@@ -37,7 +37,7 @@ The general pipeline for first time use is:
 # Installation and Requirements:
 
 - Hardware:
-     - Computer: The system should be a Linux (64 bit). For reference, we use Ubuntu 16.04 LTS and run a docker container that has everything installed (*available in a future release). You will need a strong GPU such as the [NVIDIA GeForce 1080 Ti](https://www.nvidia.com/en-us/geforce/products/10series/geforce-gtx-1080/).
+     - Computer: For reference, we use Ubuntu 16.04 LTS and run a docker container that has TensorFlow etc. installed (*available in a future release). One should also be able to run the code in Windows or MacOS (but we never tried). You will need a strong GPU such as the [NVIDIA GeForce 1080 Ti](https://www.nvidia.com/en-us/geforce/products/10series/geforce-gtx-1080/).
      
 - Software: 
      - You will need [TensorFlow](https://www.tensorflow.org/) (we used 1.0 for figures in papers, later versions also work with the provided code) for Python 3 with GPU support (otherwise training and running is very slow)
