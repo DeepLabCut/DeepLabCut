@@ -1,6 +1,6 @@
 # DeepLabCut
 
-A toolbox for markerless tracking of body parts of animals in lab settings performing various tasks, like [trail tracking](https://vnmurthylab.org/),  [reaching in mice](http://www.mousemotorlab.org/) and various drosophila behaviors (see [Mathis et al.](https://arxiv.org/abs/1411.2136) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks or species (the toolbox has also already been successfully applied to rats and zebrafish).  
+A toolbox for markerless tracking of body parts of animals in lab settings performing various tasks, like [trail tracking](https://vnmurthylab.org/),  [reaching in mice](http://www.mousemotorlab.org/) and various drosophila behaviors (see [Mathis et al.](https://arxiv.org/abs/1804.03142v1) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks or species (the toolbox has also already been successfully applied to rats and zebrafish).  
 
 <p align="center">
 <img src="/Documentation/githubfig-01-01.png" width="90%">
@@ -12,7 +12,7 @@ This work utilizes the feature detectors (ResNet + readout layers) of one of the
 
 In our preprint we demonstrate that those feature detectors can be trained with few labeled images to achieve excellent tracking accuracy for various body parts in lab tasks. Please check it out:
 
-"[Markerless tracking of user-defined features with deep learning](https://arxiv.org/abs/1411.2136)" by Alexander Mathis, Pranav Mamidanna, Taiga Abe, Kevin M. Cury, Venkatesh N. Murthy, Mackenzie W. Mathis* and Matthias Bethge*
+"[Markerless tracking of user-defined features with deep learning](https://arxiv.org/abs/1804.03142v1)" by Alexander Mathis, Pranav Mamidanna, Taiga Abe, Kevin M. Cury, Venkatesh N. Murthy, Mackenzie W. Mathis* and Matthias Bethge*
 
 # Overview:
 
@@ -167,6 +167,13 @@ For questions feel free to reach out to: [alexander.mathis@bethgelab.org] or [ma
         url = {http://arxiv.org/abs/1605.03170},
         author = {Eldar Insafutdinov and Leonid Pishchulin and Bjoern Andres and Mykhaylo Andriluka and Bernt Schiele}
     }
+    
+    @misc{1804.03142,
+	Author = {Alexander Mathis and Pranav Mamidanna and Taiga Abe and Kevin M. Cury and Venkatesh N. Murthy and Mackenzie W. Mathis and Matthias Bethge},
+	Title = {Markerless tracking of user-defined features with deep learning},
+	Year = {2018},
+	Eprint = {arXiv:1804.03142},
+	}
 
 # License:
 
