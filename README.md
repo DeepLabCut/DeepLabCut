@@ -37,10 +37,10 @@ The general pipeline for first time use is:
 # Installation and Requirements:
 
 - Hardware:
-     - Computer: For reference, we use Ubuntu 16.04 LTS and run a docker container that has TensorFlow etc. installed (*available in a future release). One should also be able to run the code in Windows or MacOS (but we never tried). You will need a strong GPU such as the [NVIDIA GeForce 1080 Ti](https://www.nvidia.com/en-us/geforce/products/10series/geforce-gtx-1080/).
+     - Computer: For reference, we use Ubuntu 16.04 LTS and run a docker container that has TensorFlow, etc. installed (*available in a future release). One should also be able to run the code in Windows or MacOS (but we never tried). You will need a strong GPU such as the [NVIDIA GeForce 1080 Ti](https://www.nvidia.com/en-us/geforce/products/10series/geforce-gtx-1080/).
      
 - Software: 
-     - You will need [TensorFlow](https://www.tensorflow.org/) (we used 1.0 for figures in papers, later versions also work with the provided code) for Python 3 with GPU support (otherwise training and running is very slow)
+     - You will need [TensorFlow](https://www.tensorflow.org/) (we used 1.0 for figures in papers, later versions also work with the provided code (we tetsed **TensorFlow versions 1.0 to 1.4**) for Python 3 with GPU support (otherwise training and running is very slow)
      - Install Sypder (or equivalent IDE) and/or Jupyter Notebook
      - Clone (or download) the code we provide
      - You will also need to install the following Python packages (in the terminal type):
@@ -52,7 +52,7 @@ The general pipeline for first time use is:
 
 # Test the Toolbox installation & code:
 
-- If you want to run the code on our demo video, a mouse reaching video from [Mathis et al., 2017](http://www.cell.com/neuron/fulltext/S0896-6273(17)30157-5), you will NOT run steps **(0)**, **(1)**, or **(2)** as we have created labels for this video already (and e.g. **(0)** will extract different frames that are thus not labeled). 
+- If you want to run the code on our demo video, a mouse reaching video from [Mathis et al., 2017](http://www.cell.com/neuron/fulltext/S0896-6273(17)30157-5), you will NOT run code from sections **(0)**, **(1)**, or **(2)** below, as we have created labels for this video already (and e.g. **(0)** will extract different frames that are thus not labeled). 
 
 - We recommend looking at the first notebooks, then proceed to **(3) Formating the data** below. Also note that this demo data contains so few labeled frames that one should not train the network (other then for brief testing) on the corresponding data set and expect it to work properly - it is only for demo purposes. 
 
