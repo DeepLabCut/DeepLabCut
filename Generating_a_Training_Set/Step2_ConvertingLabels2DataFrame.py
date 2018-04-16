@@ -103,13 +103,12 @@ for scorer in Scorers:
 
                 Xrescaled = dframe.X.values.astype(float)
                 Yrescaled = dframe.Y.values.astype(float)
-
+                
                 # get rid of values that are invisible >> thus user scored in left corner!
-                Xrescaled[(Xrescaled < invisibleboundary) *
-                          (Yrescaled < invisibleboundary)] = np.nan
-                Yrescaled[(Xrescaled < invisibleboundary) *
-                          (Yrescaled < invisibleboundary)] = np.nan
-
+                invisiblemarkersmask = (Xrescaled < invisibleboundary) * (Yrescaled < invisibleboundary)
+                Xrescaled[invisiblemarkersmask] = np.nan
+                Yrescaled[invisiblemarkersmask] = np.nan
+                
                 if Frame is None:
                     # frame=pd.DataFrame(np.vstack([dframe.X,dframe.Y]).T, columns=index,index=imageaddress)
                     frame = pd.DataFrame(
