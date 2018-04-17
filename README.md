@@ -111,7 +111,7 @@ The folder pose-tensorflow contains an earlier, minimal yet sufficient for our p
      $ cd pose-tensorflow/models/pretrained
      $ ./download.sh
     
-Next copy the two folders generated in step **(4)** into the models folder of pose-tensorflow (i.e. pose-tensorflow/models/). We have already done this for the example project, which you will find there. Then (in a terminal) navigate to the subfolder "train" of the machine file, i.e. in our case and then start training (good luck!)
+Next copy the two folders generated in step **(5) Formating the data II** into the **models** folder of pose-tensorflow (i.e. pose-tensorflow/models/). We have already done this for the example project, which you will find there. Then (in a terminal) navigate to the subfolder "train" of the machine file, i.e. in our case and then start training (good luck!)
     
      $ cd pose-tensorflow/models/reachingJan30-trainset95shuffle1/train
      $ TF_CUDNN_USE_AUTOTUNE=0 CUDA_VISIBLE_DEVICES=0 python3 ../../../train.py 
