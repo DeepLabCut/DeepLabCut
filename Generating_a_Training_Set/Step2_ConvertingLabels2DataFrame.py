@@ -26,7 +26,7 @@ import pandas as pd
 import os
 import sys
 sys.path.append(os.getcwd().split('Generating_a_Training_Set')[0])
-from myconfig import Task, bodyparts, Scorers
+from myconfig import Task, bodyparts, Scorers, invisibleboundary
 
 ###################################################
 # Code if each bodypart has its own label file!
@@ -38,7 +38,7 @@ basefolder = 'data-' + Task + '/'
 # Data frame to hold data of all data sets for different scorers,
 # bodyparts and images
 DataCombined = None
-invisibleboundary = 10  # see metadata / when bodypart not visible!
+
 for scorer in Scorers:
     os.chdir(basefolder)
     # Make list of different video data sets / each one has its own folder

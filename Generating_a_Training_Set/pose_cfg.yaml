@@ -52,7 +52,7 @@ multi_step:
 - [0.001, 1030000]
 
 # How often display loss
-display_iters: 5000
+display_iters: 1000
 # How often to save training snapshot
 save_iters: 50000
 
