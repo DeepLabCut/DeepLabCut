@@ -42,8 +42,9 @@ bodyparts = ["hand", "Finger1", "Finger2",
 Scorers = ['Mackenzie']  # who is labeling?
 
 # When importing the images and the labels in the csv/xls files should be in the same order!
-# During labeling in Fiji one can thus (for occluded body parts) click in the origin of the image, these
-# "false" labels will then be removed. To do so set the following variable:
+# During labeling in Fiji one can thus (for occluded body parts) click in the origin of the image 
+#(i.e. top left corner (close to 0,0)), these "false" labels will then be removed. To do so set the following variable:
+#set this to 0 if no labels should be removed!
 invisibleboundary=10 # If labels are closer to origin than this number they are set to NaN (not a number)
 
 ########################################
