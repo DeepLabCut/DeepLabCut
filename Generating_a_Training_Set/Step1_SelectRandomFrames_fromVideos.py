@@ -29,7 +29,7 @@ import math
 import sys
 sys.path.append(os.getcwd().split('Generating_a_Training_Set')[0])
 from myconfig import Task, vidpath, filename, x1, x2, y1, y2, portion, \
-    Scorers, bodyparts, date
+    Scorers, bodyparts, date, cropping
 import auxiliaryfunctions
 
 # check global variables:
@@ -55,11 +55,13 @@ print("Duration of video [s], ", clip.duration, "fps, ", clip.fps,
 
 ny, nx = clip.size  # dimensions of frame (width, height)
 
+
 # Select ROI of interest by adjusting values in myconfig.py
-clip = clip.crop(y1=y1, y2=y2, x1=x1, x2=x2)
+if cropping==True:
+    clip = clip.crop(y1=y1, y2=y2, x1=x1, x2=x2)
+
 '''
 USAGE:
-
 clip.crop(x1=None, y1=None, x2=None, y2=None, width=None, height=None, x_center=None, y_center=None)
 
 Returns a new clip in which just a rectangular subregion of the
@@ -67,11 +69,10 @@ original clip is conserved. x1,y1 indicates the top left corner and
 x2,y2 is the lower right corner of the croped region.
 
 All coordinates are in pixels. Float numbers are accepted.
-
 '''
+
 image = clip.get_frame(1.2)
 io.imsave("IsCroppingOK.png", image)
-
 print("--> Open CroppingOK.png file to set the output range! <---")
 print("--> Adjust shiftx, shifty, fx and fy accordingly! <---")
 

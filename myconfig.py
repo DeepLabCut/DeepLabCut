@@ -27,7 +27,6 @@ x2 = 640
 y1 = 277
 y2 = 624
 
-
 # Portion of the video to sample from in step 1. Set to 1 by default.
 portion = 1
 
@@ -65,8 +64,8 @@ resnet = 50
 # trainingsiterations='1030000'
 
 # For Evaluation/ Analyzing videos
-# To evaluate model that was trained most set this to: "-1"
-# To evaluate all models (training stages) set this to: "all"
+# To evaluate the last model that was trained most set this to: -1 
+# To evaluate all models (training stages) set this to: "all"  (as string!)
 
 snapshotindex = -1
 shuffleindex = 0

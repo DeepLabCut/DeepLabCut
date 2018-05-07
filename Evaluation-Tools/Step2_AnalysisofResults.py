@@ -16,7 +16,7 @@ import sys
 import os
 import pickle
 sys.path.append(os.getcwd().split('Evaluation-Tools')[0])
-from myconfig import Task, date, scorer, Shuffles, TrainingFraction
+from myconfig import Task, date, scorer, Shuffles, TrainingFraction, snapshotindex
 import matplotlib
 matplotlib.use('Agg')
 import numpy as np
@@ -65,15 +65,12 @@ comparisonbodyparts = list(np.unique(Data.columns.get_level_values(1)))
 
 for trainFraction in TrainingFraction:
     for shuffle in Shuffles:
+
         fns = [
             file for file in os.listdir('Results')
             if "forTask:" + str(Task) in file and "shuffle" + str(shuffle) in
             file and "_" + str(int(trainFraction * 100)) in file
         ]
-
-        DataMachine = pd.read_hdf("Results/" + fns[0], 'df_with_missing')
-        DataCombined = pd.concat([Data.T, DataMachine.T], axis=0).T
-        scorer_machine = DataMachine.columns.get_level_values(0)[0]
 
         metadatafile = datafolder + "Documentation_" + "data-" + Task + "_" + str(
             int(trainFraction * 100)) + "shuffle" + str(shuffle) + ".pickle"
@@ -83,11 +80,25 @@ for trainFraction in TrainingFraction:
                 testFraction_data
             ] = pickle.load(f)
 
-        MSE = pairwisedistances(DataCombined, scorer, scorer_machine,
-                                comparisonbodyparts)
-
-        testerror = np.nanmean(MSE.iloc[testIndexes].values.flatten())
-        trainerror = np.nanmean(MSE.iloc[trainIndexes].values.flatten())
-
-        print("Results:", int(100 * trainFraction), shuffle, "train error:",
-              trainerror, "test error:", testerror)
+        #extract training iterations:
+        TrainingIterations=[(int(fns[j].split("forTask")[0].split('_')[-1]),j) for j in range(len(fns))]
+        TrainingIterations.sort(key=lambda tup: tup[0]) #sort according to increasing # training steps!
+        
+        if snapshotindex == -1:
+                    snapindices = TrainingIterations[-1]
+        elif snapshotindex == "all":
+                    snapindices = TrainingIterations
+        
+        for trainingiterations,index in snapindices:
+        		DataMachine = pd.read_hdf("Results/" + fns[index], 'df_with_missing')
+        		DataCombined = pd.concat([Data.T, DataMachine.T], axis=0).T
+        		scorer_machine = DataMachine.columns.get_level_values(0)[0]
+        
+        		MSE = pairwisedistances(DataCombined, scorer, scorer_machine,
+        		                        comparisonbodyparts)
+        
+        		testerror = np.nanmean(MSE.iloc[testIndexes].values.flatten())
+        		trainerror = np.nanmean(MSE.iloc[trainIndexes].values.flatten())
+        
+        		print("Results for",trainingiterations, "training iterations:", int(100 * trainFraction), shuffle, "train error:",
+        		      trainerror, "test error:", testerror)
