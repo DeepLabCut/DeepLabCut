@@ -34,11 +34,15 @@ portion = 1
 # Step 2:
 ########################################
 
-bodyparts = ["hand", "Finger1", "Finger2",
-             "Joystick"]  # Exact sequence of labels as were put by
-
+bodyparts = ["hand", "Finger1", "Finger2","Joystick"]  # Exact sequence of labels as were put by
 # annotator in *.csv file
 Scorers = ['Mackenzie']  # who is labeling?
+
+# Set this true if the data was sequentially labeled and if there is one file per folder (you can set the name of this file below, i.e. multibodypartsfilename)
+# Otherwise there should be individual files per bodypart, i.e. in our demo case hand.csv, Finger1.csv etc.
+# If true then those files will be generated from Results.txt
+multibodypartsfile=False 
+multibodypartsfilename="results.csv"
 
 # When importing the images and the labels in the csv/xls files should be in the same order!
 # During labeling in Fiji one can thus (for occluded body parts) click in the origin of the image 

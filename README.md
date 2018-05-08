@@ -40,7 +40,7 @@ The general pipeline for first time use is:
      - Computer: For reference, we use Ubuntu 16.04 LTS and run a docker container that has TensorFlow, etc. installed (*available in a future release). One should also be able to run the code in Windows or MacOS (but we never tried). You will need a strong GPU such as the [NVIDIA GeForce 1080 Ti](https://www.nvidia.com/en-us/geforce/products/10series/geforce-gtx-1080/).
      
 - Software: 
-     - You will need [TensorFlow](https://www.tensorflow.org/) (we used 1.0 for figures in papers, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.4**) for Python 3 with GPU support (otherwise training and running is very slow). Please check your CUDA and [TensorFlow installation](https://www.tensorflow.org/install/) with this line (below), and you can test that your GPU is being properly engaged with these additional [tips](https://www.tensorflow.org/programmers_guide/using_gpu).
+     - You will need [TensorFlow](https://www.tensorflow.org/) (we used 1.0 for figures in papers, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.4**, but recommend **1.0**, se below) for Python 3 with GPU support (otherwise training and running is extremely slow). Please check your CUDA and [TensorFlow installation](https://www.tensorflow.org/install/) with this line (below), and you can test that your GPU is being properly engaged with these additional [tips](https://www.tensorflow.org/programmers_guide/using_gpu).
 
       $ sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
@@ -59,7 +59,7 @@ Please also install:
 
 - If you want to run the code on our demo video, a mouse reaching video from [Mathis et al., 2017](http://www.cell.com/neuron/fulltext/S0896-6273(17)30157-5), you will NOT run code from sections **(0)**, **(1)**, or **(2)** below, as we have created labels for this video already (and e.g. **(0)** will extract different frames that are thus not labeled). 
 
-- We recommend looking at the first notebooks, then proceed to **(3) Formating the data** below. Also note that this demo data contains so few labeled frames that one should not train the network (other then for brief testing) on the corresponding data set and expect it to work properly - it is only for demo purposes. 
+- We recommend looking at the first notebooks, then proceed to **(3) Formatting the data** below. Also note that this demo data contains so few labeled frames that one should not train the network (other then for brief testing) on the corresponding data set and expect it to work properly - it is only for demo purposes. 
 
 # Using the Toolbox code - Labeling and Training Instructions:
  - The following steps document using the code with either Python scripts or in Jupyter Notebooks:
@@ -80,9 +80,11 @@ Generally speaking, one should create a training set that reflects the diversity
             
 **(2) Label the frames:**
 
-   - You should label a sufficient number of frames with the anatomical locations of your choice. For the behaviors we have tested so far, 100-200 frames gave good results (see preprint). Depending on your required accuracy more training data might be necessary. Try to label consistently similar spots (e.g. on wrist that is very large).  
+   - You should label a sufficient number of frames with the anatomical locations of your choice. For the behaviors we have tested so far, 100-200 frames gave good results (see preprint). Depending on your required accuracy and the nature of the scene statistics more training data might be necessary. Try to label consistently similar spots (e.g. on wrist that is very large, try to label the same location).
      
    - Labeling can be done in any program, but we recommend using [Fiji](https://fiji.sc/). In Fiji one can simply open the images, create a (virtual) stack* (in brief, in fiji: File > Import > Image Sequence > (check "virtual stack")), then use the "Multi-point Tool" to label frames. You scroll through the frames and click on as many points as you wish in the same order on each frame. Then simply measure and save the resulting .csv file (Analyze>Measure (or simple Ctrl+M)). 
+
+   - You can either store one .csv file per folder that contains all body parts in a cyclical way (same, repeating order). If a particular body part is not visible in a frame, then click close to (0,0) to later exclude those labels (see description in `myconfig.py` for details). In this case, set `multibodypartsfile=True` and put the name of the corresponding csv file under `multibodypartsfilename` in `myconfig.py`. Furthermore, make sure that the sequence of body parts has exactly the same order as the cyclically labeled body parts. Alternatively, you can put one csv file per body part and store them with the names defined in `bodypart` list of `myconfig.py`. In this case set `multibodypartsfile=False`.
      
    *To open virtual stack see: https://imagej.nih.gov/ij/plugins/virtual-opener.html  The virtual stack is helpful when the images have different sizes. This way they are not rescaled and the label information does not need to be rescaled.
 
@@ -93,7 +95,9 @@ Generally speaking, one should create a training set that reflects the diversity
 **(3) Formating the data I:**
 
   - **IDE users:**
- The code "Step2_ConvertingLabels2DataFrame.py" creates a data structure in [pandas](https://pandas.pydata.org/) (stored as .h5 and .csv) combining the various labels together with the (local) file path of the images. This data structure also keeps track of who labeled the data and allows to combine data from multiple labelers. Keep in mind that ".csv" files for each bodyparts listed in the myconfig.py file should exist in the folder alongside the individual images.
+ The code "Step2_ConvertingLabels2DataFrame.py" creates a data structure in [pandas](https://pandas.pydata.org/) (stored as .h5 and .csv) combining the various labels together with the (local) file path of the images. This data structure also keeps track of who labeled the data and allows to combine data from multiple labelers. 
+
+Keep in mind that ".csv" files for each bodypart or multiple bodyparts listed in the myconfig.py file should exist in the folder alongside the individual images.
 
    - **Juypter Users:** use the Step2_.._demo.ipynb file
    
@@ -111,7 +115,7 @@ Generally speaking, one should create a training set that reflects the diversity
 
  **(6) Training the deep neural network:**
     
-The folder pose-tensorflow contains an earlier, minimal yet sufficient for our purposes variant of [DeeperCut](https://github.com/eldar/pose-tensorflow), which we tested for **TensorFlow 1.0 to 1.4**. Before training a model for the first time you need to download the weights for the [ResNet pretrained on ImageNet from tensorflow.org](https://github.com/tensorflow/models/tree/master/official/resnet) (~200MB). To do that: 
+The folder pose-tensorflow contains an earlier, minimal yet sufficient for our purposes variant of [DeeperCut](https://github.com/eldar/pose-tensorflow), which we tested for **TensorFlow 1.0** (which we recommend). All features other than simultanous evaluation for multiple snapshots (`Step1_EvaluateModelonDataset.py`) work for **TensorFlow** versions up to **1.4**. This script also works for single snapshots, see [Issue 8](https://github.com/AlexEMG/DeepLabCut/issues/8) for details. Before training a model for the first time you need to download the weights for the [ResNet pretrained on ImageNet from tensorflow.org](https://github.com/tensorflow/models/tree/master/official/resnet) (~200MB). To do that: 
     
      $ cd pose-tensorflow/models/pretrained
      $ ./download.sh
@@ -125,7 +129,7 @@ If your machine has multiple GPUs, you can select which GPU you want to run
 on by setting the environment variable, eg. CUDA_VISIBLE_DEVICES=0.
 
 Tips: You can also stop during a training, and restart from a snapshot (aka checkpoint):
-Just change the init_weights term, i.e. instead of "init_weights: ../../pretrained/resnet_v1_50.ckpt"  put "init_weights: ./snapshot-insertthe#ofstepshere" (i.e. 10000). Train for several thousands of iterations until the loss plateaus. 
+Just change the init_weights term, i.e. instead of "init_weights: ../../pretrained/resnet_v1_50.ckpt"  put "init_weights: ./snapshot-insertthe#ofstepshere" (i.e. 10,000). Train for several thousands of iterations until the loss plateaus. 
 
 **(7) Evaluate your network:**
      
@@ -154,7 +158,7 @@ For questions feel free to reach out to: [alexander.mathis@bethgelab.org] or [ma
 
 # Code contributors:
 
-[Alexander Mathis](https://github.com/AlexEMG), [Mackenzie Mathis](https://github.com/MMathisLab),and the DeeperCut authors for the feature detector code. Edits by [Jonas Rauber](https://github.com/jonasrauber) and [Taiga Abe](https://github.com/cellistigs). The feature detector code is based on Eldar Insafutdinov's tensorflow implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow). Please check out the following references for details:
+[Alexander Mathis](https://github.com/AlexEMG), [Mackenzie Mathis](https://github.com/MMathisLab),and the DeeperCut authors for the feature detector code. Edits and suggestions by [Jonas Rauber](https://github.com/jonasrauber), [Taiga Abe](https://github.com/cellistigs), [Jonny Saunders](https://github.com/sneakers-the-rat) and [Brandon Forys](https://github.com/bf777). The feature detector code is based on Eldar Insafutdinov's tensorflow implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow). Please check out the following references for details:
 
 
 # References:

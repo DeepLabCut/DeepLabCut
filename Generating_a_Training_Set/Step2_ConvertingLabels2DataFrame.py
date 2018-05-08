@@ -26,19 +26,35 @@ import pandas as pd
 import os
 import sys
 sys.path.append(os.getcwd().split('Generating_a_Training_Set')[0])
-from myconfig import Task, bodyparts, Scorers, invisibleboundary
+from myconfig import Task, bodyparts, Scorers, invisibleboundary,multibodypartsfile, multibodypartsfilename
+
+basefolder = 'data-' + Task + '/'
+
+
+###################################################
+# Code if all bodyparts (per folder are shared in one file)
+# This code below converts it into multiple csv files per body part & folder
+# Based on an idea by @sneakers-the-rat
+###################################################
+
+if multibodypartsfile==True:
+    folders = [name for name in os.listdir(basefolder) if os.path.isdir(os.path.join(basefolder, name))]    
+    for folder in folders:
+        # load csv, iterate over nth value in a grouping by frame, save to bodyparts files
+        dframe = pd.read_csv(os.path.join(basefolder,folders[0],multibodypartsfilename))
+        frame_grouped = dframe.groupby('Slice') #Note: the order of bodyparts list in myconfig and labels must be identical!
+        for i, bodypart in enumerate(bodyparts):
+            part_df = frame_grouped.nth(i)
+            part_fn =  part_fn = os.path.join(basefolder,folder,bodypart+'.csv')
+            part_df.to_csv(part_fn)
 
 ###################################################
 # Code if each bodypart has its own label file!
 ###################################################
 
-###################################################
-basefolder = 'data-' + Task + '/'
-
 # Data frame to hold data of all data sets for different scorers,
 # bodyparts and images
 DataCombined = None
-
 for scorer in Scorers:
     os.chdir(basefolder)
     # Make list of different video data sets / each one has its own folder
