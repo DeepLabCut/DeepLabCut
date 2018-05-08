@@ -90,7 +90,7 @@ for video in videos:
 
         ny, nx = clip.size  # dimensions of frame (height, width)
         fps = clip.fps
-        nframes = np.sum(1 for j in clip.iter_frames())
+        nframes = np.ceil(clip.fps*clip.duration).astype(np.int)
     
         if cropping:
             # one might want to adjust
