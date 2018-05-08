@@ -1,13 +1,14 @@
 """
-DeepLabCut Toolbox
-https://github.com/AlexEMG/DeepLabCut
+B Forys, brandon.forys@alumni.ubc.ca
 
-A Mathis, alexander.mathis@bethgelab.org
-M Mathis, mackenzie@post.harvard.edu
-
-This script labels the bodyparts in videos as analzyed by Step3.
+This script is a modified version of MakingLabeledVideo.py that outputs a series
+of plots instead of plotting points directly on the video. It also exports the
+DataFrame (containing all predicted movement points) to .csv for easy processing
+with MATLAB.
+Additionally, it provides another DataFrame with an unweighted average of all
+points of movement - this is useful if you want a simple representation of the
+overall movement in a given region. 
 """
-
 ####################################################
 # Dependencies
 ####################################################
@@ -45,17 +46,10 @@ Data = pd.read_hdf(
 
 bodyparts2plot = list(np.unique(Data.columns.get_level_values(1)))
 
-
-# https://stackoverflow.com/questions/14720331/how-to-generate-random-colors-in-matplotlib
 def get_cmap(n, name='hsv'):
     '''Returns a function that maps each index in 0, 1, ..., n-1 to a distinct
     RGB color; the keyword argument name must be a standard mpl colormap name.'''
     return plt.cm.get_cmap(name, n)
-
-
-####################################################
-# Loading descriptors of model
-####################################################
 
 colors = get_cmap(len(bodyparts2plot))
 
@@ -73,8 +67,10 @@ os.chdir(videofolder)
 videos = np.sort([fn for fn in os.listdir(os.curdir) if (".avi" in fn)])
 print("Starting ", videofolder, videos)
 for video in videos:
-    vname = video.split('.')[0]
-    tmpfolder = 'temp' + vname
+    vname = video.split('.')[0] + '_plot'
+    tmpfolder = 'temp' + vname + '_avg_new'
+    xoverall = []
+    yoverall = []
 
     auxiliaryfunctions.attempttomakefolder(tmpfolder)
     if os.path.isfile(tmpfolder + '/' + vname + '.mp4'):
@@ -82,7 +78,6 @@ for video in videos:
     else:
         print("Loading ", video, "and data.")
         dataname = video.split('.')[0] + scorer + '.h5'
-        print(scorer)
         try:
             Dataframe = pd.read_hdf(dataname)
             clip = VideoFileClip(video)
@@ -105,16 +100,20 @@ for video in videos:
         print("Generating frames")
         for index in tqdm(range(nframes)):
             imagename = tmpfolder + "/file%04d.png" % index
+            plotname = tmpfolder + "/plot%04d.png" % index
             if os.path.isfile(tmpfolder + "/file%04d.png" % index):
                 pass
             else:
                 plt.axis('off')
                 image = img_as_ubyte(clip.get_frame(index * 1. / clip.fps))
+                xarr = []
+                yarr = []
 
                 if np.ndim(image) > 2:
                     h, w, nc = np.shape(image)
                 else:
                     h, w = np.shape(image)
+                plt.axis('off')
 
                 plt.figure(frameon=False, figsize=(w * 1. / 100, h * 1. / 100))
                 plt.subplots_adjust(
@@ -123,15 +122,26 @@ for video in videos:
 
                 for bpindex, bp in enumerate(bodyparts2plot):
                     if Dataframe[scorer][bp]['likelihood'].values[index] > pcutoff:
-                        plt.scatter(
-                            Dataframe[scorer][bp]['x'].values[index],
-                            Dataframe[scorer][bp]['y'].values[index],
-                            color=colors(bpindex),
-                            alpha=.2)
+                        xval = Dataframe[scorer][bp]['x'].values[index]
+                        yval = Dataframe[scorer][bp]['y'].values[index]
+                        xarr.append(xval)
+                        yarr.append(yval)
+
+                xavg = np.mean(xarr)
+                yavg = np.mean(yarr)
+                xoverall.append(xavg)
+                yoverall.append(yavg)
+                xarr = []
+                yarr = []
+
+                plt.scatter(
+                    xavg, yavg,
+                    color='blue',
+                    alpha=1)
 
                 plt.xlim(0, w)
                 plt.ylim(0, h)
-                plt.axis('off')
+                plt.axis("off")
                 plt.subplots_adjust(
                     left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
                 plt.gca().invert_yaxis()
@@ -151,3 +161,18 @@ for video in videos:
                 os.remove(file_name)
 
         os.chdir("../")
+
+        if os.path.isfile(tmpfolder + '/' + scorer + '.csv'):
+            print("Overall DataFrame for this video already exported!")
+        else:
+            print("Exporting overall DataFrame to csv...")
+            Dataframe.to_csv(tmpfolder + '/' + scorer + '.csv')
+            print("..done!")
+        if os.path.isfile(tmpfolder + '/' + scorer + '_avgs' + '.csv'):
+            print("Averages DataFrame for this video already exported!")
+        else:
+            print("Exporting averages...")
+            avgs = pd.DataFrame({'x':xoverall, 'y':yoverall})
+            print("Exporting avgs DataFrame to csv...")
+            avgs.to_csv(tmpfolder + '/' + scorer + '_avgs' + '.csv')
+            print("..done!")

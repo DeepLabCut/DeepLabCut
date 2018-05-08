@@ -1,4 +1,8 @@
-# credits to @sneakers-the-rat
+"""
+Splits the .csv file by bodypart for processing.
+Credits to @sneakers-the-rat
+"""
+
 import pandas as pd
 import tkinter
 from tkinter import filedialog

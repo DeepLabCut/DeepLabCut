@@ -69,6 +69,7 @@ for scorer in Scorers:
             # sort image file names according to how they were stacked
             # files=np.sort([fn for fn in os.listdir(os.curdir)
             # if ("img" in fn and ".png" in fn and "_labelled" not in fn)])
+
             files = [
                 fn for fn in os.listdir(os.curdir)
                 if ("img" in fn and ".png" in fn and "_labelled" not in fn)
@@ -82,10 +83,10 @@ for scorer in Scorers:
             for bodypart in bodyparts:
                 datafile = bodypart
                 try:
-                    dframe = pd.read_csv(datafile + ".xls", sep='\t')
+                    dframe = pd.read_csv(datafile + ".xls")
                 except:
                     os.rename(datafile + ".csv", datafile + ".xls")
-                    dframe = pd.read_csv(datafile + ".xls", sep='\t')
+                    dframe = pd.read_csv(datafile + ".xls")
 
                 if dframe.shape[0] != len(imageaddress):
                     # Filling up with nans
@@ -103,12 +104,12 @@ for scorer in Scorers:
 
                 Xrescaled = dframe.X.values.astype(float)
                 Yrescaled = dframe.Y.values.astype(float)
-                
+
                 # get rid of values that are invisible >> thus user scored in left corner!
                 invisiblemarkersmask = (Xrescaled < invisibleboundary) * (Yrescaled < invisibleboundary)
                 Xrescaled[invisiblemarkersmask] = np.nan
                 Yrescaled[invisiblemarkersmask] = np.nan
-                
+
                 if Frame is None:
                     # frame=pd.DataFrame(np.vstack([dframe.X,dframe.Y]).T, columns=index,index=imageaddress)
                     frame = pd.DataFrame(

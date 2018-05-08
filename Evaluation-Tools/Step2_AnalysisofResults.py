@@ -67,7 +67,7 @@ for trainFraction in TrainingFraction:
     for shuffle in Shuffles:
         fns = [
             file for file in os.listdir('Results')
-            if "forTask:" + str(Task) in file and "shuffle" + str(shuffle) in
+            if "forTask_" + str(Task) in file and "shuffle" + str(shuffle) in
             file and "_" + str(int(trainFraction * 100)) in file
         ]
 

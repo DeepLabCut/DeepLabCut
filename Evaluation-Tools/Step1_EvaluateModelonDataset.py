@@ -117,7 +117,7 @@ for shuffle in Shuffles:
             scorer = 'DeepCut' + "_resnet" + str(cfg["net_type"]) + "_" + str(
                 int(trainFraction *
                     100)) + 'shuffle' + str(shuffle) + '_' + str(
-                        trainingsiterations) + "forTask:" + Task
+                        trainingsiterations) + "forTask_" + Task
 
             print("Running ", scorer, trainingsiterations)
 

@@ -47,7 +47,7 @@ auxiliaryfunctions.attempttomakefolder(basefolder)
 #####################################################################
 
 # Number of frames to pick (set this to 0 until you found right cropping)
-numframes2pick = 10
+numframes2pick = 200
 
 clip = VideoFileClip(vidpath + '/' + filename)
 print("Duration of video [s], ", clip.duration, "fps, ", clip.fps,

@@ -113,7 +113,7 @@ pdindex = pd.MultiIndex.from_product(
 os.chdir(videofolder)
 
 videos = np.sort([fn for fn in os.listdir(os.curdir) if (".avi" in fn)])
-print("Starting ", videofolder, videos)
+print("Starting AVI video ", videofolder, videos)
 for video in videos:
     dataname = video.split('.')[0] + scorer + '.h5'
     try:
