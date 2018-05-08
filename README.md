@@ -85,9 +85,14 @@ Generally speaking, one should create a training set that reflects the diversity
 <img src="/Documentation/img0000_labels.jpg" width="60%">
 </p>
 
-**(3) Formating the data I:**
+**(3) Formatting the data I:**
 
   - **IDE users:**
+	
+If you did not label some frames in the video because the bodyparts you were labelling disappeared, first use "FrameTrimmer.py". This compares the frames with the csv file of labels, *permanently discarding* frames that do not match up with the labels (which are recognized as frames that weren't labelled). It's a good idea to create a backup of these frames and the .csv first!
+
+To split the labels by body part (which is required for Step 2 to work), use the code "Step2_1_Splitting_CSV.py". This will generate one csv for each bodypart in the same folder as the images. Make sure to discard your original .csv after this is done.
+
  The code "Step2_ConvertingLabels2DataFrame.py" creates a data structure in [pandas](https://pandas.pydata.org/) (stored as .h5 and .csv) combining the various labels together with the (local) file path of the images. This data structure also keeps track of who labeled the data and allows to combine data from multiple labelers. Keep in mind that ".csv" files for each bodyparts listed in the myconfig.py file should exist in the folder alongside the individual images.
 
    - **Juypter Users:** use the Step2_.._demo.ipynb file
@@ -135,7 +140,7 @@ After successfully training and finding low generalization error for the network
  
    - To begin, first edit the myconfig_analysis.py file 
      
-   - For extracting posture from a folder with videos run ("CUDA_VISIBLE_DEVICES=0 python3 AnalyzeVideos.py") and then make labeled videos ("MakingLabeledVideo.py").
+   - For extracting posture from a folder with videos run ("CUDA_VISIBLE_DEVICES=0 python3 AnalyzeVideos.py") and then make labeled videos ("MakingLabeledVideo.py"). Use "PlotEval.py" to output all of the predicted labels for a given video to .csv, and display all bodyparts as a single, averaged value (this is useful for communicating the efficacy of the label predictor).
 
 # Contribute:
 
@@ -149,7 +154,7 @@ For questions feel free to reach out to: Alexander Mathis [alexander.mathis@beth
 
 # Code contributors:
 
-[Alexander Mathis](https://github.com/AlexEMG), [Mackenzie Mathis](https://github.com/MMathisLab), [Taiga Abe](https://github.com/cellistigs), [Jonas Rauber](https://github.com/jonasrauber) and of course the DeeperCut authors for the feature detector code. The feature detector code is based on Eldar Insafutdinov's tensorflow implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow). Please check out the following references for details:
+[Alexander Mathis](https://github.com/AlexEMG), [Mackenzie Mathis](https://github.com/MMathisLab), [Taiga Abe](https://github.com/cellistigs), [Jonas Rauber](https://github.com/jonasrauber) and of course the DeeperCut authors for the feature detector code. The feature detector code is based on Eldar Insafutdinov's tensorflow implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow). Modifications in this fork were added by [Brandon Forys](https://github.com/bf777). Please check out the following references for details:
 
 
 # References:
