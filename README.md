@@ -40,7 +40,7 @@ The general pipeline for first time use is:
      - Computer: For reference, we use Ubuntu 16.04 LTS and run a docker container that has TensorFlow, etc. installed (*available in a future release). One should also be able to run the code in Windows or MacOS (but we never tried). You will need a strong GPU such as the [NVIDIA GeForce 1080 Ti](https://www.nvidia.com/en-us/geforce/products/10series/geforce-gtx-1080/).
      
 - Software: 
-     - You will need [TensorFlow](https://www.tensorflow.org/) (we used 1.0 for figures in papers, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.4**, but recommend **1.0**, se below) for Python 3 with GPU support (otherwise training and running is extremely slow). Please check your CUDA and [TensorFlow installation](https://www.tensorflow.org/install/) with this line (below), and you can test that your GPU is being properly engaged with these additional [tips](https://www.tensorflow.org/programmers_guide/using_gpu).
+     - You will need [TensorFlow](https://www.tensorflow.org/) (we used 1.0 for figures in papers, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.4**, but recommend **1.0**, ses below) for Python 3 with GPU support (otherwise training and running is extremely slow). Please check your CUDA and [TensorFlow installation](https://www.tensorflow.org/install/) with this line (below), and you can test that your GPU is being properly engaged with these additional [tips](https://www.tensorflow.org/programmers_guide/using_gpu).
 
       $ sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
@@ -158,7 +158,7 @@ For questions feel free to reach out to: [alexander.mathis@bethgelab.org] or [ma
 
 # Code contributors:
 
-[Alexander Mathis](https://github.com/AlexEMG), [Mackenzie Mathis](https://github.com/MMathisLab),and the DeeperCut authors for the feature detector code. Edits and suggestions by [Jonas Rauber](https://github.com/jonasrauber), [Taiga Abe](https://github.com/cellistigs), [Jonny Saunders](https://github.com/sneakers-the-rat) and [Brandon Forys](https://github.com/bf777). The feature detector code is based on Eldar Insafutdinov's tensorflow implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow). Please check out the following references for details:
+[Alexander Mathis](https://github.com/AlexEMG), [Mackenzie Mathis](https://github.com/MMathisLab),and the DeeperCut authors for the feature detector code. Edits and suggestions by [Jonas Rauber](https://github.com/jonasrauber), [Taiga Abe](https://github.com/cellistigs), [Jonny Saunders](https://github.com/sneakers-the-rat) and [Brandon Forys](https://github.com/bf777). The feature detector code is based on Eldar Insafutdinov's TensorFlow implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow). Please check out the following references for details:
 
 
 # References:
