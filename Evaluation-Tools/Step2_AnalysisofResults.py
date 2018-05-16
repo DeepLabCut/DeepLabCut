@@ -83,12 +83,20 @@ for trainFraction in TrainingFraction:
         #extract training iterations:
         TrainingIterations=[(int(fns[j].split("forTask")[0].split('_')[-1]),j) for j in range(len(fns))]
         TrainingIterations.sort(key=lambda tup: tup[0]) #sort according to increasing # training steps!
-        
+        print("Found the following training snapshots: ",TrainingIterations)
+        print("You can choose among those for analyis of train/test performance.")
+
         if snapshotindex == -1:
-                    snapindices = TrainingIterations[-1]
+            snapindices = [TrainingIterations[-1]]
         elif snapshotindex == "all":
-                    snapindices = TrainingIterations
-        
+            snapindices = TrainingIterations
+        elif snapshotindex<len(TrainingIterations):
+            snapindices=[TrainingIterations[snapshotindex]]
+        else:
+            print("Invalid choice, only -1 (last), all (as string), or index corresponding to one of the listed training snapshots can be analyzed.")
+            print("Others might not have been evaluated!")
+            snapindices=[]
+
         for trainingiterations,index in snapindices:
         		DataMachine = pd.read_hdf("Results/" + fns[index], 'df_with_missing')
         		DataCombined = pd.concat([Data.T, DataMachine.T], axis=0).T

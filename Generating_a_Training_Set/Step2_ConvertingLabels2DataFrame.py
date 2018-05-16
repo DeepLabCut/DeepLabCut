@@ -98,21 +98,21 @@ for scorer in Scorers:
             for bodypart in bodyparts:
                 datafile = bodypart
                 try:
-                    dframe = pd.read_csv(datafile + ".xls", sep='\t')
+                    dframe = pd.read_csv(datafile + ".xls",sep=None,engine='python') #, sep='\t')
                 except:
                     os.rename(datafile + ".csv", datafile + ".xls")
-                    dframe = pd.read_csv(datafile + ".xls", sep='\t')
+                    dframe = pd.read_csv(datafile + ".xls",sep=None,engine='python') #, sep='\t')
 
+                # Note: If your csv file is not correctly loaded, then a common error is:
+                # "AttributeError: 'DataFrame' object has no attribute 'X'" or the corresponding error with Slice
+                # Try to make sure you specify the seperator of the csv file correctly. See https://github.com/AlexEMG/DeepLabCut/issues/10 for details.
+                
                 if dframe.shape[0] != len(imageaddress):
-                    # Filling up with nans
-                    # dframe.set_index('Slice')
                     new_index = pd.Index(
                         np.arange(len(files)) + 1, name='Slice')
                     dframe = dframe.set_index('Slice').reindex(new_index)
                     dframe = dframe.reset_index()
-                # print(dframe.index)
-                # print(frame.head())
-                # print(bodypart)
+                
                 index = pd.MultiIndex.from_product(
                     [[scorer], [bodypart], ['x', 'y']],
                     names=['scorer', 'bodyparts', 'coords'])

@@ -7,8 +7,11 @@ M Mathis, mackenzie@post.harvard.edu
 
 This script analyzes videos based on a trained network.
 You need tensorflow for evaluation. Run by:
-CUDA_VISIBLE_DEVICES=0 python3 AnalyzeVideos.py
+    
+CUDA_VISIBLE_DEVICES=0 python3 AnalyzeABunchofPictures.py
 
+This script loops over a folder containing tiff stacks and analyses them stack by stack. By popular demand of the Woolf lab at HMS.
+This can also be adapted to load different types of images. 
 """
 
 ####################################################
@@ -25,7 +28,7 @@ sys.path.append(subfolder + "pose-tensorflow/")
 sys.path.append(subfolder + "Generating_a_Training_Set")
 
 from myconfig_analysis import videofolder, cropping, Task, date, \
-    trainingsFraction, resnet, snapshotindex, shuffle,x1, x2, y1, y2, videotype
+    trainingsFraction, resnet, snapshotindex, shuffle
 
 # Deep-cut dependencies
 from config import load_config
@@ -35,10 +38,8 @@ from dataset.pose_dataset import data_to_input
 # Dependencies for video:
 import pickle
 # import matplotlib.pyplot as plt
-import imageio
-imageio.plugins.ffmpeg.download()
+from skimage import io
 from skimage.util import img_as_ubyte
-from moviepy.editor import VideoFileClip
 import skimage
 import skimage.color
 import time
@@ -108,39 +109,29 @@ pdindex = pd.MultiIndex.from_product(
 # Datafolder
 ##################################################
 
-# videofolder='../videos/' #where your folder with videos is.
-
+#Folder where your tiffstacks are:
 os.chdir(videofolder)
-videos = np.sort([fn for fn in os.listdir(os.curdir) if (videotype in fn)])
+videos = np.sort([fn for fn in os.listdir(os.curdir) if (".tiff" in fn)])
+
 print("Starting ", videofolder, videos)
-for video in videos:
-    dataname = video.split('.')[0] + scorer + '.h5'
+for tiffstack in videos:
+    dataname = tiffstack.split('.')[0] + scorer + '.h5'
     try:
         # Attempt to load data...
         pd.read_hdf(dataname)
-        print("Video already analyzed!", dataname)
+        print("tiffstack already analyzed!", dataname)
     except:
-        print("Loading ", video)
-        clip = VideoFileClip(video)
-        ny, nx = clip.size  # dimensions of frame (height, width)
-        fps = clip.fps
-        nframes = np.sum(1 for j in clip.iter_frames())
-
-        if cropping:
-            clip = clip.crop(
-                y1=y1, y2=y2, x1=x1, x2=x2)  # one might want to adjust
-
-        print("Duration of video [s]: ", clip.duration, ", recorded with ", fps,
-              "fps!")
-        print("Overall # of frames: ", nframes,
-              "with cropped frame dimensions: ", clip.size)
-
+        print("Loading ", tiffstack)
+        
+        im = io.imread(tiffstack)
+        nframes=np.shape(im)[0] # Assuming: numframes x width x height [otherwise consider changing this!]
+        
         start = time.time()
         PredicteData = np.zeros((nframes, 3 * len(cfg['all_joints_names'])))
 
         print("Starting to extract posture")
         for index in tqdm(range(nframes)):
-            image = img_as_ubyte(clip.get_frame(index * 1. / fps))
+            image = img_as_ubyte(im[index])
             pose = getpose(image, cfg, outputs)
             PredicteData[index, :] = pose.flatten(
             )  # NOTE: thereby cfg['all_joints_names'] should be same order as bodyparts!
@@ -153,8 +144,6 @@ for video in videos:
             "run_duration": stop - start,
             "Scorer": scorer,
             "config file": cfg,
-            "fps": fps,
-            "frame_dimensions": (ny, nx),
             "nframes": nframes
         }
         metadata = {'data': dictionary}

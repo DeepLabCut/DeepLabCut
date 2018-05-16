@@ -106,8 +106,10 @@ for shuffle in Shuffles:
             snapindices = [-1]
         elif snapshotindex == "all":
             snapindices = range(len(Snapshots))
+        elif snapshotindex<len(Snapshots):
+            snapindices=[snapshotindex]
         else:
-            print("Invalid choice, only -1 or all (as string)!")
+            print("Invalid choice, only -1 (last), any integer up to last, or all (as string)!")
 
         for snapindex in snapindices:
             cfg['init_weights'] = modelfolder + \

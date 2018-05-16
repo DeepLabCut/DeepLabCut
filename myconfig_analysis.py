@@ -8,6 +8,11 @@
 # Filename and path to behavioral video (for labeling)
 videofolder = '../videos/'
 cropping = False
+videotype='.avi' #type of videos to analyze 
+#Note: under the hood there is moviepy, which can handle many types of videos:
+#https://zulko.github.io/moviepy/_modules/moviepy/video/io/VideoFileClip.html
+
+# If you have stacks of tiffs (instead of videos) you can use "AnalyzeABunchofPictures.py"
 
 # ROI dimensions / bounding box (only used if cropping == True)
 # x1,y1 indicates the top left corner and

@@ -71,5 +71,5 @@ resnet = 50
 # To evaluate the last model that was trained most set this to: -1 
 # To evaluate all models (training stages) set this to: "all"  (as string!)
 
-snapshotindex = -1
+snapshotindex = "all"
 shuffleindex = 0
