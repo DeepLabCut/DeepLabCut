@@ -41,7 +41,7 @@ if multibodypartsfile==True:
     folders = [name for name in os.listdir(basefolder) if os.path.isdir(os.path.join(basefolder, name))]    
     for folder in folders:
         # load csv, iterate over nth value in a grouping by frame, save to bodyparts files
-        dframe = pd.read_csv(os.path.join(basefolder,folders[0],multibodypartsfilename))
+        dframe = pd.read_csv(os.path.join(basefolder,folder,multibodypartsfilename))
         frame_grouped = dframe.groupby('Slice') #Note: the order of bodyparts list in myconfig and labels must be identical!
         for i, bodypart in enumerate(bodyparts):
             part_df = frame_grouped.nth(i)
