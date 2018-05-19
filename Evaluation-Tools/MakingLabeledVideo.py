@@ -34,7 +34,7 @@ import os
 import glob
 import auxiliaryfunctions
 from myconfig_analysis import videofolder, cropping, scorer, Task, date, \
-    resnet, shuffle, trainingsiterations, pcutoff, deleteindividualframes,x1, x2, y1, y2
+    resnet, shuffle, trainingsiterations, pcutoff, deleteindividualframes,x1, x2, y1, y2,videotype
 
 # loading meta data / i.e. training & test files
 basefolder = '../pose-tensorflow/models/'
@@ -70,7 +70,7 @@ scorer = 'DeepCut' + "_resnet" + str(resnet) + "_" + Task + str(
 
 os.chdir(videofolder)
 
-videos = np.sort([fn for fn in os.listdir(os.curdir) if (".avi" in fn)])
+videos = np.sort([fn for fn in os.listdir(os.curdir) if (videotype in fn)])
 print("Starting ", videofolder, videos)
 for video in videos:
     vname = video.split('.')[0]
