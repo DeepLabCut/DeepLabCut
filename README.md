@@ -1,6 +1,6 @@
 # DeepLabCut
 
-A toolbox for markerless tracking of body parts of animals in lab settings performing various tasks, like [trail tracking](https://vnmurthylab.org/),  [reaching in mice](http://www.mousemotorlab.org/) and various drosophila behaviors (see [Mathis et al.](https://arxiv.org/abs/1804.03142v1) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks or species (the toolbox has also already been successfully applied to rats and zebrafish).  
+A toolbox for markerless tracking of body parts of animals in lab settings performing various tasks, like [trail tracking](https://vnmurthylab.org/),  [reaching in mice](http://www.mousemotorlab.org/) and various Drosophila behaviors (see [Mathis et al.](https://arxiv.org/abs/1804.03142v1) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks or species (the toolbox has also already been successfully applied to rats, various fish species and [race horses](https://twitter.com/TrackingActions/status/998339007745527808)).  
 
 <p align="center">
 <img src="/Documentation/githubfig-01-01.png" width="90%">
