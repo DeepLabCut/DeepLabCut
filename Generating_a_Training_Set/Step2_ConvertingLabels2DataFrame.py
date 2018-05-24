@@ -26,7 +26,7 @@ import pandas as pd
 import os
 import sys
 sys.path.append(os.getcwd().split('Generating_a_Training_Set')[0])
-from myconfig import Task, bodyparts, Scorers, invisibleboundary,multibodypartsfile, multibodypartsfilename
+from myconfig import Task, bodyparts, Scorers, invisibleboundary, multibodypartsfile, multibodypartsfilename
 
 basefolder = 'data-' + Task + '/'
 
