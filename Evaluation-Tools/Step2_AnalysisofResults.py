@@ -5,44 +5,86 @@ https://github.com/AlexEMG/DeepLabCut
 A Mathis, alexander.mathis@bethgelab.org
 M Mathis, mackenzie@post.harvard.edu
 
-This script evaluates the scorer's labels and computes the accuracy.
+This script evaluates the scorer's labels and computes the accuracy, and if plotting is set to 1, will also plot the train and test images
+with the human labels (+), DeepLabCut's confident labels (.), and DeepLabCut's labels with less then pcutoff likelihood as (x). See Fig 7A in our preprint https://arxiv.org/abs/1804.03142v1 for illustration of pcutoff. 
+
 """
 
 ####################################################
 # Dependencies
 ####################################################
 
+import os.path
 import sys
-import os
+subfolder = os.getcwd().split('Evaluation-Tools')[0]
+sys.path.append(subfolder)
+# add parent directory: (where nnet & config are!)
+#sys.path.append(subfolder + "/pose-tensorflow/")
+sys.path.append(subfolder + "/Generating_a_Training_Set")
+
+import auxiliaryfunctions
 import pickle
-sys.path.append(os.getcwd().split('Evaluation-Tools')[0])
-from myconfig import Task, date, scorer, Shuffles, TrainingFraction, snapshotindex
-import matplotlib
-matplotlib.use('Agg')
+from myconfig import Task, date, scorer, Shuffles, TrainingFraction, snapshotindex, pcutoff, plotting
+
+if plotting==True:
+    import matplotlib
+    #matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    from skimage import io
+
 import numpy as np
 import pandas as pd
 
 ####################################################
 # Auxiliary functions
 ####################################################
+# https://stackoverflow.com/questions/14720331/how-to-generate-random-colors-in-matplotlib
 
+def get_cmap(n, name='hsv'):
+    '''Returns a function that maps each index in 0, 1, ..., n-1 to a distinct
+    RGB color; the keyword argument name must be a standard mpl colormap name.'''
+    return plt.cm.get_cmap(name, n)
 
-def pairwisedistances(DataCombined, scorer1, scorer2, bodyparts=None):
-    if bodyparts is None:
-        Pointwisesquareddistance = (
-            DataCombined[scorer1] - DataCombined[scorer2])**2
-        MSE = np.sqrt(
-            Pointwisesquareddistance.xs('x', level=1, axis=1) +
-            Pointwisesquareddistance.xs('y', level=1, axis=1))
-        return MSE
-    else:  # calculationg MSE only for specific bodyparts / given by list
-        Pointwisesquareddistance = (DataCombined[scorer1][bodyparts] -
-                                    DataCombined[scorer2][bodyparts])**2
-        MSE = np.sqrt(
-            Pointwisesquareddistance.xs('x', level=1, axis=1) +
-            Pointwisesquareddistance.xs('y', level=1, axis=1))
-        return MSE
+def MakeLabeledImage(DataCombined,imagenr,imagefilename,Scorers,bodyparts,colors,labels=['+','.','x'],scaling=1,alphavalue=.5,dotsize=15):
+    '''Creating a labeled image with the original human labels, as well as the DeepLabCut's!'''
+    plt.axis('off')
+    im=io.imread(os.path.join(imagefilename,DataCombined.index[imagenr]))
+    if np.ndim(im)>2:
+        h,w,numcolors=np.shape(im)
+    else:
+        h,w=np.shape(im)
+    plt.figure(frameon=False,figsize=(w*1./100*scaling,h*1./100*scaling))
+    plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)    
+    plt.imshow(im,'gray')
+    for scorerindex,loopscorer in enumerate(Scorers):
+       for bpindex,bp in enumerate(bodyparts):
+           if np.isfinite(DataCombined[loopscorer][bp]['y'][imagenr]+DataCombined[loopscorer][bp]['x'][imagenr]):
+                y,x=int(DataCombined[loopscorer][bp]['y'][imagenr]), int(DataCombined[loopscorer][bp]['x'][imagenr])
+                if 'DeepCut' in loopscorer:
+                    p=int(DataCombined[loopscorer][bp]['likelihood'][imagenr])
+                    if p>pcutoff:
+                        plt.plot(x,y,labels[1],ms=dotsize,alpha=alphavalue,color=colors(int(bpindex)))
+                    else:
+                        plt.plot(x,y,labels[2],ms=dotsize,alpha=alphavalue,color=colors(int(bpindex)))
+                else: #by exclusion this is the human labeler (I hope nobody has DeepCut in his name...)
+                        plt.plot(x,y,labels[0],ms=dotsize,alpha=alphavalue,color=colors(int(bpindex)))
+    plt.xlim(0,w)
+    plt.ylim(0,h)
+    plt.axis('off')
+    plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+    plt.gca().invert_yaxis()    
+    return 0
 
+def pairwisedistances(DataCombined,scorer1,scorer2,pcutoff=-1,bodyparts=None):
+    mask=DataMachine[scorer2].xs('likelihood',level=1,axis=1)>=pcutoff
+    if bodyparts==None:
+            Pointwisesquareddistance=(DataCombined[scorer1]-DataCombined[scorer2])**2
+            MSE=np.sqrt(Pointwisesquareddistance.xs('x',level=1,axis=1)+Pointwisesquareddistance.xs('y',level=1,axis=1))
+            return MSE,MSE[mask]
+    else:
+            Pointwisesquareddistance=(DataCombined[scorer1][bodyparts]-DataCombined[scorer2][bodyparts])**2
+            MSE=np.sqrt(Pointwisesquareddistance.xs('x',level=1,axis=1)+Pointwisesquareddistance.xs('y',level=1,axis=1))
+            return MSE,MSE[mask]
 
 fs = 15  # fontsize for plots
 ####################################################
@@ -62,7 +104,9 @@ Data = pd.read_hdf(
 
 # only specific parts can also be compared (not all!):
 comparisonbodyparts = list(np.unique(Data.columns.get_level_values(1)))
-
+if plotting==True:
+    colors = get_cmap(len(comparisonbodyparts))
+    
 for trainFraction in TrainingFraction:
     for shuffle in Shuffles:
 
@@ -98,15 +142,28 @@ for trainFraction in TrainingFraction:
             snapindices=[]
 
         for trainingiterations,index in snapindices:
-        		DataMachine = pd.read_hdf("Results/" + fns[index], 'df_with_missing')
-        		DataCombined = pd.concat([Data.T, DataMachine.T], axis=0).T
-        		scorer_machine = DataMachine.columns.get_level_values(0)[0]
-        
-        		MSE = pairwisedistances(DataCombined, scorer, scorer_machine,
-        		                        comparisonbodyparts)
-        
-        		testerror = np.nanmean(MSE.iloc[testIndexes].values.flatten())
-        		trainerror = np.nanmean(MSE.iloc[trainIndexes].values.flatten())
-        
-        		print("Results for",trainingiterations, "training iterations:", int(100 * trainFraction), shuffle, "train error:",
-        		      trainerror, "test error:", testerror)
+          DataMachine = pd.read_hdf(os.path.join("Results/",fns[index]), 'df_with_missing')
+          DataCombined = pd.concat([Data.T, DataMachine.T], axis=0).T
+          scorer_machine = DataMachine.columns.get_level_values(0)[0]
+          MSE,MSEpcutoff = pairwisedistances(DataCombined, scorer, scorer_machine,pcutoff,comparisonbodyparts)
+          testerror = np.nanmean(MSE.iloc[testIndexes].values.flatten())
+          trainerror = np.nanmean(MSE.iloc[trainIndexes].values.flatten())
+          testerrorpcutoff = np.nanmean(MSEpcutoff.iloc[testIndexes].values.flatten())
+          trainerrorpcutoff = np.nanmean(MSEpcutoff.iloc[trainIndexes].values.flatten())
+          print("Results for",trainingiterations, "training iterations:", int(100 * trainFraction), shuffle, "train error:",trainerror, "pixels. Test error:", testerror," pixels.")
+          print("With pcutoff of", pcutoff," train error:",trainerrorpcutoff, "pixels. Test error:", testerrorpcutoff, "pixels")
+          if plotting==True:
+             foldername=os.path.join('LabeledImages_'+scorer_machine)
+             auxiliaryfunctions.attempttomakefolder(foldername)
+             NumFrames=np.size(DataCombined.index)
+             for ind in np.arange(NumFrames):
+                 fn=DataCombined.index[ind]
+                 
+                 fig=plt.figure()
+                 ax=fig.add_subplot(1,1,1)
+                 MakeLabeledImage(DataCombined,ind,os.path.join(datafolder,'data-'+Task),[scorer,scorer_machine],comparisonbodyparts,colors)
+                 if ind in trainIndexes:
+                     plt.savefig(os.path.join(foldername,'TrainingImg'+str(ind)+'_'+fn.split('/')[0]+'_'+fn.split('/')[1]))
+                 else:
+                     plt.savefig(os.path.join(foldername,'TestImg'+str(ind)+'_'+fn.split('/')[0]+'_'+fn.split('/')[1]))
+                 plt.close("all")

@@ -48,7 +48,8 @@ multibodypartsfilename="results.csv"
 # During labeling in Fiji one can thus (for occluded body parts) click in the origin of the image 
 #(i.e. top left corner (close to 0,0)), these "false" labels will then be removed. To do so set the following variable:
 #set this to 0 if no labels should be removed!
-invisibleboundary=10 # If labels are closer to origin than this number they are set to NaN (not a number)
+
+invisibleboundary=10 # If labels are closer to origin than this number they are set to NaN (not a number). Please adjust to your situation.
 
 ########################################
 # Step 3:
@@ -71,5 +72,7 @@ resnet = 50
 # To evaluate the last model that was trained most set this to: -1 
 # To evaluate all models (training stages) set this to: "all"  (as string!)
 
-snapshotindex = "all"
+snapshotindex = -1 #"all"
 shuffleindex = 0
+pcutoff=.1 # likelihood. RMSE will be reported for all pairs and pairs with larger likelihood than pcutoff (see paper). This cutoff will also be used in plots.
+plotting=True #If true will plot train & test images including DeepLabCut labels next to human labels. Note that this will be plotted for all snapshots as indicated by snapshotindex
