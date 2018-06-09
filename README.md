@@ -1,6 +1,6 @@
 # DeepLabCut
 
-A toolbox for markerless tracking of body parts of animals in lab settings performing various tasks, like [trail tracking](https://vnmurthylab.org/),  [reaching in mice](http://www.mousemotorlab.org/) and various Drosophila behaviors (see [Mathis et al.](https://arxiv.org/abs/1804.03142v1) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks or species (the toolbox has also already been successfully applied to rats, various fish species and [race horses](https://twitter.com/TrackingActions/status/998339007745527808)).  
+A toolbox for markerless tracking of body parts of animals in lab settings performing various tasks, like [trail tracking](https://vnmurthylab.org/),  [reaching in mice](http://www.mousemotorlab.org/) and various Drosophila behaviors (see [Mathis et al.](https://arxiv.org/abs/1804.03142v1) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks or species (the toolbox has also already been successfully applied to rats, humans, various fish species, and [race horses](http://www.mousemotorlab.org/deeplabcut)).  
 
 <p align="center">
 <img src="/Documentation/githubfig-01-01.png" width="90%">
@@ -92,7 +92,7 @@ Generally speaking, one should create a training set that reflects the diversity
 <img src="/Documentation/img0000_labels.jpg" width="60%">
 </p>
 
-**(3) Formating the data I:**
+**(3) Formatting the data I:**
 
   - **IDE users:**
  The code "Step2_ConvertingLabels2DataFrame.py" creates a data structure in [pandas](https://pandas.pydata.org/) (stored as .h5 and .csv) combining the various labels together with the (local) file path of the images. This data structure also keeps track of who labeled the data and allows to combine data from multiple labelers. 
@@ -107,7 +107,7 @@ Keep in mind that ".csv" files for each bodypart or multiple bodyparts listed in
  
    - **Juypter Users:** use the Step3_.._demo.ipynb file
 
-**(5) Formating the data II:** Next split the labeled data into test and train sets for benchmarking ("Step4_GenerateTrainingFileFromLabelledData.py"). This step will create a ".mat" file, which is used by DeeperCut as well as a ".yaml" file containing meta information with regard to the parameters of the DeeperCut. Before this step consider changing the parameters in 'pose_cfg.yaml'.  This file also contains short descriptions of what these parameters mean. Generally speaking pos_dist_thresh and global_scale will be of most importance. Then run the code. This file will create a folder with the training data as well as a folder for training the corresponding model in DeeperCut. 
+**(5) Formatting the data II:** Next split the labeled data into test and train sets for benchmarking ("Step4_GenerateTrainingFileFromLabelledData.py"). This step will create a ".mat" file, which is used by DeeperCut as well as a ".yaml" file containing meta information with regard to the parameters of the DeeperCut. Before this step consider changing the parameters in 'pose_cfg.yaml'.  This file also contains short descriptions of what these parameters mean. Generally speaking pos_dist_thresh and global_scale will be of most importance. Then run the code. This file will create a folder with the training data as well as a folder for training the corresponding model in DeeperCut. 
 
    - **Juypter Users:** use the Step4_.._demo.ipynb file
 
@@ -120,7 +120,7 @@ The folder pose-tensorflow contains an earlier, minimal yet sufficient for our p
      $ cd pose-tensorflow/models/pretrained
      $ ./download.sh
     
-Next copy the two folders generated in step **(5) Formating the data II** into the **models** folder of pose-tensorflow (i.e. pose-tensorflow/models/). We have already done this for the example project, which you will find there. Then (in a terminal) navigate to the subfolder "train" of the machine file, i.e. in our case and then start training (good luck!)
+Next copy the two folders generated in step **(5) Formatting the data II** into the **models** folder of pose-tensorflow (i.e. pose-tensorflow/models/). We have already done this for the example project, which you will find there. Then (in a terminal) navigate to the subfolder "train" of the machine file, i.e. in our case and then start training (good luck!)
     
      $ cd pose-tensorflow/models/reachingJan30-trainset95shuffle1/train
      $ TF_CUDNN_USE_AUTOTUNE=0 CUDA_VISIBLE_DEVICES=0 python3 ../../../train.py 
