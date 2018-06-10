@@ -61,7 +61,7 @@ def MakeLabeledImage(DataCombined,imagenr,imagefilename,Scorers,bodyparts,colors
            if np.isfinite(DataCombined[loopscorer][bp]['y'][imagenr]+DataCombined[loopscorer][bp]['x'][imagenr]):
                 y,x=int(DataCombined[loopscorer][bp]['y'][imagenr]), int(DataCombined[loopscorer][bp]['x'][imagenr])
                 if 'DeepCut' in loopscorer:
-                    p=int(DataCombined[loopscorer][bp]['likelihood'][imagenr])
+                    p=DataCombined[loopscorer][bp]['likelihood'][imagenr]
                     if p>pcutoff:
                         plt.plot(x,y,labels[1],ms=dotsize,alpha=alphavalue,color=colors(int(bpindex)))
                     else:
