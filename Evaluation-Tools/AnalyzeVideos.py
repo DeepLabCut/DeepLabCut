@@ -7,6 +7,7 @@ M Mathis, mackenzie@post.harvard.edu
 
 This script analyzes videos based on a trained network.
 You need tensorflow for evaluation. Run by:
+    
 CUDA_VISIBLE_DEVICES=0 python3 AnalyzeVideos.py
 
 """
@@ -21,7 +22,7 @@ import sys
 subfolder = os.getcwd().split('Evaluation-Tools')[0]
 sys.path.append(subfolder)
 # add parent directory: (where nnet & config are!)
-sys.path.append(subfolder + "pose-tensorflow/")
+sys.path.append(subfolder + "pose-tensorflow")
 sys.path.append(subfolder + "Generating_a_Training_Set")
 
 from myconfig_analysis import videofolder, cropping, Task, date, \
@@ -64,19 +65,20 @@ def getpose(image, cfg, outputs, outall=False):
 # Loading data, and defining model folder
 ####################################################
 
-basefolder = '../pose-tensorflow/models/'  # for cfg file & ckpt!
-modelfolder = (basefolder + Task + str(date) + '-trainset' +
+basefolder = os.path.join('..','pose-tensorflow','models')
+modelfolder = os.path.join(basefolder, Task + str(date) + '-trainset' +
                str(int(trainingsFraction * 100)) + 'shuffle' + str(shuffle))
-cfg = load_config(modelfolder + '/test/' + "pose_cfg.yaml")
+
+cfg = load_config(os.path.join(modelfolder , 'test' ,"pose_cfg.yaml"))
 
 ##################################################
 # Load and setup CNN part detector
 ##################################################
 
-# Check which snap shots are available and sort them by # iterations
+# Check which snapshots are available and sort them by # iterations
 Snapshots = np.array([
     fn.split('.')[0]
-    for fn in os.listdir(modelfolder + '/train/')
+    for fn in os.listdir(os.path.join(modelfolder , 'train'))
     if "index" in fn
 ])
 increasing_indices = np.argsort([int(m.split('-')[1]) for m in Snapshots])
@@ -90,7 +92,7 @@ print(Snapshots)
 ##################################################
 
 # Check if data already was generated:
-cfg['init_weights'] = modelfolder + '/train/' + Snapshots[snapshotindex]
+cfg['init_weights'] = os.path.join(modelfolder , 'train', Snapshots[snapshotindex])
 
 # Name for scorer:
 trainingsiterations = (cfg['init_weights'].split('/')[-1]).split('-')[-1]
@@ -98,7 +100,9 @@ trainingsiterations = (cfg['init_weights'].split('/')[-1]).split('-')[-1]
 # Name for scorer:
 scorer = 'DeepCut' + "_resnet" + str(resnet) + "_" + Task + str(
     date) + 'shuffle' + str(shuffle) + '_' + str(trainingsiterations)
-cfg['init_weights'] = modelfolder + '/train/' + Snapshots[snapshotindex]
+
+
+cfg['init_weights'] = os.path.join(modelfolder , 'train', Snapshots[snapshotindex])
 sess, inputs, outputs = predict.setup_pose_prediction(cfg)
 pdindex = pd.MultiIndex.from_product(
     [[scorer], cfg['all_joints_names'], ['x', 'y', 'likelihood']],
@@ -162,8 +166,7 @@ for video in videos:
         print("Saving results...")
         DataMachine = pd.DataFrame(
             PredicteData, columns=pdindex, index=range(nframes))
-        DataMachine.to_hdf(
-            dataname, 'df_with_missing', format='table', mode='w')
+        DataMachine.to_hdf(dataname, 'df_with_missing', format='table', mode='w')
         with open(dataname.split('.')[0] + 'includingmetadata.pickle',
                   'wb') as f:
             pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)

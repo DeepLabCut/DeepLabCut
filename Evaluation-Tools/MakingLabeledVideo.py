@@ -5,7 +5,8 @@ https://github.com/AlexEMG/DeepLabCut
 A Mathis, alexander.mathis@bethgelab.org
 M Mathis, mackenzie@post.harvard.edu
 
-This script labels the bodyparts in videos as analzyed by Step3.
+This script labels the bodyparts in videos as analzyed by "AnalyzeVideos.py". This code is relatively slow as 
+it stores all individual frames. Should be reworked at some point. Contributions are welcome. 
 """
 
 ####################################################
@@ -34,13 +35,13 @@ import os
 import glob
 import auxiliaryfunctions
 from myconfig_analysis import videofolder, cropping, scorer, Task, date, \
-    resnet, shuffle, trainingsiterations, pcutoff, deleteindividualframes,x1, x2, y1, y2,videotype
+    resnet, shuffle, trainingsiterations, pcutoff, deleteindividualframes, x1, x2, y1, y2, videotype, alphavalue
 
 # loading meta data / i.e. training & test files
-basefolder = '../pose-tensorflow/models/'
-datafolder = basefolder + "UnaugmentedDataSet_" + Task + date + '/'
-Data = pd.read_hdf(
-    datafolder + 'data-' + Task + '/CollectedData_' + scorer + '.h5',
+basefolder = os.path.join('..','pose-tensorflow','models')
+
+datafolder = os.path.join(basefolder , "UnaugmentedDataSet_" + Task + date)
+Data = pd.read_hdf(os.path.join(datafolder , 'data-' + Task , 'CollectedData_' + scorer + '.h5'),
     'df_with_missing')
 
 bodyparts2plot = list(np.unique(Data.columns.get_level_values(1)))
@@ -77,7 +78,7 @@ for video in videos:
     tmpfolder = 'temp' + vname
     
     auxiliaryfunctions.attempttomakefolder(tmpfolder)
-    if os.path.isfile(tmpfolder + '/' + vname + '.mp4'):
+    if os.path.isfile(os.path.join(tmpfolder, vname + '.mp4')):
         print("Labeled video already created.")
     else:
         print("Loading ", video, "and data.")
@@ -90,7 +91,7 @@ for video in videos:
 
         ny, nx = clip.size  # dimensions of frame (height, width)
         fps = clip.fps
-        nframes = np.ceil(clip.fps*clip.duration).astype(np.int)
+        nframes = np.ceil(clip.fps*clip.duration).astype(np.int) #note that the # of frames counted this way can be slighlty off (https://github.com/AlexEMG/DeepLabCut/issues/9)
     
         if cropping:
             # one might want to adjust
@@ -126,7 +127,7 @@ for video in videos:
                             Dataframe[scorer][bp]['x'].values[index],
                             Dataframe[scorer][bp]['y'].values[index],
                             color=colors(bpindex),
-                            alpha=.2)
+                            alpha=alphavalue)
 
                 plt.xlim(0, w)
                 plt.ylim(0, h)

@@ -6,8 +6,9 @@ A Mathis, alexander.mathis@bethgelab.org
 M Mathis, mackenzie@post.harvard.edu
 
 This script evaluates the scorer's labels and computes the accuracy, and if plotting is set to 1, will also plot the train and test images
-with the human labels (+), DeepLabCut's confident labels (.), and DeepLabCut's labels with less then pcutoff likelihood as (x). See Fig 7A in our preprint https://arxiv.org/abs/1804.03142v1 for illustration of pcutoff. 
+with the human labels (+), DeepLabCut's confident labels (.), and DeepLabCut's labels with less then pcutoff likelihood as (x). 
 
+See Fig 7A in our preprint https://arxiv.org/abs/1804.03142v1 for illustration of pcutoff. 
 """
 
 ####################################################
@@ -20,7 +21,7 @@ subfolder = os.getcwd().split('Evaluation-Tools')[0]
 sys.path.append(subfolder)
 # add parent directory: (where nnet & config are!)
 #sys.path.append(subfolder + "/pose-tensorflow/")
-sys.path.append(subfolder + "/Generating_a_Training_Set")
+sys.path.append(os.path.join(subfolder, "Generating_a_Training_Set"))
 
 import auxiliaryfunctions
 import pickle
@@ -92,17 +93,17 @@ fs = 15  # fontsize for plots
 ####################################################
 
 # loading meta data / i.e. training & test files
-basefolder = '../pose-tensorflow/models/'
-datafolder = basefolder + "UnaugmentedDataSet_" + Task + date + '/'
-Data = pd.read_hdf(
-    datafolder + 'data-' + Task + '/CollectedData_' + scorer + '.h5',
-    'df_with_missing')
+basefolder = os.path.join('..','pose-tensorflow','models')
+folder = os.path.join('UnaugmentedDataSet_' + Task + date)
+datafolder = os.path.join(basefolder,folder)
+
+Data = pd.read_hdf(os.path.join(datafolder , 'data-' + Task , 'CollectedData_' + scorer + '.h5'),'df_with_missing')
 
 ####################################################
 # Models vs. benchmark for varying training state
 ####################################################
 
-# only specific parts can also be compared (not all!):
+# only specific parts can also be compared (not all!) (in that case change which bodyparts by providing a list below)
 comparisonbodyparts = list(np.unique(Data.columns.get_level_values(1)))
 if plotting==True:
     colors = get_cmap(len(comparisonbodyparts))
@@ -112,12 +113,12 @@ for trainFraction in TrainingFraction:
 
         fns = [
             file for file in os.listdir('Results')
-            if "forTask:" + str(Task) in file and "shuffle" + str(shuffle) in
+            if "forTask_" + str(Task) in file and "shuffle" + str(shuffle) in
             file and "_" + str(int(trainFraction * 100)) in file
         ]
 
-        metadatafile = datafolder + "Documentation_" + "data-" + Task + "_" + str(
-            int(trainFraction * 100)) + "shuffle" + str(shuffle) + ".pickle"
+        metadatafile =os.path.join(datafolder , "Documentation_" + "data-" + Task + "_" + str(
+            int(trainFraction * 100)) + "shuffle" + str(shuffle) + ".pickle")
         with open(metadatafile, 'rb') as f:
             [
                 trainingdata_details, trainIndexes, testIndexes,
@@ -142,7 +143,7 @@ for trainFraction in TrainingFraction:
             snapindices=[]
 
         for trainingiterations,index in snapindices:
-          DataMachine = pd.read_hdf(os.path.join("Results/",fns[index]), 'df_with_missing')
+          DataMachine = pd.read_hdf(os.path.join("Results",fns[index]), 'df_with_missing')
           DataCombined = pd.concat([Data.T, DataMachine.T], axis=0).T
           scorer_machine = DataMachine.columns.get_level_values(0)[0]
           MSE,MSEpcutoff = pairwisedistances(DataCombined, scorer, scorer_machine,pcutoff,comparisonbodyparts)
@@ -150,8 +151,9 @@ for trainFraction in TrainingFraction:
           trainerror = np.nanmean(MSE.iloc[trainIndexes].values.flatten())
           testerrorpcutoff = np.nanmean(MSEpcutoff.iloc[testIndexes].values.flatten())
           trainerrorpcutoff = np.nanmean(MSEpcutoff.iloc[trainIndexes].values.flatten())
-          print("Results for",trainingiterations, "training iterations:", int(100 * trainFraction), shuffle, "train error:",trainerror, "pixels. Test error:", testerror," pixels.")
-          print("With pcutoff of", pcutoff," train error:",trainerrorpcutoff, "pixels. Test error:", testerrorpcutoff, "pixels")
+          print("Results for",trainingiterations, "training iterations:", int(100 * trainFraction), shuffle, "train error:",np.round(trainerror,2), "pixels. Test error:", np.round(testerror,2)," pixels.")
+          print("With pcutoff of", pcutoff," train error:",np.round(trainerrorpcutoff,2), "pixels. Test error:", np.round(testerrorpcutoff,2), "pixels")
+          
           if plotting==True:
              foldername=os.path.join('LabeledImages_'+scorer_machine)
              auxiliaryfunctions.attempttomakefolder(foldername)

@@ -49,7 +49,7 @@ multibodypartsfilename="results.csv"
 #(i.e. top left corner (close to 0,0)), these "false" labels will then be removed. To do so set the following variable:
 #set this to 0 if no labels should be removed!
 
-invisibleboundary=10 # If labels are closer to origin than this number they are set to NaN (not a number). Please adjust to your situation.
+invisibleboundary=10 # If labels are closer to origin than this number they are set to NaN (not a number). Please adjust to your situation. Units in pixel. 
 
 ########################################
 # Step 3:
@@ -66,7 +66,7 @@ TrainingFraction = [0.95]  # Fraction of labeled images used for training
 # (these are parameters reflected in the pose_cfg.yaml file)
 resnet = 50
 
-# trainingsiterations='1030000'
+trainingsiterations='5000'
 
 # For Evaluation/ Analyzing videos
 # To evaluate the last model that was trained most set this to: -1 
