@@ -26,7 +26,7 @@ sys.path.append(subfolder + "pose-tensorflow")
 sys.path.append(subfolder + "Generating_a_Training_Set")
 
 from myconfig_analysis import videofolder, cropping, Task, date, \
-    trainingsFraction, resnet, snapshotindex, shuffle,x1, x2, y1, y2, videotype
+    trainingsFraction, resnet, snapshotindex, shuffle,x1, x2, y1, y2, videotype, storedata_as_csv
 
 # Deep-cut dependencies
 from config import load_config
@@ -167,6 +167,10 @@ for video in videos:
         DataMachine = pd.DataFrame(
             PredicteData, columns=pdindex, index=range(nframes))
         DataMachine.to_hdf(dataname, 'df_with_missing', format='table', mode='w')
+        
+        if storedata_as_csv:
+            DataMachine.to_csv(video.split('.')[0] + scorer+'.csv')
+        
         with open(dataname.split('.')[0] + 'includingmetadata.pickle',
                   'wb') as f:
             pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
