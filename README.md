@@ -71,7 +71,7 @@ Please install:
 Open the **"myconfig.py"** file and set the global variables for your dataset. (Demo users, don't edit this if you want to test on the supplied video)
 
 **(1) Selecting data to label:** 
-In the folder "Generating_a_Training_Set", the provided code allows you to select a subset of frames in a video(s) for labeling. Make sure videos you want to use for the training set are in a sub-folder under "Generating_a_Training_Set" or change the video path accordingly in **"myconfig.py"*. 
+In the folder "Generating_a_Training_Set", the provided code allows you to select a subset of frames in a video(s) for labeling. Make sure videos you want to use for the training set are in a sub-folder under "Generating_a_Training_Set" or change the video path accordingly in **"myconfig.py"**. 
 
    - **IDE users:**
 
@@ -131,7 +131,7 @@ Next copy the two folders generated in step **(5) Formatting the data II** into 
 If your machine has multiple GPUs, you can select which GPU you want to run 
 on by setting the environment variable, eg. CUDA_VISIBLE_DEVICES=0.
 
-Tips: You can also stop during a training, and restart from a snapshot (aka checkpoint):
+Tips: You can also stop during a training (Cntrl-C), and restart from a snapshot (aka checkpoint):
 Just change the init_weights term, i.e. instead of "init_weights: ../../pretrained/resnet_v1_50.ckpt"  put "init_weights: ./snapshot-insertthe#ofstepshere" (i.e. 10,000). Train for several thousands of iterations until the loss plateaus. 
 
 **(7) Evaluate your network:**
@@ -148,7 +148,37 @@ After successfully training and finding low generalization error for the network
    - To begin, first edit the myconfig_analysis.py file 
      
    - For extracting posture from a folder with videos run ("CUDA_VISIBLE_DEVICES=0 python3 AnalyzeVideos.py") and then make labeled videos ("MakingLabeledVideo.py").
+   
+# Quick Run Guide: 
+  After becoming familar with the work flow, here is the list of commands to run in the terminal for training:
+  
+  Place your videos in the folder DeepLabCut-master/Generating_a_Training_Set, then select and label frames:
+  
+      $ python3 Step1_SelectRandomFrames_fromVideos.py
+  Then, in the folder Generating_a_Training_Set:
+  
+      $ python3 Step2_ConvertingLabels2DataFrame.py
+  Check labels, and prepare to run: 
+  
+      $ python3 Step3_CheckLabels.py  #go check the frames in the newly created folders, then if okay, run:
+      $ python3 python3 Step4_GenerateTrainingFileFromLabelledData.py
+	
+   - transfer the folders just created (i.e. "YOURexperimentNameTheDate-trainset95shuffle1" & "unaugmented..." ) into the folder "/pose-tensorflow/models"
+ 
+Set-up and train: 
+  
+      $ cd ..
+      $ cd pose-tensorflow/models/pretrained
+      $ ./download.sh
+	 
+Go into the newly transferred folder & run: 
 
+      $ cd pose-tensorflow/models/YOURexperimentNameTheDate-trainset95shuffle1/train #change this to your folder name!
+      $ TF_CUDNN_USE_AUTOTUNE=0 CUDA_VISIBLE_DEVICES=0 python3 ../../../train.py 
+	 
+(see Steps 7 & 8 above for post-running analysis!)  
+
+ 
 # Contribute:
 
 - Issue Tracker: https://github.com/AlexEMG/DeepLabCut/issues
@@ -158,6 +188,7 @@ After successfully training and finding low generalization error for the network
 
 If you are having issues, please let us know ([Issue Tracker](https://github.com/AlexEMG/DeepLabCut/issues)). 
 For questions feel free to reach out to: [alexander.mathis@bethgelab.org] or [mackenzie@post.harvard.edu]
+Join our Slack user group: ([deeplabcut.slack.com](https://deeplabcut.slack.com)) (please email Mackenzie to join!).
 
 # Code contributors:
 
