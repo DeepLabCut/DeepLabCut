@@ -149,36 +149,8 @@ After successfully training and finding low generalization error for the network
      
    - For extracting posture from a folder with videos run ("CUDA_VISIBLE_DEVICES=0 python3 AnalyzeVideos.py") and then make labeled videos ("MakingLabeledVideo.py").
    
-# Quick Run Guide: 
-  After becoming familar with the work flow, here is the list of commands to run in the terminal for training:
-  
-  Place your videos in the folder DeepLabCut-master/Generating_a_Training_Set, then select and label frames:
-  
-      $ python3 Step1_SelectRandomFrames_fromVideos.py
-  Then, in the folder Generating_a_Training_Set:
-  
-      $ python3 Step2_ConvertingLabels2DataFrame.py
-  Check labels, and prepare to run: 
-  
-      $ python3 Step3_CheckLabels.py  #go check the frames in the newly created folders, then if okay, run:
-      $ python3 python3 Step4_GenerateTrainingFileFromLabelledData.py
-	
-   - transfer the folders just created (i.e. "YOURexperimentNameTheDate-trainset95shuffle1" & "unaugmented..." ) into the folder "/pose-tensorflow/models"
- 
-Set-up and train: 
-  
-      $ cd ..
-      $ cd pose-tensorflow/models/pretrained
-      $ ./download.sh
-	 
-Go into the newly transferred folder & run: 
-
-      $ cd pose-tensorflow/models/YOURexperimentNameTheDate-trainset95shuffle1/train #change this to your folder name!
-      $ TF_CUDNN_USE_AUTOTUNE=0 CUDA_VISIBLE_DEVICES=0 python3 ../../../train.py 
-	 
-(see Steps 7 & 8 above for post-running analysis!)  
-
- 
+# A "Quick Run Guide" is on our Wiki page!
+   
 # Contribute:
 
 - Issue Tracker: https://github.com/AlexEMG/DeepLabCut/issues
