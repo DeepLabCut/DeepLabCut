@@ -1,6 +1,6 @@
 # DeepLabCut
 
-A toolbox for markerless tracking of body parts of animals in lab settings performing various tasks, like [trail tracking](https://vnmurthylab.org/),  [reaching in mice](http://www.mousemotorlab.org/) and various Drosophila behaviors (see [Mathis et al.](https://arxiv.org/abs/1804.03142v1) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks or species (the toolbox has also already been successfully applied to rats, humans, various fish species, and [race horses](http://www.mousemotorlab.org/deeplabcut)).  
+A toolbox for markerless tracking of body parts of animals in lab settings performing various tasks, like [trail tracking](https://vnmurthylab.org/),  [reaching in mice](http://www.mousemotorlab.org/) and various Drosophila behaviors during egg-laying (see [Mathis et al.](https://arxiv.org/abs/1804.03142v1) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks and/or species. The toolbox has also already been successfully applied to [rats](http://www.mousemotorlab.org/deeplabcut), humans, various fish species, robots, and [race horses](http://www.mousemotorlab.org/deeplabcut) performing various tasks.  
 
 <p align="center">
 <img src="/Documentation/githubfig-01-01.png" width="90%">
@@ -26,6 +26,8 @@ To solve this problem, one can train feature detectors in an end-to-end fashion.
   - trains a deep neural network while leaving out labeled frames to check if it generalizes well
   - once the network is trained it can be used to analyze videos in a fast way 
 
+The key result of our paper is that one typically requires just a few labeled frames to get excellent tracking results.
+
 The general pipeline for first time use is:
 
 **Install --> Extract frames -->  Label training data -->  Train DeeperCut feature detectors -->  Apply your trained network to unlabeled data -->  Extract trajectories for analysis.**
@@ -37,14 +39,14 @@ The general pipeline for first time use is:
 # Installation and Requirements:
 
 - Hardware:
-     - Computer: For reference, we use Ubuntu 16.04 LTS and run a docker container that has TensorFlow, etc. installed (*available in a future release). One should also be able to run the code in Windows or MacOS (but we never tried). You will need a strong GPU such as the [NVIDIA GeForce 1080 Ti](https://www.nvidia.com/en-us/geforce/products/10series/geforce-gtx-1080/).
+     - Computer: For reference, we use Ubuntu 16.04 LTS and run a docker container that has TensorFlow, etc. installed (*available in a future release). One should also be able to run the code in Windows or MacOS (some users have already successfully done so). You will need a strong GPU with at least 8GB memory such as the [NVIDIA GeForce 1080 Ti](https://www.nvidia.com/en-us/geforce/products/10series/geforce-gtx-1080/). There are no other hardware requirements. In particular, the software is very robust to track data from pretty much any camera (grayscale, color, or graysale captured under infrared light etc.). 
      
 - Software: 
-     - You will need [TensorFlow](https://www.tensorflow.org/) (we used 1.0 for figures in papers, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.4**, but recommend **1.0**, ses below) for Python 3 with GPU support (otherwise training and running is extremely slow). Please check your CUDA and [TensorFlow installation](https://www.tensorflow.org/install/) with this line (below), and you can test that your GPU is being properly engaged with these additional [tips](https://www.tensorflow.org/programmers_guide/using_gpu).
+     - The toolbox is written in [Python 3](https://www.python.org/). You will need [TensorFlow](https://www.tensorflow.org/) (we used 1.0 for figures in papers, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.4**, but recommend **1.0**, ses below) for Python 3 with GPU support (otherwise training and running is pretty slow). Please check your CUDA and [TensorFlow installation](https://www.tensorflow.org/install/) with this line (below), and you can test that your GPU is being properly engaged with these additional [tips](https://www.tensorflow.org/programmers_guide/using_gpu).
 
       $ sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
-Please also install:
+Please install:
 
      - Install Sypder (or equivalent IDE) and/or Jupyter Notebook
      - Clone (or download) the code we provide
@@ -53,7 +55,8 @@ Please also install:
       $ pip install scipy scikit-image matplotlib pyyaml easydict 
       $ pip install moviepy imageio tqdm tables
       $ git clone https://github.com/AlexEMG/DeepLabCut.git
-      
+
+[Anaconda](https://anaconda.org/anaconda/python) is perhaps the easiest way to install Python and additional packages across various operating systems.
 
 # Test the Toolbox installation & code:
 
