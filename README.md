@@ -14,6 +14,10 @@ In our preprint we demonstrate that those feature detectors can be trained with 
 
 "[Markerless tracking of user-defined features with deep learning](https://arxiv.org/abs/1804.03142v1)" by Alexander Mathis, Pranav Mamidanna, Taiga Abe, Kevin M. Cury, Venkatesh N. Murthy, Mackenzie W. Mathis* and Matthias Bethge*
 
+# News: 
+- We added wiki pages to include **"quick guides"** for training and for the evaluation tools that we provide with the package. We still recommend becoming familiar with the code base via the demo (below) first.
+- We also have a Slack group if you have questions that you feel don't fit a github issue ([deeplabcut.slack.com](https://deeplabcut.slack.com)) (please email Mackenzie at mackenzie@post.harvard.edu to join!)
+
 # Overview:
 
 A **typical use case** is: 
@@ -123,9 +127,16 @@ The folder pose-tensorflow contains an earlier, minimal yet sufficient for our p
      $ cd pose-tensorflow/models/pretrained
      $ ./download.sh
     
-Next copy the two folders generated in step **(5) Formatting the data II** into the **models** folder of pose-tensorflow (i.e. pose-tensorflow/models/). We have already done this for the example project, which you will find there. Then (in a terminal) navigate to the subfolder "train" of the machine file, i.e. in our case and then start training (good luck!)
+Next copy the two folders generated in step **(5) Formatting the data II** into the **models** folder of pose-tensorflow (i.e. pose-tensorflow/models/). We have already done this for the demo, which you will find there. To transfer:
+
+
+	$ cp -R YOURexperimentNameTheDate-trainset95shuffle1 ../pose-tensorflow/models/
+	$ cp -R UnaugmentedDataSet_YOURexperimentNameTheDate/ ../pose-tensorflow/models/
+Then (in a terminal) navigate to the subfolder "train" of the machine file, i.e. in our case
+
+	 $ cd pose-tensorflow/models/reachingJan30-trainset95shuffle1/train
+and then start training (good luck!)
     
-     $ cd pose-tensorflow/models/reachingJan30-trainset95shuffle1/train
      $ TF_CUDNN_USE_AUTOTUNE=0 CUDA_VISIBLE_DEVICES=0 python3 ../../../train.py 
 
 If your machine has multiple GPUs, you can select which GPU you want to run 
@@ -148,8 +159,6 @@ After successfully training and finding low generalization error for the network
    - To begin, first edit the myconfig_analysis.py file 
      
    - For extracting posture from a folder with videos run ("CUDA_VISIBLE_DEVICES=0 python3 AnalyzeVideos.py") and then make labeled videos ("MakingLabeledVideo.py").
-   
-# A "Quick Run Guide" is on our Wiki page!
    
 # Contribute:
 
