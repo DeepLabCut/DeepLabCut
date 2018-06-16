@@ -92,7 +92,7 @@ for video in videos:
         dataname = video.split('.')[0] + scorer + '.h5'
         try:
             Dataframe = pd.read_hdf(dataname)
-            clip = vp(fname = video,sname = 'labeled_' + vname + '.avi')
+            clip = vp(fname = video,sname = os.path.join(tmpfolder, vname + '.avi'))
         except FileNotFoundError:
             print("Data was not analyzed (run AnalysisVideos.py first).")
 

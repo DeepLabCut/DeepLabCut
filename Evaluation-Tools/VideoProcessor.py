@@ -1,8 +1,9 @@
 """
 Author:
 Hao Wu
+hwu01@g.harvard.edu
 
-This is the helper class for 
+This is the helper class for video reading and saving in DeepLabCut
 """
 import numpy as np
 try:
@@ -16,14 +17,14 @@ except Exception as ex:
 
 class VideoProcessor(object):
     '''
-    Base class for a video processing unit
+    Base class for a video processing unit, 
+    implementation is required for video loading and saving
     '''
-    def __init__(self,fname='',sname='', nframes = -1, fps = 30, verbose = False):
+    def __init__(self,fname='',sname='', nframes = -1, fps = 30):
         self.fname = fname
         self.sname = sname
 
         self.nframes = nframes
-        self.verbose = verbose
         
         self.h = 0 
         self.w = 0
@@ -110,6 +111,10 @@ class VideoProcessor(object):
 
     
 class VideoProcessorCV(VideoProcessor):
+    '''
+    OpenCV implementation of VideoProcessor
+    requires opencv-python==3.4.0.12
+    '''
     
     def __init__(self, *args, **kwargs):
         super(VideoProcessorCV, self).__init__(*args, **kwargs)
@@ -142,6 +147,11 @@ class VideoProcessorCV(VideoProcessor):
         self.vid.release()
 
 class VideoProcessorSK(VideoProcessor):
+    '''
+    Video Processor using skvideo.io
+    requires sk-video in python,
+    and ffmpeg installed in the operating system
+    '''
     
     def __init__(self, *args, **kwargs):
         super(VideoProcessorSK, self).__init__(*args, **kwargs)
