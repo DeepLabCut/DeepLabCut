@@ -15,6 +15,7 @@ class VideoProcessor(object):
     def __init__(self,fname='',sname='', nframes = -1, fps = 30, verbose = False):
         self.fname = fname
         self.sname = sname
+        print('saving at' + self.sname)
 
         self.nframes = nframes
         self.verbose = verbose
@@ -122,7 +123,7 @@ class VideoProcessorCV(VideoProcessor):
             self.nframes = all_frames
             
     def create_video(self):
-        fourcc = cv2.VideoWriter_fourcc(*'FMPG')
+        fourcc = cv2.VideoWriter_fourcc(*'FMP4')
         return cv2.VideoWriter(self.sname,fourcc, self.FPS, (self.h,self.w),True)
     
     def _read_frame(self):
