@@ -85,14 +85,14 @@ for video in videos:
     tmpfolder = 'temp' + vname
     
     auxiliaryfunctions.attempttomakefolder(tmpfolder)
-    if os.path.isfile(os.path.join(tmpfolder, vname + '.mp4')):
+    if os.path.isfile(os.path.join(tmpfolder, vname + '.avi')):
         print("Labeled video already created.")
     else:
         print("Loading ", video, "and data.")
         dataname = video.split('.')[0] + scorer + '.h5'
         try:
             Dataframe = pd.read_hdf(dataname)
-            clip = vp(fname = video,sname = 'labeled_' + vname + '.mp4')
+            clip = vp(fname = video,sname = 'labeled_' + vname + '.avi')
         except FileNotFoundError:
             print("Data was not analyzed (run AnalysisVideos.py first).")
 
