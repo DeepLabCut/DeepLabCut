@@ -12,14 +12,10 @@ class VideoProcessor(object):
     '''
     Base class for a video processing unit
     '''
-    def __init__(self,fname='',sname='',cropping=False,x1 = 0, y1 = 0, x2 = 0, y2 = 0, nframes = -1, fps = 30, verbose = False):
+    def __init__(self,fname='',sname='', nframes = -1, fps = 30, verbose = False):
         self.fname = fname
         self.sname = sname
-        self.cropping = cropping
-        self.x1 = x1
-        self.y1 = y1
-        self.x2 = x2
-        self.y2 = y2
+
         self.nframes = nframes
         self.verbose = verbose
         
@@ -35,34 +31,15 @@ class VideoProcessor(object):
             if self.fname != '':
                 self.vid = self.get_video()
                 self.get_info()
-            
+                print('yes')
             if self.sname != '':
-                if cropping:
-                    self.check_crop()
-                else:
-                    self.sh = self.h
-                    self.sw = self.w
-                    
+                self.sh = self.h
+                self.sw = self.w
                 self.svid = self.create_video()
 
         except Exception as ex:
             print('Error: %s', ex)
             
-    def check_crop(self):
-        if self.x1>=0 and self.x2<=self.w and self.y1>=0 and self.y2<=h:
-            sw = self.x2 - self.x1
-            sh = self.y2 - self.y1
-            if sw>0 and sh>0:
-                self.sw = sw
-                self.sh = sh
-            else:
-                raise Exception('Please check the order of cropping parameter')
-        else:
-            raise Exception('Please check the boundary of cropping')
-            
-    def crop(self,frame):
-        return frame[self.x1:self.x2,self.y1:self.y2]
-
     def load_frame(self):
         try:
             frame = self._read_frame()
@@ -145,8 +122,8 @@ class VideoProcessorCV(VideoProcessor):
             self.nframes = all_frames
             
     def create_video(self):
-        fourcc = cv2.VideoWriter_fourcc(*'MJPG')
-        return cv2.VideoWriter(self.sname,fourcc, self.fps, (self.h,self.w),True)
+        fourcc = cv2.VideoWriter_fourcc(*'FMPG')
+        return cv2.VideoWriter(self.sname,fourcc, self.FPS, (self.h,self.w),True)
     
     def _read_frame(self):
         return np.flip(self.vid.read()[1],2)
