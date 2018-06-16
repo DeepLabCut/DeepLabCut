@@ -4,9 +4,15 @@ Hao Wu
 
 This is the helper class for 
 """
-
-import cv2
 import numpy as np
+try:
+    import cv2
+except Exception as ex:
+    print('Error: %s', ex)
+try:
+    import skvideo.io
+except Exception as ex:
+    print('Error: %s', ex)
 
 class VideoProcessor(object):
     '''
@@ -119,6 +125,7 @@ class VideoProcessorCV(VideoProcessor):
         self.nc = 3
         if self.nframes == -1 or self.nframes>all_frames:
             self.nframes = all_frames
+        print(self.nframes)
             
     def create_video(self):
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
@@ -133,3 +140,36 @@ class VideoProcessorCV(VideoProcessor):
     def close(self):
         self.svid.release()
         self.vid.release()
+
+class VideoProcessorSK(VideoProcessor):
+    
+    def __init__(self, *args, **kwargs):
+        super(VideoProcessorSK, self).__init__(*args, **kwargs)
+    
+    def get_video(self):
+         return skvideo.io.FFmpegReader(self.fname)
+        
+    def get_info(self):
+        infos = skvideo.io.ffprobe(self.fname)['video']
+        self.h = int(infos['@height'])
+        self.w = int(infos['@width'])
+        self.FPS = eval(infos['@avg_frame_rate'])
+        vshape = self.vid.getShape()
+        all_frames = vshape[0]
+        self.nc = vshape[3]
+
+        if self.nframes == -1 or self.nframes>all_frames:
+            self.nframes = all_frames
+            
+    def create_video(self):
+        return skvideo.io.FFmpegWriter(self.sname, outputdict={'-r':str(self.FPS)})
+
+    def _read_frame(self):
+        return self.vid._readFrame()
+    
+    def save_frame(self,frame):
+        self.svid.writeFrame(frame)
+    
+    def close(self):
+        self.svid.close()
+        self.vid.close()
