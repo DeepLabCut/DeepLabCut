@@ -139,7 +139,7 @@ class VideoProcessorCV(VideoProcessor):
         self.w = int(self.vid.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.h = int(self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
         all_frames = int(self.vid.get(cv2.CAP_PROP_FRAME_COUNT))
-        self.fps = self.vid.get(cv2.CAP_PROP_FPS)
+        self.FPS = self.vid.get(cv2.CAP_PROP_FPS)
         self.nc = 3
         if self.nframes == -1 or self.nframes>all_frames:
             self.nframes = all_frames
