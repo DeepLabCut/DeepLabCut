@@ -8,7 +8,7 @@
 # myconfig.py:
 
 ########################################
-# Step 1:
+# Step 1: Selecting Frames
 Task = 'reaching'
 ########################################
 
@@ -31,7 +31,7 @@ y2 = 624
 portion = 1
 
 ########################################
-# Step 2:
+# Step 2: Converting frames
 ########################################
 
 bodyparts = ["hand", "Finger1", "Finger2","Joystick"]  # Exact sequence of labels as were put by
@@ -42,7 +42,7 @@ Scorers = ['Mackenzie']  # who is labeling?
 # Otherwise there should be individual files per bodypart, i.e. in our demo case hand.csv, Finger1.csv etc.
 # If true then those files will be generated from Results.txt
 multibodypartsfile=False 
-multibodypartsfilename="results.csv"
+multibodypartsfilename="Results.csv"
 
 # When importing the images and the labels in the csv/xls files should be in the same order!
 # During labeling in Fiji one can thus (for occluded body parts) click in the origin of the image 
@@ -52,7 +52,16 @@ multibodypartsfilename="results.csv"
 invisibleboundary=10 # If labels are closer to origin than this number they are set to NaN (not a number). Please adjust to your situation. Units in pixel. 
 
 ########################################
-# Step 3:
+# Step 3: Check labels
+########################################
+
+colormap = 'cool' #set colors, i.e. viridis, cool, hsv
+scale = 1  # for plotting
+msize=10   #size of labels
+alphavalue =.6
+
+########################################
+# Step 4: Generate Training File
 ########################################
 
 date = 'Jan30'
