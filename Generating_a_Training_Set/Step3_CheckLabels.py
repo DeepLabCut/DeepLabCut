@@ -87,7 +87,7 @@ for folder in folders:
     ]
     files.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
 
-    comparisonbodyparts = list(set(DataCombined.columns.get_level_values(1)))
+    comparisonbodyparts = bodyparts #list(set(DataCombined.columns.get_level_values(1)))
 
     for index, imagename in enumerate(files):
         image = io.imread(imagename)
