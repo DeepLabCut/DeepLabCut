@@ -7,8 +7,7 @@ M Mathis, mackenzie@post.harvard.edu
 This script evaluates a trained model at a particular state on the data set (images)
 and stores the results in a pandas dataframe.
 
-You need tensorflow for evaluation. Run by:
-CUDA_VISIBLE_DEVICES=0 python3 Step1_EvaluateModelonDataset.py
+Script called from Step1_EvaluateModelonDataset.py
 
 """
 
@@ -25,7 +24,7 @@ sys.path.append(subfolder)
 sys.path.append(subfolder + "pose-tensorflow")
 sys.path.append(subfolder + "Generating_a_Training_Set")
 
-from myconfig import Task, date, Shuffles, scorer, TrainingFraction, snapshotindex
+from myconfig import Task, date, Shuffles, scorer, TrainingFraction
 
 # Deep-cut dependencies
 from config import load_config
