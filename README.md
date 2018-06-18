@@ -57,7 +57,7 @@ Please install:
      - You will also need to install the following Python packages (in the terminal type):
 
       $ pip install scipy scikit-image matplotlib pyyaml easydict 
-      $ pip install moviepy imageio tqdm tables
+      $ pip install moviepy imageio tqdm tables sk-video
       $ git clone https://github.com/AlexEMG/DeepLabCut.git
 
 [Anaconda](https://anaconda.org/anaconda/python) is perhaps the easiest way to install Python and additional packages across various operating systems.
@@ -159,7 +159,8 @@ After successfully training and finding low generalization error for the network
    - To begin, first edit the myconfig_analysis.py file 
      
    - For extracting posture from a folder with videos run:
-     $ CUDA_VISIBLE_DEVICES=0 python3 AnalyzeVideos.py
+   
+    $ CUDA_VISIBLE_DEVICES=0 python3 AnalyzeVideos.py
 
 The postures per frame created inside a [MultiIndex Panda Arrays](http://pandas.pydata.org/pandas-docs/stable/advanced.html), which contains network, bodypart information as well as the coordinates. These arrays are stored in the efficient [Hierarchical Data Format](https://en.wikipedia.org/wiki/Hierarchical_Data_Format). The data can also be exported in e.g. ".csv" format or many other formats (see https://github.com/AlexEMG/DeepLabCut/issues/17). 
 
