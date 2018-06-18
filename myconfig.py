@@ -1,16 +1,17 @@
 # coding: utf-8
 
-############################
+#####################################################################################
 # This configuration file sets various parameters for generation of training
-# set file & evalutation of results
-############################
+# set & evalutation of DeepLabCut
+#####################################################################################
 
 # myconfig.py:
 
 ########################################
-# Step 1: Selecting Frames
-Task = 'reaching'
+# Step 1: Selecting Frames from videos
 ########################################
+
+Task = 'reaching'
 
 # Filename and path to behavioral video:
 vidpath = '.'
@@ -31,7 +32,7 @@ y2 = 624
 portion = 1
 
 ########################################
-# Step 2: Converting frames
+# Step 2: Converting frames to pandas array 
 ########################################
 
 bodyparts = ["hand", "Finger1", "Finger2","Joystick"]  # Exact sequence of labels as were put by
@@ -49,19 +50,21 @@ multibodypartsfilename="Results.csv"
 #(i.e. top left corner (close to 0,0)), these "false" labels will then be removed. To do so set the following variable:
 #set this to 0 if no labels should be removed!
 
-invisibleboundary=10 # If labels are closer to origin than this number they are set to NaN (not a number). Please adjust to your situation. Units in pixel. 
+invisibleboundary=10 # If labels are closer to origin than this number they are set to NaN (not a number). Please adjust to your situation. Units in pixel.
+ 
+imagetype=".png" # image type of labeled frames
 
 ########################################
-# Step 3: Check labels
+# Step 3: Check labels / makes plots
 ########################################
 
-colormap = 'cool' #set colors, i.e. viridis, cool, hsv
+colormap = 'cool' #set color map, i.e. viridis, cool, hsv
 scale = 1  # for plotting
 msize=10   #size of labels
-alphavalue =.6
+alphavalue =.6 #transparency of labels
 
 ########################################
-# Step 4: Generate Training File
+# Step 4: Generate Training Files 
 ########################################
 
 date = 'Jan30'
@@ -74,8 +77,6 @@ TrainingFraction = [0.95]  # Fraction of labeled images used for training
 # Which resnet to use
 # (these are parameters reflected in the pose_cfg.yaml file)
 resnet = 50
-
-trainingsiterations='5000'
 
 # For Evaluation/ Analyzing videos
 # To evaluate the last model that was trained most set this to: -1 

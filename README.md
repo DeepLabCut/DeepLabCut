@@ -152,13 +152,20 @@ In the folder "Evaluation-tools", you will find code to evaluate the performance
      $ CUDA_VISIBLE_DEVICES=0 python3 Step1_EvaluateModelonDataset.py #to evaluate your model [needs TensorFlow]
      $ python3 Step2_AnalysisofResults.py  #to compute test & train errors for your trained model
 
- **(8) Run the trained network on other videos and label videos results**
+ **(8) Run the trained network on videos and analyze results**
  
 After successfully training and finding low generalization error for the network, you can extract labeled points and poses from all videos and plot them above frames. Of course one can use the extracted poses in many other ways.
  
    - To begin, first edit the myconfig_analysis.py file 
      
-   - For extracting posture from a folder with videos run ("CUDA_VISIBLE_DEVICES=0 python3 AnalyzeVideos.py") and then make labeled videos ("MakingLabeledVideo.py").
+   - For extracting posture from a folder with videos run:
+     $ CUDA_VISIBLE_DEVICES=0 python3 AnalyzeVideos.py
+
+The postures per frame created inside a [MultiIndex Panda Arrays](http://pandas.pydata.org/pandas-docs/stable/advanced.html), which contains network, bodypart information as well as the coordinates. These arrays are stored in the efficient [Hierarchical Data Format](https://en.wikipedia.org/wiki/Hierarchical_Data_Format). The data can also be exported in e.g. ".csv" format or many other formats (see https://github.com/AlexEMG/DeepLabCut/issues/17). 
+
+   -  Then you can make labeled videos ("MakingLabeledVideo.py"). This script creates the video by storing each frame individually and then combining it into a video. This code is slow, but useful for creating flexible high-quality videos (as it has full matplotlib functionality) and looking at individual frames. There is also a "MakingLabeledVideo_fast.py" script that is much faster, but less flexible. These scripts also illustrate how to load and work with the pose-estimation data. 
+
+     $ python3 MakingLabeledVideo_fast.py
    
 # Contribute:
 
@@ -173,7 +180,7 @@ Join our Slack user group: ([deeplabcut.slack.com](https://deeplabcut.slack.com)
 
 # Code contributors:
 
-[Alexander Mathis](https://github.com/AlexEMG), [Mackenzie Mathis](https://github.com/MMathisLab),and the DeeperCut authors for the feature detector code. Edits and suggestions by [Jonas Rauber](https://github.com/jonasrauber), [Taiga Abe](https://github.com/cellistigs), [Jonny Saunders](https://github.com/sneakers-the-rat) and [Brandon Forys](https://github.com/bf777). The feature detector code is based on Eldar Insafutdinov's TensorFlow implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow). Please check out the following references for details:
+[Alexander Mathis](https://github.com/AlexEMG), [Mackenzie Mathis](https://github.com/MMathisLab),and the DeeperCut authors for the feature detector code. Edits and suggestions by [Jonas Rauber](https://github.com/jonasrauber), [Taiga Abe](https://github.com/cellistigs), [Hao Wu](https://github.com/fullerene12), [Jonny Saunders](https://github.com/sneakers-the-rat) and [Brandon Forys](https://github.com/bf777). The feature detector code is based on Eldar Insafutdinov's TensorFlow implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow). Please check out the following references for details:
 
 
 # References:

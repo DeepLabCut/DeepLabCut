@@ -29,7 +29,7 @@ from myconfig import Task, date, scorer, Shuffles, TrainingFraction, snapshotind
 
 if plotting==True:
     import matplotlib
-    #matplotlib.use('Agg')
+    matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     from skimage import io
 
@@ -50,9 +50,9 @@ def MakeLabeledImage(DataCombined,imagenr,imagefilename,Scorers,bodyparts,colors
     '''Creating a labeled image with the original human labels, as well as the DeepLabCut's!'''
     plt.axis('off')
     im=io.imread(os.path.join(imagefilename,DataCombined.index[imagenr]))
-    if np.ndim(im)>2:
+    if np.ndim(im)>2: 
         h,w,numcolors=np.shape(im)
-    else:
+    else: #grayscale
         h,w=np.shape(im)
     plt.figure(frameon=False,figsize=(w*1./100*scaling,h*1./100*scaling))
     plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)    
@@ -111,11 +111,9 @@ if plotting==True:
 for trainFraction in TrainingFraction:
     for shuffle in Shuffles:
 
-        fns = [
-            file for file in os.listdir('Results')
+        fns = [file for file in os.listdir('Results')
             if "forTask_" + str(Task) in file and "shuffle" + str(shuffle) in
-            file and "_" + str(int(trainFraction * 100)) in file
-        ]
+            file and "_" + str(int(trainFraction * 100)) in file]
 
         metadatafile =os.path.join(datafolder , "Documentation_" + "data-" + Task + "_" + str(
             int(trainFraction * 100)) + "shuffle" + str(shuffle) + ".pickle")
@@ -128,6 +126,8 @@ for trainFraction in TrainingFraction:
         #extract training iterations:
         TrainingIterations=[(int(fns[j].split("forTask")[0].split('_')[-1]),j) for j in range(len(fns))]
         TrainingIterations.sort(key=lambda tup: tup[0]) #sort according to increasing # training steps!
+        
+        print("Assessing accuracy of shuffle # ",shuffle," with ",int(trainFraction * 100)," % training fraction.")
         print("Found the following training snapshots: ",TrainingIterations)
         print("You can choose among those for analyis of train/test performance.")
 
