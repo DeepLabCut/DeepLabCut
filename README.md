@@ -57,7 +57,7 @@ Please install:
      - You will also need to install the following Python packages (in the terminal type):
 
       $ pip install scipy scikit-image matplotlib pyyaml easydict 
-      $ pip install moviepy imageio tqdm tables sk-video
+      $ pip install moviepy imageio tqdm tables sk-video requests
       $ git clone https://github.com/AlexEMG/DeepLabCut.git
 
 [Anaconda](https://anaconda.org/anaconda/python) is perhaps the easiest way to install Python and additional packages across various operating systems.
