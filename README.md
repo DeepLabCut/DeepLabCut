@@ -43,9 +43,10 @@ The general pipeline for first time use is:
 # Installation and Requirements:
 
 - Hardware:
-     - Computer: For reference, we use Ubuntu 16.04 LTS and run a docker container that has TensorFlow, etc. installed (*available in a future release). One should also be able to run the code in Windows or MacOS (some users have already successfully done so). You will need a strong GPU with at least 8GB memory such as the [NVIDIA GeForce 1080 Ti](https://www.nvidia.com/en-us/geforce/products/10series/geforce-gtx-1080/). There are no other hardware requirements. In particular, the software is very robust to track data from pretty much any camera (grayscale, color, or graysale captured under infrared light etc.). 
+     - Computer: For reference, we use Ubuntu 16.04 LTS and run a Docker container that has TensorFlow, etc. installed (* now available: https://github.com/AlexEMG/Docker4DeepLabCut). One should also be able to run the code in Windows or MacOS (some users have already successfully done so). You will need a strong GPU with at least 8GB memory such as the [NVIDIA GeForce 1080 Ti](https://www.nvidia.com/en-us/geforce/products/10series/geforce-gtx-1080/). There are no other hardware requirements. In particular, the software is very robust to track data from pretty much any camera (grayscale, color, or graysale captured under infrared light etc.). 
      
 - Software: 
+     - We recommend using the supplied Docker container: https://github.com/AlexEMG/Docker4DeepLabCut
      - The toolbox is written in [Python 3](https://www.python.org/). You will need [TensorFlow](https://www.tensorflow.org/) (we used 1.0 for figures in papers, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.4**, but recommend **1.0**, ses below) for Python 3 with GPU support (otherwise training and running is pretty slow). Please check your CUDA and [TensorFlow installation](https://www.tensorflow.org/install/) with this line (below), and you can test that your GPU is being properly engaged with these additional [tips](https://www.tensorflow.org/programmers_guide/using_gpu).
 
       $ sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
