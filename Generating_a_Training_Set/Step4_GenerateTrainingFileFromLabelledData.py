@@ -24,7 +24,7 @@ import sys
 import pandas as pd
 sys.path.append(os.getcwd().split('Generating_a_Training_Set')[0])
 from myconfig import Task, bodyparts, date, scorer, Shuffles, TrainingFraction
-
+import auxiliaryfunctions
 
 def SplitTrials(trialindex, trainFraction=0.8):
     ''' Split a trial index into train and test sets'''
@@ -110,12 +110,12 @@ for shuffle in Shuffles:
             im = io.imread(folder + filename)
             H['image'] = basefolder + folder + filename
 
-            try:
+            if np.ndim(im)>2:
                 H['size'] = np.array(
                     [np.shape(im)[2],
                      np.shape(im)[0],
                      np.shape(im)[1]])
-            except:
+            else:
                 # print "Grayscale!"
                 H['size'] = np.array([1, np.shape(im)[0], np.shape(im)[1]])
 
@@ -168,12 +168,9 @@ for shuffle in Shuffles:
         experimentname = Task + date + '-trainset' + str(
             int(trainFraction * 100)) + 'shuffle' + str(shuffle)
 
-        try:
-            os.mkdir(experimentname)
-            os.mkdir(experimentname + '/train')
-            os.mkdir(experimentname + '/test')
-        except:
-            print("Apparently ", experimentname, "already exists!")
+        auxiliaryfunctions.attempttomakefolder(experimentname)
+        auxiliaryfunctions.attempttomakefolder(experimentname + '/train')
+        auxiliaryfunctions.attempttomakefolder(experimentname + '/test')
 
         items2change = {
             "dataset": basefolder + filename_matfile + '.mat',

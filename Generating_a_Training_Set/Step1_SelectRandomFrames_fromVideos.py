@@ -91,10 +91,8 @@ width = int(np.ceil(np.log10(clip.duration * clip.fps)))
 for index in frames:
     try:
         image = img_as_ubyte(clip.get_frame(index * 1. / clip.fps))
-        io.imsave(
-            basefolder + folder + "/img" + str(index).zfill(width) + ".png",
-            image)
-    except:
+        io.imsave(basefolder + folder + "/img" + str(index).zfill(width) + ".png",image)
+    except FileNotFoundError:
         print("Frame # ", index, " does not exist.")
 
 # Extract the first frame (not cropped!) - useful for data augmentation

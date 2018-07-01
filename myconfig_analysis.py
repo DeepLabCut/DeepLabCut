@@ -45,12 +45,12 @@ storedata_as_csv=False #if true then the time series of poses will (also) be sav
 #########################################################################################
 ## For plotting (MakingLabeledVideo.py)
 #########################################################################################
-trainingsiterations = 3500  # type the number listed in the h5 file containing the pose estimation data. The video will be generated
+trainingsiterations = 500  # type the number listed in the h5 file containing the pose estimation data. The video will be generated
 #based on the labels for this network state.
 pcutoff = 0.1  # likelihood cutoff for body part in image
 
 # delete individual (labeled) frames after making video? (note there could be many...)
 deleteindividualframes = False
-alphavalue=.1 # "strength/transparency level of makers" in individual frames (Vary from 0 to 1. / not working in "MakingLabeledVideo_fast.py")
-dotsize = 5
-colormap='cool' #hsv'
+alphavalue=.6 # "strength/transparency level of makers" in individual frames (Vary from 0 to 1. / not working in "MakingLabeledVideo_fast.py")
+dotsize = 7
+colormap='hsv' #other colorschemes: 'cool' and see https://matplotlib.org/examples/color/colormaps_reference.html

@@ -79,6 +79,9 @@ for shuffleIndex, shuffle in enumerate(Shuffles):
             try:
                 Data = pd.read_hdf(os.path.join("Results",scorer + '.h5'),'df_with_missing')
                 print("This net has already been evaluated!")
-            except:
-                 # if not analyzed, then call auxiliary script to analyze the network:
-                 subprocess.call(['python3','EvaluateNetwork.py',str(snapIndex),str(shuffleIndex),str(trainFractionIndex)])
+            except FileNotFoundError:
+                    # if not analyzed, then call auxiliary script to analyze the network:
+                    try: 
+                        subprocess.call(['python3','EvaluateNetwork.py',str(snapIndex),str(shuffleIndex),str(trainFractionIndex)])
+                    except FileNotFoundError: #in case you call python3 with the command: python.
+                        subprocess.call(['python','EvaluateNetwork.py',str(snapIndex),str(shuffleIndex),str(trainFractionIndex)])

@@ -26,7 +26,7 @@ import pandas as pd
 import os
 import sys
 sys.path.append(os.getcwd().split('Generating_a_Training_Set')[0])
-from myconfig import Task, bodyparts, Scorers, invisibleboundary, multibodypartsfile, multibodypartsfilename
+from myconfig import Task, bodyparts, Scorers, invisibleboundary, multibodypartsfile, multibodypartsfilename, imagetype
 
 basefolder = 'data-' + Task + '/'
 
@@ -75,7 +75,7 @@ for scorer in Scorers:
         else:
             print(scorer, "'s data already collected!")
             print(DataSingleUser.head())
-    except:
+    except FileNotFoundError:
         DataSingleUser = None
 
     if DataSingleUser is None:
@@ -87,7 +87,7 @@ for scorer in Scorers:
             # if ("img" in fn and ".png" in fn and "_labelled" not in fn)])
             files = [
                 fn for fn in os.listdir(os.curdir)
-                if ("img" in fn and ".png" in fn and "_labelled" not in fn)
+                if ("img" in fn and imagetype in fn and "_labelled" not in fn)
             ]
             files.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
 
@@ -99,7 +99,7 @@ for scorer in Scorers:
                 datafile = bodypart
                 try:
                     dframe = pd.read_csv(datafile + ".xls",sep=None,engine='python') #, sep='\t')
-                except:
+                except FileNotFoundError:
                     os.rename(datafile + ".csv", datafile + ".xls")
                     dframe = pd.read_csv(datafile + ".xls",sep=None,engine='python') #, sep='\t')
 

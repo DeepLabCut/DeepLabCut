@@ -52,7 +52,8 @@ multibodypartsfilename="Results.csv"
 
 invisibleboundary=10 # If labels are closer to origin than this number they are set to NaN (not a number). Please adjust to your situation. Units in pixel.
  
-imagetype=".png" # image type of labeled frames
+imagetype=".png" # image type of extracted frames (do not change if you used our step1). 
+# If you started from already extracted frames in a different format then change the format here (for step2 to 4).
 
 ########################################
 # Step 3: Check labels / makes plots

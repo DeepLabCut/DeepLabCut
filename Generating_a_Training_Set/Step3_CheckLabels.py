@@ -24,6 +24,7 @@ import pandas as pd
 import os
 from skimage import io
 import matplotlib.pyplot as plt
+import auxiliaryfunctions
 
 ###################################################
 # Code if each bodypart has its own label file!
@@ -75,15 +76,12 @@ print(folders)
 
 for folder in folders:
     tmpfolder = folder + 'labeled'
-    try:
-        os.mkdir(tmpfolder)
-    except:
-        pass
+    auxiliaryfunctions.attempttomakefolder(tmpfolder)
     os.chdir(folder)
     # sort image file names according to how they were stacked (when labeled in Fiji)
     files = [
         fn for fn in os.listdir(os.curdir)
-        if ("img" in fn and ".png" in fn and "_labeled" not in fn)
+        if ("img" in fn and imagetype in fn and "_labeled" not in fn)
     ]
     files.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
 

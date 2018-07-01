@@ -88,7 +88,7 @@ print("Running ", DLCscorer, " with # of trainingiterations:", trainingsiteratio
 try:
     Data = pd.read_hdf(os.path.join("Results",DLCscorer + '.h5'),'df_with_missing')
     print("This net has already been evaluated!")
-except:
+except FileNotFoundError:
     # Specifying state of model (snapshot / training state)
     cfg['init_weights'] = os.path.join(modelfolder,'train',Snapshots[snapshotIndex])
     sess, inputs, outputs = predict.setup_pose_prediction(cfg)
