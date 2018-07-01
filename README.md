@@ -1,12 +1,12 @@
 # DeepLabCut
 
-A toolbox for markerless tracking of body parts of animals in lab settings performing various tasks, like [trail tracking](https://vnmurthylab.org/),  [reaching in mice](http://www.mousemotorlab.org/) and various Drosophila behaviors during egg-laying (see [Mathis et al.](https://arxiv.org/abs/1804.03142v1) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks and/or species. The toolbox has also already been successfully applied to [rats](http://www.mousemotorlab.org/deeplabcut), humans, various fish species, robots, and [race horses](http://www.mousemotorlab.org/deeplabcut) performing various tasks.
+A toolbox for markerless tracking of body parts of animals in lab settings performing various tasks, like [trail tracking](https://vnmurthylab.org/),  [reaching in mice](http://www.mousemotorlab.org/) and various Drosophila behaviors during egg-laying (see [Mathis et al.](https://arxiv.org/abs/1804.03142v1) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks and/or species. The toolbox has also already been successfully applied to [rats](http://www.mousemotorlab.org/deeplabcut), humans, various fish species, robots, and [race horses](http://www.mousemotorlab.org/deeplabcut).
 
 <p align="center">
 <img src="docs/images/githubfig-01-01.png" width="90%">
 </p>
 
-Please check out www.mousemotorlab.org/deeplabcut for video demonstrations of automated tracking.
+Please check out the [DeepLabCut website](www.mousemotorlab.org/deeplabcut) for video demonstrations of automated tracking. 
 
 This work utilizes the feature detectors (ResNet + readout layers) of one of the state-of-the-art algorithms for human pose estimation by [Insafutdinov et al.](https://arxiv.org/abs/1605.03170), called DeeperCut, which inspired the name for our toolbox (see references below).
 
@@ -16,6 +16,7 @@ In our preprint we demonstrate that those feature detectors can be trained with 
 
 ## News:
 
+- All the documentation is now organized in a [website format](https://alexemg.github.io/DeepLabCut)!
 - We added a simplified installation procedure including a conda environment & a Docker container. See [Installation guide](docs/installation.md)
 - Thanks to [Richard Warren](https://github.com/rwarren2163) for checking the compatability of the code in Windows. It works!
 - We added **"quick guides"** for training and for the evaluation tools that we provide with the package. We still recommend becoming familiar with the code base via the demo (below) first.
@@ -39,6 +40,8 @@ The general pipeline for first time use of DeepLabCut is:
 
 **Install --> Extract frames -->  Label training data -->  Train DeeperCut feature detectors -->  Apply your trained network to unlabeled data -->  Extract trajectories for analysis.**
 
+User guide in [website format](https://alexemg.github.io/DeepLabCut).
+
 <p align="center">
 <img src="docs/images/deeplabcutFig-01.png" width="70%">
 </p>
@@ -61,11 +64,6 @@ Once one has a well trained network, one can just use it to analyze heaps of vid
 
 [Analysis guide](docs/analysis-tools.md)
 
-# Contribute:
-
-- Issue Tracker: https://github.com/AlexEMG/DeepLabCut/issues
-- Source Code: https://github.com/AlexEMG/DeepLabCut
-
 ## Support:
 
 If you are having issues, please let us know ([Issue Tracker](https://github.com/AlexEMG/DeepLabCut/issues)). Perhaps consider checking the [already closed issues](https://github.com/AlexEMG/DeepLabCut/issues?q=is%3Aissue+is%3Aclosed) and the 
@@ -76,6 +74,12 @@ For questions feel free to reach out to: [alexander.mathis@bethgelab.org] or [ma
 ## Code contributors:
 
 [Alexander Mathis](https://github.com/AlexEMG), [Mackenzie Mathis](https://github.com/MMathisLab), and the DeeperCut authors for the feature detector code. Edits and suggestions by [Jonas Rauber](https://github.com/jonasrauber), [Taiga Abe](https://github.com/cellistigs), [Hao Wu](https://github.com/fullerene12), [Jonny Saunders](https://github.com/sneakers-the-rat), [Richard Warren](https://github.com/rwarren2163) and [Brandon Forys](https://github.com/bf777). The feature detector code is based on Eldar Insafutdinov's TensorFlow implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow). Please check out the following references for details:
+
+## Contribute:
+
+- Issue Tracker: https://github.com/AlexEMG/DeepLabCut/issues
+- Source Code: https://github.com/AlexEMG/DeepLabCut
+- Project Website: https://alexemg.github.io/DeepLabCut
 
 ## References:
 
