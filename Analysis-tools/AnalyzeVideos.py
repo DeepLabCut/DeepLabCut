@@ -148,8 +148,7 @@ for video in videos:
         for index in tqdm(range(nframes_approx)):
             #image = img_as_ubyte(clip.get_frame(index * 1. / fps))
             image = img_as_ubyte(clip.reader.read_frame())
-            
-            # Thanks to Rich Warren for the  following snipplet:
+            # Thanks to Rick Warren for the  following snipplet:
             # if close to end of video, start checking whether two adjacent frames are identical
             # this should only happen when moviepy has reached the final frame
             # if two adjacent frames are identical, terminate the loop
@@ -160,14 +159,10 @@ for video in videos:
                     nframes = index
                     print("Detected frames: ", nframes)
                     break
-                last_image = image
-            else:
-                pose = getpose(image, cfg, outputs)
-                PredicteData[index, :] = pose.flatten()  # NOTE: thereby cfg['all_joints_names'] should be same order as bodyparts!
-
+                else:
+                    last_image = image
             pose = getpose(image, cfg, outputs)
-            PredicteData[index, :] = pose.flatten(
-            )  # NOTE: thereby cfg['all_joints_names'] should be same order as bodyparts!
+            PredicteData[index, :] = pose.flatten()  # NOTE: thereby cfg['all_joints_names'] should be same order as bodyparts!
 
         stop = time.time()
 
