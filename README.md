@@ -6,7 +6,7 @@ A toolbox for markerless tracking of body parts of animals in lab settings perfo
 <img src="docs/images/githubfig-01-01.png" width="90%">
 </p>
 
-Please check out the [www.mousemotorlab.org/deeplabcut](www.mousemotorlab.org/deeplabcut) for video demonstrations of automated tracking. 
+Please check out [www.mousemotorlab.org/deeplabcut](https://www.mousemotorlab.org/deeplabcut/) for video demonstrations of automated tracking. 
 
 This work utilizes the feature detectors (ResNet + readout layers) of one of the state-of-the-art algorithms for human pose estimation by [Insafutdinov et al.](https://arxiv.org/abs/1605.03170), called DeeperCut, which inspired the name for our toolbox (see references below).
 
