@@ -6,7 +6,7 @@ For reference, we use e.g. Dell workstations (79xx series) with Ubuntu 16.04 LTS
      - Ideally, you will use a strong GPU with at least 8GB memory such as the [NVIDIA GeForce 1080 Ti](https://www.nvidia.com/en-us/geforce/products/10series/geforce-gtx-1080/). There are no other hardware requirements. In particular, the software is very robust to track data from pretty much any camera (grayscale, color, or graysale captured under infrared light etc.). A GPU is not necessary, but on a CPU the code is considerably slower (100x). 
      
 - Software: 
-     - We recommend using the supplied [Docker container](https://github.com/AlexEMG/Docker4DeepLabCut)
+     - We recommend using the supplied [Docker container](https://github.com/AlexEMG/Docker4DeepLabCut). NOTE: [this container does not work on windows hosts!]
      - The toolbox is written in [Python 3](https://www.python.org/). You will need [TensorFlow](https://www.tensorflow.org/) (we used 1.0 for figures in papers, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.4**, but recommend **1.0** or **1.2**, see below) for Python 3 with GPU support (otherwise training and running is pretty slow). 
      - To note, is it possible to run DeepLabCut on your CPU, but it will be VERY slow. However, if you want to test DeepLabCut on your data before purchasing a GPU, with the added benefit of a straightforward installation. 
 
