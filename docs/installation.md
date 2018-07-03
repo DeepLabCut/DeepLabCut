@@ -39,7 +39,7 @@ Then you can work with all DLC functionalities inside this environment.
 
 # TensorFlow Installation with GPU support:
 
-- **Docker: We highly recommend to use the supplied [Docker container](https://github.com/AlexEMG/Docker4DeepLabCut), which has everything including TensorFlow for the GPU preinstalled.**
+- **Docker: We highly recommend to use the supplied [Docker container](https://github.com/AlexEMG/Docker4DeepLabCut), which has everything including TensorFlow for the GPU preinstalled. NOTE: [this container does not work on windows hosts!](https://github.com/NVIDIA/nvidia-docker/issues/43)**
 
  - If you do not want to use Docker, here are the dependencies: 
 
