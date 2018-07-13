@@ -25,14 +25,16 @@ If you want to check out the code:
    - **Juypter Users:** use the Step1_.._demo.ipynb file* - In general, the supplied Jupyter Notebook is helpful to optimize the video cropping step.
    
    The output from this step will be a set of **.png** files for you to then label. 
+   
+   NOTE: If you use another tool to select frames, your images will need to follow the format **"img001.png"**, where the length of the numbers are consistant, i.e.  001, 002, ... 215, but not 1, 2, ... 215 (for example).
             
 **(2) Label the frames:**
 
 DMEO users: you will not run this step, but this how we currently recommend you label your own data frames in the future. 
 
-   - As of the current release, you need to use **.png** files to create the training set (This is not a limitation of the toolbox, it is just hard coded, which you can change in the base code if you wish). 
+   - As of the current release, you need to use **.png** files that start with **img** to create the training set (This is not a limitation of the toolbox, it is just hard coded, which you can change in the base code if you wish). 
     
-   - You should label a sufficient number of frames with the anatomical locations of your choice. For the behaviors we have tested so far, 100-200 frames gave good results (see preprint). Depending on your required accuracy and the nature of the scene statistics more training data might be necessary. Try to label consistently similar spots (e.g. on wrist that is very large, try to label the same location).
+   - You should label a sufficient number of frames with the anatomical locations of your choice. For the behaviors we have tested so far, 100-200 frames gave good results (see preprint). Depending on your required accuracy and the nature of the scene statistics more training data might be necessary. Try to consistently label similar spots (e.g. on a wrist that is very large, try to label the same location).
      
    - Labeling can be done in any program, but we recommend using [Fiji](https://fiji.sc/). In Fiji one can simply open the images, create a (virtual) stack* (in brief, in fiji: File > Import > Image Sequence > (check "virtual stack")), then use the "Multi-point Tool" to label frames. You scroll through the frames and click on as many points as you wish in the same order on each frame. Then simply measure and save the resulting .csv file (Analyze>Measure (or simple Ctrl+M)). 
 
