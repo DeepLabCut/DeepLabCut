@@ -20,10 +20,21 @@ conda env create -f dlcdependencies.yml
 ```
 Note that this environment does not contain Tensorflow, but all other dependencies. 
 
+Some conda channels are different for Windows and Rick Warren contributed the following yml file for **Windows**:
+```
+conda env create -f dlcDependenciesFORWINDOWS.yaml
+```
+
+
 ## Conda environment with TensorFlow for CPU support installed do (instead):
 ```
 conda env create -f dlcdependencieswTF1.2.yml
 ```
+Again on **Windows** use (instead):
+```
+conda env create -f dlcDependenciesFORWINDOWSwTF.yaml
+```
+
 Note that this environment yaml file was created on Ubuntu 16.04, so the installation of TensorFlow [might not work across platforms (Windows, MacOS)](https://stackoverflow.com/questions/39280638/how-to-share-conda-environments-across-platforms). Installing TensorTlow on your CPU is easy on any platform, if the environment yaml with TensorFlow does not work for you, then install the one without and then follow the instructions here for installing [Tensorflow](https://www.tensorflow.org/versions/r1.2/install/). 
 
 Once you installed the environment you can activate it, by typing on Linux/MacOS: 
@@ -49,7 +60,7 @@ Then you can work with all DLC functionalities inside this environment.
      ```
       $ pip install scipy scikit-image matplotlib pyyaml easydict 
       $ pip install moviepy imageio tqdm tables sk-video pandas requests
-      $ git clone https://github.com/AlexEMG/DeepLabCut.git     
+      $ git clone https://github.com/AlexEMG/DeepLabCut.git
       ```
 Then install [TensorFlow](https://www.tensorflow.org/) with CUDA (Cuda 8.0). Ideally install **TensorFlow 1.0**. Please check your CUDA and [TensorFlow installation](https://www.tensorflow.org/install/) with this line (below), and you can test that your GPU is being properly engaged with these additional [tips](https://www.tensorflow.org/programmers_guide/using_gpu).
 
@@ -57,3 +68,4 @@ Then install [TensorFlow](https://www.tensorflow.org/) with CUDA (Cuda 8.0). Ide
            
       
  Return to [readme](../README.md).
+
