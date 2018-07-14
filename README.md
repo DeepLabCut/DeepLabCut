@@ -75,12 +75,6 @@ For questions feel free to reach out to: [alexander.mathis@bethgelab.org] or [ma
 
 [Alexander Mathis](https://github.com/AlexEMG), [Mackenzie Mathis](https://github.com/MMathisLab), and the DeeperCut authors for the feature detector code. Edits and suggestions by [Jonas Rauber](https://github.com/jonasrauber), [Taiga Abe](https://github.com/cellistigs), [Hao Wu](https://github.com/fullerene12), [Jonny Saunders](https://github.com/sneakers-the-rat), [Richard Warren](https://github.com/rwarren2163) and [Brandon Forys](https://github.com/bf777). The feature detector code is based on Eldar Insafutdinov's TensorFlow implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow). Please check out the following references for details:
 
-## Contribute:
-
-- Issue Tracker: https://github.com/AlexEMG/DeepLabCut/issues
-- Source Code: https://github.com/AlexEMG/DeepLabCut
-- Project Website: https://alexemg.github.io/DeepLabCut
-
 ## References:
 
     @inproceedings{insafutdinov2017cvpr,
@@ -103,6 +97,12 @@ For questions feel free to reach out to: [alexander.mathis@bethgelab.org] or [ma
     Year = {2018},
     Eprint = {arXiv:1804.03142},
     }
+
+## Contribute:
+
+- Issue Tracker: https://github.com/AlexEMG/DeepLabCut/issues
+- Source Code: https://github.com/AlexEMG/DeepLabCut
+- Project Website: https://alexemg.github.io/DeepLabCut
 
 ## License:
 
