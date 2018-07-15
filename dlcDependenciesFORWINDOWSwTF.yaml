@@ -1,4 +1,4 @@
-name: deepLabCut
+name: DLCdependencies
 channels:
   - defaults
 dependencies:
@@ -85,4 +85,4 @@ dependencies:
     - wcwidth==0.1.7
     - werkzeug==0.14.1
     - win-unicode-console==0.5
-prefix: C:\Users\rick\Anaconda3\envs\DLCdependencies
+

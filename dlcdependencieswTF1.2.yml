@@ -57,5 +57,4 @@ dependencies:
   - tqdm==4.23.4
   - urllib3==1.23
   - werkzeug==0.14.1
-prefix: /home/alex/anaconda3/envs/DLCdependencies
 

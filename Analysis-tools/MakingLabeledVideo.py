@@ -79,7 +79,7 @@ def CreateVideo(clip,Dataframe):
     if cropping:
         # one might want to adjust
         clip = clip.crop(y1=y1, y2=y2, x1=x1, x2=x2)
-
+    clip.reader.initialize()
     print("Duration of video [s]: ", clip.duration, ", recorded with ", fps,
           "fps!")
     print("Overall # of frames: ", nframes, "with cropped frame dimensions: ",
@@ -92,7 +92,8 @@ def CreateVideo(clip,Dataframe):
             pass
         else:
             plt.axis('off')
-            image = img_as_ubyte(clip.get_frame(index * 1. / clip.fps))
+            image = img_as_ubyte(clip.reader.read_frame())
+            #image = img_as_ubyte(clip.get_frame(index * 1. / clip.fps))
 
             if np.ndim(image) > 2:
                 h, w, nc = np.shape(image)

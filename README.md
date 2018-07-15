@@ -17,7 +17,7 @@ In our preprint we demonstrate that those feature detectors can be trained with 
 ## News:
 
 - All the documentation is now organized in a [website format](https://alexemg.github.io/DeepLabCut)!
-- We added a simplified installation procedure including a conda environment & a Docker container. See [Installation guide](docs/installation.md)
+- We added a simplified installation procedure including a conda environments & a Docker container. See [Installation guide](docs/installation.md)
 - Thanks to [Richard Warren](https://github.com/rwarren2163) for checking the compatability of the code in Windows. It works!
 - We added **"quick guides"** for training and for the evaluation tools that we provide with the package. We still recommend becoming familiar with the code base via the demo (below) first.
 - We also have a Slack group if you have questions that you feel don't fit a github issue ([deeplabcut.slack.com](https://deeplabcut.slack.com)) (please email Mackenzie at mackenzie@post.harvard.edu to join!)
@@ -48,21 +48,21 @@ User guide in [website format](https://alexemg.github.io/DeepLabCut).
 
 Once one has a well trained network, one can just use it to analyze heaps of videos (Analysis-tools).
 
-## Installation and Requirements:
+## Installation guide and Hardware and Software Requirements:
 
 [Installation guide](docs/installation.md)
 
 ## Demo (and detailed) user instructions for training and testing the network:
 
-[User guide](docs/demo-guide.md)
+[User guide (detailed walk-through with labeled example data)](docs/demo-guide.md)
 
-[Quick guide for training](docs/Quicktraining-guide.md)
+[Quick guide for training a tailored feature detector network](docs/Quicktraining-guide.md)
 
-[Quick guide for network evaluation](docs/Quickevaluation-guide.md)
+[Quick guide for evaluation of feature detectors (on train & test set)](docs/Quickevaluation-guide.md)
 
 ## User instructions for analyzing data (with a trained network):
 
-[Analysis guide](docs/analysis-tools.md)
+[Analysis guide: How to use trained network to analyze videos?](docs/analysis-tools.md)
 
 ## Support:
 
@@ -70,6 +70,14 @@ If you are having issues, please let us know ([Issue Tracker](https://github.com
 [Frequently asked questions](docs/faq.md) to see if this might help. 
 
 For questions feel free to reach out to: [alexander.mathis@bethgelab.org] or [mackenzie@post.harvard.edu] or join our Slack user group: ([deeplabcut.slack.com](https://deeplabcut.slack.com)) (please email Mackenzie to join!).
+
+## Contribute:
+
+- Issue Tracker: https://github.com/AlexEMG/DeepLabCut/issues
+- Source Code: https://github.com/AlexEMG/DeepLabCut
+- Project Website: https://alexemg.github.io/DeepLabCut
+
+DeepLabCut is an actively developing project and community contributions are welcome! 
 
 ## Code contributors:
 
@@ -98,11 +106,6 @@ For questions feel free to reach out to: [alexander.mathis@bethgelab.org] or [ma
     Eprint = {arXiv:1804.03142},
     }
 
-## Contribute:
-
-- Issue Tracker: https://github.com/AlexEMG/DeepLabCut/issues
-- Source Code: https://github.com/AlexEMG/DeepLabCut
-- Project Website: https://alexemg.github.io/DeepLabCut
 
 ## License:
 

@@ -5,7 +5,7 @@ all_joints:
 - [3]
 all_joints_names: [hand, Finger1, Finger2, Joystick]
 dataset: ../../UnaugmentedDataSet_reachingJan30/reaching_Mackenzie95shuffle1.mat
-display_iters: 1000
+display_iters: 10
 global_scale: 0.8
 init_weights: ../../pretrained/resnet_v1_50.ckpt
 intermediate_supervision: false
@@ -24,6 +24,6 @@ multi_step:
 net_type: resnet_50
 num_joints: 4
 pos_dist_thresh: 17
-save_iters: 50000
+save_iters: 50
 scale_jitter_lo: 0.5
 scale_jitter_up: 1.5

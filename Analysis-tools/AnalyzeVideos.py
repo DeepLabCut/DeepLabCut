@@ -5,9 +5,10 @@ https://github.com/AlexEMG/DeepLabCut
 A Mathis, alexander.mathis@bethgelab.org
 M Mathis, mackenzie@post.harvard.edu
 
-This script analyzes videos based on a trained network.
+This script analyzes videos based on a trained network (as specified in myconfig_analysis.py)
+
 You need tensorflow for evaluation. Run by:
-    
+
 CUDA_VISIBLE_DEVICES=0 python3 AnalyzeVideos.py
 
 """
@@ -143,7 +144,7 @@ for video in videos:
 
         start = time.time()
         PredicteData = np.zeros((nframes_approx, 3 * len(cfg['all_joints_names'])))
-
+        clip.reader.initialize()
         print("Starting to extract posture")
         for index in tqdm(range(nframes_approx)):
             #image = img_as_ubyte(clip.get_frame(index * 1. / fps))
