@@ -103,7 +103,7 @@ If your machine has multiple GPUs, you can select which GPU you want to run
 on by setting the environment variable, eg. CUDA_VISIBLE_DEVICES=0. If you are running the code on a CPU you can ommit that command (also in step 7).
 
 Tips: You can also stop during a training (Ctrl-C), and restart from a snapshot (aka checkpoint):
-Just change the init_weights term, i.e. instead of "init_weights: ../../pretrained/resnet_v1_50.ckpt"  put "init_weights: ./snapshot-insertthe#ofstepshere" (i.e. 10,000). We recommend training for **several thousand** iterations until the loss plateaus. How often the loss is displayed and how often the weights are stored can be changed in the pose_cfg.yaml (variables: `display_iters: 1,000`, and `save_iters: 50,000` respectively). Note, DEMO users, you must at least train to 50,000 to save any snapshots as it is set; you can change `save_iters: 50,000` to a lower value, if you wish!
+Just change the init_weights term, i.e. instead of "init_weights: ../../pretrained/resnet_v1_50.ckpt"  put "init_weights: ./snapshot-insertthe#ofstepshere" (i.e. 10,000). We recommend training for **thousands** of iterations until the loss plateaus (typically >200,000 - see Fig 2 and Supp Fig 2 in our [paper](https://arxiv.org/pdf/1804.03142.pdf)). How often the loss is displayed and how often the weights are stored can be changed in the pose_cfg.yaml (variables: `display_iters: 1,000`, and `save_iters: 50,000` respectively). Note, DEMO users, you must at least train to 50,000 to save any snapshots as it is set; you can change `save_iters: 50,000` to a lower value, if you wish!
 
 **(7) Evaluate your network:**
 
@@ -114,7 +114,9 @@ In the folder "Evaluation-tools", you will find code to evaluate the performance
      $ CUDA_VISIBLE_DEVICES=0 python3 Step1_EvaluateModelonDataset.py #to evaluate your model [needs TensorFlow]
      $ python3 Step2_AnalysisofResults.py  #to compute test & train errors for your trained model
 
-You can then check the labeled test (and training images). Ideally DeepLabCut labeled unseen (test images) according to your required accuracy adn the average train and test errors are comparable (good generalization). If not you might want to consider labeling additional images. 
+You can then check the labeled test (and training images), which will be created by this code as well as the root mean square errors (RMSE) between your labels and the ones by DeepLabCut. Ideally DeepLabCut labeled unseen (test images) according to your required accuracy and the average train and test (RMS-)errors are comparable (good generalization). What (numerically) comprises an acceptable RMSE depends on many things (including the size of the tracked body parts, etc.). You can visually inspect if the distance between the labeled bodyparts is acceptable (see Results folder). Note that the test error can also be larger than the training error due to human variablity (in labeling, see Fig 2 in our [paper](https://arxiv.org/pdf/1804.03142.pdf)). 
+
+If the generalization is not good, you might want to a) make sure that the loss was already converged, b) consider labeling additional images, c) check if the labels were imported correctly  ... 
 
  **(8) Run the trained network on videos and analyze results**
  
