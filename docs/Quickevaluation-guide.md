@@ -10,6 +10,6 @@ In the folder **"Evaluation-tools"**, you will find code to evaluate the perform
 
      $ python3 Step2_AnalysisofResults.py  #to compute test & train errors for your trained model 
 
-For more information on the output of these programs etc., check out the [detailed walk-through with labeled example data](docs/demo-guide.md).
+For more information on the output of these programs etc., check out the [detailed walk-through with labeled example data](demo-guide.md).
 
 Return to [readme](../README.md).
