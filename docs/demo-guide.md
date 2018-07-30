@@ -16,7 +16,7 @@ DEMO users: familiarize yourself with the folder structure, and the **myconfig.p
 
 DEMO users: don't run this code, as it would create new images for you to label. This code, however, will be used to select random frames from your own videos in the near future. In the folder "Generating_a_Training_Set", the provided code allows you to select a subset of frames in a video(s) for labeling. Make sure videos you want to use for the training set are in a sub-folder under **"Generating_a_Training_Set"** or change the video path accordingly in **"myconfig.py"**. (DEMO users, this is already generated). 
 
-Generally speaking, one should create a training set that reflects the diversity of the behavior with respect to postures, animal identities, etc. of the data that will be analyzed. This code randomly selects frames from the videos in a temporally uniformly distributed way. This is fine when the postures vary accordingly. However, the behavior might be sparse (as in the case of reaching, where the reach and pull is very fast and the mouse is not moving much between trials). However, one can extract various example videos of different pulls, then this code will sample the behavior well. One should take this into account when selecting frames to label (i.e. because you can label so little data, be sure your selected frames capture the full breadth of the behavior. You may want to additionally hand select extra frames of interest). 
+Generally speaking, one should **create a training set that reflects the diversity of the behavior with respect to postures, animal identities, etc.** of the data that will be analyzed. The *provided code randomly selects frames from the videos in a temporally uniformly distributed way*. This is fine when the postures vary accordingly. However, the behavior might be sparse (as in the case of reaching, where the reach and pull is very fast and the mouse is not moving much between trials). However, one can extract various example videos of different pulls, then this code will sample the behavior well. One should take this into account when selecting frames to label (i.e. because you can label so little data, be sure your selected frames capture the full breadth of the behavior. You may want to additionally hand select extra frames of interest). *If this extraction code is suboptimal given your behavior, consider extracting training frames by different means.* We will also provide additional code in future realeases. 
 
 If you want to check out the code: 
 
@@ -107,7 +107,7 @@ Just change the init_weights term, i.e. instead of "init_weights: ../../pretrain
 
 **(7) Evaluate your network:**
 
-DEMO users: you will run the following code!    
+DEMO users: you will run the following code!
 
 In the folder "Evaluation-tools", you will find code to evaluate the performance of the trained network on the whole data set (train and test images).
 

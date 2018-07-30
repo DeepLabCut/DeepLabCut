@@ -33,6 +33,6 @@ You will need to adjust the **myconfig.py** file first (and you will need to adj
       $ cd ../YOURexperimentNameTheDate-trainset95shuffle1/train #change this to your folder name!
       $ TF_CUDNN_USE_AUTOTUNE=0 CUDA_VISIBLE_DEVICES=0 python3 ../../../train.py 
 
-Once your network generalizes well as tested by [evaluation tools](Quickevaluation-guide.md), go to the [analysis tools](analysis-tools.md) to extract poses from videos.
+Once your network generalizes well as tested by [evaluation tools](Quickevaluation-guide.md), go to the [analysis tools](analysis-tools.md) to extract poses from videos. For more information on the output of these programs etc., check out the [detailed walk-through with labeled example data](docs/demo-guide.md).
 
 Return to [readme](../README.md).

@@ -81,7 +81,7 @@ for folder in folders:
     # sort image file names according to how they were stacked (when labeled in Fiji)
     files = [
         fn for fn in os.listdir(os.curdir)
-        if ("img" in fn and imagetype in fn and "_labeled" not in fn)
+        if (imagetype in fn and "_labeled" not in fn)
     ]
     files.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
 

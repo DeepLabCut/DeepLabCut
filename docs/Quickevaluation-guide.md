@@ -9,5 +9,7 @@ In the folder **"Evaluation-tools"**, you will find code to evaluate the perform
      $ CUDA_VISIBLE_DEVICES=0 python3 Step1_EvaluateModelonDataset.py #to evaluate your model [needs TensorFlow <1.2]
 
      $ python3 Step2_AnalysisofResults.py  #to compute test & train errors for your trained model 
-     
+
+For more information on the output of these programs etc., check out the [detailed walk-through with labeled example data](docs/demo-guide.md).
+
 Return to [readme](../README.md).

@@ -1,6 +1,6 @@
 # Pose estimation - DeeperCut:
 
-This folder contains the tensorflow 1.0 (tested) version of Eldar Insafutdinov's tensorflow implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow). Visit the following references for details:
+This folder contains the TensorFlow version of Eldar Insafutdinov's implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow). Visit the following references and this github repo for details:
 
 @article{insafutdinov2016deepercut,
     author = {Eldar Insafutdinov and Leonid Pishchulin and Bjoern Andres and Mykhaylo Andriluka and Bernt Schiele},
