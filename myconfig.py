@@ -14,10 +14,15 @@
 Task = 'reaching'
 
 # Filename and path to behavioral video:
-vidpath = '.'
-filename = 'reachingvideo1.avi'
+videopath = '.'
 
-cropping = True
+# Put name of video: / or 'all' to extract frames from all videos in folder.
+filename='reachingvideo1.avi'
+#filename = 'all' 
+videotype='.avi'
+
+checkcropping=False #set "True" if you want to check cropping 
+cropping = True #set "True" if you want to crop images with values below
 
 # ROI dimensions / bounding box (only used if cropping == True)
 # x1,y1 indicates the top left corner and
@@ -28,8 +33,24 @@ x2 = 640
 y1 = 277
 y2 = 624
 
-# Portion of the video to sample from in step 1. Set to 1 by default.
-portion = 1
+# Portion of the video to sample from in step 1 (In relative terms of video length. [0,1] is the full video)
+start = 0
+stop =1
+
+# Number of frames to pick
+numframes2pick = 22
+# Method to pick frames:
+selectionalgorithm='uniform' 
+
+# Temporally uniformly sampling frames in interval (start,stop). Visual information of video is irrelevant for this method. 
+# This code is very fast and sufficient (to extract distinct frames) when behavioral videos naturally covers many states.
+
+# Alternatively consider using: 'kmeans'
+
+# This code downsamples the video to a width of resizewidth. The video is extracted as a numpy array, which is then 
+# clustered with kmeans whereby each frames is treated as a vector. Frames from different clusters are then selected for labeling. This 
+# procedure makes sure that the frames "look different", i.e. different postures etc. 
+# On large videos this code is slow. Consider not extracting the frames from the whole video but rather set start and stop to a period around interesting behavior. 
 
 ########################################
 # Step 2: Converting frames to pandas array 

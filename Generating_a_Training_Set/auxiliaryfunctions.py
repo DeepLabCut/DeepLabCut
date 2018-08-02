@@ -27,7 +27,22 @@ def SaveData(PredicteData, metadata, dataname, pdindex, imagenames):
 
 def get_immediate_subdirectories(a_dir):
     # https://stackoverflow.com/questions/800197/how-to-get-all-of-the-immediate-subdirectories-in-python
+    return [name for name in os.listdir(a_dir)
+        if os.path.isdir(os.path.join(a_dir, name))]
+
+def listfilesofaparticulartypeinfolder(a_dir,afiletype):
     return [
         name for name in os.listdir(a_dir)
-        if os.path.isdir(os.path.join(a_dir, name))
-    ]
+        if afiletype in name]
+    
+def GetVideoList(filename,videopath,videtype):
+    videos=listfilesofaparticulartypeinfolder(videopath,videtype)
+    if filename=='all':
+        return videos
+    else:
+        if filename in videos:
+            videos=[filename]
+        else:
+            videos=[]
+            print("Video not found!", filename)
+    return videos

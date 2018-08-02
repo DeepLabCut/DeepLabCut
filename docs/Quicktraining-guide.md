@@ -1,6 +1,6 @@
 # Quick Training Guide:
 
-After becoming familiar with the workflow, here is the list of commands to run in the terminal for training. 
+After becoming familiar with the workflow, here is the list of commands to run in the terminal for training. For more information on the output of these programs etc., check out the [detailed walk-through with labeled example data](demo-guide.md).
 
 You will need to adjust the **myconfig.py** file first (and you will need to adjust your folder names below accordingly):
   
