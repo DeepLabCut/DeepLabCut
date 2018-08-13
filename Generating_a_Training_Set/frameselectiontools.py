@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Apr 20 19:56:20 2018
+DeepLabCut Toolbox
+https://github.com/AlexEMG/DeepLabCut
+A Mathis, alexander.mathis@bethgelab.org
+M Mathis, mackenzie@post.harvard.edu
 
-@author: alex
 """
 
 import numpy as np
@@ -19,9 +21,9 @@ def UniformFrames(clip,numframes2pick,start,stop,Index="all"):
     print("Uniformly extracting of frames from", start*clip.duration," seconds to", stop*clip.duration, " seconds.")
     if Index=="all":
         if start==0:
-            frames2pick = np.random.randint(math.ceil(clip.duration * clip.fps * stop), size=numframes2pick - 1)
+            frames2pick = np.random.choice(math.ceil(clip.duration * clip.fps * stop), size=numframes2pick - 1, replace = False)
         else:
-            frames2pick = np.random.randint(low=math.floor(start*clip.duration * clip.fps),high=math.ceil(clip.duration * clip.fps * stop), size=numframes2pick - 1)
+            frames2pick = np.random.choice(range(math.floor(start*clip.duration * clip.fps),math.ceil(clip.duration * clip.fps * stop)), size=numframes2pick - 1, replace = False)
         return frames2pick
     else:
         startindex=int(np.floor(clip.fps*clip.duration*start))
@@ -78,7 +80,7 @@ def KmeansbasedFrameselection(clip,numframes2pick,start,stop,Index="all",resizew
         kmeans.fit(data)
 
         frames2pick=[]
-        for clusterid in range(numframes2pick - 1):
+        for clusterid in range(numframes2pick - 1): #pick one frame per cluster
             clusterids=np.where(clusterid==kmeans.labels_)[0]
             numimagesofcluster=len(clusterids)
             if numimagesofcluster>0:

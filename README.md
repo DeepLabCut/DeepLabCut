@@ -1,6 +1,15 @@
+[![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
+[![Krihelimeter](http://krihelinator.xyz/badge/AlexEMG/DeepLabCut)](http://krihelinator.xyz/repositories/AlexEMG/DeepLabCut)
+[![GitHub tag](https://img.shields.io/github/tag/AlexEMG/DeepLabCut.svg)](https://github.com/AlexEMG/DeepLabCut)
+[![GitHub forks](https://img.shields.io/github/forks/AlexEMG/DeepLabCut.svg?style=social&label=Fork)](https://github.com/AlexEMG/DeepLabCut)
+[![GitHub stars](https://img.shields.io/github/stars/AlexEMG/DeepLabCut.svg?style=social&label=Star)](https://github.com/AlexEMG/DeepLabCut)
+[![GitHub watchers](https://img.shields.io/github/watchers/AlexEMG/DeepLabCut.svg?style=social&label=Watch)](https://github.com/AlexEMG/DeepLabCut)
+[![GitHub followers](https://img.shields.io/github/followers/AlexEMG.svg?style=social&label=Follow)](https://github.com/AlexEMG)
+
 # DeepLabCut
 
-A toolbox for markerless tracking of body parts of animals in lab settings performing various tasks, like [trail tracking](https://vnmurthylab.org/),  [reaching in mice](http://www.mousemotorlab.org/) and various Drosophila behaviors during egg-laying (see [Mathis et al.](https://arxiv.org/abs/1804.03142v1) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks and/or species. The toolbox has also already been successfully applied to [rats](http://www.mousemotorlab.org/deeplabcut), humans, various fish species, robots, and [race horses](http://www.mousemotorlab.org/deeplabcut).
+Welcome to the DeepLabCut repository, a toolbox for markerless tracking of body parts of animals in lab settings performing various tasks, like [trail tracking](https://vnmurthylab.org/), [reaching in mice](http://www.mousemotorlab.org/) and various Drosophila behaviors during egg-laying (see [Mathis et al.](https://arxiv.org/abs/1804.03142v1) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks and/or species. The toolbox has also already been successfully applied to [rats](http://www.mousemotorlab.org/deeplabcut), humans, various fish species, bacteria, leeches, various robots, and [race horses](http://www.mousemotorlab.org/deeplabcut).
+
 
 <p align="center">
 <img src="docs/images/githubfig-01-01.png" width="90%">
@@ -10,12 +19,13 @@ Please check out [www.mousemotorlab.org/deeplabcut](https://www.mousemotorlab.or
 
 This work utilizes the feature detectors (ResNet + readout layers) of one of the state-of-the-art algorithms for human pose estimation by [Insafutdinov et al.](https://arxiv.org/abs/1605.03170), called DeeperCut, which inspired the name for our toolbox (see references below).
 
-In our preprint we demonstrate that those feature detectors can be trained with few labeled images to achieve excellent tracking accuracy for various body parts in lab tasks. Please check it out:
+In our preprint we *demonstrate that those feature detectors can be trained with few labeled images to achieve excellent tracking accuracy* for various body parts in lab tasks. Please check it out:
 
 "[Markerless tracking of user-defined features with deep learning](https://arxiv.org/abs/1804.03142v1)" by Alexander Mathis, Pranav Mamidanna, Taiga Abe, Kevin M. Cury, Venkatesh N. Murthy, Mackenzie W. Mathis* and Matthias Bethge*
 
 ## News:
 
+- Ed Yong covered DeepLabCut and interviewed several users for the [Atlantic](https://www.theatlantic.com/science/archive/2018/07/deeplabcut-tracking-animal-movements/564338). 
 - All the documentation is now organized in a [website format](https://alexemg.github.io/DeepLabCut)!
 - We added a simplified installation procedure including a conda environments & a Docker container. See [Installation guide](docs/installation.md)
 - Thanks to [Richard Warren](https://github.com/rwarren2163) for checking the compatability of the code in Windows. It works!
