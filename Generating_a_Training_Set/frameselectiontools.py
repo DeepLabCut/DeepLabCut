@@ -19,9 +19,9 @@ def UniformFrames(clip,numframes2pick,start,stop,Index="all"):
     print("Uniformly extracting of frames from", start*clip.duration," seconds to", stop*clip.duration, " seconds.")
     if Index=="all":
         if start==0:
-            frames2pick = np.random.randint(math.ceil(clip.duration * clip.fps * stop), size=numframes2pick - 1)
+            frames2pick = np.random.choice(math.ceil(clip.duration * clip.fps * stop), size=numframes2pick - 1, replace = False)
         else:
-            frames2pick = np.random.randint(low=math.floor(start*clip.duration * clip.fps),high=math.ceil(clip.duration * clip.fps * stop), size=numframes2pick - 1)
+            frames2pick = np.random.choice(range(math.floor(start*clip.duration * clip.fps),math.ceil(clip.duration * clip.fps * stop)), size=numframes2pick - 1, replace = False)
         return frames2pick
     else:
         startindex=int(np.floor(clip.fps*clip.duration*start))
