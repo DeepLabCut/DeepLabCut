@@ -76,7 +76,7 @@ dependencies:
     - sk-video==1.1.10
     - tables==3.4.4
     - tensorboard==1.8.0
-    - tensorflow-gpu==1.8.0
+    - tensorflow==1.8.0
     - termcolor==1.1.0
     - toolz==0.9.0
     - tqdm==4.23.4
