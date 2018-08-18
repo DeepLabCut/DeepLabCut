@@ -48,7 +48,8 @@ class PoseNet:
 
         # The next part of the code depends upon which tensorflow version you have.
         vers = tf.__version__
-        if float(vers[0:3]) < 1.4:
+        vers = vers.split(".") #Updated based on https://github.com/AlexEMG/DeepLabCut/issues/44
+        if int(vers[0])==1 and int(vers[1])<4: #check if lower than version 1.4. 
             with slim.arg_scope(resnet_v1.resnet_arg_scope(False)):
                 net, end_points = net_fun(im_centered,
                                           global_pool=False, output_stride=16)

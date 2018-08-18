@@ -8,25 +8,22 @@
 
 # DeepLabCut
 
-Welcome to the DeepLabCut repository, a toolbox for markerless tracking of body parts of animals in lab settings performing various tasks, like [trail tracking](https://vnmurthylab.org/), [reaching in mice](http://www.mousemotorlab.org/) and various Drosophila behaviors during egg-laying (see [Mathis et al.](https://arxiv.org/abs/1804.03142v1) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks and/or species. The toolbox has also already been successfully applied to [rats](http://www.mousemotorlab.org/deeplabcut), humans, various fish species, bacteria, leeches, various robots, and [race horses](http://www.mousemotorlab.org/deeplabcut).
-
+Welcome to the DeepLabCut repository, a toolbox for markerless tracking of body parts of animals in lab settings performing various tasks, like [trail tracking](https://vnmurthylab.org/), [reaching in mice](http://www.mousemotorlab.org/) and various Drosophila behaviors during egg-laying (see [Mathis et al.](https://arxiv.org/abs/1804.03142v1) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks and/or species. The toolbox has also already been successfully applied to [rats](http://www.mousemotorlab.org/deeplabcut), humans, various fish species, bacteria, leeches, various robots, and [race horses](http://www.mousemotorlab.org/deeplabcut). Please check out [www.mousemotorlab.org/deeplabcut](https://www.mousemotorlab.org/deeplabcut/) for video demonstrations of automated tracking. 
 
 <p align="center">
 <img src="docs/images/githubfig-01-01.png" width="90%">
 </p>
 
-Please check out [www.mousemotorlab.org/deeplabcut](https://www.mousemotorlab.org/deeplabcut/) for video demonstrations of automated tracking. 
-
 This work utilizes the feature detectors (ResNet + readout layers) of one of the state-of-the-art algorithms for human pose estimation by [Insafutdinov et al.](https://arxiv.org/abs/1605.03170), called DeeperCut, which inspired the name for our toolbox (see references below).
 
-In our preprint we *demonstrate that those feature detectors can be trained with few labeled images to achieve excellent tracking accuracy* for various body parts in lab tasks. Please check it out:
+In our paper we *demonstrate that those feature detectors can be trained with few labeled images to achieve human-level tracking accuracy* for various body parts in lab tasks. Please check it out:
 
 "[Markerless tracking of user-defined features with deep learning](https://arxiv.org/abs/1804.03142v1)" by Alexander Mathis, Pranav Mamidanna, Taiga Abe, Kevin M. Cury, Venkatesh N. Murthy, Mackenzie W. Mathis* and Matthias Bethge*
 
 ## News:
 
 - Ed Yong covered DeepLabCut and interviewed several users for the [Atlantic](https://www.theatlantic.com/science/archive/2018/07/deeplabcut-tracking-animal-movements/564338). 
-- All the documentation is now organized in a [website format](https://alexemg.github.io/DeepLabCut)!
+- All the documentation is now (also) organized in a [website format](https://alexemg.github.io/DeepLabCut)!
 - We added a simplified installation procedure including a conda environments & a Docker container. See [Installation guide](docs/installation.md)
 - Thanks to [Richard Warren](https://github.com/rwarren2163) for checking the compatability of the code in Windows. It works!
 - We added **"quick guides"** for training and for the evaluation tools that we provide with the package. We still recommend becoming familiar with the code base via the demo (below) first.
@@ -46,17 +43,15 @@ To solve this problem, one can train feature detectors in an end-to-end fashion.
 
 The key result of our paper is that one typically requires just a few labeled frames to get excellent tracking results.
 
-The general pipeline for first time use of DeepLabCut is:
+The general pipeline for DeepLabCut is:
 
 **Install --> Extract frames -->  Label training data -->  Train DeeperCut feature detectors -->  Apply your trained network to unlabeled data -->  Extract trajectories for analysis.**
-
-User guide in [website format](https://alexemg.github.io/DeepLabCut).
 
 <p align="center">
 <img src="docs/images/deeplabcutFig-01.png" width="70%">
 </p>
 
-Once one has a well trained network, one can just use it to analyze heaps of videos (Analysis-tools).
+Once one has a well trained network, one can just use it to analyze heaps of videos [Analysis tools](docs/analysis-tools.md). The network can also be retrained on frames, where it makes errors. User guide in [website format](https://alexemg.github.io/DeepLabCut).
 
 ## Installation guide and Hardware and Software Requirements:
 
@@ -109,11 +104,11 @@ DeepLabCut is an actively developing project and community contributions are wel
         author = {Eldar Insafutdinov and Leonid Pishchulin and Bjoern Andres and Mykhaylo Andriluka and Bernt Schiele}
     }
     
-    @misc{1804.03142,
-    Author = {Alexander Mathis and Pranav Mamidanna and Taiga Abe and Kevin M. Cury and Venkatesh N. Murthy and Mackenzie W. Mathis and Matthias Bethge},
-    Title = {Markerless tracking of user-defined features with deep learning},
-    Year = {2018},
-    Eprint = {arXiv:1804.03142},
+    @article{Mathisetal2018,
+    	author = {Alexander Mathis and Pranav Mamidanna and Taiga Abe and Kevin M. Cury and Venkatesh N. Murthy and Mackenzie W. Mathis and Matthias Bethge},
+    	title = {Markerless tracking of user-defined features with deep learning},
+    	year = {2018},
+    	Eprint = {arXiv:1804.03142},
     }
 
 
