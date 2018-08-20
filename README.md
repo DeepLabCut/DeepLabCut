@@ -4,11 +4,10 @@
 [![GitHub forks](https://img.shields.io/github/forks/AlexEMG/DeepLabCut.svg?style=social&label=Fork)](https://github.com/AlexEMG/DeepLabCut)
 [![GitHub stars](https://img.shields.io/github/stars/AlexEMG/DeepLabCut.svg?style=social&label=Star)](https://github.com/AlexEMG/DeepLabCut)
 [![GitHub watchers](https://img.shields.io/github/watchers/AlexEMG/DeepLabCut.svg?style=social&label=Watch)](https://github.com/AlexEMG/DeepLabCut)
-[![GitHub followers](https://img.shields.io/github/followers/AlexEMG.svg?style=social&label=Follow)](https://github.com/AlexEMG)
 
 # DeepLabCut
 
-Welcome to the DeepLabCut repository, a toolbox for markerless tracking of body parts of animals in lab settings performing various tasks, like [trail tracking](https://vnmurthylab.org/), [reaching in mice](http://www.mousemotorlab.org/) and various Drosophila behaviors during egg-laying (see [Mathis et al.](https://arxiv.org/abs/1804.03142v1) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks and/or species. The toolbox has also already been successfully applied to [rats](http://www.mousemotorlab.org/deeplabcut), humans, various fish species, bacteria, leeches, various robots, and [race horses](http://www.mousemotorlab.org/deeplabcut). Please check out [www.mousemotorlab.org/deeplabcut](https://www.mousemotorlab.org/deeplabcut/) for video demonstrations of automated tracking. 
+Welcome to the DeepLabCut repository, a toolbox for markerless tracking of body parts of animals in lab settings performing various tasks, like [trail tracking](https://vnmurthylab.org/), [reaching in mice](http://www.mousemotorlab.org/) and various Drosophila behaviors during egg-laying (see [Mathis et al.](https://www.nature.com/articles/s41593-018-0209-y) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks and/or species. The toolbox has also already been successfully applied to [rats](http://www.mousemotorlab.org/deeplabcut), humans, various fish species, bacteria, leeches, various robots, and [race horses](http://www.mousemotorlab.org/deeplabcut). Please check out [www.mousemotorlab.org/deeplabcut](https://www.mousemotorlab.org/deeplabcut/) for video demonstrations of automated tracking. 
 
 <p align="center">
 <img src="docs/images/githubfig-01-01.png" width="90%">
@@ -18,10 +17,11 @@ This work utilizes the feature detectors (ResNet + readout layers) of one of the
 
 In our paper we *demonstrate that those feature detectors can be trained with few labeled images to achieve human-level tracking accuracy* for various body parts in lab tasks. Please check it out:
 
-"[Markerless tracking of user-defined features with deep learning](https://arxiv.org/abs/1804.03142v1)" by Alexander Mathis, Pranav Mamidanna, Taiga Abe, Kevin M. Cury, Venkatesh N. Murthy, Mackenzie W. Mathis* and Matthias Bethge*
+"[DeepLabCut: markerless pose estimation of user-defined body parts with deep learning](https://www.nature.com/articles/s41593-018-0209-y)" by Alexander Mathis, Pranav Mamidanna, Kevin M. Cury, Taiga Abe, Venkatesh N. Murthy, Mackenzie W. Mathis* and Matthias Bethge*
 
 ## News:
 
+- Our [preprint](https://arxiv.org/abs/1804.03142) just appeared in [Nature Neuroscience](https://www.nature.com/articles/s41593-018-0209-y)
 - Ed Yong covered DeepLabCut and interviewed several users for the [Atlantic](https://www.theatlantic.com/science/archive/2018/07/deeplabcut-tracking-animal-movements/564338). 
 - All the documentation is now (also) organized in a [website format](https://alexemg.github.io/DeepLabCut)!
 - We added a simplified installation procedure including a conda environments & a Docker container. See [Installation guide](docs/installation.md)
@@ -92,24 +92,25 @@ DeepLabCut is an actively developing project and community contributions are wel
 
     @inproceedings{insafutdinov2017cvpr,
         title = {ArtTrack: Articulated Multi-person Tracking in the Wild},
+        author = {Eldar Insafutdinov and Mykhaylo Andriluka and Leonid Pishchulin and Siyu Tang and Evgeny Levinkov and Bjoern Andres and Bernt Schiele},
         booktitle = {CVPR'17},
-        url = {http://arxiv.org/abs/1612.01465},
-        author = {Eldar Insafutdinov and Mykhaylo Andriluka and Leonid Pishchulin and Siyu Tang and Evgeny Levinkov and Bjoern Andres and Bernt Schiele}
+        url = {http://arxiv.org/abs/1612.01465}
     }
     
     @article{insafutdinov2016eccv,
         title = {DeeperCut: A Deeper, Stronger, and Faster Multi-Person Pose Estimation Model},
+        author = {Eldar Insafutdinov and Leonid Pishchulin and Bjoern Andres and Mykhaylo Andriluka and Bernt Schiele},
         booktitle = {ECCV'16},
-        url = {http://arxiv.org/abs/1605.03170},
-        author = {Eldar Insafutdinov and Leonid Pishchulin and Bjoern Andres and Mykhaylo Andriluka and Bernt Schiele}
+        url = {http://arxiv.org/abs/1605.03170}
     }
     
     @article{Mathisetal2018,
-    	author = {Alexander Mathis and Pranav Mamidanna and Taiga Abe and Kevin M. Cury and Venkatesh N. Murthy and Mackenzie W. Mathis and Matthias Bethge},
-    	title = {Markerless tracking of user-defined features with deep learning},
-    	year = {2018},
-    	Eprint = {arXiv:1804.03142},
-    }
+      title={DeepLabCut: markerless pose estimation of user-defined body parts with deep learning},
+      author = {Alexander Mathis and Pranav Mamidanna and Kevin M. Cury and Taiga Abe  and Venkatesh N. Murthy and Mackenzie W. Mathis and Matthias Bethge},
+       journal={Nature Neuroscience},
+        year={2018},
+        url={https://www.nature.com/articles/s41593-018-0209-y}
+}
 
 
 ## License:
