@@ -6,7 +6,7 @@
    
    - first edit the **myconfig_analysis.py** file 
      
-   - For extracting postures, video by video from all videos in a particular folder set the video path in ```myconfig_analysis.py``` accordingly and update the ```Task``, ```date```, ```trainingsFraction```, ```shuffle```, and ```snapshotindex``` variables so that the network of interest is loaded. Then run
+   - For extracting postures, video by video from all videos in a particular folder set the video path in ```myconfig_analysis.py``` accordingly and update the ```Task```, ```date```, ```trainingsFraction```, ```shuffle```, and ```snapshotindex``` variables so that the network of interest is loaded. Then run:
    
     $ CUDA_VISIBLE_DEVICES=0 python3 AnalyzeVideos.py
 
