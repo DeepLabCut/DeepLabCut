@@ -20,15 +20,19 @@ dependencies:
 - xz=5.2.4=h14c3975_4
 - zlib=1.2.11=ha838bed_2
 - pip:
+  - backports.weakref==1.0rc1
+  - bleach==1.5.0
   - chardet==3.0.4
   - cloudpickle==0.5.3
   - cycler==0.10.0
   - dask==0.18.0
   - decorator==4.3.0
   - easydict==1.7
+  - html5lib==0.9999999
   - idna==2.7
   - imageio==2.3.0
   - kiwisolver==1.0.1
+  - markdown==2.6.11
   - matplotlib==2.2.2
   - moviepy==0.2.3.5
   - networkx==2.1
@@ -36,6 +40,7 @@ dependencies:
   - numpy==1.14.5
   - pandas==0.23.1
   - pillow==5.1.0
+  - protobuf==3.6.0
   - pyparsing==2.2.0
   - python-dateutil==2.7.3
   - pytz==2018.4
@@ -43,11 +48,15 @@ dependencies:
   - pyyaml==3.12
   - requests==2.19.1
   - scikit-image==0.14.0
+  - scikit-learn==0.19.2
   - scipy==1.1.0
   - six==1.11.0
   - sk-video==1.1.10
+  - sklearn==0.0
   - tables==3.4.4
+  - tensorflow==1.2.1
   - toolz==0.9.0
   - tqdm==4.23.4
   - urllib3==1.23
+  - werkzeug==0.14.1
 

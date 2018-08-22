@@ -29,6 +29,7 @@ import numpy as np
 import os
 import math
 import sys
+
 sys.path.append(os.getcwd().split('Generating_a_Training_Set')[0])
 from myconfig import Task, videopath, videotype, filename, x1, x2, y1, y2, start, stop, \
     date, cropping, numframes2pick, selectionalgorithm, checkcropping

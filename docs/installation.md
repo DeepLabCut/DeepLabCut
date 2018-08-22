@@ -17,7 +17,7 @@ For reference, we use e.g. Dell workstations (79xx series) with Ubuntu 16.04 LTS
 [Anaconda](https://anaconda.org/anaconda/python) is perhaps the easiest way to install Python and additional packages across various operating systems. With anaconda just create all the dependencies in an [environment](https://conda.io/docs/user-guide/tasks/manage-environments.html) on your machine by running in a terminal:
 ```
 git clone https://github.com/AlexEMG/DeepLabCut.git
-cd DeepLabCut
+cd DeepLabCut/conda-files
 conda env create -f dlcdependencieswTF1.2.yml
 ```
 

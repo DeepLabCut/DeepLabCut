@@ -71,6 +71,7 @@ dependencies:
     - pyyaml==3.12
     - requests==2.19.1
     - scikit-image==0.14.0
+    - scikit-learn==0.19.2
     - scipy==1.1.0
     - simplegeneric==0.8.1
     - sk-video==1.1.10

@@ -33,13 +33,13 @@ y1 = 277
 y2 = 624
 
 # Portion of the video to sample from in step 1 (In relative terms of video length, i.e. [0,1] is the full video)
-start = 0
+start = 0.1
 stop =1
 
 # Number of frames to pick
 numframes2pick = 22
 
-# Method to pick frames:
+# Method to pick frames: uniform or kmeans
 selectionalgorithm='uniform' 
 
 # the algorithm 'uniform' temporally uniformly sampes frames in interval (start,stop). Visual information within video is irrelevant for this method. This code is very fast and sufficient (to extract distinct frames) when behavioral videos naturally covers many states.
