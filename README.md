@@ -21,8 +21,8 @@ In our paper we *demonstrate that those feature detectors can be trained with fe
 
 ## News:
 
-- Our [preprint](https://arxiv.org/abs/1804.03142) just appeared in [Nature Neuroscience](https://www.nature.com/articles/s41593-018-0209-y)
-- Ed Yong covered DeepLabCut and interviewed several users for the [Atlantic](https://www.theatlantic.com/science/archive/2018/07/deeplabcut-tracking-animal-movements/564338). 
+- 8/18: Our [preprint](https://arxiv.org/abs/1804.03142) appeared in [Nature Neuroscience](https://www.nature.com/articles/s41593-018-0209-y)
+- 7/18: Ed Yong covered DeepLabCut and interviewed several users for the [Atlantic](https://www.theatlantic.com/science/archive/2018/07/deeplabcut-tracking-animal-movements/564338). 
 - All the documentation is now (also) organized in a [website format](https://alexemg.github.io/DeepLabCut)!
 - We added a simplified installation procedure including a conda environments & a Docker container. See [Installation guide](docs/installation.md)
 - Thanks to [Richard Warren](https://github.com/rwarren2163) for checking the compatability of the code in Windows. It works!
@@ -67,22 +67,23 @@ Once one has a well trained network, one can just use it to analyze heaps of vid
 
 ## User instructions for analyzing data (with a trained network):
 
-[Analysis guide: How to use trained network to analyze videos?](docs/analysis-tools.md)
+[Analysis guide: How to use a trained network to analyze videos?](docs/analysis-tools.md)
 
 ## Support:
 
-If you are having issues, please let us know ([Issue Tracker](https://github.com/AlexEMG/DeepLabCut/issues)). Perhaps consider checking the [already closed issues](https://github.com/AlexEMG/DeepLabCut/issues?q=is%3Aissue+is%3Aclosed) and the 
-[Frequently asked questions](docs/faq.md) to see if this might help. 
+For questions and discussions with join our Slack user group: ([deeplabcut.slack.com](https://deeplabcut.slack.com)) (please email [Mackenzie](mackenzie@post.harvard.edu) to join!).
 
-For questions feel free to reach out to: [alexander.mathis@bethgelab.org] or [mackenzie@post.harvard.edu] or join our Slack user group: ([deeplabcut.slack.com](https://deeplabcut.slack.com)) (please email Mackenzie to join!).
+If you are having issues, please let us know ([Issue Tracker](https://github.com/AlexEMG/DeepLabCut/issues)). Perhaps consider checking the [already closed issues](https://github.com/AlexEMG/DeepLabCut/issues?q=is%3Aissue+is%3Aclosed) and the [Frequently asked questions](docs/faq.md) to see if this might help. 
+
+Otherwise, please free to reach out to by email: [alexander.mathis@bethgelab.org] or [mackenzie@post.harvard.edu].
 
 ## Contribute:
+
+DeepLabCut is an actively developing project and community contributions are welcome! 
 
 - Issue Tracker: https://github.com/AlexEMG/DeepLabCut/issues
 - Source Code: https://github.com/AlexEMG/DeepLabCut
 - Project Website: https://alexemg.github.io/DeepLabCut
-
-DeepLabCut is an actively developing project and community contributions are welcome! 
 
 ## Code contributors:
 

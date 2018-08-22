@@ -1,8 +1,8 @@
 # Analysis Tools
    
-  Various scripts for analyzing novel videos with your trained network can be found in the folder ```Analysis-tools```.
+  Various scripts for analyzing videos with your trained network can be found in the folder ```Analysis-tools```.
    
-  After you have a trained network one can load the weights to extract poses from novel/other videos. To do so:
+  After you have a trained a network, you can load the weights to extract poses from novel/other videos. To do so:
    
    - first edit the **myconfig_analysis.py** file 
      

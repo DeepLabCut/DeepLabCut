@@ -3,9 +3,11 @@
 """
 DeepLabCut Toolbox
 https://github.com/AlexEMG/DeepLabCut
+
 A Mathis, alexander.mathis@bethgelab.org
 M Mathis, mackenzie@post.harvard.edu
 
+auxiliary functions for selecting frames uid or by (image-based) clustering.
 """
 
 import numpy as np
@@ -86,6 +88,6 @@ def KmeansbasedFrameselection(clip,numframes2pick,start,stop,Index="all",resizew
             if numimagesofcluster>0:
                 frames2pick.append(Index[clusterids[np.random.randint(numimagesofcluster)]])
 
-        return list(np.array(frames2pick)+startindex)
+        return list(np.array(frames2pick))
     else:
         return list(Index)
