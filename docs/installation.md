@@ -32,7 +32,7 @@ cd deeplabcut/conda-files
 conda env create -f dlcDependenciesFORWINDOWS.yaml
 ```
 
-**Then, for LINUX & Windows:** Install [TensorFlow](https://www.tensorflow.org/). We used **TensorFlow 1.0 with CUDA (Cuda 8.0)**. Therefore, we recommend this version. Some other versions of TensorFlow have been tested, but use at your own risk (i.e. these versions have been tested 1.2, 1.4, 1.8 or 1.10, but might require different CUDA versions! Please check your driver/CUDA/TensorFlow version [on this Stackoverflow post](https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-304-125/30820690#30820690). Please check your CUDA and [TensorFlow installation](https://www.tensorflow.org/install/) with th line below
+**Then, for LINUX & Windows:** Install [TensorFlow](https://www.tensorflow.org/). We used **TensorFlow 1.0 with CUDA (Cuda 8.0)**. Therefore, we recommend this version. Some other versions of TensorFlow have been tested, but use at your own risk (i.e. these versions have been tested 1.2, 1.4, 1.8 or 1.10, but might require different CUDA versions! Please check your driver/CUDA/TensorFlow version [on this Stackoverflow post](https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-304-125/30820690#30820690). Please check your CUDA and [TensorFlow installation](https://www.tensorflow.org/install/) with the line below
 
       $ sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
@@ -76,7 +76,7 @@ Then you can work with all DLC functionalities inside this environment. Enjoy!
 
 ## Alternative Python installation (not Anaconda environment based):
 
-If you wish to just install everything directly onto your computuer (i.e. you don't need other versions of TF, CUDA, etc), then you can install these packages using the terminal:
+If you wish to just install everything directly onto your computer (i.e. you don't need other versions of TF, CUDA, etc), then you can install these packages using the terminal:
 
 
  - Install Python3 [e.g. Sypder (or any other IDE) and/or Jupyter Notebook for Python3]
@@ -84,7 +84,7 @@ If you wish to just install everything directly onto your computuer (i.e. you do
 
      $ git clone https://github.com/AlexEMG/DeepLabCut
 
- - You will also need to install the following *Python3* packages (in the terminal type):
+ - You will also need to install the following **Python3** packages (in the terminal type):
 
 ```
       $ pip install scipy scikit-image sk-video matplotlib pyyaml easydict 
@@ -92,7 +92,7 @@ If you wish to just install everything directly onto your computuer (i.e. you do
       $ pip install pyqt5 scikit-learn pandas
       $ pip install ffmpeg-python
 ```
-Note if you also have python2 installed, you might want to use pip3 instead. 
+Note if you also have python2 installed, you might want to use pip3 instead (DeepLabCut is suported in Python3.x only). 
 
 Then, install *TensorFlow*:
 
