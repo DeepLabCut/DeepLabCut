@@ -99,7 +99,7 @@ for scorer in Scorers:
                 datafile = bodypart
                 try:
                     dframe = pd.read_csv(datafile + ".xls",sep=None,engine='python') #, sep='\t')
-                except FileNotFoundError:
+                except OSError as e:
                     os.rename(datafile + ".csv", datafile + ".xls")
                     dframe = pd.read_csv(datafile + ".xls",sep=None,engine='python') #, sep='\t')
 
