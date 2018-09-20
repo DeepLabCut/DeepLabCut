@@ -96,7 +96,10 @@ Note if you also have python2 installed, you might want to use pip3 instead (Dee
 
 Then, install *TensorFlow*:
 
-**Then, for LINUX & Windows:** Install [TensorFlow](https://www.tensorflow.org/). We used **TensorFlow 1.0 with CUDA (Cuda 8.0)**. Therefore, we recommend this version. Some other versions of TensorFlow have been tested, but use at your own risk (i.e. these versions have been tested 1.2, 1.4, 1.8 or 1.10, but might require different CUDA versions! Please check your driver/CUDA/TensorFlow version [on this Stackoverflow post](https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-304-125/30820690#30820690). Please check your CUDA and [TensorFlow installation](https://www.tensorflow.org/install/) with th line below
+**Then, for LINUX & Windows:** Install [TensorFlow](https://www.tensorflow.org/). We used **TensorFlow 1.0 with CUDA (Cuda 8.0)**. Therefore, we recommend this version. Some other versions of TensorFlow have been tested, but use at your own risk (i.e. these versions have been tested 1.2, 1.4, 1.8 or 1.10, but might require different CUDA versions! Please check your driver/CUDA/TensorFlow version [on this Stackoverflow post](https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-304-125/30820690#30820690). Here is a nice guide for [CUDA + cuDNN for TensorFlow installation on Ubuntu](https://medium.com/@ikekramer/installing-cuda-8-0-and-cudnn-5-1-on-ubuntu-16-04-6b9f284f6e77).
+
+
+Please check your CUDA and [TensorFlow installation](https://www.tensorflow.org/install/) with th line below
 
       $ sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 

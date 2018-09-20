@@ -77,15 +77,16 @@ def MakeLabeledImage(DataCombined,imagenr,imagefilename,Scorers,bodyparts,colors
     return 0
 
 def pairwisedistances(DataCombined,scorer1,scorer2,pcutoff=-1,bodyparts=None):
+    ''' Calculates the pairwise Euclidean distance metric '''
     mask=DataMachine[scorer2].xs('likelihood',level=1,axis=1)>=pcutoff
     if bodyparts==None:
             Pointwisesquareddistance=(DataCombined[scorer1]-DataCombined[scorer2])**2
-            MSE=np.sqrt(Pointwisesquareddistance.xs('x',level=1,axis=1)+Pointwisesquareddistance.xs('y',level=1,axis=1))
-            return MSE,MSE[mask]
+            RMSE=np.sqrt(Pointwisesquareddistance.xs('x',level=1,axis=1)+Pointwisesquareddistance.xs('y',level=1,axis=1)) #Euclidean distance (proportional to RMSE)
+            return RMSE,RMSE[mask]
     else:
             Pointwisesquareddistance=(DataCombined[scorer1][bodyparts]-DataCombined[scorer2][bodyparts])**2
-            MSE=np.sqrt(Pointwisesquareddistance.xs('x',level=1,axis=1)+Pointwisesquareddistance.xs('y',level=1,axis=1))
-            return MSE,MSE[mask]
+            RMSE=np.sqrt(Pointwisesquareddistance.xs('x',level=1,axis=1)+Pointwisesquareddistance.xs('y',level=1,axis=1)) #Euclidean distance (proportional to RMSE)
+            return RMSE,RMSE[mask]
 
 fs = 15  # fontsize for plots
 ####################################################
@@ -146,14 +147,15 @@ for trainFraction in TrainingFraction:
           DataMachine = pd.read_hdf(os.path.join("Results",fns[index]), 'df_with_missing')
           DataCombined = pd.concat([Data.T, DataMachine.T], axis=0).T
           scorer_machine = DataMachine.columns.get_level_values(0)[0]
-          MSE,MSEpcutoff = pairwisedistances(DataCombined, scorer, scorer_machine,pcutoff,comparisonbodyparts)
-          testerror = np.nanmean(MSE.iloc[testIndexes].values.flatten())
-          trainerror = np.nanmean(MSE.iloc[trainIndexes].values.flatten())
-          testerrorpcutoff = np.nanmean(MSEpcutoff.iloc[testIndexes].values.flatten())
-          trainerrorpcutoff = np.nanmean(MSEpcutoff.iloc[trainIndexes].values.flatten())
+          RMSE,RMSEpcutoff = pairwisedistances(DataCombined, scorer, scorer_machine,pcutoff,comparisonbodyparts)
+          testerror = np.nanmean(RMSE.iloc[testIndexes].values.flatten())
+          trainerror = np.nanmean(RMSE.iloc[trainIndexes].values.flatten())
+          testerrorpcutoff = np.nanmean(RMSEpcutoff.iloc[testIndexes].values.flatten())
+          trainerrorpcutoff = np.nanmean(RMSEpcutoff.iloc[trainIndexes].values.flatten())
           print("Results for",trainingiterations, "training iterations:", int(100 * trainFraction), shuffle, "train error:",np.round(trainerror,2), "pixels. Test error:", np.round(testerror,2)," pixels.")
           print("With pcutoff of", pcutoff," train error:",np.round(trainerrorpcutoff,2), "pixels. Test error:", np.round(testerrorpcutoff,2), "pixels")
-          
+          print("Thereby, the errors are given by the average distances between the labels by DLC and the scorer.")
+
           if plotting==True:
              foldername=os.path.join('LabeledImages_'+scorer_machine)
              auxiliaryfunctions.attempttomakefolder(foldername)
