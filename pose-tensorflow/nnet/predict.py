@@ -25,7 +25,6 @@ def setup_pose_prediction(cfg):
 
     return sess, inputs, outputs
 
-
 def extract_cnn_output(outputs_np, cfg):
     scmap = outputs_np[0]
     scmap = np.squeeze(scmap)
@@ -35,8 +34,9 @@ def extract_cnn_output(outputs_np, cfg):
         shape = locref.shape
         locref = np.reshape(locref, (shape[0], shape[1], -1, 2))
         locref *= cfg.locref_stdev
+    if np.ndim(scmap)==2: # Case for only 1 body part!
+        scmap=np.expand_dims(scmap,axis=2)
     return scmap, locref
-
 
 def argmax_pose_predict(scmap, offmat, stride):
     """Combine scoremat and offsets to the final pose."""
