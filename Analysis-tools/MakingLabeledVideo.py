@@ -6,7 +6,9 @@ A Mathis, alexander.mathis@bethgelab.org
 M Mathis, mackenzie@post.harvard.edu
 
 This script labels the bodyparts in videos as analzyed by "AnalyzeVideos.py". This code is relatively slow as 
-it stores all individual frames. Use  MakingLabeledVideo_fast.py instead for faster (and slightly different) version (frames are not stored).
+it stores all individual frames. 
+
+Use  MakingLabeledVideo_fast.py instead for faster (and slightly different) version (frames are not stored).
 
 python3 MakingLabeledVideo.py
 
@@ -125,10 +127,14 @@ def CreateVideo(clip,Dataframe):
 
     os.chdir(tmpfolder)
 
-    print("Generating video")
-    subprocess.call([
-        'ffmpeg', '-framerate',
-        str(clip.fps), '-i', 'file%04d.png', '-r', '30', '../'+vname + '_DeepLabCutlabeled.mp4'])
+    print("All labeled frames were created, now generating video...")
+    try:
+        subprocess.call([
+            'ffmpeg', '-framerate',
+            str(clip.fps), '-i', 'file%04d.png', '-r', '30', '../'+vname + '_DeepLabCutlabeled.mp4'])
+    except FileNotFoundError:
+        print("Ffmpeg not correctly installed, see https://github.com/AlexEMG/DeepLabCut/issues/45")
+    
     if deleteindividualframes:
         for file_name in glob.glob("*.png"):
             os.remove(file_name)
@@ -158,6 +164,7 @@ for video in videos:
             Dataframe = pd.read_hdf(dataname)
             clip = VideoFileClip(video)
             CreateVideo(clip,Dataframe)
+            
         except FileNotFoundError:
             datanames=[fn for fn in os.listdir(os.curdir) if (vname in fn) and (".h5" in fn) and "resnet" in fn]
             if len(datanames)==0:
