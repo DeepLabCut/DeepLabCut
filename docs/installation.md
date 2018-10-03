@@ -12,6 +12,7 @@ For reference, we use e.g. Dell workstations (79xx series) with Ubuntu 16.04 LTS
      - We highly recommend using the supplied [Docker container](https://github.com/AlexEMG/Docker4DeepLabCut). NOTE: [this container does not work on windows hosts!](https://github.com/NVIDIA/nvidia-docker/issues/43)
      - The toolbox is written in [Python 3](https://www.python.org/). You will need [TensorFlow](https://www.tensorflow.org/) (we used version 1.0 in the paper, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.4, 1.8, and  1.10**) for Python 3 with GPU support. 
      - To note, is it possible to run DeepLabCut on your CPU, but it will be VERY slow. However, this is the preferred path if you want to test DeepLabCut on your data before purchasing a GPU, with the added benefit of a straightforward installation. 
+    - WINDOWS specific note: If you want to run the commands in the program "cmd" (terminal), we recommend using Git Bash: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git (You can use "terminal" in Linux/MacOS as is). 
 
 ## Anaconda environment with TensorFlow on GPU support:
 
@@ -106,6 +107,8 @@ Please check your CUDA and [TensorFlow installation](https://www.tensorflow.org/
 You can test that your GPU is being properly engaged with these additional [tips](https://www.tensorflow.org/programmers_guide/using_gpu).
 
 Now you can use Jupyer Notebooks, Spyder, and to train just use the terminal, to run all the code!
+
+
           
       
  Return to [readme](../README.md).
