@@ -45,7 +45,7 @@ if multibodypartsfile==True:
         frame_grouped = dframe.groupby('Slice') #Note: the order of bodyparts list in myconfig and labels must be identical!
         for i, bodypart in enumerate(bodyparts):
             part_df = frame_grouped.nth(i)
-            part_fn =  part_fn = os.path.join(basefolder,folder,bodypart+'.csv')
+            part_fn = os.path.join(basefolder,folder,bodypart+'.csv')
             part_df.to_csv(part_fn)
 
 ###################################################
