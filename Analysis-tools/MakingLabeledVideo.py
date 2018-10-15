@@ -91,6 +91,7 @@ def CreateVideo(clip,Dataframe):
         
         imagename = tmpfolder + "/file%04d.png" % index
         if os.path.isfile(tmpfolder + "/file%04d.png" % index):
+            clip.reader.skip_frames(1)
             pass
         else:
             plt.axis('off')
