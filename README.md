@@ -108,10 +108,10 @@ DeepLabCut is an actively developing project and community contributions are wel
     @article{Mathisetal2018,
       title={DeepLabCut: markerless pose estimation of user-defined body parts with deep learning},
       author = {Alexander Mathis and Pranav Mamidanna and Kevin M. Cury and Taiga Abe  and Venkatesh N. Murthy and Mackenzie W. Mathis and Matthias Bethge},
-       journal={Nature Neuroscience},
-        year={2018},
-        url={https://www.nature.com/articles/s41593-018-0209-y}
-}
+      journal={Nature Neuroscience},
+      year={2018},
+      url={https://www.nature.com/articles/s41593-018-0209-y}
+    }
 
 
 ## License:
