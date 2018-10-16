@@ -91,6 +91,9 @@ def CreateVideo(clip,Dataframe):
         
         imagename = tmpfolder + "/file%04d.png" % index
         if os.path.isfile(tmpfolder + "/file%04d.png" % index):
+            clip.reader.skip_frames(1)
+            if index==0:
+                print("Attention: some frames were already labeled and the code will skip those. If you want to change the style,                      or redo the frames, you need to manually delete the corresponding folder", tmpfolder, " first.")
             pass
         else:
             plt.axis('off')
