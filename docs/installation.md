@@ -1,6 +1,6 @@
 ## Technical Considerations 
 
-For reference, we use e.g. Dell workstations (79xx series) with Ubuntu 16.04 LTS and run a Docker container that has TensorFlow, etc. installed (https://github.com/AlexEMG/Docker4DeepLabCut). The code also runs on Windows (thanks to  [Richard Warren](https://github.com/rwarren2163) for checking it) or MacOS (some users have already successfully done so). 
+For reference, we use e.g. Dell workstations (79xx series) with Ubuntu **16.04 LTS** and run a Docker container that has TensorFlow, etc. installed (https://github.com/AlexEMG/Docker4DeepLabCut). The code also runs on Windows (thanks to  [Richard Warren](https://github.com/rwarren2163) for checking it) or MacOS (some users have already successfully done so). 
 
 - Camera Hardware:
      - The software is very robust to track data from pretty much any camera (grayscale, color, or graysale captured under infrared light etc.). See demos on our [website](https://www.mousemotorlab.org/deeplabcut/)
@@ -9,6 +9,7 @@ For reference, we use e.g. Dell workstations (79xx series) with Ubuntu 16.04 LTS
      - Ideally, you will use a strong GPU with at least 8GB memory such as the [NVIDIA GeForce 1080 Ti](https://www.nvidia.com/en-us/geforce/products/10series/geforce-gtx-1080/).  A GPU is not necessary, but on a CPU the (training and evaluation) code is considerably slower (100x). You might also consider using cloud computing services like [Google cloud/amazon web services](https://github.com/AlexEMG/DeepLabCut/issues/47).
      
 - Software: 
+     - Linux: use only Ubuntu 16.xx and not 18.xx for ease of installation!
      - We highly recommend using the supplied [Docker container](https://github.com/AlexEMG/Docker4DeepLabCut). NOTE: [this container does not work on windows hosts!](https://github.com/NVIDIA/nvidia-docker/issues/43)
      - The toolbox is written in [Python 3](https://www.python.org/). You will need [TensorFlow](https://www.tensorflow.org/) (we used version 1.0 in the paper, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.4, 1.8, and  1.10**) for Python 3 with GPU support. 
      - To note, is it possible to run DeepLabCut on your CPU, but it will be VERY slow. However, this is the preferred path if you want to test DeepLabCut on your data before purchasing a GPU, with the added benefit of a straightforward installation. 
