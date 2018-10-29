@@ -71,9 +71,9 @@ Once one has a well trained network, one can just use it to analyze heaps of vid
 
 ## Support:
 
-For questions and discussions with join our Slack user group: ([deeplabcut.slack.com](https://deeplabcut.slack.com)) (please email [Mackenzie](mackenzie@post.harvard.edu) to join!).
+For questions and discussions please join our Slack user group: ([deeplabcut.slack.com](https://deeplabcut.slack.com)) (please email [Mackenzie](mackenzie@post.harvard.edu) to join!).
 
-If you are having issues, please let us know ([Issue Tracker](https://github.com/AlexEMG/DeepLabCut/issues)). Perhaps consider checking the [already closed issues](https://github.com/AlexEMG/DeepLabCut/issues?q=is%3Aissue+is%3Aclosed) and the [Frequently asked questions](docs/faq.md) to see if this might help. 
+If you are having code issues, please let us know ([Issue Tracker](https://github.com/AlexEMG/DeepLabCut/issues)). Perhaps consider checking the [already closed issues](https://github.com/AlexEMG/DeepLabCut/issues?q=is%3Aissue+is%3Aclosed) and the [Frequently asked questions](docs/faq.md) to see if this might help. 
 
 Otherwise, please free to reach out to by email: [alexander.mathis@bethgelab.org] or [mackenzie@post.harvard.edu].
 
