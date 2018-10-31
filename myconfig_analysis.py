@@ -42,7 +42,12 @@ resnet = 50
 snapshotindex = -1 
 shuffle = 1
 
-storedata_as_csv=False #if true then the time series of poses will (also) be saved as csv. 
+#inferencemethod = >> set inside individual script!
+storedata_as_csv=False
+
+# batch based processing
+batchsize=4 #this can be used to speed up processing, see for considerations: https://www.biorxiv.org/content/early/2018/10/30/457242.article-info
+
 
 # Note the data is always saved in hdf - format which is an efficient format 
 # that easily allows to load the full pandas multiarray at a later stage
@@ -54,7 +59,7 @@ storedata_as_csv=False #if true then the time series of poses will (also) be sav
 trainingsiterations = 500  # type the number listed in the h5 file containing the pose estimation data. The video will be generated
 #based on the labels for this network state.
 
-pcutoff = 0.1  # likelihood cutoff for body part in image
+pcutoff = -1 #0.1  # likelihood cutoff for body part in image
 
 # delete individual (labeled) frames after making video? (note there could be many...)
 deleteindividualframes = False

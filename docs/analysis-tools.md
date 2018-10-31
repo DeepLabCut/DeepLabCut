@@ -4,7 +4,8 @@
    
   After you have a trained a network, you can load the weights to extract poses from novel/other videos. To do so:
    
-   - first edit the **myconfig_analysis.py** file 
+   - first edit the **myconfig_analysis.py** file. Consider using batch processing to make analysis faster (set 'batchsize' in 'myconfig_analysis.py'; see [On the inference speed and video-compression robustness of DeepLabCut
+](https://www.biorxiv.org/content/early/2018/10/30/457242))
      
    - For extracting postures, video by video from all videos in a particular folder set the video path in ```myconfig_analysis.py``` accordingly and update the ```Task```, ```date```, ```trainingsFraction```, ```shuffle```, and ```snapshotindex``` variables so that the network of interest is loaded. Then run:
    

@@ -21,6 +21,8 @@ In our paper we *demonstrate that those feature detectors can be trained with fe
 
 ## News:
 
+- 10/18: We updated the inference code, now it can be much faster! To use it just edit 'batchsize' in 'myconfig_analysis.py'. Benchmarking and thoughts on how to integrate DeepLabCut more smoothly in to your Large-Scale Experiments can be found at [On the inference speed and video-compression robustness of DeepLabCut
+](https://www.biorxiv.org/content/early/2018/10/30/457242)
 - 8/18: Our [preprint](https://arxiv.org/abs/1804.03142) appeared in [Nature Neuroscience](https://www.nature.com/articles/s41593-018-0209-y)
 - 7/18: Ed Yong covered DeepLabCut and interviewed several users for the [Atlantic](https://www.theatlantic.com/science/archive/2018/07/deeplabcut-tracking-animal-movements/564338). 
 - All the documentation is now (also) organized in a [website format](https://alexemg.github.io/DeepLabCut)!
@@ -87,7 +89,7 @@ DeepLabCut is an actively developing project and community contributions are wel
 
 ## Code contributors:
 
-[Alexander Mathis](https://github.com/AlexEMG), [Mackenzie Mathis](https://github.com/MMathisLab), and the DeeperCut authors for the feature detector code. Edits and suggestions by [Jonas Rauber](https://github.com/jonasrauber), [Taiga Abe](https://github.com/cellistigs), [Hao Wu](https://github.com/fullerene12), [Jonny Saunders](https://github.com/sneakers-the-rat), [Richard Warren](https://github.com/rwarren2163) and [Brandon Forys](https://github.com/bf777). The feature detector code is based on Eldar Insafutdinov's TensorFlow implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow). Please check out the following references for details:
+[Alexander Mathis](https://github.com/AlexEMG), [Mackenzie Mathis](https://github.com/MMathisLab), and the DeeperCut authors for the feature detector code. Edits and suggestions by [Richard Warren](https://github.com/rwarren2163), [Jonas Rauber](https://github.com/jonasrauber), [Taiga Abe](https://github.com/cellistigs), [Hao Wu](https://github.com/fullerene12), [Jonny Saunders](https://github.com/sneakers-the-rat) and [Brandon Forys](https://github.com/bf777). The feature detector code is based on Eldar Insafutdinov's TensorFlow implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow). Please check out the following references for details:
 
 ## References:
 
