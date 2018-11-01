@@ -113,6 +113,7 @@ def CrankVideo(cfg, sess, inputs, outputs,clip,nframes_approx,batchsize):
     PredicteData = np.zeros((nframes_approx, 3 * len(cfg['all_joints_names'])))
     batch_ind = 0 # keeps track of which image within a batch should be written to
     batch_num = 0 # keeps track of which batch you are at
+    ny, nx = clip.size  # dimensions of frame (height, width)
     frames = np.empty((batchsize, nx, ny, 3), dtype='ubyte') # this keeps all frames in a batch
     for index in tqdm(range(nframes_approx)):
         image = img_as_ubyte(clip.reader.read_frame())
