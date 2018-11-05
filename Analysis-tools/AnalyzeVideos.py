@@ -116,7 +116,7 @@ def CrankVideo(cfg, sess, inputs, outputs,clip,nframes_approx,batchsize):
     ny, nx = clip.size  # dimensions of frame (height, width)
     frames = np.empty((batchsize, nx, ny, 3), dtype='ubyte') # this keeps all frames in a batch
     for index in tqdm(range(nframes_approx)):
-        image = img_as_ubyte(clip.reader.read_frame())
+        image = img_as_ubyte(clip.get_frame(index*1./clip.fps)) #clip.reader.read_frame())        
         if index==int(nframes_approx-frame_buffer*2):
             last_image = image
         elif index>int(nframes_approx-frame_buffer*2):
@@ -131,7 +131,7 @@ def CrankVideo(cfg, sess, inputs, outputs,clip,nframes_approx,batchsize):
                 break
             else:
                 last_image = image
-            
+        
         frames[batch_ind] = image
         if batch_ind==batchsize-1:
             pose = predict.getposeNP(frames,cfg, sess, inputs, outputs)
@@ -145,7 +145,7 @@ def CrankVideo(cfg, sess, inputs, outputs,clip,nframes_approx,batchsize):
 def StoicVideo(cfg, sess, inputs, outputs,clip,nframes_approx):
     PredicteData = np.zeros((nframes_approx, 3 * len(cfg['all_joints_names'])))
     for index in tqdm(range(nframes_approx)):
-        image = img_as_ubyte(clip.reader.read_frame())
+        image = img_as_ubyte(clip.get_frame(index*1./clip.fps))
         if index==int(nframes_approx-frame_buffer*2):
             last_image = image
         elif index>int(nframes_approx-frame_buffer*2):
@@ -181,26 +181,26 @@ for video in videos:
         
         print("Loading ", video)
         start0=time.time()
-        
         clip = VideoFileClip(video)
         ny, nx = clip.size  # dimensions of frame (height, width)
         fps = clip.fps
         if cropping:
-            clip = clip.crop(
-                y1=y1, y2=y2, x1=x1, x2=x2)  # one might want to adjust
-
+            print("Cropped video according to dimensions defined in config_analysis.py",x1,x2,y1,y2)
+            #clip = clip.crop(y1=y1, y2=y2, x1=x1, x2=x2)  # one might want to adjust
+            clip=clip.crop(y1=y1, y2=y2, x1=x1, x2=x2)  # one might want to adjust
+        
         nframes_approx = int(np.ceil(clip.duration * clip.fps) + frame_buffer)
         print("Duration of video [s]: ", clip.duration, ", recorded with ", fps,
               "fps!")
         print("Overall # of frames: ", nframes_approx,"with cropped frame dimensions: ", clip.size)
 
         start = time.time()
-        clip.reader.initialize()
+        
         print("Starting to extract posture")
         if batchsize>1:
-            PredicteData,nframes=CrankVideo(cfg, sess, inputs, outputs,clip,nframes_approx,batchsize)
+            PredicteData,nframes=CrankVideo(cfg, sess, inputs, outputs,clip, nframes_approx,batchsize)
         else:
-            PredicteData,nframes=StoicVideo(cfg, sess, inputs, outputs,clip,nframes_approx)
+            PredicteData,nframes=StoicVideo(cfg, sess, inputs, outputs,clip, nframes_approx)
 
         stop = time.time()
 
@@ -229,3 +229,10 @@ for video in videos:
         with open(dataname.split('.h5')[0] + 'includingmetadata.pickle',
                   'wb') as f:
             pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
+        
+        # Delete clip + reader object https://github.com/Zulko/moviepy/issues/57
+        # https://github.com/Zulko/moviepy/issues/518 (can slow down on Windows ...)
+        clip.close()
+        del clip
+        #reader.close() 
+        #del clip.reader

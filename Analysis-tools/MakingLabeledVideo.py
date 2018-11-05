@@ -81,24 +81,23 @@ def CreateVideo(clip,Dataframe):
     if cropping:
         # one might want to adjust
         clip = clip.crop(y1=y1, y2=y2, x1=x1, x2=x2)
-    clip.reader.initialize()
     print("Duration of video [s]: ", clip.duration, ", recorded with ", fps,
           "fps!")
     print("Overall # of frames: ", nframes, "with cropped frame dimensions: ",
           clip.size)
     print("Generating frames")
     for index in tqdm(range(nframes)):
-        
         imagename = tmpfolder + "/file%04d.png" % index
         if os.path.isfile(tmpfolder + "/file%04d.png" % index):
-            clip.reader.skip_frames(1)
+            #clip.reader.skip_frames(1)
+            #image = img_as_ubyte(clip.get_frame(index * 1. / clip.fps))
             if index==0:
                 print("Attention: some frames were already labeled and the code will skip those. If you want to change the style,                      or redo the frames, you need to manually delete the corresponding folder", tmpfolder, " first.")
             pass
         else:
             plt.axis('off')
-            image = img_as_ubyte(clip.reader.read_frame())
-            #image = img_as_ubyte(clip.get_frame(index * 1. / clip.fps))
+            #image = img_as_ubyte(clip.reader.read_frame())
+            image = img_as_ubyte(clip.get_frame(index * 1. / clip.fps)) #this allows skipping!
 
             if np.ndim(image) > 2:
                 h, w, nc = np.shape(image)

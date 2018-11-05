@@ -144,16 +144,10 @@ for video in videos:
 
         start = time.time()
         PredicteData = np.zeros((nframes_approx, 3 * len(cfg['all_joints_names'])))
-        clip.reader.initialize()
         print("Starting to extract postures & scoremaps!")
         Data={}
         for index in tqdm(range(nframes_approx)):
-            #image = img_as_ubyte(clip.get_frame(index * 1. / fps))
-            image = img_as_ubyte(clip.reader.read_frame())
-            # Thanks to Rick Warren for the  following snipplet:
-            # if close to end of video, start checking whether two adjacent frames are identical
-            # this should only happen when moviepy has reached the final frame
-            # if two adjacent frames are identical, terminate the loop
+            image = img_as_ubyte(clip.get_frame(index * 1./fps))
             if index==int(nframes_approx-frame_buffer*2):
                 last_image = image
             elif index>int(nframes_approx-frame_buffer*2):
@@ -193,3 +187,7 @@ for video in videos:
         with open(dataname.split('.')[0] + 'includingmetadata.pickle',
                   'wb') as f:
             pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
+        
+        
+        clip.close()
+        del clip
