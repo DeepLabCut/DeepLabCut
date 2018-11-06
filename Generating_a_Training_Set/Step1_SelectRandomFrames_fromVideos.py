@@ -113,6 +113,7 @@ def SelectFrames(videopath,filename,x1,x2,y1,y2,cropping, videotype,start,stop,T
                     io.imsave(os.path.join(basefolder,folder,"img" + str(index).zfill(indexlength) + ".png"),image)
                 except FileNotFoundError:
                     print("Frame # ", index, " does not exist.")
+            clip.reader.close()
 
 if __name__ == "__main__":
     if checkcropping==True:
