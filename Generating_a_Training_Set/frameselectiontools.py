@@ -99,6 +99,8 @@ def KmeansbasedFrameselection(clip,numframes2pick,start,stop,Index="all",resizew
             if numimagesofcluster>0:
                 frames2pick.append(Index[clusterids[np.random.randint(numimagesofcluster)]])
 
+        clipresized.close()
+        del clipresized
         return list(np.array(frames2pick))
     else:
         return list(Index)

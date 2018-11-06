@@ -94,6 +94,8 @@ def CreateVideo(clip,Dataframe):
 # Datafolder
 ##################################################
 
+start_path=os.getcwd()
+
 os.chdir(videofolder)
 videos = np.sort([fn for fn in os.listdir(os.curdir) if (videotype in fn) and ("labeled" not in fn)])
 print("Starting ", videofolder, videos)
@@ -120,6 +122,12 @@ for video in videos:
                 print("Other scorers were found, however:", datanames)
                 print("Creating labeled video for:", datanames[0]," instead.")
 
-                Dataframe = pd.read_hdf(datanames[0])
-                clip = vp(fname = video,sname = os.path.join(vname + '_DeepLabCutlabeled.mp4'))
-                CreateVideo(clip,Dataframe)
+                if cropping:
+                    print("ATTENTION: for the fast video creation tool, cropping is not implemented. Labels will be off, if you cropped them during analysis. However, you can use 'MakingLabeledVideo.py'.")
+                else:
+                    Dataframe = pd.read_hdf(datanames[0])
+                    clip = vp(fname = video,sname = os.path.join(vname + '_DeepLabCutlabeled.mp4'))
+                    CreateVideo(clip,Dataframe)
+                    
+#return to start path.
+os.chdir(str(start_path))

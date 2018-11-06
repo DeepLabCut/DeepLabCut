@@ -21,7 +21,7 @@ filename='reachingvideo1.avi'
 videotype='.avi'
 
 checkcropping=False #set "True" if you want to check cropping 
-cropping = True #set "True" if you want to crop images with values below
+cropping = True #True #set "True" if you want to crop images with values below
 
 # ROI dimensions / bounding box (only used if cropping == True)
 # x1,y1 indicates the top left corner and
@@ -40,7 +40,7 @@ stop =1
 numframes2pick = 22
 
 # Method to pick frames: uniform or kmeans
-selectionalgorithm='uniform' 
+selectionalgorithm='kmeans' #'uniform' 
 
 # the algorithm 'uniform' temporally uniformly sampes frames in interval (start,stop). Visual information within video is irrelevant for this method. This code is very fast and sufficient (to extract distinct frames) when behavioral videos naturally covers many states.
 

@@ -67,6 +67,9 @@ def CheckCropping(videopath,filename,x1,x2,y1,y2,cropping, videotype, time=start
         if vindex==len(videos)-1:
             print("--> Open the CroppingOK-videofilename-.png file(s) to set the output range! <---")
             print("--> Adjust shiftx, shifty, fx and fy accordingly! <---")
+        
+        clip.close()
+        del clip
     return image
 
 def SelectFrames(videopath,filename,x1,x2,y1,y2,cropping, videotype,start,stop,Task,selectionalgorithm):
@@ -113,7 +116,10 @@ def SelectFrames(videopath,filename,x1,x2,y1,y2,cropping, videotype,start,stop,T
                     io.imsave(os.path.join(basefolder,folder,"img" + str(index).zfill(indexlength) + ".png"),image)
                 except FileNotFoundError:
                     print("Frame # ", index, " does not exist.")
-
+            
+            clip.close()
+            del clip
+            
 if __name__ == "__main__":
     if checkcropping==True:
         #####################################################################

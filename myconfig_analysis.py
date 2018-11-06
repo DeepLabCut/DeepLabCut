@@ -46,7 +46,8 @@ shuffle = 1
 storedata_as_csv=False
 
 # batch based processing
-batchsize=4 #this can be used to speed up processing, see for considerations: https://www.biorxiv.org/content/early/2018/10/30/457242.article-info
+batchsize=4 #this can be used to speed up processing, 
+# the ideal value strongly depends on frame sizes, see for considerations: https://www.biorxiv.org/content/early/2018/10/30/457242.article-info
 
 
 # Note the data is always saved in hdf - format which is an efficient format 
@@ -56,7 +57,7 @@ batchsize=4 #this can be used to speed up processing, see for considerations: ht
 ## For plotting (MakingLabeledVideo.py / MakingLabeledVideo_fast.py)
 #########################################################################################
 
-trainingsiterations = 500  # type the number listed in the h5 file containing the pose estimation data. The video will be generated
+trainingsiterations = 250  # type the number listed in the h5 file containing the pose estimation data. The video will be generated
 #based on the labels for this network state.
 
 pcutoff = -1 #0.1  # likelihood cutoff for body part in image

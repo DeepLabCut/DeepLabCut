@@ -147,10 +147,10 @@ def CreateVideo(clip,Dataframe):
 # Datafolder
 ##################################################
 # videofolder='../videos/' #where your folder with videos is.
+start_path=os.getcwd()
 
 os.chdir(videofolder)
 videos = np.sort([fn for fn in os.listdir(os.curdir) if (videotype in fn) and ("labeled" not in fn)])
-
 print("Starting ", videofolder, videos)
 for video in videos:
     vname = video.split('.')[0]
@@ -180,3 +180,6 @@ for video in videos:
                 Dataframe = pd.read_hdf(datanames[0])
                 clip = VideoFileClip(video)
                 CreateVideo(clip,Dataframe)
+
+#return to start path.
+os.chdir(str(start_path))

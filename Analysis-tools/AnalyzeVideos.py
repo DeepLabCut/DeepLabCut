@@ -160,13 +160,16 @@ def StoicVideo(cfg, sess, inputs, outputs,clip,nframes_approx):
     
     return PredicteData,nframes
 
+# Intitalize net & change batch size
+cfg['batch_size']=batchsize
+sess, inputs, outputs = predict.setup_pose_prediction(cfg)
+start_path=os.getcwd()
+
 frame_buffer=10
-
+# Change to video folder.
 # videofolder='../videos/' #where your folder with videos is.
-
 os.chdir(videofolder)
 videos = np.random.permutation([fn for fn in os.listdir(os.curdir) if (videotype in fn)])
-
 for video in videos:
     vname=video.split('.')[0]
     dataname = vname+ scorer +'.h5'
@@ -175,10 +178,6 @@ for video in videos:
         pd.read_hdf(dataname)
         print("Video already analyzed!", dataname)
     except FileNotFoundError:
-        
-        cfg['batch_size']=batchsize
-        sess, inputs, outputs = predict.setup_pose_prediction(cfg)
-        
         print("Loading ", video)
         start0=time.time()
         clip = VideoFileClip(video)
@@ -195,7 +194,6 @@ for video in videos:
         print("Overall # of frames: ", nframes_approx,"with cropped frame dimensions: ", clip.size)
 
         start = time.time()
-        
         print("Starting to extract posture")
         if batchsize>1:
             PredicteData,nframes=CrankVideo(cfg, sess, inputs, outputs,clip, nframes_approx,batchsize)
@@ -236,3 +234,6 @@ for video in videos:
         del clip
         #reader.close() 
         #del clip.reader
+
+#return to start path.
+os.chdir(str(start_path))
