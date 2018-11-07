@@ -25,6 +25,8 @@ Open an ipython session and import the package by typing in the terminal:
 
 ``deeplabcut.create_new_project(`Name of the project',`Name of the experimenter', [`Full path of video 1',`Full path of video2',`Full path of video3'], working_directory=`Full path of the working directory',copy_videos=True/False)``
 
+- (Note, you can also put ``config_path = `` in front of thae above code to create the path to the config.yaml that is used in the next step)
+
 (more details [here](functionDetails.md#a-create-a-new-project))
 
 # Configure the Project:
@@ -33,7 +35,9 @@ Open an ipython session and import the package by typing in the terminal:
 
 (more details [here](functionDetails.md#b-configure-the-project))
 
-- set the config-path: ``config-path = '/home/computername/DeepLabCut2.0/yourprojectname'`` (for example)
+- set the config_path: ``config_path = '/home/computername/DeepLabCut2.0/yourprojectname/config.yaml'`` (for example)
+
+- or you already set it as a variable in step "Create_new_Project" directly above.
 
 **mini-demo:** create project and edit the yaml file
 
@@ -43,13 +47,13 @@ Open an ipython session and import the package by typing in the terminal:
 
 # Select Frames to Label: 
 
-``deeplabcut.extract_frames(`config-path',`automatic/manual',`uniform/kmeans', crop=True/False, checkcropping=True)``
+``deeplabcut.extract_frames(`config_path',`automatic/manual',`uniform/kmeans', crop=True/False, checkcropping=True)``
 
 (more details [here](functionDetails.md#c-data-selection))
 
 # Label Frames:
 
-``deeplabcut.label_frames(`config-path')``
+``deeplabcut.label_frames(`config_path')``
 
 (more details [here](functionDetails.md#d-label-frames))
 
@@ -61,48 +65,48 @@ Open an ipython session and import the package by typing in the terminal:
 
 # Check Annotated Frames:
 
-``deeplabcut.check_labels(`config-path')``
+``deeplabcut.check_labels(`config_path')``
 
 (more details [here](functionDetails.md#e-check-annotated-frames))
 
 # Create Training Dataset:
 
-`` deeplabcut.create_training_dataset(`config-path',num_shuffles=1)``
+`` deeplabcut.create_training_dataset(`config_path',num_shuffles=1)``
 
 (more details [here](functionDetails.md#f-create-training-dataset))
 
 # Train The Network:
 
-``deeplabcut.train_network(`config-path',shuffle=1)``
+``deeplabcut.train_network(`config_path',shuffle=1)``
 
 (more details [here](functionDetails.md#g-train-the-network))
 
 # Evaluate the Trained Network:
 
-``deeplabcut.evaluate_network(`config-path',shuffle=[1], plotting=True)``
+``deeplabcut.evaluate_network(`config_path',shuffle=[1], plotting=True)``
 
 (more details [here](functionDetails.md#h-evaluate-the-trained-network))
 
 # Video Analysis and Plotting Results:
 
-``deeplabcut.analyze_videos(`config-path',[`/analysis/project/videos/reachingvideo1.avi'], shuffle=1, save_as_csv=True)``
+``deeplabcut.analyze_videos(`config_path',[`/analysis/project/videos/reachingvideo1.avi'], shuffle=1, save_as_csv=True)``
 
-``deeplabcut.create_labeled_video(`config-path' [`/analysis/project/videos/reachingvideo1.avi',`/analysis/project/videos/reachingvideo2.avi'])``
+``deeplabcut.create_labeled_video(`config_path' [`/analysis/project/videos/reachingvideo1.avi',`/analysis/project/videos/reachingvideo2.avi'])``
 
-``deeplabcut.plot_trajectories(`config-path',[`/analysis/project/videos/reachingvideo1.avi'])``
+``deeplabcut.plot_trajectories(`config_path',[`/analysis/project/videos/reachingvideo1.avi'])``
 
 (more details [here](functionDetails.md#i-video-analysis-and-plotting-results))
 
 # optional Refinement: Extract Outlier Frames:
 
-``deeplabcut.extract_outlier_frames(`config-path',[`videofile_path'])``
+``deeplabcut.extract_outlier_frames(`config_path',[`videofile_path'])``
 
 (more details [here](functionDetails.md#j-refinement-extract-outlier-frames))
 
 # optional refinement of the labels with the GUI: 
 (refinement and augmentation of the training dataset)
 
-``deeplabcut.refine_labels(`config-path')``
+``deeplabcut.refine_labels(`config_path')``
 
 **mini-demo:** using the refinement GUI, a user can load the file then zoom, pan, and edit and/or remove points:
 
@@ -112,7 +116,7 @@ Open an ipython session and import the package by typing in the terminal:
 
 When done editing the labels, merge: 
 
-``deeplabcut.merge_datasets(`config-path')``
+``deeplabcut.merge_datasets(`config_path')``
 
 (more details [here](functionDetails.md#k-refine-labels-augmentation-of-the-training-dataset))
 
