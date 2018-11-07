@@ -9,6 +9,8 @@ Optional arguments specify the working directory, where the project directory wi
 
 
           deeplabcut.create_project(`Name of the project',`Name of the experimenter', [`Full path of video 1',`Full path of video2',`Full path of video3'], working_directory=`Full path of the working directory',copy_videos=True/False) 
+          
+ (TIP: you can also place ``config_path`` in front of ``deeplabcut.create_project`` to create a vriable that holds the path to the config.yaml file)
 
 This set of arguments will create a project directory with the name **Name of the project+name of the experimenter+date of creation of the project** in the **Working directory** and creates the symbolic links to videos in the **videos** directory. The project directory will have subdirectories: **dlc-models**, **labeled-data**, **training-datasets**, and **videos**.  All the outputs generated during the course of a project will be stored in one of these subdirectories, thus allowing each project to be curated in separation from other projects. The purpose of the subdirectories is as follows:
 
@@ -22,7 +24,7 @@ This set of arguments will create a project directory with the name **Name of th
 
        deeplabcut.add_new_videos(`Full path of the project configuration file*',[`full path of video 4', `full path of video 5'],copy_videos=True/False)
 
-*Please note, *Full path of the project configuration file* will be referenced as ``config-path`` throughout this protocol.
+*Please note, *Full path of the project configuration file* will be referenced as ``config_path`` throughout this protocol.
 
 The project directory also contains the main configuration file called *config.yaml*. The *config.yaml* file contains many important parameters of the project. A complete list of parameters including their description can be found in Box1. 
 
@@ -52,7 +54,7 @@ order to create a training dataset. The extracted frames from all the videos are
 named after the video file’s name under the ‘labeled-data’. This function also has various parameters that might be
 useful based on the user’s need.
 
-          deeplabcut.extract_frames(‘config-path’,‘automatic/manual’,‘uniform/kmeans’, crop=True/False, checkcropping=True)
+          deeplabcut.extract_frames(‘config_path’,‘automatic/manual’,‘uniform/kmeans’, crop=True/False, checkcropping=True)
 
 CRITICAL POINT: It is advisable to keep the frame size small, as large frames increase the training and
 inference time. The cropping parameters for each video can be provided in the config.yaml file (and see below).
@@ -82,7 +84,7 @@ However, picking frames is highly dependent on the data and the behavior being s
 provide all purpose code that extracts frames to create a good training dataset for every behavior and animal. If the user feels specific frames are lacking, they can extract hand selected frames of interest using the interactive GUI
 provided along with the toolbox. This can be launched by using:
 
-          >> deeplabcut.extract_frames(‘config-path’,‘manual’)
+          >> deeplabcut.extract_frames(‘config_path’,‘manual’)
           
 The user can use the *Load Video* button to load one of the videos in the project configuration file, use the scroll
 bar to navigate across the video and *Grab a Frame* to extract the frame. The user can also look at the extracted
@@ -95,7 +97,7 @@ The toolbox provides a function **label_frames** which helps the user to easily 
 an interactive graphical user interface (GUI). The user should have already named the body parts to label (points of
 interest) in the project’s configuration file by providing a list. The following command invokes the labeling toolbox.
 
-          >> deeplabcut.label_frames(‘config-path’)
+          >> deeplabcut.label_frames(‘config_path’)
           
 The user needs to use the *Load Frames* button to select the directory which stores the extracted frames from one of
 the videos. Subsequently, the user can use one of the radio buttons (top right) to select a body part to label. The
@@ -126,7 +128,7 @@ OPTIONAL: Checking if the labels were created and stored correctly is beneficial
 is one of the most critical parts for creating the training dataset. The DeepLabCut toolbox provides a function
 ‘check_labels’ to do so. It is used as follows:
 
-          >> deeplabcut.check_labels(‘config-path’)
+          >> deeplabcut.check_labels(‘config_path’)
           
 For each video directory in labeled-data this function creates a subdirectory with **labeled** as a suffix. Those directories contain the frames plotted with the annotated body parts. The user can double check if the body parts are labeled correctly. If they are not correct, the user can call the refinement GUI (see below, and check the tick box for ``adjust original labels`` to adjust the location of the labels).
 
@@ -136,7 +138,7 @@ Combining the labeled datasets from all the videos and splitting them will creat
 training data will be used to train the network, while the test data set will be used for evaluating the network. The
 function **create_training_dataset** performs those steps.
 
-          >> deeplabcut.create_training_dataset(‘config-path’,num_shuffles=1)
+          >> deeplabcut.create_training_dataset(‘config_path’,num_shuffles=1)
           
 The set of arguments in the function will shuffle the combined labeled dataset and split it to create train and test
 sets. The subdirectory with suffix ``iteration#`` under the directory **training-datasets** stores the dataset and meta
@@ -166,13 +168,13 @@ training dataset.
 
 The function ‘train_network’ helps the user in training the network. It is used as follows:
 
-                    >> deeplabcut.train_network(‘config-path’,shuffle=1)
+                    >> deeplabcut.train_network(‘config_path’,shuffle=1)
                     
 The set of arguments in the function starts training the network for the dataset created for one specific shuffle.
 
 Example parameters that one can call:
 
-                    train_network(config path,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshots_to_keep=5,autotune=False,displayiters=None,saveiters=None)
+                    train_network(config_path,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshots_to_keep=5,autotune=False,displayiters=None,saveiters=None)
 
 By default, the pre-trained ResNet network is not provided in the DeepLabCut toolbox (as it has around 100MB).
 However, if not previously downloaded from the TensorFlow model weights, it will be downloaded and stored in
@@ -222,7 +224,7 @@ strengths of DeepLabCut is that due to the probabilistic output of the scoremap,
 reliably report if a body part is visible in a given frame. (see discussions of finger tips in reaching and the Drosophila
 legs during 3D behavior in [11]). The evaluation results are computed by typing:
 
-          >> deeplabcut.evaluate_network(‘config-path’,shuffle=[1], plotting=True)
+          >> deeplabcut.evaluate_network(‘config_path’,shuffle=[1], plotting=True)
 
 Setting ``plotting`` to true plots all the testing and training frames with the manual and predicted labels. The user
 should visually check the labeled test (and training) images that are created in the ‘evaluation-results’ directory.
@@ -258,7 +260,7 @@ evaluation results for analyzing the videos. In this case, the user can enter th
 to the variable snapshotindex in the config.yaml file. By default, the most recent checkpoint (i.e. last) is used for
 analyzing the video. Then, a new video can be analyzed by typing:
 
-          >> deeplabcut.analyze_videos(‘config-path’,[‘/analysis/project/videos/reachingvideo1.avi’],shuffle=1, save_as_csv=True)
+          >> deeplabcut.analyze_videos(‘config_path’,[‘/analysis/project/videos/reachingvideo1.avi’],shuffle=1, save_as_csv=True)
           
 The labels are stored in a [MultiIndex Pandas Array](http://pandas.pydata.org), which contains the name
 of the network, body part name, (x, y) label position in pixels, and the likelihood for each frame per body part. These
@@ -270,7 +272,7 @@ by default.
 Additionally, the toolbox provides a function to create labeled videos based on the extracted poses by plotting the
 labels on top of the frame and creating a video. One can use it as follows to create multiple labeled videos:
 
-          >> deeplabcut.create_labeled_video(‘config-path’,[‘/analysis/project/videos/reachingvideo1.avi’,‘/analysis/project/videos/reachingvideo2.avi’])
+          >> deeplabcut.create_labeled_video(‘config_path’,[‘/analysis/project/videos/reachingvideo1.avi’,‘/analysis/project/videos/reachingvideo2.avi’])
           
 This function has various parameters, in particular the user can set the ``colormap``, the ``dotsize``, and ``alphavalue`` of the labels in **config.yaml** file.
 
@@ -278,7 +280,7 @@ The plotting components of this toolbox utilizes matplotlib therefore these plot
 the end user. We also provide a function to plot the trajectory of the extracted poses across the analyzed video, which
 can be called by typing:
 
-          >> deeplabcut.plot_trajectories(‘config-path’,[‘/analysis/project/videos/reachingvideo1.avi’])
+          >> deeplabcut.plot_trajectories(‘config_path’,[‘/analysis/project/videos/reachingvideo1.avi’])
           
 # (J) Refinement: Extract Outlier Frames
 
@@ -305,7 +307,7 @@ pbound is treated as missing data.  Putative outlier frames are then identified 
 
 All this can be done for a specific video by typing:
 
-          >> deeplabcut.extract_outlier_frames(‘config-path’,[‘videofile_path’])
+          >> deeplabcut.extract_outlier_frames(‘config_path’,[‘videofile_path’])
           
 In general, depending on the parameters, these methods might return much more frames than the user wants to
 extract (``numframes2pick``). Thus, this list is then used to select outlier frames either by randomly sampling from this
@@ -331,7 +333,7 @@ as invalid.
 
 The labels for extracted putative outlier frames can be refined by opening the GUI:
 
-          >> deeplabcut.refine_labels(‘config-path’)
+          >> deeplabcut.refine_labels(‘config_path’)
           
 This will launch a GUI where the user can refine the labels (Figure 6). Use the ‘Load Labels’ button to select one
 of the subdirectories, where the extracted frames are stored. Every label will be identified by a unique color. For
@@ -343,7 +345,7 @@ body part, left click and drag it to a different location. To delete a specific 
 After correcting the labels for all the frames in each of the subdirectories, the users should merge the data set to
 create a new dataset. In this step the iteration parameter in the config.yaml file is automatically updated.
 
-          >> deeplabcut.merge_datasets(‘config-path’)
+          >> deeplabcut.merge_datasets(‘config_path’)
 
 Once the dataset is merged, the user can test if the merging process was successful by plotting all the labels (Step E).
 Next, with this expanded training set the user can now create a novel training set and train the network as described
