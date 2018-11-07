@@ -1,0 +1,36 @@
+Task: Reaching
+TrainingFraction:
+- 0.95
+alphavalue: 0.9
+batch_size: 1
+bodyparts:
+- hand
+- Finger1
+- Finger2
+- Joystick
+colormap: hsv
+corner2move2: !!python/tuple
+- 50
+- 50
+cropping: false
+date: Aug30
+dotsize: 30
+iteration: 0
+move2corner: false
+numframes2pick: 5
+pcutoff: 0.1
+project_path: /home/mackenzie/DEEPLABCUT/DeepLabCutbeta/examples/Reaching-Mackenzie-2018-08-30
+resnet: 50
+scorer: Mackenzie
+snapshotindex: -1
+start: 0
+stop: 1
+test_pose_config: WILL BE AUTOMATICALLY UPDATED BY DEMO CODE
+train_pose_config: WILL BE AUTOMATICALLY UPDATED BY DEMO CODE
+video_sets:
+  /home/mackenzie/DEEPLABCUT/DeepLabCutbeta/examples/Reaching-Mackenzie-2018-08-30/videos/reachingvideo1.avi:
+    crop: 0, 640, 277, 624
+x1: 0
+x2: 640
+y1: 277
+y2: 624

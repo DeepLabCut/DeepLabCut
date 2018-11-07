@@ -1,0 +1,34 @@
+Task: openfield
+TrainingFraction:
+- 0.95
+alphavalue: 0.5
+batch_size: 1
+bodyparts:
+- snout
+- leftear
+- rightear
+- tailbase
+colormap: hsv
+corner2move2: !!python/tuple
+- 50
+- 50
+cropping: false
+date: Oct30
+dotsize: 12
+iteration: 0
+move2corner: false
+numframes2pick: 20
+pcutoff: 0.1
+project_path: /home/alex/Hacking/DeepLabCutbeta/examples/openfield-Pranav-2018-10-30
+resnet: 50
+scorer: Pranav
+snapshotindex: -1
+start: 0
+stop: 1
+video_sets:
+  /somepath/m4s1.mp4:
+    crop: 0, 640, 0, 480
+x1: 0
+x2: 640
+y1: 277
+y2: 624

@@ -3,11 +3,17 @@ name: Problem using DeepLabCut
 about: Describe what the problem is
 
 ---
+**Your Operating system and DeepLabCut version**
+
+Please state your operating system, env, and which version of DeepLabCut you are using.
+Example: Ubuntu 16.04 LTS, with an Anaconda Env, & DeepLabCut1.x or 2.x.
+
 
 **Describe the problem**
+
 A clear and concise description of what the problem is.
 
-**To Reproduce**
+**How to Reproduce the problem**
 Steps to reproduce the behavior:
 1. Go to '...'
 2. Click on '....'

@@ -1,0 +1,31 @@
+all_joints:
+- [0]
+- [1]
+- [2]
+- [3]
+all_joints_names: [hand, Finger1, Finger2, Joystick]
+dataset: training-datasets/iteration-0/UnaugmentedDataSet_ReachingAug30/Reaching_Mackenzie95shuffle1.mat
+display_iters: 10
+global_scale: 0.8
+init_weights: /home/alex/anaconda3/envs/DLC2/lib/python3.6/site-packages/deeplabcut/Pose_Estimation_Tensorflow/models/pretrained/resnet_v1_50.ckpt
+intermediate_supervision: false
+intermediate_supervision_layer: 12
+location_refinement: true
+locref_huber_loss: true
+locref_loss_weight: 0.05
+locref_stdev: 7.2801
+max_input_size: 1000
+metadataset: training-datasets/iteration-0/UnaugmentedDataSet_ReachingAug30/Documentation_data-Reaching_95shuffle1.pickle
+mirror: false
+multi_step:
+- [0.005, 10000]
+- [0.02, 430000]
+- [0.002, 730000]
+- [0.001, 1030000]
+net_type: resnet_50
+num_joints: 4
+pos_dist_thresh: 17
+project_path: /home/alex/Hacking/DeepLabCutbeta/examples/Reaching-Mackenzie-2018-08-30
+save_iters: 500
+scale_jitter_lo: 0.5
+scale_jitter_up: 1.5

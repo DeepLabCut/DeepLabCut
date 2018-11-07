@@ -1,116 +1,124 @@
-## Technical Considerations 
+# How To Install DeepLabCut2.0:
 
-For reference, we use e.g. Dell workstations (79xx series) with Ubuntu **16.04 LTS** and run a Docker container that has TensorFlow, etc. installed (https://github.com/AlexEMG/Docker4DeepLabCut). The code also runs on Windows (thanks to  [Richard Warren](https://github.com/rwarren2163) for checking it) or MacOS (some users have already successfully done so). 
+## First, Technical Considerations:
+
+- Computer: 
+
+     - For reference, we use e.g. Dell workstations (79xx series) with **Ubuntu 16.04 LTS** and run a Docker container that has TensorFlow, etc. installed (https://github.com/MMathisLab/Docker4DeepLabCut2.0). 
+
+- Computer Hardware:
+     - Ideally, you will use a strong GPU with at least 8GB memory such as the [NVIDIA GeForce 1080 Ti](https://www.nvidia.com/en-us/geforce/products/10series/geforce-gtx-1080/).  A GPU is not necessary, but on a CPU the (training and evaluation) code is considerably slower (100x). You might also consider using cloud computing services like [Google cloud/amazon web services](https://github.com/AlexEMG/DeepLabCut/issues/47).
 
 - Camera Hardware:
      - The software is very robust to track data from pretty much any camera (grayscale, color, or graysale captured under infrared light etc.). See demos on our [website](https://www.mousemotorlab.org/deeplabcut/)
 
-- Computer Hardware:
-     - Ideally, you will use a strong GPU with at least 8GB memory such as the [NVIDIA GeForce 1080 Ti](https://www.nvidia.com/en-us/geforce/products/10series/geforce-gtx-1080/).  A GPU is not necessary, but on a CPU the (training and evaluation) code is considerably slower (100x). You might also consider using cloud computing services like [Google cloud/amazon web services](https://github.com/AlexEMG/DeepLabCut/issues/47).
      
 - Software: 
-     - Linux: use only Ubuntu 16.xx and not 18.xx for ease of installation!
-     - We highly recommend using the supplied [Docker container](https://github.com/AlexEMG/Docker4DeepLabCut). NOTE: [this container does not work on windows hosts!](https://github.com/NVIDIA/nvidia-docker/issues/43)
-     - The toolbox is written in [Python 3](https://www.python.org/). You will need [TensorFlow](https://www.tensorflow.org/) (we used version 1.0 in the paper, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.4, 1.8, and  1.10**) for Python 3 with GPU support. 
-     - To note, is it possible to run DeepLabCut on your CPU, but it will be VERY slow. However, this is the preferred path if you want to test DeepLabCut on your data before purchasing a GPU, with the added benefit of a straightforward installation. 
-    - WINDOWS specific note: If you want to run the commands in the program "cmd" (terminal), we recommend using Git Bash: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git (You can use "terminal" in Linux/MacOS as is). 
+     - Operating System: Linux (Ubuntu) or Windows (7 or newer). However, the authors recommend Ubuntu
+     - Anaconda/Python3: Anaconda: a free and open source distribution of the Python programming language (download from: \https://www.anaconda.com/). DeepLabCut is written in Python 3 (https://www.python.org/) and not compatible with Python 2. 
+     - pip install deeplabcut (see below!) 
+     - TensorFlow (see below!)
+       - You will need [TensorFlow](https://www.tensorflow.org/) (we used version 1.0 in the paper, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.4, 1.8, and  1.10**) for Python 3 with GPU support. 
+        - To note, is it possible to run DeepLabCut on your CPU, but it will be VERY slow (see: [Mathis & Warren](https://www.biorxiv.org/content/early/2018/10/30/457242)). However, this is the preferred path if you want to test DeepLabCut on your data before purchasing a GPU, with the added benefit of a straightforward installation! 
+     - Docker: We highly recommend using the supplied [Docker container](https://github.com/MMathisLab/Docker4DeepLabCut2.0). 
+     NOTE: [this container does not work on windows hosts!](https://github.com/NVIDIA/nvidia-docker/issues/43)
+     
+    
+ # INSTALLATION:
+ 
+ There are several modes of installation, and the user should decide to either use a **system-wide** (see [note below](/docs/installation.md#system-wide-considerations)) or **Anaconda environment** based pip installation (recommended), or the supplied **Docker container** (recommended for more advanced users). The simplest installation is the pip installation, which is  described first.
+ 
+ **All the following commands will be run in the app ``terminal`` in Ubuntu, and called ``cmd`` in Windows. Please first open the terminal (search ``terminal`` or ``cmd``).**
+ 
+ ## Anaconda:  
+[Anaconda](https://anaconda.org/anaconda/python) is perhaps the easiest way to install Python and additional packages across various operating systems. First create an [Anaconda](https://anaconda.org/anaconda/python) environment.  With Anaconda you create all the dependencies in an [environment](https://conda.io/docs/user-guide/tasks/manage-environments.html) on your machine by running in a terminal:
 
-## Anaconda environment with TensorFlow on GPU support:
-
-- **Docker: We highly recommend to use the supplied [Docker container](https://github.com/AlexEMG/Docker4DeepLabCut), which has everything including TensorFlow for the GPU preinstalled! NOTE: [this container does not work on windows hosts!](https://github.com/NVIDIA/nvidia-docker/issues/43)**
-
- - If you cannot use the Docker container, [Anaconda](https://anaconda.org/anaconda/python) is perhaps the easiest way to install Python and additional packages across various operating systems. First create an [Anaconda](https://anaconda.org/anaconda/python) environment with all dependencies, but TensorFlow.  With Anaconda you create all the dependencies in an [environment](https://conda.io/docs/user-guide/tasks/manage-environments.html) on your machine by running in a terminal:
-
-**LINUX/MacOS:**
+**LINUX:**
 ```
-git clone https://github.com/AlexEMG/DeepLabCut.git
-cd deeplabcut/conda-files
-conda env create -f dlcdependencies.yml
+conda create -n <nameyourenvironment> python=3.6
+source activate <nameyourenvironment>
 ```
 **Windows:** 
 ```
-git clone https://github.com/AlexEMG/DeepLabCut.git
-cd deeplabcut/conda-files
-conda env create -f dlcDependenciesFORWINDOWS.yaml
+conda create -n <nameyourenvironment> python=3.6
+activate <nameyourenvironment>
 ```
+Once the environment was activated, the user can install DeepLabCut. In the terminal type: 
+```
+pip install deeplabcut 
+```
+ * if you have ever used pip to install deeplabcut (or other packges), use ``--ignore-installed`` to be sure you are grabbing the latest! i.e. ``pip install --ignore-installed deeplabcut``
 
-**Then, for LINUX & Windows:** Install [TensorFlow](https://www.tensorflow.org/). We used **TensorFlow 1.0 with CUDA (Cuda 8.0)**. Therefore, we recommend this version. Some other versions of TensorFlow have been tested, but use at your own risk (i.e. these versions have been tested 1.2, 1.4, 1.8 or 1.10, but might require different CUDA versions! Please check your driver/CUDA/TensorFlow version [on this Stackoverflow post](https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-304-125/30820690#30820690). Please check your CUDA and [TensorFlow installation](https://www.tensorflow.org/install/) with the line below
+**Then,**
 
-      $ sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+Windows: ```pip install -U wxPython ``` 
+
+Linux: ```pip install https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-16.04/wxPython-4.0.3-cp36-cp36m-linux_x86_64.whl```
+
+## Install TensorFlow - with GPU support or CPU support:
+As users can use a GPU or CPU, TensorFlow is not installed with the command ``pip install deeplabcut``. 
+Here is more information on how to best install TensorFlow with pip: https://www.tensorflow.org/install/pip
+
+CPU ONLY: 
+
+``pip install --ignore-installed tensorflow==1.10``
+
+GPU: 
+
+Install [TensorFlow](https://www.tensorflow.org/). We used **TensorFlow 1.0 with CUDA (Cuda 8.0)**. Therefore, we recommend this version. Some other versions of TensorFlow have been tested, but use at your own risk (i.e. these versions have been tested 1.2, 1.4, 1.8 or 1.10, but might require different CUDA versions! Please check your driver/CUDA/TensorFlow version [on this Stackoverflow post](https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-304-125/30820690#30820690).
+
+If you have a GPU, you should then install the NVIDIA CUDA package and an appropriate driver for your specific GPU. Please follow the instructions found here: https://www.tensorflow.org/install/gpu. Some tips will follow here:
+
+**FIRST**, install a driver for your GPU (we recommend the 384.xx) Find DRIVER HERE: https://www.nvidia.com/download/index.aspx
+- check which driver is installed by typing this into the terminal: ``nvidia-smi``
+
+**SECOND**, install CUDA (9.0 here): https://developer.nvidia.com/cuda-90-download-archive
+
+**THIRD**, install TensorFlow: 
+
+Package for pip install:
+
+``pip install tensorflow-gpu==1.8`` —with GPU support (Ubuntu and Windows)
+
+Note, the version is specified by using: ``==1.8``
+
+**FOURTH**, Please check your CUDA and [TensorFlow installation](https://www.tensorflow.org/install/) with the lines below:
+
+Start a python session: 
+`` ipython``
+
+``import tensorflow as tf``
+
+``sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))``
 
 You can test that your GPU is being properly engaged with these additional [tips](https://www.tensorflow.org/programmers_guide/using_gpu).
 
-## Anaconda environment with TensorFlow for only a CPU:
+# Troubleshooting: 
 
-[Anaconda](https://anaconda.org/anaconda/python) is perhaps the easiest way to install Python and additional packages across various operating systems. With Anaconda just create all the dependencies in an [environment](https://conda.io/docs/user-guide/tasks/manage-environments.html) on your machine by running in a terminal:
+TensorFlow:
+Here are some additional resources users have found helpful (posted without endorsement):
 
-**LINUX/MacOS:**
-```
-git clone https://github.com/AlexEMG/DeepLabCut.git
-cd deeplabcut/conda-files
-conda env create -f dlcdependencieswTF1.2.yml
-```
+- http://blog.nitishmutha.com/tensorflow/2017/01/22/TensorFlow-with-gpu-for-windows.html
 
-Some conda channels are different for Windows and Rick Warren contributed the following yml file for **Windows** which actually features TensorFlow 1.8:
+- https://developer.nvidia.com/cuda-toolkit-archive
 
-**Windows:** 
-```
-git clone https://github.com/AlexEMG/DeepLabCut.git
-cd deeplabcut/conda-files
-conda env create -f dlcDependenciesFORWINDOWSwTF.yaml
-```
+- http://www.python36.com/install-tensorflow-gpu-windows/
 
-That's it! You should now be able to run the .py files from inside the environment in the terminal.
+FFMEG:
 
-Note that these environment yaml file [might not work across platforms (other versions of Windows, MacOS, ...)](https://stackoverflow.com/questions/39280638/how-to-share-conda-environments-across-platforms). Installing TensorTlow on your CPU is easy on any platform, if the environment yaml with TensorFlow does not work for you, then install the one without, and then follow the instructions here for installing [Tensorflow 1.2](https://www.tensorflow.org/versions/r1.2/install/). 
+- A few Windows users report needing to install ffmeg as described here: https://video.stackexchange.com/questions/20495/how-do-i-set-up-and-use-ffmpeg-in-windows (A potential error could occur when making new videos). 
 
-Once you installed the environment you can activate it, by typing on Linux/MacOS: 
-```
-source activate DLCdependencies
-```
+DEEPLABCUT: 
 
-and on Windows do: 
-```
-activate DLCdependencies
-```
+- if you git clone or download this folder, and are inside of it then ``import deeplabcut`` will import the package from there (rather than from the installation)! You must work within another directory when installing; i.e. in "Documents". You will get a strange import error, as it will be trying to install from the subfolder, deeplabcut. This repo is best used for development, or for using the example Notebooks!
 
-Then you can work with all DLC functionalities inside this environment. Enjoy!
+## System-wide considerations:
 
-## Alternative Python installation (not Anaconda environment based):
+If you perform the system wide installation, and the computer has other Python packages or TensorFlow versions installed that conflict, this will overwrite them. If you have a dedicated machine for DeepLabCut, this is fine. If there are other applications that require different versions of libraries, then one would potentially break those applications. The solution to this problem is to create a virtual environment, a self-contained directory that contains a Python installation for a particular version of Python, plus additional packages. One way to manage virtual environments is to use conda environments (for which you need Anaconda installed). 
 
-If you wish to just install everything directly onto your computer (i.e. you don't need other versions of TF, CUDA, etc), then you can install these packages using the terminal:
-
-
- - Install Python3 [e.g. Sypder (or any other IDE) and/or Jupyter Notebook for Python3]
- - Clone (or download) the code we provide
-
-     $ git clone https://github.com/AlexEMG/DeepLabCut
-
- - You will also need to install the following **Python3** packages (in the terminal type):
-
-```
-      $ pip install scipy scikit-image sk-video matplotlib pyyaml easydict 
-      $ pip install moviepy imageio tqdm tables
-      $ pip install pyqt5 scikit-learn pandas
-      $ pip install ffmpeg-python
-```
-Note if you also have python2 installed, you might want to use pip3 instead (DeepLabCut is suported in Python3.x only). 
-
-Then, install *TensorFlow*:
-
-**Then, for LINUX & Windows:** Install [TensorFlow](https://www.tensorflow.org/). We used **TensorFlow 1.0 with CUDA (Cuda 8.0)**. Therefore, we recommend this version. Some other versions of TensorFlow have been tested, but use at your own risk (i.e. these versions have been tested 1.2, 1.4, 1.8 or 1.10, but might require different CUDA versions! Please check your driver/CUDA/TensorFlow version [on this Stackoverflow post](https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-304-125/30820690#30820690). Here is a nice guide for [CUDA + cuDNN for TensorFlow installation on Ubuntu](https://medium.com/@ikekramer/installing-cuda-8-0-and-cudnn-5-1-on-ubuntu-16-04-6b9f284f6e77).
-
-
-Please check your CUDA and [TensorFlow installation](https://www.tensorflow.org/install/) with th line below
-
-      $ sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
-
-You can test that your GPU is being properly engaged with these additional [tips](https://www.tensorflow.org/programmers_guide/using_gpu).
+## You're ready to Run DeepLabCut! 
 
 Now you can use Jupyer Notebooks, Spyder, and to train just use the terminal, to run all the code!
-
-
           
-      
  Return to [readme](../README.md).
 
