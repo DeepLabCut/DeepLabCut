@@ -11,7 +11,7 @@ We suggest making a "Fork" of this repo and/or then place DeepLabCut files in a 
 so you can access it locally with **Anaconda.** You can also click the "download" button, rather than using ``git``. Then you can edit the Notebooks as you like!
 
 <p align="center">
-<img src="docs/images/gitclone.png" width="70%">
+<img src="/docs/images/gitclone.png" width="90%">
 </p>
 
 ### Some quick installation notes about each demo, i.e. you need to do this in order to run the Notebooks.
@@ -34,7 +34,7 @@ so you can access it locally with **Anaconda.** You can also click the "download
 Linux: `` source activate <yourcondaname>``, then ``export BROWSER=google-chrome``, then ``jupyter notebook``
 
 <p align="center">
-<img src="docs/images/enterAnacondaNotebook.png" width="90%">
+<img src="/docs/images/enterAnacondaNotebook.png" width="90%">
 </p>
 
 ## Demo 1: run DeepLabCut [on our data](Demo_labeledexample_MouseReaching.ipynb) (already labeled) with a CPU

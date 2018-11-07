@@ -31,7 +31,7 @@ The project directory also contains the main configuration file called *config.y
 The ``create a new project`` step writes the following parameters to the configuration file: *Task*, *scorer*, *date*, *project\_path* as well as a list of videos *video\_sets*. The first three parameters should **not** be changed. The list of videos can be changed by adding new videos or manually removing videos.
 
 <p align="center">
-<img src="/docs/images/Box1.png" width="70%">
+<img src="/docs/images/Box1.png" width="90%">
 </p>
 
 ### (B) Configure the Project
@@ -156,7 +156,7 @@ configuration files contain meta information with regard to the parameters of th
 are listed in Box 2.
 
 <p align="center">
-<img src="/docs/images/Box2.png" width="70%">
+<img src="/docs/images/Box2.png" width="90%">
 </p>
 
 ###  (G) Train The Network

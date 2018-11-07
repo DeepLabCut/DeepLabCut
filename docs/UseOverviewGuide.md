@@ -25,7 +25,7 @@ Open an ipython session and import the package by typing in the terminal:
 
 ``deeplabcut.create_new_project(`Name of the project',`Name of the experimenter', [`Full path of video 1',`Full path of video2',`Full path of video3'], working_directory=`Full path of the working directory',copy_videos=True/False)``
 
-- (Note, you can also put ``config_path = `` in front of thae above code to create the path to the config.yaml that is used in the next step)
+- (Note, you can also put ``config_path = `` in front of the above line to create the path to the config.yaml that is used in the next step, i.e. ``config_path=deeplabcut.create_project(...)``)
 
 (more details [here](functionDetails.md#a-create-a-new-project))
 
@@ -42,7 +42,7 @@ Open an ipython session and import the package by typing in the terminal:
 **mini-demo:** create project and edit the yaml file
 
 <p align="center">
-<img src="docs/images/startdeeplabcut.gif" width="90%">
+<img src="/docs/images/startdeeplabcut.gif" width="90%">
 </p>
 
 ### Select Frames to Label: 
@@ -60,7 +60,7 @@ Open an ipython session and import the package by typing in the terminal:
 **mini-demo:** using the GUI to label
 
 <p align="center">
-<img src="docs/images/guiexample.gif" width="90%">
+<img src="/docs/images/guiexample.gif" width="90%">
 </p>
 
 ### Check Annotated Frames:
@@ -111,7 +111,7 @@ Open an ipython session and import the package by typing in the terminal:
 **mini-demo:** using the refinement GUI, a user can load the file then zoom, pan, and edit and/or remove points:
 
 <p align="center">
-<img src="docs/images/refinelabels.gif" width="90%">
+<img src="/docs/images/refinelabels.gif" width="90%">
 </p>
 
 When done editing the labels, merge: 
