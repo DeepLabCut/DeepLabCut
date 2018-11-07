@@ -1,4 +1,4 @@
-# (A) Create a New Project
+### (A) Create a New Project
 
 
 The function **create\_new\_project** creates a new project directory, required subdirectories, and a basic project configuration file. Each project is identified by the name of the project (e.g. Reaching), name of the experimenter (e.g. YourName), as well as the date at creation.
@@ -10,7 +10,7 @@ Optional arguments specify the working directory, where the project directory wi
 
           deeplabcut.create_project(`Name of the project',`Name of the experimenter', [`Full path of video 1',`Full path of video2',`Full path of video3'], working_directory=`Full path of the working directory',copy_videos=True/False) 
           
- (TIP: you can also place ``config_path`` in front of ``deeplabcut.create_project`` to create a vriable that holds the path to the config.yaml file)
+ (TIP: you can also place ``config_path`` in front of ``deeplabcut.create_project`` to create a vriable that holds the path to the config.yaml file, i.e. ``config_path=deeplabcut.create_project(...)``)
 
 This set of arguments will create a project directory with the name **Name of the project+name of the experimenter+date of creation of the project** in the **Working directory** and creates the symbolic links to videos in the **videos** directory. The project directory will have subdirectories: **dlc-models**, **labeled-data**, **training-datasets**, and **videos**.  All the outputs generated during the course of a project will be stored in one of these subdirectories, thus allowing each project to be curated in separation from other projects. The purpose of the subdirectories is as follows:
 
@@ -34,7 +34,7 @@ The ``create a new project`` step writes the following parameters to the configu
 <img src="/docs/images/Box1.png" width="70%">
 </p>
 
-# (B) Configure the Project
+### (B) Configure the Project
 
 Next, open the **config.yaml** file, which was created during  **create\_new\_project**. You can edit this file in any text editor.  Familiarize yourself with the meaning of the parameters (Box 1). You can edit various parameters, in particular add the list of *bodyparts* (or points of interest) that you want to track. For the next data selection step *numframes2pick*, *start*, *stop*, *x1, x2, y1, y2* and *cropping* are of major importance.
 
@@ -91,7 +91,7 @@ bar to navigate across the video and *Grab a Frame* to extract the frame. The us
 frames and e.g. delete frames (from the directory) that are too similar before re-loading the set and then manually
 annotating them.
 
-# (D) Label Frames
+### (D) Label Frames
 
 The toolbox provides a function **label_frames** which helps the user to easily label all the extracted frames using
 an interactive graphical user interface (GUI). The user should have already named the body parts to label (points of
@@ -122,7 +122,7 @@ labels to the bodyparts in the config.yaml file. Thereafter, the user can call t
 the left lower tick box, *Add new labels to existing dataset?* before loading the frames. Saving the labels after all the
 images are labelled will append the new labels to the existing labeled dataset.
 
-#  (E) Check Annotated Frames
+###  (E) Check Annotated Frames
 
 OPTIONAL: Checking if the labels were created and stored correctly is beneficial for training, since labeling
 is one of the most critical parts for creating the training dataset. The DeepLabCut toolbox provides a function
@@ -132,7 +132,7 @@ is one of the most critical parts for creating the training dataset. The DeepLab
           
 For each video directory in labeled-data this function creates a subdirectory with **labeled** as a suffix. Those directories contain the frames plotted with the annotated body parts. The user can double check if the body parts are labeled correctly. If they are not correct, the user can call the refinement GUI (see below, and check the tick box for ``adjust original labels`` to adjust the location of the labels).
 
-# (F) Create Training Dataset
+### (F) Create Training Dataset
 
 Combining the labeled datasets from all the videos and splitting them will create train and test datasets. The
 training data will be used to train the network, while the test data set will be used for evaluating the network. The
@@ -159,7 +159,7 @@ are listed in Box 2.
 <img src="/docs/images/Box2.png" width="70%">
 </p>
 
-#  (G) Train The Network
+###  (G) Train The Network
 
 Timing: The time required to train the network mainly depends on the frame size of the dataset and the
 computer hardware. On a NVIDIA GeForce GTX 1080 Ti GPU, it takes ≈ 6 hrs to train the network for at least
@@ -214,7 +214,7 @@ CRITICAL POINT: It is recommended to train for thousands of iterations until the
     saveiters: this variable is actually set in pose_config.yaml. However, you can overwrite it with this hack. Don't use this regularly, just if you are too lazy to dig out 
     the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
 
-# (H) Evaluate the Trained Network
+### (H) Evaluate the Trained Network
 
 It is important to evaluate the performance of the trained network. This performance is measured by computing
 the mean average Euclidean error (MAE; which is proportional to the average root mean square error) between the
@@ -253,7 +253,7 @@ labeled accurately
 • consider labeling additional images and make another iteration of the training data set 
 
 
-# (I) Video Analysis and Plotting Results
+### (I) Video Analysis and Plotting Results
 
 The trained network can be used to analyze new videos. The user needs to first choose a checkpoint with the best
 evaluation results for analyzing the videos. In this case, the user can enter the corresponding index of the checkpoint
@@ -282,7 +282,7 @@ can be called by typing:
 
           >> deeplabcut.plot_trajectories(‘config_path’,[‘/analysis/project/videos/reachingvideo1.avi’])
           
-# (J) Refinement: Extract Outlier Frames
+### (J) Refinement: Extract Outlier Frames
 
 While DeepLabCut typically generalizes well across datasets, one might want to optimize its performance in various,
 perhaps unexpected, situations. For generalization to large data sets, images with insufficient labeling performance
@@ -355,7 +355,7 @@ automatically done).
 
 If after training the network generalizes well to the data, proceed to analyze new videos. Otherwise, consider labeling more data.
 
-# Jupyter Notebooks for Demonstration of the DeepLabCut Work-flow
+### Jupyter Notebooks for Demonstration of the DeepLabCut Work-flow
 
 We also provide two Jupyter notebooks for using DeepLabCut on both a pre-labeled dataset, and on the end user’s
 own dataset. Firstly, we prepared an interactive Jupyter notebook called run_yourowndata.ipynb that can serve as a

@@ -25,7 +25,7 @@ Please check out [www.mousemotorlab.org/deeplabcut](https://www.mousemotorlab.or
 # [Overview of the work-flow and how to use DeepLabCut](docs/UseOverviewGuide.md)
 
 <p align="center">
-<img src="/docs/images/flowfig.png" width="80%">
+<img src="docs/images/flowfig.png" width="80%">
 </p>
 
 # [DEMO the code](/examples) 
