@@ -103,13 +103,13 @@ Here are some additional resources users have found helpful (posted without endo
 - https://stackoverflow.com/questions/30820513/what-is-the-correct-version-of-cuda-for-my-nvidia-driver/30820690
 
 <p align="center">
-<img src="docs/images/cuda_driver.png" width="50%">
+<img src="/docs/images/cuda_driver.png" width="50%">
 </p>
 
 - https://stackoverflow.com/questions/50622525/which-tensorflow-and-cuda-version-combinations-are-compatible
 
 <p align="center">
-<img src="docs/images/tensorflow_cuda_cudnn_version_chart.png" width="50%">
+<img src="/docs/images/tensorflow_cuda_cudnn_version_chart.png" width="50%">
 </p>
 
 - http://blog.nitishmutha.com/tensorflow/2017/01/22/TensorFlow-with-gpu-for-windows.html
