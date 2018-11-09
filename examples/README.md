@@ -63,7 +63,7 @@ For GPU-based training and analysis you will need to switch to either our [suppl
 
 We suggest making a "Fork" of this repo, git clone or download the folder into your google drive, then linking your google account to your GitHub (you'll see how to do this in the Notebook below). Then you can edit the Notebook for your own data too (just put https://colab.research.google.com/ in front of the web address of your own repo)
 
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/AlexEMG/DeepLabCutbeta/blob/master/examples/Colab_TrainNetwork_VideoAnalysis.ipynb)
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/AlexEMG/DeepLabCut/blob/master/examples/Colab_TrainNetwork_VideoAnalysis.ipynb)
 
 1. Click Open in Colab to launch the notebook.
 2. Make the notebook live by clicking 'Connect' in the Colab toolbar, and then click "Runtime > Change Runtime Type > and select Python3 and GPU as your hardware. Follow the instructions in the Notebook.
