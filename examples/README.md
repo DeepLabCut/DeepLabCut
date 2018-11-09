@@ -31,7 +31,8 @@ so you can access it locally with **Anaconda.** You can also click the "download
   - **Demo 2**  can use either CPUs or a GPU.
 
 ### First, activate your Anaconda environment (here called DLC2), and open a portal to Jupyter: 
-Linux: `` source activate <yourcondaname>``, then ``export BROWSER=google-chrome``, then ``jupyter notebook``
+Linux: `` source activate <yourcondaname>`` then ``jupyter notebook`` 
+note, if you have never used Jupter NOtebooks before, you need to once do ``export BROWSER=google-chrome``)
 
 <p align="center">
 <img src="/docs/images/enterAnacondaNotebook.png" width="90%">
