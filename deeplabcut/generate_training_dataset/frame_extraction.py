@@ -91,6 +91,7 @@ def extract_frames(config,mode,algo='uniform',crop=False,checkcropping=False):
             
             #update to openCV
             clip = VideoFileClip(video)
+            
             indexlength = int(np.ceil(np.log10(clip.duration * clip.fps)))
 
             if crop==True:

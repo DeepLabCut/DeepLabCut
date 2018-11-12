@@ -136,7 +136,7 @@ def RunTrajectoryAnalysis(video,basefolder,scorer,videofolder,cfg,showfigures):
 # Looping analysis over video
 ##################################################
 
-def plot_trajectories(config,video,shuffle=1,trainingsetindex=0,videotype='.avi',showfigures=False):
+def plot_trajectories(config,videos,shuffle=1,trainingsetindex=0,videotype='.avi',showfigures=False):
     """
     Plots the trajectories of various bodyparts across the video.
     
@@ -144,7 +144,8 @@ def plot_trajectories(config,video,shuffle=1,trainingsetindex=0,videotype='.avi'
     ----------
      config : string
     Full path of the config.yaml file as a string.
-    video : list
+    
+    videos : list
     A list of strings containing the full paths of the videos to analyze.
     
     shuffle: list, optional
@@ -163,7 +164,7 @@ def plot_trajectories(config,video,shuffle=1,trainingsetindex=0,videotype='.avi'
     Example
     --------
     for labeling the frames
-    >>> deeplabcut.plot_trajectories('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi'])
+    >>> deeplabcut.plot_trajectories('home/alex/analysis/project/reaching-task/config.yaml',['/home/alex/analysis/project/videos/reachingvideo1.avi'])
     --------
     
     """
@@ -173,18 +174,18 @@ def plot_trajectories(config,video,shuffle=1,trainingsetindex=0,videotype='.avi'
     DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction) #automatically loads corresponding model (even training iteration based on snapshot index)
     
     #checks if input is a directory
-    if [os.path.isdir(i) for i in video] == [True]:#os.path.isdir(video)==True:
+    if [os.path.isdir(i) for i in videos] == [True]:#os.path.isdir(video)==True:
         """
         Analyze all the videos in the directory
         """
         print("Analyzing all the videos in the directory")
-        videofolder= video[0]
+        videofolder= videos[0]
         os.chdir(videofolder)
-        videos = np.sort([fn for fn in os.listdir(os.curdir) if (videotype in fn) and ("labeled" not in fn)])
+        Videos = np.sort([fn for fn in os.listdir(os.curdir) if (videotype in fn) and ("labeled" not in fn)])
     else:
-        videos = video
+        Videos = videos
     
-    for video in videos:
+    for video in Videos:
         print(video)
         videofolder= str(Path(video).parents[0]) #where your folder with videos is.
         videotype = str(Path(video).suffix)

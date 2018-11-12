@@ -12,14 +12,11 @@ M Mathis, mackenzie@post.harvard.edu
 ####################################################
 
 import os.path
-import sys
-
 from deeplabcut.pose_estimation_tensorflow.nnet import predict
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import data_to_input
 
 from random import sample
-import pickle
 import time
 import pandas as pd
 import numpy as np
@@ -29,6 +26,8 @@ from pathlib import Path
 from tqdm import tqdm
 import tensorflow as tf
 from deeplabcut.utils import auxiliaryfunctions
+import cv2
+from skimage.util import img_as_ubyte
 
 ####################################################
 # Loading data, and defining model folder
@@ -160,8 +159,8 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
 
 
 def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize,frame_buffer):
-    ''' note cfg here is for pose-tensorflow.'''
-    from skimage.util import img_as_ubyte
+    ''' Batchwise prediction of pose '''
+    
     PredicteData = np.zeros((nframes, 3 * len(dlc_cfg['all_joints_names'])))
     batch_ind = 0 # keeps track of which image within a batch should be written to
     batch_num = 0 # keeps track of which batch you are at
@@ -188,6 +187,7 @@ def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize,frame_buff
                 pbar.update(step)
             ret, frame = cap.read()
             if ret:
+                frame=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 if cfg['cropping']:
                     frames[batch_ind] = img_as_ubyte(frame[cfg['y1']:cfg['y2'],cfg['x1']:cfg['x2']])
                 else:
@@ -212,8 +212,7 @@ def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize,frame_buff
     return PredicteData,nframes
 
 def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,frame_buffer):
-    ''' note cfg here is for pose-tensorflow.'''
-    from skimage.util import img_as_ubyte
+    ''' Non batch wise pose estimation for video cap.'''
     if cfg['cropping']:
         print("Cropping based on the x1 = %s x2 = %s y1 = %s y2 = %s. You can adjust the cropping coordinates in the config.yaml file." %(cfg['x1'], cfg['x2'],cfg['y1'], cfg['y2']))
         nx=cfg['x2']-cfg['x1']
@@ -237,6 +236,7 @@ def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,frame_buffer):
             
             ret, frame = cap.read()
             if ret:
+                frame=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 if cfg['cropping']:
                     frame= img_as_ubyte(frame[cfg['y1']:cfg['y2'],cfg['x1']:cfg['x2']])
                 else:
@@ -254,7 +254,7 @@ def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,frame_buffer):
 
 def AnalzyeVideo(video,DLCscorer,cfg,dlc_cfg,sess,inputs, outputs,pdindex,frame_buffer=10):
     #from moviepy.editor import VideoFileClip
-    import cv2
+    
     print(video)
     #videotype = Path(video).suffix
     print("Starting % ", video)
