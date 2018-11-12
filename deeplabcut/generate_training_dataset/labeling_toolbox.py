@@ -32,18 +32,18 @@ class MainFrame(wx.Frame):
     """Contains the main GUI and button boxes"""
 
     def __init__(self, parent,config):
-        wx.Frame.__init__(self, parent, title="DeepLabCut2.0 - Labeling ToolBox", size=(1600, 980))
+        wx.Frame.__init__(self, parent, title="DeepLabCut2.0 - Labeling ToolBox", size=(1200, 980))
 
 # Add SplitterWindow panels top for figure and bottom for buttons
         self.split_win = wx.SplitterWindow(self)
         # self.top_split = wx.Panel(self.split_win, style=wx.SUNKEN_BORDER)
         self.top_split = MatplotPanel(self.split_win,config) # This call/link the MatplotPanel and MainFrame classes which replaces the above line
         self.bottom_split = wx.Panel(self.split_win, style=wx.SUNKEN_BORDER)
-        self.split_win.SplitHorizontally(self.top_split, self.bottom_split, 1100)
+        self.split_win.SplitHorizontally(self.top_split, self.bottom_split, 920) #1100)
         self.Maximize(True)
 
-        self.top_split.SetBackgroundColour((100, 100, 100))
-        self.bottom_split.SetBackgroundColour((80, 80, 80))
+        #self.top_split.SetBackgroundColour((100, 100, 100))
+        #self.bottom_split.SetBackgroundColour((80, 80, 80))
 
         self.split_win.Bind(wx.EVT_CHAR_HOOK, self.OnKeyPressed) 
 
@@ -52,25 +52,25 @@ class MainFrame(wx.Frame):
 
 # Add Buttons to the bottom_split window and bind them to plot functions
         buttons_list = []
-        self.Button1 = wx.Button(self.bottom_split, -1, "Load frames", size=(200, 40), pos=(250, 25))
+        self.Button1 = wx.Button(self.bottom_split, -1, "Load frames", size=(200, 40), pos=(80, 25))
         self.Button1.Bind(wx.EVT_BUTTON, self.browseDir)
         self.Button1.Enable(True)
         buttons_list.append(self.Button1)
 
-        self.Button5 = wx.Button(self.bottom_split, -1, "Help", size=(80, 40), pos=(580, 25))
+        self.Button5 = wx.Button(self.bottom_split, -1, "Help", size=(80, 40), pos=(310, 25))
         self.Button5.Bind(wx.EVT_BUTTON, self.help)
         self.Button5.Enable(False)
         buttons_list.append(self.Button5)
 
-        self.Button2 = wx.Button(self.bottom_split, -1, "Next Frame", size=(120, 40), pos=(800, 25))
+        self.Button2 = wx.Button(self.bottom_split, -1, "Next Frame", size=(120, 40), pos=(640, 25))
         self.Button2.Bind(wx.EVT_BUTTON, self.nextImage)
         self.Button2.Enable(False)
         buttons_list.append(self.Button2)
-
-        self.Button4 = wx.Button(self.bottom_split, -1, "Save", size=(80, 40), pos=(1050, 25))
+        
+        self.Button4 = wx.Button(self.bottom_split, -1, "Save", size=(80, 40), pos=(840, 25))
         self.Button4.Bind(wx.EVT_BUTTON, self.save)
         self.Button4.Enable(False)
-        self.close = wx.Button(self.bottom_split, -1, "Quit", size=(80, 40), pos=(1230, 25))
+        self.close = wx.Button(self.bottom_split, -1, "Quit", size=(80, 40), pos=(990, 25))
         self.close.Bind(wx.EVT_BUTTON,self.quitButton)
         buttons_list.append(self.Button4)
         buttons_list.append(self.close)
@@ -78,21 +78,21 @@ class MainFrame(wx.Frame):
 # add buttons for  zoom
         # radio buttons position: (1250, 65)
 
-        self.Button8 = wx.Button(self.top_split,-1,"Zoom", size=(120,40),pos=(1250,400))
+        self.Button8 = wx.Button(self.top_split,-1,"Zoom", size=(60,30),pos=(840,875))
         self.Button8.Bind(wx.EVT_BUTTON,self.zoom)
         buttons_list.append(self.Button8)
 
-        self.Button7 = wx.Button(self.top_split,-1,"Pan", size=(120,40),pos=(1250,500))
+        self.Button7 = wx.Button(self.top_split,-1,"Pan", size=(60,30),pos=(940,875))
         self.Button7.Bind(wx.EVT_BUTTON,self.pan)
         buttons_list.append(self.Button7)
 
-        self.Button6 = wx.Button(self.top_split,-1,"Home", size=(120,40),pos=(1250,600))
+        self.Button6 = wx.Button(self.top_split,-1,"Home", size=(60,30),pos=(1040,875))
         self.Button6.Bind(wx.EVT_BUTTON,self.home)
         buttons_list.append(self.Button6)
 
-        for btn in buttons_list:
-            btn.SetBackgroundColour((160, 160, 160))
-            btn.SetForegroundColour((0, 0, 0))
+        #for btn in buttons_list:
+        #    btn.SetBackgroundColour((160, 160, 160))
+        #    btn.SetForegroundColour((0, 0, 0))
 
 # Define variables
 
@@ -109,7 +109,7 @@ class MainFrame(wx.Frame):
         self.flag = True
         self.file = 0
         self.config_file = config
-        self.addLabel = wx.CheckBox(self.top_split, label = 'Add new labels to existing dataset?',pos = (1250, 250))
+        self.addLabel = wx.CheckBox(self.top_split, label = 'Add new labels to existing dataset?',pos = (80, 875))
         self.addLabel.Bind(wx.EVT_CHECKBOX,self.newLabel)
         self.new_labels = False
 
@@ -268,9 +268,9 @@ class MainFrame(wx.Frame):
             self.dataFrame = pd.concat([self.dataFrame, frame],axis=1)
 
         if self.file == 0:
-            self.checkBox = wx.CheckBox(self.top_split, label = 'Adjust marker size.',pos = (1250, 855))
+            self.checkBox = wx.CheckBox(self.top_split, label = 'Adjust marker size.',pos = (500, 855))
             self.checkBox.Bind(wx.EVT_CHECKBOX,self.onChecked)
-            self.slider = wx.Slider(self.top_split, -1, 5, 0, 20,size=(200, -1),  pos=(1250, 780),style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS )
+            self.slider = wx.Slider(self.top_split, -1, 5, 0, 20,size=(200, -1),  pos=(500, 780),style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS )
             self.slider.Bind(wx.EVT_SLIDER, self.OnSliderScroll)
             self.slider.Enable(False)
 
@@ -399,7 +399,6 @@ class MainFrame(wx.Frame):
 
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
-
 
 class MatplotPanel(wx.Panel):
     def __init__(self, parent,config):
