@@ -1,8 +1,7 @@
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 [![Krihelimeter](http://krihelinator.xyz/badge/AlexEMG/DeepLabCut)](http://krihelinator.xyz/repositories/AlexEMG/DeepLabCut)
-[![GitHub forks](https://img.shields.io/github/forks/AlexEMG/DeepLabCut.svg?style=social&label=Fork)](https://github.com/AlexEMG/DeepLabCut)
 [![GitHub stars](https://img.shields.io/github/stars/AlexEMG/DeepLabCut.svg?style=social&label=Star)](https://github.com/AlexEMG/DeepLabCut)
-
+[![GitHub forks](https://img.shields.io/github/forks/AlexEMG/DeepLabCut.svg?style=social&label=Fork)](https://github.com/AlexEMG/DeepLabCut)
 
 ## DeepLabCut 
 
@@ -32,29 +31,6 @@ Please check out [www.mousemotorlab.org/deeplabcut](https://www.mousemotorlab.or
 # [DEMO the code](/examples) 
 We provide several Jupyter Notebooks: one that walks you through a demo dataset to test your installation, and another Notebook to run DeepLabCut from the begining on your own data. We also show you how to use the code in Docker, and on Google Colab.
 
-# Why using DeepLabCut?:
-
-- Due to transfer learning it requires **little training data** for multiple, challenging behaviors (see [Mathis et al.](https://www.nature.com/articles/s41593-018-0209-y) for details). 
-<p align="center">
-<img src="docs/images/ErrorvsTrainingsetSize.png" width="60%">
-</p>
-
-- Video anlysis is fast (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
-<p align="center">
-<img src="docs/images/inferencespeed.png" width="60%">
-</p>
-
-- The feature detectors are robust to video compression (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
-<p align="center">
-<img src="docs/images/compressionrobustness.png" width="60%">
-</p>
-
-- It allows 3D pose estimation with a single network and camera (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
-<p align="center">
-<img src="docs/images/MouseLocomotion_warren.gif" width="25%">
-</p>
-
-
 # News (and in the news):
 
 - Nov 2018: Various (post-hoc) analysis scripts contributed by users (and us) will be gathered at [DLCutils](https://github.com/AlexEMG/DLCutils). Feel free to contribute! In particular, there is a script guiding you through 
@@ -66,6 +42,29 @@ importing a project into the new data format for DLC 2.0
 - August 2018: NVIDIA AI Developer News: [AI Enables Markerless Animal Tracking](https://news.developer.nvidia.com/ai-enables-markerless-animal-tracking/)
 - July 2018: Ed Yong covered DeepLabCut and interviewed several users for the [Atlantic](https://www.theatlantic.com/science/archive/2018/07/deeplabcut-tracking-animal-movements/564338). 
 - April 2018: first DeepLabCut preprint on [arXiv.org](https://arxiv.org/abs/1804.03142)
+
+# Why using DeepLabCut?
+
+- Due to transfer learning it requires **little training data** for multiple, challenging behaviors (see [Mathis et al.](https://www.nature.com/articles/s41593-018-0209-y) for details). 
+<p align="center">
+<img src="docs/images/ErrorvsTrainingsetSize.png" width="60%">
+</p>
+
+- Video anlysis is fast (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
+<p align="center">
+<img src="docs/images/inferencespeed.png" width="70%">
+</p>
+
+- The feature detectors are robust to video compression (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
+<p align="center">
+<img src="docs/images/compressionrobustness.png" width="70%">
+</p>
+
+- It allows 3D pose estimation with a single network and camera (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
+<p align="center">
+<img src="docs/images/MouseLocomotion_warren.gif" width="25%">
+</p>
+
 
 ## Code contributors:
 
