@@ -7,5 +7,5 @@ M Mathis, mackenzie@post.harvard.edu
 
 """
 
-__version__ = '2.0.0.beta'
+__version__ = '2.0.0.dev3'
 VERSION = __version__
