@@ -83,7 +83,9 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
     --------
 
     """
-    del os.environ['TF_CUDNN_USE_AUTOTUNE'] #was potentially set during training
+    if 'TF_CUDNN_USE_AUTOTUNE' in os.environ:
+        del os.environ['TF_CUDNN_USE_AUTOTUNE'] #was potentially set during training
+    
     tf.reset_default_graph()
     
     cfg = auxiliaryfunctions.read_config(config)

@@ -74,7 +74,9 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
     from deeplabcut.utils import auxiliaryfunctions, visualization
     import tensorflow as tf
     
-    del os.environ['TF_CUDNN_USE_AUTOTUNE'] #was potentially set during training
+    if 'TF_CUDNN_USE_AUTOTUNE' in os.environ:
+        del os.environ['TF_CUDNN_USE_AUTOTUNE'] #was potentially set during training
+    
 
     tf.reset_default_graph()
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' # 
