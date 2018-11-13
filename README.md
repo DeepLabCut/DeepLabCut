@@ -13,9 +13,9 @@ This package includes graphical user interfaces to label your data, and take you
 VERSION 1.0: The initial, Nature Neuroscience version of **DeepLabCut** can be found in the history of git, or the latest version here: https://github.com/AlexEMG/DeepLabCut/releases/tag/1.11
 
 <p align="center">
-<img src="https://github.com/AlexEMG/DeepLabCut/tree/master/docs/images/MATHIS_2018_odortrail.gif" width="36.4%">
-<img src="https://github.com/AlexEMG/DeepLabCut/tree/master/docs/images/rat-grasp.gif" width="24.95%">
-<img src="https://github.com/AlexEMG/DeepLabCut/tree/master/docs/images/MATHIS_2018_fly.gif" width="31.5%">
+<img src="docs/images/MATHIS_2018_odortrail.gif" width="36.4%">
+<img src="docs/images/rat-grasp.gif" width="24.95%">
+<img src="docs/images/MATHIS_2018_fly.gif" width="31.5%">
 </p>
 
 Please check out [www.mousemotorlab.org/deeplabcut](https://www.mousemotorlab.org/deeplabcut/) for more video demonstrations of automated tracking. Above: courtesy of the Murthy (mouse), Leventhal (rat), and Axel (fly) labs!
@@ -47,22 +47,22 @@ importing a project into the new data format for DLC 2.0
 
 - Due to transfer learning it requires **little training data** for multiple, challenging behaviors (see [Mathis et al.](https://www.nature.com/articles/s41593-018-0209-y) for details). 
 <p align="center">
-<img src="https://github.com/AlexEMG/DeepLabCut/tree/master/docs/images/ErrorvsTrainingsetSize.png" width="60%">
+<img src="docs/images/ErrorvsTrainingsetSize.png" width="60%">
 </p>
 
 - Video anlysis is fast (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
 <p align="center">
-<img src="https://github.com/AlexEMG/DeepLabCut/tree/master/docs/images/inferencespeed.png" width="70%">
+<img src="docs/images/inferencespeed.png" width="70%">
 </p>
 
 - The feature detectors are robust to video compression (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
 <p align="center">
-<img src="https://github.com/AlexEMG/DeepLabCut/tree/master/docs/images/compressionrobustness.png" width="70%">
+<img src="docs/images/compressionrobustness.png" width="70%">
 </p>
 
 - It allows 3D pose estimation with a single network and camera (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
 <p align="center">
-<img src="https://github.com/AlexEMG/DeepLabCut/tree/master/docs/images/MouseLocomotion_warren.gif" width="25%">
+<img src="docs/images/MouseLocomotion_warren.gif" width="25%">
 </p>
 
 
