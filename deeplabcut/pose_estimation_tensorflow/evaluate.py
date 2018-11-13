@@ -73,6 +73,8 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
     from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import data_to_input
     from deeplabcut.utils import auxiliaryfunctions, visualization
     import tensorflow as tf
+    
+    del os.environ['TF_CUDNN_USE_AUTOTUNE'] #was potentially set during training
 
     tf.reset_default_graph()
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' # 
@@ -96,7 +98,6 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
         for trainFraction in cfg["TrainingFraction"]:
             ##################################################
             # Load and setup CNN part detector
-            
             ##################################################
             datafn,metadatafn=auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,trainFraction,shuffle,cfg)
             modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)))
@@ -107,8 +108,10 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
             try:
                 dlc_cfg = load_config(str(path_test_config))
             except FileNotFoundError:
-                print("It seems the model for shuffle %s and trainFraction %s does not exist."%(shuffle,trainFraction))
-                        
+                raise FileNotFoundError("It seems the model for shuffle %s and trainFraction %s does not exist."%(shuffle,trainFraction))
+            
+            #change batch size, if it was edited during analysis!
+            dlc_cfg['batch_size']=1 #in case this was edited for analysis.
             #Create folder structure to store results.
             evaluationfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetEvaluationFolder(trainFraction,shuffle,cfg)))
             auxiliaryfunctions.attempttomakefolder(evaluationfolder,recursive=True)
@@ -147,7 +150,7 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
                 try:
                     DataMachine = pd.read_hdf(resultsfilename,'df_with_missing')
                     print("This net has already been evaluated!")
-                except:
+                except FileNotFoundError:
                     # Specifying state of model (snapshot / training state)
                     sess, inputs, outputs = ptf_predict.setup_pose_prediction(dlc_cfg)
 

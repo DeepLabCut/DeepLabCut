@@ -25,7 +25,7 @@ def yaml_config_template(yaml_path, cfg):
             k = keys.pop()
             yaml.dump({k: cfg[k]}, cf, default_flow_style=False)
 
-def create_new_project(project, experimenter, videos, working_directory=None, copy_videos=False):
+def create_new_project(project, experimenter, videos, working_directory=None, copy_videos=False,videotype='.avi'):
     """Creates a new project directory, sub-directories and a basic configuration file. The configuration file is loaded with the default values. Change its parameters to your projects need.
 
     Parameters
@@ -37,7 +37,8 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
         String containing the name of the experimenter.
         
     videos : list
-        A list of string containing the full paths of the videos to include in the project.
+        A list of string containing the full paths of the videos to include in the project. 
+        Attention: Can also be a directory, then all videos of videotype will be imported. Do not pass it as a list!
         
     working_directory : string, optional
         The directory where the project will be created. The default is the ``current working directory``; if provided, it must be a string.
@@ -50,7 +51,9 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
     --------
     Linux/MacOs
     >>> deeplabcut.create_new_project('reaching-task','Linus',['/data/videos/mouse1.avi','/data/videos/mouse2.avi','/data/videos/mouse3.avi'],'/analysis/project/')
-
+    
+    >>> deeplabcut.create_new_project('reaching-task','Linus','/data/videos',videotype='.mp4')
+    
     Windows:
     >>> deeplabcut.create_new_project('reaching-task','Bill',['C:\\Users\\rig-95\\Videos\\reachingvideo1.avi'], copy_videos=True)
 
@@ -80,17 +83,29 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
         p.mkdir(parents=True, exist_ok=DEBUG)
         print('Created "{}"'.format(p))
 
+    # Import all videos in a folder or if just one video withouth [] passed, then make it a list.
     if isinstance(videos,str):
-        videos=[videos]
+        #there are two cases:
+        if os.path.isdir(videos): # it is a path!
+            path=videos
+            videos=[os.path.join(path,vp) for vp in os.listdir(path) if videotype in vp]
+            if len(videos)==0:
+                print("No videos found in",path,os.listdir(path))
+                print("Perhaps change the videotype, which is currently set to:", videotype)
+            else:
+                print("Directory entered, " , len(videos)," videos were found.")
+        else:
+            if os.path.isfile(videos):
+                videos=[videos]
 
     videos = [Path(vp) for vp in videos]
-
     dirs = [data_path/Path(i.stem) for i in videos]
     for p in dirs:
         """
         Creates directory under data
         """
         p.mkdir(parents = True, exist_ok = True)
+        
     destinations = [video_path.joinpath(vp.name) for vp in videos]
     if copy_videos==True:
         print("Copying the videos")

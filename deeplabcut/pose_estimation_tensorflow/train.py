@@ -81,7 +81,7 @@ def train(config_yaml,displayiters,saveiters,max_to_keep=5):
     setup_logging()
     
     cfg = load_config(config_yaml)
-    cfg['batch_size']=1 
+    cfg['batch_size']=1 #in case this was edited for analysis.
     
     dataset = create_dataset(cfg)
     batch_spec = get_batch_spec(cfg)

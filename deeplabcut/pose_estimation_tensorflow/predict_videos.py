@@ -65,6 +65,10 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
     If you want to analyze only 1 video
     >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi'])
     --------
+    
+    If you want to analyze all videos of type avi in a folder:
+    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos'],videotype='.avi')
+    --------
 
     If you want to analyze multiple videos
     >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi','/analysis/project/videos/reachingvideo2.avi'])
@@ -79,8 +83,7 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
     --------
 
     """
-    #import imageio
-    #imageio.plugins.ffmpeg.download()
+    del os.environ['TF_CUDNN_USE_AUTOTUNE'] #was potentially set during training
     tf.reset_default_graph()
     
     cfg = auxiliaryfunctions.read_config(config)
@@ -90,7 +93,7 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
     try:
         dlc_cfg = load_config(str(path_test_config))
     except FileNotFoundError:
-        print("It seems the model for shuffle %s and trainFraction %s does not exist."%(shuffle,trainFraction))
+        raise FileNotFoundError("It seems the model for shuffle %s and trainFraction %s does not exist."%(shuffle,trainFraction))
 
     # Check which snapshots are available and sort them by # iterations
     try:
@@ -149,7 +152,7 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
         else:
             Videos=[v for v in videos if os.path.isfile(v)]
     
-    if len(videos)>0:
+    if len(Videos)>0:
         #looping over videos
         for video in Videos:
             AnalzyeVideo(video,DLCscorer,cfg,dlc_cfg,sess,inputs, outputs,pdindex)
