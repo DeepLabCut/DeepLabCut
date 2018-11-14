@@ -147,7 +147,7 @@ def CreateVideoSlow(clip,Dataframe,tmpfolder,dotsize,colormap,alphavalue,pcutoff
             os.remove(file_name)
     os.chdir(start)
 
-def create_labeled_video(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',save_frames=False,delete=False,displayedbodyparts='all',codec='X264'):
+def create_labeled_video(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',save_frames=False,delete=False,displayedbodyparts='all',codec='avc1'):
     """
     Labels the bodyparts in a video. Make sure the video is already analyzed by the function 'analyze_video'
 

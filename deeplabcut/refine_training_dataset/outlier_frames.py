@@ -487,7 +487,7 @@ def merge_datasets(config,forceiterate=None):
     config_path = Path(config).parents[0]
 
     bf=Path(str(config_path/'labeled-data'))
-    allfolders = [os.path.join(bf,fn) for fn in os.listdir(bf) ]
+    allfolders = [os.path.join(bf,fn) for fn in os.listdir(bf) and "_labeled" not in fn] #exclude labeled data folders!
     flagged=False
     for findex,folder in enumerate(allfolders): 
         if os.path.isfile(os.path.join(folder,'MachineLabelsRefine.h5')): #Folder that was manually refine...
