@@ -179,7 +179,7 @@ def MakeLabeledPlots(folder,DataCombined,cfg,Labels,Colorscheme,cc,scale):
             left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
         plt.gca().invert_yaxis()
 
-        plt.savefig(str(Path(tmpfolder)/imagename.split("/")[-1])) #create file name
+        plt.savefig(str(Path(tmpfolder)/imagename.split(os.sep)[-1])) #create file name
         plt.close("all")
 
 def SplitTrials(trialindex, trainFraction=0.8):
