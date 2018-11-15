@@ -110,7 +110,13 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
     if copy_videos==True:
         print("Copying the videos")
         for src, dst in zip(videos, destinations):
-            shutil.copy(src,dst)
+            shutil.copy(os.fspath(src),os.fspath(dst)) #https://www.python.org/dev/peps/pep-0519/
+            #https://github.com/AlexEMG/DeepLabCut/issues/105 (for windows)
+            
+            #try:
+            #    #shutil.copy(src,dst)
+            #except OSError or TypeError: #https://github.com/AlexEMG/DeepLabCut/issues/105 (for windows)
+            #    shutil.copy(os.fspath(src),os.fspath(dst))
     else:
       # creates the symlinks of the video and puts it in the videos directory.
         print("Creating the symbolic link of the video")

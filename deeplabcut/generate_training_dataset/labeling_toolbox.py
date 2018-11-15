@@ -40,7 +40,7 @@ class MainFrame(wx.Frame):
         self.top_split = MatplotPanel(self.split_win,config) # This call/link the MatplotPanel and MainFrame classes which replaces the above line
         self.bottom_split = wx.Panel(self.split_win, style=wx.SUNKEN_BORDER)
         self.split_win.SplitHorizontally(self.top_split, self.bottom_split, 920) #1100)
-        self.Maximize(True)
+        #self.Maximize(True)
 
         #self.top_split.SetBackgroundColour((100, 100, 100))
         #self.bottom_split.SetBackgroundColour((80, 80, 80))
@@ -113,7 +113,7 @@ class MainFrame(wx.Frame):
         self.addLabel.Bind(wx.EVT_CHECKBOX,self.newLabel)
         self.new_labels = False
 
-        self.img_size = (11.5, 11.5)  # was (12, 7.8)
+        self.img_size = (11.5, 7.8)  # was (12, 7.8)
         
     def newLabel(self, event):
         self.chk = event.GetEventObject()

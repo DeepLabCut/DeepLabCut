@@ -157,13 +157,13 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
     if len(Videos)>0:
         #looping over videos
         for video in Videos:
-            AnalzyeVideo(video,DLCscorer,cfg,dlc_cfg,sess,inputs, outputs,pdindex)
+            AnalzyeVideo(video,DLCscorer,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv)
 
     print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
     print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
 
 
-def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize,frame_buffer):
+def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize):
     ''' Batchwise prediction of pose '''
     
     PredicteData = np.zeros((nframes, 3 * len(dlc_cfg['all_joints_names'])))
@@ -216,7 +216,7 @@ def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize,frame_buff
 
     return PredicteData,nframes
 
-def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,frame_buffer):
+def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes):
     ''' Non batch wise pose estimation for video cap.'''
     if cfg['cropping']:
         print("Cropping based on the x1 = %s x2 = %s y1 = %s y2 = %s. You can adjust the cropping coordinates in the config.yaml file." %(cfg['x1'], cfg['x2'],cfg['y1'], cfg['y2']))
@@ -257,7 +257,7 @@ def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,frame_buffer):
     return PredicteData,nframes
 
 
-def AnalzyeVideo(video,DLCscorer,cfg,dlc_cfg,sess,inputs, outputs,pdindex,frame_buffer=10):
+def AnalzyeVideo(video,DLCscorer,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv):
     #from moviepy.editor import VideoFileClip
     
     print(video)
@@ -286,9 +286,9 @@ def AnalzyeVideo(video,DLCscorer,cfg,dlc_cfg,sess,inputs, outputs,pdindex,frame_
 
         print("Starting to extract posture")
         if int(dlc_cfg["batch_size"])>1:
-            PredicteData,nframes=GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,int(dlc_cfg["batch_size"]),frame_buffer)
+            PredicteData,nframes=GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,int(dlc_cfg["batch_size"]))
         else:
-            PredicteData,nframes=GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,frame_buffer)
+            PredicteData,nframes=GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes)
 
         stop = time.time()
         
@@ -313,7 +313,7 @@ def AnalzyeVideo(video,DLCscorer,cfg,dlc_cfg,sess,inputs, outputs,pdindex,frame_
         metadata = {'data': dictionary}
 
         print("Saving results in %s..." %(Path(video).parents[0]))
-        auxiliaryfunctions.SaveData(PredicteData[:nframes,:], metadata, dataname, pdindex, range(nframes))
+        auxiliaryfunctions.SaveData(PredicteData[:nframes,:], metadata, dataname, pdindex, range(nframes),save_as_csv)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

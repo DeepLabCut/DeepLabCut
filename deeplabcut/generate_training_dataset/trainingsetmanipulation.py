@@ -74,7 +74,7 @@ def dropduplicates(config):
             print("Attention:", folder, "does not appear to have labeled data!")
 
 
-def label_frames(config):
+def label_frames(config,scale =.9):
     """
     Manually label/annotate the extracted frames. Update the list of body parts you want to localize in the config.yaml file first
 
@@ -95,7 +95,7 @@ def label_frames(config):
     
     from deeplabcut.generate_training_dataset import labeling_toolbox
     
-    labeling_toolbox.show(config)
+    labeling_toolbox.show(config) #,scale)
     os.chdir(startpath)
 
 def get_cmap(n, name='hsv'):
@@ -288,7 +288,7 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None):
     scorer = cfg['scorer']
     project_path = cfg['project_path']
     # Create path for training sets & store data there 
-    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg) #Path concatenatn OS platform independent
+    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg) #Path concatenation OS platform independent
     auxiliaryfunctions.attempttomakefolder(Path(os.path.join(project_path,str(trainingsetfolder))),recursive=True)
     Data = merge_annotateddatasets(cfg,project_path,Path(os.path.join(project_path,trainingsetfolder)))
     Data = Data[scorer] #extract labeled data

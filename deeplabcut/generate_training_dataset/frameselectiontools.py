@@ -16,7 +16,7 @@ from skimage.util import img_as_ubyte
 from sklearn.cluster import MiniBatchKMeans
 from tqdm import tqdm
 
-def UniformFrames(clip,numframes2pick,start,stop,Index="all"):
+def UniformFrames(clip,numframes2pick,start,stop,Index=None):
     ''' Temporally uniformly sampling frames in interval (start,stop). 
     Visual information of video is irrelevant for this method. This code is fast and sufficient (to extract distinct frames),
     when behavioral videos naturally covers many states.
@@ -25,7 +25,7 @@ def UniformFrames(clip,numframes2pick,start,stop,Index="all"):
     '''
     print("Uniformly extracting of frames from", start*clip.duration," seconds to", stop*clip.duration, " seconds.")
 
-    if Index=="all":
+    if Index is None:
         if start==0:
             frames2pick = np.random.choice(math.ceil(clip.duration * clip.fps * stop), size=numframes2pick, replace = False)
         else:
@@ -41,7 +41,7 @@ def UniformFrames(clip,numframes2pick,start,stop,Index="all"):
         else:
             return list(Index)
     
-def KmeansbasedFrameselection(clip,numframes2pick,start,stop,Index="all",resizewidth=30,batchsize=100,max_iter=50):
+def KmeansbasedFrameselection(clip,numframes2pick,start,stop,Index=None,resizewidth=30,batchsize=100,max_iter=50):
     ''' This code downsamples the video to a width of resizewidth. 
     
     The video is extracted as a numpy array, which is then clustered with kmeans, whereby each frames is treated as a vector. 
@@ -56,7 +56,7 @@ def KmeansbasedFrameselection(clip,numframes2pick,start,stop,Index="all",resizew
     startindex=int(np.floor(clip.fps*clip.duration*start))
     stopindex=int(np.ceil(clip.fps*clip.duration*stop))
     
-    if Index=="all":
+    if Index is None:
         Index=np.arange(stopindex-startindex)+startindex
     else:
         Index=np.array(Index)

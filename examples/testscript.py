@@ -54,7 +54,7 @@ frames=os.listdir(os.path.join(cfg['project_path'],'labeled-data',videoname))
 #As this next step is manual, we update the labels by putting them on the diagonal (fixed for all frames)
 for index,bodypart in enumerate(cfg['bodyparts']): 
         columnindex = pd.MultiIndex.from_product([[scorer], [bodypart], ['x', 'y']],names=['scorer', 'bodyparts', 'coords'])
-        frame = pd.DataFrame(np.ones((len(frames),2))*50*index, columns = columnindex, index = [os.path.join('labeled-data',videoname,fn) for fn in frames])
+        frame = pd.DataFrame(100+np.ones((len(frames),2))*50*index, columns = columnindex, index = [os.path.join('labeled-data',videoname,fn) for fn in frames])
         if index==0:
             dataFrame=frame
         else:
@@ -62,6 +62,11 @@ for index,bodypart in enumerate(cfg['bodyparts']):
 
 dataFrame.to_csv(os.path.join(cfg['project_path'],'labeled-data',videoname,"CollectedData_" + scorer + ".csv"))
 dataFrame.to_hdf(os.path.join(cfg['project_path'],'labeled-data',videoname,"CollectedData_" + scorer + '.h5'),'df_with_missing',format='table', mode='w')
+
+print("Plot labels...")
+
+deeplabcut.check_labels(path_config_file)
+
 
 print("CREATING TRAININGSET")
 deeplabcut.create_training_dataset(path_config_file)
@@ -100,7 +105,7 @@ except:
     newclip = VideoClip(make_frame, duration=1)
     newclip.write_videofile(newvideo,fps=30)
 
-deeplabcut.analyze_videos(path_config_file,[newvideo])
+deeplabcut.analyze_videos(path_config_file,[newvideo],save_as_csv=True)
 
 print("CREATE VIDEO")
 deeplabcut.create_labeled_video(path_config_file,[newvideo])
@@ -130,7 +135,7 @@ posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['itera
 DLC_config=read_config(posefile)
 DLC_config['save_iters']=5
 DLC_config['display_iters']=1
-DLC_config['multi_step']=[[0.05,5]]
+DLC_config['multi_step']=[[0.001,5]]
 
 print("CHANGING training parameters to end quickly!")
 write_config(posefile,DLC_config)
