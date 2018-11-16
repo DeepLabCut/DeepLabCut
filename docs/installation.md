@@ -14,7 +14,7 @@
 
      
 - Software: 
-     - Operating System: Linux (Ubuntu) or Windows (7 or newer). However, the authors recommend Ubuntu
+     - Operating System: Linux (Ubuntu) or Windows 10. However, the authors strongly recommend Ubuntu!
      - Anaconda/Python3: Anaconda: a free and open source distribution of the Python programming language (download from: \https://www.anaconda.com/). DeepLabCut is written in Python 3 (https://www.python.org/) and not compatible with Python 2. 
      - pip install deeplabcut (see below!) 
      - TensorFlow (see below!)
