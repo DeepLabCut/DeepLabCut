@@ -43,28 +43,22 @@ importing a project into the new data format for DLC 2.0
 - July 2018: Ed Yong covered DeepLabCut and interviewed several users for the [Atlantic](https://www.theatlantic.com/science/archive/2018/07/deeplabcut-tracking-animal-movements/564338). 
 - April 2018: first DeepLabCut preprint on [arXiv.org](https://arxiv.org/abs/1804.03142)
 
-# Why using DeepLabCut?
+# Why use DeepLabCut?
 
-- Due to transfer learning it requires **little training data** for multiple, challenging behaviors (see [Mathis et al.](https://www.nature.com/articles/s41593-018-0209-y) for details). 
+- Top left: Due to transfer learning it requires **little training data** for multiple, challenging behaviors (see [Mathis et al.](https://www.nature.com/articles/s41593-018-0209-y) for details). 
+
+- Top Right: Video anlysis is fast (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
+
+- Bottom Left: The feature detectors are robust to video compression (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
+
+- Bottom Right: It allows 3D pose estimation with a single network and camera (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
+
 <p align="center">
-<img src="docs/images/ErrorvsTrainingsetSize.png" width="60%">
+<img src="docs/images/ErrorvsTrainingsetSize.png" width="50%">
+<img src="docs/images/inferencespeed.png" width="30%">  
+<img src="docs/images/compressionrobustness.png" width="40%">
+<img src="docs/images/MouseLocomotion_warren.gif" width="30%">
 </p>
-
-- Video anlysis is fast (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
-<p align="center">
-<img src="docs/images/inferencespeed.png" width="70%">
-</p>
-
-- The feature detectors are robust to video compression (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
-<p align="center">
-<img src="docs/images/compressionrobustness.png" width="70%">
-</p>
-
-- It allows 3D pose estimation with a single network and camera (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
-<p align="center">
-<img src="docs/images/MouseLocomotion_warren.gif" width="25%">
-</p>
-
 
 ## Code contributors:
 
