@@ -97,11 +97,13 @@ The toolbox provides a function **label_frames** which helps the user to easily 
 an interactive graphical user interface (GUI). The user should have already named the body parts to label (points of
 interest) in the project’s configuration file by providing a list. The following command invokes the labeling toolbox.
 
-          >> deeplabcut.label_frames(config_path)
+          >> deeplabcut.label_frames(config_path, Sreens=1)
+          
+ If you have dual moitors (i.e. on the left and right), then change ``Screens=2``. 
           
 The user needs to use the *Load Frames* button to select the directory which stores the extracted frames from one of
-the videos. Subsequently, the user can use one of the radio buttons (top right) to select a body part to label. The
-label will be plotted as a dot in a unique color (see Figure 4 for more details).
+the videos. Subsequently, the user can use one of the radio buttons (top right) to select a body part to label. RIGHT click to add the label. left click to drag, if needed. Plesae see ``HELP`` button for user instructions! This auto-advances once you labeled the first body part. You can also advance to the next frame by clicking on the RIGHT arrow on your keyboard.
+Each label will be plotted as a dot in a unique color (see Figure 4 for more details).
 
 CRITICAL POINT: It is recommended to finalize the position of the selected label before changing the dot
 size for the next labels.
