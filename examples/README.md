@@ -62,7 +62,7 @@ For GPU-based training and analysis you will need to switch to either our [suppl
 
 ## Demo DeepLabCut training and analysis on Colaboratory (in the cloud):
 
-- Alternatively, you can use Google [Colaboratory](https://colab.research.google.com) to demo running the training and analysis of new videos, i.e. the parts that need a GPU!
+- Alternatively, you can use Google [Colaboratory](https://colab.research.google.com) to demo running the training and analysis of new videos, i.e. the parts that need a GPU! Here is a demo of us using it: https://www.youtube.com/watch?v=j13aXxysI2E
 
   - Warning: Colab updates their CUDA/TensorFlow likely faster than we can keep up, so this may not work at all future points in time (and, as a reminder, this whole package is released with a [LICENSE](/LICENSE) that implies no Liability and no Warranty). 
 
