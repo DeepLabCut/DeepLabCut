@@ -4,7 +4,6 @@ https://github.com/AlexEMG/DeepLabCut
 A Mathis, alexander.mathis@bethgelab.org
 T Nath, nath@rowland.harvard.edu
 M Mathis, mackenzie@post.harvard.edu
-
 """
 
 import os
@@ -23,54 +22,64 @@ import yaml
 from deeplabcut.generate_training_dataset import auxfun_drag_label
 from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as NavigationToolbar
 
-
 # ###########################################################################
 # Class for GUI MainFrame
 # ###########################################################################
 
+
+#minic small screen: 
+#displaysize = (660*2, 500*2)
+   
 class MainFrame(wx.Frame):
     """Contains the main GUI and button boxes"""
 
-    def __init__(self, parent,config):
-        wx.Frame.__init__(self, parent, title="DeepLabCut2.0 - Labeling ToolBox", size=(1200, 980))
+    def __init__(self, parent, config,Screens,scale_w,scale_h):
+        displaysize = wx.GetDisplaySize()
 
-# Add SplitterWindow panels top for figure and bottom for buttons
-        self.split_win = wx.SplitterWindow(self)
-        # self.top_split = wx.Panel(self.split_win, style=wx.SUNKEN_BORDER)
-        self.top_split = MatplotPanel(self.split_win,config) # This call/link the MatplotPanel and MainFrame classes which replaces the above line
-        self.bottom_split = wx.Panel(self.split_win, style=wx.SUNKEN_BORDER)
-        self.split_win.SplitHorizontally(self.top_split, self.bottom_split, 920) #1100)
-        #self.Maximize(True)
+        w = displaysize[0]
+        h = displaysize[1]
+        self.gui_width = (w*scale_w)/Screens
+        self.gui_height = (h*scale_h)
 
-        #self.top_split.SetBackgroundColour((100, 100, 100))
-        #self.bottom_split.SetBackgroundColour((80, 80, 80))
 
-        self.split_win.Bind(wx.EVT_CHAR_HOOK, self.OnKeyPressed) 
-
+        #print("Scaled GUI width", self.gui_width, "and height", self.gui_height)
+        if self.gui_width<600 or self.gui_height<500:
+                print("Your screen width", w, "and height", h)
+                print("Scaled GUI width", self.gui_width, "and height", self.gui_height)
+                print("Please adjust scale_h and scale_w, or get a bigger screen!")
+        
+        self.size=displaysize
+        
+        wx.Frame.__init__(self, None, title="DeepLabCut2.0 - Labeling GUI", size=(self.gui_width, self.gui_height), 
+                          style= wx.DEFAULT_FRAME_STYLE | wx.FULL_REPAINT_ON_RESIZE)
+        
+        self.panel = MatplotPanel(self, parent)
         self.statusbar = self.CreateStatusBar()
         self.statusbar.SetStatusText("")
+        self.Bind(wx.EVT_CHAR_HOOK, self.OnKeyPressed) 
 
-# Add Buttons to the bottom_split window and bind them to plot functions
+        self.SetBackgroundColour("#ffffff")
+
         buttons_list = []
-        self.Button1 = wx.Button(self.bottom_split, -1, "Load frames", size=(200, 40), pos=(80, 25))
+        self.Button1 = wx.Button(self, -1, "Load Frames", size=(150, 40), pos=(self.gui_width*.1, self.gui_height*.9))
         self.Button1.Bind(wx.EVT_BUTTON, self.browseDir)
         self.Button1.Enable(True)
         buttons_list.append(self.Button1)
 
-        self.Button5 = wx.Button(self.bottom_split, -1, "Help", size=(80, 40), pos=(310, 25))
+        self.Button5 = wx.Button(self, -1, "Help", size=(80, 40), pos=(self.gui_width*.3, self.gui_height*.9))
         self.Button5.Bind(wx.EVT_BUTTON, self.help)
         self.Button5.Enable(False)
         buttons_list.append(self.Button5)
 
-        self.Button2 = wx.Button(self.bottom_split, -1, "Next Frame", size=(120, 40), pos=(640, 25))
+        self.Button2 = wx.Button(self, -1, "Next Frame", size=(120, 40), pos=(self.gui_width*.4, self.gui_height*.9))
         self.Button2.Bind(wx.EVT_BUTTON, self.nextImage)
         self.Button2.Enable(False)
         buttons_list.append(self.Button2)
         
-        self.Button4 = wx.Button(self.bottom_split, -1, "Save", size=(80, 40), pos=(840, 25))
+        self.Button4 = wx.Button(self, -1, "Save", size=(80, 40), pos=(self.gui_width*.6, self.gui_height*.9))
         self.Button4.Bind(wx.EVT_BUTTON, self.save)
         self.Button4.Enable(False)
-        self.close = wx.Button(self.bottom_split, -1, "Quit", size=(80, 40), pos=(990, 25))
+        self.close = wx.Button(self, -1, "Quit", size=(80, 40), pos=(self.gui_width*.8, self.gui_height*.9))
         self.close.Bind(wx.EVT_BUTTON,self.quitButton)
         buttons_list.append(self.Button4)
         buttons_list.append(self.close)
@@ -78,15 +87,15 @@ class MainFrame(wx.Frame):
 # add buttons for  zoom
         # radio buttons position: (1250, 65)
 
-        self.Button8 = wx.Button(self.top_split,-1,"Zoom", size=(60,30),pos=(840,875))
+        self.Button8 = wx.Button(self,-1,"Zoom", size=(60,30),pos=(self.gui_width*.65, self.gui_height*.8))
         self.Button8.Bind(wx.EVT_BUTTON,self.zoom)
         buttons_list.append(self.Button8)
 
-        self.Button7 = wx.Button(self.top_split,-1,"Pan", size=(60,30),pos=(940,875))
+        self.Button7 = wx.Button(self,-1,"Pan", size=(60,30),pos=(self.gui_width*.75, self.gui_height*.8))
         self.Button7.Bind(wx.EVT_BUTTON,self.pan)
         buttons_list.append(self.Button7)
 
-        self.Button6 = wx.Button(self.top_split,-1,"Home", size=(60,30),pos=(1040,875))
+        self.Button6 = wx.Button(self,-1,"Home", size=(60,30),pos=(self.gui_width*.85, self.gui_height*.8))
         self.Button6.Bind(wx.EVT_BUTTON,self.home)
         buttons_list.append(self.Button6)
 
@@ -109,11 +118,13 @@ class MainFrame(wx.Frame):
         self.flag = True
         self.file = 0
         self.config_file = config
-        self.addLabel = wx.CheckBox(self.top_split, label = 'Add new labels to existing dataset?',pos = (80, 875))
+        self.addLabel = wx.CheckBox(self, label = 'Add new labels to existing dataset?',pos = (80, self.gui_height*.85))
         self.addLabel.Bind(wx.EVT_CHECKBOX,self.newLabel)
         self.new_labels = False
+        imgW = self.gui_width*.008 #was 12 inches (perhaps add dpi!)
+        imgH = self.gui_height*.008    #was 7 inches 
 
-        self.img_size = (11.5, 7.8)  # was (12, 7.8)
+        self.img_size = (imgW, imgH)  # width, height in inches. 
         
     def newLabel(self, event):
         self.chk = event.GetEventObject()
@@ -223,7 +234,7 @@ class MainFrame(wx.Frame):
 
         img_name = Path(self.index[self.iter]).name # self.index[self.iter].split('/')[-1]
         self.ax1f1.set_title(str(str(self.iter+1)+"/"+str(len(self.index)) +" "+ img_name ))
-        self.canvas = FigureCanvas(self.top_split,-1,self.fig1)
+        self.canvas = FigureCanvas(self,-1,self.fig1)
         self.toolbar = NavigationToolbar(self.canvas)
 
         #checks for unique bodyparts
@@ -237,7 +248,7 @@ class MainFrame(wx.Frame):
           _, idx = np.unique(oldBodyParts, return_index=True)
           oldbodyparts2plot =  list(oldBodyParts[np.sort(idx)])
           self.bodyparts =  list(set(self.bodyparts) - set(oldbodyparts2plot))
-          self.rdb = wx.RadioBox(self.top_split, id=1, label="Select a body part to annotate",pos=(1250, 65), choices=self.bodyparts, majorDimension =1,style=wx.RA_SPECIFY_COLS,validator=wx.DefaultValidator, name=wx.RadioBoxNameStr)
+          self.rdb = wx.RadioBox(self, id=1, label="Select a body part to annotate",pos=(self.gui_width*.83, self.gui_height*.1), choices=self.bodyparts, majorDimension =1,style=wx.RA_SPECIFY_COLS,validator=wx.DefaultValidator, name=wx.RadioBoxNameStr)
           self.option = self.rdb.Bind(wx.EVT_RADIOBOX,self.onRDB)
           cbar = self.fig1.colorbar(im_axis, ax = self.ax1f1)
           cbar.set_ticks(range(12,np.max(im),int(np.floor(np.max(im)/len(self.bodyparts)-1))))
@@ -247,7 +258,7 @@ class MainFrame(wx.Frame):
           cbar = self.fig1.colorbar(im_axis, ax = self.ax1f1)
           cbar.set_ticks(range(12,np.max(im),int(np.floor(np.max(im)/len(self.bodyparts)-1))))
           cbar.set_ticklabels(self.bodyparts)
-          self.rdb = wx.RadioBox(self.top_split, id=1, label="Select a body part to annotate",pos=(1250, 65), choices=self.bodyparts, majorDimension =1,style=wx.RA_SPECIFY_COLS,validator=wx.DefaultValidator, name=wx.RadioBoxNameStr)
+          self.rdb = wx.RadioBox(self, id=1, label="Select a body part to annotate",pos=(self.gui_width*.83, self.gui_height*.1), choices=self.bodyparts, majorDimension =1,style=wx.RA_SPECIFY_COLS,validator=wx.DefaultValidator, name=wx.RadioBoxNameStr)
           self.option = self.rdb.Bind(wx.EVT_RADIOBOX,self.onRDB)
 
 
@@ -268,9 +279,9 @@ class MainFrame(wx.Frame):
             self.dataFrame = pd.concat([self.dataFrame, frame],axis=1)
 
         if self.file == 0:
-            self.checkBox = wx.CheckBox(self.top_split, label = 'Adjust marker size.',pos = (500, 855))
+            self.checkBox = wx.CheckBox(self, label = 'Adjust marker size.',pos = (self.gui_width*.43, self.gui_height*.85))
             self.checkBox.Bind(wx.EVT_CHECKBOX,self.onChecked)
-            self.slider = wx.Slider(self.top_split, -1, 5, 0, 20,size=(200, -1),  pos=(500, 780),style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS )
+            self.slider = wx.Slider(self, -1, 5, 0, 20,size=(200, -1),  pos=(self.gui_width*.40, self.gui_height*.78),style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS )
             self.slider.Bind(wx.EVT_SLIDER, self.OnSliderScroll)
             self.slider.Enable(False)
 
@@ -311,7 +322,7 @@ class MainFrame(wx.Frame):
             cbar.set_ticklabels(self.bodyparts)
             img_name = Path(self.index[self.iter]).name # self.index[self.iter].split('/')[-1]
             self.ax1f1.set_title(str(str(self.iter)+"/"+str(len(self.index)-1) +" "+ img_name ))
-            self.canvas = FigureCanvas(self.top_split, -1, self.fig1)
+            self.canvas = FigureCanvas(self, -1, self.fig1)
             self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
 
         # Recreate toolbar for zooming
@@ -324,8 +335,7 @@ class MainFrame(wx.Frame):
         plt.close(self.fig1)
 
         for idx, bp in enumerate(self.updatedCoords):
-            #self.dataFrame.loc[self.index[self.iter]][self.scorer, bp[0][-2],'x' ] = bp[-1][0]
-            #self.dataFrame.loc[self.index[self.iter]][self.scorer, bp[0][-2],'y' ] = bp[-1][1]
+           
             self.dataFrame.loc[self.relativeimagenames[self.iter]][self.scorer, bp[0][-2],'x' ] = bp[-1][0]
             self.dataFrame.loc[self.relativeimagenames[self.iter]][self.scorer, bp[0][-2],'y' ] = bp[-1][1]
 
@@ -385,7 +395,7 @@ class MainFrame(wx.Frame):
         cbar.set_ticklabels(self.bodyparts)
         img_name = Path(self.index[self.iter]).name #self.index[self.iter].split('/')[-1]
         self.ax1f1.set_title(str(str(self.iter)+"/"+str(len(self.index)-1) +" "+ img_name ))
-        self.canvas = FigureCanvas(self.top_split, -1, self.fig1)
+        self.canvas = FigureCanvas(self, -1, self.fig1)
         normalize = mcolors.Normalize(vmin=np.min(self.colorparams), vmax=np.max(self.colorparams))
 
         for idx, bp in enumerate(self.updatedCoords):
@@ -402,14 +412,17 @@ from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 
 class MatplotPanel(wx.Panel):
     def __init__(self, parent,config):
-        wx.Panel.__init__(self, parent,-1,size=(100,100))
-
+        self.size=(100,100)
+        panel1 = wx.Panel.__init__(self, parent)
         self.figure = Figure()
         self.axes = self.figure.add_subplot(111)
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(self.sizer)
+        self.Fit()
 
-def show(config):
+def show(config,Screens=1,scale_w=.8,scale_h=.9):
     app = wx.App()
-    frame = MainFrame(None,config).Show()
+    frame = MainFrame(None,config,Screens,scale_w,scale_h).Show()
     app.MainLoop()
 
 
@@ -417,3 +430,4 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('config')
     cli_args = parser.parse_args()
+

@@ -2,6 +2,10 @@
 
 All of DeepLabCut can be run from an ipython console in the progam **terminal**! Go [here](/docs/UseOverviewGuide.md) for all the instructions!
 
+We also have some video tutorials to demonstrate how we use Anaconda and Docker via the terminal:
+
+ https://www.youtube.com/watch?v=7xwOhUcIGio &  https://www.youtube.com/watch?v=bgfnz1wtlpo
+
 # Demo Notebooks:
 
 We recommend using **Anaconda to install Python and Jupyter Notebooks, see the [Installation](master/docs/installation.md) page**. Then, on your local machine using these notebooks to guide you, you can (1) demo our labeled data, (2) create a project, extract frames to lablel, use the GUI to label, and create a training set. You can also then run the training that utilizies TensorFlow with a CPU on your local computer (see the [Installation](docs/installation.md)). Installing TensorFlow for GPU support, is a bit more elaborate, so we suggest running the Training and new Video Analysis inside the [supplied Docker container](https://github.com/MMathisLab/Docker4DeepLabCut2.0) (which works on all Linux systems). 
@@ -58,7 +62,7 @@ For GPU-based training and analysis you will need to switch to either our [suppl
 
 ## Demo DeepLabCut training and analysis on Colaboratory (in the cloud):
 
-- Alternatively, you can use Google [Colaboratory](https://colab.research.google.com) to demo running the training and analysis of new videos, i.e. the parts that need a GPU!
+- Alternatively, you can use Google [Colaboratory](https://colab.research.google.com) to demo running the training and analysis of new videos, i.e. the parts that need a GPU! Here is a demo of us using it: https://www.youtube.com/watch?v=j13aXxysI2E
 
   - Warning: Colab updates their CUDA/TensorFlow likely faster than we can keep up, so this may not work at all future points in time (and, as a reminder, this whole package is released with a [LICENSE](/LICENSE) that implies no Liability and no Warranty). 
 

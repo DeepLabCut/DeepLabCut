@@ -74,7 +74,7 @@ def dropduplicates(config):
             print("Attention:", folder, "does not appear to have labeled data!")
 
 
-def label_frames(config,scale =.9):
+def label_frames(config,Screens=1,scale_w=.8,scale_h=.9):
     """
     Manually label/annotate the extracted frames. Update the list of body parts you want to localize in the config.yaml file first
 
@@ -95,7 +95,7 @@ def label_frames(config,scale =.9):
     
     from deeplabcut.generate_training_dataset import labeling_toolbox
     
-    labeling_toolbox.show(config) #,scale)
+    labeling_toolbox.show(config,Screens,scale_w,scale_h)
     os.chdir(startpath)
 
 def get_cmap(n, name='hsv'):
