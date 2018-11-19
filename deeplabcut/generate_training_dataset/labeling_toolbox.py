@@ -28,12 +28,16 @@ from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as Navigat
 
 
 #minic small screen: 
-#displaysize = (660*2, 500*2)
+#displaysize = (400, 400) 
+
+#Note, if the variable Screens = 2, it assumes two screens in landscape next to eachother! If you use a different configuration, consider changing displaysize to your known display size. see troubleshooting for more information https://github.com/AlexEMG/DeepLabCut/wiki/Troubleshooting-Tips.
+
+#On Windows, there can be a issue with the sizing on start, so you can scale it down then resize on your screen. Namely, set winHack=.5 and this solves this issue. Thanks to Federico Claudi for troubleshooting this with us! 
    
 class MainFrame(wx.Frame):
     """Contains the main GUI and button boxes"""
 
-    def __init__(self, parent, config,Screens,scale_w,scale_h):
+    def __init__(self, parent, config,Screens,scale_w,scale_h, winHack):
         displaysize = wx.GetDisplaySize()
 
         w = displaysize[0]
@@ -50,8 +54,9 @@ class MainFrame(wx.Frame):
         
         self.size=displaysize
         
-        wx.Frame.__init__(self, None, title="DeepLabCut2.0 - Labeling GUI", size=(self.gui_width, self.gui_height), 
-                          style= wx.DEFAULT_FRAME_STYLE | wx.FULL_REPAINT_ON_RESIZE)
+        wx.Frame.__init__(self, None, title="DeepLabCut2.0 - Labeling GUI", size=(self.gui_width*winHack, self.gui_height*winHack), style= wx.DEFAULT_FRAME_STYLE)
+
+       
         
         self.panel = MatplotPanel(self, parent)
         self.statusbar = self.CreateStatusBar()
@@ -87,15 +92,15 @@ class MainFrame(wx.Frame):
 # add buttons for  zoom
         # radio buttons position: (1250, 65)
 
-        self.Button8 = wx.Button(self,-1,"Zoom", size=(60,30),pos=(self.gui_width*.65, self.gui_height*.8))
+        self.Button8 = wx.Button(self,-1,"Zoom", size=(60,30),pos=(self.gui_width*.65, self.gui_height*.85))
         self.Button8.Bind(wx.EVT_BUTTON,self.zoom)
         buttons_list.append(self.Button8)
 
-        self.Button7 = wx.Button(self,-1,"Pan", size=(60,30),pos=(self.gui_width*.75, self.gui_height*.8))
+        self.Button7 = wx.Button(self,-1,"Pan", size=(60,30),pos=(self.gui_width*.75, self.gui_height*.85))
         self.Button7.Bind(wx.EVT_BUTTON,self.pan)
         buttons_list.append(self.Button7)
 
-        self.Button6 = wx.Button(self,-1,"Home", size=(60,30),pos=(self.gui_width*.85, self.gui_height*.8))
+        self.Button6 = wx.Button(self,-1,"Home", size=(60,30),pos=(self.gui_width*.85, self.gui_height*.85))
         self.Button6.Bind(wx.EVT_BUTTON,self.home)
         buttons_list.append(self.Button6)
 
@@ -118,11 +123,11 @@ class MainFrame(wx.Frame):
         self.flag = True
         self.file = 0
         self.config_file = config
-        self.addLabel = wx.CheckBox(self, label = 'Add new labels to existing dataset?',pos = (80, self.gui_height*.85))
+        self.addLabel = wx.CheckBox(self, label = 'Add new labels to existing dataset?',pos = (self.gui_width*.1, self.gui_height*.85))
         self.addLabel.Bind(wx.EVT_CHECKBOX,self.newLabel)
         self.new_labels = False
-        imgW = self.gui_width*.008 #was 12 inches (perhaps add dpi!)
-        imgH = self.gui_height*.008    #was 7 inches 
+        imgW = self.gui_width*.0075 #was 12 inches (perhaps add dpi!)
+        imgH = self.gui_height*.0075    #was 7 inches 
 
         self.img_size = (imgW, imgH)  # width, height in inches. 
         
@@ -142,14 +147,17 @@ class MainFrame(wx.Frame):
     def zoom(self,event):
         self.statusbar.SetStatusText("Zoom")
         self.toolbar.zoom()
+        self.Refresh(eraseBackground=True)
         
     def home(self,event):
         self.statusbar.SetStatusText("Home")
         self.toolbar.home()
+        self.Refresh(eraseBackground=True)
          
     def pan(self,event):
         self.statusbar.SetStatusText("Pan")
         self.toolbar.pan()
+        self.Refresh(eraseBackground=True)
 
     def quitButton(self, event):
         """
@@ -234,7 +242,7 @@ class MainFrame(wx.Frame):
 
         img_name = Path(self.index[self.iter]).name # self.index[self.iter].split('/')[-1]
         self.ax1f1.set_title(str(str(self.iter+1)+"/"+str(len(self.index)) +" "+ img_name ))
-        self.canvas = FigureCanvas(self,-1,self.fig1)
+        self.canvas = FigureCanvasWxAgg(self,-1,self.fig1)
         self.toolbar = NavigationToolbar(self.canvas)
 
         #checks for unique bodyparts
@@ -322,7 +330,7 @@ class MainFrame(wx.Frame):
             cbar.set_ticklabels(self.bodyparts)
             img_name = Path(self.index[self.iter]).name # self.index[self.iter].split('/')[-1]
             self.ax1f1.set_title(str(str(self.iter)+"/"+str(len(self.index)-1) +" "+ img_name ))
-            self.canvas = FigureCanvas(self, -1, self.fig1)
+            self.canvas = FigureCanvasWxAgg(self, -1, self.fig1)
             self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
 
         # Recreate toolbar for zooming
@@ -395,35 +403,49 @@ class MainFrame(wx.Frame):
         cbar.set_ticklabels(self.bodyparts)
         img_name = Path(self.index[self.iter]).name #self.index[self.iter].split('/')[-1]
         self.ax1f1.set_title(str(str(self.iter)+"/"+str(len(self.index)-1) +" "+ img_name ))
-        self.canvas = FigureCanvas(self, -1, self.fig1)
+        self.canvas = FigureCanvasWxAgg(self, -1, self.fig1)
         normalize = mcolors.Normalize(vmin=np.min(self.colorparams), vmax=np.max(self.colorparams))
 
         for idx, bp in enumerate(self.updatedCoords):
             col = self.updatedCoords[idx][-1][-1]
-            color = self.colormap(normalize(col))
+            #color = self.colormap(normalize(col))
             x1 = self.updatedCoords[idx][-1][0]
             y1 = self.updatedCoords[idx][-1][1]
-            circle = [patches.Circle((x1, y1), radius=self.markerSize, fc = color, alpha=0.5)]
+            circle = [patches.Circle((x1, y1), radius=self.markerSize, alpha=0.5)]
             self.ax1f1.add_patch(circle[0])
             self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
 
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
+from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg, Toolbar
 
 class MatplotPanel(wx.Panel):
     def __init__(self, parent,config):
-        self.size=(100,100)
         panel1 = wx.Panel.__init__(self, parent)
         self.figure = Figure()
-        self.axes = self.figure.add_subplot(111)
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.Refresh(eraseBackground=True)
-        self.SetSizer(self.sizer)
+        self.canvas = FigureCanvasWxAgg(self, -1, self.figure)
+        self.toolbar = Toolbar(self.canvas)  # matplotlib toolbar
+        self.toolbar.EnableTool(1,False)
+        self.toolbar.Realize()
+        # self.toolbar.set_active([0,1])
+        self.toolbar.update()
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        # This way of adding to sizer allows resizing
+        sizer.Add(self.canvas, 1, wx.LEFT | wx.TOP | wx.GROW)
+        # Best to allow the toolbar to resize!
+        #sizer.Add(self.toolbar, 0, wx.GROW)
+        self.SetSizer(sizer)
         self.Fit()
+        self.Refresh(eraseBackground=True)
 
-def show(config,Screens=1,scale_w=.8,scale_h=.9):
+def GetToolBar(self): #https://matplotlib.org/examples/user_interfaces/embedding_in_wx3.html
+        # You will need to override GetToolBar if you are using an
+        # unmanaged toolbar in your frame
+        return self.toolbar        
+     
+
+def show(config,Screens=1,scale_w=.8,scale_h=.9, winHack=1):
     app = wx.App()
-    frame = MainFrame(None,config,Screens,scale_w,scale_h).Show()
+    frame = MainFrame(None,config,Screens,scale_w,scale_h, winHack).Show()
     app.MainLoop()
 
 

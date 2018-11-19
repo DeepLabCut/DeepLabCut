@@ -99,11 +99,13 @@ interest) in the project’s configuration file by providing a list. The followi
 
           >> deeplabcut.label_frames(config_path, Sreens=1)
           
- If you have dual moitors (i.e. on the left and right), then change ``Screens=2``. 
+ If you have dual moitors in landscape configuration (i.e. on the left and right), then change ``Screens=2``. If you are a **Windows user** and cannot see all the buttons (check this demo to see how it should look: https://www.youtube.com/watch?v=i8P5y0vO5Q0), please also pass ``winHack=.5``, which will make the GUI small and you can drag the lower left corner to fill your screen. For additional troubleshooting tips, please see: https://github.com/AlexEMG/DeepLabCut/wiki/Troubleshooting-Tips
           
 The user needs to use the *Load Frames* button to select the directory which stores the extracted frames from one of
-the videos. Subsequently, the user can use one of the radio buttons (top right) to select a body part to label. RIGHT click to add the label. left click to drag, if needed. Plesae see ``HELP`` button for user instructions! This auto-advances once you labeled the first body part. You can also advance to the next frame by clicking on the RIGHT arrow on your keyboard.
+the videos. Subsequently, the user can use one of the radio buttons (top right) to select a body part to label. RIGHT click to add the label. Left click to drag the label, if needed. If you cannot see a body part, just skip over the label! Pleaee see the ``HELP`` button for more user instructions! This auto-advances once you labeled the first body part. You can also advance to the next frame by clicking on the RIGHT arrow on your keyboard.
 Each label will be plotted as a dot in a unique color (see Figure 4 for more details).
+
+If you need to adjust the label size, please do so after applying the first label (or at least the first full frame). Then avoid doing so, as once this is done on an image, you cannot use the ZOOM, PAN, and HOME buttons again. 
 
 CRITICAL POINT: It is recommended to finalize the position of the selected label before changing the dot
 size for the next labels.
