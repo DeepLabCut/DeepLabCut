@@ -8,7 +8,7 @@ M Mathis, mackenzie@post.harvard.edu
 
 """
 
-def extract_frames(config,mode,algo='uniform',crop=False,checkcropping=False):
+def extract_frames(config,mode='automatic',algo='kmeans',crop=False,checkcropping=False, Screens=1,scale_w=.8,scale_h=.8):
     """
     Extracts frames from the videos in the config.yaml file. Only the videos in the config.yaml will be used to select the frames.\n
     Use the function ``add_new_video`` at any stage of the project to add new videos to the config file and extract their frames.
@@ -68,7 +68,7 @@ def extract_frames(config,mode,algo='uniform',crop=False,checkcropping=False):
         wd = Path(config).resolve().parents[0]
         os.chdir(str(wd))
         from deeplabcut.generate_training_dataset import frame_extraction_toolbox 
-        frame_extraction_toolbox.show(config)
+        frame_extraction_toolbox.show(config,Screens,scale_w,scale_h)
         
     elif mode == "automatic":
         config_file = Path(config).resolve()
@@ -104,12 +104,8 @@ def extract_frames(config,mode,algo='uniform',crop=False,checkcropping=False):
                     fig,ax = plt.subplots(1)
                     # Display the image
                     ax.imshow(image)
-                    # Create a Rectangle 
-                    x1, x2, y1, y2 = [int(s) for s in coords]
-                    rect = patches.Rectangle((x1, y1), x2-x1, y2-y1,
-                                             linewidth=3,
-                                             edgecolor='r',
-                                             facecolor='none')
+                    # Create a Rectangle patch
+                    rect = patches.Rectangle((int(coords[0]),int(coords[2])),int(coords[1]),int(coords[3]),linewidth=3,edgecolor='r',facecolor='none')
                     # Add the patch to the Axes
                     ax.add_patch(rect)
                     plt.show()
@@ -129,11 +125,11 @@ def extract_frames(config,mode,algo='uniform',crop=False,checkcropping=False):
                             io.imsave(saveimg, image)
                             
                             # crop and move on with extraction of frames:
-                            clip=clip.crop(y1=y1, y2=y2, x1=x1, x2=x2)
+                            clip=clip.crop(y1 = int(coords[2]),y2 = int(coords[3]),x1 = int(coords[0]), x2 = int(coords[1]))
                       else:
                           askuser=input ("The directory already contains some frames. Do you want to add to it?(yes/no): ")
                           if askuser=='y' or askuser=='yes' or askuser=='Y' or askuser=='Yes':
-                              clip=clip.crop(y1=y1, y2=y2, x1=x1, x2=x2)
+                              clip=clip.crop(y1 = int(coords[2]),y2 = int(coords[3]),x1 = int(coords[0]), x2 = int(coords[1]))
                           else:
                               sys.exit("Delete the frames and try again later!")
                     else:

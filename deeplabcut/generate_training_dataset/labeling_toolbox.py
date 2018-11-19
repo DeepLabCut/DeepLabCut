@@ -161,7 +161,7 @@ class MainFrame(wx.Frame):
         """
         Opens Instructions
         """
-        wx.MessageBox('1. Select one of the body parts from the radio buttons to add a label (if necessary change config.yaml first to edit the label names). \n\n2. Right clicking on the image will add the selected label. \n The label will be marked as circle filled with a unique color. \n\n3. Hover your mouse over this newly added label to see its name. \n\n4. Use left click and drag to move the label position. \n\n5. To change the marker size mark the checkbox and move the slider. \n Change the markersize only after finalizing the position of your first label, otherwise you will not be able to move your first label around! \n\n6. Once you are happy with the position, select another body part from the radio button. \n Be careful, once you add a new body part, you will not be able to move the old labels. \n\n7. Click Next Frame to move to the next image. \n\n8. When finished labeling all the images, click \'Save\' to save all the labels as a .h5 file. \n\n9. Click OK to continue using the labeling GUI.', 'User instructions', wx.OK | wx.ICON_INFORMATION)
+        wx.MessageBox('1. Select one of the body parts from the radio buttons to add a label (if necessary change config.yaml first to edit the label names). \n\n2. Right clicking on the image will add the selected label. \n The label will be marked as circle filled with a unique color. \n\n3. Hover your mouse over this newly added label to see its name. \n\n4. Use left click and drag to move the label position. \n\n5. To change the marker size mark the checkbox and move the slider. \n Change the markersize only after finalizing the position of your FIRST LABEL! \n\n6. Once you are happy with the position, select another body part from the radio button. \n Be careful, once you add a new body part, you will not be able to move the old labels. \n\n7. Click Next Frame to move to the next image. \n\n8. When finished labeling all the images, click \'Save\' to save all the labels as a .h5 file. \n\n9. Click OK to continue using the labeling GUI.', 'User instructions', wx.OK | wx.ICON_INFORMATION)
 
     def onClick(self,event):
         x1 = event.xdata
@@ -239,7 +239,7 @@ class MainFrame(wx.Frame):
 
         #checks for unique bodyparts
         if len(self.bodyparts)!=len(set(self.bodyparts)):
-          print("Error! bodyparts must have unique labels!Please choose unique bodyparts in config.yaml file and try again. Quiting for now!")
+          print("Error! bodyparts must have unique labels! Please choose unique bodyparts in config.yaml file and try again. Quiting for now!")
           self.Destroy()
           
         if self.new_labels == True:
@@ -283,7 +283,7 @@ class MainFrame(wx.Frame):
             self.checkBox.Bind(wx.EVT_CHECKBOX,self.onChecked)
             self.slider = wx.Slider(self, -1, 5, 0, 20,size=(200, -1),  pos=(self.gui_width*.40, self.gui_height*.78),style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS )
             self.slider.Bind(wx.EVT_SLIDER, self.OnSliderScroll)
-            self.slider.Enable(False)
+            self.slider.Enable(True)
 
     def onRDB(self,event):
        self.option = self.rdb.GetSelection()
@@ -417,6 +417,7 @@ class MatplotPanel(wx.Panel):
         self.figure = Figure()
         self.axes = self.figure.add_subplot(111)
         self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.Refresh(eraseBackground=True)
         self.SetSizer(self.sizer)
         self.Fit()
 
