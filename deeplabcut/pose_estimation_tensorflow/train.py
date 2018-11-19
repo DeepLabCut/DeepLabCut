@@ -75,7 +75,7 @@ def get_optimizer(loss_op, cfg):
 
     return learning_rate, train_op
 
-def train(config_yaml,displayiters,saveiters,max_to_keep=5):
+def train(config_yaml,displayiters,saveiters,maxiters,max_to_keep=5):
     start_path=os.getcwd()
     os.chdir(str(Path(config_yaml).parents[0])) #switch to folder of config_yaml (for logging)
     setup_logging()
@@ -107,8 +107,12 @@ def train(config_yaml,displayiters,saveiters,max_to_keep=5):
 
     # Restore variables from disk.
     restorer.restore(sess, cfg.init_weights)
-
-    max_iter = int(cfg.multi_step[-1][1])
+    if maxiters==None:
+        max_iter = int(cfg.multi_step[-1][1])
+    else:
+        max_iter = min(int(cfg.multi_step[-1][1]),int(maxiters))
+        #display_iters = max(1,int(displayiters))
+        print("Max_iters overwritten as",max_iter)
     
     if displayiters==None:
         display_iters = max(1,int(cfg.display_iters))

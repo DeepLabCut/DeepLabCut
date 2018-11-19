@@ -9,7 +9,7 @@ M Mathis, mackenzie@post.harvard.edu
 import os
 from pathlib import Path
 
-def train_network(config,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshots_to_keep=5,autotune=False,displayiters=None,saveiters=None):
+def train_network(config,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshots_to_keep=5,autotune=False,displayiters=None,saveiters=None,maxiters=None):
     """Trains the network with the labels in the training dataset.
 
     Parameter
@@ -38,6 +38,9 @@ def train_network(config,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshot
     the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
     
     saveiters: this variable is actually set in pose_config.yaml. However, you can overwrite it with this hack. Don't use this regularly, just if you are too lazy to dig out 
+    the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
+    
+    maxiters: this variable is actually set in pose_config.yaml. However, you can overwrite it with this hack. Don't use this regularly, just if you are too lazy to dig out 
     the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
     
     Example
@@ -73,7 +76,7 @@ def train_network(config,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshot
       if gputouse is not None:
         os.environ['CUDA_VISIBLE_DEVICES'] = str(gputouse)
       try:
-          train(str(poseconfigfile),displayiters,saveiters,max_to_keep=max_snapshots_to_keep) #pass on path and file name for pose_cfg.yaml!
+          train(str(poseconfigfile),displayiters,saveiters,maxiters,max_to_keep=max_snapshots_to_keep) #pass on path and file name for pose_cfg.yaml!
       except BaseException as e:
           raise e
       finally:
