@@ -4,13 +4,12 @@ https://github.com/AlexEMG/DeepLabCut
 A Mathis, alexander.mathis@bethgelab.org
 T Nath, nath@rowland.harvard.edu
 M Mathis, mackenzie@post.harvard.edu
+
 Edited by:
 Hao Wu, hwu01@g.harvard.edu
-This script labels the bodyparts in videos as analyzed by "AnalyzeVideos.py".
-This code does not store any frames and substantially faster!
+Who contributed his OpenCV class!
 
-Videos are not intended to be created in the docker container (due to missing ffmpeg bindings)
-You can find the directory by: "find / | grep ffmpeg" and then setting it.
+You can find the directory for ffmpeg bindings by: "find / | grep ffmpeg" and then setting it.
 """
 
 ####################################################

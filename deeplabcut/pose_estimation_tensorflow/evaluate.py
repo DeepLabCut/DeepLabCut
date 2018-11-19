@@ -95,7 +95,6 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
     comparisonbodyparts=auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg,comparisonbodyparts)
     # Make folder for evaluation
     auxiliaryfunctions.attempttomakefolder(str(cfg["project_path"]+"/evaluation-results/"))
-    final_result=[]
     for shuffle in Shuffles:
         for trainFraction in cfg["TrainingFraction"]:
             ##################################################
@@ -138,6 +137,7 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
             else:
                 print("Invalid choice, only -1 (last), any integer up to last, or all (as string)!")
 
+            final_result=[]
             ##################################################
             # Compute predictions over images
             ##################################################
