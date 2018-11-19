@@ -97,7 +97,7 @@ The toolbox provides a function **label_frames** which helps the user to easily 
 an interactive graphical user interface (GUI). The user should have already named the body parts to label (points of
 interest) in the project’s configuration file by providing a list. The following command invokes the labeling toolbox.
 
-          >> deeplabcut.label_frames(config_path, Sreens=1)
+          >> deeplabcut.label_frames(config_path, Screens=1)
           
  If you have dual moitors in landscape configuration (i.e. on the left and right), then change ``Screens=2``. If you are a **Windows user** and cannot see all the buttons (check this demo to see how it should look: https://www.youtube.com/watch?v=i8P5y0vO5Q0), please also pass ``winHack=.5``, which will make the GUI small and you can drag the lower left corner to fill your screen. For additional troubleshooting tips, please see: https://github.com/AlexEMG/DeepLabCut/wiki/Troubleshooting-Tips
           
