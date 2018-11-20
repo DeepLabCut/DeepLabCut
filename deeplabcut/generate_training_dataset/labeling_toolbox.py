@@ -58,7 +58,7 @@ class MainFrame(wx.Frame):
 
        
         
-        self.panel = MatplotPanel(self, parent)
+        
         self.statusbar = self.CreateStatusBar()
         self.statusbar.SetStatusText("")
         self.Bind(wx.EVT_CHAR_HOOK, self.OnKeyPressed) 
@@ -106,7 +106,6 @@ class MainFrame(wx.Frame):
 
         #for btn in buttons_list:
         #    btn.SetBackgroundColour((160, 160, 160))
-        #    btn.SetForegroundColour((0, 0, 0))
 
 # Define variables
 
