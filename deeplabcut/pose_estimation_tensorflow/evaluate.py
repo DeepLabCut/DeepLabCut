@@ -143,7 +143,7 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
             ##################################################
             for snapindex in snapindices:
                 dlc_cfg['init_weights'] = os.path.join(str(modelfolder),'train',Snapshots[snapindex]) #setting weights to corresponding snapshot.
-                trainingsiterations = (dlc_cfg['init_weights'].split('/')[-1]).split('-')[-1] #read how many training siterations that corresponds to.
+                trainingsiterations = (dlc_cfg['init_weights'].split(os.sep)[-1]).split('-')[-1] #read how many training siterations that corresponds to.
                 
                 #name for deeplabcut net (based on its parameters)
                 DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations)
