@@ -100,7 +100,6 @@ class MainFrame(wx.Frame):
         self.alpha = cfg['alphavalue']
         self.iterationindex = cfg['iteration']
         self.project_path=cfg['project_path']
-        self.droppedframes=[] #will collect files that were removed
         
 # ###########################################################################
 # functions for button responses
@@ -199,27 +198,13 @@ class MainFrame(wx.Frame):
             self.drs = []
             self.updatedCoords = []
 
-            imdropped=True
-            while imdropped==True:
-                # Reading images
-                try:
-                    imagename1 = os.path.join(self.project_path,self.index[self.iter])
-                    im = PIL.Image.open(imagename1)
-                    # Plotting
-                    im_axis = self.ax1f1.imshow(im,self.colormap)
-                    imdropped=False
-                except FileNotFoundError: #based on this flag, the image will be removed. 
-                    imdropped=True
-                    im=0
-    
-                self.canvas = FigureCanvas(self.top_split, -1, self.fig1)
-                if np.max(im) == 0 or imdropped==True:
-                    msg = wx.MessageBox('Invalid/Deleted image. Click Yes to remove the image from the annotation file.', 'Error!', wx.YES_NO | wx.ICON_WARNING)
-                    if msg == 2:
-                        self.Dataframe = self.Dataframe.drop(self.index[self.iter])
-                        self.droppedframes.append(self.index[self.iter])
-                        self.index = list(self.Dataframe.iloc[:,0].index)
-                    
+            # Reading images
+
+            imagename1 = os.path.join(self.project_path,self.index[self.iter])
+            im = PIL.Image.open(imagename1)
+            # Plotting
+            im_axis = self.ax1f1.imshow(im,self.colormap)
+
             if self.file == 0:
                 self.checkBox = wx.CheckBox(self.top_split, label = 'Adjust marker size.',pos = (500, 855))
                 self.checkBox.Bind(wx.EVT_CHECKBOX,self.onChecked)
@@ -249,7 +234,7 @@ class MainFrame(wx.Frame):
                     plt.close(self.fig1)
                     self.canvas.Destroy()
                     self.fig1, (self.ax1f1) = plt.subplots(figsize=(12, 7.8),facecolor = "None")
-                    
+                    #imagename1 = os.path.join(self.dir,self.index[self.iter])
                     imagename1 = os.path.join(self.project_path,self.index[self.iter])
                     im = PIL.Image.open(imagename1)
                     im_axis = self.ax1f1.imshow(im,self.colormap)
@@ -297,32 +282,25 @@ class MainFrame(wx.Frame):
             #read the image
             #imagename1 = os.path.join(self.dir,self.index[self.iter])
             imagename1 = os.path.join(self.project_path,self.index[self.iter])
-            
-            try:
-                im = PIL.Image.open(imagename1)
-                #Plotting
-                im_axis = self.ax1f1.imshow(im,self.colormap)
-    
-                self.ax1f1.imshow(im)
-                if self.adjust_original_labels == True:
-                    self.ax1f1.set_title(str(str(self.iter)+"/"+str(len(self.index)-1) +" "+ str(Path(self.index[self.iter]).stem)))
-                else:
-                    self.ax1f1.set_title(str(str(self.iter)+"/"+str(len(self.index)-1) +" "+ str(Path(self.index[self.iter]).stem) + " "+ " Threshold chosen is: " + str("{0:.2f}".format(self.threshold))))
-                
-                imdropped=False
-            except FileNotFoundError: #based on this flag, the image will be removed. 
-                imdropped=True
-                im=0
+            im = PIL.Image.open(imagename1)
+
+            #Plotting
+            im_axis = self.ax1f1.imshow(im,self.colormap)
+
+            self.ax1f1.imshow(im)
+            if self.adjust_original_labels == True:
+                self.ax1f1.set_title(str(str(self.iter)+"/"+str(len(self.index)-1) +" "+ str(Path(self.index[self.iter]).stem)))
+            else:
+                self.ax1f1.set_title(str(str(self.iter)+"/"+str(len(self.index)-1) +" "+ str(Path(self.index[self.iter]).stem) + " "+ " Threshold chosen is: " + str("{0:.2f}".format(self.threshold))))
+
 
             self.canvas = FigureCanvas(self.top_split, -1, self.fig1)
-            if np.max(im) == 0 or imdropped==True:
-                msg = wx.MessageBox('Invalid/Deleted image. Click Yes to remove the image from the annotation file.', 'Error!', wx.YES_NO | wx.ICON_WARNING)
+            if np.max(im) == 0:
+                msg = wx.MessageBox('Invalid image. Click Yes to remove', 'Error!', wx.YES_NO | wx.ICON_WARNING)
                 if msg == 2:
                     self.Dataframe = self.Dataframe.drop(self.index[self.iter])
-                    self.droppedframes.append(self.index[self.iter])
                     self.index = list(self.Dataframe.iloc[:,0].index)
-                    
-                self.iter = self.iter - 1 #then display previous image.
+                self.iter = self.iter - 1
                 plt.close(self.fig1)
 
                 #imagename1 = os.path.join(self.dir,self.index[self.iter])
@@ -444,18 +422,7 @@ class MainFrame(wx.Frame):
         if Path(self.dir,'CollectedData_'+self.humanscorer+'.h5').is_file():
             print("A training dataset file is already found for this video. The refined machine labels are merged to this data!")
             DataU1 = pd.read_hdf(os.path.join(self.dir,'CollectedData_'+self.humanscorer+'.h5'), 'df_with_missing')
-            #combine datasets Original Col. + corrected machinefiles:
-            DataCombined = pd.concat([self.Dataframe,DataU1])
-            # Now drop redundant ones keeping the first one [this will make sure that the refined machine file gets preference]
-            DataCombined = DataCombined[~DataCombined.index.duplicated(keep='first')]
-            if len(self.droppedframes)>0: #i.e. frames were dropped/corrupt. also remove them from original file (if they exist!)
-                for fn in self.droppedframes:
-                    try:
-                        DataCombined.drop(fn,inplace=True)
-                    except KeyError:
-                        pass
-                    
-                    
+            DataCombined = pd.concat([DataU1, self.Dataframe])
             DataCombined.to_hdf(os.path.join(self.dir,'CollectedData_'+ self.humanscorer +'.h5'), key='df_with_missing', mode='w')
             DataCombined.to_csv(os.path.join(self.dir,'CollectedData_'+ self.humanscorer +'.csv'))
         else:
