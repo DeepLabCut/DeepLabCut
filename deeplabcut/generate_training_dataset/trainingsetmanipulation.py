@@ -74,7 +74,7 @@ def dropduplicates(config):
             print("Attention:", folder, "does not appear to have labeled data!")
 
 
-def label_frames(config,Screens=1,scale_w=.8,scale_h=.9, winHack=1):
+def label_frames(config,Screens=1,scale_w=.8,scale_h=.9, winHack=1, img_scale=0.0075):
     """
     Manually label/annotate the extracted frames. Update the list of body parts you want to localize in the config.yaml file first
 
@@ -95,7 +95,7 @@ def label_frames(config,Screens=1,scale_w=.8,scale_h=.9, winHack=1):
     
     from deeplabcut.generate_training_dataset import labeling_toolbox
     
-    labeling_toolbox.show(config,Screens,scale_w,scale_h, winHack)
+    labeling_toolbox.show(config,Screens,scale_w,scale_h, winHack, img_scale)
     os.chdir(startpath)
 
 def get_cmap(n, name='hsv'):
@@ -112,7 +112,13 @@ def check_labels(config):
     Parameter
     ----------
     config : string
-        Full path of the config.yaml file as a string.
+        Full path of the config.yaml file as a string. 
+
+     Screens : int value of the number of Screens in landscape mode, i.e. if you have 2 screens, enter 2. Default is 1. 
+    
+    scale_h & scale_w : you can modify how much of the screen the GUI should occupy. The default is .9 and .8, respectively.
+   
+    img_scale : if you want to make the plot of the frame larger, consider changing this to .008 or more. Be careful though, too large and you will not see the buttons fully!
 
     Example
     --------

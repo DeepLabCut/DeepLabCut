@@ -31,55 +31,83 @@ from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as Navigat
 # Class for GUI MainFrame
 # ###########################################################################
 
-class MainFrame(wx.Frame):
-    """Contains the main GUI and button boxes"""
+#minic small screen: 
+#displaysize = (400, 400) 
 
-    def __init__(self, parent,config):
-        wx.Frame.__init__(self, parent,title="DeepLabCut2.0 - Labels Refining ToolBox", size=(1200, 980))
+#Note, if the variable Screens = 2, it assumes two screens in landscape next to eachother! If you use a different configuration, consider changing displaysize to your known display size. see troubleshooting for more information https://github.com/AlexEMG/DeepLabCut/wiki/Troubleshooting-Tips.
+
+#On Windows, there can be a issue with the sizing on start, so you can scale it down then resize on your screen. Namely, set winHack=.5 and this solves this issue. Thanks to Federico Claudi for troubleshooting this with us! 
+
+class MainFrame(wx.Frame):
+    """Contains the main GUI and button boxes"""  
+
+    def __init__(self, parent, config,Screens,scale_w,scale_h, winHack, img_scale):
+        displaysize = wx.GetDisplaySize()
+
+        w = displaysize[0]
+        h = displaysize[1]
+        self.gui_width = (w*scale_w)/Screens
+        self.gui_height = (h*scale_h)
+
+
+        #print("Scaled GUI width", self.gui_width, "and height", self.gui_height)
+        if self.gui_width<600 or self.gui_height<500:
+                print("Your screen width", w, "and height", h)
+                print("Scaled GUI width", self.gui_width, "and height", self.gui_height)
+                print("Please adjust scale_h and scale_w, or get a bigger screen!")
+        
+        self.size=displaysize
+        
+        wx.Frame.__init__(self, None, title="DeepLabCut2.0 - Refinement GUI", size=(self.gui_width*winHack, self.gui_height*winHack), style= wx.DEFAULT_FRAME_STYLE)
+
+        
 
 # Add SplitterWindow panels top for figure and bottom for buttons
         self.split_win = wx.SplitterWindow(self)
         # self.top_split = wx.Panel(self.split_win, style=wx.SUNKEN_BORDER)
         self.top_split = MatplotPanel(self.split_win,config) # This call/link the MatplotPanel and MainFrame classes which replaces the above line
         self.bottom_split = wx.Panel(self.split_win, style=wx.SUNKEN_BORDER)
-        self.split_win.SplitHorizontally(self.top_split, self.bottom_split, 880)
+        self.split_win.SplitHorizontally(self.top_split, self.bottom_split, self.gui_height*.9)
+
+        self.top_split.SetBackgroundColour((255, 255, 255))
+        self.bottom_split.SetBackgroundColour((74, 34, 101))
 
         self.statusbar = self.CreateStatusBar()
         self.statusbar.SetStatusText("")
 # Add Buttons to the bottom_split window and bind them to plot functions
-        self.Button1 = wx.Button(self.bottom_split, -1, "Load Labels", size=(195, 40), pos=(80, 25))
+        self.Button1 = wx.Button(self.bottom_split, -1, "Load Labels", size=(150, 40), pos=(self.gui_width*.1, self.gui_height*.01))
         self.Button1.Bind(wx.EVT_BUTTON, self.browseDir)
 
-        self.Button5 = wx.Button(self.bottom_split, -1, "Help", size=(60, 40), pos=(310, 25))
+        self.Button5 = wx.Button(self.bottom_split, -1, "Help", size=(60, 40), pos=(self.gui_width*.2, self.gui_height*.01))
         self.Button5.Bind(wx.EVT_BUTTON, self.help)
         self.Button5.Enable(True)
 
-        self.Button3 = wx.Button(self.bottom_split, -1, "Previous Image", size=(150, 40), pos=(420, 25))
+        self.Button3 = wx.Button(self.bottom_split, -1, "Previous Image", size=(150, 40), pos=(self.gui_width*.35, self.gui_height*.01))
         self.Button3.Bind(wx.EVT_BUTTON, self.prevImage)
         self.Button3.Enable(False)
 
-        self.Button2 = wx.Button(self.bottom_split, -1, "Next Image", size=(130, 40), pos=(640, 25))
+        self.Button2 = wx.Button(self.bottom_split, -1, "Next Image", size=(130, 40), pos=(self.gui_width*.45, self.gui_height*.01))
         self.Button2.Bind(wx.EVT_BUTTON, self.nextImage)
         self.Button2.Enable(False)
 
-        self.Button4 = wx.Button(self.bottom_split, -1, "Save", size=(100, 40), pos=(840, 25))
+        self.Button4 = wx.Button(self.bottom_split, -1, "Save", size=(100, 40), pos=(self.gui_width*.6, self.gui_height*.01))
         self.Button4.Bind(wx.EVT_BUTTON, self.save)
         self.Button4.Enable(False)
 
-        self.close = wx.Button(self.bottom_split, -1, "Quit", size=(100, 40), pos=(990, 25))
+        self.close = wx.Button(self.bottom_split, -1, "Quit", size=(100, 40), pos=(self.gui_width*.69, self.gui_height*.01))
         self.close.Bind(wx.EVT_BUTTON,self.quitButton)
-        self.close.Enable(False)
+        self.close.Enable(True)
 
-        self.adjustLabelCheck = wx.CheckBox(self.top_split, label = 'Adjust original labels?',pos = (80, 855))
+        self.adjustLabelCheck = wx.CheckBox(self.top_split, label = 'Adjust original labels?',pos = (self.gui_width*.1, self.gui_height*.85))
         self.adjustLabelCheck.Bind(wx.EVT_CHECKBOX,self.adjustLabel)
         
-        self.Button5 = wx.Button(self.top_split,-1,"Zoom", size=(60,20),pos=(840,855))
+        self.Button5 = wx.Button(self.top_split,-1,"Zoom", size=(60,30),pos=(self.gui_width*.6,self.gui_height*.85))
         self.Button5.Bind(wx.EVT_BUTTON,self.zoom)
         
-        self.Button6 = wx.Button(self.top_split,-1,"Pan", size=(60,20),pos=(940,855))
+        self.Button6 = wx.Button(self.top_split,-1,"Pan", size=(60,30),pos=(self.gui_width*.65,self.gui_height*.85))
         self.Button6.Bind(wx.EVT_BUTTON,self.pan)
         
-        self.Button7 = wx.Button(self.top_split,-1,"Home", size=(60,20),pos=(1040,855))
+        self.Button7 = wx.Button(self.top_split,-1,"Home", size=(60,30),pos=(self.gui_width*.7,self.gui_height*.85))
         self.Button7.Bind(wx.EVT_BUTTON,self.home)
          
         self.Bind(wx.EVT_CLOSE,self.closewindow)
@@ -100,12 +128,15 @@ class MainFrame(wx.Frame):
         self.alpha = cfg['alphavalue']
         self.iterationindex = cfg['iteration']
         self.project_path=cfg['project_path']
-        self.droppedframes=[] #will collect files that were removed
+        imgW = self.gui_width*img_scale #was 12 inches (perhaps add dpi!)
+        imgH = self.gui_height*img_scale    #was 7 inches 
+
+        self.img_size = (imgW, imgH)  # width, height in inches.
         
 # ###########################################################################
 # functions for button responses
 # ###########################################################################
-    def closewindow(self,event):
+    def closewindow(self, event):
         self.Destroy()
 
     def adjustLabel(self, event):
@@ -119,14 +150,17 @@ class MainFrame(wx.Frame):
     def zoom(self,event):
         self.statusbar.SetStatusText("Zoom")
         self.toolbar.zoom()
+        self.Refresh(eraseBackground=True)
         
     def home(self,event):
         self.statusbar.SetStatusText("Home")
         self.toolbar.home()
+        self.Refresh(eraseBackground=True)
          
     def pan(self,event):
         self.statusbar.SetStatusText("Pan")
         self.toolbar.pan()
+        self.Refresh(eraseBackground=True)
     
     def OnSliderScroll(self, event):
         """
@@ -135,7 +169,7 @@ class MainFrame(wx.Frame):
         self.drs = []
         self.updatedCoords = []
         plt.close(self.fig1)
-        self.fig1, (self.ax1f1) = plt.subplots(figsize=(12, 7.8),facecolor = "None")
+        self.fig1, (self.ax1f1) = plt.subplots(figsize=self.img_size,facecolor = "None")
         self.markerSize = (self.slider.GetValue())
         imagename1 = os.path.join(self.project_path,self.index[self.iter])
         im = PIL.Image.open(imagename1)
@@ -180,7 +214,7 @@ class MainFrame(wx.Frame):
             self.Close(True)
         dlg.Destroy()
 
-        self.fig1, (self.ax1f1) = plt.subplots(figsize=(12, 7.8),facecolor = "None")
+        self.fig1, (self.ax1f1) = plt.subplots(figsize=self.img_size,facecolor = "None")
         try:
             self.dataname = str(self.data_file)
         except:
@@ -199,31 +233,17 @@ class MainFrame(wx.Frame):
             self.drs = []
             self.updatedCoords = []
 
-            imdropped=True
-            while imdropped==True:
-                # Reading images
-                try:
-                    imagename1 = os.path.join(self.project_path,self.index[self.iter])
-                    im = PIL.Image.open(imagename1)
-                    # Plotting
-                    im_axis = self.ax1f1.imshow(im,self.colormap)
-                    imdropped=False
-                except FileNotFoundError: #based on this flag, the image will be removed. 
-                    imdropped=True
-                    im=0
-    
-                self.canvas = FigureCanvas(self.top_split, -1, self.fig1)
-                if np.max(im) == 0 or imdropped==True:
-                    msg = wx.MessageBox('Invalid/Deleted image. Click Yes to remove the image from the annotation file.', 'Error!', wx.YES_NO | wx.ICON_WARNING)
-                    if msg == 2:
-                        self.Dataframe = self.Dataframe.drop(self.index[self.iter])
-                        self.droppedframes.append(self.index[self.iter])
-                        self.index = list(self.Dataframe.iloc[:,0].index)
-                    
+            # Reading images
+
+            imagename1 = os.path.join(self.project_path,self.index[self.iter])
+            im = PIL.Image.open(imagename1)
+            # Plotting
+            im_axis = self.ax1f1.imshow(im,self.colormap)
+
             if self.file == 0:
-                self.checkBox = wx.CheckBox(self.top_split, label = 'Adjust marker size.',pos = (500, 855))
+                self.checkBox = wx.CheckBox(self.top_split, label = 'Adjust marker size.',pos = (self.gui_width*.43, self.gui_height*.85))
                 self.checkBox.Bind(wx.EVT_CHECKBOX,self.onChecked)
-                self.slider = wx.Slider(self.top_split, -1, self.markerSize, 0, 20,size=(200, -1),  pos=(500, 780),style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS )
+                self.slider = wx.Slider(self.top_split, -1, self.markerSize, 0, 20,size=(200, -1),  pos=(self.gui_width*.43, self.gui_height*.8),style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS )
                 self.slider.Bind(wx.EVT_SLIDER, self.OnSliderScroll)
                 self.slider.Enable(False)
             
@@ -249,7 +269,7 @@ class MainFrame(wx.Frame):
                     plt.close(self.fig1)
                     self.canvas.Destroy()
                     self.fig1, (self.ax1f1) = plt.subplots(figsize=(12, 7.8),facecolor = "None")
-                    
+                    #imagename1 = os.path.join(self.dir,self.index[self.iter])
                     imagename1 = os.path.join(self.project_path,self.index[self.iter])
                     im = PIL.Image.open(imagename1)
                     im_axis = self.ax1f1.imshow(im,self.colormap)
@@ -267,7 +287,7 @@ class MainFrame(wx.Frame):
 
 
         else:
-            msg = wx.MessageBox('No Machinelabels file found! Want to Retry?', 'Error!', wx.YES_NO | wx.ICON_WARNING)
+            msg = wx.MessageBox('No Machinelabels file found! Want to retry?', 'Error!', wx.YES_NO | wx.ICON_WARNING)
             if msg == 2:
                 self.Button1.Enable(True)
                 self.Button2.Enable(False)
@@ -286,7 +306,7 @@ class MainFrame(wx.Frame):
         self.checkBox.Enable(False)
         self.slider.Enable(False)
         self.iter = self.iter + 1
-        self.fig1, (self.ax1f1) = plt.subplots(figsize=(12, 7.8),facecolor="None")
+        self.fig1, (self.ax1f1) = plt.subplots(figsize=self.img_size,facecolor="None")
 
         # Checks for the last image and disables the Next button
         if len(self.index) - self.iter == 1:
@@ -297,32 +317,25 @@ class MainFrame(wx.Frame):
             #read the image
             #imagename1 = os.path.join(self.dir,self.index[self.iter])
             imagename1 = os.path.join(self.project_path,self.index[self.iter])
-            
-            try:
-                im = PIL.Image.open(imagename1)
-                #Plotting
-                im_axis = self.ax1f1.imshow(im,self.colormap)
-    
-                self.ax1f1.imshow(im)
-                if self.adjust_original_labels == True:
-                    self.ax1f1.set_title(str(str(self.iter)+"/"+str(len(self.index)-1) +" "+ str(Path(self.index[self.iter]).stem)))
-                else:
-                    self.ax1f1.set_title(str(str(self.iter)+"/"+str(len(self.index)-1) +" "+ str(Path(self.index[self.iter]).stem) + " "+ " Threshold chosen is: " + str("{0:.2f}".format(self.threshold))))
-                
-                imdropped=False
-            except FileNotFoundError: #based on this flag, the image will be removed. 
-                imdropped=True
-                im=0
+            im = PIL.Image.open(imagename1)
+
+            #Plotting
+            im_axis = self.ax1f1.imshow(im,self.colormap)
+
+            self.ax1f1.imshow(im)
+            if self.adjust_original_labels == True:
+                self.ax1f1.set_title(str(str(self.iter)+"/"+str(len(self.index)-1) +" "+ str(Path(self.index[self.iter]).stem)))
+            else:
+                self.ax1f1.set_title(str(str(self.iter)+"/"+str(len(self.index)-1) +" "+ str(Path(self.index[self.iter]).stem) + " "+ " Threshold chosen is: " + str("{0:.2f}".format(self.threshold))))
+
 
             self.canvas = FigureCanvas(self.top_split, -1, self.fig1)
-            if np.max(im) == 0 or imdropped==True:
-                msg = wx.MessageBox('Invalid/Deleted image. Click Yes to remove the image from the annotation file.', 'Error!', wx.YES_NO | wx.ICON_WARNING)
+            if np.max(im) == 0:
+                msg = wx.MessageBox('Invalid image. Click Yes to remove', 'Error!', wx.YES_NO | wx.ICON_WARNING)
                 if msg == 2:
                     self.Dataframe = self.Dataframe.drop(self.index[self.iter])
-                    self.droppedframes.append(self.index[self.iter])
                     self.index = list(self.Dataframe.iloc[:,0].index)
-                    
-                self.iter = self.iter - 1 #then display previous image.
+                self.iter = self.iter - 1
                 plt.close(self.fig1)
 
                 #imagename1 = os.path.join(self.dir,self.index[self.iter])
@@ -357,7 +370,7 @@ class MainFrame(wx.Frame):
 #        self.cb.SetValue(False)
         self.slider.Enable(False)
         plt.close(self.fig1)
-        self.fig1, (self.ax1f1) = plt.subplots(figsize=(12, 7.8),facecolor="None")
+        self.fig1, (self.ax1f1) = plt.subplots(figsize=self.img_size,facecolor="None")
         self.iter = self.iter - 1
 
         # Checks for the first image and disables the Previous button
@@ -393,7 +406,7 @@ class MainFrame(wx.Frame):
         Quits the GUI
         """
         plt.close('all')
-        print("Closing..The refined labels are stored in a subdirectory under labeled-data. Use the function 'create_training_datasets' to augment the training dataset and train the network!")
+        print("Closing... you did not hit save!")
         self.Destroy()
 
     def help(self,event):
@@ -401,9 +414,9 @@ class MainFrame(wx.Frame):
         Opens Instructions
         """
         if self.adjust_original_labels == True:
-            wx.MessageBox('1. Each label will be shown with a unique color. \n\n3.  Hover your mouse over data points to see the labels. \n\n4. Left click and drag to move the data points. \n\n5. Right click on any data point to remove it. Be careful, you cannot undo this step.\n Click once on the zoom button to zoom-in the image.The cursor will become cross, click and drag over a point to zoom in. \n Click on the zoom button again to disable the zooming function and recover the cursor. \n Use pan button to pan across the image while zoomed in. Use home button to go back to the full;default view. \n\n6. When finished click \'Save\' to save all the changes. \n\n7. Click OK to continue', 'Instructions to use!', wx.OK | wx.ICON_INFORMATION)
+            wx.MessageBox('1. Each label will be shown with a unique color. \n\n2. Enable the checkbox to adjust the marker size (you will not be able to zoom/pan/home until the next frame). \n\n3.  Hover your mouse over data points to see the labels. \n\n4. LEFT click+ drag to move the data points. \n\n5. RIGHT click on any data point to remove it. Be careful, you cannot undo this step! \n\n 6. Click once on the zoom button to zoom-in the image. The cursor will become cross, click and drag over a point to zoom in. \n Click on the zoom button again to disable the zooming function and recover the cursor. \n\n 7. Use pan button to pan across the image while zoomed in. Use home button to go back to the full default view. \n\n8. When finished click \'Save\' to save all the changes. \n\n9. Click OK to continue', 'Instructions to use!', wx.OK | wx.ICON_INFORMATION)
         else:
-            wx.MessageBox('1. Enter the threshold of likelihood you want to check. \n\n2. Each prediction will be shown with a unique color. \n All the data points above the threshold will be marked as circle filled with a unique color. \n All the data points below the threshold will be marked as hollow circle. \n\n3.  Hover your mouse over data points to see the labels and their likelihood. \n\n4. Left click and drag to move the data points. \n\n5. Right click on any data point to remove it. Be careful, you cannot undo this step. \n Click once on the zoom button to zoom-in the image.The cursor will become cross, click and drag over a point to zoom in. \n Click on the zoom button again to disable the zooming function and recover the cursor. \n Use pan button to pan across the image while zoomed in. Use home button to go back to the full;default view. \n\n6. When finished click \'Save\' to save all the changes. \n\n7. Click OK to continue', 'Instructions to use!', wx.OK | wx.ICON_INFORMATION)
+            wx.MessageBox('1. Enter the likelihood threshold. \n\n2. All the data points above the threshold will be marked as circle filled with a unique color. All the data points below the threshold will be marked with a hollow circle. \n\n3. Enable the checkbox to adjust the marker size (you will not be able to zoom/pan/home until the next frame). \n\n4. Hover your mouse over data points to see the labels and their likelihood. \n\n5. LEFT click+drag to move the data points. \n\n6. RIGHT click on any data point to remove it. Be careful, you cannot undo this step! \n Click once on the zoom button to zoom-in the image. The cursor will become cross, click and drag over a point to zoom in. \n Click on the zoom button again to disable the zooming function and recover the cursor. \n Use pan button to pan across the image while zoomed in. Use home button to go back to the full default view. \n\n7. When finished click \'Save\' to save all the changes. \n\n8. Click OK to continue', 'User instructions', wx.OK | wx.ICON_INFORMATION)
 
     def onChecked(self, event):
       MainFrame.confirm(self)
@@ -444,18 +457,7 @@ class MainFrame(wx.Frame):
         if Path(self.dir,'CollectedData_'+self.humanscorer+'.h5').is_file():
             print("A training dataset file is already found for this video. The refined machine labels are merged to this data!")
             DataU1 = pd.read_hdf(os.path.join(self.dir,'CollectedData_'+self.humanscorer+'.h5'), 'df_with_missing')
-            #combine datasets Original Col. + corrected machinefiles:
-            DataCombined = pd.concat([self.Dataframe,DataU1])
-            # Now drop redundant ones keeping the first one [this will make sure that the refined machine file gets preference]
-            DataCombined = DataCombined[~DataCombined.index.duplicated(keep='first')]
-            if len(self.droppedframes)>0: #i.e. frames were dropped/corrupt. also remove them from original file (if they exist!)
-                for fn in self.droppedframes:
-                    try:
-                        DataCombined.drop(fn,inplace=True)
-                    except KeyError:
-                        pass
-                    
-                    
+            DataCombined = pd.concat([DataU1, self.Dataframe])
             DataCombined.to_hdf(os.path.join(self.dir,'CollectedData_'+ self.humanscorer +'.h5'), key='df_with_missing', mode='w')
             DataCombined.to_csv(os.path.join(self.dir,'CollectedData_'+ self.humanscorer +'.csv'))
         else:
@@ -476,7 +478,7 @@ class MainFrame(wx.Frame):
             self.checkBox.Enable(False)
             MainFrame.browseDir(self, event)
         else:
-            print("Closing.. The refined labels are stored in a subdirectory under labeled-data. Use the function 'create_training_datasets' to augment the training dataset and re-train the network!")
+            print("Closing... The refined labels are stored in a subdirectory under labeled-data. Use the function 'merge_datasets' to augment the training dataset, and then re-train a network using create_training_dataset followed by train_network!")
             self.Destroy()
 
 # ###########################################################################
@@ -550,9 +552,9 @@ class MatplotPanel(wx.Panel):
         self.figure = Figure()
         self.axes = self.figure.add_subplot(111)
 
-def show(config):
+def show(config,Screens=1,scale_w=.7,scale_h=.9, winHack=1, img_scale=.0076):
     app = wx.App()
-    frame = MainFrame(None,config).Show()
+    frame = MainFrame(None,config,Screens,scale_w,scale_h, winHack, img_scale).Show()
     app.MainLoop()
 
 

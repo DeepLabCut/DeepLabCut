@@ -37,7 +37,7 @@ from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as Navigat
 class MainFrame(wx.Frame):
     """Contains the main GUI and button boxes"""
 
-    def __init__(self, parent, config,Screens,scale_w,scale_h, winHack):
+    def __init__(self, parent, config,Screens,scale_w,scale_h, winHack, img_scale):
         displaysize = wx.GetDisplaySize()
 
         w = displaysize[0]
@@ -58,7 +58,7 @@ class MainFrame(wx.Frame):
 
        
         
-        self.panel = MatplotPanel(self, parent)
+        
         self.statusbar = self.CreateStatusBar()
         self.statusbar.SetStatusText("")
         self.Bind(wx.EVT_CHAR_HOOK, self.OnKeyPressed) 
@@ -73,7 +73,7 @@ class MainFrame(wx.Frame):
 
         self.Button5 = wx.Button(self, -1, "Help", size=(80, 40), pos=(self.gui_width*.3, self.gui_height*.9))
         self.Button5.Bind(wx.EVT_BUTTON, self.help)
-        self.Button5.Enable(False)
+        self.Button5.Enable(True)
         buttons_list.append(self.Button5)
 
         self.Button2 = wx.Button(self, -1, "Next Frame", size=(120, 40), pos=(self.gui_width*.4, self.gui_height*.9))
@@ -106,7 +106,6 @@ class MainFrame(wx.Frame):
 
         #for btn in buttons_list:
         #    btn.SetBackgroundColour((160, 160, 160))
-        #    btn.SetForegroundColour((0, 0, 0))
 
 # Define variables
 
@@ -126,8 +125,8 @@ class MainFrame(wx.Frame):
         self.addLabel = wx.CheckBox(self, label = 'Add new labels to existing dataset?',pos = (self.gui_width*.1, self.gui_height*.85))
         self.addLabel.Bind(wx.EVT_CHECKBOX,self.newLabel)
         self.new_labels = False
-        imgW = self.gui_width*.0075 #was 12 inches (perhaps add dpi!)
-        imgH = self.gui_height*.0075    #was 7 inches 
+        imgW = self.gui_width*img_scale #was 12 inches (perhaps add dpi!)
+        imgH = self.gui_height*img_scale    #was 7 inches 
 
         self.img_size = (imgW, imgH)  # width, height in inches. 
         
@@ -169,7 +168,7 @@ class MainFrame(wx.Frame):
         """
         Opens Instructions
         """
-        wx.MessageBox('1. Select one of the body parts from the radio buttons to add a label (if necessary change config.yaml first to edit the label names). \n\n2. Right clicking on the image will add the selected label. \n The label will be marked as circle filled with a unique color. \n\n3. Hover your mouse over this newly added label to see its name. \n\n4. Use left click and drag to move the label position. \n\n5. To change the marker size mark the checkbox and move the slider. \n Change the markersize only after finalizing the position of your FIRST LABEL! \n\n6. Once you are happy with the position, select another body part from the radio button. \n Be careful, once you add a new body part, you will not be able to move the old labels. \n\n7. Click Next Frame to move to the next image. \n\n8. When finished labeling all the images, click \'Save\' to save all the labels as a .h5 file. \n\n9. Click OK to continue using the labeling GUI.', 'User instructions', wx.OK | wx.ICON_INFORMATION)
+        wx.MessageBox('1. Select one of the body parts from the radio buttons to add a label (if necessary change config.yaml first to edit the label names). \n\n2. RIGHT clicking on the image will add the selected label. \n The label will be marked as circle filled with a unique color. \n\n3. Hover your mouse over this newly added label to see its name. \n\n4. LEFT click and drag to move the label position. \n\n5. To change the marker size mark the checkbox and move the slider. Uncheck this after it is adjusted! Then advance to the next frame (you cannot zoom or pan again on this image). \n Change the markersize only after finalizing the position of your FIRST LABEL! \n\n6. Once you are happy with the position, select another body part from the radio button. \n Be careful, once you add a new body part, you will not be able to move the old labels. \n\n7. Click Next Frame to move to the next image. \n\n8. When finished labeling all the images, click \'Save\' to save all the labels as a .h5 file. \n\n9. Click OK to continue using the labeling GUI.', 'User instructions', wx.OK | wx.ICON_INFORMATION)
 
     def onClick(self,event):
         x1 = event.xdata
@@ -289,7 +288,7 @@ class MainFrame(wx.Frame):
         if self.file == 0:
             self.checkBox = wx.CheckBox(self, label = 'Adjust marker size.',pos = (self.gui_width*.43, self.gui_height*.85))
             self.checkBox.Bind(wx.EVT_CHECKBOX,self.onChecked)
-            self.slider = wx.Slider(self, -1, 5, 0, 20,size=(200, -1),  pos=(self.gui_width*.40, self.gui_height*.78),style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS )
+            self.slider = wx.Slider(self, -1, 18, 0, 20,size=(200, -1),  pos=(self.gui_width*.40, self.gui_height*.78),style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS )
             self.slider.Bind(wx.EVT_SLIDER, self.OnSliderScroll)
             self.slider.Enable(True)
 
@@ -443,9 +442,9 @@ def GetToolBar(self): #https://matplotlib.org/examples/user_interfaces/embedding
         return self.toolbar        
      
 
-def show(config,Screens=1,scale_w=.8,scale_h=.9, winHack=1):
+def show(config,Screens=1,scale_w=.8,scale_h=.9, winHack=1, img_scale=0.0075):
     app = wx.App()
-    frame = MainFrame(None,config,Screens,scale_w,scale_h, winHack).Show()
+    frame = MainFrame(None,config,Screens,scale_w,scale_h, winHack, img_scale).Show()
     app.MainLoop()
 
 

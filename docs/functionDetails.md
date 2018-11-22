@@ -99,7 +99,7 @@ interest) in the project’s configuration file by providing a list. The followi
 
           >> deeplabcut.label_frames(config_path, Sreens=1)
           
- If you have dual moitors in landscape configuration (i.e. on the left and right), then change ``Screens=2``. If you are a **Windows user** and cannot see all the buttons (check this demo to see how it should look: https://www.youtube.com/watch?v=i8P5y0vO5Q0), please also pass ``winHack=.5``, which will make the GUI small and you can drag the lower left corner to fill your screen. For additional troubleshooting tips, please see: https://github.com/AlexEMG/DeepLabCut/wiki/Troubleshooting-Tips
+GUI SIZIING: If you have dual moitors in landscape configuration (i.e. on the left and right), then change ``Screens=2``. If you cannot see all the buttons (check this demo to see how it should look: https://www.youtube.com/watch?v=i8P5y0vO5Q0), please also pass ``winHack=.5``, which will make the GUI small and you can drag the lower left corner to fill your screen. If you want to make the main image larger, use ``img_size=.008`` (The default is .0075). Be aware, you might cover buttons, so use wisely. For additional troubleshooting tips, please see: https://github.com/AlexEMG/DeepLabCut/wiki/Troubleshooting-Tips
           
 The user needs to use the *Load Frames* button to select the directory which stores the extracted frames from one of
 the videos. Subsequently, the user can use one of the radio buttons (top right) to select a body part to label. RIGHT click to add the label. Left click to drag the label, if needed. If you cannot see a body part, just skip over the label! Pleaee see the ``HELP`` button for more user instructions! This auto-advances once you labeled the first body part. You can also advance to the next frame by clicking on the RIGHT arrow on your keyboard.
@@ -349,8 +349,11 @@ The labels for extracted putative outlier frames can be refined by opening the G
 
           >> deeplabcut.refine_labels(‘config_path’)
           
-This will launch a GUI where the user can refine the labels (Figure 6). Use the ‘Load Labels’ button to select one
-of the subdirectories, where the extracted frames are stored. Every label will be identified by a unique color. For
+This will launch a GUI where the user can refine the labels (Figure 6). 
+
+GUI SIZIING: If you have dual moitors in landscape configuration (i.e. on the left and right), then change ``Screens=2``. If you cannot see all the buttons (check this demo to see how it should look: https://www.youtube.com/watch?v=i8P5y0vO5Q0), please also pass ``winHack=.5``, which will make the GUI small and you can drag the lower left corner to fill your screen. If you want to make the main image larger, use ``img_size=.008`` (The default is .0075). Be aware, you might cover buttons, so use wisely. For additional troubleshooting tips, please see: https://github.com/AlexEMG/DeepLabCut/wiki/Troubleshooting-Tips
+
+Use the ‘Load Labels’ button to select one of the subdirectories, where the extracted frames are stored. Every label will be identified by a unique color. For
 better chances to identify the low-confidence labels, specify the threshold of the likelihood. This changes the body
 parts with likelihood below this threshold to appear as circles and the ones above as solid disks while retaining the
 same color scheme. Next, to adjust the position of the label, hover the mouse over the labels to identify the specific

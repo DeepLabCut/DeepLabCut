@@ -38,11 +38,13 @@
 conda create -n <nameyourenvironment> python=3.6
 source activate <nameyourenvironment>
 ```
-**Windows:** 
+**Windows:**
 ```
 conda create -n <nameyourenvironment> python=3.6
 activate <nameyourenvironment>
 ```
+- here are some additional/alternative [tips for Anaconda + Windows](https://github.com/AlexEMG/DeepLabCut/issues/20#issuecomment-438661814)
+
 Once the environment was activated, the user can install DeepLabCut. In the terminal type: 
 ```
 pip install deeplabcut 

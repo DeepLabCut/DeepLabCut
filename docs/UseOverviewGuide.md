@@ -20,6 +20,8 @@ Open an ipython session and import the package by typing in the terminal:
 
 ``import deeplabcut``
 
+TIP: for every function there is a associated help document that can be viewed by adding a **?** after the function name; i.e. ``deeplabcut.create_new_project?``. To exit this help screen, type q. 
+
 
 ### Create a New Project:
 
