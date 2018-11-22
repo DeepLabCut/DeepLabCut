@@ -95,7 +95,6 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
     comparisonbodyparts=auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg,comparisonbodyparts)
     # Make folder for evaluation
     auxiliaryfunctions.attempttomakefolder(str(cfg["project_path"]+"/evaluation-results/"))
-    final_result=[]
     for shuffle in Shuffles:
         for trainFraction in cfg["TrainingFraction"]:
             ##################################################
@@ -138,12 +137,13 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
             else:
                 print("Invalid choice, only -1 (last), any integer up to last, or all (as string)!")
 
+            final_result=[]
             ##################################################
             # Compute predictions over images
             ##################################################
             for snapindex in snapindices:
                 dlc_cfg['init_weights'] = os.path.join(str(modelfolder),'train',Snapshots[snapindex]) #setting weights to corresponding snapshot.
-                trainingsiterations = (dlc_cfg['init_weights'].split('/')[-1]).split('-')[-1] #read how many training siterations that corresponds to.
+                trainingsiterations = (dlc_cfg['init_weights'].split(os.sep)[-1]).split('-')[-1] #read how many training siterations that corresponds to.
                 
                 #name for deeplabcut net (based on its parameters)
                 DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations)

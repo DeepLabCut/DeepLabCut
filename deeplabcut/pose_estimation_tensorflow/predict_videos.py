@@ -143,7 +143,7 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
         print("Analyzing all the videos in the directory")
         videofolder= videos[0]
         os.chdir(videofolder)
-        videolist=[fn for fn in os.listdir(os.curdir) if (videotype in fn)]
+        videolist=[fn for fn in os.listdir(os.curdir) if (videotype in fn) and ('_labeled.mp4' not in fn)] #exclude labeled-videos!
         Videos = sample(videolist,len(videolist)) # this is useful so multiple nets can be used to analzye simultanously
     else:
         if isinstance(videos,str):

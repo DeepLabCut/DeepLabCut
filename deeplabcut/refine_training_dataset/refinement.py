@@ -128,10 +128,13 @@ class MainFrame(wx.Frame):
         self.alpha = cfg['alphavalue']
         self.iterationindex = cfg['iteration']
         self.project_path=cfg['project_path']
+<<<<<<< HEAD
         imgW = self.gui_width*img_scale #was 12 inches (perhaps add dpi!)
         imgH = self.gui_height*img_scale    #was 7 inches 
 
         self.img_size = (imgW, imgH)  # width, height in inches.
+=======
+>>>>>>> 1a3fac76029ea6479d6dce18633790177648cd24
         
 # ###########################################################################
 # functions for button responses
