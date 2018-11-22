@@ -442,7 +442,7 @@ def PlottingSingleFrame(clip,Dataframe,bodyparts2plot,tmpfolder,index,scorer,dot
             plt.savefig(imagename2)
             plt.close("all")
 
-def refine_labels(config):
+def refine_labels(config,Screens=1,scale_w=.8,scale_h=.9, winHack=1, img_scale=.0076):
     """
     Refines the labels of the outlier frames extracted from the analyzed videos.\n Helps in augmenting the training dataset.
     Use the function ``analyze_video`` to analyze a video and extracts the outlier frames using the function
@@ -453,16 +453,22 @@ def refine_labels(config):
     config : string
         Full path of the config.yaml file as a string.
 
+    Screens : int value of the number of Screens in landscape mode, i.e. if you have 2 screens, enter 2. Default is 1. 
+    
+    scale_h & scale_w : you can modify how much of the screen the GUI should occupy. The default is .9 and .8, respectively.
+   
+    img_scale : if you want to make the plot of the frame larger, consider changing this to .008 or more. Be careful though, too large and you will not see the buttons fully!
+
     Examples
     --------
-    >>> deeplabcut.refine_labels('/analysis/project/reaching-task/config.yaml')
+    >>> deeplabcut.refine_labels('/analysis/project/reaching-task/config.yaml', Screens=2, imag_scale=.0075)
     --------
 
     """
     wd = Path(config).resolve().parents[0]
     os.chdir(str(wd))
     from deeplabcut.refine_training_dataset import refinement
-    refinement.show(config)
+    refinement.show(config,Screens,scale_w,scale_h, winHack, img_scale)
 
 def merge_datasets(config,forceiterate=None):
     """
@@ -511,7 +517,7 @@ def merge_datasets(config,forceiterate=None):
             yaml.dump(cfg, ymlfile,default_flow_style=False)
 
         print("Merged data sets and updated refinement iteration to "+str(cfg['iteration'])+".")
-        print("Now you can create a new training set for the expanded annotated images.")
+        print("Now you can create a new training set for the expanded annotated images (use create_training_dataset).")
     else:
         print("Please label, or remove the un-corrected folders.")
 
