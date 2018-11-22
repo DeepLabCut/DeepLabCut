@@ -150,7 +150,7 @@ def GetScorerName(cfg,shuffle,trainFraction,trainingsiterations='unknown'):
         #dlc_cfg = read_config(os.path.join(modelfolder,'pose_cfg.yaml'))
         #dlc_cfg['init_weights'] = os.path.join(modelfolder , 'train', Snapshots[snapshotindex])
         SNP=Snapshots[snapshotindex]
-        trainingsiterations = (SNP.split('/')[-1]).split('-')[-1]
+        trainingsiterations = (SNP.split(os.sep)[-1]).split('-')[-1]
 
     scorer = 'DeepCut' + "_resnet" + str(cfg['resnet']) + "_" + Task + str(date) + 'shuffle' + str(shuffle) + '_' + str(trainingsiterations)
     return scorer
