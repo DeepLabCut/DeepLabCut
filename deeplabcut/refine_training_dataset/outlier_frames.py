@@ -13,7 +13,6 @@ from pathlib import Path
 import pandas as pd
 import statsmodels.api as sm
 from deeplabcut.utils import auxiliaryfunctions, visualization
-
 from deeplabcut.utils import frameselectiontools
 import argparse
 from tqdm import tqdm
@@ -396,7 +395,9 @@ def ExtractFramesbasedonPreselection(Index,extractionalgorithm,Dataframe,datanam
         try:
           add.add_new_videos(config,[video],coords=[coords]) # make sure you pass coords as a list 
         except: #can we make a catch here? - in fact we should drop indices from DataCombined if they are in CollectedData.. [ideal behavior; currently this is pretty unlikely]
-          pass
+            print("AUTOMATIC ADDING OF VIDEO TO CONFIG FILE FAILED! You need to do this manually for including it in the config.yaml file!")
+            print("Videopath:", video,"Coordinates for cropping:", coords)
+            pass
       
         print("The outlier frames are extracted. They are stored in the subdirectory labeled-data\%s."%vname)
         print("Once you extracted frames for all videos, use 'refine_labels' to manually correct the labels.")

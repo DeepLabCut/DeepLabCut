@@ -50,6 +50,51 @@ def comparelists(config):
         else:
             print(vn, " is missing in config file!")
 
+
+def adddatasetstovideolist(config,prefix,width,height,suffix='.mp4'):
+    """
+    Auxiliary function, compares data sets in labeled-data & listed under video_sets. Adjust both to match up. Handle with care!
+    For the videos the prefix path will be added in front of the name of the labeled-data folder and the suffix ending. Width and height
+    are added as presented manually. 
+    To do: This should be written from the actual images!
+    """
+    cfg = auxiliaryfunctions.read_config(config)
+    videos = cfg['video_sets'].keys()
+    video_names = [Path(i).stem for i in videos]
+    
+    alldatafolders = [fn for fn in os.listdir(Path(config).parent / 'labeled-data') if '_labeled' not in fn]
+    
+    print("Config file contains:", len(video_names))
+    print("Labeled-data contains:", len(alldatafolders))
+    
+    toberemoved=[]
+    for vn in video_names:
+        if vn in alldatafolders:
+            pass
+        else:
+            print(vn, " is missing as a labeled folder >> removing key!")
+            for fullvideo in cfg['video_sets'].keys():
+                if vn in fullvideo:
+                    toberemoved.append(fullvideo)
+    
+    for vid in toberemoved:
+        del cfg['video_sets'][vid]
+    
+    #Load updated lists:
+    videos = cfg['video_sets'].keys()
+    video_names = [Path(i).stem for i in videos]
+    
+    for vn in alldatafolders:
+        if vn in video_names:
+            pass
+        else:
+            print(vn, " is missing in config file >> adding it!")
+            #cfg['video_sets'][vn]
+            cfg['video_sets'].update({os.path.join(prefix,vn+suffix) : {'crop': ', '.join(map(str, [0, width, 0, height]))}})
+    
+    with open(str(config), 'w') as ymlfile:
+        yaml.dump(cfg, ymlfile,default_flow_style=False)
+
 def dropduplicates(config):
     """
     Drop duplicates (of images) in annotation files. 
