@@ -1,0 +1,18 @@
+# dlc-windowsGPU.yaml 
+# 
+# DeepLabCut environment for use on FMI computers
+# FIRST: INSTALL CORRECT DRIVER for GPU, see https://github.com/AlexEMG/DeepLabCut/blob/master/docs/images/cuda_driver.png
+# 
+# Suggested by Jan Eglinger see https://github.com/AlexEMG/DeepLabCut/issues/112
+#
+# install: conda env create -f dlc-windowsGPU.yaml 
+# update:  conda env update -f dlc-windowsGPU.yaml 
+name: dlc-windowsGPU
+dependencies:
+  - python=3.6
+  - tensorflow-gpu==1.12
+  - cudnn=7
+  - wxpython
+  - jupyter
+  - pip:
+    - deeplabcut

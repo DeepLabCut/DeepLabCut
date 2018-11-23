@@ -12,14 +12,11 @@ M Mathis, mackenzie@post.harvard.edu
 ####################################################
 
 import os.path
-import sys
-
 from deeplabcut.pose_estimation_tensorflow.nnet import predict
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import data_to_input
 
 from random import sample
-import pickle
 import time
 import pandas as pd
 import numpy as np
@@ -29,6 +26,8 @@ from pathlib import Path
 from tqdm import tqdm
 import tensorflow as tf
 from deeplabcut.utils import auxiliaryfunctions
+import cv2
+from skimage.util import img_as_ubyte
 
 ####################################################
 # Loading data, and defining model folder
@@ -66,6 +65,10 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
     If you want to analyze only 1 video
     >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi'])
     --------
+    
+    If you want to analyze all videos of type avi in a folder:
+    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos'],videotype='.avi')
+    --------
 
     If you want to analyze multiple videos
     >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi','/analysis/project/videos/reachingvideo2.avi'])
@@ -80,8 +83,9 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
     --------
 
     """
-    #import imageio
-    #imageio.plugins.ffmpeg.download()
+    if 'TF_CUDNN_USE_AUTOTUNE' in os.environ:
+        del os.environ['TF_CUDNN_USE_AUTOTUNE'] #was potentially set during training
+    
     tf.reset_default_graph()
     
     cfg = auxiliaryfunctions.read_config(config)
@@ -91,7 +95,7 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
     try:
         dlc_cfg = load_config(str(path_test_config))
     except FileNotFoundError:
-        print("It seems the model for shuffle %s and trainFraction %s does not exist."%(shuffle,trainFraction))
+        raise FileNotFoundError("It seems the model for shuffle %s and trainFraction %s does not exist."%(shuffle,trainFraction))
 
     # Check which snapshots are available and sort them by # iterations
     try:
@@ -116,7 +120,7 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
 
     # Check if data already was generated:
     dlc_cfg['init_weights'] = os.path.join(modelfolder , 'train', Snapshots[snapshotindex])
-    trainingsiterations = (dlc_cfg['init_weights'].split('/')[-1]).split('-')[-1]
+    trainingsiterations = (dlc_cfg['init_weights'].split(os.sep)[-1]).split('-')[-1]
     
     #update batchsize (based on parameters in config.yaml)
     dlc_cfg['batch_size']=cfg['batch_size']
@@ -139,7 +143,7 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
         print("Analyzing all the videos in the directory")
         videofolder= videos[0]
         os.chdir(videofolder)
-        videolist=[fn for fn in os.listdir(os.curdir) if (videotype in fn)]
+        videolist=[fn for fn in os.listdir(os.curdir) if (videotype in fn) and ('_labeled.mp4' not in fn)] #exclude labeled-videos!
         Videos = sample(videolist,len(videolist)) # this is useful so multiple nets can be used to analzye simultanously
     else:
         if isinstance(videos,str):
@@ -150,18 +154,18 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
         else:
             Videos=[v for v in videos if os.path.isfile(v)]
     
-    if len(videos)>0:
+    if len(Videos)>0:
         #looping over videos
         for video in Videos:
-            AnalzyeVideo(video,DLCscorer,cfg,dlc_cfg,sess,inputs, outputs,pdindex)
+            AnalzyeVideo(video,DLCscorer,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv)
 
     print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
     print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
 
 
-def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize,frame_buffer):
-    ''' note cfg here is for pose-tensorflow.'''
-    from skimage.util import img_as_ubyte
+def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize):
+    ''' Batchwise prediction of pose '''
+    
     PredicteData = np.zeros((nframes, 3 * len(dlc_cfg['all_joints_names'])))
     batch_ind = 0 # keeps track of which image within a batch should be written to
     batch_num = 0 # keeps track of which batch you are at
@@ -188,6 +192,7 @@ def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize,frame_buff
                 pbar.update(step)
             ret, frame = cap.read()
             if ret:
+                frame=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 if cfg['cropping']:
                     frames[batch_ind] = img_as_ubyte(frame[cfg['y1']:cfg['y2'],cfg['x1']:cfg['x2']])
                 else:
@@ -211,9 +216,8 @@ def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize,frame_buff
 
     return PredicteData,nframes
 
-def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,frame_buffer):
-    ''' note cfg here is for pose-tensorflow.'''
-    from skimage.util import img_as_ubyte
+def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes):
+    ''' Non batch wise pose estimation for video cap.'''
     if cfg['cropping']:
         print("Cropping based on the x1 = %s x2 = %s y1 = %s y2 = %s. You can adjust the cropping coordinates in the config.yaml file." %(cfg['x1'], cfg['x2'],cfg['y1'], cfg['y2']))
         nx=cfg['x2']-cfg['x1']
@@ -237,6 +241,7 @@ def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,frame_buffer):
             
             ret, frame = cap.read()
             if ret:
+                frame=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 if cfg['cropping']:
                     frame= img_as_ubyte(frame[cfg['y1']:cfg['y2'],cfg['x1']:cfg['x2']])
                 else:
@@ -252,9 +257,9 @@ def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,frame_buffer):
     return PredicteData,nframes
 
 
-def AnalzyeVideo(video,DLCscorer,cfg,dlc_cfg,sess,inputs, outputs,pdindex,frame_buffer=10):
+def AnalzyeVideo(video,DLCscorer,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv):
     #from moviepy.editor import VideoFileClip
-    import cv2
+    
     print(video)
     #videotype = Path(video).suffix
     print("Starting % ", video)
@@ -281,9 +286,9 @@ def AnalzyeVideo(video,DLCscorer,cfg,dlc_cfg,sess,inputs, outputs,pdindex,frame_
 
         print("Starting to extract posture")
         if int(dlc_cfg["batch_size"])>1:
-            PredicteData,nframes=GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,int(dlc_cfg["batch_size"]),frame_buffer)
+            PredicteData,nframes=GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,int(dlc_cfg["batch_size"]))
         else:
-            PredicteData,nframes=GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,frame_buffer)
+            PredicteData,nframes=GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes)
 
         stop = time.time()
         
@@ -308,7 +313,7 @@ def AnalzyeVideo(video,DLCscorer,cfg,dlc_cfg,sess,inputs, outputs,pdindex,frame_
         metadata = {'data': dictionary}
 
         print("Saving results in %s..." %(Path(video).parents[0]))
-        auxiliaryfunctions.SaveData(PredicteData[:nframes,:], metadata, dataname, pdindex, range(nframes))
+        auxiliaryfunctions.SaveData(PredicteData[:nframes,:], metadata, dataname, pdindex, range(nframes),save_as_csv)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

@@ -4,13 +4,12 @@ https://github.com/AlexEMG/DeepLabCut
 A Mathis, alexander.mathis@bethgelab.org
 T Nath, nath@rowland.harvard.edu
 M Mathis, mackenzie@post.harvard.edu
+
 Edited by:
 Hao Wu, hwu01@g.harvard.edu
-This script labels the bodyparts in videos as analyzed by "AnalyzeVideos.py".
-This code does not store any frames and substantially faster!
+Who contributed his OpenCV class!
 
-Videos are not intended to be created in the docker container (due to missing ffmpeg bindings)
-You can find the directory by: "find / | grep ffmpeg" and then setting it.
+You can find the directory for ffmpeg bindings by: "find / | grep ffmpeg" and then setting it.
 """
 
 ####################################################
@@ -37,7 +36,6 @@ from deeplabcut.pose_estimation_tensorflow.config import load_config
 from skimage.util import img_as_ubyte
 from skimage.draw import circle_perimeter, circle
 from deeplabcut.utils.video_processor import VideoProcessorCV as vp # used to CreateVideo
-
 
 
 def get_cmap(n, name='hsv'):
@@ -148,7 +146,7 @@ def CreateVideoSlow(clip,Dataframe,tmpfolder,dotsize,colormap,alphavalue,pcutoff
             os.remove(file_name)
     os.chdir(start)
 
-def create_labeled_video(config,video,shuffle=1,trainingsetindex=0,videotype='avi',save_frames=False,delete=False,displayedbodyparts='all'):
+def create_labeled_video(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',save_frames=False,delete=False,displayedbodyparts='all',codec='mp4v'):
     """
     Labels the bodyparts in a video. Make sure the video is already analyzed by the function 'analyze_video'
 
@@ -157,7 +155,7 @@ def create_labeled_video(config,video,shuffle=1,trainingsetindex=0,videotype='av
     config : string
         Full path of the config.yaml file as a string.
 
-    video : list
+    videos : list
         A list of string containing the full paths of the videos to analyze.
 
     shuffle : int, optional
@@ -181,6 +179,8 @@ def create_labeled_video(config,video,shuffle=1,trainingsetindex=0,videotype='av
         from config.yaml are used orr a list of strings that are a subset of the full list.
         E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these two body parts.
 
+    codec: codec for labeled video. Options see http://www.fourcc.org/codecs.php [depends on your ffmpeg installation.]
+    
     Examples
     --------
     If you want to create the labeled video for only 1 video
@@ -211,16 +211,16 @@ def create_labeled_video(config,video,shuffle=1,trainingsetindex=0,videotype='av
 
     bodyparts=auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg,displayedbodyparts)
     
-    if [os.path.isdir(i) for i in video] == [True]:
+    if [os.path.isdir(i) for i in videos] == [True]:
       print("Analyzing all the videos in the directory")
-      videofolder= video[0]
+      videofolder= videos[0]
       os.chdir(videofolder)
-      videos = np.sort([fn for fn in os.listdir(os.curdir) if (videotype in fn)])
-      print("Starting ", videofolder, videos)
+      Videos = np.sort([fn for fn in os.listdir(os.curdir) if (videotype in fn)])
+      print("Starting ", videofolder, Videos)
     else:
-      videos = video
+      Videos = videos
 
-    for video in videos:
+    for video in Videos:
         videofolder= Path(video).parents[0] #where your folder with videos is.
         os.chdir(str(videofolder))
         videotype = Path(video).suffix
@@ -235,6 +235,7 @@ def create_labeled_video(config,video,shuffle=1,trainingsetindex=0,videotype='av
                 Dataframe = pd.read_hdf(dataname)
                 metadata=auxiliaryfunctions.LoadVideoMetadata(dataname)
                 #print(metadata)
+                datanames=[dataname]
             except FileNotFoundError:
                 datanames=[fn for fn in os.listdir(os.curdir) if (vname in fn) and (".h5" in fn) and "resnet" in fn]
                 if len(datanames)==0:
@@ -248,23 +249,24 @@ def create_labeled_video(config,video,shuffle=1,trainingsetindex=0,videotype='av
                     Dataframe = pd.read_hdf(datanames[0])
                     metadata=auxiliaryfunctions.LoadVideoMetadata(datanames[0])
 
-            #Loading cropping data used during analysis
-            cropping=metadata['data']["cropping"]
-            [x1,x2,y1,y2]=metadata['data']["cropping_parameters"]
-            print(cropping,x1,x2,y1,y2)
-            
-            if save_frames==True:
-                tmpfolder = os.path.join(str(videofolder),'temp-' + vname)
-                auxiliaryfunctions.attempttomakefolder(tmpfolder)
-                clip = vp(video)
-                #CreateVideoSlow(clip,Dataframe,tmpfolder,cfg["dotsize"],cfg["colormap"],cfg["alphavalue"],cfg["pcutoff"],cfg["cropping"],cfg["x1"],cfg["x2"],cfg["y1"],cfg["y2"],delete,DLCscorer,bodyparts)
-                CreateVideoSlow(clip,Dataframe,tmpfolder,cfg["dotsize"],cfg["colormap"],cfg["alphavalue"],cfg["pcutoff"],cropping,x1,x2,y1,y2,delete,DLCscorer,bodyparts)
-            else:
-                clip = vp(fname = video,sname = os.path.join(vname + DLCscorer+'_labeled.mp4'))
-                if cropping:
-                    print("Fast video creation has currently not been implemented for cropped videos. Please use 'save_frames=True' to get the video.")
+            if len(datanames)>0:
+                #Loading cropping data used during analysis
+                cropping=metadata['data']["cropping"]
+                [x1,x2,y1,y2]=metadata['data']["cropping_parameters"]
+                print(cropping,x1,x2,y1,y2)
+                
+                if save_frames==True:
+                    tmpfolder = os.path.join(str(videofolder),'temp-' + vname)
+                    auxiliaryfunctions.attempttomakefolder(tmpfolder)
+                    clip = vp(video)
+                    #CreateVideoSlow(clip,Dataframe,tmpfolder,cfg["dotsize"],cfg["colormap"],cfg["alphavalue"],cfg["pcutoff"],cfg["cropping"],cfg["x1"],cfg["x2"],cfg["y1"],cfg["y2"],delete,DLCscorer,bodyparts)
+                    CreateVideoSlow(clip,Dataframe,tmpfolder,cfg["dotsize"],cfg["colormap"],cfg["alphavalue"],cfg["pcutoff"],cropping,x1,x2,y1,y2,delete,DLCscorer,bodyparts)
                 else:
-                    CreateVideo(clip,Dataframe,cfg["pcutoff"],cfg["dotsize"],cfg["colormap"],DLCscorer,bodyparts,cropping,x1,x2,y1,y2) #NEED TO ADD CROPPING!
+                    clip = vp(fname = video,sname = os.path.join(vname + DLCscorer+'_labeled.mp4'),codec=codec)
+                    if cropping:
+                        print("Fast video creation has currently not been implemented for cropped videos. Please use 'save_frames=True' to get the video.")
+                    else:
+                        CreateVideo(clip,Dataframe,cfg["pcutoff"],cfg["dotsize"],cfg["colormap"],DLCscorer,bodyparts,cropping,x1,x2,y1,y2) #NEED TO ADD CROPPING!
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

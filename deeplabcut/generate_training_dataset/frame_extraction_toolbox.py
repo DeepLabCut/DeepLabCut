@@ -29,27 +29,32 @@ import yaml
 class MainFrame(wx.Frame):
     """Contains the main GUI and button boxes"""
 
-    def __init__(self, parent,config):
+    def __init__(self, parent,config,Screens,scale_w,scale_h):
+        displaysize = wx.GetDisplaySize()
+        w = displaysize[0]
+        h = displaysize[1]
+        self.gui_width = (w*scale_w)/Screens
+        self.gui_height = (h*scale_h)
+        #print("Scaled GUI width", self.gui_width, "and height", self.gui_height)
+        if self.gui_width<600 or self.gui_height<500:
+                print("Your screen width", w, "and height", h)
+                print("Scaled GUI width", self.gui_width, "and height", self.gui_height)
+                print("Please adjust scale_h and scale_w, or get a bigger screen!")
+        self.size=displaysize
 
-        wx.Frame.__init__(self, parent, title="DeepLabCut2.0 - Frame Extraction ToolBox", size=(1200, 980))
+        wx.Frame.__init__(self, None, title="DeepLabCut2.0 - Manual Frame Extraction GUI", size=(self.gui_width, self.gui_height))
 
-        self.split_win = wx.SplitterWindow(self)
-        self.top_split = MatplotPanel(self.split_win,config)
-
-        self.bottom_split = wx.Panel(self.split_win, style = wx.SUNKEN_BORDER)
-        self.split_win.SplitHorizontally(self.top_split, self.bottom_split, 880)
-#
-        self.Button1 = wx.Button(self.bottom_split, -1, "Load Video", size=(150, 40), pos=(260, 25))
+        self.Button1 = wx.Button(self, -1, "Load Video", size=(150, 40), pos=(self.gui_width*.1, self.gui_height*.9))
         self.Button1.Bind(wx.EVT_BUTTON, self.browseDir)
         self.Button1.Enable(True)
 
-        self.Button2 = wx.Button(self.bottom_split, -1, "Grab a Frame", size=(150, 40), pos=(450, 25))
+        self.Button2 = wx.Button(self, -1, "Grab a Frame", size=(150, 40), pos=(self.gui_width*.4, self.gui_height*.9))
         self.Button2.Bind(wx.EVT_BUTTON, self.grabFrame)
         self.Button2.Enable(False)
 
-        self.Button3 = wx.Button(self.bottom_split, -1, "Help", size=(120, 40), pos=(640, 25))
+        self.Button3 = wx.Button(self, -1, "Help", size=(80, 40), pos=(self.gui_width*.3, self.gui_height*.9))
         self.Button3.Bind(wx.EVT_BUTTON, self.helpButton)
-        self.Button4 = wx.Button(self.bottom_split, -1, "Quit", size=(120, 40), pos=(800, 25))
+        self.Button4 = wx.Button(self, -1, "Quit", size=(80, 40), pos=(self.gui_width*.7, self.gui_height*.9))
         self.Button4.Bind(wx.EVT_BUTTON,self.quitButton)
 
 
@@ -155,7 +160,7 @@ class MainFrame(wx.Frame):
                 msg = wx.MessageBox('Invalid Video file!Do you want to retry?', 'Error!', wx.YES_NO | wx.ICON_WARNING)
                 if msg == 2:
                     self.Button1.Enable(True)
-            self.slider = wx.Slider(self.top_split, -1, 0, self.currFrame, self.numberFrames, size=(950, -1),  pos=(140, 780),style = wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS )
+            self.slider = wx.Slider(self, -1, 0, self.currFrame, self.numberFrames, size=(self.gui_width*.6, -1),  pos=(self.gui_width*.15, self.gui_height*.8),style = wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS )
             self.slider.Bind(wx.EVT_SLIDER, self.OnSliderScroll)
             self.update()
 
@@ -175,15 +180,22 @@ class MainFrame(wx.Frame):
         """
         Updates the image with the current slider index
         """
+        #set image size:
+        imgW = self.gui_width*.007 #was 12 inches (perhaps add dpi!)
+        imgH = self.gui_height*.007    #was 7 inches 
+
+        self.img_size = (imgW, imgH)  # width, height in inches. 
 
         self.vid.set(1,self.currFrame)
-        self.fig1, (self.ax1f1) = plt.subplots(figsize=(12, 7.8),facecolor = "None")
+        self.fig1, (self.ax1f1) = plt.subplots(figsize=self.img_size,facecolor = "None")
         ret, frame = self.vid.read()
-        im_axis = self.ax1f1.imshow(frame)
+        if ret: 
+                frame=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                im_axis = self.ax1f1.imshow(frame)
         self.ax1f1.set_title(str(str(self.currFrame)+"/"+str(self.numberFrames) +" "+ self.filename))
         self.ax1f1.axis("off")
         # self.ax1f1.set_title(str(str(self.currFrame)+"/"+str(self.numberFrames) +" "+ self.filename))
-        self.canvas = FigureCanvas(self.top_split, -1, self.fig1)
+        self.canvas = FigureCanvas(self, -1, self.fig1)
         # self.canvas.Destroy()
 
     def grabFrame(self,event):
@@ -195,6 +207,7 @@ class MainFrame(wx.Frame):
         fname = Path(self.filename)
         output_path = self.config_path.parents[0] / 'labeled-data' / fname.stem
         if ret and output_path.exists() :
+            frame=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             img_name = str(output_path) +'/img'+str(self.currFrame).zfill(int(np.ceil(np.log10(self.numberFrames)))) + '.png'
             if self.cropping:
                 crop_img = frame[self.y1:self.y2, self.x1:self.x2]
@@ -221,11 +234,11 @@ class MatplotPanel(wx.Panel):
         self.figure = Figure()
         self.axes = self.figure.add_subplot(111)
 
-def show(config):
+def show(config,Screens=1,scale_w=.8,scale_h=.9):
     import imageio
     imageio.plugins.ffmpeg.download()
     app = wx.App()
-    frame = MainFrame(None,config).Show()
+    frame = MainFrame(None,config,Screens,scale_w,scale_h).Show()
     app.MainLoop()
 
 

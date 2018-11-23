@@ -8,7 +8,7 @@ M Mathis, mackenzie@post.harvard.edu
 
 """
 
-def extract_frames(config,mode,algo='uniform',crop=False,checkcropping=False):
+def extract_frames(config,mode='automatic',algo='kmeans',crop=False,checkcropping=False, Screens=1,scale_w=.8,scale_h=.8):
     """
     Extracts frames from the videos in the config.yaml file. Only the videos in the config.yaml will be used to select the frames.\n
     Use the function ``add_new_video`` at any stage of the project to add new videos to the config file and extract their frames.
@@ -68,7 +68,7 @@ def extract_frames(config,mode,algo='uniform',crop=False,checkcropping=False):
         wd = Path(config).resolve().parents[0]
         os.chdir(str(wd))
         from deeplabcut.generate_training_dataset import frame_extraction_toolbox 
-        frame_extraction_toolbox.show(config)
+        frame_extraction_toolbox.show(config,Screens,scale_w,scale_h)
         
     elif mode == "automatic":
         config_file = Path(config).resolve()
@@ -88,11 +88,10 @@ def extract_frames(config,mode,algo='uniform',crop=False,checkcropping=False):
             
         videos = cfg['video_sets'].keys()
         for vindex,video in enumerate(videos):
-            
+            plt.close("all")
             #update to openCV
             clip = VideoFileClip(video)
             indexlength = int(np.ceil(np.log10(clip.duration * clip.fps)))
-
             if crop==True:
                 print("Make sure you change the crop parameters in the config.yaml file. The default parameters are set to the video dimensions.")
                 coords = cfg['video_sets'][video]['crop'].split(',')
@@ -100,6 +99,7 @@ def extract_frames(config,mode,algo='uniform',crop=False,checkcropping=False):
                 
                 fname = Path(video)
                 output_path = Path(config).parents[0] / 'labeled-data' / fname.stem
+                
                 if output_path.exists() and checkcropping==True:
                     fig,ax = plt.subplots(1)
                     # Display the image
@@ -118,10 +118,10 @@ def extract_frames(config,mode,algo='uniform',crop=False,checkcropping=False):
                     if msg == "yes" or msg == "y" or msg =="Yes" or msg == "Y":
                       if len(os.listdir(output_path))==0: #check if empty
                             #store full frame (good for augmentation)
-                            index = 0
+                            index = np.random.randint(int(clip.duration * clip.fps/2))
                             image = img_as_ubyte(clip.get_frame(index * 1. / clip.fps))
                             output_path = Path(config).parents[0] / 'labeled-data' / Path(video).stem
-                            saveimg = str(output_path) +'/img'+ str(index).zfill(indexlength) + ".png"  
+                            saveimg = str(output_path) +'/img'+ str(index).zfill(indexlength) + ".png"
                             io.imsave(saveimg, image)
                             
                             # crop and move on with extraction of frames:
@@ -134,7 +134,18 @@ def extract_frames(config,mode,algo='uniform',crop=False,checkcropping=False):
                               sys.exit("Delete the frames and try again later!")
                     else:
                       sys.exit("Correct the crop parameters in the config.yaml file and try again!")
-
+                
+                elif output_path.exists(): #cropping without checking:
+                        coords = cfg['video_sets'][video]['crop'].split(',')
+                        index = np.random.randint(int(clip.duration * clip.fps/2))
+                        image = img_as_ubyte(clip.get_frame(index * 1. / clip.fps))
+                        output_path = Path(config).parents[0] / 'labeled-data' / Path(video).stem
+                        saveimg = str(output_path) +'/img'+ str(index).zfill(indexlength) + ".png"
+                        io.imsave(saveimg, image)
+                        
+                        # crop and move on with extraction of frames:
+                        clip=clip.crop(y1 = int(coords[2]),y2 = int(coords[3]),x1 = int(coords[0]), x2 = int(coords[1]))
+            
             print("Extracting frames based on %s ..." %algo)
             if algo =='uniform': #extract n-1 frames (0 was already stored)
                 frames2pick=frameselectiontools.UniformFrames(clip,numframes2pick-1,start,stop)
@@ -153,6 +164,7 @@ def extract_frames(config,mode,algo='uniform',crop=False,checkcropping=False):
                     io.imsave(img_name,image)
                 except FileNotFoundError:
                     print("Frame # ", index, " does not exist.")
+            
             #close video. 
             clip.close()
             del clip

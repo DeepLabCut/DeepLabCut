@@ -73,6 +73,10 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
     from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import data_to_input
     from deeplabcut.utils import auxiliaryfunctions, visualization
     import tensorflow as tf
+    
+    if 'TF_CUDNN_USE_AUTOTUNE' in os.environ:
+        del os.environ['TF_CUDNN_USE_AUTOTUNE'] #was potentially set during training
+    
 
     tf.reset_default_graph()
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' # 
@@ -91,12 +95,10 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
     comparisonbodyparts=auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg,comparisonbodyparts)
     # Make folder for evaluation
     auxiliaryfunctions.attempttomakefolder(str(cfg["project_path"]+"/evaluation-results/"))
-    final_result=[]
     for shuffle in Shuffles:
         for trainFraction in cfg["TrainingFraction"]:
             ##################################################
             # Load and setup CNN part detector
-            
             ##################################################
             datafn,metadatafn=auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,trainFraction,shuffle,cfg)
             modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)))
@@ -107,8 +109,10 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
             try:
                 dlc_cfg = load_config(str(path_test_config))
             except FileNotFoundError:
-                print("It seems the model for shuffle %s and trainFraction %s does not exist."%(shuffle,trainFraction))
-                        
+                raise FileNotFoundError("It seems the model for shuffle %s and trainFraction %s does not exist."%(shuffle,trainFraction))
+            
+            #change batch size, if it was edited during analysis!
+            dlc_cfg['batch_size']=1 #in case this was edited for analysis.
             #Create folder structure to store results.
             evaluationfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetEvaluationFolder(trainFraction,shuffle,cfg)))
             auxiliaryfunctions.attempttomakefolder(evaluationfolder,recursive=True)
@@ -133,12 +137,13 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
             else:
                 print("Invalid choice, only -1 (last), any integer up to last, or all (as string)!")
 
+            final_result=[]
             ##################################################
             # Compute predictions over images
             ##################################################
             for snapindex in snapindices:
                 dlc_cfg['init_weights'] = os.path.join(str(modelfolder),'train',Snapshots[snapindex]) #setting weights to corresponding snapshot.
-                trainingsiterations = (dlc_cfg['init_weights'].split('/')[-1]).split('-')[-1] #read how many training siterations that corresponds to.
+                trainingsiterations = (dlc_cfg['init_weights'].split(os.sep)[-1]).split('-')[-1] #read how many training siterations that corresponds to.
                 
                 #name for deeplabcut net (based on its parameters)
                 DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations)
@@ -147,7 +152,7 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
                 try:
                     DataMachine = pd.read_hdf(resultsfilename,'df_with_missing')
                     print("This net has already been evaluated!")
-                except:
+                except FileNotFoundError:
                     # Specifying state of model (snapshot / training state)
                     sess, inputs, outputs = ptf_predict.setup_pose_prediction(dlc_cfg)
 

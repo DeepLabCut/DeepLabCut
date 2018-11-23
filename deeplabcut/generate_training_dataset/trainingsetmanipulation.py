@@ -50,6 +50,51 @@ def comparelists(config):
         else:
             print(vn, " is missing in config file!")
 
+
+def adddatasetstovideolist(config,prefix,width,height,suffix='.mp4'):
+    """
+    Auxiliary function, compares data sets in labeled-data & listed under video_sets. Adjust both to match up. Handle with care!
+    For the videos the prefix path will be added in front of the name of the labeled-data folder and the suffix ending. Width and height
+    are added as presented manually. 
+    To do: This should be written from the actual images!
+    """
+    cfg = auxiliaryfunctions.read_config(config)
+    videos = cfg['video_sets'].keys()
+    video_names = [Path(i).stem for i in videos]
+    
+    alldatafolders = [fn for fn in os.listdir(Path(config).parent / 'labeled-data') if '_labeled' not in fn]
+    
+    print("Config file contains:", len(video_names))
+    print("Labeled-data contains:", len(alldatafolders))
+    
+    toberemoved=[]
+    for vn in video_names:
+        if vn in alldatafolders:
+            pass
+        else:
+            print(vn, " is missing as a labeled folder >> removing key!")
+            for fullvideo in cfg['video_sets'].keys():
+                if vn in fullvideo:
+                    toberemoved.append(fullvideo)
+    
+    for vid in toberemoved:
+        del cfg['video_sets'][vid]
+    
+    #Load updated lists:
+    videos = cfg['video_sets'].keys()
+    video_names = [Path(i).stem for i in videos]
+    
+    for vn in alldatafolders:
+        if vn in video_names:
+            pass
+        else:
+            print(vn, " is missing in config file >> adding it!")
+            #cfg['video_sets'][vn]
+            cfg['video_sets'].update({os.path.join(prefix,vn+suffix) : {'crop': ', '.join(map(str, [0, width, 0, height]))}})
+    
+    with open(str(config), 'w') as ymlfile:
+        yaml.dump(cfg, ymlfile,default_flow_style=False)
+
 def dropduplicates(config):
     """
     Drop duplicates (of images) in annotation files. 
@@ -74,7 +119,7 @@ def dropduplicates(config):
             print("Attention:", folder, "does not appear to have labeled data!")
 
 
-def label_frames(config):
+def label_frames(config,Screens=1,scale_w=.8,scale_h=.9, winHack=1, img_scale=0.0075):
     """
     Manually label/annotate the extracted frames. Update the list of body parts you want to localize in the config.yaml file first
 
@@ -95,7 +140,7 @@ def label_frames(config):
     
     from deeplabcut.generate_training_dataset import labeling_toolbox
     
-    labeling_toolbox.show(config)
+    labeling_toolbox.show(config,Screens,scale_w,scale_h, winHack, img_scale)
     os.chdir(startpath)
 
 def get_cmap(n, name='hsv'):
@@ -112,7 +157,13 @@ def check_labels(config):
     Parameter
     ----------
     config : string
-        Full path of the config.yaml file as a string.
+        Full path of the config.yaml file as a string. 
+
+     Screens : int value of the number of Screens in landscape mode, i.e. if you have 2 screens, enter 2. Default is 1. 
+    
+    scale_h & scale_w : you can modify how much of the screen the GUI should occupy. The default is .9 and .8, respectively.
+   
+    img_scale : if you want to make the plot of the frame larger, consider changing this to .008 or more. Be careful though, too large and you will not see the buttons fully!
 
     Example
     --------
@@ -179,7 +230,7 @@ def MakeLabeledPlots(folder,DataCombined,cfg,Labels,Colorscheme,cc,scale):
             left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
         plt.gca().invert_yaxis()
 
-        plt.savefig(str(Path(tmpfolder)/imagename.split("/")[-1])) #create file name
+        plt.savefig(str(Path(tmpfolder)/imagename.split(os.sep)[-1])) #create file name
         plt.close("all")
 
 def SplitTrials(trialindex, trainFraction=0.8):
@@ -288,7 +339,7 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None):
     scorer = cfg['scorer']
     project_path = cfg['project_path']
     # Create path for training sets & store data there 
-    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg) #Path concatenatn OS platform independent
+    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg) #Path concatenation OS platform independent
     auxiliaryfunctions.attempttomakefolder(Path(os.path.join(project_path,str(trainingsetfolder))),recursive=True)
     Data = merge_annotateddatasets(cfg,project_path,Path(os.path.join(project_path,trainingsetfolder)))
     Data = Data[scorer] #extract labeled data

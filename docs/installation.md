@@ -14,7 +14,7 @@
 
      
 - Software: 
-     - Operating System: Linux (Ubuntu) or Windows (7 or newer). However, the authors recommend Ubuntu
+     - Operating System: Linux (Ubuntu 16.04 LTS) or Windows 10. However, the authors strongly recommend Ubuntu!
      - Anaconda/Python3: Anaconda: a free and open source distribution of the Python programming language (download from: \https://www.anaconda.com/). DeepLabCut is written in Python 3 (https://www.python.org/) and not compatible with Python 2. 
      - pip install deeplabcut (see below!) 
      - TensorFlow (see below!)
@@ -24,13 +24,13 @@
      NOTE: [this container does not work on windows hosts!](https://github.com/NVIDIA/nvidia-docker/issues/43)
      
     
- # INSTALLATION:
+# INSTALLATION:
  
  There are several modes of installation, and the user should decide to either use a **system-wide** (see [note below](/docs/installation.md#system-wide-considerations)) or **Anaconda environment** based pip installation (recommended), or the supplied **Docker container** (recommended for more advanced users). The simplest installation is the pip installation, which is  described first.
  
  **All the following commands will be run in the app ``terminal`` in Ubuntu, and called ``cmd`` in Windows. Please first open the terminal (search ``terminal`` or ``cmd``).**
  
- ## Anaconda:  
+## Anaconda:  
 [Anaconda](https://anaconda.org/anaconda/python) is perhaps the easiest way to install Python and additional packages across various operating systems. First create an [Anaconda](https://anaconda.org/anaconda/python) environment.  With Anaconda you create all the dependencies in an [environment](https://conda.io/docs/user-guide/tasks/manage-environments.html) on your machine by running in a terminal:
 
 **LINUX:**
@@ -38,11 +38,13 @@
 conda create -n <nameyourenvironment> python=3.6
 source activate <nameyourenvironment>
 ```
-**Windows:** 
+**Windows:**
 ```
 conda create -n <nameyourenvironment> python=3.6
 activate <nameyourenvironment>
 ```
+- here are some additional/alternative [tips for Anaconda + Windows](https://github.com/AlexEMG/DeepLabCut/issues/20#issuecomment-438661814)
+
 Once the environment was activated, the user can install DeepLabCut. In the terminal type: 
 ```
 pip install deeplabcut 
@@ -65,9 +67,11 @@ CPU ONLY:
 
 GPU: 
 
-Install [TensorFlow](https://www.tensorflow.org/). We used **TensorFlow 1.0 with CUDA (Cuda 8.0)**. Therefore, we recommend this version. Some other versions of TensorFlow have been tested, but use at your own risk (i.e. these versions have been tested 1.2, 1.4, 1.8 or 1.10, but might require different CUDA versions! Please check your driver/CUDA/TensorFlow version [on this Stackoverflow post](https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-304-125/30820690#30820690).
+Install [TensorFlow](https://www.tensorflow.org/). In the Nature Neuroscience paper we used **TensorFlow 1.0 with CUDA (Cuda 8.0)**. Some other versions of TensorFlow have been tested, but use at your own risk (i.e. these versions have been tested 1.2, 1.4, 1.8 or 1.10-1.11, but might require different CUDA versions)! Please check your driver/CUDA/TensorFlow version [on this Stackoverflow post](https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-304-125/30820690#30820690).
 
-If you have a GPU, you should then install the NVIDIA CUDA package and an appropriate driver for your specific GPU. Please follow the instructions found here: https://www.tensorflow.org/install/gpu. Some tips will follow here:
+If you have a GPU, you should then **install the NVIDIA CUDA package and an appropriate driver for your specific GPU.** Please follow the instructions found here: https://www.tensorflow.org/install/gpu, and more [tips below](). The order of operations matters. 
+
+Some tips for installing **TensorFlow 1.8** will follow here:
 
 **FIRST**, install a driver for your GPU (we recommend the 384.xx) Find DRIVER HERE: https://www.nvidia.com/download/index.aspx
 - check which driver is installed by typing this into the terminal: ``nvidia-smi``
@@ -98,11 +102,24 @@ You can test that your GPU is being properly engaged with these additional [tips
 TensorFlow:
 Here are some additional resources users have found helpful (posted without endorsement):
 
+- https://stackoverflow.com/questions/30820513/what-is-the-correct-version-of-cuda-for-my-nvidia-driver/30820690
+
+<p align="center">
+<img src="/docs/images/cuda_driver.png" width="50%">
+</p>
+
+- https://stackoverflow.com/questions/50622525/which-tensorflow-and-cuda-version-combinations-are-compatible
+
+<p align="center">
+<img src="/docs/images/tensorflow_cuda_cudnn_version_chart.png" width="50%">
+</p>
+
 - http://blog.nitishmutha.com/tensorflow/2017/01/22/TensorFlow-with-gpu-for-windows.html
 
 - https://developer.nvidia.com/cuda-toolkit-archive
 
 - http://www.python36.com/install-tensorflow-gpu-windows/
+
 
 FFMEG:
 
@@ -110,7 +127,7 @@ FFMEG:
 
 DEEPLABCUT: 
 
-- if you git clone or download this folder, and are inside of it then ``import deeplabcut`` will import the package from there (rather than from the installation)! You must work within another directory when installing; i.e. in "Documents". You will get a strange import error, as it will be trying to install from the subfolder, deeplabcut. This repo is best used for development, or for using the example Notebooks!
+- if you git clone or download this folder, and are inside of it then ``import deeplabcut`` will import the package from there rather than from the latest on PyPi!
 
 ## System-wide considerations:
 

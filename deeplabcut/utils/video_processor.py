@@ -18,10 +18,11 @@ class VideoProcessor(object):
     Base class for a video processing unit, 
     implementation is required for video loading and saving
     '''
-    def __init__(self,fname='',sname='', nframes = -1, fps = 30):
+    def __init__(self,fname='',sname='', nframes = -1, fps = 30,codec='X264'):
         self.fname = fname
         self.sname = sname
         self.nframes = nframes
+        self.codec=codec
         
         self.h = 0 
         self.w = 0
@@ -128,10 +129,11 @@ class VideoProcessorCV(VideoProcessor):
         print(self.nframes)
             
     def create_video(self):
-        fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        fourcc = cv2.VideoWriter_fourcc(*self.codec)
         return cv2.VideoWriter(self.sname,fourcc, self.FPS, (self.w,self.h),True)
     
-    def _read_frame(self):
+    def _read_frame(self): #return RGB (rather than BGR)!
+        #return cv2.cvtColor(np.flip(self.vid.read()[1],2), cv2.COLOR_BGR2RGB)
         return np.flip(self.vid.read()[1],2)
     
     def save_frame(self,frame):

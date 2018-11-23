@@ -38,6 +38,8 @@ def extract_cnn_output(outputs_np, cfg):
         shape = locref.shape
         locref = np.reshape(locref, (shape[0], shape[1], -1, 2))
         locref *= cfg.locref_stdev
+    if len(scmap.shape)==2: #for single body part!
+        scmap=np.expand_dims(scmap,axis=2)
     return scmap, locref
 
 def argmax_pose_predict(scmap, offmat, stride):
@@ -76,6 +78,8 @@ def extract_cnn_outputmulti(outputs_np, cfg):
         shape = locref.shape
         locref = np.reshape(locref, (shape[0], shape[1],shape[2], -1, 2))
         locref *= cfg.locref_stdev
+    if len(scmap.shape)==2: #for single body part!
+        scmap=np.expand_dims(scmap,axis=2)
     return scmap, locref
 
 

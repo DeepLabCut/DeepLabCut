@@ -4,6 +4,8 @@ https://github.com/AlexEMG/DeepLabCut
 A Mathis, alexander.mathis@bethgelab.org
 T Nath, nath@rowland.harvard.edu
 M Mathis, mackenzie@post.harvard.edu
+
+
 """
 
 import os
@@ -24,17 +26,20 @@ else:
     from deeplabcut import refine_training_dataset
 
     #Direct import for convenience
-    from deeplabcut.generate_training_dataset import label_frames, comparelists, dropduplicates
+    from deeplabcut.generate_training_dataset import label_frames, comparelists, dropduplicates, adddatasetstovideolist
     from deeplabcut.refine_training_dataset import refine_labels
 
 #from deeplabcut import create_project
 from deeplabcut import pose_estimation_tensorflow
 from deeplabcut import utils
 from deeplabcut.create_project import create_new_project, add_new_videos, load_demo_data
-
 from deeplabcut.generate_training_dataset import extract_frames
-from deeplabcut.refine_training_dataset import extract_outlier_frames,merge_datasets,filterpredictions
 from deeplabcut.generate_training_dataset import check_labels,create_training_dataset
+
+if os.environ.get('Colab', default=False) == 'True':
+    print("Project loaded in colab-mode. Apparently Colab has trouble loading statsmodels, so the smooting & outlier frame extraction is disabled. Sorry!")
+else:
+    from deeplabcut.refine_training_dataset import extract_outlier_frames,merge_datasets,filterpredictions
 
 #Direct import for convenience
 from deeplabcut.pose_estimation_tensorflow import train_network

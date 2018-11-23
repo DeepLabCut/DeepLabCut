@@ -80,7 +80,7 @@ def add_new_videos(config,videos,copy_videos=False,coords=None):
     if copy_videos==True:
         print("Copying the videos")
         for src, dst in zip(videos, destinations):
-            shutil.copy(src,dst)
+            shutil.copy(os.fspath(src),os.fspath(dst)) 
     else:
         print("Creating the symbolic link of the video")
         for src, dst in zip(videos, destinations):

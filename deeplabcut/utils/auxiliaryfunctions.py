@@ -26,6 +26,12 @@ def write_config(configname,cfg):
 
 def attempttomakefolder(foldername,recursive=False):
     ''' Attempts to create a folder with specified name. Does nothing if it already exists. '''
+    
+    try:
+        os.path.isdir(foldername)
+    except TypeError: #https://www.python.org/dev/peps/pep-0519/
+        foldername=os.fspath(foldername) #https://github.com/AlexEMG/DeepLabCut/issues/105 (windows)
+    
     if os.path.isdir(foldername):
         print(foldername, " already exists!")
     else:
@@ -34,10 +40,13 @@ def attempttomakefolder(foldername,recursive=False):
         else:
             os.mkdir(foldername)
 
-def SaveData(PredicteData, metadata, dataname, pdindex, imagenames):
+def SaveData(PredicteData, metadata, dataname, pdindex, imagenames,save_as_csv):
     ''' Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py '''
     DataMachine = pd.DataFrame(PredicteData, columns=pdindex, index=imagenames)
     DataMachine.to_hdf(dataname, 'df_with_missing', format='table', mode='w')
+    if save_as_csv:
+        print("Saving csv poses!")
+        DataMachine.to_csv(dataname.split('.h5')[0]+'.csv')
     with open(dataname.split('.h5')[0] + 'includingmetadata.pickle', 'wb') as f:
         # Pickle the 'data' dictionary using the highest protocol available.
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
@@ -141,7 +150,7 @@ def GetScorerName(cfg,shuffle,trainFraction,trainingsiterations='unknown'):
         #dlc_cfg = read_config(os.path.join(modelfolder,'pose_cfg.yaml'))
         #dlc_cfg['init_weights'] = os.path.join(modelfolder , 'train', Snapshots[snapshotindex])
         SNP=Snapshots[snapshotindex]
-        trainingsiterations = (SNP.split('/')[-1]).split('-')[-1]
+        trainingsiterations = (SNP.split(os.sep)[-1]).split('-')[-1]
 
     scorer = 'DeepCut' + "_resnet" + str(cfg['resnet']) + "_" + Task + str(date) + 'shuffle' + str(shuffle) + '_' + str(trainingsiterations)
     return scorer

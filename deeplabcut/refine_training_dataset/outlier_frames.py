@@ -13,7 +13,6 @@ from pathlib import Path
 import pandas as pd
 import statsmodels.api as sm
 from deeplabcut.utils import auxiliaryfunctions, visualization
-
 from deeplabcut.utils import frameselectiontools
 import argparse
 from tqdm import tqdm
@@ -360,7 +359,7 @@ def ExtractFramesbasedonPreselection(Index,extractionalgorithm,Dataframe,datanam
     print("Duration of video [s]: ", clip.duration, ", recorded @ ", fps,"fps!")
     print("Overall # of frames: ", nframes, "with (cropped) frame dimensions: ",clip.size)
     if extractionalgorithm=='uniform':
-        frames2pick=frameselectiontools.UniformFrames(clip,numframes2extract,start,stop,Index=Index)
+        frames2pick=frameselectiontools.UniformFrames(clip,numframes2extract,start,stop,Index)
     elif extractionalgorithm=='kmeans':
         frames2pick=frameselectiontools.KmeansbasedFrameselection(clip,numframes2extract,start,stop,Index)
     else:
@@ -396,7 +395,9 @@ def ExtractFramesbasedonPreselection(Index,extractionalgorithm,Dataframe,datanam
         try:
           add.add_new_videos(config,[video],coords=[coords]) # make sure you pass coords as a list 
         except: #can we make a catch here? - in fact we should drop indices from DataCombined if they are in CollectedData.. [ideal behavior; currently this is pretty unlikely]
-          pass
+            print("AUTOMATIC ADDING OF VIDEO TO CONFIG FILE FAILED! You need to do this manually for including it in the config.yaml file!")
+            print("Videopath:", video,"Coordinates for cropping:", coords)
+            pass
       
         print("The outlier frames are extracted. They are stored in the subdirectory labeled-data\%s."%vname)
         print("Once you extracted frames for all videos, use 'refine_labels' to manually correct the labels.")
@@ -442,7 +443,7 @@ def PlottingSingleFrame(clip,Dataframe,bodyparts2plot,tmpfolder,index,scorer,dot
             plt.savefig(imagename2)
             plt.close("all")
 
-def refine_labels(config):
+def refine_labels(config,Screens=1,scale_w=.8,scale_h=.9, winHack=1, img_scale=.0076):
     """
     Refines the labels of the outlier frames extracted from the analyzed videos.\n Helps in augmenting the training dataset.
     Use the function ``analyze_video`` to analyze a video and extracts the outlier frames using the function
@@ -453,16 +454,22 @@ def refine_labels(config):
     config : string
         Full path of the config.yaml file as a string.
 
+    Screens : int value of the number of Screens in landscape mode, i.e. if you have 2 screens, enter 2. Default is 1. 
+    
+    scale_h & scale_w : you can modify how much of the screen the GUI should occupy. The default is .9 and .8, respectively.
+   
+    img_scale : if you want to make the plot of the frame larger, consider changing this to .008 or more. Be careful though, too large and you will not see the buttons fully!
+
     Examples
     --------
-    >>> deeplabcut.refine_labels('/analysis/project/reaching-task/config.yaml')
+    >>> deeplabcut.refine_labels('/analysis/project/reaching-task/config.yaml', Screens=2, imag_scale=.0075)
     --------
 
     """
     wd = Path(config).resolve().parents[0]
     os.chdir(str(wd))
     from deeplabcut.refine_training_dataset import refinement
-    refinement.show(config)
+    refinement.show(config,Screens,scale_w,scale_h, winHack, img_scale)
 
 def merge_datasets(config,forceiterate=None):
     """
@@ -487,7 +494,7 @@ def merge_datasets(config,forceiterate=None):
     config_path = Path(config).parents[0]
 
     bf=Path(str(config_path/'labeled-data'))
-    allfolders = [os.path.join(bf,fn) for fn in os.listdir(bf) ]
+    allfolders = [os.path.join(bf,fn) for fn in os.listdir(bf) if "_labeled" not in fn] #exclude labeled data folders!
     flagged=False
     for findex,folder in enumerate(allfolders): 
         if os.path.isfile(os.path.join(folder,'MachineLabelsRefine.h5')): #Folder that was manually refine...
@@ -511,7 +518,7 @@ def merge_datasets(config,forceiterate=None):
             yaml.dump(cfg, ymlfile,default_flow_style=False)
 
         print("Merged data sets and updated refinement iteration to "+str(cfg['iteration'])+".")
-        print("Now you can create a new training set for the expanded annotated images.")
+        print("Now you can create a new training set for the expanded annotated images (use create_training_dataset).")
     else:
         print("Please label, or remove the un-corrected folders.")
 
