@@ -38,7 +38,7 @@ The ``create a new project`` step writes the following parameters to the configu
 
 Next, open the **config.yaml** file, which was created during  **create\_new\_project**. You can edit this file in any text editor.  Familiarize yourself with the meaning of the parameters (Box 1). You can edit various parameters, in particular add the list of *bodyparts* (or points of interest) that you want to track. For the next data selection step *numframes2pick*, *start*, *stop*, *x1, x2, y1, y2* and *cropping* are of major importance.
 
- # (C) Data Selection
+ ### (C) Data Selection
  
 CRITICAL: A good training dataset should consist of a sufficient number of frames that capture the
 full breadth of the behavior. This implies to select the frames from different (behavioral) sessions and different animals,
@@ -228,7 +228,7 @@ strengths of DeepLabCut is that due to the probabilistic output of the scoremap,
 reliably report if a body part is visible in a given frame. (see discussions of finger tips in reaching and the Drosophila
 legs during 3D behavior in [11]). The evaluation results are computed by typing:
 
-          >> deeplabcut.evaluate_network(config_path,shuffle=[1], plotting=True)
+          >> deeplabcut.evaluate_network(config_path,Shuffles=[1], plotting=True)
 
 Setting ``plotting`` to true plots all the testing and training frames with the manual and predicted labels. The user
 should visually check the labeled test (and training) images that are created in the ‘evaluation-results’ directory.
@@ -236,6 +236,19 @@ Ideally, DeepLabCut labeled unseen (test images) according to the user’s requi
 and test errors are comparable (good generalization). What (numerically) comprises an acceptable MAE depends on
 many factors (including the size of the tracked body parts, the labeling variability, etc.). Note that the test error can
 also be larger than the training error due to human variability (in labeling, see Figure 2 in Mathis et al, Nature Neuroscience 2018).
+
+**Optional parameters:**
+
+      Shuffles: list, optional -List of integers specifying the shuffle indices of the training dataset. The default is [1]
+
+      plotting: bool, optional -Plots the predictions on the train and test images. The default is `False`; if provided it must be either `True` or `False`
+
+      show_errors: bool, optional -Display train and test errors. The default is `True`
+
+      comparisonbodyparts: list of bodyparts, Default is all -The average error will be computed for those body parts only (Has to be a subset of the body parts).
+
+      gputouse: int, optional -Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU put None. See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+
 
 The plots can be customized by editing the **config.yaml** file (i.e. the colormap, scale, marker size (dotsize), and
 transparency of labels (alphavalue) can be modified). By default each body part is plotted in a different color
@@ -278,15 +291,15 @@ labels on top of the frame and creating a video. One can use it as follows to cr
 
           >> deeplabcut.create_labeled_video(config_path,[‘/analysis/project/videos/reachingvideo1.avi’,‘/analysis/project/videos/reachingvideo2.avi’])
           
-Optional Parameters:
+**Optional Parameters:**
           
-``videotype``: string, optional. Checks for the extension of the video in case the input is a directory. Only videos with this extension are analyzed. The default is ``.avi``
+           videotype: string, optional. Checks for the extension of the video in case the input is a directory. Only videos with this extension are analyzed. The default is ``.avi``
 
- ``save_frames``: bool (i.e. True or False). If true creates each frame individual and then combines into a video. This variant is relatively slow as it stores all individual frames. However, it uses matplotlib to create the frames and is therefore much more flexible (one can set transparency of markers, crop, and easily customize).
+           save_frames: bool (i.e. True or False). If true creates each frame individual and then combines into a video. This variant is relatively slow as it stores all individual frames. However, it uses matplotlib to create the frames and is therefore much more flexible (one can set transparency of markers, crop, and easily customize).
 
-``delete``: bool (i.e. True or False). If true then the individual frames created during the video generation will be deleted.
+           delete: bool (i.e. True or False). If true then the individual frames created during the video generation will be deleted.
 
- ``displayedbodyparts``: list of strings, optional. This select the body parts that are plotted in the video. Either ``all``, then all body parts from config.yaml are used orr a list of strings that are a subset of the full list. E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these two body parts.
+           displayedbodyparts: list of strings, optional. This select the body parts that are plotted in the video. Either `all`, then all body parts from config.yaml are used orr a list of strings that are a subset of the full list. E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these two body parts.
           
 This function has various other parameters, in particular the user can set the ``colormap``, the ``dotsize``, and ``alphavalue`` of the labels in **config.yaml** file.
 
