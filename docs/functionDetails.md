@@ -381,3 +381,8 @@ labeled data. The example project, named as Reaching-Mackenzie-2018-08-30 consis
 with default parameters and 20 images, which are cropped around the region of interest as an example dataset. These
 images are extracted from a video, which was recorded in a study of skilled motor control in mice. Some example
 labels for these images are also provided. See more details [here](/examples).
+
+
+Return to [User guide overview](UseOverviewGuide.md).
+
+Return to [readme](../README.md).

@@ -39,11 +39,14 @@ conda create -n <nameyourenvironment> python=3.6
 source activate <nameyourenvironment>
 ```
 **Windows:**
+
+- We also provide [environment files for Windows](https://github.com/AlexEMG/DeepLabCut/tree/master/conda-environments). They can be installed by typing (in this folder): ```conda env create -f dlc-windowsCPU.yaml``` or ```conda env create -f dlc-windowsGPU.yaml``` for the GPU version. See further details in this [issue](https://github.com/AlexEMG/DeepLabCut/issues/112).
+
+- Alternatively, you can create your tailored environment:
 ```
 conda create -n <nameyourenvironment> python=3.6
 activate <nameyourenvironment>
 ```
-- here are some additional/alternative [tips for Anaconda + Windows](https://github.com/AlexEMG/DeepLabCut/issues/20#issuecomment-438661814)
 
 Once the environment was activated, the user can install DeepLabCut. In the terminal type: 
 ```
@@ -137,5 +140,5 @@ If you perform the system wide installation, and the computer has other Python p
 
 Now you can use Jupyer Notebooks, Spyder, and to train just use the terminal, to run all the code!
           
- Return to [readme](../README.md).
+Return to [readme](../README.md).
 

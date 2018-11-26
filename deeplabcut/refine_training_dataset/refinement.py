@@ -458,7 +458,18 @@ class MainFrame(wx.Frame):
         if Path(self.dir,'CollectedData_'+self.humanscorer+'.h5').is_file():
             print("A training dataset file is already found for this video. The refined machine labels are merged to this data!")
             DataU1 = pd.read_hdf(os.path.join(self.dir,'CollectedData_'+self.humanscorer+'.h5'), 'df_with_missing')
-            DataCombined = pd.concat([DataU1, self.Dataframe])
+            #combine datasets Original Col. + corrected machinefiles:
+            DataCombined = pd.concat([self.Dataframe,DataU1])
+            # Now drop redundant ones keeping the first one [this will make sure that the refined machine file gets preference]
+            DataCombined = DataCombined[~DataCombined.index.duplicated(keep='first')]
+            '''
+            if len(self.droppedframes)>0: #i.e. frames were dropped/corrupt. also remove them from original file (if they exist!)
+                for fn in self.droppedframes:
+                    try:
+                        DataCombined.drop(fn,inplace=True)
+                    except KeyError:
+                        pass
+            '''
             DataCombined.to_hdf(os.path.join(self.dir,'CollectedData_'+ self.humanscorer +'.h5'), key='df_with_missing', mode='w')
             DataCombined.to_csv(os.path.join(self.dir,'CollectedData_'+ self.humanscorer +'.csv'))
         else:

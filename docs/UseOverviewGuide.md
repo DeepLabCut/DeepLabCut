@@ -44,7 +44,7 @@ TIP: for every function there is a associated help document that can be viewed b
 **mini-demo:** create project and edit the yaml file
 
 <p align="center">
-<img src="/docs/images/startdeeplabcut.gif" width="90%">
+<img src="http://www.people.fas.harvard.edu/~amathis/dlc/startdeeplabcut.gif" width="90%">
 </p>
 
 ### Select Frames to Label: 
@@ -62,7 +62,7 @@ TIP: for every function there is a associated help document that can be viewed b
 **mini-demo:** using the GUI to label
 
 <p align="center">
-<img src="/docs/images/guiexample.gif" width="90%">
+<img src="http://www.people.fas.harvard.edu/~amathis/dlc/guiexample.gif" width="90%">
 </p>
 
 ### Check Annotated Frames:
@@ -113,7 +113,7 @@ TIP: for every function there is a associated help document that can be viewed b
 **mini-demo:** using the refinement GUI, a user can load the file then zoom, pan, and edit and/or remove points:
 
 <p align="center">
-<img src="/docs/images/refinelabels.gif" width="90%">
+<img src="http://www.people.fas.harvard.edu/~amathis/dlc/refinelabels.gif" width="90%">
 </p>
 
 When done editing the labels, merge: 
@@ -132,3 +132,6 @@ In ipython/Jupyter notebook:
 In Python:
 
 ``help(deeplabcut.nameofthefunction)``
+
+
+Return to [readme](../README.md).

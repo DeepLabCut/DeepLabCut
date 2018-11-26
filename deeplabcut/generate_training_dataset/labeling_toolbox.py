@@ -56,9 +56,6 @@ class MainFrame(wx.Frame):
         
         wx.Frame.__init__(self, None, title="DeepLabCut2.0 - Labeling GUI", size=(self.gui_width*winHack, self.gui_height*winHack), style= wx.DEFAULT_FRAME_STYLE)
 
-       
-        
-        
         self.statusbar = self.CreateStatusBar()
         self.statusbar.SetStatusText("")
         self.Bind(wx.EVT_CHAR_HOOK, self.OnKeyPressed) 
@@ -230,7 +227,9 @@ class MainFrame(wx.Frame):
         self.index = glob.glob(os.path.join(self.dir,'*.png'))
         print('Working on folder: {}'.format(os.path.split(str(self.dir))[-1]))
         
-        self.relativeimagenames=self.index ##[n.split(self.project_path+'/')[1] for n in self.index]
+        #self.relativeimagenames=self.index ##[n.split(self.project_path+'/')[1] for n in self.index]
+        #self.relativeimagenames=[n.split(self.project_path+'/')[1] for n in self.index]
+        self.relativeimagenames=['labeled'+n.split('labeled')[1] for n in self.index]
         
         self.fig1, (self.ax1f1) = plt.subplots(figsize=self.img_size,facecolor = "None")
         self.iter = 0
@@ -342,7 +341,6 @@ class MainFrame(wx.Frame):
         plt.close(self.fig1)
 
         for idx, bp in enumerate(self.updatedCoords):
-           
             self.dataFrame.loc[self.relativeimagenames[self.iter]][self.scorer, bp[0][-2],'x' ] = bp[-1][0]
             self.dataFrame.loc[self.relativeimagenames[self.iter]][self.scorer, bp[0][-2],'y' ] = bp[-1][1]
 

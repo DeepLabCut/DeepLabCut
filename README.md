@@ -13,9 +13,9 @@ This package includes graphical user interfaces to label your data, and take you
 VERSION 1.0: The initial, Nature Neuroscience version of **DeepLabCut** can be found in the history of git, or the latest version here: https://github.com/AlexEMG/DeepLabCut/releases/tag/1.11
 
 <p align="center">
-<img src="docs/images/MATHIS_2018_odortrail.gif" width="36.4%">
-<img src="docs/images/rat-grasp.gif" width="24.95%">
-<img src="docs/images/MATHIS_2018_fly.gif" width="31.5%">
+<img src="http://www.people.fas.harvard.edu/~amathis/dlc/MATHIS_2018_odortrail.gif" height="220">
+<img src="docs/images/rat-grasp.gif" width="24.89%">
+<img src="http://www.people.fas.harvard.edu/~amathis/dlc/MATHIS_2018_fly.gif" height="220">
 </p>
 
 Please check out [www.mousemotorlab.org/deeplabcut](https://www.mousemotorlab.org/deeplabcut/) for more video demonstrations of automated tracking. Above: courtesy of the Murthy (mouse), Leventhal (rat), and Axel (fly) labs!
@@ -29,10 +29,11 @@ Please check out [www.mousemotorlab.org/deeplabcut](https://www.mousemotorlab.or
 </p>
 
 # [DEMO the code](/examples) 
-We provide several Jupyter Notebooks: one that walks you through a demo dataset to test your installation, and another Notebook to run DeepLabCut from the begining on your own data. We also show you how to use the code in Docker, and on Google Colab.
+We provide several Jupyter Notebooks: one that walks you through a demo dataset to test your installation, and another Notebook to run DeepLabCut from the begining on your own data. We also show you how to use the code in Docker, and on Google Colab. Please also read the [user-guide](https://www.biorxiv.org/content/early/2018/10/30/457242).
 
 # News (and in the news):
 
+- Nov 2018: We posted a detailed guide for DeepLabCut 2.0 on [BioRxiv](https://www.biorxiv.org/content/early/2018/10/30/457242). It also contains a case study for 3D pose estimation in cheetahs.
 - Nov 2018: Various (post-hoc) analysis scripts contributed by users (and us) will be gathered at [DLCutils](https://github.com/AlexEMG/DLCutils). Feel free to contribute! In particular, there is a script guiding you through 
 importing a project into the new data format for DLC 2.0
 - Oct 2018: new pre-print on the speed video-compression and robustness of DeepLabCut on [BioRxiv](https://www.biorxiv.org/content/early/2018/10/30/457242)
@@ -49,20 +50,23 @@ importing a project into the new data format for DLC 2.0
 
 - Top Right: Video anlysis is fast (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
 
-- Bottom Left: The feature detectors are robust to video compression (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
+- Mid Left: The feature detectors are robust to video compression (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
 
-- Bottom Right: It allows 3D pose estimation with a single network and camera (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
+- Mid Right: It allows 3D pose estimation with a single network and camera (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
+
+- Bottom: It allows 3D pose estimation with a single network trained on data from multple cameras together with standard triangulation methods (see [Nath* and Mathis* et al.](https://www.biorxiv.org/content/early/2018/11/24/476531) for details)
 
 <p align="center">
 <img src="docs/images/ErrorvsTrainingsetSize.png" width="50%">
 <img src="docs/images/inferencespeed.png" width="30%">  
 <img src="docs/images/compressionrobustness.png" width="40%">
-<img src="docs/images/MouseLocomotion_warren.gif" width="30%">
+<img src="docs/images/MouseLocomotion_warren.gif" width="30%">  
+<img src="docs/images/cheetah.jpg" width="75%">
 </p>
 
 ## Code contributors:
 
-[Alexander Mathis](https://github.com/AlexEMG), [Tanmay Nath](http://www.mousemotorlab.org/team), [Mackenzie Mathis](https://github.com/MMathisLab), and especially the authors of DeeperCut authors for the feature detector code. The feature detector code is based on Eldar Insafutdinov's TensorFlow implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow). DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals including Richard Warren, Ronny Eichler, Jonas Rauber, Hao Wu, Taiga Abe, and Jonny Saunders. In particular, the authors thank Ronny Eichler for input on the modularized version. We are also grateful to all the beta testers! 
+[Alexander Mathis](https://github.com/AlexEMG), [Tanmay Nath](http://www.mousemotorlab.org/team), [Mackenzie Mathis](https://github.com/MMathisLab), and especially the authors of DeeperCut authors for the feature detector code. The feature detector code is based on Eldar Insafutdinov's TensorFlow implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow). DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals including Richard Warren, Ronny Eichler, Jonas Rauber, Hao Wu, Federico Claudi, Taiga Abe, and Jonny Saunders as well as the [contributors](https://github.com/AlexEMG/DeepLabCut/graphs/contributors). In particular, the authors thank Ronny Eichler for input on the modularized version. We are also grateful to all the beta testers! 
 
 This is an actively developed package and we welcome community development and involvement! If you would like to join the [DeepLabCut Slack group](https://deeplabcut.slack.com), please drop us a note to be invited by emailing: mackenzie@post.harvard.edu
 
@@ -85,7 +89,7 @@ Please check out the following references for more details:
         url = {http://arxiv.org/abs/1605.03170}
     }
     
-Our open source pre-prints:
+Our open-access pre-prints:
     
     @article{mathis2018markerless,
         title={Markerless tracking of user-defined features with deep learning},
@@ -94,6 +98,17 @@ Our open source pre-prints:
         year={2018}
     }
     
+    @article {NathMathis2018,
+        author = {Nath*, Tanmay and Mathis*, Alexander and Chen, An Chi and Patel, Amir and Bethge, Matthias and Mathis, Mackenzie W},
+        title = {Using DeepLabCut for 3D markerless pose estimation across species and behaviors},
+        year = {2018},
+        doi = {10.1101/476531},
+        publisher = {Cold Spring Harbor Laboratory},
+        URL = {https://www.biorxiv.org/content/early/2018/11/24/476531},
+        eprint = {https://www.biorxiv.org/content/early/2018/11/24/476531.full.pdf},
+        journal = {bioRxiv}
+    }
+
     @article {MathisWarren2018speed,
         author = {Mathis, Alexander and Warren, Richard A.},
         title = {On the inference speed and video-compression robustness of DeepLabCut},
