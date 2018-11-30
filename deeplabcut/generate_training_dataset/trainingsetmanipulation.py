@@ -118,6 +118,30 @@ def dropduplicates(config):
         except FileNotFoundError:
             print("Attention:", folder, "does not appear to have labeled data!")
 
+def dropentriesduetodeletedimages(config):
+    """
+    Drop entries for deleted images images in annotation files. 
+    """
+    cfg = auxiliaryfunctions.read_config(config)
+    videos = cfg['video_sets'].keys()
+    video_names = [Path(i).stem for i in videos]
+    folders = [Path(config).parent / 'labeled-data' /Path(i) for i in video_names]
+
+    for folder in folders:
+        fn=os.path.join(str(folder),'CollectedData_' + cfg['scorer'] + '.h5')
+        DC = pd.read_hdf(fn, 'df_with_missing')
+        dropped=False
+        for imagename in DC.index:
+            if os.path.isfile(os.path.join(cfg['project_path'],imagename)):
+                pass
+            else:
+                print("Dropping...", imagename)
+                DC = DC.drop(imagename)
+                dropped=True
+        if dropped==True:
+            DC.to_hdf(fn, key='df_with_missing', mode='w')
+            DC.to_csv(os.path.join(str(folder),'CollectedData_'+ cfg['scorer']+".csv"))
+
 
 def label_frames(config,Screens=1,scale_w=.8,scale_h=.9, winHack=1, img_scale=0.0075):
     """

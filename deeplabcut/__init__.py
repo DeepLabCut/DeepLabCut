@@ -26,7 +26,7 @@ else:
     from deeplabcut import refine_training_dataset
 
     #Direct import for convenience
-    from deeplabcut.generate_training_dataset import label_frames, comparelists, dropduplicates, adddatasetstovideolist
+    from deeplabcut.generate_training_dataset import label_frames, comparelists, dropduplicates, adddatasetstovideolist, dropentriesduetodeletedimages
     from deeplabcut.refine_training_dataset import refine_labels
 
 #from deeplabcut import create_project
