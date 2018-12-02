@@ -33,6 +33,7 @@ We provide several Jupyter Notebooks: one that walks you through a demo dataset 
 
 # News (and in the news):
 
+- Dec 2018: There will be a workshop on DeepLabCut at the Rowland Institute, Harvard University in January 2019! [Sign up until Dec 28](https://twitter.com/TrackingActions/status/1067253667315806211/photo/1)
 - Nov 2018: We posted a detailed guide for DeepLabCut 2.0 on [BioRxiv](https://www.biorxiv.org/content/early/2018/11/24/476531). It also contains a case study for 3D pose estimation in cheetahs.
 - Nov 2018: Various (post-hoc) analysis scripts contributed by users (and us) will be gathered at [DLCutils](https://github.com/AlexEMG/DLCutils). Feel free to contribute! In particular, there is a script guiding you through 
 importing a project into the new data format for DLC 2.0
