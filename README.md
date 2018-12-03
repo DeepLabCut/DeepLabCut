@@ -69,7 +69,11 @@ importing a project into the new data format for DLC 2.0
 
 [Alexander Mathis](https://github.com/AlexEMG), [Tanmay Nath](http://www.mousemotorlab.org/team), [Mackenzie Mathis](https://github.com/MMathisLab), and especially the authors of DeeperCut authors for the feature detector code. The feature detector code is based on Eldar Insafutdinov's TensorFlow implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow). DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals including Richard Warren, Ronny Eichler, Jonas Rauber, Hao Wu, Federico Claudi, Taiga Abe, and Jonny Saunders as well as the [contributors](https://github.com/AlexEMG/DeepLabCut/graphs/contributors). In particular, the authors thank Ronny Eichler for input on the modularized version. We are also grateful to all the beta testers! 
 
-This is an actively developed package and we welcome community development and involvement! If you would like to join the [DeepLabCut Slack group](https://deeplabcut.slack.com), please drop us a note to be invited by emailing: mackenzie@post.harvard.edu
+This is an actively developed package and we welcome community development and involvement! 
+
+For **help and questions that don't fit a GitHub code issue,** we ask you to post in https://forum.image.sc/ 
+
+If you would like to join the [development community](https://deeplabcut.slack.com), please drop us a note to be invited by emailing: mackenzie@post.harvard.edu
 
 Please check out the following references for more details:
 
