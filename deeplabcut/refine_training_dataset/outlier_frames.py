@@ -374,6 +374,10 @@ def ExtractFramesbasedonPreselection(Index,extractionalgorithm,Dataframe,datanam
         PlottingSingleFrame(clip,Dataframe,bodyparts,tmpfolder,index,scorer,cfg['dotsize'],cfg['pcutoff'],cfg['alphavalue'],colors,strwidth)
         plt.close("all")
 
+    #close videos
+    clip.close()
+    del clip
+
     # Extract annotations based on DeepLabCut and store in the folder (with name derived from video name) under labeled-data
     if len(frames2pick)>0:
         Dataframe = pd.read_hdf(os.path.join(videofolder,dataname+'.h5'))

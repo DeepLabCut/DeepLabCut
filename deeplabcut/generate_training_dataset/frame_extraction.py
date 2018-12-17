@@ -88,7 +88,8 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,checkcroppin
             
         videos = cfg['video_sets'].keys()
         for vindex,video in enumerate(videos):
-            plt.close("all")
+            #plt.close("all")
+            
             #update to openCV
             clip = VideoFileClip(video)
             indexlength = int(np.ceil(np.log10(clip.duration * clip.fps)))
@@ -105,7 +106,7 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,checkcroppin
                     # Display the image
                     ax.imshow(image)
                     # Create a Rectangle patch
-                    rect = patches.Rectangle((int(coords[0]),int(coords[2])),int(coords[1])-int(coords[0]),int(coords[3])-int(coords[2])),linewidth=3,edgecolor='r',facecolor='none')
+                    rect = patches.Rectangle((int(coords[0]),int(coords[2])),int(coords[1])-int(coords[0]),int(coords[3])-int(coords[2]),linewidth=3,edgecolor='r',facecolor='none')
                     # Add the patch to the Axes
                     ax.add_patch(rect)
                     plt.show()
