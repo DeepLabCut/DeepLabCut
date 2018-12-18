@@ -8,7 +8,7 @@ bodyparts:
 - Finger1
 - Finger2
 - Joystick
-colormap: hsv
+colormap: jet
 corner2move2: !!python/tuple
 - 50
 - 50

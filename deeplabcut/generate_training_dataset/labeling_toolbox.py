@@ -109,7 +109,7 @@ class MainFrame(wx.Frame):
         self.currentDirectory = os.getcwd()
         self.index = []
         self.iter = []
-        self.colormap = cm.hsv
+        self.colormap = cm.hsv #note will be overwritten by colormap from config file during execution
         
         self.file = 0
 

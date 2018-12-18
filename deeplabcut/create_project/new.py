@@ -173,7 +173,7 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
                 'y2':624,
                 'dotsize':12,          #for plots size of dots
                 'alphavalue':.5,          #for plots transparency of markers
-                'colormap': 'hsv',          #for plots type of colormap
+                'colormap': 'jet',          #for plots type of colormap
                 'iteration':0,
                 'project_path': str(project_path),
                 'batch_size': 4 #batch size during inference (video - analysis); see https://www.biorxiv.org/content/early/2018/10/30/457242

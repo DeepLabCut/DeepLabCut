@@ -8,7 +8,7 @@ bodyparts:
 - leftear
 - rightear
 - tailbase
-colormap: hsv
+colormap: jet
 corner2move2: !!python/tuple
 - 50
 - 50
