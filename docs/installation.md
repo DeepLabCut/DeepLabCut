@@ -138,7 +138,7 @@ If you perform the system wide installation, and the computer has other Python p
 
 ## You're ready to Run DeepLabCut! 
 
-Now you can use Jupyer Notebooks, Spyder, and to train just use the terminal, to run all the code!
+Now you can use Jupyter Notebooks, Spyder, and to train just use the terminal, to run all the code!
           
 Return to [readme](../README.md).
 
