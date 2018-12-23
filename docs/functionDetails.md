@@ -8,9 +8,9 @@ Thus, this function requires the user to input the enter the name of the project
 Optional arguments specify the working directory, where the project directory will be created, and if the user wants to copy the videos (to the project directory). If the optional argument working\_directory is unspecified, the project directory is created in the current working directory, and if copy\_videos is unspecified symbolic links for the videos are created in the videos directory. Each symbolic link creates a reference to a video and thus eliminates the need to copy the entire video to the video directory (if the videos remain at that original location). 
 
 
-           deeplabcut.create_project(`Name of the project',`Name of the experimenter', [`Full path of video 1',`Full path of video2',`Full path of video3'], working_directory=`Full path of the working directory',copy_videos=True/False) 
+           deeplabcut.create_new_project(`Name of the project',`Name of the experimenter', [`Full path of video 1',`Full path of video2',`Full path of video3'], working_directory=`Full path of the working directory',copy_videos=True/False) 
           
- (TIP: you can also place ``config_path`` in front of ``deeplabcut.create_project`` to create a vriable that holds the path to the config.yaml file, i.e. ``config_path=deeplabcut.create_project(...)``)
+ (TIP: you can also place ``config_path`` in front of ``deeplabcut.create_new_project`` to create a vriable that holds the path to the config.yaml file, i.e. ``config_path=deeplabcut.create_new_project(...)``)
 
 This set of arguments will create a project directory with the name **Name of the project+name of the experimenter+date of creation of the project** in the **Working directory** and creates the symbolic links to videos in the **videos** directory. The project directory will have subdirectories: **dlc-models**, **labeled-data**, **training-datasets**, and **videos**.  All the outputs generated during the course of a project will be stored in one of these subdirectories, thus allowing each project to be curated in separation from other projects. The purpose of the subdirectories is as follows:
 
@@ -172,7 +172,7 @@ training dataset.
 
 The function ‘train_network’ helps the user in training the network. It is used as follows:
 
-                    >> deeplabcut.train_network(config_path,shuffle=1)
+                    >> deeplabcut.train_network(config_path)
                     
 The set of arguments in the function starts training the network for the dataset created for one specific shuffle.
 
