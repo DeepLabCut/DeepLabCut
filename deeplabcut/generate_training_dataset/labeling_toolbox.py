@@ -225,6 +225,7 @@ class MainFrame(wx.Frame):
         self.colormap = plt.get_cmap(self.cfg['colormap'])
         self.project_path=self.cfg['project_path']
         self.index = glob.glob(os.path.join(self.dir,'*.png'))
+        self.index.sort() #sort the files thx to Robert Eppley for this suggestion
         print('Working on folder: {}'.format(os.path.split(str(self.dir))[-1]))
         
         #self.relativeimagenames=self.index ##[n.split(self.project_path+'/')[1] for n in self.index]
