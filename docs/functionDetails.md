@@ -191,7 +191,7 @@ the variable ``init_weights`` in the **pose_cfg.yaml** file under the *train* su
 CRITICAL POINT: It is recommended to train for thousands of iterations until the loss plateaus (typically
  around **200,000**). The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file allows the user to alter how often the loss is displayed and how often the weights are stored.
   
-**Important Parameters:** 
+**Parameters:** 
 
     config : string
         Full path of the config.yaml file as a string.
@@ -204,11 +204,8 @@ CRITICAL POINT: It is recommended to train for thousands of iterations until the
     
     gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU put None.
     See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
-   
-**Additional parameters:**
     
-    max_snapshots_to_keep: int, or None. Sets how many snapshots are kept, i.e. states of the trained network. Every savinginteration many times 
-    a snapshot is stored, however only the last max_snapshots_to_keep many are kept! If you change this to None, then all are kept. 
+    max_snapshots_to_keep: int, or None. Sets how many snapshots are kept, i.e. states of the trained network. For every saving interation a snapshot is stored, however only the last max_snapshots_to_keep many are kept! If you change this to None, then all are kept. 
     See: https://github.com/AlexEMG/DeepLabCut/issues/8#issuecomment-387404835
     
     autotune: property of TensorFlow, somehow faster if 'false' (as Eldar found out, see https://github.com/tensorflow/tensorflow/issues/13317). Default: False
