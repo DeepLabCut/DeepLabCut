@@ -31,15 +31,15 @@ from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as Navigat
 # Class for GUI MainFrame
 # ###########################################################################
 
-#minic small screen: 
-#displaysize = (400, 400) 
+#minic small screen:
+#displaysize = (400, 400)
 
 #Note, if the variable Screens = 2, it assumes two screens in landscape next to eachother! If you use a different configuration, consider changing displaysize to your known display size. see troubleshooting for more information https://github.com/AlexEMG/DeepLabCut/wiki/Troubleshooting-Tips.
 
-#On Windows, there can be a issue with the sizing on start, so you can scale it down then resize on your screen. Namely, set winHack=.5 and this solves this issue. Thanks to Federico Claudi for troubleshooting this with us! 
+#On Windows, there can be a issue with the sizing on start, so you can scale it down then resize on your screen. Namely, set winHack=.5 and this solves this issue. Thanks to Federico Claudi for troubleshooting this with us!
 
 class MainFrame(wx.Frame):
-    """Contains the main GUI and button boxes"""  
+    """Contains the main GUI and button boxes"""
 
     def __init__(self, parent, config,Screens,scale_w,scale_h, winHack, img_scale):
         displaysize = wx.GetDisplaySize()
@@ -130,7 +130,7 @@ class MainFrame(wx.Frame):
         self.project_path=cfg['project_path']
 
         imgW = self.gui_width*img_scale #was 12 inches (perhaps add dpi!)
-        imgH = self.gui_height*img_scale    #was 7 inches 
+        imgH = self.gui_height*img_scale    #was 7 inches
 
         self.img_size = (imgW, imgH)  # width, height in inches.
 
