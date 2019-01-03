@@ -7,18 +7,15 @@ M Mathis, mackenzie@post.harvard.edu
 
 """
 
-"""
-Class to drag,annotate and remove the data points. Use left click to drag the data points
-around. Use right click to remove any unwanted data points. Internally the corresponding data
-point is set to nan. When the user hovers the mouse over any data point, each data point is annotated with the labels and its corresponding likelihood. These annotations also move with the drag!
-"""
-
-
 import numpy as np
 import wx
 
 
 class DraggablePoint:
+    """
+    Class to drag, annotate and remove the data points. Use left click to drag the data points around. Use right click to remove any unwanted data points. Internally the corresponding data point is set to nan. When the user hovers the mouse over any data point, each data point is annotated with the labels and its corresponding likelihood. These annotations also move with the drag!
+    """
+
     lock = None #only one can be animated at a time
     def __init__(self, point,bodyParts):
         self.point = point
