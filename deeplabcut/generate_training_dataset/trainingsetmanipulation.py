@@ -56,7 +56,7 @@ def adddatasetstovideolist(config,prefix,width,height,suffix='.mp4'):
     Auxiliary function, compares data sets in labeled-data & listed under video_sets. Adjust both to match up. Handle with care!
     For the videos the prefix path will be added in front of the name of the labeled-data folder and the suffix ending. Width and height
     are added as presented manually.
-    To do: This should be written from the actual images!
+    TODO: This should be written from the actual images!
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg['video_sets'].keys()
