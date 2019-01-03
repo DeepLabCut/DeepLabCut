@@ -28,6 +28,10 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,checkcroppin
     checkcropping : bool, optional
         Checking for cropping (default False).
         If ``True``, the cropping parameters are overlaid in a plot of the first frame to check and the user can decide if the program should proceed with those parameters, or perhaps edit them.
+    Screens : int, optional
+        Number of Screens in landscape mode, (i.e. if you have 2 screens, enter 2) (default 1).
+    scale_w, scale_h : float, optional
+        How much of the screen the GUI should occupy (default .8, .8).
 
     Examples
     --------
