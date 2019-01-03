@@ -44,6 +44,9 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
         Copy videos to videos directory (default False).
         If ``True``, the videos are copied to the project/videos directory.
         If ``False``, symlinks of the videos are copied to the project/videos directory.
+    videotype : str, optional
+       Extension of videos for directories in the `videos` parameter (default ".avi").
+       Only videos of this extension are analyzed within the directories.
 
     Examples
     --------
