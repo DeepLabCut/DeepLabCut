@@ -151,6 +151,17 @@ def label_frames(config,Screens=1,scale_w=.8,scale_h=.9, winHack=1, img_scale=0.
     ----------
     config : str
         Full path of the config.yaml file.
+    Screens : int, optional
+        Number of Screens in landscape mode, (i.e. if you have 2 screens, enter 2) (default 1).
+    scale_w, scale_h : float, optional
+        How much of the screen the GUI should occupy (default .8, .9).
+    winHack : int, optional
+        Scale of the GUI's initial size when opened (default 1).
+        Pass `0.5` if GUI takes up too much space initially.
+    img_scale : float, optional
+        Scale of the plot image (default .0076).
+        If you want to make the plot of the frame larger, consider changing this to .008 or more.
+        Be careful though, too large and you will not see the buttons fully!
 
     Examples
     --------
