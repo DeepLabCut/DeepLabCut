@@ -27,70 +27,69 @@ def extract_outlier_frames(config,videos,shuffle=1,trainingsetindex=0,outlieralg
 
     Another crucial parameter in config.yaml is how many frames to extract 'numframes2extract'.
 
-    Parameter
+    Parameters
     ----------
-    config : string
-        Full path of the config.yaml file as a string.
-
-    videos: list
-        Full path of the video to extract the frame from. Make sure that this video is already analyzed. 
-
+    config : str
+        Full path of the config.yaml file.
+    videos : list of str
+        List of full paths of the videos to extract the outlier frames from.
+        These videos must be already analyzed.
     shuffle : int, optional
-        The shufle index of training dataset. The extracted frames will be stored in the labeled-dataset for
-        the corresponding shuffle of training dataset. Default is set to 1
-
-    trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
-     
-    outlieralgorithm: 'fitting', 'jump', or 'uncertain', optional
-        String specifying the algorithm used to detect the outliers. Currently, deeplabcut supports three methods. 'Fitting'
-        fits a Auto Regressive Integrated Moving Average model to the data and computes the distance to the estimated data. Larger distances than
-        epsilon are then potentially identified as outliers. The methods 'jump' identifies larger jumps than 'epsilon' in any body part; and 'uncertain'
-        looks for frames with confidence below p_bound. The default is set to ``fitting``.
-
-    comparisonbodyparts: list of strings, optional
-        This select the body parts for which the comparisons with the outliers are carried out. Either ``all``, then all body parts
-        from config.yaml are used orr a list of strings that are a subset of the full list.
-        E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these two body parts.
-
-    p_bound: float between 0 and 1, optional
-        For outlieralgorithm 'uncertain' this parameter defines the likelihood below, below which a body part will be flagged as a putative outlier.
-
-    epsilon; float,optional
-        Meaning depends on outlieralgoritm. The default is set to 20 pixels.
-        For outlieralgorithm 'fitting': Float bound according to which frames are picked when the (average) body part estimate deviates from model fit
-        For outlieralgorithm 'jump': Float bound specifying the distance by which body points jump from one frame to next (Euclidean distance)
-
-    ARdegree: int, optional
-        For outlieralgorithm 'fitting': Autoregressive degree of ARIMA model degree. (Note we use SARIMAX without exogeneous and seasonal part)
+        The shuffle index of training dataset (default 1).
+        The extracted frames will be stored in the labeled-dataset for the corresponding shuffle of training dataset.
+    trainingsetindex : int, optional
+        Which TrainingsetFraction to use (default 1).
+        Note that TrainingFraction is a list in config.yaml.
+    outlieralgorithm : {'fitting', 'jump', 'uncertain'}, optional
+        The algorithm used to detect the outliers (default 'fitting').
+        Currently, deeplabcut supports three methods.
+        'fitting' fits a Auto Regressive Integrated Moving Average model to the data and computes the distance to the estimated data. Larger distances than epsilon are then potentially identified as outliers.
+        'jump' identifies larger jumps than 'epsilon' in any body part
+        'uncertain' looks for frames with confidence below p_bound.
+    comparisonbodyparts : list of str or str, optional
+        List of bodyparts to use or the string "all" (default "all").
+        Must be a subset of `bodyparts` in config.yaml
+        Comparisons with the outliers are carried out only for the body parts specified by `comparisonbodyparts`.
+    epsilon : float, optional
+        Meaning depends on `outlieralgoritm` (default 20).
+        For 'fitting' this is the float bound according to which frames are picked when the (average) body part estimate deviates from model fit.
+        For 'jump' this is the float bound specifying the distance by which body points jump from one frame to next (Euclidean distance)
+    p_bound : float between 0 and 1, optional
+        For `outlieralgoritm` 'uncertain' (default .01).
+        The likelihood below which a body part will be flagged as a putative outlier.
+    ARdegree : int, optional
+        For `outlieralgorithm` 'fitting' (default 3)
+        The Autoregressive degree of ARIMA model degree.
+        Note we use SARIMAX without exogeneous and seasonal part.
         see https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html
-
-    MAdegree: int
-        For outlieralgorithm 'fitting': MovingAvarage degree of ARIMA model degree. (Note we use SARIMAX without exogeneous and seasonal part)
+    MAdegree : int, optional
+        For `outlieralgorithm` 'fitting' (default 1).
+        MovingAvarage degree of ARIMA model degree.
+        Note we use SARIMAX without exogeneous and seasonal part.
         See https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html
-
-    alpha: float
-        Significance level for detecting outliers based on confidence interval of fitted ARIMA model. Only the distance is used however.
-
-    extractionalgorithm : string, optional
-        String specifying the algorithm to use for selecting the frames from the identified putatative outlier frames. Currently, deeplabcut
-        supports either ``kmeans`` or ``uniform`` based selection (same logic as for extract_frames).
-        The default is set to``uniform``, if provided it must be either ``uniform`` or ``kmeans``.
-    
+    alpha : float, optional
+        Significance level for detecting outliers based on confidence interval of fitted ARIMA model (default .01).
+        Only the distance is used however.
+    extractionalgorithm : {"uniform", "kmeans"}, optional
+        The algorithm to use for selecting the frames from the identified putatative outlier frames (default "uniform").
+        Currently, deeplabcut supports either 'kmeans' or 'uniform' based selection.
     automatic : bool, optional
-        Set it to True, if you want to extract outliers without being asked for user feedback. 
+        Whether to extract outliers without being asked for user feedback (default False).
 
-    Example
+    Examples
     --------
-    for extracting the frames with default settings
+    For extracting the frames with default settings:
+
     >>> deeplabcut.extract_outlier_frames('/analysis/project/reaching-task/config.yaml',['/analysis/project/video/reachinvideo1.avi'])
-    --------
-    for extracting the frames with kmeans
+
+    For extracting the frames with kmeans:
+
     >>> deeplabcut.extract_outlier_frames('/analysis/project/reaching-task/config.yaml',['/analysis/project/video/reachinvideo1.avi'],extractionalgorithm='kmeans')
-    --------
-    for extracting the frames with kmeans and epsilon = 5 pixels.
+
+    For extracting the frames with kmeans and epsilon = 5 pixels:
+
     >>> deeplabcut.extract_outlier_frames('/analysis/project/reaching-task/config.yaml',['/analysis/project/video/reachinvideo1.avi'],epsilon = 5,extractionalgorithm='kmeans')
-    --------
+
     """
 
     cfg = auxiliaryfunctions.read_config(config)
@@ -106,17 +105,17 @@ def extract_outlier_frames(config,videos,shuffle=1,trainingsetindex=0,outlieralg
           startindex=max([int(np.floor(nframes*cfg['start'])),0])
           stopindex=min([int(np.ceil(nframes*cfg['stop'])),nframes])
           Index=np.arange(stopindex-startindex)+startindex
-  
+
           #figure out body part list:
           bodyparts=auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg,comparisonbodyparts)
-  
+
           Indices=[]
           if outlieralgorithm=='uncertain': #necessary parameters: considered body parts and
               for bpindex,bp in enumerate(bodyparts):
                   if bp in cfg['bodyparts']: #filter [who knows what users put in...]
                       p=Dataframe[scorer][bp]['likelihood'].values[Index]
                       Indices.extend(np.where(p<p_bound)[0]+startindex) # all indices between start and stop that are below p_bound.
-  
+
           elif outlieralgorithm=='jump':
               for bpindex,bp in enumerate(bodyparts):
                   if bp in cfg['bodyparts']: #filter [who knows what users put in...]
@@ -124,17 +123,17 @@ def extract_outlier_frames(config,videos,shuffle=1,trainingsetindex=0,outlieralg
                       dy=np.diff(Dataframe[scorer][bp]['y'].values[Index])
                       # all indices between start and stop with jump larger than epsilon (leading up to this point!)
                       Indices.extend(np.where((dx**2+dy**2)>epsilon**2)[0]+startindex+1) 
-  
+
           elif outlieralgorithm=='fitting':
               #deviation_dataname = str(Path(videofolder)/Path(dataname))
               # Calculate deviatons for video
               [d,o] = ComputeDeviations(Dataframe,cfg,comparisonbodyparts,scorer,dataname,p_bound,alpha,ARdegree,MAdegree)
               #Some heuristics for extracting frames based on distance:
               Indices=np.where(d>epsilon)[0] # time points with at least average difference of epsilon
-              
+
               if len(Index)<cfg['numframes2pick']*2 and len(d)>cfg['numframes2pick']*2: # if too few points qualify, extract the most distant ones.
                   Indices=np.argsort(d)[::-1][:cfg['numframes2pick']*2]
-  
+
           Indices=np.sort(list(set(Indices))) #remove repetitions.
           print("Method ", outlieralgorithm, " found ", len(Indices)," putative outlier frames.")
           print("Do you want to proceed with extracting ", cfg['numframes2pick'], " of those?")
@@ -144,18 +143,18 @@ def extract_outlier_frames(config,videos,shuffle=1,trainingsetindex=0,outlieralg
               print("If this list is very large, perhaps consider changing the paramters (start, stop, epsilon, comparisonbodyparts) or use a different method.")
           elif outlieralgorithm=='fitting':
               print("If this list is very large, perhaps consider changing the paramters (start, stop, epsilon, ARdegree, MAdegree, alpha, comparisonbodyparts) or use a different method.")
-  
+
           if automatic==False:
               askuser = input("yes/no")
           else:
               askuser='Ja'
-              
+
           if askuser=='y' or askuser=='yes' or askuser=='Ja' or askuser=='ha': # multilanguage support :)
               #Now extract from those Indices!
               ExtractFramesbasedonPreselection(Indices,extractionalgorithm,Dataframe,dataname,scorer,video,cfg,config)
           else:
               print("Nothing extracted, change parameters and start again...")
-  
+
       except FileNotFoundError:
           print("The video has not been analyzed yet!. You can only refine the labels, after the pose has been estimate. Please run 'analyze_video' first.")
 
@@ -164,47 +163,46 @@ def filterpredictions(config,video,shuffle=1,trainingsetindex=0,comparisonbodypa
     """
     Fits frame-by-frame pose predictions with SARIMAX model.
 
-    Parameter
+    Parameters
     ----------
-    config : string
-        Full path of the config.yaml file as a string.
-
-    video : string
-        Full path of the video to extract the frame from. Make sure that this video is already analyzed.
-
+    config : str
+        Full path of the config.yaml file.
+    video : str
+        Full path of the video to extract the frames from.
+        This video must be already analyzed.
     shuffle : int, optional
-        The shufle index of training dataset. The extracted frames will be stored in the labeled-dataset for
-        the corresponding shuffle of training dataset. Default is set to 1
-
-    trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
-     
-    comparisonbodyparts: list of strings, optional
-        This select the body parts for which SARIMAX models are fit. Either ``all``, then all body parts
-        from config.yaml are used orr a list of strings that are a subset of the full list.
-        E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these two body parts.
-
-    p_bound: float between 0 and 1, optional
-        For outlieralgorithm 'uncertain' this parameter defines the likelihood below, below which a body part will be flagged as a putative outlier.
-
-    ARdegree: int, optional
-        For outlieralgorithm 'fitting': Autoregressive degree of Sarimax model degree.
+        The shuffle index of training dataset (default 1).
+        The extracted frames will be stored in the labeled-dataset for the corresponding shuffle of training dataset.
+    trainingsetindex : int, optional
+        Which TrainingsetFraction to use (default 1).
+        Note that TrainingFraction is a list in config.yaml.
+    comparisonbodyparts : list of str or str, optional
+        List of bodyparts to use or the string "all" (default "all").
+        Must be a subset of `bodyparts` in config.yaml
+        SARIMAX models are fitted only for the body parts specified by `comparisonbodyparts`.
+    p_bound : float between 0 and 1, optional
+        For `outlieralgoritm` 'uncertain' (default .01).
+        The likelihood below which a body part will be flagged as a putative outlier.
+    ARdegree : int, optional
+        For `outlieralgorithm` 'fitting' (default 3)
+        The Autoregressive degree of ARIMA model degree.
+        Note we use SARIMAX without exogeneous and seasonal part.
         see https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html
-
-    MAdegree: int
-        For outlieralgorithm 'fitting': Moving Avarage degree of Sarimax model degree.
+    MAdegree : int, optional
+        For `outlieralgorithm` 'fitting' (default 1).
+        MovingAvarage degree of ARIMA model degree.
+        Note we use SARIMAX without exogeneous and seasonal part.
         See https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html
+    alpha : float, optional
+        Significance level for detecting outliers based on confidence interval of fitted SARIMAX model (default .01).
 
-    alpha: float
-        Significance level for detecting outliers based on confidence interval of fitted SARIMAX model.
-    
-    Example
+    Examples
     --------
     tba
     --------
-    
+
     Returns filtered pandas array (incl. confidence interval), original data, distance and average outlier vector.
-    
+
     """
 
     cfg = auxiliaryfunctions.read_config(config)
@@ -217,7 +215,7 @@ def filterpredictions(config,video,shuffle=1,trainingsetindex=0,comparisonbodypa
         Dataframe = pd.read_hdf(os.path.join(videofolder,dataname+'.h5'))
     except FileExistsError:
         print("Could not find data.")
-    
+
     data,d,o = ComputeDeviations(Dataframe,cfg,bodyparts,scorer,dataname,p_bound,alpha,ARdegree,MAdegree,storeoutput='full')
     return data,Dataframe,d,o
 
@@ -239,7 +237,7 @@ def FitSARIMAXModel(x,p,pcutoff,alpha,ARdegree,MAdegree,nforecast = 0):
     Y=x.copy()
     Y[p<pcutoff]=np.nan # Set uncertain estimates to nan (modeled as missing data)
     if np.sum(np.isfinite(Y))>10:
-        
+
         # SARIMAX implemetnation has better prediction models than simple ARIMAX (however we do not use the seasonal etc. parameters!)
         mod = sm.tsa.statespace.SARIMAX(Y.flatten(), order=(ARdegree,0,MAdegree),seasonal_order=(0, 0, 0, 0),simple_differencing=True)
         #Autoregressive Moving Average ARMA(p,q) Model
@@ -249,12 +247,12 @@ def FitSARIMAXModel(x,p,pcutoff,alpha,ARdegree,MAdegree,nforecast = 0):
         except ValueError: #https://groups.google.com/forum/#!topic/pystatsmodels/S_Fo53F25Rk (let's update to statsmodels 0.10.0 soon...)
             startvalues=np.array([convertparms2start(pn) for pn in mod.param_names])
             res= mod.fit(start_params=startvalues,disp=True)
-            
+
         predict = res.get_prediction(end=mod.nobs + nforecast-1)
         return predict.predicted_mean,predict.conf_int(alpha=alpha)
     else:
         return np.nan*np.zeros(len(Y)),np.nan*np.zeros((len(Y),2))
-    
+
 def ComputeDeviations(Dataframe,cfg,comparisonbodyparts,scorer,dataname,p_bound,alpha,ARdegree,MAdegree,storeoutput=None):
     ''' Fits Seasonal AutoRegressive Integrated Moving Average with eXogenous regressors model to data and computes confidence interval
     as well as mean fit. '''
@@ -262,7 +260,7 @@ def ComputeDeviations(Dataframe,cfg,comparisonbodyparts,scorer,dataname,p_bound,
     print("Fitting state-space models with parameters", ARdegree,MAdegree)
     bpindex=0
     ntimes=np.size(Dataframe.index)
-    
+
     for bp in tqdm(comparisonbodyparts):
         if bp in cfg['bodyparts']: #filter [who knows what users put in...]
             x,y,p=Dataframe[scorer][bp]['x'].values,Dataframe[scorer][bp]['y'].values,Dataframe[scorer][bp]['likelihood'].values
@@ -283,7 +281,7 @@ def ComputeDeviations(Dataframe,cfg,comparisonbodyparts,scorer,dataname,p_bound,
                 meany,CIy=np.nan*np.zeros(ntimes),np.nan*np.zeros((ntimes,2))
             '''
             if storeoutput=='full': #stores both the means and the confidence interval (as well as the summary stats below)
-            
+
                 pdindex = pd.MultiIndex.from_product(
                     [[scorer], [bp], ['meanx', 'meany','lowerCIx','higherCIx', 'lowerCIy','higherCIy']],
                     names=['scorer', 'bodyparts', 'coords'])
@@ -304,7 +302,7 @@ def ComputeDeviations(Dataframe,cfg,comparisonbodyparts,scorer,dataname,p_bound,
                 item=pd.DataFrame(np.hstack([distance[:,np.newaxis],significant[:,np.newaxis]]), columns=pdindex)
                 data=pd.concat([data.T, item.T]).T
             bpindex+=1
-            
+
     bpindex=0
     for bp in comparisonbodyparts: #calculate # outliers & and average distance.
         if bp in cfg['bodyparts']: #filter [who knows what users put in...]
@@ -315,20 +313,20 @@ def ComputeDeviations(Dataframe,cfg,comparisonbodyparts,scorer,dataname,p_bound,
                 d+=data[scorer][bp]["distance"]
                 o+=data[scorer][bp]["significant"]
             bpindex+=1
-    
+
     if storeoutput=='full':
         data.to_hdf(dataname.split('.h5')[0]+'filtered.h5', 'df_with_missing', format='table', mode='w')
         #data.to_csv(dataname.split('.h5')[0]+'filtered.csv')
-        
+
         if bpindex!=0:
             return data,d*1./bpindex,o*1./bpindex #average distance and average # significant differences avg. over comparisonbodyparts
         else:
-            return data,np.zeros(ntimes), np.zeros(ntimes) 
+            return data,np.zeros(ntimes), np.zeros(ntimes)
     else:
         if bpindex!=0:
             return d*1./bpindex,o*1./bpindex #average distance and average # significant differences avg. over comparisonbodyparts
         else:
-            return np.zeros(ntimes), np.zeros(ntimes) 
+            return np.zeros(ntimes), np.zeros(ntimes)
 
 
 def ExtractFramesbasedonPreselection(Index,extractionalgorithm,Dataframe,dataname,scorer,video,cfg,config):
@@ -383,31 +381,31 @@ def ExtractFramesbasedonPreselection(Index,extractionalgorithm,Dataframe,datanam
         Dataframe = pd.read_hdf(os.path.join(videofolder,dataname+'.h5'))
         DF = Dataframe.ix[frames2pick]
         DF.index=[os.path.join('labeled-data', vname,"img"+str(index).zfill(strwidth)+".png") for index in DF.index] #exchange index number by file names.
-    
+
         machinefile=os.path.join(tmpfolder,'machinelabels-iter'+str(cfg['iteration'])+'.h5')
         if Path(machinefile).is_file():
             Data = pd.read_hdf(machinefile, 'df_with_missing')
             DataCombined = pd.concat([Data, DF])
             #drop duplicate labels:
             DataCombined = DataCombined[~DataCombined.index.duplicated(keep='first')]
-            
+
             DataCombined.to_hdf(machinefile, key='df_with_missing', mode='w')
             DataCombined.to_csv(os.path.join(tmpfolder, "machinelabels.csv")) #this is always the most current one (as reading is from h5)
         else:
             DF.to_hdf(machinefile,key='df_with_missing',mode='w')
             DF.to_csv(os.path.join(tmpfolder, "machinelabels.csv"))
         try:
-          add.add_new_videos(config,[video],coords=[coords]) # make sure you pass coords as a list 
+          add.add_new_videos(config,[video],coords=[coords]) # make sure you pass coords as a list
         except: #can we make a catch here? - in fact we should drop indices from DataCombined if they are in CollectedData.. [ideal behavior; currently this is pretty unlikely]
             print("AUTOMATIC ADDING OF VIDEO TO CONFIG FILE FAILED! You need to do this manually for including it in the config.yaml file!")
             print("Videopath:", video,"Coordinates for cropping:", coords)
             pass
-      
+
         print("The outlier frames are extracted. They are stored in the subdirectory labeled-data\%s."%vname)
         print("Once you extracted frames for all videos, use 'refine_labels' to manually correct the labels.")
     else:
         print("No frames were extracted.")
-        
+
 def PlottingSingleFrame(clip,Dataframe,bodyparts2plot,tmpfolder,index,scorer,dotsize,pcutoff,alphavalue,colors,strwidth=4):
         ''' Label frame and save under imagename '''
         from skimage import io
@@ -455,19 +453,21 @@ def refine_labels(config,Screens=1,scale_w=.8,scale_h=.9, winHack=1, img_scale=.
 
     Parameters
     ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    config : str
+        Full path of the config.yaml file.
+    Screens : int, optional
+        Number of Screens in landscape mode, (i.e. if you have 2 screens, enter 2) (default 1).
+    scale_w, scale_h : float, optional
+        How much of the screen the GUI should occupy (default .8, .9).
+    img_scale : float, optional
+        Scale of the plot image (default .0076).
+        If you want to make the plot of the frame larger, consider changing this to .008 or more.
+        Be careful though, too large and you will not see the buttons fully!
 
-    Screens : int value of the number of Screens in landscape mode, i.e. if you have 2 screens, enter 2. Default is 1. 
-    
-    scale_h & scale_w : you can modify how much of the screen the GUI should occupy. The default is .9 and .8, respectively.
-   
-    img_scale : if you want to make the plot of the frame larger, consider changing this to .008 or more. Be careful though, too large and you will not see the buttons fully!
 
     Examples
     --------
     >>> deeplabcut.refine_labels('/analysis/project/reaching-task/config.yaml', Screens=2, imag_scale=.0075)
-    --------
 
     """
     wd = Path(config).resolve().parents[0]
@@ -480,18 +480,18 @@ def merge_datasets(config,forceiterate=None):
     Checks if the original training dataset can be merged with the newly refined training dataset. To do so it will check
     if the frames in all extracted video sets were relabeled. If this is the case then the iterate variable is advanced by 1.
 
-    Parameter
+    Parameters
     ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    config : str
+        Full path of the config.yaml file.
+    forceiterate : int or None, optional
+        Value of the iteration variable (default None).
+        This value is set only if all datasets were labeled or refined.
 
-    forceiterate: int, optional
-        If an integer is given the iteration variable is set to this value (this is only done if all datasets were labeled or refined)
-
-    Example
+    Examples
     --------
     >>> deeplabcut.merge_datasets('/analysis/project/reaching-task/config.yaml')
-    --------
+
     """
     import yaml
     cfg = auxiliaryfunctions.read_config(config)

@@ -35,59 +35,57 @@ from skimage.util import img_as_ubyte
 
 def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gputouse=None,save_as_csv=False):
     """
-    Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
+    Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable `snapshotindex`)
 
     Parameters
     ----------
-    config : string
-        Full path of the config.yaml file as a string.
-
-    videos : list
-        A list of strings containing the full paths to videos for analysis or a path to the directory where all the videos with same extension are stored.
-
-    shuffle: int, optional
-        An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.
-
-    trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
-        
-    videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\nOnly videos with this extension are analyzed. The default is ``.avi``
-
-    gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU put None.
-    See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
-
-    save_as_csv: bool, optional
-        Saves the predictions in a .csv file. The default is ``False``; if provided it must be either ``True`` or ``False``
+    config : str
+        Full path of the config.yaml file.
+    videos : list of str
+        List of full paths to videos or directories of videos (of a specific extension) for analysis.
+    shuffle : int, optional
+        Shuffle index of the training dataset used for training the network (default 1).
+    trainingsetindex : int, optional
+        Which TrainingsetFraction to use (default 1).
+        Note that TrainingFraction is a list in config.yaml.
+    videotype : str, optional
+       Extension of videos for directories in the `videos` parameter (default ".avi").
+       Only videos of this extension are analyzed within the directories.
+    gputouse : int or None, optional
+        Number of your GPU (default None).
+        nvidia-smi can be used to view the GPU number.
+        See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+    save_as_csv : bool, optional
+        Whether to save the predictions in a .csv file (default False).
 
     Examples
     --------
-    If you want to analyze only 1 video
+    If you want to analyze only 1 video:
+
     >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi'])
-    --------
-    
+
     If you want to analyze all videos of type avi in a folder:
+
     >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos'],videotype='.avi')
-    --------
 
-    If you want to analyze multiple videos
+    If you want to analyze multiple videos:
+
     >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi','/analysis/project/videos/reachingvideo2.avi'])
-    --------
 
-    If you want to analyze multiple videos with shuffle = 2
+    If you want to analyze multiple videos with shuffle = 2:
+
     >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi','/analysis/project/videos/reachingvideo2.avi'], shuffle=2)
 
-    --------
-    If you want to analyze multiple videos with shuffle = 2 and save results as an additional csv file too
+    If you want to analyze multiple videos with shuffle = 2 and save results as an additional csv file too:
+
     >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi','/analysis/project/videos/reachingvideo2.avi'], shuffle=2,save_as_csv=True)
-    --------
 
     """
     if 'TF_CUDNN_USE_AUTOTUNE' in os.environ:
         del os.environ['TF_CUDNN_USE_AUTOTUNE'] #was potentially set during training
-    
+
     tf.reset_default_graph()
-    
+
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg['TrainingFraction'][trainingsetindex]
     modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)))
@@ -108,10 +106,10 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
         snapshotindex = -1
     else:
         snapshotindex=cfg['snapshotindex']
-        
+
     increasing_indices = np.argsort([int(m.split('-')[1]) for m in Snapshots])
     Snapshots = Snapshots[increasing_indices]
-    
+
     print("Using %s" % Snapshots[snapshotindex], "for model", modelfolder)
 
     ##################################################
@@ -121,7 +119,7 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
     # Check if data already was generated:
     dlc_cfg['init_weights'] = os.path.join(modelfolder , 'train', Snapshots[snapshotindex])
     trainingsiterations = (dlc_cfg['init_weights'].split(os.sep)[-1]).split('-')[-1]
-    
+
     #update batchsize (based on parameters in config.yaml)
     dlc_cfg['batch_size']=cfg['batch_size']
     # Name for scorer:
@@ -131,7 +129,7 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
 
     if gputouse is not None: #gpu selectinon
             os.environ['CUDA_VISIBLE_DEVICES'] = str(gputouse)
-    
+
     ##################################################
     # Datafolder
     ##################################################
@@ -153,7 +151,7 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
                 Videos=[]
         else:
             Videos=[v for v in videos if os.path.isfile(v)]
-    
+
     if len(Videos)>0:
         #looping over videos
         for video in Videos:
@@ -165,7 +163,7 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
 
 def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize):
     ''' Batchwise prediction of pose '''
-    
+
     PredicteData = np.zeros((nframes, 3 * len(dlc_cfg['all_joints_names'])))
     batch_ind = 0 # keeps track of which image within a batch should be written to
     batch_num = 0 # keeps track of which batch you are at
@@ -182,7 +180,7 @@ def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize):
             pass #good cropping box
         else:
             raise Exception('Please check the boundary of cropping!')
-            
+
     frames = np.empty((batchsize, ny, nx, 3), dtype='ubyte') # this keeps all frames in a batch
     pbar=tqdm(total=nframes)
     counter=0
@@ -197,7 +195,7 @@ def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize):
                     frames[batch_ind] = img_as_ubyte(frame[cfg['y1']:cfg['y2'],cfg['x1']:cfg['x2']])
                 else:
                     frames[batch_ind] = img_as_ubyte(frame)
-                    
+
                 if batch_ind==batchsize-1:
                     pose = predict.getposeNP(frames,dlc_cfg, sess, inputs, outputs)
                     PredicteData[batch_num*batchsize:(batch_num+1)*batchsize, :] = pose
@@ -230,7 +228,7 @@ def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes):
             pass #good cropping box
         else:
             raise Exception('Please check the boundary of cropping!')
-    
+
     PredicteData = np.zeros((nframes, 3 * len(dlc_cfg['all_joints_names'])))
     pbar=tqdm(total=nframes)
     counter=0
@@ -238,7 +236,7 @@ def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes):
     while(cap.isOpened()):
             if counter%step==0:
                 pbar.update(step)
-            
+
             ret, frame = cap.read()
             if ret:
                 frame=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -252,14 +250,14 @@ def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes):
                 nframes=counter
                 break
             counter+=1
-            
+
     pbar.close()
     return PredicteData,nframes
 
 
 def AnalzyeVideo(video,DLCscorer,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv):
     #from moviepy.editor import VideoFileClip
-    
+
     print(video)
     #videotype = Path(video).suffix
     print("Starting % ", video)
@@ -272,12 +270,12 @@ def AnalzyeVideo(video,DLCscorer,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_a
     except FileNotFoundError:
         print("Loading ", video)
         cap=cv2.VideoCapture(video)
-        
+
         fps = cap.get(5) #https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
         nframes = int(cap.get(7))
         duration=nframes*1./fps
         size=(int(cap.get(4)),int(cap.get(3)))
-        
+
         ny,nx=size
         print("Duration of video [s]: ", round(duration,2), ", recorded with ", round(fps,2),"fps!")
         print("Overall # of frames: ", nframes,"without cropped frame dimensions: ", nx,ny)
@@ -291,12 +289,12 @@ def AnalzyeVideo(video,DLCscorer,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_a
             PredicteData,nframes=GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes)
 
         stop = time.time()
-        
+
         if cfg['cropping']==True:
             coords=[cfg['x1'],cfg['x2'],cfg['y1'],cfg['y2']]
         else:
-            coords=[0, nx, 0, ny] 
-            
+            coords=[0, nx, 0, ny]
+
         dictionary = {
             "start": start,
             "stop": stop,

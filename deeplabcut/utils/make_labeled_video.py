@@ -100,7 +100,7 @@ def CreateVideoSlow(clip,Dataframe,tmpfolder,dotsize,colormap,alphavalue,pcutoff
             image = img_as_ubyte(clip.load_frame()) #still need to read (so counter advances!)
         else:
             plt.axis('off')
-            
+
             image = img_as_ubyte(clip.load_frame())
             if cropping:
                     image=image[y1:y2,x1:x2]
@@ -152,57 +152,50 @@ def create_labeled_video(config,videos,shuffle=1,trainingsetindex=0,videotype='a
 
     Parameters
     ----------
-    config : string
-        Full path of the config.yaml file as a string.
-
-    videos : list
-        A list of string containing the full paths of the videos to analyze.
-
+    config : str
+        Full path of the config.yaml file.
+    videos : list of str
+        List of full paths to videos or directories of videos (of a specific extension) for analysis.
     shuffle : int, optional
-        Number of shuffles of training dataset. Default is set to 1.
+        Number of shuffles of training dataset (default 1).
+    trainingsetindex : int, optional
+        Which TrainingsetFraction to use (default 1).
+        Note that TrainingFraction is a list in config.yaml.
+    videotype : str, optional
+       Extension of videos for directories in the `videos` parameter (default ".avi").
+       Only videos of this extension are analyzed within the directories.
+    save_frames : bool, optional
+        Saving of all individual frames before combining of a video (default False).
+        Relatively slow, but much more flexible as it uses matplotlib to create the frames (one can set transparency of markers, crop, and easily customize).
+    delete : bool, optional
+        Deletion of the individual frames created during the video generation (default False).
+    displayedbodyparts : list of str or str, optional
+        List of bodyparts to plot in the video or the string "all" (default "all").
+    codec : str, optional
+        Codec for the labeled video (default "mp4v").
+        For options see http://www.fourcc.org/codecs.php (depends on your ffmpeg installation).
 
-    trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
-     
-    videotype: string, optional
-        Checks for the extension of the video in case the input is a directory.\nOnly videos with this extension are analyzed. The default is ``.avi``
-
-    save_frames: bool
-        If true creates each frame individual and then combines into a video. This variant is relatively slow as
-        it stores all individual frames. However, it uses matplotlib to create the frames and is therefore much more flexible (one can set transparency of markers, crop, and easily customize).
-
-    delete: bool
-        If true then the individual frames created during the video generation will be deleted.
-
-    displayedbodyparts: list of strings, optional
-        This select the body parts that are plotted in the video. Either ``all``, then all body parts
-        from config.yaml are used orr a list of strings that are a subset of the full list.
-        E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these two body parts.
-
-    codec: codec for labeled video. Options see http://www.fourcc.org/codecs.php [depends on your ffmpeg installation.]
-    
     Examples
     --------
-    If you want to create the labeled video for only 1 video
+    If you want to create the labeled video for only 1 video:
+
     >>> deeplabcut.create_labeled_video('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi'])
-    --------
 
-    If you want to create the labeled video for only 1 video and store the individual frames
+    If you want to create the labeled video for only 1 video and store the individual frames:
+
     >>> deeplabcut.create_labeled_video('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi'],save_frames=True)
-    --------
 
-    If you want to create the labeled video for multiple videos
+    If you want to create the labeled video for multiple videos:
+
     >>> deeplabcut.create_labeled_video('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi','/analysis/project/videos/reachingvideo2.avi'])
-    --------
 
-    If you want to create the labeled video for all the videos (as .avi extension) in a directory.
+    If you want to create the labeled video for all the videos (as .avi extension) in a directory:
+
     >>> deeplabcut.create_labeled_video('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/'])
 
-    --------
-    If you want to create the labeled video for all the videos (as .mp4 extension) in a directory.
-    >>> deeplabcut.create_labeled_video('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/'],videotype='mp4')
+    If you want to create the labeled video for all the videos (as .mp4 extension) in a directory:
 
-    --------
+    >>> deeplabcut.create_labeled_video('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/'],videotype='mp4')
 
     """
     cfg = auxiliaryfunctions.read_config(config)
@@ -210,7 +203,7 @@ def create_labeled_video(config,videos,shuffle=1,trainingsetindex=0,videotype='a
     DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction) #automatically loads corresponding model (even training iteration based on snapshot index)
 
     bodyparts=auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg,displayedbodyparts)
-    
+
     if [os.path.isdir(i) for i in videos] == [True]:
       print("Analyzing all the videos in the directory")
       videofolder= videos[0]
@@ -254,7 +247,7 @@ def create_labeled_video(config,videos,shuffle=1,trainingsetindex=0,videotype='a
                 cropping=metadata['data']["cropping"]
                 [x1,x2,y1,y2]=metadata['data']["cropping_parameters"]
                 print(cropping,x1,x2,y1,y2)
-                
+
                 if save_frames==True:
                     tmpfolder = os.path.join(str(videofolder),'temp-' + vname)
                     auxiliaryfunctions.attempttomakefolder(tmpfolder)

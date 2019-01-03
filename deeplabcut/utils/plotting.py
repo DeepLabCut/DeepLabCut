@@ -139,40 +139,36 @@ def RunTrajectoryAnalysis(video,basefolder,scorer,videofolder,cfg,showfigures):
 def plot_trajectories(config,videos,shuffle=1,trainingsetindex=0,videotype='.avi',showfigures=False):
     """
     Plots the trajectories of various bodyparts across the video.
-    
+
     Parameters
     ----------
-     config : string
-    Full path of the config.yaml file as a string.
-    
-    videos : list
-    A list of strings containing the full paths of the videos to analyze.
-    
-    shuffle: list, optional
-    List of integers specifying the shuffle indices of the training dataset. The default is [1]
-    
-     trainingsetindex: int, optional
-    Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
-    
-    videotype: string, optional
-    Checks for the extension of the video in case the input is a directory.\nOnly videos with this extension are analysed. The default is ``.avi``
-    
-    showfigures: bool, default false
-    If true then plots are also displayed.
-    
-    
-    Example
+    config : str
+        Full path of the config.yaml file.
+    videos : list of str
+        List of full paths to videos or directories of videos (of a specific extension) for analysis.
+    shuffle : int, optional
+        Shuffle index of the training dataset used for training the network (default 1).
+    trainingsetindex : int, optional
+        Which TrainingsetFraction to use (default 1).
+        Note that TrainingFraction is a list in config.yaml.
+    videotype : str, optional
+       Extension of videos for directories in the `videos` parameter (default ".avi").
+       Only videos of this extension are analyzed within the directories.
+    showfigures : bool, optional
+        Displaying of plots (default False).
+
+    Examples
     --------
-    for labeling the frames
+    For labeling the frames:
+
     >>> deeplabcut.plot_trajectories('home/alex/analysis/project/reaching-task/config.yaml',['/home/alex/analysis/project/videos/reachingvideo1.avi'])
-    --------
-    
+
     """
-    
+
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg['TrainingFraction'][trainingsetindex]
     DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction) #automatically loads corresponding model (even training iteration based on snapshot index)
-    
+
     #checks if input is a directory
     if [os.path.isdir(i) for i in videos] == [True]:#os.path.isdir(video)==True:
         """
@@ -184,7 +180,7 @@ def plot_trajectories(config,videos,shuffle=1,trainingsetindex=0,videotype='.avi
         Videos = np.sort([fn for fn in os.listdir(os.curdir) if (videotype in fn) and ("labeled" not in fn)])
     else:
         Videos = videos
-    
+
     for video in Videos:
         print(video)
         videofolder= str(Path(video).parents[0]) #where your folder with videos is.

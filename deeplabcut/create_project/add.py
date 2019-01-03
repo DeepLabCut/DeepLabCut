@@ -7,26 +7,26 @@ M Mathis, mackenzie@post.harvard.edu
 
 """
 
-
 def add_new_videos(config,videos,copy_videos=False,coords=None):
     """
     Add new videos to the config file at any stage of the project.
 
     Parameters
     ----------
-    config : string
-        String containing the full path of the config file in the project.
-
-    videos : list
-        A list of string containing the full paths of the videos to include in the project.
-
+    config : str
+        Full path of the config.yaml file.
+    videos : list of str
+        List of full paths of the videos to include in the project.
     copy_videos : bool, optional
-        If this is set to True, the symlink of the videos are copied to the project/videos directory. The default is
-        ``False``; if provided it must be either ``True`` or ``False``.
-    coords: list, optional
-      A list containing the list of cropping coordinates of the video. The default is set to None.
+        Copy videos to videos directory (default False).
+        If ``True``, the videos are copied to the project/videos directory.
+        If ``False``, symlinks of the videos are copied to the project/videos directory.j
+    coords : list of int or None, optional
+        Cropping coordinates of the video (default None).
+
     Examples
     --------
+
     >>> deeplabcut.add_new_videos('/home/project/reaching-task-Tanmay-2018-08-23/config.yaml',['/data/videos/mouse5.avi'],copy_videos=False,coords=[0,100,0,200])
 
     """
@@ -38,10 +38,10 @@ def add_new_videos(config,videos,copy_videos=False,coords=None):
     from deeplabcut import DEBUG
     from deeplabcut.utils import auxiliaryfunctions
     import cv2
-    
+
     # Read the config file
     cfg = auxiliaryfunctions.read_config(config)
-    
+
     for idx,video in enumerate(videos):
         try:
            video_path = os.path.realpath(video)
@@ -53,7 +53,7 @@ def add_new_videos(config,videos,copy_videos=False,coords=None):
                   # get vcap property
            width = int(vcap.get(cv2.CAP_PROP_FRAME_WIDTH))
            height = int(vcap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-           
+
         else:
            print("Cannot open the video file!")
         if coords == None:
@@ -80,7 +80,7 @@ def add_new_videos(config,videos,copy_videos=False,coords=None):
     if copy_videos==True:
         print("Copying the videos")
         for src, dst in zip(videos, destinations):
-            shutil.copy(os.fspath(src),os.fspath(dst)) 
+            shutil.copy(os.fspath(src),os.fspath(dst))
     else:
         print("Creating the symbolic link of the video")
         for src, dst in zip(videos, destinations):

@@ -55,12 +55,12 @@ class MainFrame(wx.Frame):
                 print("Your screen width", w, "and height", h)
                 print("Scaled GUI width", self.gui_width, "and height", self.gui_height)
                 print("Please adjust scale_h and scale_w, or get a bigger screen!")
-        
+
         self.size=displaysize
-        
+
         wx.Frame.__init__(self, None, title="DeepLabCut2.0 - Refinement GUI", size=(self.gui_width*winHack, self.gui_height*winHack), style= wx.DEFAULT_FRAME_STYLE)
 
-        
+
 
 # Add SplitterWindow panels top for figure and bottom for buttons
         self.split_win = wx.SplitterWindow(self)
@@ -100,16 +100,16 @@ class MainFrame(wx.Frame):
 
         self.adjustLabelCheck = wx.CheckBox(self.top_split, label = 'Adjust original labels?',pos = (self.gui_width*.1, self.gui_height*.85))
         self.adjustLabelCheck.Bind(wx.EVT_CHECKBOX,self.adjustLabel)
-        
+
         self.Button5 = wx.Button(self.top_split,-1,"Zoom", size=(60,30),pos=(self.gui_width*.6,self.gui_height*.85))
         self.Button5.Bind(wx.EVT_BUTTON,self.zoom)
-        
+
         self.Button6 = wx.Button(self.top_split,-1,"Pan", size=(60,30),pos=(self.gui_width*.65,self.gui_height*.85))
         self.Button6.Bind(wx.EVT_BUTTON,self.pan)
-        
+
         self.Button7 = wx.Button(self.top_split,-1,"Home", size=(60,30),pos=(self.gui_width*.7,self.gui_height*.85))
         self.Button7.Bind(wx.EVT_BUTTON,self.home)
-         
+
         self.Bind(wx.EVT_CLOSE,self.closewindow)
 
         self.currentDirectory = os.getcwd()
@@ -133,7 +133,7 @@ class MainFrame(wx.Frame):
         imgH = self.gui_height*img_scale    #was 7 inches 
 
         self.img_size = (imgW, imgH)  # width, height in inches.
-        
+
 # ###########################################################################
 # functions for button responses
 # ###########################################################################
@@ -147,22 +147,22 @@ class MainFrame(wx.Frame):
           self.adjust_original_labels = True
       else:
           self.adjust_original_labels = False
-        
+
     def zoom(self,event):
         self.statusbar.SetStatusText("Zoom")
         self.toolbar.zoom()
         self.Refresh(eraseBackground=True)
-        
+
     def home(self,event):
         self.statusbar.SetStatusText("Home")
         self.toolbar.home()
         self.Refresh(eraseBackground=True)
-         
+
     def pan(self,event):
         self.statusbar.SetStatusText("Pan")
         self.toolbar.pan()
         self.Refresh(eraseBackground=True)
-    
+
     def OnSliderScroll(self, event):
         """
         Adjust marker size for plotting the annotations
@@ -247,12 +247,12 @@ class MainFrame(wx.Frame):
                 self.slider = wx.Slider(self.top_split, -1, self.markerSize, 0, 20,size=(200, -1),  pos=(self.gui_width*.43, self.gui_height*.8),style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS )
                 self.slider.Bind(wx.EVT_SLIDER, self.OnSliderScroll)
                 self.slider.Enable(False)
-            
+
             self.canvas = FigureCanvas(self.top_split, -1, self.fig1)
             self.colorparams = list(range(0,(self.num_joints+1)))
             MainFrame.plot(self,im,im_axis)
             self.toolbar = NavigationToolbar(self.canvas)
-            
+
             if self.adjust_original_labels == False:
 
                 instruction = wx.MessageBox('1. Enter the likelihood threshold. \n\n2. Each prediction will be shown with a unique color. \n All the data points above the threshold will be marked as circle filled with a unique color. All the data points below the threshold will be marked with a hollow circle. \n\n3. Enable the checkbox to adjust the marker size. \n\n4.  Hover your mouse over data points to see the labels and their likelihood. \n\n5. Left click and drag to move the data points. \n\n6. Right click on any data point to remove it. Be careful, you cannot undo this step. \n Click once on the zoom button to zoom-in the image.The cursor will become cross, click and drag over a point to zoom in. \n Click on the zoom button again to disable the zooming function and recover the cursor. \n Use pan button to pan across the image while zoomed in. Use home button to go back to the full;default view. \n\n7. When finished click \'Save\' to save all the changes. \n\n8. Click OK to continue', 'User instructions', wx.OK | wx.ICON_INFORMATION)
@@ -426,7 +426,7 @@ class MainFrame(wx.Frame):
           self.slider.Enable(True)
       else:
           self.slider.Enable(False)
-    
+
     def check_labels(self):
         print("Checking labels if they are outside the image")
         for i in self.Dataframe.index:
@@ -440,12 +440,12 @@ class MainFrame(wx.Frame):
                     self.Dataframe.loc[i,(self.scorer,bp,'x')] = np.nan
                     self.Dataframe.loc[i,(self.scorer,bp,'y')] = np.nan
         return(self.Dataframe)
-        
+
     def save(self, event):
 
         MainFrame.confirm(self)
         plt.close(self.fig1)
-        
+
         if self.adjust_original_labels == True:
             self.Dataframe = MainFrame.check_labels(self)
             self.Dataframe.to_hdf(os.path.join(self.dir,'CollectedData_'+self.humanscorer+'.h5'), key='df_with_missing', mode='w')

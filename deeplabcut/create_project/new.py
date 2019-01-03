@@ -8,6 +8,7 @@ M Mathis, mackenzie@post.harvard.edu
 Boilerplate project creation inspired from DeepLabChop
 by Ronny Eichler
 """
+
 import os
 import yaml
 from pathlib import Path
@@ -30,31 +31,31 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
 
     Parameters
     ----------
-    project : string
-        String containing the name of the project.
-        
-    experimenter : string
-        String containing the name of the experimenter.
-        
-    videos : list
-        A list of string containing the full paths of the videos to include in the project. 
-        Attention: Can also be a directory, then all videos of videotype will be imported. Do not pass it as a list!
-        
-    working_directory : string, optional
-        The directory where the project will be created. The default is the ``current working directory``; if provided, it must be a string.
-        
+    project : str
+        Name of the project.
+    experimenter : str
+        Name of the experimenter.
+    videos : list of str or str
+        List of full paths of the videos to include in the project or a string of a directory path.
+    working_directory : str or None, optional
+        Directory where the project will be created (default None).
+        If None, will be set to current working directory.
     copy_videos : bool, optional
-        If this is set to True, the videos are copied to the ``videos`` directory. If it is False,symlink of the videos are copied to the project/videos directory. The default is ``False``; if provided it must be either 
-        ``True`` or ``False``.
+        Copy videos to videos directory (default False).
+        If ``True``, the videos are copied to the project/videos directory.
+        If ``False``, symlinks of the videos are copied to the project/videos directory.
 
-    Example
+    Examples
     --------
-    Linux/MacOs
+
+    Linux/MacOs:
+
     >>> deeplabcut.create_new_project('reaching-task','Linus',['/data/videos/mouse1.avi','/data/videos/mouse2.avi','/data/videos/mouse3.avi'],'/analysis/project/')
-    
+
     >>> deeplabcut.create_new_project('reaching-task','Linus','/data/videos',videotype='.mp4')
-    
+
     Windows:
+
     >>> deeplabcut.create_new_project('reaching-task','Bill',['C:\\Users\\rig-95\\Videos\\reachingvideo1.avi'], copy_videos=True)
 
     """
@@ -105,14 +106,14 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
         Creates directory under data
         """
         p.mkdir(parents = True, exist_ok = True)
-        
+
     destinations = [video_path.joinpath(vp.name) for vp in videos]
     if copy_videos==True:
         print("Copying the videos")
         for src, dst in zip(videos, destinations):
             shutil.copy(os.fspath(src),os.fspath(dst)) #https://www.python.org/dev/peps/pep-0519/
             #https://github.com/AlexEMG/DeepLabCut/issues/105 (for windows)
-            
+
             #try:
             #    #shutil.copy(src,dst)
             #except OSError or TypeError: #https://github.com/AlexEMG/DeepLabCut/issues/105 (for windows)
@@ -132,7 +133,7 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
                 subprocess.check_call('mklink %s %s' %(dst,src),shell = True)
             print('Created the symlink of {} to {}'.format(src, dst))
             videos = destinations
-    
+
     # adds the video list to the config.yaml file
     video_sets = {}
     for video in videos:

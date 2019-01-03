@@ -27,13 +27,13 @@ from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as Navigat
 # ###########################################################################
 
 
-#minic small screen: 
-#displaysize = (400, 400) 
+#minic small screen:
+#displaysize = (400, 400)
 
 #Note, if the variable Screens = 2, it assumes two screens in landscape next to eachother! If you use a different configuration, consider changing displaysize to your known display size. see troubleshooting for more information https://github.com/AlexEMG/DeepLabCut/wiki/Troubleshooting-Tips.
 
-#On Windows, there can be a issue with the sizing on start, so you can scale it down then resize on your screen. Namely, set winHack=.5 and this solves this issue. Thanks to Federico Claudi for troubleshooting this with us! 
-   
+#On Windows, there can be a issue with the sizing on start, so you can scale it down then resize on your screen. Namely, set winHack=.5 and this solves this issue. Thanks to Federico Claudi for troubleshooting this with us!
+
 class MainFrame(wx.Frame):
     """Contains the main GUI and button boxes"""
 
@@ -51,14 +51,14 @@ class MainFrame(wx.Frame):
                 print("Your screen width", w, "and height", h)
                 print("Scaled GUI width", self.gui_width, "and height", self.gui_height)
                 print("Please adjust scale_h and scale_w, or get a bigger screen!")
-        
+
         self.size=displaysize
-        
+
         wx.Frame.__init__(self, None, title="DeepLabCut2.0 - Labeling GUI", size=(self.gui_width*winHack, self.gui_height*winHack), style= wx.DEFAULT_FRAME_STYLE)
 
         self.statusbar = self.CreateStatusBar()
         self.statusbar.SetStatusText("")
-        self.Bind(wx.EVT_CHAR_HOOK, self.OnKeyPressed) 
+        self.Bind(wx.EVT_CHAR_HOOK, self.OnKeyPressed)
 
         self.SetBackgroundColour("#ffffff")
 
@@ -77,7 +77,7 @@ class MainFrame(wx.Frame):
         self.Button2.Bind(wx.EVT_BUTTON, self.nextImage)
         self.Button2.Enable(False)
         buttons_list.append(self.Button2)
-        
+
         self.Button4 = wx.Button(self, -1, "Save", size=(80, 40), pos=(self.gui_width*.6, self.gui_height*.9))
         self.Button4.Bind(wx.EVT_BUTTON, self.save)
         self.Button4.Enable(False)
@@ -110,7 +110,7 @@ class MainFrame(wx.Frame):
         self.index = []
         self.iter = []
         self.colormap = cm.hsv #note will be overwritten by colormap from config file during execution
-        
+
         self.file = 0
 
         self.updatedCoords = []
@@ -123,10 +123,10 @@ class MainFrame(wx.Frame):
         self.addLabel.Bind(wx.EVT_CHECKBOX,self.newLabel)
         self.new_labels = False
         imgW = self.gui_width*img_scale #was 12 inches (perhaps add dpi!)
-        imgH = self.gui_height*img_scale    #was 7 inches 
+        imgH = self.gui_height*img_scale    #was 7 inches
 
-        self.img_size = (imgW, imgH)  # width, height in inches. 
-        
+        self.img_size = (imgW, imgH)  # width, height in inches.
+
     def newLabel(self, event):
         self.chk = event.GetEventObject()
         if self.chk.GetValue() == True:
@@ -144,12 +144,12 @@ class MainFrame(wx.Frame):
         self.statusbar.SetStatusText("Zoom")
         self.toolbar.zoom()
         self.Refresh(eraseBackground=True)
-        
+
     def home(self,event):
         self.statusbar.SetStatusText("Home")
         self.toolbar.home()
         self.Refresh(eraseBackground=True)
-         
+
     def pan(self,event):
         self.statusbar.SetStatusText("Pan")
         self.toolbar.pan()
@@ -179,9 +179,9 @@ class MainFrame(wx.Frame):
                     self.rdb.Select(new_sel)
                     self.buttonCounter.append(new_sel)
                 except:
-                    # fallback: warn user 
+                    # fallback: warn user
                     wx.MessageBox('%s is already annotated. \n Select another body part to annotate.' % (str(self.bodyparts[self.rdb.GetSelection()])), 'Error!', wx.OK | wx.ICON_ERROR)
-            
+
             if self.flag == len(self.bodyparts):
                 wx.MessageBox('All body parts are annotated! Click \'Save\' to save the changes. \n Click OK to continue.', 'Done!', wx.OK | wx.ICON_INFORMATION)
                 self.canvas.mpl_disconnect(self.onClick)
@@ -227,11 +227,11 @@ class MainFrame(wx.Frame):
         self.index = glob.glob(os.path.join(self.dir,'*.png'))
         self.index.sort() #sort the files thx to Robert Eppley for this suggestion
         print('Working on folder: {}'.format(os.path.split(str(self.dir))[-1]))
-        
+
         #self.relativeimagenames=self.index ##[n.split(self.project_path+'/')[1] for n in self.index]
         #self.relativeimagenames=[n.split(self.project_path+'/')[1] for n in self.index]
         self.relativeimagenames=['labeled'+n.split('labeled')[1] for n in self.index]
-        
+
         self.fig1, (self.ax1f1) = plt.subplots(figsize=self.img_size,facecolor = "None")
         self.iter = 0
         self.buttonCounter = []
@@ -248,7 +248,7 @@ class MainFrame(wx.Frame):
         if len(self.bodyparts)!=len(set(self.bodyparts)):
           print("Error! bodyparts must have unique labels! Please choose unique bodyparts in config.yaml file and try again. Quiting for now!")
           self.Destroy()
-          
+
         if self.new_labels == True:
           self.oldDF = pd.read_hdf(os.path.join(self.dir,'CollectedData_'+self.scorer+'.h5'),'df_with_missing')
           oldBodyParts = self.oldDF.columns.get_level_values(1)
@@ -438,8 +438,8 @@ class MatplotPanel(wx.Panel):
 def GetToolBar(self): #https://matplotlib.org/examples/user_interfaces/embedding_in_wx3.html
         # You will need to override GetToolBar if you are using an
         # unmanaged toolbar in your frame
-        return self.toolbar        
-     
+        return self.toolbar
+
 
 def show(config,Screens=1,scale_w=.8,scale_h=.9, winHack=1, img_scale=0.0075):
     app = wx.App()
@@ -451,4 +451,3 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('config')
     cli_args = parser.parse_args()
-

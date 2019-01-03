@@ -26,12 +26,12 @@ def write_config(configname,cfg):
 
 def attempttomakefolder(foldername,recursive=False):
     ''' Attempts to create a folder with specified name. Does nothing if it already exists. '''
-    
+
     try:
         os.path.isdir(foldername)
     except TypeError: #https://www.python.org/dev/peps/pep-0519/
         foldername=os.fspath(foldername) #https://github.com/AlexEMG/DeepLabCut/issues/105 (windows)
-    
+
     if os.path.isdir(foldername):
         print(foldername, " already exists!")
     else:
@@ -78,7 +78,7 @@ def listfilesofaparticulartypeinfolder(a_dir,afiletype):
     return [
         name for name in os.listdir(a_dir)
         if afiletype in name]
-    
+
 def GetVideoList(filename,videopath,videtype):
     ''' Get list of videos in a path (if filetype == all), otherwise just a specific file.'''
     videos=listfilesofaparticulartypeinfolder(videopath,videtype)
@@ -142,7 +142,7 @@ def GetScorerName(cfg,shuffle,trainFraction,trainingsiterations='unknown'):
             snapshotindex = -1
         else:
             snapshotindex=cfg['snapshotindex']
-            
+
         modelfolder=os.path.join(cfg["project_path"],str(GetModelFolder(trainFraction,shuffle,cfg)),'train')
         Snapshots = np.array([fn.split('.')[0]for fn in os.listdir(modelfolder) if "index" in fn])
         increasing_indices = np.argsort([int(m.split('-')[1]) for m in Snapshots])

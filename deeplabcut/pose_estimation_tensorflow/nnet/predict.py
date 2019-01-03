@@ -27,7 +27,7 @@ def setup_pose_prediction(cfg):
     restorer.restore(sess, cfg.init_weights)
 
     return sess, inputs, outputs
-    
+
 def extract_cnn_output(outputs_np, cfg):
     ''' extract locref + scmap from network '''
     scmap = outputs_np[0]
@@ -86,10 +86,10 @@ def extract_cnn_outputmulti(outputs_np, cfg):
 def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
     ''' Adapted from DeeperCut, performs numpy-based faster inference on batches'''
     outputs_np = sess.run(outputs, feed_dict={inputs: image})
-    
+
     scmap, locref = extract_cnn_outputmulti(outputs_np, cfg) #processes image batch.
     batchsize,ny,nx,num_joints = scmap.shape
-    
+
     #Combine scoremat and offsets to the final pose.
     LOCREF=locref.reshape(batchsize,nx*ny,num_joints,2)
     MAXLOC=np.argmax(scmap.reshape(batchsize,nx*ny,num_joints),axis=1)
@@ -99,7 +99,7 @@ def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
         for k in range(num_joints):
             DZ[l,k,:2]=LOCREF[l,MAXLOC[l,k],k,:]
             DZ[l,k,2]=scmap[l,Y[l,k],X[l,k],k]
-            
+
     X=X.astype('float32')*cfg.stride+.5*cfg.stride+DZ[:,:,0]
     Y=Y.astype('float32')*cfg.stride+.5*cfg.stride+DZ[:,:,1]
     pose = np.empty((cfg['batch_size'], cfg['num_joints']*3), dtype=X.dtype) 
@@ -110,4 +110,3 @@ def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
         return scmap, locref, pose
     else:
         return pose
-

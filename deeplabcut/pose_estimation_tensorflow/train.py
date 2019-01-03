@@ -79,10 +79,10 @@ def train(config_yaml,displayiters,saveiters,maxiters,max_to_keep=5):
     start_path=os.getcwd()
     os.chdir(str(Path(config_yaml).parents[0])) #switch to folder of config_yaml (for logging)
     setup_logging()
-    
+
     cfg = load_config(config_yaml)
     cfg['batch_size']=1 #in case this was edited for analysis.
-    
+
     dataset = create_dataset(cfg)
     batch_spec = get_batch_spec(cfg)
     batch, enqueue_op, placeholders = setup_preloading(batch_spec)
@@ -113,20 +113,20 @@ def train(config_yaml,displayiters,saveiters,maxiters,max_to_keep=5):
         max_iter = min(int(cfg.multi_step[-1][1]),int(maxiters))
         #display_iters = max(1,int(displayiters))
         print("Max_iters overwritten as",max_iter)
-    
+
     if displayiters==None:
         display_iters = max(1,int(cfg.display_iters))
     else:
         display_iters = max(1,int(displayiters))
         print("Display_iters overwritten as",display_iters)
-    
+
     if saveiters==None:
         save_iters=max(1,int(cfg.save_iters))
-        
+
     else:
         save_iters=max(1,int(saveiters))
         print("Save_iters overwritten as",save_iters)
-        
+
     cum_loss = 0.0
     lr_gen = LearningRate(cfg)
 

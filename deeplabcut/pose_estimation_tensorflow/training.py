@@ -12,46 +12,50 @@ from pathlib import Path
 def train_network(config,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshots_to_keep=5,autotune=False,displayiters=None,saveiters=None,maxiters=None):
     """Trains the network with the labels in the training dataset.
 
-    Parameter
+    Parameters
     ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    config : str
+        Full path of the config.yaml file.
+    shuffle : int, optional
+        The shuffle index to select for training (default 1).
+    trainingsetindex : int, optional
+        Which TrainingsetFraction to use (default 1).
+        Note that TrainingFraction is a list in config.yaml.
+    gputouse : int or None, optional
+        Number of your GPU (default None).
+        nvidia-smi can be used to view the GPU number.
+        See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
 
-    shuffle: int, optional
-        Integer value specifying the shuffle index to select for training. Default is set to 1
+    Other Parameters
+    ________________
+    max_snapshots_to_keep : int or None, optional
+        How many snapshots are kept (default 5).
+        A snapshot is stored every `save_iters` many times, however only the last `max_snapshots_to_keep` many are kept!
+        If None, then all snapshots are kept. See: https://github.com/AlexEMG/DeepLabCut/issues/8#issuecomment-387404835
+    autotune : bool, optional
+        property of TensorFlow, somehow faster if 'false' (as Eldar found out, see https://github.com/tensorflow/tensorflow/issues/13317) (default False).
+    displayiters : int or None, optional
+        variable from pose_config.yaml (default None).
+        This is a hack that should not be used regularly.
+        If None, the value from pose_config.yaml is used.
+    saveiters : int or None, optional
+        variable from pose_config.yaml (default None).
+        This is a hack that should not be used regularly.
+        If None, the value from pose_config.yaml is used.
+    maxiters : int or None, optional
+        variable from pose_config.yaml (default None).
+        This is a hack that should not be used regularly.
+        If None, the value from pose_config.yaml is used.
 
-    trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
-    
-    gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU put None.
-    See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
-    
-    Additional parameters:
-    
-    max_snapshots_to_keep: int, or None. Sets how many snapshots are kept, i.e. states of the trained network. Every savinginteration many times 
-    a snapshot is stored, however only the last max_snapshots_to_keep many are kept! If you change this to None, then all are kept. 
-    See: https://github.com/AlexEMG/DeepLabCut/issues/8#issuecomment-387404835
-    
-    autotune: property of TensorFlow, somehow faster if 'false' (as Eldar found out, see https://github.com/tensorflow/tensorflow/issues/13317). Default: False
-    
-    displayiters: this variable is actually set in pose_config.yaml. However, you can overwrite it with this hack. Don't use this regularly, just if you are too lazy to dig out 
-    the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
-    
-    saveiters: this variable is actually set in pose_config.yaml. However, you can overwrite it with this hack. Don't use this regularly, just if you are too lazy to dig out 
-    the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
-    
-    maxiters: this variable is actually set in pose_config.yaml. However, you can overwrite it with this hack. Don't use this regularly, just if you are too lazy to dig out 
-    the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
-    
-    Example
+    Examples
     --------
-    for training the network for first shuffle of the training dataset.
+    Training the network for first shuffle of the training dataset:
+
     >>> deeplabcut.train_network('/analysis/project/reaching-task/config.yaml')
-    --------
 
-    for training the network for second shuffle of the training dataset.
+    Training the network for second shuffle of the training dataset:
+
     >>> deeplabcut.train_network('/analysis/project/reaching-task/config.yaml',shuffle=2)
-    --------
 
     """
     import tensorflow as tf
@@ -60,7 +64,7 @@ def train_network(config,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshot
 
     tf.reset_default_graph()
     start_path=os.getcwd()
-    
+
     # Read file path for pose_config file. >> pass it on
     cfg = auxiliaryfunctions.read_config(config)
     modelfoldername=auxiliaryfunctions.GetModelFolder(cfg["TrainingFraction"][trainingsetindex],shuffle,cfg)

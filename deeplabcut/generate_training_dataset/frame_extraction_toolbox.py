@@ -182,14 +182,14 @@ class MainFrame(wx.Frame):
         """
         #set image size:
         imgW = self.gui_width*.007 #was 12 inches (perhaps add dpi!)
-        imgH = self.gui_height*.007    #was 7 inches 
+        imgH = self.gui_height*.007    #was 7 inches
 
-        self.img_size = (imgW, imgH)  # width, height in inches. 
+        self.img_size = (imgW, imgH)  # width, height in inches.
 
         self.vid.set(1,self.currFrame)
         self.fig1, (self.ax1f1) = plt.subplots(figsize=self.img_size,facecolor = "None")
         ret, frame = self.vid.read()
-        if ret: 
+        if ret:
                 frame=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 im_axis = self.ax1f1.imshow(frame)
         self.ax1f1.set_title(str(str(self.currFrame)+"/"+str(self.numberFrames) +" "+ self.filename))
