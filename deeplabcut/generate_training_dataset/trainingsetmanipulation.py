@@ -192,19 +192,10 @@ def check_labels(config):
 
     Parameters
     ----------
-
     config : str
         Full path of the config.yaml file.
-    Screens : int, optional
-        Number of Screens in landscape mode, i.e. if you have 2 screens, enter 2 (default 1).
-    scale_h, scale_w : float, optional
-        How much of the screen the GUI should occupy (default .9, .8).
-    img_scale : int, optional
-        Scale of the plot image.
-        If you want to make the plot of the frame larger, consider changing this to .008 or more.
-        Be careful though, too large and you will not see the buttons fully!
 
-    Example
+    Examples
     --------
 
     For labeling the frames:
