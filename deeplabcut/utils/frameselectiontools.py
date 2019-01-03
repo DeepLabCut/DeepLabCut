@@ -37,8 +37,8 @@ def UniformFrames(clip,numframes2pick,start,stop,Index="all"):
 def KmeansbasedFrameselection(clip,numframes2pick,start,stop,Index="all",resizewidth=30,batchsize=100,max_iter=50):
     ''' This code downsamples the video to a width of resizewidth. The video is extracted as a numpy array, which is then
     clustered with kmeans whereby each frames is treated as a vector. Frames from different clusters are then selected for labeling. This
-    procedure makes sure that the frames "look different", i.e. different postures etc. 
-    On large videos this code is slow. Consider not extracting the frames from the whole video but rather set start and stop to a period around interesting behavior. 
+    procedure makes sure that the frames "look different", i.e. different postures etc.
+    On large videos this code is slow. Consider not extracting the frames from the whole video but rather set start and stop to a period around interesting behavior.
     Note: this method can return fewer images than numframes2pick.'''
 
     print("Kmeans-quantization based extracting of frames from", start*clip.duration," seconds to", stop*clip.duration, " seconds.")
