@@ -19,7 +19,7 @@ def load_demo_data(config):
     Parameters
     ----------
     config : str
-        Full path of the config.yaml file.
+        Full path of the config.yaml file of the provided demo dataset.
 
     Examples
     --------
