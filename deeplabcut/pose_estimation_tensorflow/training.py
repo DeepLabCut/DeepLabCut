@@ -14,7 +14,7 @@ def train_network(config,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshot
 
     Parameters
     ----------
-    config : str
+    config : string
         Full path of the config.yaml file.
     shuffle : int, optional
         The shuffle index to select for training (default 1).
