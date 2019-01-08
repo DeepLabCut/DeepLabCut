@@ -152,7 +152,7 @@ def create_labeled_video(config,videos,shuffle=1,trainingsetindex=0,videotype='a
 
     Parameters
     ----------
-    config : str
+    config : string
         Full path of the config.yaml file.
     videos : list of str
         List of full paths to videos or directories of videos (of a specific extension) for analysis.
@@ -161,7 +161,7 @@ def create_labeled_video(config,videos,shuffle=1,trainingsetindex=0,videotype='a
     trainingsetindex : int, optional
         Which TrainingsetFraction to use (default 1).
         Note that TrainingFraction is a list in config.yaml.
-    videotype : str, optional
+    videotype : string, optional
        Extension of videos for directories in the `videos` parameter (default ".avi").
        Only videos of this extension are analyzed within the directories.
     save_frames : bool, optional
@@ -169,9 +169,9 @@ def create_labeled_video(config,videos,shuffle=1,trainingsetindex=0,videotype='a
         Relatively slow, but much more flexible as it uses matplotlib to create the frames (one can set transparency of markers, crop, and easily customize).
     delete : bool, optional
         Deletion of the individual frames created during the video generation (default False).
-    displayedbodyparts : list of str or str, optional
+    displayedbodyparts : list of strings or string, optional
         List of bodyparts to plot in the video or the string "all" (default "all").
-    codec : str, optional
+    codec : string, optional if video is mp4v, otherwise it must match video type
         Codec for the labeled video (default "mp4v").
         For options see http://www.fourcc.org/codecs.php (depends on your ffmpeg installation).
 
