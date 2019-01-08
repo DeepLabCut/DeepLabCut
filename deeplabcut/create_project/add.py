@@ -13,7 +13,7 @@ def add_new_videos(config,videos,copy_videos=False,coords=None):
 
     Parameters
     ----------
-    config : str
+    config : string
         Full path of the config.yaml file.
     videos : list of str
         List of full paths of the videos to include in the project.
