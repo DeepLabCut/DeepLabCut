@@ -1,6 +1,6 @@
 '''
 Adapted from original predict.py by Eldar Insafutdinov's implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow) to do faster inference on videos.
-See https://www.biorxiv.org/content/early/2018/10/30/457242.
+We also improved the inference speed, see https://www.biorxiv.org/content/early/2018/10/30/457242.
 
 Source: DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
