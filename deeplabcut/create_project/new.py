@@ -55,8 +55,8 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
     >>> deeplabcut.create_new_project('reaching-task','Linus','/data/videos',videotype='.mp4')
     
     Windows:
-    >>> deeplabcut.create_new_project('reaching-task','Bill',[r'C:\Users\rig-95\Videos\reachingvideo1.avi'], copy_videos=True)
-    users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \ \ )
+    >>> deeplabcut.create_new_project('reaching-task','Bill',[r'C:\yourusername\rig-95\Videos\reachingvideo1.avi'], copy_videos=True)
+    Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \ \ )
 
     """
     from datetime import datetime as dt
