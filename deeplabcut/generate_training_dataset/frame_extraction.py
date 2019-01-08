@@ -15,7 +15,7 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,checkcroppin
 
     Parameters
     ----------
-    config : str
+    config : string
         Full path of the config.yaml file.
     mode : {'automatic', 'manual'}, optional
         The mode of extraction.
