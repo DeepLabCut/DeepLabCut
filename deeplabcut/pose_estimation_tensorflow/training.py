@@ -19,7 +19,7 @@ def train_network(config,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshot
     shuffle : int, optional
         The shuffle index to select for training (default 1).
     trainingsetindex : int, optional
-        Which TrainingsetFraction to use (default 1).
+        Which TrainingsetFraction to use (Default from config is .95).
         Note that TrainingFraction is a list in config.yaml.
     gputouse : int or None, optional
         Number of your GPU (default None).
@@ -30,7 +30,7 @@ def train_network(config,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshot
     ________________
     max_snapshots_to_keep : int or None, optional
         How many snapshots are kept (default 5).
-        A snapshot is stored every `save_iters` (in config.yaml) many times, however only the last `max_snapshots_to_keep` many are kept!
+        A snapshot is stored every `save_iters`-number of times (as set in config.yaml), however only the last `max_snapshots_to_keep` many are kept!
         If None, then all snapshots are kept. See: https://github.com/AlexEMG/DeepLabCut/issues/8#issuecomment-387404835
     autotune : bool, optional
         property of TensorFlow, somehow faster if 'false' (as Eldar found out, see https://github.com/tensorflow/tensorflow/issues/13317) (default False).
