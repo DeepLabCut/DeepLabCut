@@ -15,7 +15,7 @@ def add_new_videos(config,videos,copy_videos=False,coords=None):
     ----------
     config : string
         Full path of the config.yaml file.
-    videos : list of str
+    videos : list of strings
         List of full paths of the videos to include in the project.
     copy_videos : bool, optional
         Copy videos to videos directory (default False).
