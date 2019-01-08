@@ -31,27 +31,27 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
 
     Parameters
     ----------
-    project : str
+    project : string
         Name of the project.
-    experimenter : str
+    experimenter : string
         Name of the experimenter.
-    videos : list of str or str
+    videos : list of string or strings
         List of full paths of the videos to include in the project or a string of a directory path.
-    working_directory : str or None, optional
+    working_directory : string or None, optional
         Directory where the project will be created (default None).
         If None, will be set to current working directory.
     copy_videos : bool, optional
         Copy videos to videos directory (default False).
         If ``True``, the videos are copied to the project/videos directory.
         If ``False``, symlinks of the videos are copied to the project/videos directory.
-    videotype : str, optional
+    videotype : string, optional
        Extension of videos for directories in the `videos` parameter (default ".avi").
        Only videos of this extension are analyzed within the directories.
 
     Examples
     --------
 
-    Linux/MacOs:
+    Linux:
 
     >>> deeplabcut.create_new_project('reaching-task','Linus',['/data/videos/mouse1.avi','/data/videos/mouse2.avi','/data/videos/mouse3.avi'],'/analysis/project/')
 
@@ -59,7 +59,7 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
 
     Windows:
 
-    >>> deeplabcut.create_new_project('reaching-task','Bill',['C:\\Users\\rig-95\\Videos\\reachingvideo1.avi'], copy_videos=True)
+    >>> deeplabcut.create_new_project('reaching-task','Bill',[r'C:\Users\rig-95\Videos\reachingvideo1.avi'], copy_videos=True)
 
     """
     from datetime import datetime as dt
