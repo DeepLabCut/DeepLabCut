@@ -192,7 +192,7 @@ def check_labels(config):
 
     Parameters
     ----------
-    config : str
+    config : string
         Full path of the config.yaml file.
 
     Examples
@@ -339,13 +339,13 @@ def merge_annotateddatasets(cfg,project_path,trainingsetfolder_full):
 
 def create_training_dataset(config,num_shuffles=1,Shuffles=None):
     """
-    Creates a training dataset. Labels from all the extracted frames are merged into a single .h5 file.\n
-    Only the videos included in the config file are used to create this dataset.\n
-    [OPTIONAL]Use the function 'add_new_video' at any stage of the project to add more videos to the project.
+    Creates a training dataset. Labels from all the extracted frames are merged into a single .h5 file.
+    Only the videos included in the config file are used to create this dataset.
+    [OPTIONAL] Use the function 'add_new_video' at any stage of the project to add more videos to the project.
 
     Parameters
     ----------
-    config : str
+    config : string
         Full path of the config.yaml file.
     num_shuffles : int, optional
         Number of shuffles of training dataset to create (default 1).
@@ -356,13 +356,13 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None):
     Examples
     --------
 
-    Linux/MacOS:
+    Linux:
 
-    >>> deeplabcut.create_training_dataset('/analysis/project/reaching-task/config.yaml',num_shuffles=1)
+    >>> deeplabcut.create_training_dataset('/home/DeepLabCut/reaching-task/config.yaml',num_shuffles=1)
 
     Windows:
 
-    >>> deeplabcut.create_training_dataset('C:\\Users\\Ulf\\looming-task\\config.yaml',Shuffles=[3,17,5])
+    >>> deeplabcut.create_training_dataset(r'C:\Users\Ulf\looming-task\config.yaml',Shuffles=[1,2,3])
 
     --------
     """
