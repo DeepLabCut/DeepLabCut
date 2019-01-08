@@ -149,7 +149,7 @@ def label_frames(config,Screens=1,scale_w=.8,scale_h=.9, winHack=1, img_scale=0.
 
     Parameters
     ----------
-    config : str
+    config : string
         Full path of the config.yaml file.
     Screens : int, optional
         Number of Screens in landscape mode, (i.e. if you have 2 screens, enter 2) (default 1).
