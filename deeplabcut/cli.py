@@ -46,13 +46,13 @@ def create_new_project(_, *args, **kwargs):
 
     Parameters
     ----------
-    project : str
+    project : string
         Name of the project.
-    experimenter : str
+    experimenter : string
         Name of the experimenter.
-    videos : list of str or str
+    videos : list of string or string
         List of full paths of the videos to include in the project or a string of a directory path.
-    working_directory : str or None, optional
+    working_directory : string or None, optional
         Directory where the project will be created (default None).
         If None, will be set to current working directory.
     copy_videos : bool, optional
@@ -94,9 +94,9 @@ def add_new_videos(_, *args, **kwargs):
 
     Parameters
     ----------
-    config : str
+    config : string
         Full path of the config.yaml file.
-    videos : list of str
+    videos : list of string
         List of full paths of the videos to include in the project.
     copy_videos : bool, optional
         Copy videos to videos directory (default False).
@@ -128,7 +128,7 @@ def extract_frames(_,*args,**kwargs):
     Extracts frames from the videos in the config.yaml file. Only the videos in the config.yaml will be used to select the frames.
     Use the function ``add_new_video`` at any stage of the project to add new videos to the config file and extract their frames.
 
-    config : str
+    config : string
         Full path of the config.yaml file.
     mode : {'automatic', 'manual'}
         The mode of extraction.
@@ -192,7 +192,7 @@ def create_training_dataset(_,*args,**kwargs):
 
     Parameters
     ----------
-    config : str
+    config : string
         Full path of the config.yaml file.
 
     Examples
@@ -220,7 +220,7 @@ def train_network(_,*args,**kwargs):
 
     Parameters
     ----------
-    config : str
+    config : string
         Full path of the config.yaml file.
 
     Examples
@@ -247,7 +247,7 @@ def evaluate_network(_,config,**kwargs):
 
     Parameters
     ----------
-    config : str
+    config : string
         Full path of the config.yaml file.
 
     Examples
@@ -280,9 +280,9 @@ def analyze_videos(_, *args,**kwargs):
 
     Parameters
     ----------
-    config : str
+    config : string
         Full path of the config.yaml file.
-    videos : str
+    videos : string
         Full path to the video.
 
     Examples
@@ -350,9 +350,9 @@ def extract_outlier_frames(_,*args,**kwargs):
 
     Parameters
     ----------
-    config : str
+    config : string
         Full path of the config.yaml file.
-    video : str
+    video : string
         Full path of the video to extract the frame from.
         Make sure that this video is already analyzed.
 
