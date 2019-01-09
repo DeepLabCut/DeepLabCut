@@ -20,18 +20,18 @@ so you can access it locally with **Anaconda.** You can also click the "download
 
 ### Some quick installation notes about each demo, i.e. you need to do this in order to run the Notebooks.
 
-**Demo 1:** This is designed for using your own computer and a **CPU** (unless you want to install Tensorflow-gpu, see [Installation](docs/installation.md)!).
-- Required Installation steps are, in the terminal type (but **please** still check [Installation](master/docs/installation.md)):
+**Demo 1:** This is designed for using your own computer and a **CPU** (unless you want to install Tensorflow-gpu, see [Installation](/docs/installation.md)!).
+- Required Installation steps are, in the terminal type (but **please** still check [Installation](/docs/installation.md)):
   - ``pip install deeplabcut``
   - In Windows: ``pip install -U wxPython``
   - in Linux: ``pip install https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-16.04/wxPython-4.0.3-cp36-cp36m-linux_x86_64.whl``
   - ``pip install tensorflow==1.10``
   
-**Demo 1.5 & 2:** Required Installation steps are, in the terminal type (but **please** still check [Installation](master/docs/installation.md)):
+**Demo 1.5 & 2:** Required Installation steps are, in the terminal type (but **please** still check [Installation](/docs/installation.md)):
   - ``pip install deeplabcut``
   - In Windows: ``pip install -U wxPython``
   - in Linux: ``pip install https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-16.04/wxPython-4.0.3-cp36-cp36m-linux_x86_64.whl``
-  - **Demo 1.5:** This now requires the [DeepLabCut Docker](https://github.com/MMathisLab/Docker4DeepLabCut2.0) or your own GPU set up (see [Installation](master/docs/installation.md)).
+  - **Demo 1.5:** This now requires the [DeepLabCut Docker](https://github.com/MMathisLab/Docker4DeepLabCut2.0) or your own GPU set up (see [Installation](/docs/installation.md)).
   - **Demo 2**  can use either CPUs or a GPU.
 
 ### First, activate your Anaconda environment (here called DLC2), and open a portal to Jupyter: 
@@ -58,7 +58,7 @@ Note, the notebooks with labeled data: [reaching data](Demo_labeledexample_Mouse
   - Create a training set 
   - Then, either use your CPU, or your GPU (the Notebook will guide you at this junction), to train, analyze and perform some basic analysis of your data. 
 
-For GPU-based training and analysis you will need to switch to either our [supplied Docker container](https://github.com/MMathisLab/Docker4DeepLabCut2.0), and modify the [Docker Demo Notebook](Docker_TrainNetwork_VideoAnalysis.ipynb) for your project, or you need to [install TensorFlow with GPU support](master/docs/installation.md) in an Anaconda Env.
+For GPU-based training and analysis you will need to switch to either our [supplied Docker container](https://github.com/MMathisLab/Docker4DeepLabCut2.0), and modify the [Docker Demo Notebook](Docker_TrainNetwork_VideoAnalysis.ipynb) for your project, or you need to [install TensorFlow with GPU support](/docs/installation.md) in an Anaconda Env.
 
 ## Demo DeepLabCut training and analysis on Colaboratory (in the cloud):
 
