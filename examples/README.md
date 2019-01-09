@@ -8,7 +8,7 @@ We also have some video tutorials to demonstrate how we use Anaconda and Docker 
 
 # Demo Notebooks:
 
-We recommend using **Anaconda to install Python and Jupyter Notebooks, see the [Installation](master/docs/installation.md) page**. Then, on your local machine using these notebooks to guide you, you can (1) demo our labeled data, (2) create a project, extract frames to lablel, use the GUI to label, and create a training set. You can also then run the training that utilizies TensorFlow with a CPU on your local computer (see the [Installation](docs/installation.md)). Installing TensorFlow for GPU support, is a bit more elaborate, so we suggest running the Training and new Video Analysis inside the [supplied Docker container](https://github.com/MMathisLab/Docker4DeepLabCut2.0) (which works on all Linux systems). 
+We recommend using **Anaconda to install Python and Jupyter Notebooks, see the [Installation](/docs/installation.md) page**. Then, on your local machine using these notebooks to guide you, you can (1) demo our labeled data, (2) create a project, extract frames to lablel, use the GUI to label, and create a training set. You can also then run the training that utilizies TensorFlow with a CPU on your local computer (see the [Installation](docs/installation.md)). Installing TensorFlow for GPU support, is a bit more elaborate, so we suggest running the Training and new Video Analysis inside the [supplied Docker container](https://github.com/MMathisLab/Docker4DeepLabCut2.0) (which works on all Linux systems). 
 
 We suggest making a "Fork" of this repo and/or then place DeepLabCut files in a folder :
 ``git clone https://github.com/AlexEMG/DeepLabCut`` 
