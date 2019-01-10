@@ -435,7 +435,8 @@ class MatplotPanel(wx.Panel):
         self.Fit()
         self.Refresh(eraseBackground=True)
 
-    def GetToolBar(self): #https://matplotlib.org/examples/user_interfaces/embedding_in_wx3.html
+    def GetToolBar(self):
+        # https://matplotlib.org/examples/user_interfaces/embedding_in_wx3.html
         # You will need to override GetToolBar if you are using an
         # unmanaged toolbar in your frame
         return self.toolbar
