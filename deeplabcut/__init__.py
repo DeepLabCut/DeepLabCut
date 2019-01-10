@@ -44,7 +44,7 @@ else:
 #Direct import for convenience
 from deeplabcut.pose_estimation_tensorflow import train_network
 from deeplabcut.pose_estimation_tensorflow import evaluate_network
-from deeplabcut.pose_estimation_tensorflow import analyze_videos
+from deeplabcut.pose_estimation_tensorflow import analyze_videos, analyze_time_lapse_frames
 
 from deeplabcut.utils import create_labeled_video,plot_trajectories,auxiliaryfunctions
 from deeplabcut.version import __version__, VERSION

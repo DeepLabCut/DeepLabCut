@@ -167,7 +167,7 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
                 'snapshotindex':-1,
                 'pcutoff':0.1,
                 'corner2move2': (50,50),
-                'move2corner': False,
+                'move2corner': True,
                 'x1':0,
                 'x2':640,
                 'y1':277,

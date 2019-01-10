@@ -69,7 +69,7 @@ intermediate_supervision_layer: 12
 # width * height > max_input_size*max_input_size are not used in training.
 # Prevents training from crashing with out of memory exception for very
 # large images.
-max_input_size: 1000
+max_input_size: 1500
 
 # Learning rate schedule for the SGD optimiser.
 multi_step:
