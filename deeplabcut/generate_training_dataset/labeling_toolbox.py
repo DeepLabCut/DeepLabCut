@@ -414,14 +414,14 @@ class MainFrame(wx.Frame):
             self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
 
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg, Toolbar
+from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 
 class MatplotPanel(wx.Panel):
     def __init__(self, parent,config):
         panel1 = wx.Panel.__init__(self, parent)
         self.figure = Figure()
         self.canvas = FigureCanvasWxAgg(self, -1, self.figure)
-        self.toolbar = Toolbar(self.canvas)  # matplotlib toolbar
+        self.toolbar = NavigationToolbar(self.canvas)
         self.toolbar.EnableTool(1,False)
         self.toolbar.Realize()
         # self.toolbar.set_active([0,1])
