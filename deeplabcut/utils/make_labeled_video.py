@@ -60,14 +60,13 @@ def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,DLCscorer,bodyparts2plot
         print("Overall # of frames: ", nframes, "with cropped frame dimensions: ",nx,ny)
 
         print("Generating frames and creating video.")
-        
-        df_likelihood = []
-        df_x = []
-        df_y = []
+        df_likelihood = np.empty((len(bodyparts2plot),nframes))
+        df_x = np.empty((len(bodyparts2plot),nframes))
+        df_y = np.empty((len(bodyparts2plot),nframes))
         for bpindex, bp in enumerate(bodyparts2plot):
-            df_likelihood.append(Dataframe[DLCscorer][bp]['likelihood'].values)
-            df_x.append(Dataframe[DLCscorer][bp]['x'].values)
-            df_y.append(Dataframe[DLCscorer][bp]['y'].values)
+            df_likelihood[bpindex,:]=Dataframe[DLCscorer][bp]['likelihood'].values
+            df_x[bpindex,:]=Dataframe[DLCscorer][bp]['x'].values
+            df_y[bpindex,:]=Dataframe[DLCscorer][bp]['y'].values
         
         for index in tqdm(range(nframes)):
             image = clip.load_frame()
@@ -76,9 +75,9 @@ def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,DLCscorer,bodyparts2plot
             else:
                 pass
             for bpindex in range(len(bodyparts2plot)):
-                if df_likelihood[bpindex][index] > pcutoff:
-                    xc = int(df_x[bpindex][index]
-                    yc = int(df_y[bpindex][index])
+                if df_likelihood[bpindex,index] > pcutoff:
+                    xc = int(df_x[bpindex,index])
+                    yc = int(df_y[bpindex,index])
                     #rr, cc = circle_perimeter(yc,xc,radius)
                     rr, cc = circle(yc,xc,dotsize,shape=(ny,nx))
                     image[rr, cc, :] = colors[bpindex]
@@ -102,7 +101,15 @@ def CreateVideoSlow(clip,Dataframe,tmpfolder,dotsize,colormap,alphavalue,pcutoff
 
     print("Duration of video [s]: ", round(duration,2), ", recorded with ", round(fps,2),"fps!")
     print("Overall # of frames: ", int(nframes), "with cropped frame dimensions: ",nx,ny)
-    print("Generating frames")
+    print("Generating frames and creating video.")
+    df_likelihood = np.empty((len(bodyparts2plot),nframes))
+    df_x = np.empty((len(bodyparts2plot),nframes))
+    df_y = np.empty((len(bodyparts2plot),nframes))
+    for bpindex, bp in enumerate(bodyparts2plot):
+        df_likelihood[bpindex,:]=Dataframe[DLCscorer][bp]['likelihood'].values
+        df_x[bpindex,:]=Dataframe[DLCscorer][bp]['x'].values
+        df_y[bpindex,:]=Dataframe[DLCscorer][bp]['y'].values
+            
     for index in tqdm(range(nframes)):
         imagename = tmpfolder + "/file%04d.png" % index
         if os.path.isfile(tmpfolder + "/file%04d.png" % index):
@@ -120,10 +127,10 @@ def CreateVideoSlow(clip,Dataframe,tmpfolder,dotsize,colormap,alphavalue,pcutoff
             plt.imshow(image)
 
             for bpindex, bp in enumerate(bodyparts2plot):
-                if Dataframe[DLCscorer][bp]['likelihood'].values[index] > pcutoff:
+                if df_likelihood[bpindex,index] > pcutoff:
                     plt.scatter(
-                        Dataframe[DLCscorer][bp]['x'].values[index],
-                        Dataframe[DLCscorer][bp]['y'].values[index],
+                        df_x[bpindex,index],
+                        df_y[bpindex,index],
                         s=dotsize**2,
                         color=colors(bpindex),
                         alpha=alphavalue)
