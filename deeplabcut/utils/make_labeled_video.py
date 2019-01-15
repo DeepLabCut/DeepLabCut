@@ -60,16 +60,25 @@ def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,DLCscorer,bodyparts2plot
         print("Overall # of frames: ", nframes, "with cropped frame dimensions: ",nx,ny)
 
         print("Generating frames and creating video.")
+        
+        df_likelihood = []
+        df_x = []
+        df_y = []
+        for bpindex, bp in enumerate(bodyparts2plot):
+            df_likelihood.append(Dataframe[DLCscorer][bp]['likelihood'].values)
+            df_x.append(Dataframe[DLCscorer][bp]['x'].values)
+            df_y.append(Dataframe[DLCscorer][bp]['y'].values)
+        
         for index in tqdm(range(nframes)):
             image = clip.load_frame()
             if cropping:
                     image=image[y1:y2,x1:x2]
             else:
                 pass
-            for bpindex, bp in enumerate(bodyparts2plot):
-                if Dataframe[DLCscorer][bp]['likelihood'].values[index] > pcutoff:
-                    xc = int(Dataframe[DLCscorer][bp]['x'].values[index])
-                    yc = int(Dataframe[DLCscorer][bp]['y'].values[index])
+            for bpindex in range(len(bodyparts2plot)):
+                if df_likelihood[bpindex][index] > pcutoff:
+                    xc = int(df_x[bpindex][index]
+                    yc = int(df_y[bpindex][index])
                     #rr, cc = circle_perimeter(yc,xc,radius)
                     rr, cc = circle(yc,xc,dotsize,shape=(ny,nx))
                     image[rr, cc, :] = colors[bpindex]
