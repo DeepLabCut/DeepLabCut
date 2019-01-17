@@ -45,10 +45,10 @@ def add_new_videos(config,videos,copy_videos=False,coords=None):
     from deeplabcut import DEBUG
     from deeplabcut.utils import auxiliaryfunctions
     import cv2
-    
+
     # Read the config file
     cfg = auxiliaryfunctions.read_config(config)
-    
+
     for idx,video in enumerate(videos):
         try:
            video_path = os.path.realpath(video)
@@ -68,8 +68,7 @@ def add_new_videos(config,videos,copy_videos=False,coords=None):
         else:
            print("Cannot open the video file!")
 
-    with open(str(config), 'w') as ymlfile:
-        yaml.dump(cfg, ymlfile,default_flow_style=False)
+    auxiliaryfunctions.write_config(config,cfg)
 
     video_path = Path(config).parents[0] / 'videos'
     data_path = Path(config).parents[0] / 'labeled-data'

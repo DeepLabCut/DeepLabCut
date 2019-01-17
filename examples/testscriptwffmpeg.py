@@ -6,9 +6,9 @@ Created on Tue Oct  2 13:56:11 2018
 
 This script tests various functionalities in an automatic way (mostly for developers).
 It does not require ffmpeg in terminal and also tests kmeans frame extraction.
-It should take about 4 minutes to run this in a CPU. 
+It should take about 4 minutes to run this in a CPU.
 
-It produces nothing of interesting scientifically. 
+It produces nothing of interesting scientifically.
 """
 
 task='TEST2' # Enter the name of your experiment Task
@@ -18,16 +18,22 @@ import deeplabcut, os, yaml, subprocess
 from pathlib import Path
 import pandas as pd
 import numpy as np
+import ruamel.yaml
 
 def read_config(configname):
-    """    Reads config file     """
-    with open(str(configname), 'r') as ymlfile:
-        cfg = yaml.load(ymlfile)
+    """
+    Reads config file
+
+    """
+    ruamelFile = ruamel.yaml.YAML()
+    path = Path(configname)
+    cfg = ruamelFile.load(path)
     return(cfg)
 
 def write_config(configname,cfg):
-    with open(str(configname), 'w') as ymlfile:
-                yaml.dump(cfg, ymlfile,default_flow_style=False)
+    with open(configname, 'w') as cf:
+        ruamelFile = ruamel.yaml.YAML()
+        ruamelFile.dump(cfg, cf)
 
 print("Imported DLC!")
 basepath=os.path.dirname(os.path.abspath('testscript.py'))
@@ -49,7 +55,7 @@ deeplabcut.extract_frames(path_config_file,mode='automatic',algo='kmeans')
 print("CREATING-SOME LABELS FOR THE FRAMES")
 frames=os.listdir(os.path.join(cfg['project_path'],'labeled-data',videoname))
 #As this next step is manual, we update the labels by putting them on the diagonal (fixed for all frames)
-for index,bodypart in enumerate(cfg['bodyparts']): 
+for index,bodypart in enumerate(cfg['bodyparts']):
         columnindex = pd.MultiIndex.from_product([[scorer], [bodypart], ['x', 'y']],names=['scorer', 'bodyparts', 'coords'])
         frame = pd.DataFrame(np.ones((len(frames),2))*50*index, columns = columnindex, index = [os.path.join('labeled-data',videoname,fn) for fn in frames])
         if index==0:

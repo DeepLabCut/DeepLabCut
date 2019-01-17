@@ -5,7 +5,7 @@ Created on Mon Nov  5 18:06:13 2018
 
 @author: alex
 
-This is a test script that should achieve a certain performance on your system. 
+This is a test script that should achieve a certain performance on your system.
 See values on our system, the DLC 2.0 docker with TF 1.8 on a NVIDIA GTX 1080Ti.
 https://github.com/MMathisLab/Docker4DeepLabCut2.0
 
@@ -23,18 +23,24 @@ The analysis of the video takes 41 seconds (batch size 32) and creating the fram
 import deeplabcut
 import os, yaml
 from pathlib import Path
+import ruamel.yaml
 
 def read_config(configname):
-    """    Reads config file     """
-    with open(str(configname), 'r') as ymlfile:
-        cfg = yaml.load(ymlfile)
+    """
+    Reads config file
+
+    """
+    ruamelFile = ruamel.yaml.YAML()
+    path = Path(configname)
+    cfg = ruamelFile.load(path)
     return(cfg)
 
 def write_config(configname,cfg):
-    with open(str(configname), 'w') as ymlfile:
-                yaml.dump(cfg, ymlfile,default_flow_style=False)
+    with open(configname, 'w') as cf:
+        ruamelFile = ruamel.yaml.YAML()
+        ruamelFile.dump(cfg, cf)
 
-# Loading example data set 
+# Loading example data set
 path_config_file = os.path.join(os.getcwd(),'openfield-Pranav-2018-10-30/config.yaml')
 deeplabcut.load_demo_data(path_config_file)
 
