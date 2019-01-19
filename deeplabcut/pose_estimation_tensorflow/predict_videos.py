@@ -414,11 +414,11 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,traini
     --------
     If you want to analyze all frames in /analysis/project/timelapseexperiment1:
 
-    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml','/analysis/project/timelapseexperiment1')
+    >>> deeplabcut.analyze_time_lapse_frames('/analysis/project/reaching-task/config.yaml','/analysis/project/timelapseexperiment1')
 
     If you want to analyze all frames in /analysis/project/timelapseexperiment1:
 
-    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml','/analysis/project/timelapseexperiment1', frametype='.bmp')
+    >>> deeplabcut.analyze_time_lapse_frames('/analysis/project/reaching-task/config.yaml','/analysis/project/timelapseexperiment1', frametype='.bmp')
 
     Note: for test purposes one can extract all frames from a video with ffmeg, e.g. ffmpeg -i testvideo.avi thumb%04d.png
     """
