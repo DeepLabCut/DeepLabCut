@@ -92,8 +92,8 @@ def adddatasetstovideolist(config,prefix,width,height,suffix='.mp4'):
             #cfg['video_sets'][vn]
             cfg['video_sets'].update({os.path.join(prefix,vn+suffix) : {'crop': ', '.join(map(str, [0, width, 0, height]))}})
 
-    with open(str(config), 'w') as ymlfile:
-        yaml.dump(cfg, ymlfile,default_flow_style=False)
+    auxiliaryfunctions.write_config(config,cfg)
+
 
 def dropduplicates(config):
     """

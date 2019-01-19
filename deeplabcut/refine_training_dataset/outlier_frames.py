@@ -29,9 +29,9 @@ def extract_outlier_frames(config,videos,shuffle=1,trainingsetindex=0,outlieralg
 
     Parameters
     ----------
-    config : str
+    config : string
         Full path of the config.yaml file.
-    videos : list of str
+    videos : list of string
         List of full paths of the videos to extract the outlier frames from.
         These videos must be already analyzed.
     shuffle : int, optional
@@ -46,7 +46,7 @@ def extract_outlier_frames(config,videos,shuffle=1,trainingsetindex=0,outlieralg
         'fitting' fits a Auto Regressive Integrated Moving Average model to the data and computes the distance to the estimated data. Larger distances than epsilon are then potentially identified as outliers.
         'jump' identifies larger jumps than 'epsilon' in any body part
         'uncertain' looks for frames with confidence below p_bound.
-    comparisonbodyparts : list of str or str, optional
+    comparisonbodyparts : list of string or string, optional
         List of bodyparts to use or the string "all" (default "all").
         Must be a subset of `bodyparts` in config.yaml
         Comparisons with the outliers are carried out only for the body parts specified by `comparisonbodyparts`.
@@ -122,7 +122,7 @@ def extract_outlier_frames(config,videos,shuffle=1,trainingsetindex=0,outlieralg
                       dx=np.diff(Dataframe[scorer][bp]['x'].values[Index])
                       dy=np.diff(Dataframe[scorer][bp]['y'].values[Index])
                       # all indices between start and stop with jump larger than epsilon (leading up to this point!)
-                      Indices.extend(np.where((dx**2+dy**2)>epsilon**2)[0]+startindex+1) 
+                      Indices.extend(np.where((dx**2+dy**2)>epsilon**2)[0]+startindex+1)
 
           elif outlieralgorithm=='fitting':
               #deviation_dataname = str(Path(videofolder)/Path(dataname))
@@ -176,7 +176,7 @@ def filterpredictions(config,video,shuffle=1,trainingsetindex=0,comparisonbodypa
     trainingsetindex : int, optional
         Which TrainingsetFraction to use (default 1).
         Note that TrainingFraction is a list in config.yaml.
-    comparisonbodyparts : list of str or str, optional
+    comparisonbodyparts : list of string or string, optional
         List of bodyparts to use or the string "all" (default "all").
         Must be a subset of `bodyparts` in config.yaml
         SARIMAX models are fitted only for the body parts specified by `comparisonbodyparts`.
@@ -220,7 +220,7 @@ def filterpredictions(config,video,shuffle=1,trainingsetindex=0,comparisonbodypa
     return data,Dataframe,d,o
 
 def convertparms2start(pn):
-    ''' Creating a start value for sarimax in case of an value error 
+    ''' Creating a start value for sarimax in case of an value error
     See: https://groups.google.com/forum/#!topic/pystatsmodels/S_Fo53F25Rk '''
     if 'ar.' in pn:
         return 0
@@ -273,7 +273,7 @@ def ComputeDeviations(Dataframe,cfg,comparisonbodyparts,scorer,dataname,p_bound,
                 meanx,CIx=FitSARIMAXModel(x,p,p_bound,alpha,ARdegree,MAdegree)
                 meanx,CIx=meanx,CIx
             except ValueError:
-                meanx,CIx=np.nan*np.zeros(ntimes),np.nan*np.zeros((ntimes,2)) 
+                meanx,CIx=np.nan*np.zeros(ntimes),np.nan*np.zeros((ntimes,2))
             try:
                 meany,CIy=FitSARIMAXModel(y,p,p_bound,alpha,ARdegree,MAdegree)
                 meany,CIy=meany,CIy
@@ -453,7 +453,7 @@ def refine_labels(config,Screens=1,scale_w=.8,scale_h=.9, winHack=1, img_scale=.
 
     Parameters
     ----------
-    config : str
+    config : string
         Full path of the config.yaml file.
     Screens : int, optional
         Number of Screens in landscape mode, (i.e. if you have 2 screens, enter 2) (default 1).
@@ -502,7 +502,7 @@ def merge_datasets(config,forceiterate=None):
     bf=Path(str(config_path/'labeled-data'))
     allfolders = [os.path.join(bf,fn) for fn in os.listdir(bf) if "_labeled" not in fn] #exclude labeled data folders!
     flagged=False
-    for findex,folder in enumerate(allfolders): 
+    for findex,folder in enumerate(allfolders):
         if os.path.isfile(os.path.join(folder,'MachineLabelsRefine.h5')): #Folder that was manually refine...
             pass
         elif os.path.isfile(os.path.join(folder,'CollectedData_'+cfg['scorer']+'.h5')): #Folder that contains human data set...
@@ -520,8 +520,7 @@ def merge_datasets(config,forceiterate=None):
         else:
             cfg['iteration']=forceiterate
 
-        with open(str(config), 'w') as ymlfile:
-            yaml.dump(cfg, ymlfile,default_flow_style=False)
+        auxiliaryfunctions.write_config(config,cfg)
 
         print("Merged data sets and updated refinement iteration to "+str(cfg['iteration'])+".")
         print("Now you can create a new training set for the expanded annotated images (use create_training_dataset).")

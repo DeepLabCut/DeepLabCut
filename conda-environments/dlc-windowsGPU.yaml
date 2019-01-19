@@ -1,7 +1,7 @@
 # dlc-windowsGPU.yaml 
 # 
 # DeepLabCut environment for use on FMI computers
-# FIRST: INSTALL CORRECT DRIVER for GPU, see https://github.com/AlexEMG/DeepLabCut/blob/master/docs/images/cuda_driver.png
+# FIRST: INSTALL CORRECT DRIVER for GPU, see https://stackoverflow.com/questions/30820513/what-is-the-correct-version-of-cuda-for-my-nvidia-driver/30820690
 # 
 # Suggested by Jan Eglinger see https://github.com/AlexEMG/DeepLabCut/issues/112
 #

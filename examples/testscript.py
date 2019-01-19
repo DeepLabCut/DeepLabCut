@@ -7,10 +7,10 @@ Created on Tue Oct  2 13:56:11 2018
 DEVELOPERS:
 This script tests various functionalities in an automatic way.
 
-It should take about 4:00 minutes to run this in a CPU. 
+It should take about 4:00 minutes to run this in a CPU.
 It should take about 1:30 minutes on a GPU (incl. downloading the ResNet weights)
 
-It produces nothing of interesting scientifically. 
+It produces nothing of interesting scientifically.
 """
 
 task='TEST' # Enter the name of your experiment Task
@@ -21,16 +21,22 @@ import deeplabcut, os, yaml, subprocess
 from pathlib import Path
 import pandas as pd
 import numpy as np
+import ruamel.yaml
 
 def read_config(configname):
-    """    Reads config file     """
-    with open(str(configname), 'r') as ymlfile:
-        cfg = yaml.load(ymlfile)
+    """
+    Reads config file
+
+    """
+    ruamelFile = ruamel.yaml.YAML()
+    path = Path(configname)
+    cfg = ruamelFile.load(path)
     return(cfg)
 
 def write_config(configname,cfg):
-    with open(str(configname), 'w') as ymlfile:
-                yaml.dump(cfg, ymlfile,default_flow_style=False)
+    with open(configname, 'w') as cf:
+        ruamelFile = ruamel.yaml.YAML()
+        ruamelFile.dump(cfg, cf)
 
 print("Imported DLC!")
 basepath=os.path.dirname(os.path.abspath('testscript.py'))
@@ -52,7 +58,7 @@ deeplabcut.extract_frames(path_config_file,mode='automatic')
 print("CREATING-SOME LABELS FOR THE FRAMES")
 frames=os.listdir(os.path.join(cfg['project_path'],'labeled-data',videoname))
 #As this next step is manual, we update the labels by putting them on the diagonal (fixed for all frames)
-for index,bodypart in enumerate(cfg['bodyparts']): 
+for index,bodypart in enumerate(cfg['bodyparts']):
         columnindex = pd.MultiIndex.from_product([[scorer], [bodypart], ['x', 'y']],names=['scorer', 'bodyparts', 'coords'])
         frame = pd.DataFrame(100+np.ones((len(frames),2))*50*index, columns = columnindex, index = [os.path.join('labeled-data',videoname,fn) for fn in frames])
         if index==0:
@@ -91,7 +97,7 @@ print("CUT SHORT VIDEO AND ANALYZE")
 # Make super short video (so the analysis is quick!)
 vname='brief'
 newvideo=os.path.join(cfg['project_path'],'videos',vname+'.mp4')
-try: #you need ffmpeg command line interface    
+try: #you need ffmpeg command line interface
     subprocess.call(['ffmpeg','-i',video[0],'-ss','00:00:00','-to','00:00:00.4','-c','copy',newvideo])
 except:
     #for windows:
@@ -101,7 +107,7 @@ except:
     clip.reader.initialize()
     def make_frame(t):
         return clip.get_frame(1)
-    
+
     newclip = VideoClip(make_frame, duration=1)
     newclip.write_videofile(newvideo,fps=30)
 

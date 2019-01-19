@@ -1,18 +1,18 @@
 ## Documentation:
 
-This page contains a list of the essential functions of DeepLabCut as well as demos. There are many optional parameters with each described function, which you can find [here](functionDetails.md). For additional assistance, you can use the [help](UseOverviewGuide.md#help) function to better understand what each function does. 
+This page contains a list of the essential functions of DeepLabCut as well as demos. There are many optional parameters with each described function, which you can find [here](functionDetails.md). For additional assistance, you can use the [help](UseOverviewGuide.md#help) function to better understand what each function does.
 
 ## Overview of the work-flow:
 
 <p align="center">
-<img src="/docs/images/flowfig.png" width="90%">
+<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3e47454fa51a420fa8ecdf/1547585367234/flowfig.png?format=750w" width="90%">
 </p>
 
-### Option 1: Demo Notebooks: 
+### Option 1: Demo Notebooks:
 We also provide Jupyter notebooks for using DeepLabCut on both a pre-labeled dataset, and on the end user’s
 own dataset. See all the demo's [here!](/examples)
 
-### Option 2: using terminal, Start Python: 
+### Option 2: using terminal, Start Python:
 
 Open an ipython session and import the package by typing in the terminal:
 
@@ -20,7 +20,7 @@ Open an ipython session and import the package by typing in the terminal:
 
 ``import deeplabcut``
 
-TIP: for every function there is a associated help document that can be viewed by adding a **?** after the function name; i.e. ``deeplabcut.create_new_project?``. To exit this help screen, type q. 
+TIP: for every function there is a associated help document that can be viewed by adding a **?** after the function name; i.e. ``deeplabcut.create_new_project?``. To exit this help screen, type q.
 
 
 ### Create a New Project:
@@ -47,7 +47,7 @@ TIP: for every function there is a associated help document that can be viewed b
 <img src="http://www.people.fas.harvard.edu/~amathis/dlc/startdeeplabcut.gif" width="90%">
 </p>
 
-### Select Frames to Label: 
+### Select Frames to Label:
 
 ``deeplabcut.extract_frames(`config_path',`automatic/manual',`uniform/kmeans', crop=True/False, checkcropping=True)``
 
@@ -105,7 +105,7 @@ TIP: for every function there is a associated help document that can be viewed b
 
 (more details [here](functionDetails.md#j-refinement-extract-outlier-frames))
 
-### optional refinement of the labels with the GUI: 
+### optional refinement of the labels with the GUI:
 (refinement and augmentation of the training dataset)
 
 ``deeplabcut.refine_labels(`config_path')``
@@ -116,7 +116,7 @@ TIP: for every function there is a associated help document that can be viewed b
 <img src="http://www.people.fas.harvard.edu/~amathis/dlc/refinelabels.gif" width="90%">
 </p>
 
-When done editing the labels, merge: 
+When done editing the labels, merge:
 
 ``deeplabcut.merge_datasets(`config_path')``
 

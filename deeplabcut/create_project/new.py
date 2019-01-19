@@ -16,16 +16,6 @@ import cv2
 from deeplabcut import DEBUG
 import shutil
 
-def yaml_config_template(yaml_path, cfg):
-    """Write a dictionary of configuration into a new yaml file.
-    """
-    yaml_path = str(yaml_path)
-    with open(yaml_path, 'w') as cf:
-        keys = list(cfg.keys())
-        while len(keys):
-            k = keys.pop()
-            yaml.dump({k: cfg[k]}, cf, default_flow_style=False)
-
 def create_new_project(project, experimenter, videos, working_directory=None, copy_videos=False,videotype='.avi'):
     """Creates a new project directory, sub-directories and a basic configuration file. The configuration file is loaded with the default values. Change its parameters to your projects need.
 
@@ -50,11 +40,8 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
 
     Examples
     --------
-
-    Linux:
-
+    Linux/MacOs
     >>> deeplabcut.create_new_project('reaching-task','Linus',['/data/videos/mouse1.avi','/data/videos/mouse2.avi','/data/videos/mouse3.avi'],'/analysis/project/')
-
     >>> deeplabcut.create_new_project('reaching-task','Linus','/data/videos',videotype='.mp4')
 
     Windows:
@@ -64,7 +51,7 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
 
     """
     from datetime import datetime as dt
-
+    from deeplabcut.utils import auxiliaryfunctions
     date = dt.today()
     month = date.strftime("%B")
     day = date.day
@@ -156,37 +143,39 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
            print("Cannot open the video file!")
            video_sets=None
 
-    # Configuration file templates
-    cfg_dict = {'Task': project,
-                'video_sets': video_sets,
-                'cropping': False,
-                'start': 0,
-                'stop' : 1,
-                'numframes2pick': 20,
-                'bodyparts': ['hand', 'Finger1', 'Finger2',"Joystick"],
-                'scorer': experimenter,
-                'date':d,
-                'TrainingFraction': [0.95],
-                'resnet': 50,
-                'snapshotindex':-1,
-                'pcutoff':0.1,
-                'corner2move2': (50,50),
-                'move2corner': False,
-                'x1':0,
-                'x2':640,
-                'y1':277,
-                'y2':624,
-                'dotsize':12,          #for plots size of dots
-                'alphavalue':.5,          #for plots transparency of markers
-                'colormap': 'jet',          #for plots type of colormap
-                'iteration':0,
-                'project_path': str(project_path),
-                'batch_size': 4 #batch size during inference (video - analysis); see https://www.biorxiv.org/content/early/2018/10/30/457242
-                }
+    #        Set values to config file:
+    cfg_file,ruamelFile = auxiliaryfunctions.create_config_template()
+    cfg_file
+    cfg_file['Task']=project
+    cfg_file['scorer']=experimenter
+    cfg_file['video_sets']=video_sets
+    cfg_file['project_path']=str(project_path)
+    cfg_file['date']=d
+    cfg_file['bodyparts']=['Hand','Finger1','Finger2','Joystick']
+    cfg_file['cropping']=False
+    cfg_file['start']=0
+    cfg_file['stop']=1
+    cfg_file['numframes2pick']=20
+    cfg_file['TrainingFraction']=[0.95]
+    cfg_file['iteration']=0
+    cfg_file['resnet']=50
+    cfg_file['snapshotindex']=-1
+    cfg_file['x1']=0
+    cfg_file['x2']=640
+    cfg_file['y1']=277
+    cfg_file['y2']=624
+    cfg_file['batch_size']=4 #batch size during inference (video - analysis); see https://www.biorxiv.org/content/early/2018/10/30/457242
+    cfg_file['corner2move2']=(50,50)
+    cfg_file['move2corner']=True
+    cfg_file['pcutoff']=0.1
+    cfg_file['dotsize']=12 #for plots size of dots
+    cfg_file['alphavalue']=0.7 #for plots transparency of markers
+    cfg_file['colormap']='hsv' #for plots type of colormap
 
     projconfigfile=os.path.join(str(project_path),'config.yaml')
     # Write dictionary to yaml  config file
-    yaml_config_template(projconfigfile, cfg_dict)
+    auxiliaryfunctions.write_config(projconfigfile,cfg_file)
+
     print('Generated "{}"'.format(project_path / 'config.yaml'))
     print("\nA new project with name %s is created at %s and a configurable file (config.yaml) is stored there. Change the parameters in this file to adapt to your project's needs.\n Once you have changed the configuration file, use the function 'extract_frames' to select frames for labeling.\n. [OPTIONAL] Use the function 'add_new_videos' to add new videos to your project (at any stage)." %(project_name,str(wd)))
     return projconfigfile
