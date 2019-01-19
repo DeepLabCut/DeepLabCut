@@ -381,50 +381,48 @@ def GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nfra
 
 def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,trainingsetindex=0,gputouse=None,save_as_csv=False):
     """
-    Analyzed all images (of type = frametype) in a folder and stores the output in one file.
+    Analyze all images (of type = frametype) in a folder and store the output in one file.
 
     You can crop the frames (before analysis), by changing 'cropping'=True and setting 'x1','x2','y1','y2' in the config file.
 
-    Output: The labels are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position \n
-            in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
-            in the same directory, where the video is stored. However, if the flag save_as_csv is set to True, the data can also be exported in \n
-            comma-separated values format (.csv), which in turn can be imported in many programs, such as MATLAB, R, Prism, etc.
+    Output: The labels are stored as a MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position
+    in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF)
+    in the same directory, where the video is stored. However, if the flag save_as_csv is set to True, the data can also be exported in
+    comma-separated values format (.csv), which in turn can be imported in many programs, such as MATLAB, R, Prism, etc.
 
     Parameters
     ----------
     config : string
         Full path of the config.yaml file as a string.
-
-    directory: string
-        Full path to directory containing the frames that shall be analyzed
-
-    frametype: string, optional
-        Checks for the file extension of the frames. Only images with this extension are analyzed. The default is ``.png``
-
-    shuffle: int, optional
-        An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.
-
-    trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
-
-    gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU put None.
-    See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
-
-    save_as_csv: bool, optional
-        Saves the predictions in a .csv file. The default is ``False``; if provided it must be either ``True`` or ``False``
+    directory : string
+        Full path to directory containing the frames that shall be analyzed.
+    frametype : string, optional
+        File extension of the frames to analyze (default '.png').
+    shuffle : int, optional
+        Shuffle index of the training dataset used for training the network (default 1).
+    trainingsetindex : int, optional
+        Which TrainingsetFraction to use (default 0).
+        Note that TrainingFraction is a list in config.yaml.
+     gputouse : int or None, optional
+        Number of your GPU (default None).
+        nvidia-smi can be used to view the GPU number.
+        See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+    save_as_csv : bool, optional
+        Whether to save the predictions in a .csv file (default False).
 
     Examples
     --------
-    If you want to analyze all frames in /analysis/project/timelapseexperiment1
-    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml','/analysis/project/timelapseexperiment1')
-    --------
+    If you want to analyze all frames in /analysis/project/timelapseexperiment1:
 
-    If you want to analyze all frames in /analysis/project/timelapseexperiment1
+    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml','/analysis/project/timelapseexperiment1')
+
+    If you want to analyze all frames in /analysis/project/timelapseexperiment1:
+
     >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml','/analysis/project/timelapseexperiment1', frametype='.bmp')
-    --------
 
     Note: for test purposes one can extract all frames from a video with ffmeg, e.g. ffmpeg -i testvideo.avi thumb%04d.png
     """
+
     if 'TF_CUDNN_USE_AUTOTUNE' in os.environ:
         del os.environ['TF_CUDNN_USE_AUTOTUNE'] #was potentially set during training
 
