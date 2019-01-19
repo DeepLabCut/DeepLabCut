@@ -170,7 +170,7 @@ def create_labeled_video(config,videos,shuffle=1,trainingsetindex=0,videotype='a
     ----------
     config : string
         Full path of the config.yaml file.
-    videos : list of str
+    videos : list of string
         List of full paths to videos or directories of videos (of a specific extension) for analysis.
     shuffle : int, optional
         Number of shuffles of training dataset (default 1).

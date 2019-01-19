@@ -165,9 +165,9 @@ def filterpredictions(config,video,shuffle=1,trainingsetindex=0,comparisonbodypa
 
     Parameters
     ----------
-    config : str
+    config : string
         Full path of the config.yaml file.
-    video : str
+    video : string
         Full path of the video to extract the frames from.
         This video must be already analyzed.
     shuffle : int, optional
@@ -484,7 +484,7 @@ def merge_datasets(config,forceiterate=None):
 
     Parameters
     ----------
-    config : str
+    config : string
         Full path of the config.yaml file.
     forceiterate : int or None, optional
         Value of the iteration variable (default None).

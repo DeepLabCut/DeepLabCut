@@ -142,9 +142,9 @@ def plot_trajectories(config,videos,shuffle=1,trainingsetindex=0,videotype='.avi
 
     Parameters
     ----------
-    config : str
+    config : string
         Full path of the config.yaml file.
-    videos : list of str
+    videos : list of string
         List of full paths to videos or directories of videos (of a specific extension) for analysis.
     shuffle : int, optional
         Shuffle index of the training dataset used for training the network (default 1).

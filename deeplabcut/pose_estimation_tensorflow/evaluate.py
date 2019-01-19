@@ -37,7 +37,7 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
 
     Parameters
     ----------
-    config : str
+    config : string
         Full path of the config.yaml file.
     Shuffles : list of int, optional
         List of integers specifying the shuffle indices of the training dataset (default [1]).
@@ -45,7 +45,7 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
         Plot the predictions on the train and test images (default False).
     show_errors : bool, optional
         Display train and test errors (default True).
-    comparisonbodyparts : list of str or str, optional
+    comparisonbodyparts : list of string or string, optional
         List of bodyparts to use (default "all").
         Must be a subset of `bodyparts` in config.yaml
         The average error will be computed only for the body parts specified by `comparisonbodyparts`.

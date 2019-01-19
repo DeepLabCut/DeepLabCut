@@ -39,16 +39,16 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
 
     Parameters
     ----------
-    config : str
+    config : string
         Full path of the config.yaml file.
-    videos : list of str
+    videos : list of string
         List of full paths to videos or directories of videos (of a specific extension) for analysis.
     shuffle : int, optional
         Shuffle index of the training dataset used for training the network (default 1).
     trainingsetindex : int, optional
         Which TrainingsetFraction to use (default 1).
         Note that TrainingFraction is a list in config.yaml.
-    videotype : str, optional
+    videotype : string, optional
        Extension of videos for directories in the `videos` parameter (default ".avi").
        Only videos of this extension are analyzed within the directories.
     gputouse : int or None, optional
