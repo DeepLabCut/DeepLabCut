@@ -47,7 +47,7 @@ def CropImage(joints,im,Xlabel,Ylabel,cfg):
                 #    joints[0,:, 2] -= y0
     #Xstart=int(np.max([0,int(Xlabel)-widthback]))
     #Xstop=int(np.min([np.shape(im)[1]-1,int(Xlabel)+widthforward]))
-    #Ystart=int(np.max([0,int(Ylabel)-hdown])) 
+    #Ystart=int(np.max([0,int(Ylabel)-hdown]))
     #Ystop=int(np.min([np.shape(im)[0]-1,int(Ylabel)+hup]))
     joints[0,:,1]-=Xstart
     joints[0,:,2]-=Ystart

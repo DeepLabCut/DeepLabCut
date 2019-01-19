@@ -69,7 +69,7 @@ def getpose(image, cfg, sess, inputs, outputs, outall=False):
 
 ## Functions below implement are for batch sizes > 1:
 def extract_cnn_outputmulti(outputs_np, cfg):
-    ''' extract locref + scmap from network 
+    ''' extract locref + scmap from network
     Dimensions: image batch x imagedim1 x imagedim2 x bodypart'''
     scmap = outputs_np[0]
     locref = None
@@ -102,7 +102,7 @@ def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
 
     X=X.astype('float32')*cfg.stride+.5*cfg.stride+DZ[:,:,0]
     Y=Y.astype('float32')*cfg.stride+.5*cfg.stride+DZ[:,:,1]
-    pose = np.empty((cfg['batch_size'], cfg['num_joints']*3), dtype=X.dtype) 
+    pose = np.empty((cfg['batch_size'], cfg['num_joints']*3), dtype=X.dtype)
     pose[:,0::3] = X
     pose[:,1::3] = Y
     pose[:,2::3] = DZ[:,:,2] #P

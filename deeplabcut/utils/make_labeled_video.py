@@ -67,7 +67,7 @@ def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,DLCscorer,bodyparts2plot
             df_likelihood[bpindex,:]=Dataframe[DLCscorer][bp]['likelihood'].values
             df_x[bpindex,:]=Dataframe[DLCscorer][bp]['x'].values
             df_y[bpindex,:]=Dataframe[DLCscorer][bp]['y'].values
-        
+
         for index in tqdm(range(nframes)):
             image = clip.load_frame()
             if cropping:
@@ -109,7 +109,7 @@ def CreateVideoSlow(clip,Dataframe,tmpfolder,dotsize,colormap,alphavalue,pcutoff
         df_likelihood[bpindex,:]=Dataframe[DLCscorer][bp]['likelihood'].values
         df_x[bpindex,:]=Dataframe[DLCscorer][bp]['x'].values
         df_y[bpindex,:]=Dataframe[DLCscorer][bp]['y'].values
-            
+
     for index in tqdm(range(nframes)):
         imagename = tmpfolder + "/file%04d.png" % index
         if os.path.isfile(tmpfolder + "/file%04d.png" % index):

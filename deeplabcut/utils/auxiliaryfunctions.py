@@ -62,7 +62,7 @@ def create_config_template():
     ruamelFile = ruamel.yaml.YAML()
     cfg_file = ruamelFile.load(yaml_str)
     return(cfg_file,ruamelFile)
-    
+
 def read_config(configname):
     """
     Reads structured config file

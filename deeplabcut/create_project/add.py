@@ -29,7 +29,7 @@ def add_new_videos(config,videos,copy_videos=False,coords=None):
 
     Video will be added, with cropping dimenions according to the frame dimensinos of mouse5.avi
     >>> deeplabcut.add_new_videos('/home/project/reaching-task-Tanmay-2018-08-23/config.yaml',['/data/videos/mouse5.avi'])
-    
+
     Video will be added, with cropping dimenions [0,100,0,200]
     >>> deeplabcut.add_new_videos('/home/project/reaching-task-Tanmay-2018-08-23/config.yaml',['/data/videos/mouse5.avi'],copy_videos=False,coords=[[0,100,0,200]])
 
