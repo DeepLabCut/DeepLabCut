@@ -361,11 +361,10 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None):
     >>> deeplabcut.create_training_dataset('/home/DeepLabCut/reaching-task/config.yaml',num_shuffles=1)
 
     Windows:
+    >>> deeplabcut.create_training_dataset('C:\\Users\\Ulf\\looming-task\\config.yaml',Shuffles=[3,17,5])
 
-    >>> deeplabcut.create_training_dataset(r'C:\Users\Ulf\looming-task\config.yaml',Shuffles=[1,2,3])
-
-    --------
     """
+
     from skimage import io
     import scipy.io as sio
     import deeplabcut
