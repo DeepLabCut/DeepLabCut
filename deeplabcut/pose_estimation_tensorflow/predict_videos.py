@@ -33,7 +33,7 @@ from skimage.util import img_as_ubyte
 # Loading data, and defining model folder
 ####################################################
 
-def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gputouse=None,save_as_csv=False):
+def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gputouse=None,save_as_csv=False, destfolder=None):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
     
@@ -66,6 +66,9 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
 
     save_as_csv: bool, optional
         Saves the predictions in a .csv file. The default is ``False``; if provided it must be either ``True`` or ``False``
+
+    destfolder: string, optional
+        Specifies the destination folder for analysis data (default is the path of the video)
 
     Examples
     --------
@@ -165,7 +168,7 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
     if len(Videos)>0:
         #looping over videos
         for video in Videos:
-            AnalzyeVideo(video,DLCscorer,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv)
+            AnalzyeVideo(video,DLCscorer,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder)
     
     os.chdir(str(start_path))
     print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
@@ -265,11 +268,13 @@ def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes):
     return PredicteData,nframes
 
 
-def AnalzyeVideo(video,DLCscorer,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv):
+def AnalzyeVideo(video,DLCscorer,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder=None):
     ''' Helper function for analyzing a video '''
     print("Starting to analyze % ", video)
     vname = Path(video).stem
-    dataname = os.path.join(str(Path(video).parents[0]),vname + DLCscorer + '.h5')
+    if destfolder is None:
+        destfolder = str(Path(video).parents[0])
+    dataname = os.path.join(destfolder,vname + DLCscorer + '.h5')
     try:
         # Attempt to load data...
         pd.read_hdf(dataname)
