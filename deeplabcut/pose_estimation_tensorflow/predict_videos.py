@@ -37,6 +37,13 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable `snapshotindex`)
 
+    You can crop the frames (before analysis), by changing 'cropping'=True and setting 'x1','x2','y1','y2' in the config file.
+     		
+    Output: The labels are stored as a MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position
+    in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF)
+    in the same directory, where the video is stored. However, if the flag save_as_csv is set to True, the data can also be exported in
+    comma-separated values format (.csv), which in turn can be imported in many programs, such as MATLAB, R, Prism, etc.
+    
     Parameters
     ----------
     config : string
