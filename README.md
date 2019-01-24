@@ -1,39 +1,43 @@
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
+[![Image.sc forum](https://img.shields.io/badge/dynamic/json.svg?label=forum&amp;url=https%3A%2F%2Fforum.image.sc%2Ftags%2Fdeeplabcut.json&amp;query=%24.topic_list.tags.0.topic_count&amp;colorB=brightgreen&amp;&amp;suffix=%20topics&amp;logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC)](https://forum.image.sc/tags/deeplabcut)
 [![Krihelimeter](http://krihelinator.xyz/badge/AlexEMG/DeepLabCut)](http://krihelinator.xyz/repositories/AlexEMG/DeepLabCut)
 [![GitHub stars](https://img.shields.io/github/stars/AlexEMG/DeepLabCut.svg?style=social&label=Star)](https://github.com/AlexEMG/DeepLabCut)
 [![GitHub forks](https://img.shields.io/github/forks/AlexEMG/DeepLabCut.svg?style=social&label=Fork)](https://github.com/AlexEMG/DeepLabCut)
 
-## DeepLabCut
+<p align="center">
+<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c489e83aa4a992e80059d8c/1548263081887/DLCheader.png?format=1000w" width="100%">
+</p>
 
 DeepLabCut is a toolbox for markerless pose estimation of animals performing various tasks, like [trail tracking](https://vnmurthylab.org/), [reaching in mice](http://www.mousemotorlab.org/) and various Drosophila behaviors during egg-laying (see [Mathis et al.](https://www.nature.com/articles/s41593-018-0209-y) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks and/or species. The toolbox has also already been successfully applied (by us and others) to [rats](http://www.mousemotorlab.org/deeplabcut), humans, various fish species, bacteria, leeches, various robots, cheetahs, [mouse whiskers](http://www.mousemotorlab.org/deeplabcut) and [race horses](http://www.mousemotorlab.org/deeplabcut). This work utilizes the feature detectors (ResNets + readout layers) of one of the state-of-the-art algorithms for human pose estimation by Insafutdinov et al., called DeeperCut, which inspired the name for our toolbox (see references below).
 
-VERSION 2.0: This is the **python package** of [DeepLabCut](https://www.nature.com/articles/s41593-018-0209-y).
+VERSION 2.0: This is the **Python package** of [DeepLabCut](https://www.nature.com/articles/s41593-018-0209-y).
 This package includes graphical user interfaces to label your data, and take you from data set creation to automatic behavioral analysis. It also introduces an active learning framework to efficiently use DeepLabCut on large experimental projects.
 
-VERSION 1.0: The initial, Nature Neuroscience version of **DeepLabCut** can be found in the history of git, or the latest version here: https://github.com/AlexEMG/DeepLabCut/releases/tag/1.11
+VERSION 1.0: The initial, Nature Neuroscience version of **DeepLabCut** can be found in the history of git, or here: https://github.com/AlexEMG/DeepLabCut/releases/tag/1.11
 
 <p align="center">
 <img src="http://www.people.fas.harvard.edu/~amathis/dlc/MATHIS_2018_odortrail.gif" height="220">
-<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/5b0ca2b503ce64b895556b67/5b0ca8cd6d2a73781c50cf78/1527556316005/R0228_20180207_11-33-42_011_direct.gif?format=300w"  height="220">
+<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3fbd0c898583417a040dfc/1547681053201/rat-grasp.gif?format=300w"  height="220">
 <img src="http://www.people.fas.harvard.edu/~amathis/dlc/MATHIS_2018_fly.gif" height="220">
 </p>
 
 Please check out [www.mousemotorlab.org/deeplabcut](https://www.mousemotorlab.org/deeplabcut/) for more video demonstrations of automated tracking. Above: courtesy of the Murthy (mouse), Leventhal (rat), and Axel (fly) labs!
 
 
-# [Installation](docs/installation.md)
-# [Overview of the work-flow and how to use DeepLabCut](docs/UseOverviewGuide.md)
+# [Installation](docs/installation.md) 
+   - How to [install DeeplabCut](docs/installation.md)
+# [The DeepLabCut Process](docs/UseOverviewGuide.md)
+   - An overview of the pipeline and workflow for project management
 
 <p align="center">
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3e47454fa51a420fa8ecdf/1547585367234/flowfig.png?format=750w" width="50%">
 </p>
 
 # [DEMO the code](/examples)
-We provide several Jupyter Notebooks: one that walks you through a demo dataset to test your installation, and another Notebook to run DeepLabCut from the begining on your own data. We also show you how to use the code in Docker, and on Google Colab. Please also read the [user-guide](https://www.biorxiv.org/content/early/2018/11/24/476531).
+ - We provide several Jupyter Notebooks: one that walks you through a demo dataset to test your installation, and another Notebook to run DeepLabCut from the begining on your own data. We also show you how to use the code in Docker, and on Google Colab. Please also read the [user-guide] prepint!(https://www.biorxiv.org/content/early/2018/11/24/476531)
 
 # News (and in the news):
 
-- Dec 2018: There will be a workshop on DeepLabCut at the Rowland Institute, Harvard University in January 2019! [Sign up until Dec 28](https://twitter.com/TrackingActions/status/1067253667315806211/photo/1)
 - Nov 2018: We posted a detailed guide for DeepLabCut 2.0 on [BioRxiv](https://www.biorxiv.org/content/early/2018/11/24/476531). It also contains a case study for 3D pose estimation in cheetahs.
 - Nov 2018: Various (post-hoc) analysis scripts contributed by users (and us) will be gathered at [DLCutils](https://github.com/AlexEMG/DLCutils). Feel free to contribute! In particular, there is a script guiding you through
 importing a project into the new data format for DLC 2.0
@@ -61,7 +65,7 @@ importing a project into the new data format for DLC 2.0
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3e47258a922d548c483247/1547585339819/ErrorvsTrainingsetSize.png?format=750w" width="50%">
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3e477170a6adda176dcaa4/1547585409727/inferencespeed.png?format=500w" width="30%">  
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3e469d8a922d548c4828fa/1547585194560/compressionrobustness.png?format=750w" width="40%">
-<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5b1aa6a088251b08dc647c0b/1528473288768/MouseLocomotion_warren.gif?format=500w" width="30%">  
+<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3fbed74fa51acecd63deeb/1547681534736/MouseLocomotion_warren.gif?format=500w" width="30%">  
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3fc1c6758d46950ce7eec7/1547682383595/cheetah.png?format=750w" width="75%">
 </p>
 

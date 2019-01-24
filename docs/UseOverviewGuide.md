@@ -27,7 +27,10 @@ TIP: for every function there is a associated help document that can be viewed b
 
 ``deeplabcut.create_new_project(`Name of the project',`Name of the experimenter', [`Full path of video 1',`Full path of video2',`Full path of video3'], working_directory=`Full path of the working directory',copy_videos=True/False)``
 
-- (Note, you can also put ``config_path = `` in front of the above line to create the path to the config.yaml that is used in the next step, i.e. ``config_path=deeplabcut.create_project(...)``)
+- Note, if you are a Ubuntu user the path should look like: ``['/home/username/yourFolder/video1.mp4']``; if you are a Windows user, it should look like: ``[r'C:\username\yourFolder\video1.mp4']``
+- Note, you can also put ``config_path = `` in front of the above line to create the path to the config.yaml that is used in the next step, i.e. ``config_path=deeplabcut.create_project(...)``)
+    - If you do not, we recommend setting a variable so this can be easily used! Once you run this step, the conig_path is printed for you!, so set something like: ``config_path = 'theoutputpath/yaml.yaml' `` just be mindful of the formating, see below.
+
 
 (more details [here](functionDetails.md#a-create-a-new-project))
 
@@ -35,11 +38,11 @@ TIP: for every function there is a associated help document that can be viewed b
 
 - open the **config.yaml** file (in a text editor (like atom, gedit, vim etc.)), which can be found in the subfolder created when you set your project name, to change parameters and identify label names!
 
-(more details [here](functionDetails.md#b-configure-the-project))
+(PLEASE see more details [here](functionDetails.md#b-configure-the-project))
 
 - set the config_path: ``config_path = '/home/computername/DeepLabCut2.0/yourprojectname/config.yaml'`` (for example)
 
-- or you already set it as a variable in step "Create_new_Project" directly above.
+- or you already set it as a variable in step "create_new_project" directly above.
 
 **mini-demo:** create project and edit the yaml file
 
@@ -49,13 +52,13 @@ TIP: for every function there is a associated help document that can be viewed b
 
 ### Select Frames to Label:
 
-``deeplabcut.extract_frames(`config_path',`automatic/manual',`uniform/kmeans', crop=True/False, checkcropping=True)``
+``deeplabcut.extract_frames(config_path,`automatic/manual',`uniform/kmeans', crop=True/False, checkcropping=True)``
 
 (more details [here](functionDetails.md#c-data-selection))
 
 ### Label Frames:
 
-``deeplabcut.label_frames(`config_path')``
+``deeplabcut.label_frames(config_path)``
 
 (more details [here](functionDetails.md#d-label-frames))
 
@@ -67,48 +70,48 @@ TIP: for every function there is a associated help document that can be viewed b
 
 ### Check Annotated Frames:
 
-``deeplabcut.check_labels(`config_path')``
+``deeplabcut.check_labels(config_path)``
 
 (more details [here](functionDetails.md#e-check-annotated-frames))
 
 ### Create Training Dataset:
 
-`` deeplabcut.create_training_dataset(`config_path',num_shuffles=1)``
+`` deeplabcut.create_training_dataset(config_path,num_shuffles=1)``
 
 (more details [here](functionDetails.md#f-create-training-dataset))
 
 ### Train The Network:
 
-``deeplabcut.train_network(`config_path',shuffle=1)``
+``deeplabcut.train_network(config_path,shuffle=1)``
 
 (more details [here](functionDetails.md#g-train-the-network))
 
 ### Evaluate the Trained Network:
 
-``deeplabcut.evaluate_network(`config_path',shuffle=[1], plotting=True)``
+``deeplabcut.evaluate_network(config_path,shuffle=[1], plotting=True)``
 
 (more details [here](functionDetails.md#h-evaluate-the-trained-network))
 
 ### Video Analysis and Plotting Results:
 
-``deeplabcut.analyze_videos(`config_path',[`/analysis/project/videos/reachingvideo1.avi'], shuffle=1, save_as_csv=True)``
+``deeplabcut.analyze_videos(config_path,[`/fullpath/project/videos/reachingvideo1.avi'], shuffle=1, save_as_csv=True)``
 
-``deeplabcut.create_labeled_video(`config_path' [`/analysis/project/videos/reachingvideo1.avi',`/analysis/project/videos/reachingvideo2.avi'])``
+``deeplabcut.create_labeled_video(config_path, [`/analysis/project/videos/reachingvideo1.avi',`/fullpath/project/videos/reachingvideo2.avi'])``
 
-``deeplabcut.plot_trajectories(`config_path',[`/analysis/project/videos/reachingvideo1.avi'])``
+``deeplabcut.plot_trajectories(config_path,[`/fullpath/project/videos/reachingvideo1.avi'])``
 
 (more details [here](functionDetails.md#i-video-analysis-and-plotting-results))
 
 # optional Refinement: Extract Outlier Frames:
 
-``deeplabcut.extract_outlier_frames(`config_path',[`videofile_path'])``
+``deeplabcut.extract_outlier_frames(config_path,[`videofile_path'])``
 
 (more details [here](functionDetails.md#j-refinement-extract-outlier-frames))
 
 ### optional refinement of the labels with the GUI:
 (refinement and augmentation of the training dataset)
 
-``deeplabcut.refine_labels(`config_path')``
+``deeplabcut.refine_labels(config_path)``
 
 **mini-demo:** using the refinement GUI, a user can load the file then zoom, pan, and edit and/or remove points:
 
@@ -118,7 +121,7 @@ TIP: for every function there is a associated help document that can be viewed b
 
 When done editing the labels, merge:
 
-``deeplabcut.merge_datasets(`config_path')``
+``deeplabcut.merge_datasets(config_path)``
 
 (more details [here](functionDetails.md#k-refine-labels-augmentation-of-the-training-dataset))
 

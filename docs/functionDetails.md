@@ -32,7 +32,7 @@ The project directory also contains the main configuration file called *config.y
 The ``create a new project`` step writes the following parameters to the configuration file: *Task*, *scorer*, *date*, *project\_path* as well as a list of videos *video\_sets*. The first three parameters should **not** be changed. The list of videos can be changed by adding new videos or manually removing videos.
 
 <p align="center">
-<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3e464a2b6a285ef47f82b4/1547585109498/Box1.png?format=750w" width="90%">
+<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c40f4124d7a9c0b2ce651c1/1547760716298/Box1-01.png?format=1000w" width="90%">
 </p>
 
 ### (B) Configure the Project
@@ -160,8 +160,10 @@ Specifically, the user can edit the **pose_cfg.yaml** within the train subdirect
 configuration files contain meta information with regard to the parameters of the feature detectors. Key parameters
 are listed in Box 2.
 
+At this step, the ImageNet pre-trained ResNet-50 and ResNet-101 weights will be downloaded. If they do not download (you will see this downloading in the terminal, then you may not have permission to do so (something we have seen with some Windows - see troubleshooting for more help!). If you are labeling adult human data, you may also want to use a human-pretrained network. A ResNet-101 pre-trained on MPII is available. Download it and move to the pretrained folder (this will be in your site-packages, under ``../pose-tensorflow/models/pretrained``. Download with the following command in terminal: ``curl -L -O https://datasets.d2.mpi-inf.mpg.de/deepercut-models-tensorflow/mpii-single-resnet-101.data-00000-of-00001`` See Box 2 on how to specify which network is loaded for training.
+
 <p align="center">
-<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3e465cc2241b2d3e3ee8e7/1547585135754/Box2.png?format=500w" width="90%">
+<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c40efbebba223730882c2de/1547759656324/Box2-01.png?format=1000w" width="90%">
 </p>
 
 ###  (G) Train The Network
@@ -179,7 +181,7 @@ The set of arguments in the function starts training the network for the dataset
 
 Example parameters that one can call:
 
-                    train_network(config_path,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshots_to_keep=5,autotune=False,displayiters=None,saveiters=None)
+                    train_network(config_path,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshots_to_keep=5,autotune=False,displayiters=100,saveiters=15000)
 
 By default, the pre-trained ResNet network is not provided in the DeepLabCut toolbox (as it has around 100MB).
 However, if not previously downloaded from the TensorFlow model weights, it will be downloaded and stored in
