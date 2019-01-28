@@ -9,7 +9,7 @@ M Mathis, mackenzie@post.harvard.edu
 """
 
 
-def extract_frames(config,mode='automatic',algo='kmeans',crop=False,checkcropping=False, userfeedback=False,cluster_step=1,cluster_resizewidth=30,cluster_color=False,opencv=True, Screens=1,scale_w=.8,scale_h=.8):
+def extract_frames(config,mode='automatic',algo='kmeans',crop=False,checkcropping=False, userfeedback=True,cluster_step=1,cluster_resizewidth=30,cluster_color=False, Screens=1,scale_w=.8,scale_h=.8,opencv=True):
     """
     Extracts frames from the videos in the config.yaml file. Only the videos in the config.yaml will be used to select the frames.\n
     Use the function ``add_new_video`` at any stage of the project to add new videos to the config file and extract their frames.
@@ -57,6 +57,10 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,checkcroppin
     cluster_color: bool, default: False
         If false then each downsampled image is treated as a grayscale vector (discarding color information). If true, then the color channels are considered. This increases 
         the computational complexity. 
+    
+    opencv: bool, default: True
+        Uses openCV for loading & extractiong (otherwise moviepy (legacy))
+        
 
     The three parameters Screens=1,scale_w=.8,scale_h=.8 define the relative height (scale_h), relative widht (scale_w) and number of screens (horizontally) and thereby 
     affect the dimensions of the manual frame extraction GUI.
@@ -92,7 +96,7 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,checkcroppin
     from skimage.util import img_as_ubyte
     import matplotlib.pyplot as plt
     import matplotlib.patches as patches
-    from deeplabcut.generate_training_dataset import frameselectiontools
+    from deeplabcut.utils import frameselectiontools
 
     if mode == "manual":
         wd = Path(config).resolve().parents[0]
@@ -125,7 +129,7 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,checkcroppin
             #plt.close("all")
             coords = cfg['video_sets'][video]['crop'].split(',')
             
-            if userfeedback==True:
+            if userfeedback:
                 print("Do you want to extract (perhaps additional) frames for video:", video, "?")
                 askuser = input("yes/no")
             else:
@@ -175,11 +179,11 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,checkcroppin
                         msg = input("Is the cropping ok? (yes/no): ")
                         if msg == "yes" or msg == "y" or msg =="Yes" or msg == "Y":
                           if len(os.listdir(output_path))==0: #check if empty
-                                
                                 #store full frame from random location (good for augmentation)
                                 index=int(start*duration+np.random.rand()*duration*(stop-start))
                                 if opencv:
                                     cap.set(1,index)
+                                    ret, frame = cap.read()
                                     if ret:
                                         image=img_as_ubyte(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
                                 else:
@@ -203,6 +207,7 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,checkcroppin
                             index=int(start*duration+np.random.rand()*duration*(stop-start))
                             if opencv:
                                 cap.set(1,index)
+                                ret, frame = cap.read()
                                 if ret:
                                     image=img_as_ubyte(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
                             else:

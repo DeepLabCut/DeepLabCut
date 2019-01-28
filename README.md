@@ -30,7 +30,7 @@ Please check out [www.mousemotorlab.org/deeplabcut](https://www.mousemotorlab.or
    - An overview of the pipeline and workflow for project management
 
 <p align="center">
-<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3e47454fa51a420fa8ecdf/1547585367234/flowfig.png?format=750w" width="50%">
+<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3e47454fa51a420fa8ecdf/1547585367234/flowfig.png?format=750w" width="90%">
 </p>
 
 # [DEMO the code](/examples)

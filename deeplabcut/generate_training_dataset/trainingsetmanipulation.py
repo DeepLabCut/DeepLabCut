@@ -21,13 +21,19 @@ import matplotlib.pyplot as plt
 from skimage import io
 import yaml
 from deeplabcut import DEBUG
-from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils import auxiliaryfunctions, conversioncode
 
 #matplotlib.use('Agg')
 
-def comparelists(config):
+def comparevideolistsanddatafolders(config):
     """
-    Auxiliary function, compares data sets in labeled-data & listed under video_sets. Try to make sure that they are the same!
+    Auxiliary function that compares the folders in labeled-data and the ones listed under video_sets (in the config file). 
+    
+    Parameter
+    ----------
+    config : string	
+        String containing the full path of the config file in the project.
+        
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg['video_sets'].keys()
@@ -51,12 +57,25 @@ def comparelists(config):
             print(vn, " is missing in config file!")
 
 
-def adddatasetstovideolist(config,prefix,width,height,suffix='.mp4'):
+def adddatasetstovideolistandviceversa(config,prefix,width,height,suffix='.mp4'):
     """
-    Auxiliary function, compares data sets in labeled-data & listed under video_sets. Adjust both to match up. Handle with care!
-    For the videos the prefix path will be added in front of the name of the labeled-data folder and the suffix ending. Width and height
-    are added as presented manually.
-    To do: This should be written from the actual images!
+    First run comparevideolistsanddatafolders(config) to compare the folders in labeled-data and the ones listed under video_sets (in the config file). 
+    If you detect differences this function can be used to maker sure each folder has a video entry & vice versa.
+    
+    It corrects this problem in the following way:
+    
+    If a folder in labeled-data does not contain a video entry in the config file then the prefix path will be added in front of the name of the labeled-data folder and combined
+    with the suffix variable as an ending. Width and height will be added as cropping variables as passed on. TODO: This should be written from the actual images!
+    
+    If a video entry in the config file does not contain a folder in labeled-data, then the entry is removed.
+    
+    Handle with care!
+    
+    Parameter
+    ----------
+    config : string	
+        String containing the full path of the config file in the project.
+        
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg['video_sets'].keys()
@@ -95,9 +114,16 @@ def adddatasetstovideolist(config,prefix,width,height,suffix='.mp4'):
     auxiliaryfunctions.write_config(config,cfg)
 
 
-def dropduplicates(config):
+def dropduplicatesinannotatinfiles(config):
     """
-    Drop duplicates (of images) in annotation files.
+    
+    Drop duplicate entries (of images) in annotation files (this should no longer happen, but might be useful).
+    
+    Parameter
+    ----------
+    config : string	
+        String containing the full path of the config file in the project.
+        
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg['video_sets'].keys()
@@ -118,9 +144,16 @@ def dropduplicates(config):
         except FileNotFoundError:
             print("Attention:", folder, "does not appear to have labeled data!")
 
-def dropentriesduetodeletedimages(config):
+def dropannotationfileentriesduetodeletedimages(config):
     """
-    Drop entries for deleted images images in annotation files.
+    Drop entries for all deleted images in annotation files, i.e. for folders of the type: /labeled-data/*folder*/CollectedData_*scorer*.h5
+    Will be carried out iteratively for all *folders* in labeled-data.
+    
+    Parameter
+    ----------
+    config : string	
+        String containing the full path of the config file in the project.
+        
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg['video_sets'].keys()
@@ -143,14 +176,14 @@ def dropentriesduetodeletedimages(config):
             DC.to_csv(os.path.join(str(folder),'CollectedData_'+ cfg['scorer']+".csv"))
 
 
-def label_frames(config,Screens=1,scale_w=.8,scale_h=.9, winHack=1, img_scale=0.0075):
+def label_frames(config):
     """
-    Manually label/annotate the extracted frames. Update the list of body parts you want to localize in the config.yaml file first
+    Manually label/annotate the extracted frames. Update the list of body parts you want to localize in the config.yaml file first.
 
     Parameter
     ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    config : string	
+        String containing the full path of the config file in the project.
 
     Example
     --------
@@ -164,15 +197,16 @@ def label_frames(config,Screens=1,scale_w=.8,scale_h=.9, winHack=1, img_scale=0.
 
     from deeplabcut.generate_training_dataset import labeling_toolbox
 
-    labeling_toolbox.show(config,Screens,scale_w,scale_h, winHack, img_scale)
+    # labeling_toolbox.show(config,Screens,scale_w,scale_h, winHack, img_scale)
+    labeling_toolbox.show(config)
     os.chdir(startpath)
 
-def get_cmap(n, name='hsv'):
+def get_cmap(n, name='jet'):
     '''Returns a function that maps each index in 0, 1, ..., n-1 to a distinct
     RGB color; the keyword argument name must be a standard mpl colormap name.'''
     return plt.cm.get_cmap(name, n)
 
-def check_labels(config):
+def check_labels(config,Labels = ['+','.','x'],scale = 1):
     """
     Double check if the labels were at correct locations and stored in a proper file format.\n
     This creates a new subdirectory for each video under the 'labeled-data' and all the frames are plotted with the labels.\n
@@ -182,13 +216,12 @@ def check_labels(config):
     ----------
     config : string
         Full path of the config.yaml file as a string.
+        
+    Labels: List of at least 3 matplotlib markers. The first one will be used to indicate the human ground truth location (Default: +)
 
-     Screens : int value of the number of Screens in landscape mode, i.e. if you have 2 screens, enter 2. Default is 1.
-
-    scale_h & scale_w : you can modify how much of the screen the GUI should occupy. The default is .9 and .8, respectively.
-
-    img_scale : if you want to make the plot of the frame larger, consider changing this to .008 or more. Be careful though, too large and you will not see the buttons fully!
-
+    scale : float, default =1
+        Change the relative size of the output images. 
+    
     Example
     --------
     for labeling the frames
@@ -200,9 +233,7 @@ def check_labels(config):
     video_names = [Path(i).stem for i in videos]
 
    #plotting parameters:
-    Labels = ['+','.','x']  # order of labels for different scorers. Currently using only the first (as by convention the human labeler is displayed as +).
     cc = 0 # label index / here only 0, for human labeler
-    scale = 1
     Colorscheme = get_cmap(len( cfg['bodyparts']),cfg['colormap'])
 
     #folders = [Path(config).parent / 'labeled-data' /Path(i) for i in video_names]
@@ -305,9 +336,12 @@ def MakeTest_pose_yaml(dictionary, keys2save, saveasfile):
     with open(saveasfile, "w") as f:
         yaml.dump(dict_test, f)
 
-def merge_annotateddatasets(cfg,project_path,trainingsetfolder_full):
+def merge_annotateddatasets(cfg,project_path,trainingsetfolder_full,windows2linux):
     """
-    Merges all the h5 files for all labeled-datasets (from individual videos)
+    Merges all the h5 files for all labeled-datasets (from individual videos).
+    This is a bit of a mess because of cross platform compatablity. 
+    
+    Within platform comp. is straightforward. But if someone labels on windows and wants to train on a unix cluster or colab...
     """
     AnnotationData=None
     data_path = Path(os.path.join(project_path , 'labeled-data'))
@@ -324,12 +358,35 @@ def merge_annotateddatasets(cfg,project_path,trainingsetfolder_full):
         except FileNotFoundError:
             print((str(data_path / Path(i))+'/CollectedData_'+cfg['scorer']+'.h5'), " not found (perhaps not annotated)")
 
-    AnnotationData.to_hdf((str(trainingsetfolder_full)+'/'+'/CollectedData_'+cfg['scorer']+'.h5'), key='df_with_missing', mode='w')
-    AnnotationData.to_csv(str(trainingsetfolder_full)+'/'+'/CollectedData_'+cfg['scorer']+'.csv') #human readable.
-    return(AnnotationData)
+    if AnnotationData is None:
+        print("Annotation data was not found by splitting video paths (from config['video_sets']). An alternative route is taken...")
+        AnnotationData=conversioncode.merge_windowsannotationdataONlinuxsystem(cfg)
+    if AnnotationData is None:
+        print("No data was found!")
+        windowspath=False
+    else:
+        windowspath=len((AnnotationData.index[0]).split('\\'))>1 #true if the first element is in windows path format
+    
+    # Let's check if the code is *not* run on windows (Source: #https://stackoverflow.com/questions/1325581/how-do-i-check-if-im-running-on-windows-in-python)
+    # but the paths are in windows format...
+    if os.name != 'nt' and windowspath and not windows2linux: 
+        print("It appears that the images were labeled on a Windows system, but you are currently trying to create a training set on a Unix system. \n In this case the paths should be converted. Do you want to proceed with the conversion?")
+        askuser = input("yes/no")
+    else:
+        askuser='no'
+        
+    filename=str(str(trainingsetfolder_full)+'/'+'/CollectedData_'+cfg['scorer'])
+    if windows2linux or askuser=='yes' or askuser=='y' or askuser=='Ja': #convert windows path in pandas array \\ to unix / !
+        AnnotationData=conversioncode.convertpaths_to_unixstyle(AnnotationData,filename,cfg)
+        print("Annotation data converted to unix format...")
+    else: #store as is
+        AnnotationData.to_hdf(filename+'.h5', key='df_with_missing', mode='w')
+        AnnotationData.to_csv(filename+'.csv') #human readable.
+        
+    return AnnotationData 
 
 
-def create_training_dataset(config,num_shuffles=1,Shuffles=None):
+def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=False):
     """
     Creates a training dataset. Labels from all the extracted frames are merged into a single .h5 file.\n
     Only the videos included in the config file are used to create this dataset.\n
@@ -346,6 +403,10 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None):
     Shuffles: list of shuffles.
         Alternatively the user can also give a list of shuffles (integers!).
 
+    windows2linux: bool.
+        The annotation files contain path formated according to your operating system. If you label on windows 
+        but train & evaluate on a unix system (e.g. ubunt, colab, Mac) set this variable to True to convert the paths. 
+    
     Example
     --------
     >>> deeplabcut.create_training_dataset('/analysis/project/reaching-task/config.yaml',num_shuffles=1)
@@ -365,7 +426,8 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None):
     # Create path for training sets & store data there
     trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg) #Path concatenation OS platform independent
     auxiliaryfunctions.attempttomakefolder(Path(os.path.join(project_path,str(trainingsetfolder))),recursive=True)
-    Data = merge_annotateddatasets(cfg,project_path,Path(os.path.join(project_path,trainingsetfolder)))
+    
+    Data = merge_annotateddatasets(cfg,project_path,Path(os.path.join(project_path,trainingsetfolder)),windows2linux)
     Data = Data[scorer] #extract labeled data
 
     #set model type. we will allow more in the future.

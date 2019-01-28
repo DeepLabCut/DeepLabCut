@@ -122,6 +122,9 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
             print('Created the symlink of {} to {}'.format(src, dst))
             videos = destinations
 
+    if copy_videos==True:
+        videos=destinations # in this case the *new* location should be added to the config file
+        
     # adds the video list to the config.yaml file
     video_sets = {}
     for video in videos:

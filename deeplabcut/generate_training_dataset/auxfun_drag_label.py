@@ -17,7 +17,6 @@ point is set to nan. When the user hovers the mouse over any data point, each da
 import numpy as np
 import wx
 
-
 class DraggablePoint:
     lock = None #only one can be animated at a time
     def __init__(self, point,bodyParts):
@@ -31,6 +30,7 @@ class DraggablePoint:
         self.annot.set_visible(False)
         self.coords = []
 
+
     def connect(self):
         'connect to all the events we need'
 #        self.coords = [0,0]
@@ -38,8 +38,6 @@ class DraggablePoint:
         self.cidrelease = self.point.figure.canvas.mpl_connect('button_release_event', self.on_release)
         self.cidmotion = self.point.figure.canvas.mpl_connect('motion_notify_event', self.on_motion)
         self.cidhover = self.point.figure.canvas.mpl_connect("motion_notify_event", self.on_hover)
-
-
 
     def on_press(self, event):
         """
@@ -62,7 +60,7 @@ class DraggablePoint:
             self.background = canvas.copy_from_bbox(self.point.axes.bbox)
             axes.draw_artist(self.point)
             canvas.blit(axes.bbox)
-        elif event.button == 3:
+        elif event.button == 2:
             """
             To remove a predicted label. Internally, the coordinates of the selected predicted label is replaced with nan. The user needs to right click for the event.After right
             click the data point is removed from the plot.
@@ -78,21 +76,7 @@ class DraggablePoint:
                 self.coords.append(self.final_point)
                 self.point.figure.canvas.draw()
 
-#                self.Button1.Enable(True)
-#                self.Button2.Enable(False)
-#                self.Button4.Enable(False)
-#            else:
-#                self.Close(True)
-#                self.press = None
-#                DraggablePoint.lock = None
-#                self.point.set_animated(False)
-#                self.background = None
-#                self.final_point = (np.nan,np.nan)
-#                self.coords.append(self.final_point)
-#                self.point.figure.canvas.draw()
-#                self.point.center = (np.nan,np.nan)
-
-
+        
     def on_motion(self, event):
         """
         During the drag!
@@ -152,3 +136,4 @@ class DraggablePoint:
         self.point.figure.canvas.mpl_disconnect(self.cidrelease)
         self.point.figure.canvas.mpl_disconnect(self.cidmotion)
         self.point.figure.canvas.mpl_disconnect(self.cidhover)
+        self.point.figure.canvas.mpl_disconnect(self.cidkey)

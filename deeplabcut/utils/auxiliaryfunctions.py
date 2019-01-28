@@ -70,18 +70,32 @@ def read_config(configname):
     """
     ruamelFile = ruamel.yaml.YAML()
     path = Path(configname)
-    cfg = ruamelFile.load(path)
+    with open(path, 'r') as f:
+        cfg = ruamelFile.load(f)
     return(cfg)
 
 def write_config(configname,cfg):
     """
-    Write structured config file
-
+    Write structured config file.
+    
     """
     with open(configname, 'w') as cf:
         ruamelFile = ruamel.yaml.YAML()
-        ruamelFile.dump(cfg, cf)
+        cfg_file,ruamelFile = create_config_template()
+        for key in cfg.keys():
+            cfg_file[key]=cfg[key]
+            
+        ruamelFile.dump(cfg_file, cf)
 
+def read_plainconfig(filename = "pose_cfg.yaml"):
+    ''' read unstructured yaml'''
+    with open(filename, 'r') as f:
+        yaml_cfg = yaml.load(f)
+    return yaml_cfg
+
+def write_plainconfig(configname,cfg):
+    with open(str(configname), 'w') as ymlfile:
+                yaml.dump(cfg, ymlfile,default_flow_style=False)
 
 def attempttomakefolder(foldername,recursive=False):
     ''' Attempts to create a folder with specified name. Does nothing if it already exists. '''

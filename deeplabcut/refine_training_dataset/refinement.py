@@ -13,7 +13,6 @@ import pandas as pd
 import numpy as np
 #from skimage import io
 import PIL
-import glob
 
 #import matplotlib as mpl
 #mpl.use('TkAgg')

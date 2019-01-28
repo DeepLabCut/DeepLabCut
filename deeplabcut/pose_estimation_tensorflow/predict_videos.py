@@ -101,6 +101,7 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
     
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg['TrainingFraction'][trainingsetindex]
+    
     modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)))
     path_test_config = Path(modelfolder) / 'test' / 'pose_cfg.yaml'
     try:
@@ -137,6 +138,7 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
     dlc_cfg['batch_size']=cfg['batch_size']
     # Name for scorer:
     DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations)
+    
     sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
     pdindex = pd.MultiIndex.from_product([[DLCscorer], dlc_cfg['all_joints_names'], ['x', 'y', 'likelihood']],names=['scorer', 'bodyparts', 'coords'])
 
@@ -168,7 +170,7 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
     if len(Videos)>0:
         #looping over videos
         for video in Videos:
-            AnalyzeVideo(video,DLCscorer,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder)
+            AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder)
     
     os.chdir(str(start_path))
     print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
@@ -268,7 +270,7 @@ def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes):
     return PredicteData,nframes
 
 
-def AnalyzeVideo(video,DLCscorer,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder=None):
+def AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder=None):
     ''' Helper function for analyzing a video '''
     print("Starting to analyze % ", video)
     vname = Path(video).stem
@@ -311,11 +313,13 @@ def AnalyzeVideo(video,DLCscorer,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_a
             "stop": stop,
             "run_duration": stop - start,
             "Scorer": DLCscorer,
-            "config file": dlc_cfg,
+            "DLC-model-config file": dlc_cfg,
             "fps": fps,
             "batch_size": dlc_cfg["batch_size"],
             "frame_dimensions": (ny, nx),
             "nframes": nframes,
+            "iteration (active-learning)": cfg["iteration"],
+            "training set fraction": trainFraction,
             "cropping": cfg['cropping'],
             "cropping_parameters": coords
         }

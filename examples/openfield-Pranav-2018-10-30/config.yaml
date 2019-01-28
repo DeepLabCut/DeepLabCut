@@ -4,25 +4,26 @@ scorer: Pranav
 date: Oct30
 
 # Project path (change when moving around)
-project_path: /home/alex/Hacking/DeepLabCutbeta/examples/openfield-Pranav-2018-10-30
+project_path: WILL BE AUTOMATICALLY UPDATED BY DEMO CODE
 
 # Annotation data set configuration (and individual video cropping parameters)
 video_sets:
-  /somepath/m4s1.mp4:
+  WILL BE AUTOMATICALLY UPDATED BY DEMO CODE:
     crop: 0, 640, 0, 480
 bodyparts:
 - snout
 - leftear
 - rightear
 - tailbase
+
 start: 0
 stop: 1
 numframes2pick: 20
 
 # Plotting configuration
-pcutoff: 0.1
-dotsize: 12
-alphavalue: 0.5
+pcutoff: 0.4
+dotsize: 8
+alphavalue: 0.7
 colormap: jet
 
 # Training,Evaluation and Analysis configuration
@@ -31,7 +32,7 @@ TrainingFraction:
 iteration: 0
 resnet: 50
 snapshotindex: -1
-batch_size: 1
+batch_size: 4
 
 # Cropping Parameters (for analysis and outlier frame detection)
 cropping: false
@@ -42,7 +43,7 @@ y1: 277
 y2: 624
 
 # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
-corner2move2: !!python/tuple
+corner2move2:
 - 50
 - 50
 move2corner: true

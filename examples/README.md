@@ -42,23 +42,24 @@ note, if you have never used Jupter NOtebooks before, you need to once do ``expo
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3e46d9562fa78216144a08/1547585307384/enterAnacondaNotebook.png?format=500w" width="90%">
 </p>
 
-## Demo 1: run DeepLabCut [on our data](Demo_labeledexample_MouseReaching.ipynb) (already labeled) with a CPU
- - This will give you a feel of the workflow for DeepLabCut.
+## Demo 1: run DeepLabCut [on our reaching data](Demo_labeledexample_MouseReaching.ipynb) (already labeled) or [on our open-field data](Demo_labeledexample_Openfield.ipynb) with a CPU
+ - This will give you a feel of the workflow for DeepLabCut. Follow the instructions inside the notebook!
+
+Note, the notebooks with labeled data: [reaching data](Demo_labeledexample_MouseReaching.ipynb), or [open-field data](Demo_labeledexample_Openfield.ipynb) can be run on a CPU, GPU, etc. The one with the trail-tracking data even achieves good results, when trained for half an hour on a GPU!
+
  - Done? CPU mastered? Excellent - let's move into GPU computing...
 
 ## Demo 1.5: Run DeepLabCut on a [GPU in Docker (linux only)](Docker_TrainNetwork_VideoAnalysis.ipynb)
  - This requires the [DeepLabCut Docker](https://github.com/MMathisLab/Docker4DeepLabCut2.0)!
 
-Note, the notebooks with labeled data: [reaching data](Demo_labeledexample_MouseReaching.ipynb), or [trail-tracking data](Demo_labeledexample_Openfield.ipynb) can be run on a CPU, GPU, etc. The one with the trail-tracking data even achieves good results, when trained for half an hour on a GPU!
 
 ## Demo 2: Set up DeepLabCut on [your own data](Demo_yourowndata.ipynb)
 - Now that you're a master of the demos, this Notebook walks you through how to build your own pipeline:
   - Create a new project
   - Label new data
-  - Create a training set
   - Then, either use your CPU, or your GPU (the Notebook will guide you at this junction), to train, analyze and perform some basic analysis of your data.
 
-For GPU-based training and analysis you will need to switch to either our [supplied Docker container](https://github.com/MMathisLab/Docker4DeepLabCut2.0), and modify the [Docker Demo Notebook](Docker_TrainNetwork_VideoAnalysis.ipynb) for your project, or you need to [install TensorFlow with GPU support](/docs/installation.md) in an Anaconda Env.
+For GPU-based training and analysis you will need to switch to either our [supplied Docker container](https://github.com/MMathisLab/Docker4DeepLabCut2.0), and modify the [Docker Demo Notebook](Docker_TrainNetwork_VideoAnalysis.ipynb) for your project, or you need to [install TensorFlow with GPU support](/docs/installation.md) in an Anaconda Env, or use Google Colab, more below: [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/AlexEMG/DeepLabCut/blob/master/examples/Colab_TrainNetwork_VideoAnalysis.ipynb)
 
 ## Demo DeepLabCut training and analysis on Colaboratory (in the cloud):
 

@@ -17,26 +17,10 @@ task='TEST' # Enter the name of your experiment Task
 scorer='Alex' # Enter the name of the experimenter/labeler
 
 
-import deeplabcut, os, yaml, subprocess
+import deeplabcut, os,  subprocess
 from pathlib import Path
 import pandas as pd
 import numpy as np
-import ruamel.yaml
-
-def read_config(configname):
-    """
-    Reads config file
-
-    """
-    ruamelFile = ruamel.yaml.YAML()
-    path = Path(configname)
-    cfg = ruamelFile.load(path)
-    return(cfg)
-
-def write_config(configname,cfg):
-    with open(configname, 'w') as cf:
-        ruamelFile = ruamel.yaml.YAML()
-        ruamelFile.dump(cfg, cf)
 
 print("Imported DLC!")
 basepath=os.path.dirname(os.path.abspath('testscript.py'))
@@ -45,15 +29,16 @@ video=[os.path.join(basepath,'Reaching-Mackenzie-2018-08-30','videos',videoname+
 
 print("CREATING PROJECT")
 path_config_file=deeplabcut.create_new_project(task,scorer,video,copy_videos=True)
-cfg=read_config(path_config_file)
+
+cfg=deeplabcut.auxiliaryfunctions.read_config(path_config_file)
 cfg['numframes2pick']=5
 cfg['pcutoff']=0.01
 cfg['TrainingFraction']=[.8]
 
-write_config(path_config_file,cfg)
+deeplabcut.auxiliaryfunctions.write_config(path_config_file,cfg)
 
 print("EXTRACTING FRAMES")
-deeplabcut.extract_frames(path_config_file,mode='automatic')
+deeplabcut.extract_frames(path_config_file,mode='automatic',userfeedback=False)
 
 print("CREATING-SOME LABELS FOR THE FRAMES")
 frames=os.listdir(os.path.join(cfg['project_path'],'labeled-data',videoname))
@@ -73,18 +58,18 @@ print("Plot labels...")
 
 deeplabcut.check_labels(path_config_file)
 
-
 print("CREATING TRAININGSET")
 deeplabcut.create_training_dataset(path_config_file)
 
 posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(1),'train/pose_cfg.yaml')
-DLC_config=read_config(posefile)
+
+DLC_config=deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
 DLC_config['save_iters']=10
 DLC_config['display_iters']=2
 DLC_config['multi_step']=[[0.001,10]]
 
 print("CHANGING training parameters to end quickly!")
-write_config(posefile,DLC_config)
+deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
 
 print("TRAIN")
 deeplabcut.train_network(path_config_file)
@@ -101,7 +86,6 @@ try: #you need ffmpeg command line interface
     subprocess.call(['ffmpeg','-i',video[0],'-ss','00:00:00','-to','00:00:00.4','-c','copy',newvideo])
 except:
     #for windows:
-    import moviepy
     from moviepy.editor import VideoFileClip,VideoClip
     clip = VideoFileClip(video[0])
     clip.reader.initialize()
@@ -136,15 +120,15 @@ deeplabcut.merge_datasets(path_config_file)
 print("CREATING TRAININGSET")
 deeplabcut.create_training_dataset(path_config_file)
 
-cfg=read_config(path_config_file)
+cfg=deeplabcut.auxiliaryfunctions.read_config(path_config_file)
 posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(1),'train/pose_cfg.yaml')
-DLC_config=read_config(posefile)
+DLC_config=deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
 DLC_config['save_iters']=5
 DLC_config['display_iters']=1
 DLC_config['multi_step']=[[0.001,5]]
 
 print("CHANGING training parameters to end quickly!")
-write_config(posefile,DLC_config)
+deeplabcut.auxiliaryfunctions.write_config(posefile,DLC_config)
 
 print("TRAIN")
 deeplabcut.train_network(path_config_file)
