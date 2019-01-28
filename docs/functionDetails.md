@@ -92,28 +92,21 @@ bar to navigate across the video and *Grab a Frame* to extract the frame. The us
 frames and e.g. delete frames (from the directory) that are too similar before re-loading the set and then manually
 annotating them.
 
-### (D) Label Frames
+### (D) Label Frames 
+-- (as of 2.0.4)
 
 The toolbox provides a function **label_frames** which helps the user to easily label all the extracted frames using
 an interactive graphical user interface (GUI). The user should have already named the body parts to label (points of
 interest) in the project’s configuration file by providing a list. The following command invokes the labeling toolbox.
 
-          >> deeplabcut.label_frames(config_path, Screens=1)
-
-GUI SIZIING: If you have dual moitors in landscape configuration (i.e. on the left and right), then change ``Screens=2``. If you cannot see all the buttons (check this demo to see how it should look: https://www.youtube.com/watch?v=i8P5y0vO5Q0), please also pass ``winHack=.5``, which will make the GUI small and you can drag the lower left corner to fill your screen. If you want to make the main image larger, use ``img_size=.008`` (The default is .0075). Be aware, you might cover buttons, so use wisely. For additional troubleshooting tips, please see: https://github.com/AlexEMG/DeepLabCut/wiki/Troubleshooting-Tips
+          >> deeplabcut.label_frames(config_path)
 
 The user needs to use the *Load Frames* button to select the directory which stores the extracted frames from one of
-the videos. Subsequently, the user can use one of the radio buttons (top right) to select a body part to label. RIGHT click to add the label. Left click to drag the label, if needed. If you cannot see a body part, just skip over the label! Pleaee see the ``HELP`` button for more user instructions! This auto-advances once you labeled the first body part. You can also advance to the next frame by clicking on the RIGHT arrow on your keyboard.
+the videos. Subsequently, the user can use one of the radio buttons (top right) to select a body part to label. RIGHT click to add the label. Left click to drag the label, if needed. If you cannot see a body part, just skip over the label! Pleaee see the ``HELP`` button for more user instructions! This auto-advances once you labeled the first body part. You can also advance to the next frame by clicking on the RIGHT arrow on your keyboard (and go to a previous frame with LEFT arrow).
 Each label will be plotted as a dot in a unique color (see Figure 4 for more details).
 
-If you need to adjust the label size, please do so after applying the first label (or at least the first full frame). Then avoid doing so, as once this is done on an image, you cannot use the ZOOM, PAN, and HOME buttons again.
-
-CRITICAL POINT: It is recommended to finalize the position of the selected label before changing the dot
-size for the next labels.
-
 The user is free to move around the body part and once satisfied with its position, can select another radio button
-(in the top right) to switch to the respective body part. Once the user starts labeling a subsequent body part,
-preceding labels of the body parts can no longer be moved. The user can skip a body part if it is not visible. Once all the visible body parts are labeled, then the user can use ‘Next Frame’ to load the following frame. The user needs
+(in the top right) to switch to the respective body part (it otherwise auto-advances). The user can skip a body part if it is not visible. Once all the visible body parts are labeled, then the user can use ‘Next Frame’ to load the following frame. The user needs
 to save the labels after all the frames from one of the videos are labeled by clicking the save button at the bottom
 right. Saving the labels will create a labeled dataset for each video in a hierarchical data file format (HDF) in the
 subdirectory corresponding to the particular video in **labeled-data**.
