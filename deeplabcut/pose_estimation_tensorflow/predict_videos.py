@@ -227,6 +227,7 @@ def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize):
                 break
             counter+=1
 
+    pbar.close()
     return PredicteData,nframes
 
 def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes):
