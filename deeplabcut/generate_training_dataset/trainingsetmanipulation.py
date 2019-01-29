@@ -19,6 +19,7 @@ else:
     mpl.use('TkAgg')
 import matplotlib.pyplot as plt
 from skimage import io
+
 import yaml
 from deeplabcut import DEBUG
 from deeplabcut.utils import auxiliaryfunctions, conversioncode
@@ -466,7 +467,7 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
             # Generating data structure with labeled information & frame metadata (for deep cut)
             ####################################################
 
-            # Make matlab train file!
+            # Make training file!
             data = []
             for jj in trainIndexes:
                 H = {}
@@ -475,12 +476,12 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
                 im = io.imread(os.path.join(cfg['project_path'],filename))
                 H['image'] = filename
 
-                try:
+                if np.ndim(im)==3:
                     H['size'] = np.array(
                         [np.shape(im)[2],
                          np.shape(im)[0],
                          np.shape(im)[1]])
-                except:
+                else:
                     # print "Grayscale!"
                     H['size'] = np.array([1, np.shape(im)[0], np.shape(im)[1]])
 
@@ -488,10 +489,10 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
                 joints=np.zeros((len(bodyparts),3))*np.nan
                 for bpindex,bodypart in enumerate(bodyparts):
                     if Data[bodypart]['x'][jj]<np.shape(im)[1] and Data[bodypart]['y'][jj]<np.shape(im)[0]: #are labels in image?
-                        	joints[indexjoints,0]=int(bpindex)
-                        	joints[indexjoints,1]=Data[bodypart]['x'][jj]
-                        	joints[indexjoints,2]=Data[bodypart]['y'][jj]
-                        	indexjoints+=1
+                        joints[indexjoints,0]=int(bpindex)
+                        joints[indexjoints,1]=Data[bodypart]['x'][jj]
+                        joints[indexjoints,2]=Data[bodypart]['y'][jj]
+                        indexjoints+=1
 
                 joints = joints[np.where(
                     np.prod(np.isfinite(joints),
@@ -545,9 +546,9 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
                     "metadataset": metadatafilename,
                     "num_joints": len(bodyparts),
                     "all_joints": [[i] for i in range(len(bodyparts))],
-                    "all_joints_names": bodyparts,
+                    "all_joints_names": [str(bpt) for bpt in bodyparts],
                     "init_weights": resnet_path,
-                    "project_path": cfg['project_path'],
+                    "project_path": str(cfg['project_path']),
                     "net_type": net_type
                 }
 

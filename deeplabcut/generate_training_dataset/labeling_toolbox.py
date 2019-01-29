@@ -270,7 +270,7 @@ class MainFrame(wx.Frame):
         dlg = wx.MessageDialog(None,"Are you sure?", "Quit!",wx.YES_NO | wx.ICON_WARNING)
         result = dlg.ShowModal()
         if result == wx.ID_YES:
-            print("Quitting for now!")
+            print("You can now check the labels, using 'check_labels' before proceeding. Then,  you can use the function 'create_training_dataset' to create the training dataset.")
             self.Destroy()
         else:
             self.save.Enable(True)
@@ -592,9 +592,9 @@ class MainFrame(wx.Frame):
             self.choiceBox.Clear(True)
             MainFrame.updateZoomPan(self)
             MainFrame.browseDir(self, event)
-        else:
-            self.Destroy()
-            print("You can now check the labels, using 'check_labels' before proceeding. Then,  you can use the function 'create_training_dataset' to create the training dataset.")
+        #else:
+            #self.Destroy()
+            #print("You can now check the labels, using 'check_labels' before proceeding. Then,  you can use the function 'create_training_dataset' to create the training dataset.")
 
     def onChecked(self, event):
       self.cb = event.GetEventObject()
