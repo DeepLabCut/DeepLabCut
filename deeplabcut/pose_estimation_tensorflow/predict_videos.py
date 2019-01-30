@@ -15,8 +15,6 @@ import os.path
 from deeplabcut.pose_estimation_tensorflow.nnet import predict
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import data_to_input
-
-from random import sample
 import time
 import pandas as pd
 import numpy as np
@@ -33,7 +31,7 @@ from skimage.util import img_as_ubyte
 # Loading data, and defining model folder
 ####################################################
 
-def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gputouse=None,save_as_csv=False, destfolder=None):
+def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gputouse=None,save_as_csv=False, destfolder=None):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
     
@@ -50,17 +48,17 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
         Full path of the config.yaml file as a string.
 
     videos : list
-        A list of strings containing the full paths to videos for analysis or a path to the directory where all the videos with same extension are stored.
+        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
+    
+    videotype: string, optional
+        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
 
     shuffle: int, optional
         An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.
 
     trainingsetindex: int, optional
         Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
-        
-    videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\nOnly videos with this extension are analyzed. The default is ``.avi``
-
+    
     gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU put None.
     See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
 
@@ -148,25 +146,7 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
     ##################################################
     # Datafolder
     ##################################################
-    #checks if input is a directory
-    if [os.path.isdir(i) for i in videos] == [True]:#os.path.isdir(video)==True:
-        """
-        Analyzes all the videos in the directory.
-        """
-        print("Analyzing all the videos in the directory")
-        videofolder= videos[0]
-        os.chdir(videofolder)
-        videolist=[fn for fn in os.listdir(os.curdir) if (videotype in fn) and ('_labeled.mp4' not in fn)] #exclude labeled-videos!
-        Videos = sample(videolist,len(videolist)) # this is useful so multiple nets can be used to analzye simultanously
-    else:
-        if isinstance(videos,str):
-            if os.path.isfile(videos): # #or just one direct path!
-                Videos=[videos]
-            else:
-                Videos=[]
-        else:
-            Videos=[v for v in videos if os.path.isfile(v)]
-    
+    Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
     if len(Videos)>0:
         #looping over videos
         for video in Videos:

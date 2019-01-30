@@ -100,7 +100,6 @@ def analyze_videos_converth5_to_csv(videopath,videotype='.avi'):
     """
     start_path=os.getcwd()
     os.chdir(videopath)
-    
     Videos=[fn for fn in os.listdir(os.curdir) if (videotype in fn) and ('_labeled.mp4' not in fn)] #exclude labeled-videos!
     
     Allh5files=[fn for fn in os.listdir(os.curdir) if (".h5" in fn) and ("resnet" in fn)]

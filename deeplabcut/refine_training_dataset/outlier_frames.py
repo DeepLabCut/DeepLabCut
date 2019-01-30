@@ -19,7 +19,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 from skimage.util import img_as_ubyte
 
-def extract_outlier_frames(config,videos,shuffle=1,trainingsetindex=0,outlieralgorithm='jump',comparisonbodyparts='all',epsilon=20,p_bound=.01,ARdegree=3,MAdegree=1,alpha=.01,extractionalgorithm='kmeans',automatic=False,cluster_resizewidth=30,cluster_color=False,opencv=True):
+def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,outlieralgorithm='jump',comparisonbodyparts='all',epsilon=20,p_bound=.01,ARdegree=3,MAdegree=1,alpha=.01,extractionalgorithm='kmeans',automatic=False,cluster_resizewidth=30,cluster_color=False,opencv=True):
     """
     Extracts the outlier frames in case, the predictions are not correct for a certain video from the cropped video running from
     start to stop as defined in config.yaml.
@@ -31,8 +31,11 @@ def extract_outlier_frames(config,videos,shuffle=1,trainingsetindex=0,outlieralg
     config : string
         Full path of the config.yaml file as a string.
 
-    videos: list
-        Full path of the video to extract the frame from. Make sure that this video is already analyzed.
+    videos : list
+        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
+    
+    videotype: string, optional
+        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
 
     shuffle : int, optional
         The shufle index of training dataset. The extracted frames will be stored in the labeled-dataset for
@@ -105,7 +108,9 @@ def extract_outlier_frames(config,videos,shuffle=1,trainingsetindex=0,outlieralg
     cfg = auxiliaryfunctions.read_config(config)
     scorer=auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction = cfg['TrainingFraction'][trainingsetindex])
     print("network parameters:", scorer)
-    for video in videos:
+    
+    Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
+    for video in Videos:
       videofolder = str(Path(video).parents[0])
       dataname = str(Path(video).stem)+scorer
       try:

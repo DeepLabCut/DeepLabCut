@@ -113,6 +113,29 @@ def attempttomakefolder(foldername,recursive=False):
         else:
             os.mkdir(foldername)
 
+def Getlistofvideos(videos,videotype):
+    from random import sample
+    #checks if input is a directory
+    if [os.path.isdir(i) for i in videos] == [True]:#os.path.isdir(video)==True:
+        """
+        Analyzes all the videos in the directory.
+        """
+        
+        print("Analyzing all the videos in the directory")
+        videofolder= videos[0]
+        os.chdir(videofolder)
+        videolist=[fn for fn in os.listdir(os.curdir) if (videotype in fn) and ('labeled.mp4' not in fn)] #exclude labeled-videos!
+        Videos = sample(videolist,len(videolist)) # this is useful so multiple nets can be used to analzye simultanously
+    else:
+        if isinstance(videos,str):
+            if os.path.isfile(videos): # #or just one direct path!
+                Videos=[v for v in videos if os.path.isfile(v) and ('labeled.mp4' not in v)]
+            else:
+                Videos=[]
+        else:
+            Videos=[v for v in videos if os.path.isfile(v) and ('labeled.mp4' not in v)]
+    return Videos
+
 def SaveData(PredicteData, metadata, dataname, pdindex, imagenames,save_as_csv):
     ''' Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py '''
     DataMachine = pd.DataFrame(PredicteData, columns=pdindex, index=imagenames)
