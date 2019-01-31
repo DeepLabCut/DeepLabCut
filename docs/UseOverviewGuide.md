@@ -40,7 +40,8 @@ TIP: for every function there is a associated help document that can be viewed b
 
 (PLEASE see more details [here](functionDetails.md#b-configure-the-project))
 
-- set the config_path: ``config_path = '/home/computername/DeepLabCut2.0/yourprojectname/config.yaml'`` (for example)
+- set the config_path (LINUX): ``config_path = '/home/computername/DeepLabCut/yourprojectname/config.yaml'`` (for example)
+- set the config_path (WINDOWS): ``config_path = r'C:\home\computername\DeepLabCut\yourprojectname\config.yaml'`` (for example)
 
 - or you already set it as a variable in step "create_new_project" directly above.
 
