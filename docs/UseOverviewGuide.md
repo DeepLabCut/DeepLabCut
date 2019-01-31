@@ -65,7 +65,7 @@ TIP: for every function there is a associated help document that can be viewed b
 **mini-demo:** using the GUI to label
 
 <p align="center">
-<img src="http://www.people.fas.harvard.edu/~amathis/dlc/guiexample.gif" width="90%">
+<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c535f16fa0d60294ac39e4e/1548967721381/GUIdemo1.gif?format=750w" width="60%">
 </p>
 
 ### Check Annotated Frames:
