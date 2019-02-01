@@ -56,7 +56,7 @@ def UniformFramescv2(cap,numframes2pick,start,stop,Index=None):
         if start==0:
             frames2pick = np.random.choice(math.ceil(nframes * stop), size=numframes2pick, replace = False)
         else:
-            frames2pick = np.random.choice(range(math.floor(nframes * start),math.ceil(nframes * stop),nframes), size=numframes2pick, replace = False)
+            frames2pick = np.random.choice(range(math.floor(nframes * start),math.ceil(nframes * stop)), size=numframes2pick, replace = False)
         return frames2pick
     else:
         startindex=int(np.floor(nframes*start))
