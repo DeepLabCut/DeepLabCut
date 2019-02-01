@@ -270,7 +270,7 @@ class MainFrame(wx.Frame):
         dlg = wx.MessageDialog(None,"Are you sure?", "Quit!",wx.YES_NO | wx.ICON_WARNING)
         result = dlg.ShowModal()
         if result == wx.ID_YES:
-            print("You can now check the labels, using 'check_labels' before proceeding. Then,  you can use the function 'create_training_dataset' to create the training dataset.")
+            print("Quitting for now!")
             self.Destroy()
         else:
             self.save.Enable(True)
@@ -350,7 +350,8 @@ class MainFrame(wx.Frame):
         Show the DirDialog and ask the user to change the directory where machine labels are stored
         """
         self.statusbar.SetStatusText("Looking for a folder to start labeling...")
-        dlg = wx.DirDialog(self, "Choose the directory where your extracted frames are saved:",os.getcwd(), style = wx.DD_DEFAULT_STYLE)
+        cwd = os.path.join(os.getcwd(),'labeled-data')
+        dlg = wx.DirDialog(self, "Choose the directory where your extracted frames are saved:",cwd, style = wx.DD_DEFAULT_STYLE)
         if dlg.ShowModal() == wx.ID_OK:
             self.dir = dlg.GetPath()
             self.load.Enable(False)
@@ -396,6 +397,7 @@ class MainFrame(wx.Frame):
 # Reading the existing dataset,if already present
         try:
             self.dataFrame = pd.read_hdf(os.path.join(self.dir,'CollectedData_'+self.scorer+'.h5'),'df_with_missing')
+            self.dataFrame.sort_index(inplace=True)
         except:
             a = np.empty((len(self.index),2,))
             a[:] = np.nan
@@ -578,6 +580,7 @@ class MainFrame(wx.Frame):
         MainFrame.saveEachImage(self)
         MainFrame.updateZoomPan(self)
         # Windows compatible
+        self.dataFrame.sort_index(inplace=True)
         self.dataFrame.to_csv(os.path.join(self.dir,"CollectedData_" + self.scorer + ".csv"))
         self.dataFrame.to_hdf(os.path.join(self.dir,"CollectedData_" + self.scorer + '.h5'),'df_with_missing',format='table', mode='w')
 
@@ -592,9 +595,9 @@ class MainFrame(wx.Frame):
             self.choiceBox.Clear(True)
             MainFrame.updateZoomPan(self)
             MainFrame.browseDir(self, event)
-        #else:
-            #self.Destroy()
-            #print("You can now check the labels, using 'check_labels' before proceeding. Then,  you can use the function 'create_training_dataset' to create the training dataset.")
+        else:
+            self.Destroy()
+            print("You can now check the labels, using 'check_labels' before proceeding. Then,  you can use the function 'create_training_dataset' to create the training dataset.")
 
     def onChecked(self, event):
       self.cb = event.GetEventObject()
