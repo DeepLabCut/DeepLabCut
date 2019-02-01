@@ -70,8 +70,16 @@ def read_config(configname):
     """
     ruamelFile = ruamel.yaml.YAML()
     path = Path(configname)
-    with open(path, 'r') as f:
-        cfg = ruamelFile.load(f)
+    try:
+        with open(path, 'r') as f:
+            cfg = ruamelFile.load(f)
+    except Exception as err:
+        if err.args[2] == "could not determine a constructor for the tag '!!python/tuple'":
+            with open(path, 'r') as ymlfile:
+                print("Converting to novel config.yaml format!")
+                cfg = yaml.load(ymlfile)
+                write_config(configname,cfg)
+    
     return(cfg)
 
 def write_config(configname,cfg):

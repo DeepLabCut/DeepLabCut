@@ -198,12 +198,12 @@ class MainFrame(wx.Frame):
         widgetsizer.Add(self.save , 1, wx.ALL, 15)
         self.save.Bind(wx.EVT_BUTTON, self.saveDataSet)
         self.save.Enable(False)
-        
-        widgetsizer.AddStretchSpacer(15) 
+
+        widgetsizer.AddStretchSpacer(15)
         self.quit = wx.Button(self.widget_panel, id=wx.ID_ANY, label="Quit")
         widgetsizer.Add(self.quit , 1, wx.ALL|wx.ALIGN_RIGHT, 15)
         self.quit.Bind(wx.EVT_BUTTON, self.quitButton)
-        
+
         self.widget_panel.SetSizer(widgetsizer)
         self.widget_panel.SetSizerAndFit(widgetsizer)
         self.widget_panel.Layout()
@@ -253,7 +253,7 @@ class MainFrame(wx.Frame):
         """
         MainFrame.saveEachImage(self)
         MainFrame.updateZoomPan(self)
-        
+
         self.markerSize = self.slider.GetValue()
         img_name = Path(self.index[self.iter]).name
         self.axes.clear()
@@ -285,9 +285,9 @@ class MainFrame(wx.Frame):
 
     def homeButton(self,event):
         self.toolbar.home()
-#        if self.pan.GetValue() == True: 
-#            self.toolbar.pan() 
-#        if self.zoom.GetValue() == True: 
+#        if self.pan.GetValue() == True:
+#            self.toolbar.pan()
+#        if self.zoom.GetValue() == True:
 #            self.toolbar.zoom()
         MainFrame.updateZoomPan(self)
         self.zoom.SetValue(False)
@@ -299,7 +299,7 @@ class MainFrame(wx.Frame):
         if self.pan.GetValue() == True:
             self.toolbar.pan()
             self.statusbar.SetStatusText("Pan On")
-            self.zoom.SetValue(False) 
+            self.zoom.SetValue(False)
         else:
             self.toolbar.pan()
             self.statusbar.SetStatusText("Pan Off")
@@ -341,7 +341,7 @@ class MainFrame(wx.Frame):
                 self.updatedCoords.append(self.dr.coords)
                 if self.rdb.GetSelection() < len(self.bodyparts) -1:
                     self.rdb.SetSelection(self.rdb.GetSelection() + 1)
-                    
+
         self.canvas.mpl_disconnect(self.onClick)
 
 
@@ -376,7 +376,7 @@ class MainFrame(wx.Frame):
         self.alpha = self.cfg['alphavalue']
         self.colormap = plt.get_cmap(self.cfg['colormap'])
         self.project_path=self.cfg['project_path']
-        self.index =np.sort([fn for fn in glob.glob(os.path.join(self.dir,'*.png')) if ('labeled.png' not in fn)]) 
+        self.index =np.sort([fn for fn in glob.glob(os.path.join(self.dir,'*.png')) if ('labeled.png' not in fn)])
         #np.sort(glob.glob(os.path.join(self.dir,'*.png')))
         #self.labeled_imgs = np.sort(glob.glob(os.path.join(self.dir,'*_labeled.png')))
         #self.index = np.sort(list(set(self.index) - set(self.labeled_imgs)))
@@ -393,7 +393,7 @@ class MainFrame(wx.Frame):
         self.norm,self.colorIndex = self.image_panel.getColorIndices(self.img,self.bodyparts)
 
         self.flag = 0
-        
+
 # Reading the existing dataset,if already present
         try:
             self.dataFrame = pd.read_hdf(os.path.join(self.dir,'CollectedData_'+self.scorer+'.h5'),'df_with_missing')
@@ -425,7 +425,7 @@ class MainFrame(wx.Frame):
 # Sort it by the index values
             self.dataFrame.sort_index(inplace=True)
 
-            
+
 # checks for unique bodyparts
         if len(self.bodyparts)!=len(set(self.bodyparts)):
           print("Error - bodyparts must have unique labels! Please choose unique bodyparts in config.yaml file and try again. Quitting for now!")
@@ -438,7 +438,7 @@ class MainFrame(wx.Frame):
         self.new_bodyparts =  list(set(self.bodyparts) - set(oldbodyparts2plot))
 
 # Checking if user added a new label
-        if self.new_bodyparts==[]: # i.e. no new label 
+        if self.new_bodyparts==[]: # i.e. no new label
             self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.bodyparts,self.colormap)
             self.choiceBox,self.rdb,self.slider,self.checkBox = self.choice_panel.addRadioButtons(self.bodyparts,self.file,self.markerSize)
             self.buttonCounter = MainFrame.plot(self,self.img)
@@ -456,7 +456,7 @@ class MainFrame(wx.Frame):
                 frame = pd.DataFrame(a, columns = index, index = self.relativeimagenames)
                 self.dataFrame = pd.concat([self.dataFrame, frame],axis=1)
 
-        
+
             self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.bodyparts,self.colormap)
             self.choiceBox,self.rdb,self.slider,self.checkBox = self.choice_panel.addRadioButtons(self.bodyparts,self.file,self.markerSize)
             self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
@@ -474,7 +474,7 @@ class MainFrame(wx.Frame):
             self.next.Enable(False)
             return
         self.prev.Enable(True)
-        
+
 # Checks if zoom/pan button is ON
         MainFrame.updateZoomPan(self)
 
@@ -485,9 +485,9 @@ class MainFrame(wx.Frame):
         self.axes.clear()
         self.buttonCounter = []
         MainFrame.saveEachImage(self)
-        
+
         self.iter = self.iter + 1
-        
+
         if len(self.index) >= self.iter:
 #            self.dr.coords = self.updatedCoords
             self.updatedCoords = MainFrame.getLabels(self,self.iter)
@@ -518,7 +518,7 @@ class MainFrame(wx.Frame):
         self.buttonCounter = []
         self.iter = self.iter - 1
 
-        
+
         self.rdb.SetSelection(0)
         self.img = self.index[self.iter]
         img_name = Path(self.index[self.iter]).name
@@ -606,13 +606,13 @@ class MainFrame(wx.Frame):
           self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
       else:
           self.slider.Enable(False)
-    
+
     def updateZoomPan(self):
             # Checks if zoom/pan button is ON
-        if self.pan.GetValue() == True: 
-            self.toolbar.pan() 
+        if self.pan.GetValue() == True:
+            self.toolbar.pan()
             self.pan.SetValue(False)
-        if self.zoom.GetValue() == True: 
+        if self.zoom.GetValue() == True:
             self.toolbar.zoom()
             self.zoom.SetValue(False)
 

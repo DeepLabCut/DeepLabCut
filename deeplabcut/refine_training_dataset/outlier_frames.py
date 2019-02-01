@@ -33,7 +33,7 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
 
     videos : list
         A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
-    
+
     videotype: string, optional
         Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
 
@@ -84,14 +84,14 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
 
     cluster_resizewidth: number, default: 30
         For k-means one can change the width to which the images are downsampled (aspect ratio is fixed).
-    
+
     cluster_color: bool, default: False
-        If false then each downsampled image is treated as a grayscale vector (discarding color information). If true, then the color channels are considered. This increases 
-        the computational complexity. 
+        If false then each downsampled image is treated as a grayscale vector (discarding color information). If true, then the color channels are considered. This increases
+        the computational complexity.
 
     opencv: bool, default: True
         Uses openCV for loading & extractiong (otherwise moviepy (legacy))
-        
+
     Example
     --------
     for extracting the frames with default settings
@@ -108,7 +108,7 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
     cfg = auxiliaryfunctions.read_config(config)
     scorer=auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction = cfg['TrainingFraction'][trainingsetindex])
     print("network parameters:", scorer)
-    
+
     Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
     for video in Videos:
       videofolder = str(Path(video).parents[0])
@@ -359,7 +359,7 @@ def ExtractFramesbasedonPreselection(Index,extractionalgorithm,Dataframe,datanam
         print("Frames from video", vname, " already extracted (more will be added)!")
     else:
         auxiliaryfunctions.attempttomakefolder(tmpfolder)
-    
+
     nframes = np.size(Dataframe.index)
     print("Loading video...")
     if opencv:
@@ -374,12 +374,12 @@ def ExtractFramesbasedonPreselection(Index,extractionalgorithm,Dataframe,datanam
         fps = clip.fps
         duration=clip.duration
         size=clip.size
-        
+
     if  cfg['cropping']:  # one might want to adjust
         coords = (cfg['x1'],cfg['x2'],cfg['y1'], cfg['y2'])
     else:
         coords = None
-    
+
     print("Duration of video [s]: ", duration, ", recorded @ ", fps,"fps!")
     print("Overall # of frames: ", nframes, "with (cropped) frame dimensions: ",)
     if extractionalgorithm=='uniform':
@@ -531,7 +531,7 @@ def PlottingSingleFramecv2(cap,cv2,crop,coords,Dataframe,bodyparts2plot,tmpfolde
             plt.close("all")
 
 
-def refine_labels(config,Screens=1,scale_w=.8,scale_h=.9, winHack=1, img_scale=.0076):
+def refine_labels(config):
     """
     Refines the labels of the outlier frames extracted from the analyzed videos.\n Helps in augmenting the training dataset.
     Use the function ``analyze_video`` to analyze a video and extracts the outlier frames using the function
@@ -557,7 +557,7 @@ def refine_labels(config,Screens=1,scale_w=.8,scale_h=.9, winHack=1, img_scale=.
     wd = Path(config).resolve().parents[0]
     os.chdir(str(wd))
     from deeplabcut.refine_training_dataset import refinement
-    refinement.show(config,Screens,scale_w,scale_h, winHack, img_scale)
+    refinement.show(config)
 
 def merge_datasets(config,forceiterate=None):
     """
