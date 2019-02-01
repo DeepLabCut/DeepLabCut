@@ -9,7 +9,6 @@ import os
 import numpy as np
 import matplotlib as mpl
 from pathlib import Path
-import shutil
 
 if os.environ.get('DLClight', default=False) == 'True':
     mpl.use('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
