@@ -437,7 +437,7 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
         resnet_path = str(Path(deeplabcut.__file__).parents[0] / 'pose_estimation_tensorflow/models/pretrained/resnet_v1_50.ckpt')
     elif cfg['resnet']==101:
         net_type ='resnet_'+str(cfg['resnet'])
-        resnet_path = str(Path(deeplabcut.__file__).parents[0] / 'Pose_Estimation_Tensorflow/models/pretrained/resnet_v1_101.ckpt')
+        resnet_path = str(Path(deeplabcut.__file__).parents[0] / 'pose_estimation_tensorflow/models/pretrained/resnet_v1_101.ckpt')
     else:
         print("Currently only ResNet 50 or 101 supported, please change 'resnet' entry in config.yaml!")
         num_shuffles=-1 #thus the loop below is empty...
