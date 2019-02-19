@@ -27,13 +27,14 @@ class DraggablePoint:
         self.press = None
         self.background = None
         self.final_point = (0.0, 0.0)
-        self.annot = self.point.axes.annotate("", xy=(0,0), xytext=(20,20),textcoords="offset points",bbox=dict(boxstyle="round", fc="w"),arrowprops=dict(arrowstyle="->"))
+        self.annot = self.point.axes.annotate("", xy=(0,0), xytext=(20,-20),textcoords="offset points",bbox=dict(boxstyle="round", fc="w"),arrowprops=dict(arrowstyle="->"))
         self.annot.set_visible(False)
         self.coords = []
 
-    def connect(self):
+    def connect(self, releaseCallback):
         'connect to all the events we need'
 #        self.coords = [0,0]
+        self.releaseCallback=releaseCallback
         self.cidpress = self.point.figure.canvas.mpl_connect('button_press_event', self.on_press)
         self.cidrelease = self.point.figure.canvas.mpl_connect('button_release_event', self.on_release)
         self.cidmotion = self.point.figure.canvas.mpl_connect('motion_notify_event', self.on_motion)
@@ -62,21 +63,21 @@ class DraggablePoint:
             self.background = canvas.copy_from_bbox(self.point.axes.bbox)
             axes.draw_artist(self.point)
             canvas.blit(axes.bbox)
-        elif event.button == 3:
-            """
-            To remove a predicted label. Internally, the coordinates of the selected predicted label is replaced with nan. The user needs to right click for the event.After right
-            click the data point is removed from the plot.
-            """
-            msg = wx.MessageBox('Do you want to remove %s ? You cannot undo this step!'%self.bodyParts, 'Remove!', wx.YES_NO | wx.ICON_WARNING)
-            if msg == 2:
-                self.press = None
-                DraggablePoint.lock = None
-                self.point.set_animated(False)
-                self.background = None
-                self.final_point = (np.nan,np.nan)
-                self.point.center = (np.nan,np.nan)
-                self.coords.append(self.final_point)
-                self.point.figure.canvas.draw()
+        # elif event.button == 3:
+        #     """
+        #     To remove a predicted label. Internally, the coordinates of the selected predicted label is replaced with nan. The user needs to right click for the event.After right
+        #     click the data point is removed from the plot.
+        #     """
+        #     msg = wx.MessageBox('Do you want to remove %s ? You cannot undo this step!'%self.bodyParts, 'Remove!', wx.YES_NO | wx.ICON_WARNING)
+        #     if msg == 2:
+        #         self.press = None
+        #         DraggablePoint.lock = None
+        #         self.point.set_animated(False)
+        #         self.background = None
+        #         self.final_point = (np.nan,np.nan)
+        #         self.point.center = (np.nan,np.nan)
+        #         self.coords.append(self.final_point)
+        #         self.point.figure.canvas.draw()
 
 #                self.Button1.Enable(True)
 #                self.Button2.Enable(False)
@@ -125,6 +126,7 @@ class DraggablePoint:
             self.point.figure.canvas.draw()
             self.final_point = (event.xdata, event.ydata,self.bodyParts)
             self.coords.append(self.final_point)
+            self.releaseCallback((event.xdata, event.ydata),self.bodyParts)
 
     def on_hover(self,event):
         """
