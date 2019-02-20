@@ -133,7 +133,7 @@ def CreateVideoSlow(clip,Dataframe,tmpfolder,dotsize,colormap,alphavalue,pcutoff
     os.chdir(tmpfolder)
 
     print("All labeled frames were created, now generating video...")
-    vname=str(Path(tmpfolder).stem).split('-')[1]
+    vname=''.join(str(Path(tmpfolder).stem).split('-')[1:])
     try: ## One can change the parameters of the video creation script below:
         subprocess.call([
             'ffmpeg', '-framerate',
