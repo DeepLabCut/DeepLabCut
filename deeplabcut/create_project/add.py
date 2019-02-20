@@ -39,16 +39,48 @@ def add_new_videos(config,videos,copy_videos=False,coords=None):
     """
     import os
     import shutil
-    import yaml
     from pathlib import Path
 
     from deeplabcut import DEBUG
     from deeplabcut.utils import auxiliaryfunctions
     import cv2
-    
+
     # Read the config file
     cfg = auxiliaryfunctions.read_config(config)
+
+    video_path = Path(config).parents[0] / 'videos'
+    data_path = Path(config).parents[0] / 'labeled-data'
+    videos = [Path(vp) for vp in videos]
+
+    dirs = [data_path/Path(i.stem) for i in videos]
+
+    for p in dirs:
+        """
+        Creates directory under data & perhaps copies videos (to /video)
+        """
+        p.mkdir(parents = True, exist_ok = True)
     
+    destinations = [video_path.joinpath(vp.name) for vp in videos]
+    if copy_videos==True:
+        print("Copying the videos")
+        for src, dst in zip(videos, destinations):
+            shutil.copy(os.fspath(src),os.fspath(dst)) 
+    else:
+        print("Creating the symbolic link of the video")
+        for src, dst in zip(videos, destinations):
+            if dst.exists() and not DEBUG:
+                raise FileExistsError('Video {} exists already!'.format(dst))
+            try:
+                src = str(src)
+                dst = str(dst)
+                os.symlink(src, dst)
+            except shutil.SameFileError:
+                if not DEBUG:
+                    raise
+    
+    if copy_videos==True:
+        videos=destinations # in this case the *new* location should be added to the config file
+    # adds the video list to the config.yaml file
     for idx,video in enumerate(videos):
         try:
            video_path = os.path.realpath(video)
@@ -68,35 +100,5 @@ def add_new_videos(config,videos,copy_videos=False,coords=None):
         else:
            print("Cannot open the video file!")
 
-    with open(str(config), 'w') as ymlfile:
-        yaml.dump(cfg, ymlfile,default_flow_style=False)
-
-    video_path = Path(config).parents[0] / 'videos'
-    data_path = Path(config).parents[0] / 'labeled-data'
-    videos = [Path(vp) for vp in videos]
-
-    dirs = [data_path/Path(i.stem) for i in videos]
-
-    for p in dirs:
-        """
-        Creates directory under data
-        """
-        p.mkdir(parents = True, exist_ok = True)
-    destinations = [video_path.joinpath(vp.name) for vp in videos]
-    if copy_videos==True:
-        print("Copying the videos")
-        for src, dst in zip(videos, destinations):
-            shutil.copy(os.fspath(src),os.fspath(dst)) 
-    else:
-        print("Creating the symbolic link of the video")
-        for src, dst in zip(videos, destinations):
-            if dst.exists() and not DEBUG:
-                raise FileExistsError('Video {} exists already!'.format(dst))
-            try:
-                src = str(src)
-                dst = str(dst)
-                os.symlink(src, dst)
-            except shutil.SameFileError:
-                if not DEBUG:
-                    raise
+    auxiliaryfunctions.write_config(config,cfg)
     print("New video was added to the project! Use the function 'extract_frames' to select frames for labeling.")

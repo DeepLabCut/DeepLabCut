@@ -11,27 +11,108 @@ import pandas as pd
 from pathlib import Path
 import numpy as np
 
+import ruamel.yaml
+
+def create_config_template():
+    """
+    Creates a template for config.yaml file. This specific order is preserved while saving as yaml file.
+    """
+    import ruamel.yaml
+    yaml_str = """\
+# Project definitions (do not edit)
+    Task:
+    scorer:
+    date:
+    \n
+# Project path (change when moving around)
+    project_path:
+    \n
+# Annotation data set configuration (and individual video cropping parameters)
+    video_sets:
+    bodyparts:
+    start:
+    stop:
+    numframes2pick:
+    \n
+# Plotting configuration
+    pcutoff:
+    dotsize:
+    alphavalue:
+    colormap:
+    \n
+# Training,Evaluation and Analysis configuration
+    TrainingFraction:
+    iteration:
+    resnet:
+    snapshotindex:
+    batch_size:
+    \n
+# Cropping Parameters (for analysis and outlier frame detection)
+    cropping:
+#if cropping is true for analysis, then set the values here:
+    x1:
+    x2:
+    y1:
+    y2:
+    \n
+# Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
+    corner2move2:
+    move2corner:
+    """
+    ruamelFile = ruamel.yaml.YAML()
+    cfg_file = ruamelFile.load(yaml_str)
+    return(cfg_file,ruamelFile)
+    
 def read_config(configname):
     """
-    Reads config file
+    Reads structured config file
 
     """
-    with open(str(configname), 'r') as ymlfile:
-        cfg = yaml.load(ymlfile)
+    ruamelFile = ruamel.yaml.YAML()
+    path = Path(configname)
+    try:
+        with open(path, 'r') as f:
+            cfg = ruamelFile.load(f)
+    except Exception as err:
+        if err.args[2] == "could not determine a constructor for the tag '!!python/tuple'":
+            with open(path, 'r') as ymlfile:
+                print("Converting to novel config.yaml format!")
+                cfg = yaml.load(ymlfile)
+                write_config(configname,cfg)
+    
     return(cfg)
 
 def write_config(configname,cfg):
+    """
+    Write structured config file.
+    
+    """
+    with open(configname, 'w') as cf:
+        ruamelFile = ruamel.yaml.YAML()
+        cfg_file,ruamelFile = create_config_template()
+        for key in cfg.keys():
+            cfg_file[key]=cfg[key]
+            
+        ruamelFile.dump(cfg_file, cf)
+
+def read_plainconfig(filename = "pose_cfg.yaml"):
+    ''' read unstructured yaml'''
+    with open(filename, 'r') as f:
+        yaml_cfg = yaml.load(f)
+    return yaml_cfg
+
+def write_plainconfig(configname,cfg):
     with open(str(configname), 'w') as ymlfile:
                 yaml.dump(cfg, ymlfile,default_flow_style=False)
 
 def attempttomakefolder(foldername,recursive=False):
     ''' Attempts to create a folder with specified name. Does nothing if it already exists. '''
-    
+
     try:
         os.path.isdir(foldername)
     except TypeError: #https://www.python.org/dev/peps/pep-0519/
         foldername=os.fspath(foldername) #https://github.com/AlexEMG/DeepLabCut/issues/105 (windows)
-    
+
     if os.path.isdir(foldername):
         print(foldername, " already exists!")
     else:
@@ -39,6 +120,29 @@ def attempttomakefolder(foldername,recursive=False):
             os.makedirs(foldername)
         else:
             os.mkdir(foldername)
+
+def Getlistofvideos(videos,videotype):
+    from random import sample
+    #checks if input is a directory
+    if [os.path.isdir(i) for i in videos] == [True]:#os.path.isdir(video)==True:
+        """
+        Analyzes all the videos in the directory.
+        """
+        
+        print("Analyzing all the videos in the directory")
+        videofolder= videos[0]
+        os.chdir(videofolder)
+        videolist=[fn for fn in os.listdir(os.curdir) if (videotype in fn) and ('labeled.mp4' not in fn)] #exclude labeled-videos!
+        Videos = sample(videolist,len(videolist)) # this is useful so multiple nets can be used to analzye simultanously
+    else:
+        if isinstance(videos,str):
+            if os.path.isfile(videos): # #or just one direct path!
+                Videos=[v for v in videos if os.path.isfile(v) and ('labeled.mp4' not in v)]
+            else:
+                Videos=[]
+        else:
+            Videos=[v for v in videos if os.path.isfile(v) and ('labeled.mp4' not in v)]
+    return Videos
 
 def SaveData(PredicteData, metadata, dataname, pdindex, imagenames,save_as_csv):
     ''' Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py '''
@@ -78,7 +182,7 @@ def listfilesofaparticulartypeinfolder(a_dir,afiletype):
     return [
         name for name in os.listdir(a_dir)
         if afiletype in name]
-    
+
 def GetVideoList(filename,videopath,videtype):
     ''' Get list of videos in a path (if filetype == all), otherwise just a specific file.'''
     videos=listfilesofaparticulartypeinfolder(videopath,videtype)
@@ -142,7 +246,7 @@ def GetScorerName(cfg,shuffle,trainFraction,trainingsiterations='unknown'):
             snapshotindex = -1
         else:
             snapshotindex=cfg['snapshotindex']
-            
+
         modelfolder=os.path.join(cfg["project_path"],str(GetModelFolder(trainFraction,shuffle,cfg)),'train')
         Snapshots = np.array([fn.split('.')[0]for fn in os.listdir(modelfolder) if "index" in fn])
         increasing_indices = np.argsort([int(m.split('-')[1]) for m in Snapshots])

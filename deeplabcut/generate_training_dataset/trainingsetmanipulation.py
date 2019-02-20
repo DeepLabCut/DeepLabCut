@@ -19,31 +19,38 @@ else:
     mpl.use('TkAgg')
 import matplotlib.pyplot as plt
 from skimage import io
+
 import yaml
 from deeplabcut import DEBUG
-from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils import auxiliaryfunctions, conversioncode
 
 #matplotlib.use('Agg')
 
-def comparelists(config):
+def comparevideolistsanddatafolders(config):
     """
-    Auxiliary function, compares data sets in labeled-data & listed under video_sets. Try to make sure that they are the same!
+    Auxiliary function that compares the folders in labeled-data and the ones listed under video_sets (in the config file). 
+    
+    Parameter
+    ----------
+    config : string	
+        String containing the full path of the config file in the project.
+        
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg['video_sets'].keys()
     video_names = [Path(i).stem for i in videos]
-    
+
     alldatafolders = [fn for fn in os.listdir(Path(config).parent / 'labeled-data') if '_labeled' not in fn]
-    
+
     print("Config file contains:", len(video_names))
     print("Labeled-data contains:", len(alldatafolders))
-    
+
     for vn in video_names:
         if vn in alldatafolders:
             pass
         else:
             print(vn, " is missing as a folder!")
-    
+
     for vn in alldatafolders:
         if vn in video_names:
             pass
@@ -51,22 +58,35 @@ def comparelists(config):
             print(vn, " is missing in config file!")
 
 
-def adddatasetstovideolist(config,prefix,width,height,suffix='.mp4'):
+def adddatasetstovideolistandviceversa(config,prefix,width,height,suffix='.mp4'):
     """
-    Auxiliary function, compares data sets in labeled-data & listed under video_sets. Adjust both to match up. Handle with care!
-    For the videos the prefix path will be added in front of the name of the labeled-data folder and the suffix ending. Width and height
-    are added as presented manually. 
-    To do: This should be written from the actual images!
+    First run comparevideolistsanddatafolders(config) to compare the folders in labeled-data and the ones listed under video_sets (in the config file). 
+    If you detect differences this function can be used to maker sure each folder has a video entry & vice versa.
+    
+    It corrects this problem in the following way:
+    
+    If a folder in labeled-data does not contain a video entry in the config file then the prefix path will be added in front of the name of the labeled-data folder and combined
+    with the suffix variable as an ending. Width and height will be added as cropping variables as passed on. TODO: This should be written from the actual images!
+    
+    If a video entry in the config file does not contain a folder in labeled-data, then the entry is removed.
+    
+    Handle with care!
+    
+    Parameter
+    ----------
+    config : string	
+        String containing the full path of the config file in the project.
+        
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg['video_sets'].keys()
     video_names = [Path(i).stem for i in videos]
-    
+
     alldatafolders = [fn for fn in os.listdir(Path(config).parent / 'labeled-data') if '_labeled' not in fn]
-    
+
     print("Config file contains:", len(video_names))
     print("Labeled-data contains:", len(alldatafolders))
-    
+
     toberemoved=[]
     for vn in video_names:
         if vn in alldatafolders:
@@ -76,14 +96,14 @@ def adddatasetstovideolist(config,prefix,width,height,suffix='.mp4'):
             for fullvideo in cfg['video_sets'].keys():
                 if vn in fullvideo:
                     toberemoved.append(fullvideo)
-    
+
     for vid in toberemoved:
         del cfg['video_sets'][vid]
-    
+
     #Load updated lists:
     videos = cfg['video_sets'].keys()
     video_names = [Path(i).stem for i in videos]
-    
+
     for vn in alldatafolders:
         if vn in video_names:
             pass
@@ -91,13 +111,20 @@ def adddatasetstovideolist(config,prefix,width,height,suffix='.mp4'):
             print(vn, " is missing in config file >> adding it!")
             #cfg['video_sets'][vn]
             cfg['video_sets'].update({os.path.join(prefix,vn+suffix) : {'crop': ', '.join(map(str, [0, width, 0, height]))}})
-    
-    with open(str(config), 'w') as ymlfile:
-        yaml.dump(cfg, ymlfile,default_flow_style=False)
 
-def dropduplicates(config):
+    auxiliaryfunctions.write_config(config,cfg)
+
+
+def dropduplicatesinannotatinfiles(config):
     """
-    Drop duplicates (of images) in annotation files. 
+    
+    Drop duplicate entries (of images) in annotation files (this should no longer happen, but might be useful).
+    
+    Parameter
+    ----------
+    config : string	
+        String containing the full path of the config file in the project.
+        
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg['video_sets'].keys()
@@ -114,13 +141,20 @@ def dropduplicates(config):
                 print("Dropped",numimages-len(DC.index))
                 DC.to_hdf(fn, key='df_with_missing', mode='w')
                 DC.to_csv(os.path.join(str(folder),'CollectedData_'+ cfg['scorer']+".csv"))
-                
+
         except FileNotFoundError:
             print("Attention:", folder, "does not appear to have labeled data!")
 
-def dropentriesduetodeletedimages(config):
+def dropannotationfileentriesduetodeletedimages(config):
     """
-    Drop entries for deleted images images in annotation files. 
+    Drop entries for all deleted images in annotation files, i.e. for folders of the type: /labeled-data/*folder*/CollectedData_*scorer*.h5
+    Will be carried out iteratively for all *folders* in labeled-data.
+    
+    Parameter
+    ----------
+    config : string	
+        String containing the full path of the config file in the project.
+        
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg['video_sets'].keys()
@@ -143,14 +177,14 @@ def dropentriesduetodeletedimages(config):
             DC.to_csv(os.path.join(str(folder),'CollectedData_'+ cfg['scorer']+".csv"))
 
 
-def label_frames(config,Screens=1,scale_w=.8,scale_h=.9, winHack=1, img_scale=0.0075):
+def label_frames(config):
     """
-    Manually label/annotate the extracted frames. Update the list of body parts you want to localize in the config.yaml file first
+    Manually label/annotate the extracted frames. Update the list of body parts you want to localize in the config.yaml file first.
 
     Parameter
     ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    config : string	
+        String containing the full path of the config file in the project.
 
     Example
     --------
@@ -161,18 +195,19 @@ def label_frames(config,Screens=1,scale_w=.8,scale_h=.9, winHack=1, img_scale=0.
     startpath = os.getcwd()
     wd = Path(config).resolve().parents[0]
     os.chdir(str(wd))
-    
+
     from deeplabcut.generate_training_dataset import labeling_toolbox
-    
-    labeling_toolbox.show(config,Screens,scale_w,scale_h, winHack, img_scale)
+
+    # labeling_toolbox.show(config,Screens,scale_w,scale_h, winHack, img_scale)
+    labeling_toolbox.show(config)
     os.chdir(startpath)
 
-def get_cmap(n, name='hsv'):
+def get_cmap(n, name='jet'):
     '''Returns a function that maps each index in 0, 1, ..., n-1 to a distinct
     RGB color; the keyword argument name must be a standard mpl colormap name.'''
     return plt.cm.get_cmap(name, n)
 
-def check_labels(config):
+def check_labels(config,Labels = ['+','.','x'],scale = 1):
     """
     Double check if the labels were at correct locations and stored in a proper file format.\n
     This creates a new subdirectory for each video under the 'labeled-data' and all the frames are plotted with the labels.\n
@@ -181,14 +216,13 @@ def check_labels(config):
     Parameter
     ----------
     config : string
-        Full path of the config.yaml file as a string. 
+        Full path of the config.yaml file as a string.
+        
+    Labels: List of at least 3 matplotlib markers. The first one will be used to indicate the human ground truth location (Default: +)
 
-     Screens : int value of the number of Screens in landscape mode, i.e. if you have 2 screens, enter 2. Default is 1. 
+    scale : float, default =1
+        Change the relative size of the output images. 
     
-    scale_h & scale_w : you can modify how much of the screen the GUI should occupy. The default is .9 and .8, respectively.
-   
-    img_scale : if you want to make the plot of the frame larger, consider changing this to .008 or more. Be careful though, too large and you will not see the buttons fully!
-
     Example
     --------
     for labeling the frames
@@ -200,11 +234,9 @@ def check_labels(config):
     video_names = [Path(i).stem for i in videos]
 
    #plotting parameters:
-    Labels = ['+','.','x']  # order of labels for different scorers. Currently using only the first (as by convention the human labeler is displayed as +).
     cc = 0 # label index / here only 0, for human labeler
-    scale = 1
     Colorscheme = get_cmap(len( cfg['bodyparts']),cfg['colormap'])
-    
+
     #folders = [Path(config).parent / 'labeled-data' /Path(i) for i in video_names]
     folders = [os.path.join(cfg['project_path'],'labeled-data',str(Path(i))) for i in video_names]
     print("Creating images with labels by %s." %cfg['scorer'])
@@ -263,7 +295,7 @@ def SplitTrials(trialindex, trainFraction=0.8):
     if trainFraction>1 or trainFraction<0:
         print("The training fraction should be a two digit number between 0 and 1; i.e. 0.95. Please change accordingly.")
         return ([],[])
-    
+
     if abs(trainFraction-round(trainFraction,2))>0:
         print("The training fraction should be a two digit number between 0 and 1; i.e. 0.95. Please change accordingly.")
         return ([],[])
@@ -305,9 +337,12 @@ def MakeTest_pose_yaml(dictionary, keys2save, saveasfile):
     with open(saveasfile, "w") as f:
         yaml.dump(dict_test, f)
 
-def merge_annotateddatasets(cfg,project_path,trainingsetfolder_full):
+def merge_annotateddatasets(cfg,project_path,trainingsetfolder_full,windows2linux):
     """
-    Merges all the h5 files for all labeled-datasets (from individual videos)
+    Merges all the h5 files for all labeled-datasets (from individual videos).
+    This is a bit of a mess because of cross platform compatablity. 
+    
+    Within platform comp. is straightforward. But if someone labels on windows and wants to train on a unix cluster or colab...
     """
     AnnotationData=None
     data_path = Path(os.path.join(project_path , 'labeled-data'))
@@ -320,16 +355,39 @@ def merge_annotateddatasets(cfg,project_path,trainingsetfolder_full):
                 AnnotationData=data
             else:
                 AnnotationData=pd.concat([AnnotationData, data])
-            
+
         except FileNotFoundError:
             print((str(data_path / Path(i))+'/CollectedData_'+cfg['scorer']+'.h5'), " not found (perhaps not annotated)")
+
+    if AnnotationData is None:
+        print("Annotation data was not found by splitting video paths (from config['video_sets']). An alternative route is taken...")
+        AnnotationData=conversioncode.merge_windowsannotationdataONlinuxsystem(cfg)
+    if AnnotationData is None:
+        print("No data was found!")
+        windowspath=False
+    else:
+        windowspath=len((AnnotationData.index[0]).split('\\'))>1 #true if the first element is in windows path format
     
-    AnnotationData.to_hdf((str(trainingsetfolder_full)+'/'+'/CollectedData_'+cfg['scorer']+'.h5'), key='df_with_missing', mode='w')
-    AnnotationData.to_csv(str(trainingsetfolder_full)+'/'+'/CollectedData_'+cfg['scorer']+'.csv') #human readable.
-    return(AnnotationData)
+    # Let's check if the code is *not* run on windows (Source: #https://stackoverflow.com/questions/1325581/how-do-i-check-if-im-running-on-windows-in-python)
+    # but the paths are in windows format...
+    if os.name != 'nt' and windowspath and not windows2linux: 
+        print("It appears that the images were labeled on a Windows system, but you are currently trying to create a training set on a Unix system. \n In this case the paths should be converted. Do you want to proceed with the conversion?")
+        askuser = input("yes/no")
+    else:
+        askuser='no'
+        
+    filename=str(str(trainingsetfolder_full)+'/'+'/CollectedData_'+cfg['scorer'])
+    if windows2linux or askuser=='yes' or askuser=='y' or askuser=='Ja': #convert windows path in pandas array \\ to unix / !
+        AnnotationData=conversioncode.convertpaths_to_unixstyle(AnnotationData,filename,cfg)
+        print("Annotation data converted to unix format...")
+    else: #store as is
+        AnnotationData.to_hdf(filename+'.h5', key='df_with_missing', mode='w')
+        AnnotationData.to_csv(filename+'.csv') #human readable.
+        
+    return AnnotationData 
 
 
-def create_training_dataset(config,num_shuffles=1,Shuffles=None):
+def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=False):
     """
     Creates a training dataset. Labels from all the extracted frames are merged into a single .h5 file.\n
     Only the videos included in the config file are used to create this dataset.\n
@@ -345,7 +403,11 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None):
 
     Shuffles: list of shuffles.
         Alternatively the user can also give a list of shuffles (integers!).
-        
+
+    windows2linux: bool.
+        The annotation files contain path formated according to your operating system. If you label on windows 
+        but train & evaluate on a unix system (e.g. ubunt, colab, Mac) set this variable to True to convert the paths. 
+    
     Example
     --------
     >>> deeplabcut.create_training_dataset('/analysis/project/reaching-task/config.yaml',num_shuffles=1)
@@ -354,7 +416,7 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None):
     --------
     """
     from skimage import io
-    import scipy.io as sio 
+    import scipy.io as sio
     import deeplabcut
     import subprocess
 
@@ -362,10 +424,11 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None):
     cfg = auxiliaryfunctions.read_config(config)
     scorer = cfg['scorer']
     project_path = cfg['project_path']
-    # Create path for training sets & store data there 
+    # Create path for training sets & store data there
     trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg) #Path concatenation OS platform independent
     auxiliaryfunctions.attempttomakefolder(Path(os.path.join(project_path,str(trainingsetfolder))),recursive=True)
-    Data = merge_annotateddatasets(cfg,project_path,Path(os.path.join(project_path,trainingsetfolder)))
+    
+    Data = merge_annotateddatasets(cfg,project_path,Path(os.path.join(project_path,trainingsetfolder)),windows2linux)
     Data = Data[scorer] #extract labeled data
 
     #set model type. we will allow more in the future.
@@ -374,26 +437,26 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None):
         resnet_path = str(Path(deeplabcut.__file__).parents[0] / 'pose_estimation_tensorflow/models/pretrained/resnet_v1_50.ckpt')
     elif cfg['resnet']==101:
         net_type ='resnet_'+str(cfg['resnet'])
-        resnet_path = str(Path(deeplabcut.__file__).parents[0] / 'Pose_Estimation_Tensorflow/models/pretrained/resnet_v1_101.ckpt')
+        resnet_path = str(Path(deeplabcut.__file__).parents[0] / 'pose_estimation_tensorflow/models/pretrained/resnet_v1_101.ckpt')
     else:
         print("Currently only ResNet 50 or 101 supported, please change 'resnet' entry in config.yaml!")
         num_shuffles=-1 #thus the loop below is empty...
 
     if not Path(resnet_path).is_file():
         """
-        Downloads the ImageNet pretrained weights for ResNet. 
+        Downloads the ImageNet pretrained weights for ResNet.
         """
         start = os.getcwd()
         os.chdir(str(Path(resnet_path).parents[0]))
         print("Downloading the pretrained model (ResNets)....")
         subprocess.call("download.sh", shell=True)
         os.chdir(start)
-        
+
     if Shuffles==None:
         Shuffles=range(1,num_shuffles+1,1)
     else:
         Shuffles=[i for i in Shuffles if isinstance(i,int)]
-    
+
     bodyparts = cfg['bodyparts']
     TrainingFraction = cfg['TrainingFraction']
     for shuffle in Shuffles: # Creating shuffles starting from 1
@@ -404,7 +467,7 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None):
             # Generating data structure with labeled information & frame metadata (for deep cut)
             ####################################################
 
-            # Make matlab train file!
+            # Make training file!
             data = []
             for jj in trainIndexes:
                 H = {}
@@ -413,12 +476,12 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None):
                 im = io.imread(os.path.join(cfg['project_path'],filename))
                 H['image'] = filename
 
-                try:
+                if np.ndim(im)==3:
                     H['size'] = np.array(
                         [np.shape(im)[2],
                          np.shape(im)[0],
                          np.shape(im)[1]])
-                except:
+                else:
                     # print "Grayscale!"
                     H['size'] = np.array([1, np.shape(im)[0], np.shape(im)[1]])
 
@@ -426,10 +489,10 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None):
                 joints=np.zeros((len(bodyparts),3))*np.nan
                 for bpindex,bodypart in enumerate(bodyparts):
                     if Data[bodypart]['x'][jj]<np.shape(im)[1] and Data[bodypart]['y'][jj]<np.shape(im)[0]: #are labels in image?
-                        	joints[indexjoints,0]=int(bpindex)
-                        	joints[indexjoints,1]=Data[bodypart]['x'][jj]
-                        	joints[indexjoints,2]=Data[bodypart]['y'][jj]
-                        	indexjoints+=1
+                        joints[indexjoints,0]=int(bpindex)
+                        joints[indexjoints,1]=Data[bodypart]['x'][jj]
+                        joints[indexjoints,2]=Data[bodypart]['y'][jj]
+                        indexjoints+=1
 
                 joints = joints[np.where(
                     np.prod(np.isfinite(joints),
@@ -453,7 +516,7 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None):
                 ################################################################################
                 # Saving data file (convert to training file for deeper cut (*.mat))
                 ################################################################################
-    
+
                 DTYPE = [('image', 'O'), ('size', 'O'), ('joints', 'O')]
                 MatlabData = np.array(
                     [(np.array([data[item]['image']], dtype='U'),
@@ -461,36 +524,36 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None):
                       boxitintoacell(data[item]['joints']))
                      for item in range(len(data))],
                     dtype=DTYPE)
-                    
+
                 sio.savemat(os.path.join(project_path,datafilename), {'dataset': MatlabData})
-                
+
                 ################################################################################
                 # Creating file structure for training &
                 # Test files as well as pose_yaml files (containing training and testing information)
                 #################################################################################
-    
+
                 modelfoldername=auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)
                 auxiliaryfunctions.attempttomakefolder(Path(config).parents[0] / modelfoldername,recursive=True)
                 auxiliaryfunctions.attempttomakefolder(str(Path(config).parents[0] / modelfoldername)+ '/'+ '/train')
                 auxiliaryfunctions.attempttomakefolder(str(Path(config).parents[0] / modelfoldername)+ '/'+ '/test')
-                
+
                 path_train_config = str(os.path.join(cfg['project_path'],Path(modelfoldername),'train','pose_cfg.yaml'))
                 path_test_config = str(os.path.join(cfg['project_path'],Path(modelfoldername),'test','pose_cfg.yaml'))
                 #str(cfg['proj_path']+'/'+Path(modelfoldername) / 'test'  /  'pose_cfg.yaml')
-                
+
                 items2change = {
                     "dataset": datafilename,
                     "metadataset": metadatafilename,
                     "num_joints": len(bodyparts),
                     "all_joints": [[i] for i in range(len(bodyparts))],
-                    "all_joints_names": bodyparts,
+                    "all_joints_names": [str(bpt) for bpt in bodyparts],
                     "init_weights": resnet_path,
-                    "project_path": cfg['project_path'],
+                    "project_path": str(cfg['project_path']),
                     "net_type": net_type
                 }
-    
+
                 defaultconfigfile = str(Path(deeplabcut.__file__).parents[0] / 'pose_cfg.yaml')
-                
+
                 trainingdata = MakeTrain_pose_yaml(items2change,path_train_config,defaultconfigfile)
                 keys2save = [
                     "dataset", "num_joints", "all_joints", "all_joints_names",
@@ -499,5 +562,3 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None):
                 ]
                 MakeTest_pose_yaml(trainingdata, keys2save,path_test_config)
                 print("The training dataset is successfully created. Use the function 'train_network' to start training. Happy training!")
-            else:
-                pass

@@ -7,30 +7,20 @@ Created on Tue Oct  2 13:56:11 2018
 DEVELOPERS:
 This script tests various functionalities in an automatic way.
 
-It should take about 4:00 minutes to run this in a CPU. 
+It should take about 4:00 minutes to run this in a CPU.
 It should take about 1:30 minutes on a GPU (incl. downloading the ResNet weights)
 
-It produces nothing of interesting scientifically. 
+It produces nothing of interesting scientifically.
 """
 
 task='TEST' # Enter the name of your experiment Task
 scorer='Alex' # Enter the name of the experimenter/labeler
 
 
-import deeplabcut, os, yaml, subprocess
+import deeplabcut, os,  subprocess
 from pathlib import Path
 import pandas as pd
 import numpy as np
-
-def read_config(configname):
-    """    Reads config file     """
-    with open(str(configname), 'r') as ymlfile:
-        cfg = yaml.load(ymlfile)
-    return(cfg)
-
-def write_config(configname,cfg):
-    with open(str(configname), 'w') as ymlfile:
-                yaml.dump(cfg, ymlfile,default_flow_style=False)
 
 print("Imported DLC!")
 basepath=os.path.dirname(os.path.abspath('testscript.py'))
@@ -39,20 +29,21 @@ video=[os.path.join(basepath,'Reaching-Mackenzie-2018-08-30','videos',videoname+
 
 print("CREATING PROJECT")
 path_config_file=deeplabcut.create_new_project(task,scorer,video,copy_videos=True)
-cfg=read_config(path_config_file)
+
+cfg=deeplabcut.auxiliaryfunctions.read_config(path_config_file)
 cfg['numframes2pick']=5
 cfg['pcutoff']=0.01
 cfg['TrainingFraction']=[.8]
 
-write_config(path_config_file,cfg)
+deeplabcut.auxiliaryfunctions.write_config(path_config_file,cfg)
 
 print("EXTRACTING FRAMES")
-deeplabcut.extract_frames(path_config_file,mode='automatic')
+deeplabcut.extract_frames(path_config_file,mode='automatic',userfeedback=False)
 
 print("CREATING-SOME LABELS FOR THE FRAMES")
 frames=os.listdir(os.path.join(cfg['project_path'],'labeled-data',videoname))
 #As this next step is manual, we update the labels by putting them on the diagonal (fixed for all frames)
-for index,bodypart in enumerate(cfg['bodyparts']): 
+for index,bodypart in enumerate(cfg['bodyparts']):
         columnindex = pd.MultiIndex.from_product([[scorer], [bodypart], ['x', 'y']],names=['scorer', 'bodyparts', 'coords'])
         frame = pd.DataFrame(100+np.ones((len(frames),2))*50*index, columns = columnindex, index = [os.path.join('labeled-data',videoname,fn) for fn in frames])
         if index==0:
@@ -67,18 +58,18 @@ print("Plot labels...")
 
 deeplabcut.check_labels(path_config_file)
 
-
 print("CREATING TRAININGSET")
 deeplabcut.create_training_dataset(path_config_file)
 
 posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(1),'train/pose_cfg.yaml')
-DLC_config=read_config(posefile)
+
+DLC_config=deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
 DLC_config['save_iters']=10
 DLC_config['display_iters']=2
 DLC_config['multi_step']=[[0.001,10]]
 
 print("CHANGING training parameters to end quickly!")
-write_config(posefile,DLC_config)
+deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
 
 print("TRAIN")
 deeplabcut.train_network(path_config_file)
@@ -91,17 +82,16 @@ print("CUT SHORT VIDEO AND ANALYZE")
 # Make super short video (so the analysis is quick!)
 vname='brief'
 newvideo=os.path.join(cfg['project_path'],'videos',vname+'.mp4')
-try: #you need ffmpeg command line interface    
+try: #you need ffmpeg command line interface
     subprocess.call(['ffmpeg','-i',video[0],'-ss','00:00:00','-to','00:00:00.4','-c','copy',newvideo])
 except:
     #for windows:
-    import moviepy
     from moviepy.editor import VideoFileClip,VideoClip
     clip = VideoFileClip(video[0])
     clip.reader.initialize()
     def make_frame(t):
         return clip.get_frame(1)
-    
+
     newclip = VideoClip(make_frame, duration=1)
     newclip.write_videofile(newvideo,fps=30)
 
@@ -130,15 +120,15 @@ deeplabcut.merge_datasets(path_config_file)
 print("CREATING TRAININGSET")
 deeplabcut.create_training_dataset(path_config_file)
 
-cfg=read_config(path_config_file)
+cfg=deeplabcut.auxiliaryfunctions.read_config(path_config_file)
 posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(1),'train/pose_cfg.yaml')
-DLC_config=read_config(posefile)
+DLC_config=deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
 DLC_config['save_iters']=5
 DLC_config['display_iters']=1
 DLC_config['multi_step']=[[0.001,5]]
 
 print("CHANGING training parameters to end quickly!")
-write_config(posefile,DLC_config)
+deeplabcut.auxiliaryfunctions.write_config(posefile,DLC_config)
 
 print("TRAIN")
 deeplabcut.train_network(path_config_file)

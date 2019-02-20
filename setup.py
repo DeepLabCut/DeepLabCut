@@ -15,7 +15,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="deeplabcut",
-    version="2.0.2",
+    version="2.0.4.1",
     author="Alexander Mathis, Tanmay Nath, Mackenzie Mathis",
     author_email="alexander.mathis@bethgelab.org",
     description="Markerless pose-estimation of user-defined features with deep learning",
@@ -26,8 +26,8 @@ setuptools.setup(
                       'h5py~=2.7','imageio==2.3.0','intel-openmp',
                       'ipython~=6.0.0','ipython-genutils==0.2.0',
                       'matplotlib==2.2.2','moviepy~=0.2.3.5','numpy~=1.14.5','opencv-python~=3.4',
-                      'pandas~=0.20.0','patsy','python-dateutil==2.7.3','pyyaml>=4.2b1','requests',
-                      'setuptools','scikit-image~=0.14.0','scikit-learn~=0.19.2',
+                      'pandas==0.21.0','patsy','python-dateutil==2.7.3','pyyaml>=4.2b1','requests',
+                      'ruamel.yaml==0.15','setuptools','scikit-image~=0.14.0','scikit-learn~=0.19.2',
                       'scipy~=1.1.0','six==1.11.0','statsmodels==0.9.0','tables==3.4.3',
                       'tqdm>4','wheel==0.31.1'],
     scripts=['deeplabcut/pose_estimation_tensorflow/models/pretrained/download.sh'],

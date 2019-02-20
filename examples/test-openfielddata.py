@@ -5,7 +5,7 @@ Created on Mon Nov  5 18:06:13 2018
 
 @author: alex
 
-This is a test script that should achieve a certain performance on your system. 
+This is a test script that should achieve a certain performance on your system.
 See values on our system, the DLC 2.0 docker with TF 1.8 on a NVIDIA GTX 1080Ti.
 https://github.com/MMathisLab/Docker4DeepLabCut2.0
 
@@ -21,30 +21,22 @@ The analysis of the video takes 41 seconds (batch size 32) and creating the fram
 
 # Importing the toolbox (takes several seconds)
 import deeplabcut
-import os, yaml
+import os
 from pathlib import Path
 
-def read_config(configname):
-    """    Reads config file     """
-    with open(str(configname), 'r') as ymlfile:
-        cfg = yaml.load(ymlfile)
-    return(cfg)
-
-def write_config(configname,cfg):
-    with open(str(configname), 'w') as ymlfile:
-                yaml.dump(cfg, ymlfile,default_flow_style=False)
-
-# Loading example data set 
+# Loading example data set
 path_config_file = os.path.join(os.getcwd(),'openfield-Pranav-2018-10-30/config.yaml')
 deeplabcut.load_demo_data(path_config_file)
 
-cfg=read_config(path_config_file)
+cfg=deeplabcut.auxiliaryfunctions.read_config(path_config_file)
 posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(1),'train/pose_cfg.yaml')
-DLC_config=read_config(posefile)
+
+DLC_config=deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
 DLC_config['save_iters']=10
 DLC_config['display_iters']=2
 DLC_config['multi_step']=[[0.005,15001]]
-write_config(posefile,DLC_config)
+deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
+
 
 print("TRAIN NETWORK")
 
