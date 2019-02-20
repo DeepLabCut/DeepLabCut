@@ -62,7 +62,10 @@ def convertcsv2h5(config,userfeedback=True,scorer=None):
                 orderofbpincsv=list(data.values[0,1:-1:2])
                 imageindex=list(data.values[2:,0])
                 
-                assert(len(orderofbpincsv)==len(cfg['bodyparts']))
+                #assert(len(orderofbpincsv)==len(cfg['bodyparts']))
+                print(orderofbpincsv)
+                print(cfg['bodyparts'])
+                
                 #TODO: test len of images vs. len of imagenames for another sanity check
                 
                 index = pd.MultiIndex.from_product([[scorer], orderofbpincsv, ['x', 'y']],names=['scorer', 'bodyparts', 'coords'])
