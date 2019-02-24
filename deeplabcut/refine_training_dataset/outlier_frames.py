@@ -138,7 +138,6 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
                       dy=np.diff(Dataframe[scorer][bp]['y'].values[Index])
                       # all indices between start and stop with jump larger than epsilon (leading up to this point!)
                       Indices.extend(np.where((dx**2+dy**2)>epsilon**2)[0]+startindex+1)
-
           elif outlieralgorithm=='fitting':
               #deviation_dataname = str(Path(videofolder)/Path(dataname))
               # Calculate deviatons for video
@@ -148,28 +147,34 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
 
               if len(Index)<cfg['numframes2pick']*2 and len(d)>cfg['numframes2pick']*2: # if too few points qualify, extract the most distant ones.
                   Indices=np.argsort(d)[::-1][:cfg['numframes2pick']*2]
-
-          Indices=np.sort(list(set(Indices))) #remove repetitions.
-          print("Method ", outlieralgorithm, " found ", len(Indices)," putative outlier frames.")
-          print("Do you want to proceed with extracting ", cfg['numframes2pick'], " of those?")
-          if outlieralgorithm=='uncertain':
-              print("If this list is very large, perhaps consider changing the paramters (start, stop, p_bound, comparisonbodyparts) or use a different method.")
-          elif outlieralgorithm=='jump':
-              print("If this list is very large, perhaps consider changing the paramters (start, stop, epsilon, comparisonbodyparts) or use a different method.")
-          elif outlieralgorithm=='fitting':
-              print("If this list is very large, perhaps consider changing the paramters (start, stop, epsilon, ARdegree, MAdegree, alpha, comparisonbodyparts) or use a different method.")
-
-          if automatic==False:
-              askuser = input("yes/no")
-          else:
-              askuser='Ja'
-
-          if askuser=='y' or askuser=='yes' or askuser=='Ja' or askuser=='ha': # multilanguage support :)
-              #Now extract from those Indices!
-              ExtractFramesbasedonPreselection(Indices,extractionalgorithm,Dataframe,dataname,scorer,video,cfg,config,opencv,cluster_resizewidth,cluster_color)
-          else:
-              print("Nothing extracted, change parameters and start again...")
-
+          elif outlieralgorithm=='manual':
+              wd = Path(config).resolve().parents[0]
+              os.chdir(str(wd))
+              from deeplabcut.refine_training_dataset import outlier_frame_extraction_toolbox 
+              outlier_frame_extraction_toolbox.show(config,video,shuffle,Dataframe,scorer)
+# Run always except when the outlieralgorithm == manual.
+          if not outlieralgorithm=='manual':
+              Indices=np.sort(list(set(Indices))) #remove repetitions.
+              print("Method ", outlieralgorithm, " found ", len(Indices)," putative outlier frames.")
+              print("Do you want to proceed with extracting ", cfg['numframes2pick'], " of those?")
+              if outlieralgorithm=='uncertain':
+                  print("If this list is very large, perhaps consider changing the paramters (start, stop, p_bound, comparisonbodyparts) or use a different method.")
+              elif outlieralgorithm=='jump':
+                  print("If this list is very large, perhaps consider changing the paramters (start, stop, epsilon, comparisonbodyparts) or use a different method.")
+              elif outlieralgorithm=='fitting':
+                  print("If this list is very large, perhaps consider changing the paramters (start, stop, epsilon, ARdegree, MAdegree, alpha, comparisonbodyparts) or use a different method.")
+    
+              if automatic==False:
+                  askuser = input("yes/no")
+              else:
+                  askuser='Ja'
+    
+              if askuser=='y' or askuser=='yes' or askuser=='Ja' or askuser=='ha': # multilanguage support :)
+                  #Now extract from those Indices!
+                  ExtractFramesbasedonPreselection(Indices,extractionalgorithm,Dataframe,dataname,scorer,video,cfg,config,opencv,cluster_resizewidth,cluster_color)
+              else:
+                  print("Nothing extracted, change parameters and start again...")
+        
       except FileNotFoundError:
           print("The video has not been analyzed yet!. You can only refine the labels, after the pose has been estimate. Please run 'analyze_video' first.")
 
@@ -394,6 +399,11 @@ def ExtractFramesbasedonPreselection(Index,extractionalgorithm,Dataframe,datanam
             if  cfg['cropping']:
                 clip = clip.crop(y1=cfg['y1'], y2=cfg['x2'], x1=cfg['x1'], x2=cfg['x2'])
             frames2pick=frameselectiontools.KmeansbasedFrameselection(clip,numframes2extract,start,stop,Index,resizewidth=cluster_resizewidth,color=cluster_color)
+#    elif extractionalgorithm=='manual':
+#        wd = Path(config).resolve().parents[0]
+#        os.chdir(str(wd))
+#        from deeplabcut.refine_training_dataset import outlier_frame_extraction_toolbox 
+#        outlier_frame_extraction_toolbox.show(config,video,shuffle)
     else:
         print("Please implement this method yourself!")
         frames2pick=[]

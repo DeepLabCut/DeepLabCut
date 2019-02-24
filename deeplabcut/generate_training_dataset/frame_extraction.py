@@ -1,15 +1,13 @@
 """
 DeepLabCut2.0 Toolbox
 https://github.com/AlexEMG/DeepLabCut
-
 A Mathis, alexander.mathis@bethgelab.org
 T Nath, nath@rowland.harvard.edu
 M Mathis, mackenzie@post.harvard.edu
-
 """
 
 
-def extract_frames(config,mode='automatic',algo='kmeans',crop=False,checkcropping=False, userfeedback=True,cluster_step=1,cluster_resizewidth=30,cluster_color=False, Screens=1,scale_w=.8,scale_h=.8,opencv=True):
+def extract_frames(config,mode='automatic',algo='kmeans',crop=False,userfeedback=True,cluster_step=1,cluster_resizewidth=30,cluster_color=False,opencv=True):
     """
     Extracts frames from the videos in the config.yaml file. Only the videos in the config.yaml will be used to select the frames.\n
     Use the function ``add_new_video`` at any stage of the project to add new videos to the config file and extract their frames.
@@ -37,11 +35,7 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,checkcroppin
     crop : bool, optional
         If this is set to True, the selected frames are cropped based on the ``crop`` parameters in the config.yaml file. 
         The default is ``False``; if provided it must be either ``True`` or ``False``.
-        
-    checkcropping: bool, optional
-        If this is set to True, the cropping parameters are overlayed in a plot of the first frame to check and the user can decide if the program should proceed 
-        with those parameters, or perhaps edit them. The default is ``False``; if provided it must be either ``True`` or ``False``.
-    
+            
     userfeedback: bool, optional
         If this is set to false during automatic mode then frames for all videos are extracted. The user can set this to true, which will result in a dialog,
         where the user is asked for each video if (additional/any) frames from this video should be extracted. Use this, e.g. if you have already labeled
@@ -61,9 +55,6 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,checkcroppin
     opencv: bool, default: True
         Uses openCV for loading & extractiong (otherwise moviepy (legacy))
         
-
-    The three parameters Screens=1,scale_w=.8,scale_h=.8 define the relative height (scale_h), relative widht (scale_w) and number of screens (horizontally) and thereby 
-    affect the dimensions of the manual frame extraction GUI.
         
     Examples
     --------
@@ -75,9 +66,6 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,checkcroppin
     --------
     for selecting frames automatically with 'uniform' and want to crop the frames based on the ``crop`` parameters in config.yaml
     >>> deeplabcut.extract_frames('/analysis/project/reaching-task/config.yaml','automatic',crop=True)
-    --------
-    for selecting frames automatically with 'uniform', want to crop the frames based on the ``crop`` parameters in config.yaml and check for cropping
-    >>> deeplabcut.extract_frames('/analysis/project/reaching-task/config.yaml','automatic',crop=True,checkcropping=True)
     --------
     for selecting frames manually,
     >>> deeplabcut.extract_frames('/analysis/project/reaching-task/config.yaml','manual')
@@ -97,12 +85,14 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,checkcroppin
     import matplotlib.pyplot as plt
     import matplotlib.patches as patches
     from deeplabcut.utils import frameselectiontools
+    from deeplabcut.utils import auxiliaryfunctions
+    from matplotlib.widgets import RectangleSelector
 
     if mode == "manual":
         wd = Path(config).resolve().parents[0]
         os.chdir(str(wd))
         from deeplabcut.generate_training_dataset import frame_extraction_toolbox 
-        frame_extraction_toolbox.show(config,Screens,scale_w,scale_h)
+        frame_extraction_toolbox.show(config)
         
     elif mode == "automatic":
         config_file = Path(config).resolve()
@@ -127,6 +117,7 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,checkcroppin
             from moviepy.editor import VideoFileClip
         for vindex,video in enumerate(videos):
             #plt.close("all")
+            global coords
             coords = cfg['video_sets'][video]['crop'].split(',')
             
             if userfeedback:
@@ -150,7 +141,6 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,checkcroppin
                     nframes=int(np.ceil(clip.duration*1./fps))
                 indexlength = int(np.ceil(np.log10(nframes)))
                 if crop==True:
-                    print("Make sure you change the crop parameters in the config.yaml file. The default parameters are set to the video dimensions.")
                     if opencv:
                         cap.set(2,start*duration)
                         ret, frame = cap.read()
@@ -162,23 +152,14 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,checkcroppin
                     fname = Path(video)
                     output_path = Path(config).parents[0] / 'labeled-data' / fname.stem
                     
-                    if output_path.exists() and checkcropping==True:
+                    if output_path.exists() :
                         fig,ax = plt.subplots(1)
                         # Display the image
                         ax.imshow(image)
-                        # Create a Rectangle patch
-                        rect = patches.Rectangle((int(coords[0]),int(coords[2])),int(coords[1])-int(coords[0]),int(coords[3])-int(coords[2]),linewidth=3,edgecolor='r',facecolor='none')
-                        # Add the patch to the Axes
-                        ax.add_patch(rect)
+                        cid = RectangleSelector(ax, line_select_callback,drawtype='box', useblit=False,button=[1], minspanx=5, minspany=5,spancoords='pixels',interactive=True)
                         plt.show()
                         
-                        print("The red boundary indicates how the cropped image will look.")
-                        #saveimg = str(Path(config).parents[0] / Path('labeled-data','IsCroppingOK_'+fname.stem +".png")) 
-                        #io.imsave(saveimg, image)
-                        
-                        msg = input("Is the cropping ok? (yes/no): ")
-                        if msg == "yes" or msg == "y" or msg =="Yes" or msg == "Y":
-                          if len(os.listdir(output_path))==0: #check if empty
+                        if len(os.listdir(output_path))==0: #check if empty
                                 #store full frame from random location (good for augmentation)
                                 index=int(start*duration+np.random.rand()*duration*(stop-start))
                                 if opencv:
@@ -193,15 +174,13 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,checkcroppin
                                 saveimg = str(output_path) +'/img'+ str(index).zfill(indexlength) + ".png"
                                 io.imsave(saveimg, image)
 
-                          else:
+                        else:
                               askuser=input ("The directory already contains some frames. Do you want to add to it?(yes/no): ")
                               if askuser=='y' or askuser=='yes' or askuser=='Y' or askuser=='Yes':
                                   #clip=clip.crop(y1 = int(coords[2]),y2 = int(coords[3]),x1 = int(coords[0]), x2 = int(coords[1]))
                                   pass
                               else:
                                   sys.exit("Delete the frames and try again later!")
-                        else:
-                          sys.exit("Correct the crop parameters in the config.yaml file and try again!")
                     
                     elif output_path.exists(): #cropping without checking:
                             index=int(start*duration+np.random.rand()*duration*(stop-start))
@@ -221,6 +200,8 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,checkcroppin
                     numframes2pick=cfg['numframes2pick']+1 # without cropping a full size frame will not be extracted >> thus one more frame should be selected in next stage.
                     
                 print("Extracting frames based on %s ..." %algo)
+                cfg['video_sets'][video] = {'crop': ', '.join(map(str, [int(coords[0]), int(coords[1]), int(coords[2]), int(coords[3])]))}
+                auxiliaryfunctions.write_config(config_file,cfg)
                 if algo =='uniform': #extract n-1 frames (0 was already stored)
                     if opencv:
                         frames2pick=frameselectiontools.UniformFramescv2(cap,numframes2pick-1,start,stop)
@@ -271,3 +252,9 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,checkcroppin
     
     print("\nFrames were selected.\nYou can now label the frames using the function 'label_frames' (if you extracted enough frames for all videos).")
 
+def line_select_callback(eclick, erelease):
+        'eclick and erelease are the press and release events'
+        global coords
+        new_x1, new_y1 = eclick.xdata, eclick.ydata
+        new_x2, new_y2 = erelease.xdata, erelease.ydata
+        coords = [str(int(new_x1)),str(int(new_x2)),str(int(new_y1)),str(int(new_y2))]

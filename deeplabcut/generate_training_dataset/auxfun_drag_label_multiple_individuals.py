@@ -19,9 +19,11 @@ import wx
 
 class DraggablePoint:
     lock = None #only one can be animated at a time
-    def __init__(self, point,bodyParts):
+    def __init__(self, point,individual_names,bodyParts):
+#    def __init__(self, point,bodyParts):
         self.point = point
         self.bodyParts = bodyParts
+        self.individual_names = individual_names
 #        self.likelihood = likelihood
         self.press = None
         self.background = None
@@ -71,12 +73,12 @@ class DraggablePoint:
                 DraggablePoint.lock = None
                 self.point.set_animated(False)
                 self.background = None
-                self.final_point = (np.nan,np.nan,self.bodyParts)
+                self.final_point = (np.nan,np.nan,self.individual_names,self.bodyParts)
                 self.point.center = (np.nan,np.nan)
                 self.coords.append(self.final_point)
                 self.point.figure.canvas.draw()
 
-
+        
     def on_motion(self, event):
         """
         During the drag!
@@ -107,7 +109,7 @@ class DraggablePoint:
             self.point.set_animated(False)
             self.background = None
             self.point.figure.canvas.draw()
-            self.final_point = (event.xdata, event.ydata,self.bodyParts)
+            self.final_point = (event.xdata, event.ydata,self.individual_names,self.bodyParts)
             self.coords.append(self.final_point)
 
     def on_hover(self,event):
@@ -120,8 +122,8 @@ class DraggablePoint:
             contains, attrd = self.point.contains(event)
             if contains:
                 self.annot.xy = (self.point.center[0],self.point.center[1])
-                text = str(self.bodyParts)
-#                text = str(self.individual_names+','+self.bodyParts)
+#                text = str(self.bodyParts)
+                text = str(self.individual_names+','+self.bodyParts)
                 self.annot.set_text(text)
                 self.annot.get_bbox_patch().set_alpha(0.4)
                 self.annot.set_visible(True)

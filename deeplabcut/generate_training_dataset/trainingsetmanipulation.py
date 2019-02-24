@@ -11,10 +11,14 @@ import os
 import numpy as np
 import pandas as pd
 import os.path
+import platform
 import matplotlib as mpl
+
 if os.environ.get('DLClight', default=False) == 'True':
     mpl.use('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
     pass
+elif platform.system() == 'Darwin':
+    mpl.use('WxAgg') #TkAgg
 else:
     mpl.use('TkAgg')
 import matplotlib.pyplot as plt
@@ -177,7 +181,7 @@ def dropannotationfileentriesduetodeletedimages(config):
             DC.to_csv(os.path.join(str(folder),'CollectedData_'+ cfg['scorer']+".csv"))
 
 
-def label_frames(config):
+def label_frames(config,multiple_individuals=False):
     """
     Manually label/annotate the extracted frames. Update the list of body parts you want to localize in the config.yaml file first.
 
@@ -185,7 +189,7 @@ def label_frames(config):
     ----------
     config : string	
         String containing the full path of the config file in the project.
-
+    
     Example
     --------
     >>> deeplabcut.label_frames('/analysis/project/reaching-task/config.yaml')
@@ -197,9 +201,13 @@ def label_frames(config):
     os.chdir(str(wd))
 
     from deeplabcut.generate_training_dataset import labeling_toolbox
+    from deeplabcut.generate_training_dataset import multiple_individual_labeling_toolbox
 
     # labeling_toolbox.show(config,Screens,scale_w,scale_h, winHack, img_scale)
-    labeling_toolbox.show(config)
+    if multiple_individuals == True:
+        multiple_individual_labeling_toolbox.show(config)
+    else:
+        labeling_toolbox.show(config)
     os.chdir(startpath)
 
 def get_cmap(n, name='jet'):
