@@ -13,11 +13,11 @@ import os
 import matplotlib
 import numpy as np
 from pathlib import Path
+import pandas as pd
 import argparse
 from deeplabcut.utils import auxiliaryfunctions
-
+from deeplabcut.create_project import add
 from skimage import io
-from skimage.util import img_as_ubyte
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -31,7 +31,7 @@ from matplotlib.widgets import RectangleSelector
 # ###########################################################################
 class ImagePanel(wx.Panel):
 
-    def __init__(self, parent,config,gui_size,**kwargs):
+    def __init__(self, parent,config,video,shuffle,Dataframe,gui_size,**kwargs):
         h=gui_size[0]/2
         w=gui_size[1]/3
         wx.Panel.__init__(self, parent, -1,style=wx.SUNKEN_BORDER,size=(h,w))
@@ -54,9 +54,9 @@ class ImagePanel(wx.Panel):
         """
         Returns the colormaps ticks and . The order of ticks labels is reversed.
         """
-        im = io.imread(img)
-        norm = mcolors.Normalize(vmin=0, vmax=np.max(im))
-        ticks = np.linspace(0,np.max(im),len(bodyparts))[::-1]
+#        im = io.imread(img)
+        norm = mcolors.Normalize(vmin=np.min(img), vmax=np.max(img))
+        ticks = np.linspace(np.min(img),np.max(img),len(bodyparts))[::-1]
         return norm, ticks
 
 
@@ -65,10 +65,13 @@ class WidgetPanel(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent, -1,style=wx.SUNKEN_BORDER)
 
+
+
+
 class MainFrame(wx.Frame):
     """Contains the main GUI and button boxes"""
 
-    def __init__(self, parent,config):
+    def __init__(self, parent,config,video,shuffle,Dataframe,scorer):
 # Settting the GUI size and panels design
         displays = (wx.Display(i) for i in range(wx.Display.GetCount())) # Gets the number of displays
         screenSizes = [display.GetGeometry().GetSize() for display in displays] # Gets the size of each display
@@ -77,7 +80,7 @@ class MainFrame(wx.Frame):
         screenHeight = screenSizes[index][1]
         self.gui_size = (screenWidth*0.7,screenHeight*0.85)
 
-        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = 'DeepLabCut2.0 - Manual Frame Extraction',
+        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = 'DeepLabCut2.0 - Manual Outlier Frame Extraction',
                             size = wx.Size(self.gui_size), pos = wx.DefaultPosition, style = wx.RESIZE_BORDER|wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
         self.statusbar = self.CreateStatusBar()
         self.statusbar.SetStatusText("")
@@ -88,7 +91,7 @@ class MainFrame(wx.Frame):
 # Spliting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
         topSplitter = wx.SplitterWindow(self)
 
-        self.image_panel = ImagePanel(topSplitter, config,self.gui_size)
+        self.image_panel = ImagePanel(topSplitter, config,video,shuffle,Dataframe,self.gui_size)
         self.widget_panel = WidgetPanel(topSplitter)
         
         topSplitter.SplitHorizontally(self.image_panel, self.widget_panel,sashPosition=self.gui_size[1]*0.83)#0.9
@@ -101,31 +104,34 @@ class MainFrame(wx.Frame):
 # Add Buttons to the WidgetPanel and bind them to their respective functions.
 
         widgetsizer = wx.WrapSizer(orient=wx.HORIZONTAL)
-
-        self.load = wx.Button(self.widget_panel, id=wx.ID_ANY, label="Load Video")
-        widgetsizer.Add(self.load , 1, wx.ALL, 15)
-        self.load.Bind(wx.EVT_BUTTON, self.browseDir)
+        
+        self.load_button_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.help_button_sizer = wx.BoxSizer(wx.VERTICAL)
         
         self.help = wx.Button(self.widget_panel, id=wx.ID_ANY, label="Help")
-        widgetsizer.Add(self.help , 1, wx.ALL, 15)
+        self.help_button_sizer.Add(self.help , 1, wx.ALL, 15)
+#        widgetsizer.Add(self.help , 1, wx.ALL, 15)
         self.help.Bind(wx.EVT_BUTTON, self.helpButton)
 
+        widgetsizer.Add(self.help_button_sizer,1,wx.ALL,0)
+        
         self.grab = wx.Button(self.widget_panel, id=wx.ID_ANY, label="Grab Frames")
         widgetsizer.Add(self.grab , 1, wx.ALL, 15)
         self.grab.Bind(wx.EVT_BUTTON, self.grabFrame)
-        self.grab.Enable(False)
+        self.grab.Enable(True)
 
         widgetsizer.AddStretchSpacer(5)
         self.slider = wx.Slider(self.widget_panel, id=wx.ID_ANY, value = 0, minValue=0, maxValue=1,size=(200, -1), style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS )
         widgetsizer.Add(self.slider,1, wx.ALL,5)
-        self.slider.Hide()
+        self.slider.Bind(wx.EVT_SLIDER, self.OnSliderScroll)
         
         widgetsizer.AddStretchSpacer(5)
         self.start_frames_sizer = wx.BoxSizer(wx.VERTICAL)
         self.end_frames_sizer = wx.BoxSizer(wx.VERTICAL)
 
         self.start_frames_sizer.AddSpacer(15)
-        self.startFrame = wx.SpinCtrl(self.widget_panel, value='0', size=(100, -1), min=0, max=120)
+        self.startFrame = wx.SpinCtrl(self.widget_panel, size=(100, -1),style=wx.SP_VERTICAL)
+        
         self.startFrame.Enable(False)
         self.start_frames_sizer.Add(self.startFrame,1, wx.EXPAND|wx.ALIGN_LEFT,15)
         start_text = wx.StaticText(self.widget_panel, label='Start Frame Index')
@@ -155,13 +161,9 @@ class MainFrame(wx.Frame):
         self.quit.Bind(wx.EVT_BUTTON, self.quitButton)
         self.quit.Enable(True)
 
-# Hiding these widgets and show them once the video is loaded
-        self.start_frames_sizer.ShowItems(show=False)
-        self.end_frames_sizer.ShowItems(show=False)
-
         self.widget_panel.SetSizer(widgetsizer)
         self.widget_panel.SetSizerAndFit(widgetsizer)
-        self.widget_panel.Layout()
+        
         
 # Variables initialization
         self.numberFrames = 0
@@ -169,6 +171,11 @@ class MainFrame(wx.Frame):
         self.figure = Figure()
         self.axes = self.figure.add_subplot(111)
         self.drs = []
+        self.extract_range_frame = False
+        self.firstFrame  = 0
+        # self.cropping = False
+
+# Read confing file
         self.cfg = auxiliaryfunctions.read_config(config)
         self.Task = self.cfg['Task']
         self.start = self.cfg['start']
@@ -182,11 +189,37 @@ class MainFrame(wx.Frame):
         self.colormap = self.colormap.reversed()
         self.markerSize = self.cfg['dotsize']
         self.alpha = self.cfg['alphavalue']
+        self.iterationindex=self.cfg['iteration']
         self.video_names = [Path(i).stem for i in self.videos]
         self.config_path = Path(config)
-        self.extract_range_frame = False
-        self.extract_from_analyse_video = False
+        self.video_source = Path(video).resolve()
+        self.shuffle = shuffle
+        self.Dataframe = Dataframe
+        self.scorer = scorer
+        
+        
+# Read the video file
+        self.vid = cv2.VideoCapture(str(self.video_source))
+        self.videoPath = os.path.dirname(self.video_source)
+        self.filename = Path(self.video_source).name
+        self.numberFrames = int(self.vid.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.strwidth = int(np.ceil(np.log10(self.numberFrames)))
+# Set the values of slider and range of frames
+        self.startFrame.SetRange(0, self.numberFrames-1)
+        self.startFrame.SetValue(0)
+        self.slider.SetMax(self.numberFrames-1)
+        self.endFrame.SetMax(self.numberFrames-1)
+        self.startFrame.Bind(wx.EVT_SPIN,self.updateSlider)
+# Set the status bar
+        self.statusbar.SetStatusText('Working on video: {}'.format(os.path.split(str(self.video_source))[-1]))
+# Adding the video file to the config file.
+        if  not (str(self.video_source.stem) in self.video_names) :
+            add.add_new_videos(self.config_path,[self.video_source])
 
+        self.filename = Path(self.video_source).name
+        self.update()
+        self.plot_labels()
+        self.widget_panel.Layout()
     def quitButton(self, event):
         """
         Quits the GUI
@@ -200,11 +233,12 @@ class MainFrame(wx.Frame):
 
     def updateSlider(self,event):
         self.slider.SetValue(self.startFrame.GetValue())
+        self.axes.clear()
+        self.figure.delaxes(self.figure.axes[1])
+        self.grab.Bind(wx.EVT_BUTTON, self.grabFrame)
         self.currFrame = (self.slider.GetValue())
-        if self.extract_from_analyse_video == True:
-            self.figure.delaxes(self.figure.axes[1])
-            self.plot_labels()
         self.update()
+        self.plot_labels()
     
     def activate_frame_range(self,event):
         """
@@ -231,128 +265,18 @@ class MainFrame(wx.Frame):
         self.new_x1, self.new_y1 = eclick.xdata, eclick.ydata
         self.new_x2, self.new_y2 = erelease.xdata, erelease.ydata
 
-    
-    
-    def CheckCropping(self):
-        ''' Display frame at time "time" for video to check if cropping is fine.
-        Select ROI of interest by adjusting values in myconfig.py
-
-        USAGE for cropping:
-        clip.crop(x1=None, y1=None, x2=None, y2=None, width=None, height=None, x_center=None, y_center=None)
-
-        Returns a new clip in which just a rectangular subregion of the
-        original clip is conserved. x1,y1 indicates the top left corner and
-        x2,y2 is the lower right corner of the cropped region.
-
-        All coordinates are in pixels. Float numbers are accepted.
-        '''
-
-        videosource = self.video_source
-        self.x1 = int(self.cfg['video_sets'][videosource]['crop'].split(',')[0])
-        self.x2 = int(self.cfg['video_sets'][videosource]['crop'].split(',')[1])
-        self.y1 = int(self.cfg['video_sets'][videosource]['crop'].split(',')[2])
-        self.y2 = int(self.cfg['video_sets'][videosource]['crop'].split(',')[3])
-
-        if self.cropping==True:
-# Select ROI of interest by drawing a rectangle
-            self.cid = RectangleSelector(self.axes, self.line_select_callback,drawtype='box', useblit=False,button=[1], minspanx=5, minspany=5,spancoords='pixels',interactive=True)
-            self.canvas.mpl_connect('key_press_event', self.cid)
             
     def OnSliderScroll(self, event):
         """
         Slider to scroll through the video
         """
         self.axes.clear()
+        self.figure.delaxes(self.figure.axes[1])
         self.grab.Bind(wx.EVT_BUTTON, self.grabFrame)
         self.currFrame = (self.slider.GetValue())
         self.update()
+        self.plot_labels()
     
-    def is_crop_ok(self,event):
-        """
-        Checks if the cropping is ok
-        """
-        
-        self.grab.SetLabel("Grab Frames")
-        self.grab.Bind(wx.EVT_BUTTON, self.grabFrame)
-        self.slider.Show()
-        self.start_frames_sizer.ShowItems(show=True)
-        self.end_frames_sizer.ShowItems(show=True)
-        self.widget_panel.Layout()
-        self.slider.SetMax(self.numberFrames)
-        self.startFrame.SetMax(self.numberFrames-1)
-        self.endFrame.SetMax(self.numberFrames)
-        self.x1 = int(self.new_x1)
-        self.x2 = int(self.new_x2)
-        self.y1 = int(self.new_y1)
-        self.y2 = int(self.new_y2)
-        self.canvas.mpl_disconnect(self.cid)
-        self.axes.clear()
-        self.currFrame = (self.slider.GetValue())
-        self.update()
-# Update the config.yaml file
-        self.cfg['video_sets'][self.video_source] = {'crop': ', '.join(map(str, [self.x1, self.x2, self.y1, self.y2]))}
-        auxiliaryfunctions.write_config(self.config_path,self.cfg)
-
-        
-    def browseDir(self, event):
-        """
-        Show the File Dialog and ask the user to select the video file
-        """
-
-        self.statusbar.SetStatusText("Looking for a video to start extraction..")
-        dlg = wx.FileDialog(self, "SELECT A VIDEO", os.getcwd(), "", "*.*", wx.FD_OPEN)
-        if dlg.ShowModal() == wx.ID_OK:
-            self.video_source_original = dlg.GetPath()
-            self.video_source = str(Path(self.video_source_original).resolve())
-            
-            self.load.Enable(False)
-        else:
-            pass
-            dlg.Destroy()
-            self.Close(True)
-        dlg.Destroy()
-        selectedvideo = Path(self.video_source)
-        
-        self.statusbar.SetStatusText('Working on video: {}'.format(os.path.split(str(selectedvideo))[-1]))
-
-        if  str(selectedvideo.stem) in self.video_names :
-            self.grab.Enable(True)
-            self.vid = cv2.VideoCapture(self.video_source)
-            self.videoPath = os.path.dirname(self.video_source)
-            self.filename = Path(self.video_source).name
-            self.numberFrames = int(self.vid.get(cv2.CAP_PROP_FRAME_COUNT))
-# Checks if the video is corrupt.
-            if not self.vid.isOpened():
-                msg = wx.MessageBox('Invalid Video file!Do you want to retry?', 'Error!', wx.YES_NO | wx.ICON_WARNING)
-                if msg == 2:
-                    self.load.Enable(True)
-                    MainFrame.browseDir(self, event)
-                else:
-                    self.Destroy()
-            self.slider.Bind(wx.EVT_SLIDER, self.OnSliderScroll)
-            self.update()
-
-            cropMsg = wx.MessageBox("Do you want to crop the frames?",'Want to crop?',wx.YES_NO|wx.ICON_INFORMATION)
-            if cropMsg == 2:
-                self.cropping = True
-                self.grab.SetLabel("Set cropping parameters")
-                self.grab.Bind(wx.EVT_BUTTON, self.is_crop_ok)
-                self.widget_panel.Layout()
-                self.basefolder = 'data-' + self.Task + '/'
-                MainFrame.CheckCropping(self)
-            else:
-                self.cropping = False
-                self.slider.Show()
-                self.start_frames_sizer.ShowItems(show=True)
-                self.end_frames_sizer.ShowItems(show=True)
-                self.widget_panel.Layout()
-                self.slider.SetMax(self.numberFrames-1)
-                self.startFrame.SetMax(self.numberFrames-1)
-                self.endFrame.SetMax(self.numberFrames-1)
-       
-        else:
-            wx.MessageBox('Video file is not in config file. Use add function to add this video in the config file and retry!', 'Error!', wx.OK | wx.ICON_WARNING)
-            self.Close(True)
 
     def update(self):
         """
@@ -365,38 +289,48 @@ class MainFrame(wx.Frame):
         ret, frame = self.vid.read()
         if ret:
             frame=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        self.ax = self.axes.imshow(frame)
-        self.axes.set_title(str(str(self.currFrame)+"/"+str(self.numberFrames-1) +" "+ self.filename))
-        self.figure.canvas.draw()
-
+            self.ax = self.axes.imshow(frame,cmap = self.colormap)
+            self.axes.set_title(str(str(self.currFrame)+"/"+str(self.numberFrames-1) +" "+ self.filename))
+            self.figure.canvas.draw()
+        else:
+            print("Invalid frame")
+        
     def chooseFrame(self):
         ret, frame = self.vid.read()
         fname = Path(self.filename)
         output_path = self.config_path.parents[0] / 'labeled-data' / fname.stem
-        
+        self.machinefile = os.path.join(str(output_path),'machinelabels-iter'+str(self.iterationindex)+'.h5')
+
         if output_path.exists() :
+            name = str(fname.stem)
+            DF = self.Dataframe.ix[[self.currFrame]]
+            DF.index=[os.path.join('labeled-data',name,"img"+str(index).zfill(self.strwidth)+".png") for index in DF.index]
             frame=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frame=img_as_ubyte(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
             img_name = str(output_path) +'/img'+str(self.currFrame).zfill(int(np.ceil(np.log10(self.numberFrames)))) + '.png'
-            if self.cropping:
-                crop_img = frame[self.y1:self.y2, self.x1:self.x2]
-                cv2.imwrite(img_name, cv2.cvtColor(crop_img, cv2.COLOR_RGB2BGR))
-            else:
-                cv2.imwrite(img_name, cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
+            cv2.imwrite(img_name, cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
+            Data = pd.read_hdf(self.machinefile,'df_with_missing')
+            DataCombined = pd.concat([Data,DF])
+            DataCombined = DataCombined[~DataCombined.index.duplicated(keep='first')]
+            DataCombined.to_hdf(self.machinefile,key='df_with_missing',mode='w')
+            DataCombined.to_csv(os.path.join(str(output_path),'machinelabels.csv'))
         else:
             print("%s path not found. Please make sure that the video was added to the config file using the function 'deeplabcut.add_new_videos'." %output_path)
-    
+        
     def grabFrame(self,event):
         """
         Extracts the frame and saves in the current directory
         """
-        num_frames_extract = self.endFrame.GetValue()
-        for i in range(self.currFrame,self.currFrame+num_frames_extract):
-            self.currFrame = i
+
+        if self.extract_range_frame == True:
+            num_frames_extract = self.endFrame.GetValue()
+            for i in range(self.currFrame,self.currFrame+num_frames_extract):
+                self.currFrame = i
+                self.vid.set(1,self.currFrame)
+                self.chooseFrame()
+        else:
             self.vid.set(1,self.currFrame)
             self.chooseFrame()
-        self.vid.set(1,self.currFrame)
-        self.chooseFrame()
+
 
     def plot_labels(self):
         """
@@ -404,10 +338,9 @@ class MainFrame(wx.Frame):
         """
         self.vid.set(1,self.currFrame)
         ret, frame = self.vid.read()
+        self.norm,self.colorIndex = self.image_panel.getColorIndices(frame,self.bodyparts)
         if ret:
             frame=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            self.norm = mcolors.Normalize(vmin=np.min(frame), vmax=np.max(frame))
-            self.colorIndex = np.linspace(np.min(frame),np.max(frame),len(self.bodyparts))
             divider = make_axes_locatable(self.axes)
             cax = divider.append_axes("right", size="5%", pad=0.05)
             cbar = self.figure.colorbar(self.ax, cax=cax,spacing='proportional', ticks=self.colorIndex)
@@ -423,24 +356,16 @@ class MainFrame(wx.Frame):
         """
         Opens Instructions
         """
-        wx.MessageBox('1. Use the Load Video button to load a video. Use the slider to select a frame in the entire video. The number mentioned on the top of the slider represents the frame index. \n\n2. Click Grab Frames button to save the specific frame.\n\n3. In events where you need to extract a range of frames, then use the checkbox Range of frames to select the start frame index and number of frames to extract. Click the update button to see the start frame index. Click Grab Frames to select the range of frames. \n\n Click OK to continue', 'Instructions to use!', wx.OK | wx.ICON_INFORMATION)
+        wx.MessageBox("1. Use the checkbox 'Crop?' at the bottom left if you need to crop the frame. In this case use the left mouse button to draw a box corresponding to the region of interest. Click the 'Set cropping parameters' button to add the video with the chosen crop parameters to the config file.\n\n2. Use the slider to select a frame in the entire video. \n\n3. Click Grab Frames button to save the specific frame.\n\n4. In events where you need to extract a range frames, then use the checkbox 'Range of frames' to select the starting frame index and the number of frames to extract. \n Click the update button to see the frame. Click Grab Frames to select the range of frames. \n Click OK to continue", 'Instructions to use!', wx.OK | wx.ICON_INFORMATION)
 
-class MatplotPanel(wx.Panel):
-    def __init__(self, parent,config):
-        wx.Panel.__init__(self, parent,-1,size=(100,100))
-
-        self.figure = Figure()
-        self.axes = self.figure.add_subplot(111)
-
-def show(config):
+def show(config,video,shuffle,Dataframe,scorer):
     import imageio
     imageio.plugins.ffmpeg.download()
     app = wx.App()
-    frame = MainFrame(None,config).Show()
+    frame = MainFrame(None,config,video,shuffle,Dataframe,scorer).Show()
     app.MainLoop()
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('config')
+    parser.add_argument('config','video','shuffle','Dataframe','scorer')
     cli_args = parser.parse_args()

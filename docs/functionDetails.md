@@ -53,16 +53,17 @@ order to create a training dataset. The extracted frames from all the videos are
 named after the video file’s name under the ‘labeled-data’. This function also has various parameters that might be
 useful based on the user’s need.
 
-          deeplabcut.extract_frames(config_path,‘automatic/manual’,‘uniform/kmeans’, userfeedback=False, crop=True/False, checkcropping=True)
+          deeplabcut.extract_frames(config_path,‘automatic/manual’,‘uniform/kmeans’, userfeedback=False, crop=True/False)
 
 CRITICAL POINT: It is advisable to keep the frame size small, as large frames increase the training and
 inference time. The cropping parameters for each video can be provided in the config.yaml file (and see below).
-When running the function extract_frames, if the parameter crop=True and checkcropping=True, then it will crop
-the frames to the size provided in the config.yaml file, and the user can first check the bounding box of the cropping.
-Upon calling extract_frames a image will pop up with a red bounding box based on the crop parameters so that
-the user can check those parameters. Once the user closes the pop-up window, they will be asked if the cropping is
-correct. If yes, then the frames are extracted accordingly. If not, the cropping parameters can be iteratively adjusted
-based on this graphical feedback before proceeding. `userfeedback` allows the user to check which videos they wish to extract frames from. In this way, if you added more videos to the config.yaml file it does not, by default, extract frames (again) from every video. If you wish to disable this question, set `userfeedback=True`.
+When running the function extract_frames, if the parameter crop=True, then, as of version 2.0.5 onwards, you can draw a rectangle over the image that pops up, and it will crop the frames to the size provided (and write this size to the config.yaml file).
+
+<p align="center">
+<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c71bde77817f79f73a53a20/1550958072612/newCROP_2.0.5.gif?format=750w" width="70%">
+</p>
+
+`userfeedback` allows the user to check which videos they wish to extract frames from. In this way, if you added more videos to the config.yaml file it does not, by default, extract frames (again) from every video. If you wish to disable this question, set `userfeedback=True`.
 
 The provided function either selects frames from the videos in a randomly and temporally uniformly distributed
 way (uniform), by clustering based on visual appearance (k-means), or by manual selection. Random
@@ -86,9 +87,11 @@ provided along with the toolbox. This can be launched by using:
           >> deeplabcut.extract_frames(config_path,‘manual’)
 
 The user can use the *Load Video* button to load one of the videos in the project configuration file, use the scroll
-bar to navigate across the video and *Grab a Frame* to extract the frame. The user can also look at the extracted
-frames and e.g. delete frames (from the directory) that are too similar before re-loading the set and then manually
-annotating them.
+bar to navigate across the video and *Grab a Frame* (or a range of frames, as of version 2.0.5) to extract the frame(s). The user can also look at the extracted frames and e.g. delete frames (from the directory) that are too similar before re-loading the set and then manually annotating them.
+
+<p align="center">
+<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c71bfbc71c10b4a23d20567/1550958540700/cropMANUAL.gif?format=750w" width="70%">
+</p>
 
 ### (D) Label Frames 
 -- (as of 2.0.4 onwards)
@@ -104,19 +107,15 @@ the videos. Subsequently, the user can use one of the radio buttons (top right) 
 Each label will be plotted as a dot in a unique color (see Figure 4 for more details).
 
 The user is free to move around the body part and once satisfied with its position, can select another radio button
-(in the top right) to switch to the respective body part (it otherwise auto-advances). The user can skip a body part if it is not visible. Once all the visible body parts are labeled, then the user can use ‘Next Frame’ to load the following frame. The user needs
-to save the labels after all the frames from one of the videos are labeled by clicking the save button at the bottom
-right. Saving the labels will create a labeled dataset for each video in a hierarchical data file format (HDF) in the
-subdirectory corresponding to the particular video in **labeled-data**. You can save at any intermediate step and return to labeling a dataset by reloading it! 
+(in the top right) to switch to the respective body part (it otherwise auto-advances). The user can skip a body part if it is not visible. Once all the visible body parts are labeled, then the user can use ‘Next Frame’ to load the following frame. The user needs to save the labels after all the frames from one of the videos are labeled by clicking the save button at the bottom right. Saving the labels will create a labeled dataset for each video in a hierarchical data file format (HDF) in the
+subdirectory corresponding to the particular video in **labeled-data**. You can save at any intermediate step (even without closing the GUI, just hit save) and you return to labeling a dataset by reloading it! 
 
 **CRITICAL POINT:** It is advisable to **consistently label similar spots** (e.g. on a wrist that is very large, try
 to label the same location). In general, invisible or occluded points should not be labeled by the user. They can
 simply be skipped by not applying the label anywhere on the frame.
 
 OPTIONAL: In an event of adding more labels to the existing labeled dataset, the user need to append the new
-labels to the bodyparts in the config.yaml file. Thereafter, the user can call the function **label_frames** and check
-the left lower tick box, *Add new labels to existing dataset?* before loading the frames. Saving the labels after all the
-images are labelled will append the new labels to the existing labeled dataset.
+labels to the bodyparts in the config.yaml file. Thereafter, the user can call the function **label_frames**. As of 2.0.5: then a box will pop up and ask the user if they wish to display all parts, or only add in the new labels. Saving the labels after all the images are labelled will append the new labels to the existing labeled dataset.
 
 ###  (E) Check Annotated Frames
 

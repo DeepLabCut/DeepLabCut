@@ -70,22 +70,22 @@ def read_config(configname):
     """
     ruamelFile = ruamel.yaml.YAML()
     path = Path(configname)
-    try:
-        with open(path, 'r') as f:
-            cfg = ruamelFile.load(f)
-    except Exception as err:
-        if err.args[2] == "could not determine a constructor for the tag '!!python/tuple'":
-            with open(path, 'r') as ymlfile:
-                print("Converting to novel config.yaml format!")
-                cfg = yaml.load(ymlfile)
-                write_config(configname,cfg)
-    
+    if os.path.exists(path):
+        try:
+            with open(path, 'r') as f:
+                cfg = ruamelFile.load(f)
+        except Exception as err:
+            if err.args[2] == "could not determine a constructor for the tag '!!python/tuple'":
+                with open(path, 'r') as ymlfile:
+                  cfg = yaml.load(ymlfile)
+                  write_config(configname,cfg)
+    else:
+        raise FileNotFoundError ("Config file is not found. Please make sure that the file exists and/or there are no unnecessary spaces in the path of the config file!")
     return(cfg)
 
 def write_config(configname,cfg):
     """
     Write structured config file.
-    
     """
     with open(configname, 'w') as cf:
         ruamelFile = ruamel.yaml.YAML()
@@ -242,7 +242,7 @@ def GetScorerName(cfg,shuffle,trainFraction,trainingsiterations='unknown'):
     if trainingsiterations=='unknown':
         snapshotindex=cfg['snapshotindex']
         if cfg['snapshotindex'] == 'all':
-            print("Changing snapshotindext to the last one -- plotting, videomaking, etc. should not be performed for all indices. For more selectivity enter the ordinal number of the snapshot you want (ie. 4 for the fifth).")
+            print("Changing snapshotindext to the last one -- plotting, videomaking, etc. should not be performed for all indices. For more selectivity enter the ordinal number of the snapshot you want (ie. 4 for the fifth) in the config file.")
             snapshotindex = -1
         else:
             snapshotindex=cfg['snapshotindex']

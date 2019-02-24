@@ -8,9 +8,10 @@
 name: dlc-windowsCPU
 dependencies:
   - python=3.6
+  - msvc_runtime
+  - jupyter
   - tensorflow==1.12
   - wxpython
-  - jupyter
   - pytables==3.4.3 #problem with 3.4.4
   - pip:
     - deeplabcut

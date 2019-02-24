@@ -15,6 +15,7 @@ own dataset. See all the demo's [here!](/examples)
 ### Option 2: using terminal, Start Python:
 
 Open an ipython session and import the package by typing in the terminal:
+Please note, if you are using MacOS, you must use ``pythonw`` vs. ``ipython`` (also, GUIs are not supported in Jupyter in MacOS so please follow the instructions below!)
 
 ``ipython``
 
@@ -53,9 +54,9 @@ TIP: for every function there is a associated help document that can be viewed b
 
 ### Select Frames to Label:
 
-``deeplabcut.extract_frames(config_path,`automatic/manual',`uniform/kmeans', crop=True/False, checkcropping=True)``
+``deeplabcut.extract_frames(config_path,`automatic/manual',`uniform/kmeans', crop=True/False)``
 
-(more details [here](functionDetails.md#c-data-selection))
+(more details [here](functionDetails.md#c-data-selection)) *update: as of 2.0.5 ``checkcropping=True`` is droppped; you now just the option to directly draw a rectangle over the image to crop before extraction (i.e. there no need to manually change in config.yaml then check).
 
 ### Label Frames:
 
@@ -94,12 +95,18 @@ TIP: for every function there is a associated help document that can be viewed b
 (more details [here](functionDetails.md#h-evaluate-the-trained-network))
 
 ### Video Analysis and Plotting Results:
+- Plesae note that novel videos DO NOT need to be added to the config.yaml file. You can simply have a folder eslsewhere on your computer and pass the video folder (then it will analyze all videos of the specified type (i.e. ``videotype='.mp4'``), or pass the path to the exact video you wish to analyze:
 
 ``deeplabcut.analyze_videos(config_path,[`/fullpath/project/videos/reachingvideo1.avi'], shuffle=1, save_as_csv=True)``
 
 ``deeplabcut.create_labeled_video(config_path, [`/analysis/project/videos/reachingvideo1.avi',`/fullpath/project/videos/reachingvideo2.avi'])``
 
 ``deeplabcut.plot_trajectories(config_path,[`/fullpath/project/videos/reachingvideo1.avi'])``
+
+You can also filter the points by:
+
+``deeplabcut.filterpredictions(config_path,[`/fullpath/project/videos/reachingvideo1.avi'], shuffle=1)``
+Note, this creates a file with the ending filtered.h5 that you can use for further analysis. This filtering step has many parameters, so please see the full docstring by typing: ``deeplabcut.filterpredictions?``
 
 (more details [here](functionDetails.md#i-video-analysis-and-plotting-results))
 

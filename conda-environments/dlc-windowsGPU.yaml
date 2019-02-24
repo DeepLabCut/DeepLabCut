@@ -10,6 +10,7 @@
 name: dlc-windowsGPU
 dependencies:
   - python=3.6
+  - msvc_runtime
   - tensorflow-gpu==1.12
   - cudnn=7
   - wxpython

@@ -14,27 +14,23 @@ import numpy as np
 #from skimage import io
 import PIL
 import glob
-
+import platform
 import wx.lib.scrolledpanel as SP
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-import matplotlib.cm as cm
 import matplotlib.colors as mcolors
 import os.path
 import argparse
-import yaml
+import matplotlib
 from deeplabcut.utils import auxiliaryfunctions
-from matplotlib import pylab as pl
 from skimage import io
 
 from pathlib import Path
 from deeplabcut.refine_training_dataset import auxfun_drag
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+
 from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as NavigationToolbar
-
-
-from matplotlib.figure import Figure
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 
 
@@ -48,7 +44,7 @@ class ImagePanel(wx.Panel):
         w=gui_size[1]/3
         wx.Panel.__init__(self, parent, -1,style=wx.SUNKEN_BORDER,size=(h,w))
 
-        self.figure = pl.figure()
+        self.figure = matplotlib.figure.Figure()
         self.axes = self.figure.add_subplot(1, 1, 1)
         self.canvas = FigureCanvas(self, -1, self.figure)
         self.sizer = wx.BoxSizer(wx.VERTICAL)
@@ -63,7 +59,7 @@ class ImagePanel(wx.Panel):
         im = io.imread(img)
         ax = self.axes.imshow(im,cmap=cmap)
         divider = make_axes_locatable(self.axes)
-        colorIndex = np.linspace(0,np.max(im),len(bodyparts))
+        colorIndex = np.linspace(np.min(im),np.max(im),len(bodyparts))
         cax = divider.append_axes("right", size="5%", pad=0.05)
         cbar = self.figure.colorbar(ax, cax=cax,spacing='proportional', ticks=colorIndex)
         cbar.set_ticklabels(bodyparts[::-1])
@@ -233,6 +229,7 @@ class MainFrame(wx.Frame):
         self.move2corner = cfg['move2corner']
         self.center = cfg['corner2move2']
         self.colormap = plt.get_cmap(cfg['colormap'])
+        self.colormap = self.colormap.reversed()
         self.markerSize = cfg['dotsize']
         self.alpha = cfg['alphavalue']
         self.iterationindex = cfg['iteration']
@@ -316,7 +313,12 @@ class MainFrame(wx.Frame):
         fname = str('machinelabels-iter'+str(self.iterationindex)+'.h5')
         self.statusbar.SetStatusText("Looking for a folder to start refining...")
         cwd = os.path.join(os.getcwd(),'labeled-data')
-        dlg = wx.FileDialog(self, "Choose the machinelabels file for current iteration.",cwd, "",wildcard=fname,style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+#        dlg = wx.FileDialog(self, "Choose the machinelabels file for current iteration.",cwd, "",wildcard=fname,style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+        print(platform.system())
+        if platform.system()=='Darwin':  
+            dlg = wx.FileDialog(self, "Choose the machinelabels file for current iteration.",cwd, fname ,wildcard="(*.h5)|*.h5",style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) 
+        else:
+            dlg = wx.FileDialog(self, "Choose the machinelabels file for current iteration.",cwd, "",wildcard=fname,style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
 
         if dlg.ShowModal() == wx.ID_OK:
             self.data_file = dlg.GetPath()
