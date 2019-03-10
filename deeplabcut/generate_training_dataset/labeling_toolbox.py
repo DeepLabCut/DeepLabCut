@@ -40,6 +40,8 @@ class ImagePanel(wx.Panel):
         self.figure = matplotlib.figure.Figure()
         self.axes = self.figure.add_subplot(1, 1, 1)
         self.canvas = FigureCanvas(self, -1, self.figure)
+        self.orig_xlim = None
+        self.orig_ylim = None
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.sizer.Add(self.canvas, 1, wx.LEFT | wx.TOP | wx.GROW)
         self.SetSizer(self.sizer)
@@ -48,18 +50,31 @@ class ImagePanel(wx.Panel):
     def getfigure(self):
         return(self.figure)
 
-    def drawplot(self,img,img_name,itr,index,bodyparts,cmap):
-        im = cv2.imread(img)
+    def drawplot(self,img,img_name,itr,index,bodyparts,cmap,keep_view=False):
+        xlim = self.axes.get_xlim()
+        ylim = self.axes.get_ylim()
+        self.axes.clear()
+
+        # Convert from openCV BGR to matplotlib RGB
+        im = cv2.imread(img)[...,::-1]
         ax = self.axes.imshow(im,cmap=cmap)
+        self.orig_xlim = self.axes.get_xlim()
+        self.orig_ylim = self.axes.get_ylim()
         divider = make_axes_locatable(self.axes)
         colorIndex = np.linspace(np.min(im),np.max(im),len(bodyparts))
         cax = divider.append_axes("right", size="5%", pad=0.05)
         cbar = self.figure.colorbar(ax, cax=cax,spacing='proportional', ticks=colorIndex)
         cbar.set_ticklabels(bodyparts[::-1])
         self.axes.set_title(str(str(itr)+"/"+str(len(index)-1) +" "+ img_name ))
-        self.figure.canvas.draw()
+        if keep_view:
+            self.axes.set_xlim(xlim)
+            self.axes.set_ylim(ylim)
         self.toolbar = NavigationToolbar(self.canvas)
         return(self.figure,self.axes,self.canvas,self.toolbar)
+
+    def resetView(self):
+        self.axes.set_xlim(self.orig_xlim)
+        self.axes.set_ylim(self.orig_ylim)
 
     def getColorIndices(self,img,bodyparts):
         """
@@ -243,9 +258,8 @@ class MainFrame(wx.Frame):
         self.buttonCounter = []
         self.markerSize = self.slider.GetValue()
         img_name = Path(self.index[self.iter]).name
-        self.axes.clear()
         self.figure.delaxes(self.figure.axes[1])
-        self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.bodyparts,self.colormap)
+        self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.bodyparts,self.colormap,keep_view=True)
         self.buttonCounter = MainFrame.plot(self,self.img)
 
     def quitButton(self, event):
@@ -253,7 +267,7 @@ class MainFrame(wx.Frame):
         Asks user for its inputs and then quits the GUI
         """
         self.statusbar.SetStatusText("Qutting now!")
-        
+
         nextFilemsg = wx.MessageBox('Do you want to label another data set?', 'Repeat?', wx.YES_NO | wx.ICON_INFORMATION)
         if nextFilemsg == 2:
             self.file = 1
@@ -263,7 +277,7 @@ class MainFrame(wx.Frame):
             self.bodyparts = []
             self.new_labels = self.new_labels
             self.axes.clear()
-            self.figure.delaxes(self.figure.axes[1]) 
+            self.figure.delaxes(self.figure.axes[1])
             self.choiceBox.Clear(True)
             MainFrame.updateZoomPan(self)
             MainFrame.browseDir(self, event)
@@ -281,7 +295,8 @@ class MainFrame(wx.Frame):
         self.statusbar.SetStatusText("Help")
 
     def homeButton(self,event):
-        self.toolbar.home()
+        self.image_panel.resetView()
+        self.figure.canvas.draw()
         MainFrame.updateZoomPan(self)
         self.zoom.SetValue(False)
         self.pan.SetValue(False)
@@ -328,6 +343,7 @@ class MainFrame(wx.Frame):
                 self.updatedCoords.append(self.dr.coords)
                 if self.rdb.GetSelection() < len(self.bodyparts) -1:
                     self.rdb.SetSelection(self.rdb.GetSelection() + 1)
+                self.figure.canvas.draw()
 
         self.canvas.mpl_disconnect(self.onClick)
 
@@ -372,7 +388,7 @@ class MainFrame(wx.Frame):
             self.dataFrame = pd.read_hdf(os.path.join(self.dir,'CollectedData_'+self.scorer+'.h5'),'df_with_missing')
             self.dataFrame.sort_index(inplace=True)
             self.prev.Enable(True)
-            
+
 # Finds the first empty row in the dataframe and sets the iteration to that index
             for idx,j in enumerate(self.dataFrame.index):
                 values = self.dataFrame.loc[j,:].values
@@ -381,7 +397,7 @@ class MainFrame(wx.Frame):
                     break
                 else:
                     self.iter = idx
-                    
+
         except:
             a = np.empty((len(self.index),2,))
             a[:] = np.nan
@@ -469,7 +485,6 @@ class MainFrame(wx.Frame):
         self.rdb.SetSelection(0)
         self.file = 1
 # Refreshing the button counter
-        self.axes.clear()
         self.buttonCounter = []
         MainFrame.saveEachImage(self)
 
@@ -480,7 +495,7 @@ class MainFrame(wx.Frame):
             self.img = self.index[self.iter]
             img_name = Path(self.index[self.iter]).name
             self.figure.delaxes(self.figure.axes[1]) # Removes the axes corresponding to the colorbar
-            self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.bodyparts,self.colormap)
+            self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.bodyparts,self.colormap,keep_view=True)
             self.buttonCounter = MainFrame.plot(self,self.img)
             self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
 
@@ -499,7 +514,6 @@ class MainFrame(wx.Frame):
         self.statusbar.SetStatusText('Working on folder: {}'.format(os.path.split(str(self.dir))[-1]))
         MainFrame.saveEachImage(self)
 
-        self.axes.clear()
         self.buttonCounter = []
         self.iter = self.iter - 1
 
@@ -507,7 +521,7 @@ class MainFrame(wx.Frame):
         self.img = self.index[self.iter]
         img_name = Path(self.index[self.iter]).name
         self.figure.delaxes(self.figure.axes[1]) # Removes the axes corresponding to the colorbar
-        self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.bodyparts,self.colormap)
+        self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.bodyparts,self.colormap,keep_view=True)
         self.buttonCounter = MainFrame.plot(self,self.img)
         self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
         MainFrame.saveEachImage(self)
