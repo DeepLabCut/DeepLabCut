@@ -19,7 +19,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 from skimage.util import img_as_ubyte
 
-def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,outlieralgorithm='jump',comparisonbodyparts='all',epsilon=20,p_bound=.01,ARdegree=3,MAdegree=1,alpha=.01,extractionalgorithm='kmeans',automatic=False,cluster_resizewidth=30,cluster_color=False,opencv=True):
+def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,outlieralgorithm='jump',comparisonbodyparts='all',epsilon=20,p_bound=.01,ARdegree=3,MAdegree=1,alpha=.01,extractionalgorithm='kmeans',automatic=False,cluster_resizewidth=30,cluster_color=False,opencv=True,savelabeled=True):
     """
     Extracts the outlier frames in case, the predictions are not correct for a certain video from the cropped video running from
     start to stop as defined in config.yaml.
@@ -91,6 +91,9 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
 
     opencv: bool, default: True
         Uses openCV for loading & extractiong (otherwise moviepy (legacy))
+
+    savelabeled: bool, default: True
+        If true also saves frame with predicted labels in each folder. 
 
     Example
     --------
@@ -171,7 +174,7 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
     
               if askuser=='y' or askuser=='yes' or askuser=='Ja' or askuser=='ha': # multilanguage support :)
                   #Now extract from those Indices!
-                  ExtractFramesbasedonPreselection(Indices,extractionalgorithm,Dataframe,dataname,scorer,video,cfg,config,opencv,cluster_resizewidth,cluster_color)
+                  ExtractFramesbasedonPreselection(Indices,extractionalgorithm,Dataframe,dataname,scorer,video,cfg,config,opencv,cluster_resizewidth,cluster_color,savelabeled)
               else:
                   print("Nothing extracted, change parameters and start again...")
         
@@ -350,7 +353,7 @@ def ComputeDeviations(Dataframe,cfg,comparisonbodyparts,scorer,dataname,p_bound,
             return np.zeros(ntimes), np.zeros(ntimes)
 
 
-def ExtractFramesbasedonPreselection(Index,extractionalgorithm,Dataframe,dataname,scorer,video,cfg,config,opencv=True,cluster_resizewidth=30,cluster_color=False):
+def ExtractFramesbasedonPreselection(Index,extractionalgorithm,Dataframe,dataname,scorer,video,cfg,config,opencv=True,cluster_resizewidth=30,cluster_color=False,savelabeled=True):
     from deeplabcut.create_project import add
     start  = cfg['start']
     stop = cfg['stop']
@@ -414,9 +417,9 @@ def ExtractFramesbasedonPreselection(Index,extractionalgorithm,Dataframe,datanam
     strwidth = int(np.ceil(np.log10(nframes))) #width for strings
     for index in frames2pick: ##tqdm(range(0,nframes,10)):
         if opencv:
-            PlottingSingleFramecv2(cap,cv2,cfg['cropping'],coords,Dataframe,bodyparts,tmpfolder,index,scorer,cfg['dotsize'],cfg['pcutoff'],cfg['alphavalue'],colors,strwidth)
+            PlottingSingleFramecv2(cap,cv2,cfg['cropping'],coords,Dataframe,bodyparts,tmpfolder,index,scorer,cfg['dotsize'],cfg['pcutoff'],cfg['alphavalue'],colors,strwidth,savelabeled)
         else:
-            PlottingSingleFrame(clip,Dataframe,bodyparts,tmpfolder,index,scorer,cfg['dotsize'],cfg['pcutoff'],cfg['alphavalue'],colors,strwidth)
+            PlottingSingleFrame(clip,Dataframe,bodyparts,tmpfolder,index,scorer,cfg['dotsize'],cfg['pcutoff'],cfg['alphavalue'],colors,strwidth,savelabeled)
         plt.close("all")
 
     #close videos
@@ -445,7 +448,10 @@ def ExtractFramesbasedonPreselection(Index,extractionalgorithm,Dataframe,datanam
             DF.to_hdf(machinefile,key='df_with_missing',mode='w')
             DF.to_csv(os.path.join(tmpfolder, "machinelabels.csv"))
         try:
-          add.add_new_videos(config,[video],coords=[coords]) # make sure you pass coords as a list
+            if cfg['cropping']:
+                add.add_new_videos(config,[video],coords=[coords]) # make sure you pass coords as a list
+            else:
+                add.add_new_videos(config,[video],coords=None)
         except: #can we make a catch here? - in fact we should drop indices from DataCombined if they are in CollectedData.. [ideal behavior; currently this is pretty unlikely]
             print("AUTOMATIC ADDING OF VIDEO TO CONFIG FILE FAILED! You need to do this manually for including it in the config.yaml file!")
             print("Videopath:", video,"Coordinates for cropping:", coords)
@@ -456,7 +462,7 @@ def ExtractFramesbasedonPreselection(Index,extractionalgorithm,Dataframe,datanam
     else:
         print("No frames were extracted.")
 
-def PlottingSingleFrame(clip,Dataframe,bodyparts2plot,tmpfolder,index,scorer,dotsize,pcutoff,alphavalue,colors,strwidth=4):
+def PlottingSingleFrame(clip,Dataframe,bodyparts2plot,tmpfolder,index,scorer,dotsize,pcutoff,alphavalue,colors,strwidth=4,savelabeled=True):
         ''' Label frame and save under imagename / this is already cropped (for clip) '''
         from skimage import io
         imagename1 = os.path.join(tmpfolder,"img"+str(index).zfill(strwidth)+".png")
@@ -492,10 +498,11 @@ def PlottingSingleFrame(clip,Dataframe,bodyparts2plot,tmpfolder,index,scorer,dot
             plt.subplots_adjust(
                 left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
             plt.gca().invert_yaxis()
-            plt.savefig(imagename2)
+            if savelabeled:
+                plt.savefig(imagename2)
             plt.close("all")
 
-def PlottingSingleFramecv2(cap,cv2,crop,coords,Dataframe,bodyparts2plot,tmpfolder,index,scorer,dotsize,pcutoff,alphavalue,colors,strwidth=4):
+def PlottingSingleFramecv2(cap,cv2,crop,coords,Dataframe,bodyparts2plot,tmpfolder,index,scorer,dotsize,pcutoff,alphavalue,colors,strwidth=4,savelabeled=True):
         ''' Label frame and save under imagename / cap is not already cropped. '''
         from skimage import io
         imagename1 = os.path.join(tmpfolder,"img"+str(index).zfill(strwidth)+".png")
@@ -537,7 +544,8 @@ def PlottingSingleFramecv2(cap,cv2,crop,coords,Dataframe,bodyparts2plot,tmpfolde
             plt.subplots_adjust(
                 left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
             plt.gca().invert_yaxis()
-            plt.savefig(imagename2)
+            if savelabeled:
+                plt.savefig(imagename2)
             plt.close("all")
 
 

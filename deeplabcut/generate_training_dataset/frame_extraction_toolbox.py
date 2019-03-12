@@ -126,6 +126,7 @@ class MainFrame(wx.Frame):
 
         self.start_frames_sizer.AddSpacer(15)
         self.startFrame = wx.SpinCtrl(self.widget_panel, value='0', size=(100, -1), min=0, max=120)
+        self.startFrame.Bind(wx.EVT_SPINCTRL,self.updateSlider)
         self.startFrame.Enable(False)
         self.start_frames_sizer.Add(self.startFrame,1, wx.EXPAND|wx.ALIGN_LEFT,15)
         start_text = wx.StaticText(self.widget_panel, label='Start Frame Index')
@@ -265,6 +266,7 @@ class MainFrame(wx.Frame):
         self.axes.clear()
         self.grab.Bind(wx.EVT_BUTTON, self.grabFrame)
         self.currFrame = (self.slider.GetValue())
+        self.startFrame.SetValue(self.currFrame)
         self.update()
     
     def is_crop_ok(self,event):
@@ -376,7 +378,7 @@ class MainFrame(wx.Frame):
         
         if output_path.exists() :
             frame=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frame=img_as_ubyte(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            frame=img_as_ubyte(frame)
             img_name = str(output_path) +'/img'+str(self.currFrame).zfill(int(np.ceil(np.log10(self.numberFrames)))) + '.png'
             if self.cropping:
                 crop_img = frame[self.y1:self.y2, self.x1:self.x2]

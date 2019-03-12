@@ -89,7 +89,7 @@ def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,DLCscorer,bodyparts2plot
             clip.save_frame(frame)
         clip.close()
 
-def CreateVideoSlow(clip,Dataframe,tmpfolder,dotsize,colormap,alphavalue,pcutoff,cropping,x1,x2,y1,y2,delete,DLCscorer,bodyparts2plot,outputframerate):
+def CreateVideoSlow(clip,Dataframe,tmpfolder,dotsize,colormap,alphavalue,pcutoff,cropping,x1,x2,y1,y2,delete,DLCscorer,bodyparts2plot,outputframerate,Frames2plot):
     ''' Creating individual frames with labeled body parts and making a video'''
     #scorer=np.unique(Dataframe.columns.get_level_values(0))[0]
     #bodyparts2plot = list(np.unique(Dataframe.columns.get_level_values(1)))
@@ -102,7 +102,6 @@ def CreateVideoSlow(clip,Dataframe,tmpfolder,dotsize,colormap,alphavalue,pcutoff
     fps=clip.fps()
     if  outputframerate is None: #by def. same as input rate.
         outputframerate=clip.fps()
-    
     
     nframes = len(Dataframe.index)
     duration = nframes/fps
@@ -123,7 +122,15 @@ def CreateVideoSlow(clip,Dataframe,tmpfolder,dotsize,colormap,alphavalue,pcutoff
     if nframes_digits>9:
         raise Exception("Your video has more than 10**9 frames, we recommend chopping it up.")
     
-    for index in tqdm(range(nframes)):
+    if Frames2plot==None:
+        Index=range(nframes)
+    else:
+        Index=[]
+        for k in Frames2plot:
+            if k>=0 and k<nframes:
+                Index.append(int(k))
+            
+    for index in tqdm(Index):
         imagename = tmpfolder + "/file"+str(index).zfill(nframes_digits)+".png"
         if os.path.isfile(imagename):
             image = img_as_ubyte(clip.load_frame()) #still need to read (so counter advances!)
@@ -162,7 +169,6 @@ def CreateVideoSlow(clip,Dataframe,tmpfolder,dotsize,colormap,alphavalue,pcutoff
     os.chdir(tmpfolder)
     print("All labeled frames were created, now generating video...")
     vname=str(Path(tmpfolder).stem).split('-')[1]
-    print("HALLO,", os.listdir(os.curdir))
     ## One can change the parameters of the video creation script below:
     # See ffmpeg user guide: http://ffmpeg.org/ffmpeg.html#Video-and-Audio-file-format-conversion
     # 
@@ -178,7 +184,7 @@ def CreateVideoSlow(clip,Dataframe,tmpfolder,dotsize,colormap,alphavalue,pcutoff
             os.remove(file_name)
     os.chdir(start)
 
-def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,save_frames=False,delete=False,displayedbodyparts='all',codec='mp4v',outputframerate=None):
+def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,save_frames=False,Frames2plot=None,delete=False,displayedbodyparts='all',codec='mp4v',outputframerate=None):
     """
     Labels the bodyparts in a video. Make sure the video is already analyzed by the function 'analyze_video'
 
@@ -206,6 +212,9 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
         If true creates each frame individual and then combines into a video. This variant is relatively slow as
         it stores all individual frames. However, it uses matplotlib to create the frames and is therefore much more flexible (one can set transparency of markers, crop, and easily customize).
 
+    Frames2plot: List of indices
+        If not None & save_frames=True then the frames corresponding to the index will be plotted. For example, Frames2plot=[0,11] will plot the first and the 12th frame.
+        
     delete: bool
         If true then the individual frames created during the video generation will be deleted.
 
@@ -289,7 +298,7 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
                     auxiliaryfunctions.attempttomakefolder(tmpfolder)
                     clip = vp(video)
                     #CreateVideoSlow(clip,Dataframe,tmpfolder,cfg["dotsize"],cfg["colormap"],cfg["alphavalue"],cfg["pcutoff"],cfg["cropping"],cfg["x1"],cfg["x2"],cfg["y1"],cfg["y2"],delete,DLCscorer,bodyparts)
-                    CreateVideoSlow(clip,Dataframe,tmpfolder,cfg["dotsize"],cfg["colormap"],cfg["alphavalue"],cfg["pcutoff"],cropping,x1,x2,y1,y2,delete,DLCscorer,bodyparts,outputframerate)
+                    CreateVideoSlow(clip,Dataframe,tmpfolder,cfg["dotsize"],cfg["colormap"],cfg["alphavalue"],cfg["pcutoff"],cropping,x1,x2,y1,y2,delete,DLCscorer,bodyparts,outputframerate,Frames2plot)
                 else:
                     clip = vp(fname = video,sname = os.path.join(vname + DLCscorer+'_labeled.mp4'),codec=codec)
                     if cropping:
