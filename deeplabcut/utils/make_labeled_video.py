@@ -130,41 +130,41 @@ def CreateVideoSlow(clip,Dataframe,tmpfolder,dotsize,colormap,alphavalue,pcutoff
             if k>=0 and k<nframes:
                 Index.append(int(k))
             
-    for index in tqdm(Index):
+    for index in tqdm(range(nframes)):
         imagename = tmpfolder + "/file"+str(index).zfill(nframes_digits)+".png"
         if os.path.isfile(imagename):
             image = img_as_ubyte(clip.load_frame()) #still need to read (so counter advances!)
         else:
             plt.axis('off')
-            
             image = img_as_ubyte(clip.load_frame())
-            if cropping:
-                    image=image[y1:y2,x1:x2]
-            else:
-                pass
-            plt.figure(frameon=False, figsize=(nx * 1. / 100, ny * 1. / 100))
-            plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-            plt.imshow(image)
-
-            for bpindex, bp in enumerate(bodyparts2plot):
-                if df_likelihood[bpindex,index] > pcutoff:
-                    plt.scatter(
-                        df_x[bpindex,index],
-                        df_y[bpindex,index],
-                        s=dotsize**2,
-                        color=colors(bpindex),
-                        alpha=alphavalue)
-
-            plt.xlim(0, nx)
-            plt.ylim(0, ny)
-            plt.axis('off')
-            plt.subplots_adjust(
-                left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-            plt.gca().invert_yaxis()
-            plt.savefig(imagename)
-
-            plt.close("all")
-
+            if index in Index: #then extract the frame!
+                if cropping:
+                        image=image[y1:y2,x1:x2]
+                else:
+                    pass
+                plt.figure(frameon=False, figsize=(nx * 1. / 100, ny * 1. / 100))
+                plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+                plt.imshow(image)
+    
+                for bpindex, bp in enumerate(bodyparts2plot):
+                    if df_likelihood[bpindex,index] > pcutoff:
+                        plt.scatter(
+                            df_x[bpindex,index],
+                            df_y[bpindex,index],
+                            s=dotsize**2,
+                            color=colors(bpindex),
+                            alpha=alphavalue)
+    
+                plt.xlim(0, nx)
+                plt.ylim(0, ny)
+                plt.axis('off')
+                plt.subplots_adjust(
+                    left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+                plt.gca().invert_yaxis()
+                plt.savefig(imagename)
+    
+                plt.close("all")
+    
     start= os.getcwd()
     os.chdir(tmpfolder)
     print("All labeled frames were created, now generating video...")
