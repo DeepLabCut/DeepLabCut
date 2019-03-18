@@ -70,6 +70,8 @@ intermediate_supervision_layer: 12
 # Prevents training from crashing with out of memory exception for very
 # large images.
 max_input_size: 1500
+# all images smaller than 64*64 will be excluded. 
+min_input_size: 64
 
 # Learning rate schedule for the SGD optimiser.
 multi_step:

@@ -65,13 +65,13 @@ class DraggablePoint:
             To remove a predicted label. Internally, the coordinates of the selected predicted label is replaced with nan. The user needs to right click for the event.After right
             click the data point is removed from the plot.
             """
-            msg = wx.MessageBox('Do you want to remove %s ? You cannot undo this step!'%self.bodyParts, 'Remove!', wx.YES_NO | wx.ICON_WARNING)
+            msg = wx.MessageBox('Do you want to remove the label %s ?'%self.bodyParts, 'Remove!', wx.YES_NO | wx.ICON_WARNING)
             if msg == 2:
                 self.press = None
                 DraggablePoint.lock = None
                 self.point.set_animated(False)
                 self.background = None
-                self.final_point = (np.nan,np.nan)
+                self.final_point = (np.nan,np.nan,self.bodyParts)
                 self.point.center = (np.nan,np.nan)
                 self.coords.append(self.final_point)
                 self.point.figure.canvas.draw()
@@ -121,6 +121,7 @@ class DraggablePoint:
             if contains:
                 self.annot.xy = (self.point.center[0],self.point.center[1])
                 text = str(self.bodyParts)
+#                text = str(self.individual_names+','+self.bodyParts)
                 self.annot.set_text(text)
                 self.annot.get_bbox_patch().set_alpha(0.4)
                 self.annot.set_visible(True)

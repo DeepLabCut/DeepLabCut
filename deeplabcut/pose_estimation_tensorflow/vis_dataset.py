@@ -6,12 +6,15 @@ https://github.com/eldar/pose-tensorflow
 import logging, os
 import numpy as np
 from scipy.misc import imresize
+import platform
 import matplotlib as mpl
 if os.environ.get('DLClight', default=False) == 'True':
     mpl.use('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
     pass
+elif platform.system() == 'Darwin':
+    mpl.use('WXAgg')
 else:
-    mpl.use('TkAgg')
+    mpl.use('TkAgg') #TkAgg
 
 import matplotlib.pyplot as plt
 

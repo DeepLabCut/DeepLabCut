@@ -170,7 +170,7 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
     cfg_file['pcutoff']=0.1
     cfg_file['dotsize']=12 #for plots size of dots
     cfg_file['alphavalue']=0.7 #for plots transparency of markers
-    cfg_file['colormap']='hsv' #for plots type of colormap
+    cfg_file['colormap']='jet' #for plots type of colormap
 
     projconfigfile=os.path.join(str(project_path),'config.yaml')
     # Write dictionary to yaml  config file

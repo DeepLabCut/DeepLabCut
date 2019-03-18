@@ -62,21 +62,21 @@ def add_new_videos(config,videos,copy_videos=False,coords=None):
     
     destinations = [video_path.joinpath(vp.name) for vp in videos]
     if copy_videos==True:
-        print("Copying the videos")
         for src, dst in zip(videos, destinations):
-            shutil.copy(os.fspath(src),os.fspath(dst)) 
+            if dst.exists():
+                pass
+            else:
+                print("Copying the videos")
+                shutil.copy(os.fspath(src),os.fspath(dst)) 
     else:
-        print("Creating the symbolic link of the video")
         for src, dst in zip(videos, destinations):
-            if dst.exists() and not DEBUG:
-                raise FileExistsError('Video {} exists already!'.format(dst))
-            try:
+            if dst.exists():
+                pass
+            else:
+                print("Creating the symbolic link of the video")
                 src = str(src)
                 dst = str(dst)
                 os.symlink(src, dst)
-            except shutil.SameFileError:
-                if not DEBUG:
-                    raise
     
     if copy_videos==True:
         videos=destinations # in this case the *new* location should be added to the config file
