@@ -29,7 +29,7 @@ def pairwisedistances(DataCombined,scorer1,scorer2,pcutoff=-1,bodyparts=None):
             RMSE=np.sqrt(Pointwisesquareddistance.xs('x',level=1,axis=1)+Pointwisesquareddistance.xs('y',level=1,axis=1)) #Euclidean distance (proportional to RMSE)
             return RMSE,RMSE[mask]
 
-def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comparisonbodyparts="all",gputouse=None):
+def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comparisonbodyparts="all",gputouse=None,suffix=''):
     """
     Evaluates the network based on the saved models at different stages of the training network.\n
     The evaluation results are stored in the .h5 and .csv file under the subdirectory 'evaluation_results'.
@@ -100,8 +100,8 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
             ##################################################
             # Load and setup CNN part detector
             ##################################################
-            datafn,metadatafn=auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,trainFraction,shuffle,cfg)
-            modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)))
+            datafn,metadatafn=auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,trainFraction,shuffle,cfg,suffix)
+            modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg,suffix)))
             path_test_config = Path(modelfolder) / 'test' / 'pose_cfg.yaml'
             # Load meta data
             data, trainIndices, testIndices, trainFraction=auxiliaryfunctions.LoadMetadata(os.path.join(cfg["project_path"],metadatafn))
@@ -114,7 +114,7 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
             #change batch size, if it was edited during analysis!
             dlc_cfg['batch_size']=1 #in case this was edited for analysis.
             #Create folder structure to store results.
-            evaluationfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetEvaluationFolder(trainFraction,shuffle,cfg)))
+            evaluationfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetEvaluationFolder(trainFraction,shuffle,cfg,suffix)))
             auxiliaryfunctions.attempttomakefolder(evaluationfolder,recursive=True)
             #path_train_config = modelfolder / 'train' / 'pose_cfg.yaml'
             

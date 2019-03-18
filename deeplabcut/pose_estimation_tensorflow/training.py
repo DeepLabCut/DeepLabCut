@@ -9,7 +9,7 @@ M Mathis, mackenzie@post.harvard.edu
 import os
 from pathlib import Path
 
-def train_network(config,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshots_to_keep=5,autotune=False,displayiters=None,saveiters=None,maxiters=None):
+def train_network(config,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshots_to_keep=5,autotune=False,displayiters=None,saveiters=None,maxiters=None,suffix=''):
     """Trains the network with the labels in the training dataset.
 
     Parameter
@@ -63,7 +63,7 @@ def train_network(config,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshot
     
     # Read file path for pose_config file. >> pass it on
     cfg = auxiliaryfunctions.read_config(config)
-    modelfoldername=auxiliaryfunctions.GetModelFolder(cfg["TrainingFraction"][trainingsetindex],shuffle,cfg)
+    modelfoldername=auxiliaryfunctions.GetModelFolder(cfg["TrainingFraction"][trainingsetindex],shuffle,cfg, suffix)
     poseconfigfile=Path(os.path.join(cfg['project_path'],str(modelfoldername),"train","pose_cfg.yaml"))
     if not poseconfigfile.is_file():
       print("The training datafile ", poseconfigfile, " is not present.")

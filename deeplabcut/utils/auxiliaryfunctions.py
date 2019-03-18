@@ -196,22 +196,22 @@ def GetTrainingSetFolder(cfg):
     iterate = 'iteration-'+str(cfg['iteration'])
     return Path(os.path.join('training-datasets',iterate,'UnaugmentedDataSet_' + Task + date))
 
-def GetModelFolder(trainFraction,shuffle,cfg):
+def GetModelFolder(trainFraction,shuffle,cfg,suffix=''):
     Task = cfg['Task']
     date = cfg['date']
     iterate = 'iteration-'+str(cfg['iteration'])
-    return Path('dlc-models/'+ iterate+'/'+Task + date + '-trainset' + str(int(trainFraction * 100)) + 'shuffle' + str(shuffle))
+    return Path('dlc-models/'+ iterate+'/'+Task + date + '-trainset' + str(int(trainFraction * 100)) + 'shuffle' + str(shuffle) + suffix)
 
-def GetEvaluationFolder(trainFraction,shuffle,cfg):
+def GetEvaluationFolder(trainFraction,shuffle,cfg,suffix=''):
     Task = cfg['Task']
     date = cfg['date']
     iterate = 'iteration-'+str(cfg['iteration'])
-    return Path('evaluation-results/'+ iterate+'/'+Task + date + '-trainset' + str(int(trainFraction * 100)) + 'shuffle' + str(shuffle))
+    return Path('evaluation-results/'+ iterate+'/'+Task + date + '-trainset' + str(int(trainFraction * 100)) + 'shuffle' + str(shuffle) + suffix)
 
-def GetDataandMetaDataFilenames(trainingsetfolder,trainFraction,shuffle,cfg):
+def GetDataandMetaDataFilenames(trainingsetfolder,trainFraction,shuffle,cfg,suffix=''):
     # Filename for metadata and data relative to project path for corresponding parameters
-    metadatafn=os.path.join(str(trainingsetfolder) , 'Documentation_data-' + cfg["Task"] + "_" + str(int(trainFraction * 100)) + "shuffle" + str(shuffle) + '.pickle')
-    datafn=os.path.join(str(trainingsetfolder) ,cfg["Task"] + "_" + cfg["scorer"] + str(int(100 * trainFraction)) + "shuffle" + str(shuffle)+ '.mat')
+    metadatafn=os.path.join(str(trainingsetfolder) , 'Documentation_data-' + cfg["Task"] + "_" + str(int(trainFraction * 100)) + "shuffle" + str(shuffle) + suffix + '.pickle')
+    datafn=os.path.join(str(trainingsetfolder) ,cfg["Task"] + "_" + cfg["scorer"] + str(int(100 * trainFraction)) + "shuffle" + str(shuffle) + suffix +  '.mat')
     return datafn,metadatafn
 
 
@@ -239,7 +239,7 @@ def GetScorerName(cfg,shuffle,trainFraction,trainingsiterations='unknown'):
         else:
             snapshotindex=cfg['snapshotindex']
 
-        modelfolder=os.path.join(cfg["project_path"],str(GetModelFolder(trainFraction,shuffle,cfg)),'train')
+        modelfolder=os.path.join(cfg["project_path"],str(GetModelFolder(trainFraction,shuffle,cfg,suffix)),'train')
         Snapshots = np.array([fn.split('.')[0]for fn in os.listdir(modelfolder) if "index" in fn])
         increasing_indices = np.argsort([int(m.split('-')[1]) for m in Snapshots])
         Snapshots = Snapshots[increasing_indices]

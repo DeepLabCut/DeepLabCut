@@ -306,6 +306,34 @@ def SplitTrials(trialindex, trainFraction=0.8):
         trainIndexes = shuffle[:trainsetsize]
         return (trainIndexes, testIndexes)
 
+def divideTestAndTrain(divide_folders_lists, shuffle, fileNames): 
+
+    trainFiles = []
+    testFiles = []
+    for ii in range(len(divide_folders_lists)): 
+        if ii == shuffle:
+            testFiles.extend(divide_folders_lists[ii])
+        else: 
+            trainFiles.extend(divide_folders_lists[ii])
+    
+    trainIndexes = []
+    testIndexes = []      
+    for ii in range(len(fileNames)): 
+        path = fileNames[ii]
+        filePath = os.path.split(path)
+        file = os.path.split(filePath[0])
+        fileName = file[1]
+        
+        for jj in range(len(trainFiles)):
+            if (trainFiles[jj] == fileName): 
+                trainIndexes.append(ii)
+                
+        for jj in range(len(testFiles)):
+            if (testFiles[jj] == fileName):
+                testIndexes.append(ii)
+              
+    return (trainIndexes, testIndexes)
+
 def boxitintoacell(joints):
     ''' Auxiliary function for creating matfile.'''
     outer = np.array([[None]], dtype=object)
@@ -387,7 +415,7 @@ def merge_annotateddatasets(cfg,project_path,trainingsetfolder_full,windows2linu
     return AnnotationData 
 
 
-def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=False):
+def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=False, divide_folders_lists = None, suffix=""):
     """
     Creates a training dataset. Labels from all the extracted frames are merged into a single .h5 file.\n
     Only the videos included in the config file are used to create this dataset.\n
@@ -430,6 +458,7 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
     
     Data = merge_annotateddatasets(cfg,project_path,Path(os.path.join(project_path,trainingsetfolder)),windows2linux)
     Data = Data[scorer] #extract labeled data
+    # print(Data.index)
 
     #set model type. we will allow more in the future.
     if cfg['resnet']==50:
@@ -437,7 +466,7 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
         resnet_path = str(Path(deeplabcut.__file__).parents[0] / 'pose_estimation_tensorflow/models/pretrained/resnet_v1_50.ckpt')
     elif cfg['resnet']==101:
         net_type ='resnet_'+str(cfg['resnet'])
-        resnet_path = str(Path(deeplabcut.__file__).parents[0] / 'Pose_Estimation_Tensorflow/models/pretrained/resnet_v1_101.ckpt')
+        resnet_path = str(Path(deeplabcut.__file__).parents[0] / 'pose_estimation_tensorflow/models/pretrained/resnet_v1_101.ckpt')
     else:
         print("Currently only ResNet 50 or 101 supported, please change 'resnet' entry in config.yaml!")
         num_shuffles=-1 #thus the loop below is empty...
@@ -459,15 +488,22 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
 
     bodyparts = cfg['bodyparts']
     TrainingFraction = cfg['TrainingFraction']
-    for shuffle in Shuffles: # Creating shuffles starting from 1
-        for trainFraction in TrainingFraction:
-            trainIndexes, testIndexes = SplitTrials(range(len(Data.index)), trainFraction)
+    divideFolders = divide_folders_lists is not None
+    if divideFolders:
+        TrainingFraction = TrainingFraction[:1]
 
             ####################################################
             # Generating data structure with labeled information & frame metadata (for deep cut)
             ####################################################
+               
+    for shuffle in Shuffles: # Creating shuffles starting from 1
+        for trainFraction in TrainingFraction:
+            if divideFolders:
+                trainIndexes, testIndexes = divideTestAndTrain(divide_folders_lists, shuffle - 1, Data.index)
+            else:
+                trainIndexes, testIndexes = SplitTrials(range(len(Data.index)), trainFraction)
 
-            # Make training file!
+    # Make training file!
             data = []
             for jj in trainIndexes:
                 H = {}
@@ -508,7 +544,7 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
                         data.append(H)
 
             if len(trainIndexes)>0:
-                datafilename,metadatafilename=auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,trainFraction,shuffle,cfg)
+                datafilename,metadatafilename=auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,trainFraction,shuffle,cfg,suffix)
                 ################################################################################
                 # Saving metadata (Pickle file)
                 ################################################################################
@@ -532,7 +568,8 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
                 # Test files as well as pose_yaml files (containing training and testing information)
                 #################################################################################
 
-                modelfoldername=auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)
+                modelfoldername=auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg, suffix)
+                # modelfoldername = Path(modelfoldername + suffix)
                 auxiliaryfunctions.attempttomakefolder(Path(config).parents[0] / modelfoldername,recursive=True)
                 auxiliaryfunctions.attempttomakefolder(str(Path(config).parents[0] / modelfoldername)+ '/'+ '/train')
                 auxiliaryfunctions.attempttomakefolder(str(Path(config).parents[0] / modelfoldername)+ '/'+ '/test')
@@ -562,5 +599,3 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
                 ]
                 MakeTest_pose_yaml(trainingdata, keys2save,path_test_config)
                 print("The training dataset is successfully created. Use the function 'train_network' to start training. Happy training!")
-            else:
-                pass
