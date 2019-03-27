@@ -56,7 +56,7 @@ class ImagePanel(wx.Panel):
         self.axes.clear()
 
         # convert the image to RGB as you are showing the image with matplotlib
-        im = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        im = cv2.imread(img)[...,::-1]
         ax = self.axes.imshow(im,cmap=cmap)
         self.orig_xlim = self.axes.get_xlim()
         self.orig_ylim = self.axes.get_ylim()
