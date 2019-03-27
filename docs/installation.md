@@ -26,12 +26,13 @@
 
 # INSTALLATION:
 
- There are several modes of installation, and the user should decide to either use a **system-wide** (see [note below](/docs/installation.md#system-wide-considerations)) or **Anaconda environment** based installation (recommended), or the supplied **Docker container** (recommended for Ubuntu advanced users). 
+ There are several modes of installation, and the user should decide to either use a **system-wide** (see [note below](/docs/installation.md#system-wide-considerations)), **Anaconda environment** based installation (recommended), or the supplied **Docker container** (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but this is the easiest route. 
 
  **All the following commands will be run in the app ``terminal`` in Ubuntu/MacOS, and called ``cmd`` in Windows. Please first open the terminal (search ``terminal`` or ``cmd``).**
 
 ## Anaconda:  
-[Anaconda](https://anaconda.org/anaconda/python) is perhaps the easiest way to install Python and additional packages across various operating systems. First create an [Anaconda](https://anaconda.org/anaconda/python) environment.  With Anaconda you create all the dependencies in an [environment](https://conda.io/docs/user-guide/tasks/manage-environments.html) on your machine by running in a terminal:
+
+[Anaconda](https://anaconda.org/anaconda/python) is perhaps the easiest way to install Python and additional packages across various operating systems. First create an [Anaconda](https://anaconda.org/anaconda/python) environment.  With Anaconda you create all the dependencies in an [environment](https://conda.io/docs/user-guide/tasks/manage-environments.html) on your machine in the following way. More details can be found in the [conda environment readme](/conda-environments/README.md).
 
 **MacOS (Mojave+/CPU only):**
 - We provide [environment files for MacOS](https://github.com/AlexEMG/DeepLabCut/tree/master/conda-environments). This can be installed by typing (from the terminal, within in this conda-environments folder): ```conda env create -f dlc-macOS-CPU.yaml```
