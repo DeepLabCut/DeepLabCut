@@ -156,9 +156,9 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,userfeedback
                         fig,ax = plt.subplots(1)
                         # Display the image
                         ax.imshow(image)
-                        cid = RectangleSelector(ax, line_select_callback,drawtype='box', useblit=False,button=[1], minspanx=5, minspany=5,spancoords='pixels',interactive=True)
+                        cid = RectangleSelector(ax, line_select_callback,drawtype='box', useblit=True,button=[1], minspanx=5, minspany=5,spancoords='pixels',interactive=True)
                         plt.show()
-                        
+
                         if len(os.listdir(output_path))==0: #check if empty
                                 #store full frame from random location (good for augmentation)
                                 index=int(start*duration+np.random.rand()*duration*(stop-start))
@@ -178,23 +178,22 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,userfeedback
                               askuser=input ("The directory already contains some frames. Do you want to add to it?(yes/no): ")
                               if askuser=='y' or askuser=='yes' or askuser=='Y' or askuser=='Yes':
                                   #clip=clip.crop(y1 = int(coords[2]),y2 = int(coords[3]),x1 = int(coords[0]), x2 = int(coords[1]))
+                                  index=int(start*duration+np.random.rand()*duration*(stop-start))
+                                  if opencv:
+                                    cap.set(1,index)
+                                    ret, frame = cap.read()
+                                    if ret:
+                                        image=img_as_ubyte(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+                                  else:
+                                      image = img_as_ubyte(clip.get_frame(index * 1. / clip.fps))
+                                      clip=clip.crop(y1 = int(coords[2]),y2 = int(coords[3]),x1 = int(coords[0]), x2 = int(coords[1]))
+                            
+                                  saveimg = str(output_path) +'/img'+ str(index).zfill(indexlength) + ".png"
+                                  io.imsave(saveimg, image)
                                   pass
                               else:
                                   sys.exit("Delete the frames and try again later!")
                     
-                    elif output_path.exists(): #cropping without checking:
-                            index=int(start*duration+np.random.rand()*duration*(stop-start))
-                            if opencv:
-                                cap.set(1,index)
-                                ret, frame = cap.read()
-                                if ret:
-                                    image=img_as_ubyte(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-                            else:
-                                image = img_as_ubyte(clip.get_frame(index * 1. / clip.fps))
-                                clip=clip.crop(y1 = int(coords[2]),y2 = int(coords[3]),x1 = int(coords[0]), x2 = int(coords[1]))
-                            
-                            saveimg = str(output_path) +'/img'+ str(index).zfill(indexlength) + ".png"
-                            io.imsave(saveimg, image)
                             
                 else:
                     numframes2pick=cfg['numframes2pick']+1 # without cropping a full size frame will not be extracted >> thus one more frame should be selected in next stage.
