@@ -130,7 +130,8 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
     for video in videos:
         print(video)
         try:
-           rel_video_path = os.path.realpath(video)
+           #rel_video_path = os.path.realpath(video)
+           rel_video_path=str(Path.resolve(Path(video)))
         except:
            rel_video_path = os.readlink(str(video))
 
