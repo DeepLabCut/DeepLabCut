@@ -199,6 +199,12 @@ class MainFrame(wx.Frame):
         self.widget_panel.SetSizer(widgetsizer)
         self.pan.Enable(False)
 
+        self.lock = wx.CheckBox(self.widget_panel, id=wx.ID_ANY, label="Lock View")
+        widgetsizer.Add(self.lock, 1, wx.ALL, 15)
+        self.lock.Bind(wx.EVT_CHECKBOX, self.lockChecked)
+        self.widget_panel.SetSizer(widgetsizer)
+        self.lock.Enable(False)
+
         self.save = wx.Button(self.widget_panel, id=wx.ID_ANY, label="Save")
         widgetsizer.Add(self.save , 1, wx.ALL, 15)
         self.save.Bind(wx.EVT_BUTTON, self.saveDataSet)
@@ -228,6 +234,7 @@ class MainFrame(wx.Frame):
         self.bodyparts2plot = []
         self.drs = []
         self.num = []
+        self.view_locked=False
 
 ###############################################################################################################################
 # BUTTONS FUNCTIONS FOR HOTKEYS
@@ -332,6 +339,10 @@ class MainFrame(wx.Frame):
             self.updateZoomPan()
             self.statusbar.SetStatusText("Pan Off")
 
+    def lockChecked(self, event):
+        self.cb = event.GetEventObject()
+        self.view_locked=self.cb.GetValue()
+
     def onClick(self,event):
         """
         This function adds labels and auto advances to the next label.
@@ -381,6 +392,7 @@ class MainFrame(wx.Frame):
         self.zoom.Enable(True)
         self.home.Enable(True)
         self.pan.Enable(True)
+        self.lock.Enable(True)
 
 # Reading config file and its variables
         self.cfg = auxiliaryfunctions.read_config(self.config_file)
@@ -514,7 +526,10 @@ class MainFrame(wx.Frame):
             self.img = self.index[self.iter]
             img_name = Path(self.index[self.iter]).name
             self.figure.delaxes(self.figure.axes[1]) # Removes the axes corresponding to the colorbar
-            self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.bodyparts,self.colormap,keep_view=True)
+            self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,
+                                                                                       self.index,self.bodyparts,
+                                                                                       self.colormap,
+                                                                                       keep_view=self.view_locked)
             self.axes.callbacks.connect('xlim_changed', self.onZoom)
             self.axes.callbacks.connect('ylim_changed', self.onZoom)
             self.buttonCounter = MainFrame.plot(self,self.img)
@@ -543,7 +558,10 @@ class MainFrame(wx.Frame):
         self.img = self.index[self.iter]
         img_name = Path(self.index[self.iter]).name
         self.figure.delaxes(self.figure.axes[1]) # Removes the axes corresponding to the colorbar
-        self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.bodyparts,self.colormap,keep_view=True)
+        self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,
+                                                                                   self.index,self.bodyparts,
+                                                                                   self.colormap,
+                                                                                   keep_view=self.view_locked)
         self.axes.callbacks.connect('xlim_changed', self.onZoom)
         self.axes.callbacks.connect('ylim_changed', self.onZoom)
         self.buttonCounter = MainFrame.plot(self,self.img)
