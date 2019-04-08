@@ -76,7 +76,7 @@ class DraggablePoint:
                 self.coords.append(self.final_point)
                 self.point.figure.canvas.draw()
 
-        
+
     def on_motion(self, event):
         """
         During the drag!
