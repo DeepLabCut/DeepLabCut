@@ -136,7 +136,7 @@ def RunTrajectoryAnalysis(video,basefolder,scorer,videofolder,cfg,showfigures):
 # Looping analysis over video
 ##################################################
 
-def plot_trajectories(config,videos,videotype='.avi',shuffle=1,trainingsetindex=0,showfigures=False):
+def plot_trajectories(config,videos,videotype='.avi',shuffle=1,trainingsetindex=0,showfigures=False, destfolder=None):
     """
     Plots the trajectories of various bodyparts across the video.
     
@@ -160,6 +160,8 @@ def plot_trajectories(config,videos,videotype='.avi',shuffle=1,trainingsetindex=
     showfigures: bool, default false
     If true then plots are also displayed.
     
+    destfolder: string, optional
+        Specifies the destination folder that was used for storing analysis data (default is the path of the video). 
     
     Example
     --------
@@ -176,7 +178,12 @@ def plot_trajectories(config,videos,videotype='.avi',shuffle=1,trainingsetindex=
     Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
     for video in Videos:
         print(video)
-        videofolder= str(Path(video).parents[0]) #where your folder with videos is.
+        if destfolder is None:
+            videofolder = str(Path(video).parents[0])
+            
+        else:
+            videofolder=destfolder
+            
         videotype = str(Path(video).suffix)
         print("Starting % ", videofolder, videos)
         basefolder=videofolder

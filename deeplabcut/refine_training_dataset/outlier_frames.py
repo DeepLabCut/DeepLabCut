@@ -19,7 +19,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 from skimage.util import img_as_ubyte
 
-def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,outlieralgorithm='jump',comparisonbodyparts='all',epsilon=20,p_bound=.01,ARdegree=3,MAdegree=1,alpha=.01,extractionalgorithm='kmeans',automatic=False,cluster_resizewidth=30,cluster_color=False,opencv=True,savelabeled=True):
+def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,outlieralgorithm='jump',comparisonbodyparts='all',epsilon=20,p_bound=.01,ARdegree=3,MAdegree=1,alpha=.01,extractionalgorithm='kmeans',automatic=False,cluster_resizewidth=30,cluster_color=False,opencv=True,savelabeled=True, destfolder=None):
     """
     Extracts the outlier frames in case, the predictions are not correct for a certain video from the cropped video running from
     start to stop as defined in config.yaml.
@@ -95,6 +95,9 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
     savelabeled: bool, default: True
         If true also saves frame with predicted labels in each folder. 
 
+    destfolder: string, optional
+        Specifies the destination folder that was used for storing analysis data (default is the path of the video). 
+
     Example
     --------
     for extracting the frames with default settings
@@ -114,7 +117,11 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
 
     Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
     for video in Videos:
-      videofolder = str(Path(video).parents[0])
+      if destfolder is None:
+            videofolder = str(Path(video).parents[0])
+      else:
+            videofolder=destfolder
+      
       dataname = str(Path(video).stem)+scorer
       try:
           Dataframe = pd.read_hdf(os.path.join(videofolder,dataname+'.h5'))
@@ -123,7 +130,7 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
           startindex=max([int(np.floor(nframes*cfg['start'])),0])
           stopindex=min([int(np.ceil(nframes*cfg['stop'])),nframes])
           Index=np.arange(stopindex-startindex)+startindex
-
+          
           #figure out body part list:
           bodyparts=auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg,comparisonbodyparts)
 
@@ -145,6 +152,7 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
               #deviation_dataname = str(Path(videofolder)/Path(dataname))
               # Calculate deviatons for video
               [d,o] = ComputeDeviations(Dataframe,cfg,bodyparts,scorer,dataname,p_bound,alpha,ARdegree,MAdegree)
+              
               #Some heuristics for extracting frames based on distance:
               Indices=np.where(d>epsilon)[0] # time points with at least average difference of epsilon
 
@@ -155,8 +163,9 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
               os.chdir(str(wd))
               from deeplabcut.refine_training_dataset import outlier_frame_extraction_toolbox 
               outlier_frame_extraction_toolbox.show(config,video,shuffle,Dataframe,scorer)
-# Run always except when the outlieralgorithm == manual.
-          if not outlieralgorithm=='manual':
+          
+          
+          if not outlieralgorithm=='manual': # Run always except when the outlieralgorithm == manual.
               Indices=np.sort(list(set(Indices))) #remove repetitions.
               print("Method ", outlieralgorithm, " found ", len(Indices)," putative outlier frames.")
               print("Do you want to proceed with extracting ", cfg['numframes2pick'], " of those?")
@@ -402,11 +411,7 @@ def ExtractFramesbasedonPreselection(Index,extractionalgorithm,Dataframe,datanam
             if  cfg['cropping']:
                 clip = clip.crop(y1=cfg['y1'], y2=cfg['x2'], x1=cfg['x1'], x2=cfg['x2'])
             frames2pick=frameselectiontools.KmeansbasedFrameselection(clip,numframes2extract,start,stop,Index,resizewidth=cluster_resizewidth,color=cluster_color)
-#    elif extractionalgorithm=='manual':
-#        wd = Path(config).resolve().parents[0]
-#        os.chdir(str(wd))
-#        from deeplabcut.refine_training_dataset import outlier_frame_extraction_toolbox 
-#        outlier_frame_extraction_toolbox.show(config,video,shuffle)
+
     else:
         print("Please implement this method yourself!")
         frames2pick=[]
@@ -428,10 +433,10 @@ def ExtractFramesbasedonPreselection(Index,extractionalgorithm,Dataframe,datanam
     else:
         clip.close()
         del clip
-
+    
     # Extract annotations based on DeepLabCut and store in the folder (with name derived from video name) under labeled-data
     if len(frames2pick)>0:
-        Dataframe = pd.read_hdf(os.path.join(videofolder,dataname+'.h5'))
+        #Dataframe = pd.read_hdf(os.path.join(videofolder,dataname+'.h5'))
         DF = Dataframe.ix[frames2pick]
         DF.index=[os.path.join('labeled-data', vname,"img"+str(index).zfill(strwidth)+".png") for index in DF.index] #exchange index number by file names.
 

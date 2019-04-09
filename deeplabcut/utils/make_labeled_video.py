@@ -184,7 +184,7 @@ def CreateVideoSlow(clip,Dataframe,tmpfolder,dotsize,colormap,alphavalue,pcutoff
             os.remove(file_name)
     os.chdir(start)
 
-def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,save_frames=False,Frames2plot=None,delete=False,displayedbodyparts='all',codec='mp4v',outputframerate=None):
+def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,save_frames=False,Frames2plot=None,delete=False,displayedbodyparts='all',codec='mp4v',outputframerate=None, destfolder=None):
     """
     Labels the bodyparts in a video. Make sure the video is already analyzed by the function 'analyze_video'
 
@@ -227,6 +227,9 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
     
     outputframerate: positive number, output frame rate for labeled video (only available for the mode with saving frames.) By default: None, which results in the original video rate.
     
+    destfolder: string, optional
+        Specifies the destination folder that was used for storing analysis data (default is the path of the video). 
+    
     Examples
     --------
     If you want to create the labeled video for only 1 video
@@ -259,7 +262,13 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
     
     Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
     for video in Videos:
-        videofolder= Path(video).parents[0] #where your folder with videos is.
+        
+        if destfolder is None:
+            #videofolder = str(Path(video).parents[0])
+            videofolder= Path(video).parents[0] #where your folder with videos is.
+        else:
+            videofolder=destfolder
+            
         os.chdir(str(videofolder))
         videotype = Path(video).suffix
         print("Starting % ", videofolder, videos)
