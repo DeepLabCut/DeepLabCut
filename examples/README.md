@@ -76,7 +76,5 @@ We suggest making a "Fork" of this repo, git clone or download the folder into y
 2. Make the notebook live by clicking 'Connect' in the Colab toolbar, and then click "Runtime > Change Runtime Type > and select Python3 and GPU as your hardware. Follow the instructions in the Notebook.
 3. Be aware, they often don't let you run on their GPUs for very long, so make sure your ``save_inters`` variable is low for this setting.
 
-There is also an example notebook for the open field data:
-
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/AlexEMG/DeepLabCut/blob/master/examples/Colab_DEMO_mouse_openfield.ipynb)
+We also created an example notebook for the open field data, which you can launch by clicking the badge below: [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/AlexEMG/DeepLabCut/blob/master/examples/Colab_DEMO_mouse_openfield.ipynb)
 

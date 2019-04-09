@@ -71,6 +71,11 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
 
     Examples
     --------
+    
+    Windows example for analyzing 1 video 
+    >>> deeplabcut.analyze_videos('C:\\myproject\\reaching-task\\config.yaml',['C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi'])
+    --------
+
     If you want to analyze only 1 video
     >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi'])
     --------

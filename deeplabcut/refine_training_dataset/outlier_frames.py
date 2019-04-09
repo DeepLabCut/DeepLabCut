@@ -98,7 +98,10 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
     destfolder: string, optional
         Specifies the destination folder that was used for storing analysis data (default is the path of the video). 
 
-    Example
+    Examples
+    
+    Windows example ffor extracting the frames with default settings
+    >>> deeplabcut.extract_outlier_frames('C:\\myproject\\reaching-task\\config.yaml',['C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi'])
     --------
     for extracting the frames with default settings
     >>> deeplabcut.extract_outlier_frames('/analysis/project/reaching-task/config.yaml',['/analysis/project/video/reachinvideo1.avi'])
