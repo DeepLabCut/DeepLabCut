@@ -7,9 +7,11 @@ import math, os
 import numpy as np
 from scipy.misc import imresize
 import matplotlib
+import platform
 if os.environ.get('DLClight', default=False) == 'True':
     matplotlib.use('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
-    pass
+elif platform.system() == 'Darwin':
+    matplotlib.use('WxAgg') #TkAgg
 else:
     matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt

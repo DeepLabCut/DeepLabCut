@@ -15,8 +15,6 @@ import os.path
 from deeplabcut.pose_estimation_tensorflow.nnet import predict
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import data_to_input
-
-from random import sample
 import time
 import pandas as pd
 import numpy as np
@@ -33,7 +31,7 @@ from skimage.util import img_as_ubyte
 # Loading data, and defining model folder
 ####################################################
 
-def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gputouse=None,save_as_csv=False, destfolder=None):
+def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gputouse=None,save_as_csv=False, destfolder=None):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
     
@@ -50,17 +48,17 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
         Full path of the config.yaml file as a string.
 
     videos : list
-        A list of strings containing the full paths to videos for analysis or a path to the directory where all the videos with same extension are stored.
+        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
+    
+    videotype: string, optional
+        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
 
     shuffle: int, optional
         An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.
 
     trainingsetindex: int, optional
         Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
-        
-    videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\nOnly videos with this extension are analyzed. The default is ``.avi``
-
+    
     gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU put None.
     See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
 
@@ -68,10 +66,16 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
         Saves the predictions in a .csv file. The default is ``False``; if provided it must be either ``True`` or ``False``
 
     destfolder: string, optional
-        Specifies the destination folder for analysis data (default is the path of the video)
+        Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this 
+        folder also needs to be passed.
 
     Examples
     --------
+    
+    Windows example for analyzing 1 video 
+    >>> deeplabcut.analyze_videos('C:\\myproject\\reaching-task\\config.yaml',['C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi'])
+    --------
+
     If you want to analyze only 1 video
     >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi'])
     --------
@@ -148,25 +152,7 @@ def analyze_videos(config,videos,shuffle=1,trainingsetindex=0,videotype='avi',gp
     ##################################################
     # Datafolder
     ##################################################
-    #checks if input is a directory
-    if [os.path.isdir(i) for i in videos] == [True]:#os.path.isdir(video)==True:
-        """
-        Analyzes all the videos in the directory.
-        """
-        print("Analyzing all the videos in the directory")
-        videofolder= videos[0]
-        os.chdir(videofolder)
-        videolist=[fn for fn in os.listdir(os.curdir) if (videotype in fn) and ('_labeled.mp4' not in fn)] #exclude labeled-videos!
-        Videos = sample(videolist,len(videolist)) # this is useful so multiple nets can be used to analzye simultanously
-    else:
-        if isinstance(videos,str):
-            if os.path.isfile(videos): # #or just one direct path!
-                Videos=[videos]
-            else:
-                Videos=[]
-        else:
-            Videos=[v for v in videos if os.path.isfile(v)]
-    
+    Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
     if len(Videos)>0:
         #looping over videos
         for video in Videos:
@@ -329,11 +315,15 @@ def AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,
         print("Saving results in %s..." %(Path(video).parents[0]))
         auxiliaryfunctions.SaveData(PredicteData[:nframes,:], metadata, dataname, pdindex, range(nframes),save_as_csv)
 
-def GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nframes,batchsize):
+def GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nframes,batchsize,rgb):
     ''' Batchwise prediction of pose  for framelist in directory'''
     from skimage import io
     print("Starting to extract posture")
-    im=io.imread(os.path.join(directory,framelist[0]),mode='RGB')
+    if rgb:
+        im=io.imread(os.path.join(directory,framelist[0]),mode='RGB')
+    else:
+        im=io.imread(os.path.join(directory,framelist[0]))
+    
     ny,nx,nc=np.shape(im)
     print("Overall # of frames: ", nframes," found with (before cropping) frame dimensions: ", nx,ny)
 
@@ -359,28 +349,37 @@ def GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nfra
     
     if batchsize==1:
         for counter,framename in enumerate(framelist):
-                frame=io.imread(os.path.join(directory,framename),mode='RGB')
+                #frame=io.imread(os.path.join(directory,framename),mode='RGB')
+                if rgb:
+                    im=io.imread(os.path.join(directory,framename),mode='RGB')
+                else:
+                    im=io.imread(os.path.join(directory,framename))
+                    
                 if counter%step==0:
                     pbar.update(step)
 
                 if cfg['cropping']:
-                    frame= img_as_ubyte(frame[cfg['y1']:cfg['y2'],cfg['x1']:cfg['x2'],:])
+                    frame= img_as_ubyte(im[cfg['y1']:cfg['y2'],cfg['x1']:cfg['x2'],:])
                 else:
-                    frame = img_as_ubyte(frame)
+                    frame = img_as_ubyte(im)
                     
                 pose = predict.getpose(frame, dlc_cfg, sess, inputs, outputs)
                 PredicteData[counter, :] = pose.flatten()
     else:
         frames = np.empty((batchsize, ny, nx, 3), dtype='ubyte') # this keeps all the frames of a batch
         for counter,framename in enumerate(framelist):
-                frame=io.imread(os.path.join(directory,framename),mode='RGB')
+                if rgb:
+                    im=io.imread(os.path.join(directory,framename),mode='RGB')
+                else:
+                    im=io.imread(os.path.join(directory,framename))
+                
                 if counter%step==0:
                     pbar.update(step)
 
                 if cfg['cropping']:
-                    frames[batch_ind] = img_as_ubyte(frame[cfg['y1']:cfg['y2'],cfg['x1']:cfg['x2'],:])
+                    frames[batch_ind] = img_as_ubyte(im[cfg['y1']:cfg['y2'],cfg['x1']:cfg['x2'],:])
                 else:
-                    frames[batch_ind] = img_as_ubyte(frame)
+                    frames[batch_ind] = img_as_ubyte(im)
                     
                 if batch_ind==batchsize-1:
                     pose = predict.getposeNP(frames,dlc_cfg, sess, inputs, outputs)
@@ -398,7 +397,7 @@ def GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nfra
     return PredicteData,nframes,nx,ny
 
 
-def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,trainingsetindex=0,gputouse=None,save_as_csv=False):
+def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,trainingsetindex=0,gputouse=None,save_as_csv=False,rgb=True):
     """
     Analyzed all images (of type = frametype) in a folder and stores the output in one file. 
     
@@ -431,6 +430,9 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,traini
 
     save_as_csv: bool, optional
         Saves the predictions in a .csv file. The default is ``False``; if provided it must be either ``True`` or ``False``
+
+    rbg: bool, optional.
+        Whether to load image as rgb; Note e.g. some tiffs do not alow that option in io.imread, then just set this to false.
 
     Examples
     --------
@@ -518,7 +520,7 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,traini
             if nframes>1:
                 start = time.time()
                 
-                PredicteData,nframes,nx,ny=GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nframes,dlc_cfg['batch_size'])
+                PredicteData,nframes,nx,ny=GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nframes,dlc_cfg['batch_size'],rgb)
                 stop = time.time()
                 
                 if cfg['cropping']==True:

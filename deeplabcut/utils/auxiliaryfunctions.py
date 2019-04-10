@@ -70,14 +70,22 @@ def read_config(configname):
     """
     ruamelFile = ruamel.yaml.YAML()
     path = Path(configname)
-    with open(path, 'r') as f:
-        cfg = ruamelFile.load(f)
+    if os.path.exists(path):
+        try:
+            with open(path, 'r') as f:
+                cfg = ruamelFile.load(f)
+        except Exception as err:
+            if err.args[2] == "could not determine a constructor for the tag '!!python/tuple'":
+                with open(path, 'r') as ymlfile:
+                  cfg = yaml.load(ymlfile)
+                  write_config(configname,cfg)
+    else:
+        raise FileNotFoundError ("Config file is not found. Please make sure that the file exists and/or there are no unnecessary spaces in the path of the config file!")
     return(cfg)
 
 def write_config(configname,cfg):
     """
     Write structured config file.
-    
     """
     with open(configname, 'w') as cf:
         ruamelFile = ruamel.yaml.YAML()
@@ -112,6 +120,29 @@ def attempttomakefolder(foldername,recursive=False):
             os.makedirs(foldername)
         else:
             os.mkdir(foldername)
+
+def Getlistofvideos(videos,videotype):
+    from random import sample
+    #checks if input is a directory
+    if [os.path.isdir(i) for i in videos] == [True]:#os.path.isdir(video)==True:
+        """
+        Analyzes all the videos in the directory.
+        """
+        
+        print("Analyzing all the videos in the directory")
+        videofolder= videos[0]
+        os.chdir(videofolder)
+        videolist=[fn for fn in os.listdir(os.curdir) if (videotype in fn) and ('labeled.mp4' not in fn)] #exclude labeled-videos!
+        Videos = sample(videolist,len(videolist)) # this is useful so multiple nets can be used to analzye simultanously
+    else:
+        if isinstance(videos,str):
+            if os.path.isfile(videos): # #or just one direct path!
+                Videos=[v for v in videos if os.path.isfile(v) and ('labeled.mp4' not in v)]
+            else:
+                Videos=[]
+        else:
+            Videos=[v for v in videos if os.path.isfile(v) and ('labeled.mp4' not in v)]
+    return Videos
 
 def SaveData(PredicteData, metadata, dataname, pdindex, imagenames,save_as_csv):
     ''' Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py '''
@@ -211,7 +242,7 @@ def GetScorerName(cfg,shuffle,trainFraction,trainingsiterations='unknown'):
     if trainingsiterations=='unknown':
         snapshotindex=cfg['snapshotindex']
         if cfg['snapshotindex'] == 'all':
-            print("Changing snapshotindext to the last one -- plotting, videomaking, etc. should not be performed for all indices. For more selectivity enter the ordinal number of the snapshot you want (ie. 4 for the fifth).")
+            print("Changing snapshotindext to the last one -- plotting, videomaking, etc. should not be performed for all indices. For more selectivity enter the ordinal number of the snapshot you want (ie. 4 for the fifth) in the config file.")
             snapshotindex = -1
         else:
             snapshotindex=cfg['snapshotindex']

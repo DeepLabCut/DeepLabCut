@@ -288,24 +288,7 @@ def MakeLabeledPlots(folder,DataCombined,cfg,Labels,Colorscheme,cc,scale):
 
         plt.savefig(str(Path(tmpfolder)/imagename.split(os.sep)[-1])) #create file name
         plt.close("all")
-
-def SplitTrials(trialindex, trainFraction=0.8):
-    ''' Split a trial index into train and test sets. Also checks that the trainFraction is a two digit number between 0 an 1. The reason
-    is that the folders contain the trainfraction as int(100*trainFraction). '''
-    if trainFraction>1 or trainFraction<0:
-        print("The training fraction should be a two digit number between 0 and 1; i.e. 0.95. Please change accordingly.")
-        return ([],[])
-
-    if abs(trainFraction-round(trainFraction,2))>0:
-        print("The training fraction should be a two digit number between 0 and 1; i.e. 0.95. Please change accordingly.")
-        return ([],[])
-    else:
-        trainsetsize = int(len(trialindex) * round(trainFraction,2))
-        shuffle = np.random.permutation(trialindex)
-        testIndexes = shuffle[trainsetsize:]
-        trainIndexes = shuffle[:trainsetsize]
-        return (trainIndexes, testIndexes)
-
+    
 def boxitintoacell(joints):
     ''' Auxiliary function for creating matfile.'''
     outer = np.array([[None]], dtype=object)
@@ -386,12 +369,110 @@ def merge_annotateddatasets(cfg,project_path,trainingsetfolder_full,windows2linu
         
     return AnnotationData 
 
+def SplitTrials(trialindex, trainFraction=0.8):
+    ''' Split a trial index into train and test sets. Also checks that the trainFraction is a two digit number between 0 an 1. The reason
+    is that the folders contain the trainfraction as int(100*trainFraction). '''
+    if trainFraction>1 or trainFraction<0:
+        print("The training fraction should be a two digit number between 0 and 1; i.e. 0.95. Please change accordingly.")
+        return ([],[])
 
-def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=False):
+    if abs(trainFraction-round(trainFraction,2))>0:
+        print("The training fraction should be a two digit number between 0 and 1; i.e. 0.95. Please change accordingly.")
+        return ([],[])
+    else:
+        trainsetsize = int(len(trialindex) * round(trainFraction,2))
+        shuffle = np.random.permutation(trialindex)
+        testIndexes = shuffle[trainsetsize:]
+        trainIndexes = shuffle[:trainsetsize]
+        
+        return (trainIndexes, testIndexes)
+
+def mergeandsplit(config,trainindex=0,uniform=True,windows2linux=False):
+    """
+    This function allows additional control over "create_training_dataset". 
+    
+    Merge annotated data sets (from different folders) and split data in a specific way, returns the split variables (train/test indices). 
+    Importantly, this allows one to freeze a split. 
+    
+    One can also either create a uniform split (uniform = True; thereby indexing TrainingFraction in config file) or leave-one-folder out split 
+    by passing the index of the corrensponding video from the config.yaml file as variable trainindex.
+    
+    Parameter
+    ----------
+    config : string
+        Full path of the config.yaml file as a string.
+
+    trainindex: int, optional
+        Either (in case uniform = True) indexes which element of TrainingFraction in the config file should be used (note it is a list!).
+        Alternatively (uniform = False) indexes which folder is dropped, i.e. the first if trainindex=0, the second if trainindex =1, etc.
+
+    uniform: bool, optional
+        Perform uniform split (disregarding folder structure in labeled data), or (if False) leave one folder out.
+
+    windows2linux: bool.
+        The annotation files contain path formated according to your operating system. If you label on windows 
+        but train & evaluate on a unix system (e.g. ubunt, colab, Mac) set this variable to True to convert the paths. 
+    
+    Examples
+    --------
+    To create a leave-one-folder-out model:
+    >>> trainIndexes, testIndexes=deeplabcut.mergeandsplit(config,trainindex=0,uniform=False)
+    returns the indices for the first video folder (as defined in config file) as testIndexes and all others as trainIndexes.
+    You can then create the training set by calling (e.g. defining it as Shuffle 3):
+    >>> deeplabcut.create_training_dataset(config,Shuffles=[3],trainIndexes=trainIndexes,testIndexes=testIndexes)
+    
+    To freeze a (uniform) split:
+    >>> trainIndexes, testIndexes=deeplabcut.mergeandsplit(config,trainindex=0,uniform=True)
+    You can then create two model instances that have the identical trainingset. Thereby you can assess the role of various parameters on the performance of DLC.
+    
+    >>> deeplabcut.create_training_dataset(config,Shuffles=[0],trainIndexes=trainIndexes,testIndexes=testIndexes)
+    >>> deeplabcut.create_training_dataset(config,Shuffles=[1],trainIndexes=trainIndexes,testIndexes=testIndexes)
+    --------
+    
+    """
+    
+    # Loading metadata from config file:
+    cfg = auxiliaryfunctions.read_config(config)
+    scorer = cfg['scorer']
+    project_path = cfg['project_path']
+    # Create path for training sets & store data there
+    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg) #Path concatenation OS platform independent
+    auxiliaryfunctions.attempttomakefolder(Path(os.path.join(project_path,str(trainingsetfolder))),recursive=True)
+    fn=os.path.join(project_path,trainingsetfolder,'CollectedData_'+cfg['scorer'])
+    
+    try:
+        Data= pd.read_hdf(fn, 'df_with_missing')
+    except FileNotFoundError:
+        Data = merge_annotateddatasets(cfg,project_path,Path(os.path.join(project_path,trainingsetfolder)),windows2linux=windows2linux)
+    
+    Data = Data[scorer] #extract labeled data
+    
+    if uniform==True:
+        TrainingFraction = cfg['TrainingFraction']
+        trainFraction=TrainingFraction[trainindex]
+        trainIndexes, testIndexes = SplitTrials(range(len(Data.index)), trainFraction)
+    else: #leave one folder out split
+        videos = cfg['video_sets'].keys()
+        test_video_name = [Path(i).stem for i in videos][trainindex]
+        print("Excluding the following folder (from training):", test_video_name)
+        trainIndexes, testIndexes=[],[]
+        for index,name in enumerate(Data.index):
+            #print(index,name.split(os.sep)[1])
+            if test_video_name==name.split(os.sep)[1]: #this is the video name
+                #print(name,test_video_name)
+                testIndexes.append(index)
+            else:
+                trainIndexes.append(index)
+                
+    return trainIndexes, testIndexes
+
+
+def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=False,trainIndexes=None,testIndexes=None):
     """
     Creates a training dataset. Labels from all the extracted frames are merged into a single .h5 file.\n
     Only the videos included in the config file are used to create this dataset.\n
-    [OPTIONAL]Use the function 'add_new_video' at any stage of the project to add more videos to the project.
+    
+    [OPTIONAL] Use the function 'add_new_video' at any stage of the project to add more videos to the project.
 
     Parameter
     ----------
@@ -437,7 +518,7 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
         resnet_path = str(Path(deeplabcut.__file__).parents[0] / 'pose_estimation_tensorflow/models/pretrained/resnet_v1_50.ckpt')
     elif cfg['resnet']==101:
         net_type ='resnet_'+str(cfg['resnet'])
-        resnet_path = str(Path(deeplabcut.__file__).parents[0] / 'Pose_Estimation_Tensorflow/models/pretrained/resnet_v1_101.ckpt')
+        resnet_path = str(Path(deeplabcut.__file__).parents[0] / 'pose_estimation_tensorflow/models/pretrained/resnet_v1_101.ckpt')
     else:
         print("Currently only ResNet 50 or 101 supported, please change 'resnet' entry in config.yaml!")
         num_shuffles=-1 #thus the loop below is empty...
@@ -461,8 +542,12 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
     TrainingFraction = cfg['TrainingFraction']
     for shuffle in Shuffles: # Creating shuffles starting from 1
         for trainFraction in TrainingFraction:
-            trainIndexes, testIndexes = SplitTrials(range(len(Data.index)), trainFraction)
-
+            #trainIndexes, testIndexes = SplitTrials(range(len(Data.index)), trainFraction)
+            if trainIndexes is None and testIndexes is None:
+                trainIndexes, testIndexes = SplitTrials(range(len(Data.index)), trainFraction)
+            else:
+                print("You passed a split with the following fraction:", len(trainIndexes)*1./(len(testIndexes)+len(trainIndexes))*100)
+            
             ####################################################
             # Generating data structure with labeled information & frame metadata (for deep cut)
             ####################################################
@@ -562,5 +647,3 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
                 ]
                 MakeTest_pose_yaml(trainingdata, keys2save,path_test_config)
                 print("The training dataset is successfully created. Use the function 'train_network' to start training. Happy training!")
-            else:
-                pass

@@ -136,7 +136,7 @@ def RunTrajectoryAnalysis(video,basefolder,scorer,videofolder,cfg,showfigures):
 # Looping analysis over video
 ##################################################
 
-def plot_trajectories(config,videos,shuffle=1,trainingsetindex=0,videotype='.avi',showfigures=False):
+def plot_trajectories(config,videos,videotype='.avi',shuffle=1,trainingsetindex=0,showfigures=False, destfolder=None):
     """
     Plots the trajectories of various bodyparts across the video.
     
@@ -146,7 +146,10 @@ def plot_trajectories(config,videos,shuffle=1,trainingsetindex=0,videotype='.avi
     Full path of the config.yaml file as a string.
     
     videos : list
-    A list of strings containing the full paths of the videos to analyze.
+        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
+    
+    videotype: string, optional
+        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
     
     shuffle: list, optional
     List of integers specifying the shuffle indices of the training dataset. The default is [1]
@@ -154,12 +157,11 @@ def plot_trajectories(config,videos,shuffle=1,trainingsetindex=0,videotype='.avi
      trainingsetindex: int, optional
     Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
     
-    videotype: string, optional
-    Checks for the extension of the video in case the input is a directory.\nOnly videos with this extension are analysed. The default is ``.avi``
-    
     showfigures: bool, default false
     If true then plots are also displayed.
     
+    destfolder: string, optional
+        Specifies the destination folder that was used for storing analysis data (default is the path of the video). 
     
     Example
     --------
@@ -173,21 +175,15 @@ def plot_trajectories(config,videos,shuffle=1,trainingsetindex=0,videotype='.avi
     trainFraction = cfg['TrainingFraction'][trainingsetindex]
     DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction) #automatically loads corresponding model (even training iteration based on snapshot index)
     
-    #checks if input is a directory
-    if [os.path.isdir(i) for i in videos] == [True]:#os.path.isdir(video)==True:
-        """
-        Analyze all the videos in the directory
-        """
-        print("Analyzing all the videos in the directory")
-        videofolder= videos[0]
-        os.chdir(videofolder)
-        Videos = np.sort([fn for fn in os.listdir(os.curdir) if (videotype in fn) and ("labeled" not in fn)])
-    else:
-        Videos = videos
-    
+    Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
     for video in Videos:
         print(video)
-        videofolder= str(Path(video).parents[0]) #where your folder with videos is.
+        if destfolder is None:
+            videofolder = str(Path(video).parents[0])
+            
+        else:
+            videofolder=destfolder
+            
         videotype = str(Path(video).suffix)
         print("Starting % ", videofolder, videos)
         basefolder=videofolder

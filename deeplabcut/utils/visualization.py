@@ -8,13 +8,16 @@ M Mathis, mackenzie@post.harvard.edu
 import os
 import numpy as np
 import matplotlib as mpl
+import platform
 from pathlib import Path
 
 if os.environ.get('DLClight', default=False) == 'True':
     mpl.use('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
     pass
+elif platform.system() == 'Darwin':
+    mpl.use('WXAgg')
 else:
-    mpl.use('TkAgg')
+    mpl.use('TkAgg') #TkAgg
 import matplotlib.pyplot as plt
 
 def get_cmap(n, name='hsv'):
@@ -66,7 +69,13 @@ def PlottingandSaveLabeledFrame(DataCombined,ind,trainIndices,cfg,colors,compari
         MakeLabeledImage(DataCombined,ind,cfg["pcutoff"],cfg["project_path"],[cfg["scorer"],DLCscorer],comparisonbodyparts,colors,cfg)
 
         if ind in trainIndices:
-            plt.savefig(os.path.join(foldername,'Training-'+imfoldername+'-'+imagename)) #create filename comprising videofolder + imagename
+            full_path = os.path.join(foldername,'Training-'+imfoldername+'-'+imagename)
         else:
-            plt.savefig(os.path.join(foldername,'Test-'+imfoldername+'-'+imagename))
+            full_path = os.path.join(foldername,'Test-'+imfoldername+'-'+imagename)
+
+        # windows throws error if file path is > 260 characters, can fix with prefix. see https://docs.microsoft.com/en-us/windows/desktop/fileio/naming-a-file#maximum-path-length-limitation
+        if (len(full_path) >= 260) and (os.name == 'nt'):
+            full_path = '\\\\?\\'+full_path
+        plt.savefig(full_path)
+
         plt.close("all")

@@ -34,7 +34,7 @@ Please check out [www.mousemotorlab.org/deeplabcut](https://www.mousemotorlab.or
 </p>
 
 # [DEMO the code](/examples)
- - We provide several Jupyter Notebooks: one that walks you through a demo dataset to test your installation, and another Notebook to run DeepLabCut from the begining on your own data. We also show you how to use the code in Docker, and on Google Colab. Please also read the [user-guide] prepint!(https://www.biorxiv.org/content/early/2018/11/24/476531)
+ - We provide several Jupyter Notebooks: one that walks you through a demo dataset to test your installation, and another Notebook to run DeepLabCut from the begining on your own data. We also show you how to use the code in Docker, and on Google Colab. Please also read the [user-guide preprint!](https://www.biorxiv.org/content/early/2018/11/24/476531)
 
 # News (and in the news):
 
@@ -71,13 +71,13 @@ importing a project into the new data format for DLC 2.0
 
 ## Code contributors:
 
-[Alexander Mathis](https://github.com/AlexEMG), [Tanmay Nath](http://www.mousemotorlab.org/team), [Mackenzie Mathis](https://github.com/MMathisLab), and especially the authors of DeeperCut authors for the feature detector code. The feature detector code is based on Eldar Insafutdinov's TensorFlow implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow). DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals including Richard Warren, Ronny Eichler, Jonas Rauber, Hao Wu, Federico Claudi, Taiga Abe, and Jonny Saunders as well as the [contributors](https://github.com/AlexEMG/DeepLabCut/graphs/contributors). In particular, the authors thank Ronny Eichler for input on the modularized version. We are also grateful to all the beta testers!
+[Alexander Mathis](https://github.com/AlexEMG), [Tanmay Nath](http://www.mousemotorlab.org/team), [Mackenzie Mathis](https://github.com/MMathisLab). The feature detector code is based on Eldar Insafutdinov's TensorFlow implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow). DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals including Richard Warren, Ronny Eichler, Jonas Rauber, Hao Wu, Federico Claudi, Gary Kane, Taiga Abe, and Jonny Saunders as well as the [contributors](https://github.com/AlexEMG/DeepLabCut/graphs/contributors). In particular, the authors thank Ronny Eichler for input on the modularized version. 
 
-This is an actively developed package and we welcome community development and involvement!
+This is an actively developed package and we welcome community development and involvement.
 
-For **help and questions that don't fit a GitHub code issue,** we ask you to post in https://forum.image.sc/
+For **help and questions that don't fit a GitHub code issue,** we ask you to post them here: https://forum.image.sc/
 
-If you would like to join the [development community](https://deeplabcut.slack.com), please drop us a note to be invited by emailing: mackenzie@post.harvard.edu
+If you would like to join the [code development community](https://deeplabcut.slack.com), please drop us a note to be invited by emailing: mackenzie@post.harvard.edu
 
 Please check out the following references for more details:
 

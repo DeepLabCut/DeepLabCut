@@ -62,7 +62,10 @@ def convertcsv2h5(config,userfeedback=True,scorer=None):
                 orderofbpincsv=list(data.values[0,1:-1:2])
                 imageindex=list(data.values[2:,0])
                 
-                assert(len(orderofbpincsv)==len(cfg['bodyparts']))
+                #assert(len(orderofbpincsv)==len(cfg['bodyparts']))
+                print(orderofbpincsv)
+                print(cfg['bodyparts'])
+                
                 #TODO: test len of images vs. len of imagenames for another sanity check
                 
                 index = pd.MultiIndex.from_product([[scorer], orderofbpincsv, ['x', 'y']],names=['scorer', 'bodyparts', 'coords'])
@@ -100,7 +103,6 @@ def analyze_videos_converth5_to_csv(videopath,videotype='.avi'):
     """
     start_path=os.getcwd()
     os.chdir(videopath)
-    
     Videos=[fn for fn in os.listdir(os.curdir) if (videotype in fn) and ('_labeled.mp4' not in fn)] #exclude labeled-videos!
     
     Allh5files=[fn for fn in os.listdir(os.curdir) if (".h5" in fn) and ("resnet" in fn)]
