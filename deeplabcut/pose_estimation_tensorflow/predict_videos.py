@@ -66,10 +66,16 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
         Saves the predictions in a .csv file. The default is ``False``; if provided it must be either ``True`` or ``False``
 
     destfolder: string, optional
-        Specifies the destination folder for analysis data (default is the path of the video)
+        Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this 
+        folder also needs to be passed.
 
     Examples
     --------
+    
+    Windows example for analyzing 1 video 
+    >>> deeplabcut.analyze_videos('C:\\myproject\\reaching-task\\config.yaml',['C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi'])
+    --------
+
     If you want to analyze only 1 video
     >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi'])
     --------
