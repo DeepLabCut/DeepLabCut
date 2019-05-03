@@ -20,5 +20,7 @@ or
 
 ``conda env create -f dlc-windowsGPU.yaml``
 
+If you plant to use Jupyter Notebooks, once you are inside the environment you need to run this line one time to link to Jupyter: ``conda install nb_conda``
+
 
 Great, that's it! Now just follow the user guide to acvitate your environment and get DeepLabCut up and running in no time!
