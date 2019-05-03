@@ -12,12 +12,24 @@ import numpy as np
 import pandas as pd
 import os.path
 import matplotlib as mpl
+
+import platform
 if os.environ.get('DLClight', default=False) == 'True':
     mpl.use('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
-    pass
+elif platform.system() == 'Darwin':
+    mpl.use('WxAgg') #TkAgg
 else:
     mpl.use('TkAgg')
 import matplotlib.pyplot as plt
+
+
+
+#if os.environ.get('DLClight', default=False) == 'True':
+#    mpl.use('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
+#    pass
+#else:
+#    mpl.use('TkAgg')
+#import matplotlib.pyplot as plt
 from skimage import io
 
 import yaml
@@ -300,7 +312,7 @@ def MakeTrain_pose_yaml(itemstochange,saveasconfigfile,defaultconfigfile):
     docs = []
     for raw_doc in raw.split('\n---'):
         try:
-            docs.append(yaml.load(raw_doc))
+            docs.append(yaml.load(raw_doc,Loader=yaml.SafeLoader))
         except SyntaxError:
             docs.append(raw_doc)
 

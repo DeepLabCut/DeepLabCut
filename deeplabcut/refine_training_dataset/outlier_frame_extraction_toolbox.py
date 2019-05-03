@@ -71,7 +71,7 @@ class WidgetPanel(wx.Panel):
 class MainFrame(wx.Frame):
     """Contains the main GUI and button boxes"""
 
-    def __init__(self, parent,config,video,shuffle,Dataframe,scorer):
+    def __init__(self, parent,config,video,shuffle,Dataframe,scorer,savelabeled):
 # Settting the GUI size and panels design
         displays = (wx.Display(i) for i in range(wx.Display.GetCount())) # Gets the number of displays
         screenSizes = [display.GetGeometry().GetSize() for display in displays] # Gets the size of each display
@@ -197,6 +197,7 @@ class MainFrame(wx.Frame):
         self.shuffle = shuffle
         self.Dataframe = Dataframe
         self.scorer = scorer
+        self.savelabeled = savelabeled
         
 # Read the video file
         self.vid = cv2.VideoCapture(str(self.video_source))
@@ -322,7 +323,8 @@ class MainFrame(wx.Frame):
 # Check for it output path and a machine label file exist
         if output_path.exists() and Path(self.machinefile).is_file():
             cv2.imwrite(img_name, frame)
-            self.figure.savefig(labeled_img_name,bbox_inches='tight')
+            if self.savelabeled:
+                self.figure.savefig(labeled_img_name,bbox_inches='tight')
             Data = pd.read_hdf(self.machinefile,'df_with_missing')
             DataCombined = pd.concat([Data,DF])
             DataCombined = DataCombined[~DataCombined.index.duplicated(keep='first')]
@@ -330,7 +332,8 @@ class MainFrame(wx.Frame):
             DataCombined.to_csv(os.path.join(str(output_path),'machinelabels.csv'))
 # If machine label file does not exist then create one
         elif output_path.exists() and not(Path(self.machinefile).is_file()):
-            self.figure.savefig(labeled_img_name,bbox_inches='tight')
+            if self.savelabeled:
+                self.figure.savefig(labeled_img_name,bbox_inches='tight')
             cv2.imwrite(img_name, frame)
             DF.to_hdf(self.machinefile,key='df_with_missing',mode='w')
             DF.to_csv(os.path.join(str(output_path), "machinelabels.csv"))
@@ -380,14 +383,14 @@ class MainFrame(wx.Frame):
         """
         wx.MessageBox("1. Use the checkbox 'Crop?' at the bottom left if you need to crop the frame. In this case use the left mouse button to draw a box corresponding to the region of interest. Click the 'Set cropping parameters' button to add the video with the chosen crop parameters to the config file.\n\n2. Use the slider to select a frame in the entire video. \n\n3. Click Grab Frames button to save the specific frame.\n\n4. In events where you need to extract a range frames, then use the checkbox 'Range of frames' to select the starting frame index and the number of frames to extract. \n Click the update button to see the frame. Click Grab Frames to select the range of frames. \n Click OK to continue", 'Instructions to use!', wx.OK | wx.ICON_INFORMATION)
 
-def show(config,video,shuffle,Dataframe,scorer):
+def show(config,video,shuffle,Dataframe,scorer,savelabeled):
     import imageio
     imageio.plugins.ffmpeg.download()
     app = wx.App()
-    frame = MainFrame(None,config,video,shuffle,Dataframe,scorer).Show()
+    frame = MainFrame(None,config,video,shuffle,Dataframe,scorer,savelabeled).Show()
     app.MainLoop()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('config','video','shuffle','Dataframe','scorer')
+    parser.add_argument('config','video','shuffle','Dataframe','scorer','savelabeled')
     cli_args = parser.parse_args()

@@ -1,5 +1,5 @@
 # Quick Anaconda Install for Windows and MacOS!
-### Please use one (or more) of the supplied Anaconda environments for a fast, easy install. 
+### Please use one (or more) of the supplied Anaconda environments for a fast and easy installation process.
 
 (0) Be sure you have Anaconda 3 installed! https://www.anaconda.com/distribution/, and get familiar with using "cmd" or terminal!
 
@@ -20,7 +20,18 @@ or
 
 ``conda env create -f dlc-windowsGPU.yaml``
 
-If you plant to use Jupyter Notebooks, once you are inside the environment you need to run this line one time to link to Jupyter: ``conda install nb_conda``
+If you plan to use Jupyter Notebooks once you are inside the environment you need to run this line one time to link to Jupyter: ``conda install nb_conda``
 
 
-Great, that's it! Now just follow the user guide to acvitate your environment and get DeepLabCut up and running in no time!
+Great, that's it! 
+
+Now just follow the user guide, to activate your environment and get DeepLabCut up and running in no time!
+
+Just as a reminder, you can exit the environment anytime and (later) come back! So the environments really allow you to manage multiple packages that you might want to install on your computer. 
+
+Once you are in the terminal type:
+- Windows: ``activate nameoftheenvironment``
+- Linux/MacOS: ``source activate nameoftheenvironment``
+
+Here are some conda environment management tips: https://kapeli.com/cheat_sheets/Conda.docset/Contents/Resources/Documents/index
+

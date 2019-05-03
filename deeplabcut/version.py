@@ -7,5 +7,5 @@ M Mathis, mackenzie@post.harvard.edu
 
 """
 
-__version__ = '2.0.5.1'
+__version__ = '2.0.6'
 VERSION = __version__
