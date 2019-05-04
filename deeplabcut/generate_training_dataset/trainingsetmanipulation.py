@@ -434,11 +434,11 @@ def mergeandsplit(config,trainindex=0,uniform=True,windows2linux=False):
     >>> deeplabcut.create_training_dataset(config,Shuffles=[3],trainIndexes=trainIndexes,testIndexes=testIndexes)
     
     To freeze a (uniform) split:
-    >>> trainIndexes, testIndexes=deeplabcut.mergeandsplit(config,trainindex=0,uniform=True)
+    >>> trainIndices, testIndices=deeplabcut.mergeandsplit(config,trainindex=0,uniform=True)
     You can then create two model instances that have the identical trainingset. Thereby you can assess the role of various parameters on the performance of DLC.
     
-    >>> deeplabcut.create_training_dataset(config,Shuffles=[0],trainIndexes=trainIndexes,testIndexes=testIndexes)
-    >>> deeplabcut.create_training_dataset(config,Shuffles=[1],trainIndexes=trainIndexes,testIndexes=testIndexes)
+    >>> deeplabcut.create_training_dataset(config,Shuffles=[0],trainIndices=trainIndices,testIndices=testIndices)
+    >>> deeplabcut.create_training_dataset(config,Shuffles=[1],trainIndices=trainIndices,testIndices=testIndices)
     --------
     
     """
@@ -479,7 +479,7 @@ def mergeandsplit(config,trainindex=0,uniform=True,windows2linux=False):
     return trainIndexes, testIndexes
 
 
-def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=False,trainIndexes=None,testIndexes=None):
+def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=False,trainIndices=None,testIndices=None):
     """
     Creates a training dataset. Labels from all the extracted frames are merged into a single .h5 file.\n
     Only the videos included in the config file are used to create this dataset.\n
@@ -500,6 +500,9 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
     windows2linux: bool.
         The annotation files contain path formated according to your operating system. If you label on windows 
         but train & evaluate on a unix system (e.g. ubunt, colab, Mac) set this variable to True to convert the paths. 
+    
+    trainIndices and testIndices: list of indices for traininng and testing. Use mergeandsplit(config,trainindex=0,uniform=True,windows2linux=False) to create them
+    See help for deeplabcut.mergeandsplit?
     
     Example
     --------
@@ -555,9 +558,11 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
     for shuffle in Shuffles: # Creating shuffles starting from 1
         for trainFraction in TrainingFraction:
             #trainIndexes, testIndexes = SplitTrials(range(len(Data.index)), trainFraction)
-            if trainIndexes is None and testIndexes is None:
+            if trainIndices is None and testIndices is None:
                 trainIndexes, testIndexes = SplitTrials(range(len(Data.index)), trainFraction)
-            else:
+            else: # set to passed values...
+                trainIndexes=trainIndices
+                testIndexes=testIndices
                 print("You passed a split with the following fraction:", len(trainIndexes)*1./(len(testIndexes)+len(trainIndexes))*100)
             
             ####################################################
