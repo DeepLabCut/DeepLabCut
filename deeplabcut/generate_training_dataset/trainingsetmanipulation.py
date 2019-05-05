@@ -22,7 +22,9 @@ else:
     mpl.use('TkAgg')
 import matplotlib.pyplot as plt
 
-
+import urllib
+import tarfile
+from io import BytesIO
 
 #if os.environ.get('DLClight', default=False) == 'True':
 #    mpl.use('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
@@ -265,7 +267,7 @@ def MakeLabeledPlots(folder,DataCombined,cfg,Labels,Colorscheme,cc,scale):
     tmpfolder = str(folder) + '_labeled'
     auxiliaryfunctions.attempttomakefolder(tmpfolder)
     for index, imagename in enumerate(DataCombined.index.values):
-        image = io.imread(os.path.join(cfg['project_path'],imagename))
+        image = skio.imread(os.path.join(cfg['project_path'],imagename))
         plt.axis('off')
 
         if np.ndim(image)==2:
@@ -434,11 +436,11 @@ def mergeandsplit(config,trainindex=0,uniform=True,windows2linux=False):
     >>> deeplabcut.create_training_dataset(config,Shuffles=[3],trainIndexes=trainIndexes,testIndexes=testIndexes)
     
     To freeze a (uniform) split:
-    >>> trainIndices, testIndices=deeplabcut.mergeandsplit(config,trainindex=0,uniform=True)
+    >>> trainIndexes, testIndexes=deeplabcut.mergeandsplit(config,trainindex=0,uniform=True)
     You can then create two model instances that have the identical trainingset. Thereby you can assess the role of various parameters on the performance of DLC.
     
-    >>> deeplabcut.create_training_dataset(config,Shuffles=[0],trainIndices=trainIndices,testIndices=testIndices)
-    >>> deeplabcut.create_training_dataset(config,Shuffles=[1],trainIndices=trainIndices,testIndices=testIndices)
+    >>> deeplabcut.create_training_dataset(config,Shuffles=[0],trainIndexes=trainIndexes,testIndexes=testIndexes)
+    >>> deeplabcut.create_training_dataset(config,Shuffles=[1],trainIndexes=trainIndexes,testIndexes=testIndexes)
     --------
     
     """
@@ -479,7 +481,7 @@ def mergeandsplit(config,trainindex=0,uniform=True,windows2linux=False):
     return trainIndexes, testIndexes
 
 
-def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=False,trainIndices=None,testIndices=None):
+def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=False,trainIndexes=None,testIndexes=None):
     """
     Creates a training dataset. Labels from all the extracted frames are merged into a single .h5 file.\n
     Only the videos included in the config file are used to create this dataset.\n
@@ -500,9 +502,6 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
     windows2linux: bool.
         The annotation files contain path formated according to your operating system. If you label on windows 
         but train & evaluate on a unix system (e.g. ubunt, colab, Mac) set this variable to True to convert the paths. 
-    
-    trainIndices and testIndices: list of indices for traininng and testing. Use mergeandsplit(config,trainindex=0,uniform=True,windows2linux=False) to create them
-    See help for deeplabcut.mergeandsplit?
     
     Example
     --------
@@ -528,12 +527,13 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
     Data = Data[scorer] #extract labeled data
 
     #set model type. we will allow more in the future.
+    parent_path = os.path.dirname(deeplabcut.__file__)
     if cfg['resnet']==50:
         net_type ='resnet_'+str(cfg['resnet'])
-        resnet_path = str(Path(deeplabcut.__file__).parents[0] / 'pose_estimation_tensorflow/models/pretrained/resnet_v1_50.ckpt')
+        resnet_path = os.path.join(parent_path, 'pose_estimation_tensorflow/models/pretrained/resnet_v1_50.ckpt')
     elif cfg['resnet']==101:
         net_type ='resnet_'+str(cfg['resnet'])
-        resnet_path = str(Path(deeplabcut.__file__).parents[0] / 'pose_estimation_tensorflow/models/pretrained/resnet_v1_101.ckpt')
+        resnet_path = os.path.join(parent_path, 'pose_estimation_tensorflow/models/pretrained/resnet_v1_101.ckpt')
     else:
         print("Currently only ResNet 50 or 101 supported, please change 'resnet' entry in config.yaml!")
         num_shuffles=-1 #thus the loop below is empty...
@@ -542,11 +542,14 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
         """
         Downloads the ImageNet pretrained weights for ResNet.
         """
-        start = os.getcwd()
-        os.chdir(str(Path(resnet_path).parents[0]))
-        print("Downloading the pretrained model (ResNets)....")
-        subprocess.call("download.sh", shell=True)
-        os.chdir(start)
+        target_dir = os.path.dirname(resnet_path)
+        with open(os.path.join(target_dir, 'models.txt'), 'r') as f:
+            for line in f:
+                url = line.rstrip()
+                print("Downloading a pretrained model (ResNet) from {}....".format(url))
+                response = urllib.request.urlopen(url)
+                with tarfile.open(fileobj=BytesIO(response.read()), mode='r:gz') as tar:
+                    tar.extractall(path=target_dir)   
 
     if Shuffles==None:
         Shuffles=range(1,num_shuffles+1,1)
@@ -558,11 +561,9 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
     for shuffle in Shuffles: # Creating shuffles starting from 1
         for trainFraction in TrainingFraction:
             #trainIndexes, testIndexes = SplitTrials(range(len(Data.index)), trainFraction)
-            if trainIndices is None and testIndices is None:
+            if trainIndexes is None and testIndexes is None:
                 trainIndexes, testIndexes = SplitTrials(range(len(Data.index)), trainFraction)
-            else: # set to passed values...
-                trainIndexes=trainIndices
-                testIndexes=testIndices
+            else:
                 print("You passed a split with the following fraction:", len(trainIndexes)*1./(len(testIndexes)+len(trainIndexes))*100)
             
             ####################################################

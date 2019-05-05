@@ -30,7 +30,6 @@ setuptools.setup(
                       'ruamel.yaml==0.15','setuptools','scikit-image~=0.14.0','scikit-learn~=0.19.2',
                       'scipy~=1.1.0','six==1.11.0','statsmodels==0.9.0','tables',
                       'tqdm>4','wheel==0.31.1'],
-    scripts=['deeplabcut/pose_estimation_tensorflow/models/pretrained/download.sh'],
     packages=setuptools.find_packages(),
     data_files=[('deeplabcut',['deeplabcut/pose_cfg.yaml'])],
     include_package_data=True,
