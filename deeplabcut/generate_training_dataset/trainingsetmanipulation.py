@@ -527,23 +527,23 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
     Data = Data[scorer] #extract labeled data
 
     #set model type. we will allow more in the future.
-    parent_path = os.path.dirname(deeplabcut.__file__)
+    parent_path = Path(os.path.dirname(deeplabcut.__file__))
     if cfg['resnet']==50:
         net_type ='resnet_'+str(cfg['resnet'])
-        resnet_path = os.path.join(parent_path, 'pose_estimation_tensorflow/models/pretrained/resnet_v1_50.ckpt')
+        resnet_path = parent_path  / 'pose_estimation_tensorflow/models/pretrained/resnet_v1_50.ckpt'
     elif cfg['resnet']==101:
         net_type ='resnet_'+str(cfg['resnet'])
-        resnet_path = os.path.join(parent_path, 'pose_estimation_tensorflow/models/pretrained/resnet_v1_101.ckpt')
+        resnet_path = parent_path / 'pose_estimation_tensorflow/models/pretrained/resnet_v1_101.ckpt'
     else:
         print("Currently only ResNet 50 or 101 supported, please change 'resnet' entry in config.yaml!")
         num_shuffles=-1 #thus the loop below is empty...
 
-    if not Path(resnet_path).is_file():
+    if not resnet_path.is_file():
         """
         Downloads the ImageNet pretrained weights for ResNet.
         """
-        target_dir = os.path.dirname(resnet_path)
-        with open(os.path.join(target_dir, 'models.txt'), 'r') as f:
+        target_dir = resnet_path.parents[0]
+        with open(target_dir / 'models.txt', 'r') as f:
             for line in f:
                 url = line.rstrip()
                 print("Downloading a pretrained model (ResNet) from {}....".format(url))
