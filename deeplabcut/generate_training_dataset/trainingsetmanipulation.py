@@ -267,7 +267,7 @@ def MakeLabeledPlots(folder,DataCombined,cfg,Labels,Colorscheme,cc,scale):
     tmpfolder = str(folder) + '_labeled'
     auxiliaryfunctions.attempttomakefolder(tmpfolder)
     for index, imagename in enumerate(DataCombined.index.values):
-        image = skio.imread(os.path.join(cfg['project_path'],imagename))
+        image = io.imread(os.path.join(cfg['project_path'],imagename))
         plt.axis('off')
 
         if np.ndim(image)==2:
