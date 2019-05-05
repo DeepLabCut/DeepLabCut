@@ -51,7 +51,7 @@ else:
     from deeplabcut.refine_training_dataset import extract_outlier_frames, merge_datasets, filterpredictions
 
 #Direct import for convenience
-from deeplabcut.pose_estimation_tensorflow import train_network, train_network_path
+from deeplabcut.pose_estimation_tensorflow import train_network
 from deeplabcut.pose_estimation_tensorflow import evaluate_network
 from deeplabcut.pose_estimation_tensorflow import analyze_videos, analyze_time_lapse_frames
 
