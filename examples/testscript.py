@@ -10,19 +10,17 @@ This script tests various functionalities in an automatic way.
 It should take about 4:00 minutes to run this in a CPU.
 It should take about 1:30 minutes on a GPU (incl. downloading the ResNet weights)
 
-It produces nothing of interesting scientifically.
+It produces nothing of interest scientifically.
 """
 
 task='TEST' # Enter the name of your experiment Task
 scorer='Alex' # Enter the name of the experimenter/labeler
 
 
-import deeplabcut, os,  subprocess
+import os,  subprocess, deeplabcut
 from pathlib import Path
 import pandas as pd
 import numpy as np
-
-
 
 print("Imported DLC!")
 basepath=os.path.dirname(os.path.abspath('testscript.py'))
@@ -143,5 +141,10 @@ deeplabcut.auxiliaryfunctions.write_config(posefile,DLC_config)
 print("TRAIN")
 deeplabcut.train_network(path_config_file)
 
-
 print("ALL DONE!!! - default cases are functional.")
+
+
+print("Re-import DLC with env. variable set to test DLC light mode.")
+os.environ['DLClight']='True'
+subprocess.call(['python3',"-c","import deeplabcut"])
+

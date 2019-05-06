@@ -55,6 +55,12 @@ def train_network(config,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshot
 
     """
     import tensorflow as tf
+    #reload logger.
+    import importlib
+    import logging
+    importlib.reload(logging)
+    logging.shutdown()
+    
     from deeplabcut.pose_estimation_tensorflow.train import train
     from deeplabcut.utils import auxiliaryfunctions
 
