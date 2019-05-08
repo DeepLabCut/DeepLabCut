@@ -8,6 +8,8 @@
 <p align="center"> 
 <img src= https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc5abe0d9297405a428522/1556896461304/howtouseDLC-01.png?format=1000w width="60%">
  </p>
+ 
+ Here are some tips for scaling up your analysis: https://github.com/AlexEMG/DeepLabCut/wiki/Batch-Processing-your-Analysis
 
 You can get started by using our demo Jupyter Notebooks [(#1)](/docs/UseOverviewGuide.md#option-1-demo-notebooks), or use the program terminal/cmd [(#2)](/docs/UseOverviewGuide.md#option-2-using-the-program-terminal-start-ipython). 
 
@@ -140,6 +142,8 @@ deeplabcut.evaluate_network(config_path,shuffle=[1], plotting=True)
 ```
 deeplabcut.analyze_videos(config_path,[`/fullpath/project/videos/'], videotype='.mp4', save_as_csv=True)
 ```
+Here are some tips for scaling up your analysis: https://github.com/AlexEMG/DeepLabCut/wiki/Batch-Processing-your-Analysis
+
 You can also filter the predicted bodyparts by:
 ```
 deeplabcut.filterpredictions(config_path,[`/fullpath/project/videos/reachingvideo1.avi'], shuffle=1)
