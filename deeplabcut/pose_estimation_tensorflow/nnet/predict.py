@@ -10,6 +10,62 @@ import numpy as np
 import tensorflow as tf
 from deeplabcut.pose_estimation_tensorflow.nnet.net_factory import pose_net
 
+# Added methods for supporting saving the probability frames:
+
+from io import StringIO
+from typing import TextIO
+
+# Class is used so we can have a counter variable which is static and is not reset every execution
+class FrameWriter:
+    current_frame = 1
+    
+    @staticmethod
+    def write_frame(scmap, cfg, save_file: str) -> None:
+        """
+        Writes the given source map of probabilities to the specified file
+        
+        Format written to file is the frame, followed by the bodypart, followed by a list of probabilities, ending in a ////.
+        
+        param scmap: The source map of the given image or frame of video, the probability frame.
+        param cfg: The dlc_cfg, used to get the names of the bodyparts
+        param save_file: The file location to save to, should end with .csv(sorta makes a csv)
+                         NOTE: This is a string path, not a file handler...
+        """
+        # If there is more then 4 dimensions, there is a problem
+        if(len(scmap.shape) > 4):
+            raise ValueError("scmap has more then 4 dimensions!")
+        # If we have 4 dimensions in the source map, we have multiple frames of the video, 
+        # so recall this function with each frame seperated
+        if(len(scmap.shape) > 3):
+            for innermap in scmap:
+                return FrameWriter.write_frame(innermap, cfg, save_file)
+                
+        # Iterating the last row in each 3-dimensional array list
+        # As this is a specific bodypart of the degu
+        for i in range(scmap.shape[-1]):
+            # Open file path as f, and append to the end...
+            with open(save_file, "a") as f:
+                # Create StringIO to store output of numpy savetxt
+                temp = StringIO()
+                # Write the current frame and bodypart
+                temp.write(f"Frame: {FrameWriter.current_frame}\n")
+                temp.write(f"BodyPart: {cfg['all_joints_names'][i]}, {i}\n")
+                # Write probability data for this bodypart, we also have to reshape data 
+                # to appear like the original frame dimensions... 
+                np.savetxt(temp, scmap[:, :, i].reshape(scmap.shape[-3], scmap.shape[-2]))
+                # Write //// to indicate end of this block of data
+                temp.write("////\n")
+                
+                # Write the string buffer
+                f.write(temp.getvalue())
+                # Close temp string buffer
+                temp.close()
+        # Increment the frame...
+        FrameWriter.current_frame += 1
+
+
+# ORIGINAL METHODS BELOW:
+
 def setup_pose_prediction(cfg):
     tf.reset_default_graph()
     inputs = tf.placeholder(tf.float32, shape=[cfg.batch_size   , None, None, 3])
@@ -56,11 +112,16 @@ def argmax_pose_predict(scmap, offmat, stride):
                                [scmap[maxloc][joint_idx]])))
     return np.array(pose)
 
-def getpose(image, cfg, sess, inputs, outputs, outall=False):
+# Arg h5_path added
+def getpose(image, cfg, sess, inputs, outputs, h5_path, outall=False):
     ''' Extract pose '''
     im=np.expand_dims(image, axis=0).astype(float)
     outputs_np = sess.run(outputs, feed_dict={inputs: im})
     scmap, locref = extract_cnn_output(outputs_np, cfg)
+    
+    # This line is added to save the scmaps
+    FrameWriter.write_frame(scmap, cfg, h5_path[:-3])
+    
     pose = argmax_pose_predict(scmap, locref, cfg.stride)
     if outall:
         return scmap, locref, pose
@@ -82,12 +143,16 @@ def extract_cnn_outputmulti(outputs_np, cfg):
         scmap=np.expand_dims(scmap,axis=2)
     return scmap, locref
 
-
-def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
+# Arg video_path added
+def getposeNP(image, cfg, sess, inputs, outputs, h5_path, outall=False):
     ''' Adapted from DeeperCut, performs numpy-based faster inference on batches'''
     outputs_np = sess.run(outputs, feed_dict={inputs: image})
     
     scmap, locref = extract_cnn_outputmulti(outputs_np, cfg) #processes image batch.
+    
+    # Line added to save srcmaps
+    FrameWriter.write_frame(scmap, cfg, h5_path[:-3] + ".csv")
+    
     batchsize,ny,nx,num_joints = scmap.shape
     
     #Combine scoremat and offsets to the final pose.

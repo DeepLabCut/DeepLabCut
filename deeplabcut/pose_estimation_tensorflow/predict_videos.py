@@ -104,7 +104,7 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
     start_path=os.getcwd() #record cwd to return to this directory in the end
     
     cfg = auxiliaryfunctions.read_config(config)
-    trainFraction = cfg['TrainingFraction'][trainingsetindex]
+    trainFraction =  cfg['TrainingFraction'][trainingsetindex]
     
     modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)))
     path_test_config = Path(modelfolder) / 'test' / 'pose_cfg.yaml'
@@ -162,7 +162,8 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
     print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
     print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
 
-def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize):
+# Arg h5_path added
+def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize, h5_path):
     ''' Batchwise prediction of pose '''
     
     PredicteData = np.zeros((nframes, 3 * len(dlc_cfg['all_joints_names'])))
@@ -198,7 +199,7 @@ def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize):
                     frames[batch_ind] = img_as_ubyte(frame)
                     
                 if batch_ind==batchsize-1:
-                    pose = predict.getposeNP(frames,dlc_cfg, sess, inputs, outputs)
+                    pose = predict.getposeNP(frames,dlc_cfg, sess, inputs, outputs, h5_path)
                     PredicteData[batch_num*batchsize:(batch_num+1)*batchsize, :] = pose
                     batch_ind = 0
                     batch_num += 1
@@ -208,7 +209,7 @@ def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize):
                 nframes = counter
                 print("Detected frames: ", nframes)
                 if batch_ind>0:
-                    pose = predict.getposeNP(frames, dlc_cfg, sess, inputs, outputs) #process the whole batch (some frames might be from previous batch!)
+                    pose = predict.getposeNP(frames, dlc_cfg, sess, inputs, outputs,  h5_path) #process the whole batch (some frames might be from previous batch!)
                     PredicteData[batch_num*batchsize:batch_num*batchsize+batch_ind, :] = pose[:batch_ind,:]
                 break
             counter+=1
@@ -216,7 +217,8 @@ def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize):
     pbar.close()
     return PredicteData,nframes
 
-def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes):
+# Arg h5_path added
+def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes, h5_path):
     ''' Non batch wise pose estimation for video cap.'''
     if cfg['cropping']:
         print("Cropping based on the x1 = %s x2 = %s y1 = %s y2 = %s. You can adjust the cropping coordinates in the config.yaml file." %(cfg['x1'], cfg['x2'],cfg['y1'], cfg['y2']))
@@ -246,7 +248,7 @@ def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes):
                     frame= img_as_ubyte(frame[cfg['y1']:cfg['y2'],cfg['x1']:cfg['x2']])
                 else:
                     frame = img_as_ubyte(frame)
-                pose = predict.getpose(frame, dlc_cfg, sess, inputs, outputs)
+                pose = predict.getpose(frame, dlc_cfg, sess, inputs, outputs, h5_path)
                 PredicteData[counter, :] = pose.flatten()  # NOTE: thereby cfg['all_joints_names'] should be same order as bodyparts!
             else:
                 nframes=counter
@@ -264,6 +266,7 @@ def AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,
     if destfolder is None:
         destfolder = str(Path(video).parents[0])
     dataname = os.path.join(destfolder,vname + DLCscorer + '.h5')
+    
     try:
         # Attempt to load data...
         pd.read_hdf(dataname)
@@ -284,9 +287,9 @@ def AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,
 
         print("Starting to extract posture")
         if int(dlc_cfg["batch_size"])>1:
-            PredicteData,nframes=GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,int(dlc_cfg["batch_size"]))
+            PredicteData,nframes=GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,int(dlc_cfg["batch_size"]), dataname)
         else:
-            PredicteData,nframes=GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes)
+            PredicteData,nframes=GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes, dataname)
 
         stop = time.time()
         
