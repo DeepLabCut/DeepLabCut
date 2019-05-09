@@ -38,8 +38,8 @@ class FrameWriter:
         # so recall this function with each frame seperated
         if(len(scmap.shape) > 3):
             for innermap in scmap:
-                return FrameWriter.write_frame(innermap, cfg, save_file)
-                
+                FrameWriter.write_frame(innermap, cfg, save_file)
+            return
         # Iterating the last row in each 3-dimensional array list
         # As this is a specific bodypart of the degu
         for i in range(scmap.shape[-1]):
