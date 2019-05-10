@@ -69,7 +69,7 @@ def read_config(configname):
 
     """
     ruamelFile = ruamel.yaml.YAML()
-    path = Path(configname)
+    path = str(Path(configname).resolve())
     if os.path.exists(path):
         try:
             with open(path, 'r') as f:
