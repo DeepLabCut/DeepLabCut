@@ -453,7 +453,7 @@ def mergeandsplit(config,trainindex=0,uniform=True,windows2linux=False):
     fn=os.path.join(project_path,trainingsetfolder,'CollectedData_'+cfg['scorer'])
     
     try:
-        Data= pd.read_hdf(fn, 'df_with_missing')
+        Data= pd.read_hdf(fn+'.h5', 'df_with_missing')
     except FileNotFoundError:
         Data = merge_annotateddatasets(cfg,project_path,Path(os.path.join(project_path,trainingsetfolder)),windows2linux=windows2linux)
     
