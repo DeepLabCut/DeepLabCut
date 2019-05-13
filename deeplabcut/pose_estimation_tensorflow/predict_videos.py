@@ -100,6 +100,9 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
     if 'TF_CUDNN_USE_AUTOTUNE' in os.environ:
         del os.environ['TF_CUDNN_USE_AUTOTUNE'] #was potentially set during training
     
+    if gputouse is not None: #gpu selection
+            os.environ['CUDA_VISIBLE_DEVICES'] = str(gputouse)
+            
     tf.reset_default_graph()
     start_path=os.getcwd() #record cwd to return to this directory in the end
     
@@ -145,10 +148,6 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
     
     sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
     pdindex = pd.MultiIndex.from_product([[DLCscorer], dlc_cfg['all_joints_names'], ['x', 'y', 'likelihood']],names=['scorer', 'bodyparts', 'coords'])
-
-    if gputouse is not None: #gpu selectinon
-            os.environ['CUDA_VISIBLE_DEVICES'] = str(gputouse)
-    
     ##################################################
     # Datafolder
     ##################################################

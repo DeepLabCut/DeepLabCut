@@ -81,6 +81,8 @@ def train_network(config,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshot
           os.environ['TF_CUDNN_USE_AUTOTUNE'] = '0'
       if gputouse is not None:
         os.environ['CUDA_VISIBLE_DEVICES'] = str(gputouse)
+
+
       try:
           train(str(poseconfigfile),displayiters,saveiters,maxiters,max_to_keep=max_snapshots_to_keep) #pass on path and file name for pose_cfg.yaml!
       except BaseException as e:
