@@ -141,6 +141,9 @@ deeplabcut.auxiliaryfunctions.write_config(posefile,DLC_config)
 print("TRAIN")
 deeplabcut.train_network(path_config_file)
 
+print("Inference with new direct cropping")
+deeplabcut.analyze_videos(path_config_file,[newvideo],destfolder=dfolder,cropping=[0,50,0,50],save_as_csv=True)
+
 print("ALL DONE!!! - default cases are functional.")
 
 
