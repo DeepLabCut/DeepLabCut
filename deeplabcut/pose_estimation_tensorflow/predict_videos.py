@@ -325,7 +325,7 @@ def GetPoseALL(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, pre
             if(pose is not None):
                 # If the predictor returned a pose, add it to the pose_prediction_data and increment the counter
                 # That keeps track of fully finished frames.
-                pose_prediction_data[frames_done:frames_done + pose.get_frame_count()] = pose
+                pose_prediction_data[frames_done:frames_done + pose.get_frame_count()] = pose.get_all()
                 frames_done += pose.get_frame_count()
 
         if(size < batchsize):
@@ -344,7 +344,7 @@ def GetPoseALL(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, pre
 
     # Add any post-processed frames
     if(final_poses is not None):
-        pose_prediction_data[frames_done:frames_done + final_poses.get_frame_count()] = final_poses
+        pose_prediction_data[frames_done:frames_done + final_poses.get_frame_count()] = final_poses.get_all()
         frames_done += final_poses.get_frame_count()
 
     # Check and make sure the predictor returned all frames, otherwise throw an error

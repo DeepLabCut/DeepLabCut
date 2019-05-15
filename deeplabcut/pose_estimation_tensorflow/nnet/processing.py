@@ -14,7 +14,7 @@ from typing import List, Union, Type, Tuple, Iterable, Sequence
 import tqdm
 
 # Used by get_predictor for loading plugins
-import deeplabcut.pose_estimation_tensorflow.util.pluginloader as loader
+from deeplabcut.pose_estimation_tensorflow.util import pluginloader
 
 # Used by TrackData class
 import numpy as np
@@ -43,12 +43,12 @@ class TrackingData:
                         stored as an integer.
         """
         # If scmap recieved is only 3-dimension, it is of only 1 frame, but add the dimension so it works better.
-        if(len(scmap.size) == 3):
+        if(len(scmap.shape) == 3):
             self._scmap = np.expand_dims(scmap, axis=0)
         else:
             self._scmap = scmap
 
-        if(len(locref.size) == 3):
+        if(len(locref.shape) == 3):
             self._locref = np.expand_dims(locref, axis=0)
         else:
             self._locref = locref
@@ -88,8 +88,8 @@ class TrackingData:
         :return: A tuple of numpy arrays, the first numpy array being the y coordinate max for each frame, the second
                  being the x coordinate max for each frame
         """
-        y_dim, x_dim = self._scmap.size[1], self._scmap.shape[2]
-        flat_max = np.argmax(self._scmap.reshape((self._scmap.size[0], y_dim * x_dim, self._scmap.size[3])), axis=1)
+        y_dim, x_dim = self._scmap.shape[1], self._scmap.shape[2]
+        flat_max = np.argmax(self._scmap.reshape((self._scmap.shape[0], y_dim * x_dim, self._scmap.shape[3])), axis=1)
         return np.unravel_index(flat_max, dims=(y_dim, x_dim))
 
     def get_poses_for(self, points: Tuple[ndarray, ndarray]):
@@ -199,7 +199,7 @@ class Pose:
         :param y: All y-values for these poses, in ndarray indexing format frame->body part->y-value
         :param prob: All probabilities for these poses, in ndarray indexing format frame->body part->p-value
         """
-        self._data = np.empty((x.size[0], x.size[1] * 3), dtype=x.dtype)
+        self._data = np.empty((x.shape[0], x.shape[1] * 3), dtype=x.dtype)
         self.set_all_x(x)
         self.set_all_y(y)
         self.set_all_prob(prob)
@@ -371,7 +371,6 @@ class Predictor(ABC):
 
     Predictors accept a source map of data received.
     """
-    # TODO: Maybe add generator for on_end so DLC can display a progress bar for post processing if it exist
     @abstractmethod
     def __init__(self, bodyparts: List[str]):
         """
@@ -440,8 +439,8 @@ def get_predictor(name: str) -> Type[Predictor]:
     :return: The plugin class that has a name that matches the specified name
     """
     # Load the plugins
-    plugins = loader.load_plugin_classes("deeplabcut.pose_estimation_tensorflow.nnet.predictors", Predictor)
-
+    plugins = pluginloader.load_plugin_classes("deeplabcut/pose_estimation_tensorflow/nnet/predictors", Predictor)
+    print(plugins)
     # Iterate the plugins until we find one with a matching name, otherwise throw a ValueError if we don't find one.
     for plugin in plugins:
         if(plugin.get_name() == name):

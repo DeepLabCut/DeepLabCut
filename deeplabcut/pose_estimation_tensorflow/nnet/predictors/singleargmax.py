@@ -21,7 +21,7 @@ class SingleArgMaxPredict(Predictor):
         # Using new object library to get the max... Drastically simplified logic...
         return scmap.get_poses_for(scmap.get_max_scmap_points())
 
-    def on_end(self) -> Union[None, Pose]:
+    def on_end(self, pbar) -> Union[None, Pose]:
         # Processing is done per frame, so return None.
         return None
 
