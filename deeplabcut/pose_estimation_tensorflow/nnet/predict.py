@@ -120,7 +120,7 @@ def getpose(image, cfg, sess, inputs, outputs, h5_path, outall=False):
     scmap, locref = extract_cnn_output(outputs_np, cfg)
     
     # This line is added to save the scmaps
-    FrameWriter.write_frame(scmap, cfg, h5_path[:-3])
+    # FrameWriter.write_frame(scmap, cfg, h5_path[:-3])
     
     pose = argmax_pose_predict(scmap, locref, cfg.stride)
     if outall:
@@ -151,7 +151,7 @@ def getposeNP(image, cfg, sess, inputs, outputs, h5_path, outall=False):
     scmap, locref = extract_cnn_outputmulti(outputs_np, cfg) #processes image batch.
     
     # Line added to save srcmaps
-    FrameWriter.write_frame(scmap, cfg, h5_path[:-3] + ".csv")
+    # FrameWriter.write_frame(scmap, cfg, h5_path[:-3] + ".csv")
     
     batchsize,ny,nx,num_joints = scmap.shape
     

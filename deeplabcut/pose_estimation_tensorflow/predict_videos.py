@@ -180,7 +180,7 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
     print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
 
 # Arg h5_path added
-def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize, h5_path, predictor):
+def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize, h5_path):
     ''' Batchwise prediction of pose '''
     
     PredicteData = np.zeros((nframes, 3 * len(dlc_cfg['all_joints_names'])))
@@ -234,10 +234,133 @@ def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize, h5_path, 
     pbar.close()
     return PredicteData,nframes
 
-# TODO: Modify getposeS, getposeF, and all methods they call to use predictor
+
+
+
+# Utility method used by GetPoseALL, gets a batch of frames, stores them in frame_store and returns the size of the batch
+def GetVideoBatch(cap, batch_size, cfg, frame_store) -> int:
+    """ Gets a batch size of frames, and returns them """
+    current_frame = 0
+
+    # While the cap is still going and the current frame is less then the batch size...
+    while(cap.isOpened() and current_frame < batch_size):
+        # Read a frame
+        ret_val, frame = cap.read()
+
+        # If we got an actual frame, store it in the frame store.
+        if(ret_val):
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            if cfg['cropping']:
+                frame_store[current_frame] = img_as_ubyte(frame[cfg['y1']:cfg['y2'], cfg['x1']:cfg['x2']])
+            else:
+                frame_store[current_frame] = img_as_ubyte(frame)
+        else:
+            # If we don't we have reached the end most likely return the amount of frames we managed to get
+            return current_frame
+        # Increment frame counter
+        current_frame += 1
+
+    # Return the frame counter, most likely the same as batch_size at this point....
+    return current_frame
+
+
+
+# Method Added by Isaac Robinson, replaces old system of getting poses and uses a new plugin system for predicting
+# poses...
+def GetPoseALL(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, predictor):
+    """ Gets the poses for any batch size, including batch size of only 1 """
+    # Create a numpy array to hold all pose prediction data...
+    pose_prediction_data = np.zeros((nframes, 3 * len(dlc_cfg["all_joints_names"])))
+
+    # Create the progress bar
+    pbar = tqdm(total=nframes)
+
+    ny, nx = int(cap.get(4)), int(cap.get(3))
+    # Same cropping code as other methods, no need to change
+    if cfg['cropping']:
+        print("Cropping based on the x1 = %s x2 = %s y1 = %s y2 = %s. You can adjust the cropping coordinates in the config.yaml file." %(cfg['x1'], cfg['x2'],cfg['y1'], cfg['y2']))
+        nx=cfg['x2']-cfg['x1']
+        ny=cfg['y2']-cfg['y1']
+        if nx>0 and ny>0:
+            pass
+        else:
+            raise Exception('Please check the order of cropping parameter!')
+        if cfg['x1']>=0 and cfg['x2']<int(cap.get(3)+1) and cfg['y1']>=0 and cfg['y2']<int(cap.get(4)+1):
+            pass #good cropping box
+        else:
+            raise Exception('Please check the boundary of cropping!')
+
+    # Create the temporary batch frame store...
+    frame_store = np.empty((batchsize, ny, nx, 3), dtype='ubyte')
+
+    # Create a counter to keep track of the progress bar
+    counter = 0
+    prog_step = max(10, int(nframes / 100))
+    current_step = 0
+
+    # Keeps track of data that has been processed
+    frames_done = 0
+
+    # Iterating until we get all video frames... (Check is done at the bottom...)
+    while(True):
+        size = GetVideoBatch(cap, batchsize, cfg, frame_store)
+        counter += size
+
+        # If we pass the current step or phase, update the progress bar
+        if(counter // prog_step > current_step):
+            pbar.update(prog_step)
+            current_step += 1
+
+        if(size > 0):
+            # If we received any frames, process them...
+            scmap, locref = predict.extract_cnn_outputmulti(sess.run(outputs, feed_dict={inputs: frame_store}), dlc_cfg)
+            down_scale = dlc_cfg.stride
+
+            if len(scmap.shape) == 2:  # If there is a single body part, add a dimension at the end
+                scmap = np.expand_dims(scmap, axis=2)
+
+            # Run the predictor providing it the scmap, locref, and scaling using a TrackingData object
+            pose = predictor.on_frames(processing.TrackingData(scmap[:size], locref, down_scale))
+
+            if(pose is not None):
+                # If the predictor returned a pose, add it to the pose_prediction_data and increment the counter
+                # That keeps track of fully finished frames.
+                pose_prediction_data[frames_done:frames_done + pose.get_frame_count()] = pose
+                frames_done += pose.get_frame_count()
+
+        if(size < batchsize):
+            # If the output frames by the video capture were less then a full batch, we have reached the end of the
+            # video, break the loop...
+            break
+
+    pbar.close() # Close the progress bar
+
+    # Phase 2: Post processing...
+
+    # Get all of the final poses that are still held by the predictor
+    post_pbar = tqdm(total = 100)
+    final_poses = predictor.on_end(post_pbar)
+    post_pbar.close()
+
+    # Add any post-processed frames
+    if(final_poses is not None):
+        pose_prediction_data[frames_done:frames_done + final_poses.get_frame_count()] = final_poses
+        frames_done += final_poses.get_frame_count()
+
+    # Check and make sure the predictor returned all frames, otherwise throw an error
+    if(frames_done != nframes):
+        raise ValueError(f"The predictor algorithm did not return the same amount of frames as are in the video. "
+                         f"Expected Amount: {nframes}, Actual Amount Returned: {frames_done}")
+
+    # We are good, return data
+    return pose_prediction_data, nframes
+
+
+
+
 
 # Arg h5_path added
-def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes, h5_path, predictor):
+def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes, h5_path):
     ''' Non batch wise pose estimation for video cap.'''
     if cfg['cropping']:
         print("Cropping based on the x1 = %s x2 = %s y1 = %s y2 = %s. You can adjust the cropping coordinates in the config.yaml file." %(cfg['x1'], cfg['x2'],cfg['y1'], cfg['y2']))
@@ -309,10 +432,18 @@ def AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,
         start = time.time()
 
         print("Starting to extract posture")
+
+        # cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, predictor
+        PredicteData, nframes = GetPoseALL(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes,
+                                           int(dlc_cfg["batch_size"]), predictor_inst)
+
+        # Old DLC Code
+        """
         if int(dlc_cfg["batch_size"])>1:
-            PredicteData,nframes=GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,int(dlc_cfg["batch_size"]), dataname, predictor)
+            PredicteData,nframes=GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,int(dlc_cfg["batch_size"]), dataname)
         else:
-            PredicteData,nframes=GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes, dataname, predictor)
+            PredicteData,nframes=GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes, dataname)
+        """
 
         stop = time.time()
         

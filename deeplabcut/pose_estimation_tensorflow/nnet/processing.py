@@ -11,6 +11,7 @@ from abc import abstractmethod
 # Used for type hints
 from numpy import ndarray
 from typing import List, Union, Type, Tuple, Iterable, Sequence
+import tqdm
 
 # Used by get_predictor for loading plugins
 import deeplabcut.pose_estimation_tensorflow.util.pluginloader as loader
@@ -102,20 +103,24 @@ class TrackingData:
         y, x = points
         # Create new numpy array to store probabilities, x offsets, and y offsets...
         probs = np.zeros(x.shape)
+
         x_offsets = np.zeros(x.shape)
         y_offsets = np.zeros(y.shape)
+
 
         # Iterate the frame and body part indexes in x and y, we just use x since both are the same size
         for frame in range(x.shape[0]):
             for bp in range(x.shape[1]):
                 probs[frame, bp] = self._scmap[frame, y[frame, bp], x[frame, bp], bp]
-                # Locref is frame -> y -> x -> bodypart -> relative coordinate pair offset
-                x_offsets[frame, bp], y_offsets[frame, bp] = self._locref[frame, y[frame, bp], x[frame, bp], bp]
+                # Locref is frame -> y -> x -> bodypart -> relative coordinate pair offset. if it is None, just keep all
+                # offsets as 0.
+                if (self._locref is not None):
+                    x_offsets[frame, bp], y_offsets[frame, bp] = self._locref[frame, y[frame, bp], x[frame, bp], bp]
 
         # Now apply offsets to x and y to get actual x and y coordinates...
         # Done by multiplying by scale, centering in the middle of the "scale square" and then adding extra offset
-        x = x.astype("float") * self._scaling + (0.5 * self._scaling) + x_offsets
-        y = y.astype("float") * self._scaling + (0.5 * self._scaling) + y_offsets
+        x = x.astype("float32") * self._scaling + (0.5 * self._scaling) + x_offsets
+        y = y.astype("float32") * self._scaling + (0.5 * self._scaling) + y_offsets
 
         # Create and return a new pose object now....
         return Pose(x, y, probs)
@@ -342,6 +347,23 @@ class Pose:
         """
         return self._data[frame, self._fix_index(bodypart, 2)]
 
+    def get_frame_count(self) -> int:
+        """
+        Returns the amount of frames in this pose object
+
+        :return: An integer, being the amount of total frames stored in this pose
+        """
+        return self._data.shape[0]
+
+    def get_bodypart_count(self) -> int:
+        """
+        Gets the amount of body parts per frame in this pose object
+
+        :return: The amount of body parts per frame, as an integer.
+        """
+        return (self._data.shape[1] // 3)
+
+
 
 class Predictor(ABC):
     """
@@ -374,10 +396,13 @@ class Predictor(ABC):
         pass
 
     @abstractmethod
-    def on_end(self) -> Union[None, Pose]:
+    def on_end(self, progress_bar: tqdm.tqdm) -> Union[None, Pose]:
         """
         Executed once all frames have been run through. Should be used for post-processing, if it needs to store all
         of the frames in order to do it's prediction algorithm.
+
+        :param progress_bar: A tqdm progress bar, should be used to display post-processing progress...
+
         :return: A Pose object representing a collection of poses for frames and body parts, or None if TrackingData
                  objects were already converted to poses in on_frame method and returned.
         """

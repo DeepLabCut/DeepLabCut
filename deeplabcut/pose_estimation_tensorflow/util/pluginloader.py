@@ -49,6 +49,4 @@ def load_plugin_classes(plugin_dir: str, plugin_metaclass: Type[T]) -> Set[Type[
     # Return all subclasses of the plugin base class as a set so as to remove duplicates.
     return set(plugin_metaclass.__subclasses__())
 
-# TODO: Add plugin loader for specifically predictors...
-
 
