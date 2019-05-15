@@ -15,6 +15,7 @@ import os.path
 from deeplabcut.pose_estimation_tensorflow.nnet import predict
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import data_to_input
+from deeplabcut.pose_estimation_tensorflow.nnet import processing
 import time
 import pandas as pd
 import numpy as np
@@ -31,7 +32,7 @@ from skimage.util import img_as_ubyte
 # Loading data, and defining model folder
 ####################################################
 
-def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gputouse=None,save_as_csv=False, destfolder=None):
+def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gputouse=None,save_as_csv=False, destfolder=None, predictor = None):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
     
@@ -68,6 +69,10 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
     destfolder: string, optional
         Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this 
         folder also needs to be passed.
+
+    predictor: The prediction algorithm to use on the probability outputs of the deeplabcut neural net. Defaults to
+               "singleargmax". The options available depends on the currently availiable Predictor plugins in the
+               predictors folder.
 
     Examples
     --------
@@ -148,6 +153,18 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
 
     if gputouse is not None: #gpu selectinon
             os.environ['CUDA_VISIBLE_DEVICES'] = str(gputouse)
+
+    ##################################################
+    # Load selected or default predictor plugin
+    ##################################################
+    # TODO: Actually Write Code to incorperate Predictors in methods...
+    # If predictor is None, change to default
+    if(predictor is None):
+        predictor = "singleargmax"
+
+    # Load plugin predictor class
+    predictor_cls = processing.get_predictor(predictor)
+
     
     ##################################################
     # Datafolder
@@ -156,14 +173,14 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
     if len(Videos)>0:
         #looping over videos
         for video in Videos:
-            AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder)
+            AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, predictor_cls, destfolder)
     
     os.chdir(str(start_path))
     print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
     print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
 
 # Arg h5_path added
-def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize, h5_path):
+def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize, h5_path, predictor):
     ''' Batchwise prediction of pose '''
     
     PredicteData = np.zeros((nframes, 3 * len(dlc_cfg['all_joints_names'])))
@@ -217,8 +234,10 @@ def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize, h5_path):
     pbar.close()
     return PredicteData,nframes
 
+# TODO: Modify getposeS, getposeF, and all methods they call to use predictor
+
 # Arg h5_path added
-def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes, h5_path):
+def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes, h5_path, predictor):
     ''' Non batch wise pose estimation for video cap.'''
     if cfg['cropping']:
         print("Cropping based on the x1 = %s x2 = %s y1 = %s y2 = %s. You can adjust the cropping coordinates in the config.yaml file." %(cfg['x1'], cfg['x2'],cfg['y1'], cfg['y2']))
@@ -259,8 +278,9 @@ def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes, h5_path):
     return PredicteData,nframes
 
 
-def AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder=None):
+def AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, predictor, destfolder=None):
     ''' Helper function for analyzing a video '''
+    # Note: predictor is not a string but rather the selected plugin's class
     print("Starting to analyze % ", video)
     vname = Path(video).stem
     if destfolder is None:
@@ -274,6 +294,9 @@ def AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,
     except FileNotFoundError:
         print("Loading ", video)
         cap=cv2.VideoCapture(video)
+
+        # Create a predictor plugin instance...
+        predictor_inst = predictor(dlc_cfg['all_joints_names'])
         
         fps = cap.get(5) #https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
         nframes = int(cap.get(7))
@@ -287,9 +310,9 @@ def AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,
 
         print("Starting to extract posture")
         if int(dlc_cfg["batch_size"])>1:
-            PredicteData,nframes=GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,int(dlc_cfg["batch_size"]), dataname)
+            PredicteData,nframes=GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,int(dlc_cfg["batch_size"]), dataname, predictor)
         else:
-            PredicteData,nframes=GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes, dataname)
+            PredicteData,nframes=GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes, dataname, predictor)
 
         stop = time.time()
         
