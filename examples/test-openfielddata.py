@@ -6,6 +6,7 @@ Created on Mon Nov  5 18:06:13 2018
 @author: alex
 
 This is a test script that should achieve a certain performance on your system.
+
 See values on our system, the DLC 2.0 docker with TF 1.8 on a NVIDIA GTX 1080Ti.
 https://github.com/MMathisLab/Docker4DeepLabCut2.0
 

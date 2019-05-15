@@ -31,11 +31,12 @@ from skimage.util import img_as_ubyte
 # Loading data, and defining model folder
 ####################################################
 
-def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gputouse=None,save_as_csv=False, destfolder=None):
+def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gputouse=None,save_as_csv=False, destfolder=None,cropping=None):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
     
     You can crop the video (before analysis), by changing 'cropping'=True and setting 'x1','x2','y1','y2' in the config file. The same cropping parameters will then be used for creating the video.
+    Note: you can also pass cropping = [x1,x2,y1,y2] coordinates directly, that then will be used for all videos. You can of course loop over videos & pass specific coordinates for each case.
     
     Output: The labels are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position \n
             in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
@@ -66,10 +67,16 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
         Saves the predictions in a .csv file. The default is ``False``; if provided it must be either ``True`` or ``False``
 
     destfolder: string, optional
-        Specifies the destination folder for analysis data (default is the path of the video)
+        Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this 
+        folder also needs to be passed.
 
     Examples
     --------
+    
+    Windows example for analyzing 1 video 
+    >>> deeplabcut.analyze_videos('C:\\myproject\\reaching-task\\config.yaml',['C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi'])
+    --------
+
     If you want to analyze only 1 video
     >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi'])
     --------
@@ -94,10 +101,20 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
     if 'TF_CUDNN_USE_AUTOTUNE' in os.environ:
         del os.environ['TF_CUDNN_USE_AUTOTUNE'] #was potentially set during training
     
+    if gputouse is not None: #gpu selection
+            os.environ['CUDA_VISIBLE_DEVICES'] = str(gputouse)
+            
     tf.reset_default_graph()
     start_path=os.getcwd() #record cwd to return to this directory in the end
     
     cfg = auxiliaryfunctions.read_config(config)
+    
+    if cropping is not None:
+        cfg['cropping']=True
+        cfg['x1'],cfg['x2'],cfg['y1'],cfg['y2']=cropping
+        print("Overwriting cropping parameters:", cropping)
+        print("These are used for all videos, but won't be save to the cfg file.")
+        
     trainFraction = cfg['TrainingFraction'][trainingsetindex]
     
     modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)))
@@ -139,10 +156,6 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
     
     sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
     pdindex = pd.MultiIndex.from_product([[DLCscorer], dlc_cfg['all_joints_names'], ['x', 'y', 'likelihood']],names=['scorer', 'bodyparts', 'coords'])
-
-    if gputouse is not None: #gpu selectinon
-            os.environ['CUDA_VISIBLE_DEVICES'] = str(gputouse)
-    
     ##################################################
     # Datafolder
     ##################################################

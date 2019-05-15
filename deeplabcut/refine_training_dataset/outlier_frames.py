@@ -19,7 +19,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 from skimage.util import img_as_ubyte
 
-def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,outlieralgorithm='jump',comparisonbodyparts='all',epsilon=20,p_bound=.01,ARdegree=3,MAdegree=1,alpha=.01,extractionalgorithm='kmeans',automatic=False,cluster_resizewidth=30,cluster_color=False,opencv=True,savelabeled=True):
+def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,outlieralgorithm='jump',comparisonbodyparts='all',epsilon=20,p_bound=.01,ARdegree=3,MAdegree=1,alpha=.01,extractionalgorithm='kmeans',automatic=False,cluster_resizewidth=30,cluster_color=False,opencv=True,savelabeled=True, destfolder=None):
     """
     Extracts the outlier frames in case, the predictions are not correct for a certain video from the cropped video running from
     start to stop as defined in config.yaml.
@@ -95,7 +95,13 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
     savelabeled: bool, default: True
         If true also saves frame with predicted labels in each folder. 
 
-    Example
+    destfolder: string, optional
+        Specifies the destination folder that was used for storing analysis data (default is the path of the video). 
+
+    Examples
+    
+    Windows example for extracting the frames with default settings
+    >>> deeplabcut.extract_outlier_frames('C:\\myproject\\reaching-task\\config.yaml',['C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi'])
     --------
     for extracting the frames with default settings
     >>> deeplabcut.extract_outlier_frames('/analysis/project/reaching-task/config.yaml',['/analysis/project/video/reachinvideo1.avi'])
@@ -114,7 +120,11 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
 
     Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
     for video in Videos:
-      videofolder = str(Path(video).parents[0])
+      if destfolder is None:
+            videofolder = str(Path(video).parents[0])
+      else:
+            videofolder=destfolder
+      
       dataname = str(Path(video).stem)+scorer
       try:
           Dataframe = pd.read_hdf(os.path.join(videofolder,dataname+'.h5'))
@@ -123,7 +133,7 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
           startindex=max([int(np.floor(nframes*cfg['start'])),0])
           stopindex=min([int(np.ceil(nframes*cfg['stop'])),nframes])
           Index=np.arange(stopindex-startindex)+startindex
-
+          
           #figure out body part list:
           bodyparts=auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg,comparisonbodyparts)
 
@@ -145,6 +155,7 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
               #deviation_dataname = str(Path(videofolder)/Path(dataname))
               # Calculate deviatons for video
               [d,o] = ComputeDeviations(Dataframe,cfg,bodyparts,scorer,dataname,p_bound,alpha,ARdegree,MAdegree)
+              
               #Some heuristics for extracting frames based on distance:
               Indices=np.where(d>epsilon)[0] # time points with at least average difference of epsilon
 
@@ -154,7 +165,8 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
               wd = Path(config).resolve().parents[0]
               os.chdir(str(wd))
               from deeplabcut.refine_training_dataset import outlier_frame_extraction_toolbox 
-              outlier_frame_extraction_toolbox.show(config,video,shuffle,Dataframe,scorer)
+
+              outlier_frame_extraction_toolbox.show(config,video,shuffle,Dataframe,scorer,savelabeled)
 # Run always except when the outlieralgorithm == manual.
           if not outlieralgorithm=='manual':
               Indices=np.sort(list(set(Indices))) #remove repetitions.
@@ -182,7 +194,7 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
           print("The video has not been analyzed yet!. You can only refine the labels, after the pose has been estimate. Please run 'analyze_video' first.")
 
 
-def filterpredictions(config,video,shuffle=1,trainingsetindex=0,comparisonbodyparts='all',p_bound=.01,ARdegree=3,MAdegree=1,alpha=.01):
+def filterpredictions(config,video,videotype='avi',shuffle=1,trainingsetindex=0,p_bound=.001,ARdegree=3,MAdegree=1,alpha=.01,save_as_csv=True,destfolder=None):
     """
     Fits frame-by-frame pose predictions with SARIMAX model.
 
@@ -207,7 +219,8 @@ def filterpredictions(config,video,shuffle=1,trainingsetindex=0,comparisonbodypa
         E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these two body parts.
 
     p_bound: float between 0 and 1, optional
-        For outlieralgorithm 'uncertain' this parameter defines the likelihood below, below which a body part will be flagged as a putative outlier.
+        For outlieralgorithm 'uncertain' this parameter defines the likelihood below, 
+        below which a body part will be consided as missing data for filtering purposes.
 
     ARdegree: int, optional
         For outlieralgorithm 'fitting': Autoregressive degree of Sarimax model degree.
@@ -220,29 +233,67 @@ def filterpredictions(config,video,shuffle=1,trainingsetindex=0,comparisonbodypa
     alpha: float
         Significance level for detecting outliers based on confidence interval of fitted SARIMAX model.
 
+    save_as_csv: bool, optional
+        Saves the predictions in a .csv file. The default is ``False``; if provided it must be either ``True`` or ``False``
+
+    destfolder: string, optional
+        Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this 
+        folder also needs to be passed.
+
     Example
     --------
-    tba
+    deeplabcut.filterpredictions('C:\\myproject\\reaching-task\\config.yaml',['C:\\myproject\\trailtracking-task\\test.mp4'],shuffle=3,ARdegree=5,MAdegree=2)
+    
+    One can then use the filtered rather than the frame-by-frame predictions by calling:
+        
+    deeplabcut.plot_trajectories('C:\\myproject\\reaching-task\\config.yaml',['C:\\myproject\\trailtracking-task\\test.mp4'],shuffle=3,filtered=True)
+
+    deeplabcut.create_labeled_video('C:\\myproject\\reaching-task\\config.yaml',['C:\\myproject\\trailtracking-task\\test.mp4'],shuffle=3,filtered=True)
     --------
 
-    Returns filtered pandas array (incl. confidence interval), original data, distance and average outlier vector.
-
+    Returns filtered pandas array with the same structure as normal output of network.
     """
-
     cfg = auxiliaryfunctions.read_config(config)
     scorer=auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction = cfg['TrainingFraction'][trainingsetindex])
-    print("network parameters:", scorer)
-    videofolder = str(Path(video).parents[0])
-    dataname = str(Path(video).stem)+scorer
-    bodyparts=auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg,comparisonbodyparts)
-    try:
-        Dataframe = pd.read_hdf(os.path.join(videofolder,dataname+'.h5'))
-    except FileExistsError:
-        print("Could not find data.")
-
-    data,d,o = ComputeDeviations(Dataframe,cfg,bodyparts,scorer,dataname,p_bound,alpha,ARdegree,MAdegree,storeoutput='full')
-    return data,Dataframe,d,o
-
+    Videos=auxiliaryfunctions.Getlistofvideos(video,videotype)
+    if len(Videos)>0:
+        for video in Videos:
+            
+            if destfolder is None:
+                destfolder = str(Path(video).parents[0])
+            
+            print("Filtering with ARIMA model %s",video)
+            videofolder = str(Path(video).parents[0])
+            dataname = str(Path(video).stem)+scorer
+            filteredname=dataname.split('.h5')[0]+'filtered.h5'
+            try:
+                Dataframe = pd.read_hdf(os.path.join(videofolder,filteredname))
+                print("Video already filtered...")
+            except FileNotFoundError:
+                try:
+                    Dataframe = pd.read_hdf(os.path.join(videofolder,dataname+'.h5'))
+                    for bpindex,bp in tqdm(enumerate(cfg['bodyparts'])):
+                        pdindex = pd.MultiIndex.from_product([[scorer], [bp], ['x', 'y','likelihood']],names=['scorer', 'bodyparts', 'coords'])
+                        x,y,p=Dataframe[scorer][bp]['x'].values,Dataframe[scorer][bp]['y'].values,Dataframe[scorer][bp]['likelihood'].values
+                        meanx,CIx=FitSARIMAXModel(x,p,p_bound,alpha,ARdegree,MAdegree,False)
+                        meany,CIy=FitSARIMAXModel(y,p,p_bound,alpha,ARdegree,MAdegree,False)
+                        
+                        meanx[0]=x[0]
+                        meany[0]=y[0]
+                        
+                        if bpindex==0:
+                            data = pd.DataFrame(np.hstack([np.expand_dims(meanx,axis=1),np.expand_dims(meany,axis=1),np.expand_dims(p,axis=1)]), columns=pdindex)
+                        else:
+                            item=pd.DataFrame(np.hstack([np.expand_dims(meanx,axis=1),np.expand_dims(meany,axis=1),np.expand_dims(p,axis=1)]), columns=pdindex)
+                            data=pd.concat([data.T, item.T]).T
+    
+                    data.to_hdf(os.path.join(videofolder,filteredname), 'df_with_missing', format='table', mode='w')
+                    if save_as_csv:
+                        print("Saving filtered csv poses!")
+                        data.to_csv(os.path.join(videofolder,filteredname.split('.h5')[0]+'.csv'))
+                except FileNotFoundError:
+                    print("Video not analyzed -- Run analyze_videos first.")
+                        
 def convertparms2start(pn):
     ''' Creating a start value for sarimax in case of an value error
     See: https://groups.google.com/forum/#!topic/pystatsmodels/S_Fo53F25Rk '''
@@ -255,7 +306,7 @@ def convertparms2start(pn):
     else:
         return 0
 
-def FitSARIMAXModel(x,p,pcutoff,alpha,ARdegree,MAdegree,nforecast = 0):
+def FitSARIMAXModel(x,p,pcutoff,alpha,ARdegree,MAdegree,nforecast = 0,disp=False):
     # Seasonal Autoregressive Integrated Moving-Average with eXogenous regressors (SARIMAX)
     # see http://www.statsmodels.org/stable/statespace.html#seasonal-autoregressive-integrated-moving-average-with-exogenous-regressors-sarimax
     Y=x.copy()
@@ -267,10 +318,10 @@ def FitSARIMAXModel(x,p,pcutoff,alpha,ARdegree,MAdegree,nforecast = 0):
         #Autoregressive Moving Average ARMA(p,q) Model
         #mod = sm.tsa.ARIMA(Y, order=(ARdegree,0,MAdegree)) #order=(ARdegree,0,MAdegree)
         try:
-            res = mod.fit(disp=True)
+            res = mod.fit(disp=disp)
         except ValueError: #https://groups.google.com/forum/#!topic/pystatsmodels/S_Fo53F25Rk (let's update to statsmodels 0.10.0 soon...)
             startvalues=np.array([convertparms2start(pn) for pn in mod.param_names])
-            res= mod.fit(start_params=startvalues,disp=True)
+            res= mod.fit(start_params=startvalues,disp=disp)
 
         predict = res.get_prediction(end=mod.nobs + nforecast-1)
         return predict.predicted_mean,predict.conf_int(alpha=alpha)
@@ -289,21 +340,7 @@ def ComputeDeviations(Dataframe,cfg,comparisonbodyparts,scorer,dataname,p_bound,
         if bp in cfg['bodyparts']: #filter [who knows what users put in...]
             x,y,p=Dataframe[scorer][bp]['x'].values,Dataframe[scorer][bp]['y'].values,Dataframe[scorer][bp]['likelihood'].values
             meanx,CIx=FitSARIMAXModel(x,p,p_bound,alpha,ARdegree,MAdegree)
-            #meanx,CIx=meanx.values,CIx.values
             meany,CIy=FitSARIMAXModel(y,p,p_bound,alpha,ARdegree,MAdegree)
-            #meany,CIy=meany.values,CIy.values
-            '''
-            try:
-                meanx,CIx=FitSARIMAXModel(x,p,p_bound,alpha,ARdegree,MAdegree)
-                meanx,CIx=meanx,CIx
-            except ValueError:
-                meanx,CIx=np.nan*np.zeros(ntimes),np.nan*np.zeros((ntimes,2))
-            try:
-                meany,CIy=FitSARIMAXModel(y,p,p_bound,alpha,ARdegree,MAdegree)
-                meany,CIy=meany,CIy
-            except ValueError:
-                meany,CIy=np.nan*np.zeros(ntimes),np.nan*np.zeros((ntimes,2))
-            '''
             if storeoutput=='full': #stores both the means and the confidence interval (as well as the summary stats below)
 
                 pdindex = pd.MultiIndex.from_product(
@@ -402,11 +439,7 @@ def ExtractFramesbasedonPreselection(Index,extractionalgorithm,Dataframe,datanam
             if  cfg['cropping']:
                 clip = clip.crop(y1=cfg['y1'], y2=cfg['x2'], x1=cfg['x1'], x2=cfg['x2'])
             frames2pick=frameselectiontools.KmeansbasedFrameselection(clip,numframes2extract,start,stop,Index,resizewidth=cluster_resizewidth,color=cluster_color)
-#    elif extractionalgorithm=='manual':
-#        wd = Path(config).resolve().parents[0]
-#        os.chdir(str(wd))
-#        from deeplabcut.refine_training_dataset import outlier_frame_extraction_toolbox 
-#        outlier_frame_extraction_toolbox.show(config,video,shuffle)
+
     else:
         print("Please implement this method yourself!")
         frames2pick=[]
@@ -428,10 +461,10 @@ def ExtractFramesbasedonPreselection(Index,extractionalgorithm,Dataframe,datanam
     else:
         clip.close()
         del clip
-
+    
     # Extract annotations based on DeepLabCut and store in the folder (with name derived from video name) under labeled-data
     if len(frames2pick)>0:
-        Dataframe = pd.read_hdf(os.path.join(videofolder,dataname+'.h5'))
+        #Dataframe = pd.read_hdf(os.path.join(videofolder,dataname+'.h5'))
         DF = Dataframe.ix[frames2pick]
         DF.index=[os.path.join('labeled-data', vname,"img"+str(index).zfill(strwidth)+".png") for index in DF.index] #exchange index number by file names.
 

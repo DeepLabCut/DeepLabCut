@@ -77,7 +77,7 @@ def read_config(configname):
         except Exception as err:
             if err.args[2] == "could not determine a constructor for the tag '!!python/tuple'":
                 with open(path, 'r') as ymlfile:
-                  cfg = yaml.load(ymlfile)
+                  cfg = yaml.load(ymlfile,Loader=yaml.SafeLoader)
                   write_config(configname,cfg)
     else:
         raise FileNotFoundError ("Config file is not found. Please make sure that the file exists and/or there are no unnecessary spaces in the path of the config file!")
@@ -98,7 +98,7 @@ def write_config(configname,cfg):
 def read_plainconfig(filename = "pose_cfg.yaml"):
     ''' read unstructured yaml'''
     with open(filename, 'r') as f:
-        yaml_cfg = yaml.load(f)
+        yaml_cfg = yaml.load(f,Loader=yaml.SafeLoader)
     return yaml_cfg
 
 def write_plainconfig(configname,cfg):

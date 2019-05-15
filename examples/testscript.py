@@ -10,14 +10,14 @@ This script tests various functionalities in an automatic way.
 It should take about 4:00 minutes to run this in a CPU.
 It should take about 1:30 minutes on a GPU (incl. downloading the ResNet weights)
 
-It produces nothing of interesting scientifically.
+It produces nothing of interest scientifically.
 """
 
 task='TEST' # Enter the name of your experiment Task
 scorer='Alex' # Enter the name of the experimenter/labeler
 
 
-import deeplabcut, os,  subprocess
+import os,  subprocess, deeplabcut
 from pathlib import Path
 import pandas as pd
 import numpy as np
@@ -26,6 +26,10 @@ print("Imported DLC!")
 basepath=os.path.dirname(os.path.abspath('testscript.py'))
 videoname='reachingvideo1'
 video=[os.path.join(basepath,'Reaching-Mackenzie-2018-08-30','videos',videoname+'.avi')]
+
+#to test destination folder:
+#dfolder=basepath
+dfolder=None
 
 print("CREATING PROJECT")
 path_config_file=deeplabcut.create_new_project(task,scorer,video,copy_videos=True)
@@ -95,14 +99,18 @@ except:
     newclip = VideoClip(make_frame, duration=1)
     newclip.write_videofile(newvideo,fps=30)
 
-deeplabcut.analyze_videos(path_config_file,[newvideo],save_as_csv=True)
+deeplabcut.analyze_videos(path_config_file,[newvideo],save_as_csv=True, destfolder=dfolder)
 
 print("CREATE VIDEO")
-deeplabcut.create_labeled_video(path_config_file,[newvideo])
+deeplabcut.create_labeled_video(path_config_file,[newvideo], destfolder=dfolder)
+
+print("Making plots")
+deeplabcut.plot_trajectories(path_config_file,[newvideo], destfolder=dfolder)
 
 
 print("EXTRACT OUTLIERS")
-deeplabcut.extract_outlier_frames(path_config_file,[newvideo],outlieralgorithm='jump',epsilon=0,automatic=True)
+deeplabcut.extract_outlier_frames(path_config_file,[newvideo],outlieralgorithm='jump',epsilon=0,automatic=True, destfolder=dfolder)
+
 
 file=os.path.join(cfg['project_path'],'labeled-data',vname,"machinelabels-iter"+ str(cfg['iteration']) + '.h5')
 
@@ -133,5 +141,13 @@ deeplabcut.auxiliaryfunctions.write_config(posefile,DLC_config)
 print("TRAIN")
 deeplabcut.train_network(path_config_file)
 
+print("Inference with new direct cropping")
+deeplabcut.analyze_videos(path_config_file,[newvideo],destfolder=dfolder,cropping=[0,50,0,50],save_as_csv=True)
 
 print("ALL DONE!!! - default cases are functional.")
+
+
+print("Re-import DLC with env. variable set to test DLC light mode.")
+os.environ['DLClight']='True'
+subprocess.call(['python3',"-c","import deeplabcut"])
+

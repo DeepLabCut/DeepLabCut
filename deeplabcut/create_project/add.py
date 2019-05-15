@@ -83,7 +83,9 @@ def add_new_videos(config,videos,copy_videos=False,coords=None):
     # adds the video list to the config.yaml file
     for idx,video in enumerate(videos):
         try:
-           video_path = os.path.realpath(video)
+# For windows os.path.realpath does not work and does not link to the real video. 
+           video_path = str(Path.resolve(Path(video)))
+#           video_path = os.path.realpath(video)
         except:
            video_path = os.readlink(video)
 

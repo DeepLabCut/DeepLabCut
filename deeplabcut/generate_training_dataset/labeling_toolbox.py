@@ -267,8 +267,9 @@ class MainFrame(wx.Frame):
         img_name = Path(self.index[self.iter]).name
         self.figure.delaxes(self.figure.axes[1])
         self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.bodyparts,self.colormap,keep_view=True)
-        self.axes.callbacks.connect('xlim_changed', self.onZoom)
-        self.axes.callbacks.connect('ylim_changed', self.onZoom)
+
+#        self.axes.callbacks.connect('xlim_changed', self.onZoom)
+#        self.axes.callbacks.connect('ylim_changed', self.onZoom)
         self.buttonCounter = MainFrame.plot(self,self.img)
 
     def quitButton(self, event):
@@ -329,10 +330,11 @@ class MainFrame(wx.Frame):
             self.toolbar.zoom()
             self.statusbar.SetStatusText("Zoom Off")
 
-    def onZoom(self, ax):
-        if self.zoom.GetValue():
-            self.updateZoomPan()
-            self.statusbar.SetStatusText("Zoom Off")
+#    def onZoom(self, ax):
+#        print(self.zoom.GetValue())
+#        if self.zoom.GetValue():
+#            self.updateZoomPan()
+#            self.statusbar.SetStatusText("Zoom Off")
 
     def onButtonRelease(self, event):
         if self.pan.GetValue():
@@ -469,8 +471,9 @@ class MainFrame(wx.Frame):
 # Checking if user added a new label
         if self.new_bodyparts==[]: # i.e. no new label
             self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.bodyparts,self.colormap)
-            self.axes.callbacks.connect('xlim_changed', self.onZoom)
-            self.axes.callbacks.connect('ylim_changed', self.onZoom)
+            #self.axes.callbacks.connect('xlim_changed', self.onZoom)
+            #self.axes.callbacks.connect('ylim_changed', self.onZoom)
+
             self.choiceBox,self.rdb,self.slider,self.checkBox = self.choice_panel.addRadioButtons(self.bodyparts,self.file,self.markerSize)
             self.buttonCounter = MainFrame.plot(self,self.img)
             self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
@@ -489,8 +492,9 @@ class MainFrame(wx.Frame):
                 self.dataFrame = pd.concat([self.dataFrame, frame],axis=1)
 
             self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.bodyparts,self.colormap)
-            self.axes.callbacks.connect('xlim_changed', self.onZoom)
-            self.axes.callbacks.connect('ylim_changed', self.onZoom)
+            #self.axes.callbacks.connect('xlim_changed', self.onZoom)
+            #self.axes.callbacks.connect('ylim_changed', self.onZoom)
+
             self.choiceBox,self.rdb,self.slider,self.checkBox = self.choice_panel.addRadioButtons(self.bodyparts,self.file,self.markerSize)
             self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
             self.canvas.mpl_connect('button_release_event', self.onButtonRelease)
@@ -530,8 +534,9 @@ class MainFrame(wx.Frame):
                                                                                        self.index,self.bodyparts,
                                                                                        self.colormap,
                                                                                        keep_view=self.view_locked)
-            self.axes.callbacks.connect('xlim_changed', self.onZoom)
-            self.axes.callbacks.connect('ylim_changed', self.onZoom)
+#            self.axes.callbacks.connect('xlim_changed', self.onZoom)
+#            self.axes.callbacks.connect('ylim_changed', self.onZoom)
+
             self.buttonCounter = MainFrame.plot(self,self.img)
             self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
             self.canvas.mpl_connect('button_release_event', self.onButtonRelease)
@@ -562,8 +567,9 @@ class MainFrame(wx.Frame):
                                                                                    self.index,self.bodyparts,
                                                                                    self.colormap,
                                                                                    keep_view=self.view_locked)
-        self.axes.callbacks.connect('xlim_changed', self.onZoom)
-        self.axes.callbacks.connect('ylim_changed', self.onZoom)
+#        self.axes.callbacks.connect('xlim_changed', self.onZoom)
+#        self.axes.callbacks.connect('ylim_changed', self.onZoom)
+
         self.buttonCounter = MainFrame.plot(self,self.img)
         self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
         self.canvas.mpl_connect('button_release_event', self.onButtonRelease)
