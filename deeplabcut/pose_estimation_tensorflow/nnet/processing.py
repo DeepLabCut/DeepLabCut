@@ -48,7 +48,7 @@ class TrackingData:
         else:
             self._scmap = scmap
 
-        if(len(locref.shape) == 3):
+        if((locref is not None) and (len(locref.shape) == 3)):
             self._locref = np.expand_dims(locref, axis=0)
         else:
             self._locref = locref
