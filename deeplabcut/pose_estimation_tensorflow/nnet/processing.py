@@ -81,6 +81,31 @@ class TrackingData:
         """
         return self._scaling
 
+    def set_source_map(self, scmap: ndarray):
+        """
+        Sets the raw probability source map of this tracking data.
+
+        :param scmap: A numpy array representing the source probability map of this tracking data. It is a 4-dimensional
+                array containing the dimensions: [frame, y location, x location, body part]
+        """
+        self._scmap = scmap
+
+    def set_offset_map(self, locref: ndarray):
+        """
+        Sets the offset map for precision offsets for each point.
+
+        :param locref: A numpy array representing the offsets within the scmap.
+        """
+        self._locref = locref
+
+    def set_down_scaling(self, scale: int):
+        """
+        Sets the down scaling performed on the source map, as an integer
+
+        :param scale: An integer representing the downscaling of the source map compared to the original video file
+        """
+        self._scaling = scale
+
     def get_max_scmap_points(self) -> Tuple[ndarray, ndarray]:
         """
         Gets the maximum points for each frame in the array
@@ -90,6 +115,18 @@ class TrackingData:
         """
         y_dim, x_dim = self._scmap.shape[1], self._scmap.shape[2]
         flat_max = np.argmax(self._scmap.reshape((self._scmap.shape[0], y_dim * x_dim, self._scmap.shape[3])), axis=1)
+        return np.unravel_index(flat_max, dims=(y_dim, x_dim))
+
+    def get_max_of_frame(self, frame: int):
+        """
+        Gets the maximum points for a single frame in the array
+
+        :param frame: The index of the frame to get the maximum of, in form of an integer.
+        :return: A tuple of numpy arrays, the first numpy array being the y coordinate max for each body part in the
+                 frame, the second being the x coordinate max for each body part in the frame
+        """
+        y_dim, x_dim = self._scmap.shape[1], self._scmap.shape[2]
+        flat_max = np.argmax(self._scmap[frame].reshape((y_dim * x_dim, self._scmap.shape[3])), axis=0)
         return np.unravel_index(flat_max, dims=(y_dim, x_dim))
 
     def get_poses_for(self, points: Tuple[ndarray, ndarray]):
@@ -125,7 +162,22 @@ class TrackingData:
         # Create and return a new pose object now....
         return Pose(x, y, probs)
 
-    def get_prob_table_for(self, frame: Union[int, slice, Sequence[int]], bodypart: Union[int, slice, Sequence[int]]) -> ndarray:
+
+    # Utility method to get length of an index selection(as in how many indexes it selects...)
+    @staticmethod
+    def _get_count_of(self, val: Union[int, slice, Sequence[int]], length: int) -> int:
+        if (isinstance(val, Sequence)):
+            return len(val)
+        elif (isinstance(val, slice)):
+            start, stop, step = val.indices(length)
+            return len(range(start, stop - 1, step))
+        elif (isinstance(val, int)):
+            return 1
+        else:
+            raise ValueError("Value is not a slice, integer, or list...")
+
+
+    def get_prob_table(self, frame: Union[int, slice, Sequence[int]], bodypart: Union[int, slice, Sequence[int]]) -> ndarray:
         """
         Get the probability table for a selection of frames and body parts or a single frame and body part.
 
@@ -133,26 +185,47 @@ class TrackingData:
         :param bodypart: The body part index, as an integer or slice.
         :return: The probability map for a single frame or selection of frames based on indexes, as a numpy array...
         """
-        # Utility method to get length of an index selection(as in how many indexes it selects...)
-        def get_count_of(val: Union[int, slice, bodypart], length: int) -> int:
-            if (isinstance(val, Sequence)):
-                return len(val)
-            elif (isinstance(val, slice)):
-                start, stop, step = val.indices(length)
-                return len(range(start, stop - 1, step))
-            elif(isinstance(val, int)):
-                return 1
-            else:
-                raise ValueError("Value is not a slice, integer, or list...")
-
         # Compute amount of frames and body parts selected....
-        frame_count = get_count_of(frame, self.get_frame_count())
-        part_count = get_count_of(bodypart, self.get_bodypart_count())
+        frame_count = self._get_count_of(frame, self.get_frame_count())
+        part_count = self._get_count_of(bodypart, self.get_bodypart_count())
 
         # Return the frames, reshaped to be more "frame like"...
-        return (self._scmap[frame, :, :, bodypart]
-                   .reshape((frame_count, self.get_frame_height(), self.get_frame_width(), part_count))
-                   .squeeze())
+        slicer = self._scmap[frame, :, :, bodypart]
+
+        if(frame_count == 1):
+            np.expand_dims(slicer, axis=0)
+
+        if(part_count == 1):
+            np.expand_dims(slicer, axis=3)
+
+        return np.transpose(slicer, [0, 3, 1, 2]).squeeze()
+
+
+
+    def set_prob_table(self, frame: Union[int, slice, Sequence[int]], bodypart: Union[int, slice, Sequence[int]],
+                           values: ndarray):
+        """
+        Set the probability table for a selection of frames and body parts or a single frame and body part.
+
+        :param frame: The frame index, as an integer or slice.
+        :param bodypart: The body part index, as an integer or slice.
+        :param values: The probability maps to set these indexes to, is a numpy array.
+        """
+        values = values.squeeze()
+        # Compute amount of frames and body parts selected....
+        frame_count = self._get_count_of(frame, self.get_frame_count())
+        part_count = self._get_count_of(bodypart, self.get_bodypart_count())
+
+        # Add dimensions that might have been removed
+        if(len(values.shape) < 4 and frame_count == 1):
+            values = np.expand_dims(values, axis=0)
+
+        if(len(values.shape) < 4 and part_count == 1):
+            values = np.expand_dims(values, axis=3)
+
+        # Set the frames, resizing the array to fit
+        self._scmap[frame, :, :, bodypart] = np.transpose(values, [0, 2, 3, 1]).squeeze()
+
 
     def get_frame_count(self) -> int:
         """
@@ -199,10 +272,26 @@ class Pose:
         :param y: All y-values for these poses, in ndarray indexing format frame->body part->y-value
         :param prob: All probabilities for these poses, in ndarray indexing format frame->body part->p-value
         """
-        self._data = np.empty((x.shape[0], x.shape[1] * 3), dtype=x.dtype)
+        self._data = np.zeros((x.shape[0], x.shape[1] * 3))
+
         self.set_all_x(x)
         self.set_all_y(y)
         self.set_all_prob(prob)
+
+    # Helper Constructor methods...
+
+    @classmethod
+    def empty_pose(cls, frame_count: int, part_count: int) -> "Pose":
+        """
+        Returns an empty pose object, or a pose object with numpy arrays full of zeros. It will have space for
+        "frame_count" frames and "part_count" body parts.
+
+        :param frame_count: The amount of frames to allocate space for in the underlying array, an Integer.
+        :param part_count: The amount of body parts to allocate space for in the underlying array, an Integer.
+        :return: A new Pose object.
+        """
+        return cls(np.zeros((frame_count, part_count)), np.zeros((frame_count, part_count)),
+                   np.zeros((frame_count, part_count)))
 
     # Helper Methods
 
@@ -372,11 +461,12 @@ class Predictor(ABC):
     Predictors accept a source map of data received.
     """
     @abstractmethod
-    def __init__(self, bodyparts: List[str]):
+    def __init__(self, bodyparts: List[str], num_frames: int):
         """
         Constructor for the predictor.
 
         :param bodyparts: The bodyparts for the dataset, a list of the string friendly names in order.
+        :param num_frames: The number of total frames this predictor will be processing.
         """
         pass
 

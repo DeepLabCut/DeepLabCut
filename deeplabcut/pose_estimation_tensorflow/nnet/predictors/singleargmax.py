@@ -13,8 +13,8 @@ class SingleArgMaxPredict(Predictor):
     Default processor for DeepLabCut, and the code originally used by DeepLabCut for prediction of points. Predicts
     the point from the probability frames simply by selecting the max probability in the frame.
     """
-    def __init__(self, bodyparts: List[str]):
-        super().__init__(bodyparts)
+    def __init__(self, bodyparts: List[str], num_frames: int):
+        super().__init__(bodyparts, num_frames)
 
 
     def on_frames(self, scmap: TrackingData) -> Union[None, Pose]:

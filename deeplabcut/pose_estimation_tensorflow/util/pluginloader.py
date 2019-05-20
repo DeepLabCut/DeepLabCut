@@ -7,9 +7,9 @@ Module includes methods useful to loading all plugins placed in a folder, or mod
 from typing import Set
 from typing import Type
 from typing import TypeVar
-from abc import ABC
 import sys
 import pkgutil
+import os
 
 # Needed to actually load modules in folders containing plugins
 def _load_modules(dirname: str):
@@ -18,8 +18,11 @@ def _load_modules(dirname: str):
 
     :param dirname: Path to the directory, can be relative.
     """
+    # Replace dots with files seperators, as iter_modules requires folder separators and not dots...
+    path = dirname.replace(".", os.path.pathsep)
+
     # Iterate all modules in specified directory using pkgutil, importing them if they are not in sys.modules
-    for importer, package_name, ispkg in pkgutil.iter_modules([dirname]):
+    for importer, package_name, ispkg in pkgutil.iter_modules([path]):
         full_pkg_name = f"{dirname}.{package_name}"
 
         if(full_pkg_name not in sys.modules):
