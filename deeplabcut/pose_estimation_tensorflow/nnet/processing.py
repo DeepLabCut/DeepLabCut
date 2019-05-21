@@ -56,6 +56,22 @@ class TrackingData:
         self._scaling = scaling
 
 
+    @classmethod
+    def empty_tracking_data(cls, frame_amt: int, part_count: int, width: int, height: int,
+                   stride: int = DEFAULT_SCALE) -> "TrackingData":
+        """
+        Create a new empty tracking data object with space allocated to fit the specified size.
+
+        :param frame_amt: The amount of frames to allocate space for, an Integer.
+        :param part_count: The amount of body parts per frame to allocate space for, an Integer.
+        :param width: The width of each probability frame, an Integer.
+        :param height: The height of each probability frame, an Integer.
+        :param stride: The downscaling of the probability frame relative to the original video, defaults to 8.
+        :return: A tracking data object full of zeroes.
+        """
+        return cls(np.zeros((frame_amt, height, width, part_count), dtype="float32"), None, stride)
+
+
     def get_source_map(self) -> ndarray:
         """
         Gets the raw probability source map of this tracking data.
@@ -259,6 +275,38 @@ class TrackingData:
         """
         return self._scmap.shape[1]
 
+    # Used for setting single poses....
+    def set_pose_at(self, frame: int, bodypart: int, scmap_x: int, scmap_y: int, pose_object: "Pose"):
+        """
+        Sets the pose in a pose object to the specified x and y coordinate for a provided body part and frame.
+        USE THIS METHOD TO SET POSE VALUES!!!! Pose expects correct x and y values, not the scaled down ones...
+        Pose is really only for storing poses, not modifying them...
+
+        :param frame: The specified frame in the pose object to set.
+        :param bodypart: The specified body part in the pose object to set
+        :param scmap_x: The x value to set the pose this frame and body part to
+        :param scmap_y: The y value to set the pose this this frame and body part to
+        :param pose_object: The pose object to modify and change the pose at this single location in
+        :return: Nothing, changes stored in pose_object...
+        """
+        # Get probability...
+        prob = self._scmap[frame, scmap_y, scmap_x, bodypart]
+        # Default offsets to 0
+        off_x, off_y = 0, 0
+
+        # If we are actually using locref, set offsets to it
+        if(self._locref is not None):
+            off_y, off_x = self._locref[frame, scmap_y, scmap_x, bodypart]
+
+        # Compute actual x and y values in the video...
+        x = float(x) * self._scaling + (0.5 * self._scaling) + off_x
+        y = float(y) * self._scaling + (0.5 * self._scaling) + off_y
+
+        # Set values...
+        pose_object.set_x_at(frame, bodypart, x)
+        pose_object.set_y_at(frame, bodypart, y)
+        pose_object.set_prob_at(frame, bodypart, prob)
+
 
 class Pose:
     """
@@ -315,7 +363,6 @@ class Pose:
             raise ValueError("Index is not of type slice or integer!")
 
     # Setter Methods
-
     def set_all_x(self, x: ndarray):
         """
         Sets the x values of this batch of Poses
@@ -490,7 +537,8 @@ class Predictor(ABC):
         Executed once all frames have been run through. Should be used for post-processing, if it needs to store all
         of the frames in order to do it's prediction algorithm.
 
-        :param progress_bar: A tqdm progress bar, should be used to display post-processing progress...
+        :param progress_bar: A tqdm progress bar, should be used to display post-processing progress, the max value
+                             of the progress bar is set to the number of frames left...
 
         :return: A Pose object representing a collection of poses for frames and body parts, or None if TrackingData
                  objects were already converted to poses in on_frame method and returned.

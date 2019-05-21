@@ -157,7 +157,6 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
     ##################################################
     # Load selected or default predictor plugin
     ##################################################
-    # TODO: Actually Write Code to incorperate Predictors in methods...
     # If predictor is None, change to default
     if(predictor is None):
         predictor = "singleargmax"
@@ -178,63 +177,6 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
     os.chdir(str(start_path))
     print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
     print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
-
-# Arg h5_path added
-def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize, h5_path):
-    ''' Batchwise prediction of pose '''
-    
-    PredicteData = np.zeros((nframes, 3 * len(dlc_cfg['all_joints_names'])))
-    batch_ind = 0 # keeps track of which image within a batch should be written to
-    batch_num = 0 # keeps track of which batch you are at
-    ny,nx=int(cap.get(4)),int(cap.get(3))
-    if cfg['cropping']:
-        print("Cropping based on the x1 = %s x2 = %s y1 = %s y2 = %s. You can adjust the cropping coordinates in the config.yaml file." %(cfg['x1'], cfg['x2'],cfg['y1'], cfg['y2']))
-        nx=cfg['x2']-cfg['x1']
-        ny=cfg['y2']-cfg['y1']
-        if nx>0 and ny>0:
-            pass
-        else:
-            raise Exception('Please check the order of cropping parameter!')
-        if cfg['x1']>=0 and cfg['x2']<int(cap.get(3)+1) and cfg['y1']>=0 and cfg['y2']<int(cap.get(4)+1):
-            pass #good cropping box
-        else:
-            raise Exception('Please check the boundary of cropping!')
-            
-    frames = np.empty((batchsize, ny, nx, 3), dtype='ubyte') # this keeps all frames in a batch
-    pbar=tqdm(total=nframes)
-    counter=0
-    step=max(10,int(nframes/100))
-    while(cap.isOpened()):
-            if counter%step==0:
-                pbar.update(step)
-            ret, frame = cap.read()
-            if ret:
-                frame=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                if cfg['cropping']:
-                    frames[batch_ind] = img_as_ubyte(frame[cfg['y1']:cfg['y2'],cfg['x1']:cfg['x2']])
-                else:
-                    frames[batch_ind] = img_as_ubyte(frame)
-                    
-                if batch_ind==batchsize-1:
-                    pose = predict.getposeNP(frames,dlc_cfg, sess, inputs, outputs, h5_path)
-                    PredicteData[batch_num*batchsize:(batch_num+1)*batchsize, :] = pose
-                    batch_ind = 0
-                    batch_num += 1
-                else:
-                   batch_ind+=1
-            else:
-                nframes = counter
-                print("Detected frames: ", nframes)
-                if batch_ind>0:
-                    pose = predict.getposeNP(frames, dlc_cfg, sess, inputs, outputs,  h5_path) #process the whole batch (some frames might be from previous batch!)
-                    PredicteData[batch_num*batchsize:batch_num*batchsize+batch_ind, :] = pose[:batch_ind,:]
-                break
-            counter+=1
-
-    pbar.close()
-    return PredicteData,nframes
-
-
 
 
 # Utility method used by GetPoseALL, gets a batch of frames, stores them in frame_store and returns the size of the batch
@@ -338,7 +280,7 @@ def GetPoseALL(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, pre
     # Phase 2: Post processing...
 
     # Get all of the final poses that are still held by the predictor
-    post_pbar = tqdm(total = 100)
+    post_pbar = tqdm(total = nframes - frames_done)
     final_poses = predictor.on_end(post_pbar)
     post_pbar.close()
 
@@ -356,9 +298,6 @@ def GetPoseALL(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, pre
     return pose_prediction_data, nframes
 
 
-
-
-
 # Arg h5_path added
 def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes, h5_path):
     ''' Non batch wise pose estimation for video cap.'''
@@ -374,7 +313,7 @@ def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes, h5_path):
             pass #good cropping box
         else:
             raise Exception('Please check the boundary of cropping!')
-    
+
     PredicteData = np.zeros((nframes, 3 * len(dlc_cfg['all_joints_names'])))
     pbar=tqdm(total=nframes)
     counter=0
@@ -382,7 +321,7 @@ def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes, h5_path):
     while(cap.isOpened()):
             if counter%step==0:
                 pbar.update(step)
-            
+
             ret, frame = cap.read()
             if ret:
                 frame=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -396,7 +335,7 @@ def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes, h5_path):
                 nframes=counter
                 break
             counter+=1
-            
+
     pbar.close()
     return PredicteData,nframes
 
@@ -471,6 +410,7 @@ def AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,
 
         print("Saving results in %s..." %(Path(video).parents[0]))
         auxiliaryfunctions.SaveData(PredicteData[:nframes,:], metadata, dataname, pdindex, range(nframes),save_as_csv)
+
 
 def GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nframes,batchsize,rgb):
     ''' Batchwise prediction of pose  for framelist in directory'''
