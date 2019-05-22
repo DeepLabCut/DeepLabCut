@@ -15,6 +15,7 @@ import tqdm
 
 # Used by get_predictor for loading plugins
 from deeplabcut.pose_estimation_tensorflow.util import pluginloader
+from deeplabcut.pose_estimation_tensorflow.nnet import predictors
 
 # Used by TrackData class
 import numpy as np
@@ -181,7 +182,7 @@ class TrackingData:
 
     # Utility method to get length of an index selection(as in how many indexes it selects...)
     @staticmethod
-    def _get_count_of(self, val: Union[int, slice, Sequence[int]], length: int) -> int:
+    def _get_count_of(val: Union[int, slice, Sequence[int]], length: int) -> int:
         if (isinstance(val, Sequence)):
             return len(val)
         elif (isinstance(val, slice)):
@@ -207,15 +208,15 @@ class TrackingData:
 
         # Return the frames, reshaped to be more "frame like"...
         slicer = self._scmap[frame, :, :, bodypart]
-
-        if(frame_count == 1):
-            np.expand_dims(slicer, axis=0)
-
-        if(part_count == 1):
-            np.expand_dims(slicer, axis=3)
-
-        return np.transpose(slicer, [0, 3, 1, 2]).squeeze()
-
+        
+        # If the part_count is greater then one, move bodypart dimension back 2 in the dimensions
+        if(part_count > 1 and frame_count > 1):
+            return np.transpose(slicer, (0, 3, 1, 2))
+        elif(part_count > 1):
+            return np.transpose(slicer, (2, 0, 1))
+        # Otherwise just return the slice...
+        else:
+            return slicer
 
 
     def set_prob_table(self, frame: Union[int, slice, Sequence[int]], bodypart: Union[int, slice, Sequence[int]],
@@ -227,20 +228,18 @@ class TrackingData:
         :param bodypart: The body part index, as an integer or slice.
         :param values: The probability maps to set these indexes to, is a numpy array.
         """
-        values = values.squeeze()
         # Compute amount of frames and body parts selected....
         frame_count = self._get_count_of(frame, self.get_frame_count())
         part_count = self._get_count_of(bodypart, self.get_bodypart_count())
-
-        # Add dimensions that might have been removed
-        if(len(values.shape) < 4 and frame_count == 1):
-            values = np.expand_dims(values, axis=0)
-
-        if(len(values.shape) < 4 and part_count == 1):
-            values = np.expand_dims(values, axis=3)
-
+        
+        # If multiple body parts were selected, rearrange dimensions to match those used by the scmap...
+        if(part_count > 1 and frame_count > 1):
+            values = np.transpose(slicer, (0, 2, 3, 1))
+        elif(part_count > 1):
+            values = np.transpose(slicer, (1, 2, 0))
+        
         # Set the frames, resizing the array to fit
-        self._scmap[frame, :, :, bodypart] = np.transpose(values, [0, 2, 3, 1]).squeeze()
+        self._scmap[frame, :, :, bodypart] = values
 
 
     def get_frame_count(self) -> int:
@@ -577,7 +576,8 @@ def get_predictor(name: str) -> Type[Predictor]:
     :return: The plugin class that has a name that matches the specified name
     """
     # Load the plugins
-    plugins = pluginloader.load_plugin_classes("deeplabcut/pose_estimation_tensorflow/nnet/predictors", Predictor)
+    # "deeplabcut.pose_estimation_tensorflow.nnet.predictors"
+    plugins = pluginloader.load_plugin_classes(predictors, Predictor)
     print(plugins)
     # Iterate the plugins until we find one with a matching name, otherwise throw a ValueError if we don't find one.
     for plugin in plugins:

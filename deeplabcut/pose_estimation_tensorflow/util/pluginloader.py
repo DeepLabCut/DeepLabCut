@@ -7,23 +7,25 @@ Module includes methods useful to loading all plugins placed in a folder, or mod
 from typing import Set
 from typing import Type
 from typing import TypeVar
+from types import ModuleType
 import sys
 import pkgutil
 import os
 
 # Needed to actually load modules in folders containing plugins
-def _load_modules(dirname: str):
+def _load_modules(dirname: ModuleType):
     """
     Loads all modules in a given package, or directory. Private method used by main plugin loader method
 
-    :param dirname: Path to the directory, can be relative.
+    :param dirname: A module object, representing module all packages are in...
     """
-    # Replace dots with files seperators, as iter_modules requires folder separators and not dots...
-    path = dirname.replace(".", os.path.pathsep)
+    # Get absolute and relative package paths for this module...
+    path = list(iter(dirname.__path__))[0]
+    rel_path = dirname.__name__
 
     # Iterate all modules in specified directory using pkgutil, importing them if they are not in sys.modules
     for importer, package_name, ispkg in pkgutil.iter_modules([path]):
-        full_pkg_name = f"{dirname}.{package_name}"
+        full_pkg_name = f"{rel_path}.{package_name}"
 
         if(full_pkg_name not in sys.modules):
             importer.find_module(package_name).load_module(package_name)
@@ -34,12 +36,12 @@ def _load_modules(dirname: str):
 # Generic type for method below
 T = TypeVar("T")
 
-def load_plugin_classes(plugin_dir: str, plugin_metaclass: Type[T]) -> Set[Type[T]]:
+def load_plugin_classes(plugin_dir: ModuleType, plugin_metaclass: Type[T]) -> Set[Type[T]]:
     """
     Loads all plugins, or classes, within the specified module folder that extend the provided metaclass type.
 
-    :param plugin_dir: The directory or package all modules or plugins are in, written in dot notation
-                       Ex: "foo.bar.baz" for directory "foo/bar/baz" in the project...
+    :param plugin_dir: A module object representing the path containing plugins... Can get a module object 
+                       using import...
     :param plugin_metaclass: The metaclass that all plugins extend. Please note this is the class type, not the
                              instance of the class, so if the base class is Foo just type Foo as this argument.
 

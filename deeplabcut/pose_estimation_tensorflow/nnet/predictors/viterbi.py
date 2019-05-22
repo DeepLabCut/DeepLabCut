@@ -35,7 +35,10 @@ class Viterbi(Predictor):
         self._viterbi_frames: TrackingData= None
         self._current_frame = 0
 
-
+    @staticmethod
+    def log(num):
+        """ Computes and returns the natural logarithim of the number """
+        return np.log(num + 1)
 
     def _gaussian_formula(self, prior_x: float, x: float, prior_y: float, y: float) -> float:
         """
@@ -64,19 +67,21 @@ class Viterbi(Predictor):
         :return: The viterbi 2D frame for the current frame.
         """
         viterbi_frame = np.zeros(current_frame.shape, dtype=current_frame.dtype)
-
+        
         # Iterating all x and y in current frame
-        for y in current_frame.shape[0]:
-            for x in current_frame.shape[1]:
+        for y in range(current_frame.shape[0]):
+            print(f"Computed for {y}")
+            for x in range(current_frame.shape[1]):
                 # Create variable to store the max value
+                print(f"Computed x for {x}")
                 best_val = None
 
                 # Iterate the prior frame computing viterbi values at the point, and also find the maximum...
-                for py in prior_frame.shape[0]:
-                    for px in prior_frame.shape[1]:
+                for py in range(prior_frame.shape[0]):
+                    for px in range(prior_frame.shape[1]):
                         # Viterbi computation for single point...on the log scale...
-                        temp = (prior_frame[py, px] + np.log(self._gaussian_formula(px, x, py, y)) +
-                                np.log(current_frame[y, x]))
+                        temp = (prior_frame[py, px] + self.log(self._gaussian_formula(px, x, py, y)) +
+                                self.log(current_frame[y, x]))
 
                         if(best_val is None):
                             best_val = temp
@@ -102,11 +107,11 @@ class Viterbi(Predictor):
         # Create the new frame
         new_frame = np.zeros(current_frame.shape, dtype=current_frame.dtype)
 
-        for cy in current_frame.shape[0]:
-            for cx in current_frame.shape[1]:
+        for cy in range(current_frame.shape[0]):
+            for cx in range(current_frame.shape[1]):
                 # Applying same viterbi backwards, but since we know the max of the frame in front we don't need to
                 # compute it for all points of the prior frame, but rather one point, as seen here...
-                new_frame[cy, cx] = [np.log(current_frame[cy, cx]) + np.log(self._gaussian_formula(px, cx, py, cx)) +
+                new_frame[cy, cx] = [self.log(current_frame[cy, cx]) + self.log(self._gaussian_formula(px, cx, py, cx)) +
                                      prob]
 
         return new_frame
@@ -122,13 +127,13 @@ class Viterbi(Predictor):
             # Set offset map to empty array, we will eventually just copy all frame offsets over...
             self._viterbi_frames.set_offset_map(np.zeros((self._num_frames, scmap.get_frame_height(),
                                                 scmap.get_frame_width(), len(self._bodyparts), 2), dtype="float32"))
-
+            
             # Add the first frame...
-            self._viterbi_frames.get_source_map()[0] = np.log(scmap.get_source_map()[0])
-            scmap.set_source_map(scmap.set_source_map()[1:])
-
+            self._viterbi_frames.get_source_map()[0] = self.log(scmap.get_source_map()[0])
+            scmap.set_source_map(scmap.get_source_map()[1:])
+            
             self._current_frame += 1
-
+        
         for frame in range(scmap.get_frame_count()):
             # Copy over offset map for this frame...
             self._viterbi_frames.get_offset_map()[self._current_frame] = scmap.get_offset_map()[frame]
@@ -142,6 +147,7 @@ class Viterbi(Predictor):
             self._current_frame += 1
 
         # Return None since we are storing frames
+        
         return None
 
 
