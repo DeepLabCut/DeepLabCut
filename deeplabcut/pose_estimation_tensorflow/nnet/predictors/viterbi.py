@@ -162,6 +162,9 @@ class Viterbi(Predictor):
             # Add the first frame...
             self._viterbi_frames.get_source_map()[0] = self.log(scmap.get_source_map()[0])
             scmap.set_source_map(scmap.get_source_map()[1:])
+
+            # Precompute the gaussian table
+            self._compute_gaussian_table(self._viterbi_frames.get_frame_width(), self._viterbi_frames.get_frame_height())
             
             self._current_frame += 1
         
