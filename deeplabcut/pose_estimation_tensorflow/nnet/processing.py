@@ -413,7 +413,7 @@ class Pose:
 
         :param frame: The frame index, can be a slice or integer
         :param bodypart: The body part index, can be a slice or integer
-        :param values: The x-values to set this pose's probability values to, as a numpy array
+        :param values: The probability values to set this pose's probability values to, as a numpy array
         """
         self._data[frame, self._fix_index(bodypart, 2)] = values
 

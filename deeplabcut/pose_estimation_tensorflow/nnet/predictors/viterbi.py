@@ -136,17 +136,9 @@ class Viterbi(Predictor):
         :return: A numpy array being the full viterbi frame for the current frame...
         """
         py, px, prob = prior_point
-        # Create the new frame
-        new_frame = np.zeros(current_frame.shape, dtype=current_frame.dtype)
+        height, width = current_frame.shape
 
-        for cy in range(current_frame.shape[0]):
-            for cx in range(current_frame.shape[1]):
-                # Applying same viterbi backwards, but since we know the max of the frame in front we don't need to
-                # compute it for all points of the prior frame, but rather one point, as seen here...
-                new_frame[cy, cx] = [self.log(current_frame[cy, cx]) + self.log(self._gaussian_formula(px, cx, py, cx)) +
-                                     prob]
-
-        return new_frame
+        return self.log(current_frame) + self._gaussian_table_at(px, py, width, height) + prob
 
 
     def on_frames(self, scmap: TrackingData) -> Union[None, Pose]:
@@ -223,6 +215,7 @@ class Viterbi(Predictor):
                 prob = table[y, x]
                 # Set the point in the pose object and append it to current points
                 self._viterbi_frames.set_pose_at(r_counter, bp, x, y, poses)
+                poses.set_prob_at(r_counter, bp, np.exp(np.exp(poses.get_prob_at(r_counter, bp))))
                 current_points.append((y, x, prob))
 
             # Decrement the counter and set the prior points to the current points
