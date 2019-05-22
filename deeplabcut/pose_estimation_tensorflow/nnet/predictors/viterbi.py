@@ -34,11 +34,14 @@ class Viterbi(Predictor):
         # Used to store viterbi frames
         self._viterbi_frames: TrackingData= None
         self._current_frame = 0
+        # Precomputed gaussian table. We don't know the width and height of frames yet, so set to none...
+        self._gaussian_table = None
+
 
     @staticmethod
     def log(num):
-        """ Computes and returns the natural logarithim of the number """
-        return np.log(num + 1)
+        """ Computes and returns the natural logarithim of the number or numpy array """
+        return np.log(num)
 
     def _gaussian_formula(self, prior_x: float, x: float, prior_y: float, y: float) -> float:
         """
@@ -58,40 +61,68 @@ class Viterbi(Predictor):
         return self.AMPLITUDE * np.exp(-(inner_x_delta + inner_y_delta))
 
 
+    def _compute_gaussian_table(self, width: int, height: int):
+        """
+        Compute the gaussian table given the width and height of each probability frame. Results are stored in
+        self._gaussian_table
+        """
+        # Compute the coordinates of the origin
+        ox, oy = width - 1, height - 1
+
+        # Compute the width and height of the gaussian table
+        g_t_width, g_t_height = (width * 2) - 1, (height * 2) - 1
+
+        # Create empty array
+        self._gaussian_table = np.zeros((g_t_height, g_t_width), dtype="float32")
+
+        # Iterate table filling in values
+        for gy in range(self._gaussian_table.shape[0]):
+            for gx in range(self._gaussian_table.shape[1]):
+                # We add log scale now so we don't have to do it later...
+                self._gaussian_table[gy, gx] = np.log(self._gaussian_formula(ox, gx, oy, gy))
+
+
+    def _gaussian_table_at(self, current_x: int, current_y: int, width: int, height: int):
+        """
+        Get the gaussian table for a probability frame given the current point within the frame being compared to
+
+        :param current_x: The current x location within the current frame being looked at
+        :param current_y: The current y location within the current frame being looked at
+        :param width: The width of the probability frame...
+        :param height: The height of the probability frame...
+        :return: The slice or subsection of _gaussian_table for this point in this frame.
+        """
+        # Get the origin location
+        ox, oy = width - 1, height - 1
+
+        # Compute offset of the probability map within the gaussian map
+        off_x, off_y = ox - current_x, oy - current_y
+
+        # Return slice of gaussian table correlated to this probability frame...
+        return self._gaussian_table[off_y:off_y + height, off_x:off_x + width]
+
+
+    # Note to self: temp = (prior_frame[py, px] + self.log(self._gaussian_formula(px, x, py, y)) +
+    #                                 self.log(current_frame[y, x]))
     def _compute_frame(self, prior_frame: ndarray, current_frame: ndarray) -> ndarray:
         """
         Computes the viterbi frame given a current frame and the prior viterbi frame...
 
-        :param prior_frame: The prior 2D(y, x) viterbi frame, for a given frame and body part
-        :param current_frame: The 2D(y, x) non-viterbi current frame, of the next frame but same body part.
-        :return: The viterbi 2D frame for the current frame.
+        :param prior_frame: The prior viterbi frame, (y, x, bodypart) for a given frame and body part
+        :param current_frame: The non-viterbi current frame, (y, x, bodypart) of the next frame but same body part.
+        :return: The viterbi frame (y, x, bodypart) for the current frame.
         """
-        viterbi_frame = np.zeros(current_frame.shape, dtype=current_frame.dtype)
-        
-        # Iterating all x and y in current frame
-        for y in range(current_frame.shape[0]):
-            print(f"Computed for {y}")
-            for x in range(current_frame.shape[1]):
-                # Create variable to store the max value
-                print(f"Computed x for {x}")
-                best_val = None
+        height, width = current_frame.shape[0], current_frame.shape[1]
+        # Iterate x and y values in the current frame
+        for cy in range(height):
+            for cx in range(width):
+                # Compute viterbi for this point on entire prior array
+                temp = prior_frame + self._gaussian_table_at(cx, cy, width, height) + self.log(current_frame[cy, cx])
+                # Grab the max and set the current frames cy, cx to the max body parts.
+                current_frame[cy, cx] = np.max(temp.reshape((width*height), current_frame.shape[2]), axis=0)
 
-                # Iterate the prior frame computing viterbi values at the point, and also find the maximum...
-                for py in range(prior_frame.shape[0]):
-                    for px in range(prior_frame.shape[1]):
-                        # Viterbi computation for single point...on the log scale...
-                        temp = (prior_frame[py, px] + self.log(self._gaussian_formula(px, x, py, y)) +
-                                self.log(current_frame[y, x]))
-
-                        if(best_val is None):
-                            best_val = temp
-                        elif(best_val < temp):
-                            best_val = temp
-                # Set the value for this point in the viterbi frame to the max...
-                viterbi_frame[y, x] = best_val
-
-        # Return the max...
-        return viterbi_frame
+        # Done, just return the current frame...
+        return current_frame
 
 
     def _back_compute(self, current_frame: ndarray, prior_point: Tuple[int, int, float]) -> ndarray:
@@ -138,11 +169,10 @@ class Viterbi(Predictor):
             # Copy over offset map for this frame...
             self._viterbi_frames.get_offset_map()[self._current_frame] = scmap.get_offset_map()[frame]
 
-            for bodypart in range(scmap.get_bodypart_count()):
-                # Compute viterbi frame for this frame and body part...
-                frame_data = self._viterbi_frames.get_prob_table(self._current_frame, bodypart)
-                prior_frame = self._viterbi_frames.get_prob_table(self._current_frame - 1, bodypart)
-                self._viterbi_frames.set_prob_table(self._current_frame, bodypart, self._compute_frame(prior_frame, frame_data))
+            # Compute the viterbi for all body parts of current frame, and store the result...
+            viterbi = self._viterbi_frames.get_source_map()
+            viterbi[self._current_frame] = self._compute_frame(viterbi[self._current_frame - 1],
+                                                               viterbi[self._current_frame])
             # Increment global frame counter...
             self._current_frame += 1
 
