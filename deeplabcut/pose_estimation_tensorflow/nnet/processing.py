@@ -234,9 +234,9 @@ class TrackingData:
         
         # If multiple body parts were selected, rearrange dimensions to match those used by the scmap...
         if(part_count > 1 and frame_count > 1):
-            values = np.transpose(slicer, (0, 2, 3, 1))
+            values = np.transpose(self._scmap[frame, :, :, bodypart], (0, 2, 3, 1))
         elif(part_count > 1):
-            values = np.transpose(slicer, (1, 2, 0))
+            values = np.transpose(self._scmap[frame, :, :, bodypart], (1, 2, 0))
         
         # Set the frames, resizing the array to fit
         self._scmap[frame, :, :, bodypart] = values
@@ -298,12 +298,12 @@ class TrackingData:
             off_y, off_x = self._locref[frame, scmap_y, scmap_x, bodypart]
 
         # Compute actual x and y values in the video...
-        x = float(x) * self._scaling + (0.5 * self._scaling) + off_x
-        y = float(y) * self._scaling + (0.5 * self._scaling) + off_y
+        scmap_x = float(scmap_x) * self._scaling + (0.5 * self._scaling) + off_x
+        scmap_y = float(scmap_y) * self._scaling + (0.5 * self._scaling) + off_y
 
         # Set values...
-        pose_object.set_x_at(frame, bodypart, x)
-        pose_object.set_y_at(frame, bodypart, y)
+        pose_object.set_x_at(frame, bodypart, scmap_x)
+        pose_object.set_y_at(frame, bodypart, scmap_y)
         pose_object.set_prob_at(frame, bodypart, prob)
 
 
