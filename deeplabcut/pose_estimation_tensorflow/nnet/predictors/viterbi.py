@@ -138,7 +138,7 @@ class Viterbi(Predictor):
         py, px, prob = prior_point
         height, width = current_frame.shape
 
-        return self.log(current_frame) + self._gaussian_table_at(px, py, width, height) + prob
+        return current_frame + self._gaussian_table_at(px, py, width, height) + prob
 
 
     def on_frames(self, scmap: TrackingData) -> Union[None, Pose]:
@@ -211,11 +211,11 @@ class Viterbi(Predictor):
             for bp in range(self._viterbi_frames.get_bodypart_count()):
                 # Compute the max of the viterbi probability table
                 table = self._back_compute(self._viterbi_frames.get_prob_table(r_counter, bp), prior_points[bp])
-                y, x = np.unravel_index(np.argmax(table, shape=(height, width)))
+                y, x = np.unravel_index(np.argmax(table), shape=(height, width))
                 prob = table[y, x]
                 # Set the point in the pose object and append it to current points
                 self._viterbi_frames.set_pose_at(r_counter, bp, x, y, poses)
-                poses.set_prob_at(r_counter, bp, np.exp(np.exp(poses.get_prob_at(r_counter, bp))))
+                poses.set_prob_at(r_counter, bp, np.exp(poses.get_prob_at(r_counter, bp)))
                 current_points.append((y, x, prob))
 
             # Decrement the counter and set the prior points to the current points
