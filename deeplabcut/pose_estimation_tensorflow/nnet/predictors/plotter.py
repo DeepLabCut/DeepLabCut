@@ -39,7 +39,9 @@ class PlotterArgMax(Predictor):
             from matplotlib import pyplot
 
             for bp in range(scmap.get_bodypart_count()):
-                pyplot.pcolormesh(scmap.get_prob_table(self._current_frame, bp))
+                pyplot.subplot(2, 2, bp + 1)
+                pyplot.title(f"Bodypart: {self._parts[bp]}, Frame: {self._current_frame}")
+                pyplot.pcolormesh(scmap.get_prob_table(0, bp))
 
             pyplot.show()
 
