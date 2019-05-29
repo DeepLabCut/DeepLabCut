@@ -19,7 +19,7 @@ class Viterbi(Predictor):
     is also more memory intensive and computationally expensive.
     """
     # Global values for the gaussian formula, can be adjusted for differing results...
-    NORM_DIST = 1  # The normal distribution
+    NORM_DIST = 5  # The normal distribution
     AMPLITUDE = 1  # The amplitude, or height of the gaussian curve
 
 
@@ -31,6 +31,8 @@ class Viterbi(Predictor):
         self._num_frames = num_frames
         # Used to store viterbi frames
         self._viterbi_frames: TrackingData= None
+        # Store the original DLC probabilities...
+        self._old_probs: TrackingData = None
         self._current_frame = 0
         # Precomputed gaussian table. We don't know the width and height of frames yet, so set to none...
         self._gaussian_table = None
@@ -147,6 +149,9 @@ class Viterbi(Predictor):
         """ Handles Forward part of the viterbi algorithm, allowing for faster post processing. """
         # Check if this is the first frame
         if(self._viterbi_frames is None):
+            # Create numpy array to store old dlc probabilities...
+            self._old_probs = TrackingData.empty_tracking_data(self._num_frames, len(self._bodyparts),
+                                   scmap.get_frame_width(), scmap.get_frame_height(), scmap.get_down_scaling())
             # Create an empty tracking data object
             self._viterbi_frames = TrackingData.empty_tracking_data(self._num_frames, len(self._bodyparts),
                                    scmap.get_frame_width(), scmap.get_frame_height(), scmap.get_down_scaling())
@@ -156,6 +161,7 @@ class Viterbi(Predictor):
             
             # Add the first frame...
             self._viterbi_frames.get_source_map()[0] = self.log(scmap.get_source_map()[0])
+            self._old_probs.get_source_map()[0] = scmap.get_source_map()[0]
             scmap.set_source_map(scmap.get_source_map()[1:])
 
             # Precompute the gaussian table
@@ -166,6 +172,8 @@ class Viterbi(Predictor):
         for frame in range(scmap.get_frame_count()):
             # Copy over offset map for this frame...
             self._viterbi_frames.get_offset_map()[self._current_frame] = scmap.get_offset_map()[frame]
+            # Copy over old probabilities...
+            self._old_probs.get_source_map()[self._current_frame] = scmap.get_source_map()[frame]
 
             # Compute the viterbi for all body parts of current frame, and store the result...
             viterbi = self._viterbi_frames.get_source_map()
@@ -217,7 +225,7 @@ class Viterbi(Predictor):
                 prob = table[y, x]
                 # Set the point in the pose object and append it to current points
                 self._viterbi_frames.set_pose_at(r_counter, bp, x, y, poses)
-                poses.set_prob_at(r_counter, bp, np.exp(poses.get_prob_at(r_counter, bp)))
+                poses.set_prob_at(r_counter, bp, self._old_probs.get_source_map()[r_counter, y, x, bp])
                 current_points.append((y, x, prob))
 
             # Decrement the counter and set the prior points to the current points
