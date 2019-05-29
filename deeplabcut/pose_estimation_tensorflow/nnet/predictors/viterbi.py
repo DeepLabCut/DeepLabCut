@@ -191,7 +191,7 @@ class Viterbi(Predictor):
         for bp in range(self._viterbi_frames.get_bodypart_count()):
             # Compute the max...
             table = self._viterbi_frames.get_prob_table(r_counter, bp)
-            y, x = np.unravel_index(np.argmax(table), shape=(height, width))
+            y, x = np.unravel_index(np.argmax(table), (height, width))
             prob = table[y, x]
             # Set the pose at this point....
             self._viterbi_frames.set_pose_at(r_counter, bp, x, y, poses)
