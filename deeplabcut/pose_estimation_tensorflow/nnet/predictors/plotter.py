@@ -62,10 +62,11 @@ class PlotterArgMax(Predictor):
                 for bp in range(scmap.get_bodypart_count()):
                     pyplot.subplot(self._grid_size, self._grid_size, bp + 1)
                     pyplot.title(f"Bodypart: {self._parts[bp]}, Frame: {self._current_frame}")
-                    pyplot.pcolormesh(scmap.get_prob_table(frame, bp))
+                    pyplot.pcolormesh(np.log(scmap.get_prob_table(frame, bp)))
 
                 # Save chart to the buffer.
                 pyplot.savefig(buffer, format="png")
+                pyplot.clf()
                 buffer.seek(0)
 
                 # Convert buffer cv2 image, then close the buffer
