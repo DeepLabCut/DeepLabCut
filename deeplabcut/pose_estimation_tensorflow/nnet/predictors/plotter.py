@@ -69,7 +69,7 @@ class PlotterArgMax(Predictor):
                 buffer.seek(0)
 
                 # Convert buffer cv2 image, then close the buffer
-                img = cv2.imdecode(np.frombuffer(buffer, dtype=np.uint8), cv2.IMREAD_COLOR)
+                img = cv2.imdecode(np.frombuffer(buffer.getbuffer(), dtype=np.uint8), cv2.IMREAD_COLOR)
                 buffer.close()
 
                 # If the video writer does not exist, create it now...
