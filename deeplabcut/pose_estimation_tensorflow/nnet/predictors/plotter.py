@@ -65,6 +65,7 @@ class PlotterArgMax(Predictor):
                     pyplot.pcolormesh(np.log(scmap.get_prob_table(frame, bp)))
 
                 # Save chart to the buffer.
+                pyplot.tight_layout()
                 pyplot.savefig(buffer, format="png")
                 pyplot.clf()
                 buffer.seek(0)
