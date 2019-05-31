@@ -116,10 +116,6 @@ class Viterbi(Predictor):
         # Iterate x and y values in the current frame
         for cy in range(height):
             for cx in range(width):
-                if(current_frame[cy, cx] < 1e-20):
-                    current_frame[cy, cx] = float("-inf")
-                    continue
-
                 # Compute viterbi for this point on entire prior array
                 temp = (prior_frame + np.expand_dims(self._gaussian_table_at(cx, cy, width, height), axis=2) +
                        self.log(current_frame[cy, cx]))
