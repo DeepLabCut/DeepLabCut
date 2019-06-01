@@ -275,6 +275,7 @@ def GetPoseALL(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, pre
             # video, break the loop...
             break
 
+    pbar.update(counter // prog_step) # Finish the progress bar
     pbar.close() # Close the progress bar
 
     # Phase 2: Post processing...
@@ -299,7 +300,7 @@ def GetPoseALL(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, pre
 
 
 # Arg h5_path added
-def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes, h5_path):
+def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes):
     ''' Non batch wise pose estimation for video cap.'''
     if cfg['cropping']:
         print("Cropping based on the x1 = %s x2 = %s y1 = %s y2 = %s. You can adjust the cropping coordinates in the config.yaml file." %(cfg['x1'], cfg['x2'],cfg['y1'], cfg['y2']))
@@ -648,7 +649,23 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,traini
                 print("No frames were found. Consider changing the path or the frametype.")
     
     os.chdir(str(start_path))
-    
+
+
+def list_predictor_plugins():
+    """
+    Retrieve and print all currently installed and available predictor plugins that can be used with deeplabcut to
+    the console...
+
+    :return: Nothing, if one wants to get the plugins for other code look at processing.get_predictor_plugins().
+    """
+    # Load the plugins...
+    predictors = processing.get_predictor_plugins()
+
+    for predictor in predictors:
+        print(predictor.get_name())
+        print(predictor.get_description())
+        print()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

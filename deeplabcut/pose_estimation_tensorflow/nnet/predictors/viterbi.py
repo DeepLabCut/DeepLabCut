@@ -12,6 +12,9 @@ from deeplabcut.pose_estimation_tensorflow.nnet.processing import Pose
 # For computations
 import numpy as np
 
+# Used to for parallelization
+from multiprocessing.pool import ThreadPool as Pool
+
 class Viterbi(Predictor):
     """
     A predictor that applies the Viterbi algorithm to frames in order to predict poses.
