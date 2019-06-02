@@ -127,7 +127,7 @@ class ViterbiNew(Predictor):
                 temp = (prior_frame + np.expand_dims(self._gaussian_table_at(cx, cy, pw, ph), axis=2) +
                        self.log(current_frame.base[cy, cx]))
                 # Grab the max and set the current frames cy, cx to the max body parts.
-                current_frame[cy, cx] = np.max(temp.reshape((width*height), current_frame.shape[2]), axis=0)
+                current_frame[cy, cx] = np.max(temp.reshape((pw * ph), current_frame.shape[2]), axis=0)
 
         # Done, just return the current frame...
         return current_frame
