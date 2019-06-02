@@ -15,6 +15,8 @@ import numpy as np
 # Used to for parallelization
 from multiprocessing.pool import ThreadPool as Pool
 
+# TODO: HELPER FUNCTION BROKEN, NEED TO ADD ARG PASSED FOR HANDLING OFFSET....
+
 class ViterbiNew(Predictor):
     """
     A predictor that applies the Viterbi algorithm to frames in order to predict poses.
