@@ -12,6 +12,7 @@ class GaussianArgMax(Predictor):
     # Global values for the gaussian formula, can be adjusted for differing results...
     NORM_DIST = 5  # The normal distribution
     AMPLITUDE = 1  # The amplitude, or height of the gaussian curve
+    LOWEST_VAL = 0 # Changes the lowest value that the gaussian curve can produce
 
     def __init__(self, bodyparts: List[str], num_frames: int):
         """ Creates a new Gaussian arg max predictor... """
@@ -41,7 +42,7 @@ class GaussianArgMax(Predictor):
         # Formula for 2D gaussian curve (or bump)
         inner_x_delta = ((prior_x - x) ** 2) / (2 * self.NORM_DIST ** 2)
         inner_y_delta = ((prior_y - y) ** 2) / (2 * self.NORM_DIST ** 2)
-        return self.AMPLITUDE * np.exp(-(inner_x_delta + inner_y_delta))
+        return self.AMPLITUDE * np.exp(-(inner_x_delta + inner_y_delta)) + self.LOWEST_VAL
 
 
     def _compute_gaussian_table(self, width: int, height: int):

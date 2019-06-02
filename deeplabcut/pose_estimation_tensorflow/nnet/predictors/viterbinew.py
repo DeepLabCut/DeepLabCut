@@ -12,7 +12,10 @@ from deeplabcut.pose_estimation_tensorflow.nnet.processing import Pose
 # For computations
 import numpy as np
 
-class Viterbi(Predictor):
+# Used to for parallelization
+from multiprocessing.pool import ThreadPool as Pool
+
+class ViterbiNew(Predictor):
     """
     A predictor that applies the Viterbi algorithm to frames in order to predict poses.
     The algorithm is frame-aware, unlike the default algorithm used by DeepLabCut, but
@@ -37,7 +40,8 @@ class Viterbi(Predictor):
         self._current_frame = 0
         # Precomputed gaussian table. We don't know the width and height of frames yet, so set to none...
         self._gaussian_table = None
-
+        # Worker Pool used for multiprocessing cells of the probability table
+        self._worker = Pool()
 
     @staticmethod
     def log(num):
@@ -105,9 +109,10 @@ class Viterbi(Predictor):
 
     # Note to self: temp = (prior_frame[py, px] + self.log(self._gaussian_formula(px, x, py, y)) +
     #                                 self.log(current_frame[y, x]))
-    def _compute_frame(self, prior_frame: ndarray, current_frame: ndarray) -> ndarray:
+    def _compute_frame_helper(self, prior_frame: ndarray, current_frame: ndarray) -> ndarray:
         """
-        Computes the viterbi frame given a current frame and the prior viterbi frame...
+        Computes the viterbi frame given a current frame and the prior viterbi frame... Helper method to 
+        _compute_frame_multi... Although could be called alone..
 
         :param prior_frame: The prior viterbi frame, (y, x, bodypart) for a given frame and body part
         :param current_frame: The non-viterbi current frame, (y, x, bodypart) of the next frame but same body part.
@@ -124,6 +129,25 @@ class Viterbi(Predictor):
                 current_frame[cy, cx] = np.max(temp.reshape((width*height), current_frame.shape[2]), axis=0)
 
         # Done, just return the current frame...
+        return current_frame
+
+
+    def _compute_frame_multi(self, prior_frame: ndarray, current_frame: ndarray):
+        """
+        Computes the viterbi frame given a current frame and the prior viterbi frame using multiple threads...
+
+        :param prior_frame: The prior viterbi frame, (y, x, bodypart) for a given frame and body part
+        :param current_frame: The non-viterbi current frame, (y, x, bodypart) of the next frame but same body part.
+        :return: The viterbi frame (y, x, bodypart) for the current frame.
+        """
+        # Pack up the data args... Note * does shallow copies and np.array_split creates views, so these calls really
+        # only create a bunch of pointers to the original data
+        args = zip([prior_frame] * self._worker._processes, np.array_split(current_frame, self._worker._processes))
+
+        # Call the helper method using the thread worker...
+        self._worker.starmap(self._compute_frame_helper, args)
+
+        # Return the current frame since data is stored there...
         return current_frame
 
 
@@ -236,7 +260,7 @@ class Viterbi(Predictor):
 
     @staticmethod
     def get_name() -> str:
-        return "viterbi"
+        return "viterbinew"
 
     @staticmethod
     def get_description() -> str:
