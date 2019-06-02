@@ -119,11 +119,12 @@ class ViterbiNew(Predictor):
         :return: The viterbi frame (y, x, bodypart) for the current frame.
         """
         height, width = current_frame.shape[0], current_frame.shape[1]
+        ph, pw = prior_frame.shape[0], prior_frame.shape[1]
         # Iterate x and y values in the current frame
         for cy in range(height):
             for cx in range(width):
                 # Compute viterbi for this point on entire prior array
-                temp = (prior_frame + np.expand_dims(self._gaussian_table_at(cx, cy, width, height), axis=2) +
+                temp = (prior_frame + np.expand_dims(self._gaussian_table_at(cx, cy, pw, ph), axis=2) +
                        self.log(current_frame.base[cy, cx]))
                 # Grab the max and set the current frames cy, cx to the max body parts.
                 current_frame[cy, cx] = np.max(temp.reshape((width*height), current_frame.shape[2]), axis=0)
