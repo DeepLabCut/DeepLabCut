@@ -198,7 +198,7 @@ class ViterbiNew(Predictor):
 
             # Compute the viterbi for all body parts of current frame, and store the result...
             viterbi = self._viterbi_frames.get_source_map()
-            viterbi[self._current_frame] = self._compute_frame(viterbi[self._current_frame - 1],
+            viterbi[self._current_frame] = self._compute_frame_multi(viterbi[self._current_frame - 1],
                                                                scmap.get_source_map()[frame])
             # Increment global frame counter...
             self._current_frame += 1
