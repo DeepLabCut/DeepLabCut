@@ -8,28 +8,27 @@ from typing import Set
 from typing import Type
 from typing import TypeVar
 from types import ModuleType
-import sys
 import pkgutil
-import os
 
 # Needed to actually load modules in folders containing plugins
-def _load_modules(dirname: ModuleType):
+def _load_modules(dirmodule: ModuleType):
     """
     Loads all modules in a given package, or directory. Private method used by main plugin loader method
 
-    :param dirname: A module object, representing module all packages are in...
+    :param dirmodule: A module object, representing directory module(package) all packages are in...
     """
     # Get absolute and relative package paths for this module...
-    path = list(iter(dirname.__path__))[0]
-    rel_path = dirname.__name__
+    path = list(iter(dirmodule.__path__))[0]
 
     # Iterate all modules in specified directory using pkgutil, importing them if they are not in sys.modules
     for importer, package_name, ispkg in pkgutil.iter_modules([path]):
-        full_pkg_name = f"{rel_path}.{package_name}"
+        # Don't check sys.modules, since this method should reload plugins if they are already loaded...
+        module = importer.find_module(package_name).load_module(package_name)
 
-        if(full_pkg_name not in sys.modules):
-            importer.find_module(package_name).load_module(package_name)
-
+        # If the module is a subpackage, import all modules in that package(via recursive call)
+        if(ispkg):
+            _load_modules(module)
+    # Modules loaded, return...
     return
 
 
