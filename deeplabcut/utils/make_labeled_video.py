@@ -89,7 +89,7 @@ def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,DLCscorer,bodyparts2plot
             clip.save_frame(frame)
         clip.close()
 
-def CreateVideoSlow(clip,Dataframe,tmpfolder,dotsize,colormap,alphavalue,pcutoff,cropping,x1,x2,y1,y2,delete,DLCscorer,bodyparts2plot,outputframerate,Frames2plot):
+def CreateVideoSlow(videooutname,clip,Dataframe,tmpfolder,dotsize,colormap,alphavalue,pcutoff,cropping,x1,x2,y1,y2,delete,DLCscorer,bodyparts2plot,outputframerate,Frames2plot):
     ''' Creating individual frames with labeled body parts and making a video'''
     #scorer=np.unique(Dataframe.columns.get_level_values(0))[0]
     #bodyparts2plot = list(np.unique(Dataframe.columns.get_level_values(1)))
@@ -168,14 +168,14 @@ def CreateVideoSlow(clip,Dataframe,tmpfolder,dotsize,colormap,alphavalue,pcutoff
     start= os.getcwd()
     os.chdir(tmpfolder)
     print("All labeled frames were created, now generating video...")
-    vname=str(Path(tmpfolder).stem).split('-')[1]
+    #vname=str(Path(tmpfolder).stem).split('-')[1]
     ## One can change the parameters of the video creation script below:
     # See ffmpeg user guide: http://ffmpeg.org/ffmpeg.html#Video-and-Audio-file-format-conversion
     # 
     try: 
         subprocess.call([
             'ffmpeg', '-framerate',
-            str(clip.fps()), '-i', 'file%0'+str(nframes_digits)+'d.png', '-r', str(outputframerate),'../'+vname + DLCscorer+'_labeled.mp4'])
+            str(clip.fps()), '-i', 'file%0'+str(nframes_digits)+'d.png', '-r', str(outputframerate),'../'+videooutname])
     except FileNotFoundError:
         print("Ffmpeg not correctly installed, see https://github.com/AlexEMG/DeepLabCut/issues/45")
 
@@ -184,7 +184,7 @@ def CreateVideoSlow(clip,Dataframe,tmpfolder,dotsize,colormap,alphavalue,pcutoff
             os.remove(file_name)
     os.chdir(start)
 
-def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,save_frames=False,Frames2plot=None,delete=False,displayedbodyparts='all',codec='mp4v',outputframerate=None, destfolder=None):
+def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,filtered=False,save_frames=False,Frames2plot=None,delete=False,displayedbodyparts='all',codec='mp4v',outputframerate=None, destfolder=None):
     """
     Labels the bodyparts in a video. Make sure the video is already analyzed by the function 'analyze_video'
 
@@ -204,7 +204,11 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
 
     trainingsetindex: int, optional
         Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
-     
+
+    filtered: bool, default false
+    Boolean variable indicating if filtered output should be plotted rather than frame-by-frame predictions. Filtered version can be calculated with deeplabcut.filterpredictions
+    
+
     videotype: string, optional
         Checks for the extension of the video in case the input is a directory.\nOnly videos with this extension are analyzed. The default is ``.avi``
 
@@ -273,29 +277,44 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
         videotype = Path(video).suffix
         print("Starting % ", videofolder, videos)
         vname = str(Path(video).stem)
-        if os.path.isfile(os.path.join(str(videofolder),vname + DLCscorer+'_labeled.mp4')):
+        if filtered==True:
+            videooutname=os.path.join(vname + DLCscorer+'filtered_labeled.mp4')
+        else:
+            videooutname=os.path.join(vname + DLCscorer+'_labeled.mp4')
+        
+        
+        if os.path.isfile(os.path.join(str(videofolder),videooutname)):
             print("Labeled video already created.")
         else:
             print("Loading ", video, "and data.")
             dataname = os.path.join(str(videofolder),vname+DLCscorer + '.h5')
             try:
-                Dataframe = pd.read_hdf(dataname)
+                dataname = str(Path(video).stem) + DLCscorer + '.h5'
                 metadata=auxiliaryfunctions.LoadVideoMetadata(dataname)
-                #print(metadata)
+                if filtered==False:
+                    Dataframe = pd.read_hdf(os.path.join(videofolder,dataname))
+                else: #for filtered output
+                    try:
+                        Dataframe = pd.read_hdf(os.path.join(videofolder,str(Path(video).stem) + DLCscorer + 'filtered.h5'))
+                    except FileNotFoundError:
+                        print("No filtered predictions found, using frame-by-frame output instead.")
+                        Dataframe = pd.read_hdf(os.path.join(videofolder,dataname))
                 datanames=[dataname]
+                
             except FileNotFoundError:
-                datanames=[fn for fn in os.listdir(os.curdir) if (vname in fn) and (".h5" in fn) and "resnet" in fn]
+                datanames=[fn for fn in os.listdir(videofolder) if (vname in fn) and (".h5" in fn) and "resnet" in fn]
                 if len(datanames)==0:
                     print("The video was not analyzed with this scorer:", DLCscorer)
-                    print("No other scorers were found, please use the function 'analyze_videos' first.")
+                    print("No other scorers were found, please run AnalysisVideos.py first.")
+                    
                 elif len(datanames)>0:
                     print("The video was not analyzed with this scorer:", DLCscorer)
                     print("Other scorers were found, however:", datanames)
-                    DLCscorer='DeepCut'+(datanames[0].split('DeepCut')[1]).split('.h5')[0]
-                    print("Creating labeled video for:", DLCscorer," instead.")
+                    print("Creating plots for:", datanames[0]," instead.")
+                    
                     Dataframe = pd.read_hdf(datanames[0])
                     metadata=auxiliaryfunctions.LoadVideoMetadata(datanames[0])
-
+                    
             if len(datanames)>0:
                 #Loading cropping data used during analysis
                 cropping=metadata['data']["cropping"]
@@ -307,9 +326,9 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
                     auxiliaryfunctions.attempttomakefolder(tmpfolder)
                     clip = vp(video)
                     #CreateVideoSlow(clip,Dataframe,tmpfolder,cfg["dotsize"],cfg["colormap"],cfg["alphavalue"],cfg["pcutoff"],cfg["cropping"],cfg["x1"],cfg["x2"],cfg["y1"],cfg["y2"],delete,DLCscorer,bodyparts)
-                    CreateVideoSlow(clip,Dataframe,tmpfolder,cfg["dotsize"],cfg["colormap"],cfg["alphavalue"],cfg["pcutoff"],cropping,x1,x2,y1,y2,delete,DLCscorer,bodyparts,outputframerate,Frames2plot)
+                    CreateVideoSlow(videooutname,clip,Dataframe,tmpfolder,cfg["dotsize"],cfg["colormap"],cfg["alphavalue"],cfg["pcutoff"],cropping,x1,x2,y1,y2,delete,DLCscorer,bodyparts,outputframerate,Frames2plot)
                 else:
-                    clip = vp(fname = video,sname = os.path.join(vname + DLCscorer+'_labeled.mp4'),codec=codec)
+                    clip = vp(fname = video,sname = videooutname,codec=codec)
                     if cropping:
                         print("Fast video creation has currently not been implemented for cropped videos. Please use 'save_frames=True' to get the video.")
                     else:
