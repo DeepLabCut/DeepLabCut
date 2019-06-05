@@ -40,21 +40,22 @@ from skimage.util import img_as_ubyte
 from skimage.draw import circle_perimeter, circle
 from deeplabcut.utils.video_processor import VideoProcessorCV as vp # used to CreateVideo
 
-
 def get_cmap(n, name='hsv'):
     '''Returns a function that maps each index in 0, 1, ..., n-1 to a distinct
     RGB color; the keyword argument name must be a standard mpl colormap name.'''
     return plt.cm.get_cmap(name, n)
 
-def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,DLCscorer,bodyparts2plot,cropping,x1,x2,y1,y2):
+def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,DLCscorer,bodyparts2plot,cropping,x1,x2,y1,y2,displaycropped):
         ''' Creating individual frames with labeled body parts and making a video'''
         colorclass=plt.cm.ScalarMappable(cmap=colormap)
         C=colorclass.to_rgba(np.linspace(0,1,len(bodyparts2plot)))
         colors=(C[:,:3]*255).astype(np.uint8)
-        if cropping:
+        
+        if displaycropped:
             ny, nx= y2-y1,x2-x1
         else:
             ny, nx= clip.height(), clip.width()
+        
         fps=clip.fps()
         nframes = len(Dataframe.index)
         duration = nframes/fps
@@ -68,20 +69,22 @@ def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,DLCscorer,bodyparts2plot
         df_y = np.empty((len(bodyparts2plot),nframes))
         for bpindex, bp in enumerate(bodyparts2plot):
             df_likelihood[bpindex,:]=Dataframe[DLCscorer][bp]['likelihood'].values
-            df_x[bpindex,:]=Dataframe[DLCscorer][bp]['x'].values
-            df_y[bpindex,:]=Dataframe[DLCscorer][bp]['y'].values
+            if cropping and not displaycropped:
+                df_x[bpindex,:]=Dataframe[DLCscorer][bp]['x'].values+x1
+                df_y[bpindex,:]=Dataframe[DLCscorer][bp]['y'].values+y1
+            else:
+                df_x[bpindex,:]=Dataframe[DLCscorer][bp]['x'].values
+                df_y[bpindex,:]=Dataframe[DLCscorer][bp]['y'].values
         
         for index in tqdm(range(nframes)):
             image = clip.load_frame()
-            if cropping:
+            if displaycropped:
                     image=image[y1:y2,x1:x2]
-            else:
-                pass
+            
             for bpindex in range(len(bodyparts2plot)):
                 if df_likelihood[bpindex,index] > pcutoff:
                     xc = int(df_x[bpindex,index])
                     yc = int(df_y[bpindex,index])
-                    #rr, cc = circle_perimeter(yc,xc,radius)
                     rr, cc = circle(yc,xc,dotsize,shape=(ny,nx))
                     image[rr, cc, :] = colors[bpindex]
 
@@ -89,12 +92,13 @@ def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,DLCscorer,bodyparts2plot
             clip.save_frame(frame)
         clip.close()
 
-def CreateVideoSlow(videooutname,clip,Dataframe,tmpfolder,dotsize,colormap,alphavalue,pcutoff,cropping,x1,x2,y1,y2,delete,DLCscorer,bodyparts2plot,outputframerate,Frames2plot):
+def CreateVideoSlow(videooutname,clip,Dataframe,tmpfolder,dotsize,colormap,alphavalue,pcutoff,cropping,x1,x2,y1,y2,delete,DLCscorer,bodyparts2plot,outputframerate,Frames2plot,displaycropped):
     ''' Creating individual frames with labeled body parts and making a video'''
     #scorer=np.unique(Dataframe.columns.get_level_values(0))[0]
     #bodyparts2plot = list(np.unique(Dataframe.columns.get_level_values(1)))
+    
     colors = get_cmap(len(bodyparts2plot),name=colormap)
-    if cropping:
+    if displaycropped:
         ny, nx= y2-y1,x2-x1
     else:
         ny, nx= clip.height(), clip.width()
@@ -112,11 +116,15 @@ def CreateVideoSlow(videooutname,clip,Dataframe,tmpfolder,dotsize,colormap,alpha
     df_likelihood = np.empty((len(bodyparts2plot),nframes))
     df_x = np.empty((len(bodyparts2plot),nframes))
     df_y = np.empty((len(bodyparts2plot),nframes))
+    
     for bpindex, bp in enumerate(bodyparts2plot):
         df_likelihood[bpindex,:]=Dataframe[DLCscorer][bp]['likelihood'].values
-        df_x[bpindex,:]=Dataframe[DLCscorer][bp]['x'].values
-        df_y[bpindex,:]=Dataframe[DLCscorer][bp]['y'].values
-    
+        if cropping and not displaycropped:
+            df_x[bpindex,:]=Dataframe[DLCscorer][bp]['x'].values+x1
+            df_y[bpindex,:]=Dataframe[DLCscorer][bp]['y'].values+y1
+        else:
+            df_x[bpindex,:]=Dataframe[DLCscorer][bp]['x'].values
+            df_y[bpindex,:]=Dataframe[DLCscorer][bp]['y'].values
     
     nframes_digits=int(np.ceil(np.log10(nframes)))
     if nframes_digits>9:
@@ -138,10 +146,11 @@ def CreateVideoSlow(videooutname,clip,Dataframe,tmpfolder,dotsize,colormap,alpha
             plt.axis('off')
             image = img_as_ubyte(clip.load_frame())
             if index in Index: #then extract the frame!
-                if cropping:
+                if cropping and displaycropped:
                         image=image[y1:y2,x1:x2]
                 else:
                     pass
+                
                 plt.figure(frameon=False, figsize=(nx * 1. / 100, ny * 1. / 100))
                 plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
                 plt.imshow(image)
@@ -184,7 +193,7 @@ def CreateVideoSlow(videooutname,clip,Dataframe,tmpfolder,dotsize,colormap,alpha
             os.remove(file_name)
     os.chdir(start)
 
-def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,filtered=False,save_frames=False,Frames2plot=None,delete=False,displayedbodyparts='all',codec='mp4v',outputframerate=None, destfolder=None):
+def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,filtered=False,save_frames=False,Frames2plot=None,delete=False,displayedbodyparts='all',codec='mp4v',outputframerate=None, destfolder=None,displaycropped=False):
     """
     Labels the bodyparts in a video. Make sure the video is already analyzed by the function 'analyze_video'
 
@@ -234,6 +243,9 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
     destfolder: string, optional
         Specifies the destination folder that was used for storing analysis data (default is the path of the video). 
     
+    displaycropped: bool, optional
+        Specifies whether only cropped frame is displayed (with labels analyzed therein), or the original frame with the labels analyzed in the cropped subset.
+    
     Examples
     --------
     If you want to create the labeled video for only 1 video
@@ -266,7 +278,6 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
     
     Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
     for video in Videos:
-        
         if destfolder is None:
             #videofolder = str(Path(video).parents[0])
             videofolder= Path(video).parents[0] #where your folder with videos is.
@@ -325,14 +336,15 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
                     tmpfolder = os.path.join(str(videofolder),'temp-' + vname)
                     auxiliaryfunctions.attempttomakefolder(tmpfolder)
                     clip = vp(video)
-                    #CreateVideoSlow(clip,Dataframe,tmpfolder,cfg["dotsize"],cfg["colormap"],cfg["alphavalue"],cfg["pcutoff"],cfg["cropping"],cfg["x1"],cfg["x2"],cfg["y1"],cfg["y2"],delete,DLCscorer,bodyparts)
-                    CreateVideoSlow(videooutname,clip,Dataframe,tmpfolder,cfg["dotsize"],cfg["colormap"],cfg["alphavalue"],cfg["pcutoff"],cropping,x1,x2,y1,y2,delete,DLCscorer,bodyparts,outputframerate,Frames2plot)
+                    CreateVideoSlow(videooutname,clip,Dataframe,tmpfolder,cfg["dotsize"],cfg["colormap"],cfg["alphavalue"],cfg["pcutoff"],cropping,x1,x2,y1,y2,delete,DLCscorer,bodyparts,outputframerate,Frames2plot,displaycropped)
                 else:
-                    clip = vp(fname = video,sname = videooutname,codec=codec)
-                    if cropping:
-                        print("Fast video creation has currently not been implemented for cropped videos. Please use 'save_frames=True' to get the video.")
-                    else:
-                        CreateVideo(clip,Dataframe,cfg["pcutoff"],cfg["dotsize"],cfg["colormap"],DLCscorer,bodyparts,cropping,x1,x2,y1,y2) #NEED TO ADD CROPPING!
+                    if displaycropped: #then the cropped video + the labels is depicted
+                        clip = vp(fname = video,sname = videooutname,codec=codec,sw=x2-x1,sh=y2-y1)
+                        CreateVideo(clip,Dataframe,cfg["pcutoff"],cfg["dotsize"],cfg["colormap"],DLCscorer,bodyparts,cropping,x1,x2,y1,y2,displaycropped)
+                    else: #then the full video + the (perhaps in cropped mode analyzed labels) are depicted
+                        clip = vp(fname = video,sname = videooutname,codec=codec)
+                        CreateVideo(clip,Dataframe,cfg["pcutoff"],cfg["dotsize"],cfg["colormap"],DLCscorer,bodyparts,cropping,x1,x2,y1,y2,displaycropped)
+                    
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

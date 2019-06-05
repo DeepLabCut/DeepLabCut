@@ -144,6 +144,15 @@ deeplabcut.train_network(path_config_file)
 print("Inference with new direct cropping")
 deeplabcut.analyze_videos(path_config_file,[newvideo],destfolder=dfolder,cropping=[0,50,0,50],save_as_csv=True)
 
+print("Filter and plot filtered output")
+deeplabcut.filterpredictions(path_config_file,[newvideo])
+
+#deeplabcut.create_labeled_video(path_config_file,[newvideo], destfolder=dfolder,filtered=True)
+deeplabcut.create_labeled_video(path_config_file,[newvideo], destfolder=dfolder,displaycropped=True,filtered=True)
+
+deeplabcut.plot_trajectories(path_config_file,[newvideo], destfolder=dfolder,filtered=True)
+
+
 print("ALL DONE!!! - default cases are functional.")
 
 
