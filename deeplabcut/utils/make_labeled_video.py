@@ -51,10 +51,11 @@ def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,DLCscorer,bodyparts2plot
         colorclass=plt.cm.ScalarMappable(cmap=colormap)
         C=colorclass.to_rgba(np.linspace(0,1,len(bodyparts2plot)))
         colors=(C[:,:3]*255).astype(np.uint8)
-        if cropping:
-            ny, nx= y2-y1,x2-x1
-        else:
-            ny, nx= clip.height(), clip.width()
+        #if cropping:
+        #    ny, nx= y2-y1,x2-x1
+        #else:
+        #    ny, nx= clip.height(), clip.width()
+        ny, nx= clip.height(), clip.width()
         fps=clip.fps()
         nframes = len(Dataframe.index)
         duration = nframes/fps
@@ -68,15 +69,19 @@ def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,DLCscorer,bodyparts2plot
         df_y = np.empty((len(bodyparts2plot),nframes))
         for bpindex, bp in enumerate(bodyparts2plot):
             df_likelihood[bpindex,:]=Dataframe[DLCscorer][bp]['likelihood'].values
-            df_x[bpindex,:]=Dataframe[DLCscorer][bp]['x'].values
-            df_y[bpindex,:]=Dataframe[DLCscorer][bp]['y'].values
+            if cropping:
+                df_x[bpindex,:]=Dataframe[DLCscorer][bp]['x'].values+x1
+                df_y[bpindex,:]=Dataframe[DLCscorer][bp]['y'].values+y1
+            else:
+                df_x[bpindex,:]=Dataframe[DLCscorer][bp]['x'].values
+                df_y[bpindex,:]=Dataframe[DLCscorer][bp]['y'].values
         
         for index in tqdm(range(nframes)):
             image = clip.load_frame()
-            if cropping:
-                    image=image[y1:y2,x1:x2]
-            else:
-                pass
+            #if cropping:
+            #        image=image[y1:y2,x1:x2]
+            #else:
+            #    pass
             for bpindex in range(len(bodyparts2plot)):
                 if df_likelihood[bpindex,index] > pcutoff:
                     xc = int(df_x[bpindex,index])
@@ -329,10 +334,11 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
                     CreateVideoSlow(videooutname,clip,Dataframe,tmpfolder,cfg["dotsize"],cfg["colormap"],cfg["alphavalue"],cfg["pcutoff"],cropping,x1,x2,y1,y2,delete,DLCscorer,bodyparts,outputframerate,Frames2plot)
                 else:
                     clip = vp(fname = video,sname = videooutname,codec=codec)
-                    if cropping:
-                        print("Fast video creation has currently not been implemented for cropped videos. Please use 'save_frames=True' to get the video.")
-                    else:
-                        CreateVideo(clip,Dataframe,cfg["pcutoff"],cfg["dotsize"],cfg["colormap"],DLCscorer,bodyparts,cropping,x1,x2,y1,y2) #NEED TO ADD CROPPING!
+                    CreateVideo(clip,Dataframe,cfg["pcutoff"],cfg["dotsize"],cfg["colormap"],DLCscorer,bodyparts,cropping,x1,x2,y1,y2)
+                    #if cropping:
+                    #    print("Fast video creation has currently not been implemented for cropped videos. Please use 'save_frames=True' to get the video.")
+                    #else:
+                    #    CreateVideo(clip,Dataframe,cfg["pcutoff"],cfg["dotsize"],cfg["colormap"],DLCscorer,bodyparts,cropping,x1,x2,y1,y2) #NEED TO ADD CROPPING!
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
