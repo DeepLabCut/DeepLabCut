@@ -127,7 +127,7 @@ class ViterbiNew(Predictor):
             for cx in range(width):
                 # Compute viterbi for this point on entire prior array
                 temp = (prior_frame + np.expand_dims(self._gaussian_table_at(cx, cy, pw, ph), axis=2) +
-                       self.log(current_frame.base[cy, cx]))
+                       self.log(current_frame[cy, cx]))
                 # Grab the max and set the current frames cy, cx to the max body parts.
                 current_frame[cy, cx] = np.max(temp.reshape((pw * ph), current_frame.shape[2]), axis=0)
 
