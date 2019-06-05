@@ -48,7 +48,8 @@ from deeplabcut.generate_training_dataset import check_labels,create_training_da
 if os.environ.get('Colab', default=False) == 'True':
     print("Project loaded in colab-mode. Apparently Colab has trouble loading statsmodels, so the smooting & outlier frame extraction is disabled. Sorry!")
 else:
-    from deeplabcut.refine_training_dataset import extract_outlier_frames, merge_datasets, filterpredictions
+    from deeplabcut.refine_training_dataset import extract_outlier_frames, merge_datasets
+    from deeplabcut.post_processing import filterpredictions
 
 #Direct import for convenience
 from deeplabcut.pose_estimation_tensorflow import train_network
