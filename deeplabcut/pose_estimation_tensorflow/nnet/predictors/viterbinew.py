@@ -129,7 +129,7 @@ class ViterbiNew(Predictor):
                 temp = (prior_frame + np.expand_dims(self._gaussian_table_at(cx, cy, pw, ph), axis=2) +
                        self.log(current_frame[cy, cx]))
                 # Grab the max and set the current frames cy, cx to the max body parts.
-                current_frame[cy, cx] = np.max(temp.reshape((pw * ph), current_frame.shape[2]), axis=0)
+                current_frame[cy, cx] = np.max(temp.reshape((ph * pw), current_frame.shape[2]), axis=0)
 
         # Done, just return the current frame...
         return current_frame
@@ -147,8 +147,13 @@ class ViterbiNew(Predictor):
         # only create a bunch of pointers to the original data
         args = zip([prior_frame] * self._worker._processes, np.array_split(current_frame, self._worker._processes))
 
+        cframe = np.zeros(current_frame.shape)
+        cframe[:] = current_frame
+
         # Call the helper method using the thread worker...
         self._worker.starmap(self._compute_frame_helper, args)
+
+        print(current_frame - cframe)
 
         # Return the current frame since data is stored there...
         return current_frame

@@ -275,7 +275,7 @@ def GetPoseALL(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, pre
             # video, break the loop...
             break
 
-    pbar.update(counter // prog_step) # Finish the progress bar
+    pbar.update(counter - (prog_step * current_step)) # Finish the progress bar
     pbar.close() # Close the progress bar
 
     # Phase 2: Post processing...
