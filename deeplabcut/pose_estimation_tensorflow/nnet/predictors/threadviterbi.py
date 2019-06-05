@@ -1,4 +1,3 @@
-
 # For types in methods
 from typing import Union, List, Tuple
 from numpy import ndarray
@@ -12,12 +11,12 @@ from deeplabcut.pose_estimation_tensorflow.nnet.processing import Pose
 # For computations
 import numpy as np
 
-# Used to for parallelization
+# For multithreading
 from multiprocessing.pool import ThreadPool as Pool
+from multiprocessing import cpu_count
 
-# TODO: HELPER FUNCTION BROKEN, NEED TO ADD ARG PASSED FOR HANDLING OFFSET....
 
-class ViterbiNew(Predictor):
+class Viterbi(Predictor):
     """
     A predictor that applies the Viterbi algorithm to frames in order to predict poses.
     The algorithm is frame-aware, unlike the default algorithm used by DeepLabCut, but
@@ -26,8 +25,7 @@ class ViterbiNew(Predictor):
     # Global values for the gaussian formula, can be adjusted for differing results...
     NORM_DIST = 5  # The normal distribution
     AMPLITUDE = 1  # The amplitude, or height of the gaussian curve
-    LOWEST_VAL = 0 # Changes the lowest value that the gaussian curve can produce
-
+    LOWEST_VAL = 0  # Changes the lowest value that the gaussian curve can produce
 
     def __init__(self, bodyparts: List[str], num_frames: int):
         super().__init__(bodyparts, num_frames)
@@ -36,14 +34,16 @@ class ViterbiNew(Predictor):
         self._bodyparts = bodyparts
         self._num_frames = num_frames
         # Used to store viterbi frames
-        self._viterbi_frames: TrackingData= None
+        self._viterbi_frames: TrackingData = None
         # Store the original DLC probabilities...
         self._old_probs: TrackingData = None
         self._current_frame = 0
         # Precomputed gaussian table. We don't know the width and height of frames yet, so set to none...
         self._gaussian_table = None
-        # Worker Pool used for multiprocessing cells of the probability table
-        self._worker = Pool()
+
+        # Used for multithreading
+        self._num_threads = cpu_count()
+        self._worker = None
 
     @staticmethod
     def log(num):
@@ -67,7 +67,6 @@ class ViterbiNew(Predictor):
         inner_y_delta = ((prior_y - y) ** 2) / (2 * self.NORM_DIST ** 2)
         return self.AMPLITUDE * np.exp(-(inner_x_delta + inner_y_delta)) + self.LOWEST_VAL
 
-
     def _compute_gaussian_table(self, width: int, height: int):
         """
         Compute the gaussian table given the width and height of each probability frame. Results are stored in
@@ -88,7 +87,6 @@ class ViterbiNew(Predictor):
                 # We add log scale now so we don't have to do it later...
                 self._gaussian_table[gy, gx] = np.log(self._gaussian_formula(ox, gx, oy, gy))
 
-
     def _gaussian_table_at(self, current_x: int, current_y: int, width: int, height: int):
         """
         Get the gaussian table for a probability frame given the current point within the frame being compared to
@@ -108,55 +106,67 @@ class ViterbiNew(Predictor):
         # Return slice of gaussian table correlated to this probability frame...
         return self._gaussian_table[off_y:off_y + height, off_x:off_x + width]
 
-
     # Note to self: temp = (prior_frame[py, px] + self.log(self._gaussian_formula(px, x, py, y)) +
     #                                 self.log(current_frame[y, x]))
-    def _compute_frame_helper(self, prior_frame: ndarray, current_frame: ndarray) -> ndarray:
+    def _compute_frame(self, prior_frame: ndarray, current_frame: ndarray) -> ndarray:
         """
-        Computes the viterbi frame given a current frame and the prior viterbi frame... Helper method to 
-        _compute_frame_multi... Although could be called alone..
+        Computes the viterbi frame given a current frame and the prior viterbi frame...
 
         :param prior_frame: The prior viterbi frame, (y, x, bodypart) for a given frame and body part
         :param current_frame: The non-viterbi current frame, (y, x, bodypart) of the next frame but same body part.
         :return: The viterbi frame (y, x, bodypart) for the current frame.
         """
-        height, width = current_frame.shape[0], current_frame.shape[1]
-        ph, pw = prior_frame.shape[0], prior_frame.shape[1]
-        # Iterate x and y values in the current frame
-        for cy in range(height):
-            for cx in range(width):
-                # Compute viterbi for this point on entire prior array
-                temp = (prior_frame + np.expand_dims(self._gaussian_table_at(cx, cy, pw, ph), axis=2) +
-                       self.log(current_frame[cy, cx]))
-                # Grab the max and set the current frames cy, cx to the max body parts.
-                current_frame[cy, cx] = np.max(temp.reshape((ph * pw), current_frame.shape[2]), axis=0)
+        height = current_frame.shape[0]
+        # If worker is not set, create a worker, and set number of threads to proper value.
+        if(self._worker is None):
+            self._num_threads = self._num_threads if (self._num_threads < height) else height
 
-        # Done, just return the current frame...
-        return current_frame
+            self._worker = Pool(self._num_threads)
 
+        # Grab and package up all of the arguments...
+        args = zip([prior_frame] * self._num_threads, [current_frame] * self._num_threads,
+                   self._compute_subsections(height, self._num_threads))
 
-    def _compute_frame_multi(self, prior_frame: ndarray, current_frame: ndarray):
-        """
-        Computes the viterbi frame given a current frame and the prior viterbi frame using multiple threads...
-
-        :param prior_frame: The prior viterbi frame, (y, x, bodypart) for a given frame and body part
-        :param current_frame: The non-viterbi current frame, (y, x, bodypart) of the next frame but same body part.
-        :return: The viterbi frame (y, x, bodypart) for the current frame.
-        """
-        # Pack up the data args... Note * does shallow copies and np.array_split creates views, so these calls really
-        # only create a bunch of pointers to the original data
-        args = zip([prior_frame] * self._worker._processes, np.array_split(current_frame, self._worker._processes))
-
-        cframe = np.zeros(current_frame.shape)
-        cframe[:] = current_frame
-
-        # Call the helper method using the thread worker...
+        # Execute helper method on all threads
         self._worker.starmap(self._compute_frame_helper, args)
 
-        print(current_frame - cframe)
-
-        # Return the current frame since data is stored there...
+        # Return the current frame...
         return current_frame
+
+
+    @staticmethod
+    def _compute_subsections(array_len: int, amount: int) -> List[slice]:
+        """
+        Computes the amount of subsections to split the array into.
+
+        :param array_len: The length of the array being split up, an integer.
+        :param amount: The amount of times to split up the array, an integer.
+        :return: A list of slices, being the subsections the array should be split into.
+        """
+        slc_list = []
+        slice_size = array_len // amount
+        slice_leftover = array_len % amount
+        offset = 0
+
+        for i in ([slice_size + 1] * slice_leftover) + ([slice_size] * (amount - slice_leftover)):
+            slc_list.append(slice(offset, offset + i))
+            offset += i
+
+        return slc_list
+
+    def _compute_frame_helper(self, prior_frame: ndarray, current_frame: ndarray, sub_range: slice) -> ndarray:
+        """ Helper function for _compute_frame """
+        height, width = current_frame.shape[0], current_frame.shape[1]
+
+        for cy in range(*sub_range.indices(current_frame.shape[0])):
+            for cx in range(width):
+                temp = (prior_frame + np.expand_dims(self._gaussian_table_at(cx, cy, width, height), axis=2) +
+                        self.log(current_frame[cy, cx]))
+                # Grab the max and set the current frames cy, cx to the max body parts.
+                current_frame[cy, cx] = np.max(temp.reshape((width * height), current_frame.shape[2]), axis=0)
+
+        return current_frame
+
 
 
     def _back_compute(self, current_frame: ndarray, prior_point: Tuple[int, int, float]) -> ndarray:
@@ -173,49 +183,50 @@ class ViterbiNew(Predictor):
 
         return current_frame + self._gaussian_table_at(px, py, width, height) + prob
 
-
     def on_frames(self, scmap: TrackingData) -> Union[None, Pose]:
         """ Handles Forward part of the viterbi algorithm, allowing for faster post processing. """
         # Check if this is the first frame
-        if(self._viterbi_frames is None):
+        if (self._viterbi_frames is None):
             # Create numpy array to store old dlc probabilities...
             self._old_probs = TrackingData.empty_tracking_data(self._num_frames, len(self._bodyparts),
-                                   scmap.get_frame_width(), scmap.get_frame_height(), scmap.get_down_scaling())
+                                                               scmap.get_frame_width(), scmap.get_frame_height(),
+                                                               scmap.get_down_scaling())
             # Create an empty tracking data object
             self._viterbi_frames = TrackingData.empty_tracking_data(self._num_frames, len(self._bodyparts),
-                                   scmap.get_frame_width(), scmap.get_frame_height(), scmap.get_down_scaling())
+                                                                    scmap.get_frame_width(), scmap.get_frame_height(),
+                                                                    scmap.get_down_scaling())
             # Set offset map to empty array, we will eventually just copy all frame offsets over...
             self._viterbi_frames.set_offset_map(np.zeros((self._num_frames, scmap.get_frame_height(),
-                                                scmap.get_frame_width(), len(self._bodyparts), 2), dtype="float32"))
-            
+                                                          scmap.get_frame_width(), len(self._bodyparts), 2),
+                                                         dtype="float32"))
+
             # Add the first frame...
             self._viterbi_frames.get_source_map()[0] = self.log(scmap.get_source_map()[0])
             self._old_probs.get_source_map()[0] = scmap.get_source_map()[0]
             scmap.set_source_map(scmap.get_source_map()[1:])
 
             # Precompute the gaussian table
-            self._compute_gaussian_table(self._viterbi_frames.get_frame_width(), self._viterbi_frames.get_frame_height())
-            
+            self._compute_gaussian_table(self._viterbi_frames.get_frame_width(),
+                                         self._viterbi_frames.get_frame_height())
+
             self._current_frame += 1
-        
+
         for frame in range(scmap.get_frame_count()):
             # Copy over offset map for this frame...
             self._viterbi_frames.get_offset_map()[self._current_frame] = scmap.get_offset_map()[frame]
             # Copy over old probabilities...
-            self._old_probs.get_source_map()[self._current_frame] = np.copy(scmap.get_source_map()[frame])
+            self._old_probs.get_source_map()[self._current_frame] = scmap.get_source_map()[frame]
 
             # Compute the viterbi for all body parts of current frame, and store the result...
             viterbi = self._viterbi_frames.get_source_map()
-            viterbi[self._current_frame] = self._compute_frame_multi(viterbi[self._current_frame - 1],
+            viterbi[self._current_frame] = self._compute_frame(viterbi[self._current_frame - 1],
                                                                scmap.get_source_map()[frame])
             # Increment global frame counter...
             self._current_frame += 1
 
         # Return None since we are storing frames
-        
+
         return None
-
-
 
     def on_end(self, progress_bar: tqdm.tqdm) -> Union[None, Pose]:
         """ Handles backward part of viterbi, and then returns the poses """
@@ -243,7 +254,7 @@ class ViterbiNew(Predictor):
             progress_bar.update()
 
         # Now begin main loop...
-        while(r_counter >= 0):
+        while (r_counter >= 0):
             # The current body part points...
             current_points = []
             # For every body part...
@@ -265,10 +276,9 @@ class ViterbiNew(Predictor):
         # Done, return the predicted poses...
         return poses
 
-
     @staticmethod
     def get_name() -> str:
-        return "viterbinew"
+        return "threadviterbi"
 
     @staticmethod
     def get_description() -> str:
