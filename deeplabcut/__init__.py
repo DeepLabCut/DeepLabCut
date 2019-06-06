@@ -55,5 +55,9 @@ from deeplabcut.pose_estimation_tensorflow import train_network
 from deeplabcut.pose_estimation_tensorflow import evaluate_network
 from deeplabcut.pose_estimation_tensorflow import analyze_videos, analyze_time_lapse_frames
 
+# Added for new predictor plugin system... Allows user to see currently installed plugins and what configurable settings
+# each has...
+from deeplabcut.pose_estimation_tensorflow import list_predictor_plugins, get_predictor_settings
+
 from deeplabcut.utils import create_labeled_video, plot_trajectories, auxiliaryfunctions, convertcsv2h5, analyze_videos_converth5_to_csv
 from deeplabcut.version import __version__, VERSION

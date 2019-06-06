@@ -1,5 +1,5 @@
 # For types in methods
-from typing import Union, List, Tuple
+from typing import Union, List, Tuple, Dict, Any
 from numpy import ndarray
 import tqdm
 
@@ -22,13 +22,9 @@ class Viterbi(Predictor):
     The algorithm is frame-aware, unlike the default algorithm used by DeepLabCut, but
     is also more memory intensive and computationally expensive.
     """
-    # Global values for the gaussian formula, can be adjusted for differing results...
-    NORM_DIST = 5  # The normal distribution
-    AMPLITUDE = 1  # The amplitude, or height of the gaussian curve
-    LOWEST_VAL = 0  # Changes the lowest value that the gaussian curve can produce
 
-    def __init__(self, bodyparts: List[str], num_frames: int):
-        super().__init__(bodyparts, num_frames)
+    def __init__(self, bodyparts: List[str], num_frames: int, settings: Dict[str, Any]):
+        super().__init__(bodyparts, num_frames, settings)
 
         # Store bodyparts and num_frames for later use, they become useful
         self._bodyparts = bodyparts
@@ -44,6 +40,11 @@ class Viterbi(Predictor):
         # Used for multithreading
         self._num_threads = cpu_count()
         self._worker = None
+
+        # Global values for the gaussian formula, can be adjusted in dlc_config for differing results...
+        self.NORM_DIST = settings["norm_dist"]  # The normal distribution
+        self.AMPLITUDE = settings["amplitude"]  # The amplitude, or height of the gaussian curve
+        self.LOWEST_VAL = settings["lowest_val"]  # Changes the lowest value that the gaussian curve can produce
 
     @staticmethod
     def log(num):
@@ -275,6 +276,17 @@ class Viterbi(Predictor):
 
         # Done, return the predicted poses...
         return poses
+
+    @staticmethod
+    def get_settings() -> Union[List[Tuple[str, str, Any]], None]:
+        return [
+            ("norm_dist", "The normal distribution of the 2D gaussian curve used \n"
+                          "for transition probabilities by the viterbi algorithm.", 5),
+            ("amplitude", "The amplitude of the gaussian curve used by the viterbi algorithm.", 1),
+            ("lowest_val", "The lowest value of the gaussian curve used by the viterbi algorithm. \n"
+                           "Really a constant that is added on the the 2D gaussian to give all points\n"
+                           "a minimum probability.", 0)
+        ]
 
     @staticmethod
     def get_name() -> str:

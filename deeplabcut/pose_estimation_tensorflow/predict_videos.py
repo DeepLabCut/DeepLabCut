@@ -206,7 +206,6 @@ def GetVideoBatch(cap, batch_size, cfg, frame_store) -> int:
     return current_frame
 
 
-
 # Method Added by Isaac Robinson, replaces old system of getting poses and uses a new plugin system for predicting
 # poses...
 def GetPoseALL(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, predictor):
@@ -341,6 +340,31 @@ def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes):
     return PredicteData,nframes
 
 
+# Utility method used by , gets the settings for the given predictor plugin
+def GetPredictorSettings(cfg, predictor_cls):
+    """ Get the predictor settings from deeplabcut config and return a dictionary for plugin to use... """
+    # Grab setting blueprints for predictor plugins(list of tuples of name, desc, default val)....
+    setting_info = predictor_cls.get_settings()
+    name = predictor_cls.get_name()
+
+    # If it is None, return none
+    if(setting_info is None):
+        return None
+
+    # Pull out the name and default values into a dictionary...
+    setting_info = {name: def_val for (name, desc, def_val) in predictor_cls.get_settings()}
+
+    # If the dlc config contains a category predictors, and predictors contains a category named after the plugin, load
+    # the user cfg for this plugin and merge it with default values
+    if(("predictors" in cfg) and (cfg["predictors"]) and (name in cfg["predictors"])):
+        setting_info.update(
+            {key: cfg["predictors"][name][key] for key in (setting_info.keys() & cfg["predictors"][name].keys())}
+        )
+
+    return setting_info
+
+
+
 def AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, predictor, destfolder=None):
     ''' Helper function for analyzing a video '''
     # Note: predictor is not a string but rather the selected plugin's class
@@ -364,7 +388,7 @@ def AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,
         size=(int(cap.get(4)),int(cap.get(3)))
 
         # Create a predictor plugin instance...
-        predictor_inst = predictor(dlc_cfg['all_joints_names'], nframes)
+        predictor_inst = predictor(dlc_cfg['all_joints_names'], nframes, GetPredictorSettings(cfg, predictor))
         
         ny,nx=size
         print("Duration of video [s]: ", round(duration,2), ", recorded with ", round(fps,2),"fps!")
@@ -662,8 +686,33 @@ def list_predictor_plugins():
     predictors = processing.get_predictor_plugins()
 
     for predictor in predictors:
-        print(predictor.get_name())
+        print(f"Plugin Name: '{predictor.get_name()}'")
+        print("Description: ")
         print(predictor.get_description())
+        print()
+
+
+def get_predictor_settings(predictor_name = None):
+    """
+    Gets the available/modifiable settings for a specified predictor plugin...
+
+    :param predictor_name: The string name of the predictor to view customizable settings for. If None, will print settings
+                      for all currently available predictors. Defaults to None.
+
+    :return: Nothing, prints to console....
+    """
+    if(predictor_name is None):
+        predictors = processing.get_predictor_plugins()
+    else:
+        predictors = [processing.get_predictor(predictor_name)]
+
+    for predictor in predictors:
+        print(f"Plugin Name: {predictor.get_name()}")
+        print("Arguments: ")
+        for name, desc, def_val in predictor.get_settings():
+            print(f"Name: '{name}'")
+            print(f"Description: \n{desc}")
+            print(f"Default Value: {def_val} \n")
         print()
 
 

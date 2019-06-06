@@ -1,6 +1,6 @@
 
 # For types in methods
-from typing import Union, List
+from typing import Union, List, Tuple, Any
 
 # Plugin base class
 from deeplabcut.pose_estimation_tensorflow.nnet.processing import Predictor
@@ -13,8 +13,8 @@ class SingleArgMaxPredict(Predictor):
     Default processor for DeepLabCut, and the code originally used by DeepLabCut for prediction of points. Predicts
     the point from the probability frames simply by selecting the max probability in the frame.
     """
-    def __init__(self, bodyparts: List[str], num_frames: int):
-        super().__init__(bodyparts, num_frames)
+    def __init__(self, bodyparts: List[str], num_frames: int, settings: None):
+        super().__init__(bodyparts, num_frames, settings)
 
 
     def on_frames(self, scmap: TrackingData) -> Union[None, Pose]:
@@ -26,9 +26,12 @@ class SingleArgMaxPredict(Predictor):
         return None
 
     @staticmethod
+    def get_settings() -> Union[List[Tuple[str, str, Any]], None]:
+        return None
+
+    @staticmethod
     def get_name() -> str:
         return "singleargmax"
-
 
     @staticmethod
     def get_description() -> str:

@@ -1,6 +1,6 @@
 
 # For types in methods
-from typing import Union, List
+from typing import Union, List, Tuple, Any, Dict
 
 import tqdm
 
@@ -21,15 +21,8 @@ class PlotterArgMax(Predictor):
     during processing...
     """
 
-    # Name of the video file to save to
-    VIDEO_NAME = "prob-dlc.mp4"
-    # Output codec to save using
-    OUTPUT_CODEC = cv2.VideoWriter_fourcc(*"X264")
-    # Frames per second to use for video
-    OUTPUT_FPS = 15
-
-    def __init__(self, bodyparts: List[str], num_frames: int):
-        super().__init__(bodyparts, num_frames)
+    def __init__(self, bodyparts: List[str], num_frames: int, settings: Dict[str, Any]):
+        super().__init__(bodyparts, num_frames, settings)
         self._parts = bodyparts
         self._num_frames = num_frames
 
@@ -47,6 +40,13 @@ class PlotterArgMax(Predictor):
         self._grid_size = int(math.ceil(math.sqrt(len(self._parts))))
         # Stores opencv video writer...
         self._vid_writer = None
+
+        # Name of the video file to save to
+        self.VIDEO_NAME = settings["video_name"]
+        # Output codec to save using
+        self.OUTPUT_CODEC = cv2.VideoWriter_fourcc(*settings["codec"])
+        # Frames per second to use for video
+        self.OUTPUT_FPS = settings["output_fps"]
 
 
     def on_frames(self, scmap: TrackingData) -> Union[None, Pose]:
@@ -94,6 +94,14 @@ class PlotterArgMax(Predictor):
         self._vid_writer.release()
         # We are done, return None...
         return None
+
+    @staticmethod
+    def get_settings() -> Union[List[Tuple[str, str, Any]], None]:
+        return [
+            ("video_name", "Name of the video file that plotting data will be saved to.", "prob-dlc.mp4"),
+            ("codec", "The codec to be used by the opencv library to save info to, typically a 4-byte string.", "X264"),
+            ("output_fps", "The frames per second of the output video, as an number.", 15)
+        ]
 
     @staticmethod
     def get_name() -> str:

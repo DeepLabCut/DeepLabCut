@@ -1,4 +1,4 @@
-from typing import Union, List
+from typing import Union, List, Tuple, Any, Dict
 import tqdm
 from deeplabcut.pose_estimation_tensorflow.nnet.processing import Predictor, Pose, TrackingData
 import numpy as np
@@ -14,9 +14,9 @@ class GaussianArgMax(Predictor):
     AMPLITUDE = 1  # The amplitude, or height of the gaussian curve
     LOWEST_VAL = 0 # Changes the lowest value that the gaussian curve can produce
 
-    def __init__(self, bodyparts: List[str], num_frames: int):
+    def __init__(self, bodyparts: List[str], num_frames: int, settings: Dict[str, Any]):
         """ Creates a new Gaussian arg max predictor... """
-        super().__init__(bodyparts, num_frames)
+        super().__init__(bodyparts, num_frames, settings)
         # Store number of bodyparts and frames for later use...
         self._part_len = len(bodyparts)
         self._num_frames = num_frames
@@ -25,6 +25,10 @@ class GaussianArgMax(Predictor):
         self._prior_max_loc = None
         # Stores the gaussian table
         self._gaussian_table = None
+        # Global values for the gaussian formula, can be adjusted in dlc_config for differing results...
+        self.NORM_DIST = settings["norm_dist"]  # The normal distribution
+        self.AMPLITUDE = settings["amplitude"]  # The amplitude, or height of the gaussian curve
+        self.LOWEST_VAL = settings["lowest_val"]  # Changes the lowest value that the gaussian curve can produce
 
 
     def _gaussian_formula(self, prior_x: float, x: float, prior_y: float, y: float) -> float:
@@ -130,6 +134,17 @@ class GaussianArgMax(Predictor):
     def on_end(self, progress_bar: tqdm.tqdm) -> Union[None, Pose]:
         # We are finished
         return None
+
+    @staticmethod
+    def get_settings() -> Union[List[Tuple[str, str, Any]], None]:
+        return [
+            ("norm_dist", "The normal distribution of the 2D gaussian curve used \n"
+                          "for transition probabilities by the viterbi algorithm.", 5),
+            ("amplitude", "The amplitude of the gaussian curve used by the viterbi algorithm.", 1),
+            ("lowest_val", "The lowest value of the gaussian curve used by the viterbi algorithm. \n"
+                           "Really a constant that is added on the the 2D gaussian to give all points\n"
+                           "a minimum probability.", 0)
+        ]
 
     @staticmethod
     def get_name() -> str:

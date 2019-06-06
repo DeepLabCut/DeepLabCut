@@ -10,7 +10,7 @@ from abc import abstractmethod
 
 # Used for type hints
 from numpy import ndarray
-from typing import List, Union, Type, Tuple, Set, Sequence
+from typing import List, Union, Type, Tuple, Set, Sequence, Dict, Any
 import tqdm
 
 # Used by get_predictor for loading plugins
@@ -507,12 +507,16 @@ class Predictor(ABC):
     Predictors accept a source map of data received.
     """
     @abstractmethod
-    def __init__(self, bodyparts: List[str], num_frames: int):
+    def __init__(self, bodyparts: List[str], num_frames: int, settings: Union[Dict[str, Any], None]):
         """
         Constructor for the predictor.
 
         :param bodyparts: The bodyparts for the dataset, a list of the string friendly names in order.
         :param num_frames: The number of total frames this predictor will be processing.
+        :param settings: The settings for this predictor plugin. Dictionary is a map of strings, or setting names
+                         to values. The actual data within the dictionary depends on return provided by get_settings
+                         and what settings the user has set in deeplabcut's config.yaml.
+                         If get_settings for this predictor returns None, this method will return None...
         """
         pass
 
@@ -564,6 +568,27 @@ class Predictor(ABC):
         user lists available plugins
 
         :return: The description/summary of this plugin.
+        """
+        pass
+
+
+    @staticmethod
+    @abstractmethod
+    def get_settings() -> Union[List[Tuple[str, str, Any]], None]:
+        """
+        Get the configurable or available settings for this predictor plugin.
+
+        :return: The settings that can be set for this plugin, in the form of a list of tuples. Each tuple will contain
+                 3 items:
+
+                    - Setting Name: A String, the name this setting will have in the config file, and also the name it
+                                    will be given when passed to the constructor of this predictor.
+                    - Setting Description: A String, A user friendly description of the setting. Should include info
+                                           on it's default value, what it does, and what it should be set to.
+                    - Setting Default Value: Any type, the default value to be assigned to this setting if it is not
+                                             set explicitly in the DeepLabCut config by the user...
+
+                  If this predictor plugin has no configurable settings, this method should return None.
         """
         pass
 
