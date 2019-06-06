@@ -32,7 +32,7 @@ setuptools.setup(
                       'tqdm>4','wheel==0.31.1'],
     scripts=['deeplabcut/pose_estimation_tensorflow/models/pretrained/download.sh'],
     packages=setuptools.find_packages(),
-    data_files=[('deeplabcut',['deeplabcut/pose_cfg.yaml'])],
+    data_files=[('deeplabcut',['deeplabcut/pose_cfg.yaml','deeplabcut/pose_estimation_tensorflow/models/pretrained/pretrained_model_urls.yaml'])],
     include_package_data=True,
     classifiers=(
         "Programming Language :: Python :: 3",
