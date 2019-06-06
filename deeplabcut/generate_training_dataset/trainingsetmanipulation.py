@@ -21,22 +21,11 @@ elif platform.system() == 'Darwin':
 else:
     mpl.use('TkAgg')
 import matplotlib.pyplot as plt
-
-import urllib
-import tarfile
-from io import BytesIO
-
-#if os.environ.get('DLClight', default=False) == 'True':
-#    mpl.use('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
-#    pass
-#else:
-#    mpl.use('TkAgg')
-#import matplotlib.pyplot as plt
 from skimage import io
 
 import yaml
 from deeplabcut import DEBUG
-from deeplabcut.utils import auxiliaryfunctions, conversioncode
+from deeplabcut.utils import auxiliaryfunctions, conversioncode, auxfun_models
 
 #matplotlib.use('Agg')
 
@@ -444,7 +433,6 @@ def mergeandsplit(config,trainindex=0,uniform=True,windows2linux=False):
     --------
     
     """
-    
     # Loading metadata from config file:
     cfg = auxiliaryfunctions.read_config(config)
     scorer = cfg['scorer']
@@ -512,9 +500,7 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
     """
     from skimage import io
     import scipy.io as sio
-    import deeplabcut
-    import subprocess
-
+    
     # Loading metadata from config file:
     cfg = auxiliaryfunctions.read_config(config)
     scorer = cfg['scorer']
@@ -525,32 +511,16 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
     
     Data = merge_annotateddatasets(cfg,project_path,Path(os.path.join(project_path,trainingsetfolder)),windows2linux)
     Data = Data[scorer] #extract labeled data
-
-    #set model type. we will allow more in the future.
+    
+    
+    #loading & linking pretrained models
+    net_type ='resnet_'+str(cfg['resnet'])
+    import deeplabcut
     parent_path = Path(os.path.dirname(deeplabcut.__file__))
-    if cfg['resnet']==50:
-        net_type ='resnet_'+str(cfg['resnet'])
-        resnet_path = parent_path  / 'pose_estimation_tensorflow/models/pretrained/resnet_v1_50.ckpt'
-    elif cfg['resnet']==101:
-        net_type ='resnet_'+str(cfg['resnet'])
-        resnet_path = parent_path / 'pose_estimation_tensorflow/models/pretrained/resnet_v1_101.ckpt'
-    else:
-        print("Currently only ResNet 50 or 101 supported, please change 'resnet' entry in config.yaml!")
-        num_shuffles=-1 #thus the loop below is empty...
-
-    if not resnet_path.is_file():
-        """
-        Downloads the ImageNet pretrained weights for ResNet.
-        """
-        target_dir = resnet_path.parents[0]
-        with open(target_dir / 'models.txt', 'r') as f:
-            for line in f:
-                url = line.rstrip()
-                print("Downloading a pretrained model (ResNet) from {}....".format(url))
-                response = urllib.request.urlopen(url)
-                with tarfile.open(fileobj=BytesIO(response.read()), mode='r:gz') as tar:
-                    tar.extractall(path=target_dir)   
-
+    defaultconfigfile = str(parent_path / 'pose_cfg.yaml')
+    
+    model_path,num_shuffles=auxfun_models.Check4weights(net_type,parent_path,num_shuffles)
+    
     if Shuffles==None:
         Shuffles=range(1,num_shuffles+1,1)
     else:
@@ -650,13 +620,10 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
                     "num_joints": len(bodyparts),
                     "all_joints": [[i] for i in range(len(bodyparts))],
                     "all_joints_names": [str(bpt) for bpt in bodyparts],
-                    "init_weights": resnet_path,
+                    "init_weights": model_path,
                     "project_path": str(cfg['project_path']),
                     "net_type": net_type
                 }
-
-                defaultconfigfile = str(Path(deeplabcut.__file__).parents[0] / 'pose_cfg.yaml')
-
                 trainingdata = MakeTrain_pose_yaml(items2change,path_train_config,defaultconfigfile)
                 keys2save = [
                     "dataset", "num_joints", "all_joints", "all_joints_names",
