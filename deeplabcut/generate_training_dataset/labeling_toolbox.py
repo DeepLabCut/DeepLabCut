@@ -247,6 +247,8 @@ class MainFrame(wx.Frame):
             self.nextImage(event=None)
         elif event.GetKeyCode() == wx.WXK_LEFT:
             self.prevImage(event=None)
+        elif event.GetKeyCode() == wx.WXK_DOWN:
+            self.limbSkip()
 
     def activateSlider(self,event):
         """
@@ -381,6 +383,18 @@ class MainFrame(wx.Frame):
 
         self.canvas.mpl_disconnect(self.onClick)
         self.canvas.mpl_disconnect(self.onButtonRelease)
+
+    def limbSkip(self):
+        """
+        This function is to create a hotkey to skip labeling a limb in the case of occlusion
+        """
+        #
+        if self.rdb.GetSelection() in self.buttonCounter :
+            wx.MessageBox('%s is already annotated. \n Select another body part to annotate.' % (str(self.bodyparts[self.rdb.GetSelection()])), 'Error!', wx.OK | wx.ICON_ERROR)
+
+        if self.rdb.GetSelection() < len(self.bodyparts) -1:
+            self.rdb.SetSelection(self.rdb.GetSelection() + 1)
+
 
     def browseDir(self, event):
         """
