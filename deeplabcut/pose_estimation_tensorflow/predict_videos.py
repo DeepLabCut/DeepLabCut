@@ -388,7 +388,9 @@ def AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,
         size=(int(cap.get(4)),int(cap.get(3)))
 
         # Create a predictor plugin instance...
-        predictor_inst = predictor(dlc_cfg['all_joints_names'], nframes, GetPredictorSettings(cfg, predictor))
+        predictor_settings = GetPredictorSettings(cfg, predictor) # Grab the plugin settings for this plugin...
+        print(f"Plugin {predictor.get_name()} Settings: {predictor_settings}")
+        predictor_inst = predictor(dlc_cfg['all_joints_names'], nframes, predictor_settings)
         
         ny,nx=size
         print("Duration of video [s]: ", round(duration,2), ", recorded with ", round(fps,2),"fps!")
