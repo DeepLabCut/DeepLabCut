@@ -388,12 +388,13 @@ class MainFrame(wx.Frame):
         """
         This function is to create a hotkey to skip labeling a limb in the case of occlusion
         """
-        #
-        if self.rdb.GetSelection() in self.buttonCounter :
-            wx.MessageBox('%s is already annotated. \n Select another body part to annotate.' % (str(self.bodyparts[self.rdb.GetSelection()])), 'Error!', wx.OK | wx.ICON_ERROR)
-
+        #First we test if we can advance the bodypart, and advance if we can
         if self.rdb.GetSelection() < len(self.bodyparts) -1:
             self.rdb.SetSelection(self.rdb.GetSelection() + 1)
+            
+        #Then we see if it has been labeled already
+        if self.rdb.GetSelection() in self.buttonCounter :
+            wx.MessageBox('%s is already annotated. \n Select another body part to annotate.' % (str(self.bodyparts[self.rdb.GetSelection()])), 'Error!', wx.OK | wx.ICON_ERROR)
 
 
     def browseDir(self, event):
