@@ -329,7 +329,7 @@ def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes):
                     frame= img_as_ubyte(frame[cfg['y1']:cfg['y2'],cfg['x1']:cfg['x2']])
                 else:
                     frame = img_as_ubyte(frame)
-                pose = predict.getpose(frame, dlc_cfg, sess, inputs, outputs, h5_path)
+                pose = predict.getpose(frame, dlc_cfg, sess, inputs, outputs)
                 PredicteData[counter, :] = pose.flatten()  # NOTE: thereby cfg['all_joints_names'] should be same order as bodyparts!
             else:
                 nframes=counter

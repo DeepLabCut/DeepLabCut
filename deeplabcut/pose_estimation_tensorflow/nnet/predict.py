@@ -113,7 +113,7 @@ def argmax_pose_predict(scmap, offmat, stride):
     return np.array(pose)
 
 # Arg h5_path added
-def getpose(image, cfg, sess, inputs, outputs, h5_path, outall=False):
+def getpose(image, cfg, sess, inputs, outputs, outall=False):
     ''' Extract pose '''
     im=np.expand_dims(image, axis=0).astype(float)
     outputs_np = sess.run(outputs, feed_dict={inputs: im})
@@ -144,7 +144,7 @@ def extract_cnn_outputmulti(outputs_np, cfg):
     return scmap, locref
 
 # Arg video_path added
-def getposeNP(image, cfg, sess, inputs, outputs, h5_path, outall=False):
+def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
     ''' Adapted from DeeperCut, performs numpy-based faster inference on batches'''
     outputs_np = sess.run(outputs, feed_dict={inputs: image})
     
