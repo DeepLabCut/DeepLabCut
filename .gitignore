@@ -103,6 +103,3 @@ ENV/
 
 # mypy
 .mypy_cache/
-
-#my_examples
-/examples/open_field-Tom-2019-04-09 
