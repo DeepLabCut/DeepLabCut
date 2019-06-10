@@ -69,6 +69,9 @@ class MainFrame(wx.Frame):
     """Contains the main GUI and button boxes"""
 
     def __init__(self, parent,config):
+# Read in config
+        self.cfg = auxiliaryfunctions.read_config(config)
+
 # Settting the GUI size and panels design
         displays = (wx.Display(i) for i in range(wx.Display.GetCount())) # Gets the number of displays
         screenSizes = [display.GetGeometry().GetSize() for display in displays] # Gets the size of each display
@@ -79,6 +82,7 @@ class MainFrame(wx.Frame):
 
         wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = 'DeepLabCut2.0 - Manual Frame Extraction',
                             size = wx.Size(self.gui_size), pos = wx.DefaultPosition, style = wx.RESIZE_BORDER|wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+
         self.statusbar = self.CreateStatusBar()
         self.statusbar.SetStatusText("")
 
@@ -116,7 +120,13 @@ class MainFrame(wx.Frame):
         self.grab.Enable(False)
 
         widgetsizer.AddStretchSpacer(5)
-        self.slider = wx.Slider(self.widget_panel, id=wx.ID_ANY, value = 0, minValue=0, maxValue=1,size=(200, -1), style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS )
+
+        try:
+            slider_width = self.cfg['slider_width']
+        except:
+            slider_width = 25
+        size_x = round(self.gui_size[0] * (slider_width/100), 0)
+        self.slider = wx.Slider(self.widget_panel, id=wx.ID_ANY, value = 0, minValue=0, maxValue=1,size=(size_x, -1), style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS )
         widgetsizer.Add(self.slider,1, wx.ALL,5)
         self.slider.Hide()
         
@@ -170,7 +180,6 @@ class MainFrame(wx.Frame):
         self.figure = Figure()
         self.axes = self.figure.add_subplot(111)
         self.drs = []
-        self.cfg = auxiliaryfunctions.read_config(config)
         self.Task = self.cfg['Task']
         self.start = self.cfg['start']
         self.stop = self.cfg['stop']
