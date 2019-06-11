@@ -248,7 +248,7 @@ class MainFrame(wx.Frame):
         elif event.GetKeyCode() == wx.WXK_LEFT:
             self.prevImage(event=None)
         elif event.GetKeyCode() == wx.WXK_DOWN:
-            self.limbSkip()
+            self.nextLabel(event=None)
 
     def activateSlider(self,event):
         """
@@ -384,9 +384,9 @@ class MainFrame(wx.Frame):
         self.canvas.mpl_disconnect(self.onClick)
         self.canvas.mpl_disconnect(self.onButtonRelease)
 
-    def limbSkip(self):
+    def nextLabel(self,event):
         """
-        This function is to create a hotkey to skip labeling a limb in the case of occlusion
+        This function is to create a hotkey to skip down on the radio button panel.
         """
         #First we test if we can advance the bodypart, and advance if we can
         if self.rdb.GetSelection() < len(self.bodyparts) -1:
