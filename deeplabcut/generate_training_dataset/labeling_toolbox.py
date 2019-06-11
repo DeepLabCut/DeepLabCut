@@ -249,6 +249,8 @@ class MainFrame(wx.Frame):
             self.prevImage(event=None)
         elif event.GetKeyCode() == wx.WXK_DOWN:
             self.nextLabel(event=None)
+        elif event.GetKeyCode() == wx.WXK_UP:
+            self.previousLabel(event=None)
 
     def activateSlider(self,event):
         """
@@ -388,9 +390,15 @@ class MainFrame(wx.Frame):
         """
         This function is to create a hotkey to skip down on the radio button panel.
         """
-        #First we test if we can advance the bodypart, and advance if we can
         if self.rdb.GetSelection() < len(self.bodyparts) -1:
-            self.rdb.SetSelection(self.rdb.GetSelection() + 1)
+                self.rdb.SetSelection(self.rdb.GetSelection() + 1)
+
+    def previousLabel(self,event):
+        """
+        This function is to create a hotkey to skip up on the radio button panel.
+        """
+        if self.rdb.GetSelection() < len(self.bodyparts) -1:
+                self.rdb.SetSelection(self.rdb.GetSelection() - 1)
 
     def browseDir(self, event):
         """
