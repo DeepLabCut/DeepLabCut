@@ -7,7 +7,7 @@ M Mathis, mackenzie@post.harvard.edu
 """
 
 
-def extract_frames(config,mode='automatic',algo='kmeans',crop=False,userfeedback=True,cluster_step=1,cluster_resizewidth=30,cluster_color=False,opencv=True):
+def extract_frames(config,mode='automatic',algo='kmeans',crop=False,userfeedback=True,cluster_step=1,cluster_resizewidth=30,cluster_color=False,opencv=True,slider_width=25):
     """
     Extracts frames from the videos in the config.yaml file. Only the videos in the config.yaml will be used to select the frames.\n
     Use the function ``add_new_video`` at any stage of the project to add new videos to the config file and extract their frames.
@@ -55,6 +55,8 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,userfeedback
     opencv: bool, default: True
         Uses openCV for loading & extractiong (otherwise moviepy (legacy))
         
+    slider_width: number, default: 25
+        Width of the video frames slider, in percent of window
         
     Examples
     --------
@@ -69,6 +71,9 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,userfeedback
     --------
     for selecting frames manually,
     >>> deeplabcut.extract_frames('/analysis/project/reaching-task/config.yaml','manual')
+    --------
+    for selecting frames manually, with a 60% wide frames slider
+    >>> deeplabcut.extract_frames('/analysis/project/reaching-task/config.yaml','manual', slider_width=60)
     
     While selecting the frames manually, you do not need to specify the ``crop`` parameter in the command. Rather, you will get a prompt in the graphic user interface to choose 
     if you need to crop or not.
@@ -93,7 +98,7 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,userfeedback
         wd = Path(config).resolve().parents[0]
         os.chdir(str(wd))
         from deeplabcut.generate_training_dataset import frame_extraction_toolbox 
-        frame_extraction_toolbox.show(config)
+        frame_extraction_toolbox.show(config, slider_width)
         
     elif mode == "automatic":
         config_file = Path(config).resolve()
