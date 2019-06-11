@@ -388,14 +388,14 @@ class MainFrame(wx.Frame):
 
     def nextLabel(self,event):
         """
-        This function advances to the next label.
+        This function is to create a hotkey to skip down on the radio button panel.
         """
         if self.rdb.GetSelection() < len(self.bodyparts) -1:
                 self.rdb.SetSelection(self.rdb.GetSelection() + 1)
 
     def previousLabel(self,event):
         """
-        This function goes back to the previous label.
+        This function is to create a hotkey to skip up on the radio button panel.
         """
         if self.rdb.GetSelection() < len(self.bodyparts) -1:
                 self.rdb.SetSelection(self.rdb.GetSelection() - 1)
