@@ -36,7 +36,7 @@ class PlotterArgMax(Predictor):
             with open("scmap.txt", "w") as f:
                 for y in range(scmap.get_frame_height()):
                     for x in range(scmap.get_frame_width()):
-                        f.write(f"{x} {y} {scmap.get_prob_table(0, 0)[y, x]}")
+                        f.write(f"{x} {y} {scmap.get_prob_table(0, 0)[y, x]} \n")
 
 
         self._first_run += scmap.get_frame_count()
