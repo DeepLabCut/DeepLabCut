@@ -44,8 +44,6 @@ class PlotterArgMax(Predictor):
         return scmap.get_poses_for(scmap.get_max_scmap_points())
 
     def on_end(self, progress_bar: tqdm.tqdm) -> Union[None, Pose]:
-        # Release the video writer...
-        self._vid_writer.release()
         # We are done, return None...
         return None
 
