@@ -13,6 +13,7 @@ from deeplabcut.pose_estimation_tensorflow.nnet.net_factory import pose_net
 def setup_pose_prediction(cfg):
     tf.reset_default_graph()
     inputs = tf.placeholder(tf.float32, shape=[cfg.batch_size   , None, None, 3])
+    # inputs = tf.placeholder(tf.float32, shape=[None   , None, None, 3])
     net_heads = pose_net(cfg).test(inputs)
     outputs = [net_heads['part_prob']]
     if cfg.location_refinement:
@@ -56,12 +57,39 @@ def argmax_pose_predict(scmap, offmat, stride):
                                [scmap[maxloc][joint_idx]])))
     return np.array(pose)
 
+def multi_pose_predict(scmap, locref, stride, num_outputs):
+    Y, X = get_top_values(scmap[None], num_outputs)
+    Y, X = Y[:, 0], X[:, 0]
+    num_joints = scmap.shape[2]
+    DZ=np.zeros((num_outputs,num_joints,3)) 
+    for m in range(num_outputs):
+        for k in range(num_joints):
+            x = X[m, k]
+            y = Y[m, k]
+            DZ[m,k,:2]=locref[y,x,k,:]
+            DZ[m,k,2]=scmap[y,x,k]
+            
+    X = X.astype('float32')*stride + .5*stride + DZ[:,:,0]
+    Y = Y.astype('float32')*stride + .5*stride + DZ[:,:,1]
+    P = DZ[:, :, 2]
+    
+    pose = np.empty((num_joints, num_outputs*3), dtype='float32') 
+    pose[:,0::3] = X.T
+    pose[:,1::3] = Y.T
+    pose[:,2::3] = P.T
+
+    return pose
+    
 def getpose(image, cfg, sess, inputs, outputs, outall=False):
     ''' Extract pose '''
     im=np.expand_dims(image, axis=0).astype(float)
     outputs_np = sess.run(outputs, feed_dict={inputs: im})
     scmap, locref = extract_cnn_output(outputs_np, cfg)
-    pose = argmax_pose_predict(scmap, locref, cfg.stride)
+    num_outputs = cfg.get('num_outputs', 1)
+    if num_outputs > 1:
+        pose = multi_pose_predict(scmap, locref, cfg.stride, num_outputs)
+    else:
+        pose = argmax_pose_predict(scmap, locref, cfg.stride)
     if outall:
         return scmap, locref, pose
     else:
@@ -83,29 +111,52 @@ def extract_cnn_outputmulti(outputs_np, cfg):
     return scmap, locref
 
 
+def get_top_values(scmap, n_top=5):
+    batchsize,ny,nx,num_joints = scmap.shape
+    scmap_flat = scmap.reshape(batchsize,nx*ny,num_joints)
+    if n_top == 1:
+        scmap_top = np.argmax(scmap_flat, axis=1)[None]
+    else:
+        scmap_top = np.argpartition(scmap_flat, -n_top, axis=1)[:, -n_top:]
+        for ix in range(batchsize):
+            vals = scmap_flat[ix, scmap_top[ix], np.arange(num_joints)]
+            arg = np.argsort(-vals, axis=0)
+            scmap_top[ix] = scmap_top[ix, arg, np.arange(num_joints)]
+        scmap_top = scmap_top.swapaxes(0,1)
+
+    Y, X = np.unravel_index(scmap_top, (ny, nx))
+    return Y, X
+
 def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
     ''' Adapted from DeeperCut, performs numpy-based faster inference on batches'''
+    num_outputs = cfg.get('num_outputs', 1)
+    
     outputs_np = sess.run(outputs, feed_dict={inputs: image})
     
     scmap, locref = extract_cnn_outputmulti(outputs_np, cfg) #processes image batch.
     batchsize,ny,nx,num_joints = scmap.shape
+
+    Y,X = get_top_values(scmap, n_top=num_outputs)
     
     #Combine scoremat and offsets to the final pose.
-    LOCREF=locref.reshape(batchsize,nx*ny,num_joints,2)
-    MAXLOC=np.argmax(scmap.reshape(batchsize,nx*ny,num_joints),axis=1)
-    Y,X=np.unravel_index(MAXLOC,dims=(ny,nx))
-    DZ=np.zeros((batchsize,num_joints,3))
-    for l in range(batchsize):
-        for k in range(num_joints):
-            DZ[l,k,:2]=LOCREF[l,MAXLOC[l,k],k,:]
-            DZ[l,k,2]=scmap[l,Y[l,k],X[l,k],k]
+    DZ=np.zeros((num_outputs,batchsize,num_joints,3)) 
+    for m in range(num_outputs):
+        for l in range(batchsize):
+            for k in range(num_joints):
+                x = X[m, l, k]
+                y = Y[m, l, k]
+                DZ[m,l,k,:2]=locref[l,y,x,k,:]
+                DZ[m,l,k,2]=scmap[l,y,x,k]
             
-    X=X.astype('float32')*cfg.stride+.5*cfg.stride+DZ[:,:,0]
-    Y=Y.astype('float32')*cfg.stride+.5*cfg.stride+DZ[:,:,1]
-    pose = np.empty((cfg['batch_size'], cfg['num_joints']*3), dtype=X.dtype) 
-    pose[:,0::3] = X
-    pose[:,1::3] = Y
-    pose[:,2::3] = DZ[:,:,2] #P
+    X = X.astype('float32')*cfg.stride + .5*cfg.stride + DZ[:,:,:,0]
+    Y = Y.astype('float32')*cfg.stride + .5*cfg.stride + DZ[:,:,:,1]
+    P = DZ[:,:,:,2]
+    
+    pose = np.empty((cfg['batch_size'], num_outputs*cfg['num_joints']*3), dtype=X.dtype) 
+    pose[:,0::3] = X.swapaxes(0,2).reshape(batchsize, -1)
+    pose[:,1::3] = Y.swapaxes(0,2).reshape(batchsize, -1)
+    pose[:,2::3] = P.swapaxes(0,2).reshape(batchsize, -1)
+    
     if outall:
         return scmap, locref, pose
     else:
