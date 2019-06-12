@@ -53,7 +53,7 @@ class PlotterArgMax(Predictor):
 
     @staticmethod
     def get_name() -> str:
-        return "plotterargmax"
+        return "saveargmax"
 
     @staticmethod
     def get_description() -> str:
