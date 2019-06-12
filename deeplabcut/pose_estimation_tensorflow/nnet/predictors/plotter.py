@@ -47,6 +47,8 @@ class PlotterArgMax(Predictor):
         self.OUTPUT_CODEC = cv2.VideoWriter_fourcc(*settings["codec"])
         # Frames per second to use for video
         self.OUTPUT_FPS = settings["output_fps"]
+        # Determines if we are using log scaling...
+        self.LOG_SCALE = settings["use_log_scale"]
 
 
     def on_frames(self, scmap: TrackingData) -> Union[None, Pose]:
@@ -62,7 +64,8 @@ class PlotterArgMax(Predictor):
                 for bp in range(scmap.get_bodypart_count()):
                     pyplot.subplot(self._grid_size, self._grid_size, bp + 1)
                     pyplot.title(f"Bodypart: {self._parts[bp]}, Frame: {self._current_frame}")
-                    pyplot.pcolormesh(np.log(scmap.get_prob_table(frame, bp)))
+                    pyplot.pcolormesh(np.log(scmap.get_prob_table(frame, bp)) if (self.LOG_SCALE) else
+                                      scmap.get_prob_table(frame, bp))
 
                 # Save chart to the buffer.
                 pyplot.tight_layout()
@@ -100,7 +103,8 @@ class PlotterArgMax(Predictor):
         return [
             ("video_name", "Name of the video file that plotting data will be saved to.", "prob-dlc.mp4"),
             ("codec", "The codec to be used by the opencv library to save info to, typically a 4-byte string.", "X264"),
-            ("output_fps", "The frames per second of the output video, as an number.", 15)
+            ("output_fps", "The frames per second of the output video, as an number.", 15),
+            ("use_log_scale", "Boolean, determines whether to apply log scaling to the frames in the video.", True)
         ]
 
     @staticmethod
@@ -109,5 +113,5 @@ class PlotterArgMax(Predictor):
 
     @staticmethod
     def get_description() -> str:
-        return "Identical to singleargmax, but plots at most 100 probability frames to the user using matplotlib \n" \
+        return "Identical to singleargmax, but plots a video of probability frames using matplotlib \n" \
                "during processing..."

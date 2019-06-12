@@ -698,23 +698,33 @@ def get_predictor_settings(predictor_name = None):
     """
     Gets the available/modifiable settings for a specified predictor plugin...
 
-    :param predictor_name: The string name of the predictor to view customizable settings for. If None, will print settings
-                      for all currently available predictors. Defaults to None.
+    :param predictor_name: The string or list of strings being the names of the predictor plugins to view customizable
+                           settings for. If None, will print settings for all currently available predictors.
+                           Defaults to None.
 
     :return: Nothing, prints to console....
     """
+    from typing import Iterable
+
     if(predictor_name is None):
         predictors = processing.get_predictor_plugins()
-    else:
+    elif(isinstance(predictor_name, str)):
         predictors = [processing.get_predictor(predictor_name)]
+    elif(isinstance(predictor_name, Iterable)):
+        predictors = [processing.get_predictor(name) for name in predictor_name]
+    else:
+        raise ValueError("Argument 'predictor_name' not of type Iterable[str], string, or None!!!")
 
     for predictor in predictors:
         print(f"Plugin Name: {predictor.get_name()}")
         print("Arguments: ")
-        for name, desc, def_val in predictor.get_settings():
-            print(f"Name: '{name}'")
-            print(f"Description: \n{desc}")
-            print(f"Default Value: {def_val} \n")
+        if(predictor.get_settings() is None):
+            print("None")
+        else:
+            for name, desc, def_val in predictor.get_settings():
+                print(f"Name: '{name}'")
+                print(f"Description: \n{desc}")
+                print(f"Default Value: {def_val} \n")
         print()
 
 
