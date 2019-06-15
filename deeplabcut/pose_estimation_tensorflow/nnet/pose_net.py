@@ -96,6 +96,9 @@ class PoseNet:
 
     def train(self, batch):
         cfg = self.cfg
+        
+        if cfg.deterministic:
+            tf.set_random_seed(42)
 
         heads = self.get_net(batch[Batch.inputs])
 

@@ -27,6 +27,7 @@ cfg.intermediate_supervision_layer = 12
 cfg.regularize = False
 cfg.weight_decay = 0.0001
 cfg.mirror = False
+cfg.deterministic = False
 
 cfg.crop_pad = 0
 cfg.scoremap_dir = "test"

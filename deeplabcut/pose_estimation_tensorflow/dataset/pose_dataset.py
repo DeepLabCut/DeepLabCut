@@ -33,7 +33,9 @@ def mirror_joints_map(all_joints, num_joints):
 
 def CropImage(joints,im,Xlabel,Ylabel,cfg):
     ''' Randomly cropping image around xlabel,ylabel taking into account size of image.'''
-    
+    if cfg.deterministic:
+        np.random.seed(42)
+
     widthforward=int(cfg["minsize"]+np.random.randint(cfg["rightwidth"]))
     widthback=int(cfg["minsize"]+np.random.randint(cfg["leftwidth"]))
     hup=int(cfg["minsize"]+np.random.randint(cfg["topheight"]))
@@ -138,6 +140,8 @@ class PoseDataset:
         return res
 
     def shuffle_images(self):
+        if self.cfg.deterministic:
+            np.random.seed(42)
         num_images = self.num_images
         if self.cfg.mirror:
             image_indices = np.random.permutation(num_images * 2)
@@ -170,6 +174,8 @@ class PoseDataset:
 
     def get_scale(self):
         cfg = self.cfg
+        if cfg.deterministic:
+            rand.seed(42)
         scale = cfg.global_scale
         if hasattr(cfg, 'scale_jitter_lo') and hasattr(cfg, 'scale_jitter_up'):
             scale_jitter = rand.uniform(cfg.scale_jitter_lo, cfg.scale_jitter_up)
