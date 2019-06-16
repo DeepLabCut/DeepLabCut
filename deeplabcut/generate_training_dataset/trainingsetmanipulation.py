@@ -390,44 +390,45 @@ def SplitTrials(trialindex, trainFraction=0.8):
         
         return (trainIndexes, testIndexes)
 
-def mergeandsplit(config,trainindex=0,uniform=True,windows2linux=False):
+def mergeandsplit(config, test_video_name=[], trainindex=0, uniform=True, windows2linux=False):
     """
     This function allows additional control over "create_training_dataset". 
     
     Merge annotated data sets (from different folders) and split data in a specific way, returns the split variables (train/test indices). 
     Importantly, this allows one to freeze a split. 
     
-    One can also either create a uniform split (uniform = True; thereby indexing TrainingFraction in config file) or leave-one-folder out split 
-    by passing the index of the corrensponding video from the config.yaml file as variable trainindex.
+    One can also either create a uniform split (uniform = True; thereby indexing TrainingFraction in config file) or leave-folder-out split 
+    by listing the corrensponding video name in test_video_name.
     
     Parameter
     ----------
-    config : string
+    config: string
         Full path of the config.yaml file as a string.
 
+    test_video_name: list
+        In case uniform = False, the listed folders are returned as testIndexes and all others as trainIndexes.
+
     trainindex: int, optional
-        Either (in case uniform = True) indexes which element of TrainingFraction in the config file should be used (note it is a list!).
-        Alternatively (uniform = False) indexes which folder is dropped, i.e. the first if trainindex=0, the second if trainindex =1, etc.
+        In case uniform = True, indexes which element of TrainingFraction in the config file should be used (note it is a list!).
 
     uniform: bool, optional
-        Perform uniform split (disregarding folder structure in labeled data), or (if False) leave one folder out.
+        Perform uniform split (disregarding folder structure in labeled data), or (if False) leave-folder-out split.
 
     windows2linux: bool.
         The annotation files contain path formated according to your operating system. If you label on windows 
-        but train & evaluate on a unix system (e.g. ubunt, colab, Mac) set this variable to True to convert the paths. 
+        but train & evaluate on a unix system (e.g. ubuntu, colab, Mac) set this variable to True to convert the paths. 
     
     Examples
     --------
-    To create a leave-one-folder-out model:
-    >>> trainIndexes, testIndexes=deeplabcut.mergeandsplit(config,trainindex=0,uniform=False)
-    returns the indices for the first video folder (as defined in config file) as testIndexes and all others as trainIndexes.
+    To create a leave-folder-out model:
+    >>> trainIndexes, testIndexes=deeplabcut.mergeandsplit(config,['mouse1','mouse3'],uniform=False)
+    returns the indices for the video 'mouse1' and 'mouse3' as testIndexes and all others as trainIndexes.
     You can then create the training set by calling (e.g. defining it as Shuffle 3):
     >>> deeplabcut.create_training_dataset(config,Shuffles=[3],trainIndexes=trainIndexes,testIndexes=testIndexes)
     
     To freeze a (uniform) split:
     >>> trainIndexes, testIndexes=deeplabcut.mergeandsplit(config,trainindex=0,uniform=True)
     You can then create two model instances that have the identical trainingset. Thereby you can assess the role of various parameters on the performance of DLC.
-    
     >>> deeplabcut.create_training_dataset(config,Shuffles=[0],trainIndexes=trainIndexes,testIndexes=testIndexes)
     >>> deeplabcut.create_training_dataset(config,Shuffles=[1],trainIndexes=trainIndexes,testIndexes=testIndexes)
     --------
@@ -453,19 +454,27 @@ def mergeandsplit(config,trainindex=0,uniform=True,windows2linux=False):
         TrainingFraction = cfg['TrainingFraction']
         trainFraction=TrainingFraction[trainindex]
         trainIndexes, testIndexes = SplitTrials(range(len(Data.index)), trainFraction)
-    else: #leave one folder out split
+    else: #leave folders out split
         videos = cfg['video_sets'].keys()
-        test_video_name = [Path(i).stem for i in videos][trainindex]
-        print("Excluding the following folder (from training):", test_video_name)
-        trainIndexes, testIndexes=[],[]
-        for index,name in enumerate(Data.index):
-            #print(index,name.split(os.sep)[1])
-            if test_video_name==name.split(os.sep)[1]: #this is the video name
-                #print(name,test_video_name)
-                testIndexes.append(index)
-            else:
+        trainIndexes, testIndexes, wrongName=[],[],[]
+        wrongName = list(set(test_video_name) - set([Path(i).stem for i in videos]))
+        test_video_name = list(set(test_video_name) - set(wrongName))
+        
+        if not test_video_name:
+            print("Folder name is missing or incorrect in parameter 'test_video_name'!")
+        else:
+            if wrongName:
+                print("Folder", wrongName,"does not exist in", os.path.join(project_path,'labeled-data'))
+            print("Excluding the following folder (from training):", test_video_name)
+            for index,name in enumerate(Data.index):
+                #print(index,name.split(os.sep)[1])
+                for x in range(len(test_video_name)):
+                    if test_video_name[x]==name.split(os.sep)[1]: #this is the video name
+                        #print(name,test_video_name[x])
+                        testIndexes.append(index)   
                 trainIndexes.append(index)
-                
+            trainIndexes = list(set(trainIndexes) - set(testIndexes))
+    
     return trainIndexes, testIndexes
 
 
