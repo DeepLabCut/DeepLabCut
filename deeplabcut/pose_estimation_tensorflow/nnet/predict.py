@@ -156,9 +156,9 @@ def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
     Ps = P.swapaxes(0,2).swapaxes(0,1)
     
     pose = np.empty((cfg['batch_size'], num_outputs*cfg['num_joints']*3), dtype=X.dtype) 
-    pose[:,0::3] = X.reshape(batchsize, -1)
-    pose[:,1::3] = Y.reshape(batchsize, -1)
-    pose[:,2::3] = P.reshape(batchsize, -1)
+    pose[:,0::3] = Xs.reshape(batchsize, -1)
+    pose[:,1::3] = Ys.reshape(batchsize, -1)
+    pose[:,2::3] = Ps.reshape(batchsize, -1)
     
     if outall:
         return scmap, locref, pose
