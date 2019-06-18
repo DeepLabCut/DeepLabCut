@@ -150,11 +150,15 @@ def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
     X = X.astype('float32')*cfg.stride + .5*cfg.stride + DZ[:,:,:,0]
     Y = Y.astype('float32')*cfg.stride + .5*cfg.stride + DZ[:,:,:,1]
     P = DZ[:,:,:,2]
+
+    Xs = X.swapaxes(0,2).swapaxes(0,1)
+    Ys = Y.swapaxes(0,2).swapaxes(0,1)
+    Ps = P.swapaxes(0,2).swapaxes(0,1)
     
     pose = np.empty((cfg['batch_size'], num_outputs*cfg['num_joints']*3), dtype=X.dtype) 
-    pose[:,0::3] = X.swapaxes(0,2).reshape(batchsize, -1)
-    pose[:,1::3] = Y.swapaxes(0,2).reshape(batchsize, -1)
-    pose[:,2::3] = P.swapaxes(0,2).reshape(batchsize, -1)
+    pose[:,0::3] = X.reshape(batchsize, -1)
+    pose[:,1::3] = Y.reshape(batchsize, -1)
+    pose[:,2::3] = P.reshape(batchsize, -1)
     
     if outall:
         return scmap, locref, pose
