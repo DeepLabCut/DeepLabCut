@@ -87,6 +87,7 @@ class TrackingData:
         Gets the offset map for precision offsets for each point.
 
         :return: A numpy array representing the offsets within the scmap.
+                 Indexing: [frame, y location, x location, bodypart, 0 for x offset or 1 for y offset]
         """
         return self._locref
 
@@ -360,6 +361,43 @@ class Pose:
             return slice((start * 3) + value_offset, (end * 3) + value_offset, step * 3)
         else:
             raise ValueError("Index is not of type slice or integer!")
+
+    # Represents point data, is a tuple of x, y data where x and y are numpy arrays or integers...
+    PointData = Tuple[Union[int, ndarray], Union[int, ndarray]]
+    # Represents point data, is a tuple of x, y data where x and y are numpy arrays or floats...
+    FloatPointData = Tuple[Union[float, ndarray], Union[float, ndarray]]
+    # Represents and Index, either an integer or a slice
+    Index = Union[int, slice]
+
+    def set_at(self, frame: Index, bodypart: Index, scmap_coord: PointData, offset: Union[FloatPointData, None],
+               prob: Union[float, ndarray], down_scale: int):
+        """
+        Sets the probability data at a given location or locations to the specified data.
+
+        :param frame: The index of the frame or frames to set, an integer or a slice.
+        :param bodypart: The index of the bodypart or bodyparts to set, integer or a slice
+        :param scmap_coord: The coordinate to set this pose locations to, specifically the one directly selected
+                            from the downscaled deeplabcut source map. It a tuple of two integer or numpy arrays of
+                            integers representing x and y coordinates...
+        :param offset: The offset of the source map point once scaled to fit the video. This data should be collected
+                       using get_offset_map in the TrackingData object. Is a tuple of x and y floating point
+                       coordinates, or numpy arrays of floating point coordinates.
+        :param prob: The probabilities the set for this pose within the pose object, between 0 and 1. Is a numpy array
+                     of floating point numbers or a single floating point number.
+        :param down_scale: The downscale factor of the original source map relative to the video, an integer.
+                                  this is typically collected from the method TrackingData.get_down_scaling().
+                                  Ex. Value of 8 means network output map is 1/8th the size of the original video.
+        :return: Nothing...
+        """
+        offset = (0, 0) if (offset is None) else offset
+
+        scmap_x = scmap_coord[0] * down_scale + (0.5 * down_scale) + offset[0]
+        scmap_y = scmap_coord[1] * down_scale + (0.5 * down_scale) + offset[1]
+
+        self.set_x_at(frame, bodypart, scmap_x)
+        self.set_y_at(frame, bodypart, scmap_y)
+        self.set_prob_at(frame, bodypart, prob)
+
 
     # Setter Methods
     def set_all_x(self, x: ndarray):
