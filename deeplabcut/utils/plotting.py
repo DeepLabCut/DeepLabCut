@@ -1,10 +1,11 @@
 """
-DeepLabCut Toolbox
+DeepLabCut2.0 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
-A Mathis, alexander.mathis@bethgelab.org
-M Mathis, mackenzie@post.harvard.edu
 
-
+Please see AUTHORS for contributors.
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
 """
 
 ####################################################
@@ -49,6 +50,8 @@ def PlottingResults(video,tmpfolder,Dataframe,scorer,cfg,showfigures,suffix='.pn
     sm._A = []
     cbar = plt.colorbar(sm,ticks=range(len(bodyparts2plot)))
     cbar.set_ticklabels(bodyparts2plot)
+    plt.xlabel('X position in pixels')
+    plt.ylabel('Y position in pixels')
     plt.savefig(os.path.join(tmpfolder,"trajectory"+suffix))
     plt.figure(figsize=(30, 10))
     Time=np.arange(np.size(Dataframe[scorer][bodyparts2plot[0]]['x'].values))
@@ -62,8 +65,8 @@ def PlottingResults(video,tmpfolder,Dataframe,scorer,cfg,showfigures,suffix='.pn
     sm._A = []
     cbar = plt.colorbar(sm,ticks=range(len(bodyparts2plot)))
     cbar.set_ticklabels(bodyparts2plot)
-    plt.xlabel('Frame index')
-    plt.ylabel('X and y-position in pixels')
+    plt.xlabel('Frame Index')
+    plt.ylabel('X-(dashed) and Y- (solid) position in pixels')
     plt.savefig(os.path.join(tmpfolder,"plot"+suffix))
 
     plt.figure(figsize=(30, 10))
@@ -75,8 +78,8 @@ def PlottingResults(video,tmpfolder,Dataframe,scorer,cfg,showfigures,suffix='.pn
     sm._A = []
     cbar = plt.colorbar(sm,ticks=range(len(bodyparts2plot)))
     cbar.set_ticklabels(bodyparts2plot)
-    plt.xlabel('Frame index')
-    plt.ylabel('likelihood')
+    plt.xlabel('Frame Index')
+    plt.ylabel('Likelihood')
 
     plt.savefig(os.path.join(tmpfolder,"plot-likelihood"+suffix))
 

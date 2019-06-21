@@ -1,11 +1,12 @@
 '''
-Source: DeeperCut by Eldar Insafutdinov
+Adapted from DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
 '''
 
 import math, os
 import numpy as np
 from scipy.misc import imresize
+
 import matplotlib
 import platform
 if os.environ.get('DLClight', default=False) == 'True':

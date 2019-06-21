@@ -1,10 +1,13 @@
 """
-DeepLabCut Toolbox
+DeepLabCut2.0 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
-T Nath, nath@rowland.harvard.edu
-A Mathis, alexander.mathis@bethgelab.org
-M Mathis, mackenzie@post.harvard.edu
+Please see AUTHORS for contributors.
+
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
 """
+
 
 import sys
 import wx

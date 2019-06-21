@@ -3,25 +3,26 @@
 <img src=   https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5cca1d519b747a750d680de5/1556749676166/dlc_overview-01.png?format=1000w width="80%">
  </p>
  
-**DeepLabCut** is a software package that is organized such that you create a master project folder and this holds a ``config.yaml`` (a text document) file that will always link you back to the project. Namely, you can have as many projects on your computer as you wish. You can have DeepLabCut installed in an [environment](/conda-environments) and always exit and return to this environment to run the code. You just need to point to the correct ``config.yaml`` file to [jump back in](/docs/UseOverviewGuide.md#tips-for-daily-use)! The documentation below will take you through the individual steps.
+**DeepLabCut** is a software package for markerless pose estimation of animals performing various tasks. The software can manage multiple projects for various tasks. Each project is identified by the name of the project (e.g. TheBehavior), name of the experimenter (e.g. YourName), as well as the date at creation. This project folder holds a ``config.yaml`` (a text document) file containing various (project) parameters as well as links the data of the project. 
+
+
+You can have as many projects on your computer as you wish. You can have DeepLabCut installed in an [environment](/conda-environments) and always exit and return to this environment to run the code. You just need to point to the correct ``config.yaml`` file to [jump back in](/docs/UseOverviewGuide.md#tips-for-daily-use)! The documentation below will take you through the individual steps.
 
 <p align="center"> 
-<img src= https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc5abe0d9297405a428522/1556896461304/howtouseDLC-01.png?format=1000w width="60%">
+<img src=  https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559758477126-B9PU1EFA7L7L1I24Z2EH/ke17ZwdGBToddI8pDm48kH6mtUjqMdETiS6k4kEkCoR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UQf4d-kVja3vCG3Q_2S8RPAcZTZ9JxgjXkf3-Un9aT84H3bqxw7fF48mhrq5Ulr0Hg/howtouseDLC2d_3d-01.png?format=500w width="60%">
  </p>
  
- Here are some tips for scaling up your analysis: https://github.com/AlexEMG/DeepLabCut/wiki/Batch-Processing-your-Analysis
+ **NEW** as of 2.0.7 we support 3D analysis directly inside our package. Please see the [3D details here](/docs/Overviewof3D.md). Here are some tips for scaling up your 2D analysis: https://github.com/AlexEMG/DeepLabCut/wiki/Batch-Processing-your-Analysis
 
-You can get started by using our demo Jupyter Notebooks [(#1)](/docs/UseOverviewGuide.md#option-1-demo-notebooks), or use the program terminal/cmd [(#2)](/docs/UseOverviewGuide.md#option-2-using-the-program-terminal-start-ipython). 
+You can get started by using our **demo Jupyter Notebooks** [(#1)](/docs/UseOverviewGuide.md#option-1-demo-notebooks), or use **iPython** from the program terminal/cmd [(#2)](/docs/UseOverviewGuide.md#option-2-using-the-program-terminal-start-ipython). 
 
 
-## Overview of the work-flow:
+## Overview of the workflow:
 This page contains a list of the essential functions of DeepLabCut as well as demos. There are many optional parameters with each described function, which you can find [here](functionDetails.md). For additional assistance, you can use the [help](UseOverviewGuide.md#help) function to better understand what each function does.
-
- 
-This figure highlights the steps we will describe below:
  
  <p align="center">
-<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5cca272524a69435c3251c40/1556752170424/flowfig.jpg?format=1000w" width="80%">
+<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5cca272524a69435c3251c40/1556752170424/flowfig.jpg?format=1000w" height="270">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1560124235138-A9VEZB45SQPD5Z0BDEXA/ke17ZwdGBToddI8pDm48kKsvCFNoOAts8bgs5LXY20UUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcZaDohTswVrVk6oKw3G03bTl18OXeDyNJsBjNlGiyPYGo9Ewyd5AI5wx6CleNeBtf/dlc_steps.jpg?format=1000w" height="270">
 </p>
 
   
@@ -161,7 +162,7 @@ deeplabcut.plot_trajectories(config_path,[`/fullpath/project/videos/reachingvide
 
 (more details [here](functionDetails.md#i-video-analysis-and-plotting-results))
 
-### [optional] Refinement - Extract Outlier Frames from a video:
+### [optional] Active Learning --> Network Refinement - extract outlier frames from a video:
 
 ```
 deeplabcut.extract_outlier_frames(config_path,[`videofile_path'])
