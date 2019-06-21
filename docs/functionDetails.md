@@ -55,13 +55,9 @@ useful based on the user’s need.
 
     deeplabcut.extract_frames(config_path,‘automatic/manual’,‘uniform/kmeans’, userfeedback=False, crop=True/False)
 
-CRITICAL POINT: It is advisable to keep the frame size small, as large frames increase the training and
+**CRITICAL POINT:** It is advisable to keep the frame size small, as large frames increase the training and
 inference time. The cropping parameters for each video can be provided in the config.yaml file (and see below).
-When running the function extract_frames, if the parameter crop=True, then, as of version 2.0.5 onwards, you can draw a rectangle over the image that pops up, and it will crop the frames to the size provided (and write this size to the config.yaml file).
-
-<p align="center">
-<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c71bde77817f79f73a53a20/1550958072612/newCROP_2.0.5.gif?format=750w" width="70%">
-</p>
+When running the function extract_frames, if the parameter crop=True, then you will be asked to draw a box within the GUI an (and this is written to the config.yaml file).
 
 `userfeedback` allows the user to check which videos they wish to extract frames from. In this way, if you added more videos to the config.yaml file it does not, by default, extract frames (again) from every video. If you wish to disable this question, set `userfeedback=True`.
 
@@ -183,7 +179,7 @@ The set of arguments in the function starts training the network for the dataset
 
 Example parameters that one can call:
    
-           deeplabcut.train_network(config_path,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshots_to_keep=5,autotune=False,displayiters=100,saveiters=15000)
+           deeplabcut.train_network(config_path,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshots_to_keep=5,autotune=False,displayiters=100,saveiters=15000, maxiters=30000)
 
 By default, the pre-trained ResNet network is not provided in the DeepLabCut toolbox (as it has around 100MB).
 However, if not previously downloaded from the TensorFlow model weights, it will be downloaded and stored in
@@ -219,6 +215,8 @@ CRITICAL POINT: It is recommended to train for thousands of iterations until the
 
     saveiters: this variable is actually set in pose_config.yaml. However, you can overwrite it with this hack. Don't use this regularly, just if you are too lazy to dig out
     the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
+    
+    maxiters: This sets how many iterations to train. This variable is set in pose_config.yaml. However, you can overwrite it with this. If None, the value from there is used, otherwise it is overwritten! Default: None
 
 ### (H) Evaluate the Trained Network
 
@@ -272,7 +270,7 @@ labeled accurately
 • consider labeling additional images and make another iteration of the training data set
 
 
-### (I) Video Analysis and Plotting Results
+### (I) Video Analysis and Plotting Results:
 
 The trained network can be used to analyze new videos. The user needs to first choose a checkpoint with the best
 evaluation results for analyzing the videos. In this case, the user can enter the corresponding index of the checkpoint
@@ -283,7 +281,7 @@ analyzing the video. Novel/new videos **DO NOT have to be in the config file!** 
 
 There are several other optional inputs, such as:
 
-    deeplabcut.analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gputouse=None,save_as_csv=False, destfolder=None)
+    deeplabcut.analyze_videos(config_path,videos,videotype='avi',shuffle=1,trainingsetindex=0,gputouse=None,save_as_csv=False, destfolder=None)
 
 The labels are stored in a [MultiIndex Pandas Array](http://pandas.pydata.org), which contains the name
 of the network, body part name, (x, y) label position in pixels, and the likelihood for each frame per body part. These
@@ -293,22 +291,22 @@ However, if the flag ``save_as_csv`` is set to ``True``, the data can also be ex
 by default. You can also set a destination folder (``destfolder``) for the output files by passing a path of the folder you wish to write to.
 
 #### Filter data:
-          
-You can also filter the predictions with a [SARIMAX model](https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html), if you wish. We find this better than a simple median filter, etc. This creates a new .h5 file with the ending *_filtered* that you can use in create_labeled_data and/or plot trajectories.
+
+You can also filter the predictions with a median filter (default; **NEW** as of 2.0.7) or with a [SARIMAX model](https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html), if you wish. This creates a new .h5 file with the ending *_filtered* that you can use in create_labeled_data and/or plot trajectories.
 
       deeplabcut.filterpredictions(config_path,[‘fullpath/analysis/project/videos/reachingvideo1.avi’]) 
   An example call:
   
-     deeplabcut.filterpredictions(config_path,[‘fullpath/analysis/project/videos’],videotype='.mp4',shuffle=1,ARdegree=5,MAdegree=2)
-           
+     deeplabcut.filterpredictions(config_path,[‘fullpath/analysis/project/videos’], videotype='.mp4',filtertype= 'arima',ARdegree=5,MAdegree=2)
+             
   Here are parameters you can modify and pass:
            
-     deeplabcut.filterpredictions(config_path, [‘fullpath/analysis/project/videos/reachingvideo1.avi’], shuffle=1, trainingsetindex=0, comparisonbodyparts='all', p_bound=0.01, ARdegree=3, MAdegree=1, alpha=0.01)
+     deeplabcut.filterpredictions(config_path, [‘fullpath/analysis/project/videos/reachingvideo1.avi’], shuffle=1, trainingsetindex=0, comparisonbodyparts='all', filtertype='arima', p_bound=0.01, ARdegree=3, MAdegree=1, alpha=0.01)
  
  Here is an example of how this can be applied to a video:
  
  <p align="center">
-<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc8b8ae6e8df000100a995/1556908943893/filter_example-01.png?format=1000w" width="80%">
+<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc8b8ae6e8df000100a995/1556908943893/filter_example-01.png?format=1000w" width="70%">
 </p>
 
 #### Plot Trajectories:
@@ -318,17 +316,50 @@ the end user. We also provide a function to plot the trajectory of the extracted
 can be called by typing:
 
     deeplabcut.plot_trajectories(config_path,[‘fullpath/analysis/project/videos/reachingvideo1.avi’])
+  
+ It creates a folder called ``plot-poses`` (in the directory of the video). The plots display the coordinates of body parts vs. time, likelihoods vs time, the x- vs. y- coordinate of the body parts, as well as histograms of consecutive coordinate differences. These plots help the user to quickly assess the tracking performance for a video. Ideally, the likelihood stays high and the histogram of consecutive coordinate differences has values close to zero (i.e. no jumps in body part detections across frames). Here are example plot outputs on a demo video (left):
  
-#### Create labeled videos:
+<p align="center"> 
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559946148685-WHDO5IG9MMCHU0T7RC62/ke17ZwdGBToddI8pDm48kEOb1vFO6oRDmR8SXh4iL21Zw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVG1gXK66ltnjKh4U2immgm7AVAdfOWODmXNLQLqbLRZ2DqWIIaSPh2v08GbKqpiV54/file0289.png?format=500w" height="240">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559939762886-CCB0R107I2HXAHZLHECP/ke17ZwdGBToddI8pDm48kNeA8e5AnyMqj80u4_mB0hV7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UcpboONgOQYHLzaUWEI1Ir9fXt7Ehyn7DSgU3GCReAA-ZDqXZYzu2fuaodM4POSZ4w/plot_poses-01.png?format=1000w" height="250">
+</p>
+ 
+#### Create Labeled Videos:
 
 Additionally, the toolbox provides a function to create labeled videos based on the extracted poses by plotting the
-labels on top of the frame and creating a video. One can use it as follows to create multiple labeled videos:
+labels on top of the frame and creating a video. There are two modes to create videos: FAST and SLOW (but higher quality!). If you want to create high-quality videos, please add ``save_frames=True``. One can use the command as follows to create multiple labeled videos:
 
-    deeplabcut.create_labeled_video(config_path,[‘fullpath/analysis/project/videos/reachingvideo1.avi’,‘fullpath/analysis/project/videos/reachingvideo2.avi’])
+    deeplabcut.create_labeled_video(config_path,[‘fullpath/analysis/project/videos/reachingvideo1.avi’,‘fullpath/analysis/project/videos/reachingvideo2.avi’], save_frames=True/False)
           
  Optionally, if you want to use the filtered data for a video or directory of filtered videos pass ``filtered=True``, i.e.:
          
      deeplabcut.create_labeled_video(config_path,[‘fullpath/afolderofvideos’], videotype='.mp4', filtered=True)
+     
+ **NEW** as of 2.0.7: You can also optionally add a skeleton to connect points and/or add a history of points for visualization. To set the "trailing points" you need to pass ``trailpoints``: 
+ 
+    deeplabcut.create_labeled_video(config_path,[‘fullpath/afolderofvideos’], videotype='.mp4', trailpoints=10) 
+
+**NEW** as of 2.0.7: To draw a skeleton, you need to first define the pairs of connected nodes (in the ``config.yaml`` file) and set the skeleton color (in the ``config.yaml`` file). If you are using a project that was created before 2.0.7, you simply need to add these two items (``skeleton`` and  ``skeleton_color``) to your config file (This addition is fully backwards compatable, so don't worry!).
+
+Here is how the ``config.yaml`` additions/edits should look (for example, on the Openfield demo data we provide):
+```
+# Plotting configuration
+skeleton: [['snout', 'leftear'], ['snout', 'rightear'], ['leftear', 'tailbase'], ['leftear', 'rightear'], ['rightear','tailbase']]
+skeleton_color: white
+pcutoff: 0.4
+dotsize: 4
+alphavalue: 0.5
+colormap: jet
+```
+Then pass ``draw_skeleton=True`` with the command: 
+
+    deeplabcut.create_labeled_video(config_path,[‘fullpath/afolderofvideos’], videotype='.mp4', draw_skeleton=True)
+    
+**PRO TIP:** that the **best quality videos** are created when ``save_frames=True`` is passed. Therefore, when ``trailpoints`` and ``draw_skeleton`` are used, we **highly** recommend you also pass ``save_frames=True``! 
+
+ <p align="center">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559935526258-KFYZC8BDHK01ZIDPNVIX/ke17ZwdGBToddI8pDm48kJbosy0LGK_KqcAZRQ_Qph1Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpzkC6kmM1CbNgeHQVxASNv0wiXikHv274BIFe4LR7nd1rKmAka4uxYMJ9FupazBoaU/mouse_skel_trail.gif?format=750w" width="40%">
+</p>
 
 **Other optional Parameters:**
 
@@ -338,11 +369,13 @@ labels on top of the frame and creating a video. One can use it as follows to cr
 
            delete: bool (i.e. True or False). If true then the individual frames created during the video generation will be deleted.
 
-           displayedbodyparts: list of strings, optional. This select the body parts that are plotted in the video. Either `all`, then all body parts from config.yaml are used orr a list of strings that are a subset of the full list. E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these two body parts.
+           displayedbodyparts: list of strings, optional. This select the body parts that are plotted in the video. Either `all`, then all body parts from config.yaml are used orr a list of strings that are a subset of the full list. E.g. ['Hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these two body parts.
+          
+           displaycropped: If =True then the video will be cropped (to the size in  the config.yaml file) and points plotted.
 
 This function has various other parameters, in particular the user can set the ``colormap``, the ``dotsize``, and ``alphavalue`` of the labels in **config.yaml** file.
 
-### (J) Refinement: Extract Outlier Frames
+### (J) Optional Active Learning -> Network Refinement: Extract Outlier Frames
 
 While DeepLabCut typically generalizes well across datasets, one might want to optimize its performance in various,
 perhaps unexpected, situations. For generalization to large data sets, images with insufficient labeling performance
@@ -356,7 +389,7 @@ where the decoder might make large errors.
 
 All this can be done for a specific video by typing (see other optional inputs below):
 
-    deeplabcut.extract_outlier_frames(‘config_path’,[‘videofile_path’])
+    deeplabcut.extract_outlier_frames(config_path,[‘videofile_path’])
 
 
 We provide various frame-selection methods for this purpose. In particular
@@ -378,7 +411,7 @@ pbound is treated as missing data.  Putative outlier frames are then identified 
 
  As an example:
 
-    deeplabcut.extract_outlier_frames(‘config_path’,[‘videofile_path’],outlieralgorithm='manual')
+    deeplabcut.extract_outlier_frames(config_path,[‘videofile_path’],outlieralgorithm='manual')
 
 
 In general, depending on the parameters, these methods might return much more frames than the user wants to
@@ -407,7 +440,7 @@ as invalid.
 
 The labels for extracted putative outlier frames can be refined by opening the GUI:
 
-    deeplabcut.refine_labels(‘config_path’)
+    deeplabcut.refine_labels(config_path)
 
 This will launch a GUI where the user can refine the labels (Figure 6).
 
@@ -416,7 +449,7 @@ Use the ‘Load Labels’ button to select one of the subdirectories, where the 
 After correcting the labels for all the frames in each of the subdirectories, the users should merge the data set to
 create a new dataset. In this step the iteration parameter in the config.yaml file is automatically updated.
 
-    deeplabcut.merge_datasets(‘config_path’)
+    deeplabcut.merge_datasets(config_path)
 
 Once the dataset is merged, the user can test if the merging process was successful by plotting all the labels (Step E).
 Next, with this expanded training set the user can now create a novel training set and train the network as described
@@ -424,9 +457,11 @@ in Steps F and G. The training dataset will be stored in the same place as befor
 subdirectory, where the ``#`` is the new value of ``iteration`` variable stored in the project’s configuration file (this is
 automatically done).
 
+Now you can run ``create_training_dataset``, then ``train_network``, etc. If your original labels were adjusted at all, start from fresh weights (the typically recommended path anyhow), otherwise consider using your already trained network weights (see Box 2).
+
 If after training the network generalizes well to the data, proceed to analyze new videos. Otherwise, consider labeling more data.
 
-### Jupyter Notebooks for Demonstration of the DeepLabCut Work-flow
+### Jupyter Notebooks for Demonstration of the DeepLabCut Workflow
 
 We also provide two Jupyter notebooks for using DeepLabCut on both a pre-labeled dataset, and on the end user’s
 own dataset. Firstly, we prepared an interactive Jupyter notebook called run_yourowndata.ipynb that can serve as a
@@ -435,6 +470,25 @@ labeled data. The example project, named as Reaching-Mackenzie-2018-08-30 consis
 with default parameters and 20 images, which are cropped around the region of interest as an example dataset. These
 images are extracted from a video, which was recorded in a study of skilled motor control in mice. Some example
 labels for these images are also provided. See more details [here](/examples).
+
+## 3D Toolbox
+
+Please find all the information on using the 3D toolbox of DeepLabCut (as of 2.0.7) here: https://github.com/AlexEMG/DeepLabCut/blob/master/docs/Overviewof3D.md
+
+
+## Other functions, some are yet-to-be-documented: 
+
+We suggest you check out these additional helper functions, that could be useful (they are all optional). 
+
+```
+deeplabcut.analyze_videos_converth5_to_csv
+
+deeplabcut.mergeandsplit
+
+deeplabcut.analyze_time_lapse_frames
+
+deeplabcut.convertcsv2h5
+```
 
 
 Return to [User guide overview](UseOverviewGuide.md).

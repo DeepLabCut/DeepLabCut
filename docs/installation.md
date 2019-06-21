@@ -13,7 +13,11 @@ Anaconda is perhaps the easiest way to install Python and additional packages ac
 ## Step 3: Easy install for Windows and MacOS: use our supplied Anaconda environments.
 Please click here: https://github.com/AlexEMG/DeepLabCut/blob/master/conda-environments/README.md
 
-**For LINUX** (Ubuntu 16.04 or 18.04 LTS) users, we recommend using Docker for the GPU-based steps. The Docker files are here: https://github.com/MMathisLab/Docker4DeepLabCut2.0 and here is a quick video tutorial to show you how to use both Docker + Anaconda for DLC:  https://www.youtube.com/watch?v=7xwOhUcIGio
+
+
+**For LINUX ONLY, follow below!** (Ubuntu 16.04 or 18.04 LTS):
+
+We recommend using Docker for the GPU-based steps. The Docker files are here: https://github.com/MMathisLab/Docker4DeepLabCut2.0 and here is a quick video tutorial to show you how to use both Docker + Anaconda for DLC:  https://www.youtube.com/watch?v=7xwOhUcIGio
 
 Otherwise, here is how you can create a tailored Anaconda environment:
 ```

@@ -1,13 +1,13 @@
 """
-DeepLabCut2.0 Toolbox
+DeepLabCut2.0 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
-A Mathis, alexander.mathis@bethgelab.org
-T Nath, nath@rowland.harvard.edu
-M Mathis, mackenzie@post.harvard.edu
 
-Boilerplate project creation inspired from DeepLabChop
-by Ronny Eichler
+Please see AUTHORS for contributors.
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
 """
+
 import os
 import yaml
 from pathlib import Path
@@ -152,7 +152,7 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
     cfg_file['video_sets']=video_sets
     cfg_file['project_path']=str(project_path)
     cfg_file['date']=d
-    cfg_file['bodyparts']=['Hand','Finger1','Finger2','Joystick']
+    cfg_file['bodyparts']=['bodypart1','bodypart2','bodypart3','objectA']
     cfg_file['cropping']=False
     cfg_file['start']=0
     cfg_file['stop']=1
@@ -165,9 +165,11 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
     cfg_file['x2']=640
     cfg_file['y1']=277
     cfg_file['y2']=624
-    cfg_file['batch_size']=4 #batch size during inference (video - analysis); see https://www.biorxiv.org/content/early/2018/10/30/457242
+    cfg_file['batch_size']=8 #batch size during inference (video - analysis); see https://www.biorxiv.org/content/early/2018/10/30/457242
     cfg_file['corner2move2']=(50,50)
     cfg_file['move2corner']=True
+    cfg_file['skeleton']=[['bodypart1','bodypart2'],['objectA','bodypart3']]
+    cfg_file['skeleton_color']='black'
     cfg_file['pcutoff']=0.1
     cfg_file['dotsize']=12 #for plots size of dots
     cfg_file['alphavalue']=0.7 #for plots transparency of markers

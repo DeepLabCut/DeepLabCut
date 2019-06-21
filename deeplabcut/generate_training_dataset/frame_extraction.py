@@ -1,9 +1,11 @@
 """
-DeepLabCut2.0 Toolbox
+DeepLabCut2.0 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
-A Mathis, alexander.mathis@bethgelab.org
-T Nath, nath@rowland.harvard.edu
-M Mathis, mackenzie@post.harvard.edu
+
+Please see AUTHORS for contributors.
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
 """
 
 
@@ -82,7 +84,6 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,userfeedback
     """
     import os
     import sys
-    import yaml
     import numpy as np
     from pathlib import Path
     from skimage import io
@@ -91,13 +92,13 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,userfeedback
     import matplotlib.patches as patches
     from deeplabcut.utils import frameselectiontools
     from deeplabcut.utils import auxiliaryfunctions
-    from deeplabcut.utils import select_crop_parameters
     from matplotlib.widgets import RectangleSelector
 
     if mode == "manual":
         wd = Path(config).resolve().parents[0]
         os.chdir(str(wd))
-        from deeplabcut.generate_training_dataset import frame_extraction_toolbox 
+        from deeplabcut.generate_training_dataset import frame_extraction_toolbox
+        from deeplabcut.utils import select_crop_parameters
         frame_extraction_toolbox.show(config, slider_width)
         
     elif mode == "automatic":
@@ -132,7 +133,6 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,userfeedback
                 askuser="yes"
                 
             if askuser=='y' or askuser=='yes' or askuser=='Ja' or askuser=='ha': # multilanguage support :)
-                #indexlength = int(np.ceil(np.log10(clip.duration * clip.fps)))
                 if opencv:
                     cap=cv2.VideoCapture(video)
                     fps = cap.get(5) #https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
@@ -146,6 +146,7 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,userfeedback
                     nframes=int(np.ceil(clip.duration*1./fps))
                 indexlength = int(np.ceil(np.log10(nframes)))
                 if crop==True:
+                    from deeplabcut.utils import select_crop_parameters
                     if opencv:
                         cap.set(2,start*duration)
                         ret, frame = cap.read()
@@ -159,11 +160,9 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,userfeedback
                     
                     if output_path.exists() :
                         fig,ax = plt.subplots(1)
-                        # Display the image
-#                        ax.imshow(image)
-# Call the GUI to select the cropping parameters
+                        # Call the GUI to select the cropping parameters
                         coords = select_crop_parameters.show(config,image)
-# Update the config.yaml file with current cropping parameters
+                        # Update the config.yaml file with current cropping parameters
                         cfg['video_sets'][video] = {'crop': ', '.join(map(str, [int(coords[0]), int(coords[1]), int(coords[2]), int(coords[3])]))}
                         auxiliaryfunctions.write_config(config_file,cfg)
 

@@ -46,6 +46,10 @@ Here is a demo of us using the Colab Notebooks: https://www.youtube.com/watch?v=
 
 *Warning: Colab updates their CUDA/TensorFlow likely faster than we can keep up, so this may not work at all future points in time (and, as a reminder, this whole package is released with a [LICENSE](/LICENSE) that implies no Liability and no Warranty).*
 
+# 3D DeepLabCut
+
+Ready to take your pose estimation to a new dimension? As of 2.0.7 we support 3D within the package. Please check out the dedicated 3D_Demo_DeepLabCut.ipynb above for more details!
+
 
 # Python/iPython:
 
