@@ -1,10 +1,11 @@
 """
-DeepLabCut2.0 Toolbox
+DeepLabCut2.0 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
-A Mathis, alexander.mathis@bethgelab.org
-T Nath, nath@rowland.harvard.edu
-M Mathis, mackenzie@post.harvard.edu
 
+Please see AUTHORS for contributors.
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
 """
 
 import os
@@ -235,6 +236,10 @@ class MainFrame(wx.Frame):
         self.drs = []
         self.num = []
         self.view_locked=False
+        # Workaround for MAC - xlim and ylim changed events seem to be triggered too often so need to make sure that the
+        # xlim and ylim have actually changed before turning zoom off
+        self.prezoom_xlim=[]
+        self.prezoom_ylim=[]
 
 ###############################################################################################################################
 # BUTTONS FUNCTIONS FOR HOTKEYS
@@ -243,6 +248,10 @@ class MainFrame(wx.Frame):
             self.nextImage(event=None)
         elif event.GetKeyCode() == wx.WXK_LEFT:
             self.prevImage(event=None)
+        elif event.GetKeyCode() == wx.WXK_DOWN:
+            self.nextLabel(event=None)
+        elif event.GetKeyCode() == wx.WXK_UP:
+            self.previousLabel(event=None)
 
     def activateSlider(self,event):
         """
@@ -267,6 +276,7 @@ class MainFrame(wx.Frame):
         img_name = Path(self.index[self.iter]).name
         self.figure.delaxes(self.figure.axes[1])
         self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.bodyparts,self.colormap,keep_view=True)
+
         self.axes.callbacks.connect('xlim_changed', self.onZoom)
         self.axes.callbacks.connect('ylim_changed', self.onZoom)
         self.buttonCounter = MainFrame.plot(self,self.img)
@@ -322,6 +332,9 @@ class MainFrame(wx.Frame):
 
     def zoomButton(self, event):
         if self.zoom.GetValue() == True:
+            # Save pre-zoom xlim and ylim values
+            self.prezoom_xlim=self.axes.get_xlim()
+            self.prezoom_ylim=self.axes.get_ylim()
             self.toolbar.zoom()
             self.statusbar.SetStatusText("Zoom On")
             self.pan.SetValue(False)
@@ -330,7 +343,10 @@ class MainFrame(wx.Frame):
             self.statusbar.SetStatusText("Zoom Off")
 
     def onZoom(self, ax):
-        if self.zoom.GetValue():
+        # See if axis limits have actually changed
+        curr_xlim=self.axes.get_xlim()
+        curr_ylim=self.axes.get_ylim()
+        if self.zoom.GetValue() and not (self.prezoom_xlim[0]==curr_xlim[0] and self.prezoom_xlim[1]==curr_xlim[1] and self.prezoom_ylim[0]==curr_ylim[0] and self.prezoom_ylim[1]==curr_ylim[1]):
             self.updateZoomPan()
             self.statusbar.SetStatusText("Zoom Off")
 
@@ -370,6 +386,20 @@ class MainFrame(wx.Frame):
 
         self.canvas.mpl_disconnect(self.onClick)
         self.canvas.mpl_disconnect(self.onButtonRelease)
+
+    def nextLabel(self,event):
+        """
+        This function is to create a hotkey to skip down on the radio button panel.
+        """
+        if self.rdb.GetSelection() < len(self.bodyparts) -1:
+                self.rdb.SetSelection(self.rdb.GetSelection() + 1)
+
+    def previousLabel(self,event):
+        """
+        This function is to create a hotkey to skip up on the radio button panel.
+        """
+        if self.rdb.GetSelection() < len(self.bodyparts) -1:
+                self.rdb.SetSelection(self.rdb.GetSelection() - 1)
 
     def browseDir(self, event):
         """
@@ -471,6 +501,7 @@ class MainFrame(wx.Frame):
             self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.bodyparts,self.colormap)
             self.axes.callbacks.connect('xlim_changed', self.onZoom)
             self.axes.callbacks.connect('ylim_changed', self.onZoom)
+
             self.choiceBox,self.rdb,self.slider,self.checkBox = self.choice_panel.addRadioButtons(self.bodyparts,self.file,self.markerSize)
             self.buttonCounter = MainFrame.plot(self,self.img)
             self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
@@ -491,6 +522,7 @@ class MainFrame(wx.Frame):
             self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.bodyparts,self.colormap)
             self.axes.callbacks.connect('xlim_changed', self.onZoom)
             self.axes.callbacks.connect('ylim_changed', self.onZoom)
+
             self.choiceBox,self.rdb,self.slider,self.checkBox = self.choice_panel.addRadioButtons(self.bodyparts,self.file,self.markerSize)
             self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
             self.canvas.mpl_connect('button_release_event', self.onButtonRelease)
@@ -532,6 +564,7 @@ class MainFrame(wx.Frame):
                                                                                        keep_view=self.view_locked)
             self.axes.callbacks.connect('xlim_changed', self.onZoom)
             self.axes.callbacks.connect('ylim_changed', self.onZoom)
+
             self.buttonCounter = MainFrame.plot(self,self.img)
             self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
             self.canvas.mpl_connect('button_release_event', self.onButtonRelease)
@@ -564,6 +597,7 @@ class MainFrame(wx.Frame):
                                                                                    keep_view=self.view_locked)
         self.axes.callbacks.connect('xlim_changed', self.onZoom)
         self.axes.callbacks.connect('ylim_changed', self.onZoom)
+
         self.buttonCounter = MainFrame.plot(self,self.img)
         self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
         self.canvas.mpl_connect('button_release_event', self.onButtonRelease)

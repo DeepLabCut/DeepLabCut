@@ -1,9 +1,11 @@
 """
-DeepLabCut2.0 Toolbox
+DeepLabCut2.0 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
-A Mathis, alexander.mathis@bethgelab.org
-T Nath, nath@rowland.harvard.edu
-M Mathis, mackenzie@post.harvard.edu
+
+Please see AUTHORS for contributors.
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
 """
 
 from pathlib import Path
@@ -12,9 +14,12 @@ import numpy as np
 import pandas as pd
 import os.path
 import matplotlib as mpl
+
+import platform
 if os.environ.get('DLClight', default=False) == 'True':
     mpl.use('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
-    pass
+elif platform.system() == 'Darwin':
+    mpl.use('WxAgg') #TkAgg
 else:
     mpl.use('TkAgg')
 import matplotlib.pyplot as plt
@@ -22,7 +27,7 @@ from skimage import io
 
 import yaml
 from deeplabcut import DEBUG
-from deeplabcut.utils import auxiliaryfunctions, conversioncode
+from deeplabcut.utils import auxiliaryfunctions, conversioncode, auxfun_models
 
 #matplotlib.use('Agg')
 
@@ -300,7 +305,7 @@ def MakeTrain_pose_yaml(itemstochange,saveasconfigfile,defaultconfigfile):
     docs = []
     for raw_doc in raw.split('\n---'):
         try:
-            docs.append(yaml.load(raw_doc))
+            docs.append(yaml.load(raw_doc,Loader=yaml.SafeLoader))
         except SyntaxError:
             docs.append(raw_doc)
 
@@ -430,7 +435,6 @@ def mergeandsplit(config,trainindex=0,uniform=True,windows2linux=False):
     --------
     
     """
-    
     # Loading metadata from config file:
     cfg = auxiliaryfunctions.read_config(config)
     scorer = cfg['scorer']
@@ -441,7 +445,7 @@ def mergeandsplit(config,trainindex=0,uniform=True,windows2linux=False):
     fn=os.path.join(project_path,trainingsetfolder,'CollectedData_'+cfg['scorer'])
     
     try:
-        Data= pd.read_hdf(fn, 'df_with_missing')
+        Data= pd.read_hdf(fn+'.h5', 'df_with_missing')
     except FileNotFoundError:
         Data = merge_annotateddatasets(cfg,project_path,Path(os.path.join(project_path,trainingsetfolder)),windows2linux=windows2linux)
     
@@ -498,9 +502,7 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
     """
     from skimage import io
     import scipy.io as sio
-    import deeplabcut
-    import subprocess
-
+    
     # Loading metadata from config file:
     cfg = auxiliaryfunctions.read_config(config)
     scorer = cfg['scorer']
@@ -511,28 +513,15 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
     
     Data = merge_annotateddatasets(cfg,project_path,Path(os.path.join(project_path,trainingsetfolder)),windows2linux)
     Data = Data[scorer] #extract labeled data
-
-    #set model type. we will allow more in the future.
-    if cfg['resnet']==50:
-        net_type ='resnet_'+str(cfg['resnet'])
-        resnet_path = str(Path(deeplabcut.__file__).parents[0] / 'pose_estimation_tensorflow/models/pretrained/resnet_v1_50.ckpt')
-    elif cfg['resnet']==101:
-        net_type ='resnet_'+str(cfg['resnet'])
-        resnet_path = str(Path(deeplabcut.__file__).parents[0] / 'pose_estimation_tensorflow/models/pretrained/resnet_v1_101.ckpt')
-    else:
-        print("Currently only ResNet 50 or 101 supported, please change 'resnet' entry in config.yaml!")
-        num_shuffles=-1 #thus the loop below is empty...
-
-    if not Path(resnet_path).is_file():
-        """
-        Downloads the ImageNet pretrained weights for ResNet.
-        """
-        start = os.getcwd()
-        os.chdir(str(Path(resnet_path).parents[0]))
-        print("Downloading the pretrained model (ResNets)....")
-        subprocess.call("download.sh", shell=True)
-        os.chdir(start)
-
+    
+    #loading & linking pretrained models
+    net_type ='resnet_'+str(cfg['resnet'])
+    import deeplabcut
+    parent_path = Path(os.path.dirname(deeplabcut.__file__))
+    defaultconfigfile = str(parent_path / 'pose_cfg.yaml')
+    
+    model_path,num_shuffles=auxfun_models.Check4weights(net_type,parent_path,num_shuffles)
+    
     if Shuffles==None:
         Shuffles=range(1,num_shuffles+1,1)
     else:
@@ -632,13 +621,10 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
                     "num_joints": len(bodyparts),
                     "all_joints": [[i] for i in range(len(bodyparts))],
                     "all_joints_names": [str(bpt) for bpt in bodyparts],
-                    "init_weights": resnet_path,
+                    "init_weights": model_path,
                     "project_path": str(cfg['project_path']),
                     "net_type": net_type
                 }
-
-                defaultconfigfile = str(Path(deeplabcut.__file__).parents[0] / 'pose_cfg.yaml')
-
                 trainingdata = MakeTrain_pose_yaml(items2change,path_train_config,defaultconfigfile)
                 keys2save = [
                     "dataset", "num_joints", "all_joints", "all_joints_names",

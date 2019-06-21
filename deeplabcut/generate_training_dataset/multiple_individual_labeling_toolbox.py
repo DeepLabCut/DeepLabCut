@@ -1,10 +1,11 @@
 """
-DeepLabCut2.0 Toolbox
+DeepLabCut2.0 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
-A Mathis, alexander.mathis@bethgelab.org
-T Nath, nath@rowland.harvard.edu
-M Mathis, mackenzie@post.harvard.edu
+Please see AUTHORS for contributors.
 
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
 """
 
 import os
@@ -50,6 +51,8 @@ class ImagePanel(wx.Panel):
 
     def drawplot(self,img,img_name,itr,index,bodyparts,cmap):
         im = cv2.imread(img)
+        # convert the image to RGB as you are showing the image with matplotlib
+        im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
         ax = self.axes.imshow(im,cmap=cmap)
         divider = make_axes_locatable(self.axes)
         colorIndex = np.linspace(np.min(im),np.max(im),len(bodyparts))

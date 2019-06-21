@@ -2,8 +2,8 @@
 Author: Hao Wu
 hwu01@g.harvard.edu
 
-
 This is the helper class for video reading and saving in DeepLabCut.
+Updated by AM
 
 You can set various codecs below,
 fourcc = cv2.VideoWriter_fourcc(*'MJPG')
@@ -15,19 +15,17 @@ import cv2
 
 class VideoProcessor(object):
     '''
-    Base class for a video processing unit, 
-    implementation is required for video loading and saving
+    Base class for a video processing unit, implementation is required for video loading and saving
+    
+    sh and sw are the output height and width respectively.
     '''
-    def __init__(self,fname='',sname='', nframes = -1, fps = 30,codec='X264'):
+    def __init__(self,fname='',sname='', nframes = -1, fps = 30,codec='X264',sh='',sw=''):
         self.fname = fname
         self.sname = sname
         self.nframes = nframes
         self.codec=codec
-        
         self.h = 0 
         self.w = 0
-        self.sh = 0
-        self.sw = 0
         self.FPS = fps
         self.nc = 3
         self.i = 0
@@ -36,9 +34,15 @@ class VideoProcessor(object):
             if self.fname != '':
                 self.vid = self.get_video()
                 self.get_info()
+                self.sh = 0
+                self.sw = 0
             if self.sname != '':
-                self.sh = self.h
-                self.sw = self.w
+                if sh=='' and sw=='':
+                    self.sh = self.h
+                    self.sw = self.w
+                else:
+                    self.sw=sw
+                    self.sh=sh
                 self.svid = self.create_video()
 
         except Exception as ex:
@@ -106,7 +110,6 @@ class VideoProcessor(object):
         pass
 
 
-    
 class VideoProcessorCV(VideoProcessor):
     '''
     OpenCV implementation of VideoProcessor
@@ -130,7 +133,7 @@ class VideoProcessorCV(VideoProcessor):
             
     def create_video(self):
         fourcc = cv2.VideoWriter_fourcc(*self.codec)
-        return cv2.VideoWriter(self.sname,fourcc, self.FPS, (self.w,self.h),True)
+        return cv2.VideoWriter(self.sname,fourcc, self.FPS, (self.sw,self.sh),True)
     
     def _read_frame(self): #return RGB (rather than BGR)!
         #return cv2.cvtColor(np.flip(self.vid.read()[1],2), cv2.COLOR_BGR2RGB)
@@ -142,3 +145,4 @@ class VideoProcessorCV(VideoProcessor):
     def close(self):
         self.svid.release()
         self.vid.release()
+

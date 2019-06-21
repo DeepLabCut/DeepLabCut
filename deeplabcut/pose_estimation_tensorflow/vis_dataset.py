@@ -1,5 +1,5 @@
 '''
-Source: DeeperCut by Eldar Insafutdinov
+Adapted from DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
 '''
 

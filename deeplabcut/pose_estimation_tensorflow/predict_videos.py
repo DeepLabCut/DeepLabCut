@@ -1,10 +1,11 @@
 """
-DeepLabCut Toolbox
+DeepLabCut2.0 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
-A Mathis, alexander.mathis@bethgelab.org
-T Nath, nath@rowland.harvard.edu
-M Mathis, mackenzie@post.harvard.edu
 
+Please see AUTHORS for contributors.
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
 """
 
 ####################################################
@@ -31,11 +32,12 @@ from skimage.util import img_as_ubyte
 # Loading data, and defining model folder
 ####################################################
 
-def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gputouse=None,save_as_csv=False, destfolder=None):
+def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gputouse=None,save_as_csv=False, destfolder=None,cropping=None):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
     
     You can crop the video (before analysis), by changing 'cropping'=True and setting 'x1','x2','y1','y2' in the config file. The same cropping parameters will then be used for creating the video.
+    Note: you can also pass cropping = [x1,x2,y1,y2] coordinates directly, that then will be used for all videos. You can of course loop over videos & pass specific coordinates for each case.
     
     Output: The labels are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position \n
             in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
@@ -100,10 +102,20 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
     if 'TF_CUDNN_USE_AUTOTUNE' in os.environ:
         del os.environ['TF_CUDNN_USE_AUTOTUNE'] #was potentially set during training
     
+    if gputouse is not None: #gpu selection
+            os.environ['CUDA_VISIBLE_DEVICES'] = str(gputouse)
+            
     tf.reset_default_graph()
     start_path=os.getcwd() #record cwd to return to this directory in the end
     
     cfg = auxiliaryfunctions.read_config(config)
+    
+    if cropping is not None:
+        cfg['cropping']=True
+        cfg['x1'],cfg['x2'],cfg['y1'],cfg['y2']=cropping
+        print("Overwriting cropping parameters:", cropping)
+        print("These are used for all videos, but won't be save to the cfg file.")
+        
     trainFraction = cfg['TrainingFraction'][trainingsetindex]
     
     modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)))
@@ -145,22 +157,24 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
     
     sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
     pdindex = pd.MultiIndex.from_product([[DLCscorer], dlc_cfg['all_joints_names'], ['x', 'y', 'likelihood']],names=['scorer', 'bodyparts', 'coords'])
-
-    if gputouse is not None: #gpu selectinon
-            os.environ['CUDA_VISIBLE_DEVICES'] = str(gputouse)
-    
     ##################################################
     # Datafolder
     ##################################################
     Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
+    
     if len(Videos)>0:
         #looping over videos
         for video in Videos:
             AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder)
     
-    os.chdir(str(start_path))
-    print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
-    print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
+        os.chdir(str(start_path))
+        print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
+        print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
+    else:
+        print("No video was found in the path/ or single video with path:", videos)
+        print("Perhaps the videotype is distinct from the videos in the path, I was looking for:",videotype)
+        
+    return DLCscorer
 
 def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize):
     ''' Batchwise prediction of pose '''

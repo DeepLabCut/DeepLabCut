@@ -1,12 +1,14 @@
 """
-DeepLabCut2.0 Toolbox
+DeepLabCut2.0 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
+Please see AUTHORS for contributors.
 
-A Mathis, alexander.mathis@bethgelab.org
-T Nath, nath@rowland.harvard.edu
-M Mathis, mackenzie@post.harvard.edu
-
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
 """
+
+
 import numpy as np
 import os
 from pathlib import Path
@@ -100,7 +102,7 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
 
     Examples
     
-    Windows example ffor extracting the frames with default settings
+    Windows example for extracting the frames with default settings
     >>> deeplabcut.extract_outlier_frames('C:\\myproject\\reaching-task\\config.yaml',['C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi'])
     --------
     for extracting the frames with default settings
@@ -165,10 +167,10 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
               wd = Path(config).resolve().parents[0]
               os.chdir(str(wd))
               from deeplabcut.refine_training_dataset import outlier_frame_extraction_toolbox 
-              outlier_frame_extraction_toolbox.show(config,video,shuffle,Dataframe,scorer)
-          
-          
-          if not outlieralgorithm=='manual': # Run always except when the outlieralgorithm == manual.
+
+              outlier_frame_extraction_toolbox.show(config,video,shuffle,Dataframe,scorer,savelabeled)
+# Run always except when the outlieralgorithm == manual.
+          if not outlieralgorithm=='manual':
               Indices=np.sort(list(set(Indices))) #remove repetitions.
               print("Method ", outlieralgorithm, " found ", len(Indices)," putative outlier frames.")
               print("Do you want to proceed with extracting ", cfg['numframes2pick'], " of those?")
@@ -194,67 +196,6 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
           print("The video has not been analyzed yet!. You can only refine the labels, after the pose has been estimate. Please run 'analyze_video' first.")
 
 
-def filterpredictions(config,video,shuffle=1,trainingsetindex=0,comparisonbodyparts='all',p_bound=.01,ARdegree=3,MAdegree=1,alpha=.01):
-    """
-    Fits frame-by-frame pose predictions with SARIMAX model.
-
-    Parameter
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
-
-    video : string
-        Full path of the video to extract the frame from. Make sure that this video is already analyzed.
-
-    shuffle : int, optional
-        The shufle index of training dataset. The extracted frames will be stored in the labeled-dataset for
-        the corresponding shuffle of training dataset. Default is set to 1
-
-    trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
-
-    comparisonbodyparts: list of strings, optional
-        This select the body parts for which SARIMAX models are fit. Either ``all``, then all body parts
-        from config.yaml are used orr a list of strings that are a subset of the full list.
-        E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these two body parts.
-
-    p_bound: float between 0 and 1, optional
-        For outlieralgorithm 'uncertain' this parameter defines the likelihood below, below which a body part will be flagged as a putative outlier.
-
-    ARdegree: int, optional
-        For outlieralgorithm 'fitting': Autoregressive degree of Sarimax model degree.
-        see https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html
-
-    MAdegree: int
-        For outlieralgorithm 'fitting': Moving Avarage degree of Sarimax model degree.
-        See https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html
-
-    alpha: float
-        Significance level for detecting outliers based on confidence interval of fitted SARIMAX model.
-
-    Example
-    --------
-    tba
-    --------
-
-    Returns filtered pandas array (incl. confidence interval), original data, distance and average outlier vector.
-
-    """
-
-    cfg = auxiliaryfunctions.read_config(config)
-    scorer=auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction = cfg['TrainingFraction'][trainingsetindex])
-    print("network parameters:", scorer)
-    videofolder = str(Path(video).parents[0])
-    dataname = str(Path(video).stem)+scorer
-    bodyparts=auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg,comparisonbodyparts)
-    try:
-        Dataframe = pd.read_hdf(os.path.join(videofolder,dataname+'.h5'))
-    except FileExistsError:
-        print("Could not find data.")
-
-    data,d,o = ComputeDeviations(Dataframe,cfg,bodyparts,scorer,dataname,p_bound,alpha,ARdegree,MAdegree,storeoutput='full')
-    return data,Dataframe,d,o
-
 def convertparms2start(pn):
     ''' Creating a start value for sarimax in case of an value error
     See: https://groups.google.com/forum/#!topic/pystatsmodels/S_Fo53F25Rk '''
@@ -267,7 +208,7 @@ def convertparms2start(pn):
     else:
         return 0
 
-def FitSARIMAXModel(x,p,pcutoff,alpha,ARdegree,MAdegree,nforecast = 0):
+def FitSARIMAXModel(x,p,pcutoff,alpha,ARdegree,MAdegree,nforecast = 0,disp=False):
     # Seasonal Autoregressive Integrated Moving-Average with eXogenous regressors (SARIMAX)
     # see http://www.statsmodels.org/stable/statespace.html#seasonal-autoregressive-integrated-moving-average-with-exogenous-regressors-sarimax
     Y=x.copy()
@@ -279,10 +220,10 @@ def FitSARIMAXModel(x,p,pcutoff,alpha,ARdegree,MAdegree,nforecast = 0):
         #Autoregressive Moving Average ARMA(p,q) Model
         #mod = sm.tsa.ARIMA(Y, order=(ARdegree,0,MAdegree)) #order=(ARdegree,0,MAdegree)
         try:
-            res = mod.fit(disp=True)
+            res = mod.fit(disp=disp)
         except ValueError: #https://groups.google.com/forum/#!topic/pystatsmodels/S_Fo53F25Rk (let's update to statsmodels 0.10.0 soon...)
             startvalues=np.array([convertparms2start(pn) for pn in mod.param_names])
-            res= mod.fit(start_params=startvalues,disp=True)
+            res= mod.fit(start_params=startvalues,disp=disp)
 
         predict = res.get_prediction(end=mod.nobs + nforecast-1)
         return predict.predicted_mean,predict.conf_int(alpha=alpha)
@@ -301,21 +242,7 @@ def ComputeDeviations(Dataframe,cfg,comparisonbodyparts,scorer,dataname,p_bound,
         if bp in cfg['bodyparts']: #filter [who knows what users put in...]
             x,y,p=Dataframe[scorer][bp]['x'].values,Dataframe[scorer][bp]['y'].values,Dataframe[scorer][bp]['likelihood'].values
             meanx,CIx=FitSARIMAXModel(x,p,p_bound,alpha,ARdegree,MAdegree)
-            #meanx,CIx=meanx.values,CIx.values
             meany,CIy=FitSARIMAXModel(y,p,p_bound,alpha,ARdegree,MAdegree)
-            #meany,CIy=meany.values,CIy.values
-            '''
-            try:
-                meanx,CIx=FitSARIMAXModel(x,p,p_bound,alpha,ARdegree,MAdegree)
-                meanx,CIx=meanx,CIx
-            except ValueError:
-                meanx,CIx=np.nan*np.zeros(ntimes),np.nan*np.zeros((ntimes,2))
-            try:
-                meany,CIy=FitSARIMAXModel(y,p,p_bound,alpha,ARdegree,MAdegree)
-                meany,CIy=meany,CIy
-            except ValueError:
-                meany,CIy=np.nan*np.zeros(ntimes),np.nan*np.zeros((ntimes,2))
-            '''
             if storeoutput=='full': #stores both the means and the confidence interval (as well as the summary stats below)
 
                 pdindex = pd.MultiIndex.from_product(

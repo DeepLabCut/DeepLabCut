@@ -1,11 +1,13 @@
 """
-DeepLabCut2.0 Toolbox
+DeepLabCut2.0 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
-A Mathis, alexander.mathis@bethgelab.org
-T Nath, nath@rowland.harvard.edu
-M Mathis, mackenzie@post.harvard.edu
 
+Please see AUTHORS for contributors.
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
 """
+
 import os
 from pathlib import Path
 
@@ -55,6 +57,12 @@ def train_network(config,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshot
 
     """
     import tensorflow as tf
+    #reload logger.
+    import importlib
+    import logging
+    importlib.reload(logging)
+    logging.shutdown()
+    
     from deeplabcut.pose_estimation_tensorflow.train import train
     from deeplabcut.utils import auxiliaryfunctions
 
@@ -75,6 +83,8 @@ def train_network(config,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshot
           os.environ['TF_CUDNN_USE_AUTOTUNE'] = '0'
       if gputouse is not None:
         os.environ['CUDA_VISIBLE_DEVICES'] = str(gputouse)
+
+
       try:
           train(str(poseconfigfile),displayiters,saveiters,maxiters,max_to_keep=max_snapshots_to_keep) #pass on path and file name for pose_cfg.yaml!
       except BaseException as e:

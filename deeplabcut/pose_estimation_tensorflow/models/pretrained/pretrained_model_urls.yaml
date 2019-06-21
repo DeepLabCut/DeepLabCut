@@ -1,0 +1,2 @@
+resnet_50: http://download.tensorflow.org/models/resnet_v1_50_2016_08_28.tar.gz
+resnet_101: http://download.tensorflow.org/models/resnet_v1_101_2016_08_28.tar.gz
