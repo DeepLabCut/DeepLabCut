@@ -41,7 +41,7 @@ class FastViterbi(Predictor):
         # Global values for the gaussian formula, can be adjusted in dlc_config for differing results...
         self.NORM_DIST = settings["norm_dist"]  # The normal distribution
         self.AMPLITUDE = settings["amplitude"]  # The amplitude, or height of the gaussian curve
-        self.LOWEST_VAL = settings["lowest_val"]  # Changes the lowest value that the gaussian curve can produce
+        self.LOWEST_VAL = settings["lowest_gaussian_value"]  # Changes the lowest value that the gaussian curve can produce
         self.THRESHOLD = settings["threshold"] # The threshold for the matrix... Everything below this value is ignored.
 
     @staticmethod
@@ -72,7 +72,7 @@ class FastViterbi(Predictor):
         self._gaussian_table
         """
         # Allocate gaussian table of width x height...
-        self._gaussian_table = np.zeros((height, width), dtype="float32")
+        self._gaussian_table = np.zeros((width, height), dtype="float32")
 
         # Iterate through filling in the values, using (0, 0) as the prior coordinate
         for y in range(height):
@@ -103,10 +103,10 @@ class FastViterbi(Predictor):
         return self._gaussian_table[delta_x.flatten(), delta_y.flatten()].reshape(delta_y.shape)
 
 
-    def _compute_init_frame(self, bodypart: int, scmap: TrackingData):
+    def _compute_init_frame(self, bodypart: int, frame: int, scmap: TrackingData):
         """ Inserts the initial frame, or first frame to have actual points that are above the threshold. """
         # Get coordinates for all above threshold probabilities in this frame...
-        coords = np.nonzero(scmap.get_prob_table(self._current_frame, bodypart) > self.THRESHOLD)
+        coords = np.nonzero(scmap.get_prob_table(frame, bodypart) > self.THRESHOLD)
 
         # If no points are found above the threshold, frame for this bodypart is a dud, set it to none...
         if (len(coords[0]) == 0):
@@ -117,16 +117,16 @@ class FastViterbi(Predictor):
         # Set first attribute for this bodypart to the x, y coordinates element wise.
         self._viterbi_frames[self._current_frame][bodypart * 2] = np.transpose(coords)
         # Get the probabilities and offsets of the first frame and store them...
-        prob = scmap.get_prob_table(self._current_frame, bodypart)[coords]
-        off_x, off_y = (0, 0) if(scmap.get_offset_map() is None) else scmap.get_offset_map()[self._current_frame,
-                                                                                             coords, bodypart]
-        self._viterbi_frames[self._current_frame][(bodypart * 2) + 1] = np.hstack(self.log(prob), off_x, off_y, prob)
+        prob = scmap.get_prob_table(frame, bodypart)[coords]
+        off_x, off_y = (0, 0) if(scmap.get_offset_map() is None) else np.transpose(scmap.get_offset_map()[frame,
+                                                                                       coords[0], coords[1], bodypart])
+        self._viterbi_frames[self._current_frame][(bodypart * 2) + 1] = np.hstack((self.log(prob), off_x, off_y, prob))
 
 
-    def _compute_normal_frame(self, bodypart: int, scmap: TrackingData):
+    def _compute_normal_frame(self, bodypart: int, frame: int, scmap: TrackingData):
         """ Computes and inserts a frame that has occurred after the first data-full frame. """
         # Get coordinates for all above threshold probabilities in this frame...
-        coords = np.nonzero(scmap.get_prob_table(self._current_frame, bodypart) > self.THRESHOLD)
+        coords = np.nonzero(scmap.get_prob_table(frame, bodypart) > self.THRESHOLD)
 
         # If no points are found above the threshold, frame for this bodypart is a dud,
         # copy prior frame probabilities... Also set all old_probabilities to 0 this point can't
@@ -151,10 +151,10 @@ class FastViterbi(Predictor):
         py, px = self._viterbi_frames[self._current_frame - 1][bodypart * 2].transpose()
 
         # Get offset values
-        off_x, off_y = (0, 0) if(scmap.get_offset_map() is None) else scmap.get_offset_map()[self._current_frame,
-                                                                                             coords, bodypart]
+        off_x, off_y = (0, 0) if(scmap.get_offset_map() is None) else np.transpose(scmap.get_offset_map()[frame,
+                                                                                   coords[0], coords[1], bodypart])
         # Grab current non-viterbi probabilities...
-        current_prob = scmap.get_prob_table(self._current_frame, bodypart)[coords]
+        current_prob = scmap.get_prob_table(frame, bodypart)[coords]
         # Grab the prior viterbi probabilities
         prior_vit_probs = self._viterbi_frames[self._current_frame - 1][bodypart * 2][:, 0]
 
@@ -177,7 +177,7 @@ class FastViterbi(Predictor):
             self._down_scaling = scmap.get_down_scaling()
 
             for bp in range(scmap.get_bodypart_count()):
-                self._compute_init_frame(bp, scmap)
+                self._compute_init_frame(bp, 0, scmap)
 
             # Remove first frame from source map, so we can compute the rest as normal...
             scmap.set_source_map(scmap.get_source_map()[1:])
@@ -193,10 +193,10 @@ class FastViterbi(Predictor):
                 # If the prior frame was a dud frame and all frames before it where dud frames, try initializing
                 # on this frame... Note in a dud frame all points are below threshold...
                 if(self._viterbi_frames[self._current_frame - 1][bp * 2] is None):
-                    self._compute_init_frame(bp, scmap)
+                    self._compute_init_frame(bp, frame, scmap)
                 # Otherwise we can do full viterbi on this frame...
                 else:
-                    self._compute_normal_frame(bp, scmap)
+                    self._compute_normal_frame(bp, frame, scmap)
 
             # Increment frame counter
             self._current_frame += 1
@@ -231,7 +231,7 @@ class FastViterbi(Predictor):
         # To eventually store all poses
         all_poses = Pose.empty_pose(self._num_frames, len(self._bodyparts))
         # Points of the 'prior' frame (really the current frame)
-        prior_points: List[Tuple[int, int, float]]= []
+        prior_points: List[Tuple[int, int, float]] = []
 
         # Initial frame...
         for bp in range(len(self._bodyparts)):

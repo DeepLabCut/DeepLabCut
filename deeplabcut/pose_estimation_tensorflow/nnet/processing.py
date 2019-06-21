@@ -11,6 +11,7 @@ from abc import abstractmethod
 # Used for type hints
 from numpy import ndarray
 from typing import List, Union, Type, Tuple, Set, Sequence, Dict, Any
+from types import MethodType
 import tqdm
 
 # Used by get_predictor for loading plugins
@@ -544,6 +545,10 @@ class Predictor(ABC):
 
     Predictors accept a source map of data received.
     """
+
+    # Stores the test methods for a given plugin...
+    _TEST_METHODS: List[MethodType] = None
+
     @abstractmethod
     def __init__(self, bodyparts: List[str], num_frames: int, settings: Union[Dict[str, Any], None]):
         """
