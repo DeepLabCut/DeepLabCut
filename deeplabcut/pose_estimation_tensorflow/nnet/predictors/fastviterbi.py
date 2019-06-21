@@ -72,12 +72,12 @@ class FastViterbi(Predictor):
         self._gaussian_table
         """
         # Allocate gaussian table of width x height...
-        self._gaussian_table = np.zeros((width, height), dtype="float32")
+        self._gaussian_table = np.zeros((height, width), dtype="float32")
 
         # Iterate through filling in the values, using (0, 0) as the prior coordinate
         for y in range(height):
             for x in range(width):
-                self._gaussian_table[x, y] = self.log(self._gaussian_formula(0, x, 0, y))
+                self._gaussian_table[y, x] = self.log(self._gaussian_formula(0, x, 0, y))
 
         # Done, return...
         return
@@ -98,9 +98,9 @@ class FastViterbi(Predictor):
         delta_x = np.abs(np.expand_dims(current_xs, axis=1) - np.expand_dims(prior_xs, axis=0))
         delta_y = np.abs(np.expand_dims(current_ys, axis=1) - np.expand_dims(prior_ys, axis=0))
 
-        # Return the current_frame by prior_frame gaussian array by just plugging in x and y indexes...
+        # Return the current_frame by prior_frame gaussian array by just plugging in y and x indexes...
         # This is the easiest way I have found to do it but I am sure there is a better way...
-        return self._gaussian_table[delta_x.flatten(), delta_y.flatten()].reshape(delta_y.shape)
+        return self._gaussian_table[delta_y.flatten(), delta_x.flatten()].reshape(delta_y.shape)
 
 
     def _compute_init_frame(self, bodypart: int, frame: int, scmap: TrackingData):
@@ -114,13 +114,13 @@ class FastViterbi(Predictor):
             self._viterbi_frames[self._current_frame][(bodypart * 2) + 1] = None
             return
 
-        # Set first attribute for this bodypart to the x, y coordinates element wise.
+        # Set first attribute for this bodypart to the y, x coordinates element wise.
         self._viterbi_frames[self._current_frame][bodypart * 2] = np.transpose(coords)
         # Get the probabilities and offsets of the first frame and store them...
         prob = scmap.get_prob_table(frame, bodypart)[coords]
         off_x, off_y = (0, 0) if(scmap.get_offset_map() is None) else np.transpose(scmap.get_offset_map()[frame,
                                                                                        coords[0], coords[1], bodypart])
-        self._viterbi_frames[self._current_frame][(bodypart * 2) + 1] = np.hstack((self.log(prob), off_x, off_y, prob))
+        self._viterbi_frames[self._current_frame][(bodypart * 2) + 1] = np.transpose((self.log(prob), off_x, off_y, prob))
 
 
     def _compute_normal_frame(self, bodypart: int, frame: int, scmap: TrackingData):
@@ -161,7 +161,7 @@ class FastViterbi(Predictor):
         # Perform viterbi computation and set this frame to the final viterbi frame...
         viterbi_vals = (np.expand_dims(self.log(current_prob), axis=1) + np.expand_dims(prior_vit_probs, axis=0) +
                        self._gaussian_values_at(cx, cy, px, py))
-        self._viterbi_frames[self._current_frame][bodypart * 2 + 1] = np.hstack((np.max(viterbi_vals, axis=1),
+        self._viterbi_frames[self._current_frame][bodypart * 2 + 1] = np.transpose((np.max(viterbi_vals, axis=1),
                                                                                  off_x, off_y, current_prob))
 
 
@@ -315,3 +315,11 @@ class FastViterbi(Predictor):
         return ("A predictor that applies the Viterbi algorithm to frames in order to predict poses.\n"
                 "The algorithm is frame-aware, unlike the default algorithm used by DeepLabCut, but\n"
                 "is also more memory intensive and computationally expensive.")
+
+
+def plugin():
+    fv = FastViterbi(["nose"], 1, {name:val for (name, __, val) in FastViterbi.get_settings()})
+    print(fv._compute_gaussian_table(4, 4))
+
+if(__name__ == "__main__"):
+    plugin()
