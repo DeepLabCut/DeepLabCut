@@ -3,17 +3,10 @@ name: Bug report
 about: Create a report to help us improve
 
 ---
-**Your Operating system and DeepLabCut version**
 
-Please state your operating system, env, and which version of DeepLabCut you are using.
-Example: Ubuntu 16.04 LTS, with an Anaconda Env, & DeepLabCut1.x or 2.x.
-
-**If applicable, please also complete the following information:**
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
- 
 **Describe the bug**
-A clear and concise description of what the bug is!
+A clear and concise description of what the bug is. 
+Please provide the minimal required code to re-produce the error.
 
 **To Reproduce**
 Steps to reproduce the behavior:
@@ -27,6 +20,11 @@ A clear and concise description of what you expected to happen.
 
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
+
+**Desktop (please complete the following information about your system):**
+ - OS: [e.g. iOS]
+ - DeepLabCut Version [e.g. 22] (please check with ``import deeplabcut``, ``deeplabcut.__version__``)
+ - Browser [e.g. chrome, safari]
 
 **Additional context**
 Add any other context about the problem here.

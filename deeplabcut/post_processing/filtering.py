@@ -1,11 +1,11 @@
 """
-DeepLabCut2.0 Toolbox
+DeepLabCut2.0 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
+Please see AUTHORS for contributors.
 
-A Mathis, alexander.mathis@bethgelab.org
-T Nath, nath@rowland.harvard.edu
-M Mathis, mackenzie@post.harvard.edu
-
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
 """
 import numpy as np
 import os
@@ -23,7 +23,7 @@ from skimage.util import img_as_ubyte
 from scipy import signal
 
 
-def filterpredictions(config,video,videotype='avi',shuffle=1,trainingsetindex=0,filterype='median',windowlength=5,p_bound=.001,ARdegree=3,MAdegree=1,alpha=.01,save_as_csv=True,destfolder=None):
+def filterpredictions(config,video,videotype='avi',shuffle=1,trainingsetindex=0,filtertype='median',windowlength=5,p_bound=.001,ARdegree=3,MAdegree=1,alpha=.01,save_as_csv=True,destfolder=None):
     """
     
     Fits frame-by-frame pose predictions with ARIMA model (filtertype='arima') or median filter (default).
@@ -43,7 +43,7 @@ def filterpredictions(config,video,videotype='avi',shuffle=1,trainingsetindex=0,
     trainingsetindex: int, optional
         Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
 
-    filterype: string
+    filtertype: string
         Select which filter, 'arima' or 'median' filter. 
     
     windowlength: int
@@ -99,7 +99,8 @@ def filterpredictions(config,video,videotype='avi',shuffle=1,trainingsetindex=0,
             if destfolder is None:
                 destfolder = str(Path(video).parents[0])
             
-            print("Filtering with ARIMA model %s",video)
+            print("Filtering with %s model %s"%(filtertype,video))
+#            print("Filtering with ARIMA model %s",video)
             videofolder = str(Path(video).parents[0])
             dataname = str(Path(video).stem)+scorer
             filteredname=dataname.split('.h5')[0]+'filtered.h5'
@@ -113,7 +114,7 @@ def filterpredictions(config,video,videotype='avi',shuffle=1,trainingsetindex=0,
                         pdindex = pd.MultiIndex.from_product([[scorer], [bp], ['x', 'y','likelihood']],names=['scorer', 'bodyparts', 'coords'])
                         x,y,p=Dataframe[scorer][bp]['x'].values,Dataframe[scorer][bp]['y'].values,Dataframe[scorer][bp]['likelihood'].values
                         
-                        if filterype=='arima':
+                        if filtertype=='arima':
                             meanx,CIx=FitSARIMAXModel(x,p,p_bound,alpha,ARdegree,MAdegree,False)
                             meany,CIy=FitSARIMAXModel(y,p,p_bound,alpha,ARdegree,MAdegree,False)
                             

@@ -1,14 +1,18 @@
-# Quick Anaconda Install for Windows and MacOS!
+# Quick Anaconda Install for Windows 10 and MacOS!
 ### Please use one (or more) of the supplied Anaconda environments for a fast and easy installation process.
 
 (0) Be sure you have Anaconda 3 installed! https://www.anaconda.com/distribution/, and get familiar with using "cmd" or terminal!
 
-(1) download or git clone this repo (in the terminal/cmd program, while in a folder you wish to place DeepLabCut 
-type ``git clone https://github.com/AlexEMG/DeepLabCut.git``
+(1) Either go to www.deeplabcut.org to download the correct environment file:
 
-(2) "cd", i.e. go into, the folder named ``conda-environments``
+<p align="center">
+<img src= https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559946970288-746C71KJ8S0QHRWX6J7K/ke17ZwdGBToddI8pDm48kELMDNUlnb4MkVstKRkN11VZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIgSbWMtmBz9ZfqPOQ4lPb9Tf93k5QH8_hDHLJHb65L6A/installimage.png?format=1000w width="60%">
+</p>
 
-(2) Now, depending on which file you want to use, in your terminal type: 
+or download or git clone this repo (in the terminal/cmd program, while in a folder you wish to place DeepLabCut 
+type ``git clone https://github.com/AlexEMG/DeepLabCut.git`` Now, "cd", i.e. go into, the folder named ``conda-environments``
+
+(2) Now, depending on which file you want to use (if **WindowsGPU**, see extra note below), open the program terminal or cmd where you placed the file and type: 
 
 ``conda env create -f dlc-macOS-CPU.yaml``
 
@@ -35,3 +39,6 @@ Once you are in the terminal type:
 
 Here are some conda environment management tips: https://kapeli.com/cheat_sheets/Conda.docset/Contents/Resources/Documents/index
 
+**WindowsGPU:** The ONLY thing you need to do first if have an NVIDIA driver installed, and CUDA (currently, TensorFlow 1.13 is installed inside the env, so you can install CUDA 10 and an appropriate driver).
+- DRIVERS: https://www.nvidia.com/Download/index.aspx
+- CUDA: https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html#verify-you-have-cuda-enabled-system

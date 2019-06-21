@@ -1,15 +1,11 @@
 """
-DeepLabCut2.0 Toolbox
+DeepLabCut2.0 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
-A Mathis, alexander.mathis@bethgelab.org
-T Nath, nath@rowland.harvard.edu
-M Mathis, mackenzie@post.harvard.edu
+Please see AUTHORS for contributors.
 
-The feature detectors in DeepLabCut are based of DeeperCut.
-Our toolbox provides an interface to DeeperCut by Eldar Insafutdinov et al.
-https://github.com/eldar/pose-tensorflow
-
-Pose_Estimation_Tensorflow is based of Eldar's repository.
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
 """
 from deeplabcut.pose_estimation_tensorflow.dataset.factory import *
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import *

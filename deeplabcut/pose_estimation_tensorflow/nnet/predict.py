@@ -1,9 +1,16 @@
 '''
 Adapted from original predict.py by Eldar Insafutdinov's implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow)
-To do faster inference on videos. See https://www.biorxiv.org/content/early/2018/10/30/457242
 
 Source: DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
+
+
+To do faster inference on videos:
+
+"On the inference speed and video-compression robustness of DeepLabCut"
+Alexander Mathis & Richard Warren
+doi: https://doi.org/10.1101/457242
+See https://www.biorxiv.org/content/early/2018/10/30/457242
 '''
 
 import numpy as np
@@ -84,7 +91,8 @@ def extract_cnn_outputmulti(outputs_np, cfg):
 
 
 def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
-    ''' Adapted from DeeperCut, performs numpy-based faster inference on batches'''
+    ''' Adapted from DeeperCut, performs numpy-based faster inference on batches. 
+	Introduced in https://www.biorxiv.org/content/10.1101/457242v1 '''
     outputs_np = sess.run(outputs, feed_dict={inputs: image})
     
     scmap, locref = extract_cnn_outputmulti(outputs_np, cfg) #processes image batch.
