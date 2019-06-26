@@ -46,7 +46,7 @@ class FastViterbi(Predictor):
 
     @staticmethod
     def log(num):
-        """ Computes and returns the natural logarithim of the number or numpy array """
+        """ Computes and returns the natural logarithm of the number or numpy array """
         return np.log(num)
 
     def _gaussian_formula(self, prior_x: float, x: float, prior_y: float, y: float) -> float:
@@ -82,7 +82,7 @@ class FastViterbi(Predictor):
         # Done, return...
         return
 
-
+    # TODO: TEST FOR ERRORS
     def _gaussian_values_at(self, current_xs: ndarray, current_ys: ndarray, prior_xs: ndarray, prior_ys: ndarray) -> ndarray:
         """
         Get the gaussian values for a collection of points provided as arrays....
@@ -103,6 +103,7 @@ class FastViterbi(Predictor):
         return self._gaussian_table[delta_y.flatten(), delta_x.flatten()].reshape(delta_y.shape)
 
 
+    # TODO: TEST FOR ERRORS
     def _compute_init_frame(self, bodypart: int, frame: int, scmap: TrackingData):
         """ Inserts the initial frame, or first frame to have actual points that are above the threshold. """
         # Get coordinates for all above threshold probabilities in this frame...
@@ -122,7 +123,7 @@ class FastViterbi(Predictor):
                                                                                        coords[0], coords[1], bodypart])
         self._viterbi_frames[self._current_frame][(bodypart * 2) + 1] = np.transpose((self.log(prob), off_x, off_y, prob))
 
-
+    # TODO: TEST FOR ERRORS
     def _compute_normal_frame(self, bodypart: int, frame: int, scmap: TrackingData):
         """ Computes and inserts a frame that has occurred after the first data-full frame. """
         # Get coordinates for all above threshold probabilities in this frame...
@@ -164,7 +165,7 @@ class FastViterbi(Predictor):
         self._viterbi_frames[self._current_frame][bodypart * 2 + 1] = np.transpose((np.max(viterbi_vals, axis=1),
                                                                                  off_x, off_y, current_prob))
 
-
+    # TODO: TEST FOR ERRORS
     def on_frames(self, scmap: TrackingData) -> Union[None, Pose]:
         """ Handles Forward part of the viterbi algorithm, allowing for faster post processing. """
         # If gaussian_table is none, we have just started, initialize all variables...
@@ -204,7 +205,7 @@ class FastViterbi(Predictor):
         # Still processing frames, return None to indicate that...
         return None
 
-
+    # TODO: TEST FOR ERRORS
     def _get_prior_frame(self, prior_frame: List[Union[ndarray, None]], current_point: Tuple[int, int, float]) -> Union[Tuple[int, Tuple[int, int, float]], Tuple[None, None]]:
         """
         Performs the viterbi back computation, given prior frame and current predicted point,
@@ -223,6 +224,7 @@ class FastViterbi(Predictor):
         return (max_loc, (prior_frame[0][max_loc][1], prior_frame[0][max_loc][0], prior_frame[1][max_loc][0]))
 
 
+    # TODO: TEST FOR ERRORS
     def on_end(self, progress_bar: tqdm.tqdm) -> Union[None, Pose]:
         """ Handles backward part of viterbi, and then returns the poses """
         # TODO: BACK COMPUTATION.......
@@ -279,8 +281,10 @@ class FastViterbi(Predictor):
                 current_points.append(max_point)
                 # Add current max to pose object...
                 coord_data, prob_data = self._viterbi_frames[r_counter][(bp * 2):(bp * 2) + 2]
-                all_poses.set_at(r_counter, bp, coord_data[max_loc], prob_data[max_loc, 1:3], prob_data[max_loc, 0],
-                                 self._down_scaling)
+
+                # TODO: ERROR RIGHT HERE, Points are put in backwards (y, x) instead of (x, y).
+                all_poses.set_at(r_counter, bp, reversed(coord_data[max_loc]), prob_data[max_loc, 1:3],
+                                 prob_data[max_loc, 0], self._down_scaling)
 
             # Set prior_points to current_points...
             prior_points = current_points
@@ -315,11 +319,3 @@ class FastViterbi(Predictor):
         return ("A predictor that applies the Viterbi algorithm to frames in order to predict poses.\n"
                 "The algorithm is frame-aware, unlike the default algorithm used by DeepLabCut, but\n"
                 "is also more memory intensive and computationally expensive.")
-
-
-def plugin():
-    fv = FastViterbi(["nose"], 1, {name:val for (name, __, val) in FastViterbi.get_settings()})
-    print(fv._compute_gaussian_table(4, 4))
-
-if(__name__ == "__main__"):
-    plugin()
