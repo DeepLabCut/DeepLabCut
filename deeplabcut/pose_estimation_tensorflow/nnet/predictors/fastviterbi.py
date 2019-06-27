@@ -282,9 +282,8 @@ class FastViterbi(Predictor):
                 # Add current max to pose object...
                 coord_data, prob_data = self._viterbi_frames[r_counter][(bp * 2):(bp * 2) + 2]
 
-                # TODO: ERROR RIGHT HERE, Points are put in backwards (y, x) instead of (x, y).
                 all_poses.set_at(r_counter, bp, reversed(coord_data[max_loc]), prob_data[max_loc, 1:3],
-                                 prob_data[max_loc, 0], self._down_scaling)
+                                 prob_data[max_loc, 3], self._down_scaling)
 
             # Set prior_points to current_points...
             prior_points = current_points
