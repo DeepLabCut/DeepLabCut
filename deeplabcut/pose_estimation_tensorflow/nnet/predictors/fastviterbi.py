@@ -82,7 +82,6 @@ class FastViterbi(Predictor):
         # Done, return...
         return
 
-    # TODO: TEST FOR ERRORS
     def _gaussian_values_at(self, current_xs: ndarray, current_ys: ndarray, prior_xs: ndarray, prior_ys: ndarray) -> ndarray:
         """
         Get the gaussian values for a collection of points provided as arrays....
@@ -119,8 +118,8 @@ class FastViterbi(Predictor):
         self._viterbi_frames[self._current_frame][bodypart * 2] = np.transpose(coords)
         # Get the probabilities and offsets of the first frame and store them...
         prob = scmap.get_prob_table(frame, bodypart)[coords]
-        off_x, off_y = (0, 0) if(scmap.get_offset_map() is None) else np.transpose(scmap.get_offset_map()[frame,
-                                                                                       coords[0], coords[1], bodypart])
+        off_x, off_y = np.zeros(np.transpose(coords).shape) if(scmap.get_offset_map() is None) else np.transpose(
+                       scmap.get_offset_map()[frame, coords[0], coords[1], bodypart])
         self._viterbi_frames[self._current_frame][(bodypart * 2) + 1] = np.transpose((self.log(prob), off_x, off_y, prob))
 
     # TODO: TEST FOR ERRORS
@@ -133,11 +132,12 @@ class FastViterbi(Predictor):
         # copy prior frame probabilities... Also set all old_probabilities to 0 this point can't
         # be plotted...
         if (len(coords[0]) == 0):
+            # TODO: Bug here, array is copied by refrence... then a value is assigned, added np.copy calls
             self._viterbi_frames[self._current_frame][bodypart * 2] = (
-                self._viterbi_frames[self._current_frame - 1][bodypart * 2]
+                np.copy(self._viterbi_frames[self._current_frame - 1][bodypart * 2])
             )
             self._viterbi_frames[self._current_frame][(bodypart * 2) + 1] = (
-                self._viterbi_frames[self._current_frame - 1][bodypart * 2 + 1]
+                np.copy(self._viterbi_frames[self._current_frame - 1][bodypart * 2 + 1])
             )
             self._viterbi_frames[self._current_frame][(bodypart * 2) + 1][:, 3] = 0
             return
@@ -152,8 +152,8 @@ class FastViterbi(Predictor):
         py, px = self._viterbi_frames[self._current_frame - 1][bodypart * 2].transpose()
 
         # Get offset values
-        off_x, off_y = (0, 0) if(scmap.get_offset_map() is None) else np.transpose(scmap.get_offset_map()[frame,
-                                                                                   coords[0], coords[1], bodypart])
+        off_x, off_y = np.zeros(np.array(coords).shape) if(scmap.get_offset_map() is None) else np.transpose(
+                       scmap.get_offset_map()[frame, coords[0], coords[1], bodypart])
         # Grab current non-viterbi probabilities...
         current_prob = scmap.get_prob_table(frame, bodypart)[coords]
         # Grab the prior viterbi probabilities

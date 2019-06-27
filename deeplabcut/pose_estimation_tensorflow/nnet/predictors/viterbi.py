@@ -28,7 +28,7 @@ class Viterbi(Predictor):
         self._num_frames = num_frames
         # Used to store viterbi frames
         self._viterbi_frames: TrackingData= None
-        # Store the original DLC probabilities...
+        # Store the original DLC probabilities...968261996
         self._old_probs: TrackingData = None
         self._current_frame = 0
         # Precomputed gaussian table. We don't know the width and height of frames yet, so set to none...
