@@ -170,4 +170,4 @@ dependencies:
   - zstd=1.4.0=h3b9ef0a_0
   - pip:
     - opencv-python==3.4.5.20
-    - deeplabcut==2.0.7
+    - deeplabcut
