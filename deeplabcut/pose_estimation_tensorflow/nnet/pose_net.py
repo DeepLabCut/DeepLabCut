@@ -12,7 +12,8 @@ from deeplabcut.pose_estimation_tensorflow.nnet import losses
 
 
 net_funcs = {'resnet_50': resnet_v1.resnet_v1_50,
-             'resnet_101': resnet_v1.resnet_v1_101}
+             'resnet_101': resnet_v1.resnet_v1_101,
+             'resnet_152': resnet_v1.resnet_v1_152}
 
 
 def prediction_layer(cfg, input, name, num_outputs):
@@ -96,6 +97,9 @@ class PoseNet:
 
     def train(self, batch):
         cfg = self.cfg
+        
+        if cfg.deterministic:
+            tf.set_random_seed(42)
 
         heads = self.get_net(batch[Batch.inputs])
 
