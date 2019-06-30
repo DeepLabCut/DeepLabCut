@@ -212,7 +212,7 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,filtert
             auxiliaryfunctions_3d.SaveMetadata3d(str(output_filename+'_includingmetadata.pickle'), metadata)
             
             if save_as_csv:
-                df_3d.to_csv(str(output_filename+'.csv'),'df_with_missing',format='table', mode='w')
+                df_3d.to_csv(str(output_filename+'.csv'))
     
             print("Triangulated data for video", vname)
             print("Results are saved under: ",destfolder)
