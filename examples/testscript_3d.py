@@ -132,7 +132,7 @@ deeplabcut.check_undistortion(path_config_file)
 
 print("TRIANGULATING")
 video_dir = os.path.join(basepath,folder)
-deeplabcut.triangulate(path_config_file,video_dir)
+deeplabcut.triangulate(path_config_file,video_dir,save_as_csv=True)
 
 
 print("CREATING LABELED VIDEO 3-D")
