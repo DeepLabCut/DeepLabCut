@@ -213,15 +213,7 @@ def analyzeskeleton(config, video, videotype='avi', shuffle=1, trainingsetindex=
 			print("Video not analyzed -- Run analyze_videos first.")
 					
 if __name__ == '__main__':
-	# parser = argparse.ArgumentParser()
-	# parser.add_argument('config')
-	# parser.add_argument('videos')
-	# cli_args = parser.parse_args()
-
-	fld = "D:\\Dropbox (UCL - SWC)\\Rotation_vte\\DLC_nets\\Nets\\maze_joined-Federico-2019-02-22"
-
-	video = [os.path.join(fld, "videos", v) for v in os.listdir(os.path.join(fld, "videos"))][0]
-	config = os.path.join(fld, "config.yaml")
-
-
-	analyzeskeleton(config, video, videotype='mp4')
+	parser = argparse.ArgumentParser()
+	parser.add_argument('config')
+	parser.add_argument('videos')
+	cli_args = parser.parse_args()
