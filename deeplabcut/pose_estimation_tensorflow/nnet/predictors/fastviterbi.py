@@ -320,17 +320,4 @@ class FastViterbi(Predictor):
 
     @classmethod
     def get_tests(cls) -> Union[List[Callable[[], Tuple[bool, str, str]]], None]:
-        return [cls.rand_test]
-
-    @staticmethod
-    def rand_test() -> Tuple[bool, str, str]:
-        """ Test for testing test printer method... """
-        import random
-        random_int = random.randint(1, 3)
-
-        if(random_int == 1):
-            return (False, "Foo", "Bar")
-        elif(random_int == 2):
-            return (True, "Foo", "Foo")
-        else:
-            raise ValueError("GAAAAA!!!!")
+        return None
