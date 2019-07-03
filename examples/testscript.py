@@ -38,6 +38,7 @@ cfg=deeplabcut.auxiliaryfunctions.read_config(path_config_file)
 cfg['numframes2pick']=5
 cfg['pcutoff']=0.01
 cfg['TrainingFraction']=[.8]
+cfg['skeleton']=[['bodypart1','bodypart2'],['bodypart1','bodypart3']]
 
 deeplabcut.auxiliaryfunctions.write_config(path_config_file,cfg)
 
@@ -144,7 +145,8 @@ deeplabcut.train_network(path_config_file)
 print("Inference with new direct cropping")
 deeplabcut.analyze_videos(path_config_file,[newvideo],destfolder=dfolder,cropping=[0,50,0,50],save_as_csv=True)
 
-print("Filter and plot filtered output")
+print("Extracting skeleton distances, filter and plot filtered output")
+deeplabcut.analyzeskeleton(path_config_file, [newvideo], save_as_csv=True, destfolder=dfolder)
 deeplabcut.filterpredictions(path_config_file,[newvideo])
 
 #deeplabcut.create_labeled_video(path_config_file,[newvideo], destfolder=dfolder,filtered=True)
