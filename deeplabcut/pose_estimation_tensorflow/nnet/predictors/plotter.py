@@ -1,6 +1,6 @@
 
 # For types in methods
-from typing import Union, List, Tuple, Any, Dict
+from typing import Union, List, Tuple, Any, Dict, Callable
 
 import tqdm
 
@@ -115,3 +115,7 @@ class PlotterArgMax(Predictor):
     def get_description() -> str:
         return "Identical to singleargmax, but plots a video of probability frames using matplotlib \n" \
                "during processing..."
+
+    @classmethod
+    def get_tests(cls) -> Union[List[Callable[[], Tuple[bool, str, str]]], None]:
+        return None

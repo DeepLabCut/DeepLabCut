@@ -706,6 +706,7 @@ def get_predictor_settings(predictor_name = None):
     """
     from typing import Iterable
 
+    # Convert whatever the predictor_name argument is to a list of predictor plugins
     if(predictor_name is None):
         predictors = processing.get_predictor_plugins()
     elif(isinstance(predictor_name, str)):
@@ -715,6 +716,7 @@ def get_predictor_settings(predictor_name = None):
     else:
         raise ValueError("Argument 'predictor_name' not of type Iterable[str], string, or None!!!")
 
+    # Print name, and settings for each plugin.
     for predictor in predictors:
         print(f"Plugin Name: {predictor.get_name()}")
         print("Arguments: ")
@@ -725,6 +727,68 @@ def get_predictor_settings(predictor_name = None):
                 print(f"Name: '{name}'")
                 print(f"Description: \n{desc}")
                 print(f"Default Value: {def_val} \n")
+        print()
+
+
+def test_predictor_plugin(predictor_name = None, interactive = False):
+    """
+    Run the tests for a predictor plugin.
+
+    :param predictor_name: The name of the predictor or to run tests for, or a list of names of the predictors to run.
+                           If the predictor_name is not specified or set to None, then run tests for all of the
+                           predictor plugins...
+                           Note: names are strings...
+    :param interactive: A boolean. If True, the program will wait for user input after every test, to allow the user
+                        to easily read test one by one... If false, all tests will be run at once with no user
+                        interaction. Defaults to false.
+
+
+    :return: Nothing, prints test info to console...
+    """
+    from typing import Iterable
+    import traceback
+
+    # Convert whatever the predictor_name argument is to a list of predictor plugins
+    if(predictor_name is None):
+        predictors = processing.get_predictor_plugins()
+    elif(isinstance(predictor_name, str)):
+        predictors = [processing.get_predictor(predictor_name)]
+    elif(isinstance(predictor_name, Iterable)):
+        predictors = [processing.get_predictor(name) for name in predictor_name]
+    else:
+        raise ValueError("Argument 'predictor_name' not of type Iterable[str], string, or None!!!")
+
+    # Test plugins by calling there tests...
+    for predictor in predictors:
+        print(f"Testing Plugin: {predictor.get_name()}")\
+        # Get the tests...
+        tests = predictor.get_tests()
+
+        # If this test contains no test, let the user know and move to the next plugin.
+        if(tests is None):
+            print(f"Plugin {predictor.get_name()} has no tests...")
+            print()
+            continue
+
+        # Iterate tests printing there results...
+        for test_meth in tests:
+            print(f"Running Test {test_meth.__name__}:")
+            try:
+                passed, expected, actual = test_meth()
+
+                print(f"Results: {'Passed' if passed else 'Failed'}")
+                if(not passed):
+                    print(f"Expected Results: {expected}")
+                    print(f"Actual Results: {actual}")
+
+            except Exception as excep:
+                print("Results: Failed With Exception")
+                traceback.print_exception(excep, excep, excep.__traceback__)
+            finally:
+                print()
+                if(interactive):
+                    input("Press Enter To Continue: ")
+                    print()
         print()
 
 

@@ -10,7 +10,7 @@ from abc import abstractmethod
 
 # Used for type hints
 from numpy import ndarray
-from typing import List, Union, Type, Tuple, Set, Sequence, Dict, Any
+from typing import List, Union, Type, Tuple, Set, Sequence, Dict, Any, Callable
 from types import MethodType
 import tqdm
 
@@ -632,6 +632,28 @@ class Predictor(ABC):
                                              set explicitly in the DeepLabCut config by the user...
 
                   If this predictor plugin has no configurable settings, this method should return None.
+        """
+        pass
+
+    @classmethod
+    @abstractmethod
+    def get_tests(cls) -> Union[List[Callable[[], Tuple[bool, str, str]]], None]:
+        """
+        Get the test methods for this plugin.
+
+        :return: A list of callable objects(aka. methods) or None if no test methods exist. The callables in the list
+                 should accept no arguments and return a tuple of 3 items, where these values should be:
+
+                    - Test Success: A Boolean, True if test was successful, otherwise false.
+
+                    - Test Expected Results: A string, a human readable string representing the expected results of this
+                                             test.
+                    - Test Actual Results: A string, a human readable string representing the actual results that the
+                                           the test method received. If test was successful, this should match the
+                                           expected results value.
+                 Another valid response from the test methods is to throw an exception, in which case the test is
+                 considered a failure and the stack trace is printed instead of the expected/actual results.
+
         """
         pass
 

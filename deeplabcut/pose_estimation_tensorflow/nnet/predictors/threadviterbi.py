@@ -1,5 +1,5 @@
 # For types in methods
-from typing import Union, List, Tuple, Dict, Any
+from typing import Union, List, Tuple, Dict, Any, Callable
 from numpy import ndarray
 import tqdm
 
@@ -290,10 +290,14 @@ class Viterbi(Predictor):
 
     @staticmethod
     def get_name() -> str:
-        return "threadviterbi"
+        return "viterbi"
 
     @staticmethod
     def get_description() -> str:
         return ("A predictor that applies the Viterbi algorithm to frames in order to predict poses.\n"
                 "The algorithm is frame-aware, unlike the default algorithm used by DeepLabCut, but\n"
                 "is also more memory intensive and computationally expensive.")
+
+    @classmethod
+    def get_tests(cls) -> Union[List[Callable[[], Tuple[bool, str, str]]], None]:
+        return None

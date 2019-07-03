@@ -1,5 +1,5 @@
 # For types in methods
-from typing import Union, List, Tuple, Any, Dict
+from typing import Union, List, Tuple, Any, Dict, Callable
 from numpy import ndarray
 import tqdm
 
@@ -13,6 +13,7 @@ import numpy as np
 
 
 class FastViterbi(Predictor):
+    # STABLE STATE 1:
     """
     A predictor that applies the Viterbi algorithm to frames in order to predict poses.
     The algorithm is frame-aware, unlike the default algorithm used by DeepLabCut, but
@@ -296,7 +297,7 @@ class FastViterbi(Predictor):
     def get_settings() -> Union[List[Tuple[str, str, Any]], None]:
         return [
             ("norm_dist", "The normal distribution of the 2D gaussian curve used \n"
-                          "for transition probabilities by the viterbi algorithm.", 5),
+                          "for transition probabilities by the viterbi algorithm.", 3),
             ("amplitude", "The amplitude of the gaussian curve used by the viterbi algorithm.", 1),
             ("lowest_gaussian_value", "The lowest value of the gaussian curve used by the viterbi algorithm. \n"
                                       "Really a constant that is added on the the 2D gaussian to give all points\n"
@@ -316,3 +317,20 @@ class FastViterbi(Predictor):
                 "is also more memory intensive and computationally expensive. This specific implementation \n"
                 "uses sparse matrix multiplication(log addition) for massive speedup over the normal \n"
                 "viterbi implementation...")
+
+    @classmethod
+    def get_tests(cls) -> Union[List[Callable[[], Tuple[bool, str, str]]], None]:
+        return [cls.rand_test]
+
+    @staticmethod
+    def rand_test() -> Tuple[bool, str, str]:
+        """ Test for testing test printer method... """
+        import random
+        random_int = random.randint(1, 3)
+
+        if(random_int == 1):
+            return (False, "Foo", "Bar")
+        elif(random_int == 2):
+            return (True, "Foo", "Foo")
+        else:
+            raise ValueError("GAAAAA!!!!")

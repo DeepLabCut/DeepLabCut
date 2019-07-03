@@ -1,6 +1,6 @@
 
 # For types in methods
-from typing import Union, List, Tuple, Any
+from typing import Union, List, Tuple, Any, Callable
 
 # Plugin base class
 from deeplabcut.pose_estimation_tensorflow.nnet.processing import Predictor
@@ -38,3 +38,7 @@ class SingleArgMaxPredict(Predictor):
         return ("Default processor for DeepLabCut, and was the code originally used by DeepLabCut \n"
                 "historically. Predicts the point from the probability frames simply by selecting \n"
                 "the max probability in the frame.")
+
+    @classmethod
+    def get_tests(cls) -> Union[List[Callable[[], Tuple[bool, str, str]]], None]:
+        return None

@@ -1,4 +1,4 @@
-from typing import Union, List, Tuple, Any, Dict
+from typing import Union, List, Tuple, Any, Dict, Callable
 import tqdm
 from deeplabcut.pose_estimation_tensorflow.nnet.processing import Predictor, Pose, TrackingData
 import numpy as np
@@ -9,10 +9,6 @@ class GaussianArgMax(Predictor):
     Predictor plugin that computes the next frame's max by multiplying the current frame by a gaussian centered at the
     prior frame's maximum point location.
     """
-    # Global values for the gaussian formula, can be adjusted for differing results...
-    NORM_DIST = 5  # The normal distribution
-    AMPLITUDE = 1  # The amplitude, or height of the gaussian curve
-    LOWEST_VAL = 0 # Changes the lowest value that the gaussian curve can produce
 
     def __init__(self, bodyparts: List[str], num_frames: int, settings: Dict[str, Any]):
         """ Creates a new Gaussian arg max predictor... """
@@ -154,3 +150,7 @@ class GaussianArgMax(Predictor):
     def get_description() -> str:
         return ("Predictor plugin that computes the next frame's max by multiplying the current frame by a gaussian\n"
                 "centered at the frame's maximum point location.")
+
+    @classmethod
+    def get_tests(cls) -> Union[List[Callable[[], Tuple[bool, str, str]]], None]:
+        return None
