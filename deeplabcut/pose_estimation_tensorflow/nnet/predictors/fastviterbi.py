@@ -181,7 +181,7 @@ class FastViterbi(Predictor):
         # copy prior frame probabilities... Also set all old_probabilities to 0 this point can't
         # be plotted...
         if (len(coords[0]) == 0):
-            self._edge_vals[self._current_frame, bodypart] = self._edge_vals[self._current_frame - 1][bodypart]
+            self._edge_vals[self._current_frame, bodypart] = self._edge_vals[self._current_frame - 1, bodypart]
 
             self._viterbi_frames[self._current_frame][bodypart * 2] = (
                 np.copy(self._viterbi_frames[self._current_frame - 1][bodypart * 2])
@@ -208,22 +208,29 @@ class FastViterbi(Predictor):
         # Grab current non-viterbi probabilities...
         current_prob = scmap.get_prob_table(frame, bodypart)[coords] * (1 - self.EDGE_PROB)
         # Grab the prior viterbi probabilities
-        prior_vit_probs = self._viterbi_frames[self._current_frame - 1][bodypart * 2][:, 0]
+        prior_vit_probs = self._viterbi_frames[self._current_frame - 1][(bodypart * 2) + 1][:, 0]
 
-        # Perform viterbi computation and set this frame to the final viterbi frame...
-        viterbi_vals = (np.expand_dims(np.log(current_prob), axis=1) + np.expand_dims(prior_vit_probs, axis=0) +
-                       self._gaussian_values_at(cx, cy, px, py))
+        # Compute probabilities of transferring from the prior frame to this frame...
+        frame_to_frame = (np.expand_dims(np.log(current_prob), axis=1) + np.expand_dims(prior_vit_probs, axis=0) +
+                          self._gaussian_values_at(cx, cy, px, py))
+        # Compute the probabilities of transferring from the prior edge to this frame.
+        edge_to_frame = (np.log(current_prob) + self._from_edge_values(cx, cy) +
+                         self._edge_vals[self._current_frame - 1, bodypart])
+        # Merge probabilities of going from the edge to the frame or frame to frame, selecting the max of the two for
+        # each point in this frame.
+        viterbi_vals = np.maximum(np.max(frame_to_frame, axis=1), edge_to_frame)
 
-        # Add in possibly moving from the edge...
-        viterbi_vals = np.maximum(np.max(viterbi_vals, axis=1),
-                                  np.log(current_prob) + self._from_edge_values(cx, cy) +
-                                  self._edge_vals[self._current_frame - 1])
+        # Compute the probability of transitioning from the prior frame to the current edge.....
+        frame_to_edge = np.max(self._to_edge_values(px, py) + prior_vit_probs + np.log(self.EDGE_PROB))
+        # Compute the probability of transitioning from the prior edge to the current edge...
+        edge_to_edge = (self._edge_vals[self._current_frame - 1, bodypart] + np.log(self.AMPLITUDE + self.LOWEST_VAL) +
+                        np.log(self.EDGE_PROB))
 
-        # Compute the probability of transitioning to the edge values, select the max.....
-        self._edge_vals[self._current_frame] = max(np.max(self._to_edge_values(px, py) + prior_vit_probs + np.log(self.EDGE_PROB)),
-                                                   self._edge_vals[self._current_frame - 1] +
-                                                   np.log(self.AMPLITUDE + self.LOWEST_VAL) + np.log(self.EDGE_PROB))
+        # Set the edge value for this frame to the max probability of transferring from the prior edge or the
+        # prior frame...
+        self._edge_vals[self._current_frame, bodypart] = max(frame_to_edge, edge_to_edge)
 
+        # Fill out this viterbi frame with computations done above...
         self._viterbi_frames[self._current_frame][bodypart * 2 + 1] = np.transpose((viterbi_vals,
                                                                                  off_x, off_y, current_prob))
 
@@ -280,7 +287,10 @@ class FastViterbi(Predictor):
         if((prior_frame[0] is None)):
             return None, None
 
+        # Unpack the point
         cx, cy, cprob = current_point
+
+        # If the point is not an edge, do normal viterbi, otherwise do viterbi of a point to an edge...
         if(cy != -1 and cx != -1):
             prior_viterbi = (cprob + self._gaussian_values_at(np.array(cx), np.array(cy), prior_frame[0][:, 1],
                                                               prior_frame[0][:, 0]).flatten() + prior_frame[1][:, 0])
@@ -288,7 +298,7 @@ class FastViterbi(Predictor):
             prior_viterbi = (cprob + self._from_edge_values(prior_frame[0][:, 1], prior_frame[0][:, 0])
                              + prior_frame[1][:, 0])
 
-
+        # Get max probability in list of possible transitions and return it...
         max_loc: int = np.argmax(prior_viterbi)
 
         return (max_loc, (prior_frame[0][max_loc][1], prior_frame[0][max_loc][0], prior_frame[1][max_loc][0]))
@@ -297,6 +307,8 @@ class FastViterbi(Predictor):
     def _get_prior_edge_prob(self, prior_edge_prob: float, current_point: Tuple[int, int, float]) -> int:
         x, y, prob = current_point
 
+        # If the point we are on is an edge, multiply edges by a transition probability of one, otherwise actually
+        # multiply by the transition probability of point to edge...
         if(x == -1 and y == -1):
             return prior_edge_prob + np.log(self.AMPLITUDE + self.LOWEST_VAL) + prob
         else:
@@ -324,9 +336,7 @@ class FastViterbi(Predictor):
 
             # Gather all required fields...
             y, x = self._viterbi_frames[r_counter][(bp * 2)][max_loc]
-            prob = self._viterbi_frames[r_counter][(bp * 2) + 1][max_loc, 0]
-            off_x, off_y = self._viterbi_frames[r_counter][(bp * 2) + 1][max_loc, 1:3]
-            output_prob = self._viterbi_frames[r_counter][(bp * 2) + 1][max_loc, 3]
+            prob, off_x, off_y, output_prob = self._viterbi_frames[r_counter][(bp * 2) + 1][max_loc]
 
             # If the edge is greater then the max point in frame, set prior point to (-1, -1) and pose output
             # probability to 0.
@@ -417,4 +427,31 @@ class FastViterbi(Predictor):
     @classmethod
     # TODO: FINISH WRITING TEST...
     def test_plotting(cls) -> Tuple[bool, str, str]:
-        return (True, "foo", "foo")
+        data = np.zeros((4, 3, 3))
+
+        data[0] = [[0, 0, 0], [0, 1, 0], [0, 0, 0]]
+        data[1] = [[0, 1, 0], [0, 0.5, 0], [0, 0, 0]]
+        data[2] = [[1, 0.5, 0], [0, 0, 0], [0, 0, 0]]
+        data[3] = [[0.5, 0, 0], [1, 0, 0], [0, 0, 0]]
+
+        expected_result = [[1, 1, 1], [0, 1, 1], [0, 0, 1], [1, 0, 1]]
+
+        np.expand_dims(data, axis=1)
+
+        # Make tracking data...
+        track_data = TrackingData(data, None, scaling=1)
+
+        # Make the predictor...
+        predictor = cls(["part1"], 4, {name:val for name, desc, val in cls.get_settings()})
+
+        # Pass it data...
+        predictor.on_frames(data)
+
+        # Check output
+        poses = predictor.on_end(tqdm.tqdm(total=4)).get_all()
+
+        if(poses == expected_result):
+            return (True, str(poses), str(expected_result))
+        else:
+            return (False, str(poses), str(expected_result))
+
