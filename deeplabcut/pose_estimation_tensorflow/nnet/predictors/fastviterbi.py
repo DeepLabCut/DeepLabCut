@@ -435,7 +435,8 @@ class FastViterbi(Predictor):
         track_data.set_prob_table(2, 0, np.array([[1, 0.5, 0], [0, 0, 0], [0, 0, 0]]))
         track_data.set_prob_table(3, 0, np.array([[0.5, 0, 0], [1, 0, 0], [0, 0, 0]]))
 
-        expected_result = [[3, 3, 1], [3, 1, 1], [1, 1, 1], [1, 3, 1]]
+        # Note that probabilities are scaled down due to being adjusted to equal 1 with out of bounds value included...
+        expected_result = [[3, 3, 0.9], [3, 1, 0.9], [1, 1, 0.9], [1, 3, 0.9]]
 
         # Make the predictor...
         predictor = cls(["part1"], track_data.get_frame_count(), {name:val for name, desc, val in cls.get_settings()})
@@ -446,8 +447,8 @@ class FastViterbi(Predictor):
         # Check output
         poses = predictor.on_end(tqdm.tqdm(total=4)).get_all()
 
-        if(np.array_equal(poses, expected_result)):
-            return (True, str(expected_result), str(poses))
+        if(np.allclose(poses, expected_result)):
+            return (True, "\n" + str(expected_result), "\n" + str(np.array(poses)))
         else:
-            return (False, str(expected_result), str(poses))
+            return (False, "\n" + str(expected_result), "\n" + str(np.array(poses)))
 
