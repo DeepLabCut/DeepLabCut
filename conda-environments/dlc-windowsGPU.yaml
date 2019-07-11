@@ -8,7 +8,7 @@
 #https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 #Licensed under GNU Lesser General Public License v3.0
 # 
-# DeepLabCut environment for use on FMI computers
+# DeepLabCut environment
 # FIRST: INSTALL CORRECT DRIVER for GPU, see https://stackoverflow.com/questions/30820513/what-is-the-correct-version-of-cuda-for-my-nvidia-driver/30820690
 # 
 # Suggested by Jan Eglinger see https://github.com/AlexEMG/DeepLabCut/issues/112
@@ -18,8 +18,7 @@
 name: dlc-windowsGPU
 dependencies:
   - python=3.6
-  - msvc_runtime
-  - tensorflow-gpu==1.13
+  - tensorflow-gpu==1.13.1
   - cudnn=7
   - wxpython
   - jupyter

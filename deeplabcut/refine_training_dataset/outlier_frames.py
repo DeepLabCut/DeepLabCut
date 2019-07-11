@@ -46,8 +46,8 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
     trainingsetindex: int, optional
         Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
 
-    outlieralgorithm: 'fitting', 'jump', or 'uncertain', optional
-        String specifying the algorithm used to detect the outliers. Currently, deeplabcut supports three methods. 'Fitting'
+    outlieralgorithm: 'fitting', 'jump', 'uncertain', or 'manual'
+        String specifying the algorithm used to detect the outliers. Currently, deeplabcut supports three methods + a manual GUI option. 'Fitting'
         fits a Auto Regressive Integrated Moving Average model to the data and computes the distance to the estimated data. Larger distances than
         epsilon are then potentially identified as outliers. The methods 'jump' identifies larger jumps than 'epsilon' in any body part; and 'uncertain'
         looks for frames with confidence below p_bound. The default is set to ``jump``.
@@ -169,7 +169,7 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
               from deeplabcut.refine_training_dataset import outlier_frame_extraction_toolbox 
 
               outlier_frame_extraction_toolbox.show(config,video,shuffle,Dataframe,scorer,savelabeled)
-# Run always except when the outlieralgorithm == manual.
+          # Run always except when the outlieralgorithm == manual.
           if not outlieralgorithm=='manual':
               Indices=np.sort(list(set(Indices))) #remove repetitions.
               print("Method ", outlieralgorithm, " found ", len(Indices)," putative outlier frames.")
@@ -190,10 +190,10 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
                   #Now extract from those Indices!
                   ExtractFramesbasedonPreselection(Indices,extractionalgorithm,Dataframe,dataname,scorer,video,cfg,config,opencv,cluster_resizewidth,cluster_color,savelabeled)
               else:
-                  print("Nothing extracted, change parameters and start again...")
+                  print("Nothing extracted, please change the parameters and start again...")
         
       except FileNotFoundError:
-          print("The video has not been analyzed yet!. You can only refine the labels, after the pose has been estimate. Please run 'analyze_video' first.")
+          print("It seems the video has not been analyzed yet, or the video is not found! You can only refine the labels after the a video is analyzed. Please run 'analyze_video' first. Or, please double check your video file path")
 
 
 def convertparms2start(pn):
@@ -234,7 +234,7 @@ def ComputeDeviations(Dataframe,cfg,comparisonbodyparts,scorer,dataname,p_bound,
     ''' Fits Seasonal AutoRegressive Integrated Moving Average with eXogenous regressors model to data and computes confidence interval
     as well as mean fit. '''
 
-    print("Fitting state-space models with parameters", ARdegree,MAdegree)
+    print("Fitting state-space models with parameters:", ARdegree, MAdegree)
     bpindex=0
     ntimes=np.size(Dataframe.index)
 
@@ -343,7 +343,7 @@ def ExtractFramesbasedonPreselection(Index,extractionalgorithm,Dataframe,datanam
             frames2pick=frameselectiontools.KmeansbasedFrameselection(clip,numframes2extract,start,stop,Index,resizewidth=cluster_resizewidth,color=cluster_color)
 
     else:
-        print("Please implement this method yourself!")
+        print("Please implement this method yourself! Currently the options are 'kmeans', 'jump', 'uniform'.")
         frames2pick=[]
 
     # Extract frames + frames with plotted labels and store them in folder (with name derived from video name) nder labeled-data

@@ -38,7 +38,7 @@ if os.environ.get('Colab', default=False) == 'True':
     print("Project loaded in colab-mode. Apparently Colab has trouble loading statsmodels, so the smoothing & outlier frame extraction is disabled. Sorry!")
 else:
     from deeplabcut.refine_training_dataset import extract_outlier_frames, merge_datasets
-    from deeplabcut.post_processing import filterpredictions
+    from deeplabcut.post_processing import filterpredictions, analyzeskeleton
 
 
 # Train, evaluate & predict functions / require TF

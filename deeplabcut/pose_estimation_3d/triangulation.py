@@ -30,8 +30,8 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,filtert
     config : string
         Full path of the config.yaml file as a string.
 
-    video_path : string
-        Full path of the directory where videos are saved.
+    video_path : string/list of list
+        Full path of the directory where videos are saved. If the user wants to analyze only a pair of videos, the user needs to pass them as a list of list of videos i.e. [['video1-camera-1.avi','video1-camera-2.avi']]
 
     videotype: string, optional
         Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
@@ -53,12 +53,20 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,filtert
 
     Example
     -------
-    Linux/MacOs
+    Linux/MacOS
+    To analyze all the videos in the directory:
     >>> deeplabcut.triangulate(config,'/data/project1/videos/')
+    
+    To analyze only a few pairs of videos:
+    >>> deeplabcut.triangulate(config,[['/data/project1/videos/video1-camera-1.avi','/data/project1/videos/video1-camera-2.avi'],['/data/project1/videos/video2-camera-1.avi','/data/project1/videos/video2-camera-2.avi']])
+    
 
     Windows
+    To analyze all the videos in the directory:
     >>> deeplabcut.triangulate(config,'C:\\yourusername\\rig-95\\Videos')
     
+    To analyze only a few pair of videos:
+    >>> deeplabcut.triangulate(config,[['C:\\yourusername\\rig-95\\Videos\\video1-camera-1.avi','C:\\yourusername\\rig-95\\Videos\\video1-camera-2.avi'],['C:\\yourusername\\rig-95\\Videos\\video2-camera-1.avi','C:\\yourusername\\rig-95\\Videos\\video2-camera-2.avi']])
     """
     from deeplabcut.pose_estimation_tensorflow import predict_videos
     from deeplabcut.post_processing import filtering
@@ -74,8 +82,14 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,filtert
         # Check if the config file exists
         if not os.path.exists(snapshots[cam]):
             raise Exception(str("It seems the file specified in the variable config_file_"+str(cam))+" does not exist. Please edit the config file with correct file path and retry.")
+    #flag to check if the video_path variable is a string or a list of list
+    flag=False
+    if isinstance(video_path, str)==True:
+        flag=True
+        video_list = auxiliaryfunctions_3d.get_camerawise_videos(video_path,cam_names,videotype=videotype)
+    else:
+        video_list = video_path
 
-    video_list = auxiliaryfunctions_3d.get_camerawise_videos(video_path,cam_names,videotype=videotype)
     if video_list == []:
         print("No videos found in the specified video path.", video_path)
         print("Please make sure that the video names are specified with correct camera names as entered in the config file or")
@@ -92,11 +106,13 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,filtert
                 
                 shuffle = cfg_3d[str('shuffle_'+cam_names[j])]
                 trainingsetindex=cfg_3d[str('trainingsetindex_'+cam_names[j])]
-                
-                video = os.path.join(video_path,video_list[i][j])
+                if flag==True:
+                    video = os.path.join(video_path,video_list[i][j])
+                else:
+                    video_path = str(Path(video_list[i][j]).parents[0])
+                    video = os.path.join(video_path,video_list[i][j])
                 if destfolder is None:
                     destfolder = str(Path(video).parents[0])
-
                 vname = Path(video).stem
                 prefix = str(vname).split(cam_names[j])[0]
                 suffix = str(vname).split(cam_names[j])[-1]
@@ -131,7 +147,9 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,filtert
                         filtering.filterpredictions(cfg,[video],videotype=videotype,shuffle=shuffle,trainingsetindex=trainingsetindex,filtertype=filtertype,destfolder=destfolder)
                     
                     dataname.append(os.path.join(destfolder,vname + DLCscorer + '.h5'))
-        
+        # have to make the dest folder none so that it can be updated for a new pair of videos
+        if destfolder == str(Path(video).parents[0]):
+            destfolder = None
         if len(dataname)>0:
             #undistort points for this pair
             print("Undistorting...")
@@ -158,14 +176,14 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,filtert
                 #low_likelihood_frames = np.all(likelihoods < pcutoff, axis=1)
                 
                 low_likelihood_frames = np.where(low_likelihood_frames==True)[0]
-                points_cam1_undistort = np.array([dataFrame_camera1_undistort[scorer_cam1][bp]['x'].values[:], dataFrame_camera1_undistort[scorer_cam2][bp]['y'].values[:]])
+                points_cam1_undistort = np.array([dataFrame_camera1_undistort[scorer_cam1][bp]['x'].values[:], dataFrame_camera1_undistort[scorer_cam1][bp]['y'].values[:]])
                 points_cam1_undistort = points_cam1_undistort.T
                 
                 # For cam1 camera: Assign nans to x and y values of a bodypart where the likelihood for is less than pvalue
                 points_cam1_undistort[low_likelihood_frames] = np.nan,np.nan
                 points_cam1_undistort = np.expand_dims(points_cam1_undistort, axis=1)
     
-                points_cam2_undistort = np.array([dataFrame_camera2_undistort[scorer_cam1][bp]['x'].values[:], dataFrame_camera2_undistort[scorer_cam2][bp]['y'].values[:]])
+                points_cam2_undistort = np.array([dataFrame_camera2_undistort[scorer_cam2][bp]['x'].values[:], dataFrame_camera2_undistort[scorer_cam2][bp]['y'].values[:]])
                 points_cam2_undistort = points_cam2_undistort.T
     
                 # For cam2 camera: Assign nans to x and y values of a bodypart where the likelihood is less than pvalue
@@ -194,7 +212,7 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,filtert
             auxiliaryfunctions_3d.SaveMetadata3d(str(output_filename+'_includingmetadata.pickle'), metadata)
             
             if save_as_csv:
-                df_3d.to_csv(str(output_filename+'.csv'),'df_with_missing',format='table', mode='w')
+                df_3d.to_csv(str(output_filename+'.csv'))
     
             print("Triangulated data for video", vname)
             print("Results are saved under: ",destfolder)
@@ -233,7 +251,7 @@ def undistort_points(config,dataframe,camera_pair,destfolder):
         dataframe_cam1 = pd.read_hdf(dataframe[0])
         dataframe_cam2 = pd.read_hdf(dataframe[1])
         scorer_cam1 = dataframe_cam1.columns.get_level_values(0)[0]
-        scorer_cam2 = dataframe_cam1.columns.get_level_values(0)[0]
+        scorer_cam2 = dataframe_cam2.columns.get_level_values(0)[0]
         stereo_file = auxiliaryfunctions.read_pickle(os.path.join(path_camera_matrix,'stereo_params.pickle'))
         path_stereo_file = os.path.join(path_camera_matrix,'stereo_params.pickle')
         stereo_file = auxiliaryfunctions.read_pickle(path_stereo_file)

@@ -17,8 +17,10 @@ def Check4weights(modeltype,parent_path,num_shuffles):
         model_path = parent_path  / 'pose_estimation_tensorflow/models/pretrained/resnet_v1_50.ckpt'
     elif 'resnet_101' == modeltype:
         model_path = parent_path / 'pose_estimation_tensorflow/models/pretrained/resnet_v1_101.ckpt'
+    elif 'resnet_152' == modeltype:
+        model_path = parent_path / 'pose_estimation_tensorflow/models/pretrained/resnet_v1_152.ckpt'
     else:
-        print("Currently only ResNet 50 or 101 supported, please change 'resnet' entry in config.yaml!")
+        print("Currently only ResNet 50, 101 or 152 supported, please change 'resnet' entry in config.yaml!")
         num_shuffles=-1 #thus the loop below is empty...
         model_path=parent_path
         

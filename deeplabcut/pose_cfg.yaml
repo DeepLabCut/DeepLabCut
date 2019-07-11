@@ -47,7 +47,7 @@ bottomheight: 400
 
 
 
-# Type of the CNN to use, currently resnet_101 and resnet_50
+# Type of the CNN to use, currently resnet_152, resnet_101 and resnet_50
 # are supported
 net_type: resnet_50
 
