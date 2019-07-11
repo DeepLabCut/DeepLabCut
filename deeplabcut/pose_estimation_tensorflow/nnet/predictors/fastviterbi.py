@@ -428,14 +428,14 @@ class FastViterbi(Predictor):
     # TODO: FINISH WRITING TEST...
     def test_plotting(cls) -> Tuple[bool, str, str]:
         # Make tracking data...
-        track_data = TrackingData.empty_tracking_data(4, 1, 3, 3, 1)
+        track_data = TrackingData.empty_tracking_data(4, 1, 3, 3, 2)
 
         track_data.set_prob_table(0, 0, np.array([[0, 0, 0], [0, 1, 0], [0, 0, 0]]))
         track_data.set_prob_table(1, 0, np.array([[0, 1, 0], [0, 0.5, 0], [0, 0, 0]]))
         track_data.set_prob_table(2, 0, np.array([[1, 0.5, 0], [0, 0, 0], [0, 0, 0]]))
         track_data.set_prob_table(3, 0, np.array([[0.5, 0, 0], [1, 0, 0], [0, 0, 0]]))
 
-        expected_result = [[1, 1, 1], [0, 1, 1], [0, 0, 1], [1, 0, 1]]
+        expected_result = [[3, 3, 1], [3, 1, 1], [1, 1, 1], [1, 3, 1]]
 
         # Make the predictor...
         predictor = cls(["part1"], track_data.get_frame_count(), {name:val for name, desc, val in cls.get_settings()})
@@ -446,8 +446,8 @@ class FastViterbi(Predictor):
         # Check output
         poses = predictor.on_end(tqdm.tqdm(total=4)).get_all()
 
-        if(poses == expected_result):
-            return (True, str(poses), str(expected_result))
+        if(np.array_equal(poses, expected_result)):
+            return (True, str(expected_result), str(poses))
         else:
-            return (False, str(poses), str(expected_result))
+            return (False, str(expected_result), str(poses))
 
