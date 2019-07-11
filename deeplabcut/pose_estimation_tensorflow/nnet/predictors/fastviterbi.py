@@ -167,7 +167,7 @@ class FastViterbi(Predictor):
         self._viterbi_frames[self._current_frame][bodypart * 2] = np.transpose(coords)
         # Get the probabilities and offsets of the first frame and store them...
         prob = scmap.get_prob_table(frame, bodypart)[coords] * (1 - self.EDGE_PROB)
-        off_x, off_y = np.zeros(np.transpose(coords).shape) if(scmap.get_offset_map() is None) else np.transpose(
+        off_x, off_y = np.zeros(np.array(coords).shape) if(scmap.get_offset_map() is None) else np.transpose(
                        scmap.get_offset_map()[frame, coords[0], coords[1], bodypart])
         self._viterbi_frames[self._current_frame][(bodypart * 2) + 1] = np.transpose((np.log(prob), off_x, off_y, prob))
 
@@ -427,25 +427,21 @@ class FastViterbi(Predictor):
     @classmethod
     # TODO: FINISH WRITING TEST...
     def test_plotting(cls) -> Tuple[bool, str, str]:
-        data = np.zeros((4, 3, 3))
+        # Make tracking data...
+        track_data = TrackingData.empty_tracking_data(4, 1, 3, 3, 1)
 
-        data[0] = [[0, 0, 0], [0, 1, 0], [0, 0, 0]]
-        data[1] = [[0, 1, 0], [0, 0.5, 0], [0, 0, 0]]
-        data[2] = [[1, 0.5, 0], [0, 0, 0], [0, 0, 0]]
-        data[3] = [[0.5, 0, 0], [1, 0, 0], [0, 0, 0]]
+        track_data.set_prob_table(0, 0, np.array([[0, 0, 0], [0, 1, 0], [0, 0, 0]]))
+        track_data.set_prob_table(1, 0, np.array([[0, 1, 0], [0, 0.5, 0], [0, 0, 0]]))
+        track_data.set_prob_table(2, 0, np.array([[1, 0.5, 0], [0, 0, 0], [0, 0, 0]]))
+        track_data.set_prob_table(3, 0, np.array([[0.5, 0, 0], [1, 0, 0], [0, 0, 0]]))
 
         expected_result = [[1, 1, 1], [0, 1, 1], [0, 0, 1], [1, 0, 1]]
 
-        np.expand_dims(data, axis=1)
-
-        # Make tracking data...
-        track_data = TrackingData(data, None, scaling=1)
-
         # Make the predictor...
-        predictor = cls(["part1"], 4, {name:val for name, desc, val in cls.get_settings()})
+        predictor = cls(["part1"], track_data.get_frame_count(), {name:val for name, desc, val in cls.get_settings()})
 
         # Pass it data...
-        predictor.on_frames(data)
+        predictor.on_frames(track_data)
 
         # Check output
         poses = predictor.on_end(tqdm.tqdm(total=4)).get_all()
