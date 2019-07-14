@@ -1,0 +1,2 @@
+model_checkpoint_path: "/home/alex/Hacking/DeepLabCut/examples/TEST-Alex-2019-07-14/dlc-models/iteration-0/TESTJul14-trainset80shuffle1/train/snapshot-10"
+all_model_checkpoint_paths: "/home/alex/Hacking/DeepLabCut/examples/TEST-Alex-2019-07-14/dlc-models/iteration-0/TESTJul14-trainset80shuffle1/train/snapshot-10"
