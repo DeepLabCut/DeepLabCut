@@ -1,8 +1,0 @@
-scorer,Alex,Alex,Alex,Alex,Alex,Alex,Alex,Alex
-bodyparts,bodypart1,bodypart1,bodypart2,bodypart2,bodypart3,bodypart3,objectA,objectA
-coords,x,y,x,y,x,y,x,y
-labeled-data/reachingvideo1/img129.png,100.0,100.0,150.0,150.0,200.0,200.0,250.0,250.0
-labeled-data/reachingvideo1/img038.png,100.0,100.0,150.0,150.0,200.0,200.0,250.0,250.0
-labeled-data/reachingvideo1/img205.png,100.0,100.0,150.0,150.0,200.0,200.0,250.0,250.0
-labeled-data/reachingvideo1/img060.png,100.0,100.0,150.0,150.0,200.0,200.0,250.0,250.0
-labeled-data/reachingvideo1/img250.png,100.0,100.0,150.0,150.0,200.0,200.0,250.0,250.0
