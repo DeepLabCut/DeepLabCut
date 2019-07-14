@@ -9,7 +9,11 @@ import tensorflow.contrib.slim as slim
 from tensorflow.contrib.slim.nets import resnet_v1
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import Batch
 from deeplabcut.pose_estimation_tensorflow.nnet import losses
-
+vers = (tf.__version__).split('.')
+if int(vers[0])==1 and int(vers[1])>12:
+    TF=tf.compat.v1
+else:
+    TF=tf
 
 net_funcs = {'resnet_50': resnet_v1.resnet_v1_50,
              'resnet_101': resnet_v1.resnet_v1_101,
@@ -20,7 +24,7 @@ def prediction_layer(cfg, input, name, num_outputs):
     with slim.arg_scope([slim.conv2d, slim.conv2d_transpose], padding='SAME',
                         activation_fn=None, normalizer_fn=None,
                         weights_regularizer=slim.l2_regularizer(cfg.weight_decay)):
-        with tf.variable_scope(name):
+        with TF.variable_scope(name):
             pred = slim.conv2d_transpose(input, num_outputs,
                                          kernel_size=[3, 3], stride=2,
                                          scope='block4')
@@ -71,7 +75,7 @@ class PoseNet:
         layer_name = 'resnet_v1_{}'.format(num_layers) + '/block{}/unit_{}/bottleneck_v1'
 
         out = {}
-        with tf.variable_scope('pose', reuse=reuse):
+        with TF.variable_scope('pose', reuse=reuse):
             out['part_pred'] = prediction_layer(cfg, features, 'part_pred',
                                                 cfg.num_joints)
             if cfg.location_refinement:
@@ -97,7 +101,7 @@ class PoseNet:
 
     def train(self, batch):
         cfg = self.cfg
-        
+
         if cfg.deterministic:
             tf.set_random_seed(42)
 
@@ -107,7 +111,7 @@ class PoseNet:
         part_score_weights = batch[Batch.part_score_weights] if weigh_part_predictions else 1.0
 
         def add_part_loss(pred_layer):
-            return tf.losses.sigmoid_cross_entropy(batch[Batch.part_score_targets],
+            return TF.losses.sigmoid_cross_entropy(batch[Batch.part_score_targets],
                                                    heads[pred_layer],
                                                    part_score_weights)
 

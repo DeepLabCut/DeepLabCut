@@ -15,26 +15,31 @@ See https://www.biorxiv.org/content/early/2018/10/30/457242
 
 import numpy as np
 import tensorflow as tf
+vers = (tf.__version__).split('.')
+if int(vers[0])==1 and int(vers[1])>12:
+    TF=tf.compat.v1
+else:
+    TF=tf
 from deeplabcut.pose_estimation_tensorflow.nnet.net_factory import pose_net
 
 def setup_pose_prediction(cfg):
-    tf.reset_default_graph()
-    inputs = tf.placeholder(tf.float32, shape=[cfg.batch_size   , None, None, 3])
+    TF.reset_default_graph()
+    inputs = TF.placeholder(tf.float32, shape=[cfg.batch_size   , None, None, 3])
     net_heads = pose_net(cfg).test(inputs)
     outputs = [net_heads['part_prob']]
     if cfg.location_refinement:
         outputs.append(net_heads['locref'])
 
-    restorer = tf.train.Saver()
-    sess = tf.Session()
-    sess.run(tf.global_variables_initializer())
-    sess.run(tf.local_variables_initializer())
+    restorer = TF.train.Saver()
+    sess = TF.Session()
+    sess.run(TF.global_variables_initializer())
+    sess.run(TF.local_variables_initializer())
 
     # Restore variables from disk.
     restorer.restore(sess, cfg.init_weights)
 
     return sess, inputs, outputs
-    
+
 def extract_cnn_output(outputs_np, cfg):
     ''' extract locref + scmap from network '''
     scmap = outputs_np[0]
@@ -76,7 +81,7 @@ def getpose(image, cfg, sess, inputs, outputs, outall=False):
 
 ## Functions below implement are for batch sizes > 1:
 def extract_cnn_outputmulti(outputs_np, cfg):
-    ''' extract locref + scmap from network 
+    ''' extract locref + scmap from network
     Dimensions: image batch x imagedim1 x imagedim2 x bodypart'''
     scmap = outputs_np[0]
     locref = None
@@ -91,13 +96,13 @@ def extract_cnn_outputmulti(outputs_np, cfg):
 
 
 def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
-    ''' Adapted from DeeperCut, performs numpy-based faster inference on batches. 
+    ''' Adapted from DeeperCut, performs numpy-based faster inference on batches.
 	Introduced in https://www.biorxiv.org/content/10.1101/457242v1 '''
     outputs_np = sess.run(outputs, feed_dict={inputs: image})
-    
+
     scmap, locref = extract_cnn_outputmulti(outputs_np, cfg) #processes image batch.
     batchsize,ny,nx,num_joints = scmap.shape
-    
+
     #Combine scoremat and offsets to the final pose.
     LOCREF=locref.reshape(batchsize,nx*ny,num_joints,2)
     MAXLOC=np.argmax(scmap.reshape(batchsize,nx*ny,num_joints),axis=1)
@@ -107,10 +112,10 @@ def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
         for k in range(num_joints):
             DZ[l,k,:2]=LOCREF[l,MAXLOC[l,k],k,:]
             DZ[l,k,2]=scmap[l,Y[l,k],X[l,k],k]
-            
+
     X=X.astype('float32')*cfg.stride+.5*cfg.stride+DZ[:,:,0]
     Y=Y.astype('float32')*cfg.stride+.5*cfg.stride+DZ[:,:,1]
-    pose = np.empty((cfg['batch_size'], cfg['num_joints']*3), dtype=X.dtype) 
+    pose = np.empty((cfg['batch_size'], cfg['num_joints']*3), dtype=X.dtype)
     pose[:,0::3] = X
     pose[:,1::3] = Y
     pose[:,2::3] = DZ[:,:,2] #P
@@ -118,4 +123,3 @@ def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
         return scmap, locref, pose
     else:
         return pose
-

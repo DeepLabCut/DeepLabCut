@@ -17,6 +17,7 @@ if os.environ.get('DLClight', default=False) == 'True':
 else:
     from deeplabcut.generate_training_dataset.auxfun_drag_label import *
     from deeplabcut.generate_training_dataset.labeling_toolbox import *
+    from deeplabcut.generate_training_dataset.multiple_individual_labeling_toolbox import *
     from deeplabcut.generate_training_dataset.frame_extraction_toolbox import *
 
 from deeplabcut.generate_training_dataset.frame_extraction import *

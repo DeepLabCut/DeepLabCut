@@ -16,6 +16,11 @@ import threading
 import argparse
 from pathlib import Path
 import tensorflow as tf
+vers = (tf.__version__).split('.')
+if int(vers[0])==1 and int(vers[1])>12:
+    TF=tf.compat.v1
+else:
+    TF=tf
 import tensorflow.contrib.slim as slim
 
 from deeplabcut.pose_estimation_tensorflow.config import load_config
@@ -37,13 +42,16 @@ class LearningRate(object):
         return lr
 
 def setup_preloading(batch_spec):
-    placeholders = {name: tf.placeholder(tf.float32, shape=spec) for (name, spec) in batch_spec.items()}
+    placeholders = {name: TF.placeholder(tf.float32, shape=spec) for (name, spec) in batch_spec.items()}
     names = placeholders.keys()
     placeholders_list = list(placeholders.values())
 
     QUEUE_SIZE = 20
-
-    q = tf.FIFOQueue(QUEUE_SIZE, [tf.float32]*len(batch_spec))
+    vers = (tf.__version__).split('.')
+    if int(vers[0])==1 and int(vers[1])>12:
+        q = tf.queue.FIFOQueue(QUEUE_SIZE, [tf.float32]*len(batch_spec))
+    else:
+        q = tf.FIFOQueue(QUEUE_SIZE, [tf.float32]*len(batch_spec))
     enqueue_op = q.enqueue(placeholders_list)
     batch_list = q.dequeue()
 
@@ -62,7 +70,7 @@ def load_and_enqueue(sess, enqueue_op, coord, dataset, placeholders):
 
 
 def start_preloading(sess, enqueue_op, dataset, placeholders):
-    coord = tf.train.Coordinator()
+    coord = TF.train.Coordinator()
 
     t = threading.Thread(target=load_and_enqueue,
                          args=(sess, enqueue_op, coord, dataset, placeholders))
@@ -71,12 +79,12 @@ def start_preloading(sess, enqueue_op, dataset, placeholders):
     return coord, t
 
 def get_optimizer(loss_op, cfg):
-    learning_rate = tf.placeholder(tf.float32, shape=[])
+    learning_rate = TF.placeholder(tf.float32, shape=[])
 
     if cfg.optimizer == "sgd":
-        optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9)
+        optimizer = TF.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9)
     elif cfg.optimizer == "adam":
-        optimizer = tf.train.AdamOptimizer(cfg.adam_lr)
+        optimizer = TF.train.AdamOptimizer(cfg.adam_lr)
     else:
         raise ValueError('unknown optimizer {}'.format(cfg.optimizer))
     train_op = slim.learning.create_train_op(loss_op, optimizer)
@@ -87,10 +95,10 @@ def train(config_yaml,displayiters,saveiters,maxiters,max_to_keep=5):
     start_path=os.getcwd()
     os.chdir(str(Path(config_yaml).parents[0])) #switch to folder of config_yaml (for logging)
     setup_logging()
-    
+
     cfg = load_config(config_yaml)
     cfg['batch_size']=1 #in case this was edited for analysis.
-    
+
     dataset = create_dataset(cfg)
     batch_spec = get_batch_spec(cfg)
     batch, enqueue_op, placeholders = setup_preloading(batch_spec)
@@ -98,20 +106,20 @@ def train(config_yaml,displayiters,saveiters,maxiters,max_to_keep=5):
     total_loss = losses['total_loss']
 
     for k, t in losses.items():
-        tf.summary.scalar(k, t)
-    merged_summaries = tf.summary.merge_all()
+        TF.summary.scalar(k, t)
+    merged_summaries = TF.summary.merge_all()
 
     variables_to_restore = slim.get_variables_to_restore(include=["resnet_v1"])
-    restorer = tf.train.Saver(variables_to_restore)
-    saver = tf.train.Saver(max_to_keep=max_to_keep) # selects how many snapshots are stored, see https://github.com/AlexEMG/DeepLabCut/issues/8#issuecomment-387404835
+    restorer = TF.train.Saver(variables_to_restore)
+    saver = TF.train.Saver(max_to_keep=max_to_keep) # selects how many snapshots are stored, see https://github.com/AlexEMG/DeepLabCut/issues/8#issuecomment-387404835
 
-    sess = tf.Session()
+    sess = TF.Session()
     coord, thread = start_preloading(sess, enqueue_op, dataset, placeholders)
-    train_writer = tf.summary.FileWriter(cfg.log_dir, sess.graph)
+    train_writer = TF.summary.FileWriter(cfg.log_dir, sess.graph)
     learning_rate, train_op = get_optimizer(total_loss, cfg)
 
-    sess.run(tf.global_variables_initializer())
-    sess.run(tf.local_variables_initializer())
+    sess.run(TF.global_variables_initializer())
+    sess.run(TF.local_variables_initializer())
 
     # Restore variables from disk.
     restorer.restore(sess, cfg.init_weights)
@@ -121,20 +129,20 @@ def train(config_yaml,displayiters,saveiters,maxiters,max_to_keep=5):
         max_iter = min(int(cfg.multi_step[-1][1]),int(maxiters))
         #display_iters = max(1,int(displayiters))
         print("Max_iters overwritten as",max_iter)
-    
+
     if displayiters==None:
         display_iters = max(1,int(cfg.display_iters))
     else:
         display_iters = max(1,int(displayiters))
         print("Display_iters overwritten as",display_iters)
-    
+
     if saveiters==None:
         save_iters=max(1,int(cfg.save_iters))
-        
+
     else:
         save_iters=max(1,int(saveiters))
         print("Save_iters overwritten as",save_iters)
-        
+
     cum_loss = 0.0
     lr_gen = LearningRate(cfg)
 

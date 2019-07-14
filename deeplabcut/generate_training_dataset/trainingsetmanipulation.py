@@ -182,7 +182,7 @@ def dropannotationfileentriesduetodeletedimages(config):
             DC.to_csv(os.path.join(str(folder),'CollectedData_'+ cfg['scorer']+".csv"))
 
 
-def label_frames(config):
+def label_frames(config,ma=False):
     """
     Manually label/annotate the extracted frames. Update the list of body parts you want to localize in the config.yaml file first.
 
@@ -201,10 +201,15 @@ def label_frames(config):
     wd = Path(config).resolve().parents[0]
     os.chdir(str(wd))
 
-    from deeplabcut.generate_training_dataset import labeling_toolbox
-
-    # labeling_toolbox.show(config,Screens,scale_w,scale_h, winHack, img_scale)
-    labeling_toolbox.show(config)
+    if ma==False:
+        from deeplabcut.generate_training_dataset import labeling_toolbox
+    
+        # labeling_toolbox.show(config,Screens,scale_w,scale_h, winHack, img_scale)
+        labeling_toolbox.show(config)
+    else:
+        from deeplabcut.generate_training_dataset import multiple_individual_labeling_toolbox
+        multiple_individual_labeling_toolbox.show(config)
+        
     os.chdir(startpath)
 
 def get_cmap(n, name='jet'):
