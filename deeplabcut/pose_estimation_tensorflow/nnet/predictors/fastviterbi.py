@@ -11,6 +11,8 @@ from deeplabcut.pose_estimation_tensorflow.nnet.processing import Pose
 # For computations
 import numpy as np
 
+# CHECKPOINT STATE: [Features: Sparse Matrix, Special Edge Case, Testing Method]
+#  [Next: Multiple Possible Edge Locations, Negative Prior Body Part Impact, Positive Blob impact for grouped body parts]
 
 class FastViterbi(Predictor):
     """
