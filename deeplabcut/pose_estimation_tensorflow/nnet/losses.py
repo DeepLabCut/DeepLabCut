@@ -6,8 +6,11 @@ import tensorflow as tf
 
 from tensorflow.python.ops import math_ops
 from tensorflow.python.framework import ops
-
-import tensorflow.contrib.losses as tf_losses
+vers = (tf.__version__).split('.')
+if int(vers[0])==1 and int(vers[1])>12:
+    TF=tf.compat.v1
+else:
+    TF=tf
 
 
 def huber_loss(labels, predictions, weight=1.0, k=1.0, scope=None):
@@ -39,4 +42,4 @@ def huber_loss(labels, predictions, weight=1.0, k=1.0, scope=None):
         losses = tf.where(abs_diff < k,
                           0.5 * tf.square(diff),
                           k * abs_diff - 0.5 * k ** 2)
-        return tf.losses.compute_weighted_loss(losses, weight)
+        return TF.losses.compute_weighted_loss(losses, weight)
