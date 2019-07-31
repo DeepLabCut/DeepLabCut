@@ -77,11 +77,11 @@ class FastViterbi(Predictor):
         self._gaussian_table
         """
         # Allocate gaussian table of width x height...
-        self._gaussian_table = np.zeros((height + 1, width + 1), dtype="float32")
+        self._gaussian_table = np.zeros((height + 2, width + 2), dtype="float32")
 
         # Iterate through filling in the values, using (0, 0) as the prior coordinate
-        for y in range(height + 1):
-            for x in range(width + 1):
+        for y in range(height + 2):
+            for x in range(width + 2):
                 self._gaussian_table[y, x] = np.log(self._gaussian_formula(0, x, 0, y))
 
         # Done, return...
