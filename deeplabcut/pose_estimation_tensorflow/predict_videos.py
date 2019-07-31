@@ -71,7 +71,7 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
         folder also needs to be passed.
 
     predictor: The prediction algorithm to use on the probability outputs of the deeplabcut neural net. Defaults to
-               "singleargmax". The options available depends on the currently availiable Predictor plugins in the
+               "singleargmax". The options available depends on the currently available Predictor plugins in the
                predictors folder.
 
     Examples

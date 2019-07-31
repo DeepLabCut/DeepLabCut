@@ -35,8 +35,8 @@ class SingleArgMaxPredict(Predictor):
 
     @staticmethod
     def get_description() -> str:
-        return ("Default processor for DeepLabCut, and was the code originally used by DeepLabCut \n"
-                "historically. Predicts the point from the probability frames simply by selecting \n"
+        return ("Default processor for DeepLabCut, and was the code originally used by DeepLabCut"
+                "historically. Predicts the point from the probability frames simply by selecting"
                 "the max probability in the frame.")
 
     @classmethod

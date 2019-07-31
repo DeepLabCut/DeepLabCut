@@ -113,7 +113,7 @@ class PlotterArgMax(Predictor):
 
     @staticmethod
     def get_description() -> str:
-        return "Identical to singleargmax, but plots a video of probability frames using matplotlib \n" \
+        return "Identical to singleargmax, but plots a video of probability frames using matplotlib" \
                "during processing..."
 
     @classmethod
