@@ -379,7 +379,7 @@ class FastViterbi(Predictor):
                     px, py = prior_points[bp][:-1]
                     off_x, off_y, output_prob = self._viterbi_frames[r_counter][(bp * 2) + 1][max_loc, 1:]
                     all_poses.set_at(r_counter, bp, (max_x, max_y), (off_x, off_y),
-                                     output_prob * np.exp(self._gaussian_table[np.max(max_y - py), np.max(max_x - px)]),
+                                     output_prob * np.exp(self._gaussian_table[np.max((max_y - py) // 3), np.max((max_x - px) // 3)]),
                                      self._down_scaling)
                 else:
                     all_poses.set_at(r_counter, bp, (-1, -1), (0, 0), 0, 1)
