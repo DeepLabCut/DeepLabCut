@@ -11,6 +11,8 @@ from deeplabcut.pose_estimation_tensorflow.nnet.processing import Pose
 # For computations
 import numpy as np
 
+# TODO: I am pretty sure I forgot to do (PROB * (1 - EDGE_TOTAL)) in some spots, double check code....
+
 class FastViterbi(Predictor):
     """
     A predictor that applies the Viterbi algorithm to frames in order to predict poses.
@@ -335,7 +337,7 @@ class FastViterbi(Predictor):
             # Gather all required fields...
             y, x = self._viterbi_frames[r_counter][(bp * 2)][max_frame_loc]
             prob, off_x, off_y, output_prob = self._viterbi_frames[r_counter][(bp * 2) + 1][max_frame_loc]
-            edge_x, edge_y = self._edge_coords[r_counter, bp, max_edge_loc]
+            edge_x, edge_y = self._edge_coords[max_edge_loc]
             edge_prob = self._edge_vals[r_counter, bp, max_edge_loc]
 
             # If the edge is greater then the max point in frame, set prior point to (-1, -1) and pose output
