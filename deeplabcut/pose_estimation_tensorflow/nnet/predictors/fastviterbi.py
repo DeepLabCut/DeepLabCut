@@ -10,6 +10,7 @@ from deeplabcut.pose_estimation_tensorflow.nnet.processing import Pose
 
 # For computations
 import numpy as np
+from collections import deque
 
 # TODO: I am pretty sure I forgot to do (PROB * (1 - EDGE_TOTAL)) in some spots, double check code....
 
@@ -48,7 +49,10 @@ class FastViterbi(Predictor):
         # Keeps track of current frame...
         self._current_frame = 0
 
-        # Global values for the gaussian formula, can be adjusted in dlc_config for differing results...
+        # Precomputed table for computing negative impacts of body parts
+        self._neg_gaussian_table = None
+
+        # Values for the gaussian formula, can be adjusted in dlc_config for differing results...
         self.NORM_DIST = settings["norm_dist"]  # The normal distribution
         self.AMPLITUDE = settings["amplitude"]  # The amplitude, or height of the gaussian curve
         self.LOWEST_VAL = settings["lowest_gaussian_value"]  # Changes the lowest value that the gaussian curve can produce
@@ -56,6 +60,12 @@ class FastViterbi(Predictor):
         self.EDGE_PROB = settings["edge_probability"] # DLC "Predicted" going off screen probability.
         self.BLOCKS_PER_EDGE = settings["edge_blocks_per_side"] # Number of blocks to allocate per edge....
         self._edge_block_value = self.EDGE_PROB / (self.BLOCKS_PER_EDGE * 4) # Probability value for every block...
+
+        # More global variables, can also be set in dlc_config...
+        self.NEGATE_ON = settings["negate_overlapping_predictions"] # Enables prior body part negation...
+        self.NEG_NORM_DIST = settings["negative_impact_distance"] # Normal distribution of negative 2D gaussian curve
+        self.NEG_AMPLITUDE = settings["negative_impact_factor"] # Negative amplitude to use for 2D negation gaussian
+
 
     def _gaussian_formula(self, prior_x: float, x: float, prior_y: float, y: float) -> float:
         """
@@ -73,6 +83,22 @@ class FastViterbi(Predictor):
         inner_y_delta = ((prior_y - y) ** 2) / (2 * self.NORM_DIST ** 2)
         return self.AMPLITUDE * np.exp(-(inner_x_delta + inner_y_delta)) + self.LOWEST_VAL
 
+    def _neg_gaussian_formula(self, prior_x: float, x: float, prior_y: float, y: float) -> float:
+        """
+        Private method, computes location of point (x, y) on a inverted gaussian curve given a prior point
+        (x_prior, y_prior) to use as the center.
+
+        :param prior_x: The x point in the prior frame
+        :param x: The current frame's x point
+        :param prior_y: The y point in the prior frame
+        :param y: The current frame's y point
+        :return: The location of x, y given inverted gaussian curve (1 - curve) centered at x_prior, y_prior
+        """
+        # Formula for 2D inverted gaussian curve (or dip)
+        inner_x_delta = ((prior_x - x) ** 2) / (2 * self.NEG_NORM_DIST ** 2)
+        inner_y_delta = ((prior_y - y) ** 2) / (2 * self.NEG_NORM_DIST ** 2)
+        return 1 - (self.NEG_AMPLITUDE * np.exp(-(inner_x_delta + inner_y_delta)))
+
     def _compute_gaussian_table(self, width: int, height: int) -> None:
         """
         Compute the gaussian table given the width and height of each probability frame. Results are stored in
@@ -87,6 +113,23 @@ class FastViterbi(Predictor):
                 self._gaussian_table[y, x] = np.log(self._gaussian_formula(0, x, 0, y))
 
         # Done, return...
+        return
+
+
+    def _compute_neg_gaussian_table(self, width: int, height: int) -> None:
+        """
+        Computes the precomputed inverted 2D gaussian curve used for providing negative impacts at prior predicted
+        bodyparts. Stored in self._neg_gaussian_table.
+        """
+        # Allocate...
+        self._neg_gaussian_table = np.zeros((height, width), dtype="float32")
+
+        # Iterate and fill values
+        for y in range(height):
+            for x in range(width):
+                self._neg_gaussian_table[y, x] = np.log(self._neg_gaussian_formula(0, x, 0, y))
+
+        # Done
         return
 
 
@@ -248,6 +291,10 @@ class FastViterbi(Predictor):
             # Set down scaling.
             self._down_scaling = scmap.get_down_scaling()
 
+            # Compute negative gaussian if negative impact setting is switched on...
+            if(self.NEGATE_ON):
+                self._compute_neg_gaussian_table(scmap.get_frame_width(), scmap.get_frame_height())
+
             # Adjust the blocks-per edge to avoid having it greater then the length of one of the sides of the frame.
             self.BLOCKS_PER_EDGE = min(scmap.get_frame_height(), scmap.get_frame_width(), self.BLOCKS_PER_EDGE)
             self._edge_block_value = self.EDGE_PROB / (self.BLOCKS_PER_EDGE * 4)  # Must be recomputed...
@@ -326,6 +373,8 @@ class FastViterbi(Predictor):
         all_poses = Pose.empty_pose(self._num_frames, len(self._bodyparts))
         # Points of the 'prior' frame (really the current frame)
         prior_points: List[Tuple[int, int, float]] = []
+        # Keeps track last body part count - 1 body parts...
+        bp_queue = deque(maxlen=(len(self._bodyparts) - 1))
 
         # Initial frame...
         for bp in range(len(self._bodyparts)):
@@ -334,8 +383,18 @@ class FastViterbi(Predictor):
             if(self._viterbi_frames[r_counter][(bp * 2)] is None):
                 raise ValueError("All frames contain zero points!!! No actual tracking data!!!")
 
+            viterbi_data = self._viterbi_frames[r_counter][(bp * 2) + 1][:, 0]
+            coord_y, coord_x = self._viterbi_frames[r_counter][(bp * 2)][:].transpose()
+
+
+            # Perform negation of prior body parts if enabled
+            if(self.NEGATE_ON):
+                for bpx, bpy, bpprob in bp_queue:
+                    viterbi_data = viterbi_data + self._neg_gaussian_table[np.abs(coord_y - bpy), np.abs(coord_x - bpx)]
+
+
             # Get the max location index
-            max_frame_loc = np.argmax(self._viterbi_frames[r_counter][(bp * 2) + 1][:, 0])
+            max_frame_loc = np.argmax(viterbi_data)
             max_edge_loc = np.argmax(self._edge_vals[r_counter, bp])
 
             # Gather all required fields...
@@ -347,12 +406,18 @@ class FastViterbi(Predictor):
             # If the edge is greater then the max point in frame, set prior point to (-1, -1) and pose output
             # probability to 0.
             if(prob < edge_prob):
-                prior_points.append((edge_x, edge_y, self._edge_vals[r_counter, bp]))
+                prior_points.append((edge_x, edge_y, edge_prob))
                 all_poses.set_at(r_counter, bp, (-1, -1), (0, 0), 0, 1)
+
+                if(self.NEGATE_ON):
+                    bp_queue.append((edge_x, edge_y, edge_prob))
             else:
                 # Append point to prior points and also add it the the poses object...
                 prior_points.append((x, y, prob))
                 all_poses.set_at(r_counter, bp, (x, y), (off_x, off_y), output_prob, self._down_scaling)
+
+                if(self.NEGATE_ON):
+                    bp_queue.append((x, y, prob))
 
             # Drop the counter by 1
             r_counter -= 1
@@ -365,8 +430,20 @@ class FastViterbi(Predictor):
 
             for bp in range(len(self._bodyparts)):
                 # Run single step of backtrack....
+                viterbi_data = self._viterbi_frames[r_counter][bp * 2 + 1][:]
+                coord_y, coord_x = self._viterbi_frames[r_counter][bp * 2][:].transpose()
+
+                # If negate switch is on, perform negation of all prior bodyparts from this one...
+                if(self.NEGATE_ON):
+                    for bpx, bpy, bpprob in current_points:
+                        if(bpx is None):
+                            continue
+                        viterbi_data[:, 0] = viterbi_data[:, 0] + self._neg_gaussian_table[
+                            np.abs(coord_y - bpy), np.abs(coord_x - bpx)]
+
+
                 is_in_frame, max_loc, max_point = self._get_prior_location(
-                    [self._viterbi_frames[r_counter][bp * 2], self._viterbi_frames[r_counter][bp * 2 + 1]],
+                    [self._viterbi_frames[r_counter][bp * 2], viterbi_data],
                     self._edge_vals[r_counter, bp],
                     prior_points[bp]
                 )
@@ -374,6 +451,8 @@ class FastViterbi(Predictor):
                 if(is_in_frame is None):
                     all_poses.set_at(r_counter, bp, (-1, -1), (0, 0), 0, 1)
                     current_points.append((None, None, None))
+                    if(self.NEGATE_ON):
+                        bp_queue.append((None, None, None))
                     continue
 
 
@@ -390,6 +469,9 @@ class FastViterbi(Predictor):
 
                 # Append point to current points....
                 current_points.append(max_point)
+
+                if(self.NEGATE_ON):
+                    bp_queue.append(max_point)
 
             # Set prior_points to current_points...
             prior_points = current_points
@@ -414,7 +496,13 @@ class FastViterbi(Predictor):
                           "in order to be kept and added to the sparse matrix.", 0.001),
             ("edge_probability", "A constant float between 0 and 1 that determines the probability that a point goes"
                                  "off the screen. This probability is divided among edge blocks", 0.3),
-            ("edge_blocks_per_side", "Number of edge blocks to have per side.", 4)
+            ("edge_blocks_per_side", "Number of edge blocks to have per side.", 4),
+            ("negate_overlapping_predictions", "If enabled, predictor will discourage a bodypart from being in the same"
+                                               "location as prior predicted body parts.", True),
+            ("negative_impact_factor", "The height of the upside down 2D gaussian curve used for negating locations"
+                                       "of prior predicted body parts.", 0.5),
+            ("negative_impact_distance", "The normal distribution of the 2D gaussian curve used for negating locations"
+                                         "of prior predicted body parts.", 0.5)
         ]
 
     @staticmethod
