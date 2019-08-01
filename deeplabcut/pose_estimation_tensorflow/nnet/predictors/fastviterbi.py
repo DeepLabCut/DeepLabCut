@@ -445,7 +445,7 @@ class FastViterbi(Predictor):
         track_data.set_prob_table(3, 0, np.array([[0.5, 0, 0], [1, 0, 0], [0, 0, 0]]))
 
         # Note that probabilities are scaled down due to being adjusted to equal 1 with out of bounds value included...
-        expected_result = [[3, 3, 0.9], [3, 1, 0.9], [1, 1, 0.9], [1, 3, 0.9]]
+        expected_result = [[3, 3, 0.6621716], [3, 1, 0.6621716], [1, 1, 0.6621716], [1, 3, 0.7]]
 
         # Make the predictor...
         predictor = cls(["part1"], track_data.get_frame_count(), {name:val for name, desc, val in cls.get_settings()})
