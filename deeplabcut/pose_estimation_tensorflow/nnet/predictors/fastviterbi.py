@@ -443,8 +443,9 @@ class FastViterbi(Predictor):
                         try:
                             viterbi_data[:, 0] = viterbi_data[:, 0] + self._neg_gaussian_table[
                                                  np.abs(coord_y - bpy), np.abs(coord_x - bpx)]
-                        finally:
+                        except:
                             print(coord_x, coord_y, bpx, bpy)
+                            exit(1)
 
 
                 is_in_frame, max_loc, max_point = self._get_prior_location(
