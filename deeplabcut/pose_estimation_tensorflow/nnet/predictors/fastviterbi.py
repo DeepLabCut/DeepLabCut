@@ -248,6 +248,10 @@ class FastViterbi(Predictor):
             # Set down scaling.
             self._down_scaling = scmap.get_down_scaling()
 
+            # Adjust the blocks-per edge to avoid having it greater then the length of one of the sides of the frame.
+            self.BLOCKS_PER_EDGE = min(scmap.get_frame_height(), scmap.get_frame_width(), self.BLOCKS_PER_EDGE)
+            self._edge_block_value = self.EDGE_PROB / (self.BLOCKS_PER_EDGE * 4)  # Must be recomputed...
+
             # Create off edge point table of gaussian values for off-edge/on-edge transitions...
             self._compute_edge_coordinates(scmap.get_frame_width(), scmap.get_frame_height(), self.BLOCKS_PER_EDGE)
             self._edge_vals = np.zeros((self._num_frames, len(self._bodyparts), self.BLOCKS_PER_EDGE * 4), dtype="float32")
@@ -379,7 +383,7 @@ class FastViterbi(Predictor):
                     px, py = prior_points[bp][:-1]
                     off_x, off_y, output_prob = self._viterbi_frames[r_counter][(bp * 2) + 1][max_loc, 1:]
                     all_poses.set_at(r_counter, bp, (max_x, max_y), (off_x, off_y),
-                                     output_prob * np.exp(self._gaussian_table[np.max((max_y - py) // 3), np.max((max_x - px) // 3)]),
+                                     output_prob * np.exp(self._gaussian_table[np.abs(max_y - py), np.abs(max_x - px)]),
                                      self._down_scaling)
                 else:
                     all_poses.set_at(r_counter, bp, (-1, -1), (0, 0), 0, 1)
