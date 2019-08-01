@@ -437,15 +437,11 @@ class FastViterbi(Predictor):
 
                 # If negate switch is on, perform negation of all prior bodyparts from this one...
                 if(self.NEGATE_ON):
-                    for bpx, bpy, bpprob in current_points:
+                    for bpx, bpy, bpprob in bp_queue:
                         if(bpx is None):
                             continue
-                        try:
-                            viterbi_data[:, 0] = viterbi_data[:, 0] + self._neg_gaussian_table[
-                                                 np.abs(coord_y - bpy), np.abs(coord_x - bpx)]
-                        except:
-                            print(coord_x, coord_y, bpx, bpy)
-                            exit(1)
+                        viterbi_data[:, 0] = viterbi_data[:, 0] + self._neg_gaussian_table[
+                                             np.abs(coord_y - bpy), np.abs(coord_x - bpx)]
 
 
                 is_in_frame, max_loc, max_point = self._get_prior_location(
