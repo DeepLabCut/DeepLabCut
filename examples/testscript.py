@@ -38,6 +38,7 @@ cfg=deeplabcut.auxiliaryfunctions.read_config(path_config_file)
 cfg['numframes2pick']=5
 cfg['pcutoff']=0.01
 cfg['TrainingFraction']=[.8]
+cfg['skeleton']=[['bodypart1','bodypart2'],['bodypart1','bodypart3']]
 
 deeplabcut.auxiliaryfunctions.write_config(path_config_file,cfg)
 
@@ -144,7 +145,8 @@ deeplabcut.train_network(path_config_file)
 print("Inference with new direct cropping")
 deeplabcut.analyze_videos(path_config_file,[newvideo],destfolder=dfolder,cropping=[0,50,0,50],save_as_csv=True)
 
-print("Filter and plot filtered output")
+print("Extracting skeleton distances, filter and plot filtered output")
+deeplabcut.analyzeskeleton(path_config_file, [newvideo], save_as_csv=True, destfolder=dfolder)
 deeplabcut.filterpredictions(path_config_file,[newvideo])
 
 #deeplabcut.create_labeled_video(path_config_file,[newvideo], destfolder=dfolder,filtered=True)
@@ -153,8 +155,25 @@ deeplabcut.create_labeled_video(path_config_file,[newvideo], destfolder=dfolder,
 deeplabcut.plot_trajectories(path_config_file,[newvideo], destfolder=dfolder,filtered=True)
 
 
-print("ALL DONE!!! - default cases are functional.")
+print("CREATING TRAININGSET for shuffle 2")
+print("will be used for 3D testscript...")
+deeplabcut.create_training_dataset(path_config_file,Shuffles=[2])
 
+posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(2),'train/pose_cfg.yaml')
+
+DLC_config=deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
+DLC_config['save_iters']=10
+DLC_config['display_iters']=2
+DLC_config['multi_step']=[[0.001,10]]
+
+print("CHANGING training parameters to end quickly!")
+deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
+
+print("TRAINING shuffle 2")
+deeplabcut.train_network(path_config_file,shuffle=2)
+
+
+print("ALL DONE!!! - default cases are functional.")
 
 print("Re-import DLC with env. variable set to test DLC light mode.")
 os.environ['DLClight']='True'

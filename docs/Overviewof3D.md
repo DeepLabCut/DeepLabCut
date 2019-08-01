@@ -25,7 +25,7 @@ Thus, this function requires the user to input the enter the name of the project
 
 To start a 3D project type the following in ipython:
 ```
-deeplabcut.create_new_project_3d(`Name of the project',`Name of the experimenter',num_camera=2)
+deeplabcut.create_new_project_3d(`Name of the project',`Name of the experimenter',num_cameras=2)
 ```
 TIP 1: you can also pass ``working_directory=`Full path of the working directory'`` if you want to place this folder somewhere beside the current directory you are working in. If the optional argument ``working_directory`` is unspecified, the project directory is created in the current working directory.
 

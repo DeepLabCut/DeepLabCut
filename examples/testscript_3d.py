@@ -73,7 +73,11 @@ path_config_file=deeplabcut.create_new_project_3d(task,scorer,num_cameras)
 try:
     cfg=deeplabcut.auxiliaryfunctions.read_config(path_config_file)
     cfg['config_file_camera-1']=config
+    cfg['shuffle_camera-1']=1
+    
     cfg['config_file_camera-2']=config
+    cfg['shuffle_camera-2']=2
+    
     cfg['skeleton']=[['bodypart1','bodypart2'],['objectA','bodypart3']]
     deeplabcut.auxiliaryfunctions.write_config_3d(path_config_file,cfg)
 except:
@@ -128,7 +132,7 @@ deeplabcut.check_undistortion(path_config_file)
 
 print("TRIANGULATING")
 video_dir = os.path.join(basepath,folder)
-deeplabcut.triangulate(path_config_file,video_dir)
+deeplabcut.triangulate(path_config_file,video_dir,save_as_csv=True)
 
 
 print("CREATING LABELED VIDEO 3-D")
