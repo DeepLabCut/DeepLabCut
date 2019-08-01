@@ -12,7 +12,7 @@ from deeplabcut.pose_estimation_tensorflow.nnet.processing import Pose
 import numpy as np
 from collections import deque
 
-# TODO: I am pretty sure I forgot to do (PROB * (1 - EDGE_TOTAL)) in some spots, double check code....
+#TODO: Add more test methods, disable numpy warnings....
 
 class FastViterbi(Predictor):
     """
@@ -390,6 +390,8 @@ class FastViterbi(Predictor):
             # Perform negation of prior body parts if enabled
             if(self.NEGATE_ON):
                 for bpx, bpy, bpprob in bp_queue:
+                    if (bpx is None):
+                        continue
                     viterbi_data = viterbi_data + self._neg_gaussian_table[np.abs(coord_y - bpy), np.abs(coord_x - bpx)]
 
 
@@ -410,7 +412,7 @@ class FastViterbi(Predictor):
                 all_poses.set_at(r_counter, bp, (-1, -1), (0, 0), 0, 1)
 
                 if(self.NEGATE_ON):
-                    bp_queue.append((edge_x, edge_y, edge_prob))
+                    bp_queue.append((None, None, None))
             else:
                 # Append point to prior points and also add it the the poses object...
                 prior_points.append((x, y, prob))
@@ -464,14 +466,17 @@ class FastViterbi(Predictor):
                     all_poses.set_at(r_counter, bp, (max_x, max_y), (off_x, off_y),
                                      output_prob * np.exp(self._gaussian_table[np.abs(max_y - py), np.abs(max_x - px)]),
                                      self._down_scaling)
+
+                    if (self.NEGATE_ON):
+                        bp_queue.append(max_point)
                 else:
                     all_poses.set_at(r_counter, bp, (-1, -1), (0, 0), 0, 1)
 
+                    if (self.NEGATE_ON):
+                        bp_queue.append((None, None, None))
+
                 # Append point to current points....
                 current_points.append(max_point)
-
-                if(self.NEGATE_ON):
-                    bp_queue.append(max_point)
 
             # Set prior_points to current_points...
             prior_points = current_points
