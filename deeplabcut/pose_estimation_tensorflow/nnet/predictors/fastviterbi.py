@@ -66,6 +66,8 @@ class FastViterbi(Predictor):
         self.NEG_NORM_DIST = settings["negative_impact_distance"] # Normal distribution of negative 2D gaussian curve
         self.NEG_AMPLITUDE = settings["negative_impact_factor"] # Negative amplitude to use for 2D negation gaussian
 
+        self.TWEAK_DLC_PROB = 5
+
 
     def _gaussian_formula(self, prior_x: float, x: float, prior_y: float, y: float) -> float:
         """
@@ -464,7 +466,9 @@ class FastViterbi(Predictor):
                     px, py = prior_points[bp][:-1]
                     off_x, off_y, output_prob = self._viterbi_frames[r_counter][(bp * 2) + 1][max_loc, 1:]
                     all_poses.set_at(r_counter, bp, (max_x, max_y), (off_x, off_y),
-                                     output_prob * np.exp(self._gaussian_table[np.abs(max_y - py), np.abs(max_x - px)]),
+                                     output_prob * np.exp(self._gaussian_table[
+                                     np.abs(max_y - py) // self.TWEAK_DLC_PROB,
+                                     np.abs(max_x - px) // self.TWEAK_DLC_PROB]),
                                      self._down_scaling)
 
                     if (self.NEGATE_ON):
@@ -492,7 +496,7 @@ class FastViterbi(Predictor):
     def get_settings() -> Union[List[Tuple[str, str, Any]], None]:
         return [
             ("norm_dist", "The normal distribution of the 2D gaussian curve used"
-                          "for transition probabilities by the viterbi algorithm.", 3),
+                          "for transition probabilities by the viterbi algorithm.", 1),
             ("amplitude", "The amplitude of the gaussian curve used by the viterbi algorithm.", 1),
             ("lowest_gaussian_value", "The lowest value of the gaussian curve used by the viterbi algorithm."
                                       "Really a constant that is added on the the 2D gaussian to give all points"
@@ -500,7 +504,7 @@ class FastViterbi(Predictor):
             ("threshold", "The minimum floating point value a pixel within the probability frame must have"
                           "in order to be kept and added to the sparse matrix.", 0.001),
             ("edge_probability", "A constant float between 0 and 1 that determines the probability that a point goes"
-                                 "off the screen. This probability is divided among edge blocks", 0.3),
+                                 "off the screen. This probability is divided among edge blocks", 0.2),
             ("edge_blocks_per_side", "Number of edge blocks to have per side.", 4),
             ("negate_overlapping_predictions", "If enabled, predictor will discourage a bodypart from being in the same"
                                                "location as prior predicted body parts.", True),
