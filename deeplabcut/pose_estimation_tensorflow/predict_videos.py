@@ -528,13 +528,13 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,traini
 
     #update batchsize (based on parameters in config.yaml)
     dlc_cfg['batch_size'] = cfg['batch_size'] 
-
-    # update number of outputs
-    dlc_cfg['num_outputs'] = cfg.get('num_outputs', 1)
     
     # Name for scorer:
     DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations)
     sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
+
+    # update number of outputs and adjust pandas indices
+    dlc_cfg['num_outputs'] = cfg.get('num_outputs', 1)
 
     xyz_labs_orig = ['x', 'y', 'likelihood']
     suffix = [str(s+1) for s in range(dlc_cfg['num_outputs'])]

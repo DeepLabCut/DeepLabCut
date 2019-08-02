@@ -270,7 +270,7 @@ labeled accurately
 • consider labeling additional images and make another iteration of the training data set
 
 
-### (I) Video Analysis and Plotting Results:
+### (I) Novel Video Analysis:
 
 The trained network can be used to analyze new videos. The user needs to first choose a checkpoint with the best
 evaluation results for analyzing the videos. In this case, the user can enter the corresponding index of the checkpoint
@@ -290,9 +290,11 @@ However, if the flag ``save_as_csv`` is set to ``True``, the data can also be ex
 (.csv), which in turn can be imported in many programs, such as MATLAB, R, Prism, etc.; This flag is set to ``False``
 by default. You can also set a destination folder (``destfolder``) for the output files by passing a path of the folder you wish to write to.
 
+As of 2.0.8+: you can extract multiple bodyparts, although there is no support for plotting or further analysis at this time; i.e. if you want to extract 3 snouts (as in [Figure 4 of Mathis et al, 2018 Nature Neuroscience](https://www.nature.com/articles/s41593-018-0209-y/figures/4)), you can edit the config.yaml file to contain ``num_outputs=3``. Then, when you run ``deeplabcut.analyze_videos`` it will extract the top three points (i.e. the 3 x, y, and likelihoods) and save this to the .h5 output file.
+
 #### Filter data:
 
-You can also filter the predictions with a median filter (default; **NEW** as of 2.0.7) or with a [SARIMAX model](https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html), if you wish. This creates a new .h5 file with the ending *_filtered* that you can use in create_labeled_data and/or plot trajectories.
+You can also filter the predictions with a median filter (default; **NEW** as of 2.0.7+) or with a [SARIMAX model](https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html), if you wish. This creates a new .h5 file with the ending *_filtered* that you can use in create_labeled_data and/or plot trajectories.
 
       deeplabcut.filterpredictions(config_path,[‘fullpath/analysis/project/videos/reachingvideo1.avi’]) 
   An example call:
@@ -374,6 +376,16 @@ Then pass ``draw_skeleton=True`` with the command:
            displaycropped: If =True then the video will be cropped (to the size in  the config.yaml file) and points plotted.
 
 This function has various other parameters, in particular the user can set the ``colormap``, the ``dotsize``, and ``alphavalue`` of the labels in **config.yaml** file.
+
+### Extract "Skeleton" Features:
+
+NEW, as of 2.0.7: You can save the "skeleton" that was applied in ``create_labeled_videos`` for more computations. Namely,  it extracts length and orientation of each "bone" of the skeleton as defined in the **config.yaml** file. You can use the function by:
+
+``
+deeplabcut.analyzeskeleton(config, video, videotype='avi', shuffle=1, trainingsetindex=0, save_as_csv=False, destfolder=None)
+``
+See more details here: https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/post_processing/analyze_skeleton.py
+
 
 ### (J) Optional Active Learning -> Network Refinement: Extract Outlier Frames
 

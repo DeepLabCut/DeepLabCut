@@ -115,8 +115,7 @@ class MainFrame(wx.Frame):
 
     def show_image(self):
         self.figure,self.axes,self.canvas = self.image_panel.getfigure()
-        frame=cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
-        self.ax = self.axes.imshow(frame)
+        self.ax = self.axes.imshow(self.image)
         self.figure.canvas.draw()
         self.cid = RectangleSelector(self.axes, self.line_select_callback,drawtype='box', useblit=False,button=[1], minspanx=5, minspany=5,spancoords='pixels',interactive=True)
         self.canvas.mpl_connect('key_press_event', self.cid)

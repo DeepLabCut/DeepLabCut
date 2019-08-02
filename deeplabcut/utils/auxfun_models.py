@@ -8,7 +8,7 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-
+import os
 from deeplabcut.utils import auxiliaryfunctions
 
 def Check4weights(modeltype,parent_path,num_shuffles):
@@ -49,3 +49,19 @@ def Downloadweights(modeltype,model_path):
             tar.extractall(path=target_dir)
     except KeyError:
         print("Model does not exist", modeltype)
+
+def download_mpii_weigths(wd):
+    import urllib.request
+    from pathlib import Path
+
+    url = ['https://datasets.d2.mpi-inf.mpg.de/deepercut-models-tensorflow/mpii-single-resnet-101.data-00000-of-00001','https://datasets.d2.mpi-inf.mpg.de/deepercut-models-tensorflow/mpii-single-resnet-101.meta','https://datasets.d2.mpi-inf.mpg.de/deepercut-models-tensorflow/mpii-single-resnet-101.index']
+    for i in url:
+        file = str(Path(i).name)
+        filename = file.replace("mpii-single-resnet-101","snapshot-103000")
+        filename = os.path.join(wd,filename)
+        if os.path.isfile(filename):
+            print("Weights already present!")
+            break # not checking all the 3 files.
+        else:
+            urllib.request.urlretrieve(i, filename)
+    return filename

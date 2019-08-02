@@ -26,7 +26,6 @@ This page contains a list of the essential functions of DeepLabCut as well as de
 </p>
 
   
-
 ### Option 1: Demo Notebooks:
 We provide Jupyter notebooks for using DeepLabCut on both a pre-labeled dataset, and on the end user’s
 own dataset. See all the demo's [here!](/examples) Please note that GUIs are not easily supported in Jupyter in MacOS, as you need a framework build of python. While it's possible to launch them with a few tweaks, we recommend using terminal - it's more fun and still easy, so please follow the instructions below!
@@ -34,6 +33,7 @@ own dataset. See all the demo's [here!](/examples) Please note that GUIs are not
 ### Option 2: using the program terminal, Start iPython*:
 *please note, we provide a quick-guide of the commands at the bottom of this page.
 Also, if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython``, but otherwise it's the same.
+If you are using DeepLabCut on the cloud, you cannot use the GUIs and you need to first set DLClight=True. Please read more [here](https://github.com/MMathisLab/Docker4DeepLabCut2.0), and in our Protocol paper [here](https://www.nature.com/articles/s41596-019-0176-0).
 
 Open an ``ipython`` session and import the package by typing in the terminal:
 ```

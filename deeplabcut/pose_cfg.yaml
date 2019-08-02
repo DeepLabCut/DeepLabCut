@@ -33,6 +33,8 @@ mirror: false
 
 ##########################################################
 # Auto cropping is new (was not in Nature neuroscience manuscript)
+# Added and described in "Using DeepLabCut for 3D markerless pose estimation across species and behaviors" 
+# Source: https://www.nature.com/articles/s41596-019-0176-0
 # Parameters for augmentation with regard to cropping
 crop: True
 cropratio: 0.4 #what is the fraction of training samples with cropping?
@@ -43,9 +45,6 @@ topheight: 400
 bottomheight: 400
 
 #limit width  [-leftwidth*u-100,100+u*rightwidth] x [-bottomwith*u-100,100+u*topwidth] where u is always a (different) random number in unit interval
-
-
-
 
 # Type of the CNN to use, currently resnet_152, resnet_101 and resnet_50
 # are supported

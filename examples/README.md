@@ -46,10 +46,13 @@ Here is a demo of us using the Colab Notebooks: https://www.youtube.com/watch?v=
 
 *Warning: Colab updates their CUDA/TensorFlow likely faster than we can keep up, so this may not work at all future points in time (and, as a reminder, this whole package is released with a [LICENSE](/LICENSE) that implies no Liability and no Warranty).*
 
-# 3D DeepLabCut
+## 3D DeepLabCut:
 
 Ready to take your pose estimation to a new dimension? As of 2.0.7 we support 3D within the package. Please check out the dedicated 3D_Demo_DeepLabCut.ipynb above for more details!
 
+## Human pre-trained network DEMO:
+
+We provide a COLAB notebook (Human_Project_DEMO.ipynb) that allows you to immediately analyze videos using a human pre-trained network. Here, your videos should include frames that are around 300 by 300 pixels (although it does not need to be square) for optimal performance. This code will also create a new project folder so you can refine, add new bodyparts or label other objects, and re-train. Launch the COLAB here: [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/AlexEMG/DeepLabCut/blob/master/examples/Human_Project_DEMO.ipynb)
 
 # Python/iPython:
 

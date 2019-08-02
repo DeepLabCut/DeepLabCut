@@ -14,7 +14,7 @@ from pathlib import Path
 import cv2
 import os
 from tqdm import tqdm
-
+import glob
 
 from deeplabcut.utils import auxiliaryfunctions_3d
 from deeplabcut.utils import auxiliaryfunctions
@@ -96,16 +96,18 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,filtert
         print("perhaps the videotype is distinct from the videos in the path, I was looking for:",videotype)
         
     print("List of pairs:", video_list)
-    file_name_3d_scorer = []
+    scorer_name = {}
+    run_triangulate=False
     for i in range(len(video_list)):
         dataname = []
         for j in range(len(video_list[i])): #looping over cameras
             if cam_names[j] in video_list[i][j]:
                 print("Analyzing video %s using %s" %(video_list[i][j], str('config_file_'+cam_names[j])))
-                cfg = snapshots[cam_names[j]]
-                
+                config_2d = snapshots[cam_names[j]]
+                cfg = auxiliaryfunctions.read_config(config_2d)
                 shuffle = cfg_3d[str('shuffle_'+cam_names[j])]
                 trainingsetindex=cfg_3d[str('trainingsetindex_'+cam_names[j])]
+                trainFraction = cfg['TrainingFraction'][trainingsetindex]
                 if flag==True:
                     video = os.path.join(video_path,video_list[i][j])
                 else:
@@ -136,28 +138,63 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,filtert
 
                 output_filename= os.path.join(output_filename+'_'+scorer_3d)
                 if os.path.isfile(output_filename+'.h5'): #TODO: don't check twice and load the pickle file to check if the same snapshots + camera matrices were used.
-                    print("Already analyzed...",vname)
-                    
+                    print("Already analyzed...Checking the meta data for any change in the camera matrices and/or scorer names",vname)
+                    pickle_file = str(output_filename+'_includingmetadata.pickle')
+                    metadata_ = auxiliaryfunctions_3d.LoadMetadata3d(pickle_file)
+                    img_path,path_corners,path_camera_matrix,path_undistort=auxiliaryfunctions_3d.Foldernames3Dproject(cfg_3d)
+                    path_stereo_file = os.path.join(path_camera_matrix,'stereo_params.pickle')
+                    stereo_file = auxiliaryfunctions.read_pickle(path_stereo_file)
+                    cam_pair = str(cam_names[0]+'-'+cam_names[1])
+                    if_video_analyzed = False # variable to keep track if the video was already analyzed
+                    # Check for the camera matrix
+                    for k in metadata_['stereo_matrix'].keys():
+                        if np.all(metadata_['stereo_matrix'][k] == stereo_file[cam_pair][k]) :
+                            pass
+                        else:
+                            run_triangulate = True
+                    # Check for scorer names in the pickle file of 3d output
+                    DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations='unknown')
+                    if  metadata_['scorer_name'][cam_names[j]] == DLCscorer:
+                        if_video_analyzed=True
+                    else:
+                        if_video_analyzed=False
+                        run_triangulate = True
+
+                    if if_video_analyzed:
+                        print("This file is already analyzed!")
+                        dataname.append(os.path.join(destfolder,vname + DLCscorer + '.h5'))
+                        scorer_name[cam_names[j]] = DLCscorer
+                    else:
+                        # Analyze video if score name is different
+                        DLCscorer = predict_videos.analyze_videos(config_2d,[video],videotype=videotype,shuffle=shuffle,trainingsetindex=trainingsetindex,gputouse=gputouse,destfolder=destfolder)
+                        scorer_name[cam_names[j]] = DLCscorer
+                        if_video_analyzed=False
+                        run_triangulate = True
+                        if filterpredictions:
+                            filtering.filterpredictions(config_2d,[video],videotype=videotype,shuffle=shuffle,trainingsetindex=trainingsetindex,filtertype=filtertype,destfolder=destfolder)
+                        dataname.append(os.path.join(destfolder,vname + DLCscorer + '.h5'))
                 else: # need to do the whole jam.
-                    
-                    DLCscorer = predict_videos.analyze_videos(cfg,[video],videotype=videotype,shuffle=shuffle,trainingsetindex=trainingsetindex,gputouse=gputouse,destfolder=destfolder)
-                    file_name_3d_scorer.append(DLCscorer)
-                    
+                    DLCscorer = predict_videos.analyze_videos(config_2d,[video],videotype=videotype,shuffle=shuffle,trainingsetindex=trainingsetindex,gputouse=gputouse,destfolder=destfolder)
+                    scorer_name[cam_names[j]] = DLCscorer
+                    run_triangulate = True
                     if filterpredictions:
-                        filtering.filterpredictions(cfg,[video],videotype=videotype,shuffle=shuffle,trainingsetindex=trainingsetindex,filtertype=filtertype,destfolder=destfolder)
-                    
-                    dataname.append(os.path.join(destfolder,vname + DLCscorer + '.h5'))
-        # have to make the dest folder none so that it can be updated for a new pair of videos
-        if destfolder == str(Path(video).parents[0]):
-            destfolder = None
-        if len(dataname)>0:
+                        print(destfolder)
+                        filtering.filterpredictions(config_2d,[video],videotype=videotype,shuffle=shuffle,trainingsetindex=trainingsetindex,filtertype=filtertype,destfolder=destfolder)
+                        dataname.append(os.path.join(destfolder,vname + DLCscorer + '.h5'))
+
+        if run_triangulate:
+#        if len(dataname)>0:
             #undistort points for this pair
             print("Undistorting...")
             dataFrame_camera1_undistort,dataFrame_camera2_undistort,stereomatrix,path_stereo_file = undistort_points(config,dataname,str(cam_names[0]+'-'+cam_names[1]),destfolder)
             if len(dataFrame_camera1_undistort) != len(dataFrame_camera2_undistort):
-                raise Exception("The number of frames do not match in the two videos. Please make sure that your videos have same number of frames and then retry!")
-    
-            print("Computing the triangulation...")
+                import warnings
+                warnings.warn("The number of frames do not match in the two videos. Please make sure that your videos have same number of frames and then retry! Excluding the extra frames from the longer video.")
+                if len(dataFrame_camera1_undistort) > len(dataFrame_camera2_undistort):
+                    dataFrame_camera1_undistort = dataFrame_camera1_undistort[:len(dataFrame_camera2_undistort)]
+                if len(dataFrame_camera2_undistort) > len(dataFrame_camera1_undistort):
+                    dataFrame_camera2_undistort = dataFrame_camera2_undistort[:len(dataFrame_camera1_undistort)]
+#                raise Exception("The number of frames do not match in the two videos. Please make sure that your videos have same number of frames and then retry!")
             X_final = []
             triangulate = []
             scorer_cam1 = dataFrame_camera1_undistort.columns.get_level_values(0)[0]
@@ -166,6 +203,7 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,filtert
             P1 = stereomatrix['P1']
             P2 = stereomatrix['P2']
             
+            print("Computing the triangulation...")
             for bpindex, bp in enumerate(bodyparts):
                 # Extract the indices of frames where the likelihood of a bodypart for both cameras are less than pvalue
                 likelihoods = np.array([dataFrame_camera1_undistort[scorer_cam1][bp]['likelihood'].values[:], dataFrame_camera2_undistort[scorer_cam2][bp]['likelihood'].values[:]])
@@ -196,11 +234,10 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,filtert
                 X_final.append(X_l)
             triangulate.append(X_final)
             triangulate = np.asanyarray(triangulate)
-            
             metadata = {}
             metadata['stereo_matrix'] = stereomatrix
             metadata['stereo_matrix_file'] = path_stereo_file
-            metadata['scorer_name'] = {cam_names[0]:file_name_3d_scorer[0],cam_names[1]:file_name_3d_scorer[1]}
+            metadata['scorer_name'] = {cam_names[0]:scorer_name[cam_names[0]],cam_names[1]:scorer_name[cam_names[1]]}
     
             # Create an empty dataframe to store x,y,z of 3d data
             for bpindex, bp in enumerate(bodyparts):
@@ -214,8 +251,11 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,filtert
             if save_as_csv:
                 df_3d.to_csv(str(output_filename+'.csv'))
     
-            print("Triangulated data for video", vname)
+            print("Triangulated data for video", video_list[i])
             print("Results are saved under: ",destfolder)
+            # have to make the dest folder none so that it can be updated for a new pair of videos
+            if destfolder == str(Path(video).parents[0]):
+                destfolder = None
     
     if len(video_list)>0:
         print("All videos were analyzed...")

@@ -22,6 +22,7 @@ dependencies:
   - cudnn=7
   - wxpython
   - jupyter
+  - nb_conda
   - pytables==3.4.4
   - pip:
     - deeplabcut

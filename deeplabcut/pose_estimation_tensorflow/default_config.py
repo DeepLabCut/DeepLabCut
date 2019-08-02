@@ -35,20 +35,21 @@ cfg.intermediate_supervision_layer = 12
 cfg.regularize = False
 cfg.weight_decay = 0.0001
 cfg.mirror = False
-cfg.deterministic = False
-
 cfg.crop_pad = 0
 cfg.scoremap_dir = "test"
 
-cfg.dataset_type = "default"
-
-cfg.use_gt_segm = False
 cfg.batch_size = 1
-cfg.video = False
-cfg.video_batch = False
+
+#types of datasets, see factory: deeplabcut/pose_estimation_tensorflow/dataset/factory.py
+cfg.dataset_type = "default"
+#you can also set this to deterministic, see https://github.com/AlexEMG/DeepLabCut/pull/324
+cfg.deterministic = False
 
 # Parameters for augmentation with regard to cropping
+# Added and described in "Using DeepLabCut for 3D markerless pose estimation across species and behaviors" 
+# Source: https://www.nature.com/articles/s41596-019-0176-0
 cfg.crop = False
+
 cfg.cropratio= 0.25 #what is the fraction of training samples with cropping?
 cfg.minsize= 100 #what is the minimal frames size for cropping plus/minus ie.. [-100,100]^2 for an arb. joint
 cfg.leftwidth= 400
@@ -56,4 +57,3 @@ cfg.leftwidth= 400
 cfg.rightwidth= 400
 cfg.topheight= 400
 cfg.bottomheight= 400
-#these will be updated by trainingsetmanipulation.py in the future

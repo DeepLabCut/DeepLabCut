@@ -18,6 +18,7 @@ name: dlc-windowsCPU
 dependencies:
   - python=3.6
   - jupyter
+  - nb_conda
   - tensorflow==1.12
   - wxpython
   - pytables==3.4.4 

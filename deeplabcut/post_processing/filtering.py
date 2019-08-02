@@ -101,7 +101,7 @@ def filterpredictions(config,video,videotype='avi',shuffle=1,trainingsetindex=0,
             
             print("Filtering with %s model %s"%(filtertype,video))
 #            print("Filtering with ARIMA model %s",video)
-            videofolder = str(Path(video).parents[0])
+            videofolder = destfolder
             dataname = str(Path(video).stem)+scorer
             filteredname=dataname.split('.h5')[0]+'filtered.h5'
             try:

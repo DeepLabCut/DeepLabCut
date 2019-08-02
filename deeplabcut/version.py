@@ -8,5 +8,5 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-__version__ = '2.0.7.2'
+__version__ = '2.0.8'
 VERSION = __version__

@@ -303,7 +303,7 @@ class MainFrame(wx.Frame):
         self.updatedCoords = []
 
         img_name = Path(self.index[self.iter]).name
-        self.axes.clear()
+#        self.axes.clear()
         self.figure.delaxes(self.figure.axes[1])
         self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.threshold,self.bodyparts,self.colormap,self.preview)
         MainFrame.plot(self,self.img)

@@ -34,7 +34,7 @@ Please check out [www.deeplabcut.org](https://www.mousemotorlab.org/deeplabcut/)
 How to [install DeeplabCut](docs/installation.md)
 # [The DeepLabCut Process](docs/UseOverviewGuide.md)
 
-An overview of the pipeline and workflow for project management. Please also read the [user-guide preprint!](https://www.biorxiv.org/content/early/2018/11/24/476531)
+An overview of the pipeline and workflow for project management. Please also read the [Nature Protocols user-guide](https://doi.org/10.1038/s41596-019-0176-0)!
 
 <p align="center">
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5cca1d519b747a750d680de5/1556749676166/dlc_overview-01.png?format=1000w" width="95%">
@@ -42,19 +42,19 @@ An overview of the pipeline and workflow for project management. Please also rea
 
 # [DEMO the code](/examples)
 
-We provide several Jupyter Notebooks: one that walks you through a demo dataset to test your installation, and another Notebook to run DeepLabCut from the begining on your own data. We also show you how to use the code in Docker, and on Google Colab. Please also read the [user-guide preprint!](https://www.biorxiv.org/content/early/2018/11/24/476531)
+We provide several Jupyter Notebooks: one that walks you through a demo dataset to test your installation, and another Notebook to run DeepLabCut from the begining on your own data. We also show you how to use the code in Docker, and on Google Colab. Please also read the Nature Protocols [paper](https://doi.org/10.1038/s41596-019-0176-0).
 
 # Why use DeepLabCut?
 
 - Top left: Due to transfer learning it requires **little training data** for multiple, challenging behaviors (see [Mathis et al.](https://www.nature.com/articles/s41593-018-0209-y) for details).
 
-- Top Right: Video anlysis is fast (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
+- Top Right: Video analysis is fast (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
 
 - Mid Left: The feature detectors are robust to video compression (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
 
 - Mid Right: It allows 3D pose estimation with a single network and camera (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
 
-- Bottom: It allows 3D pose estimation with a single network trained on data from multple cameras together with standard triangulation methods (see [Nath* and Mathis* et al.](https://www.biorxiv.org/content/early/2018/11/24/476531) for details)
+- Bottom: It allows 3D pose estimation with a single network trained on data from multple cameras together with standard triangulation methods (see [Nath* and Mathis* et al.](https://doi.org/10.1038/s41596-019-0176-0) for details)
 
 <p align="center">
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3e47258a922d548c483247/1547585339819/ErrorvsTrainingsetSize.png?format=750w" width="50%">
@@ -72,13 +72,13 @@ This is an actively developed package and we welcome community development and i
 
 ## Community Support, Developers, & Help:
 
-- If you encounter a previously unreported bug/code issue, please post here (we encourage you to search issue first): https://github.com/AlexEMG/DeepLabCut/issues
+- If you encounter a previously unreported bug/code issue, please post here (we encourage you to search issues first): https://github.com/AlexEMG/DeepLabCut/issues
 
 - For community sourced help and questions, we ask you to post them here: [![Image.sc forum](https://img.shields.io/badge/dynamic/json.svg?label=forum&amp;url=https%3A%2F%2Fforum.image.sc%2Ftags%2Fdeeplabcut.json&amp;query=%24.topic_list.tags.0.topic_count&amp;colorB=brightgreen&amp;&amp;suffix=%20topics&amp;logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC)](https://forum.image.sc/tags/deeplabcut) 
 
 - For quick discussions here: [![Gitter](https://badges.gitter.im/DeepLabCut/community.svg)](https://gitter.im/DeepLabCut/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-If you want to contribute to the code, please make a pull request that includes how you modified the code and what new functionality it has, and the output of the [testscript.py](examples/testscript.py). 
+If you want to contribute to the code, please make a pull request that includes how you modified the code and what new functionality it has, the OS it has been tested on, and the **output of the [testscript.py](examples/testscript.py)**. 
 
 ## References:
 

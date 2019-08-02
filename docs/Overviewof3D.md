@@ -1,6 +1,6 @@
 ### How to use the 3D Functionality of DeepLabCut 2.0.7+
 
-**New:** as of ``2.0.7+`` you can create a 3D project to combine multiple cameras for 3D pose estimation. Watch a [DEMO VIDEO](https://youtu.be/Eh6oIGE4dwI) on how to use this code!
+**New:** as of deeplabcut 2.0.7+ you can create a 3D project to combine multiple cameras for 3D pose estimation. Watch a [DEMO VIDEO](https://youtu.be/Eh6oIGE4dwI) on how to use this code! (currently, update by: ``pip install deeplabcut==2.0.8``)
 
 <p align="center">
 <img src= https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1560968522350-COKR986AQESF5N1N7QNK/ke17ZwdGBToddI8pDm48kNaO57GzHjWqV-xM6jVvY6ZZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpyR5k0u27ivMv3az5DOhUvLuYQefjfUWYPEDVexVC_mSas4X78tjQKn3yE00zHvnK8/3D_maousLarger.gif?format=750w width="85%">
@@ -57,7 +57,7 @@ Use a chessboard as big as possible, ideally a chessboard with of at least 8x6 s
 
  (**CRITICAL!**) You must take images of a checkerboard to calibrate your images. Here are example boards you could print and use (mount it on a flat, hard surface!): https://markhedleyjones.com/projects/calibration-checkerboard-collection.
 - You must save the image pairs as .jpg files.
-- They should be named with the camera-# as the prefix, i.e. **camera-1-01.jpg** and **camera-2-01.jpg** for the first pair of images.
+- They should be named with the **camera-#** as the prefix, i.e. **camera-1-01.jpg** and **camera-2-01.jpg** for the first pair of images. plesae note, this cannot be changed after the project is created.
 
 **TIP:** If you want to take a short video (vs. snapping pairs of frames) while you move the checkerboard around, you can use this command inside your conda environment (but outside of ipython!) to convert the video to **.jpg** frames (this will take the first 20 frames (set with ``-vframes``) and name them camera-1-001.jpg, etc; edit appropriately):
 
@@ -83,7 +83,7 @@ In some cases, it may happen that the corners are not detected correctly or the 
 
 To begin, please place your images into the **calibration_images** directory.
 
- (**CRITICAL!**) Edit the **config.yaml** file to set the camera names; note that once this is set, do not change the names!
+ (**CRITICAL!**) Edit the **config.yaml** file to set the camera names; note that once this is set, **do not change the names!**
 
 Then, run:
 

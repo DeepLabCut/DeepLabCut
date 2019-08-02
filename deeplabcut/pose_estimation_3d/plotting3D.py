@@ -78,7 +78,6 @@ def create_labeled_video_3d(config,path,videofolder=None,start=0,end=None,trailp
 
     """
 
-
     # Read the config file and related variables
     cfg_3d = auxiliaryfunctions.read_config(config)
     cam_names = cfg_3d['camera_names']
@@ -102,10 +101,16 @@ def create_labeled_video_3d(config,path,videofolder=None,start=0,end=None,trailp
         triangulate_file = file[0]
         # triangulated file is a list which is always sorted as [triangulated.h5,camera-1.videotype,camera-2.videotype]
         file_name = str(Path(triangulate_file).stem)
+        string_to_remove = str(Path(triangulate_file).suffix)
+        pickle_file = triangulate_file.replace(string_to_remove,'_includingmetadata.pickle')
+        metadata_ = auxiliaryfunctions_3d.LoadMetadata3d(pickle_file)
+        
         base_filename_cam1 = str(Path(file[1]).stem).split(videotype)[0] # required for searching the filtered file
         base_filename_cam2 = str(Path(file[2]).stem).split(videotype)[0] # required for searching the filtered file
         cam1_view_video = file[1]
         cam2_view_video = file[2]
+        cam1_scorer = metadata_['scorer_name'][cam_names[0]]
+        cam2_scorer = metadata_['scorer_name'][cam_names[1]]
         print("Creating 3D video from %s and %s using %s"%(Path(cam1_view_video).name,Path(cam2_view_video).name,Path(triangulate_file).name))
 
         # Read the video files and corresponfing h5 files
@@ -115,13 +120,14 @@ def create_labeled_video_3d(config,path,videofolder=None,start=0,end=None,trailp
         # Look for the filtered predictions file
         try:
             print("Trying to find filtered predictions...")
-            df_cam1= pd.read_hdf(glob.glob(os.path.join(path_h5_file,str('*'+base_filename_cam1+'*filtered.h5')))[0])
-            df_cam2 = pd.read_hdf(glob.glob(os.path.join(path_h5_file,str('*'+base_filename_cam2+'*filtered.h5')))[0])
+            df_cam1= pd.read_hdf(glob.glob(os.path.join(path_h5_file,str('*'+base_filename_cam1+cam1_scorer+'*filtered.h5')))[0])
+            df_cam2 = pd.read_hdf(glob.glob(os.path.join(path_h5_file,str('*'+base_filename_cam2+cam2_scorer+'*filtered.h5')))[0])
             print("Found filtered predictions! I will use these for triangulation.")
+            print("This is I found: ",os.path.join(path_h5_file,str('*'+base_filename_cam1+cam1_scorer+'*filtered.h5')),os.path.join(path_h5_file,str('*'+base_filename_cam2+cam2_scorer+'*filtered.h5')))
         except:
             print("No filtered predictions found. I will use the unfiltered predictions.")
-            df_cam1= pd.read_hdf(glob.glob(os.path.join(path_h5_file,str(base_filename_cam1+'*.h5')))[0])
-            df_cam2 = pd.read_hdf(glob.glob(os.path.join(path_h5_file,str(base_filename_cam2+'*.h5')))[0])
+            df_cam1= pd.read_hdf(glob.glob(os.path.join(path_h5_file,str(base_filename_cam1+cam1_scorer+'*.h5')))[0])
+            df_cam2 = pd.read_hdf(glob.glob(os.path.join(path_h5_file,str(base_filename_cam2+cam2_scorer+'*.h5')))[0])
         
         df_3d = pd.read_hdf(triangulate_file,'df_with_missing')
         plt.rcParams.update({'figure.max_open_warning': 0})

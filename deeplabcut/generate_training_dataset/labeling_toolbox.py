@@ -451,7 +451,7 @@ class MainFrame(wx.Frame):
                     self.iter = idx
                     break
                 else:
-                    self.iter = idx
+                    self.iter = 0
 
         except:
             a = np.empty((len(self.index),2,))
