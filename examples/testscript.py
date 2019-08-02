@@ -28,8 +28,8 @@ videoname='reachingvideo1'
 video=[os.path.join(basepath,'Reaching-Mackenzie-2018-08-30','videos',videoname+'.avi')]
 
 #to test destination folder:
-#dfolder=basepath
-dfolder=None
+dfolder=basepath
+#dfolder=None
 
 print("CREATING PROJECT")
 path_config_file=deeplabcut.create_new_project(task,scorer,video,copy_videos=True)
