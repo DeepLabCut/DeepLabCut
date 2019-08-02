@@ -158,11 +158,27 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
 
     #update batchsize (based on parameters in config.yaml)
     dlc_cfg['batch_size']=cfg['batch_size']
+
+    # update number of outputs
+    dlc_cfg['num_outputs'] = cfg.get('num_outputs', 1)
+
+    print('num_outputs = ', dlc_cfg['num_outputs'])
+    
     # Name for scorer:
     DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations)
 
     sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
-    pdindex = pd.MultiIndex.from_product([[DLCscorer], dlc_cfg['all_joints_names'], ['x', 'y', 'likelihood']],names=['scorer', 'bodyparts', 'coords'])
+    
+    xyz_labs_orig = ['x', 'y', 'likelihood']
+    suffix = [str(s+1) for s in range(dlc_cfg['num_outputs'])]
+    suffix[0] = '' # first one has empty suffix for backwards compatibility
+    xyz_labs = [x+s for s in suffix for x in xyz_labs_orig]
+
+    pdindex = pd.MultiIndex.from_product([[DLCscorer],
+                                          dlc_cfg['all_joints_names'],
+                                          xyz_labs],
+                                         names=['scorer', 'bodyparts', 'coords'])
+
     ##################################################
     # Datafolder
     ##################################################
@@ -182,10 +198,11 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
 
     return DLCscorer
 
+    
 def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize):
     ''' Batchwise prediction of pose '''
 
-    PredicteData = np.zeros((nframes, 3 * len(dlc_cfg['all_joints_names'])))
+    PredicteData = np.zeros((nframes, dlc_cfg['num_outputs'] * 3 * len(dlc_cfg['all_joints_names'])))
     batch_ind = 0 # keeps track of which image within a batch should be written to
     batch_num = 0 # keeps track of which batch you are at
     ny,nx=int(cap.get(4)),int(cap.get(3))
@@ -218,7 +235,7 @@ def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize):
                     frames[batch_ind] = img_as_ubyte(frame)
 
                 if batch_ind==batchsize-1:
-                    pose = predict.getposeNP(frames,dlc_cfg, sess, inputs, outputs)
+                    pose = predict.getposeNP(frames, dlc_cfg, sess, inputs, outputs)
                     PredicteData[batch_num*batchsize:(batch_num+1)*batchsize, :] = pose
                     batch_ind = 0
                     batch_num += 1
@@ -236,6 +253,7 @@ def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize):
     pbar.close()
     return PredicteData,nframes
 
+
 def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes):
     ''' Non batch wise pose estimation for video cap.'''
     if cfg['cropping']:
@@ -250,8 +268,9 @@ def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes):
             pass #good cropping box
         else:
             raise Exception('Please check the boundary of cropping!')
+    
+    PredicteData = np.zeros((nframes, dlc_cfg['num_outputs'] * 3 * len(dlc_cfg['all_joints_names'])))
 
-    PredicteData = np.zeros((nframes, 3 * len(dlc_cfg['all_joints_names'])))
     pbar=tqdm(total=nframes)
     counter=0
     step=max(10,int(nframes/100))
@@ -323,6 +342,7 @@ def AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,
             "DLC-model-config file": dlc_cfg,
             "fps": fps,
             "batch_size": dlc_cfg["batch_size"],
+            "num_outputs": dlc_cfg["num_outputs"],
             "frame_dimensions": (ny, nx),
             "nframes": nframes,
             "iteration (active-learning)": cfg["iteration"],
@@ -347,7 +367,7 @@ def GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nfra
     ny,nx,nc=np.shape(im)
     print("Overall # of frames: ", nframes," found with (before cropping) frame dimensions: ", nx,ny)
 
-    PredicteData = np.zeros((nframes, 3 * len(dlc_cfg['all_joints_names'])))
+    PredicteData = np.zeros((nframes, dlc_cfg['num_outputs'] * 3 * len(dlc_cfg['all_joints_names'])))
     batch_ind = 0 # keeps track of which image within a batch should be written to
     batch_num = 0 # keeps track of which batch you are at
 
@@ -507,12 +527,24 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,traini
     trainingsiterations = (dlc_cfg['init_weights'].split(os.sep)[-1]).split('-')[-1]
 
     #update batchsize (based on parameters in config.yaml)
-    dlc_cfg['batch_size']=cfg['batch_size']
+    dlc_cfg['batch_size'] = cfg['batch_size'] 
 
+    # update number of outputs
+    dlc_cfg['num_outputs'] = cfg.get('num_outputs', 1)
+    
     # Name for scorer:
     DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations)
     sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
-    pdindex = pd.MultiIndex.from_product([[DLCscorer], dlc_cfg['all_joints_names'], ['x', 'y', 'likelihood']],names=['scorer', 'bodyparts', 'coords'])
+
+    xyz_labs_orig = ['x', 'y', 'likelihood']
+    suffix = [str(s+1) for s in range(dlc_cfg['num_outputs'])]
+    suffix[0] = '' # first one has empty suffix for backwards compatibility
+    xyz_labs = [x+s for s in suffix for x in xyz_labs_orig]
+
+    pdindex = pd.MultiIndex.from_product([[DLCscorer],
+                                          dlc_cfg['all_joints_names'],
+                                          xyz_labs],
+                                         names=['scorer', 'bodyparts', 'coords'])
 
     if gputouse is not None: #gpu selectinon
             os.environ['CUDA_VISIBLE_DEVICES'] = str(gputouse)
@@ -555,6 +587,7 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,traini
                     "Scorer": DLCscorer,
                     "config file": dlc_cfg,
                     "batch_size": dlc_cfg["batch_size"],
+                    "num_outputs": dlc_cfg["num_outputs"],
                     "frame_dimensions": (ny, nx),
                     "nframes": nframes,
                     "cropping": cfg['cropping'],
