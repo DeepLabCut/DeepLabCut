@@ -1,4 +1,4 @@
-### How to use the 3D Functionality of DeepLabCut 2.0.7+
+### How to use the 3D Functionality of DeepLabCut
 
 **New:** as of deeplabcut 2.0.7+ you can create a 3D project to combine multiple cameras for 3D pose estimation. Watch a [DEMO VIDEO](https://youtu.be/Eh6oIGE4dwI) on how to use this code! (currently, update by: ``pip install deeplabcut==2.0.8``)
 
@@ -79,7 +79,7 @@ ffmpeg -i videoname.mp4 -vframes 20 camera-1-%03d.jpg
 The camera calibration is an **iterative process**, where the user needs to select a set of calibration images where the grid pattern is correctly detected. The function:``deeplabcut.calibrate_cameras(config_path)``
 extracts the grid pattern from the calibration images and store them under the `corners` directory. The grid pattern could be 8x8 or 5x5 etc. We use a pattern of the 8x6 grid to find the internal corners of the checkerboard.
 
-In some cases, it may happen that the corners are not detected correctly or the order of corners detected in the camera-1 image and camera-2 image is incorrect. We need to remove these pair of images as they will reduce the calibration accuracy.
+In some cases, it may happen that the corners are not detected correctly or the order of corners detected in the camera-1 image and camera-2 image is incorrect. You need to remove these pair of images from the **calibration_images** folder as they will reduce the calibration accuracy.
 
 To begin, please place your images into the **calibration_images** directory.
 
@@ -123,7 +123,11 @@ Each calibration image is undistorted and saved under the directory ``undistorti
 
 If there are no errors in the undistortion, then the pose from the 2 cameras can be triangulated to get the 3D DeepLabCut coordinates!
 
- (**CRITICAL!**) Name the video files in such a way that the file name contains the name of the cameras as specified in the ``config file``. e.g. if the cameras as named as ``camera-1`` and ``camera-2`` (or ``cam-1``, ``cam-2`` etc.) then the video filename must contain this naming, i.e. this could be named as ``rig-1-mouse-day1-camera-1.avi`` and ``rig-1-mouse-day1-camera-2.avi``. Notably, the videos do not need to be the same pixel size, but be sure they are similar in size to the calibration images (and they must be the same cameras used for calibration).
+ (**CRITICAL!**) Name the video files in such a way that the file name **contains the name of the cameras** as specified in the ``config file``. e.g. if the cameras as named as ``camera-1`` and ``camera-2`` (or ``cam-1``, ``cam-2`` etc.) then the video filename must contain this naming, i.e. this could be named as ``rig-1-mouse-day1-camera-1.avi`` and ``rig-1-mouse-day1-camera-2.avi`` or could be ``rig-1-mouse-day1-camera-1-date.avi`` and ``rig-1-mouse-day1-camera-2-date.avi``. 
+ 
+- **Note** that to correctly pair the videos, the file names otherwise need to be the same! 
+- If helpful, [here is the software we use to record videos](https://github.com/AdaptiveMotorControlLab/Camera_Control).  
+- **Note** that the videos do not need to be the same pixel size, but be sure they are similar in size to the calibration images (and they must be the same cameras used for calibration).
 
  (**CRITICAL!**) You must also edit the **3D project config.yaml** file to denote which DeepLabCut projects have the information for the 2D views.
 
@@ -184,18 +188,46 @@ The **triangulated file** is now saved under the same directory where the video 
 
 ### (5) Visualize your 3D DeepLabCut Videos:
 
-In order to visualize the pose in 3D, the user can create a 3D video for certain frames (these are large files, so we advise just looking at a subset of frames). The user can specify the path of the triangulated file and specify the start and end frame indices to create a 3D labeled video. Note that the ``triangulated_file`` is the newly created file that ends with ``yourDLC_3D_scorername.h5``. This can be done using:
+In order to visualize both the 2D videos with tracked points plut the pose in 3D, the user can create a 3D video for certain frames (these are large files, so we advise just looking at a subset of frames). The user can specify the config file, the **path of the triangulated file folder**, and specify the start and end frame indices to create a 3D labeled video. Note that the ``triangulated_file_folder`` is where the newly created file that ends with ``yourDLC_3D_scorername.h5`` is located. This can be done using:
 
 ```
-deeplabcut.create_labeled_video_3d(config_path,['triangulated_file_folder'],start=50,end=250, trailpoints=3)
+deeplabcut.create_labeled_video_3d(config_path,['triangulated_file_folder'],start=50,end=250)
 ```
-**TIP:** You can set how the axis of the 3D plot on the far right looks by changing the variables ``xlim``, ``ylim``, ``zlim`` and ``view``. Your checkerboard_3d.png image which was created above will show you the axis ranges. Here is an example:
+
+**TIP:** (see more parameters below) You can set how the axis of the 3D plot on the far right looks by changing the variables ``xlim``, ``ylim``, ``zlim`` and ``view``. Your checkerboard_3d.png image which was created above will show you the axis ranges. Here is an example:
 
  <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559864026106-B6XQHUDUA8VB6F0FNVBA/ke17ZwdGBToddI8pDm48kKmw982fUOZVIQXHUCR1F55Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpx7krGdD6VO1HGZR3BdeCbrijc_yIxzfnirMo-szZRSL5-VIQGAVcQr6HuuQP1evvE/checkerboard_3d.png?format=750w" width="45%">
 </p>
 
 ``View`` is used to set the elevation and azimuth of the axes (defaults are [113, 270], and you should play around to find the view-point you like!). Also note that the video is created from a set of .png files in a "temp" directory, so as soon as you run this command you can open the first image, and if you don't like the view, hit ``CNTRL+C`` to stop, edit the values, and start again!
+
+**Other optional parameters include:**
+
+```
+    videofolder: string
+        Full path of the folder where the videos are stored. Use this if the vidoes are stored in a different location other than where the triangulation files are stored. By default is ``None`` and therefore looks for video files in the directory where the triangulation file is stored.
+
+    trailpoints: int
+        Number of previous frames whose body parts are plotted in a frame (for displaying history). Default is set to 0.
+
+    videotype: string
+        Checks for the extension of the video in case the input is a directory.
+Only videos with this extension are analyzed. The default is ``.avi``
+
+    view: list
+        A list that sets the elevation angle in z plane and azimuthal angle in x,y plane of 3d view. Useful for rotating the axis for 3d view
+    
+    xlim: list
+        A list of integers specifying the limits for xaxis of 3d view. By default it is set to [None,None], where the x limit is set by taking the minimum and maximum value of the x coordinates for all the bodyparts.
+    
+    ylim: list
+        A list of integers specifying the limits for yaxis of 3d view. By default it is set to [None,None], where the y limit is set by taking the minimum and maximum value of the y coordinates for all the bodyparts.
+    
+    zlim: list
+        A list of integers specifying the limits for zaxis of 3d view. By default it is set to [None,None], where the z limit is set by taking the minimum and maximum value of the z coordinates for all the bodyparts.
+
+```
 
 ### If you use this code:
 
