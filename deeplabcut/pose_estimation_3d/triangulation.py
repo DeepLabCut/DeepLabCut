@@ -138,6 +138,11 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,filtert
 
                 output_filename= os.path.join(output_filename+'_'+scorer_3d)
                 if os.path.isfile(output_filename+'.h5'): #TODO: don't check twice and load the pickle file to check if the same snapshots + camera matrices were used.
+                    if save_as_csv is True and not os.path.exists(output_filename + '.csv'):
+                        # In case user adds save_as_csv is True after triangulating
+                        import pandas as pd
+                        pd.read_hdf(output_filename + '.h5').to_csv(str(output_filename+'.csv'))
+
                     print("Already analyzed...Checking the meta data for any change in the camera matrices and/or scorer names",vname)
                     pickle_file = str(output_filename+'_includingmetadata.pickle')
                     metadata_ = auxiliaryfunctions_3d.LoadMetadata3d(pickle_file)
