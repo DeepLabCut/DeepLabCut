@@ -14,6 +14,7 @@ import numpy as np
 from pathlib import Path
 import cv2
 import os
+import re
 import pickle
 import glob
 import matplotlib.pyplot as plt
@@ -105,35 +106,58 @@ def calibrate_cameras(config,cbrow = 8,cbcol = 6,calibrate=False,alpha=0.4):
     # Sort the images.
     images.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
     if len(images)==0:
-        raise Exception("No calibration images found. Make sure the calibration images are saved as .jpg and with prefix as the camera name as specified in the config.yaml file.")
+        msg = "No calibration images found. Make sure the calibration images are saved as .jpg and with prefix as the camera name as specified in the config.yaml file."
+        raise Exception(msg)
+
+    # Find incomplete pairs
+    if calibrate is True:
+        index_finder = re.compile(r'\d+')
+        valid_corners = [Path(img_path).stem for img_path in glob.glob(os.path.join(path_corners, '*.jpg'))]
+        usable_corners = []
+        occurance = {}
+        for img in valid_corners:
+            index = index_finder.search(img).group()
+            print(index)
+            if index in occurance:
+                occurance[index] = True
+            else:
+                occurance[index] = False
+
+        for img in valid_corners:
+            index = index_finder.search(img).group()
+            if occurance[index] is True:
+                usable_corners.append(img.replace('_corner', ''))
     
     for fname in images:
         for cam in cam_names:
             if cam in fname:
-                filename = Path(fname).stem
+                fname_pathlib = Path(fname)
+                if calibrate is True and fname_pathlib.stem not in usable_corners:
+                    print('Skipping %s as it is part of a bad pair' % fname_pathlib.name)
+                    continue
                 img = cv2.imread(fname)
                 gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
                 # Find the chess board corners
                 ret, corners = cv2.findChessboardCorners(gray, (cbcol,cbrow),None,) #  (8,6) pattern (dimensions = common points of black squares)
                 # If found, add object points, image points (after refining them)
-                if ret == True:
+                if ret is True:
                     img_shape[cam] = gray.shape[::-1]
                     objpoints[cam].append(objp)
                     corners = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
                     imgpoints[cam].append(corners)
                     # Draw the corners and store the images
                     img = cv2.drawChessboardCorners(img, (cbcol,cbrow), corners,ret)
-                    cv2.imwrite(os.path.join(str(path_corners),filename+'_corner.jpg'),img)
+                    cv2.imwrite(os.path.join(str(path_corners),fname_pathlib.stem+'_corner.jpg'),img)
                 else:
-                    print("Corners not found for the image %s" %Path(fname).name)
+                    print("Corners not found for the image %s" % fname_pathlib.name)
     try:
         h,  w = img.shape[:2]
     except:
         raise Exception("It seems that the name of calibration images does not match with the camera names in the config file. Please make sure that the calibration images are named with camera names as specified in the config.yaml file.")
 
     # Perform calibration for each cameras and store the matrices as a pickle file
-    if calibrate == True:
+    if calibrate is True:
         # Calibrating each camera
         for cam in cam_names:
             ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints[cam], imgpoints[cam], img_shape[cam],None,None)
@@ -231,6 +255,23 @@ def check_undistortion(config,cbrow = 8,cbcol = 6,plot=True):
                 img = cv2.imread(fname)
                 gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
     '''
+    # Get bad pairs
+    index_finder = re.compile(r'\d+')
+    valid_corners = [Path(img_path).stem for img_path in glob.glob(os.path.join(path_corners, '*.jpg'))]
+    usable_corners = []
+    occurance = {}
+    for img in valid_corners:
+        index = index_finder.search(img).group()
+        if index in occurance:
+            occurance[index] = True
+        else:
+            occurance[index] = False
+
+    for img in valid_corners:
+        index = index_finder.search(img).group()
+        if occurance[index] is True:
+            usable_corners.append(img.replace('_corner', ''))
+
     camera_pair = [[cam_names[0], cam_names[1]]]
     stereo_params = auxiliaryfunctions.read_pickle(os.path.join(path_camera_matrix,'stereo_params.pickle'))
     
@@ -241,8 +282,10 @@ def check_undistortion(config,cbrow = 8,cbcol = 6,plot=True):
         cam2_undistort = []
         
         for fname in images:
+            filename = Path(fname).stem
+            if filename not in usable_corners:
+                continue
             if pair[0] in fname:
-                filename = Path(fname).stem
                 img1 = cv2.imread(fname)
                 gray1 = cv2.cvtColor(img1,cv2.COLOR_BGR2GRAY)
                 h,  w = img1.shape[:2]
@@ -257,7 +300,6 @@ def check_undistortion(config,cbrow = 8,cbcol = 6,plot=True):
                 imgpoints_proj_undistort = []
                 
             elif pair[1] in fname:
-                filename = Path(fname).stem
                 img2 = cv2.imread(fname)
                 gray2 = cv2.cvtColor(img2,cv2.COLOR_BGR2GRAY)
                 h,  w = img2.shape[:2]
