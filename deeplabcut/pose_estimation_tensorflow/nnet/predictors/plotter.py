@@ -55,11 +55,13 @@ class PlotterArgMax(Predictor):
                 pyplot.ylim(pyplot.ylim()[::-1])
 
             # Save chart to the buffer.
+            fig = pyplot.gcf()
             pyplot.tight_layout()
             pyplot.gcf().canvas.draw()
 
             # Convert plot to cv2 image, then plot it...
-            img = cv2.imdecode(np.array(pyplot.gcf().canvas.buffer_rgba(), dtype="uint8")[:, :, :-1], cv2.IMREAD_COLOR)
+            img = cv2.imdecode(np.frombuffer(fig.canvas.tostring_rgb())
+                               .reshape(fig.canvas.get_width_height()[::-1] + (3,)), cv2.IMREAD_COLOR)
 
             # Clear plotting done by pyplot....
             pyplot.clf()
