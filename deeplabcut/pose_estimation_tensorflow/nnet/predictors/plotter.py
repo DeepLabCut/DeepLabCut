@@ -61,7 +61,7 @@ class PlotterArgMax(Predictor):
 
             # Convert plot to cv2 image, then plot it...
             img = np.reshape(np.frombuffer(fig.canvas.tostring_rgb(), dtype="uint8"),
-                               fig.canvas.get_width_height()[::-1] + (3,))
+                               fig.canvas.get_width_height()[::-1] + (3,))[:, :, ::-1]
 
             # Clear plotting done by pyplot....
             pyplot.clf()
