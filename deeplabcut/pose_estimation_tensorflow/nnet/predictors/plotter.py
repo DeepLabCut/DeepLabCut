@@ -60,7 +60,7 @@ class PlotterArgMax(Predictor):
             pyplot.gcf().canvas.draw()
 
             # Convert plot to cv2 image, then plot it...
-            img = cv2.imdecode(np.frombuffer(fig.canvas.tostring_rgb())
+            img = cv2.imdecode(np.frombuffer(fig.canvas.tostring_rgb(), dtype="uint8")
                                .reshape(fig.canvas.get_width_height()[::-1] + (3,)), cv2.IMREAD_COLOR)
 
             # Clear plotting done by pyplot....
