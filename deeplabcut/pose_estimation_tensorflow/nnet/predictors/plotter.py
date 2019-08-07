@@ -11,7 +11,7 @@ from deeplabcut.pose_estimation_tensorflow.nnet.processing import TrackingData
 # Used specifically by plugin...
 import math
 import numpy as np
-import io
+from matplotlib import pyplot
 import cv2
 
 
@@ -25,14 +25,6 @@ class PlotterArgMax(Predictor):
         super().__init__(bodyparts, num_frames, settings)
         self._parts = bodyparts
         self._num_frames = num_frames
-
-        # Attempt to import matplotlib, if it fails set a flag to indicate so...
-        try:
-            from matplotlib import pyplot
-            self._has_plotter = pyplot
-        except ImportError:
-            print("Error: Unable to import matplotlib, fall back to just computing frames...")
-            self._has_plotter = None
 
         # Keeps track of how many frames
         self._current_frame = 0
@@ -52,40 +44,35 @@ class PlotterArgMax(Predictor):
 
 
     def on_frames(self, scmap: TrackingData) -> Union[None, Pose]:
-        # If we managed to import numplotlib, render plots and save them to a video...
-        if(self._has_plotter is not None):
-            pyplot = self._has_plotter
+        for frame in range(scmap.get_frame_count()):
+            # Plot all probability maps
+            for bp in range(scmap.get_bodypart_count()):
+                pyplot.subplot(self._grid_size, self._grid_size, bp + 1)
+                pyplot.title(f"Bodypart: {self._parts[bp]}, Frame: {self._current_frame}")
+                pyplot.pcolormesh(np.log(scmap.get_prob_table(frame, bp)) if (self.LOG_SCALE) else
+                                  scmap.get_prob_table(frame, bp))
+                # This reverses the y-axis data, so as probability maps match the video...
+                pyplot.ylim(pyplot.ylim()[::-1])
 
-            for frame in range(scmap.get_frame_count()):
-                # Allocate buffer to store output of pyplot
-                buffer = io.BytesIO()
+            # Save chart to the buffer.
+            pyplot.tight_layout()
+            pyplot.gcf().canvas.draw()
 
-                # Plot all probability maps
-                for bp in range(scmap.get_bodypart_count()):
-                    pyplot.subplot(self._grid_size, self._grid_size, bp + 1)
-                    pyplot.title(f"Bodypart: {self._parts[bp]}, Frame: {self._current_frame}")
-                    pyplot.pcolormesh(np.log(scmap.get_prob_table(frame, bp)) if (self.LOG_SCALE) else
-                                      scmap.get_prob_table(frame, bp))
+            # Convert plot to cv2 image, then plot it...
+            img = cv2.imdecode(np.array(pyplot.gcf().canvas.buffer_rgba()), cv2.IMREAD_COLOR)
 
-                # Save chart to the buffer.
-                pyplot.tight_layout()
-                pyplot.savefig(buffer, format="png")
-                pyplot.clf()
-                buffer.seek(0)
+            # Clear plotting done by pyplot....
+            pyplot.clf()
 
-                # Convert buffer cv2 image, then close the buffer
-                img = cv2.imdecode(np.frombuffer(buffer.getbuffer(), dtype=np.uint8), cv2.IMREAD_COLOR)
-                buffer.close()
+            # If the video writer does not exist, create it now...
+            if (self._vid_writer is None):
+                height, width, layers = img.shape
+                self._vid_writer = cv2.VideoWriter(self.VIDEO_NAME, self.OUTPUT_CODEC, self.OUTPUT_FPS,
+                                                   (width, height))
 
-                # If the video writer does not exist, create it now...
-                if (self._vid_writer is None):
-                    height, width, layers = img.shape
-                    self._vid_writer = cv2.VideoWriter(self.VIDEO_NAME, self.OUTPUT_CODEC, self.OUTPUT_FPS,
-                                                       (width, height))
-
-                # Write image to the video writer...
-                self._vid_writer.write(img)
-                self._current_frame += 1
+            # Write image to the video writer...
+            self._vid_writer.write(img)
+            self._current_frame += 1
 
 
         # Return argmax values for each frame...
@@ -102,7 +89,7 @@ class PlotterArgMax(Predictor):
     def get_settings() -> Union[List[Tuple[str, str, Any]], None]:
         return [
             ("video_name", "Name of the video file that plotting data will be saved to.", "prob-dlc.mp4"),
-            ("codec", "The codec to be used by the opencv library to save info to, typically a 4-byte string.", "X264"),
+            ("codec", "The codec to be used by the opencv library to save info to, typically a 4-byte string.", "MPEG"),
             ("output_fps", "The frames per second of the output video, as an number.", 15),
             ("use_log_scale", "Boolean, determines whether to apply log scaling to the frames in the video.", True)
         ]
