@@ -60,15 +60,15 @@ class PlotterArgMax(Predictor):
             pyplot.gcf().canvas.draw()
 
             # Convert plot to cv2 image, then plot it...
-            img = cv2.imdecode(np.reshape(np.frombuffer(fig.canvas.tostring_rgb(), dtype="uint8"),
-                               fig.canvas.get_width_height()[::-1] + (3,) ), cv2.IMREAD_COLOR)
+            img = np.reshape(np.frombuffer(fig.canvas.tostring_rgb(), dtype="uint8"),
+                               fig.canvas.get_width_height()[::-1] + (3,))
 
             # Clear plotting done by pyplot....
             pyplot.clf()
 
             # If the video writer does not exist, create it now...
             if (self._vid_writer is None):
-                height, width, layers = img.shape
+                height, width, colors = img.shape
                 self._vid_writer = cv2.VideoWriter(self.VIDEO_NAME, self.OUTPUT_CODEC, self.OUTPUT_FPS,
                                                    (width, height))
 
