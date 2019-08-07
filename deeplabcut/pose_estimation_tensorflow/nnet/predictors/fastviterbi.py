@@ -423,9 +423,9 @@ class FastViterbi(Predictor):
                 if(self.NEGATE_ON):
                     bp_queue.append((x, y, prob))
 
-            # Drop the counter by 1
-            r_counter -= 1
-            progress_bar.update()
+        # Drop the counter by 1
+        r_counter -= 1
+        progress_bar.update()
 
         # Entering main loop...
         while(r_counter >= 0):
