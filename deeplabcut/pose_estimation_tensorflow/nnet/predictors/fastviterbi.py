@@ -416,7 +416,7 @@ class FastViterbi(Predictor):
                     bp_queue.append((None, None, None))
             else:
                 # Normalize the viterbi probability...
-                normalized_prob = 1 - np.abs(prob / np.sum(viterbi_data))
+                normalized_prob = 1 - np.abs(prob) / np.sum(np.abs(viterbi_data[:, 0]))
 
                 # Append point to prior points and also add it the the poses object...
                 prior_points.append((x, y, prob))
@@ -469,7 +469,7 @@ class FastViterbi(Predictor):
                     off_x, off_y = self._viterbi_frames[r_counter][(bp * 2) + 1][max_loc, 1:]
 
                     # Normalize the viterbi probability...
-                    normalized_prob = 1 - np.abs(max_prob / np.sum(viterbi_data[:, 0]))
+                    normalized_prob = 1 - np.abs(max_prob) / np.sum(np.abs(viterbi_data[:, 0]))
 
                     all_poses.set_at(r_counter, bp, (max_x, max_y), (off_x, off_y),
                                      normalized_prob,

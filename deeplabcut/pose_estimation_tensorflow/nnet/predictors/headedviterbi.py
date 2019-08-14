@@ -29,7 +29,7 @@ class HeadedViterbi(Predictor):
 
     @staticmethod
     def get_settings() -> Union[List[Tuple[str, str, Any]], None]:
-        return FastViterbi.get_settings() + (("num_heads", "The number of heads within each frame"),)
+        return FastViterbi.get_settings() + [("num_heads", "The number of heads within each frame", 2)]
 
     @classmethod
     def get_tests(cls) -> Union[List[Callable[[], Tuple[bool, str, str]]], None]:
