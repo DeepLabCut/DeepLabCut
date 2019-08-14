@@ -66,9 +66,6 @@ class FastViterbi(Predictor):
         self.NEG_NORM_DIST = settings["negative_impact_distance"] # Normal distribution of negative 2D gaussian curve
         self.NEG_AMPLITUDE = settings["negative_impact_factor"] # Negative amplitude to use for 2D negation gaussian
 
-        self.TWEAK_DLC_PROB = 5
-
-
     def _gaussian_formula(self, prior_x: float, x: float, prior_y: float, y: float) -> float:
         """
         Private method, computes location of point (x, y) on a gaussian curve given a prior point (x_prior, y_prior)
