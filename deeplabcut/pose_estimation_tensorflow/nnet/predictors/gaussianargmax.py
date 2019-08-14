@@ -135,7 +135,7 @@ class GaussianArgMax(Predictor):
     def get_settings() -> Union[List[Tuple[str, str, Any]], None]:
         return [
             ("norm_dist", "The normal distribution of the 2D gaussian curve used"
-                          "for transition probabilities by the viterbi algorithm.", 5),
+                          "for transition probabilities by the viterbi algorithm.", 1),
             ("amplitude", "The amplitude of the gaussian curve used by the viterbi algorithm.", 1),
             ("lowest_val", "The lowest value of the gaussian curve used by the viterbi algorithm."
                            "Really a constant that is added on the the 2D gaussian to give all points"

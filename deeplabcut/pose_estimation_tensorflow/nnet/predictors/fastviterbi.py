@@ -207,7 +207,7 @@ class FastViterbi(Predictor):
         prob = scmap.get_prob_table(frame, bodypart)[coords] * (1 - self.EDGE_PROB)
         off_x, off_y = np.zeros(np.array(coords).shape) if(scmap.get_offset_map() is None) else np.transpose(
                        scmap.get_offset_map()[frame, coords[0], coords[1], bodypart])
-        self._viterbi_frames[self._current_frame][(bodypart * 2) + 1] = np.transpose((np.log(prob), off_x, off_y, prob))
+        self._viterbi_frames[self._current_frame][(bodypart * 2) + 1] = np.transpose((np.log(prob), off_x, off_y))
 
 
     def _compute_normal_frame(self, bodypart: int, frame: int, scmap: TrackingData):
@@ -226,7 +226,7 @@ class FastViterbi(Predictor):
             self._viterbi_frames[self._current_frame][(bodypart * 2) + 1] = (
                 np.copy(self._viterbi_frames[self._current_frame - 1][bodypart * 2 + 1])
             )
-            self._viterbi_frames[self._current_frame][(bodypart * 2) + 1][:, 3] = 0
+            # self._viterbi_frames[self._current_frame][(bodypart * 2) + 1][:, 3] = 0
 
             return
 
@@ -265,8 +265,7 @@ class FastViterbi(Predictor):
         # each point in this frame.
         viterbi_vals = np.maximum(np.max(frame_to_frame, axis=1), np.max(edge_to_frame, axis=1))
         # Fill out this viterbi frame with computations done above...
-        self._viterbi_frames[self._current_frame][bodypart * 2 + 1] = np.transpose((viterbi_vals,
-                                                                                 off_x, off_y, current_prob))
+        self._viterbi_frames[self._current_frame][bodypart * 2 + 1] = np.transpose((viterbi_vals, off_x, off_y))
 
         # COMPUTE OFF-SCREEN VITERBI VALUES:
         # Compute the probability of transitioning from the prior frame to the current edge.....
@@ -403,7 +402,7 @@ class FastViterbi(Predictor):
 
             # Gather all required fields...
             y, x = self._viterbi_frames[r_counter][(bp * 2)][max_frame_loc]
-            prob, off_x, off_y, output_prob = self._viterbi_frames[r_counter][(bp * 2) + 1][max_frame_loc]
+            prob, off_x, off_y = self._viterbi_frames[r_counter][(bp * 2) + 1][max_frame_loc]
             edge_x, edge_y = self._edge_coords[max_edge_loc]
             edge_prob = self._edge_vals[r_counter, bp, max_edge_loc]
 
@@ -416,9 +415,12 @@ class FastViterbi(Predictor):
                 if(self.NEGATE_ON):
                     bp_queue.append((None, None, None))
             else:
+                # Normalize the viterbi probability...
+                normalized_prob = 1 - np.abs(prob / np.sum(viterbi_data))
+
                 # Append point to prior points and also add it the the poses object...
                 prior_points.append((x, y, prob))
-                all_poses.set_at(r_counter, bp, (x, y), (off_x, off_y), output_prob, self._down_scaling)
+                all_poses.set_at(r_counter, bp, (x, y), (off_x, off_y), normalized_prob, self._down_scaling)
 
                 if(self.NEGATE_ON):
                     bp_queue.append((x, y, prob))
@@ -464,11 +466,13 @@ class FastViterbi(Predictor):
                 if(is_in_frame):
                     max_x, max_y, max_prob = max_point
                     px, py = prior_points[bp][:-1]
-                    off_x, off_y, output_prob = self._viterbi_frames[r_counter][(bp * 2) + 1][max_loc, 1:]
+                    off_x, off_y = self._viterbi_frames[r_counter][(bp * 2) + 1][max_loc, 1:]
+
+                    # Normalize the viterbi probability...
+                    normalized_prob = 1 - np.abs(max_prob / np.sum(viterbi_data[:, 0]))
+
                     all_poses.set_at(r_counter, bp, (max_x, max_y), (off_x, off_y),
-                                     output_prob * np.exp(self._gaussian_table[
-                                     np.abs(max_y - py) // self.TWEAK_DLC_PROB,
-                                     np.abs(max_x - px) // self.TWEAK_DLC_PROB]),
+                                     normalized_prob,
                                      self._down_scaling)
 
                     if (self.NEGATE_ON):
