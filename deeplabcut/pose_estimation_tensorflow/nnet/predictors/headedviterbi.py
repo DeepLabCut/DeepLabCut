@@ -6,11 +6,20 @@ from deeplabcut.pose_estimation_tensorflow.nnet.predictors.fastviterbi import Fa
 from deeplabcut.pose_estimation_tensorflow.nnet.processing import Predictor, Pose, TrackingData
 
 class HeadedViterbi(Predictor):
+
     # TODO: Finish writing...
     def __init__(self, bodyparts: List[str], num_frames: int, settings: Union[Dict[str, Any], None]):
         super().__init__(bodyparts, num_frames, settings)
 
-        self._wrapped_viterbi = FastViterbi(["head1", "head2"] + bodyparts, num_frames, settings)
+        self._noses = [part for part in bodyparts if (part.startswith("nose"))]
+        self._tails = [part for part in bodyparts if (part.startswith("tail"))]
+
+        self._body_clusters = []
+
+        for nose in self._noses:
+            pass # TODO: To be continued....
+
+        self._wrapped_viterbi = FastViterbi(self._head_list + bodyparts, num_frames, settings)
 
 
     def on_frames(self, scmap: TrackingData) -> Union[None, Pose]:
@@ -29,7 +38,7 @@ class HeadedViterbi(Predictor):
 
     @staticmethod
     def get_settings() -> Union[List[Tuple[str, str, Any]], None]:
-        return FastViterbi.get_settings() + [("num_heads", "The number of heads within each frame", 2)]
+        return FastViterbi.get_settings()
 
     @classmethod
     def get_tests(cls) -> Union[List[Callable[[], Tuple[bool, str, str]]], None]:
