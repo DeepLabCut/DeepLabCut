@@ -330,14 +330,14 @@ class FastViterbi(Predictor):
         return None
 
 
-    def _get_prior_location(self, prior_frame: List[Union[ndarray, None]], prior_edge_probs: ndarray, current_point: Tuple[int, int, float]) -> Union[Tuple[bool, int, Tuple[int, int, float]], Tuple[None, None, None]]:
+    def _get_prior_location(self, prior_frame: List[Union[ndarray, None]], prior_edge_probs: ndarray, current_point: Tuple[int, int, float]) -> Union[Tuple[bool, int, Tuple[int, int, float], float], Tuple[None, None, None, None]]:
         """
         Performs the viterbi back computation, given prior frame and current predicted point,
         returns the predicted point for this frame... (for single bodypart...)
         """
         # If the point data is none, return None
         if((prior_frame[0] is None) or (current_point[0] is None)):
-            return None, None, None
+            return None, None, None, None
 
         # Unpack the point
         cx, cy, cprob = current_point
@@ -356,11 +356,16 @@ class FastViterbi(Predictor):
         max_frame_i: int = np.argmax(prior_frame_viterbi)
         max_edge_i: int = np.argmax(prior_edge_viterbi)
 
+
+        viterbi_sum = float(np.sum(np.abs(np.concatenate(prior_edge_viterbi, prior_frame_viterbi, axis=None))))
+
         # If the in frame selection is greater, return it, otherwise return edge prediction
         if(prior_frame_viterbi[max_frame_i] > prior_edge_viterbi[max_edge_i]):
-            return (True, max_frame_i, (px[max_frame_i], py[max_frame_i], prior_frame_viterbi[max_frame_i]))
+            return (True, max_frame_i, (px[max_frame_i], py[max_frame_i], prior_frame_viterbi[max_frame_i]),
+                    viterbi_sum)
         else:
-            return (False, max_edge_i, (edge_x[max_edge_i], edge_y[max_edge_i], prior_edge_viterbi[max_edge_i]))
+            return (False, max_edge_i, (edge_x[max_edge_i], edge_y[max_edge_i], prior_edge_viterbi[max_edge_i]),
+                    viterbi_sum)
 
 
     def on_end(self, progress_bar: tqdm.tqdm) -> Union[None, Pose]:
@@ -416,6 +421,7 @@ class FastViterbi(Predictor):
                 normalized_prob = np.exp(-np.abs(prob / np.sum(viterbi_data)))
 
                 if (not (0 <= normalized_prob <= 1)):
+                    print("FIRST FRAME ERR!!!")
                     print(prob)
                     print(np.sum(viterbi_data))
 
@@ -449,7 +455,7 @@ class FastViterbi(Predictor):
                                              np.abs(coord_y - bpy), np.abs(coord_x - bpx)]
 
 
-                is_in_frame, max_loc, max_point = self._get_prior_location(
+                is_in_frame, max_loc, max_point, viterbi_sum = self._get_prior_location(
                     [self._viterbi_frames[r_counter][bp * 2], viterbi_data],
                     self._edge_vals[r_counter, bp],
                     prior_points[bp]
@@ -469,11 +475,11 @@ class FastViterbi(Predictor):
                     off_x, off_y = self._viterbi_frames[r_counter][(bp * 2) + 1][max_loc, 1:]
 
                     # Normalize the viterbi probability...
-                    normalized_prob = np.exp(-np.abs(max_prob / np.sum(viterbi_data[:, 0])))
+                    normalized_prob = 1 - (np.abs(max_prob) / viterbi_sum)
 
                     if(not (0 <= normalized_prob <= 1)):
                         print(max_prob)
-                        print(np.sum(viterbi_data[:, 0]))
+                        print(viterbi_sum)
 
                     all_poses.set_at(r_counter, bp, (max_x, max_y), (off_x, off_y),
                                      normalized_prob,
