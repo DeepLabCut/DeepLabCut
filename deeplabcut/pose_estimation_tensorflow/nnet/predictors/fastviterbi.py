@@ -205,7 +205,7 @@ class FastViterbi(Predictor):
         prob = scmap.get_prob_table(frame, bodypart)[coords] * (1 - self.EDGE_PROB)
         off_x, off_y = np.zeros(np.array(coords).shape) if(scmap.get_offset_map() is None) else np.transpose(
                        scmap.get_offset_map()[frame, coords[0], coords[1], bodypart])
-        self._viterbi_frames[self._current_frame][(bodypart * 2) + 1] = np.transpose(prob, off_x, off_y)
+        self._viterbi_frames[self._current_frame][(bodypart * 2) + 1] = np.transpose((prob, off_x, off_y))
 
 
     def _compute_normal_frame(self, bodypart: int, frame: int, scmap: TrackingData):
