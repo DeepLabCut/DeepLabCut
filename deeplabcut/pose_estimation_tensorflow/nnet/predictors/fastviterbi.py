@@ -357,7 +357,7 @@ class FastViterbi(Predictor):
         max_edge_i: int = np.argmax(prior_edge_viterbi)
 
 
-        viterbi_sum = float(np.sum(np.abs(np.concatenate(prior_edge_viterbi, prior_frame_viterbi, axis=None))))
+        viterbi_sum = float(np.sum(np.abs(np.concatenate((prior_edge_viterbi, prior_frame_viterbi), axis=None))))
 
         # If the in frame selection is greater, return it, otherwise return edge prediction
         if(prior_frame_viterbi[max_frame_i] > prior_edge_viterbi[max_edge_i]):
