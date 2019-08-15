@@ -11,13 +11,21 @@ class HeadedViterbi(Predictor):
     def __init__(self, bodyparts: List[str], num_frames: int, settings: Union[Dict[str, Any], None]):
         super().__init__(bodyparts, num_frames, settings)
 
-        self._noses = [part for part in bodyparts if (part.startswith("nose"))]
-        self._tails = [part for part in bodyparts if (part.startswith("tail"))]
+        self._bodyparts = bodyparts
+
+        # Convert noses and tails to a list of tuples, being in the format: (nose index, tail index)
+        self._noses = {part: i for i, part in enumerate(bodyparts) if (part.startswith("nose"))}
+        self._tails = {part: i for i, part in enumerate(bodyparts) if (part.startswith("tail"))}
 
         self._body_clusters = []
 
+        nose_str_len = len("nose")
+        tail_str_len = len("tail")
+
         for nose in self._noses:
-            pass # TODO: To be continued....
+            for tail in self._tails:
+                if(nose[nose_str_len:] == tail[tail_str_len:]):
+                    self._body_clusters.append((self._noses[nose], self._tails[tail]))
 
         self._wrapped_viterbi = FastViterbi(self._head_list + bodyparts, num_frames, settings)
 

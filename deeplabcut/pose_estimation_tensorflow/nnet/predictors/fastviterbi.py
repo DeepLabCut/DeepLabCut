@@ -13,13 +13,14 @@ import numpy as np
 from collections import deque
 
 #TODO: Add more test methods, disable numpy warnings....
+#TODO: Apply scaling at each step, remove log scaling...
 
 class FastViterbi(Predictor):
     """
     A predictor that applies the Viterbi algorithm to frames in order to predict poses.
     The algorithm is frame-aware, unlike the default algorithm used by DeepLabCut, but
     is also more memory intensive and computationally expensive. This specific implementation
-    uses sparse matrix multiplication(log addition) for massive speedup over the normal
+    uses sparse matrix multiplication for massive speedup over the normal
     viterbi implementation...)
     """
 
@@ -109,7 +110,7 @@ class FastViterbi(Predictor):
         # Iterate through filling in the values, using (0, 0) as the prior coordinate
         for y in range(height + 2):
             for x in range(width + 2):
-                self._gaussian_table[y, x] = np.log(self._gaussian_formula(0, x, 0, y))
+                self._gaussian_table[y, x] = self._gaussian_formula(0, x, 0, y)
 
         # Done, return...
         return
@@ -126,7 +127,7 @@ class FastViterbi(Predictor):
         # Iterate and fill values
         for y in range(height):
             for x in range(width):
-                self._neg_gaussian_table[y, x] = np.log(self._neg_gaussian_formula(0, x, 0, y))
+                self._neg_gaussian_table[y, x] = self._neg_gaussian_formula(0, x, 0, y)
 
         # Done
         return
@@ -190,7 +191,7 @@ class FastViterbi(Predictor):
         coords = np.nonzero(scmap.get_prob_table(frame, bodypart) > self.THRESHOLD)
 
         # Set initial value for edge values...
-        self._edge_vals[self._current_frame, bodypart, :] = np.log(self._edge_block_value)
+        self._edge_vals[self._current_frame, bodypart, :] = self._edge_block_value
 
         # If no points are found above the threshold, frame for this bodypart is a dud, set it to none...
         if (len(coords[0]) == 0):
@@ -204,7 +205,7 @@ class FastViterbi(Predictor):
         prob = scmap.get_prob_table(frame, bodypart)[coords] * (1 - self.EDGE_PROB)
         off_x, off_y = np.zeros(np.array(coords).shape) if(scmap.get_offset_map() is None) else np.transpose(
                        scmap.get_offset_map()[frame, coords[0], coords[1], bodypart])
-        self._viterbi_frames[self._current_frame][(bodypart * 2) + 1] = np.transpose((np.log(prob), off_x, off_y))
+        self._viterbi_frames[self._current_frame][(bodypart * 2) + 1] = np.transpose(prob, off_x, off_y)
 
 
     def _compute_normal_frame(self, bodypart: int, frame: int, scmap: TrackingData):
@@ -223,8 +224,6 @@ class FastViterbi(Predictor):
             self._viterbi_frames[self._current_frame][(bodypart * 2) + 1] = (
                 np.copy(self._viterbi_frames[self._current_frame - 1][bodypart * 2 + 1])
             )
-            # self._viterbi_frames[self._current_frame][(bodypart * 2) + 1][:, 3] = 0
-
             return
 
         # NORMAL CASE:
@@ -248,33 +247,40 @@ class FastViterbi(Predictor):
         # Get all of the same data for the edge values...
         edge_x, edge_y = self._edge_coords[:, 0], self._edge_coords[:, 1]
         prior_edge_probs = self._edge_vals[self._current_frame - 1, bodypart, :]
-        current_edge_probs = np.array([np.log(self._edge_block_value)] * (self.BLOCKS_PER_EDGE * 4))
-
+        current_edge_probs = np.array([self._edge_block_value] * (self.BLOCKS_PER_EDGE * 4))
 
         # COMPUTE IN-FRAME VITERBI VALUES:
         # Compute probabilities of transferring from the prior frame to this frame...
-        frame_to_frame = (np.expand_dims(np.log(current_prob), axis=1) + np.expand_dims(prior_vit_probs, axis=0)
-                          + self._gaussian_values_at(cx, cy, px, py))
+        frame_to_frame = (np.expand_dims(current_prob, axis=1) * np.expand_dims(prior_vit_probs, axis=0)
+                          * self._gaussian_values_at(cx, cy, px, py))
         # Compute the probabilities of transferring from the prior edge to this frame.
-        edge_to_frame = (np.expand_dims(np.log(current_prob), axis=1) + self._gaussian_values_at(cx, cy, edge_x, edge_y)
-                         + np.expand_dims(prior_edge_probs, axis=0))
+        edge_to_frame = (np.expand_dims(current_prob, axis=1) * self._gaussian_values_at(cx, cy, edge_x, edge_y)
+                         * np.expand_dims(prior_edge_probs, axis=0))
         # Merge probabilities of going from the edge to the frame or frame to frame, selecting the max of the two for
         # each point in this frame.
         viterbi_vals = np.maximum(np.max(frame_to_frame, axis=1), np.max(edge_to_frame, axis=1))
-        # Fill out this viterbi frame with computations done above...
-        self._viterbi_frames[self._current_frame][bodypart * 2 + 1] = np.transpose((viterbi_vals, off_x, off_y))
 
         # COMPUTE OFF-SCREEN VITERBI VALUES:
         # Compute the probability of transitioning from the prior frame to the current edge.....
-        frame_to_edge = (np.expand_dims(current_edge_probs, axis=1) + self._gaussian_values_at(edge_x, edge_y, px, py)
-                         + np.expand_dims((prior_vit_probs), axis=0))
+        frame_to_edge = (np.expand_dims(current_edge_probs, axis=1) * self._gaussian_values_at(edge_x, edge_y, px, py)
+                         * np.expand_dims((prior_vit_probs), axis=0))
         # Compute the probability of transitioning from the prior edge to the current edge...
-        edge_to_edge = (np.expand_dims(current_edge_probs, axis=1) + np.expand_dims(prior_edge_probs, axis=0)
-                        + self._gaussian_values_at(edge_x, edge_y, edge_x, edge_y))
-        # Set the edge value for this frame to the max probability of transferring from the prior edge or the
-        # prior frame...
-        self._edge_vals[self._current_frame, bodypart] = np.maximum(np.max(frame_to_edge, axis=1),
-                                                                    np.max(edge_to_edge, axis=1))
+        edge_to_edge = (np.expand_dims(current_edge_probs, axis=1) * np.expand_dims(prior_edge_probs, axis=0)
+                        * self._gaussian_values_at(edge_x, edge_y, edge_x, edge_y))
+        # Merge probabilities to produce final edge transitioning viterbi values...
+        edge_vit_vals = np.maximum(np.max(frame_to_edge, axis=1), np.max(edge_to_edge, axis=1))
+
+        # NORMALIZE PROBABILITIES:
+        # If we were to leave the probabilities as-is then we would experience floating point underflow after enough
+        # frames, so we normalize the probabilities before storing them to avoid this issue. Since relations and scaling
+        # between the probabilities is still the same, normalizing has no effect on the results...
+        total_sum = np.sum(edge_vit_vals) + np.sum(viterbi_vals)
+        viterbi_vals = viterbi_vals / total_sum
+        edge_vit_vals = edge_vit_vals / total_sum
+
+        # SAVE NEW VITERBI FRAMES:
+        self._edge_vals[self._current_frame, bodypart] = edge_vit_vals
+        self._viterbi_frames[self._current_frame][bodypart * 2 + 1] = np.transpose((viterbi_vals, off_x, off_y))
 
 
 
@@ -330,14 +336,14 @@ class FastViterbi(Predictor):
         return None
 
 
-    def _get_prior_location(self, prior_frame: List[Union[ndarray, None]], prior_edge_probs: ndarray, current_point: Tuple[int, int, float]) -> Union[Tuple[bool, int, Tuple[int, int, float], float], Tuple[None, None, None, None]]:
+    def _get_prior_location(self, prior_frame: List[Union[ndarray, None]], prior_edge_probs: ndarray, current_point: Tuple[int, int, float]) -> Union[Tuple[bool, int, Tuple[int, int, float]], Tuple[None, None, None]]:
         """
         Performs the viterbi back computation, given prior frame and current predicted point,
         returns the predicted point for this frame... (for single bodypart...)
         """
         # If the point data is none, return None
         if((prior_frame[0] is None) or (current_point[0] is None)):
-            return None, None, None, None
+            return None, None, None
 
         # Unpack the point
         cx, cy, cprob = current_point
@@ -347,25 +353,25 @@ class FastViterbi(Predictor):
         edge_x, edge_y = self._edge_coords[:, 0], self._edge_coords[:, 1]
 
         # Compute probability of going from current point to some where in the prior frame...
-        prior_frame_viterbi = (cprob + self._gaussian_values_at(np.array(cx), np.array(cy), px, py).flatten() + pprob)
+        prior_frame_viterbi = (cprob * self._gaussian_values_at(np.array(cx), np.array(cy), px, py).flatten() * pprob)
 
         # Compute the probability of going from the current point to somewhere outside of the prior frame...
-        prior_edge_viterbi = (cprob + self._gaussian_values_at(np.array(cx), np.array(cy), edge_x, edge_y).flatten() + prior_edge_probs)
+        prior_edge_viterbi = (cprob * self._gaussian_values_at(np.array(cx), np.array(cy), edge_x, edge_y).flatten()
+                              * prior_edge_probs)
 
-        # Get max probability in list of possible transitions, for the frame and edge...
+        # Get max probability in list of possible transitions, for the frame and edge... Also normalize them...
         max_frame_i: int = np.argmax(prior_frame_viterbi)
         max_edge_i: int = np.argmax(prior_edge_viterbi)
 
-
-        viterbi_sum = float(np.sum(np.abs(np.concatenate((prior_edge_viterbi, prior_frame_viterbi), axis=None))))
+        # Compute total sum of probabilities so we can normalize when returning values...
+        total_sum = np.sum(prior_frame_viterbi) + np.sum(prior_edge_viterbi)
 
         # If the in frame selection is greater, return it, otherwise return edge prediction
         if(prior_frame_viterbi[max_frame_i] > prior_edge_viterbi[max_edge_i]):
-            return (True, max_frame_i, (px[max_frame_i], py[max_frame_i], prior_frame_viterbi[max_frame_i]),
-                    viterbi_sum)
+            return (True, max_frame_i, (px[max_frame_i], py[max_frame_i], prior_frame_viterbi[max_frame_i] / total_sum))
         else:
-            return (False, max_edge_i, (edge_x[max_edge_i], edge_y[max_edge_i], prior_edge_viterbi[max_edge_i]),
-                    viterbi_sum)
+            return (False, max_edge_i, (edge_x[max_edge_i], edge_y[max_edge_i],
+                    prior_edge_viterbi[max_edge_i] / total_sum))
 
 
     def on_end(self, progress_bar: tqdm.tqdm) -> Union[None, Pose]:
@@ -389,14 +395,12 @@ class FastViterbi(Predictor):
             viterbi_data = self._viterbi_frames[r_counter][(bp * 2) + 1][:, 0]
             coord_y, coord_x = self._viterbi_frames[r_counter][(bp * 2)][:].transpose()
 
-
             # Perform negation of prior body parts if enabled
             if(self.NEGATE_ON):
                 for bpx, bpy, bpprob in bp_queue:
                     if (bpx is None):
                         continue
-                    viterbi_data = viterbi_data + self._neg_gaussian_table[np.abs(coord_y - bpy), np.abs(coord_x - bpx)]
-
+                    viterbi_data = viterbi_data * self._neg_gaussian_table[np.abs(coord_y - bpy), np.abs(coord_x - bpx)]
 
             # Get the max location index
             max_frame_loc = np.argmax(viterbi_data)
@@ -404,7 +408,8 @@ class FastViterbi(Predictor):
 
             # Gather all required fields...
             y, x = self._viterbi_frames[r_counter][(bp * 2)][max_frame_loc]
-            prob, off_x, off_y = self._viterbi_frames[r_counter][(bp * 2) + 1][max_frame_loc]
+            off_x, off_y = self._viterbi_frames[r_counter][(bp * 2) + 1][max_frame_loc][1:]
+            prob = viterbi_data[max_frame_loc]
             edge_x, edge_y = self._edge_coords[max_edge_loc]
             edge_prob = self._edge_vals[r_counter, bp, max_edge_loc]
 
@@ -418,19 +423,14 @@ class FastViterbi(Predictor):
                     bp_queue.append((None, None, None))
             else:
                 # Normalize the viterbi probability...
-                normalized_prob = np.exp(-np.abs(prob / np.sum(viterbi_data)))
-
-                if (not (0 <= normalized_prob <= 1)):
-                    print("FIRST FRAME ERR!!!")
-                    print(prob)
-                    print(np.sum(viterbi_data))
+                normalized_prob = prob / (np.sum(self._edge_vals[r_counter, bp]) + np.sum(viterbi_data))
 
                 # Append point to prior points and also add it the the poses object...
-                prior_points.append((x, y, prob))
+                prior_points.append((x, y, normalized_prob))
                 all_poses.set_at(r_counter, bp, (x, y), (off_x, off_y), normalized_prob, self._down_scaling)
 
                 if(self.NEGATE_ON):
-                    bp_queue.append((x, y, prob))
+                    bp_queue.append((x, y, normalized_prob))
 
         # Drop the counter by 1
         r_counter -= 1
@@ -451,11 +451,11 @@ class FastViterbi(Predictor):
                     for bpx, bpy, bpprob in bp_queue:
                         if(bpx is None):
                             continue
-                        viterbi_data[:, 0] = viterbi_data[:, 0] + self._neg_gaussian_table[
+                        viterbi_data[:, 0] = viterbi_data[:, 0] * self._neg_gaussian_table[
                                              np.abs(coord_y - bpy), np.abs(coord_x - bpx)]
 
 
-                is_in_frame, max_loc, max_point, viterbi_sum = self._get_prior_location(
+                is_in_frame, max_loc, max_point = self._get_prior_location(
                     [self._viterbi_frames[r_counter][bp * 2], viterbi_data],
                     self._edge_vals[r_counter, bp],
                     prior_points[bp]
@@ -471,18 +471,11 @@ class FastViterbi(Predictor):
 
                 # Based on if the point is in frame or not, decide how to plot it.
                 if(is_in_frame):
-                    max_x, max_y, max_prob = max_point
+                    max_x, max_y, max_normalized_prob = max_point
                     off_x, off_y = self._viterbi_frames[r_counter][(bp * 2) + 1][max_loc, 1:]
 
-                    # Normalize the viterbi probability...
-                    normalized_prob = 1 - (np.abs(max_prob) / viterbi_sum)
-
-                    if(not (0 <= normalized_prob <= 1)):
-                        print(max_prob)
-                        print(viterbi_sum)
-
                     all_poses.set_at(r_counter, bp, (max_x, max_y), (off_x, off_y),
-                                     normalized_prob,
+                                     max_normalized_prob,
                                      self._down_scaling)
 
                     if (self.NEGATE_ON):
@@ -523,7 +516,7 @@ class FastViterbi(Predictor):
             ("negate_overlapping_predictions", "If enabled, predictor will discourage a bodypart from being in the same"
                                                "location as prior predicted body parts.", True),
             ("negative_impact_factor", "The height of the upside down 2D gaussian curve used for negating locations"
-                                       "of prior predicted body parts.", 0.5),
+                                       "of prior predicted body parts.", 0.99),
             ("negative_impact_distance", "The normal distribution of the 2D gaussian curve used for negating locations"
                                          "of prior predicted body parts.", 0.5)
         ]
@@ -537,7 +530,7 @@ class FastViterbi(Predictor):
         return ("A predictor that applies the Viterbi algorithm to frames in order to predict poses. "
                 "The algorithm is frame-aware, unlike the default algorithm used by DeepLabCut, but "
                 "is also more memory intensive and computationally expensive. This specific implementation "
-                "uses sparse matrix multiplication(log addition) for massive speedup over the normal "
+                "uses sparse matrix multiplication for massive speedup over the normal "
                 "viterbi implementation...")
 
     @classmethod
