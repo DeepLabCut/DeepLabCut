@@ -417,7 +417,7 @@ class FastViterbi(Predictor):
 
                 if (not (0 <= normalized_prob <= 1)):
                     print(prob)
-                    print(np.sum(np.abs(viterbi_data)))
+                    print(np.sum(viterbi_data))
 
                 # Append point to prior points and also add it the the poses object...
                 prior_points.append((x, y, prob))
@@ -473,7 +473,7 @@ class FastViterbi(Predictor):
 
                     if(not (0 <= normalized_prob <= 1)):
                         print(max_prob)
-                        print(np.sum(np.abs(viterbi_data[:, 0])))
+                        print(np.sum(viterbi_data[:, 0]))
 
                     all_poses.set_at(r_counter, bp, (max_x, max_y), (off_x, off_y),
                                      normalized_prob,
