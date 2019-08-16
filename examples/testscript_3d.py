@@ -145,5 +145,5 @@ print("ALL DONE!!! - default cases are functional.")
 
 print("Re-import DLC with env. variable set to test DLC light mode.")
 os.environ['DLClight']='True'
-subprocess.call(['python3',"-c","import deeplabcut"])
+subprocess.call(['python',"-c","import deeplabcut"])
 print("SUCCESS!!! - DLC light mode works too.")

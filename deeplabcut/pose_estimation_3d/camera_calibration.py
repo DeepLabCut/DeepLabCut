@@ -25,7 +25,7 @@ from matplotlib.axes._axes import _log as matplotlib_axes_logger
 matplotlib_axes_logger.setLevel('ERROR')
 
 
-def calibrate_cameras(config,cbrow = 8,cbcol = 6,calibrate=False,alpha=0.4):
+def calibrate_cameras(config,cbrow=8, cbcol=6, calibrate=False, alpha=0.4):
     """This function extracts the corners points from the calibration images, calibrates the camera and stores the calibration files in the project folder (defined in the config file).
     
     Make sure you have around 20-60 pairs of calibration images. The function should be used iteratively to select the right set of calibration images. 
@@ -110,31 +110,55 @@ def calibrate_cameras(config,cbrow = 8,cbcol = 6,calibrate=False,alpha=0.4):
         raise Exception(msg)
 
     # Find incomplete pairs
-    if calibrate is True:
-        index_finder = re.compile(r'\d+')
+    corner_selected_by_user_check = glob.glob(os.path.join(path_corners, '*.jpg')) != [] and len(glob.glob(os.path.join(path_corners, '*.jpg'))) <= len(images)
+    if calibrate is True and corner_selected_by_user_check:
         valid_corners = [Path(img_path).stem for img_path in glob.glob(os.path.join(path_corners, '*.jpg'))]
-        usable_corners = []
-        occurance = {}
-        for img in valid_corners:
-            index = index_finder.search(img).group()
-            print(index)
-            if index in occurance:
-                occurance[index] = True
-            else:
-                occurance[index] = False
 
-        for img in valid_corners:
-            index = index_finder.search(img).group()
-            if occurance[index] is True:
-                usable_corners.append(img.replace('_corner', ''))
+        usable_corners = []
+        occurance = []
+        finder = re.compile(r'\d+')
+        img_id_warn = False
+        for img_name in valid_corners:
+            if cam_names[0] in img_name:
+                img_id_search = finder.findall(img_name[len(cam_names[0])+1:])
+            elif cam_names[1] in img_name:
+                img_id_search = finder.findall(img_name[len(cam_names[1])+1:])
+
+            if img_id_search != []:
+                if len(img_id_search) == 1:
+                    img_id = int(img_id_search[0])
+                else:
+                    if img_id_warn is False:
+                        img_id_warn = True
+                        msg = 'Detected multiple numbers in ID: %s\nUsing the last integer' % img_id_search
+                        warn(msg)
+                    img_id = int(img_id_search[-1])
+            else:
+                msg = 'Could not detect ID of %s. Skipping' % img_name
+                warn(msg)
+                continue
+
+            if img_id in occurance:
+                usable_corners.append(img_id)
+            else:
+                occurance.append(img_id)
     
     for fname in images:
         for cam in cam_names:
             if cam in fname:
                 fname_pathlib = Path(fname)
-                if calibrate is True and fname_pathlib.stem not in usable_corners:
-                    print('Skipping %s as it is part of a bad pair' % fname_pathlib.name)
-                    continue
+                img_name = fname_pathlib.stem
+
+                if calibrate is True and corner_selected_by_user_check:
+                    if cam_names[0] in img_name:
+                        img_id_search = finder.findall(img_name[len(cam_names[0])+1:])
+                    elif cam_names[1] in img_name:
+                        img_id_search = finder.findall(img_name[len(cam_names[1])+1:])
+                    img_id = int(img_id_search[-1])
+                    if img_id not in usable_corners:
+                        print('Skipping %s as it is part of a bad pair' % fname_pathlib.name)
+                        continue
+
                 img = cv2.imread(fname)
                 gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
@@ -147,14 +171,16 @@ def calibrate_cameras(config,cbrow = 8,cbcol = 6,calibrate=False,alpha=0.4):
                     corners = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
                     imgpoints[cam].append(corners)
                     # Draw the corners and store the images
-                    img = cv2.drawChessboardCorners(img, (cbcol,cbrow), corners,ret)
+                    img = cv2.drawChessboardCorners(img, (cbcol,cbrow), corners, ret)
                     cv2.imwrite(os.path.join(str(path_corners),fname_pathlib.stem+'_corner.jpg'),img)
                 else:
                     print("Corners not found for the image %s" % fname_pathlib.name)
     try:
-        h,  w = img.shape[:2]
+        h, w = img.shape[:2]
     except:
-        raise Exception("It seems that the name of calibration images does not match with the camera names in the config file. Please make sure that the calibration images are named with camera names as specified in the config.yaml file.")
+        msg = "It seems that the name of calibration images does not match with the camera names in the config file.\n" \
+                "Please make sure that the calibration images are named with camera names as specified in the config.yaml file."
+        raise Exception(msg)
 
     # Perform calibration for each cameras and store the matrices as a pickle file
     if calibrate is True:
@@ -178,30 +204,39 @@ def calibrate_cameras(config,cbrow = 8,cbcol = 6,calibrate=False,alpha=0.4):
         # Compute stereo calibration for each pair of cameras
         camera_pair = [[cam_names[0], cam_names[1]]]
         for pair in camera_pair:
-            print("Computing stereo calibration for " %pair)
-            retval, cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, R, T, E, F = cv2.stereoCalibrate(objpoints[pair[0]],imgpoints[pair[0]],imgpoints[pair[1]],dist_pickle[pair[0]]['mtx'],dist_pickle[pair[0]]['dist'], dist_pickle[pair[1]]['mtx'], dist_pickle[pair[1]]['dist'],(h,  w),flags = cv2.CALIB_FIX_INTRINSIC)
-
+            print("Computing stereo calibration for %s" % pair)
+            retval, cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, R, T, E, F = cv2.stereoCalibrate(
+                objectPoints=objpoints[pair[0]],
+                imagePoints1=imgpoints[pair[0]],
+                imagePoints2=imgpoints[pair[1]],
+                cameraMatrix1=dist_pickle[pair[0]]['mtx'],
+                distCoeffs1=dist_pickle[pair[0]]['dist'],
+                cameraMatrix2=dist_pickle[pair[1]]['mtx'],
+                distCoeffs2=dist_pickle[pair[1]]['dist'],
+                imageSize=(w, h),
+                flags=cv2.CALIB_FIX_INTRINSIC
+            )
             # Stereo Rectification
             rectify_scale = alpha # Free scaling parameter check this https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html#fisheye-stereorectify
             R1, R2, P1, P2, Q, roi1, roi2 = cv2.stereoRectify(cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, (h, w), R, T, alpha = rectify_scale)
-            
-            stereo_params[pair[0]+'-'+pair[1]] = {"cameraMatrix1": cameraMatrix1,"cameraMatrix2": cameraMatrix2,"distCoeffs1": distCoeffs1,"distCoeffs2": distCoeffs2,"R":R,"T":T,"E":E,"F":F,
-                         "R1":R1,
-                         "R2":R2,
-                         "P1":P1,
-                         "P2":P2,
-                         "roi1":roi1,
-                         "roi2":roi2,
-                         "Q":Q,
-                         "image_shape":[img_shape[pair[0]],img_shape[pair[1]]]}
-            
+
+            stereo_params[pair[0]+'-'+pair[1]] = {
+                "R": R, "T":T, "E": E, "F": F, "R1": R1,
+                "R2":R2, "P1":P1, "P2":P2, "roi1":roi1,
+                "roi2": roi2, "Q":Q,
+                "cameraMatrix1": cameraMatrix1,
+                "cameraMatrix2": cameraMatrix2,
+                "distCoeffs1": distCoeffs1,
+                "distCoeffs2": distCoeffs2,
+                "image_shape":[img_shape[pair[0]],img_shape[pair[1]]]
+            }
+
         print('Saving the stereo parameters for every pair of cameras as a pickle file in %s'%str(os.path.join(path_camera_matrix)))
-        
+
         auxiliaryfunctions.write_pickle(os.path.join(path_camera_matrix,'stereo_params.pickle'),stereo_params)
         print("Camera calibration done! Use the function ``check_undistortion`` to check the check the calibration")
     else:
         print("Corners extracted! You may check for the extracted corners in the directory %s and remove the pair of images where the corners are incorrectly detected. If all the corners are detected correctly with right order, then re-run the same function and use the flag ``calibrate=True``, to calbrate the camera."%str(path_corners))
-
 
 
 def check_undistortion(config,cbrow = 8,cbcol = 6,plot=True):
@@ -250,27 +285,44 @@ def check_undistortion(config,cbrow = 8,cbcol = 6,plot=True):
     for fname in images:
         for cam in cam_names:
             if cam in fname:
-                filename = Path(fname).stem
+                img_name = Path(fname).stem
                 ext = Path(fname).suffix
                 img = cv2.imread(fname)
                 gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
     '''
     # Get bad pairs
-    index_finder = re.compile(r'\d+')
-    valid_corners = [Path(img_path).stem for img_path in glob.glob(os.path.join(path_corners, '*.jpg'))]
-    usable_corners = []
-    occurance = {}
-    for img in valid_corners:
-        index = index_finder.search(img).group()
-        if index in occurance:
-            occurance[index] = True
-        else:
-            occurance[index] = False
+    corner_selected_by_user_check = glob.glob(os.path.join(path_corners, '*.jpg')) != [] and len(glob.glob(os.path.join(path_corners, '*.jpg'))) <= len(images)
+    if corner_selected_by_user_check is True:
+        valid_corners = [Path(img_path).stem for img_path in glob.glob(os.path.join(path_corners, '*.jpg'))]
 
-    for img in valid_corners:
-        index = index_finder.search(img).group()
-        if occurance[index] is True:
-            usable_corners.append(img.replace('_corner', ''))
+        usable_corners = []
+        occurance = []
+        finder = re.compile(r'\d+')
+        img_id_warn = False
+        for img_name in valid_corners:
+            if cam_names[0] in img_name:
+                img_id_search = finder.findall(img_name[len(cam_names[0])+1:])
+            elif cam_names[1] in img_name:
+                img_id_search = finder.findall(img_name[len(cam_names[1])+1:])
+
+            if img_id_search != []:
+                if len(img_id_search) == 1:
+                    img_id = int(img_id_search[0])
+                else:
+                    if img_id_warn is False:
+                        img_id_warn = True
+                        msg = 'Detected multiple numbers in ID: %s\nUsing the last integer' % img_id_search
+                        warn(msg)
+                    img_id = int(img_id_search[-1])
+            else:
+                msg = 'Could not detect ID of %s. Skipping' % img_name
+                warn(msg)
+                continue
+
+            if img_id in occurance:
+                usable_corners.append(img_id)
+            else:
+                occurance.append(img_id)
 
     camera_pair = [[cam_names[0], cam_names[1]]]
     stereo_params = auxiliaryfunctions.read_pickle(os.path.join(path_camera_matrix,'stereo_params.pickle'))
@@ -282,9 +334,19 @@ def check_undistortion(config,cbrow = 8,cbcol = 6,plot=True):
         cam2_undistort = []
         
         for fname in images:
-            filename = Path(fname).stem
-            if filename not in usable_corners:
-                continue
+            fname_pathlib = Path(fname)
+            img_name = fname_pathlib.stem
+
+            if corner_selected_by_user_check:
+                if cam_names[0] in img_name:
+                    img_id_search = finder.findall(img_name[len(cam_names[0])+1:])
+                elif cam_names[1] in img_name:
+                    img_id_search = finder.findall(img_name[len(cam_names[1])+1:])
+                img_id = int(img_id_search[-1])
+                if img_id not in usable_corners:
+                    print('Skipping %s as it is part of a bad pair' % fname_pathlib.name)
+                    continue
+
             if pair[0] in fname:
                 img1 = cv2.imread(fname)
                 gray1 = cv2.cvtColor(img1,cv2.COLOR_BGR2GRAY)
@@ -296,7 +358,7 @@ def check_undistortion(config,cbrow = 8,cbcol = 6,plot=True):
                 im_remapped1 = cv2.remap(img1, map1_x, map1_y, cv2.INTER_LANCZOS4)
                 imgpoints_proj_undistort = cv2.undistortPoints(src=corners_origin1, cameraMatrix =stereo_params[pair[0]+'-'+pair[1]]["cameraMatrix1"], distCoeffs = stereo_params[pair[0]+'-'+pair[1]]["distCoeffs1"],P=stereo_params[pair[0]+'-'+pair[1]]["P1"],R=stereo_params[pair[0]+'-'+pair[1]]["R1"])
                 cam1_undistort.append(imgpoints_proj_undistort)
-                cv2.imwrite(os.path.join(str(path_undistort),filename+'_undistort.jpg'),im_remapped1)
+                cv2.imwrite(os.path.join(str(path_undistort),img_name+'_undistort.jpg'),im_remapped1)
                 imgpoints_proj_undistort = []
                 
             elif pair[1] in fname:
@@ -310,7 +372,7 @@ def check_undistortion(config,cbrow = 8,cbcol = 6,plot=True):
                 im_remapped2 = cv2.remap(img2, map2_x, map2_y, cv2.INTER_LANCZOS4)
                 imgpoints_proj_undistort2 = cv2.undistortPoints(src=corners_origin2, cameraMatrix =stereo_params[pair[0]+'-'+pair[1]]["cameraMatrix2"], distCoeffs = stereo_params[pair[0]+'-'+pair[1]]["distCoeffs2"],P=stereo_params[pair[0]+'-'+pair[1]]["P2"],R=stereo_params[pair[0]+'-'+pair[1]]["R2"])
                 cam2_undistort.append(imgpoints_proj_undistort2)
-                cv2.imwrite(os.path.join(str(path_undistort),filename+'_undistort.jpg'),im_remapped2)
+                cv2.imwrite(os.path.join(str(path_undistort),img_name+'_undistort.jpg'),im_remapped2)
                 imgpoints_proj_undistort2 = []
         
         cam1_undistort = np.array(cam1_undistort)

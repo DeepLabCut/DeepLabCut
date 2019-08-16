@@ -1,0 +1,41 @@
+all_joints:
+- - 0
+- - 1
+- - 2
+- - 3
+all_joints_names:
+- bodypart1
+- bodypart2
+- bodypart3
+- objectA
+bottomheight: 400
+crop: true
+cropratio: 0.4
+dataset: training-datasets\iteration-1\UnaugmentedDataSet_TESTAug16\TEST_Alex80shuffle2.mat
+display_iters: 2
+global_scale: 0.8
+init_weights: z:\projects\apps\my_deeplabcut\deeplabcut\pose_estimation_tensorflow\models\pretrained\resnet_v1_50.ckpt
+intermediate_supervision: false
+intermediate_supervision_layer: 12
+leftwidth: 400
+location_refinement: true
+locref_huber_loss: true
+locref_loss_weight: 0.05
+locref_stdev: 7.2801
+max_input_size: 1500
+metadataset: training-datasets\iteration-1\UnaugmentedDataSet_TESTAug16\Documentation_data-TEST_80shuffle2.pickle
+min_input_size: 64
+minsize: 100
+mirror: false
+multi_step:
+- - 0.001
+  - 10
+net_type: resnet_50
+num_joints: 4
+pos_dist_thresh: 17
+project_path: \\Rxamd\d\Projects\apps\my_DeepLabCut\examples\TEST-Alex-2019-08-16
+rightwidth: 400
+save_iters: 10
+scale_jitter_lo: 0.5
+scale_jitter_up: 1.25
+topheight: 400

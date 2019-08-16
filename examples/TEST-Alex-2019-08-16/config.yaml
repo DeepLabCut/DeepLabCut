@@ -1,0 +1,56 @@
+# Project definitions (do not edit)
+Task: TEST
+scorer: Alex
+date: Aug16
+
+# Project path (change when moving around)
+project_path: \\Rxamd\d\Projects\apps\my_DeepLabCut\examples\TEST-Alex-2019-08-16
+
+# Annotation data set configuration (and individual video cropping parameters)
+video_sets:
+  \\Rxamd\d\Projects\apps\my_DeepLabCut\examples\TEST-Alex-2019-08-16\videos\reachingvideo1.avi:
+    crop: 0, 832, 0, 747
+  \\Rxamd\d\Projects\apps\my_DeepLabCut\examples\TEST-Alex-2019-08-16\videos\brief.mp4:
+    crop: 0, 832, 0, 747
+bodyparts:
+- bodypart1
+- bodypart2
+- bodypart3
+- objectA
+start: 0
+stop: 1
+numframes2pick: 5
+
+# Plotting configuration
+skeleton:
+- - bodypart1
+  - bodypart2
+- - bodypart1
+  - bodypart3
+skeleton_color: black
+pcutoff: 0.01
+dotsize: 12
+alphavalue: 0.7
+colormap: jet
+
+# Training,Evaluation and Analysis configuration
+TrainingFraction:
+- 0.8
+iteration: 1
+resnet: 50
+snapshotindex: -1
+batch_size: 8
+
+# Cropping Parameters (for analysis and outlier frame detection)
+cropping: false
+#if cropping is true for analysis, then set the values here:
+x1: 0
+x2: 640
+y1: 277
+y2: 624
+
+# Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
+corner2move2:
+- 50
+- 50
+move2corner: true
