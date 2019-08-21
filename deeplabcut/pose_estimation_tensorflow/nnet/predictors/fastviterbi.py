@@ -13,7 +13,7 @@ import numpy as np
 from collections import deque
 
 #TODO: Add more test methods, disable numpy warnings....
-#TODO: Apply scaling at each step, remove log scaling...
+#TODO: Add Concept of being "In the Ground..."
 
 class FastViterbi(Predictor):
     """
@@ -23,6 +23,8 @@ class FastViterbi(Predictor):
     uses sparse matrix multiplication for massive speedup over the normal
     viterbi implementation...)
     """
+    # The amount of blocks for which the normal distribution should be 1...
+    ND_UNIT_PER_BLOCK_COUNT = 100000
 
     def __init__(self, bodyparts: List[str], num_frames: int, settings: Dict[str, Any]):
         """ Initialized a fastviterbi plugin for analyzing a video """
@@ -54,7 +56,8 @@ class FastViterbi(Predictor):
         self._neg_gaussian_table = None
 
         # Values for the gaussian formula, can be adjusted in dlc_config for differing results...
-        self.NORM_DIST = settings["norm_dist"]  # The normal distribution
+        self.NORM_DIST_UNSCALED = settings["norm_dist"]  # The normal distribution
+        self.NORM_DIST = None
         self.AMPLITUDE = settings["amplitude"]  # The amplitude, or height of the gaussian curve
         self.LOWEST_VAL = settings["lowest_gaussian_value"]  # Changes the lowest value that the gaussian curve can produce
         self.THRESHOLD = settings["threshold"] # The threshold for the matrix... Everything below this value is ignored.
@@ -64,7 +67,8 @@ class FastViterbi(Predictor):
 
         # More global variables, can also be set in dlc_config...
         self.NEGATE_ON = settings["negate_overlapping_predictions"] # Enables prior body part negation...
-        self.NEG_NORM_DIST = settings["negative_impact_distance"] # Normal distribution of negative 2D gaussian curve
+        self.NEG_NORM_DIST_UNSCALED = settings["negative_impact_distance"] # Normal distribution of negative 2D gaussian curve
+        self.NEG_NORM_DIST = None
         self.NEG_AMPLITUDE = settings["negative_impact_factor"] # Negative amplitude to use for 2D negation gaussian
 
     def _gaussian_formula(self, prior_x: float, x: float, prior_y: float, y: float) -> float:
@@ -104,6 +108,8 @@ class FastViterbi(Predictor):
         Compute the gaussian table given the width and height of each probability frame. Results are stored in
         self._gaussian_table
         """
+        # Compute the normal distribution based on how many blocks per frame there are...
+        self.NORM_DIST = ((width * height) / self.ND_UNIT_PER_BLOCK_COUNT) * self.NORM_DIST_UNSCALED
         # Allocate gaussian table of width x height...
         self._gaussian_table = np.zeros((height + 2, width + 2), dtype="float32")
 
@@ -121,6 +127,8 @@ class FastViterbi(Predictor):
         Computes the precomputed inverted 2D gaussian curve used for providing negative impacts at prior predicted
         bodyparts. Stored in self._neg_gaussian_table.
         """
+        # Scale normal distribution based on size of frames...
+        self.NEG_NORM_DIST = ((width * height) / self.ND_UNIT_PER_BLOCK_COUNT) * self.NEG_NORM_DIST_UNSCALED
         # Allocate...
         self._neg_gaussian_table = np.zeros((height, width), dtype="float32")
 
@@ -228,9 +236,6 @@ class FastViterbi(Predictor):
 
         # NORMAL CASE:
 
-        # Set coordinates for this frame
-        self._viterbi_frames[self._current_frame][bodypart * 2] = np.transpose(coords)
-
         # Get the x and y locations for the points in this frame and the prior frame...
         cy, cx = coords
         py, px = self._viterbi_frames[self._current_frame - 1][bodypart * 2].transpose()
@@ -277,6 +282,28 @@ class FastViterbi(Predictor):
         total_sum = np.sum(edge_vit_vals) + np.sum(viterbi_vals)
         viterbi_vals = viterbi_vals / total_sum
         edge_vit_vals = edge_vit_vals / total_sum
+
+        # POST FILTER PHASE:
+
+        # Filter out any zero or NaN values from our matrix:
+        post_filter = (~np.isnan(viterbi_vals)) | (viterbi_vals > self.THRESHOLD)
+        coords = coords[:, post_filter]
+        viterbi_vals = viterbi_vals[post_filter]
+
+        if (len(coords[0]) == 0):
+            # In this special case, we just copy the prior frame data...
+            self._edge_vals[self._current_frame, bodypart, :] = self._edge_vals[self._current_frame - 1, bodypart, :]
+
+            self._viterbi_frames[self._current_frame][bodypart * 2] = (
+                np.copy(self._viterbi_frames[self._current_frame - 1][bodypart * 2])
+            )
+            self._viterbi_frames[self._current_frame][(bodypart * 2) + 1] = (
+                np.copy(self._viterbi_frames[self._current_frame - 1][bodypart * 2 + 1])
+            )
+            return
+
+        # Set coordinates for this frame
+        self._viterbi_frames[self._current_frame][bodypart * 2] = np.transpose(coords)
 
         # SAVE NEW VITERBI FRAMES:
         self._edge_vals[self._current_frame, bodypart] = edge_vit_vals
