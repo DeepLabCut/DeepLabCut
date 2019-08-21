@@ -7,7 +7,9 @@ from deeplabcut.utils.auxiliaryfunctions_3d import get_coord, unit_vector
 from deeplabcut.pose_estimation_3d import triangulate_raw_2d_camera_coords
 
 
-def get_basis(config_dict, image_dict, camera_pairs, pixel_tolerance=2):
+# TODO: Create a jupyter notebook with an implementation of this workflow
+
+def get_basis(config_dict, image_dict, camera_pairs, user_defined_axis=['x-axis', 'z-axis'], pixel_tolerance=2):
     """
     Parameters
     ----------
@@ -19,21 +21,31 @@ def get_basis(config_dict, image_dict, camera_pairs, pixel_tolerance=2):
         of the referance points taken with the camera
     camera_pairs : list-like
         List of cameras that are pairs. Pairs usually have their own deeplabcut 3D project
+    user_defined_axis : list-like with max length 2
+        List of axis that are selected by the user, choose between 'x-axis', 'y-axis', 'z-axis'; 1-, 2-, 3-dimension.
+        There must be two axis names, the third axis is defined using the cross product
     pixel_tolerance : integer, float; default 2
         Defines the floor-tolerance for setting basis vector after coordinate components being set to 0. After being moved to the origin
     """
-
+    VALID_AXIS_NAMES = ['x-axis', 'y-axis', 'z-axis', 1, 2, 3]
+    coord_labels = ['origin']
+    for axis_name in user_defined_axis:
+        if axis_name in VALID_AXIS_NAMES:
+            coord_labels.append(axis_name)
+        else:
+            msg = "Invalid axis name, {}. Valid names: {}".format(axis_name, VALID_AXIS_NAMES)
+            raise ValueError(msg)
+            
     cam_coords = dict.fromkeys(image_dict)
-    coord_labels = ('origin', 'x-axis', 'z-axis')
     for cam_name, cam_img in image_dict.items():
         cam_coords[cam_name] = []
         max_i = len(coord_labels) - 1
-        for i, coord_name in enumerate(coord_labels):
+        for coord_name in coord_labels:
             title = "%s: left mouse click add point" % coord_name
             cam_coords[cam_name].append(get_coord(cam_img, n=1, title=title))
 
     basis_of_pairs = {}
-    basis_dict = {'2d_origin': None, 'x-axis': None, 'z-axis': None}
+    basis_dict = dict.fromkeys(coord_labels)
     for cam1_name, cam2_name in camera_pairs:
         coords = triangulate_raw_2d_camera_coords(
             config_dict[(cam1_name, cam2_name)], cam1_coords=cam_coords[cam1_name], cam2_coords=cam_coords[cam2_name], coord_keys=coord_labels
@@ -41,12 +53,10 @@ def get_basis(config_dict, image_dict, camera_pairs, pixel_tolerance=2):
 
         basis_of_pairs[(cam1_name, cam2_name)] = copy(basis_dict)
         basis_of_pairs[(cam1_name, cam2_name)]['origin'] = np.array(coords['origin'])
-        basis_of_pairs[(cam1_name, cam2_name)]['x-axis'] = unit_vector(
-            remove_close_zero(coords['x-axis'] - coords['origin'], tol=pixel_tolerance)
-        )
-        basis_of_pairs[(cam1_name, cam2_name)]['z-axis'] = unit_vector(
-            remove_close_zero(coords['z-axis'] - coords['origin'], tol=pixel_tolerance)
-        )
+        for user_axis in user_defined_axis:
+            basis_of_pairs[(cam1_name, cam2_name)][user_axis] = unit_vector(
+                remove_close_zero(coords[user_axis] - coords['origin'], tol=pixel_tolerance)
+            )
 
     return basis_of_pairs
 
@@ -73,7 +83,7 @@ def change_of_basis(column_matrix, x=None, y=None, z=None, origin=np.array((0, 0
     Example
     -------
     With random basis vectors:
-    >>> deeplabcut.change_of_basis(column_matrix, x=(2.4, 0, 0), y=(0,  5.3, 0), z=None).
+    >>> deeplabcut.change_of_basis(column_matrix, x=(2.4, 0, 0), y=(0,  5.3, 0), z=None, origin=np.array((0, 0, 0))).
 
     """
     basis_dict = {'x': x, 'y': y, 'z': z}
