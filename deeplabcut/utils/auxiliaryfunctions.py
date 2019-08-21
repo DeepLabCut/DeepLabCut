@@ -82,8 +82,10 @@ def create_config_template_3d():
     scorer:
     date:
     \n
-# Project path (change when moving around)
+# Project path
+    # Change when moving around
     project_path:
+    combine_3d_project_path:
     \n
 # Plotting configuration
     skeleton: # Note that the pairs must be defined, as you want them linked!

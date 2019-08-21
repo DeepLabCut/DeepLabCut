@@ -16,7 +16,7 @@ from deeplabcut import DEBUG
 import matplotlib.pyplot as plt
 #import shutil
 
-def create_new_project_3d(project, experimenter, num_cameras=2, working_directory=None):
+def create_new_project_3d(project, experimenter, num_cameras=2, working_directory=None, combine_3d_project_path=None):
     """Creates a new project directory, sub-directories and a basic configuration file for 3d project. 
     The configuration file is loaded with the default values. Adjust the parameters to your project's needs.
 
@@ -80,6 +80,7 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
     cfg_file_3d['scorer']=experimenter
     cfg_file_3d['date']=d
     cfg_file_3d['project_path']= str(project_path)
+    cfg_file_3d['combine_3d_project_path']=combine_3d_project_path
 #    cfg_file_3d['config_files']= [str('Enter the path of the config file ')+str(i)+ ' to include' for i in range(1,3)]
 #    cfg_file_3d['config_files']= ['Enter the path of the config file 1']
     cfg_file_3d['colormap'] = 'jet'

@@ -261,7 +261,27 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,filtert
             # have to make the dest folder none so that it can be updated for a new pair of videos
             if destfolder == str(Path(video).parents[0]):
                 destfolder = None
-    
+
+            combine_3d_path = os.path.realpath(cfg_3d['combine_3d_project_path'])
+            if combine_3d_path is not None:
+                from re import findall
+
+                exp_id = str(findall(r'\d+', vname)[-1])
+                cam_pair_str = '%s-%s' % cam_names
+                print('Using %s as experiment ID' % exp_id)
+                exp_path = os.path.join(combine_3d_path, exp_id)
+                cam_pair_path = os.path.join(exp_path, cam_pair_str)
+                print('Saving a copy of triangualted points to the 3D combine project:\n' + str(exp_path))
+                
+                if not os.path.exists(combine_3d_path):
+                    os.mkdir(combine_3d_path)
+
+                if not os.path.exists(exp_path):
+                    os.mkdir(exp_path)
+
+                combine_3d_h5 = os.path.join(exp_path, '%s_%s.h5' % (cam_pair_str, exp_id))
+                df_3d.to_hdf(combine_3d_h5, 'df_with_missing', format='table', mode='w')
+
     if len(video_list)>0:
         print("All videos were analyzed...")
         print("Now you can create 3D video(s) using deeplabcut.create_labeled_video_3d")
@@ -346,34 +366,7 @@ def undistort_points(config,dataframe,camera_pair,destfolder):
     return(dataFrame_cam1_undistort,dataFrame_cam2_undistort,stereo_file[camera_pair],path_stereo_file)
 
 
-def get_coords(cam1_image, cam2_image):
-    """
-    Helper function for triangulate_raw_2d_camera_coords. User manually selects points on the provided images
-    
-    Parameters
-    ----------
-    cam1_image : string; default None
-        Full path of the image of camera 1 as a string.
-    cam2_image : string; default None
-        Full path of the image of camera 2 as a string.
-    """
-
-    import matplotlib.pyplot as plt
-    import matplotlib.image as mpimg
-
-    plt.imshow(mpimg.imread(cam1_image))
-    cam1_coords = plt.ginput(n=-1, timeout=-1, show_clicks=True)
-    plt.imshow(mpimg.imread(cam2_image))
-    cam2_coords = plt.ginput(n=-1, timeout=-1, show_clicks=True)
-
-    if len(cam1_coords) == len(cam2_coords):
-        return cam1_coords, cam2_coords
-    else:
-        print('The number of points in both images must be equal')
-        return get_coords(cam1_image, cam2_image)
-
-
-def triangulate_raw_2d_camera_coords(config, cam1_coords=None, cam2_coords=None, cam1_image=None, cam2_image=None):
+def triangulate_raw_2d_camera_coords(config, cam1_coords=None, cam2_coords=None, cam1_image=None, cam2_image=None, coord_keys=None):
     """
     This function triangulates user-defined coordinates from the two camera views using the camera matrices (derived from calibration) to calculate 3D predictions.
     Optionally, the user can define the coordiantes from images.
@@ -388,10 +381,12 @@ def triangulate_raw_2d_camera_coords(config, cam1_coords=None, cam2_coords=None,
         Full path of the image of camera 1 as a string.
     cam2_image : string; default None
         Full path of the image of camera 2 as a string.
-    cam1_coords : array-like; default None
+    cam1_coords : numpy.array-like; default None
         List of vectors that are coordinates in the camera 1 image
-    cam2_coords : array-like; default None
+    cam2_coords : numpy.array-like; default None
         List of vectors that are coordinates in the camera 2 image
+    coord_keys : list-like; default None
+        List of names or dictionary keys that can be associated with the 3d-coordinate with the identical index
 
     Example
     -------
@@ -407,18 +402,46 @@ def triangulate_raw_2d_camera_coords(config, cam1_coords=None, cam2_coords=None,
     >>> deeplabcut.triangulate_raw_2d_camera_coords(config, cam1_image='<drive_letter>:\\<image_directory>\\cam1.png', cam2_image='\\image_directory\\cam2.png')
 
     """
-    if ((cam1_coords is None and cam2_coords is None) and (cam1_image is None and cam2_image is None)) or (
-        (cam1_coords is not None and cam2_coords is not None) and (cam1_image is not None and cam2_image is not None)):
-        msg = 'Must include a set of camera images OR 2d-coordinates'
+    # if ((cam1_coords is None and cam2_coords is None) and (cam1_image is None and cam2_image is None)) or (
+    #     (cam1_coords is not None and cam2_coords is not None) and (cam1_image is not None and cam2_image is not None)):
+    #     msg = 'Must include a set of camera images or 2d-coordinates'
+    #     raise ValueError(msg)
+    
+    if cam1_coords is not None and cam2_coords is not None:
+        coords_defined = True
+        
+    if cam1_image is not None and cam2_image is not None:
+        if coords_defined is True:
+            msg = 'Must include a set of camera images or 2d-coordinates'
+            raise ValueError(msg)
+        cam1_coords = auxiliaryfunctions_3d.get_coord(cam1_image, n=-1)
+        cam2_coords = auxiliaryfunctions_3d.get_coord(cam2_image, n=-1)
+        
+        if len(cam1_coords) != len(cam2_coords):
+            msg = 'Each image must have the same number of selections'
+            raise ValueError(msg)
+
+    cam1_coords = np.array(cam1_coords, dtype=np.float64)
+    cam2_coords = np.array(cam1_coords, dtype=np.float64)
+
+    if cam1_coords.shape != cam2_coords.shape:
+        msg = "Camera coordinate arrays have different dimensions"
         raise ValueError(msg)
 
-    cfg_3d = auxiliaryfunctions.read_config(config)
-    cam_names = cfg_3d['camera_names']
-    pcutoff = cfg_3d['pcutoff']
-    scorer_3d = cfg_3d['scorername_3d']
+    if not cam1_coords[0].shape == (1, 2):
+        if cam1_coords[0].shape == (2,):
+            print("Attempting to fix coordinate-array by np.expand_dims(<array>, axis=1)")
+            cam1_coords = np.expand_dims(cam1_coords, axis=1)
+            cam2_coords = np.expand_dims(cam2_coords, axis=1)
+        else:
+            msg = "Coordinate-array has an invalid format"
+            raise ValueError(msg)
 
-    camera_pair_key = cam_names[0]+'-'+cam_names[1]
+    cfg_3d = auxiliaryfunctions.read_config(config)
     img_path, path_corners, path_camera_matrix, path_undistort = auxiliaryfunctions_3d.Foldernames3Dproject(cfg_3d)
+
+    cam_names = cfg_3d['camera_names']
+    camera_pair_key = cam_names[0]+'-'+cam_names[1]
 
     # Create an empty dataFrame to store the undistorted 2d coordinates and likelihood
     stereo_file = auxiliaryfunctions.read_pickle(os.path.join(path_camera_matrix, 'stereo_params.pickle'))
@@ -437,15 +460,16 @@ def triangulate_raw_2d_camera_coords(config, cam1_coords=None, cam2_coords=None,
     R2 = stereo_file[camera_pair_key]['R2']
     P2 = stereo_file[camera_pair_key]['P2']
 
-    # Undistorting the points from cam1 camera
-    cam1_coords = np.array(cam1_coords, dtype=np.float64)
-    cam1_undistorted_coords = cv2.undistortPoints(src=np.expand_dims(cam1_coords, axis=1), cameraMatrix=mtx_l, distCoeffs=dist_l, P=P1, R=R1)
-
-    # Undistorting the points from cam2 camera
-    cam2_coords = np.array(cam1_coords, dtype=np.float64)
-    cam2_undistorted_coords = cv2.undistortPoints(src=np.expand_dims(cam2_coords, axis=1), cameraMatrix =mtx_r, distCoeffs = dist_r,P=P2,R=R2)
-    
+    cam1_undistorted_coords = cv2.undistortPoints(
+        src=cam1_coords, cameraMatrix=mtx_l, distCoeffs=dist_l, P=P1, R=R1
+    )
+    cam2_undistorted_coords = cv2.undistortPoints(
+        src=cam2_coords, cameraMatrix =mtx_r, distCoeffs = dist_r,P=P2,R=R2
+    )
     homogenous_coords = auxiliaryfunctions_3d.triangulatePoints(P1, P2, cam1_undistorted_coords, cam2_undistorted_coords)
     triangulated_coords = np.array((homogenous_coords[0], homogenous_coords[1], homogenous_coords[2])).T
 
-    return triangulated_coords
+    if coord_keys is not None:
+        return {label: coord for label, coord in zip(coord_keys, triangulated_coords)}
+    else:
+        return triangulated_coords
