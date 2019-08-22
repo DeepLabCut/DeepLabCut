@@ -24,8 +24,8 @@ class FastViterbi(Predictor):
     uses sparse matrix multiplication for massive speedup over the normal
     viterbi implementation...)
     """
-    # The amount of blocks for which the normal distribution should be 1...
-    ND_UNIT_PER_BLOCK_COUNT = 10
+    # The amount of side block increase for the normal distribution to increase by 1...
+    ND_UNIT_PER_SIDE_COUNT = 10
 
     def __init__(self, bodyparts: List[str], num_frames: int, settings: Dict[str, Any]):
         """ Initialized a fastviterbi plugin for analyzing a video """
@@ -56,9 +56,11 @@ class FastViterbi(Predictor):
         # Precomputed table for computing negative impacts of body parts
         self._neg_gaussian_table = None
 
+        #
+
         # Values for the gaussian formula, can be adjusted in dlc_config for differing results...
         self.NORM_DIST_UNSCALED = settings["norm_dist"]  # The normal distribution
-        self.NORM_DIST = None
+        self.NORM_DIST = None # To be computed below...
         self.AMPLITUDE = settings["amplitude"]  # The amplitude, or height of the gaussian curve
         self.LOWEST_VAL = settings["lowest_gaussian_value"]  # Changes the lowest value that the gaussian curve can produce
         self.THRESHOLD = settings["threshold"] # The threshold for the matrix... Everything below this value is ignored.
@@ -69,7 +71,7 @@ class FastViterbi(Predictor):
         # More global variables, can also be set in dlc_config...
         self.NEGATE_ON = settings["negate_overlapping_predictions"] # Enables prior body part negation...
         self.NEG_NORM_DIST_UNSCALED = settings["negative_impact_distance"] # Normal distribution of negative 2D gaussian curve
-        self.NEG_NORM_DIST = None
+        self.NEG_NORM_DIST = None # To be computed below....
         self.NEG_AMPLITUDE = settings["negative_impact_factor"] # Negative amplitude to use for 2D negation gaussian
 
     def _gaussian_formula(self, prior_x: float, x: float, prior_y: float, y: float) -> float:
@@ -110,7 +112,7 @@ class FastViterbi(Predictor):
         self._gaussian_table
         """
         # Compute the normal distribution based on how many blocks per frame there are...
-        self.NORM_DIST = (np.sqrt(width * height) / self.ND_UNIT_PER_BLOCK_COUNT) * self.NORM_DIST_UNSCALED
+        self.NORM_DIST = (np.sqrt(width * height) / self.ND_UNIT_PER_SIDE_COUNT) * self.NORM_DIST_UNSCALED
         # Allocate gaussian table of width x height...
         self._gaussian_table = np.zeros((height + 2, width + 2), dtype="float32")
 
@@ -129,7 +131,7 @@ class FastViterbi(Predictor):
         bodyparts. Stored in self._neg_gaussian_table.
         """
         # Scale normal distribution based on size of frames...
-        self.NEG_NORM_DIST = (np.sqrt(width * height) / self.ND_UNIT_PER_BLOCK_COUNT) * self.NEG_NORM_DIST_UNSCALED
+        self.NEG_NORM_DIST = (np.sqrt(width * height) / self.ND_UNIT_PER_SIDE_COUNT) * self.NEG_NORM_DIST_UNSCALED
         # Allocate...
         self._neg_gaussian_table = np.zeros((height, width), dtype="float32")
 
@@ -288,7 +290,7 @@ class FastViterbi(Predictor):
 
         # Filter out any zero or NaN values from our matrix:
         post_filter = (~np.isnan(viterbi_vals)) | (viterbi_vals > self.THRESHOLD)
-        coords = coords[:, post_filter]
+        coords = coords[0][post_filter], coords[1][post_filter]
         viterbi_vals = viterbi_vals[post_filter]
 
         if (len(coords[0]) == 0):
