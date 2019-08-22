@@ -14,6 +14,7 @@ from collections import deque
 
 #TODO: Add more test methods, disable numpy warnings....
 #TODO: Add Concept of being "In the Ground..."
+#TODO: Outputing 0.99 for first frame, I think it is an error in the foward compute, although may be bug in back compute
 
 class FastViterbi(Predictor):
     """
@@ -24,7 +25,7 @@ class FastViterbi(Predictor):
     viterbi implementation...)
     """
     # The amount of blocks for which the normal distribution should be 1...
-    ND_UNIT_PER_BLOCK_COUNT = 100000
+    ND_UNIT_PER_BLOCK_COUNT = 10
 
     def __init__(self, bodyparts: List[str], num_frames: int, settings: Dict[str, Any]):
         """ Initialized a fastviterbi plugin for analyzing a video """
@@ -109,7 +110,7 @@ class FastViterbi(Predictor):
         self._gaussian_table
         """
         # Compute the normal distribution based on how many blocks per frame there are...
-        self.NORM_DIST = ((width * height) / self.ND_UNIT_PER_BLOCK_COUNT) * self.NORM_DIST_UNSCALED
+        self.NORM_DIST = (np.sqrt(width * height) / self.ND_UNIT_PER_BLOCK_COUNT) * self.NORM_DIST_UNSCALED
         # Allocate gaussian table of width x height...
         self._gaussian_table = np.zeros((height + 2, width + 2), dtype="float32")
 
@@ -128,7 +129,7 @@ class FastViterbi(Predictor):
         bodyparts. Stored in self._neg_gaussian_table.
         """
         # Scale normal distribution based on size of frames...
-        self.NEG_NORM_DIST = ((width * height) / self.ND_UNIT_PER_BLOCK_COUNT) * self.NEG_NORM_DIST_UNSCALED
+        self.NEG_NORM_DIST = (np.sqrt(width * height) / self.ND_UNIT_PER_BLOCK_COUNT) * self.NEG_NORM_DIST_UNSCALED
         # Allocate...
         self._neg_gaussian_table = np.zeros((height, width), dtype="float32")
 
