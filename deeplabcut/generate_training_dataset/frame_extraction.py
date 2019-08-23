@@ -177,22 +177,8 @@ def extract_frames(config,
                     numframes2pick=cfg['numframes2pick']+1 # without cropping a full size frame will not be extracted >> thus one more frame should be selected in next stage.
 
                 print("Extracting frames based on %s ..." %algo)
-
-                if algo =='uniform': #extract n-1 frames (0 was already stored)
-                    if driver == 'opencv':
-                        frames2pick=frameselectiontools.UniformFramescv2(cap,numframes2pick-1,start,stop)
-                    elif driver == 'ffmpeg':
-                        pass
-                    else:
-                        frames2pick=frameselectiontools.UniformFrames(clip,numframes2pick-1,start,stop)
-                elif algo =='kmeans':
-                    if opencv:
-                        frames2pick=frameselectiontools.KmeansbasedFrameselectioncv2(cap,numframes2pick-1,start,stop,crop,coords,step=cluster_step,resizewidth=cluster_resizewidth,color=cluster_color)
-                    else:
-                        frames2pick=frameselectiontools.KmeansbasedFrameselection(clip,numframes2pick-1,start,stop,step=cluster_step,resizewidth=cluster_resizewidth,color=cluster_color)
-                else:
-                    print("Please implement this method yourself and send us a pull request! Otherwise, choose 'uniform' or 'kmeans'.")
-                    frames2pick=[]
+                frames2pick = frameselectiontools.run(picker, numframes2pick-1, start=start, stop=stop,
+                                        step=cluster_step, resizewidth=cluster_resizewidth)
 
                 output_path = Path(config).parents[0] / 'labeled-data' / Path(video).stem
                 if opencv:
