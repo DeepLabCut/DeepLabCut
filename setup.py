@@ -29,7 +29,7 @@ setuptools.setup(
                       'ipython','ipython-genutils',
                       'matplotlib','moviepy','numpy',
                       'pandas','patsy','python-dateutil','pyyaml','requests',
-                      'setuptools','scikit-image','scikit-learn',
+                      'setuptools','scikit-image','scikit-learn','scikit-video',
                       'scipy','six','statsmodels','tables',
                       'tensorpack>=0.9.7.1',
                       'tqdm>4','wheel'],

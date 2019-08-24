@@ -70,7 +70,7 @@ def kmeans_based_frame_selection(picker, numframes2pick, start=0, stop=1,
 
     Note: this method can return fewer images than numframes2pick.'''
 
-    print("Kmeans-quantization based extracting of frames from", round(start*pick.duration,2)," seconds to", round(stop*pick.duration,2), " seconds.")
+    print("Kmeans-quantization based extracting of frames from", round(start*picker.duration,2)," seconds to", round(stop*picker.duration,2), " seconds.")
 
     # prepare list of frame indices
     startindex, stopindex = __as_indices(picker, start, stop)

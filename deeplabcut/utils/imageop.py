@@ -19,6 +19,8 @@ try:
 except ImportError:
     from imageio import imread
     from PIL import Image
+    import numpy as np
+    
     def imresize(img, size=None, interp='nearest', mode=None):
         if interp == 'nearest':
             interp = Image.NEAREST
@@ -33,7 +35,7 @@ except ImportError:
                 RuntimeWarning, stacklevel=2)
             interp = Image.NEAREST
 
-        width, height = img.shape
+        width, height = img.shape[:2]
         if isinstance(size, int):
             size = (round(width*size/100), round(height*size/100))
         elif isinstance(size, float):

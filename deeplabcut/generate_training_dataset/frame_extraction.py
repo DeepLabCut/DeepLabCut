@@ -180,36 +180,9 @@ def extract_frames(config,
                 frames2pick = frameselectiontools.run(picker, numframes2pick-1, start=start, stop=stop,
                                         step=cluster_step, resizewidth=cluster_resizewidth)
 
-                output_path = Path(config).parents[0] / 'labeled-data' / Path(video).stem
-                if opencv:
-                    for index in frames2pick:
-                            cap.set(1,index) #extract a particular frame
-                            ret, frame = cap.read()
-                            if ret:
-                                image=img_as_ubyte(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-                                img_name = str(output_path) +'/img'+ str(index).zfill(indexlength) + ".png"
-                                if crop:
-                                    io.imsave(img_name,image[int(coords[2]):int(coords[3]),int(coords[0]):int(coords[1]),:]) #y1 = int(coords[2]),y2 = int(coords[3]),x1 = int(coords[0]), x2 = int(coords[1]
-                                else:
-                                    io.imsave(img_name,image)
-                            else:
-                                print("Frame", index, " not found!")
-                    cap.release()
-                else:
-                    for index in frames2pick:
-                        try:
-                            image = img_as_ubyte(clip.get_frame(index * 1. / clip.fps))
-                            img_name = str(output_path) +'/img'+ str(index).zfill(indexlength) + ".png"
-                            io.imsave(img_name,image)
-                            if np.var(image)==0: #constant image
-                                print("Seems like black/constant images are extracted from your video. Perhaps consider using opencv under the hood, by setting: opencv=True")
-
-                        except FileNotFoundError:
-                            print("Frame # ", index, " does not exist.")
-
-                    #close video.
-                    clip.close()
-                    del clip
+                output_dir = Path(config).parents[0] / 'labeled-data' / Path(video).stem
+                picker.save_multiple(frames2pick, output_dir=output_dir, basename='img')
+                picker.close()
     else:
         print("Invalid MODE. Choose either 'manual' or 'automatic'. Check ``help(deeplabcut.extract_frames)`` on python and ``deeplabcut.extract_frames?`` \
               for ipython/jupyter notebook for more details.")
