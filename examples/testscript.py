@@ -173,10 +173,12 @@ deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
 print("TRAINING shuffle 2")
 deeplabcut.train_network(path_config_file,shuffle=2)
 
+print("ANALYZING some individual frames")
+deeplabcut.analyze_time_lapse_frames(path_config_file,os.path.join(cfg['project_path'],'labeled-data/reachingvideo1/'))
+
+
 
 print("ALL DONE!!! - default cases are functional.")
-
 print("Re-import DLC with env. variable set to test DLC light mode.")
 os.environ['DLClight']='True'
 subprocess.call(['python3',"-c","import deeplabcut"])
-
