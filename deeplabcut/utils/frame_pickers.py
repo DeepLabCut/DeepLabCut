@@ -20,7 +20,7 @@ import cv2
 class FramePicker(object):
     """the base driver class for extracting frames from a video."""
     def __init__(self, path):
-        self.path         = path
+        self.path         = str(path)
         self.nframes      = 0
         self.img_as_ubyte = img_as_ubyte
         self.crop         = None
@@ -40,6 +40,9 @@ class FramePicker(object):
             return super(FramePicker, self).__getattr__(name)
 
     def close(self):
+        raise NotImplementedError()
+
+    def iter_frames(self, crop=False, resize=False, transform_color=True):
         raise NotImplementedError()
 
     def get_ncolorchannels(self):
@@ -85,7 +88,7 @@ class OpenCVPicker(FramePicker):
     def __init__(self, path):
         import cv2
         super(OpenCVPicker, self).__init__(path)
-        self.cap      = cv2.VideoCapture(path)
+        self.cap      = cv2.VideoCapture(str(path))
         self.is_open  = True
         self.fps      = self.cap.get(cv2.CAP_PROP_FPS)
         self.width    = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -101,15 +104,22 @@ class OpenCVPicker(FramePicker):
             del self.cap
             self.is_open = False
 
+    def iter_frames(self, crop=False, resize=False, transform_color=True):
+        if self.offset != 0:
+            self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        while self.cap.is_open():
+            try:
+                yield self.read(crop=crop, resize=resize, transform_color=transform_color)
+            except RuntimeError:
+                break
+
     def set_resize(self, resizewidth):
         ratio  = resizewidth*1. / self.width
         if ratio > 1:
             raise ValueError("Choice of resizewidth actually upsamples!")
         self.resize = ratio
 
-    def pick_single(self, index, crop=False, resize=False, transform_color=True):
-        if self.offset != index:
-            self.cap.set(cv2.CAP_PROP_POS_FRAMES, index)
+    def read(self, crop=False, resize=False, transform_color=True):
         ret, img = self.cap.read()
         self.offset += 1
         if not ret:
@@ -123,6 +133,11 @@ class OpenCVPicker(FramePicker):
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         return img_as_ubyte(img)
 
+    def pick_single(self, index, crop=False, resize=False, transform_color=True):
+        if self.offset != index:
+            self.cap.set(cv2.CAP_PROP_POS_FRAMES, index)
+        return self.read(crop=crop, resize=resize, transform_color=transform_color)
+
     def pick_at_fraction(self, frac):
         self.cap.set(cv2.CAP_PROP_POS_MSEC, frac*self.duration*1000)
         ret, frame = self.cap.read()
@@ -135,13 +150,15 @@ class MoviePyPicker(FramePicker):
     def __init__(self, path):
         from moviepy.editor import VideoFileClip
         super(MoviePyPicker, self).__init__(path)
-        self.clip     = VideoFileClip(video)
+        self.clip     = VideoFileClip(str(path))
         self.is_open  = True
         self.fps      = self.clip.fps
         self.duration = self.clip.duration
         self.nframes  = int(np.ceil(self.clip.duration*1./(self.fps)))
         self.resized  = None
         self.ncolors  = None
+        self.width    = np.nan
+        self.height   = np.nan
 
     def close(self):
         if self.is_open == True:
@@ -155,6 +172,10 @@ class MoviePyPicker(FramePicker):
             return frame0.shape[2]
         else:
             return 0
+
+    def iter_frames(self):
+        # FIXME
+        raise NotImplementedError()
 
     def set_crop(self, coords):
         self.clip = self.clip.crop(y1 = int(coords[2]),
@@ -179,10 +200,11 @@ class SkVideoPicker(FramePicker):
     """an experimental, rather slow frame picker based on scikit-video/ffmpeg."""
     def __init__(self, path):
         super(SkVideoPicker, self).__init__(path)
-        self.reader   = FFmpegReader(path)
+        self.reader   = FFmpegReader(str(path))
         self.is_open  = True
         self.nframes, self.width, self.height, self.nchan = self._getinfo()
         self.duration = self.nframes
+        self.fps      = 1
         self.iterator = None
         self.offset   = 0
 
@@ -199,7 +221,7 @@ class SkVideoPicker(FramePicker):
         n = 0
         for image in self.reader.nextFrame():
             n += 1
-        width, height, nchan = image.shape
+        height, width, nchan = image.shape
         self.rewind()
         return n, width, height, nchan
 
@@ -208,6 +230,15 @@ class SkVideoPicker(FramePicker):
         if ratio > 1:
             raise ValueError("Choice of resizewidth actually upsamples!")
         self.resize = ratio
+
+    def iter_frames(self, crop=False, resize=False, transform_color=True):
+        if (self.iterator is None) or (self.offset > 0):
+            self.rewind()
+        try:
+            while True:
+                yield self.read(None, crop=crop, resize=resize, transform_color=transform_color)
+        except StopIteration:
+            pass
 
     def rewind(self):
         self.reader.close()
@@ -230,13 +261,18 @@ class SkVideoPicker(FramePicker):
             except StopIteration:
                 raise RuntimeError("reached end of stream while seeking")
 
-    def pick_single(self, index, crop=False, resize=False, transform_color=None):
-        img = self.seek(index)
+    def read(self, img=None, crop=False, resize=False, transform_color=None):
+        if img is None:
+            img = next(self.iterator)
         if (crop == True) and (self.crop is not None):
             img = img[int(self.crop[2]):int(self.crop[3]),int(self.crop[0]):int(self.crop[1])]
         if (resize == True) and (self.resize is not None):
             img = imresize(img, self.resize, interp='nearest')
         return img_as_ubyte(img)
+
+    def pick_single(self, index, crop=False, resize=False, transform_color=None):
+        img = self.seek(index)
+        return self.read(img, crop=crop, resize=resize, transform_color=transform_color)
 
     def pick_at_fraction(self, frac):
         index = int(frac*self.nframes)
@@ -249,3 +285,6 @@ def get_frame_picker_class(driver='opencv'):
         return SkVideoPicker
     else:
         return OpenCVPicker
+
+def get_frame_picker(path, driver='opencv'):
+    return get_frame_picker_class(driver)(path)
