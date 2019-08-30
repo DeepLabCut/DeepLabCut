@@ -17,10 +17,13 @@ from warnings import warn
 try:
     from scipy.misc import imread, imresize
 except ImportError:
-    from imageio import imread
+    import imageio
     from PIL import Image
     import numpy as np
-    
+
+    def imread(path, mode=None):
+        return imageio.imread(path, pilmode=mode)
+
     def imresize(img, size=None, interp='nearest', mode=None):
         if interp == 'nearest':
             interp = Image.NEAREST
