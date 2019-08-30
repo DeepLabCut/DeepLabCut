@@ -27,14 +27,45 @@ global_scale: 0.8
 # range [scale_jitter_lo; scale_jitter_up] to augment training data,
 scale_jitter_lo: 0.5
 scale_jitter_up: 1.25
+scaleratio: 0.4 # what is the fraction of training samples with scaling augmentation?
 
 # Randomly flips an image horizontally to augment training data
 mirror: false
 
+# Randomly rotates an image with respect to the image center within the
+# range [-rotate_max_deg_abs; rotate_max_deg_abs] to augment training data
+rotate_max_deg_abs: 15
+rotateratio: 0.4  # what is the fraction of training samples with rotation augmentation? 
+
+# Randomly adds brightness within the range [-brightness_dif, brightness_dif]
+# to augment training data 
+brightness_dif: 0.3
+brightnessratio: 0.4  # what is the fraction of training samples with brightness augmentation? 
+
+# Randomly applies x = (x - mean) * contrast_factor + mean`` to each 
+# color channel within the range [contrast_factor_lo, contrast_factor_up]
+# to augment training data 
+contrast_factor_lo: 0.5
+contrast_factor_up: 2.0
+contrastratio: 0.4 # what is the fraction of training samples with contrast augmentation? 
+
+# Randomly adjusts saturation within range 1 + [-saturation_max_dif, saturation_max_dif]
+# to augment training data
+saturation_max_dif: 0.5 
+saturationratio: 0.4  # what is the fraction of training samples with saturation augmentation? 
+
+# Randomly applies gaussian noise N(0, noise_sigma^2) to an image 
+# to augment training data 
+noise_sigma: 0.1
+noiseratio: 0.4  # what is the fraction of training samples with noise augmentation? 
+
+# Randomly applies gaussian blur to an image with a random window size 
+# within the range [0, 2 * blur_max_window_size + 1] to augment training data
+blur_max_window_size: 10
+blurratio: 0.4 # what is the fraction of training samples with blur augmentation? 
+
 ##########################################################
 # Auto cropping is new (was not in Nature neuroscience manuscript)
-# Added and described in "Using DeepLabCut for 3D markerless pose estimation across species and behaviors" 
-# Source: https://www.nature.com/articles/s41596-019-0176-0
 # Parameters for augmentation with regard to cropping
 crop: True
 cropratio: 0.4 #what is the fraction of training samples with cropping?
@@ -46,7 +77,19 @@ bottomheight: 400
 
 #limit width  [-leftwidth*u-100,100+u*rightwidth] x [-bottomwith*u-100,100+u*topwidth] where u is always a (different) random number in unit interval
 
-# Type of the CNN to use, currently resnet_152, resnet_101 and resnet_50
+
+# Whether image is RGB  or RBG. If None, contrast augmentation uses the mean per-channel.
+is_rgb: True 
+
+# Clips image to [0, 255] even when data type is not uint8
+to_clip: True
+
+# Number of processes to use per core during training 
+processratio: 1 
+# Number of datapoints to prefetch at a time during training
+num_prefetch: 100
+
+# Type of the CNN to use, currently resnet_101 and resnet_50
 # are supported
 net_type: resnet_50
 
