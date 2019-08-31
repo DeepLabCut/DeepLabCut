@@ -31,6 +31,7 @@ setuptools.setup(
                       'pandas==0.21.0','patsy','python-dateutil==2.7.3','pyyaml>=5.1','requests',
                       'ruamel.yaml==0.15','setuptools','scikit-image~=0.14.0','scikit-learn~=0.19.2',
                       'scipy~=1.1.0','six==1.11.0','statsmodels==0.9.0','tables',
+                      'tensorpack==0.9.7.1',
                       'tqdm>4','wheel==0.31.1'],
     scripts=['deeplabcut/pose_estimation_tensorflow/models/pretrained/download.sh'],
     packages=setuptools.find_packages(),
