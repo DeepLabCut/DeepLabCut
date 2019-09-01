@@ -163,12 +163,12 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
     dlc_cfg['num_outputs'] = cfg.get('num_outputs', 1)
 
     print('num_outputs = ', dlc_cfg['num_outputs'])
-    
+
     # Name for scorer:
     DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations)
 
     sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
-    
+
     xyz_labs_orig = ['x', 'y', 'likelihood']
     suffix = [str(s+1) for s in range(dlc_cfg['num_outputs'])]
     suffix[0] = '' # first one has empty suffix for backwards compatibility
@@ -198,7 +198,7 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
 
     return DLCscorer
 
-    
+
 def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize):
     ''' Batchwise prediction of pose '''
 
@@ -268,7 +268,7 @@ def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes):
             pass #good cropping box
         else:
             raise Exception('Please check the boundary of cropping!')
-    
+
     PredicteData = np.zeros((nframes, dlc_cfg['num_outputs'] * 3 * len(dlc_cfg['all_joints_names'])))
 
     pbar=tqdm(total=nframes)
@@ -489,9 +489,17 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,traini
     if 'TF_CUDNN_USE_AUTOTUNE' in os.environ:
         del os.environ['TF_CUDNN_USE_AUTOTUNE'] #was potentially set during training
 
+    if gputouse is not None:  # gpu selection
+        os.environ['CUDA_VISIBLE_DEVICES'] = str(gputouse)
+
+    vers = (tf.__version__).split('.')
+    if int(vers[0]) == 1 and int(vers[1]) > 12:
+        TF = tf.compat.v1
+    else:
+        TF = tf
+
     TF.reset_default_graph()
     start_path=os.getcwd() #record cwd to return to this directory in the end
-
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg['TrainingFraction'][trainingsetindex]
     modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)))
@@ -500,7 +508,6 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,traini
         dlc_cfg = load_config(str(path_test_config))
     except FileNotFoundError:
         raise FileNotFoundError("It seems the model for shuffle %s and trainFraction %s does not exist."%(shuffle,trainFraction))
-
     # Check which snapshots are available and sort them by # iterations
     try:
       Snapshots = np.array([fn.split('.')[0]for fn in os.listdir(os.path.join(modelfolder , 'train'))if "index" in fn])
@@ -527,8 +534,8 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,traini
     trainingsiterations = (dlc_cfg['init_weights'].split(os.sep)[-1]).split('-')[-1]
 
     #update batchsize (based on parameters in config.yaml)
-    dlc_cfg['batch_size'] = cfg['batch_size'] 
-    
+    dlc_cfg['batch_size'] = cfg['batch_size']
+
     # Name for scorer:
     DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations)
     sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
@@ -569,7 +576,7 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,traini
             print("Frames already analyzed!", dataname)
         except FileNotFoundError:
             nframes = len(framelist)
-            if nframes>1:
+            if nframes>0:
                 start = time.time()
 
                 PredicteData,nframes,nx,ny=GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nframes,dlc_cfg['batch_size'],rgb)
