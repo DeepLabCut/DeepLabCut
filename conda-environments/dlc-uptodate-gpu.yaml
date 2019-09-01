@@ -18,6 +18,7 @@ dependencies:
     - tqdm
     - pip
     - pip:
+        - ruamel.yaml
         - easydict
         - moviepy
         - scikit-video

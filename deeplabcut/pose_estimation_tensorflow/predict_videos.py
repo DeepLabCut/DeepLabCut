@@ -207,11 +207,7 @@ def analyze_videos(config, videos, videotype='avi', videodriver='opencv',
     return DLCscorer
 
 
-<<<<<<< HEAD
-def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize):
-=======
 def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs, picker, batchsize):
->>>>>>> make analysis run
     ''' Batchwise prediction of pose '''
 
     PredicteData = np.zeros((picker.nframes, dlc_cfg['num_outputs'] * 3 * len(dlc_cfg['all_joints_names'])))
@@ -274,11 +270,6 @@ def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs, picker):
             picker.set_crop((cfg['x1'], cfg['x2'], cfg['y1'], cfg['y2']))
         else:
             raise Exception('Please check the boundary of cropping!')
-<<<<<<< HEAD
-
-    PredicteData = np.zeros((nframes, dlc_cfg['num_outputs'] * 3 * len(dlc_cfg['all_joints_names'])))
-=======
->>>>>>> make analysis run
 
     PredicteData = np.zeros((picker.nframes, dlc_cfg['num_outputs'] * 3 * len(dlc_cfg['all_joints_names'])))
 

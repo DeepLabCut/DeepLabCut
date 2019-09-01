@@ -9,7 +9,7 @@ Licensed under GNU Lesser General Public License v3.0
 """
 import numpy as np
 import os
-from traceback import print_exc as _print
+from traceback import print_exc as _print_exc
 
 from skvideo.io import FFmpegReader
 from skimage import io
@@ -86,7 +86,6 @@ class FramePicker(object):
 class OpenCVPicker(FramePicker):
     """the default frame picker based on OpenCV."""
     def __init__(self, path):
-        import cv2
         super(OpenCVPicker, self).__init__(path)
         self.cap      = cv2.VideoCapture(str(path))
         self.is_open  = True
@@ -103,6 +102,16 @@ class OpenCVPicker(FramePicker):
             self.cap.release()
             del self.cap
             self.is_open = False
+
+    def get_ncolorchannels(self):
+        ret, img = self.cap.read()
+        self.offset += 1
+        if not ret:
+            raise RuntimeError("could not read from the stream")
+        if np.ndim(img) == 2:
+            return 0
+        else:
+            return np.shape(img)[2]
 
     def iter_frames(self, crop=False, resize=False, transform_color=True):
         if self.offset != 0:
@@ -221,7 +230,11 @@ class SkVideoPicker(FramePicker):
         n = 0
         for image in self.reader.nextFrame():
             n += 1
-        height, width, nchan = image.shape
+        if image.ndim == 2:
+            height, width = image.shape
+            nchan = 0
+        else:
+            height, width, nchan = image.shape[:3]
         self.rewind()
         return n, width, height, nchan
 
