@@ -1,0 +1,23 @@
+name: ks-dlc
+dependencies:
+    - tensorflow-gpu
+    - wxpython
+    - jupyter
+    - pytables
+    - chardet
+    - click
+    - pandas
+    - patsy
+    - pyyaml
+    - opencv
+    - requests
+    - ruamel_yaml
+    - scikit-image
+    - scikit-learn
+    - statsmodels
+    - tqdm
+    - pip
+    - pip:
+        - easydict
+        - moviepy
+        - scikit-video
