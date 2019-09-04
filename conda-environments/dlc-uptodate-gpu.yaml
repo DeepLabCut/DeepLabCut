@@ -1,4 +1,4 @@
-name: ks-dlc
+name: dlc-gpu
 dependencies:
     - tensorflow-gpu
     - wxpython
