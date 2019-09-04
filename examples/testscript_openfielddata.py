@@ -40,7 +40,6 @@ deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
 
 
 print("TRAIN NETWORK")
-
 deeplabcut.train_network(path_config_file, shuffle=1,saveiters=15000,displayiters=100)
 
 print("EVALUATE")

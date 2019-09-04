@@ -1,7 +1,16 @@
 '''
-Adapted from DeeperCut by Eldar Insafutdinov
+Loader adapted from DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
+
+See pull request:
+https://github.com/AlexEMG/DeepLabCut/pull/409
+use tensorpack dataflow to improve augmentation #409
+
+A Neural Net Training Interface on TensorFlow, with focus on speed + flexibility
+https://github.com/tensorpack/tensorpack
 '''
+
+
 import os
 import cv2
 import multiprocessing
@@ -130,29 +139,77 @@ class Pose(RNGDataFlow):
                 yield data_item
 
 class PoseDataset:
-
     def __init__(self, cfg):
+        # Initializing variables if they don't exist...
+
+        # what is the fraction of training samples with scaling augmentation?
+        cfg['scaleratio']=cfg.get('scaleratio', 0.6)
+
+        # Randomly rotates an image with respect to the image center within the
+        # range [-rotate_max_deg_abs; rotate_max_deg_abs] to augment training data
+        cfg['rotate_max_deg_abs']= cfg.get('rotate_max_deg_abs', 45)
+        cfg['rotateratio']=cfg.get('rotateratio', 0.4)  # what is the fraction of training samples with rotation augmentation?
+
+        # Randomly adds brightness within the range [-brightness_dif, brightness_dif]
+        # to augment training data
+        cfg['brightness_dif']= cfg.get('brightness_dif', 0.3)
+        cfg['brightnessratio']=cfg.get('brightnessratio', 0.2)  # what is the fraction of training samples with brightness augmentation?
+
+        # Randomly applies x = (x - mean) * contrast_factor + mean`` to each
+        # color channel within the range [contrast_factor_lo, contrast_factor_up]
+        # to augment training data
+        cfg['contrast_factor_lo']= cfg.get('contrast_factor_lo', 0.5)
+        cfg['contrast_factor_up']= cfg.get('contrast_factor_up', 2.0)
+        cfg['contrastratio']=cfg.get('contrastratio', 0.2) # what is the fraction of training samples with contrast augmentation?
+
+        # Randomly adjusts saturation within range 1 + [-saturation_max_dif, saturation_max_dif]
+        # to augment training data
+        cfg['saturation_max_dif']= cfg.get('saturation_max_dif', 0.5)
+        cfg['saturationratio']=cfg.get('saturationratio', 0.2) # what is the fraction of training samples with saturation augmentation?
+
+        # Randomly applies gaussian noise N(0, noise_sigma^2) to an image
+        # to augment training data
+        cfg['noise_sigma']= cfg.get('noise_sigma', 0.1)
+        cfg['noiseratio']=cfg.get('noiseratio', 0.2) # what is the fraction of training samples with noise augmentation?
+
+        # Randomly applies gaussian blur to an image with a random window size
+        # within the range [0, 2 * blur_max_window_size + 1] to augment training data
+        cfg['blur_max_window_size']= cfg.get('blur_max_window_size', 10)
+        cfg['blurratio']=cfg.get('blurratio', 0.2) # what is the fraction of training samples with blur augmentation?
+
+        # Whether image is RGB  or RBG. If None, contrast augmentation uses the mean per-channel.
+        cfg['is_rgb']=cfg.get('is_rgb', True)
+
+        # Clips image to [0, 255] even when data type is not uint8
+        cfg['to_clip']=cfg.get('to_clip', True)
+
+        # Number of processes to use per core during training
+        cfg['processratio']=cfg.get('processratio', 6)
+        # Number of datapoints to prefetch at a time during training
+        cfg['num_prefetch']=cfg.get('num_prefetch', 100)
+
+
         self.cfg = cfg
         self.scaling = RandomResize(xrange = (self.cfg['scale_jitter_lo'] * self.cfg['global_scale'],
                                     self.cfg['scale_jitter_up'] * self.cfg['global_scale']), aspect_ratio_thres = 0.0)
         self.scaling_apply = RandomApplyAug(self.scaling, self.cfg['scaleratio'])
-        self.cropping = RandomCropping(wmin = self.cfg['minsize'], hmin = self.cfg['minsize'], 
+        self.cropping = RandomCropping(wmin = self.cfg['minsize'], hmin = self.cfg['minsize'],
                                        wmax = self.cfg['leftwidth'] + self.cfg['rightwidth'] + self.cfg['minsize'],
                                        hmax = self.cfg['topheight'] + self.cfg['bottomheight'] + self.cfg['minsize'])
         self.rotation = Affine(rotate_max_deg = self.cfg['rotate_max_deg_abs'])
         self.brightness = Brightness(self.cfg['brightness_dif'])
-        self.contrast = Contrast((self.cfg['contrast_factor_lo'], self.cfg['contrast_factor_up']), 
+        self.contrast = Contrast((self.cfg['contrast_factor_lo'], self.cfg['contrast_factor_up']),
                                   rgb = self.cfg['is_rgb'], clip = self.cfg['to_clip'])
         self.saturation = Saturation(self.cfg['saturation_max_dif'], rgb = self.cfg['is_rgb'])
         self.gaussian_noise = GaussianNoise(sigma = self.cfg['noise_sigma'])
         self.gaussian_blur = GaussianBlur(max_size = self.cfg['blur_max_window_size'])
-        self.augmentors = [RandomApplyAug(self.cropping, self.cfg['cropratio']), 
+        self.augmentors = [RandomApplyAug(self.cropping, self.cfg['cropratio']),
                            RandomApplyAug(self.rotation, self.cfg['rotateratio']),
                            RandomApplyAug(self.brightness, self.cfg['brightnessratio']),
                            RandomApplyAug(self.contrast, self.cfg['contrastratio']),
-                           RandomApplyAug(self.saturation, self.cfg['saturationratio']), 
+                           RandomApplyAug(self.saturation, self.cfg['saturationratio']),
                            RandomApplyAug(self.gaussian_noise, self.cfg['noiseratio']),
-                           RandomApplyAug(self.gaussian_blur, self.cfg['blurratio']), 
+                           RandomApplyAug(self.gaussian_blur, self.cfg['blurratio']),
                            self.scaling_apply]
 
         self.has_gt = True
@@ -185,7 +242,7 @@ class PoseDataset:
 
         return [joint_id, aug_img, aug_coords, data, size, scale]
 
-    
+
     def get_dataflow(self, cfg):
 
         df = Pose(cfg)
@@ -194,8 +251,8 @@ class PoseDataset:
 
         num_cores = multiprocessing.cpu_count()
         num_processes = num_cores * self.cfg['processratio']
-        if num_processes == 1: 
-            num_processes = 2 # recommended to use more than one process for training 
+        if num_processes == 1:
+            num_processes = 2 # recommended to use more than one process for training
         if os.name == 'nt':
             df2 = MultiProcessRunner(df, num_proc = num_processes, num_prefetch = self.cfg['num_prefetch'])
         else:
