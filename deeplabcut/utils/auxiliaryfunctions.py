@@ -70,7 +70,7 @@ def create_config_template():
     ruamelFile = ruamel.yaml.YAML()
     cfg_file = ruamelFile.load(yaml_str)
     return(cfg_file,ruamelFile)
-    
+
 def create_config_template_3d():
     """
     Creates a template for config.yaml file for 3d project. This specific order is preserved while saving as yaml file.
@@ -134,7 +134,7 @@ def write_config(configname,cfg):
         cfg_file,ruamelFile = create_config_template()
         for key in cfg.keys():
             cfg_file[key]=cfg[key]
-        
+
         # Adding default value for variable skeleton and skeleton_color for backward compatibility.
         if not 'skeleton' in cfg.keys():
             cfg_file['skeleton'] = []
@@ -189,13 +189,13 @@ def read_pickle(filename):
     with open(filename, 'rb') as handle:
         return(pickle.load(handle))
 
-# Write the pickle file    
+# Write the pickle file
 def write_pickle(filename,data):
     with open(filename, 'wb') as handle:
         pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 def create_empty_df(dataframe,scorer,flag):
-# Creates an empty dataFrame of same shape as df_side_view.  
+# Creates an empty dataFrame of same shape as df_side_view.
 # flag = number of coordinates. e.g. 4 for 3d,3 for 2d as we need to store the likelihood too.
 #    df = pd.read_hdf(dataframe)
     df = dataframe
@@ -212,42 +212,41 @@ def create_empty_df(dataframe,scorer,flag):
                                              names=['scorer', 'bodyparts', 'coords'])
         elif flag == '3d':
             pdindex = pd.MultiIndex.from_product([[scorer], [bodypart], ['x', 'y','z']],
-                                             names=['scorer', 'bodyparts', 'coords']) 
+                                             names=['scorer', 'bodyparts', 'coords'])
         frame = pd.DataFrame(a, columns = pdindex,index = range(0,df.shape[0]))
         dataFrame = pd.concat([frame,dataFrame],axis=1)
     return(dataFrame,scorer,bodyparts)
 
 def Getlistofvideos(videos,videotype):
     from random import sample
-    #checks if input is a directory
-    if [os.path.isdir(i) for i in videos] == [True]:#os.path.isdir(video)==True:
-        """
-        Analyzes all the videos in the directory.
-        """
-        
-        print("Analyzing all the videos in the directory")
-        videofolder= videos[0]
-        os.chdir(videofolder)
-        videolist=[fn for fn in os.listdir(os.curdir) if (videotype in fn) and ('labeled.mp4' not in fn)] #exclude labeled-videos!
-        Videos = sample(videolist,len(videolist)) # this is useful so multiple nets can be used to analzye simultanously
-    else:
-        if isinstance(videos,str):
-            if os.path.isfile(videos): # #or just one direct path!
-                Videos=[v for v in videos if os.path.isfile(v) and ('labeled.mp4' not in v)]
-            else:
-                Videos=[]
-        else:
-            Videos=[v for v in videos if os.path.isfile(v) and ('labeled.mp4' not in v)]
-    return Videos
+    if isinstance(videos, str):
+        return Getlistofvideos([videos], videotype)
+
+    def __to_be_analyzed(path):
+        return path.is_file() and (videotype in str(path)) and ('labeled.mp4' not in str(path)) # exclude labeled-videos!
+
+    ret = []
+    for item in videos:
+        #checks if input is a directory
+        item = Path(item)
+        if item.is_dir():
+            # list up all the videos in the directory
+            print("Analyzing all the videos in the directory: {}".format(item))
+            ret += [path for path in item.iterdir() if __to_be_analyzed(path)]
+        elif __to_be_analyzed(item):
+            ret.append(item)
+    return sorted(set(ret))
 
 def SaveData(PredicteData, metadata, dataname, pdindex, imagenames,save_as_csv):
     ''' Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py '''
     DataMachine = pd.DataFrame(PredicteData, columns=pdindex, index=imagenames)
-    DataMachine.to_hdf(dataname, 'df_with_missing', format='table', mode='w')
+    DataMachine.to_hdf(str(dataname), 'df_with_missing', format='table', mode='w')
     if save_as_csv:
-        print("Saving csv poses!")
-        DataMachine.to_csv(dataname.split('.h5')[0]+'.csv')
-    with open(dataname.split('.h5')[0] + 'includingmetadata.pickle', 'wb') as f:
+        csvfile = dataname.with_suffix('.csv')
+        print(f"Saving csv poses to: {csvfile}")
+        DataMachine.to_csv(csvfile)
+    picklefile = dataname.with_name(dataname.stem + '_includingmetadata').with_suffix('.pickle')
+    with open(picklefile, 'wb') as f:
         # Pickle the 'data' dictionary using the highest protocol available.
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
