@@ -32,7 +32,7 @@ from skimage.util import img_as_ubyte
 # Loading data, and defining model folder
 ####################################################
 
-def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gputouse=None,save_as_csv=False, destfolder=None,cropping=None):
+def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gputouse=None,save_as_csv=False, destfolder=None,cropping=None,get_nframesfrommetadata=True):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
 
@@ -70,6 +70,11 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
     destfolder: string, optional
         Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this
         folder also needs to be passed.
+
+    get_nframesfrommetadata: bool, Default true.
+        Some videos have wrong metadata (and thus the frame number is not accurate). If this is set to False, then the
+        video is loaded frame by frame and the number of frames is counted. This makes sure that for broken metadata
+        the output file is correct. See https://github.com/AlexEMG/DeepLabCut/issues/422
 
     Examples
     --------
@@ -187,7 +192,7 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
     if len(Videos)>0:
         #looping over videos
         for video in Videos:
-            AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder)
+            AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder,get_nframesfrommetadata)
 
         os.chdir(str(start_path))
         print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
@@ -295,8 +300,19 @@ def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes):
     pbar.close()
     return PredicteData,nframes
 
+def bruteforce_countframes_bydecoding(cap):
+    counter=0
+    while(cap.isOpened()):
+        ret, frame = cap.read()
+        if ret:
+            counter+=1
+        else:
+            break
+    #reset cap to frame 0!
+    return counter
 
-def AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder=None):
+
+def AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder,get_nframesfrommetadata=True):
     ''' Helper function for analyzing a video '''
     print("Starting to analyze % ", video)
     vname = Path(video).stem
@@ -310,9 +326,16 @@ def AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,
     except FileNotFoundError:
         print("Loading ", video)
         cap=cv2.VideoCapture(video)
+        if get_nframesfrommetadata:
+            nframes = int(cap.get(7))
+        else: #actually decode and check
+            nframes_metadata = int(cap.get(7))
+            nframes=bruteforce_countframes_bydecoding(cap)
+            print("Metadata:",nframes_metadata,"Counted:",nframes)
+            nframes+=5 #adding buffer! [will be cropped anyway if too long]
+            cap=cv2.VideoCapture(video) #reopen video
 
         fps = cap.get(5) #https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
-        nframes = int(cap.get(7))
         duration=nframes*1./fps
         size=(int(cap.get(4)),int(cap.get(3)))
 

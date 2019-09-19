@@ -31,8 +31,15 @@ scale_jitter_up: 1.25
 # Randomly flips an image horizontally to augment training data
 mirror: False
 
-##########################################################
-# Auto cropping is new (was not in Nature neuroscience manuscript, but introduce in Nath et al. Nat. Protocols)
+#Data loaders, i.e. with additional data augmentation options (as of 2.0.9+):
+dataset_type: default 
+#default with be with no extra dataloaders. Other options: 'tensorpack, deterministic'
+#types of datasets, see factory: deeplabcut/pose_estimation_tensorflow/dataset/factory.py
+#For deterministic, see https://github.com/AlexEMG/DeepLabCut/pull/324
+#For tensorpack, see https://github.com/AlexEMG/DeepLabCut/pull/409
+
+# Auto cropping is new (was not in Nature Neuroscience 2018 paper, but introduced in Nath et al. Nat. Protocols 2019)
+#and boosts performance by 2X, particularly on challenging datasets, like the cheetah in Nath et al.
 # Parameters for augmentation with regard to cropping
 crop: True
 cropratio: 0.4 #what is the fraction of training samples with cropping?
@@ -59,7 +66,7 @@ locref_loss_weight: 0.05
 locref_stdev: 7.2801
 
 # Enabling this adds additional loss layer in the middle of the ConvNet,
-# which helps accuracy.
+# which helps accuracy (you should set to true for ResNet-101, or 152!).
 intermediate_supervision: false
 intermediate_supervision_layer: 12
 

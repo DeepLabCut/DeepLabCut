@@ -28,7 +28,7 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
 
     videos : list
         A list of string containing the full paths of the videos to include in the project.
-        Attention: Can also be a directory, then all videos of videotype will be imported. Do not pass it as a list!
+        Attention: Can also be a directory, then all videos of videotype will be imported.
 
     working_directory : string, optional
         The directory where the project will be created. The default is the ``current working directory``; if provided, it must be a string.
@@ -41,7 +41,7 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
     --------
     Linux/MacOs
     >>> deeplabcut.create_new_project('reaching-task','Linus',['/data/videos/mouse1.avi','/data/videos/mouse2.avi','/data/videos/mouse3.avi'],'/analysis/project/')
-    >>> deeplabcut.create_new_project('reaching-task','Linus','/data/videos',videotype='.mp4')
+    >>> deeplabcut.create_new_project('reaching-task','Linus',['/data/videos'],videotype='.mp4')
 
     Windows:
     >>> deeplabcut.create_new_project('reaching-task','Bill',[r'C:\yourusername\rig-95\Videos\reachingvideo1.avi'], copy_videos=True)
@@ -72,21 +72,39 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
     for p in [video_path, data_path, shuffles_path, results_path]:
         p.mkdir(parents=True, exist_ok=DEBUG)
         print('Created "{}"'.format(p))
-
-    # Import all videos in a folder or if just one video withouth [] passed, then make it a list.
-    if isinstance(videos,str):
-        #there are two cases:
-        if os.path.isdir(videos): # it is a path!
-            path=videos
-            videos=[os.path.join(path,vp) for vp in os.listdir(path) if videotype in vp]
-            if len(videos)==0:
-                print("No videos found in",path,os.listdir(path))
+    
+    # Add all videos in the folder. Multiple folders can be passed in a list, similar to the video files. Folders and video files can also be passed!
+    vids = []
+    for i in videos:
+        #Check if it is a folder
+        if os.path.isdir(i):
+            vids_in_dir = [os.path.join(i,vp) for vp in os.listdir(i) if videotype in vp]
+            vids = vids + vids_in_dir
+            if len(vids_in_dir)==0:
+                print("No videos found in",i)
                 print("Perhaps change the videotype, which is currently set to:", videotype)
             else:
-                print("Directory entered, " , len(videos)," videos were found.")
+                videos = vids
+                print(len(vids_in_dir)," videos from the directory" ,i, "were added to the project.")
         else:
-            if os.path.isfile(videos):
-                videos=[videos]
+            if os.path.isfile(i):
+                vids = vids + [i]
+            videos = vids
+
+    # Import all videos in a folder or if just one video withouth [] passed, then make it a list.
+#    if isinstance(videos,str):
+#        #there are two cases:
+#        if os.path.isdir(videos): # it is a path!
+#            path=videos
+#            videos=[os.path.join(path,vp) for vp in os.listdir(path) if videotype in vp]
+#            if len(videos)==0:
+#                print("No videos found in",path,os.listdir(path))
+#                print("Perhaps change the videotype, which is currently set to:", videotype)
+#            else:
+#                print("Directory entered, " , len(videos)," videos were found.")
+#        else:
+#            if os.path.isfile(videos):
+#                videos=[videos]
 
     videos = [Path(vp) for vp in videos]
     dirs = [data_path/Path(i.stem) for i in videos]

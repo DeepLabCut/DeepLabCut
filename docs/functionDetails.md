@@ -125,11 +125,11 @@ For each video directory in labeled-data this function creates a subdirectory wi
 
 ### (F) Create Training Dataset
 
-**CRITICAL POINT:** Only run this step **where** you are going to train the network. If you label on your laptop but move your project folder to Google Colab or AWS, lab server, etc, then run the step below on that platform! If you labeled on a Windows machine but train on Linux, this is fine as of 2.0.4! You simply will be asked if you want to convert the data, and it will be done automatically! (it saves file sets as both Linux and Windows for you). 
+**CRITICAL POINT:** Only run this step **where** you are going to train the network. If you label on your laptop but move your project folder to Google Colab or AWS, lab server, etc, then run the step below on that platform! If you labeled on a Windows machine but train on Linux, this is fine as of 2.0.4+! You simply will be asked if you want to convert the data, and it will be done automatically! (it saves file sets as both Linux and Windows for you). 
 
 As a reminder, if you move your project folder, you must **only** change the `project_path` in the main config.yaml file - that's it - no need to change the video paths, etc! Your project is fully portable. 
 
-As you see in our [demo notebooks](https://github.com/AlexEMG/DeepLabCut/blob/master/examples/Colab_DEMO_mouse_openfield.ipynb) for running DLC training, evaluation, and novel video analysis on the Cloud, you must first supress GUIs - server computers don't have a screen you can interact with. So, before you launch ipython, run `export DLClight=True` (see more tips in the full PDF user-guide).
+As a reminder, if you run this on the cloud, before importing `deeplabcut` you need to suppress GUIs. As you see in our [demo notebooks](https://github.com/AlexEMG/DeepLabCut/blob/master/examples/Colab_DEMO_mouse_openfield.ipynb) for running DLC training, evaluation, and novel video analysis on the Cloud, you must first supress GUIs - server computers don't have a screen you can interact with. So, before you launch ipython, run `export DLClight=True` (see more tips in the full PDF user-guide).
 
 Combining the labeled datasets from all the videos and splitting them will create train and test datasets. The
 training data will be used to train the network, while the test data set will be used for evaluating the network. The
@@ -152,13 +152,17 @@ Specifically, the user can edit the **pose_cfg.yaml** within the **train** subdi
 configuration files contain meta information with regard to the parameters of the feature detectors. Key parameters
 are listed in Box 2.
 
-At this step, the ImageNet pre-trained ResNet-50, ResNet-101 and ResNet-152 weights will be downloaded. If they do not download (you will see this downloading in the terminal, then you may not have permission to do so (something we have seen with some Windows users - see the **[WIKI troubleshooting for more help!](https://github.com/AlexEMG/DeepLabCut/wiki/Troubleshooting-Tips)**). If you are labeling adult human data, you may also want to use a human-pretrained network. A ResNet-101 pre-trained on MPII is available. Download it and move to the pretrained folder (this will be in your site-packages, under ``../pose-tensorflow/models/pretrained``). Download with the following commands in the terminal: 
+At this step, the ImageNet pre-trained ResNet-50, ResNet-101 and ResNet-152 weights will be downloaded. If they do not download (you will see this downloading in the terminal, then you may not have permission to do so (something we have seen with some Windows users - see the **[WIKI troubleshooting for more help!](https://github.com/AlexEMG/DeepLabCut/wiki/Troubleshooting-Tips)**). 
+
+If you are labeling adult human data, you may also want to use a human-pretrained network. A ResNet-101 pre-trained on MPII is available. You can use the following notebook to create a project that uses this network, [HUMAN DEMO](https://github.com/AlexEMG/DeepLabCut/blob/master/examples/Human_Project_DEMO.ipynb), or you can add the pretrained model manually to the correct folder (then to use them, set the path to the model as described in Box 2!)
+
+Download it and move to the pretrained folder (this will be in your site-packages, under ``../pose-tensorflow/models/pretrained``). Download with the following commands in the terminal: 
  ```
     curl -L -O https://datasets.d2.mpi-inf.mpg.de/deepercut-models-tensorflow/mpii-single-resnet-101.data-00000-of-00001 
     curl -L -O https://datasets.d2.mpi-inf.mpg.de/deepercut-models-tensorflow/mpii-single-resnet-101.meta
     curl -L -O https://datasets.d2.mpi-inf.mpg.de/deepercut-models-tensorflow/mpii-single-resnet-101.index
  ```
- See Box 2 on how to specify which network is loaded for training.
+ See Box 2 on how to specify which network is loaded for training:
 
 <p align="center">
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c40efbebba223730882c2de/1547759656324/Box2-01.png?format=1000w" width="90%">
@@ -171,6 +175,10 @@ computer hardware. On a NVIDIA GeForce GTX 1080 Ti GPU, it takes ≈ 6 hrs to tr
 200,000 iterations. On the CPU, it will take several days to train for the same number of iterations on the same
 training dataset.
 
+The default parameters work very well for most all tasks (as shown on www.deeplabcut.org), but there are many options, including data augmentation, intermediate supervision, etc. Please look at the [**pose_cfg.yaml**](https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml) file for a full list of parameters **you might want to change before running this step.**
+
+For example, there are several data loaders that can be used. Currently, there are several options for this. For example, you can use [TensorPack](https://github.com/tensorpack/tensorpack) for data augmentation (currently this is easiest on Linux only). You can set this in your projects "dlc-models folder, ... train" then edit the **pose_cfg.yaml**. Note, to see the options, look at the default file: [**pose_cfg.yaml**](https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml)
+
 The function ‘train_network’ helps the user in training the network. It is used as follows:
 
     deeplabcut.train_network(config_path)
@@ -181,14 +189,12 @@ Example parameters that one can call:
    
            deeplabcut.train_network(config_path,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshots_to_keep=5,autotune=False,displayiters=100,saveiters=15000, maxiters=30000)
 
-By default, the pre-trained ResNet network is not provided in the DeepLabCut toolbox (as it has around 100MB).
-However, if not previously downloaded from the TensorFlow model weights, it will be downloaded and stored in
-a subdirectory *pre-trained* under the subdirectory *models* in *Pose_Estimation_Tensorflow*. At user specified
-iterations during training checkpoints are stored in the subdirectory *train* under the respective iteration directory.
+By default, the pre-trained ResNet networks are not in the DeepLabCut toolbox (as they are around 100MB), but they get downloaded before you train. However, if not previously downloaded from the TensorFlow model weights, it will be downloaded and stored in a subdirectory *pre-trained* under the subdirectory *models* in *Pose_Estimation_Tensorflow*. 
+At user specified iterations during training checkpoints are stored in the subdirectory *train* under the respective iteration directory.
 If the user wishes to restart the training at a specific checkpoint they can specify the full path of the checkpoint to
 the variable ``init_weights`` in the **pose_cfg.yaml** file under the *train* subdirectory (see Box 2).
 
-CRITICAL POINT: It is recommended to train for thousands of iterations until the loss plateaus (typically
+CRITICAL POINT: It is recommended to train the ResNets for thousands of iterations until the loss plateaus (typically
  around **200,000**). The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file allows the user to alter how often the loss is displayed and how often the weights are stored.
 
 **Parameters:**
@@ -217,6 +223,9 @@ CRITICAL POINT: It is recommended to train for thousands of iterations until the
     the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
     
     maxiters: This sets how many iterations to train. This variable is set in pose_config.yaml. However, you can overwrite it with this. If None, the value from there is used, otherwise it is overwritten! Default: None
+    
+    
+
 
 ### (H) Evaluate the Trained Network
 
@@ -485,23 +494,12 @@ labels for these images are also provided. See more details [here](/examples).
 
 ## 3D Toolbox
 
-Please find all the information on using the 3D toolbox of DeepLabCut (as of 2.0.7) here: https://github.com/AlexEMG/DeepLabCut/blob/master/docs/Overviewof3D.md
+Please find all the information on using the 3D toolbox of DeepLabCut (as of 2.0.7+) here: https://github.com/AlexEMG/DeepLabCut/blob/master/docs/Overviewof3D.md
 
 
 ## Other functions, some are yet-to-be-documented: 
 
-We suggest you check out these additional helper functions, that could be useful (they are all optional). 
-
-```
-deeplabcut.analyze_videos_converth5_to_csv
-
-deeplabcut.mergeandsplit
-
-deeplabcut.analyze_time_lapse_frames
-
-deeplabcut.convertcsv2h5
-```
-
+We suggest you [check out these additional helper functions](/docs/HelperFunctions.md), that could be useful (they are all optional).
 
 Return to [User guide overview](UseOverviewGuide.md).
 

@@ -217,7 +217,7 @@ def dropimagesduetolackofannotation(config):
         print("PROCESSED:", folder, " now # of annotated images: ", len(annotatedimages)," in folder:", len(imagelist))
 
 
-def label_frames(config,ma=False):
+def label_frames(config,multiple=False):
     """
     Manually label/annotate the extracted frames. Update the list of body parts you want to localize in the config.yaml file first.
 
@@ -225,10 +225,16 @@ def label_frames(config,ma=False):
     ----------
     config : string
         String containing the full path of the config file in the project.
+    
+    multiple: bool, optional
+        If this is set to True, a user can label multiple individuals.
+        The default is ``False``; if provided it must be either ``True`` or ``False``.
+        
 
     Example
     --------
-    >>> deeplabcut.label_frames('/analysis/project/reaching-task/config.yaml')
+    To label multiple individuals
+    >>> deeplabcut.label_frames('/analysis/project/reaching-task/config.yaml',multiple=True)
     --------
 
     """
@@ -236,7 +242,7 @@ def label_frames(config,ma=False):
     wd = Path(config).resolve().parents[0]
     os.chdir(str(wd))
 
-    if ma==False:
+    if multiple==False:
         from deeplabcut.generate_training_dataset import labeling_toolbox
 
         # labeling_toolbox.show(config,Screens,scale_w,scale_h, winHack, img_scale)
