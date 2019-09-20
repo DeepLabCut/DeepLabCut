@@ -166,8 +166,7 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
 
     # update number of outputs
     dlc_cfg['num_outputs'] = cfg.get('num_outputs', 1)
-
-    print('num_outputs = ', dlc_cfg['num_outputs'])
+    #print('num_outputs = ', dlc_cfg['num_outputs'])
 
     # Name for scorer:
     DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations)

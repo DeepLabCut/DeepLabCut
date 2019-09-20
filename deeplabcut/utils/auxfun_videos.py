@@ -12,10 +12,12 @@ Licensed under GNU Lesser General Public License v3.0
 from pathlib import Path
 import subprocess, os
 
-def ShortenVideo(vname,start='00:00:01',stop='00:01:00',outsuffix='short'):
+def ShortenVideo(vname,start='00:00:01',stop='00:01:00',outsuffix='short',outpath=None):
     """
     Auxiliary function to shorten video and output with outsuffix appended.
     to the same folder from start (hours:minutes:seconds) to stop (hours:minutes:seconds).
+
+    Returns the full path to the shortened video!
 
     Parameter
     ----------
@@ -31,6 +33,9 @@ def ShortenVideo(vname,start='00:00:01',stop='00:01:00',outsuffix='short'):
     outsuffix: str
         Suffix for output videoname (see example).
 
+    outpath: str
+        Output path for saving video to (by default will be the same folder as the video)
+
     Linux/MacOs
     >>> deeplabcut.ShortenVideo('/data/videos/mouse1.avi')
 
@@ -41,18 +46,24 @@ def ShortenVideo(vname,start='00:00:01',stop='00:01:00',outsuffix='short'):
 
     Extracts (sub)video from minute 17 to 22 and and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1brief.avi
     """
-    vidpath=os.path.dirname(vname)
+    if outpath is None:
+        vidpath=os.path.dirname(vname)
+    else:
+        vidpath=outpath
+
     #TODO check if those times exist...
     newfilename=os.path.join(vidpath,str(Path(vname).stem)+str(outsuffix)+str(Path(vname).suffix))
     print("Slicing and saving to name", newfilename)
     subprocess.call(['ffmpeg','-i',vname,'-ss',str(start),'-to',str(stop),'-c','copy',newfilename])
+    return str(newfilename)
 
-
-def DownSampleVideo(vname,width=-1,height=200,outsuffix='downsampled'):
+def DownSampleVideo(vname,width=-1,height=200,outsuffix='cropped',outpath=None):
     """
     Auxiliary function to downsample a video and output it to the same folder with "outsuffix" appended in its name.
     Width and height will control the new dimensions. You can also pass only height or width and set the other one to -1,
     this will keep the aspect ratio identical.
+
+    Returns the full path to the downsampled video!
 
     Parameter
     ----------
@@ -68,19 +79,26 @@ def DownSampleVideo(vname,width=-1,height=200,outsuffix='downsampled'):
     outsuffix: str
         Suffix for output videoname (see example).
 
+    outpath: str
+        Output path for saving video to (by default will be the same folder as the video)
+
     Linux/MacOs
-    >>> deeplabcut.DownSampleVideo('/data/videos/mouse1.avi', width=220, height=320)
+    >>> deeplabcut.DownSampleVideo('/data/videos/mouse1.avi')
 
     Downsamples the video using default values and saves it in /data/videos as mouse1cropped.avi
 
     Windows:
-    >>> deeplabcut.DownSampleVideo('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi', width=220, height=320)
+    >>> shortenedvideoname=deeplabcut.DownSampleVideo('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi', width=220,height=320,outsuffix='cropped')
 
-    Downsamples the video to a width of 220 and height of 320 and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1downsampled.avi
+    Downsamples the video to a width of 220 and height of 320 and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1cropped.avi
     """
-    vidpath=os.path.dirname(vname)
+    if outpath is None:
+        vidpath=os.path.dirname(vname)
+    else:
+        vidpath=outpath
+
     newfilename=os.path.join(vidpath,str(Path(vname).stem)+str(outsuffix)+str(Path(vname).suffix))
     print("Downsampling and saving to name", newfilename)
     command = f"ffmpeg -i {vname} -filter:v scale={width}:{height} -c:a copy {newfilename}"
     subprocess.call(command, shell=True)
-    print("Done!")
+    return str(newfilename)

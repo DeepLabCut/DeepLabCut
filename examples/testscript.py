@@ -85,12 +85,14 @@ deeplabcut.evaluate_network(path_config_file,plotting=True)
 print("CUT SHORT VIDEO AND ANALYZE")
 
 # Make super short video (so the analysis is quick!)
-vname='brief'
-newvideo=os.path.join(cfg['project_path'],'videos',vname+'.mp4')
+
 try: #you need ffmpeg command line interface
-    subprocess.call(['ffmpeg','-i',video[0],'-ss','00:00:00','-to','00:00:00.4','-c','copy',newvideo])
-except:
-    #for windows:
+    #subprocess.call(['ffmpeg','-i',video[0],'-ss','00:00:00','-to','00:00:00.4','-c','copy',newvideo])
+    newvideo=deeplabcut.ShortenVideo(video[0],start='00:00:00',stop='00:00:00.4',outsuffix='short',outpath=os.path.join(cfg['project_path'],'videos'))
+    vname=Path(newvideo).stem
+except: # if ffmpeg is broken
+    vname='brief'
+    newvideo=os.path.join(cfg['project_path'],'videos',vname+'.mp4')
     from moviepy.editor import VideoFileClip,VideoClip
     clip = VideoFileClip(video[0])
     clip.reader.initialize()
@@ -111,8 +113,6 @@ deeplabcut.plot_trajectories(path_config_file,[newvideo], destfolder=dfolder)
 
 print("EXTRACT OUTLIERS")
 deeplabcut.extract_outlier_frames(path_config_file,[newvideo],outlieralgorithm='jump',epsilon=0,automatic=True, destfolder=dfolder)
-
-
 file=os.path.join(cfg['project_path'],'labeled-data',vname,"machinelabels-iter"+ str(cfg['iteration']) + '.h5')
 
 print("RELABELING")
