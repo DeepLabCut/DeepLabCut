@@ -29,15 +29,21 @@ scale_jitter_lo: 0.5
 scale_jitter_up: 1.25
 
 # Randomly flips an image horizontally to augment training data
-mirror: false
+mirror: False
 
-##########################################################
-# Auto cropping is new (was not in Nature neuroscience manuscript)
-# Added and described in "Using DeepLabCut for 3D markerless pose estimation across species and behaviors" 
-# Source: https://www.nature.com/articles/s41596-019-0176-0
+#Data loaders, i.e. with additional data augmentation options (as of 2.0.9+):
+dataset_type: default 
+#default with be with no extra dataloaders. Other options: 'tensorpack, deterministic'
+#types of datasets, see factory: deeplabcut/pose_estimation_tensorflow/dataset/factory.py
+#For deterministic, see https://github.com/AlexEMG/DeepLabCut/pull/324
+#For tensorpack, see https://github.com/AlexEMG/DeepLabCut/pull/409
+
+# Auto cropping is new (was not in Nature Neuroscience 2018 paper, but introduced in Nath et al. Nat. Protocols 2019)
+#and boosts performance by 2X, particularly on challenging datasets, like the cheetah in Nath et al.
 # Parameters for augmentation with regard to cropping
 crop: True
 cropratio: 0.4 #what is the fraction of training samples with cropping?
+
 minsize: 100 #what is the minimal frames size for cropping plus/minus ie.. [-100,100]^2 for an arb. joint
 leftwidth: 400
 rightwidth: 400
@@ -46,7 +52,7 @@ bottomheight: 400
 
 #limit width  [-leftwidth*u-100,100+u*rightwidth] x [-bottomwith*u-100,100+u*topwidth] where u is always a (different) random number in unit interval
 
-# Type of the CNN to use, currently resnet_152, resnet_101 and resnet_50
+# Type of the CNN to use, currently resnet_50, resnet_101 and resnet_152
 # are supported
 net_type: resnet_50
 
@@ -60,7 +66,7 @@ locref_loss_weight: 0.05
 locref_stdev: 7.2801
 
 # Enabling this adds additional loss layer in the middle of the ConvNet,
-# which helps accuracy.
+# which helps accuracy (you should set to true for ResNet-101, or 152!).
 intermediate_supervision: false
 intermediate_supervision_layer: 12
 
