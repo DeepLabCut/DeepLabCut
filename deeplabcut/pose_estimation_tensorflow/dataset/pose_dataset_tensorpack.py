@@ -1,10 +1,18 @@
-'''
-Loader adapted from DeeperCut by Eldar Insafutdinov
+"""
+DeepLabCut2.0 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
+https://github.com/AlexEMG/DeepLabCut
+Please see AUTHORS for contributors.
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
+
+Loader structure adapted from DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
 
 See pull request:
 https://github.com/AlexEMG/DeepLabCut/pull/409
-use tensorpack dataflow to improve augmentation #409
+use tensorpack dataflow to improve augmentation #409 and #426
+Written largely by Kate Rupp -- Thanks!
 
 A Neural Net Training Interface on TensorFlow, with focus on speed + flexibility
 https://github.com/tensorpack/tensorpack
@@ -23,7 +31,6 @@ from enum import Enum
 from numpy import array as arr
 from numpy import concatenate as cat
 import scipy.io as sio
-from scipy.misc import imread
 
 from tensorpack.dataflow.base import RNGDataFlow
 from tensorpack.dataflow.common import MapData
@@ -184,9 +191,9 @@ class PoseDataset:
         cfg['to_clip']=cfg.get('to_clip', True)
 
         # Number of processes to use per core during training
-        cfg['processratio']=cfg.get('processratio', 6)
+        cfg['processratio']=cfg.get('processratio', 1)
         # Number of datapoints to prefetch at a time during training
-        cfg['num_prefetch']=cfg.get('num_prefetch', 100)
+        cfg['num_prefetch']=cfg.get('num_prefetch', 50)
 
 
         self.cfg = cfg

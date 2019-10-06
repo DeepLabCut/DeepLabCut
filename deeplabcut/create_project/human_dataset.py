@@ -64,54 +64,55 @@ def create_pretrained_human_project(project,experimenter,videos,working_director
     copy_videos : bool, optional
         If this is set to True, the videos are copied to the ``videos`` directory. If it is False,symlink of the videos are copied to the project/videos directory. The default is ``False``; if provided it must be either
         ``True`` or ``False``.
-    analyzevideo " bool, optional 
-        If true, then the video is analzyed and a labeled video is created. If false, then only the project will be created and the weights downloaded. You can then access them 
+    analyzevideo " bool, optional
+        If true, then the video is analzyed and a labeled video is created. If false, then only the project will be created and the weights downloaded. You can then access them
 
     Example
     --------
     Linux/MacOs
     >>> deeplabcut.create_pretrained_human_project('human','Linus',['/data/videos/mouse1.avi'],'/analysis/project/',copy_videos=False)
-    
+
     Windows:
     >>> deeplabcut.create_pretrained_human_project('human','Bill',[r'C:\yourusername\rig-95\Videos\reachingvideo1.avi'],r'C:\yourusername\analysis\project' copy_videos=False)
     Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \ \ )
     --------
     """
-    
+
     cfg=deeplabcut.create_new_project(project,experimenter,videos,working_directory,copy_videos,videotype)
+
     config = auxiliaryfunctions.read_config(cfg)
     config['bodyparts'] = ['ankle1','knee1','hip1','hip2','knee2','ankle2','wrist1','elbow1','shoulder1','shoulder2','elbow2','wrist2','chin','forehead']
     config['skeleton'] = [['ankle1', 'knee1'],['ankle2', 'knee2'],['knee1', 'hip1'],['knee2', 'hip2'],['hip1', 'hip2'], ['shoulder1', 'shoulder2'], ['shoulder1', 'hip1'], ['shoulder2', 'hip2'], ['shoulder1', 'elbow1'], ['shoulder2', 'elbow2'], ['chin', 'forehead'], ['elbow1', 'wrist1'], ['elbow2', 'wrist2']]
+    config['default_net_type']='resnet_101'
     auxiliaryfunctions.write_config(cfg,config)
     config = auxiliaryfunctions.read_config(cfg)
-    
+
     train_dir = Path(os.path.join(config['project_path'],str(auxiliaryfunctions.GetModelFolder(trainFraction=config['TrainingFraction'][0],shuffle=1,cfg=config)),'train'))
     test_dir = Path(os.path.join(config['project_path'],str(auxiliaryfunctions.GetModelFolder(trainFraction=config['TrainingFraction'][0],shuffle=1,cfg=config)),'test'))
-    
-    # Create the model directory 
+
+    # Create the model directory
     train_dir.mkdir(parents=True,exist_ok=True)
     test_dir.mkdir(parents=True,exist_ok=True)
-    
+
     modelfoldername=auxiliaryfunctions.GetModelFolder(trainFraction=config['TrainingFraction'][0],shuffle=1,cfg=config)
-    
+
     path_train_config = str(os.path.join(config['project_path'],Path(modelfoldername),'train','pose_cfg.yaml'))
     path_test_config = str(os.path.join(config['project_path'],Path(modelfoldername),'test','pose_cfg.yaml'))
-    
-    
+
     # Download the weights and put then in appropriate directory
     cwd = os.getcwd()
     os.chdir(train_dir)
     print("Checking if the weights are already available, otherwise I will download them!")
     weightfilename=auxfun_models.download_mpii_weigths(train_dir)
     os.chdir(cwd)
-    
-    # create the pose_config.yaml files
+
+    # Create the pose_config.yaml files
     parent_path = Path(os.path.dirname(deeplabcut.__file__))
     defaultconfigfile = str(parent_path / 'pose_cfg.yaml')
     trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(config)
     datafilename,metadatafilename=auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,trainFraction=config['TrainingFraction'][0],shuffle=1,cfg=config)
     bodyparts = config['bodyparts']
-    net_type ='resnet_101'#'resnet_'+str(config['resnet'])
+    net_type ='resnet_101'
     num_shuffles= 1
     model_path,num_shuffles=auxfun_models.Check4weights(net_type,parent_path,num_shuffles)
     items2change = {"dataset": 'dataset-test.mat',#datafilename,
@@ -119,7 +120,7 @@ def create_pretrained_human_project(project,experimenter,videos,working_director
                         "num_joints": len(bodyparts),
                         "all_joints": [[i] for i in range(len(bodyparts))],
                         "all_joints_names": [str(bpt) for bpt in bodyparts],
-                        "init_weights": weightfilename, #'models/mpii/snapshot-1030000',
+                        "init_weights": weightfilename.split('.index')[0], #'models/mpii/snapshot-1030000',
                         "project_path": str(config['project_path']),
                         "net_type": net_type,
                         "dataset_type": "default"
@@ -130,12 +131,13 @@ def create_pretrained_human_project(project,experimenter,videos,working_director
                         "net_type", 'init_weights', 'global_scale', 'location_refinement',
                         'locref_stdev']
     MakeTest_pose_yaml(trainingdata, keys2save,path_test_config)
-    
+
     video_dir = os.path.join(config['project_path'],'videos')
-    
+
     if analyzevideo==True:
         # Analyze the videos
         deeplabcut.analyze_videos(cfg,[video_dir],videotype,save_as_csv=True)
     if createlabeledvideo==True:
         deeplabcut.create_labeled_video(cfg,[video_dir],videotype, draw_skeleton=True)
         deeplabcut.plot_trajectories(cfg,[video_dir],videotype)
+    return cfg, path_train_config

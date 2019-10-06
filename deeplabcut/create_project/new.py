@@ -72,7 +72,7 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
     for p in [video_path, data_path, shuffles_path, results_path]:
         p.mkdir(parents=True, exist_ok=DEBUG)
         print('Created "{}"'.format(p))
-    
+
     # Add all videos in the folder. Multiple folders can be passed in a list, similar to the video files. Folders and video files can also be passed!
     vids = []
     for i in videos:
@@ -142,7 +142,7 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
 
     if copy_videos==True:
         videos=destinations # in this case the *new* location should be added to the config file
-        
+
     # adds the video list to the config.yaml file
     video_sets = {}
     for video in videos:
@@ -177,7 +177,9 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
     cfg_file['numframes2pick']=20
     cfg_file['TrainingFraction']=[0.95]
     cfg_file['iteration']=0
-    cfg_file['resnet']=50
+    #cfg_file['resnet']=50
+    cfg_file['default_net_type']='resnet_50'
+    cfg_file['default_augmenter']='default'
     cfg_file['snapshotindex']=-1
     cfg_file['x1']=0
     cfg_file['x2']=640

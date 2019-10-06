@@ -11,7 +11,35 @@ Licensed under GNU Lesser General Public License v3.0
 import os
 from pathlib import Path
 
-def train_network(config,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshots_to_keep=5,autotune=False,displayiters=None,saveiters=None,maxiters=None):
+def return_train_network_path(config,shuffle=1,trainingsetindex=0):
+    ''' Returns the training and test pose config file names as well as the folder where the snapshot is
+    Parameter
+    ----------
+    config : string
+        Full path of the config.yaml file as a string.
+
+    shuffle: int, optional
+        Integer value specifying the shuffle index to select for training. Default is set to 1
+
+    trainingsetindex: int, optional
+        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+
+    Returns the triple: trainposeconfigfile, testposeconfigfile, snapshotfolder
+
+    '''
+    from deeplabcut.utils import auxiliaryfunctions
+    # Read file path for pose_config file. >> pass it on
+    cfg = auxiliaryfunctions.read_config(config)
+
+    modelfoldername=auxiliaryfunctions.GetModelFolder(cfg["TrainingFraction"][trainingsetindex],shuffle,cfg)
+    trainposeconfigfile=Path(os.path.join(cfg['project_path'],str(modelfoldername),"train","pose_cfg.yaml"))
+    testposeconfigfile=Path(os.path.join(cfg['project_path'],str(modelfoldername),"test","pose_cfg.yaml"))
+    snapshotfolder=Path(os.path.join(cfg['project_path'],str(modelfoldername),'train'))
+
+    return trainposeconfigfile,testposeconfigfile,snapshotfolder
+
+
+def train_network(config,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshots_to_keep=5,autotune=False,displayiters=None,saveiters=None,maxiters=None,keepdeconvweights=True):
     """Trains the network with the labels in the training dataset.
 
     Parameter
@@ -26,24 +54,28 @@ def train_network(config,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshot
         Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
 
     gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU put None.
-    See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+        See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
 
     Additional parameters:
 
     max_snapshots_to_keep: int, or None. Sets how many snapshots are kept, i.e. states of the trained network. Every savinginteration many times
-    a snapshot is stored, however only the last max_snapshots_to_keep many are kept! If you change this to None, then all are kept.
-    See: https://github.com/AlexEMG/DeepLabCut/issues/8#issuecomment-387404835
+        a snapshot is stored, however only the last max_snapshots_to_keep many are kept! If you change this to None, then all are kept.
+        See: https://github.com/AlexEMG/DeepLabCut/issues/8#issuecomment-387404835
 
     autotune: property of TensorFlow, somehow faster if 'false' (as Eldar found out, see https://github.com/tensorflow/tensorflow/issues/13317). Default: False
 
     displayiters: this variable is actually set in pose_config.yaml. However, you can overwrite it with this hack. Don't use this regularly, just if you are too lazy to dig out
-    the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
+        the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
 
     saveiters: this variable is actually set in pose_config.yaml. However, you can overwrite it with this hack. Don't use this regularly, just if you are too lazy to dig out
-    the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
+        the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
 
     maxiters: this variable is actually set in pose_config.yaml. However, you can overwrite it with this hack. Don't use this regularly, just if you are too lazy to dig out
-    the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
+        the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
+
+    keepdeconvweights: bool, default: true
+        Also restores the weights of the deconvolution layers (and the backbone) when training from a snapshot. Note that if you change the number of bodyparts, you need to
+        set this to false for re-training.
 
     Example
     --------
@@ -92,7 +124,7 @@ def train_network(config,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshot
 
 
       try:
-          train(str(poseconfigfile),displayiters,saveiters,maxiters,max_to_keep=max_snapshots_to_keep) #pass on path and file name for pose_cfg.yaml!
+          train(str(poseconfigfile),displayiters,saveiters,maxiters,max_to_keep=max_snapshots_to_keep,keepdeconvweights=keepdeconvweights) #pass on path and file name for pose_cfg.yaml!
       except BaseException as e:
           raise e
       finally:

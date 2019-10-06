@@ -10,7 +10,7 @@ This script tests various functionalities in an automatic way.
 Note that the same ResNet 152 is trained 4 times (twice with the standard loader).
 The sequence of losses is different....
 
-Then twice with the 'deterministic' loader. The losses are identical when this is done twice. 
+Then twice with the 'deterministic' loader. The losses are identical when this is done twice.
 
 I.e. I get twice: ;)
 iteration: 1 loss: 1.6505 lr: 0.001
@@ -28,7 +28,7 @@ iteration: 10 loss: 0.1220 lr: 0.001
 It produces nothing of interest scientifically.
 """
 
-task='TEST_deterministic' # Enter the name of your experiment Task
+task='TEST-deterministic' # Enter the name of your experiment Task
 scorer='Alex' # Enter the name of the experimenter/labeler
 
 
@@ -53,7 +53,7 @@ cfg=deeplabcut.auxiliaryfunctions.read_config(path_config_file)
 cfg['numframes2pick']=5
 cfg['pcutoff']=0.01
 cfg['TrainingFraction']=[.8]
-cfg['resnet']=152
+cfg['default_net_type']='resnet_152'
 
 deeplabcut.auxiliaryfunctions.write_config(path_config_file,cfg)
 

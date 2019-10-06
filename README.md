@@ -10,16 +10,15 @@
 [![Gitter](https://badges.gitter.im/DeepLabCut/community.svg)](https://gitter.im/DeepLabCut/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Twitter Follow](https://img.shields.io/twitter/follow/DeepLabCut.svg?label=DeepLabCut&style=social)](https://twitter.com/DeepLabCut)
 
-<p align="center">
-<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c489e83aa4a992e80059d8c/1548263081887/DLCheader.png?format=1000w" width="100%">
+<p align="left">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1569784311526-IM06CY9O4JFX5ZYHALM7/ke17ZwdGBToddI8pDm48kAMBde6ecjGv6dm0LEqXwpsUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKci9dmvkVRnPXVkP72RxXkS1QtgM7s1chBISH4vuimidCf4Tew2tj6nYy6ifuXtFSI/LOGO-01.png?format=750w" width="75%">
 </p>
 
-DeepLabCut is a toolbox for markerless pose estimation of animals performing various tasks. Originally, we demonstrated the capabilities for [trail tracking](https://vnmurthylab.org/), [reaching in mice](http://www.mousemotorlab.org/) and various Drosophila behaviors during egg-laying (see [Mathis et al.](https://www.nature.com/articles/s41593-018-0209-y) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks and/or species. The toolbox has also already been successfully applied (by us and others) to [rats](http://www.mousemotorlab.org/deeplabcut), humans, various fish species, bacteria, leeches, various robots, cheetahs, [mouse whiskers](http://www.mousemotorlab.org/deeplabcut) and [race horses](http://www.mousemotorlab.org/deeplabcut). This work utilizes the feature detectors (ResNets + readout layers) of one of the state-of-the-art algorithms for human pose estimation by Insafutdinov et al., called DeeperCut, which inspired the name for our toolbox (see references below).
+DeepLabCut is a toolbox for markerless pose estimation of animals performing various tasks. In 2018, we demonstrated the capabilities for [trail tracking](https://vnmurthylab.org/), [reaching in mice](http://www.mousemotorlab.org/) and various Drosophila behaviors during egg-laying (see [Mathis et al.](https://www.nature.com/articles/s41593-018-0209-y) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks and/or species. The toolbox has already been successfully applied (by us and others) to [rats](http://www.mousemotorlab.org/deeplabcut), humans, various fish species, bacteria, leeches, various robots, cheetahs, [mouse whiskers](http://www.mousemotorlab.org/deeplabcut) and [race horses](http://www.mousemotorlab.org/deeplabcut). DeepLabCut utilizes the feature detectors (ResNets + readout layers) of one of the state-of-the-art algorithms for human pose estimation by Insafutdinov et al., called DeeperCut, which inspired the name for our toolbox (see references below). Furthermore, we have added faster variants with MobileNetV2 backbones (see [Pretraining boosts out-of-domain robustness for pose estimation](https://arxiv.org/abs/1909.11229)). Additionally, we have improved the inference speed and provided additional augmentation methods (via tensorpack and imgaug).
 
-VERSION 2.0: This is the **Python package** of [DeepLabCut](https://www.nature.com/articles/s41593-018-0209-y) that is released with our [Nature Protocols](https://doi.org/10.1038/s41596-019-0176-0) paper (preprint [here](https://www.biorxiv.org/content/10.1101/476531v1)).
-This package includes graphical user interfaces to label your data, and take you from data set creation to automatic behavioral analysis. It also introduces an active learning framework to efficiently use DeepLabCut on large experimental projects, and new data augmentation that improves network performance, especially in challenging cases (see [panel b](https://camo.githubusercontent.com/77c92f6b89d44ca758d815bdd7e801247437060b/68747470733a2f2f737461746963312e73717561726573706163652e636f6d2f7374617469632f3537663664353163396637343536366635356563663237312f742f3563336663316336373538643436393530636537656563372f313534373638323338333539352f636865657461682e706e673f666f726d61743d37353077)).
-
-VERSION 1.0: The initial, Nature Neuroscience version of [DeepLabCut](https://www.nature.com/articles/s41593-018-0209-y) can be found in the history of git, or here: https://github.com/AlexEMG/DeepLabCut/releases/tag/1.11
+<p align="center">
+    <a href="https://www.mousemotorlab.org/deeplabcut/">www.deeplabcut.org</a>
+</p>
 
 <p align="center">
 <img src="http://www.people.fas.harvard.edu/~amathis/dlc/MATHIS_2018_odortrail.gif" height="220">
@@ -27,15 +26,17 @@ VERSION 1.0: The initial, Nature Neuroscience version of [DeepLabCut](https://ww
 <img src="http://www.people.fas.harvard.edu/~amathis/dlc/MATHIS_2018_fly.gif" height="220">
 </p>
 
-Please check out [www.deeplabcut.org](https://www.mousemotorlab.org/deeplabcut/) for more video demonstrations of automated tracking. Above: courtesy of the Murthy (mouse), Leventhal (rat), and Axel (fly) labs!
+VERSION 2.x+: This is the **Python package** of [DeepLabCut](https://www.nature.com/articles/s41593-018-0209-y) that was originally released with our [Nature Protocols](https://doi.org/10.1038/s41596-019-0176-0) paper (preprint [here](https://www.biorxiv.org/content/10.1101/476531v1)).
+This package includes graphical user interfaces to label your data, and take you from data set creation to automatic behavioral analysis. It also introduces an active learning framework to efficiently use DeepLabCut on large experimental projects, and data augmentation tools that improve network performance, especially in challenging cases (see [panel b](https://camo.githubusercontent.com/77c92f6b89d44ca758d815bdd7e801247437060b/68747470733a2f2f737461746963312e73717561726573706163652e636f6d2f7374617469632f3537663664353163396637343536366635356563663237312f742f3563336663316336373538643436393530636537656563372f313534373638323338333539352f636865657461682e706e673f666f726d61743d37353077)).
 
+VERSION 1.0: The initial, Nature Neuroscience version of [DeepLabCut](https://www.nature.com/articles/s41593-018-0209-y) can be found in the history of git, or here: https://github.com/AlexEMG/DeepLabCut/releases/tag/1.11
 
-# [Installation](docs/installation.md) 
+# [Installation](docs/installation.md)
 
 How to [install DeeplabCut](docs/installation.md)
 # [The DeepLabCut Process](docs/UseOverviewGuide.md)
 
-An overview of the pipeline and workflow for project management. Please also read the [Nature Protocols user-guide](https://doi.org/10.1038/s41596-019-0176-0)!
+An overview of the pipeline and workflow for project management. Please read the [Nature Protocols user-guide](https://doi.org/10.1038/s41596-019-0176-0)!
 
 <p align="center">
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5cca1d519b747a750d680de5/1556749676166/dlc_overview-01.png?format=1000w" width="95%">
@@ -43,7 +44,7 @@ An overview of the pipeline and workflow for project management. Please also rea
 
 # [DEMO the code](/examples)
 
-We provide several Jupyter Notebooks: one that walks you through a demo dataset to test your installation, and another Notebook to run DeepLabCut from the begining on your own data. We also show you how to use the code in Docker, and on Google Colab. Please also read the Nature Protocols [paper](https://doi.org/10.1038/s41596-019-0176-0).
+We provide several Jupyter Notebooks: one that walks you through a demo dataset to test your installation, and another Notebook to run DeepLabCut from the beginning on your own data. We also show you how to use the code in Docker, and on Google Colab. Please also read the Nature Protocols [paper](https://doi.org/10.1038/s41596-019-0176-0).
 
 # Why use DeepLabCut?
 
@@ -67,7 +68,7 @@ We provide several Jupyter Notebooks: one that walks you through a demo dataset 
 
 ## Code contributors:
 
-[Alexander Mathis](https://github.com/AlexEMG), [Tanmay Nath](http://www.mousemotorlab.org/team), [Mackenzie Mathis](https://github.com/MMathisLab). The feature detector code is based on Eldar Insafutdinov's TensorFlow implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow). DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals including Richard Warren, Ronny Eichler, Jonas Rauber, Hao Wu, Federico Claudi, Gary Kane, Taiga Abe, and Jonny Saunders as well as the [contributors](https://github.com/AlexEMG/DeepLabCut/graphs/contributors). In particular, the authors thank Ronny Eichler for input on the modularized version. 
+DLC was originally developed by [Alexander Mathis](https://github.com/AlexEMG) & [Mackenzie Mathis](https://github.com/MMathisLab), and extended in 2.0 with [Tanmay Nath](http://www.mousemotorlab.org/team). The feature detector code is based on Eldar Insafutdinov's TensorFlow implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow). DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals including  Mert Yuksekgonul, Tom Biasi, Richard Warren, Jonas Rauber, Hao Wu, Federico Claudi, Gary Kane, Taiga Abe, and Jonny Saunders as well as the [contributors](https://github.com/AlexEMG/DeepLabCut/graphs/contributors). In particular, the authors thank Ronny Eichler for input on the modularized version. Please see [AUTHORS](https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS) for more details!
 
 This is an actively developed package and we welcome community development and involvement.
 
@@ -75,7 +76,7 @@ This is an actively developed package and we welcome community development and i
 
 - If you encounter a previously unreported bug/code issue, please post here (we encourage you to search issues first): https://github.com/AlexEMG/DeepLabCut/issues
 
-- For community sourced help and questions, we ask you to post them here: [![Image.sc forum](https://img.shields.io/badge/dynamic/json.svg?label=forum&amp;url=https%3A%2F%2Fforum.image.sc%2Ftags%2Fdeeplabcut.json&amp;query=%24.topic_list.tags.0.topic_count&amp;colorB=brightgreen&amp;&amp;suffix=%20topics&amp;logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC)](https://forum.image.sc/tags/deeplabcut) 
+- For community sourced help and questions, we ask you to post them here: [![Image.sc forum](https://img.shields.io/badge/dynamic/json.svg?label=forum&amp;url=https%3A%2F%2Fforum.image.sc%2Ftags%2Fdeeplabcut.json&amp;query=%24.topic_list.tags.0.topic_count&amp;colorB=brightgreen&amp;&amp;suffix=%20topics&amp;logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC)](https://forum.image.sc/tags/deeplabcut)
 
 - For quick discussions here: [![Gitter](https://badges.gitter.im/DeepLabCut/community.svg)](https://gitter.im/DeepLabCut/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
@@ -83,7 +84,7 @@ This is an actively developed package and we welcome community development and i
 
 ## References:
 
-If you use this code or data please [cite Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y) and if you use the Python package (DeepLabCut2.0) please also cite [Nath, Mathis et al, 2019](https://doi.org/10.1038/s41596-019-0176-0).
+If you use this code or data please [cite Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y) and, if you use, the Python package (DeepLabCut2.x) please also cite [Nath, Mathis et al, 2019](https://doi.org/10.1038/s41596-019-0176-0). If you utilize the MobileNets please cite [Mathis et al. 2019](https://arxiv.org/abs/1909.11229).
 
 Please check out the following references for more details:
 
@@ -94,7 +95,7 @@ Please check out the following references for more details:
         year={2018},
         url={https://www.nature.com/articles/s41593-018-0209-y}
     }
-    
+
      @article{NathMathisetal2019,
         title={Using DeepLabCut for 3D markerless pose estimation across species and behaviors},
         author = {Nath*, Tanmay and Mathis*, Alexander and Chen, An Chi and Patel, Amir and Bethge, Matthias and Mathis, Mackenzie W},
@@ -109,8 +110,17 @@ Please check out the following references for more details:
         booktitle = {ECCV'16},
         url = {http://arxiv.org/abs/1605.03170}
     }
-    
+
 Our open-access pre-prints:
+
+    @misc{Mathis2019_pretraining,
+        title={Pretraining boosts out-of-domain robustness for pose estimation},
+        author={Alexander Mathis and Mert Y\"uksekg\"on\"ul and Byron Rogers and Matthias Bethge and Mackenzie W. Mathis},
+        year={2019},
+        eprint={1909.11229},
+        archivePrefix={arXiv},
+        primaryClass={cs.CV}
+        }
 
     @article {NathMathis2018,
         author = {Nath*, Tanmay and Mathis*, Alexander and Chen, An Chi and Patel, Amir and Bethge, Matthias and Mathis, Mackenzie W},
@@ -121,16 +131,16 @@ Our open-access pre-prints:
         URL = {https://www.biorxiv.org/content/early/2018/11/24/476531},
         eprint = {https://www.biorxiv.org/content/early/2018/11/24/476531.full.pdf},
         journal = {bioRxiv}
-    }
+        }
 
     @article{mathis2018markerless,
         title={Markerless tracking of user-defined features with deep learning},
         author={Mathis, Alexander and Mamidanna, Pranav and Abe, Taiga and Cury, Kevin M and Murthy, Venkatesh N and Mathis, Mackenzie W and Bethge, Matthias},
         journal={arXiv preprint arXiv:1804.03142},
         year={2018}
-    }
+        }
 
-    @article {MathisWarren2018speed,
+    @article{MathisWarren2018speed,
         author = {Mathis, Alexander and Warren, Richard A.},
         title = {On the inference speed and video-compression robustness of DeepLabCut},
         year = {2018},
@@ -139,14 +149,16 @@ Our open-access pre-prints:
         URL = {https://www.biorxiv.org/content/early/2018/10/30/457242},
         eprint = {https://www.biorxiv.org/content/early/2018/10/30/457242.full.pdf},
         journal = {bioRxiv}
-    }
+        }
 
 ## License:
 
-This project is licensed under the GNU Lesser General Public License v3.0. Note that the software is provided "as is", without warranty of any kind, express or implied. If you use this code or data, please [cite us!](https://www.nature.com/articles/s41593-018-0209-y).
+This project is licensed under the GNU Lesser General Public License v3.0. Note that the software is provided "as is", without warranty of any kind, express or implied. If you use the code or data, please [cite us!](https://www.nature.com/articles/s41593-018-0209-y).
 
 # News (and in the news):
 
+- Oct 2019: DLC 2.1. released with lots of updates. In particular, a Project Manager GUI, MobileNetsV2, and augmentation packages (Imgaug and Tensorpack). For detailed updates see [releases](https://github.com/AlexEMG/DeepLabCut/releases)
+- Sept 2019: We published two preprints. One showing that [ImageNet pretraining contributes to robustness](https://arxiv.org/abs/1909.11229) and a [review on animal pose estimation](https://arxiv.org/abs/1909.13868). Check them out!
 - Jun 2019: DLC 2.0.7 released with lots of updates. For updates see [releases](https://github.com/AlexEMG/DeepLabCut/releases)
 - Feb 2019: DeepLabCut joined [twitter](https://twitter.com/deeplabcut) [![Twitter Follow](https://img.shields.io/twitter/follow/DeepLabCut.svg?label=DeepLabCut&style=social)](https://twitter.com/DeepLabCut)
 - Jan 2019: We hosted workshops for DLC in Warsaw, Munich and Cambridge. The materials are available [here](https://github.com/AlexEMG/DeepLabCut-Workshop-Materials)

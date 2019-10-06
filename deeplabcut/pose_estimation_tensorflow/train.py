@@ -84,14 +84,14 @@ def get_optimizer(loss_op, cfg):
     if cfg.optimizer == "sgd":
         optimizer = TF.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9)
     elif cfg.optimizer == "adam":
-        optimizer = TF.train.AdamOptimizer(cfg.adam_lr)
+        optimizer = TF.train.AdamOptimizer(learning_rate)
     else:
         raise ValueError('unknown optimizer {}'.format(cfg.optimizer))
     train_op = slim.learning.create_train_op(loss_op, optimizer)
 
     return learning_rate, train_op
 
-def train(config_yaml,displayiters,saveiters,maxiters,max_to_keep=5):
+def train(config_yaml,displayiters,saveiters,maxiters,max_to_keep=5,keepdeconvweights=True):
     start_path=os.getcwd()
     os.chdir(str(Path(config_yaml).parents[0])) #switch to folder of config_yaml (for logging)
     setup_logging()
@@ -109,7 +109,19 @@ def train(config_yaml,displayiters,saveiters,maxiters,max_to_keep=5):
         TF.summary.scalar(k, t)
     merged_summaries = TF.summary.merge_all()
 
-    variables_to_restore = slim.get_variables_to_restore(include=["resnet_v1"])
+    if 'snapshot' in Path(cfg.init_weights).stem and keepdeconvweights:
+        print("Loading already trained DLC with backbone:", cfg.net_type)
+        variables_to_restore = slim.get_variables_to_restore()
+    else:
+        print("Loading ImageNet-pretrained", cfg.net_type)
+        #loading backbone from ResNet, MobileNet etc.
+        if 'resnet' in cfg.net_type:
+            variables_to_restore = slim.get_variables_to_restore(include=["resnet_v1"])
+        elif 'mobilenet' in cfg.net_type:
+            variables_to_restore = slim.get_variables_to_restore(include=["MobilenetV2"])
+        else:
+            print("Wait for DLC 2.3.")
+
     restorer = TF.train.Saver(variables_to_restore)
     saver = TF.train.Saver(max_to_keep=max_to_keep) # selects how many snapshots are stored, see https://github.com/AlexEMG/DeepLabCut/issues/8#issuecomment-387404835
 

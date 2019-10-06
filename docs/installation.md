@@ -19,16 +19,16 @@ Please click here: https://github.com/AlexEMG/DeepLabCut/blob/master/conda-envir
 ## The most common "new user" hurdle is installing and using your GPU:
 - Here we provide notes on how to install and check your GPU use with TensorFlow (which is used by DeepLabCut and already installed with the Anaconda files above). Thus, you do not need to independently install tensorflow.
 
-In the Nature Neuroscience paper, we used **TensorFlow 1.0 with CUDA (Cuda 8.0)**; in the Nature Protocols paper, we tested up through **TensorFlow 1.14 with CUDA 10**. Some other versions of TensorFlow have been tested (i.e. these versions have been tested 1.2, 1.4, 1.8 and 1.10-1.14, but might require different CUDA versions)! Please check your driver/cuDNN/CUDA/TensorFlow versions [on this StackOverflow post](https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-304-125/30820690#30820690).
+In the Nature Neuroscience paper, we used **TensorFlow 1.0 with CUDA (Cuda 8.0)**; in the Nature Protocols paper, we tested up through **TensorFlow 1.14 with CUDA 10**. Some other versions of TensorFlow have been tested (i.e. these versions have been tested 1.2, 1.4, 1.8 and 1.10-1.14, but might require different CUDA versions)! Currently, TensorFlow 2.0 is not supported. Please check your driver/cuDNN/CUDA/TensorFlow versions [on this StackOverflow post](https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-304-125/30820690#30820690).
 
-Here is an example on how to install **the GPU driver + CUDA + optional TensorFlow 1.12** will follow here:
+Here is an example on how to install **the GPU driver + CUDA 9 + optional TensorFlow 1.12** will follow here:
 
 **FIRST**, install a driver for your GPU (we recommend the 384.xx) Find DRIVER HERE: https://www.nvidia.com/download/index.aspx
 - check which driver is installed by typing this into the terminal: ``nvidia-smi``
 
 **SECOND**, install CUDA (9.0 here): https://developer.nvidia.com/cuda-90-download-archive (Note that cuDNN, https://developer.nvidia.com/cudnn, is supplied inside the anaconda environment files, so you don't need to install it again).
 
-**THIRD:** Launch the provided Anaconda Environment File (see [here!](https://github.com/AlexEMG/DeepLabCut/tree/master/conda-environments)) or [OPTIONAL] install TensorFlow independendtly:
+**THIRD:** Launch the provided Anaconda Environment File (see [here!](https://github.com/AlexEMG/DeepLabCut/tree/master/conda-environments)) or [OPTIONAL] install TensorFlow independently:
 
 Package for pip install:
 
@@ -91,16 +91,16 @@ If you perform the system-wide installation, and the computer has other Python p
 
 - Computer:
 
-     - For reference, we use e.g. Dell workstations (79xx series) with **Ubuntu 16.04 LTS** or 18.04 LTS and run a Docker container that has TensorFlow, etc. installed (https://github.com/MMathisLab/Docker4DeepLabCut2.0).
+     - For reference, we use e.g. Dell workstations (79xx series) with **Ubuntu 16.04 LTS or 18.04 LTS** and run a Docker container that has TensorFlow, etc. installed (https://github.com/MMathisLab/Docker4DeepLabCut2.0).
 
 - Computer Hardware:
-     - Ideally, you will use a strong GPU with at least 8GB memory such as the [NVIDIA GeForce 1080 Ti or 2080 Ti](https://www.nvidia.com/en-us/shop/geforce/?page=1&limit=9&locale=en-us).  A GPU is not necessary, but on a CPU the (training and evaluation) code is considerably slower (10x). You might also consider using cloud computing services like [Google cloud/amazon web services](https://github.com/AlexEMG/DeepLabCut/issues/47) or Google Colaboratory.
+     - Ideally, you will use a strong GPU with at least 8GB memory such as the [NVIDIA GeForce 1080 Ti or 2080 Ti](https://www.nvidia.com/en-us/shop/geforce/?page=1&limit=9&locale=en-us).  A GPU is not necessary, but on a CPU the (training and evaluation) code is considerably slower (10x) for ResNets, but MobileNets are faster (see WIKI). You might also consider using cloud computing services like [Google cloud/amazon web services](https://github.com/AlexEMG/DeepLabCut/issues/47) or Google Colaboratory.
 
 - Camera Hardware:
      - The software is very robust to track data from any camera (cell phone cameras, grayscale, color; captured under infrared light, different manufacturers, etc.). See demos on our [website](https://www.mousemotorlab.org/deeplabcut/).
 
 - Software:
-     - Operating System: Linux (Ubuntu), MacOS* (Mojave), or Windows 10. However, the authors strongly recommend Ubuntu! *MacOS does not support NVIDIA GPUs (easily), so we only suggest this option for CPU use or a case where the user wants to label data, refine data, etc and then push the project to a cloud resource for GPU computing steps.
+     - Operating System: Linux (Ubuntu), MacOS* (Mojave), or Windows 10. However, the authors strongly recommend Ubuntu! *MacOS does not support NVIDIA GPUs (easily), so we only suggest this option for CPU use or a case where the user wants to label data, refine data, etc and then push the project to a cloud resource for GPU computing steps, or use MobileNets.
      - Anaconda/Python3: Anaconda: a free and open source distribution of the Python programming language (download from https://www.anaconda.com/). DeepLabCut is written in Python 3 (https://www.python.org/) and not compatible with Python 2.
      - pip install deeplabcut (see below!)
      - TensorFlow (see below!)

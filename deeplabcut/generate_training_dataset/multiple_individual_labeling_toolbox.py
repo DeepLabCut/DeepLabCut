@@ -108,6 +108,7 @@ class ScrollPanel(SP.ScrolledPanel):
         SP.ScrolledPanel.__init__(self, parent, -1,style=wx.SUNKEN_BORDER)
         self.SetupScrolling(scroll_x=True, scroll_y=True, scrollToTop=False)
         self.Layout()
+        
     def on_focus(self,event):
         pass
 
@@ -117,11 +118,11 @@ class ScrollPanel(SP.ScrolledPanel):
         """
         self.choiceBox = wx.BoxSizer(wx.VERTICAL)
         choices = [l for l in bodyparts]
-        self.fieldradiobox = wx.RadioBox(self,label='Select a bodypart to label',style=wx.RA_SPECIFY_ROWS,choices=choices)
+        self.fieldradiobox = wx.RadioBox(self,label='Select a bodypart to label',majorDimension=3,style=wx.RA_SPECIFY_COLS,choices=choices)
         self.change_marker = wx.Slider(self, -1, markersize, 1, markersize*3,size=(250, -1), style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS )
         self.change_marker.Enable(False)
         names = [k for k in individual_names]
-        self.individualradiobox = wx.RadioBox(self,label='Select an individual',majorDimension=2, style=wx.RA_SPECIFY_COLS, choices=names)
+        self.individualradiobox = wx.RadioBox(self,label='Select an individual',majorDimension=3, style=wx.RA_SPECIFY_COLS, choices=names)
         
         self.checkBox = wx.CheckBox(self, id=wx.ID_ANY,label = 'Adjust marker size')
         self.choiceBox.Add(self.change_marker, 0, wx.ALL, 5 )
@@ -251,6 +252,7 @@ class MainFrame(wx.Frame):
         self.bodyparts2plot = []
         self.drs = []
         self.num = []
+        self.are_unique_bodyparts_present = True
         self.view_locked=False
         # Workaround for MAC - xlim and ylim changed events seem to be triggered too often so need to make sure that the
         # xlim and ylim have actually changed before turning zoom off
@@ -457,6 +459,8 @@ class MainFrame(wx.Frame):
         self.scorer = self.cfg['scorer']
         self.multibodyparts = self.cfg['multianimalbodyparts']
         self.uniquebodyparts = self.cfg['uniquebodyparts']
+#        if self.uniquebodyparts == "":
+#            self.uniquebodyparts = self.multibodyparts
         self.videos = self.cfg['video_sets'].keys()
         self.markerSize = self.cfg['dotsize']
         self.alpha = self.cfg['alphavalue']
@@ -464,6 +468,9 @@ class MainFrame(wx.Frame):
         self.colormap = self.colormap.reversed()
         self.project_path=self.cfg['project_path']
         self.individual_names = self.cfg['individuals']
+        if self.uniquebodyparts[0] == None:
+            self.individual_names.remove('single')
+            self.are_unique_bodyparts_present = False
         self.buttonCounter = {i : [] for i in self.individual_names}
         self.index =np.sort([fn for fn in glob.glob(os.path.join(self.dir,'*.png')) if ('labeled.png' not in fn)])
         self.statusbar.SetStatusText('Working on folder: {}'.format(os.path.split(str(self.dir))[-1]))
@@ -515,26 +522,19 @@ class MainFrame(wx.Frame):
         _, idx = np.unique(oldMultiBodyParts, return_index=True)
         oldMultiBodyparts2plot =  list(oldMultiBodyParts[np.sort(idx)])
         # Extracting the list of old unique labels
-        oldUniqueBodyParts = self.dataFrame.iloc[:, self.dataFrame.columns.get_level_values(1)=='single'].columns.get_level_values(2)
-        _, idx_unique = np.unique(oldUniqueBodyParts, return_index=True)
-        oldUniqueBodyparts2plot =  list(oldUniqueBodyParts[np.sort(idx_unique)])
+        if self.are_unique_bodyparts_present:
+            oldUniqueBodyParts = self.dataFrame.iloc[:, self.dataFrame.columns.get_level_values(1)=='single'].columns.get_level_values(2)
+            _, idx_unique = np.unique(oldUniqueBodyParts, return_index=True)
+            oldUniqueBodyparts2plot =  list(oldUniqueBodyParts[np.sort(idx_unique)])
+            self.new_UniqueBodyparts =  [x for x in self.uniquebodyparts if x not in oldUniqueBodyparts2plot ]
+        else:
+            self.new_UniqueBodyparts = []
         # Checking if new labels are added or not
         self.new_Multibodyparts =  [x for x in self.multibodyparts if x not in oldMultiBodyparts2plot ]
-        self.new_UniqueBodyparts =  [x for x in self.uniquebodyparts if x not in oldUniqueBodyparts2plot ]
-
+        
         # Checking if user added a new label
         if self.new_Multibodyparts==[] and self.new_UniqueBodyparts==[]: # i.e. no new labels
             self.figure,self.axes,self.canvas,self.toolbar,self.image_axis = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.multibodyparts,self.colormap,keep_view=self.view_locked)
-            self.axes.callbacks.connect('xlim_changed', self.onZoom)
-            self.axes.callbacks.connect('ylim_changed', self.onZoom)
-            self.image_panel.addcolorbar(self.img,self.image_axis,self.iter,self.multibodyparts,self.colormap)
-            self.choiceBox,self.individualrdb,self.rdb,self.change_marker_size,self.checkBox = self.choice_panel.addRadioButtons(self.multibodyparts,self.individual_names,self.file,self.markerSize)
-            self.individualrdb.Bind(wx.EVT_RADIOBOX,self.select_individual)
-            if self.rdb.GetStringSelection=="single":
-                self.norm,self.colorIndex = self.image_panel.getColorIndices(self.img,self.uniquebodyparts)
-            else:
-                self.norm,self.colorIndex = self.image_panel.getColorIndices(self.img,self.multibodyparts)
-            self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
         else:
             # Found new labels in either multiple bodyparts or unique bodyparts
             dlg = wx.MessageDialog(None,"New label found in the config file. Do you want to see all the other labels?", "New label found",wx.YES_NO | wx.ICON_WARNING)
@@ -547,34 +547,96 @@ class MainFrame(wx.Frame):
             
             self.dataFrame = MainFrame.create_dataframe(self,self.dataFrame,self.relativeimagenames,self.individual_names,self.new_UniqueBodyparts,self.new_Multibodyparts)
             self.figure,self.axes,self.canvas,self.toolbar,self.image_axis = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.multibodyparts,self.colormap,keep_view=self.view_locked)
-            self.axes.callbacks.connect('xlim_changed', self.onZoom)
-            self.axes.callbacks.connect('ylim_changed', self.onZoom)
-            self.image_panel.addcolorbar(self.img,self.image_axis,self.iter,self.multibodyparts,self.colormap)
+        
+        self.axes.callbacks.connect('xlim_changed', self.onZoom)
+        self.axes.callbacks.connect('ylim_changed', self.onZoom)
+        
+        if self.individual_names[0] == 'single':
+            self.choiceBox,self.individualrdb,self.rdb,self.change_marker_size,self.checkBox = self.choice_panel.addRadioButtons(self.uniquebodyparts,self.individual_names,self.file,self.markerSize)
+            self.image_panel.addcolorbar(self.img,self.image_axis,self.iter,self.uniquebodyparts,self.colormap)
+        else:
             self.choiceBox,self.individualrdb,self.rdb,self.change_marker_size,self.checkBox = self.choice_panel.addRadioButtons(self.multibodyparts,self.individual_names,self.file,self.markerSize)
-            self.individualrdb.Bind(wx.EVT_RADIOBOX,self.select_individual)
-            if self.rdb.GetStringSelection=="single":
-                self.norm,self.colorIndex = self.image_panel.getColorIndices(self.img,self.uniquebodyparts)
-            else:
-                self.norm,self.colorIndex = self.image_panel.getColorIndices(self.img,self.multibodyparts)
-            self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
-            
+            self.image_panel.addcolorbar(self.img,self.image_axis,self.iter,self.multibodyparts,self.colormap)
+        self.individualrdb.Bind(wx.EVT_RADIOBOX,self.select_individual)
+        # check if single is slected when radio buttons are changed
+        if self.rdb.GetStringSelection=="single":
+            self.norm,self.colorIndex = self.image_panel.getColorIndices(self.img,self.uniquebodyparts)
+        else:
+            self.norm,self.colorIndex = self.image_panel.getColorIndices(self.img,self.multibodyparts)
+        self.buttonCounter = MainFrame.plot(self,self.img)
+        self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
+        self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
+
+        # Checking if user added a new label
+#        if self.new_Multibodyparts==[] and self.new_UniqueBodyparts==[]: # i.e. no new labels
+#            self.figure,self.axes,self.canvas,self.toolbar,self.image_axis = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.multibodyparts,self.colormap,keep_view=self.view_locked)
+#            self.axes.callbacks.connect('xlim_changed', self.onZoom)
+#            self.axes.callbacks.connect('ylim_changed', self.onZoom)
+#            self.image_panel.addcolorbar(self.img,self.image_axis,self.iter,self.multibodyparts,self.colormap)
+#            # Only show the bodyparts corresponding to single
+#            if self.individual_names[0] == 'single':
+#                self.choiceBox,self.individualrdb,self.rdb,self.change_marker_size,self.checkBox = self.choice_panel.addRadioButtons(self.uniquebodyparts,self.individual_names,self.file,self.markerSize)
+#            else:
+#                self.choiceBox,self.individualrdb,self.rdb,self.change_marker_size,self.checkBox = self.choice_panel.addRadioButtons(self.multibodyparts,self.individual_names,self.file,self.markerSize)
+#
+#            self.individualrdb.Bind(wx.EVT_RADIOBOX,self.select_individual)
+#            
+#            # Get the color index, depending on if single is selcted or not.
+#            if self.rdb.GetStringSelection=="single":
+#                self.norm,self.colorIndex = self.image_panel.getColorIndices(self.img,self.uniquebodyparts)
+#            else:
+#                self.norm,self.colorIndex = self.image_panel.getColorIndices(self.img,self.multibodyparts)
+#            self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
+#        else:
+#            # Found new labels in either multiple bodyparts or unique bodyparts
+#            dlg = wx.MessageDialog(None,"New label found in the config file. Do you want to see all the other labels?", "New label found",wx.YES_NO | wx.ICON_WARNING)
+#            result = dlg.ShowModal()
+#            if result == wx.ID_NO:
+#                if self.new_Multibodyparts!=[]:
+#                    self.multibodyparts = self.new_Multibodyparts
+#                if self.new_UniqueBodyparts!=[]:
+#                    self.uniquebodyparts = self.new_UniqueBodyparts
+#            
+#            self.dataFrame = MainFrame.create_dataframe(self,self.dataFrame,self.relativeimagenames,self.individual_names,self.new_UniqueBodyparts,self.new_Multibodyparts)
+#            self.figure,self.axes,self.canvas,self.toolbar,self.image_axis = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.multibodyparts,self.colormap,keep_view=self.view_locked)
+#            self.axes.callbacks.connect('xlim_changed', self.onZoom)
+#            self.axes.callbacks.connect('ylim_changed', self.onZoom)
+#            self.image_panel.addcolorbar(self.img,self.image_axis,self.iter,self.multibodyparts,self.colormap)
+#            
+#            if self.individual_names[0] == 'single':
+#                self.choiceBox,self.individualrdb,self.rdb,self.change_marker_size,self.checkBox = self.choice_panel.addRadioButtons(self.uniquebodyparts,self.individual_names,self.file,self.markerSize)
+#            else:
+#                self.choiceBox,self.individualrdb,self.rdb,self.change_marker_size,self.checkBox = self.choice_panel.addRadioButtons(self.multibodyparts,self.individual_names,self.file,self.markerSize)
+#            self.individualrdb.Bind(wx.EVT_RADIOBOX,self.select_individual)
+#            if self.rdb.GetStringSelection=="single":
+#                self.norm,self.colorIndex = self.image_panel.getColorIndices(self.img,self.uniquebodyparts)
+#            else:
+#                self.norm,self.colorIndex = self.image_panel.getColorIndices(self.img,self.multibodyparts)
+#            self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
+        
         self.checkBox.Bind(wx.EVT_CHECKBOX,self.activateSlider)
         self.change_marker_size.Bind(wx.EVT_SLIDER,self.OnSliderScroll)
 
     def create_dataframe(self,dataFrame,relativeimagenames,individual_names,uniquebodyparts,multibodyparts):
         a = np.empty((len(relativeimagenames),2,))
         a[:] = np.nan
-        for prfxindex,prefix in enumerate(individual_names ):
-            if prefix=='single':
-                for c, bp in enumerate(uniquebodyparts):
-                    index = pd.MultiIndex.from_product([[self.scorer],[prefix], [bp], ['x', 'y']],names=['scorer','individuals', 'bodyparts', 'coords'])
-                    frame = pd.DataFrame(a, columns = index, index = relativeimagenames)
-                    dataFrame = pd.concat([dataFrame, frame],axis=1)
+        for prfxindex,prefix in enumerate(individual_names):
+            if uniquebodyparts !=None:
+                if prefix=='single':
+                    for c, bp in enumerate(uniquebodyparts):
+                        index = pd.MultiIndex.from_product([[self.scorer],[prefix], [bp], ['x', 'y']],names=['scorer','individuals', 'bodyparts', 'coords'])
+                        frame = pd.DataFrame(a, columns = index, index = relativeimagenames)
+                        dataFrame = pd.concat([dataFrame, frame],axis=1)
+                else:
+                    for c, bp in enumerate(multibodyparts):
+                        index = pd.MultiIndex.from_product([[self.scorer],[prefix], [bp], ['x', 'y']],names=['scorer','individuals', 'bodyparts', 'coords'])
+                        frame = pd.DataFrame(a, columns = index, index = relativeimagenames)
+                        dataFrame = pd.concat([dataFrame, frame],axis=1)
             else:
                 for c, bp in enumerate(multibodyparts):
-                    index = pd.MultiIndex.from_product([[self.scorer],[prefix], [bp], ['x', 'y']],names=['scorer','individuals', 'bodyparts', 'coords'])
-                    frame = pd.DataFrame(a, columns = index, index = relativeimagenames)
-                    dataFrame = pd.concat([dataFrame, frame],axis=1)
+                        index = pd.MultiIndex.from_product([[self.scorer],[prefix], [bp], ['x', 'y']],names=['scorer','individuals', 'bodyparts', 'coords'])
+                        frame = pd.DataFrame(a, columns = index, index = relativeimagenames)
+                        dataFrame = pd.concat([dataFrame, frame],axis=1)
         dataFrame.sort_index(inplace=True)
         return(dataFrame)
     
@@ -609,7 +671,6 @@ class MainFrame(wx.Frame):
             self.checkBox.Bind(wx.EVT_CHECKBOX,self.activateSlider)
             self.change_marker_size.Bind(wx.EVT_SLIDER,self.OnSliderScroll)
 
-    
     def nextImage(self,event):
         """
         Moves to next image
@@ -683,12 +744,76 @@ class MainFrame(wx.Frame):
 
         self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
 
+#    def plot(self,img):
+#        self.drs= []
+#        self.updatedCoords = []
+#        for ind in self.individual_names:
+#            if self.are_unique_bodyparts_present == False: #no unique bodyparts present
+##            for ind in self.individual_names:
+#                image_points = []
+#                for c, bp in enumerate(self.multibodyparts):
+#                    image_points = [[self.dataFrame[self.scorer][ind][bp]['x'].values[self.iter],self.dataFrame[self.scorer][ind][bp]['y'].values[self.iter],ind,bp]]
+#                    self.points = [self.dataFrame[self.scorer][ind][bp]['x'].values[self.iter],self.dataFrame[self.scorer][ind][bp]['y'].values[self.iter]]
+#                    self.norm,self.colorIndex = self.image_panel.getColorIndices(self.img,self.multibodyparts)
+#                    color = self.colormap(self.norm(self.colorIndex[c]))
+#                    circle = patches.Circle((self.points[0], self.points[1]), radius=self.markerSize, fc = color, alpha=self.alpha)
+##                    print(circle)
+#                    print(self.axes)
+#                    self.axes.add_patch(circle)
+#                    self.dr = auxfun_drag_label_multiple_individuals.DraggablePoint(circle,ind,self.multibodyparts[c])
+#                    self.dr.connect()
+#                    self.dr.coords = image_points
+#                    self.drs.append(self.dr)
+#                    self.updatedCoords.append(self.dr.coords)
+#                    if np.isnan(self.points)[0] == False:
+#                        self.buttonCounter[ind].append(self.multibodyparts[c])
+#        else:
+#            if ind == 'single':
+#                for c, bp in enumerate(self.uniquebodyparts):
+#                    image_points = [[self.dataFrame[self.scorer][ind][bp]['x'].values[self.iter],self.dataFrame[self.scorer][ind][bp]['y'].values[self.iter],ind,bp]]
+#                    self.points = [self.dataFrame[self.scorer][ind][bp]['x'].values[self.iter],self.dataFrame[self.scorer][ind][bp]['y'].values[self.iter]]
+#                    self.norm,self.colorIndex = self.image_panel.getColorIndices(self.img,self.uniquebodyparts)
+#                    color = self.colormap(self.norm(self.colorIndex[c]))
+#                    circle = patches.Circle((self.points[0], self.points[1]), radius=self.markerSize, fc = color, alpha=self.alpha)
+##                    print(circle)
+#                    print(self.axes)
+#                    self.axes.add_patch(circle)
+#                    self.dr = auxfun_drag_label_multiple_individuals.DraggablePoint(circle,ind,self.uniquebodyparts[c])
+#                    self.dr.connect()
+#                    self.dr.coords = image_points
+#                    self.drs.append(self.dr)
+#                    self.updatedCoords.append(self.dr.coords)
+#                    if np.isnan(self.points)[0] == False:
+#                        self.buttonCounter[ind].append(self.uniquebodyparts[c])
+#            else:
+#                for c, bp in enumerate(self.multibodyparts):
+#                    image_points = [[self.dataFrame[self.scorer][ind][bp]['x'].values[self.iter],self.dataFrame[self.scorer][ind][bp]['y'].values[self.iter],ind,bp]]
+#                    self.points = [self.dataFrame[self.scorer][ind][bp]['x'].values[self.iter],self.dataFrame[self.scorer][ind][bp]['y'].values[self.iter]]
+#                    self.norm,self.colorIndex = self.image_panel.getColorIndices(self.img,self.multibodyparts)
+#                    color = self.colormap(self.norm(self.colorIndex[c]))
+#                    circle = patches.Circle((self.points[0], self.points[1]), radius=self.markerSize, fc = color, alpha=self.alpha)
+##                    print(circle)
+#                    print(self.axes)
+#                    self.axes.add_patch(circle)
+#                    self.dr = auxfun_drag_label_multiple_individuals.DraggablePoint(circle,ind,self.multibodyparts[c])
+#                    self.dr.connect()
+#                    self.dr.coords = image_points
+#                    self.drs.append(self.dr)
+#                    self.updatedCoords.append(self.dr.coords)
+#                    if np.isnan(self.points)[0] == False:
+#                        self.buttonCounter[ind].append(self.multibodyparts[c])
+#            
+#        MainFrame.saveEachImage(self)
+#        self.figure.canvas.draw()
+#        return(self.buttonCounter)
+    
     def plot(self,img):
         """
         Plots and call auxfun_drag class for moving and removing points.
         """
         self.drs= []
         self.updatedCoords = []
+#        print(self.dataFrame)
         for ind in self.individual_names:
             image_points = []
             if ind == 'single':
@@ -697,14 +822,13 @@ class MainFrame(wx.Frame):
                     self.points = [self.dataFrame[self.scorer][ind][bp]['x'].values[self.iter],self.dataFrame[self.scorer][ind][bp]['y'].values[self.iter]]
                     self.norm,self.colorIndex = self.image_panel.getColorIndices(self.img,self.uniquebodyparts)
                     color = self.colormap(self.norm(self.colorIndex[c]))
-                    circle = [patches.Circle((self.points[0], self.points[1]), radius=self.markerSize, fc = color, alpha=self.alpha)]
-                    self.axes.add_patch(circle[0])
-                    self.dr = auxfun_drag_label_multiple_individuals.DraggablePoint(circle[0],ind,self.uniquebodyparts[c])
+                    circle = patches.Circle((self.points[0], self.points[1]), radius=self.markerSize, fc = color, alpha=self.alpha)
+                    self.axes.add_patch(circle)
+                    self.dr = auxfun_drag_label_multiple_individuals.DraggablePoint(circle,ind,self.uniquebodyparts[c])
                     self.dr.connect()
                     self.dr.coords = image_points
                     self.drs.append(self.dr)
                     self.updatedCoords.append(self.dr.coords)
-            
                     if np.isnan(self.points)[0] == False:
                         self.buttonCounter[ind].append(self.uniquebodyparts[c])
             else:
@@ -713,14 +837,13 @@ class MainFrame(wx.Frame):
                     self.points = [self.dataFrame[self.scorer][ind][bp]['x'].values[self.iter],self.dataFrame[self.scorer][ind][bp]['y'].values[self.iter]]
                     self.norm,self.colorIndex = self.image_panel.getColorIndices(self.img,self.multibodyparts)
                     color = self.colormap(self.norm(self.colorIndex[c]))
-                    circle = [patches.Circle((self.points[0], self.points[1]), radius=self.markerSize, fc = color, alpha=self.alpha)]
-                    self.axes.add_patch(circle[0])
-                    self.dr = auxfun_drag_label_multiple_individuals.DraggablePoint(circle[0],ind,self.multibodyparts[c])
+                    circle = patches.Circle((self.points[0], self.points[1]), radius=self.markerSize, fc = color, alpha=self.alpha)
+                    self.axes.add_patch(circle)
+                    self.dr = auxfun_drag_label_multiple_individuals.DraggablePoint(circle,ind,self.multibodyparts[c])
                     self.dr.connect()
                     self.dr.coords = image_points
                     self.drs.append(self.dr)
                     self.updatedCoords.append(self.dr.coords)
-            
                     if np.isnan(self.points)[0] == False:
                         self.buttonCounter[ind].append(self.multibodyparts[c])
             MainFrame.saveEachImage(self)
