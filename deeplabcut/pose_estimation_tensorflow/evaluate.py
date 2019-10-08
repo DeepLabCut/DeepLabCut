@@ -77,10 +77,10 @@ def evaluate_network(config,Shuffles=[1],trainingsetindex=0,plotting = None,show
     Examples
     --------
     If you do not want to plot
-    >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml', shuffle=[1])
+    >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml', Shuffles=[1])
     --------
     If you want to plot
-    >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml',shuffle=[1],True)
+    >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml',Shuffles=[1],True)
     """
     import os
     #import skimage.color
