@@ -262,26 +262,6 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,filtert
             if destfolder == str(Path(video).parents[0]):
                 destfolder = None
 
-            combine_3d_path = os.path.realpath(cfg_3d['combine_3d_project_path'])
-            if combine_3d_path is not None:
-                from re import findall
-
-                exp_id = str(findall(r'\d+', vname)[-1])
-                cam_pair_str = '%s-%s' % cam_names
-                print('Using %s as experiment ID' % exp_id)
-                exp_path = os.path.join(combine_3d_path, exp_id)
-                cam_pair_path = os.path.join(exp_path, cam_pair_str)
-                print('Saving a copy of triangualted points to the 3D combine project:\n' + str(exp_path))
-                
-                if not os.path.exists(combine_3d_path):
-                    os.mkdir(combine_3d_path)
-
-                if not os.path.exists(exp_path):
-                    os.mkdir(exp_path)
-
-                combine_3d_h5 = os.path.join(exp_path, '%s_%s.h5' % (cam_pair_str, exp_id))
-                df_3d.to_hdf(combine_3d_h5, 'df_with_missing', format='table', mode='w')
-
     if len(video_list)>0:
         print("All videos were analyzed...")
         print("Now you can create 3D video(s) using deeplabcut.create_labeled_video_3d")

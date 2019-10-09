@@ -212,32 +212,3 @@ def LoadMetadata3d(metadatafilename):
     with open(metadatafilename, 'rb') as f:
         metadata= pickle.load(f)
         return metadata
-
-def get_coord(cam_image, n=-1, title=None):
-    """
-    Helper function for triangulate_raw_2d_camera_coords. User manually selects points on the provided images
-    
-    Parameters
-    ----------
-    cam_image : string; default None
-        Full path of the image from camera as a string.
-    cam2_image : string; default None
-        Full path of the image of camera 2 as a string.
-    """
-    import matplotlib.pyplot as plt
-    import matplotlib.image as mpimg
-
-    plt.imshow(mpimg.imread(cam_image))
-    if title is not None:
-        plt.title(title)
-    
-    return plt.ginput(n=n, timeout=-1, show_clicks=True)
-
-def remove_close_zero(vector, tol=1e-16):
-    """ Returns the vector where values under the tolerance is set to 0 """
-    vector[np.abs(vector) < tol] = 0
-    return vector
-
-def unit_vector(vector):
-    """ Returns the unit vector of the vector. """
-    return vector / np.linalg.norm(vector)

@@ -85,7 +85,6 @@ def create_config_template_3d():
 # Project path
     # Change when moving around
     project_path:
-    combine_3d_project_path:
     \n
 # Plotting configuration
     skeleton: # Note that the pairs must be defined, as you want them linked!

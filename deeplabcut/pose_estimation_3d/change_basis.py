@@ -9,7 +9,7 @@ from deeplabcut.pose_estimation_3d import triangulate_raw_2d_camera_coords
 
 # TODO: Create a jupyter notebook with an implementation of this workflow
 
-def get_basis(config_dict, image_dict, camera_pairs, user_defined_axis=['x-axis', 'z-axis'], pixel_tolerance=2):
+def get_basis(config_dict, image_dict, camera_pairs, clockwise=True, user_defined_axis=['x', 'z'], pixel_tolerance=2):
     """
     Parameters
     ----------
@@ -21,13 +21,15 @@ def get_basis(config_dict, image_dict, camera_pairs, user_defined_axis=['x-axis'
         of the referance points taken with the camera
     camera_pairs : list-like
         List of cameras that are pairs. Pairs usually have their own deeplabcut 3D project
-    user_defined_axis : list-like with max length 2
-        List of axis that are selected by the user, choose between 'x-axis', 'y-axis', 'z-axis'; 1-, 2-, 3-dimension.
-        There must be two axis names, the third axis is defined using the cross product
+    user_defined_axis : dictionary with max length 2
+        Dictionary where the key are the axis to be selected by the user, choose between 'x-axis', 'y-axis', 'z-axis'; 1-, 2-, 3-dimension.
+        There must be two axis names, the third axis is defined using the cross product.
+        
+        The values of the keys is the direction of the defined axis. This is important for the calculation of the third axis (first right hand rule)
     pixel_tolerance : integer, float; default 2
         Defines the floor-tolerance for setting basis vector after coordinate components being set to 0. After being moved to the origin
-    """
-    VALID_AXIS_NAMES = ['x-axis', 'y-axis', 'z-axis', 1, 2, 3]
+    """ 
+    VALID_AXIS_NAMES = ['x', 'y', 'z', 1, 2, 3]
     coord_labels = ['origin']
     for axis_name in user_defined_axis:
         if axis_name in VALID_AXIS_NAMES:
@@ -60,6 +62,40 @@ def get_basis(config_dict, image_dict, camera_pairs, user_defined_axis=['x-axis'
 
     return basis_of_pairs
 
+def get_cage_basis():
+    CAMERAS = {
+            'NorthWest': ['x', 'z', 'close'], 'NorthEast': ['x', 'z', 'close'],
+            'EastNorth': ['y', 'z', 'far'], 'EastSouth': ['y', 'z', 'far'],
+            'SouthEast': ['x', 'z', 'close'], 'SouthWest': ['x', 'z', 'close'],
+            'WestSouth': ['y', 'z', 'far'], 'WestNorth': ['y', 'z', 'far']
+        }
+        camera_units = dict.fromkeys(CAMERAS)
+        for camera, axis in CAMERAS.items():
+            directions = []
+            for direction in ('+', '-'):
+                directions.append(get_coord(cam_img, n=1, title=direction+axis[0]))
+            z = get_coord(cam_img, n=1, title='z-axis')
+            if axis[2] == 'close':
+                origin = direction[0] + (direction[1] - direction[0]) / 2
+                camera_units[camera] = {
+                    axis[0]: (direction[0] - origin) / unit_vector(direction[0] - origin)
+                    'z': (origin - z) / unit_vector(origin - z)
+                }
+                camera_units[camera]['y'] = - np.cross(
+                    camera_units[camera][axis[0]],
+                    camera_units[camera]['z']
+                    )
+            else:
+                origin = direction[1] + (direction[0] - direction[1]) / 2
+                camera_units[camera] = {
+                    axis[0]: (origin - direction[1]) / unit_vector(origin - direction[1]))
+                    'z': (origin - z) / unit_vector(origin - z)
+                }
+                camera_units[camera]['x'] = np.cross(
+                    camera_units[camera][axis[0]],
+                    camera_units[camera]['z']
+                    )
+        return basis_of_pairs
 
 def change_of_basis(column_matrix, x=None, y=None, z=None, origin=np.array((0, 0, 0)) ):
     """
