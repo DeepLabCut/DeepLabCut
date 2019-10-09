@@ -326,7 +326,7 @@ class MainFrame(wx.Frame):
 
 # Check for it output path and a machine label file exist
         if output_path.exists() and Path(self.machinefile).is_file():
-            cv2.imwrite(img_name, frame)
+            io.imsave(img_name,frame)
             if self.savelabeled:
                 self.figure.savefig(labeled_img_name,bbox_inches='tight')
             Data = pd.read_hdf(self.machinefile,'df_with_missing')
@@ -338,7 +338,8 @@ class MainFrame(wx.Frame):
         elif output_path.exists() and not(Path(self.machinefile).is_file()):
             if self.savelabeled:
                 self.figure.savefig(labeled_img_name,bbox_inches='tight')
-            cv2.imwrite(img_name, frame)
+            io.imsave(img_name,frame)
+#            cv2.imwrite(img_name, frame)
             DF.to_hdf(self.machinefile,key='df_with_missing',mode='w')
             DF.to_csv(os.path.join(str(output_path), "machinelabels.csv"))
         else:

@@ -30,7 +30,7 @@ colormap: jet
 TrainingFraction:
 - 0.95
 iteration: 0
-resnet: 50
+default_net_type: resnet_50
 snapshotindex: -1
 batch_size: 4
 

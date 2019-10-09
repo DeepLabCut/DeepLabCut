@@ -1,10 +1,18 @@
-'''
-Loader adapted from DeeperCut by Eldar Insafutdinov
+"""
+DeepLabCut2.0 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
+https://github.com/AlexEMG/DeepLabCut
+Please see AUTHORS for contributors.
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
+
+Loader structure adapted from DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
 
 See pull request:
 https://github.com/AlexEMG/DeepLabCut/pull/409
-use tensorpack dataflow to improve augmentation #409
+use tensorpack dataflow to improve augmentation #409 and #426
+Written largely by Kate Rupp -- Thanks!
 
 A Neural Net Training Interface on TensorFlow, with focus on speed + flexibility
 https://github.com/tensorpack/tensorpack
@@ -23,7 +31,6 @@ from enum import Enum
 from numpy import array as arr
 from numpy import concatenate as cat
 import scipy.io as sio
-from scipy.misc import imread
 
 from tensorpack.dataflow.base import RNGDataFlow
 from tensorpack.dataflow.common import MapData
@@ -153,7 +160,7 @@ class PoseDataset:
         # Randomly adds brightness within the range [-brightness_dif, brightness_dif]
         # to augment training data
         cfg['brightness_dif']= cfg.get('brightness_dif', 0.3)
-        cfg['brightnessratio']=cfg.get('brightnessratio', 0.2)  # what is the fraction of training samples with brightness augmentation?
+        cfg['brightnessratio']=cfg.get('brightnessratio', 0.0)  # what is the fraction of training samples with brightness augmentation?
 
         # Randomly applies x = (x - mean) * contrast_factor + mean`` to each
         # color channel within the range [contrast_factor_lo, contrast_factor_up]
@@ -165,12 +172,12 @@ class PoseDataset:
         # Randomly adjusts saturation within range 1 + [-saturation_max_dif, saturation_max_dif]
         # to augment training data
         cfg['saturation_max_dif']= cfg.get('saturation_max_dif', 0.5)
-        cfg['saturationratio']=cfg.get('saturationratio', 0.2) # what is the fraction of training samples with saturation augmentation?
+        cfg['saturationratio']=cfg.get('saturationratio', 0.0) # what is the fraction of training samples with saturation augmentation?
 
         # Randomly applies gaussian noise N(0, noise_sigma^2) to an image
         # to augment training data
         cfg['noise_sigma']= cfg.get('noise_sigma', 0.1)
-        cfg['noiseratio']=cfg.get('noiseratio', 0.2) # what is the fraction of training samples with noise augmentation?
+        cfg['noiseratio']=cfg.get('noiseratio', 0.0) # what is the fraction of training samples with noise augmentation?
 
         # Randomly applies gaussian blur to an image with a random window size
         # within the range [0, 2 * blur_max_window_size + 1] to augment training data
@@ -184,9 +191,9 @@ class PoseDataset:
         cfg['to_clip']=cfg.get('to_clip', True)
 
         # Number of processes to use per core during training
-        cfg['processratio']=cfg.get('processratio', 6)
+        cfg['processratio']=cfg.get('processratio', 1)
         # Number of datapoints to prefetch at a time during training
-        cfg['num_prefetch']=cfg.get('num_prefetch', 100)
+        cfg['num_prefetch']=cfg.get('num_prefetch', 50)
 
 
         self.cfg = cfg
@@ -250,8 +257,8 @@ class PoseDataset:
         df = MapData(df, self.compute_target_part_scoremap)
 
         num_cores = multiprocessing.cpu_count()
-        num_processes = num_cores * self.cfg['processratio']
-        if num_processes == 1:
+        num_processes = num_cores * int(self.cfg['processratio'])
+        if num_processes <= 1:
             num_processes = 2 # recommended to use more than one process for training
         if os.name == 'nt':
             df2 = MultiProcessRunner(df, num_proc = num_processes, num_prefetch = self.cfg['num_prefetch'])

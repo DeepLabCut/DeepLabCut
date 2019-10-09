@@ -7,7 +7,7 @@ init_weights: willbeautomaticallyupdatedbycreate_training_datasetcode
 project_path: willbeautomaticallyupdatedbycreate_training_datasetcode
 
 
-# Hyperparameters below worked well for our tasks in 
+# Hyperparameters below worked well for our tasks in
 # Mathis et al. Nature Neuroscience
 # https://www.nature.com/articles/s41593-018-0209-y
 
@@ -32,7 +32,7 @@ scale_jitter_up: 1.25
 mirror: False
 
 #Data loaders, i.e. with additional data augmentation options (as of 2.0.9+):
-dataset_type: default 
+dataset_type: default
 #default with be with no extra dataloaders. Other options: 'tensorpack, deterministic'
 #types of datasets, see factory: deeplabcut/pose_estimation_tensorflow/dataset/factory.py
 #For deterministic, see https://github.com/AlexEMG/DeepLabCut/pull/324
@@ -52,10 +52,9 @@ bottomheight: 400
 
 #limit width  [-leftwidth*u-100,100+u*rightwidth] x [-bottomwith*u-100,100+u*topwidth] where u is always a (different) random number in unit interval
 
-# Type of the CNN to use, currently resnet_50, resnet_101 and resnet_152
-# are supported
+# NOTE: as of DLC 2.1 these are defined when creating the training set!
+# Type of the CNN to use, currently resnets + mobilenets are supported (see docs)
 net_type: resnet_50
-
 #init_weights: ./snapshot-5000
 
 
@@ -75,10 +74,10 @@ intermediate_supervision_layer: 12
 # Prevents training from crashing with out of memory exception for very
 # large images.
 max_input_size: 1500
-# all images smaller than 64*64 will be excluded. 
+# all images smaller than 64*64 will be excluded.
 min_input_size: 64
 
-# Learning rate schedule for the SGD optimiser.
+# Learning rate schedule for the SGD optimizer.
 multi_step:
 - [0.005, 10000]
 - [0.02, 430000]
@@ -89,4 +88,3 @@ multi_step:
 display_iters: 1000
 # How often to save training snapshot
 save_iters: 50000
-

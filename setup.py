@@ -17,25 +17,25 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="deeplabcut",
-    version="2.0.9",
+    version="2.1",
     author="A. & M. Mathis Labs",
     author_email="alexander.mathis@bethgelab.org",
     description="Markerless pose-estimation of user-defined features with deep learning",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/AlexEMG/DeepLabCut",
-    install_requires=['certifi','chardet~=3.0.4','click','easydict~=1.7',
-                      'h5py~=2.7','imageio~=2.3.0','intel-openmp',
-                      'ipython~=6.0.0','ipython-genutils~=0.2.0',
-                      'matplotlib~=3.0.3','moviepy~=0.2.3.5','numpy~=1.14.5','opencv-python~=3.4',
-                      'pandas>=0.21.0','patsy','python-dateutil~=2.7.3','pyyaml>=5.1','requests',
-                      'ruamel.yaml~=0.15','setuptools','scikit-image~=0.14.0','scikit-learn~=0.19.2',
-                      'scipy~=1.1.0','six~=1.11.0','statsmodels~=0.9.0','tables',
-                      'tensorpack~=0.9.7.1',
-                      'tqdm>4.29','wheel~=0.31.1'],
+    install_requires=['certifi','chardet','click','easydict',
+                      'h5py~=2.7','imageio','intel-openmp','imgaug',
+                      'ipython','ipython-genutils','imageio~=2.3.0' ,
+                      'matplotlib==3.0.3','moviepy','numpy>=1.15.0','opencv-python~=3.4',
+                      'pandas','patsy','python-dateutil','pyyaml>=5.1','requests',
+                      'ruamel.yaml~=0.15','setuptools','scikit-image','scikit-learn',
+                      'scipy','six','statsmodels==0.10.1','tables==3.4.3',
+                      'tensorpack>=0.9.7.1',
+                      'tqdm','wheel'],
     scripts=['deeplabcut/pose_estimation_tensorflow/models/pretrained/download.sh'],
     packages=setuptools.find_packages(),
-    data_files=[('deeplabcut',['deeplabcut/pose_cfg.yaml','deeplabcut/pose_estimation_tensorflow/models/pretrained/pretrained_model_urls.yaml'])],
+    data_files=[('deeplabcut',['deeplabcut/pose_cfg.yaml','deeplabcut/pose_estimation_tensorflow/models/pretrained/pretrained_model_urls.yaml','deeplabcut/gui/media/logo.png','deeplabcut/gui/media/dlc_1-01.png'])],
     include_package_data=True,
     classifiers=(
         "Programming Language :: Python :: 3",
@@ -46,4 +46,4 @@ setuptools.setup(
             dlc=dlc:main""",
 )
 
-#https://stackoverflow.com/questions/39590187/in-requirements-txt-what-does-tilde-equals-mean
+#https://www.python.org/dev/peps/pep-0440/#compatible-release

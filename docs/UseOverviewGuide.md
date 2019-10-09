@@ -14,7 +14,7 @@ You can have as many projects on your computer as you wish. You can have DeepLab
  
  **NEW** as of 2.0.7 we support 3D analysis directly inside our package. Please see the [3D details here](/docs/Overviewof3D.md). Here are some tips for scaling up your 2D analysis: https://github.com/AlexEMG/DeepLabCut/wiki/Batch-Processing-your-Analysis
 
-You can get started by using our **demo Jupyter Notebooks** [(#1)](/docs/UseOverviewGuide.md#option-1-demo-notebooks), or use **iPython** from the program terminal/cmd [(#2)](/docs/UseOverviewGuide.md#option-2-using-the-program-terminal-start-ipython). 
+You can get started by using our **demo Jupyter Notebooks** [(#1)](/docs/UseOverviewGuide.md#option-1-demo-notebooks), or use **iPython** from the program terminal/cmd [(#2)](/docs/UseOverviewGuide.md#option-2-using-the-program-terminal-start-ipython), or, as of 2.1+, you can use our Project Manager GUI [(#3)](docs/functionDetails.md#deeplabcut-project-manager-gui)!
 
 
 ## Overview of the workflow:
@@ -42,6 +42,18 @@ import deeplabcut
 ```
 
 **TIP:** for every function there is a associated help document that can be viewed by adding a **?** after the function name; i.e. ``deeplabcut.create_new_project?``. To exit this help screen, type ``:q``.
+
+### Option 3: using the Project Manger GUI:
+Start iPython, or if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython``, but otherwise it's the same.
+If you are using DeepLabCut on the cloud, you cannot use the GUIs and you need to first set DLClight=True. Please read more [here](https://github.com/MMathisLab/Docker4DeepLabCut2.0), and in our Protocol paper [here](https://www.nature.com/articles/s41596-019-0176-0).
+
+Open an ``ipython`` session, import the package, and launch by typing in the terminal:
+```
+ipython
+import deeplabcut
+deeplabcut.launch_dlc()
+```
+That's it! Follow the GUI for details
 
 ### Create a New Project:
 

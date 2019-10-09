@@ -31,12 +31,18 @@ def pairwisedistances(DataCombined,scorer1,scorer2,pcutoff=-1,bodyparts=None):
             RMSE=np.sqrt(Pointwisesquareddistance.xs('x',level=1,axis=1)+Pointwisesquareddistance.xs('y',level=1,axis=1)) #Euclidean distance (proportional to RMSE)
             return RMSE,RMSE[mask]
 
-def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comparisonbodyparts="all",gputouse=None):
+def Plotting(cfg,comparisonbodyparts,DLCscorer,trainIndices,DataCombined,foldername):
+    from deeplabcut.utils import visualization
+    colors = visualization.get_cmap(len(comparisonbodyparts),name=cfg['colormap'])
+    NumFrames=np.size(DataCombined.index)
+    for ind in tqdm(np.arange(NumFrames)):
+        visualization.PlottingandSaveLabeledFrame(DataCombined,ind,trainIndices,cfg,colors,comparisonbodyparts,DLCscorer,foldername)
+
+def evaluate_network(config,Shuffles=[1],trainingsetindex=0,plotting = None,show_errors = True,comparisonbodyparts="all",gputouse=None, rescale=False):
     """
     Evaluates the network based on the saved models at different stages of the training network.\n
     The evaluation results are stored in the .h5 and .csv file under the subdirectory 'evaluation_results'.
     Change the snapshotindex parameter in the config file to 'all' in order to evaluate all the saved models.
-
     Parameters
     ----------
     config : string
@@ -44,6 +50,10 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
 
     Shuffles: list, optional
         List of integers specifying the shuffle indices of the training dataset. The default is [1]
+
+    trainingsetindex: int, optional
+        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml). This
+        variable can also be set to "all".
 
     plotting: bool, optional
         Plots the predictions on the train and test images. The default is ``False``; if provided it must be either ``True`` or ``False``
@@ -55,38 +65,38 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
         The average error will be computed for those body parts only (Has to be a subset of the body parts).
 
     gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU put None.
-    See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+        See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+
+    rescale: bool, default False
+        Evaluate the model at the 'global_scale' variable (as set in the test/pose_config.yaml file for a particular project). I.e. every
+        image will be resized according to that scale and prediction will be compared to the resized ground truth. The error will be reported
+        in pixels at rescaled to the *original* size. I.e. For a [200,200] pixel image evaluated at global_scale=.5, the predictions are calculated
+        on [100,100] pixel images, compared to 1/2*ground truth and this error is then multiplied by 2!. The evaluation images are also shown for the
+        original size!
 
     Examples
     --------
     If you do not want to plot
-    >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml', shuffle=[1])
+    >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml', Shuffles=[1])
     --------
-
     If you want to plot
-    >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml',shuffle=[1],True)
+    >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml',Shuffles=[1],True)
     """
     import os
-    from skimage import io
-    import skimage.color
+    #import skimage.color
+    #from skimage.io import imread
 
-    from deeplabcut.pose_estimation_tensorflow.nnet import predict as ptf_predict
+    from deeplabcut.utils.auxfun_videos import imread, imresize
+    from deeplabcut.pose_estimation_tensorflow.nnet import predict
     from deeplabcut.pose_estimation_tensorflow.config import load_config
     from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import data_to_input
-    from deeplabcut.utils import auxiliaryfunctions, visualization
+    from deeplabcut.utils import auxiliaryfunctions
     import tensorflow as tf
 
     if 'TF_CUDNN_USE_AUTOTUNE' in os.environ:
         del os.environ['TF_CUDNN_USE_AUTOTUNE'] #was potentially set during training
 
-    vers = (tf.__version__).split('.')
-    if int(vers[0])==1 and int(vers[1])>12:
-        TF=tf.compat.v1
-    else:
-        TF=tf
-
-    TF.reset_default_graph()
-
+    tf.reset_default_graph()
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' #
 #    tf.logging.set_verbosity(tf.logging.WARN)
 
@@ -96,19 +106,29 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
     if gputouse is not None: #gpu selectinon
             os.environ['CUDA_VISIBLE_DEVICES'] = str(gputouse)
 
+    if trainingsetindex=='all':
+        TrainingFractions=cfg["TrainingFraction"]
+    else:
+        if trainingsetindex<len(cfg["TrainingFraction"]) and trainingsetindex>=0:
+            TrainingFractions=[cfg["TrainingFraction"][int(trainingsetindex)]]
+        else:
+            raise Exception('Please check the trainingsetindex! ', trainingsetindex, ' should be an integer from 0 .. ', int(len(cfg["TrainingFraction"])-1))
+
     # Loading human annotatated data
     trainingsetfolder=auxiliaryfunctions.GetTrainingSetFolder(cfg)
     Data=pd.read_hdf(os.path.join(cfg["project_path"],str(trainingsetfolder),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing')
+
     # Get list of body parts to evaluate network for
     comparisonbodyparts=auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg,comparisonbodyparts)
     # Make folder for evaluation
     auxiliaryfunctions.attempttomakefolder(str(cfg["project_path"]+"/evaluation-results/"))
     for shuffle in Shuffles:
-        for trainFraction in cfg["TrainingFraction"]:
+        for trainFraction in TrainingFractions:
             ##################################################
             # Load and setup CNN part detector
             ##################################################
             datafn,metadatafn=auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,trainFraction,shuffle,cfg)
+
             modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)))
             path_test_config = Path(modelfolder) / 'test' / 'pose_cfg.yaml'
             # Load meta data
@@ -121,6 +141,7 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
 
             #change batch size, if it was edited during analysis!
             dlc_cfg['batch_size']=1 #in case this was edited for analysis.
+
             #Create folder structure to store results.
             evaluationfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetEvaluationFolder(trainFraction,shuffle,cfg)))
             auxiliaryfunctions.attempttomakefolder(evaluationfolder,recursive=True)
@@ -146,6 +167,14 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
                 print("Invalid choice, only -1 (last), any integer up to last, or all (as string)!")
 
             final_result=[]
+
+            ########################### RESCALING (to global scale)
+            if rescale==True:
+                scale=dlc_cfg['global_scale']
+                Data=pd.read_hdf(os.path.join(cfg["project_path"],str(trainingsetfolder),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing')*scale
+            else:
+                scale=1
+
             ##################################################
             # Compute predictions over images
             ##################################################
@@ -153,31 +182,30 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
                 dlc_cfg['init_weights'] = os.path.join(str(modelfolder),'train',Snapshots[snapindex]) #setting weights to corresponding snapshot.
                 trainingsiterations = (dlc_cfg['init_weights'].split(os.sep)[-1]).split('-')[-1] #read how many training siterations that corresponds to.
 
-                #name for deeplabcut net (based on its parameters)
-                DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations)
+                # Name for deeplabcut net (based on its parameters)
+                DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations)
+                notanalyzed,resultsfilename,DLCscorer=auxiliaryfunctions.CheckifNotEvaluated(str(evaluationfolder),DLCscorer,DLCscorerlegacy,Snapshots[snapindex])
                 print("Running ", DLCscorer, " with # of trainingiterations:", trainingsiterations)
-                resultsfilename=os.path.join(str(evaluationfolder),DLCscorer + '-' + Snapshots[snapindex]+  '.h5')
-                try:
-                    DataMachine = pd.read_hdf(resultsfilename,'df_with_missing')
-                    print("This net has already been evaluated!")
-                except FileNotFoundError:
+                if notanalyzed:
                     # Specifying state of model (snapshot / training state)
-                    sess, inputs, outputs = ptf_predict.setup_pose_prediction(dlc_cfg)
-
+                    sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
                     Numimages = len(Data.index)
                     PredicteData = np.zeros((Numimages,3 * len(dlc_cfg['all_joints_names'])))
                     print("Analyzing data...")
                     for imageindex, imagename in tqdm(enumerate(Data.index)):
-                        image = io.imread(os.path.join(cfg['project_path'],imagename),mode='RGB')
-                        image = skimage.color.gray2rgb(image)
+                        image = imread(os.path.join(cfg['project_path'],imagename),mode='RGB')
+                        if scale!=1:
+                            image = imresize(image, scale)
+
+                        #image = skimage.color.gray2rgb(image)
                         image_batch = data_to_input(image)
 
                         # Compute prediction with the CNN
                         outputs_np = sess.run(outputs, feed_dict={inputs: image_batch})
-                        scmap, locref = ptf_predict.extract_cnn_output(outputs_np, dlc_cfg)
+                        scmap, locref = predict.extract_cnn_output(outputs_np, dlc_cfg)
 
                         # Extract maximum scoring location from the heatmap, assume 1 person
-                        pose = ptf_predict.argmax_pose_predict(scmap, locref, dlc_cfg.stride)
+                        pose = predict.argmax_pose_predict(scmap, locref, dlc_cfg.stride)
                         PredicteData[imageindex, :] = pose.flatten()  # NOTE: thereby     cfg_test['all_joints_names'] should be same order as bodyparts!
 
                     sess.close() #closes the current tf session
@@ -192,6 +220,7 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
 
                     print("Done and results stored for snapshot: ", Snapshots[snapindex])
                     DataCombined = pd.concat([Data.T, DataMachine.T], axis=0).T
+
                     RMSE,RMSEpcutoff = pairwisedistances(DataCombined, cfg["scorer"], DLCscorer,cfg["pcutoff"],comparisonbodyparts)
                     testerror = np.nanmean(RMSE.iloc[testIndices].values.flatten())
                     trainerror = np.nanmean(RMSE.iloc[trainIndices].values.flatten())
@@ -203,21 +232,27 @@ def evaluate_network(config,Shuffles=[1],plotting = None,show_errors = True,comp
                     if show_errors == True:
                             print("Results for",trainingsiterations," training iterations:", int(100 * trainFraction), shuffle, "train error:",np.round(trainerror,2), "pixels. Test error:", np.round(testerror,2)," pixels.")
                             print("With pcutoff of", cfg["pcutoff"]," train error:",np.round(trainerrorpcutoff,2), "pixels. Test error:", np.round(testerrorpcutoff,2), "pixels")
+                            if scale!=1:
+                                print("The predictions have been calculated for rescaled images (and rescaled ground truth). Scale:", scale)
                             print("Thereby, the errors are given by the average distances between the labels by DLC and the scorer.")
-
 
                     if plotting == True:
                         print("Plotting...")
-                        colors = visualization.get_cmap(len(comparisonbodyparts),name=cfg['colormap'])
-
                         foldername=os.path.join(str(evaluationfolder),'LabeledImages_' + DLCscorer + '_' + Snapshots[snapindex])
                         auxiliaryfunctions.attempttomakefolder(foldername)
-                        NumFrames=np.size(DataCombined.index)
-                        for ind in np.arange(NumFrames):
-                            visualization.PlottingandSaveLabeledFrame(DataCombined,ind,trainIndices,cfg,colors,comparisonbodyparts,DLCscorer,foldername)
+                        Plotting(cfg,comparisonbodyparts,DLCscorer,trainIndices,DataCombined*1./scale,foldername) #Rescaling coordinates to have figure in original size!
 
-                    TF.reset_default_graph()
+                    tf.reset_default_graph()
                     #print(final_result)
+                else:
+                    DataMachine = pd.read_hdf(resultsfilename,'df_with_missing')
+                    if plotting == True:
+                        DataCombined = pd.concat([Data.T, DataMachine.T], axis=0).T
+                        print("Plotting...(attention scale might be inconsistent in comparison to when data was analyzed; i.e. if you used rescale)")
+                        foldername=os.path.join(str(evaluationfolder),'LabeledImages_' + DLCscorer + '_' + Snapshots[snapindex])
+                        auxiliaryfunctions.attempttomakefolder(foldername)
+                        Plotting(cfg,comparisonbodyparts,DLCscorer,trainIndices,DataCombined*1./scale,foldername)
+
             make_results_file(final_result,evaluationfolder,DLCscorer)
             print("The network is evaluated and the results are stored in the subdirectory 'evaluation_results'.")
             print("If it generalizes well, choose the best model for prediction and update the config file with the appropriate index for the 'snapshotindex'.\nUse the function 'analyze_video' to make predictions on new videos.")

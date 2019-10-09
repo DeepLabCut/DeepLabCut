@@ -5,7 +5,8 @@ https://github.com/eldar/pose-tensorflow
 
 import math, os
 import numpy as np
-from scipy.misc import imresize
+#from scipy.misc import imresize
+from deeplabcut.utils.auxfun_videos import imresize
 
 import matplotlib
 import platform
@@ -16,7 +17,6 @@ elif platform.system() == 'Darwin':
 else:
     matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
-
 
 def _npcircle(image, cx, cy, radius, color, transparency=0.0):
     """Draw a circle on an image using only numpy methods."""
@@ -56,7 +56,6 @@ def visualize_joints(image, pose):
                       colors[p_idx],
                       0.0)
     return visim
-
 
 def show_heatmaps(cfg, img, scmap, pose, cmap="jet"):
     interp = "bilinear"

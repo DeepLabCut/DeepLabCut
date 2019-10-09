@@ -32,12 +32,13 @@ from skimage.util import img_as_ubyte
 # Loading data, and defining model folder
 ####################################################
 
-def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gputouse=None,save_as_csv=False, destfolder=None,cropping=None,get_nframesfrommetadata=True):
+def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0,
+                    gputouse=None, save_as_csv=False, destfolder=None, batchsize=None,
+                    cropping=None,get_nframesfrommetadata=True, TFGPUinference=True,dynamic=(False,.5,10)):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
 
     You can crop the video (before analysis), by changing 'cropping'=True and setting 'x1','x2','y1','y2' in the config file. The same cropping parameters will then be used for creating the video.
-    Note: you can also pass cropping = [x1,x2,y1,y2] coordinates directly, that then will be used for all videos. You can of course loop over videos & pass specific coordinates for each case.
 
     Output: The labels are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position \n
             in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
@@ -71,10 +72,19 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
         Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this
         folder also needs to be passed.
 
-    get_nframesfrommetadata: bool, Default true.
-        Some videos have wrong metadata (and thus the frame number is not accurate). If this is set to False, then the
-        video is loaded frame by frame and the number of frames is counted. This makes sure that for broken metadata
-        the output file is correct. See https://github.com/AlexEMG/DeepLabCut/issues/422
+    batchsize: int, default from pose_cfg.yaml
+        Change batch size for inference; if given overwrites value in pose_cfg.yaml
+
+    TFGPUinference: bool, default: True
+        Perform inference on GPU with Tensorflow code. Introduced in "Pretraining boosts out-of-domain robustness for pose estimation" by
+        Alexander Mathis, Mert Yüksekgönül, Byron Rogers, Matthias Bethge, Mackenzie W. Mathis Source: https://arxiv.org/abs/1909.11229
+
+    dynamic: triple containing (state,detectiontreshold,margin)
+        If the state is true, then dynamic cropping will be performed. That means that if an object is detected (i.e. any body part > detectiontreshold),
+        then object boundaries are computed according to the smallest/largest x position and smallest/largest y position of all body parts. This  window is
+        expanded by the margin and from then on only the posture within this crop is analyzed (until the object is lost, i.e. <detectiontreshold). The
+        current position is utilized for updating the crop window for the next frame (this is why the margin is important and should be set large
+        enough given the movement of the animal).
 
     Examples
     --------
@@ -110,24 +120,17 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
     if gputouse is not None: #gpu selection
             os.environ['CUDA_VISIBLE_DEVICES'] = str(gputouse)
 
-    vers = (tf.__version__).split('.')
-    if int(vers[0])==1 and int(vers[1])>12:
-        TF=tf.compat.v1
-    else:
-        TF=tf
-
-    TF.reset_default_graph()
+    tf.reset_default_graph()
     start_path=os.getcwd() #record cwd to return to this directory in the end
 
     cfg = auxiliaryfunctions.read_config(config)
+    trainFraction = cfg['TrainingFraction'][trainingsetindex]
 
     if cropping is not None:
         cfg['cropping']=True
         cfg['x1'],cfg['x2'],cfg['y1'],cfg['y2']=cropping
         print("Overwriting cropping parameters:", cropping)
         print("These are used for all videos, but won't be save to the cfg file.")
-
-    trainFraction = cfg['TrainingFraction'][trainingsetindex]
 
     modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)))
     path_test_config = Path(modelfolder) / 'test' / 'pose_cfg.yaml'
@@ -161,67 +164,84 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
     dlc_cfg['init_weights'] = os.path.join(modelfolder , 'train', Snapshots[snapshotindex])
     trainingsiterations = (dlc_cfg['init_weights'].split(os.sep)[-1]).split('-')[-1]
 
-    #update batchsize (based on parameters in config.yaml)
-    dlc_cfg['batch_size']=cfg['batch_size']
-
-    # update number of outputs
+    # Update number of output and batchsize
     dlc_cfg['num_outputs'] = cfg.get('num_outputs', 1)
-    #print('num_outputs = ', dlc_cfg['num_outputs'])
+
+    if batchsize==None:
+        #update batchsize (based on parameters in config.yaml)
+        dlc_cfg['batch_size']=cfg['batch_size']
+    else:
+        dlc_cfg['batch_size']=batchsize
+        cfg['batch_size']=batchsize
+
+    if dynamic[0]: #state=true
+        #(state,detectiontreshold,margin)=dynamic
+        print("Starting analysis in dynamic cropping mode with parameters:", dynamic)
+        dlc_cfg['num_outputs']=1
+        TFGPUinference=False
+        dlc_cfg['batch_size']=1
+        print("Switching batchsize to 1, num_outputs (per animal) to 1 and TFGPUinference to False (all these features are not supported in this mode).")
 
     # Name for scorer:
-    DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations)
+    DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations)
+    if dlc_cfg['num_outputs']>1 and TFGPUinference:
+        print("Switching to Numpy extraction code, as multiple point extraction is not supported by TF code currently.")
+        TFGPUinference=False
+        xyz_labs_orig = ['x', 'y', 'likelihood']
+        suffix = [str(s+1) for s in range(dlc_cfg['num_outputs'])]
+        suffix[0] = '' # first one has empty suffix for backwards compatibility
+        xyz_labs = [x+s for s in suffix for x in xyz_labs_orig]
+    else:
+        xyz_labs = ['x', 'y', 'likelihood']
 
-    sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
-
-    xyz_labs_orig = ['x', 'y', 'likelihood']
-    suffix = [str(s+1) for s in range(dlc_cfg['num_outputs'])]
-    suffix[0] = '' # first one has empty suffix for backwards compatibility
-    xyz_labs = [x+s for s in suffix for x in xyz_labs_orig]
+    #sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
+    if TFGPUinference:
+        sess, inputs, outputs = predict.setup_GPUpose_prediction(dlc_cfg)
+    else:
+        sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
 
     pdindex = pd.MultiIndex.from_product([[DLCscorer],
                                           dlc_cfg['all_joints_names'],
                                           xyz_labs],
                                          names=['scorer', 'bodyparts', 'coords'])
 
+    pdindex = pd.MultiIndex.from_product([[DLCscorer], dlc_cfg['all_joints_names'], xyz_labs],names=['scorer', 'bodyparts', 'coords'])
     ##################################################
     # Datafolder
     ##################################################
     Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
-
     if len(Videos)>0:
         #looping over videos
         for video in Videos:
-            AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder,get_nframesfrommetadata)
+            DLCscorer=AnalyzeVideo(video,DLCscorer,DLCscorerlegacy,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder,TFGPUinference,dynamic)
 
-        os.chdir(str(start_path))
-        print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
-        print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
+    os.chdir(str(start_path))
+    print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
+    print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
+    return DLCscorer #note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
+
+def checkcropping(cfg,cap):
+    print("Cropping based on the x1 = %s x2 = %s y1 = %s y2 = %s. You can adjust the cropping coordinates in the config.yaml file." %(cfg['x1'], cfg['x2'],cfg['y1'], cfg['y2']))
+    nx=cfg['x2']-cfg['x1']
+    ny=cfg['y2']-cfg['y1']
+    if nx>0 and ny>0:
+        pass
     else:
-        print("No video was found in the path/ or single video with path:", videos)
-        print("Perhaps the videotype is distinct from the videos in the path, I was looking for:",videotype)
-
-    return DLCscorer
-
+        raise Exception('Please check the order of cropping parameter!')
+    if cfg['x1']>=0 and cfg['x2']<int(cap.get(3)+1) and cfg['y1']>=0 and cfg['y2']<int(cap.get(4)+1):
+        pass #good cropping box
+    else:
+        raise Exception('Please check the boundary of cropping!')
+    return int(ny),int(nx)
 
 def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize):
     ''' Batchwise prediction of pose '''
-
-    PredicteData = np.zeros((nframes, dlc_cfg['num_outputs'] * 3 * len(dlc_cfg['all_joints_names'])))
+    PredicteData = np.zeros((nframes, 3 * len(dlc_cfg['all_joints_names'])))
     batch_ind = 0 # keeps track of which image within a batch should be written to
     batch_num = 0 # keeps track of which batch you are at
     ny,nx=int(cap.get(4)),int(cap.get(3))
     if cfg['cropping']:
-        print("Cropping based on the x1 = %s x2 = %s y1 = %s y2 = %s. You can adjust the cropping coordinates in the config.yaml file." %(cfg['x1'], cfg['x2'],cfg['y1'], cfg['y2']))
-        nx=cfg['x2']-cfg['x1']
-        ny=cfg['y2']-cfg['y1']
-        if nx>0 and ny>0:
-            pass
-        else:
-            raise Exception('Please check the order of cropping parameter!')
-        if cfg['x1']>=0 and cfg['x2']<int(cap.get(3)+1) and cfg['y1']>=0 and cfg['y2']<int(cap.get(4)+1):
-            pass #good cropping box
-        else:
-            raise Exception('Please check the boundary of cropping!')
+        ny,nx=checkcropping(cfg,cap)
 
     frames = np.empty((batchsize, ny, nx, 3), dtype='ubyte') # this keeps all frames in a batch
     pbar=tqdm(total=nframes)
@@ -239,7 +259,7 @@ def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize):
                     frames[batch_ind] = img_as_ubyte(frame)
 
                 if batch_ind==batchsize-1:
-                    pose = predict.getposeNP(frames, dlc_cfg, sess, inputs, outputs)
+                    pose = predict.getposeNP(frames,dlc_cfg, sess, inputs, outputs)
                     PredicteData[batch_num*batchsize:(batch_num+1)*batchsize, :] = pose
                     batch_ind = 0
                     batch_num += 1
@@ -257,24 +277,12 @@ def GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize):
     pbar.close()
     return PredicteData,nframes
 
-
 def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes):
     ''' Non batch wise pose estimation for video cap.'''
     if cfg['cropping']:
-        print("Cropping based on the x1 = %s x2 = %s y1 = %s y2 = %s. You can adjust the cropping coordinates in the config.yaml file." %(cfg['x1'], cfg['x2'],cfg['y1'], cfg['y2']))
-        nx=cfg['x2']-cfg['x1']
-        ny=cfg['y2']-cfg['y1']
-        if nx>0 and ny>0:
-            pass
-        else:
-            raise Exception('Please check the order of cropping parameter!')
-        if cfg['x1']>=0 and cfg['x2']<int(cap.get(3)+1) and cfg['y1']>=0 and cfg['y2']<int(cap.get(4)+1):
-            pass #good cropping box
-        else:
-            raise Exception('Please check the boundary of cropping!')
+        ny,nx=checkcropping(cfg,cap)
 
-    PredicteData = np.zeros((nframes, dlc_cfg['num_outputs'] * 3 * len(dlc_cfg['all_joints_names'])))
-
+    PredicteData = np.zeros((nframes, 3 * len(dlc_cfg['all_joints_names'])))
     pbar=tqdm(total=nframes)
     counter=0
     step=max(10,int(nframes/100))
@@ -299,58 +307,195 @@ def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes):
     pbar.close()
     return PredicteData,nframes
 
-def bruteforce_countframes_bydecoding(cap):
+def GetPoseS_GTF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes):
+    ''' Non batch wise pose estimation for video cap.'''
+    if cfg['cropping']:
+        ny,nx=checkcropping(cfg,cap)
+
+    pose_tensor = predict.extract_GPUprediction(outputs, dlc_cfg) #extract_output_tensor(outputs, dlc_cfg)
+    PredicteData = np.zeros((nframes, 3 * len(dlc_cfg['all_joints_names'])))
+    pbar=tqdm(total=nframes)
     counter=0
+    step=max(10,int(nframes/100))
     while(cap.isOpened()):
-        ret, frame = cap.read()
-        if ret:
+            if counter%step==0:
+                pbar.update(step)
+
+            ret, frame = cap.read()
+            if ret:
+                frame=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                if cfg['cropping']:
+                    frame= img_as_ubyte(frame[cfg['y1']:cfg['y2'],cfg['x1']:cfg['x2']])
+                else:
+                    frame = img_as_ubyte(frame)
+
+                pose = sess.run(pose_tensor, feed_dict={inputs: np.expand_dims(frame, axis=0).astype(float)})
+                pose[:, [0,1,2]] = pose[:, [1,0,2]]
+                #pose = predict.getpose(frame, dlc_cfg, sess, inputs, outputs)
+                PredicteData[counter, :] = pose.flatten()  # NOTE: thereby cfg['all_joints_names'] should be same order as bodyparts!
+            else:
+                nframes=counter
+                break
             counter+=1
-        else:
-            break
-    #reset cap to frame 0!
-    return counter
 
+    pbar.close()
+    return PredicteData,nframes
 
-def AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder,get_nframesfrommetadata=True):
-    ''' Helper function for analyzing a video '''
+def GetPoseF_GTF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize):
+    ''' Batchwise prediction of pose '''
+    PredicteData = np.zeros((nframes, 3 * len(dlc_cfg['all_joints_names'])))
+    batch_ind = 0 # keeps track of which image within a batch should be written to
+    batch_num = 0 # keeps track of which batch you are at
+    ny,nx=int(cap.get(4)),int(cap.get(3))
+    if cfg['cropping']:
+        ny,nx=checkcropping(cfg,cap)
+
+    pose_tensor = predict.extract_GPUprediction(outputs, dlc_cfg) #extract_output_tensor(outputs, dlc_cfg)
+    frames = np.empty((batchsize, ny, nx, 3), dtype='ubyte') # this keeps all frames in a batch
+    pbar=tqdm(total=nframes)
+    counter=0
+    step=max(10,int(nframes/100))
+    while(cap.isOpened()):
+            if counter%step==0:
+                pbar.update(step)
+            ret, frame = cap.read()
+            if ret:
+                frame=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                if cfg['cropping']:
+                    frames[batch_ind] = img_as_ubyte(frame[cfg['y1']:cfg['y2'],cfg['x1']:cfg['x2']])
+                else:
+                    frames[batch_ind] = img_as_ubyte(frame)
+
+                if batch_ind==batchsize-1:
+                    #pose = predict.getposeNP(frames,dlc_cfg, sess, inputs, outputs)
+                    pose = sess.run(pose_tensor, feed_dict={inputs: frames})
+                    pose[:, [0,1,2]] = pose[:, [1,0,2]] #change order to have x,y,confidence
+                    pose=np.reshape(pose,(batchsize,-1)) #bring into batchsize times x,y,conf etc.
+                    PredicteData[batch_num*batchsize:(batch_num+1)*batchsize, :] = pose
+
+                    batch_ind = 0
+                    batch_num += 1
+                else:
+                   batch_ind+=1
+            else:
+                nframes = counter
+                print("Detected frames: ", nframes)
+                if batch_ind>0:
+                    #pose = predict.getposeNP(frames, dlc_cfg, sess, inputs, outputs) #process the whole batch (some frames might be from previous batch!)
+                    pose = sess.run(pose_tensor, feed_dict={inputs: frames})
+                    pose[:, [0,1,2]] = pose[:, [1,0,2]]
+                    pose=np.reshape(pose,(batchsize,-1))
+                    PredicteData[batch_num*batchsize:batch_num*batchsize+batch_ind, :] = pose[:batch_ind,:]
+
+                break
+            counter+=1
+
+    pbar.close()
+    return PredicteData,nframes
+
+def getboundingbox(x,y,nx,ny,margin):
+    x1=max([0,int(np.amin(x))-margin])
+    x2=min([nx,int(np.amax(x))+margin])
+    y1=max([0,int(np.amin(y))-margin])
+    y2=min([ny,int(np.amax(y))+margin])
+    return x1,x2,y1,y2
+
+def GetPoseDynamic(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,detectiontreshold,margin):
+    ''' Non batch wise pose estimation for video cap by dynamically cropping around previously detected parts.'''
+    if cfg['cropping']:
+        ny,nx=checkcropping(cfg,cap)
+    else:
+        ny,nx=(int(cap.get(4)),int(cap.get(3)))
+    x1,x2,y1,y2=0,nx,0,ny
+    detected = False
+    #TODO: perform detection on resized image (For speed)
+
+    PredicteData = np.zeros((nframes, 3 * len(dlc_cfg['all_joints_names'])))
+    pbar=tqdm(total=nframes)
+    counter=0
+    step=max(10,int(nframes/100))
+    while(cap.isOpened()):
+            if counter%step==0:
+                pbar.update(step)
+
+            ret, frame = cap.read()
+            if ret:
+                #print(counter,x1,x2,y1,y2,detected)
+                originalframe=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                if cfg['cropping']:
+                    frame= img_as_ubyte(originalframe[cfg['y1']:cfg['y2'],cfg['x1']:cfg['x2']])[y1:y2,x1:x2]
+                else:
+                    frame = img_as_ubyte(originalframe[y1:y2,x1:x2])
+
+                pose = predict.getpose(frame, dlc_cfg, sess, inputs, outputs).flatten()
+                detection=np.any(pose[2::3]>detectiontreshold) #is anything detected?
+                if detection:
+                    pose[0::3],pose[1::3]=pose[0::3]+x1,pose[1::3]+y1 #offset according to last bounding box
+                    x1,x2,y1,y2=getboundingbox(pose[0::3],pose[1::3],nx,ny,margin) #coordinates for next iteration
+                    if not detected:
+                        detected=True #object detected
+                else:
+                    if detected and (x1+y1+y2-ny+x2-nx)!=0: #was detected in last frame and dyn. cropping was performed >> but object lost in cropped variant >> re-run on full frame!
+                        #print("looking again, lost!")
+                        if cfg['cropping']:
+                            frame= img_as_ubyte(originalframe[cfg['y1']:cfg['y2'],cfg['x1']:cfg['x2']])
+                        else:
+                            frame = img_as_ubyte(originalframe)
+                        pose = predict.getpose(frame, dlc_cfg, sess, inputs, outputs).flatten() #no offset is necessary
+
+                    x0,y0=x1,y1
+                    x1,x2,y1,y2=0,nx,0,ny
+                    detected=False
+
+                PredicteData[counter, :] = pose
+            else:
+                nframes=counter
+                break
+            counter+=1
+
+    pbar.close()
+    return PredicteData,nframes
+
+def AnalyzeVideo(video,DLCscorer,DLCscorerlegacy,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder=None,TFGPUinference=True,dynamic=(False,.5,10)):
+    ''' Helper function for analyzing a video. '''
     print("Starting to analyze % ", video)
     vname = Path(video).stem
     if destfolder is None:
         destfolder = str(Path(video).parents[0])
-    dataname = os.path.join(destfolder,vname + DLCscorer + '.h5')
-    try:
-        # Attempt to load data...
-        pd.read_hdf(dataname)
-        print("Video already analyzed!", dataname)
-    except FileNotFoundError:
+
+    notanalyzed,dataname, DLCscorer=auxiliaryfunctions.CheckifNotAnalyzed(destfolder,vname,DLCscorer,DLCscorerlegacy)
+    if notanalyzed:
         print("Loading ", video)
         cap=cv2.VideoCapture(video)
-        if get_nframesfrommetadata:
-            nframes = int(cap.get(7))
-        else: #actually decode and check
-            nframes_metadata = int(cap.get(7))
-            nframes=bruteforce_countframes_bydecoding(cap)
-            print("Metadata:",nframes_metadata,"Counted:",nframes)
-            nframes+=5 #adding buffer! [will be cropped anyway if too long]
-            cap=cv2.VideoCapture(video) #reopen video
 
         fps = cap.get(5) #https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
+        nframes = int(cap.get(7))
         duration=nframes*1./fps
         size=(int(cap.get(4)),int(cap.get(3)))
 
         ny,nx=size
         print("Duration of video [s]: ", round(duration,2), ", recorded with ", round(fps,2),"fps!")
         print("Overall # of frames: ", nframes," found with (before cropping) frame dimensions: ", nx,ny)
-        start = time.time()
 
+        dynamic_analysis_state,detectiontreshold,margin=dynamic
+        start = time.time()
         print("Starting to extract posture")
-        if int(dlc_cfg["batch_size"])>1:
-            PredicteData,nframes=GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,int(dlc_cfg["batch_size"]))
+        if dynamic_analysis_state:
+            PredicteData,nframes=GetPoseDynamic(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,detectiontreshold,margin)
+            #GetPoseF_GTF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,int(dlc_cfg["batch_size"]))
         else:
-            PredicteData,nframes=GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes)
+            if int(dlc_cfg["batch_size"])>1:
+                if TFGPUinference:
+                    PredicteData,nframes=GetPoseF_GTF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,int(dlc_cfg["batch_size"]))
+                else:
+                    PredicteData,nframes=GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,int(dlc_cfg["batch_size"]))
+            else:
+                if TFGPUinference:
+                    PredicteData,nframes=GetPoseS_GTF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes)
+                else:
+                    PredicteData,nframes=GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes)
 
         stop = time.time()
-
         if cfg['cropping']==True:
             coords=[cfg['x1'],cfg['x2'],cfg['y1'],cfg['y2']]
         else:
@@ -364,27 +509,31 @@ def AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,
             "DLC-model-config file": dlc_cfg,
             "fps": fps,
             "batch_size": dlc_cfg["batch_size"],
-            "num_outputs": dlc_cfg["num_outputs"],
             "frame_dimensions": (ny, nx),
             "nframes": nframes,
             "iteration (active-learning)": cfg["iteration"],
             "training set fraction": trainFraction,
             "cropping": cfg['cropping'],
             "cropping_parameters": coords
+            #"gpu_info": device_lib.list_local_devices()
         }
         metadata = {'data': dictionary}
 
         print("Saving results in %s..." %(Path(video).parents[0]))
         auxiliaryfunctions.SaveData(PredicteData[:nframes,:], metadata, dataname, pdindex, range(nframes),save_as_csv)
+        return DLCscorer
+    else:
+        return DLCscorer
 
 def GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nframes,batchsize,rgb):
     ''' Batchwise prediction of pose  for framelist in directory'''
-    from skimage import io
+    #from skimage.io import imread
+    from deeplabcut.utils.auxfun_videos import imread
     print("Starting to extract posture")
     if rgb:
-        im=io.imread(os.path.join(directory,framelist[0]),mode='RGB')
+        im=imread(os.path.join(directory,framelist[0]),mode='RGB')
     else:
-        im=io.imread(os.path.join(directory,framelist[0]))
+        im=imread(os.path.join(directory,framelist[0]))
 
     ny,nx,nc=np.shape(im)
     print("Overall # of frames: ", nframes," found with (before cropping) frame dimensions: ", nx,ny)
@@ -411,11 +560,11 @@ def GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nfra
 
     if batchsize==1:
         for counter,framename in enumerate(framelist):
-                #frame=io.imread(os.path.join(directory,framename),mode='RGB')
+                #frame=imread(os.path.join(directory,framename),mode='RGB')
                 if rgb:
-                    im=io.imread(os.path.join(directory,framename),mode='RGB')
+                    im=imread(os.path.join(directory,framename),mode='RGB')
                 else:
-                    im=io.imread(os.path.join(directory,framename))
+                    im=imread(os.path.join(directory,framename))
 
                 if counter%step==0:
                     pbar.update(step)
@@ -431,9 +580,9 @@ def GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nfra
         frames = np.empty((batchsize, ny, nx, 3), dtype='ubyte') # this keeps all the frames of a batch
         for counter,framename in enumerate(framelist):
                 if rgb:
-                    im=io.imread(os.path.join(directory,framename),mode='RGB')
+                    im=imread(os.path.join(directory,framename),mode='RGB')
                 else:
-                    im=io.imread(os.path.join(directory,framename))
+                    im=imread(os.path.join(directory,framename))
 
                 if counter%step==0:
                     pbar.update(step)
@@ -494,7 +643,7 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,traini
         Saves the predictions in a .csv file. The default is ``False``; if provided it must be either ``True`` or ``False``
 
     rbg: bool, optional.
-        Whether to load image as rgb; Note e.g. some tiffs do not alow that option in io.imread, then just set this to false.
+        Whether to load image as rgb; Note e.g. some tiffs do not alow that option in imread, then just set this to false.
 
     Examples
     --------
@@ -559,7 +708,7 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,traini
     dlc_cfg['batch_size'] = cfg['batch_size']
 
     # Name for scorer:
-    DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations)
+    DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations)
     sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
 
     # update number of outputs and adjust pandas indices
@@ -589,14 +738,9 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,traini
         print("Analyzing all frames in the directory: ", directory)
         os.chdir(directory)
         framelist=np.sort([fn for fn in os.listdir(os.curdir) if (frametype in fn)])
-
-        vname = Path(directory).stem
-        dataname = os.path.join(directory,vname + DLCscorer + '.h5')
-        try:
-            # Attempt to load data...
-            pd.read_hdf(dataname)
-            print("Frames already analyzed!", dataname)
-        except FileNotFoundError:
+        vname=Path(directory).stem
+        notanalyzed,dataname,DLCscorer=auxiliaryfunctions.CheckifNotAnalyzed(directory,vname,DLCscorer,DLCscorerlegacy,flag='framestack')
+        if notanalyzed:
             nframes = len(framelist)
             if nframes>0:
                 start = time.time()
@@ -633,7 +777,6 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,traini
                 print("No frames were found. Consider changing the path or the frametype.")
 
     os.chdir(str(start_path))
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
