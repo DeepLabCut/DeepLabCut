@@ -1,4 +1,4 @@
-"""
+'''
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
@@ -257,7 +257,7 @@ class PoseDataset:
         df = MapData(df, self.compute_target_part_scoremap)
 
         num_cores = multiprocessing.cpu_count()
-        num_processes = num_cores * int(self.cfg['processratio'])
+        num_processes = int(num_cores * self.cfg['processratio'])
         if num_processes <= 1:
             num_processes = 2 # recommended to use more than one process for training
         if os.name == 'nt':
