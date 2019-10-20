@@ -16,8 +16,6 @@ import threading
 import argparse
 from pathlib import Path
 import tensorflow as tf
-config = tf.ConfigProto()
-config.gpu_options.allow_growth = True
 vers = (tf.__version__).split('.')
 if int(vers[0])==1 and int(vers[1])>12:
     TF=tf.compat.v1
@@ -93,7 +91,7 @@ def get_optimizer(loss_op, cfg):
 
     return learning_rate, train_op
 
-def train(config_yaml,displayiters,saveiters,maxiters,max_to_keep=5,keepdeconvweights=True):
+def train(config_yaml,displayiters,saveiters,maxiters,max_to_keep=5,keepdeconvweights=True,allow_growth=False):
     start_path=os.getcwd()
     os.chdir(str(Path(config_yaml).parents[0])) #switch to folder of config_yaml (for logging)
     setup_logging()
@@ -101,7 +99,6 @@ def train(config_yaml,displayiters,saveiters,maxiters,max_to_keep=5,keepdeconvwe
     cfg = load_config(config_yaml)
     if cfg.dataset_type=='default' or cfg.dataset_type=='tensorpack' or cfg.dataset_type=='deterministic':
         print("Switching batchsize to 1, as default/tensorpack/deterministic loaders do not support batches >1. Use imgaug loader.")
-
         cfg['batch_size']=1 #in case this was edited for analysis.-
 
     dataset = create_dataset(cfg)
@@ -130,7 +127,13 @@ def train(config_yaml,displayiters,saveiters,maxiters,max_to_keep=5,keepdeconvwe
     restorer = TF.train.Saver(variables_to_restore)
     saver = TF.train.Saver(max_to_keep=max_to_keep) # selects how many snapshots are stored, see https://github.com/AlexEMG/DeepLabCut/issues/8#issuecomment-387404835
 
-    sess = TF.Session(config=config)
+    if allow_growth==True:
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        sess = TF.Session(config=config)
+    else:
+        sess = TF.Session()
+
     coord, thread = start_preloading(sess, enqueue_op, dataset, placeholders)
     train_writer = TF.summary.FileWriter(cfg.log_dir, sess.graph)
     learning_rate, train_op = get_optimizer(total_loss, cfg)

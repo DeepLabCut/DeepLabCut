@@ -36,7 +36,7 @@ video=[os.path.join(basepath,'Reaching-Mackenzie-2018-08-30','videos',videoname+
 dfolder=None
 net_type='resnet_50' #'mobilenet_v2_0.35' #'resnet_50'
 augmenter_type='default' #'tensorpack'
-numiter=10
+numiter=5
 
 print("CREATING PROJECT")
 path_config_file=deeplabcut.create_new_project(task,scorer,video,copy_videos=True)
@@ -166,7 +166,7 @@ except: # if ffmpeg is broken
         return clip.get_frame(1)
 
     newclip = VideoClip(make_frame, duration=1)
-    newclip.write_videofile(newvideo,fps=30)
+    newclip.write_videofile(newvideo2,fps=30)
 
 
 print("Inference with direct cropping")
@@ -194,8 +194,8 @@ DLC_config['multi_step']=[[0.001,10]]
 print("CHANGING training parameters to end quickly!")
 deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
 
-print("TRAINING shuffle 2")
-deeplabcut.train_network(path_config_file,shuffle=2)
+print("TRAINING shuffle 2, with smaller allocated memory")
+deeplabcut.train_network(path_config_file,shuffle=2,allow_growth=True)
 
 print("ANALYZING some individual frames")
 deeplabcut.analyze_time_lapse_frames(path_config_file,os.path.join(cfg['project_path'],'labeled-data/reachingvideo1/'))
