@@ -544,7 +544,7 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
 
     userfeedback: bool, optional
         If this is set to false, then all requested train/test splits are created (no matter if they already exist). If you
-        want to assure that previous splits etc. are not overwritten, then set this to False and you will be asked for ech split.
+        want to assure that previous splits etc. are not overwritten, then set this to True and you will be asked for each split.
 
     net_type: string
         Type of networks. Currently resnet_50, resnet_101, resnet_152, mobilenet_v2_1.0,mobilenet_v2_0.75, mobilenet_v2_0.5, and mobilenet_v2_0.35 are supported.
@@ -609,7 +609,7 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
                 if os.path.isfile(trainposeconfigfile):
                     askuser=input ("The model folder is already present. If you continue, it will overwrite the existing model (split). Do you want to continue?(yes/no): ")
                     if askuser=='no'or askuser=='No' or askuser=='N' or askuser=='No':
-                        sys.exit("Use the Shuffles argument as a list to specify a different shuffle index. Check out the help for more details.")
+                        raise Exception("Use the Shuffles argument as a list to specify a different shuffle index. Check out the help for more details.")
                     else:
                         pass
             #trainIndexes, testIndexes = SplitTrials(range(len(Data.index)), trainFraction)
@@ -730,7 +730,7 @@ def get_largestshuffle_index(config):
         max_shuffle_index = 0
     return(max_shuffle_index)
 
-def create_training_model_comparison(config,trainindex=0,num_shuffles=1,net_types=['resnet_50'],augmenter_types=['default'],windows2linux=False):
+def create_training_model_comparison(config,trainindex=0,num_shuffles=1,net_types=['resnet_50'],augmenter_types=['default'],userfeedback=False,windows2linux=False):
     """
     Creates a training dataset with different networks and augmentation types (dataset_loader) so that the shuffles
     have same training and testing indices.
@@ -754,6 +754,10 @@ def create_training_model_comparison(config,trainindex=0,num_shuffles=1,net_type
 
     augmenter_types: list
         Type of augmenters. Currently "default", "imgaug", "tensorpack", and "deterministic" are supported.
+
+    userfeedback: bool, optional
+        If this is set to false, then all requested train/test splits are created (no matter if they already exist). If you
+        want to assure that previous splits etc. are not overwritten, then set this to True and you will be asked for each split.
 
     windows2linux: bool.
         The annotation files contain path formated according to your operating system. If you label on windows
@@ -792,5 +796,5 @@ def create_training_model_comparison(config,trainindex=0,num_shuffles=1,net_type
             for idx_aug,aug in enumerate(augmenter_types):
                 get_max_shuffle_idx=(largestshuffleindex+idx_aug+idx_net*len(augmenter_types)+shuffle*len(augmenter_types)*len(net_types))+1 #get shuffle index; starts ith 0 so added 1
                 log_info = str("Shuffle index:" + str(get_max_shuffle_idx) + ", net_type:"+net +", augmenter_type:"+aug + ", trainsetindex:" +str(trainindex))
-                create_training_dataset(config,Shuffles=[get_max_shuffle_idx],net_type=net,trainIndexes=trainIndexes,testIndexes=testIndexes,augmenter_type=aug,windows2linux=windows2linux)
+                create_training_dataset(config,Shuffles=[get_max_shuffle_idx],net_type=net,trainIndexes=trainIndexes,testIndexes=testIndexes,augmenter_type=aug,userfeedback=userfeedback,windows2linux=windows2linux)
                 logger.info(log_info)

@@ -99,6 +99,7 @@ def train(config_yaml,displayiters,saveiters,maxiters,max_to_keep=5,keepdeconvwe
     cfg = load_config(config_yaml)
     if cfg.dataset_type=='default' or cfg.dataset_type=='tensorpack' or cfg.dataset_type=='deterministic':
         print("Switching batchsize to 1, as default/tensorpack/deterministic loaders do not support batches >1. Use imgaug loader.")
+
         cfg['batch_size']=1 #in case this was edited for analysis.-
 
     dataset = create_dataset(cfg)

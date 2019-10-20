@@ -38,8 +38,150 @@ def Plotting(cfg,comparisonbodyparts,DLCscorer,trainIndices,DataCombined,foldern
     for ind in tqdm(np.arange(NumFrames)):
         visualization.PlottingandSaveLabeledFrame(DataCombined,ind,trainIndices,cfg,colors,comparisonbodyparts,DLCscorer,foldername)
 
+def return_evaluate_network_data(config,shuffle=0,trainingsetindex=0,comparisonbodyparts="all",Snapindex=None,rescale=False,fulldata=False,show_errors = True):
+    """
+    Returns the results for (previously evaluated) network. deeplabcut.evaluate_network(..)
+    Returns list of (per model): [trainingsiterations,trainfraction,shuffle,trainerror,testerror,pcutoff,trainerrorpcutoff,testerrorpcutoff,Snapshots[snapindex],scale,net_type]
+
+    If fulldata=True, also returns (the complete annotation and prediction array)
+    Returns list of: (DataMachine, Data, data, trainIndices, testIndices, trainFraction, DLCscorer,comparisonbodyparts, cfg, Snapshots[snapindex])
+    ----------
+    config : string
+        Full path of the config.yaml file as a string.
+
+    shuffle: integer
+        integers specifying shuffle index of the training dataset. The default is 0.
+
+    trainingsetindex: int, optional
+        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml). This
+        variable can also be set to "all".
+
+    comparisonbodyparts: list of bodyparts, Default is "all".
+        The average error will be computed for those body parts only (Has to be a subset of the body parts).
+
+    rescale: bool, default False
+        Evaluate the model at the 'global_scale' variable (as set in the test/pose_config.yaml file for a particular project). I.e. every
+        image will be resized according to that scale and prediction will be compared to the resized ground truth. The error will be reported
+        in pixels at rescaled to the *original* size. I.e. For a [200,200] pixel image evaluated at global_scale=.5, the predictions are calculated
+        on [100,100] pixel images, compared to 1/2*ground truth and this error is then multiplied by 2!. The evaluation images are also shown for the
+        original size!
+
+    Examples
+    --------
+    If you do not want to plot
+    >>> deeplabcut._evaluate_network_data('/analysis/project/reaching-task/config.yaml', shuffle=[1])
+    --------
+    If you want to plot
+    >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml',shuffle=[1],True)
+    """
+
+    import os
+    from skimage import io
+    import skimage.color
+
+    from deeplabcut.pose_estimation_tensorflow.config import load_config
+    from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import data_to_input
+    from deeplabcut.utils import auxiliaryfunctions, visualization
+
+    start_path=os.getcwd()
+    # Read file path for pose_config file. >> pass it on
+    cfg = auxiliaryfunctions.read_config(config)
+
+    # Loading human annotatated data
+    trainingsetfolder=auxiliaryfunctions.GetTrainingSetFolder(cfg)
+    #Data=pd.read_hdf(os.path.join(cfg["project_path"],str(trainingsetfolder),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing')
+
+    # Get list of body parts to evaluate network for
+    comparisonbodyparts=auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg,comparisonbodyparts)
+    ##################################################
+    # Load data...
+    ##################################################
+    trainFraction=cfg["TrainingFraction"][trainingsetindex]
+    datafn,metadatafn=auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,trainFraction,shuffle,cfg)
+    modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)))
+    path_test_config = Path(modelfolder) / 'test' / 'pose_cfg.yaml'
+    # Load meta data
+    data, trainIndices, testIndices, trainFraction=auxiliaryfunctions.LoadMetadata(os.path.join(cfg["project_path"],metadatafn))
+
+    try:
+        dlc_cfg = load_config(str(path_test_config))
+    except FileNotFoundError:
+        raise FileNotFoundError("It seems the model for shuffle %s and trainFraction %s does not exist."%(shuffle,trainFraction))
+
+    ########################### RESCALING (to global scale)
+    if rescale==True:
+        scale=dlc_cfg['global_scale']
+        print("Rescaling Data to ", scale)
+        Data=pd.read_hdf(os.path.join(cfg["project_path"],str(trainingsetfolder),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing')*scale
+    else:
+        scale=1
+        Data=pd.read_hdf(os.path.join(cfg["project_path"],str(trainingsetfolder),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing')
+
+    evaluationfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetEvaluationFolder(trainFraction,shuffle,cfg)))
+    # Check which snapshots are available and sort them by # iterations
+    Snapshots = np.array([fn.split('.')[0]for fn in os.listdir(os.path.join(str(modelfolder), 'train'))if "index" in fn])
+
+    if len(Snapshots)==0:
+        print("Snapshots not found! It seems the dataset for shuffle %s and trainFraction %s is not trained.\nPlease train it before evaluating.\nUse the function 'train_network' to do so."%(shuffle,trainFraction))
+        snapindices=[]
+    else:
+        increasing_indices = np.argsort([int(m.split('-')[1]) for m in Snapshots])
+        Snapshots = Snapshots[increasing_indices]
+        if Snapindex==None:
+            Snapindex=cfg["snapshotindex"]
+
+        if Snapindex == -1:
+            snapindices = [-1]
+        elif Snapindex == "all":
+            snapindices = range(len(Snapshots))
+        elif Snapindex<len(Snapshots):
+            snapindices=[Snapindex]
+        else:
+            print("Invalid choice, only -1 (last), any integer up to last, or all (as string)!")
+
+    DATA=[]
+    results=[]
+    for snapindex in snapindices:
+        dlc_cfg['init_weights'] = os.path.join(str(modelfolder),'train',Snapshots[snapindex]) #setting weights to corresponding snapshot.
+        trainingsiterations = (dlc_cfg['init_weights'].split(os.sep)[-1]).split('-')[-1] #read how many training siterations that corresponds to.
+
+        #name for deeplabcut net (based on its parameters)
+        #DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations)
+        DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations)
+        print("Retrieving ", DLCscorer, " with # of trainingiterations:", trainingsiterations)
+        notanalyzed,resultsfilename,DLCscorer=auxiliaryfunctions.CheckifNotEvaluated(str(evaluationfolder),DLCscorer,DLCscorerlegacy,Snapshots[snapindex])
+        #resultsfilename=os.path.join(str(evaluationfolder),DLCscorer + '-' + str(Snapshots[snapindex])+  '.h5') # + '-' + str(snapshot)+  ' #'-' + Snapshots[snapindex]+  '.h5')
+        print(resultsfilename)
+        if not notanalyzed and os.path.isfile(resultsfilename): #data exists..
+            DataMachine = pd.read_hdf(resultsfilename,'df_with_missing')
+            DataCombined = pd.concat([Data.T, DataMachine.T], axis=0).T
+            RMSE,RMSEpcutoff = pairwisedistances(DataCombined, cfg["scorer"], DLCscorer,cfg["pcutoff"],comparisonbodyparts)
+
+            testerror = np.nanmean(RMSE.iloc[testIndices].values.flatten())
+            trainerror = np.nanmean(RMSE.iloc[trainIndices].values.flatten())
+            testerrorpcutoff = np.nanmean(RMSEpcutoff.iloc[testIndices].values.flatten())
+            trainerrorpcutoff = np.nanmean(RMSEpcutoff.iloc[trainIndices].values.flatten())
+            if show_errors == True:
+                    print("Results for",trainingsiterations," training iterations:", int(100 * trainFraction), shuffle, "train error:",np.round(trainerror,2), "pixels. Test error:", np.round(testerror,2)," pixels.")
+                    print("With pcutoff of", cfg["pcutoff"]," train error:",np.round(trainerrorpcutoff,2), "pixels. Test error:", np.round(testerrorpcutoff,2), "pixels")
+                    print("Snapshot",Snapshots[snapindex])
+
+            r=[trainingsiterations,int(100 * trainFraction),shuffle,np.round(trainerror,2),np.round(testerror,2),cfg["pcutoff"],np.round(trainerrorpcutoff,2), np.round(testerrorpcutoff,2),Snapshots[snapindex],scale,dlc_cfg['net_type']]
+            results.append(r)
+        else:
+            print("Model not trained/evaluated!")
+        if fulldata==True:
+            DATA.append([DataMachine, Data, data, trainIndices, testIndices, trainFraction, DLCscorer,comparisonbodyparts, cfg, evaluationfolder, Snapshots[snapindex]])
+
+    os.chdir(start_path)
+    if fulldata==True:
+        return DATA, results
+    else:
+        return results
+
 def evaluate_network(config,Shuffles=[1],trainingsetindex=0,plotting = None,show_errors = True,comparisonbodyparts="all",gputouse=None, rescale=False):
     """
+
     Evaluates the network based on the saved models at different stages of the training network.\n
     The evaluation results are stored in the .h5 and .csv file under the subdirectory 'evaluation_results'.
     Change the snapshotindex parameter in the config file to 'all' in order to evaluate all the saved models.
@@ -81,6 +223,7 @@ def evaluate_network(config,Shuffles=[1],trainingsetindex=0,plotting = None,show
     --------
     If you want to plot
     >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml',Shuffles=[1],True)
+
     """
     import os
     #import skimage.color

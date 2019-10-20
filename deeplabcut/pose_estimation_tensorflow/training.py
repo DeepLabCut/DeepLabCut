@@ -113,7 +113,7 @@ def train_network(config,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshot
     poseconfigfile=Path(os.path.join(cfg['project_path'],str(modelfoldername),"train","pose_cfg.yaml"))
     if not poseconfigfile.is_file():
       print("The training datafile ", poseconfigfile, " is not present.")
-      print("Probably, the training dataset for this secific shuffle index was not created.")
+      print("Probably, the training dataset for this specific shuffle index was not created.")
       print("Try with a different shuffle/trainingsetfraction or use function 'create_training_dataset' to create a new trainingdataset with this shuffle index." )
     else:
       # Set environment variables
