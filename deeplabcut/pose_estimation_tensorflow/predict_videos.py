@@ -526,7 +526,7 @@ def AnalyzeVideo(video,DLCscorer,DLCscorerlegacy,trainFraction,cfg,dlc_cfg,sess,
         return DLCscorer
 
 def GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nframes,batchsize,rgb):
-    ''' Batchwise prediction of pose for framelist in directory'''
+    ''' Batchwise prediction of pose for frame list in directory'''
     #from skimage.io import imread
     from deeplabcut.utils.auxfun_videos import imread
     print("Starting to extract posture")
@@ -671,6 +671,7 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,
 
     TF.reset_default_graph()
     start_path=os.getcwd() #record cwd to return to this directory in the end
+
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg['TrainingFraction'][trainingsetindex]
     modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)))

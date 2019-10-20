@@ -24,10 +24,11 @@ else:
 import tensorflow.contrib.slim as slim
 
 from deeplabcut.pose_estimation_tensorflow.config import load_config
+from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import Batch
 from deeplabcut.pose_estimation_tensorflow.dataset.factory import create as create_dataset
 from deeplabcut.pose_estimation_tensorflow.nnet.net_factory import pose_net
-from deeplabcut.pose_estimation_tensorflow.nnet.pose_net import get_batch_spec
 from deeplabcut.pose_estimation_tensorflow.util.logging import setup_logging
+
 
 class LearningRate(object):
     def __init__(self, cfg):
@@ -40,6 +41,17 @@ class LearningRate(object):
             self.current_step += 1
 
         return lr
+
+def get_batch_spec(cfg):
+    num_joints = cfg.num_joints
+    batch_size = cfg.batch_size
+    return {
+        Batch.inputs: [batch_size, None, None, 3],
+        Batch.part_score_targets: [batch_size, None, None, num_joints],
+        Batch.part_score_weights: [batch_size, None, None, num_joints],
+        Batch.locref_targets: [batch_size, None, None, num_joints * 2],
+        Batch.locref_mask: [batch_size, None, None, num_joints * 2]
+    }
 
 def setup_preloading(batch_spec):
     placeholders = {name: TF.placeholder(tf.float32, shape=spec) for (name, spec) in batch_spec.items()}
