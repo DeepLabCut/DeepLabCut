@@ -16,6 +16,8 @@ import threading
 import argparse
 from pathlib import Path
 import tensorflow as tf
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
 vers = (tf.__version__).split('.')
 if int(vers[0])==1 and int(vers[1])>12:
     TF=tf.compat.v1
@@ -128,7 +130,7 @@ def train(config_yaml,displayiters,saveiters,maxiters,max_to_keep=5,keepdeconvwe
     restorer = TF.train.Saver(variables_to_restore)
     saver = TF.train.Saver(max_to_keep=max_to_keep) # selects how many snapshots are stored, see https://github.com/AlexEMG/DeepLabCut/issues/8#issuecomment-387404835
 
-    sess = TF.Session()
+    sess = TF.Session(config=config)
     coord, thread = start_preloading(sess, enqueue_op, dataset, placeholders)
     train_writer = TF.summary.FileWriter(cfg.log_dir, sess.graph)
     learning_rate, train_op = get_optimizer(total_loss, cfg)
