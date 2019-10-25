@@ -1,10 +1,10 @@
-# Demo Notebooks:
+# Demo Jupyter & Colaboratory Notebooks:
 
 You can use DeepLabCut in the cloud without any installation (see [Demo using Google Colaboratory below](/examples#demo-deeplabcut-training-and-analysis-on-google-colaboratory-with-googles-gpus)).
 
 On your computer, we recommend using **Anaconda to install Python and Jupyter Notebooks, see the [Installation](/docs/installation.md) page**. Then, on your local machine using these notebooks to guide you, you can (1) demo our labeled data (or create your own), (2) create a project, extract frames to lablel, use the GUI to label, and create a training set. 
 
-We suggest making a "Fork" of this repo and/or then place DeepLabCut files in a folder :
+We suggest making a "Fork" of this repo and/or then place DeepLabCut files in a folder:
 ``git clone https://github.com/AlexEMG/DeepLabCut``
 so you can access it locally with **Anaconda.** You can also click the "download" button, rather than using ``git``. Then you can edit the Notebooks as you like!
 
@@ -46,10 +46,13 @@ Here is a demo of us using the Colab Notebooks: https://www.youtube.com/watch?v=
 
 *Warning: Colab updates their CUDA/TensorFlow likely faster than we can keep up, so this may not work at all future points in time (and, as a reminder, this whole package is released with a [LICENSE](/LICENSE) that implies no Liability and no Warranty).*
 
-# 3D DeepLabCut
+## 3D DeepLabCut:
 
-Ready to take your pose estimation to a new dimension? As of 2.0.7 we support 3D within the package. Please check out the dedicated 3D_Demo_DeepLabCut.ipynb above for more details!
+Ready to take your pose estimation to a new dimension? As of 2.0.7+ we support 3D within the package. Please check out the dedicated 3D_Demo_DeepLabCut.ipynb above for more details!
 
+## Human pre-trained network DEMO:
+
+We provide a COLAB notebook (COLAB_Human_Project_DEMO.ipynb) that allows you to immediately analyze videos using a human pre-trained network. Here, your videos should include frames that are around 300 by 300 pixels (although it does not need to be square) for optimal performance. As of 2.0.9, we provide tools to downsample and shorten videos within the toolbox. This code will also create a new project folder so you can refine, add new bodyparts or label other objects, and re-train. Launch COLAB here: [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/AlexEMG/DeepLabCut/blob/master/examples/COLAB_Human_Project_DEMO.ipynb)
 
 # Python/iPython:
 

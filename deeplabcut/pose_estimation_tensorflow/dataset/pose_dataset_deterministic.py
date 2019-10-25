@@ -23,8 +23,8 @@ from numpy import array as arr
 from numpy import concatenate as cat
 
 import scipy.io as sio
-from scipy.misc import imread, imresize
-
+#from scipy.misc import imread, imresize
+from deeplabcut.utils.auxfun_videos import imread, imresize
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import Batch, data_to_input, mirror_joints_map, CropImage, DataItem
 
 class PoseDataset:
@@ -165,11 +165,11 @@ class PoseDataset:
         return True
 
     def make_batch(self, data_item, scale, mirror):
-        
+
         im_file = data_item.im_path
         logging.debug('image %s', im_file)
         logging.debug('mirror %r', mirror)
-        
+
         #print(im_file, os.getcwd())
         #print(self.cfg.project_path)
         image = imread(os.path.join(self.cfg.project_path,im_file), mode='RGB')
@@ -184,7 +184,7 @@ class PoseDataset:
                 # draw random crop dimensions & subtract joint points
                 #print(joints,j,'ahah')
                 joints,image=CropImage(joints,image,joints[0,j,1],joints[0,j,2],self.cfg)
-                
+
                 #if self.has_gt:
                 #    joints[0,:, 1] -= x0
                 #    joints[0,:, 2] -= y0
@@ -198,7 +198,7 @@ class PoseDataset:
                 '''
             else:
                 pass #no cropping!
-                
+
         img = imresize(image, scale) if scale != 1 else image
         scaled_img_size = arr(img.shape[0:2])
 

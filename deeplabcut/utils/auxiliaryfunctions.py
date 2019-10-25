@@ -7,9 +7,6 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
-
-
-
 import os, pickle, yaml
 import pandas as pd
 from pathlib import Path
@@ -19,6 +16,8 @@ import ruamel.yaml
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import cv2
+
+
 def create_config_template():
     """
     Creates a template for config.yaml file. This specific order is preserved while saving as yaml file.
@@ -70,7 +69,7 @@ def create_config_template():
     ruamelFile = ruamel.yaml.YAML()
     cfg_file = ruamelFile.load(yaml_str)
     return(cfg_file,ruamelFile)
-    
+
 def create_config_template_3d():
     """
     Creates a template for config.yaml file for 3d project. This specific order is preserved while saving as yaml file.
@@ -134,7 +133,7 @@ def write_config(configname,cfg):
         cfg_file,ruamelFile = create_config_template()
         for key in cfg.keys():
             cfg_file[key]=cfg[key]
-        
+
         # Adding default value for variable skeleton and skeleton_color for backward compatibility.
         if not 'skeleton' in cfg.keys():
             cfg_file['skeleton'] = []
@@ -189,13 +188,13 @@ def read_pickle(filename):
     with open(filename, 'rb') as handle:
         return(pickle.load(handle))
 
-# Write the pickle file    
+# Write the pickle file
 def write_pickle(filename,data):
     with open(filename, 'wb') as handle:
         pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 def create_empty_df(dataframe,scorer,flag):
-# Creates an empty dataFrame of same shape as df_side_view.  
+# Creates an empty dataFrame of same shape as df_side_view.
 # flag = number of coordinates. e.g. 4 for 3d,3 for 2d as we need to store the likelihood too.
 #    df = pd.read_hdf(dataframe)
     df = dataframe
@@ -212,7 +211,7 @@ def create_empty_df(dataframe,scorer,flag):
                                              names=['scorer', 'bodyparts', 'coords'])
         elif flag == '3d':
             pdindex = pd.MultiIndex.from_product([[scorer], [bodypart], ['x', 'y','z']],
-                                             names=['scorer', 'bodyparts', 'coords']) 
+                                             names=['scorer', 'bodyparts', 'coords'])
         frame = pd.DataFrame(a, columns = pdindex,index = range(0,df.shape[0]))
         dataFrame = pd.concat([frame,dataFrame],axis=1)
     return(dataFrame,scorer,bodyparts)
@@ -224,7 +223,7 @@ def Getlistofvideos(videos,videotype):
         """
         Analyzes all the videos in the directory.
         """
-        
+
         print("Analyzing all the videos in the directory")
         videofolder= videos[0]
         os.chdir(videofolder)
@@ -331,10 +330,18 @@ def IntersectionofBodyPartsandOnesGivenbyUser(cfg,comparisonbodyparts):
                 cpbpts.append(bp)
         return cpbpts
 
+'''
+mobilenet_v2_1.0:
+mobilenet_v2_0.75:
+mobilenet_v2_0.5:
+mobilenet_v2_0.35
+'''
+
 def GetScorerName(cfg,shuffle,trainFraction,trainingsiterations='unknown'):
     ''' Extract the scorer/network name for a particular shuffle, training fraction, etc. '''
     Task = cfg['Task']
     date = cfg['date']
+
     if trainingsiterations=='unknown':
         snapshotindex=cfg['snapshotindex']
         if cfg['snapshotindex'] == 'all':
@@ -347,10 +354,122 @@ def GetScorerName(cfg,shuffle,trainFraction,trainingsiterations='unknown'):
         Snapshots = np.array([fn.split('.')[0]for fn in os.listdir(modelfolder) if "index" in fn])
         increasing_indices = np.argsort([int(m.split('-')[1]) for m in Snapshots])
         Snapshots = Snapshots[increasing_indices]
-        #dlc_cfg = read_config(os.path.join(modelfolder,'pose_cfg.yaml'))
-        #dlc_cfg['init_weights'] = os.path.join(modelfolder , 'train', Snapshots[snapshotindex])
         SNP=Snapshots[snapshotindex]
         trainingsiterations = (SNP.split(os.sep)[-1]).split('-')[-1]
 
-    scorer = 'DeepCut' + "_resnet" + str(cfg['resnet']) + "_" + Task + str(date) + 'shuffle' + str(shuffle) + '_' + str(trainingsiterations)
-    return scorer
+    dlc_cfg=read_plainconfig(os.path.join(cfg["project_path"],str(GetModelFolder(trainFraction,shuffle,cfg)),'train','pose_cfg.yaml'))
+    if 'resnet' in dlc_cfg['net_type']: #ABBREVIATE NETWORK NAMES -- esp. for mobilenet!
+        netname=dlc_cfg['net_type'].replace('_','')
+    else: #mobilenet >> mobnet_100; mobnet_35 etc.
+        netname='mobnet_'+str(int(float(dlc_cfg['net_type'].split('_')[-1])*100))
+
+    scorer = 'DLC_' + netname + "_" + Task + str(date) + 'shuffle' + str(shuffle) + '_' + str(trainingsiterations)
+    #legacy scorername until DLC 2.1. (cfg['resnet'] is deprecated / which is why we get the resnet_xyz name from dlc_cfg!
+    #scorer_legacy = 'DeepCut' + "_resnet" + str(cfg['resnet']) + "_" + Task + str(date) + 'shuffle' + str(shuffle) + '_' + str(trainingsiterations)
+    scorer_legacy = 'DeepCut_' + netname + "_" + Task + str(date) + 'shuffle' + str(shuffle) + '_' + str(trainingsiterations)
+    return scorer, scorer_legacy
+
+def CheckifPostProcessing(folder,vname,DLCscorer,DLCscorerlegacy,suffix='filtered'):
+    ''' Checks if filtered/bone lengths were already calculated. If not, figures
+    out if data was already analyzed (either with legacy scorer name or new one!) '''
+    outdataname = os.path.join(folder,vname + DLCscorer + suffix+'.h5')
+    sourcedataname = os.path.join(folder,vname + DLCscorer+'.h5')
+    if os.path.isfile(outdataname): #was data already processed?
+        if suffix=='filtered':
+            print("Video already filtered...", outdataname)
+        elif suffix=='_skeleton':
+            print("Skeleton in video already processed...", outdataname)
+
+        return False, outdataname, sourcedataname, DLCscorer
+    else:
+        odn = os.path.join(folder,vname + DLCscorerlegacy + suffix+'.h5')
+        if os.path.isfile(odn): #was it processed by DLC <2.1 project?
+            if suffix=='filtered':
+                print("Video already filtered...(with DLC<2.1)!", odn)
+            elif suffix=='_skeleton':
+                print("Skeleton in video already processed... (with DLC<2.1)!", odn)
+
+            return False, odn, os.path.join(folder,vname + DLCscorerlegacy+ suffix+'.h5'), DLCscorerlegacy
+        else: #Was the video already analyzed?
+            if os.path.isfile(sourcedataname):
+                return True, outdataname, sourcedataname, DLCscorer
+            else: #was it analyzed with DLC<2.1?
+                sdn=os.path.join(folder,vname + DLCscorerlegacy+'.h5')
+                if os.path.isfile(sdn):
+                    return True, odn, sdn, DLCscorerlegacy
+                else:
+                    print("Video not analyzed -- Run analyze_videos first.")
+                    return False, outdataname,sourcedataname, DLCscorer
+
+
+def CheckifNotAnalyzed(destfolder,vname,DLCscorer,DLCscorerlegacy,flag='video'):
+    dataname = os.path.join(destfolder,vname + DLCscorer + '.h5')
+    if os.path.isfile(dataname):
+        if flag=='video':
+            print("Video already analyzed!", dataname)
+        elif flag=='framestack':
+            print("Frames already analyzed!", dataname)
+        return False, dataname, DLCscorer
+    else:
+        dn = os.path.join(destfolder,vname + DLCscorerlegacy + '.h5')
+        if os.path.isfile(dn):
+            if flag=='video':
+                print("Video already analyzed (with DLC<2.1)!", dn)
+            elif flag=='framestack':
+                print("Frames already analyzed (with DLC<2.1)!", dn)
+            return False, dn, DLCscorerlegacy
+        else:
+            return True, dataname, DLCscorer
+
+def CheckifNotEvaluated(folder,DLCscorer,DLCscorerlegacy,snapshot):
+    dataname=os.path.join(folder,DLCscorer + '-' + str(snapshot)+  '.h5')
+    if os.path.isfile(dataname):
+        print("This net has already been evaluated!")
+        return False, dataname,DLCscorer
+    else:
+        dn = os.path.join(folder,DLCscorerlegacy + '-' + str(snapshot)+  '.h5')
+        if os.path.isfile(dn):
+            print("This net has already been evaluated (with DLC<2.1)!")
+            return False, dn,DLCscorerlegacy
+        else:
+            return True, dataname,DLCscorer
+
+def LoadAnalyzedData(videofolder,vname,DLCscorer,filtered):
+    if filtered==True:
+        try:
+            fn=os.path.join(videofolder,vname + DLCscorer + 'filtered.h5')
+            Dataframe = pd.read_hdf(fn)
+            metadata=LoadVideoMetadata(os.path.join(videofolder,vname + DLCscorer + '.h5'))
+            datafound=True
+            suffix='_filtered.'
+            return datafound,metadata,Dataframe, DLCscorer,suffix
+        except FileNotFoundError:
+            print("No filtered predictions found, using frame-by-frame output instead.")
+            fn=os.path.join(videofolder,vname + DLCscorer + '.h5')
+            suffix=''
+    else:
+        fn=os.path.join(videofolder,vname + DLCscorer + '.h5')
+        suffix=''
+    try: #TODO: Check if DLCscorer is correct? (based on lookup in pickle?)
+        Dataframe = pd.read_hdf(fn)
+        metadata=LoadVideoMetadata(fn)
+        datafound=True
+    except FileNotFoundError:
+        datanames=[fn for fn in os.listdir(os.curdir) if (vname in fn) and (".h5" in fn) and ("resnet" in fn or "mobilenet" in fn)]
+        if len(datanames)==0:
+            print("The video was not analyzed with this scorer:", DLCscorer)
+            print("No other scorers were found, please use the function 'analyze_videos' first.")
+            datafound=False
+            metadata,Dataframe=[],[]
+        elif len(datanames)>0:
+            print("The video was not analyzed with this scorer:", DLCscorer)
+            print("Other scorers were found, however:", datanames)
+            if 'DeepCut_resnet' in datanames[0]: # try the legacy scorer name instead!
+                DLCscorer='DeepCut'+(datanames[0].split('DeepCut')[1]).split('.h5')[0]
+            else:
+                DLCscorer='DLC_'+(datanames[0].split('DLC_')[1]).split('.h5')[0]
+            print("Creating output for:", DLCscorer," instead.")
+            Dataframe = pd.read_hdf(datanames[0])
+            metadata=LoadVideoMetadata(datanames[0])
+            datafound=True
+    return datafound, metadata, Dataframe, DLCscorer,suffix

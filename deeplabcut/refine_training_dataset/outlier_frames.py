@@ -95,13 +95,13 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
         Uses openCV for loading & extractiong (otherwise moviepy (legacy))
 
     savelabeled: bool, default: True
-        If true also saves frame with predicted labels in each folder. 
+        If true also saves frame with predicted labels in each folder.
 
     destfolder: string, optional
-        Specifies the destination folder that was used for storing analysis data (default is the path of the video). 
+        Specifies the destination folder that was used for storing analysis data (default is the path of the video).
 
     Examples
-    
+
     Windows example for extracting the frames with default settings
     >>> deeplabcut.extract_outlier_frames('C:\\myproject\\reaching-task\\config.yaml',['C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi'])
     --------
@@ -117,25 +117,25 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
     """
 
     cfg = auxiliaryfunctions.read_config(config)
-    scorer=auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction = cfg['TrainingFraction'][trainingsetindex])
-    print("network parameters:", scorer)
-
+    DLCscorer,DLCscorerlegacy=auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction = cfg['TrainingFraction'][trainingsetindex])
     Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
     for video in Videos:
       if destfolder is None:
             videofolder = str(Path(video).parents[0])
       else:
             videofolder=destfolder
-      
-      dataname = str(Path(video).stem)+scorer
-      try:
-          Dataframe = pd.read_hdf(os.path.join(videofolder,dataname+'.h5'))
+
+      notanalyzed,dataname,DLCscorer=auxiliaryfunctions.CheckifNotAnalyzed(videofolder,str(Path(video).stem),DLCscorer,DLCscorerlegacy,flag='checking')
+      if notanalyzed:
+          print("It seems the video has not been analyzed yet, or the video is not found! You can only refine the labels after the a video is analyzed. Please run 'analyze_video' first. Or, please double check your video file path")
+      else:
+          Dataframe = pd.read_hdf(dataname,'df_with_missing')
+          scorer=Dataframe.columns.get_level_values(0)[0] #reading scorer from
           nframes=np.size(Dataframe.index)
-          #extract min and max index based on start stop interval.
+          # extract min and max index based on start stop interval.
           startindex=max([int(np.floor(nframes*cfg['start'])),0])
           stopindex=min([int(np.ceil(nframes*cfg['stop'])),nframes])
           Index=np.arange(stopindex-startindex)+startindex
-          
           #figure out body part list:
           bodyparts=auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg,comparisonbodyparts)
 
@@ -157,7 +157,7 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
               #deviation_dataname = str(Path(videofolder)/Path(dataname))
               # Calculate deviatons for video
               [d,o] = ComputeDeviations(Dataframe,cfg,bodyparts,scorer,dataname,p_bound,alpha,ARdegree,MAdegree)
-              
+
               #Some heuristics for extracting frames based on distance:
               Indices=np.where(d>epsilon)[0] # time points with at least average difference of epsilon
 
@@ -166,7 +166,7 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
           elif outlieralgorithm=='manual':
               wd = Path(config).resolve().parents[0]
               os.chdir(str(wd))
-              from deeplabcut.refine_training_dataset import outlier_frame_extraction_toolbox 
+              from deeplabcut.refine_training_dataset import outlier_frame_extraction_toolbox
 
               outlier_frame_extraction_toolbox.show(config,video,shuffle,Dataframe,scorer,savelabeled)
           # Run always except when the outlieralgorithm == manual.
@@ -180,20 +180,18 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
                   print("If this list is very large, perhaps consider changing the paramters (start, stop, epsilon, comparisonbodyparts) or use a different method.")
               elif outlieralgorithm=='fitting':
                   print("If this list is very large, perhaps consider changing the paramters (start, stop, epsilon, ARdegree, MAdegree, alpha, comparisonbodyparts) or use a different method.")
-    
+
               if automatic==False:
                   askuser = input("yes/no")
               else:
                   askuser='Ja'
-    
+
               if askuser=='y' or askuser=='yes' or askuser=='Ja' or askuser=='ha': # multilanguage support :)
                   #Now extract from those Indices!
                   ExtractFramesbasedonPreselection(Indices,extractionalgorithm,Dataframe,dataname,scorer,video,cfg,config,opencv,cluster_resizewidth,cluster_color,savelabeled)
               else:
                   print("Nothing extracted, please change the parameters and start again...")
-        
-      except FileNotFoundError:
-          print("It seems the video has not been analyzed yet, or the video is not found! You can only refine the labels after the a video is analyzed. Please run 'analyze_video' first. Or, please double check your video file path")
+
 
 
 def convertparms2start(pn):
@@ -363,7 +361,7 @@ def ExtractFramesbasedonPreselection(Index,extractionalgorithm,Dataframe,datanam
     else:
         clip.close()
         del clip
-    
+
     # Extract annotations based on DeepLabCut and store in the folder (with name derived from video name) under labeled-data
     if len(frames2pick)>0:
         #Dataframe = pd.read_hdf(os.path.join(videofolder,dataname+'.h5'))

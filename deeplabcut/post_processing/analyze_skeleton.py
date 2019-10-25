@@ -9,19 +9,19 @@ from math import factorial, atan2, degrees, acos, sqrt, pi
 
 from deeplabcut.utils import auxiliaryfunctions
 
-# UTILS FUNCTIONS
+# utility functions
 def calc_distance_between_points_two_vectors_2d(v1, v2):
     '''calc_distance_between_points_two_vectors_2d [pairwise distance between vectors points]
-    
+
     Arguments:
         v1 {[np.array]} -- [description]
         v2 {[type]} -- [description]
-    
+
     Raises:
         ValueError -- [description]
         ValueError -- [description]
         ValueError -- [description]
-    
+
     Returns:
         [type] -- [description]
 
@@ -46,14 +46,14 @@ def calc_distance_between_points_two_vectors_2d(v1, v2):
 
 
 def angle_between_points_2d_anticlockwise(p1, p2):
-    '''angle_between_points_2d_clockwise [Determines the angle of a straight line drawn between point one and two. 
+    '''angle_between_points_2d_clockwise [Determines the angle of a straight line drawn between point one and two.
         The number returned, which is a double in degrees, tells us how much we have to rotate
         a horizontal line anti-clockwise for it to match the line between the two points.]
 
     Arguments:
         p1 {[np.ndarray, list]} -- np.array or list [ with the X and Y coordinates of the point]
         p2 {[np.ndarray, list]} -- np.array or list [ with the X and Y coordinates of the point]
-    
+
     Returns:
         [int] -- [clockwise angle between p1, p2 using the inner product and the deterinant of the two vectors]
 
@@ -67,7 +67,7 @@ def angle_between_points_2d_anticlockwise(p1, p2):
     '''
 
     """
-        Determines the angle of a straight line drawn between point one and two. 
+        Determines the angle of a straight line drawn between point one and two.
         The number returned, which is a double in degrees, tells us how much we have to rotate
         a horizontal line anit-clockwise for it to match the line between the two points.
     """
@@ -83,14 +83,14 @@ def angle_between_points_2d_anticlockwise(p1, p2):
 
 def calc_angle_between_vectors_of_points_2d(v1, v2):
     '''calc_angle_between_vectors_of_points_2d [calculates the clockwise angle between each set of point for two 2d arrays of points]
-    
+
     Arguments:
         v1 {[np.ndarray]} -- [2d array with X,Y position at each timepoint]
         v2 {[np.ndarray]} -- [2d array with X,Y position at each timepoint]
 
     Returns:
         [np.ndarray] -- [1d array with clockwise angle between pairwise points in v1,v2]
-    
+
     Testing:
     >>> v1 = np.zeros((2, 4))
     >>> v1[1, :] = [1, 1, 1, 1, ]
@@ -103,7 +103,7 @@ def calc_angle_between_vectors_of_points_2d(v1, v2):
     # Check data format
     if v1 is None or v2 is None or not isinstance(v1, np.ndarray) or not isinstance(v2, np.ndarray):
         raise ValueError('Invalid format for input arguments')
-    if len(v1) != len(v2): 
+    if len(v1) != len(v2):
         raise ValueError('Input arrays should have the same length, instead: ', len(v1), len(v2))
     if not v1.shape[0] == 2 or not v2.shape[0] == 2:
         raise ValueError('Invalid shape for input arrays: ', v1.shape, v2.shape)
@@ -121,7 +121,7 @@ def calc_angle_between_vectors_of_points_2d(v1, v2):
 # Process single bone
 def analyzebone(bp1, bp2):
     """[Computes length and orientation of the bone at each frame]
-    
+
     Arguments:
         bp1 {[type]} -- [description]
         bp2 {[type]} -- [description]
@@ -144,13 +144,13 @@ def analyzebone(bp1, bp2):
                                     likelihood=likelihood,
                                     ))
     # df.index.name=name
-    
+
     return df
 
 # MAIN FUNC
 def analyzeskeleton(config, videos, videotype='avi', shuffle=1, trainingsetindex=0, save_as_csv=False, destfolder=None):
     """
-    Extracts length and orientation of each "bone" of the skeleton as defined in the config file. 
+    Extracts length and orientation of each "bone" of the skeleton as defined in the config file.
 
     Parameter
     ----------
@@ -159,59 +159,48 @@ def analyzeskeleton(config, videos, videotype='avi', shuffle=1, trainingsetindex
 
     videos : list
         A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
-    
+
     shuffle : int, optional
         The shufle index of training dataset. The extracted frames will be stored in the labeled-dataset for
         the corresponding shuffle of training dataset. Default is set to 1
 
     trainingsetindex: int, optional
         Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
-    
+
     save_as_csv: bool, optional
         Saves the predictions in a .csv file. The default is ``False``; if provided it must be either ``True`` or ``False``
 
     destfolder: string, optional
-        Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this 
+        Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this
         folder also needs to be passed.
     """
     # Load config file, scorer and videos
     cfg = auxiliaryfunctions.read_config(config)
-    scorer=auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction = cfg['TrainingFraction'][trainingsetindex])
-    
+    DLCscorer,DLCscorerlegacy=auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction = cfg['TrainingFraction'][trainingsetindex])
+
     Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
     for video in Videos:
-        print(video)
-        if destfolder is None:
-            videofolder = str(Path(video).parents[0])
-        else:
-            videofolder=destfolder
-        
         print("Processing %s"%(video))
-        
-        dataname = str(Path(video).stem)+scorer
-        processedname=dataname.split('.h5')[0]+'_skeleton.h5'
-        try:
-            # See if file was already proccessed
-            Dataframe = pd.read_hdf(os.path.join(videofolder, processedname))
-            print("Video already processed...")
-        except FileNotFoundError:
-            try:
-                Dataframe = pd.read_hdf(os.path.join(videofolder,dataname+'.h5'))
+        if destfolder is None:
+            destfolder= str(Path(video).parents[0])
+
+        vname=Path(video).stem
+        notanalyzed,outdataname,sourcedataname,scorer=auxiliaryfunctions.CheckifPostProcessing(destfolder,vname,DLCscorer,DLCscorerlegacy,suffix='_skeleton')
+        if notanalyzed:
+                Dataframe = pd.read_hdf(sourcedataname,'df_with_missing')
                 # Process skeleton
                 bones = {}
                 for bp1, bp2 in cfg['skeleton']:
                     name = "{}_{}".format(bp1, bp2)
                     bones[name] = analyzebone(Dataframe[scorer][bp1], Dataframe[scorer][bp2])
-                
+
                 skeleton = pd.concat(bones, axis=1)
                 # save
-                skeleton.to_hdf(processedname, 'df_with_missing', format='table', mode='w')
+                skeleton.to_hdf(outdataname, 'df_with_missing', format='table', mode='w')
                 if save_as_csv:
-                    skeleton.to_csv(processedname.split('.h5')[0]+'.csv')
-    
-            except FileNotFoundError:
-                print("Video not analyzed -- Run analyze_videos first.")
-                        
+                    skeleton.to_csv(outdataname.split('.h5')[0]+'.csv')
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('config')

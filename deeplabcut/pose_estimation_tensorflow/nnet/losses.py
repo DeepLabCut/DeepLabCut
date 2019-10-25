@@ -3,14 +3,14 @@ Source: DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
 '''
 import tensorflow as tf
-
-from tensorflow.python.ops import math_ops
-from tensorflow.python.framework import ops
 vers = (tf.__version__).split('.')
 if int(vers[0])==1 and int(vers[1])>12:
     TF=tf.compat.v1
 else:
     TF=tf
+
+from tensorflow.python.ops import math_ops
+from tensorflow.python.framework import ops
 
 
 def huber_loss(labels, predictions, weight=1.0, k=1.0, scope=None):
