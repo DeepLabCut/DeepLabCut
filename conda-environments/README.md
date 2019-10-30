@@ -38,7 +38,7 @@ NOTE: DO NOT run pip install deeplabcut, etc! It is already installed!!! :)
 
 Great, that's it! 
 
-Simply run ``ipython`` or ``pythonw`` (macOS only) to lauch the terminal, ``jupyter notebook`` to lauch a browser session, or ``ipython, import deeplabcut, deeplabcut.lauch_dlc()`` to use our Project Manager GUI! **Many more details** [**here**](https://github.com/AlexEMG/DeepLabCut/blob/master/docs/UseOverviewGuide.md)!
+Simply run ``ipython`` or ``pythonw`` (macOS only) to lauch the terminal, ``jupyter notebook`` to lauch a browser session, or ``ipython, import deeplabcut, deeplabcut.launch_dlc()`` to use our Project Manager GUI! **Many more details** [**here**](https://github.com/AlexEMG/DeepLabCut/blob/master/docs/UseOverviewGuide.md)!
 
 
 
