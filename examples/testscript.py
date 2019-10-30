@@ -155,7 +155,8 @@ deeplabcut.train_network(path_config_file)
 try: #you need ffmpeg command line interface
     #subprocess.call(['ffmpeg','-i',video[0],'-ss','00:00:00','-to','00:00:00.4','-c','copy',newvideo])
     newvideo2=deeplabcut.ShortenVideo(video[0],start='00:00:00',stop='00:00:00.4',outsuffix='short',outpath=os.path.join(cfg['project_path'],'videos'))
-    vname=Path(newvideo).stem
+
+    vname=Path(newvideo2).stem
 except: # if ffmpeg is broken
     vname='brief'
     newvideo2=os.path.join(cfg['project_path'],'videos',vname+'.mp4')

@@ -55,7 +55,12 @@ class Label_frames(wx.Panel):
         sizer.Add(self.help_button, pos=(4, 0), flag=wx.LEFT, border=10)
         self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
 
-        self.ok = wx.Button(self, label="Ok")
+        self.check = wx.Button(self, label="Check Labeled Frames")
+        sizer.Add(self.check, pos=(4, 3), flag=wx.BOTTOM|wx.RIGHT, border=10)
+        self.check.Bind(wx.EVT_BUTTON, self.check_labelF)
+        self.check.Enable(True)
+
+        self.ok = wx.Button(self, label="Label Frames")
         sizer.Add(self.ok, pos=(4, 4))
         self.ok.Bind(wx.EVT_BUTTON, self.label_frames)
 
@@ -82,6 +87,11 @@ class Label_frames(wx.Panel):
         wx.MessageBox(help_text,'Help',wx.OK | wx.ICON_INFORMATION)
         help_file.close()
         os.remove('help.txt')
+
+    def check_labelF(self,event):
+        dlg = wx.MessageDialog(None, "This will now plot the labeled frames afer you have finished labeling!")
+        result = dlg.ShowModal()
+        deeplabcut.check_labels(self.config)
 
     def select_config(self,event):
         """

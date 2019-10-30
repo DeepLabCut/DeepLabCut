@@ -48,35 +48,35 @@ class Create_new_project(wx.Panel):
 
         # Add logo of DLC
         icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(logo))
-        self.sizer.Add(icon, pos=(0, 4), flag=wx.TOP|wx.RIGHT|wx.ALIGN_RIGHT,border=5)
+        self.sizer.Add(icon, pos=(0,7), flag=wx.TOP|wx.RIGHT|wx.ALIGN_RIGHT,border=5)
 
         line = wx.StaticLine(self)
         self.sizer.Add(line, pos=(1, 0), span=(1, 8),flag=wx.EXPAND|wx.BOTTOM, border=10)
 
         # Add all the options
-        self.proj = wx.RadioBox(self, label='Please choose an option?', choices=['Create new project', 'Load existing project'],majorDimension=0, style=wx.RA_SPECIFY_COLS)
-        self.sizer.Add(self.proj, pos=(2, 0), flag=wx.LEFT, border=10)
+        self.proj = wx.RadioBox(self, label='Please choose an option:', choices=['Create new project', 'Load existing project'],majorDimension=0, style=wx.RA_SPECIFY_COLS)
+        self.sizer.Add(self.proj, pos=(2, 0), span=(1, 6), flag=wx.LEFT, border=10)
         self.proj.Bind(wx.EVT_RADIOBOX,self.chooseOption)
 
         line = wx.StaticLine(self)
         self.sizer.Add(line, pos=(3, 0), span=(1, 8),flag=wx.EXPAND|wx.BOTTOM, border=10)
 
-        self.proj_name = wx.StaticText(self, label="Enter name of the project")
+        self.proj_name = wx.StaticText(self, label="Name of the project:")
         self.sizer.Add(self.proj_name, pos=(4, 0), flag=wx.LEFT, border=10)
 
         self.proj_name_txt_box = wx.TextCtrl(self)
         self.sizer.Add(self.proj_name_txt_box, pos=(4, 1), span=(1, 2), flag=wx.TOP|wx.EXPAND)
 
-        self.exp = wx.StaticText(self, label="Enter name of the experimenter")
+        self.exp = wx.StaticText(self, label="Name of the experimenter:")
         self.sizer.Add(self.exp, pos=(5, 0), flag=wx.LEFT|wx.TOP, border=10)
 
         self.exp_txt_box = wx.TextCtrl(self)
         self.sizer.Add(self.exp_txt_box, pos=(5, 1), span=(1, 2), flag=wx.TOP|wx.EXPAND,border=5)
 
-        self.vids = wx.StaticText(self, label="Choose the videos")
+        self.vids = wx.StaticText(self, label="Choose the videos:")
         self.sizer.Add(self.vids, pos=(6, 0), flag=wx.TOP|wx.LEFT, border=10)
 
-        self.sel_vids = wx.Button(self, label="Add videos to the project")
+        self.sel_vids = wx.Button(self, label="Load Videos")
         self.sizer.Add(self.sel_vids, pos=(6, 1), flag=wx.TOP|wx.EXPAND, border=5)
         self.sel_vids.Bind(wx.EVT_BUTTON, self.select_videos)
 #
@@ -96,7 +96,7 @@ class Create_new_project(wx.Panel):
         hbox2.Add(self.sel_wd,0, wx.ALL, -1)
         self.boxsizer.Add(hbox2)
 
-        self.copy_choice = wx.CheckBox(self, label="Do you want to copy the videos ?")
+        self.copy_choice = wx.CheckBox(self, label="Do you want to copy the videos?")
         self.copy_choice.Bind(wx.EVT_CHECKBOX,self.activate_copy_videos)
         hbox3.Add(self.copy_choice)
         hbox3.AddSpacer(155)
@@ -158,10 +158,6 @@ class Create_new_project(wx.Panel):
         wx.MessageBox(help_text,'Help',wx.OK | wx.ICON_INFORMATION)
         help_file.close()
         os.remove('help.txt')
-
-#    def help_function(self,event):
-#        wx.MessageBox("1. Choose an option to create a new project or load an existing project.\n\n2. To create a new project, enter the name of project, experimenter, and choose videos to add to the project.\n\n3. As an optional step, choose a directory where you need to create the project and specify if you need to copy the videos\n\n4. To load an existing project, use the active Browse button to select the config.yaml file of the project",'Help',wx.OK | wx.ICON_INFORMATION)
-
 
     def chooseOption(self,event):
         if self.proj.GetStringSelection() == 'Load existing project':
@@ -229,7 +225,7 @@ class Create_new_project(wx.Panel):
         """
         self.change_copy = event.GetEventObject()
         if self.change_copy.GetValue() == True:
-            self.yes.Enable(True)
+            self.yes.Enable(False)
             self.no.Enable(True)
         else:
             self.yes.Enable(False)
@@ -262,7 +258,7 @@ class Create_new_project(wx.Panel):
         if self.sel_config.IsShown():
             self.cfg = self.sel_config.GetPath()
             if self.cfg == "":
-                wx.MessageBox('Please choose the config.yml file to load the project', 'Error', wx.OK | wx.ICON_ERROR)
+                wx.MessageBox('Please choose the config.yaml file to load the project', 'Error', wx.OK | wx.ICON_ERROR)
                 self.loaded = False
             else:
                 wx.MessageBox('Project Loaded!', 'Info', wx.OK | wx.ICON_INFORMATION)
@@ -274,7 +270,7 @@ class Create_new_project(wx.Panel):
             if self.task!="" and self.scorer!="" and self.filelist!=[]:
                 self.cfg=deeplabcut.create_new_project(self.task,self.scorer,self.filelist,self.dir,self.copy)
             else:
-                wx.MessageBox('Some of the enteries are missing.\n\nMake sure that the task and experimenter name are specified and videos are slected!', 'Error', wx.OK | wx.ICON_ERROR)
+                wx.MessageBox('Some of the enteries are missing.\n\nMake sure that the task and experimenter name are specified and videos are selected!', 'Error', wx.OK | wx.ICON_ERROR)
                 self.cfg = False
             if self.cfg:
                 wx.MessageBox('New Project Created', 'Info', wx.OK | wx.ICON_INFORMATION)
@@ -321,7 +317,7 @@ class Create_new_project(wx.Panel):
         self.proj_name_txt_box.SetValue("")
         self.exp_txt_box.SetValue("")
         self.filelist = []
-        self.sel_vids.SetLabel("Add videos to the project")
+        self.sel_vids.SetLabel("Load Videos")
         self.dir = os.getcwd()
         self.edit_config_file.Enable(False)
         self.proj_name.Enable(True)
