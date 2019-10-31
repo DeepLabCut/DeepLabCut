@@ -374,7 +374,7 @@ def check_undistortion(config,cbrow = 8,cbcol = 6,plot=True):
                 cam2_undistort.append(imgpoints_proj_undistort2)
                 cv2.imwrite(os.path.join(str(path_undistort),img_name+'_undistort.jpg'),im_remapped2)
                 imgpoints_proj_undistort2 = []
-        
+
         cam1_undistort = np.array(cam1_undistort)
         cam2_undistort = np.array(cam2_undistort)
         print("All images are undistorted and stored in %s"%str(path_undistort))

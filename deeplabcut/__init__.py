@@ -48,7 +48,7 @@ from deeplabcut.pose_estimation_tensorflow import train_network, return_train_ne
 from deeplabcut.pose_estimation_tensorflow import evaluate_network
 from deeplabcut.pose_estimation_tensorflow import analyze_videos, analyze_time_lapse_frames
 
-from deeplabcut.pose_estimation_3d import calibrate_cameras,check_undistortion,triangulate,triangulate_raw_2d_camera_coords,create_labeled_video_3d,get_basis,change_of_basis
+from deeplabcut.pose_estimation_3d import calibrate_cameras,check_undistortion,triangulate,create_labeled_video_3d
 
 from deeplabcut.create_project import create_new_project, create_new_project_3d, add_new_videos, load_demo_data, create_pretrained_human_project
 from deeplabcut.generate_training_dataset import extract_frames
