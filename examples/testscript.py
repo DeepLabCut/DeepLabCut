@@ -116,7 +116,7 @@ print("analyze again...")
 deeplabcut.analyze_videos(path_config_file,[newvideo],save_as_csv=True, destfolder=dfolder)
 
 print("CREATE VIDEO")
-deeplabcut.create_labeled_video(path_config_file,[newvideo], destfolder=dfolder)
+deeplabcut.create_labeled_video(path_config_file,[newvideo], destfolder=dfolder,save_frames=True)
 
 print("Making plots")
 deeplabcut.plot_trajectories(path_config_file,[newvideo], destfolder=dfolder)
@@ -154,7 +154,7 @@ deeplabcut.train_network(path_config_file)
 
 try: #you need ffmpeg command line interface
     #subprocess.call(['ffmpeg','-i',video[0],'-ss','00:00:00','-to','00:00:00.4','-c','copy',newvideo])
-    newvideo2=deeplabcut.ShortenVideo(video[0],start='00:00:00',stop='00:00:00.4',outsuffix='short',outpath=os.path.join(cfg['project_path'],'videos'))
+    newvideo2=deeplabcut.ShortenVideo(video[0],start='00:00:00',stop='00:00:00.4',outsuffix='short2',outpath=os.path.join(cfg['project_path'],'videos'))
 
     vname=Path(newvideo2).stem
 except: # if ffmpeg is broken
