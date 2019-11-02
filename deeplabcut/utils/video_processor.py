@@ -125,6 +125,11 @@ class VideoProcessorCV(VideoProcessor):
         self.w = int(self.vid.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.h = int(self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
         all_frames = int(self.vid.get(cv2.CAP_PROP_FRAME_COUNT))
+        infourcc = int(self.vid.get(cv2.CAP_PROP_FOURCC)) #read fourcc code from original video
+        if infourcc == 844516695: #This fourcc code is not read properly/does not contain FPS information
+            self.FPS = self.FPS #Set FPS to init 30 fps
+        else:
+            self.FPS = self.vid.get(cv2.CAP_PROP_FPS)
         self.FPS = self.vid.get(cv2.CAP_PROP_FPS)
         self.nc = 3
         if self.nframes == -1 or self.nframes>all_frames:
