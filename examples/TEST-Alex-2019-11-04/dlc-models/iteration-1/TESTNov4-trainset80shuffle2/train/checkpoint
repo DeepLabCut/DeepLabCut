@@ -1,0 +1,2 @@
+model_checkpoint_path: "C:\\Users\\Can\\Projects\\CINPLA\\DeepLabCut\\my_DeepLabCut\\examples\\TEST-Alex-2019-11-04\\dlc-models\\iteration-1\\TESTNov4-trainset80shuffle2\\train\\snapshot-10"
+all_model_checkpoint_paths: "C:\\Users\\Can\\Projects\\CINPLA\\DeepLabCut\\my_DeepLabCut\\examples\\TEST-Alex-2019-11-04\\dlc-models\\iteration-1\\TESTNov4-trainset80shuffle2\\train\\snapshot-10"

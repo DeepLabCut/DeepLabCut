@@ -22,7 +22,7 @@ from matplotlib.axes._axes import _log as matplotlib_axes_logger
 matplotlib_axes_logger.setLevel('ERROR')
 
 def triangulate(config,video_path,videotype='avi',filterpredictions=True,
-                filtertype='median',gputouse=None,destfolder=None,save_as_csv=False):
+                filtertype='median',gputouse=None,destfolders=None,save_as_csv=False):
     """
     This function triangulates the detected DLC-keypoints from the two camera views
     using the camera matrices (derived from calibration) to calculate 3D predictions.
@@ -52,8 +52,9 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,
         If you do not have a GPU put None.
         See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
 
-    destfolder: string, optional
-        Specifies the destination folder for analysis data (default is the path of the video)
+    destfolders: string or list-like, optional
+        String: Specifies the destination folder for analysis data (default is the path of the video).
+        List-like: Specifies the destination folder for analysis data on a per pair of videos basis
 
     save_as_csv: bool, optional
         Saves the predictions in a .csv file. The default is ``False``
@@ -103,7 +104,17 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,
         print("Please make sure that the video names are specified with correct camera names as entered in the config file or")
         print("perhaps the videotype is distinct from the videos in the path, I was looking for:",videotype)
 
-    print("List of pairs:", video_list)
+    if (isinstance(destfolders, list) or isinstance(destfolders, tuple)):
+        if len(video_list) != len(destfolders):
+            msg = 'The number of desination folders is not equal to the number of video pairs:\n%s video pairs; %s destination folders' % (len(video_list), len(destfolders))
+            raise ValueError(msg)
+
+        print('Video pairs and their destination folders:\n')
+        for video, destfolder in zip(video_list, destfolders):
+            print('cam1:\n%s\ncam2:\n%s\ndestination:\n%s\n' % (video[0], video[1], destfolder))
+    else:
+        print("List of pairs:", video_list)
+
     scorer_name = {}
     run_triangulate=False
     for i in range(len(video_list)):
@@ -123,12 +134,18 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,
                     video_path = str(Path(video_list[i][j]).parents[0])
                     video = os.path.join(video_path,video_list[i][j])
 
-                if destfolder is None:
-                    destfolder = str(Path(video).parents[0])
-
                 vname = Path(video).stem
                 prefix = str(vname).split(cam_names[j])[0]
                 suffix = str(vname).split(cam_names[j])[-1]
+
+                if destfolders is None:
+                    destfolder = str(Path(video).parents[0])
+                elif isinstance(destfolders, list) or isinstance(destfolders, tuple):
+                    destfolder = destfolders[i]
+                elif not os.path.exists(destfolders):
+                    msg = 'Specified destfolder does not exist:\n%s' % (destfolders,)
+                    raise ValueError(msg)
+
                 if prefix == "":
                     pass
                 elif prefix[-1]=='_' or prefix[-1]=='-':
@@ -204,7 +221,6 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,
                         dataname.append(os.path.join(destfolder,vname + DLCscorer + '.h5'))
 
         if run_triangulate:
-#        if len(dataname)>0:
             #undistort points for this pair
             print("Undistorting...")
             dataFrame_camera1_undistort,dataFrame_camera2_undistort,stereomatrix,path_stereo_file = undistort_points(config,dataname,str(cam_names[0]+'-'+cam_names[1]),destfolder)
@@ -215,7 +231,7 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,
                     dataFrame_camera1_undistort = dataFrame_camera1_undistort[:len(dataFrame_camera2_undistort)]
                 if len(dataFrame_camera2_undistort) > len(dataFrame_camera1_undistort):
                     dataFrame_camera2_undistort = dataFrame_camera2_undistort[:len(dataFrame_camera1_undistort)]
-#                raise Exception("The number of frames do not match in the two videos. Please make sure that your videos have same number of frames and then retry!")
+                # raise Exception("The number of frames do not match in the two videos. Please make sure that your videos have same number of frames and then retry!")
             X_final = []
             triangulate = []
             scorer_cam1 = dataFrame_camera1_undistort.columns.get_level_values(0)[0]
