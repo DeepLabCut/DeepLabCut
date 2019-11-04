@@ -1,11 +1,13 @@
 ### DeepLabCut Project Manager GUI
 
-As of 2.1+ you can also launch a GUI to aid in project creation and modify existing projects. 
+As of 2.1+ you can also launch a GUI to aid in project creation and modify/run existing projects. 
 Simply launch `ipython` (or `pythonw` on MacOS), `import deeplabcut` then run `deeplabcut.launch_dlc()`. The below functions are available to you in an easy-to-use graphical user interface. While most functionality is available, advanced users might want the additional flexibility that command line interface offers. Read more [here](/docs/PROJECT_GUI.md).
 
 <p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1570056469743-SEGFUXMVS8YOZI7L37OS/ke17ZwdGBToddI8pDm48kLsntQCY1QWijXyGg3dq7owUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcBr4CcH-KF-rhlMRpAfkoGxF8gTXG9pG_BYoXmRkWRtNidc9E4L1Ctx8AFqW8So1U/lauch_dlc.png?format=1000w" width="60%">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572824438905-QY9XQKZ8LAJZG6BLPWOQ/ke17ZwdGBToddI8pDm48kIIa76w436aRzIF_cdFnEbEUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcLthF_aOEGVRewCT7qiippiAuU5PSJ9SSYal26FEts0MmqyMIhpMOn8vJAUvOV4MI/guilaunch.jpg?format=1000w" width="60%">
 </p>
+
+As a reminder, the core functions are described in our [Nature Protocols](https://www.nature.com/articles/s41596-019-0176-0) paper (published at the time of 2.0.6). Additional functions and features are continually added to the package. Thus, we recommend you read over the protocol and then please look to the following documentation and the doctrings. Thanks for using DeepLabCut!
 
 
 ### (A) Create a New Project
@@ -81,7 +83,7 @@ video and clusters the frames using k-means, where each frame is treated as a ve
 are then selected. This procedure makes sure that the frames look different. However, on large and long videos, this
 code is slow due to computational complexity.
 
-CRITICAL POINT: It is advisable to extract frames from a period of the video that contains interesting
+**CRITICAL POINT:** It is advisable to extract frames from a period of the video that contains interesting
 behaviors, and not extract the frames across the whole video. This can be achieved by using the start and stop
 parameters in the config.yaml file. Also, the user can change the number of frames to extract from each video using
 the numframes2extract in the config.yaml file.
@@ -138,7 +140,9 @@ For each video directory in labeled-data this function creates a subdirectory wi
 
 As a reminder, if you move your project folder, you must **only** change the `project_path` in the main config.yaml file - that's it - no need to change the video paths, etc! Your project is fully portable. 
 
-As a reminder, if you run this on the cloud, before importing `deeplabcut` you need to suppress GUIs. As you can see in our [demo notebooks](https://github.com/AlexEMG/DeepLabCut/blob/master/examples/Colab_DEMO_mouse_openfield.ipynb) for running DLC training, evaluation, and novel video analysis on the Cloud, you must first supress GUIs - server computers don't have a screen you can interact with. So, before you launch ipython, run `export DLClight=True` (see more tips in the full PDF user-guide).
+As a reminder, if you run this on the cloud, before importing `deeplabcut` you need to suppress GUIs. As you can see in our [demo notebooks](https://github.com/AlexEMG/DeepLabCut/blob/master/examples/Colab_DEMO_mouse_openfield.ipynb) for running DLC training, evaluation, and novel video analysis on the Cloud, you must first suppress GUIs - server computers don't have a screen you can interact with. So, before you launch ipython, run `export DLClight=True` (see more tips in the full PDF user-guide).
+
+**CRITICAL POINT:** At this step, you select the network you want to use, and any additional data augmentation (beyond our defaults). You can set ``net_type`` and ``augmenter_type`` when you call the function. You can also test several models by creating the same test/train split for different networks. You can easily do this in the Project Manager GUI, or use the function ``deeplabcut.create_training_model_comparison(`` (check the docstring for more details!).
 
 Combining the labeled datasets from all the videos and splitting them will create train and test datasets. The
 training data will be used to train the network, while the test data set will be used for evaluating the network. The
@@ -163,9 +167,12 @@ are listed in Box 2.
 
 At this step, the ImageNet pre-trained ResNet-50, ResNet-101 and ResNet-152 weights will be downloaded. If they do not download (you will see this downloading in the terminal, then you may not have permission to do so (something we have seen with some Windows users - see the **[WIKI troubleshooting for more help!](https://github.com/AlexEMG/DeepLabCut/wiki/Troubleshooting-Tips)**). 
 
-If you are labeling adult human data, you may also want to use a human-pretrained network. A ResNet-101 pre-trained on MPII is available. You can use the following notebook to create a project that uses this network, [HUMAN DEMO](https://github.com/AlexEMG/DeepLabCut/blob/master/examples/Human_Project_DEMO.ipynb), or you can add the pretrained model manually to the correct folder (then to use them, set the path to the model as described in Box 2!)
-
-Download it and move to the pretrained folder (this will be in your site-packages, under ``../pose-tensorflow/models/pretrained``). Download with the following commands in the terminal: 
+If you are labeling adult human data, you may also want to use a human-pretrained network. 
+A ResNet-101 pre-trained on MPII is available. You can use the following notebook to create a project that uses this network:
+- [HUMAN DEMO](https://github.com/AlexEMG/DeepLabCut/blob/master/examples/Human_Project_DEMO.ipynb) notebook
+- or use the new function: `` deeplabcut.create_pretrained_human_project(..``
+- or you can add the pretrained model manually to the correct folder (then to use them set the path to the model as described in Box 2)
+   - Download these and move to the pretrained folder (this will be in your site-packages, under ``../pose-tensorflow/models/pretrained``). In the terminal: 
  ```
     curl -L -O https://datasets.d2.mpi-inf.mpg.de/deepercut-models-tensorflow/mpii-single-resnet-101.data-00000-of-00001 
     curl -L -O https://datasets.d2.mpi-inf.mpg.de/deepercut-models-tensorflow/mpii-single-resnet-101.meta
@@ -203,8 +210,7 @@ At user specified iterations during training checkpoints are stored in the subdi
 If the user wishes to restart the training at a specific checkpoint they can specify the full path of the checkpoint to
 the variable ``init_weights`` in the **pose_cfg.yaml** file under the *train* subdirectory (see Box 2).
 
-CRITICAL POINT: It is recommended to train the ResNets for thousands of iterations until the loss plateaus (typically
- around **200,000**). The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file allows the user to alter how often the loss is displayed and how often the weights are stored.
+**CRITICAL POINT:** It is recommended to train the ResNets or MobileNets for thousands of iterations until the loss plateaus (typically around **200,000**). The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file allows the user to alter how often the loss is displayed and how often the weights are stored.
 
 **Parameters:**
 
@@ -299,7 +305,7 @@ analyzing the video. Novel/new videos **DO NOT have to be in the config file!** 
 
 There are several other optional inputs, such as:
 
-    deeplabcut.analyze_videos(config_path,videos,videotype='avi',shuffle=1,trainingsetindex=0,gputouse=None,save_as_csv=False, destfolder=None)
+    deeplabcut.analyze_videos(config_path,videos,videotype='avi',shuffle=1,trainingsetindex=0,gputouse=None,save_as_csv=False, destfolder=None, dynamic=(False,.5,10))
 
 The labels are stored in a [MultiIndex Pandas Array](http://pandas.pydata.org), which contains the name
 of the network, body part name, (x, y) label position in pixels, and the likelihood for each frame per body part. These
@@ -309,6 +315,15 @@ However, if the flag ``save_as_csv`` is set to ``True``, the data can also be ex
 by default. You can also set a destination folder (``destfolder``) for the output files by passing a path of the folder you wish to write to.
 
 As of 2.0.8+: you can extract multiple bodyparts, although there is no support for plotting or further analysis at this time; i.e. if you want to extract 3 snouts (as in [Figure 4 of Mathis et al, 2018 Nature Neuroscience](https://www.nature.com/articles/s41593-018-0209-y/figures/4)), you can edit the config.yaml file to contain ``num_outputs=3``. Then, when you run ``deeplabcut.analyze_videos`` it will extract the top three points (i.e. the 3 x, y, and likelihoods) and save this to the .h5 output file.
+
+### (I) Novel Video Analysis: extra features
+
+#### Dynamic-cropping of videos:
+
+As of 2.1+ we have a dynamic cropping option. Namely, if you have large frames and the animal/object occupies a smaller fraction, you can crop around your animal/object to make processing speeds faster. For example, if you have a large open field experiment but only track the mouse, this will speed up your analysis (also helpful for real-time applications). To use this simply add ``dynamic=(True,.5,10)`` when you call ``analyze_videos``. 
+
+dynamic: triple containing (state,detectiontreshold,margin)
+        If the state is true, then dynamic cropping will be performed. That means that if an object is detected (i.e. any body part > detectiontreshold), then object boundaries are computed according to the smallest/largest x position and smallest/largest y position of all body parts. This  window is expanded by the margin and from then on only the posture within this crop is analyzed (until the object is lost, i.e. <detectiontreshold). The current position is utilized for updating the crop window for the next frame (this is why the margin is important and should be set large enough given the movement of the animal).
 
 #### Filter data:
 
@@ -359,7 +374,7 @@ labels on top of the frame and creating a video. There are two modes to create v
  
     deeplabcut.create_labeled_video(config_path,[‘fullpath/afolderofvideos’], videotype='.mp4', trailpoints=10) 
 
-**NEW** as of 2.0.7: To draw a skeleton, you need to first define the pairs of connected nodes (in the ``config.yaml`` file) and set the skeleton color (in the ``config.yaml`` file). If you are using a project that was created before 2.0.7, you simply need to add these two items (``skeleton`` and  ``skeleton_color``) to your config file (This addition is fully backwards compatable, so don't worry!).
+**NEW** as of 2.0.7: To draw a skeleton, you need to first define the pairs of connected nodes (in the ``config.yaml`` file) and set the skeleton color (in the ``config.yaml`` file). If you are using a project that was created before 2.0.7, you simply need to add these two items (``skeleton`` and  ``skeleton_color``) to your config file (This addition is fully backwards compatible, so don't worry!).
 
 Here is how the ``config.yaml`` additions/edits should look (for example, on the Openfield demo data we provide):
 ```
@@ -464,7 +479,7 @@ label is shown, even when DeepLabCut is uncertain. This is necessary, so that th
 the predicted label. However, to help the user to remove all invisible body parts the low-likelihood predictions
 are shown as open circles (rather than disks).
 
-(D) Invalid images: In an unlikely event that there are any invalid images, the user should remove such an image
+(D) Invalid images: In the unlikely event that there are any invalid images, the user should remove such an image
 and their corresponding predictions, if any. Here, the GUI will prompt the user to remove an image identified
 as invalid.
 
