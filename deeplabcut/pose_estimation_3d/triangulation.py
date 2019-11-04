@@ -54,7 +54,8 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,
 
     destfolders: string or list-like, optional
         String: Specifies the destination folder for analysis data (default is the path of the video).
-        List-like: Specifies the destination folder for analysis data on a per pair of videos basis
+        List-like: Only when video_path is defined as pairs of videos. Specifies the destination folder
+                   for analysis data on a per video pair basis.
 
     save_as_csv: bool, optional
         Saves the predictions in a .csv file. The default is ``False``
@@ -90,6 +91,16 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,
         # Check if the config file exists
         if not os.path.exists(snapshots[cam]):
             raise Exception(str("It seems the file specified in the variable config_file_"+str(cam))+" does not exist. Please edit the config file with correct file path and retry.")
+
+    if (isinstance(destfolders, (list, tuple)):
+        if not isinstance(video_path, (list, tuple)):
+            msg = 'destfolders can be list-like only when video_path is defined as pairs of videos'
+            raise ValueError(msg)
+
+        for destfolder in destfolders:
+            if not os.path.exists(destfolder):
+                msg = 'destfolder does not exist:\n%s' % destfolder
+                raise ValueError(msg)
 
     #flag to check if the video_path variable is a string or a list of list
     flag=False # assumes that video path is a list
@@ -140,11 +151,8 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,
 
                 if destfolders is None:
                     destfolder = str(Path(video).parents[0])
-                elif isinstance(destfolders, list) or isinstance(destfolders, tuple):
+                elif isinstance(destfolders, (list, tuple)):
                     destfolder = destfolders[i]
-                elif not os.path.exists(destfolders):
-                    msg = 'Specified destfolder does not exist:\n%s' % (destfolders,)
-                    raise ValueError(msg)
 
                 if prefix == "":
                     pass
