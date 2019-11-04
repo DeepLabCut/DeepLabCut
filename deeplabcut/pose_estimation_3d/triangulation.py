@@ -92,7 +92,7 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,
         if not os.path.exists(snapshots[cam]):
             raise Exception(str("It seems the file specified in the variable config_file_"+str(cam))+" does not exist. Please edit the config file with correct file path and retry.")
 
-    if (isinstance(destfolders, (list, tuple)):
+    if isinstance(destfolders, (list, tuple)):
         if not isinstance(video_path, (list, tuple)):
             msg = 'destfolders can be list-like only when video_path is defined as pairs of videos'
             raise ValueError(msg)
