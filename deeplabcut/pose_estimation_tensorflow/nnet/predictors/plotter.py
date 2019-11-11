@@ -17,7 +17,7 @@ import cv2
 
 class PlotterArgMax(Predictor):
     """
-    Identical to singleargmax, but plots at most 100 probability frames to the user using matplotlib
+    Identical to singleargmax, but plots probability frames in form of video to the user using matplotlib
     during processing...
     """
 
@@ -41,30 +41,50 @@ class PlotterArgMax(Predictor):
         self.OUTPUT_FPS = settings["output_fps"]
         # Determines if we are using log scaling...
         self.LOG_SCALE = settings["use_log_scale"]
+        # Determines if we are using 3d projection...
+        self.PROJECT_3D = settings["3d_projection"]
+        self.Z_SHRINK_F = settings["z_shrink_factor"]
+        # The colormap to use while plotting...
+        self.COLOR_MAP = settings["colormap"]
+
+        # Build the subplots...
+        if(self.PROJECT_3D):
+            from mpl_toolkits.mplot3d import Axes3D
+            self._figure, self._axes = pyplot.subplots(self._grid_size, self._grid_size, subplot_kw={'projection': '3d'})
+        else:
+            self._figure, self._axes = pyplot.subplots(self._grid_size, self._grid_size)
+        # Hide all axis.....
+        for ax in self._axes.flat:
+            ax.axis("off")
 
 
     def on_frames(self, scmap: TrackingData) -> Union[None, Pose]:
         for frame in range(scmap.get_frame_count()):
             # Plot all probability maps
-            for bp in range(scmap.get_bodypart_count()):
-                pyplot.subplot(self._grid_size, self._grid_size, bp + 1)
-                pyplot.title(f"Bodypart: {self._parts[bp]}, Frame: {self._current_frame}")
-                pyplot.pcolormesh(np.log(scmap.get_prob_table(frame, bp)) if (self.LOG_SCALE) else
-                                  scmap.get_prob_table(frame, bp))
-                # This reverses the y-axis data, so as probability maps match the video...
-                pyplot.ylim(pyplot.ylim()[::-1])
+            for bp, ax in zip(range(scmap.get_bodypart_count()), self._axes.flat):
+                ax.clear()
+                ax.axis("off")
+                ax.set_title(f"Bodypart: {self._parts[bp]}, Frame: {self._current_frame}")
 
-            # Save chart to the buffer.
-            fig = pyplot.gcf()
-            pyplot.tight_layout()
-            pyplot.gcf().canvas.draw()
+                if(self.PROJECT_3D):
+                    x, y = np.arange(scmap.get_frame_width()), np.arange(scmap.get_frame_height())
+                    x, y = np.meshgrid(x, y)
+                    z = np.log(scmap.get_prob_table(frame, bp)) if (self.LOG_SCALE) else scmap.get_prob_table(frame, bp)
+                    ax.plot_surface(x, y, z, cmap=self.COLOR_MAP)
+                    ax.set_zlim(ax.get_zlim()[0], ax.get_zlim()[1] * self.Z_SHRINK_F)
+                else:
+                    ax.pcolormesh(np.log(scmap.get_prob_table(frame, bp)) if (self.LOG_SCALE) else
+                                      scmap.get_prob_table(frame, bp), cmap=self.COLOR_MAP)
+                # This reverses the y-axis data, so as probability maps match the video...
+                ax.set_ylim(ax.get_ylim()[::-1])
+
+            # Save chart to the buffer
+            self._figure.tight_layout()
+            self._figure.canvas.draw()
 
             # Convert plot to cv2 image, then plot it...
-            img = np.reshape(np.frombuffer(fig.canvas.tostring_rgb(), dtype="uint8"),
-                               fig.canvas.get_width_height()[::-1] + (3,))[:, :, ::-1]
-
-            # Clear plotting done by pyplot....
-            pyplot.clf()
+            img = np.reshape(np.frombuffer(self._figure.canvas.tostring_rgb(), dtype="uint8"),
+                               self._figure.canvas.get_width_height()[::-1] + (3,))[:, :, ::-1]
 
             # If the video writer does not exist, create it now...
             if (self._vid_writer is None):
@@ -93,7 +113,11 @@ class PlotterArgMax(Predictor):
             ("video_name", "Name of the video file that plotting data will be saved to.", "prob-dlc.mp4"),
             ("codec", "The codec to be used by the opencv library to save info to, typically a 4-byte string.", "MPEG"),
             ("output_fps", "The frames per second of the output video, as an number.", 15),
-            ("use_log_scale", "Boolean, determines whether to apply log scaling to the frames in the video.", True)
+            ("use_log_scale", "Boolean, determines whether to apply log scaling to the frames in the video.", True),
+            ("3d_projection", "Boolean, determines if probability frames should be plotted in 3d.", False),
+            ("colormap", "String, determines the underlying colormap to be passed to matplotlib while plotting the "
+                         "mesh.", "Blues"),
+            ("z_shrink_factor", "Float, determines how much to shrink the z-axis if in 3D mode...", 5)
         ]
 
     @staticmethod
@@ -102,8 +126,8 @@ class PlotterArgMax(Predictor):
 
     @staticmethod
     def get_description() -> str:
-        return "Identical to singleargmax, but plots a video of probability frames using matplotlib" \
-               "during processing..."
+        return "Identical to singleargmax, but plots probability frames in form of video to the user using \n" \
+               "matplotlib during processing..."
 
     @classmethod
     def get_tests(cls) -> Union[List[Callable[[], Tuple[bool, str, str]]], None]:

@@ -56,8 +56,6 @@ class FastViterbi(Predictor):
         # Precomputed table for computing negative impacts of body parts
         self._neg_gaussian_table = None
 
-        #
-
         # Values for the gaussian formula, can be adjusted in dlc_config for differing results...
         self.NORM_DIST_UNSCALED = settings["norm_dist"]  # The normal distribution
         self.NORM_DIST = None # To be computed below...
@@ -73,6 +71,10 @@ class FastViterbi(Predictor):
         self.NEG_NORM_DIST_UNSCALED = settings["negative_impact_distance"] # Normal distribution of negative 2D gaussian curve
         self.NEG_NORM_DIST = None # To be computed below....
         self.NEG_AMPLITUDE = settings["negative_impact_factor"] # Negative amplitude to use for 2D negation gaussian
+
+        # Used for keeping track of the last n - 1 bodypart, used for bodypart negation during forward compute
+        if(self.NEGATE_ON):
+            self._bp_stack = deque(maxlen=len(bodyparts) - 1)
 
     def _gaussian_formula(self, prior_x: float, x: float, prior_y: float, y: float) -> float:
         """
