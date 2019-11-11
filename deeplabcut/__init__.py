@@ -57,3 +57,8 @@ from deeplabcut.utils import create_labeled_video,plot_trajectories, auxiliaryfu
 from deeplabcut.utils.auxfun_videos import ShortenVideo, DownSampleVideo
 
 from deeplabcut.version import __version__, VERSION
+
+
+if __name__ == "__main__":
+    # if module is executed direcyly (i.e. `python -m deeplabcut`) launch straight into the GUI
+    launch_dlc()
