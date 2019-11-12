@@ -19,6 +19,7 @@ from deeplabcut import DEBUG
 # DLClight version does not support GUIs. Importing accordingly
 import matplotlib as mpl
 if os.environ.get('DLClight', default=False) == 'True':
+    print("DLC loaded in light mode; you cannot use any GUI (labeling, relabeling and standalone GUI)")
     mpl.use('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
     pass
 else: #standard use [wxpython supported]
