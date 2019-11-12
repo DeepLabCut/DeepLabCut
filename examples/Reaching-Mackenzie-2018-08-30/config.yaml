@@ -4,12 +4,12 @@ scorer: Mackenzie
 date: Aug30
 
 # Project path (change when moving around)
-project_path: /home/alex/Hacking/DLCreleases/DLC4alphatesters/DeepLabCutpairwise/examples/Reaching-Mackenzie-2018-08-30
+project_path: WILL BE AUTOMATICALLY UPDATED BY DEMO CODE
 
 # Annotation data set configuration (and individual video cropping parameters)
 video_sets:
-  ? /home/alex/Hacking/DLCreleases/DLC4alphatesters/DeepLabCutpairwise/examples/Reaching-Mackenzie-2018-08-30/videos/reachingvideo1.avi
-  : crop: 0, 832, 0, 747
+  WILL BE AUTOMATICALLY UPDATED BY DEMO CODE:
+    crop: 0, 832, 0, 747
 bodyparts:
 - Hand
 - Finger1
@@ -21,18 +21,19 @@ stop: 1
 numframes2pick: 40
 
 # Plotting configuration
-skeleton: [[Hand, Finger1], [Joystick1, Joystick2]]
+skeleton: [['Hand', 'Finger1'], ['Joystick1', 'Joystick2']]
 skeleton_color: blue
 pcutoff: 0.4
 dotsize: 12
 alphavalue: 0.7
 colormap: jet
 
+
 # Training,Evaluation and Analysis configuration
 TrainingFraction:
 - 0.95
 iteration: 0
-resnet:
+default_net_type: resnet_50
 snapshotindex: -1
 batch_size: 4
 
@@ -49,4 +50,3 @@ corner2move2:
 - 50
 - 50
 move2corner: true
-default_net_type: resnet_50
