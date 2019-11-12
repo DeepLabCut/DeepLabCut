@@ -231,8 +231,6 @@ def evaluate_network(config,Shuffles=[1],trainingsetindex=0,plotting = None,show
 
     from deeplabcut.utils.auxfun_videos import imread, imresize
     from deeplabcut.pose_estimation_tensorflow.nnet import predict
-    #PW
-    from deeplabcut.pose_estimation_tensorflow.nnet import predict_pairwise
     from deeplabcut.pose_estimation_tensorflow.config import load_config
     from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import data_to_input
     from deeplabcut.utils import auxiliaryfunctions
@@ -336,39 +334,21 @@ def evaluate_network(config,Shuffles=[1],trainingsetindex=0,plotting = None,show
                     sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
                     Numimages = len(Data.index)
                     PredicteData = np.zeros((Numimages,3 * len(dlc_cfg['all_joints_names'])))
-                    if dlc_cfg['pairwise_predict']==True:
-                        PWpreds={}
-                        path_train_config = Path(modelfolder) / 'train' / 'pose_cfg.yaml'
-                        dlc_cfg_train = load_config(str(path_train_config))
-                        from deeplabcut.pose_estimation_tensorflow.pairwiseutils import load_pairwise_stats
-                        pairwise_stats=load_pairwise_stats(dlc_cfg_train)
-                        PWpreds['stats']=pairwise_stats
-
                     print("Analyzing data...")
                     for imageindex, imagename in tqdm(enumerate(Data.index)):
                         image = imread(os.path.join(cfg['project_path'],imagename),mode='RGB')
                         if scale!=1:
                             image = imresize(image, scale)
 
-                        if dlc_cfg['pairwise_predict']==True:
-                            #scmap, locref, pairwise_diff = predict.extract_cnn_output(outputs_np, dlc_cfg)
-                            pose, pairwisepredictions = predict_pairwise.getposewithpairwise(data_to_input(image), dlc_cfg, sess, inputs, outputs,pairwise_stats)
-                            PWpreds[imageindex]={}
-                            PWpreds[imageindex]['name']=imagename
-                            PWpreds[imageindex]['pws']=pairwisepredictions
-                            PWpreds[imageindex]['pose']=pose.flatten()
-                        else:
+                        #image = skimage.color.gray2rgb(image)
+                        image_batch = data_to_input(image)
 
-                            #image = skimage.color.gray2rgb(image)
-                            image_batch = data_to_input(image)
+                        # Compute prediction with the CNN
+                        outputs_np = sess.run(outputs, feed_dict={inputs: image_batch})
+                        scmap, locref = predict.extract_cnn_output(outputs_np, dlc_cfg)
 
-                            # Compute prediction with the CNN
-                            outputs_np = sess.run(outputs, feed_dict={inputs: image_batch})
-                            scmap, locref = predict.extract_cnn_output(outputs_np, dlc_cfg)
-
-                            # Extract maximum scoring location from the heatmap, assume 1 person
-                            pose = predict.argmax_pose_predict(scmap, locref, dlc_cfg.stride)
-
+                        # Extract maximum scoring location from the heatmap, assume 1 person
+                        pose = predict.argmax_pose_predict(scmap, locref, dlc_cfg.stride)
                         PredicteData[imageindex, :] = pose.flatten()  # NOTE: thereby     cfg_test['all_joints_names'] should be same order as bodyparts!
 
                     sess.close() #closes the current tf session
@@ -376,11 +356,6 @@ def evaluate_network(config,Shuffles=[1],trainingsetindex=0,plotting = None,show
                     index = pd.MultiIndex.from_product(
                         [[DLCscorer], dlc_cfg['all_joints_names'], ['x', 'y', 'likelihood']],
                         names=['scorer', 'bodyparts', 'coords'])
-
-                    if dlc_cfg['pairwise_predict']==True:
-                        with open(resultsfilename.split('.h5')[0] + 'pairwise.pickle', 'wb') as f:
-                            # Pickle the 'labeled-data' dictionary using the highest protocol available.
-                            pickle.dump(PWpreds, f,pickle.HIGHEST_PROTOCOL)
 
                     # Saving results
                     DataMachine = pd.DataFrame(PredicteData, columns=index, index=Data.index.values)

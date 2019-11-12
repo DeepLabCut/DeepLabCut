@@ -1,6 +1,7 @@
 '''
-Source: DeeperCut by Eldar Insafutdinov
+Adopted: DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
+
 '''
 
 import re
@@ -14,7 +15,6 @@ net_funcs = {'resnet_50': resnet_v1.resnet_v1_50,
              'resnet_101': resnet_v1.resnet_v1_101,
              'resnet_152': resnet_v1.resnet_v1_152}
 
-
 def prediction_layer(cfg, input, name, num_outputs):
     with slim.arg_scope([slim.conv2d, slim.conv2d_transpose], padding='SAME',
                         activation_fn=None, normalizer_fn=None,
@@ -25,38 +25,16 @@ def prediction_layer(cfg, input, name, num_outputs):
                                          scope='block4')
             return pred
 
-def get_batch_spec(cfg):
-    num_joints = cfg.num_joints
-    batch_size = cfg.batch_size
-    batch_spec = {
-        Batch.inputs: [batch_size, None, None, 3],
-        Batch.part_score_targets: [batch_size, None, None, num_joints],
-        Batch.part_score_weights: [batch_size, None, None, num_joints],
-    }
-    if cfg.location_refinement:
-        batch_spec[Batch.locref_targets]= [batch_size, None, None, num_joints * 2]
-        batch_spec[Batch.locref_mask]= [batch_size, None, None, num_joints * 2]
-
-    if cfg.pairwise_predict:
-        if 'num_pairwisepredictions' not in cfg.keys(): #all pairs (without self; 2 because x and y)
-            cfg.num_pairwisepredictions=num_joints * (num_joints - 1) * 2
-        batch_spec[Batch.pairwise_targets] = [batch_size, None, None, cfg.num_pairwisepredictions]
-        batch_spec[Batch.pairwise_mask] = [batch_size, None, None, cfg.num_pairwisepredictions]
-    return batch_spec
-
 class PoseNet:
     def __init__(self, cfg):
         self.cfg = cfg
         if 'output_stride' not in self.cfg.keys():
             self.cfg.output_stride=16
-        if 'batchnorm' not in self.cfg.keys():
-            self.cfg.batchnorm=False
         if 'deconvolutionstride' not in self.cfg.keys():
             self.cfg.deconvolutionstride=2
 
     def extract_features(self, inputs):
         net_fun = net_funcs[self.cfg.net_type]
-
         mean = tf.constant(self.cfg.mean_pixel,
                            dtype=tf.float32, shape=[1, 1, 1, 3], name='img_mean')
         im_centered = inputs - mean
@@ -71,13 +49,12 @@ class PoseNet:
         else:
             with slim.arg_scope(resnet_v1.resnet_arg_scope()):
                 net, end_points = net_fun(im_centered,
-                                          global_pool=False, output_stride=self.cfg.output_stride,is_training=self.cfg.batchnorm)
+                                          global_pool=False, output_stride=self.cfg.output_stride,is_training=False)
 
         return net,end_points
 
     def prediction_layers(self, features, end_points, reuse=None):
         cfg = self.cfg
-
         num_layers = re.findall("resnet_([0-9]*)", cfg.net_type)[0]
         layer_name = 'resnet_v1_{}'.format(num_layers) + '/block{}/unit_{}/bottleneck_v1'
 
@@ -88,12 +65,10 @@ class PoseNet:
             if cfg.location_refinement:
                 out['locref'] = prediction_layer(cfg, features, 'locref_pred',
                                                  cfg.num_joints * 2)
-
-            if cfg.pairwise_predict:
-                out['pairwise_pred'] = prediction_layer(cfg, features, 'pairwise_pred',
-                                                           cfg.num_joints * (cfg.num_joints - 1) * 2)
-
             if cfg.intermediate_supervision:
+                if cfg.net_type=='resnet_50' and cfg.intermediate_supervision_layer>6:
+                    print("Changing layer to 6! (higher ones don't exist in block 3 of ResNet 50).")
+                    cfg.intermediate_supervision_layer=6
                 interm_name = layer_name.format(3, cfg.intermediate_supervision_layer)
                 block_interm_out = end_points[interm_name]
                 out['part_pred_interm'] = prediction_layer(cfg, block_interm_out,
@@ -109,13 +84,10 @@ class PoseNet:
     def test(self, inputs):
         heads = self.get_net(inputs)
         prob = tf.sigmoid(heads['part_pred'])
-        if self.cfg.pairwise_predict:
-            return {'part_prob': prob, 'locref': heads['locref'],'pairwise_pred': heads['pairwise_pred']}
-        else:
-            return {'part_prob': prob, 'locref': heads['locref']}
+        return {'part_prob': prob, 'locref': heads['locref']}
 
     def inference(self,inputs):
-        #DOES NOT INCLUDE PAIRWISE!!!
+        ''' Direct TF inference on GPU. Added with: https://arxiv.org/abs/1909.11229'''
         heads = self.get_net(inputs)
         #if cfg.location_refinement:
         locref=heads['locref']
@@ -178,7 +150,9 @@ class PoseNet:
 
     def train(self, batch):
         cfg = self.cfg
+
         heads = self.get_net(batch[Batch.inputs])
+
         weigh_part_predictions = cfg.weigh_part_predictions
         part_score_weights = batch[Batch.part_score_weights] if weigh_part_predictions else 1.0
 
@@ -203,15 +177,6 @@ class PoseNet:
             loss['locref_loss'] = cfg.locref_loss_weight * loss_func(locref_targets, locref_pred, locref_weights)
             total_loss = total_loss + loss['locref_loss']
 
-        if cfg.pairwise_predict:
-            pairwise_pred = heads['pairwise_pred']
-            pairwise_targets = batch[Batch.pairwise_targets]
-            pairwise_weights = batch[Batch.pairwise_mask]
-
-            loss_func = losses.huber_loss if cfg.pairwise_huber_loss else tf.losses.mean_squared_error
-            loss['pairwise_loss'] = cfg.pairwise_loss_weight * loss_func(pairwise_targets, pairwise_pred,
-                                                                         pairwise_weights)
-            total_loss = total_loss + loss['pairwise_loss']
-
+        # loss['total_loss'] = slim.losses.get_total_loss(add_regularization_losses=params.regularize)
         loss['total_loss'] = total_loss
         return loss
