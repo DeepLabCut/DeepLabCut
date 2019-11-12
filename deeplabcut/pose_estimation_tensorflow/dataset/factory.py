@@ -38,6 +38,10 @@ def create(cfg):
         from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset_imgaug import PoseDataset
         data = PoseDataset(cfg)
 
+    elif dataset_type=='pairwise':
+        print("Starting with pairwise pose-dataset")
+        from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset_pairwise import PoseDataset
+        data = PoseDataset(cfg)
     else:
         raise Exception("Unsupported dataset_type: \"{}\"".format(dataset_type))
 

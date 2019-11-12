@@ -1,0 +1,6 @@
+model_checkpoint_path: "/home/alex/Hacking/DLCreleases/DLC4alphatesters/DeepLabCutpairwise/examples/Reaching-Mackenzie-2018-08-30/dlc-models/iteration-0/ReachingAug30-trainset95shuffle1/train/snapshot-1001"
+all_model_checkpoint_paths: "/home/alex/Hacking/DLCreleases/DLC4alphatesters/DeepLabCutpairwise/examples/Reaching-Mackenzie-2018-08-30/dlc-models/iteration-0/ReachingAug30-trainset95shuffle1/train/snapshot-850"
+all_model_checkpoint_paths: "/home/alex/Hacking/DLCreleases/DLC4alphatesters/DeepLabCutpairwise/examples/Reaching-Mackenzie-2018-08-30/dlc-models/iteration-0/ReachingAug30-trainset95shuffle1/train/snapshot-900"
+all_model_checkpoint_paths: "/home/alex/Hacking/DLCreleases/DLC4alphatesters/DeepLabCutpairwise/examples/Reaching-Mackenzie-2018-08-30/dlc-models/iteration-0/ReachingAug30-trainset95shuffle1/train/snapshot-950"
+all_model_checkpoint_paths: "/home/alex/Hacking/DLCreleases/DLC4alphatesters/DeepLabCutpairwise/examples/Reaching-Mackenzie-2018-08-30/dlc-models/iteration-0/ReachingAug30-trainset95shuffle1/train/snapshot-1000"
+all_model_checkpoint_paths: "/home/alex/Hacking/DLCreleases/DLC4alphatesters/DeepLabCutpairwise/examples/Reaching-Mackenzie-2018-08-30/dlc-models/iteration-0/ReachingAug30-trainset95shuffle1/train/snapshot-1001"

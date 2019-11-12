@@ -27,8 +27,14 @@ cfg.log_dir = "log"
 cfg.global_scale = 1.0
 cfg.location_refinement = False
 cfg.locref_stdev = 7.2801
+
 cfg.locref_loss_weight = 1.0
 cfg.locref_huber_loss = True
+
+cfg.weigh_only_present_joints=False
+cfg.pairwise_huber_loss=True
+cfg.pairwise_loss_weight=.1
+
 cfg.optimizer = "sgd"
 cfg.intermediate_supervision = False
 cfg.intermediate_supervision_layer = 12
@@ -46,7 +52,7 @@ cfg.dataset_type = "default"
 cfg.deterministic = False
 
 # Parameters for augmentation with regard to cropping
-# Added and described in "Using DeepLabCut for 3D markerless pose estimation across species and behaviors" 
+# Added and described in "Using DeepLabCut for 3D markerless pose estimation across species and behaviors"
 # Source: https://www.nature.com/articles/s41596-019-0176-0
 cfg.crop = False
 

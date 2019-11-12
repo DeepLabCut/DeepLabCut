@@ -27,6 +27,7 @@ from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import Batch
 from deeplabcut.pose_estimation_tensorflow.dataset.factory import create as create_dataset
 from deeplabcut.pose_estimation_tensorflow.nnet.net_factory import pose_net
+from deeplabcut.pose_estimation_tensorflow.nnet.pose_net import get_batch_spec
 from deeplabcut.pose_estimation_tensorflow.util.logging import setup_logging
 
 
@@ -41,17 +42,6 @@ class LearningRate(object):
             self.current_step += 1
 
         return lr
-
-def get_batch_spec(cfg):
-    num_joints = cfg.num_joints
-    batch_size = cfg.batch_size
-    return {
-        Batch.inputs: [batch_size, None, None, 3],
-        Batch.part_score_targets: [batch_size, None, None, num_joints],
-        Batch.part_score_weights: [batch_size, None, None, num_joints],
-        Batch.locref_targets: [batch_size, None, None, num_joints * 2],
-        Batch.locref_mask: [batch_size, None, None, num_joints * 2]
-    }
 
 def setup_preloading(batch_spec):
     placeholders = {name: TF.placeholder(tf.float32, shape=spec) for (name, spec) in batch_spec.items()}
@@ -175,28 +165,47 @@ def train(config_yaml,displayiters,saveiters,maxiters,max_to_keep=5,keepdeconvwe
         save_iters=max(1,int(saveiters))
         print("Save_iters overwritten as",save_iters)
 
-    cum_loss = 0.0
-    lr_gen = LearningRate(cfg)
-
     stats_path = Path(config_yaml).with_name('learning_stats.csv')
     lrf = open(str(stats_path), 'w')
 
+    cumloss,partloss,locrefloss,pwloss=0.,0.,0.,0.
+    lr_gen = LearningRate(cfg)
     print("Training parameter:")
     print(cfg)
     print("Starting training....")
     for it in range(max_iter+1):
         current_lr = lr_gen.get_lr(it)
-        [_, loss_val, summary] = sess.run([train_op, total_loss, merged_summaries],
+
+        if 'frozen_iterations' in cfg.keys() and it < cfg.frozen_iterations:
+            run_ops = [frozen_train_op, losses, total_loss, merged_summaries]
+        else:
+            run_ops = [train_op, losses, total_loss, merged_summaries]
+
+        [_, alllosses,loss_val, summary] = sess.run(run_ops,
                                           feed_dict={learning_rate: current_lr})
-        cum_loss += loss_val
+
+        partloss+=alllosses['part_loss'] #scoremap loss
+        if cfg.location_refinement:
+            locrefloss+=alllosses['locref_loss']
+        if cfg.pairwise_predict: #paf loss
+            pwloss+=alllosses['pairwise_loss']
+
+        cumloss += loss_val
         train_writer.add_summary(summary, it)
 
         if it % display_iters == 0 and it>0:
-            average_loss = cum_loss / display_iters
-            cum_loss = 0.0
-            logging.info("iteration: {} loss: {} lr: {}"
-                         .format(it, "{0:.4f}".format(average_loss), current_lr))
-            lrf.write("{}, {:.5f}, {}\n".format(it, average_loss, current_lr))
+            if cfg.pairwise_predict and cfg.location_refinement:
+                message="iteration: {} loss: {} scmap loss: {} locref loss: {} pairwise loss: {} lr: {}".format(it, "{0:.4f}".format(cumloss / display_iters),
+                            "{0:.4f}".format(partloss/ display_iters),"{0:.4f}".format(locrefloss/ display_iters), "{0:.4f}".format(pwloss/ display_iters), current_lr)
+            elif cfg.location_refinement:
+                message="iteration: {} loss: {} scmap loss: {} locref loss: {} lr: {}".format(it, "{0:.4f}".format(cumloss / display_iters),
+                            "{0:.4f}".format(partloss/ display_iters),"{0:.4f}".format(locrefloss/ display_iters), current_lr)
+            else:
+                message="iteration: {} loss: {} lr: {}".format(it, "{0:.4f}".format(cumloss / display_iters), current_lr)
+
+            logging.info(message)
+            lrf.write(message)
+            cumloss,partloss,locrefloss,pwloss=0.,0.,0.,0.
             lrf.flush()
 
         # Save snapshot

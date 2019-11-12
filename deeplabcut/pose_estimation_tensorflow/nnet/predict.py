@@ -32,6 +32,8 @@ def setup_pose_prediction(cfg):
     outputs = [net_heads['part_prob']]
     if cfg.location_refinement:
         outputs.append(net_heads['locref'])
+    if cfg.pairwise_predict:
+        outputs.append(net_heads['pairwise_pred'])
 
     restorer = TF.train.Saver()
     sess = TF.Session()

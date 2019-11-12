@@ -1,0 +1,382 @@
+2019-11-12 14:45:35 Config:
+{'all_joints': [[0], [1], [2], [3], [4]],
+ 'all_joints_names': ['Hand', 'Finger1', 'Tongue', 'Joystick1', 'Joystick2'],
+ 'batch_size': 1,
+ 'bottomheight': 400,
+ 'crop': True,
+ 'crop_pad': 0,
+ 'cropratio': 0.4,
+ 'dataset': 'training-datasets/iteration-0/UnaugmentedDataSet_ReachingAug30/Reaching_Mackenzie95shuffle1.mat',
+ 'dataset_type': 'pairwise',
+ 'deterministic': False,
+ 'display_iters': 1000,
+ 'fg_fraction': 0.25,
+ 'global_scale': 1.0,
+ 'init_weights': '/home/alex/Hacking/DLCreleases/DLC4alphatesters/DeepLabCutpairwise/deeplabcut/pose_estimation_tensorflow/models/pretrained/resnet_v1_50.ckpt',
+ 'intermediate_supervision': False,
+ 'intermediate_supervision_layer': 12,
+ 'leftwidth': 400,
+ 'location_refinement': True,
+ 'locref_huber_loss': True,
+ 'locref_loss_weight': 0.05,
+ 'locref_stdev': 7.2801,
+ 'log_dir': 'log',
+ 'max_input_size': 1500,
+ 'mean_pixel': [123.68, 116.779, 103.939],
+ 'metadataset': 'training-datasets/iteration-0/UnaugmentedDataSet_ReachingAug30/Documentation_data-Reaching_95shuffle1.pickle',
+ 'min_input_size': 64,
+ 'minsize': 100,
+ 'mirror': False,
+ 'multi_step': [[0.005, 10000],
+                [0.02, 430000],
+                [0.002, 730000],
+                [0.001, 1030000]],
+ 'net_type': 'resnet_50',
+ 'num_joints': 5,
+ 'optimizer': 'sgd',
+ 'pairwise_huber_loss': True,
+ 'pairwise_loss_weight': 0.1,
+ 'pairwise_predict': True,
+ 'pairwise_stats_collect': False,
+ 'pairwise_stats_fn': '/home/alex/Hacking/DLCreleases/DLC4alphatesters/DeepLabCutpairwise/examples/Reaching-Mackenzie-2018-08-30/dlc-models/iteration-0/ReachingAug30-trainset95shuffle1/train/pwstats.mat',
+ 'pos_dist_thresh': 17,
+ 'project_path': '/home/alex/Hacking/DLCreleases/DLC4alphatesters/DeepLabCutpairwise/examples/Reaching-Mackenzie-2018-08-30',
+ 'regularize': False,
+ 'rightwidth': 400,
+ 'save_iters': 50000,
+ 'scale_jitter_lo': 0.25,
+ 'scale_jitter_up': 1.1,
+ 'scoremap_dir': 'test',
+ 'set_pairwise_stats_collect': True,
+ 'shuffle': True,
+ 'snapshot_prefix': '/home/alex/Hacking/DLCreleases/DLC4alphatesters/DeepLabCutpairwise/examples/Reaching-Mackenzie-2018-08-30/dlc-models/iteration-0/ReachingAug30-trainset95shuffle1/train/snapshot',
+ 'stride': 8.0,
+ 'topheight': 400,
+ 'weigh_negatives': False,
+ 'weigh_only_present_joints': False,
+ 'weigh_part_predictions': False,
+ 'weight_decay': 0.0001}
+2019-11-12 14:46:31 iteration: 5 loss: 0.6900 scmap loss: 0.5097 locref loss: 0.0499 pairwise loss: 0.1304 lr: 0.005
+2019-11-12 14:46:52 iteration: 10 loss: 0.1822 scmap loss: 0.0191 locref loss: 0.0402 pairwise loss: 0.1228 lr: 0.005
+2019-11-12 14:47:08 iteration: 15 loss: 0.1185 scmap loss: 0.0214 locref loss: 0.0219 pairwise loss: 0.0752 lr: 0.005
+2019-11-12 14:47:32 iteration: 20 loss: 0.1090 scmap loss: 0.0126 locref loss: 0.0243 pairwise loss: 0.0722 lr: 0.005
+2019-11-12 14:47:54 iteration: 25 loss: 0.1354 scmap loss: 0.0271 locref loss: 0.0271 pairwise loss: 0.0813 lr: 0.005
+2019-11-12 14:48:22 iteration: 30 loss: 0.0849 scmap loss: 0.0121 locref loss: 0.0265 pairwise loss: 0.0463 lr: 0.005
+2019-11-12 14:48:36 iteration: 35 loss: 0.1198 scmap loss: 0.0125 locref loss: 0.0208 pairwise loss: 0.0864 lr: 0.005
+2019-11-12 14:49:01 iteration: 40 loss: 0.0688 scmap loss: 0.0099 locref loss: 0.0177 pairwise loss: 0.0412 lr: 0.005
+2019-11-12 14:49:19 iteration: 45 loss: 0.1166 scmap loss: 0.0142 locref loss: 0.0218 pairwise loss: 0.0806 lr: 0.005
+2019-11-12 14:49:30 iteration: 50 loss: 0.0900 scmap loss: 0.0137 locref loss: 0.0155 pairwise loss: 0.0608 lr: 0.005
+2019-11-12 14:49:50 iteration: 55 loss: 0.0910 scmap loss: 0.0120 locref loss: 0.0168 pairwise loss: 0.0622 lr: 0.005
+2019-11-12 14:50:15 iteration: 60 loss: 0.0917 scmap loss: 0.0092 locref loss: 0.0195 pairwise loss: 0.0630 lr: 0.005
+2019-11-12 14:50:43 iteration: 65 loss: 0.1263 scmap loss: 0.0098 locref loss: 0.0185 pairwise loss: 0.0980 lr: 0.005
+2019-11-12 14:51:01 iteration: 70 loss: 0.1062 scmap loss: 0.0158 locref loss: 0.0196 pairwise loss: 0.0707 lr: 0.005
+2019-11-12 14:51:11 iteration: 75 loss: 0.0626 scmap loss: 0.0120 locref loss: 0.0109 pairwise loss: 0.0397 lr: 0.005
+2019-11-12 14:51:37 iteration: 80 loss: 0.0720 scmap loss: 0.0110 locref loss: 0.0233 pairwise loss: 0.0376 lr: 0.005
+2019-11-12 14:51:49 iteration: 85 loss: 0.1052 scmap loss: 0.0107 locref loss: 0.0122 pairwise loss: 0.0822 lr: 0.005
+2019-11-12 14:52:11 iteration: 90 loss: 0.0745 scmap loss: 0.0083 locref loss: 0.0191 pairwise loss: 0.0471 lr: 0.005
+2019-11-12 14:52:34 iteration: 95 loss: 0.0565 scmap loss: 0.0103 locref loss: 0.0189 pairwise loss: 0.0273 lr: 0.005
+2019-11-12 14:52:51 iteration: 100 loss: 0.0493 scmap loss: 0.0077 locref loss: 0.0149 pairwise loss: 0.0268 lr: 0.005
+2019-11-12 14:53:10 iteration: 105 loss: 0.0875 scmap loss: 0.0142 locref loss: 0.0199 pairwise loss: 0.0534 lr: 0.005
+2019-11-12 14:53:27 iteration: 110 loss: 0.0590 scmap loss: 0.0131 locref loss: 0.0171 pairwise loss: 0.0289 lr: 0.005
+2019-11-12 14:53:43 iteration: 115 loss: 0.0863 scmap loss: 0.0104 locref loss: 0.0177 pairwise loss: 0.0583 lr: 0.005
+2019-11-12 14:54:00 iteration: 120 loss: 0.0649 scmap loss: 0.0079 locref loss: 0.0119 pairwise loss: 0.0451 lr: 0.005
+2019-11-12 14:54:17 iteration: 125 loss: 0.0539 scmap loss: 0.0074 locref loss: 0.0134 pairwise loss: 0.0331 lr: 0.005
+2019-11-12 14:54:43 iteration: 130 loss: 0.0675 scmap loss: 0.0069 locref loss: 0.0168 pairwise loss: 0.0438 lr: 0.005
+2019-11-12 14:55:10 iteration: 135 loss: 0.0746 scmap loss: 0.0104 locref loss: 0.0196 pairwise loss: 0.0446 lr: 0.005
+2019-11-12 14:55:25 iteration: 140 loss: 0.0556 scmap loss: 0.0144 locref loss: 0.0163 pairwise loss: 0.0249 lr: 0.005
+2019-11-12 14:55:38 iteration: 145 loss: 0.0489 scmap loss: 0.0090 locref loss: 0.0137 pairwise loss: 0.0262 lr: 0.005
+2019-11-12 14:55:52 iteration: 150 loss: 0.0794 scmap loss: 0.0124 locref loss: 0.0129 pairwise loss: 0.0541 lr: 0.005
+2019-11-12 14:56:09 iteration: 155 loss: 0.0487 scmap loss: 0.0089 locref loss: 0.0157 pairwise loss: 0.0242 lr: 0.005
+2019-11-12 14:56:27 iteration: 160 loss: 0.0663 scmap loss: 0.0088 locref loss: 0.0136 pairwise loss: 0.0438 lr: 0.005
+2019-11-12 14:56:47 iteration: 165 loss: 0.0531 scmap loss: 0.0087 locref loss: 0.0160 pairwise loss: 0.0284 lr: 0.005
+2019-11-12 14:57:11 iteration: 170 loss: 0.0532 scmap loss: 0.0111 locref loss: 0.0161 pairwise loss: 0.0260 lr: 0.005
+2019-11-12 14:57:22 iteration: 175 loss: 0.0835 scmap loss: 0.0134 locref loss: 0.0157 pairwise loss: 0.0545 lr: 0.005
+2019-11-12 14:57:40 iteration: 180 loss: 0.0774 scmap loss: 0.0125 locref loss: 0.0169 pairwise loss: 0.0479 lr: 0.005
+2019-11-12 14:58:16 iteration: 185 loss: 0.0623 scmap loss: 0.0105 locref loss: 0.0203 pairwise loss: 0.0316 lr: 0.005
+2019-11-12 14:58:33 iteration: 190 loss: 0.0804 scmap loss: 0.0118 locref loss: 0.0140 pairwise loss: 0.0546 lr: 0.005
+2019-11-12 14:58:55 iteration: 195 loss: 0.0740 scmap loss: 0.0082 locref loss: 0.0183 pairwise loss: 0.0475 lr: 0.005
+2019-11-12 14:59:14 iteration: 200 loss: 0.0515 scmap loss: 0.0087 locref loss: 0.0158 pairwise loss: 0.0269 lr: 0.005
+2019-11-12 14:59:26 iteration: 205 loss: 0.0858 scmap loss: 0.0100 locref loss: 0.0117 pairwise loss: 0.0641 lr: 0.005
+2019-11-12 14:59:48 iteration: 210 loss: 0.0776 scmap loss: 0.0090 locref loss: 0.0145 pairwise loss: 0.0541 lr: 0.005
+2019-11-12 15:00:05 iteration: 215 loss: 0.0820 scmap loss: 0.0083 locref loss: 0.0159 pairwise loss: 0.0579 lr: 0.005
+2019-11-12 15:00:23 iteration: 220 loss: 0.0625 scmap loss: 0.0084 locref loss: 0.0162 pairwise loss: 0.0378 lr: 0.005
+2019-11-12 15:00:33 iteration: 225 loss: 0.0651 scmap loss: 0.0097 locref loss: 0.0114 pairwise loss: 0.0440 lr: 0.005
+2019-11-12 15:00:47 iteration: 230 loss: 0.0390 scmap loss: 0.0102 locref loss: 0.0126 pairwise loss: 0.0163 lr: 0.005
+2019-11-12 15:01:10 iteration: 235 loss: 0.0600 scmap loss: 0.0107 locref loss: 0.0209 pairwise loss: 0.0283 lr: 0.005
+2019-11-12 15:01:21 iteration: 240 loss: 0.0860 scmap loss: 0.0109 locref loss: 0.0110 pairwise loss: 0.0641 lr: 0.005
+2019-11-12 15:01:37 iteration: 245 loss: 0.0642 scmap loss: 0.0091 locref loss: 0.0111 pairwise loss: 0.0439 lr: 0.005
+2019-11-12 15:01:55 iteration: 250 loss: 0.0539 scmap loss: 0.0123 locref loss: 0.0134 pairwise loss: 0.0282 lr: 0.005
+2019-11-12 15:02:07 iteration: 255 loss: 0.0325 scmap loss: 0.0076 locref loss: 0.0084 pairwise loss: 0.0166 lr: 0.005
+2019-11-12 15:02:25 iteration: 260 loss: 0.0423 scmap loss: 0.0094 locref loss: 0.0135 pairwise loss: 0.0194 lr: 0.005
+2019-11-12 15:02:40 iteration: 265 loss: 0.0457 scmap loss: 0.0089 locref loss: 0.0117 pairwise loss: 0.0250 lr: 0.005
+2019-11-12 15:03:11 iteration: 270 loss: 0.0639 scmap loss: 0.0078 locref loss: 0.0162 pairwise loss: 0.0399 lr: 0.005
+2019-11-12 15:03:26 iteration: 275 loss: 0.0350 scmap loss: 0.0102 locref loss: 0.0113 pairwise loss: 0.0135 lr: 0.005
+2019-11-12 15:03:39 iteration: 280 loss: 0.0468 scmap loss: 0.0149 locref loss: 0.0166 pairwise loss: 0.0153 lr: 0.005
+2019-11-12 15:03:59 iteration: 285 loss: 0.0602 scmap loss: 0.0102 locref loss: 0.0170 pairwise loss: 0.0330 lr: 0.005
+2019-11-12 15:04:22 iteration: 290 loss: 0.0644 scmap loss: 0.0100 locref loss: 0.0187 pairwise loss: 0.0357 lr: 0.005
+2019-11-12 15:04:33 iteration: 295 loss: 0.0396 scmap loss: 0.0105 locref loss: 0.0138 pairwise loss: 0.0153 lr: 0.005
+2019-11-12 15:04:50 iteration: 300 loss: 0.0387 scmap loss: 0.0072 locref loss: 0.0128 pairwise loss: 0.0187 lr: 0.005
+2019-11-12 15:05:08 iteration: 305 loss: 0.0425 scmap loss: 0.0076 locref loss: 0.0140 pairwise loss: 0.0209 lr: 0.005
+2019-11-12 15:05:25 iteration: 310 loss: 0.0508 scmap loss: 0.0094 locref loss: 0.0152 pairwise loss: 0.0262 lr: 0.005
+2019-11-12 15:05:41 iteration: 315 loss: 0.0580 scmap loss: 0.0083 locref loss: 0.0176 pairwise loss: 0.0321 lr: 0.005
+2019-11-12 15:06:03 iteration: 320 loss: 0.0638 scmap loss: 0.0088 locref loss: 0.0183 pairwise loss: 0.0367 lr: 0.005
+2019-11-12 15:06:23 iteration: 325 loss: 0.0330 scmap loss: 0.0053 locref loss: 0.0125 pairwise loss: 0.0152 lr: 0.005
+2019-11-12 15:06:30 iteration: 330 loss: 0.0563 scmap loss: 0.0115 locref loss: 0.0082 pairwise loss: 0.0366 lr: 0.005
+2019-11-12 15:06:47 iteration: 335 loss: 0.0664 scmap loss: 0.0089 locref loss: 0.0168 pairwise loss: 0.0406 lr: 0.005
+2019-11-12 15:07:01 iteration: 340 loss: 0.0431 scmap loss: 0.0068 locref loss: 0.0116 pairwise loss: 0.0247 lr: 0.005
+2019-11-12 15:07:42 iteration: 345 loss: 0.0585 scmap loss: 0.0055 locref loss: 0.0215 pairwise loss: 0.0315 lr: 0.005
+2019-11-12 15:07:56 iteration: 350 loss: 0.0643 scmap loss: 0.0092 locref loss: 0.0104 pairwise loss: 0.0447 lr: 0.005
+2019-11-12 15:08:21 iteration: 355 loss: 0.0451 scmap loss: 0.0082 locref loss: 0.0152 pairwise loss: 0.0217 lr: 0.005
+2019-11-12 15:08:42 iteration: 360 loss: 0.0645 scmap loss: 0.0114 locref loss: 0.0165 pairwise loss: 0.0366 lr: 0.005
+2019-11-12 15:08:54 iteration: 365 loss: 0.0475 scmap loss: 0.0109 locref loss: 0.0124 pairwise loss: 0.0242 lr: 0.005
+2019-11-12 15:09:17 iteration: 370 loss: 0.0507 scmap loss: 0.0076 locref loss: 0.0132 pairwise loss: 0.0300 lr: 0.005
+2019-11-12 15:09:32 iteration: 375 loss: 0.0567 scmap loss: 0.0118 locref loss: 0.0129 pairwise loss: 0.0320 lr: 0.005
+2019-11-12 15:09:45 iteration: 380 loss: 0.0481 scmap loss: 0.0112 locref loss: 0.0112 pairwise loss: 0.0257 lr: 0.005
+2019-11-12 15:10:05 iteration: 385 loss: 0.0523 scmap loss: 0.0082 locref loss: 0.0128 pairwise loss: 0.0312 lr: 0.005
+2019-11-12 15:10:23 iteration: 390 loss: 0.0403 scmap loss: 0.0088 locref loss: 0.0124 pairwise loss: 0.0191 lr: 0.005
+2019-11-12 15:10:36 iteration: 395 loss: 0.0367 scmap loss: 0.0136 locref loss: 0.0107 pairwise loss: 0.0123 lr: 0.005
+2019-11-12 15:10:55 iteration: 400 loss: 0.0412 scmap loss: 0.0104 locref loss: 0.0145 pairwise loss: 0.0163 lr: 0.005
+2019-11-12 15:11:15 iteration: 405 loss: 0.0341 scmap loss: 0.0087 locref loss: 0.0099 pairwise loss: 0.0155 lr: 0.005
+2019-11-12 15:11:42 iteration: 410 loss: 0.0411 scmap loss: 0.0077 locref loss: 0.0127 pairwise loss: 0.0207 lr: 0.005
+2019-11-12 15:12:07 iteration: 415 loss: 0.0479 scmap loss: 0.0070 locref loss: 0.0106 pairwise loss: 0.0303 lr: 0.005
+2019-11-12 15:12:37 iteration: 420 loss: 0.0431 scmap loss: 0.0076 locref loss: 0.0185 pairwise loss: 0.0170 lr: 0.005
+2019-11-12 15:12:51 iteration: 425 loss: 0.0441 scmap loss: 0.0105 locref loss: 0.0119 pairwise loss: 0.0216 lr: 0.005
+2019-11-12 15:13:08 iteration: 430 loss: 0.0364 scmap loss: 0.0075 locref loss: 0.0109 pairwise loss: 0.0181 lr: 0.005
+2019-11-12 15:13:31 iteration: 435 loss: 0.0511 scmap loss: 0.0101 locref loss: 0.0139 pairwise loss: 0.0271 lr: 0.005
+2019-11-12 15:13:59 iteration: 440 loss: 0.0559 scmap loss: 0.0145 locref loss: 0.0191 pairwise loss: 0.0224 lr: 0.005
+2019-11-12 15:14:25 iteration: 445 loss: 0.0553 scmap loss: 0.0091 locref loss: 0.0137 pairwise loss: 0.0326 lr: 0.005
+2019-11-12 15:14:39 iteration: 450 loss: 0.0441 scmap loss: 0.0088 locref loss: 0.0105 pairwise loss: 0.0248 lr: 0.005
+2019-11-12 15:14:54 iteration: 455 loss: 0.0545 scmap loss: 0.0103 locref loss: 0.0113 pairwise loss: 0.0329 lr: 0.005
+2019-11-12 15:15:07 iteration: 460 loss: 0.0237 scmap loss: 0.0078 locref loss: 0.0085 pairwise loss: 0.0073 lr: 0.005
+2019-11-12 15:15:25 iteration: 465 loss: 0.0548 scmap loss: 0.0094 locref loss: 0.0131 pairwise loss: 0.0324 lr: 0.005
+2019-11-12 15:15:40 iteration: 470 loss: 0.0435 scmap loss: 0.0083 locref loss: 0.0133 pairwise loss: 0.0220 lr: 0.005
+2019-11-12 15:15:54 iteration: 475 loss: 0.0322 scmap loss: 0.0069 locref loss: 0.0080 pairwise loss: 0.0173 lr: 0.005
+2019-11-12 15:16:07 iteration: 480 loss: 0.0364 scmap loss: 0.0099 locref loss: 0.0091 pairwise loss: 0.0173 lr: 0.005
+2019-11-12 15:16:49 iteration: 485 loss: 0.0565 scmap loss: 0.0068 locref loss: 0.0182 pairwise loss: 0.0315 lr: 0.005
+2019-11-12 15:17:08 iteration: 490 loss: 0.0549 scmap loss: 0.0076 locref loss: 0.0119 pairwise loss: 0.0354 lr: 0.005
+2019-11-12 15:17:29 iteration: 495 loss: 0.0587 scmap loss: 0.0100 locref loss: 0.0125 pairwise loss: 0.0363 lr: 0.005
+2019-11-12 15:17:37 iteration: 500 loss: 0.0569 scmap loss: 0.0115 locref loss: 0.0090 pairwise loss: 0.0364 lr: 0.005
+2019-11-12 15:18:05 iteration: 505 loss: 0.0606 scmap loss: 0.0078 locref loss: 0.0131 pairwise loss: 0.0397 lr: 0.005
+2019-11-12 15:18:19 iteration: 510 loss: 0.0445 scmap loss: 0.0091 locref loss: 0.0120 pairwise loss: 0.0234 lr: 0.005
+2019-11-12 15:18:39 iteration: 515 loss: 0.0377 scmap loss: 0.0074 locref loss: 0.0122 pairwise loss: 0.0181 lr: 0.005
+2019-11-12 15:19:01 iteration: 520 loss: 0.0452 scmap loss: 0.0058 locref loss: 0.0114 pairwise loss: 0.0280 lr: 0.005
+2019-11-12 15:19:23 iteration: 525 loss: 0.0320 scmap loss: 0.0073 locref loss: 0.0135 pairwise loss: 0.0113 lr: 0.005
+2019-11-12 15:19:57 iteration: 530 loss: 0.0486 scmap loss: 0.0064 locref loss: 0.0152 pairwise loss: 0.0270 lr: 0.005
+2019-11-12 15:20:16 iteration: 535 loss: 0.0408 scmap loss: 0.0073 locref loss: 0.0098 pairwise loss: 0.0237 lr: 0.005
+2019-11-12 15:20:37 iteration: 540 loss: 0.0374 scmap loss: 0.0055 locref loss: 0.0109 pairwise loss: 0.0211 lr: 0.005
+2019-11-12 15:20:52 iteration: 545 loss: 0.0410 scmap loss: 0.0090 locref loss: 0.0098 pairwise loss: 0.0223 lr: 0.005
+2019-11-12 15:21:09 iteration: 550 loss: 0.0392 scmap loss: 0.0108 locref loss: 0.0107 pairwise loss: 0.0176 lr: 0.005
+2019-11-12 15:21:30 iteration: 555 loss: 0.0513 scmap loss: 0.0090 locref loss: 0.0109 pairwise loss: 0.0313 lr: 0.005
+2019-11-12 15:21:41 iteration: 560 loss: 0.0444 scmap loss: 0.0146 locref loss: 0.0122 pairwise loss: 0.0176 lr: 0.005
+2019-11-12 15:22:01 iteration: 565 loss: 0.0416 scmap loss: 0.0087 locref loss: 0.0130 pairwise loss: 0.0199 lr: 0.005
+2019-11-12 15:22:18 iteration: 570 loss: 0.0490 scmap loss: 0.0086 locref loss: 0.0134 pairwise loss: 0.0269 lr: 0.005
+2019-11-12 15:22:31 iteration: 575 loss: 0.0567 scmap loss: 0.0113 locref loss: 0.0121 pairwise loss: 0.0333 lr: 0.005
+2019-11-12 15:22:40 iteration: 580 loss: 0.0300 scmap loss: 0.0074 locref loss: 0.0108 pairwise loss: 0.0117 lr: 0.005
+2019-11-12 15:22:49 iteration: 585 loss: 0.0382 scmap loss: 0.0076 locref loss: 0.0089 pairwise loss: 0.0216 lr: 0.005
+2019-11-12 15:22:59 iteration: 590 loss: 0.0433 scmap loss: 0.0090 locref loss: 0.0113 pairwise loss: 0.0231 lr: 0.005
+2019-11-12 15:23:27 iteration: 595 loss: 0.0444 scmap loss: 0.0063 locref loss: 0.0143 pairwise loss: 0.0238 lr: 0.005
+2019-11-12 15:23:45 iteration: 600 loss: 0.0440 scmap loss: 0.0124 locref loss: 0.0141 pairwise loss: 0.0175 lr: 0.005
+2019-11-12 15:24:02 iteration: 605 loss: 0.0568 scmap loss: 0.0065 locref loss: 0.0140 pairwise loss: 0.0363 lr: 0.005
+2019-11-12 15:24:12 iteration: 610 loss: 0.0362 scmap loss: 0.0072 locref loss: 0.0093 pairwise loss: 0.0197 lr: 0.005
+2019-11-12 15:24:32 iteration: 615 loss: 0.0814 scmap loss: 0.0091 locref loss: 0.0145 pairwise loss: 0.0578 lr: 0.005
+2019-11-12 15:24:44 iteration: 620 loss: 0.0302 scmap loss: 0.0076 locref loss: 0.0107 pairwise loss: 0.0119 lr: 0.005
+2019-11-12 15:24:56 iteration: 625 loss: 0.0422 scmap loss: 0.0077 locref loss: 0.0195 pairwise loss: 0.0150 lr: 0.005
+2019-11-12 15:25:23 iteration: 630 loss: 0.0543 scmap loss: 0.0086 locref loss: 0.0166 pairwise loss: 0.0291 lr: 0.005
+2019-11-12 15:25:37 iteration: 635 loss: 0.0453 scmap loss: 0.0094 locref loss: 0.0262 pairwise loss: 0.0097 lr: 0.005
+2019-11-12 15:25:55 iteration: 640 loss: 0.0553 scmap loss: 0.0090 locref loss: 0.0148 pairwise loss: 0.0316 lr: 0.005
+2019-11-12 15:26:14 iteration: 645 loss: 0.0309 scmap loss: 0.0084 locref loss: 0.0110 pairwise loss: 0.0115 lr: 0.005
+2019-11-12 15:26:23 iteration: 650 loss: 0.0264 scmap loss: 0.0092 locref loss: 0.0079 pairwise loss: 0.0093 lr: 0.005
+2019-11-12 15:26:35 iteration: 655 loss: 0.0276 scmap loss: 0.0075 locref loss: 0.0079 pairwise loss: 0.0122 lr: 0.005
+2019-11-12 15:26:57 iteration: 660 loss: 0.0443 scmap loss: 0.0080 locref loss: 0.0150 pairwise loss: 0.0213 lr: 0.005
+2019-11-12 15:27:07 iteration: 665 loss: 0.0357 scmap loss: 0.0069 locref loss: 0.0088 pairwise loss: 0.0200 lr: 0.005
+2019-11-12 15:27:15 iteration: 670 loss: 0.0356 scmap loss: 0.0069 locref loss: 0.0080 pairwise loss: 0.0207 lr: 0.005
+2019-11-12 15:27:43 iteration: 675 loss: 0.0544 scmap loss: 0.0059 locref loss: 0.0155 pairwise loss: 0.0329 lr: 0.005
+2019-11-12 15:28:10 iteration: 680 loss: 0.0541 scmap loss: 0.0073 locref loss: 0.0135 pairwise loss: 0.0333 lr: 0.005
+2019-11-12 15:28:22 iteration: 685 loss: 0.0361 scmap loss: 0.0079 locref loss: 0.0100 pairwise loss: 0.0182 lr: 0.005
+2019-11-12 15:28:39 iteration: 690 loss: 0.0312 scmap loss: 0.0086 locref loss: 0.0100 pairwise loss: 0.0125 lr: 0.005
+2019-11-12 15:28:55 iteration: 695 loss: 0.0298 scmap loss: 0.0066 locref loss: 0.0092 pairwise loss: 0.0140 lr: 0.005
+2019-11-12 15:29:07 iteration: 700 loss: 0.0267 scmap loss: 0.0060 locref loss: 0.0101 pairwise loss: 0.0106 lr: 0.005
+2019-11-12 15:29:24 iteration: 705 loss: 0.0299 scmap loss: 0.0072 locref loss: 0.0101 pairwise loss: 0.0126 lr: 0.005
+2019-11-12 15:29:47 iteration: 710 loss: 0.0402 scmap loss: 0.0054 locref loss: 0.0108 pairwise loss: 0.0240 lr: 0.005
+2019-11-12 15:30:09 iteration: 715 loss: 0.0517 scmap loss: 0.0073 locref loss: 0.0141 pairwise loss: 0.0303 lr: 0.005
+2019-11-12 15:30:16 iteration: 720 loss: 0.0487 scmap loss: 0.0101 locref loss: 0.0107 pairwise loss: 0.0279 lr: 0.005
+2019-11-12 15:30:25 iteration: 725 loss: 0.0404 scmap loss: 0.0093 locref loss: 0.0102 pairwise loss: 0.0209 lr: 0.005
+2019-11-12 15:30:41 iteration: 730 loss: 0.0247 scmap loss: 0.0059 locref loss: 0.0078 pairwise loss: 0.0110 lr: 0.005
+2019-11-12 15:31:01 iteration: 735 loss: 0.0304 scmap loss: 0.0055 locref loss: 0.0085 pairwise loss: 0.0165 lr: 0.005
+2019-11-12 15:31:17 iteration: 740 loss: 0.0224 scmap loss: 0.0061 locref loss: 0.0078 pairwise loss: 0.0084 lr: 0.005
+2019-11-12 15:31:45 iteration: 745 loss: 0.0339 scmap loss: 0.0051 locref loss: 0.0113 pairwise loss: 0.0175 lr: 0.005
+2019-11-12 15:31:52 iteration: 750 loss: 0.0272 scmap loss: 0.0088 locref loss: 0.0065 pairwise loss: 0.0119 lr: 0.005
+2019-11-12 15:32:14 iteration: 755 loss: 0.0418 scmap loss: 0.0073 locref loss: 0.0109 pairwise loss: 0.0236 lr: 0.005
+2019-11-12 15:32:40 iteration: 760 loss: 0.0316 scmap loss: 0.0050 locref loss: 0.0107 pairwise loss: 0.0159 lr: 0.005
+2019-11-12 15:32:49 iteration: 765 loss: 0.0306 scmap loss: 0.0083 locref loss: 0.0095 pairwise loss: 0.0127 lr: 0.005
+2019-11-12 15:32:58 iteration: 770 loss: 0.0319 scmap loss: 0.0072 locref loss: 0.0066 pairwise loss: 0.0181 lr: 0.005
+2019-11-12 15:33:09 iteration: 775 loss: 0.0358 scmap loss: 0.0075 locref loss: 0.0096 pairwise loss: 0.0186 lr: 0.005
+2019-11-12 15:33:21 iteration: 780 loss: 0.0287 scmap loss: 0.0068 locref loss: 0.0102 pairwise loss: 0.0117 lr: 0.005
+2019-11-12 15:33:28 iteration: 785 loss: 0.0402 scmap loss: 0.0106 locref loss: 0.0070 pairwise loss: 0.0225 lr: 0.005
+2019-11-12 15:33:46 iteration: 790 loss: 0.0258 scmap loss: 0.0056 locref loss: 0.0100 pairwise loss: 0.0102 lr: 0.005
+2019-11-12 15:33:54 iteration: 795 loss: 0.0304 scmap loss: 0.0114 locref loss: 0.0093 pairwise loss: 0.0098 lr: 0.005
+2019-11-12 15:34:13 iteration: 800 loss: 0.0313 scmap loss: 0.0064 locref loss: 0.0116 pairwise loss: 0.0133 lr: 0.005
+2019-11-12 15:34:20 iteration: 805 loss: 0.0352 scmap loss: 0.0082 locref loss: 0.0065 pairwise loss: 0.0206 lr: 0.005
+2019-11-12 15:34:27 iteration: 810 loss: 0.0242 scmap loss: 0.0067 locref loss: 0.0097 pairwise loss: 0.0079 lr: 0.005
+2019-11-12 15:34:50 iteration: 815 loss: 0.0268 scmap loss: 0.0054 locref loss: 0.0105 pairwise loss: 0.0108 lr: 0.005
+2019-11-12 15:35:15 iteration: 820 loss: 0.0284 scmap loss: 0.0053 locref loss: 0.0114 pairwise loss: 0.0117 lr: 0.005
+2019-11-12 15:35:29 iteration: 825 loss: 0.0406 scmap loss: 0.0092 locref loss: 0.0108 pairwise loss: 0.0207 lr: 0.005
+2019-11-12 15:35:42 iteration: 830 loss: 0.0347 scmap loss: 0.0084 locref loss: 0.0131 pairwise loss: 0.0133 lr: 0.005
+2019-11-12 15:35:57 iteration: 835 loss: 0.0259 scmap loss: 0.0074 locref loss: 0.0093 pairwise loss: 0.0093 lr: 0.005
+2019-11-12 15:36:11 iteration: 840 loss: 0.0489 scmap loss: 0.0083 locref loss: 0.0146 pairwise loss: 0.0260 lr: 0.005
+2019-11-12 15:36:29 iteration: 845 loss: 0.0576 scmap loss: 0.0096 locref loss: 0.0181 pairwise loss: 0.0299 lr: 0.005
+2019-11-12 15:36:49 iteration: 850 loss: 0.0317 scmap loss: 0.0060 locref loss: 0.0109 pairwise loss: 0.0148 lr: 0.005
+2019-11-12 15:37:08 iteration: 855 loss: 0.0471 scmap loss: 0.0086 locref loss: 0.0165 pairwise loss: 0.0219 lr: 0.005
+2019-11-12 15:37:18 iteration: 860 loss: 0.0341 scmap loss: 0.0078 locref loss: 0.0063 pairwise loss: 0.0200 lr: 0.005
+2019-11-12 15:37:34 iteration: 865 loss: 0.0485 scmap loss: 0.0077 locref loss: 0.0095 pairwise loss: 0.0313 lr: 0.005
+2019-11-12 15:37:49 iteration: 870 loss: 0.0296 scmap loss: 0.0065 locref loss: 0.0093 pairwise loss: 0.0139 lr: 0.005
+2019-11-12 15:37:59 iteration: 875 loss: 0.0249 scmap loss: 0.0070 locref loss: 0.0082 pairwise loss: 0.0098 lr: 0.005
+2019-11-12 15:38:11 iteration: 880 loss: 0.0273 scmap loss: 0.0067 locref loss: 0.0080 pairwise loss: 0.0126 lr: 0.005
+2019-11-12 15:38:28 iteration: 885 loss: 0.0246 scmap loss: 0.0048 locref loss: 0.0095 pairwise loss: 0.0103 lr: 0.005
+2019-11-12 15:38:46 iteration: 890 loss: 0.0378 scmap loss: 0.0116 locref loss: 0.0103 pairwise loss: 0.0159 lr: 0.005
+2019-11-12 15:39:01 iteration: 895 loss: 0.0231 scmap loss: 0.0068 locref loss: 0.0057 pairwise loss: 0.0106 lr: 0.005
+2019-11-12 15:39:23 iteration: 900 loss: 0.0371 scmap loss: 0.0078 locref loss: 0.0098 pairwise loss: 0.0195 lr: 0.005
+2019-11-12 15:39:31 iteration: 905 loss: 0.0237 scmap loss: 0.0080 locref loss: 0.0079 pairwise loss: 0.0078 lr: 0.005
+2019-11-12 15:39:46 iteration: 910 loss: 0.0500 scmap loss: 0.0061 locref loss: 0.0126 pairwise loss: 0.0314 lr: 0.005
+2019-11-12 15:39:56 iteration: 915 loss: 0.0304 scmap loss: 0.0093 locref loss: 0.0084 pairwise loss: 0.0127 lr: 0.005
+2019-11-12 15:40:11 iteration: 920 loss: 0.0395 scmap loss: 0.0062 locref loss: 0.0180 pairwise loss: 0.0153 lr: 0.005
+2019-11-12 15:40:19 iteration: 925 loss: 0.0341 scmap loss: 0.0126 locref loss: 0.0093 pairwise loss: 0.0122 lr: 0.005
+2019-11-12 15:40:33 iteration: 930 loss: 0.0372 scmap loss: 0.0125 locref loss: 0.0085 pairwise loss: 0.0162 lr: 0.005
+2019-11-12 15:40:54 iteration: 935 loss: 0.0362 scmap loss: 0.0077 locref loss: 0.0094 pairwise loss: 0.0190 lr: 0.005
+2019-11-12 15:41:08 iteration: 940 loss: 0.0232 scmap loss: 0.0056 locref loss: 0.0067 pairwise loss: 0.0109 lr: 0.005
+2019-11-12 15:41:33 iteration: 945 loss: 0.0340 scmap loss: 0.0059 locref loss: 0.0115 pairwise loss: 0.0166 lr: 0.005
+2019-11-12 15:41:53 iteration: 950 loss: 0.0206 scmap loss: 0.0046 locref loss: 0.0080 pairwise loss: 0.0080 lr: 0.005
+2019-11-12 15:42:09 iteration: 955 loss: 0.0203 scmap loss: 0.0051 locref loss: 0.0090 pairwise loss: 0.0061 lr: 0.005
+2019-11-12 15:42:18 iteration: 960 loss: 0.0238 scmap loss: 0.0064 locref loss: 0.0046 pairwise loss: 0.0128 lr: 0.005
+2019-11-12 15:42:35 iteration: 965 loss: 0.0280 scmap loss: 0.0065 locref loss: 0.0104 pairwise loss: 0.0111 lr: 0.005
+2019-11-12 15:42:49 iteration: 970 loss: 0.0278 scmap loss: 0.0079 locref loss: 0.0092 pairwise loss: 0.0107 lr: 0.005
+2019-11-12 15:43:00 iteration: 975 loss: 0.0280 scmap loss: 0.0102 locref loss: 0.0069 pairwise loss: 0.0110 lr: 0.005
+2019-11-12 15:43:13 iteration: 980 loss: 0.0208 scmap loss: 0.0054 locref loss: 0.0076 pairwise loss: 0.0078 lr: 0.005
+2019-11-12 15:43:31 iteration: 985 loss: 0.0381 scmap loss: 0.0069 locref loss: 0.0127 pairwise loss: 0.0184 lr: 0.005
+2019-11-12 15:43:48 iteration: 990 loss: 0.0309 scmap loss: 0.0056 locref loss: 0.0175 pairwise loss: 0.0078 lr: 0.005
+2019-11-12 15:44:13 iteration: 995 loss: 0.0314 scmap loss: 0.0068 locref loss: 0.0111 pairwise loss: 0.0135 lr: 0.005
+2019-11-12 15:44:26 iteration: 1000 loss: 0.0313 scmap loss: 0.0086 locref loss: 0.0086 pairwise loss: 0.0140 lr: 0.005
+2019-11-12 15:44:29 Config:
+{'all_joints': [[0], [1], [2], [3], [4]],
+ 'all_joints_names': ['Hand', 'Finger1', 'Tongue', 'Joystick1', 'Joystick2'],
+ 'batch_size': 1,
+ 'batchnorm': False,
+ 'bottomheight': 400,
+ 'crop': True,
+ 'crop_pad': 0,
+ 'cropratio': 0.4,
+ 'dataset': 'training-datasets/iteration-0/UnaugmentedDataSet_ReachingAug30/Reaching_Mackenzie95shuffle1.mat',
+ 'dataset_type': 'pairwise',
+ 'deconvolutionstride': 2,
+ 'deterministic': False,
+ 'display_iters': 1000,
+ 'fg_fraction': 0.25,
+ 'global_scale': 0.8,
+ 'init_weights': '/home/alex/Hacking/DLCreleases/DLC4alphatesters/DeepLabCutpairwise/deeplabcut/pose_estimation_tensorflow/models/pretrained/resnet_v1_50.ckpt',
+ 'intermediate_supervision': False,
+ 'intermediate_supervision_layer': 12,
+ 'leftwidth': 400,
+ 'location_refinement': True,
+ 'locref_huber_loss': True,
+ 'locref_loss_weight': 0.05,
+ 'locref_stdev': 7.2801,
+ 'log_dir': 'log',
+ 'max_input_size': 1500,
+ 'mean_pixel': [123.68, 116.779, 103.939],
+ 'metadataset': 'training-datasets/iteration-0/UnaugmentedDataSet_ReachingAug30/Documentation_data-Reaching_95shuffle1.pickle',
+ 'min_input_size': 64,
+ 'minsize': 100,
+ 'mirror': False,
+ 'multi_step': [[0.005, 10000],
+                [0.02, 430000],
+                [0.002, 730000],
+                [0.001, 1030000]],
+ 'net_type': 'resnet_50',
+ 'num_joints': 5,
+ 'num_pairwisepredictions': 40,
+ 'optimizer': 'sgd',
+ 'output_stride': 16,
+ 'pairwise_huber_loss': True,
+ 'pairwise_loss_weight': 0.1,
+ 'pairwise_predict': True,
+ 'pairwise_stats_collect': False,
+ 'pairwise_stats_fn': '/home/alex/Hacking/DLCreleases/DLC4alphatesters/DeepLabCutpairwise/examples/Reaching-Mackenzie-2018-08-30/dlc-models/iteration-0/ReachingAug30-trainset95shuffle1/train/pwstats.mat',
+ 'pos_dist_thresh': 17,
+ 'project_path': '/home/alex/Hacking/DLCreleases/DLC4alphatesters/DeepLabCutpairwise/examples/Reaching-Mackenzie-2018-08-30',
+ 'regularize': False,
+ 'rightwidth': 400,
+ 'save_iters': 50000,
+ 'scale_jitter_lo': 0.25,
+ 'scale_jitter_up': 1.1,
+ 'scoremap_dir': 'test',
+ 'set_pairwise_stats_collect': True,
+ 'shuffle': True,
+ 'snapshot_prefix': '/home/alex/Hacking/DLCreleases/DLC4alphatesters/DeepLabCutpairwise/examples/Reaching-Mackenzie-2018-08-30/dlc-models/iteration-0/ReachingAug30-trainset95shuffle1/test/snapshot',
+ 'stride': 8.0,
+ 'topheight': 400,
+ 'weigh_negatives': False,
+ 'weigh_only_present_joints': False,
+ 'weigh_part_predictions': False,
+ 'weight_decay': 0.0001}
+2019-11-12 15:44:34 Config:
+{'all_joints': [[0], [1], [2], [3], [4]],
+ 'all_joints_names': ['Hand', 'Finger1', 'Tongue', 'Joystick1', 'Joystick2'],
+ 'batch_size': 1,
+ 'batchnorm': False,
+ 'bottomheight': 400,
+ 'crop': True,
+ 'crop_pad': 0,
+ 'cropratio': 0.4,
+ 'dataset': 'training-datasets/iteration-0/UnaugmentedDataSet_ReachingAug30/Reaching_Mackenzie95shuffle1.mat',
+ 'dataset_type': 'pairwise',
+ 'deconvolutionstride': 2,
+ 'deterministic': False,
+ 'display_iters': 1000,
+ 'fg_fraction': 0.25,
+ 'global_scale': 1.0,
+ 'init_weights': '/home/alex/Hacking/DLCreleases/DLC4alphatesters/DeepLabCutpairwise/deeplabcut/pose_estimation_tensorflow/models/pretrained/resnet_v1_50.ckpt',
+ 'intermediate_supervision': False,
+ 'intermediate_supervision_layer': 12,
+ 'leftwidth': 400,
+ 'location_refinement': True,
+ 'locref_huber_loss': True,
+ 'locref_loss_weight': 0.05,
+ 'locref_stdev': 7.2801,
+ 'log_dir': 'log',
+ 'max_input_size': 1500,
+ 'mean_pixel': [123.68, 116.779, 103.939],
+ 'metadataset': 'training-datasets/iteration-0/UnaugmentedDataSet_ReachingAug30/Documentation_data-Reaching_95shuffle1.pickle',
+ 'min_input_size': 64,
+ 'minsize': 100,
+ 'mirror': False,
+ 'multi_step': [[0.005, 10000],
+                [0.02, 430000],
+                [0.002, 730000],
+                [0.001, 1030000]],
+ 'net_type': 'resnet_50',
+ 'num_joints': 5,
+ 'num_pairwisepredictions': 40,
+ 'optimizer': 'sgd',
+ 'output_stride': 16,
+ 'pairwise_huber_loss': True,
+ 'pairwise_loss_weight': 0.1,
+ 'pairwise_predict': True,
+ 'pairwise_stats_collect': False,
+ 'pairwise_stats_fn': '/home/alex/Hacking/DLCreleases/DLC4alphatesters/DeepLabCutpairwise/examples/Reaching-Mackenzie-2018-08-30/dlc-models/iteration-0/ReachingAug30-trainset95shuffle1/train/pwstats.mat',
+ 'pos_dist_thresh': 17,
+ 'project_path': '/home/alex/Hacking/DLCreleases/DLC4alphatesters/DeepLabCutpairwise/examples/Reaching-Mackenzie-2018-08-30',
+ 'regularize': False,
+ 'rightwidth': 400,
+ 'save_iters': 50000,
+ 'scale_jitter_lo': 0.25,
+ 'scale_jitter_up': 1.1,
+ 'scoremap_dir': 'test',
+ 'set_pairwise_stats_collect': True,
+ 'shuffle': True,
+ 'snapshot_prefix': '/home/alex/Hacking/DLCreleases/DLC4alphatesters/DeepLabCutpairwise/examples/Reaching-Mackenzie-2018-08-30/dlc-models/iteration-0/ReachingAug30-trainset95shuffle1/train/snapshot',
+ 'stride': 8.0,
+ 'topheight': 400,
+ 'weigh_negatives': False,
+ 'weigh_only_present_joints': False,
+ 'weigh_part_predictions': False,
+ 'weight_decay': 0.0001}
