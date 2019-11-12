@@ -19,6 +19,7 @@ from deeplabcut import DEBUG
 # DLClight version does not support GUIs. Importing accordingly
 import matplotlib as mpl
 if os.environ.get('DLClight', default=False) == 'True':
+    print("DLC loaded in light mode; you cannot use any GUI (labeling, relabeling and standalone GUI)")
     mpl.use('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
     pass
 else: #standard use [wxpython supported]
@@ -57,8 +58,3 @@ from deeplabcut.utils import create_labeled_video,plot_trajectories, auxiliaryfu
 from deeplabcut.utils.auxfun_videos import ShortenVideo, DownSampleVideo
 
 from deeplabcut.version import __version__, VERSION
-
-
-if __name__ == "__main__":
-    # if module is executed direcyly (i.e. `python -m deeplabcut`) launch straight into the GUI
-    launch_dlc()
