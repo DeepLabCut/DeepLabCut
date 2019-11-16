@@ -64,7 +64,7 @@ class PlotterArgMax(Predictor):
             self._figure, self._axes = pyplot.subplots(self._grid_size, self._grid_size, subplot_kw=self.AXES_ARGS,
                                                        **self.FIGURE_ARGS)
         # Hide all axis.....
-        if(self.AXIS_ON):
+        if(not self.AXIS_ON):
             for ax in self._axes.flat:
                 ax.axis("off")
 
@@ -74,8 +74,9 @@ class PlotterArgMax(Predictor):
             # Plot all probability maps
             for bp, ax in zip(range(scmap.get_bodypart_count()), self._axes.flat):
                 ax.clear()
-                if(self.AXIS_ON):
+                if(not self.AXIS_ON):
                     ax.axis("off")
+
                 ax.set_title(f"Bodypart: {self._parts[bp]}, Frame: {self._current_frame}")
 
                 if(self.PROJECT_3D):
