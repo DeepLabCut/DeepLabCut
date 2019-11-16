@@ -182,6 +182,16 @@ A ResNet-101 pre-trained on MPII is available. You can use the following noteboo
     curl -L -O https://datasets.d2.mpi-inf.mpg.de/deepercut-models-tensorflow/mpii-single-resnet-101.meta
     curl -L -O https://datasets.d2.mpi-inf.mpg.de/deepercut-models-tensorflow/mpii-single-resnet-101.index
  ```
+ 
+ At this stage you can also decide what type of augmentation to use. The default loaders work well for most all tasks (as shown on www.deeplabcut.org), but there are many options, more data augmentation, intermediate supervision, etc. Please look at the [**pose_cfg.yaml**](https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml) file for a full list of parameters **you might want to change before running this step.** There are several data loaders that can be used. For example, you can use the default loader (introduced and described in the Nature Protocols paper), [TensorPack](https://github.com/tensorpack/tensorpack) for data augmentation (currently this is easiest on Linux only), or [imgaug](https://imgaug.readthedocs.io/en/latest/). You can set this by passing  ``` deeplabcut.create_training_dataset(config_pathaugmenter_type='imgaug')  ```
+The differences of the loaders are as follows:
+- default: our standard DLC 2.0 introduced in Nature Protocols variant (scaling, auto-crop augmentation)
+- imgaug: a lot of augmentation possibilities, efficient code for target map creation & batchsizes >1 supported. [will prob. become default soon]
+- tensorpack: a lot of augmentation possibilities, multi CPU support for fast processing, target maps are created less efficiently than in imgaug, does not allow batchsize>1 
+- deterministic: only useful for testing, freezes numpy seed otherwise like default
+
+You can set this in your projects "dlc-models folder, ... train" then edit the **pose_cfg.yaml**. Note, to see the options, look at the default file: [**pose_cfg.yaml**](https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml). 
+
  See Box 2 on how to specify which network is loaded for training:
 
 <p align="center">
@@ -195,10 +205,6 @@ Timing: The time required to train the network mainly depends on the frame size 
 computer hardware. On a NVIDIA GeForce GTX 1080 Ti GPU, it takes ≈ 6 hrs to train the network for at least
 200,000 iterations. On the CPU, it will take several days to train for the same number of iterations on the same
 training dataset.
-
-The default parameters work very well for most all tasks (as shown on www.deeplabcut.org), but there are many options, including data augmentation, intermediate supervision, etc. Please look at the [**pose_cfg.yaml**](https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml) file for a full list of parameters **you might want to change before running this step.**
-
-For example, there are several data loaders that can be used. Currently, there are several options for this. For example, you can use [TensorPack](https://github.com/tensorpack/tensorpack) for data augmentation (currently this is easiest on Linux only), or [imgaug](https://imgaug.readthedocs.io/en/latest/). You can set this in your projects "dlc-models folder, ... train" then edit the **pose_cfg.yaml**. Note, to see the options, look at the default file: [**pose_cfg.yaml**](https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml)
 
 The function ‘train_network’ helps the user in training the network. It is used as follows:
 
