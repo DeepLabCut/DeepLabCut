@@ -11,7 +11,6 @@ from tensorflow.contrib.slim.nets import resnet_v1
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import Batch
 from deeplabcut.pose_estimation_tensorflow.nnet import losses
 
-
 net_funcs = {'resnet_50': resnet_v1.resnet_v1_50,
              'resnet_101': resnet_v1.resnet_v1_101,
              'resnet_152': resnet_v1.resnet_v1_152}
@@ -25,18 +24,6 @@ def prediction_layer(cfg, input, name, num_outputs):
                                          kernel_size=[3, 3], stride=cfg.deconvolutionstride,
                                          scope='block4')
             return pred
-
-
-def get_batch_spec(cfg):
-    num_joints = cfg.num_joints
-    batch_size = cfg.batch_size
-    return {
-        Batch.inputs: [batch_size, None, None, 3],
-        Batch.part_score_targets: [batch_size, None, None, num_joints],
-        Batch.part_score_weights: [batch_size, None, None, num_joints],
-        Batch.locref_targets: [batch_size, None, None, num_joints * 2],
-        Batch.locref_mask: [batch_size, None, None, num_joints * 2]
-    }
 
 class PoseNet:
     def __init__(self, cfg):

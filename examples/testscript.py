@@ -36,7 +36,7 @@ video=[os.path.join(basepath,'Reaching-Mackenzie-2018-08-30','videos',videoname+
 dfolder=None
 net_type='resnet_50' #'mobilenet_v2_0.35' #'resnet_50'
 augmenter_type='default' #'tensorpack'
-numiter=10
+numiter=5
 
 print("CREATING PROJECT")
 path_config_file=deeplabcut.create_new_project(task,scorer,video,copy_videos=True)
@@ -116,7 +116,7 @@ print("analyze again...")
 deeplabcut.analyze_videos(path_config_file,[newvideo],save_as_csv=True, destfolder=dfolder)
 
 print("CREATE VIDEO")
-deeplabcut.create_labeled_video(path_config_file,[newvideo], destfolder=dfolder)
+deeplabcut.create_labeled_video(path_config_file,[newvideo], destfolder=dfolder,save_frames=True)
 
 print("Making plots")
 deeplabcut.plot_trajectories(path_config_file,[newvideo], destfolder=dfolder)
@@ -154,8 +154,9 @@ deeplabcut.train_network(path_config_file)
 
 try: #you need ffmpeg command line interface
     #subprocess.call(['ffmpeg','-i',video[0],'-ss','00:00:00','-to','00:00:00.4','-c','copy',newvideo])
-    newvideo2=deeplabcut.ShortenVideo(video[0],start='00:00:00',stop='00:00:00.4',outsuffix='short',outpath=os.path.join(cfg['project_path'],'videos'))
-    vname=Path(newvideo).stem
+    newvideo2=deeplabcut.ShortenVideo(video[0],start='00:00:00',stop='00:00:00.4',outsuffix='short2',outpath=os.path.join(cfg['project_path'],'videos'))
+
+    vname=Path(newvideo2).stem
 except: # if ffmpeg is broken
     vname='brief'
     newvideo2=os.path.join(cfg['project_path'],'videos',vname+'.mp4')
@@ -166,7 +167,7 @@ except: # if ffmpeg is broken
         return clip.get_frame(1)
 
     newclip = VideoClip(make_frame, duration=1)
-    newclip.write_videofile(newvideo,fps=30)
+    newclip.write_videofile(newvideo2,fps=30)
 
 
 print("Inference with direct cropping")
@@ -194,8 +195,8 @@ DLC_config['multi_step']=[[0.001,10]]
 print("CHANGING training parameters to end quickly!")
 deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
 
-print("TRAINING shuffle 2")
-deeplabcut.train_network(path_config_file,shuffle=2)
+print("TRAINING shuffle 2, with smaller allocated memory")
+deeplabcut.train_network(path_config_file,shuffle=2,allow_growth=True)
 
 print("ANALYZING some individual frames")
 deeplabcut.analyze_time_lapse_frames(path_config_file,os.path.join(cfg['project_path'],'labeled-data/reachingvideo1/'))

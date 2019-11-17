@@ -99,9 +99,9 @@ def get_camerawise_videos(path,cam_names,videotype):
     import glob
     from pathlib import Path
     vid=[]
-    
+
     # Find videos only specific to the cam names
-    videos = [glob.glob(os.path.join(path,str('*'+cam_names[i]+'*'+videotype))) for i in range(len(cam_names)) ]
+    videos = [glob.glob( os.path.join(path, str('*'+cam_name+'*'+videotype)) ) for cam_name in cam_names ]
     videos = [y for x in videos for y in x]
 
     # Exclude the labeled video files
@@ -112,7 +112,7 @@ def get_camerawise_videos(path,cam_names,videotype):
     videos=[v for v in videos if os.path.isfile(v) and not (file_to_exclude in v)]
     video_list=[]
     cam=cam_names[0] #camera1
-    vid.append([name for name in glob.glob(os.path.join(path,str('*'+cam+'*'+videotype)))]) #all videos with cam 
+    vid.append([name for name in glob.glob(os.path.join(path,str('*'+cam+'*'+videotype)))]) #all videos with cam
     #print("here is what I found",vid)
     for k in range(len(vid[0])):
         if cam in str(Path(vid[0][k]).stem):
@@ -133,7 +133,7 @@ def get_camerawise_videos(path,cam_names,videotype):
             if os.path.isfile(putativecam2name): 
                 #found a pair!!!
                 video_list.append([os.path.join(path,pref+cam+suf+ending),putativecam2name])
-    return(video_list)
+    return video_list
 
 
 def Get_list_of_triangulated_and_videoFiles(filepath,videotype,scorer_3d,cam_names,videofolder):

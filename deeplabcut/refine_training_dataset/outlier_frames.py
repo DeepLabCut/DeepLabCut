@@ -482,7 +482,7 @@ def PlottingSingleFramecv2(cap,cv2,crop,coords,Dataframe,bodyparts2plot,tmpfolde
             plt.close("all")
 
 
-def refine_labels(config):
+def refine_labels(config,multianimal=False):
     """
     Refines the labels of the outlier frames extracted from the analyzed videos.\n Helps in augmenting the training dataset.
     Use the function ``analyze_video`` to analyze a video and extracts the outlier frames using the function
@@ -505,10 +505,19 @@ def refine_labels(config):
     --------
 
     """
+
+    startpath = os.getcwd()
     wd = Path(config).resolve().parents[0]
     os.chdir(str(wd))
-    from deeplabcut.refine_training_dataset import refinement
-    refinement.show(config)
+    cfg = auxiliaryfunctions.read_config(config)
+    if multianimal==False and not cfg.get('multianimalproject',False):
+        from deeplabcut.refine_training_dataset import refinement
+        refinement.show(config)
+    else: #loading multianimal labeling GUI
+        from deeplabcut.refine_training_dataset import multiple_individuals_refinement_toolbox
+        multiple_individuals_refinement_toolbox.show(config)
+
+    os.chdir(startpath)
 
 def merge_datasets(config,forceiterate=None):
     """

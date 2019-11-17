@@ -194,29 +194,6 @@ def write_pickle(filename,data):
     with open(filename, 'wb') as handle:
         pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-def create_empty_df(dataframe,scorer,flag):
-# Creates an empty dataFrame of same shape as df_side_view.
-# flag = number of coordinates. e.g. 4 for 3d,3 for 2d as we need to store the likelihood too.
-#    df = pd.read_hdf(dataframe)
-    df = dataframe
-    scorer = scorer#df.columns.get_level_values(0)[0]
-    bodyparts =  df.columns.get_level_values(1)
-    _, idx = np.unique(bodyparts, return_index=True)
-    bodyparts =  list(bodyparts[np.sort(idx)])
-    a = np.empty((df.shape[0],3))
-    a[:] = np.nan
-    dataFrame = None
-    for bodypart in bodyparts:
-        if flag == '2d':
-            pdindex = pd.MultiIndex.from_product([[scorer], [bodypart], ['x', 'y','likelihood']],
-                                             names=['scorer', 'bodyparts', 'coords'])
-        elif flag == '3d':
-            pdindex = pd.MultiIndex.from_product([[scorer], [bodypart], ['x', 'y','z']],
-                                             names=['scorer', 'bodyparts', 'coords'])
-        frame = pd.DataFrame(a, columns = pdindex,index = range(0,df.shape[0]))
-        dataFrame = pd.concat([frame,dataFrame],axis=1)
-    return(dataFrame,scorer,bodyparts)
-
 def Getlistofvideos(videos,videotype):
     from random import sample
     #checks if input is a directory

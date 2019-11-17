@@ -151,13 +151,15 @@ class Evaluate_network(wx.Panel):
         #shuffle = self.shuffle.GetValue()
         trainingsetindex = self.trainingset.GetValue()
 
-        shuffle = list(range(1,self.shuffles.GetValue()+1))
+        shuffle = [self.shuffles.GetValue()]
         if self.plot_choice.GetStringSelection() == "Yes":
             plotting = True
         else:
             plotting = False
-        print(self.bodyparts)
-        deeplabcut.evaluate_network(self.config,shuffle,trainingsetindex,plotting,show_errors=True,comparisonbodyparts=self.bodyparts,gputouse=None)
+
+        if len(self.bodyparts)==0:
+            self.bodyparts='all'
+        deeplabcut.evaluate_network(self.config,Shuffles=shuffle,trainingsetindex=trainingsetindex,plotting=plotting,show_errors=True,comparisonbodyparts=self.bodyparts,gputouse=None)
 
     def cancel_evaluate_network(self,event):
         """

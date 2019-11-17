@@ -17,7 +17,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="deeplabcut",
-    version="2.1",
+    version="2.1.3",
     author="A. & M. Mathis Labs",
     author_email="alexander.mathis@bethgelab.org",
     description="Markerless pose-estimation of user-defined features with deep learning",
@@ -25,9 +25,9 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/AlexEMG/DeepLabCut",
     install_requires=['certifi','chardet','click','easydict',
-                      'h5py~=2.7','imageio','intel-openmp','imgaug',
-                      'ipython','ipython-genutils','imageio~=2.3.0' ,
-                      'matplotlib==3.0.3','moviepy','numpy>=1.15.0','opencv-python~=3.4',
+                      'h5py~=2.7','intel-openmp','imgaug',
+                      'ipython','ipython-genutils',
+                      'matplotlib==3.0.3','moviepy','numpy>=1.16.4','opencv-python~=3.4',
                       'pandas','patsy','python-dateutil','pyyaml>=5.1','requests',
                       'ruamel.yaml~=0.15','setuptools','scikit-image','scikit-learn',
                       'scipy','six','statsmodels==0.10.1','tables==3.4.3',

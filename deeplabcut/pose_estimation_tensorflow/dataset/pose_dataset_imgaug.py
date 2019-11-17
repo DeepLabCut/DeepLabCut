@@ -25,7 +25,6 @@ from numpy import concatenate as cat
 import scipy.io as sio
 from deeplabcut.utils.auxfun_videos import imread
 from scipy.stats import truncnorm
-import imageio
 from imgaug.augmentables import Keypoint, KeypointsOnImage
 import imgaug.augmenters as iaa
 import pickle
@@ -227,11 +226,13 @@ class PoseDataset:
                                                   keypoints=batch_joints)
             #If you would like to check the augmented images, script for saving
             #the images with joints on:
+            #import imageio
             #for i in range(self.batch_size):
             #    joints = batch_joints[i]
             #    kps = KeypointsOnImage([Keypoint(x=joint[0], y=joint[1]) for joint in joints], shape=batch_images[i].shape)
             #    im = kps.draw_on_image(batch_images[i])
             #    imageio.imwrite('some_location/augmented/'+str(i)+'.png', im)
+
             image_shape = arr(batch_images).shape[1:3]
             batch = {Batch.inputs: arr(batch_images).astype(np.float64)}
             if self.has_gt:
@@ -241,7 +242,6 @@ class PoseDataset:
             batch = {key: data_to_input_batch(data) for (key, data) in batch.items()}
             batch[Batch.data_item] = data_items
             return batch
-
 
     def set_test_mode(self, test_mode):
         self.has_gt = not test_mode

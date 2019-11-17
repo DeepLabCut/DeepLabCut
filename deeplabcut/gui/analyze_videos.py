@@ -27,16 +27,16 @@ class Analyze_videos(wx.Panel):
         self.config = cfg
         self.draw = False
         # design the panel
-        self.sizer = wx.GridBagSizer(5, 5)
+        self.sizer = wx.GridBagSizer(5, 10)
 
         text = wx.StaticText(self, label="DeepLabCut - Step 7. Analyze videos")
         self.sizer.Add(text, pos=(0, 0), flag=wx.TOP|wx.LEFT|wx.BOTTOM,border=15)
         # Add logo of DLC
         icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(logo))
-        self.sizer.Add(icon, pos=(0, 4), flag=wx.TOP|wx.RIGHT|wx.ALIGN_RIGHT,border=5)
+        self.sizer.Add(icon, pos=(0, 9), flag=wx.TOP|wx.RIGHT|wx.ALIGN_RIGHT,border=5)
 
         line1 = wx.StaticLine(self)
-        self.sizer.Add(line1, pos=(1, 0), span=(1, 5),flag=wx.EXPAND|wx.BOTTOM, border=10)
+        self.sizer.Add(line1, pos=(1, 0), span=(1, 10),flag=wx.EXPAND|wx.BOTTOM, border=10)
 
         self.cfg_text = wx.StaticText(self, label="Select the config file")
         self.sizer.Add(self.cfg_text, pos=(2, 0), flag=wx.TOP|wx.LEFT, border=10)
@@ -156,7 +156,7 @@ class Analyze_videos(wx.Panel):
         self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
 
         self.ok = wx.Button(self, label="RUN")
-        self.sizer.Add(self.ok, pos=(5, 4))
+        self.sizer.Add(self.ok, pos=(5, 8), flag=wx.BOTTOM|wx.RIGHT, border=10)
         self.ok.Bind(wx.EVT_BUTTON, self.analyze_videos)
 
         self.reset = wx.Button(self, label="Reset")

@@ -94,13 +94,13 @@ def create_labeled_video_3d(config,path,videofolder=None,start=0,end=None,trailp
     bodyparts2plot = list(np.unique([val for sublist in bodyparts2connect for val in sublist]))
     color = plt.cm.get_cmap(cmap, len(bodyparts2plot))
     file_list = auxiliaryfunctions_3d.Get_list_of_triangulated_and_videoFiles(path,videotype,scorer_3d,cam_names,videofolder)
-    print(file_list)
+
     if file_list == []:
         raise Exception("No corresponding video file(s) found for the specified triangulated file or folder. Did you specify the video file type? If videos are stored in a different location, please use the ``videofolder`` argument to specify their path.")
 
-    for file in file_list:
-        path_h5_file = Path(file[0]).parents[0]
-        triangulate_file = file[0]
+    for file_path in file_list:
+        path_h5_file = Path(file_path[0]).parents[0]
+        triangulate_file = file_path[0]
         # triangulated file is a list which is always sorted as [triangulated.h5,camera-1.videotype,camera-2.videotype]
         #name for output video
         file_name = str(Path(triangulate_file).stem)
@@ -111,10 +111,10 @@ def create_labeled_video_3d(config,path,videofolder=None,start=0,end=None,trailp
             pickle_file = triangulate_file.replace(string_to_remove,'_includingmetadata.pickle')
             metadata_ = auxiliaryfunctions_3d.LoadMetadata3d(pickle_file)
 
-            base_filename_cam1 = str(Path(file[1]).stem).split(videotype)[0] # required for searching the filtered file
-            base_filename_cam2 = str(Path(file[2]).stem).split(videotype)[0] # required for searching the filtered file
-            cam1_view_video = file[1]
-            cam2_view_video = file[2]
+            base_filename_cam1 = str(Path(file_path[1]).stem).split(videotype)[0] # required for searching the filtered file
+            base_filename_cam2 = str(Path(file_path[2]).stem).split(videotype)[0] # required for searching the filtered file
+            cam1_view_video = file_path[1]
+            cam2_view_video = file_path[2]
             cam1_scorer = metadata_['scorer_name'][cam_names[0]]
             cam2_scorer = metadata_['scorer_name'][cam_names[1]]
             print("Creating 3D video from %s and %s using %s"%(Path(cam1_view_video).name,Path(cam2_view_video).name,Path(triangulate_file).name))
@@ -126,7 +126,7 @@ def create_labeled_video_3d(config,path,videofolder=None,start=0,end=None,trailp
             # Look for the filtered predictions file
             try:
                 print("Trying to find filtered predictions...")
-                df_cam1= pd.read_hdf(glob.glob(os.path.join(path_h5_file,str('*'+base_filename_cam1+cam1_scorer+'*filtered.h5')))[0])
+                df_cam1 = pd.read_hdf(glob.glob(os.path.join(path_h5_file,str('*'+base_filename_cam1+cam1_scorer+'*filtered.h5')))[0])
                 df_cam2 = pd.read_hdf(glob.glob(os.path.join(path_h5_file,str('*'+base_filename_cam2+cam2_scorer+'*filtered.h5')))[0])
                 print("Found filtered predictions! I will use these for triangulation.")
                 print("This is I found: ",os.path.join(path_h5_file,str('*'+base_filename_cam1+cam1_scorer+'*filtered.h5')),os.path.join(path_h5_file,str('*'+base_filename_cam2+cam2_scorer+'*filtered.h5')))
@@ -135,7 +135,7 @@ def create_labeled_video_3d(config,path,videofolder=None,start=0,end=None,trailp
                 df_cam1= pd.read_hdf(glob.glob(os.path.join(path_h5_file,str(base_filename_cam1+cam1_scorer+'*.h5')))[0])
                 df_cam2 = pd.read_hdf(glob.glob(os.path.join(path_h5_file,str(base_filename_cam2+cam2_scorer+'*.h5')))[0])
 
-            df_3d = pd.read_hdf(triangulate_file,'df_with_missing')
+            df_3d = pd.read_hdf(triangulate_file, 'df_with_missing')
             plt.rcParams.update({'figure.max_open_warning': 0})
 
             if end==None:
