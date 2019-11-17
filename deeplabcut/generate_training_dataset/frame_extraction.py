@@ -86,6 +86,7 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,userfeedback
     import sys
     import numpy as np
     from pathlib import Path
+    from warnings import warn
     from skimage import io
     from skimage.util import img_as_ubyte
     import matplotlib.pyplot as plt
@@ -136,12 +137,20 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,userfeedback
                 if opencv:
                     cap=cv2.VideoCapture(video)
                     fps = cap.get(5) #https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
+                    if fps == 0:
+                        msg = 'Skipping %s\nIt has corrupt metadata, appears to be 0 fps' % video
+                        warn(msg)
+                        continue
                     nframes = int(cap.get(7))
                     duration=nframes*1./fps
                 else:
                     #Moviepy:
                     clip = VideoFileClip(video)
                     fps=clip.fps
+                    if fps == 0:
+                        msg = 'Skipping %s\nIt has corrupt metadata, appears to be 0 fps' % video
+                        warn(msg)
+                        continue
                     duration=clip.duration
                     nframes=int(np.ceil(clip.duration*1./fps))
                 indexlength = int(np.ceil(np.log10(nframes)))
