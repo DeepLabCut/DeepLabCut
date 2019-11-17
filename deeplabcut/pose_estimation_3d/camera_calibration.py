@@ -130,12 +130,10 @@ def calibrate_cameras(config,cbrow=8, cbcol=6, calibrate=False, alpha=0.4):
                 else:
                     if img_id_warn is False:
                         img_id_warn = True
-                        msg = 'Detected multiple numbers in ID: %s\nUsing the last integer' % img_id_search
-                        warn(msg)
+                        warn('Detected multiple numbers in ID: %s\nUsing the last integer' % img_id_search)
                     img_id = int(img_id_search[-1])
             else:
-                msg = 'Could not detect ID of %s. Skipping' % img_name
-                warn(msg)
+                warn('Could not detect ID of %s. Skipping' % img_name)
                 continue
 
             if img_id in occurance:
@@ -311,12 +309,10 @@ def check_undistortion(config,cbrow = 8,cbcol = 6,plot=True):
                 else:
                     if img_id_warn is False:
                         img_id_warn = True
-                        msg = 'Detected multiple numbers in ID: %s\nUsing the last integer' % img_id_search
-                        warn(msg)
+                        warn('Detected multiple numbers in ID: %s\nUsing the last integer' % img_id_search)
                     img_id = int(img_id_search[-1])
             else:
-                msg = 'Could not detect ID of %s. Skipping' % img_name
-                warn(msg)
+                warn('Could not detect ID of %s. Skipping' % img_name)
                 continue
 
             if img_id in occurance:

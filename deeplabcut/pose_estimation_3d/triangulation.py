@@ -94,13 +94,11 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,
 
     if isinstance(destfolders, (list, tuple)):
         if not isinstance(video_path, (list, tuple)):
-            msg = 'destfolders can be list-like only when video_path is defined as pairs of videos'
-            raise ValueError(msg)
+            raise ValueError('destfolders can be list-like only when video_path is defined as pairs of videos')
 
         for destfolder in destfolders:
             if not os.path.exists(destfolder):
-                msg = 'destfolder does not exist:\n%s' % destfolder
-                raise ValueError(msg)
+                raise ValueError('destfolder does not exist:\n%s' % destfolder)
 
     #flag to check if the video_path variable is a string or a list of list
     flag=False # assumes that video path is a list
@@ -117,8 +115,7 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,
 
     if (isinstance(destfolders, list) or isinstance(destfolders, tuple)):
         if len(video_list) != len(destfolders):
-            msg = 'The number of desination folders is not equal to the number of video pairs:\n%s video pairs; %s destination folders' % (len(video_list), len(destfolders))
-            raise ValueError(msg)
+            raise ValueError('The number of desination folders is not equal to the number of video pairs:\n%s video pairs; %s destination folders' % (len(video_list), len(destfolders)))
 
         print('Video pairs and their destination folders:\n')
         for video, destfolder in zip(video_list, destfolders):
