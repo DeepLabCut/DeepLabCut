@@ -186,11 +186,11 @@ A ResNet-101 pre-trained on MPII is available. You can use the following noteboo
  At this stage you can also decide what type of augmentation to use. The default loaders work well for most all tasks (as shown on www.deeplabcut.org), but there are many options, more data augmentation, intermediate supervision, etc. Please look at the [**pose_cfg.yaml**](https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml) file for a full list of parameters **you might want to change before running this step.** There are several data loaders that can be used. For example, you can use the default loader (introduced and described in the Nature Protocols paper), [TensorPack](https://github.com/tensorpack/tensorpack) for data augmentation (currently this is easiest on Linux only), or [imgaug](https://imgaug.readthedocs.io/en/latest/). You can set this by passing  ``` deeplabcut.create_training_dataset(config_pathaugmenter_type='imgaug')  ```
 The differences of the loaders are as follows:
 - default: our standard DLC 2.0 introduced in Nature Protocols variant (scaling, auto-crop augmentation)
-- imgaug: a lot of augmentation possibilities, efficient code for target map creation & batchsizes >1 supported. [will prob. become default soon]
+- imgaug: a lot of augmentation possibilities, efficient code for target map creation & batchsizes >1 supported. [will prob. become default soon]. You can set the parameters such as the batch_size in the pose_cfg.yaml file for the model you are training. 
 - tensorpack: a lot of augmentation possibilities, multi CPU support for fast processing, target maps are created less efficiently than in imgaug, does not allow batchsize>1 
 - deterministic: only useful for testing, freezes numpy seed otherwise like default
 
-You can set this in your projects "dlc-models folder, ... train" then edit the **pose_cfg.yaml**. Note, to see the options, look at the default file: [**pose_cfg.yaml**](https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml). 
+Alternatively, you can set the loader (as well as other training parameters) in the **pose_cfg.yaml** file of the model that you want train. Note, to get details on the options, look at the default file: [**pose_cfg.yaml**](https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml). 
 
  See Box 2 on how to specify which network is loaded for training:
 
@@ -210,14 +210,14 @@ The function ‘train_network’ helps the user in training the network. It is u
 
     deeplabcut.train_network(config_path)
 
-The set of arguments in the function starts training the network for the dataset created for one specific shuffle.
+The set of arguments in the function starts training the network for the dataset created for one specific shuffle. Note that you can change the loader (imgaug/default/etc) as well as other training parameters in the **pose_cfg.yaml** file of the model that you want train (before you start training).
 
 Example parameters that one can call:
-   
-           deeplabcut.train_network(config_path,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshots_to_keep=5,autotune=False,displayiters=100,saveiters=15000, maxiters=30000)
+            deeplabcut.train_network(config_path,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshots_to_keep=5,autotune=False,displayiters=100,saveiters=15000, maxiters=30000)
 
 By default, the pre-trained ResNet networks are not in the DeepLabCut toolbox (as they are around 100MB), but they get downloaded before you train. However, if not previously downloaded from the TensorFlow model weights, it will be downloaded and stored in a subdirectory *pre-trained* under the subdirectory *models* in *Pose_Estimation_Tensorflow*. 
 At user specified iterations during training checkpoints are stored in the subdirectory *train* under the respective iteration directory.
+
 If the user wishes to restart the training at a specific checkpoint they can specify the full path of the checkpoint to
 the variable ``init_weights`` in the **pose_cfg.yaml** file under the *train* subdirectory (see Box 2).
 
