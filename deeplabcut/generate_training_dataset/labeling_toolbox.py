@@ -258,7 +258,7 @@ class MainFrame(wx.Frame):
         Activates the slider to increase the markersize
         """
         self.checkSlider = event.GetEventObject()
-        if self.checkSlider.GetValue() is True:
+        if self.checkSlider.GetValue() == True:
             self.activate_slider = True
             self.slider.Enable(True)
             MainFrame.updateZoomPan(self)
@@ -322,7 +322,7 @@ class MainFrame(wx.Frame):
         self.statusbar.SetStatusText("")
 
     def panButton(self,event):
-        if self.pan.GetValue() is True:
+        if self.pan.GetValue() == True:
             self.toolbar.pan()
             self.statusbar.SetStatusText("Pan On")
             self.zoom.SetValue(False)
@@ -331,7 +331,7 @@ class MainFrame(wx.Frame):
             self.statusbar.SetStatusText("Pan Off")
 
     def zoomButton(self, event):
-        if self.zoom.GetValue() is True:
+        if self.zoom.GetValue() == True:
             # Save pre-zoom xlim and ylim values
             self.prezoom_xlim=self.axes.get_xlim()
             self.prezoom_ylim=self.axes.get_ylim()
@@ -629,7 +629,7 @@ class MainFrame(wx.Frame):
             self.dr.coords = MainFrame.getLabels(self,self.iter)[bpindex]
             self.drs.append(self.dr)
             self.updatedCoords.append(self.dr.coords)
-            if np.isnan(self.points)[0] is False:
+            if np.isnan(self.points)[0] == False:
                 self.buttonCounter.append(bpindex)
         self.figure.canvas.draw()
 
@@ -657,7 +657,7 @@ class MainFrame(wx.Frame):
 
     def onChecked(self, event):
       self.cb = event.GetEventObject()
-      if self.cb.GetValue() is True:
+      if self.cb.GetValue() == True:
           self.slider.Enable(True)
           self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
           self.canvas.mpl_connect('button_release_event', self.onButtonRelease)
@@ -666,10 +666,10 @@ class MainFrame(wx.Frame):
 
     def updateZoomPan(self):
 # Checks if zoom/pan button is ON
-        if self.pan.GetValue() is True:
+        if self.pan.GetValue() == True:
             self.toolbar.pan()
             self.pan.SetValue(False)
-        if self.zoom.GetValue() is True:
+        if self.zoom.GetValue() == True:
             self.toolbar.zoom()
             self.zoom.SetValue(False)
 

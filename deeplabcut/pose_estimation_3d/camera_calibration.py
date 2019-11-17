@@ -376,7 +376,7 @@ def check_undistortion(config,cbrow = 8,cbcol = 6,plot=True):
         print("All images are undistorted and stored in %s"%str(path_undistort))
         print("Use the function ``triangulate`` to undistort the dataframes and compute the triangulation")
         
-        if plot is True:
+        if plot == True:
             f1, (ax1, ax2) = plt.subplots(1, 2, figsize=(20,10))
             f1.suptitle(str("Original Image: Views from "+ pair[0] + " and " + pair[1]), fontsize=25)
 

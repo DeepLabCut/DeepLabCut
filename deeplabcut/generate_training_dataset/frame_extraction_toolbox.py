@@ -206,7 +206,7 @@ class MainFrame(wx.Frame):
     def updateSlider(self,event):
         self.slider.SetValue(self.startFrame.GetValue())
         self.currFrame = (self.slider.GetValue())
-        if self.extract_from_analyse_video is True:
+        if self.extract_from_analyse_video == True:
             self.figure.delaxes(self.figure.axes[1])
             self.plot_labels()
         self.update()
@@ -216,7 +216,7 @@ class MainFrame(wx.Frame):
         Activates the frame range boxes
         """
         self.checkSlider = event.GetEventObject()
-        if self.checkSlider.GetValue() is True:
+        if self.checkSlider.GetValue() == True:
             self.extract_range_frame = True
             self.startFrame.Enable(True)
             self.startFrame.SetValue(self.slider.GetValue())

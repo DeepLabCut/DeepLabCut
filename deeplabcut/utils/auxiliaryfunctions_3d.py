@@ -68,7 +68,7 @@ def compute_triangulation_calibration_images(stereo_matrix, projectedPoints1, pr
     triangulate = np.asanyarray(triangulate)
 
 # Plotting
-    if plot is True:
+    if plot == True:
         col = colormap(np.linspace(0, 1, triangulate.shape[0]))
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
