@@ -161,7 +161,7 @@ def return_evaluate_network_data(config,shuffle=0,trainingsetindex=0,comparisonb
             trainerror = np.nanmean(RMSE.iloc[trainIndices].values.flatten())
             testerrorpcutoff = np.nanmean(RMSEpcutoff.iloc[testIndices].values.flatten())
             trainerrorpcutoff = np.nanmean(RMSEpcutoff.iloc[trainIndices].values.flatten())
-            if show_errors == True:
+            if show_errors is True:
                     print("Results for",trainingsiterations," training iterations:", int(100 * trainFraction), shuffle, "train error:",np.round(trainerror,2), "pixels. Test error:", np.round(testerror,2)," pixels.")
                     print("With pcutoff of", cfg["pcutoff"]," train error:",np.round(trainerrorpcutoff,2), "pixels. Test error:", np.round(testerrorpcutoff,2), "pixels")
                     print("Snapshot",Snapshots[snapindex])
@@ -372,14 +372,14 @@ def evaluate_network(config,Shuffles=[1],trainingsetindex=0,plotting = None,show
                     results = [trainingsiterations,int(100 * trainFraction),shuffle,np.round(trainerror,2),np.round(testerror,2),cfg["pcutoff"],np.round(trainerrorpcutoff,2), np.round(testerrorpcutoff,2)]
                     final_result.append(results)
 
-                    if show_errors == True:
+                    if show_errors is True:
                             print("Results for",trainingsiterations," training iterations:", int(100 * trainFraction), shuffle, "train error:",np.round(trainerror,2), "pixels. Test error:", np.round(testerror,2)," pixels.")
                             print("With pcutoff of", cfg["pcutoff"]," train error:",np.round(trainerrorpcutoff,2), "pixels. Test error:", np.round(testerrorpcutoff,2), "pixels")
                             if scale!=1:
                                 print("The predictions have been calculated for rescaled images (and rescaled ground truth). Scale:", scale)
                             print("Thereby, the errors are given by the average distances between the labels by DLC and the scorer.")
 
-                    if plotting == True:
+                    if plotting is True:
                         print("Plotting...")
                         foldername=os.path.join(str(evaluationfolder),'LabeledImages_' + DLCscorer + '_' + Snapshots[snapindex])
                         auxiliaryfunctions.attempttomakefolder(foldername)
@@ -389,7 +389,7 @@ def evaluate_network(config,Shuffles=[1],trainingsetindex=0,plotting = None,show
                     #print(final_result)
                 else:
                     DataMachine = pd.read_hdf(resultsfilename,'df_with_missing')
-                    if plotting == True:
+                    if plotting is True:
                         DataCombined = pd.concat([Data.T, DataMachine.T], axis=0).T
                         print("Plotting...(attention scale might be inconsistent in comparison to when data was analyzed; i.e. if you used rescale)")
                         foldername=os.path.join(str(evaluationfolder),'LabeledImages_' + DLCscorer + '_' + Snapshots[snapindex])

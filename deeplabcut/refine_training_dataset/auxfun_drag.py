@@ -123,7 +123,7 @@ class DraggablePoint():
             contains, attrd = self.point.contains(event)
             if contains:
                 self.annot.xy = (self.point.center[0],self.point.center[1])
-#                if self.adjust_original_labels == True:
+#                if self.adjust_original_labels is True:
 #                    text = str(self.bodyParts)
 #                else:
                 text = str(self.bodyParts+',p='+ str("{0:.2f}".format(self.likelihood)))
