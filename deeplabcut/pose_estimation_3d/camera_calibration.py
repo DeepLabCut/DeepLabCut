@@ -106,8 +106,7 @@ def calibrate_cameras(config,cbrow=8, cbcol=6, calibrate=False, alpha=0.4):
     # Sort the images.
     images.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
     if len(images)==0:
-        msg = "No calibration images found. Make sure the calibration images are saved as .jpg and with prefix as the camera name as specified in the config.yaml file."
-        raise Exception(msg)
+        raise Exception("No calibration images found. Make sure the calibration images are saved as .jpg and with prefix as the camera name as specified in the config.yaml file.")
 
     # Find incomplete pairs
     corner_selected_by_user_check = glob.glob(os.path.join(path_corners, '*.jpg')) != [] and len(glob.glob(os.path.join(path_corners, '*.jpg'))) <= len(images)
@@ -176,9 +175,10 @@ def calibrate_cameras(config,cbrow=8, cbcol=6, calibrate=False, alpha=0.4):
     try:
         h, w = img.shape[:2]
     except:
-        msg = "It seems that the name of calibration images does not match with the camera names in the config file.\n" \
-                "Please make sure that the calibration images are named with camera names as specified in the config.yaml file."
-        raise Exception(msg)
+        raise Exception(
+            "It seems that the name of calibration images does not match with the camera names in the config file.\n" \
+            "Please make sure that the calibration images are named with camera names as specified in the config.yaml file."
+        )
 
     # Perform calibration for each cameras and store the matrices as a pickle file
     if calibrate is True:
