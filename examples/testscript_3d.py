@@ -141,4 +141,13 @@ deeplabcut.create_labeled_video_3d(path_config_file,[video_dir],start=5,end=10)
 #output_path = [os.path.join(basepath,folder)]
 #deeplabcut.create_labeled_video_3d(path_config_file,output_path,start=5,end=10)
 
+<<<<<<< HEAD
+print("ALL DONE!!! - default cases are functional.")
+
+print("Re-import DLC with env. variable set to test DLC light mode.")
+os.environ['DLClight']='True'
+subprocess.call(['python',"-c","import deeplabcut"])
+print("SUCCESS!!! - DLC light mode works too.")
+=======
 print("ALL DONE!!! - default 3D cases are functional.")
+>>>>>>> upstream/master
