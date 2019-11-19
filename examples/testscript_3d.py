@@ -74,10 +74,10 @@ try:
     cfg=deeplabcut.auxiliaryfunctions.read_config(path_config_file)
     cfg['config_file_camera-1']=config
     cfg['shuffle_camera-1']=1
-    
+
     cfg['config_file_camera-2']=config
     cfg['shuffle_camera-2']=2
-    
+
     cfg['skeleton']=[['bodypart1','bodypart2'],['objectA','bodypart3']]
     deeplabcut.auxiliaryfunctions.write_config_3d(path_config_file,cfg)
 except:
@@ -95,7 +95,7 @@ project_name = '{pn}-{exp}-{date}-{triangulate}'.format(pn=task, exp=scorer, dat
 project_name=path_config_file.split(os.sep)[-2]
 
 os.chdir(os.path.join(basepath,project_name,'calibration_images'))
-# Dowloading the calibration images 
+# Dowloading the calibration images
 url = 'http://www.vision.caltech.edu/bouguetj/calib_doc/htmls/stereo_example.zip'
 file_name = 'stereo_example.zip'
 with urllib.request.urlopen(url) as response, open(file_name, 'wb') as out_file:
@@ -141,9 +141,4 @@ deeplabcut.create_labeled_video_3d(path_config_file,[video_dir],start=5,end=10)
 #output_path = [os.path.join(basepath,folder)]
 #deeplabcut.create_labeled_video_3d(path_config_file,output_path,start=5,end=10)
 
-print("ALL DONE!!! - default cases are functional.")
-
-print("Re-import DLC with env. variable set to test DLC light mode.")
-os.environ['DLClight']='True'
-subprocess.call(['python3',"-c","import deeplabcut"])
-print("SUCCESS!!! - DLC light mode works too.")
+print("ALL DONE!!! - default 3D cases are functional.")

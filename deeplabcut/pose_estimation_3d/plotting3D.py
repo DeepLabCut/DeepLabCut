@@ -26,7 +26,7 @@ from tqdm import tqdm
 def create_labeled_video_3d(config,path,videofolder=None,start=0,end=None,trailpoints=0,videotype='avi',view=[-113, -270],xlim=[None,None],ylim=[None,None],zlim=[None,None],draw_skeleton=True):
     """
     Creates a video with views from the two cameras and the 3d reconstruction for a selected number of frames.
-    
+
     Parameters
     ----------
     config : string
@@ -34,16 +34,16 @@ def create_labeled_video_3d(config,path,videofolder=None,start=0,end=None,trailp
 
     path : list
         A list of strings containing the full paths to triangulated files for analysis or a path to the directory, where all the triangulated files are stored.
-    
+
     videofolder: string
         Full path of the folder where the videos are stored. Use this if the vidoes are stored in a different location other than where the triangulation files are stored. By default is ``None`` and therefore looks for video files in the directory where the triangulation file is stored.
 
     start: int
         Integer specifying the start of frame index to select. Default is set to 0.
-    
+
     end: int
         Integer specifying the end of frame index to select. Default is set to None, where all the frames of the video are used for creating the labeled video.
-        
+
     trailpoints: int
         Number of revious frames whose body parts are plotted in a frame (for displaying history). Default is set to 0.
 
@@ -52,13 +52,13 @@ def create_labeled_video_3d(config,path,videofolder=None,start=0,end=None,trailp
 
     view: list
         A list that sets the elevation angle in z plane and azimuthal angle in x,y plane of 3d view. Useful for rotating the axis for 3d view
-    
+
     xlim: list
         A list of integers specifying the limits for xaxis of 3d view. By default it is set to [None,None], where the x limit is set by taking the minimum and maximum value of the x coordinates for all the bodyparts.
-    
+
     ylim: list
         A list of integers specifying the limits for yaxis of 3d view. By default it is set to [None,None], where the y limit is set by taking the minimum and maximum value of the y coordinates for all the bodyparts.
-    
+
     zlim: list
         A list of integers specifying the limits for zaxis of 3d view. By default it is set to [None,None], where the z limit is set by taking the minimum and maximum value of the z coordinates for all the bodyparts.
 
@@ -69,14 +69,15 @@ def create_labeled_video_3d(config,path,videofolder=None,start=0,end=None,trailp
     -------
     Linux/MacOs
     >>> deeplabcut.create_labeled_video_3d(config,['/data/project1/videos/3d.h5'],start=100, end=500)
-    
+
     To create labeled videos for all the triangulated files in the folder
     >>> deeplabcut.create_labeled_video_3d(config,['/data/project1/videos'],start=100, end=500)
-    
+
     To set the xlim, ylim, zlim and rotate the view of the 3d axis
     >>> deeplabcut.create_labeled_video_3d(config,['/data/project1/videos'],start=100, end=500,view=[30,90],xlim=[-12,12],ylim=[15,25],zlim=[20,30])
 
     """
+    start_path=os.getcwd()
 
     # Read the config file and related variables
     cfg_3d = auxiliaryfunctions.read_config(config)
@@ -88,7 +89,7 @@ def create_labeled_video_3d(config,path,videofolder=None,start=0,end=None,trailp
     bodyparts2connect = cfg_3d['skeleton']
     skeleton_color = cfg_3d['skeleton_color']
     scorer_3d = cfg_3d['scorername_3d']
-    
+
     # Flatten the list of bodyparts to connect
     bodyparts2plot = list(np.unique([val for sublist in bodyparts2connect for val in sublist]))
     color = plt.cm.get_cmap(cmap, len(bodyparts2plot))
@@ -96,55 +97,62 @@ def create_labeled_video_3d(config,path,videofolder=None,start=0,end=None,trailp
     print(file_list)
     if file_list == []:
         raise Exception("No corresponding video file(s) found for the specified triangulated file or folder. Did you specify the video file type? If videos are stored in a different location, please use the ``videofolder`` argument to specify their path.")
+
     for file in file_list:
         path_h5_file = Path(file[0]).parents[0]
         triangulate_file = file[0]
         # triangulated file is a list which is always sorted as [triangulated.h5,camera-1.videotype,camera-2.videotype]
+        #name for output video
         file_name = str(Path(triangulate_file).stem)
-        string_to_remove = str(Path(triangulate_file).suffix)
-        pickle_file = triangulate_file.replace(string_to_remove,'_includingmetadata.pickle')
-        metadata_ = auxiliaryfunctions_3d.LoadMetadata3d(pickle_file)
-        
-        base_filename_cam1 = str(Path(file[1]).stem).split(videotype)[0] # required for searching the filtered file
-        base_filename_cam2 = str(Path(file[2]).stem).split(videotype)[0] # required for searching the filtered file
-        cam1_view_video = file[1]
-        cam2_view_video = file[2]
-        cam1_scorer = metadata_['scorer_name'][cam_names[0]]
-        cam2_scorer = metadata_['scorer_name'][cam_names[1]]
-        print("Creating 3D video from %s and %s using %s"%(Path(cam1_view_video).name,Path(cam2_view_video).name,Path(triangulate_file).name))
+        if os.path.isfile(os.path.join(path_h5_file,file_name+'.mpg')):
+            print("Video already created...")
+        else:
+            string_to_remove = str(Path(triangulate_file).suffix)
+            pickle_file = triangulate_file.replace(string_to_remove,'_includingmetadata.pickle')
+            metadata_ = auxiliaryfunctions_3d.LoadMetadata3d(pickle_file)
 
-        # Read the video files and corresponfing h5 files
-        vid_cam1 = cv2.VideoCapture(cam1_view_video)
-        vid_cam2 = cv2.VideoCapture(cam2_view_video)
+            base_filename_cam1 = str(Path(file[1]).stem).split(videotype)[0] # required for searching the filtered file
+            base_filename_cam2 = str(Path(file[2]).stem).split(videotype)[0] # required for searching the filtered file
+            cam1_view_video = file[1]
+            cam2_view_video = file[2]
+            cam1_scorer = metadata_['scorer_name'][cam_names[0]]
+            cam2_scorer = metadata_['scorer_name'][cam_names[1]]
+            print("Creating 3D video from %s and %s using %s"%(Path(cam1_view_video).name,Path(cam2_view_video).name,Path(triangulate_file).name))
 
-        # Look for the filtered predictions file
-        try:
-            print("Trying to find filtered predictions...")
-            df_cam1= pd.read_hdf(glob.glob(os.path.join(path_h5_file,str('*'+base_filename_cam1+cam1_scorer+'*filtered.h5')))[0])
-            df_cam2 = pd.read_hdf(glob.glob(os.path.join(path_h5_file,str('*'+base_filename_cam2+cam2_scorer+'*filtered.h5')))[0])
-            print("Found filtered predictions! I will use these for triangulation.")
-            print("This is I found: ",os.path.join(path_h5_file,str('*'+base_filename_cam1+cam1_scorer+'*filtered.h5')),os.path.join(path_h5_file,str('*'+base_filename_cam2+cam2_scorer+'*filtered.h5')))
-        except:
-            print("No filtered predictions found. I will use the unfiltered predictions.")
-            df_cam1= pd.read_hdf(glob.glob(os.path.join(path_h5_file,str(base_filename_cam1+cam1_scorer+'*.h5')))[0])
-            df_cam2 = pd.read_hdf(glob.glob(os.path.join(path_h5_file,str(base_filename_cam2+cam2_scorer+'*.h5')))[0])
-        
-        df_3d = pd.read_hdf(triangulate_file,'df_with_missing')
-        plt.rcParams.update({'figure.max_open_warning': 0})
-        
-        if end==None:
-            end=len(df_3d) # All the frames
-        frames = list(range(start,end,1))
+            # Read the video files and corresponfing h5 files
+            vid_cam1 = cv2.VideoCapture(cam1_view_video)
+            vid_cam2 = cv2.VideoCapture(cam2_view_video)
 
-        # Start plotting for every frame
-        for k in tqdm(frames):
-            output_folder,num_frames = plot2D(cfg_3d,k,bodyparts2plot,vid_cam1,vid_cam2,bodyparts2connect,df_cam1,df_cam2,df_3d,pcutoff,markerSize,alphaValue,color,path_h5_file,file_name,skeleton_color,view,draw_skeleton,trailpoints,xlim,ylim,zlim)
+            # Look for the filtered predictions file
+            try:
+                print("Trying to find filtered predictions...")
+                df_cam1= pd.read_hdf(glob.glob(os.path.join(path_h5_file,str('*'+base_filename_cam1+cam1_scorer+'*filtered.h5')))[0])
+                df_cam2 = pd.read_hdf(glob.glob(os.path.join(path_h5_file,str('*'+base_filename_cam2+cam2_scorer+'*filtered.h5')))[0])
+                print("Found filtered predictions! I will use these for triangulation.")
+                print("This is I found: ",os.path.join(path_h5_file,str('*'+base_filename_cam1+cam1_scorer+'*filtered.h5')),os.path.join(path_h5_file,str('*'+base_filename_cam2+cam2_scorer+'*filtered.h5')))
+            except FileNotFoundError:
+                print("No filtered predictions found. I will use the unfiltered predictions.")
+                df_cam1= pd.read_hdf(glob.glob(os.path.join(path_h5_file,str(base_filename_cam1+cam1_scorer+'*.h5')))[0])
+                df_cam2 = pd.read_hdf(glob.glob(os.path.join(path_h5_file,str(base_filename_cam2+cam2_scorer+'*.h5')))[0])
 
-        # Once all the frames are saved, then make a movie using ffmpeg.
-        cwd = os.getcwd()
-        os.chdir(str(output_folder))
-        subprocess.call(['ffmpeg', '-start_number', str(start) ,'-framerate', str(30), '-i', str('img%0'+str(num_frames)+'d.png'), '-r', str(30),'-vb', '20M' ,os.path.join(output_folder,str('../'+file_name+'.mpg'))])
-        os.chdir(cwd)
+            df_3d = pd.read_hdf(triangulate_file,'df_with_missing')
+            plt.rcParams.update({'figure.max_open_warning': 0})
+
+            if end==None:
+                end=len(df_3d) # All the frames
+            frames = list(range(start,end,1))
+
+            # Start plotting for every frame
+            for k in tqdm(frames):
+                output_folder,num_frames = plot2D(cfg_3d,k,bodyparts2plot,vid_cam1,vid_cam2,bodyparts2connect,df_cam1,df_cam2,df_3d,pcutoff,markerSize,alphaValue,color,path_h5_file,file_name,skeleton_color,view,draw_skeleton,trailpoints,xlim,ylim,zlim)
+
+            # Once all the frames are saved, then make a movie using ffmpeg.
+            cwd = os.getcwd()
+            os.chdir(str(output_folder))
+            subprocess.call(['ffmpeg', '-start_number', str(start) ,'-framerate', str(30), '-i', str('img%0'+str(num_frames)+'d.png'), '-r', str(30),'-vb', '20M' ,os.path.join(output_folder,str('../'+file_name+'.mpg'))])
+            os.chdir(cwd)
+
+    os.chdir(start_path)
 
 def plot2D(cfg_3d,k,bodyparts2plot,vid_cam1,vid_cam2,bodyparts2connect,df_cam1_view,df_cam2_view,xyz_pts,pcutoff,markerSize,alphaValue,color,path_h5_file,file_name,skeleton_color,view,draw_skeleton,trailpoints,xlim,ylim,zlim):
     """
@@ -176,16 +184,16 @@ def plot2D(cfg_3d,k,bodyparts2plot,vid_cam1,vid_cam2,bodyparts2connect,df_cam1_v
 
     # Initialize arrays for appending the 2d data from cam1 for actual plotting the points
     xdata_cam1=[]
-    ydata_cam1=[] 
+    ydata_cam1=[]
 
     # Initialize arrays for appending the 2d data from cam2 for actual plotting the points
     xdata_cam2=[]
-    ydata_cam2=[] 
+    ydata_cam2=[]
 
     # Initialize arrays for appending the 2d data from cam1 for drawing the lines
     xcam1 = []
     ycam1 = []
-    
+
     # Initialize arrays for appending the 2d data from cam2 for drawing the lines
     xcam2 = []
     ycam2 = []
@@ -245,7 +253,7 @@ def plot2D(cfg_3d,k,bodyparts2plot,vid_cam1,vid_cam2,bodyparts2connect,df_cam1_v
                 ydata_cam2.append(df_cam2_view.iloc[max(0,k-trailpoints):k][scorer_cam2][bp]['y'])
                 xdata_3d.append(xyz_pts.iloc[max(0,k-trailpoints):k][scorer_3d][bp]['x'])
                 ydata_3d.append(xyz_pts.iloc[max(0,k-trailpoints):k][scorer_3d][bp]['y'])
-                zdata_3d.append(xyz_pts.iloc[max(0,k-trailpoints):k][scorer_3d][bp]['z']) 
+                zdata_3d.append(xyz_pts.iloc[max(0,k-trailpoints):k][scorer_3d][bp]['z'])
             else:
                 xdata_cam1.append(df_cam1_view.iloc[k][scorer_cam1][bp]['x'])
                 ydata_cam1.append(df_cam1_view.iloc[k][scorer_cam1][bp]['y'])
@@ -253,7 +261,7 @@ def plot2D(cfg_3d,k,bodyparts2plot,vid_cam1,vid_cam2,bodyparts2connect,df_cam1_v
                 ydata_cam2.append(df_cam2_view.iloc[k][scorer_cam2][bp]['y'])
                 xdata_3d.append(xyz_pts.iloc[k][scorer_3d][bp]['x'])
                 ydata_3d.append(xyz_pts.iloc[k][scorer_3d][bp]['y'])
-                zdata_3d.append(xyz_pts.iloc[k][scorer_3d][bp]['z']) 
+                zdata_3d.append(xyz_pts.iloc[k][scorer_3d][bp]['z'])
         else:
             xdata_cam1.append(np.nan)
             ydata_cam1.append(np.nan)
@@ -307,5 +315,3 @@ def plot2D(cfg_3d,k,bodyparts2plot,vid_cam1,vid_cam2,bodyparts2connect,df_cam1_v
     plt.savefig(img_name)
     plt.close('all')
     return(output_folder,num_frames)
-
-

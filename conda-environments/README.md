@@ -34,12 +34,16 @@ or
 - Windows: ``activate nameoftheenv`` (i.e. ``activate dlc-windowsGPU``)
 
 Now you should see (nameofenv) on the left of your teminal screen, i.e. ``(dlc-macOS-CPU) YourName-MacBook...``
-
-(4) If you plan to use Jupyter Notebooks **once you are inside the environment** you need to run this line one time to link to Jupyter: ``conda install nb_conda``
+NOTE: DO NOT run pip install deeplabcut, etc! It is already installed!!! :)
 
 Great, that's it! 
 
-Now just follow the user guide, to get DeepLabCut up and running in no time!
+Simply run ``ipython`` or ``pythonw`` (macOS only) to lauch the terminal, ``jupyter notebook`` to lauch a browser session, or ``ipython, import deeplabcut, deeplabcut.launch_dlc()`` to use our Project Manager GUI! **Many more details** [**here**](https://github.com/AlexEMG/DeepLabCut/blob/master/docs/UseOverviewGuide.md)!
+
+
+
+
+Now just [**follow the user guide**](https://www.nature.com/articles/s41596-019-0176-0), to get DeepLabCut up and running in no time!
 
 Just as a reminder, you can exit the environment anytime and (later) come back! So the environments really allow you to manage multiple packages that you might want to install on your computer. 
 

@@ -27,10 +27,14 @@ from pathlib import Path
 
 # Loading example data set
 path_config_file = os.path.join(os.getcwd(),'openfield-Pranav-2018-10-30/config.yaml')
-deeplabcut.load_demo_data(path_config_file)
+#deeplabcut.load_demo_data(path_config_file)
 
+#shuffle=11 #>> imageio functions!
+shuffle=12
+
+deeplabcut.create_training_dataset(path_config_file,Shuffles=[shuffle])
 cfg=deeplabcut.auxiliaryfunctions.read_config(path_config_file)
-posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(1),'train/pose_cfg.yaml')
+posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(shuffle),'train/pose_cfg.yaml')
 
 DLC_config=deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
 DLC_config['save_iters']=10
@@ -40,15 +44,14 @@ deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
 
 
 print("TRAIN NETWORK")
-deeplabcut.train_network(path_config_file, shuffle=1,saveiters=15000,displayiters=100)
+deeplabcut.train_network(path_config_file, shuffle=shuffle,saveiters=15000,displayiters=1000,max_snapshots_to_keep=15)
 
 print("EVALUATE")
-deeplabcut.evaluate_network(path_config_file,plotting=False)
+deeplabcut.evaluate_network(path_config_file, Shuffles=[shuffle],plotting=True)
 
+#print("Analyze Video")
+#videofile_path = os.path.join(os.getcwd(),'openfield-Pranav-2018-10-30','videos','m3v1mp4.mp4')
+#deeplabcut.analyze_videos(path_config_file,[videofile_path], shuffle=shuffle)
 
-print("Analyze Video")
-videofile_path = os.path.join(os.getcwd(),'openfield-Pranav-2018-10-30','videos','m3v1mp4.mp4')
-deeplabcut.analyze_videos(path_config_file,[videofile_path])
-
-print("Create Labeled Video")
-deeplabcut.create_labeled_video(path_config_file,[videofile_path],save_frames=True)
+#print("Create Labeled Video")
+#deeplabcut.create_labeled_video(path_config_file,[videofile_path],save_frames=False, shuffle=shuffle)

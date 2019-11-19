@@ -4,13 +4,16 @@ Adapted from original predict.py by Eldar Insafutdinov's implementation of [Deep
 Source: DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
 
-
-To do faster inference on videos:
-
+To do faster inference on videos (with numpy based code; introduced in Oct 2018)
 "On the inference speed and video-compression robustness of DeepLabCut"
 Alexander Mathis & Richard Warren
 doi: https://doi.org/10.1101/457242
 See https://www.biorxiv.org/content/early/2018/10/30/457242
+
+To do even faster inference on videos (with TensorFlow based code; introduced in Oct 2019)
+Pretraining boosts out-of-domain robustness for pose estimation
+by Alexander Mathis, Mert Yüksekgönül, Byron Rogers, Matthias Bethge, Mackenzie W. Mathis
+https://arxiv.org/abs/1909.11229
 '''
 
 import numpy as np
@@ -72,25 +75,25 @@ def multi_pose_predict(scmap, locref, stride, num_outputs):
     Y, X = get_top_values(scmap[None], num_outputs)
     Y, X = Y[:, 0], X[:, 0]
     num_joints = scmap.shape[2]
-    DZ=np.zeros((num_outputs,num_joints,3)) 
+    DZ=np.zeros((num_outputs,num_joints,3))
     for m in range(num_outputs):
         for k in range(num_joints):
             x = X[m, k]
             y = Y[m, k]
             DZ[m,k,:2]=locref[y,x,k,:]
             DZ[m,k,2]=scmap[y,x,k]
-            
+
     X = X.astype('float32')*stride + .5*stride + DZ[:,:,0]
     Y = Y.astype('float32')*stride + .5*stride + DZ[:,:,1]
     P = DZ[:, :, 2]
-    
-    pose = np.empty((num_joints, num_outputs*3), dtype='float32') 
+
+    pose = np.empty((num_joints, num_outputs*3), dtype='float32')
     pose[:,0::3] = X.T
     pose[:,1::3] = Y.T
     pose[:,2::3] = P.T
 
     return pose
-    
+
 def getpose(image, cfg, sess, inputs, outputs, outall=False):
     ''' Extract pose '''
     im=np.expand_dims(image, axis=0).astype(float)
@@ -177,3 +180,24 @@ def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
         return scmap, locref, pose
     else:
         return pose
+
+### Code for TF inference on GPU
+def setup_GPUpose_prediction(cfg):
+    tf.reset_default_graph()
+    inputs = tf.placeholder(tf.float32, shape=[cfg.batch_size   , None, None, 3])
+    net_heads = pose_net(cfg).inference(inputs)
+    outputs = [net_heads['pose']]
+
+    restorer = tf.train.Saver()
+    sess = tf.Session()
+
+    sess.run(tf.global_variables_initializer())
+    sess.run(tf.local_variables_initializer())
+
+    # Restore variables from disk.
+    restorer.restore(sess, cfg.init_weights)
+
+    return sess, inputs, outputs
+
+def extract_GPUprediction(outputs, cfg):
+    return outputs[0]
