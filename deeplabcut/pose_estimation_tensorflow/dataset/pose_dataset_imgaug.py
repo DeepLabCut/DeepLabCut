@@ -35,8 +35,16 @@ class PoseDataset:
     def __init__(self, cfg):
         self.cfg = cfg
         self.data = self.load_dataset()
+        self.batch_size = cfg.get('batch_size',1)
         self.num_images = len(self.data)
-        self.batch_size = cfg.batch_size
+        self.max_input_sizesquare=cfg.get('max_input_size', 1500)**2
+        self.min_input_sizesquare=cfg.get('min_input_size', 64)**2
+        self.locref_scale = 1.0 / cfg.locref_stdev
+        self.stride = cfg.stride
+        self.half_stride = cfg.stride / 2
+        self.scale = cfg.global_scale
+        self.scale_jitter_lo=cfg.get('scale_jitter_lo',.75)
+        self.scale_jitter_up=cfg.get('scale_jitter_up',1.25)
         print("Batch Size is %d" % self.batch_size)
 
     def load_dataset(self):
@@ -75,15 +83,10 @@ class PoseDataset:
         else:
             print("Loading pickle data with float coordinates!")
             file_name = cfg.dataset.split(".")[0] + ".pickle"
-            # Load Matlab file dataset annotation
-            #mlab = sio.loadmat(file_name)
-            #mlab = sio.loadmat(os.path.join(self.cfg.project_path,file_name))
             with open(os.path.join(self.cfg.project_path,file_name), 'rb') as f:
-                # Pickle the 'data' dictionary using the highest protocol available.
                 pickledata=pickle.load(f)
 
             self.raw_data = pickledata
-            #mlab = mlab['dataset']
             num_images = len(pickledata) #mlab.shape[1]
             data = []
             has_gt = True
@@ -168,7 +171,7 @@ class PoseDataset:
             scale = self.get_scale()
             size = self.data[idx].im_size
             target_size = np.ceil(size[1:3]*scale).astype(int)
-            if self.is_valid_size(target_size):
+            if self.is_valid_size(target_size[1] * target_size[0]):
                 break
 
         stride = self.cfg.stride
@@ -260,24 +263,18 @@ class PoseDataset:
             scale *= scale_jitter
         return scale
 
-    def is_valid_size(self, target_size):
-        im_width = target_size[1]
-        im_height = target_size[0]
-        if hasattr(self.cfg, 'min_input_size'):
-            min_input_size = self.cfg.min_input_size
-            if im_height < min_input_size or im_width < min_input_size:
-                return False
-        if hasattr(self.cfg, 'max_input_size'):
-            max_input_size = self.cfg.max_input_size
-            if im_width * im_height > max_input_size * max_input_size:
-                return False
+    def is_valid_size(self, target_size_product):
+        if target_size_product > self.max_input_sizesquare:
+            return False
+
+        if target_size_product  < self.min_input_sizesquare:
+            return False
+
         return True
 
     def gaussian_scmap(self, joint_id, coords, data_item, size, scale):
-        stride = self.cfg.stride
         #dist_thresh = float(self.cfg.pos_dist_thresh * scale)
         num_joints = self.cfg.num_joints
-        half_stride = stride / 2
         scmap = np.zeros(cat([size, arr([num_joints])]))
         locref_size = cat([size, arr([num_joints * 2])])
         locref_mask = np.zeros(locref_size)
@@ -286,20 +283,19 @@ class PoseDataset:
         width = size[1]
         height = size[0]
         dist_thresh = float((width+height)/6)
-        locref_scale = 1.0 / self.cfg.locref_stdev
         dist_thresh_sq = dist_thresh ** 2
 
         std = dist_thresh/4
         # Grid of coordinates
         grid = np.mgrid[:height, :width].transpose((1,2,0))
-        grid = grid*stride + half_stride
+        grid = grid*self.stride + self.half_stride
         for person_id in range(len(coords)):
             for k, j_id in enumerate(joint_id[person_id]):
                 joint_pt = coords[person_id][k, :]
                 j_x = np.asscalar(joint_pt[0])
-                j_x_sm = round((j_x - half_stride) / stride)
+                j_x_sm = round((j_x - self.half_stride) / self.stride)
                 j_y = np.asscalar(joint_pt[1])
-                j_y_sm = round((j_y - half_stride) / stride)
+                j_y_sm = round((j_y - self.half_stride) / self.stride)
                 map_j = grid.copy()
                 # Distance between the joint point and each coordinate
                 dist = np.linalg.norm(grid - (j_y, j_x), axis=2)**2
@@ -309,14 +305,13 @@ class PoseDataset:
                 locref_mask[dist<=dist_thresh_sq,j_id * 2 + 1]=1
                 dx = j_x - grid.copy()[:, :, 1 ]
                 dy = j_y - grid.copy()[:, :, 0 ]
-                locref_map[..., j_id * 2 + 0] = dx * locref_scale
-                locref_map[..., j_id * 2 + 1] = dy * locref_scale
+                locref_map[..., j_id * 2 + 0] = dx * self.locref_scale
+                locref_map[..., j_id * 2 + 1] = dy * self.locref_scale
         weights = self.compute_scmap_weights(scmap.shape, joint_id, data_item)
         return scmap, weights, locref_map, locref_mask
 
     def compute_scmap_weights(self, scmap_shape, joint_id, data_item):
-        cfg = self.cfg
-        if cfg.weigh_only_present_joints:
+        if self.cfg.weigh_only_present_joints:
             weights = np.zeros(scmap_shape)
             for person_joint_id in joint_id:
                 for j_id in person_joint_id:
@@ -326,17 +321,14 @@ class PoseDataset:
         return weights
 
     def compute_target_part_scoremap_numpy(self, joint_id, coords, data_item, size, scale):
-        stride = self.cfg.stride
         dist_thresh = float(self.cfg.pos_dist_thresh * scale)
+        dist_thresh_sq = dist_thresh ** 2
         num_joints = self.cfg.num_joints
-        half_stride = stride / 2
+
         scmap = np.zeros(cat([size, arr([num_joints])]))
         locref_size = cat([size, arr([num_joints * 2])])
         locref_mask = np.zeros(locref_size)
         locref_map = np.zeros(locref_size)
-
-        locref_scale = 1.0 / self.cfg.locref_stdev
-        dist_thresh_sq = dist_thresh ** 2
 
         width = size[1]
         height = size[0]
@@ -346,17 +338,17 @@ class PoseDataset:
             for k, j_id in enumerate(joint_id[person_id]):
                 joint_pt = coords[person_id][k, :]
                 j_x = np.asscalar(joint_pt[0])
-                j_x_sm = round((j_x - half_stride) / stride)
+                j_x_sm = round((j_x - self.half_stride) / self.stride)
                 j_y = np.asscalar(joint_pt[1])
-                j_y_sm = round((j_y - half_stride) / stride)
+                j_y_sm = round((j_y - self.half_stride) / self.stride)
                 min_x = round(max(j_x_sm - dist_thresh - 1, 0))
                 max_x = round(min(j_x_sm + dist_thresh + 1, width - 1))
                 min_y = round(max(j_y_sm - dist_thresh - 1, 0))
                 max_y = round(min(j_y_sm + dist_thresh + 1, height - 1))
                 x = grid.copy()[:, :, 1]
                 y = grid.copy()[:, :, 0]
-                dx = j_x - x*stride - half_stride
-                dy = j_y - y*stride - half_stride
+                dx = j_x - x*self.stride - self.half_stride
+                dy = j_y - y*self.stride - self.half_stride
                 dist = dx**2 + dy**2
                 mask1 = (dist <= dist_thresh_sq)
                 mask2 = ((x >= min_x) & (x <= max_x))
@@ -365,8 +357,8 @@ class PoseDataset:
                 scmap[mask, j_id] = 1
                 locref_mask[mask, j_id*2+0] = 1
                 locref_mask[mask, j_id*2+1] = 1
-                locref_map[mask, j_id * 2 + 0] = (dx * locref_scale)[mask]
-                locref_map[mask, j_id * 2 + 1] = (dy * locref_scale)[mask]
+                locref_map[mask, j_id * 2 + 0] = (dx * self.locref_scale)[mask]
+                locref_map[mask, j_id * 2 + 1] = (dy * self.locref_scale)[mask]
 
         weights = self.compute_scmap_weights(scmap.shape, joint_id, data_item)
         return scmap, weights, locref_map, locref_mask
