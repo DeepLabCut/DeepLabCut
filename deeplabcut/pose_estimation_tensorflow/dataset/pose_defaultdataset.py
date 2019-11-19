@@ -2,13 +2,6 @@
 Adapted from DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
 '''
-
-
-'''
-Adapted from DeeperCut by Eldar Insafutdinov
-https://github.com/eldar/pose-tensorflow
-'''
-
 import os
 import logging
 import random as rand
@@ -17,7 +10,8 @@ from numpy import array as arr
 from numpy import concatenate as cat
 
 import scipy.io as sio
-from deeplabcut.utils.imageop import imread, imresize
+from deeplabcut.utils.auxfun_videos import imread, imresize
+#from scipy.misc import imread, imresize
 
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import Batch, data_to_input, mirror_joints_map, CropImage, DataItem
 #from dataset.pose_dataset import Batch, data_to_input, mirror_joints_map, CropImage, DataItem
@@ -175,15 +169,8 @@ class PoseDataset:
 
         if self.cfg.crop: #adapted cropping for DLC
             if np.random.rand()<self.cfg.cropratio:
-                #1. get center of joints
                 j=np.random.randint(np.shape(joints)[1]) #pick a random joint
-                # draw random crop dimensions & subtract joint points
-                #print(joints,j,'ahah')
                 joints,image=CropImage(joints,image,joints[0,j,1],joints[0,j,2],self.cfg)
-
-                #if self.has_gt:
-                #    joints[0,:, 1] -= x0
-                #    joints[0,:, 2] -= y0
                 '''
                 print(joints)
                 import matplotlib.pyplot as plt
@@ -197,7 +184,6 @@ class PoseDataset:
 
         img = imresize(image, scale) if scale != 1 else image
         scaled_img_size = arr(img.shape[0:2])
-
         if mirror:
             img = np.fliplr(img)
 

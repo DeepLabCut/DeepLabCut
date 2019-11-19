@@ -137,8 +137,6 @@ class MainFrame(wx.Frame):
         wx.MessageBox('1. Use left click to select the region of interest. A red box will be drawn around the selected region. \n\n2. Use the corner points to expand the box and center to move the box around the image. \n\n3. Click ''Save parameters and Quit'' to save the croppeing parameters and close the GUI. \n\n Click OK to continue', 'Instructions to use!', wx.OK | wx.ICON_INFORMATION)
 
 def show(config,image):
-    import imageio
-    imageio.plugins.ffmpeg.download()
     app = wx.App()
     MainFrame(None,config,image).Show()
     app.MainLoop()

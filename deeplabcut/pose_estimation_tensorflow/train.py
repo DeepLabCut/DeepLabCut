@@ -24,10 +24,11 @@ else:
 import tensorflow.contrib.slim as slim
 
 from deeplabcut.pose_estimation_tensorflow.config import load_config
+from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import Batch
 from deeplabcut.pose_estimation_tensorflow.dataset.factory import create as create_dataset
 from deeplabcut.pose_estimation_tensorflow.nnet.net_factory import pose_net
-from deeplabcut.pose_estimation_tensorflow.nnet.pose_net import get_batch_spec
 from deeplabcut.pose_estimation_tensorflow.util.logging import setup_logging
+
 
 class LearningRate(object):
     def __init__(self, cfg):
@@ -40,6 +41,17 @@ class LearningRate(object):
             self.current_step += 1
 
         return lr
+
+def get_batch_spec(cfg):
+    num_joints = cfg.num_joints
+    batch_size = cfg.batch_size
+    return {
+        Batch.inputs: [batch_size, None, None, 3],
+        Batch.part_score_targets: [batch_size, None, None, num_joints],
+        Batch.part_score_weights: [batch_size, None, None, num_joints],
+        Batch.locref_targets: [batch_size, None, None, num_joints * 2],
+        Batch.locref_mask: [batch_size, None, None, num_joints * 2]
+    }
 
 def setup_preloading(batch_spec):
     placeholders = {name: TF.placeholder(tf.float32, shape=spec) for (name, spec) in batch_spec.items()}
@@ -84,20 +96,22 @@ def get_optimizer(loss_op, cfg):
     if cfg.optimizer == "sgd":
         optimizer = TF.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9)
     elif cfg.optimizer == "adam":
-        optimizer = TF.train.AdamOptimizer(cfg.adam_lr)
+        optimizer = TF.train.AdamOptimizer(learning_rate)
     else:
         raise ValueError('unknown optimizer {}'.format(cfg.optimizer))
     train_op = slim.learning.create_train_op(loss_op, optimizer)
 
     return learning_rate, train_op
 
-def train(config_yaml,displayiters,saveiters,maxiters,max_to_keep=5):
+def train(config_yaml,displayiters,saveiters,maxiters,max_to_keep=5,keepdeconvweights=True,allow_growth=False):
     start_path=os.getcwd()
     os.chdir(str(Path(config_yaml).parents[0])) #switch to folder of config_yaml (for logging)
     setup_logging()
 
     cfg = load_config(config_yaml)
-    cfg['batch_size']=1 #in case this was edited for analysis.
+    if cfg.dataset_type=='default' or cfg.dataset_type=='tensorpack' or cfg.dataset_type=='deterministic':
+        print("Switching batchsize to 1, as default/tensorpack/deterministic loaders do not support batches >1. Use imgaug loader.")
+        cfg['batch_size']=1 #in case this was edited for analysis.-
 
     dataset = create_dataset(cfg)
     batch_spec = get_batch_spec(cfg)
@@ -109,11 +123,29 @@ def train(config_yaml,displayiters,saveiters,maxiters,max_to_keep=5):
         TF.summary.scalar(k, t)
     merged_summaries = TF.summary.merge_all()
 
-    variables_to_restore = slim.get_variables_to_restore(include=["resnet_v1"])
+    if 'snapshot' in Path(cfg.init_weights).stem and keepdeconvweights:
+        print("Loading already trained DLC with backbone:", cfg.net_type)
+        variables_to_restore = slim.get_variables_to_restore()
+    else:
+        print("Loading ImageNet-pretrained", cfg.net_type)
+        #loading backbone from ResNet, MobileNet etc.
+        if 'resnet' in cfg.net_type:
+            variables_to_restore = slim.get_variables_to_restore(include=["resnet_v1"])
+        elif 'mobilenet' in cfg.net_type:
+            variables_to_restore = slim.get_variables_to_restore(include=["MobilenetV2"])
+        else:
+            print("Wait for DLC 2.3.")
+
     restorer = TF.train.Saver(variables_to_restore)
     saver = TF.train.Saver(max_to_keep=max_to_keep) # selects how many snapshots are stored, see https://github.com/AlexEMG/DeepLabCut/issues/8#issuecomment-387404835
 
-    sess = TF.Session()
+    if allow_growth==True:
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        sess = TF.Session(config=config)
+    else:
+        sess = TF.Session()
+
     coord, thread = start_preloading(sess, enqueue_op, dataset, placeholders)
     train_writer = TF.summary.FileWriter(cfg.log_dir, sess.graph)
     learning_rate, train_op = get_optimizer(total_loss, cfg)

@@ -326,7 +326,7 @@ class MainFrame(wx.Frame):
 
 # Check for it output path and a machine label file exist
         if output_path.exists() and Path(self.machinefile).is_file():
-            cv2.imwrite(img_name, frame)
+            io.imsave(img_name,frame)
             if self.savelabeled:
                 self.figure.savefig(labeled_img_name,bbox_inches='tight')
             Data = pd.read_hdf(self.machinefile,'df_with_missing')
@@ -338,7 +338,8 @@ class MainFrame(wx.Frame):
         elif output_path.exists() and not(Path(self.machinefile).is_file()):
             if self.savelabeled:
                 self.figure.savefig(labeled_img_name,bbox_inches='tight')
-            cv2.imwrite(img_name, frame)
+            io.imsave(img_name,frame)
+#            cv2.imwrite(img_name, frame)
             DF.to_hdf(self.machinefile,key='df_with_missing',mode='w')
             DF.to_csv(os.path.join(str(output_path), "machinelabels.csv"))
         else:
@@ -388,8 +389,6 @@ class MainFrame(wx.Frame):
         wx.MessageBox("1. Use the checkbox 'Crop?' at the bottom left if you need to crop the frame. In this case use the left mouse button to draw a box corresponding to the region of interest. Click the 'Set cropping parameters' button to add the video with the chosen crop parameters to the config file.\n\n2. Use the slider to select a frame in the entire video. \n\n3. Click Grab Frames button to save the specific frame.\n\n4. In events where you need to extract a range frames, then use the checkbox 'Range of frames' to select the starting frame index and the number of frames to extract. \n Click the update button to see the frame. Click Grab Frames to select the range of frames. \n Click OK to continue", 'Instructions to use!', wx.OK | wx.ICON_INFORMATION)
 
 def show(config,video,shuffle,Dataframe,scorer,savelabeled):
-    import imageio
-    imageio.plugins.ffmpeg.download()
     app = wx.App()
     frame = MainFrame(None,config,video,shuffle,Dataframe,scorer,savelabeled).Show()
     app.MainLoop()
