@@ -647,9 +647,13 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
                         joints[indexjoints,2]=Data[bodypart]['y'][jj]
                         indexjoints+=1
 
+                print(joints)
+                joints[joints < 0] = np.nan  # replace negatives with nans
+                print(joints)
                 joints = joints[np.where(
                     np.prod(np.isfinite(joints),
                             1))[0], :]  # drop NaN, i.e. lines for missing body parts
+                print(joints)
 
                 assert (np.prod(np.array(joints[:, 2]) < np.shape(im)[0])
                         )  # y coordinate within image?
