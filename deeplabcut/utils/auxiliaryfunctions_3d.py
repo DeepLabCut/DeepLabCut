@@ -17,6 +17,8 @@ import pickle
 import pandas as pd
 from pathlib import Path
 import glob
+from warnings import warn
+import re
 
 def Foldernames3Dproject(cfg_3d):
     ''' Definitions of subfolders in 3D projects '''
@@ -88,7 +90,67 @@ def triangulatePoints( P1, P2, x1, x2 ):
     X = cv2.triangulatePoints( P1[:3], P2[:3], x1, x2 )
     return X/X[3]
 
-    
+
+def get_pairs_with_bad_corners(cam_names, path_corners, img_path, images):
+    """
+    Finds corner image pairs that have been selected out of the corners folder during the manual inspection of corner labels
+    """
+
+    corner_imgs = glob.glob(os.path.join(path_corners, '*.jpg'))
+    corner_selected_by_user_check = corner_imgs != [] and len(corner_imgs) <= len(images)
+
+    usable_corners = []
+    if corner_selected_by_user_check is True:
+        valid_corners = [Path(img_path).stem for img_path in corner_imgs]
+
+        finder = re.compile(r'\d+')
+        img_id_warn = False
+        occurance = []
+        for img_name in valid_corners:
+            if cam_names[0] in img_name:
+                img_id_search = finder.findall(img_name[len(cam_names[0])+1:])
+            elif cam_names[1] in img_name:
+                img_id_search = finder.findall(img_name[len(cam_names[1])+1:])
+
+            if img_id_search != []:
+                if len(img_id_search) == 1:
+                    img_id = int(img_id_search[0])
+                else:
+                    if img_id_warn is False:
+                        img_id_warn = True
+                        warn('Detected multiple numbers in ID: %s\nUsing the last integer' % img_id_search)
+                    img_id = int(img_id_search[-1])
+            else:
+                warn('Could not detect ID of %s. Skipping' % img_name)
+                continue
+
+            if img_id in occurance:
+                usable_corners.append(img_id)
+            else:
+                occurance.append(img_id)
+
+    return corner_selected_by_user_check, usable_corners
+
+
+def is_img_usable(usable_corners, cam_names, img_name, fname_pathlib):
+    """
+    Check if the image is usable with respect to corner images that have been selected out as bad
+    """
+
+    finder = re.compile(r'\d+')
+    if cam_names[0] in img_name:
+        img_id_search = finder.findall(img_name[len(cam_names[0])+1:])
+    elif cam_names[1] in img_name:
+        img_id_search = finder.findall(img_name[len(cam_names[1])+1:])
+    img_id = int(img_id_search[-1])
+
+    if img_id not in usable_corners:
+        print('Skipping %s as it is part of a bad pair' % fname_pathlib.name)
+        return False
+
+    return True
+
+
 def get_camerawise_videos(path,cam_names,videotype):
     """
     This function returns the list of videos corresponding to the camera names specified in the cam_names.

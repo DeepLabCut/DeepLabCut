@@ -109,52 +109,16 @@ def calibrate_cameras(config,cbrow=8, cbcol=6, calibrate=False, alpha=0.4):
         raise Exception("No calibration images found. Make sure the calibration images are saved as .jpg and with prefix as the camera name as specified in the config.yaml file.")
 
     # Find incomplete pairs
-    corner_selected_by_user_check = glob.glob(os.path.join(path_corners, '*.jpg')) != [] and len(glob.glob(os.path.join(path_corners, '*.jpg'))) <= len(images)
-    if calibrate is True and corner_selected_by_user_check:
-        valid_corners = [Path(img_path).stem for img_path in glob.glob(os.path.join(path_corners, '*.jpg'))]
+    corner_selected_by_user_check, usable_corners = auxiliaryfunctions_3d.get_pairs_with_bad_corners(cam_names, path_corners, img_path, images)
 
-        usable_corners = []
-        occurance = []
-        finder = re.compile(r'\d+')
-        img_id_warn = False
-        for img_name in valid_corners:
-            if cam_names[0] in img_name:
-                img_id_search = finder.findall(img_name[len(cam_names[0])+1:])
-            elif cam_names[1] in img_name:
-                img_id_search = finder.findall(img_name[len(cam_names[1])+1:])
-
-            if img_id_search != []:
-                if len(img_id_search) == 1:
-                    img_id = int(img_id_search[0])
-                else:
-                    if img_id_warn is False:
-                        img_id_warn = True
-                        warn('Detected multiple numbers in ID: %s\nUsing the last integer' % img_id_search)
-                    img_id = int(img_id_search[-1])
-            else:
-                warn('Could not detect ID of %s. Skipping' % img_name)
-                continue
-
-            if img_id in occurance:
-                usable_corners.append(img_id)
-            else:
-                occurance.append(img_id)
-    
     for fname in images:
         for cam in cam_names:
             if cam in fname:
                 fname_pathlib = Path(fname)
                 img_name = fname_pathlib.stem
 
-                if calibrate is True and corner_selected_by_user_check:
-                    if cam_names[0] in img_name:
-                        img_id_search = finder.findall(img_name[len(cam_names[0])+1:])
-                    elif cam_names[1] in img_name:
-                        img_id_search = finder.findall(img_name[len(cam_names[1])+1:])
-                    img_id = int(img_id_search[-1])
-                    if img_id not in usable_corners:
-                        print('Skipping %s as it is part of a bad pair' % fname_pathlib.name)
-                        continue
+                if calibrate is True and corner_selected_by_user_check is True and auxiliaryfunctions_3d.is_img_usable(usable_corners, cam_names, img_name, fname_pathlib) is False:
+                    continue
 
                 img = cv2.imread(fname)
                 gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
@@ -176,9 +140,9 @@ def calibrate_cameras(config,cbrow=8, cbcol=6, calibrate=False, alpha=0.4):
         h, w = img.shape[:2]
     except:
         raise Exception(
-            "It seems that the name of calibration images does not match with the camera names in the config file.\n" \
-            "Please make sure that the calibration images are named with camera names as specified in the config.yaml file."
-        )
+                "It seems that the name of calibration images does not match with the camera names in the config file.\n" \
+                "Please make sure that the calibration images are named with camera names as specified in the config.yaml file."
+            )
 
     # Perform calibration for each cameras and store the matrices as a pickle file
     if calibrate is True:
@@ -289,40 +253,11 @@ def check_undistortion(config,cbrow = 8,cbcol = 6,plot=True):
                 gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
     '''
     # Get bad pairs
-    corner_selected_by_user_check = glob.glob(os.path.join(path_corners, '*.jpg')) != [] and len(glob.glob(os.path.join(path_corners, '*.jpg'))) <= len(images)
-    if corner_selected_by_user_check is True:
-        valid_corners = [Path(img_path).stem for img_path in glob.glob(os.path.join(path_corners, '*.jpg'))]
-
-        usable_corners = []
-        occurance = []
-        finder = re.compile(r'\d+')
-        img_id_warn = False
-        for img_name in valid_corners:
-            if cam_names[0] in img_name:
-                img_id_search = finder.findall(img_name[len(cam_names[0])+1:])
-            elif cam_names[1] in img_name:
-                img_id_search = finder.findall(img_name[len(cam_names[1])+1:])
-
-            if img_id_search != []:
-                if len(img_id_search) == 1:
-                    img_id = int(img_id_search[0])
-                else:
-                    if img_id_warn is False:
-                        img_id_warn = True
-                        warn('Detected multiple numbers in ID: %s\nUsing the last integer' % img_id_search)
-                    img_id = int(img_id_search[-1])
-            else:
-                warn('Could not detect ID of %s. Skipping' % img_name)
-                continue
-
-            if img_id in occurance:
-                usable_corners.append(img_id)
-            else:
-                occurance.append(img_id)
+    corner_selected_by_user_check, usable_corners = auxiliaryfunctions_3d.get_pairs_with_bad_corners(cam_names, path_corners, img_path, images)
 
     camera_pair = [[cam_names[0], cam_names[1]]]
     stereo_params = auxiliaryfunctions.read_pickle(os.path.join(path_camera_matrix,'stereo_params.pickle'))
-    
+
     for pair in camera_pair:
         map1_x,map1_y = cv2.initUndistortRectifyMap(stereo_params[pair[0]+'-'+pair[1]]["cameraMatrix1"], stereo_params[pair[0]+'-'+pair[1]]["distCoeffs1"], stereo_params[pair[0]+'-'+pair[1]]["R1"], stereo_params[pair[0]+'-'+pair[1]]["P1"],(stereo_params[pair[0]+'-'+pair[1]]["image_shape"][0]), cv2.CV_16SC2)
         map2_x,map2_y = cv2.initUndistortRectifyMap(stereo_params[pair[0]+'-'+pair[1]]["cameraMatrix2"], stereo_params[pair[0]+'-'+pair[1]]["distCoeffs2"], stereo_params[pair[0]+'-'+pair[1]]["R2"], stereo_params[pair[0]+'-'+pair[1]]["P2"],(stereo_params[pair[0]+'-'+pair[1]]["image_shape"][1]), cv2.CV_16SC2)
@@ -333,15 +268,8 @@ def check_undistortion(config,cbrow = 8,cbcol = 6,plot=True):
             fname_pathlib = Path(fname)
             img_name = fname_pathlib.stem
 
-            if corner_selected_by_user_check:
-                if cam_names[0] in img_name:
-                    img_id_search = finder.findall(img_name[len(cam_names[0])+1:])
-                elif cam_names[1] in img_name:
-                    img_id_search = finder.findall(img_name[len(cam_names[1])+1:])
-                img_id = int(img_id_search[-1])
-                if img_id not in usable_corners:
-                    print('Skipping %s as it is part of a bad pair' % fname_pathlib.name)
-                    continue
+            if corner_selected_by_user_check is True and auxiliaryfunctions_3d.is_img_usable(usable_corners, cam_names, img_name, fname_pathlib) is False:
+                continue
 
             if pair[0] in fname:
                 img1 = cv2.imread(fname)

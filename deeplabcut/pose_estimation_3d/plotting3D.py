@@ -94,6 +94,7 @@ def create_labeled_video_3d(config,path,videofolder=None,start=0,end=None,trailp
     bodyparts2plot = list(np.unique([val for sublist in bodyparts2connect for val in sublist]))
     color = plt.cm.get_cmap(cmap, len(bodyparts2plot))
     file_list = auxiliaryfunctions_3d.Get_list_of_triangulated_and_videoFiles(path,videotype,scorer_3d,cam_names,videofolder)
+    print(file_list)
 
     if file_list == []:
         raise Exception("No corresponding video file(s) found for the specified triangulated file or folder. Did you specify the video file type? If videos are stored in a different location, please use the ``videofolder`` argument to specify their path.")
