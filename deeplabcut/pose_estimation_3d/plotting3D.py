@@ -213,15 +213,15 @@ def plot2D(cfg_3d,k,bodyparts2plot,vid_cam1,vid_cam2,bodyparts2connect,df_cam1_v
         df_x[bpindex,:]=xyz_pts[scorer_3d][bp]['x'].values
         df_y[bpindex,:]=xyz_pts[scorer_3d][bp]['y'].values
         df_z[bpindex,:]=xyz_pts[scorer_3d][bp]['z'].values
-    if xlim==[None,None]:
+    if list(xlim)==[None,None]:
         axes3.set_xlim3d([np.nanmin(df_x),np.nanmax(df_x)])
     else:
         axes3.set_xlim3d(xlim)
-    if ylim==[None,None]:
+    if list(ylim)==[None,None]:
         axes3.set_ylim3d([np.nanmin(df_y),np.nanmax(df_y)])
     else:
         axes3.set_ylim3d(ylim)
-    if zlim==[None,None]:
+    if list(zlim)==[None,None]:
         axes3.set_zlim3d([np.nanmin(df_z),np.nanmax(df_z)])
     else:
         axes3.set_zlim3d(zlim)
