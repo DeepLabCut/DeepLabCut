@@ -148,7 +148,7 @@ deeplabcut.train_network(config_path,shuffle=1)
 ### Evaluate the Trained Network:
 
 ```
-deeplabcut.evaluate_network(config_path,shuffle=[1], plotting=True)
+deeplabcut.evaluate_network(config_path,Shuffles=[1], plotting=True)
 ```
 
 (more details [here](functionDetails.md#h-evaluate-the-trained-network))
