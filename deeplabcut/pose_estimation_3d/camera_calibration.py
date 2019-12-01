@@ -115,9 +115,9 @@ def calibrate_cameras(config,cbrow=8, cbcol=6, calibrate=False, alpha=0.4):
         for cam in cam_names:
             if cam in fname:
                 fname_pathlib = Path(fname)
-                img_name = fname_pathlib.stem
+                filename = fname_pathlib.stem
 
-                if calibrate is True and corner_selected_by_user_check is True and auxiliaryfunctions_3d.is_img_usable(usable_corners, cam_names, img_name, fname_pathlib) is False:
+                if calibrate is True and corner_selected_by_user_check is True and auxiliaryfunctions_3d.is_img_usable(usable_corners, cam_names, filename, fname_pathlib) is False:
                     continue
 
                 img = cv2.imread(fname)
@@ -247,7 +247,7 @@ def check_undistortion(config,cbrow = 8,cbcol = 6,plot=True):
     for fname in images:
         for cam in cam_names:
             if cam in fname:
-                img_name = Path(fname).stem
+                filename = Path(fname).stem
                 ext = Path(fname).suffix
                 img = cv2.imread(fname)
                 gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
@@ -266,9 +266,9 @@ def check_undistortion(config,cbrow = 8,cbcol = 6,plot=True):
         
         for fname in images:
             fname_pathlib = Path(fname)
-            img_name = fname_pathlib.stem
+            filename = fname_pathlib.stem
 
-            if corner_selected_by_user_check is True and auxiliaryfunctions_3d.is_img_usable(usable_corners, cam_names, img_name, fname_pathlib) is False:
+            if corner_selected_by_user_check is True and auxiliaryfunctions_3d.is_img_usable(usable_corners, cam_names, filename, fname_pathlib) is False:
                 continue
 
             if pair[0] in fname:
@@ -282,7 +282,7 @@ def check_undistortion(config,cbrow = 8,cbcol = 6,plot=True):
                 im_remapped1 = cv2.remap(img1, map1_x, map1_y, cv2.INTER_LANCZOS4)
                 imgpoints_proj_undistort = cv2.undistortPoints(src=corners_origin1, cameraMatrix =stereo_params[pair[0]+'-'+pair[1]]["cameraMatrix1"], distCoeffs = stereo_params[pair[0]+'-'+pair[1]]["distCoeffs1"],P=stereo_params[pair[0]+'-'+pair[1]]["P1"],R=stereo_params[pair[0]+'-'+pair[1]]["R1"])
                 cam1_undistort.append(imgpoints_proj_undistort)
-                cv2.imwrite(os.path.join(str(path_undistort),img_name+'_undistort.jpg'),im_remapped1)
+                cv2.imwrite(os.path.join(str(path_undistort),filename+'_undistort.jpg'),im_remapped1)
                 imgpoints_proj_undistort = []
                 
             elif pair[1] in fname:
@@ -296,7 +296,7 @@ def check_undistortion(config,cbrow = 8,cbcol = 6,plot=True):
                 im_remapped2 = cv2.remap(img2, map2_x, map2_y, cv2.INTER_LANCZOS4)
                 imgpoints_proj_undistort2 = cv2.undistortPoints(src=corners_origin2, cameraMatrix =stereo_params[pair[0]+'-'+pair[1]]["cameraMatrix2"], distCoeffs = stereo_params[pair[0]+'-'+pair[1]]["distCoeffs2"],P=stereo_params[pair[0]+'-'+pair[1]]["P2"],R=stereo_params[pair[0]+'-'+pair[1]]["R2"])
                 cam2_undistort.append(imgpoints_proj_undistort2)
-                cv2.imwrite(os.path.join(str(path_undistort),img_name+'_undistort.jpg'),im_remapped2)
+                cv2.imwrite(os.path.join(str(path_undistort),filename+'_undistort.jpg'),im_remapped2)
                 imgpoints_proj_undistort2 = []
 
         cam1_undistort = np.array(cam1_undistort)

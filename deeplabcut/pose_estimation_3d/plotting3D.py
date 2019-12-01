@@ -235,7 +235,6 @@ def plot2D(cfg_3d,k,bodyparts2plot,vid_cam1,vid_cam2,bodyparts2connect,df_cam1_v
     axes3.set_ylabel('Y', fontsize=10)
     axes3.set_zlabel('Z', fontsize=10)
 
-
     # Set the frame number to read#max(0,index-trailpoints):index
     vid_cam1.set(1,k)
     vid_cam2.set(1,k)
