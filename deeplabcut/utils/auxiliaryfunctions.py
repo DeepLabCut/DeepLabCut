@@ -81,8 +81,7 @@ def create_config_template_3d():
     scorer:
     date:
     \n
-# Project path
-    # Change when moving around
+# Project path (change when moving around)
     project_path:
     \n
 # Plotting configuration
