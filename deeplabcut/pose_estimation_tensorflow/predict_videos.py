@@ -215,10 +215,12 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
         for video in Videos:
             DLCscorer=AnalyzeVideo(video,DLCscorer,DLCscorerlegacy,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder,TFGPUinference,dynamic)
 
-    os.chdir(str(start_path))
-    print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
-    print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
-    return DLCscorer #note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
+        os.chdir(str(start_path))
+        print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
+        print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
+        return DLCscorer #note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
+    else:
+        print("No video/s found. Please check your path!")
 
 def checkcropping(cfg,cap):
     print("Cropping based on the x1 = %s x2 = %s y1 = %s y2 = %s. You can adjust the cropping coordinates in the config.yaml file." %(cfg['x1'], cfg['x2'],cfg['y1'], cfg['y2']))
