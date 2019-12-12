@@ -221,6 +221,7 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
         return DLCscorer #note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
     else:
         print("No video/s found. Please check your path!")
+        return DLCscorer 
 
 def checkcropping(cfg,cap):
     print("Cropping based on the x1 = %s x2 = %s y1 = %s y2 = %s. You can adjust the cropping coordinates in the config.yaml file." %(cfg['x1'], cfg['x2'],cfg['y1'], cfg['y2']))
