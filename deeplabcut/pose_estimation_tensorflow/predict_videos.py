@@ -164,7 +164,7 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
     dlc_cfg['init_weights'] = os.path.join(modelfolder , 'train', Snapshots[snapshotindex])
     trainingsiterations = (dlc_cfg['init_weights'].split(os.sep)[-1]).split('-')[-1]
     # Update number of output and batchsize
-    dlc_cfg['num_outputs'] = dlc_cfg.get('num_outputs', 1)
+    dlc_cfg['num_outputs'] = cfg.get('num_outputs', dlc_cfg.get('num_outputs', 1))
 
     if batchsize==None:
         #update batchsize (based on parameters in config.yaml)
