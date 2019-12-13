@@ -125,13 +125,13 @@ def create_labeled_video_3d(config,path,videofolder=None,start=0,end=None,trailp
 
             # Look for the filtered predictions file
             try:
-                print("Trying to find filtered predictions...")
+                print("Looking for filtered predictions...")
                 df_cam1= pd.read_hdf(glob.glob(os.path.join(path_h5_file,str('*'+base_filename_cam1+cam1_scorer+'*filtered.h5')))[0])
                 df_cam2 = pd.read_hdf(glob.glob(os.path.join(path_h5_file,str('*'+base_filename_cam2+cam2_scorer+'*filtered.h5')))[0])
-                print("Found filtered predictions! I will use these for triangulation.")
-                print("This is I found: ",os.path.join(path_h5_file,str('*'+base_filename_cam1+cam1_scorer+'*filtered.h5')),os.path.join(path_h5_file,str('*'+base_filename_cam2+cam2_scorer+'*filtered.h5')))
+                #print("Found filtered predictions, will be use these for triangulation.")
+                print("Found the following filtered data: ",os.path.join(path_h5_file,str('*'+base_filename_cam1+cam1_scorer+'*filtered.h5')),os.path.join(path_h5_file,str('*'+base_filename_cam2+cam2_scorer+'*filtered.h5')))
             except FileNotFoundError:
-                print("No filtered predictions found. I will use the unfiltered predictions.")
+                print("No filtered predictions found, the unfiltered predictions will be used instead.")
                 df_cam1= pd.read_hdf(glob.glob(os.path.join(path_h5_file,str(base_filename_cam1+cam1_scorer+'*.h5')))[0])
                 df_cam2 = pd.read_hdf(glob.glob(os.path.join(path_h5_file,str(base_filename_cam2+cam2_scorer+'*.h5')))[0])
 
@@ -204,7 +204,8 @@ def plot2D(cfg_3d,k,bodyparts2plot,vid_cam1,vid_cam2,bodyparts2connect,df_cam1_v
     scorer_3d = xyz_pts.columns.get_level_values(0)[0]
 
     # Set the x,y, and z limits for the 3d view
-    numberFrames = int(vid_cam1.get(cv2.CAP_PROP_FRAME_COUNT))
+
+    numberFrames = min([int(vid_cam1.get(cv2.CAP_PROP_FRAME_COUNT)),int(vid_cam2.get(cv2.CAP_PROP_FRAME_COUNT))]) #minimum of two cameras / TODO: clean up!
     df_x = np.empty((len(bodyparts2plot),numberFrames))
     df_y = np.empty((len(bodyparts2plot),numberFrames))
     df_z = np.empty((len(bodyparts2plot),numberFrames))
@@ -238,7 +239,7 @@ def plot2D(cfg_3d,k,bodyparts2plot,vid_cam1,vid_cam2,bodyparts2connect,df_cam1_v
     # Set the frame number to read#max(0,index-trailpoints):index
     vid_cam1.set(1,k)
     vid_cam2.set(1,k)
-    ret_cam1, frame_cam1 = vid_cam1.read()
+    ret_cam1, frame_cam1 = vid_cam1.read() #TODO: use ret_camj
     ret_cam2,frame_cam2 = vid_cam2.read()
 
     # Plot the labels for each body part
