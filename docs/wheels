@@ -1,0 +1,18 @@
+In case you want to install the wheels (from here). 
+
+```
+git clone https://github.com/AlexEMG/DeepLabCut
+python setup.py sdist bdist_wheel
+pip install dist/deeplabcut-2.0.dev1-py3-none-any.whl
+pip install tensorflow==1.8
+conda install nb_conda
+pip install https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-16.04/wxPython-4.0.3-cp36-cp36m-linux_x86_64.whl
+```
+restart terminal (nb_conda...)
+
+
+Windows: pip install -U wxPython
+Linux: pip install https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-16.04/wxPython-4.0.3-cp36-cp36m-linux_x86_64.whl
+
+Linux: export DLClight=True
+Windows: set DLClight=True
