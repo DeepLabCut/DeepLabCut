@@ -121,7 +121,7 @@ print("CREATE VIDEO")
 deeplabcut.create_labeled_video(path_config_file,[newvideo], destfolder=dfolder,save_frames=True)
 
 print("Making plots")
-deeplabcut.plot_trajectories(path_config_file,[newvideo], destfolder=dfolder)
+deeplabcut.plot_trajectories(path_config_file, [newvideo], destfolder=dfolder)
 
 print("EXTRACT OUTLIERS")
 deeplabcut.extract_outlier_frames(path_config_file,[newvideo],outlieralgorithm='jump',epsilon=0,automatic=True, destfolder=dfolder)
@@ -181,7 +181,7 @@ deeplabcut.filterpredictions(path_config_file,[newvideo])
 
 #deeplabcut.create_labeled_video(path_config_file,[newvideo], destfolder=dfolder,filtered=True)
 deeplabcut.create_labeled_video(path_config_file,[newvideo2], destfolder=dfolder,displaycropped=True,filtered=True)
-deeplabcut.plot_trajectories(path_config_file,[newvideo2], destfolder=dfolder,filtered=True)
+deeplabcut.plot_trajectories(path_config_file, [newvideo2], filtered=True, destfolder=dfolder)
 
 print("CREATING TRAININGSET for shuffle 2")
 print("will be used for 3D testscript...")

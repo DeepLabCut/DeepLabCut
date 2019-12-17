@@ -112,7 +112,7 @@ for shuffle,net_type in enumerate(['mobilenet_v2_0.35','resnet_50']): #'mobilene
     deeplabcut.create_labeled_video(path_config_file,[newvideo],shuffle=shuffle, destfolder=dfolder)
 
     print("Making plots")
-    deeplabcut.plot_trajectories(path_config_file,[newvideo],shuffle=shuffle, destfolder=dfolder)
+    deeplabcut.plot_trajectories(path_config_file, [newvideo], shuffle=shuffle, destfolder=dfolder)
 
     print("EXTRACT OUTLIERS")
     deeplabcut.extract_outlier_frames(path_config_file,[newvideo],shuffle=shuffle,outlieralgorithm='jump',epsilon=0,automatic=True, destfolder=dfolder)

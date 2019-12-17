@@ -261,7 +261,9 @@ class Analyze_videos(wx.Panel):
             deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle, trainingsetindex=trainingsetindex, draw_skeleton= self.draw,trailpoints = self.trail_points.GetValue(), filtered=True)
 
         if self.trajectory.GetStringSelection() == "Yes":
-            deeplabcut.plot_trajectories(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex, filtered=True, showfigures=False, destfolder=self.destfolder)
+            deeplabcut.plot_trajectories(self.config, self.filelist, videotype=self.videotype.GetValue(),
+                                         shuffle=shuffle, trainingsetindex=trainingsetindex, filtered=True,
+                                         showfigures=False, destfolder=self.destfolder)
 
 
     def reset_analyze_videos(self,event):
