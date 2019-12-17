@@ -11,13 +11,8 @@ or
 
 if you already have deeplabcut installed, just go into your env then run `` pip install --upgrade deeplabcut``
 
-(2) Open the terminal and run: `python -m deeplabcut`
+(2) Open the terminal and run: `python -m deeplabcut` or MacOS: `pythonw -m deeplabcut`
 
-or, you can also launch from within ipython/pythonw:
-
- - start ``ipython`` or ``pythonw`` (MacOS) and ``import deeplabcut`` 
-
- - ``deeplabcut.launch_dlc()``
 
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572824438905-QY9XQKZ8LAJZG6BLPWOQ/ke17ZwdGBToddI8pDm48kIIa76w436aRzIF_cdFnEbEUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcLthF_aOEGVRewCT7qiippiAuU5PSJ9SSYal26FEts0MmqyMIhpMOn8vJAUvOV4MI/guilaunch.jpg?format=1000w" width="80%">
