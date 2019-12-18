@@ -45,7 +45,7 @@ class Analyze_videos(wx.Panel):
             self.sel_config = wx.FilePickerCtrl(self, path="",style=wx.FLP_USE_TEXTCTRL,message="Choose the config.yaml file", wildcard="*.yaml")
         else:
             self.sel_config = wx.FilePickerCtrl(self, path="",style=wx.FLP_USE_TEXTCTRL,message="Choose the config.yaml file", wildcard="config.yaml")
-        # self.sel_config = wx.FilePickerCtrl(self, path="",style=wx.FLP_USE_TEXTCTRL,message="Choose the config.yaml file", wildcard="config.yaml")
+
         self.sizer.Add(self.sel_config, pos=(2, 1),span=(1,3),flag=wx.TOP|wx.EXPAND, border=5)
         self.sel_config.SetPath(self.config)
         self.sel_config.Bind(wx.EVT_FILEPICKER_CHANGED, self.select_config)
@@ -118,7 +118,7 @@ class Analyze_videos(wx.Panel):
         self.trajectory = wx.RadioBox(self, label='Want to plot the trajectories?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
         self.trajectory.SetSelection(1)
 
-        self.create_labeled_videos = wx.RadioBox(self, label='Want to create labeled video(s)?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
+        self.create_labeled_videos = wx.RadioBox(self, label='Create labeled video(s)? (see next tab for more options)', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
         self.create_labeled_videos.Bind(wx.EVT_RADIOBOX, self.choose_create_labeled_video_options)
         self.create_labeled_videos.SetSelection(1)
 
@@ -261,9 +261,7 @@ class Analyze_videos(wx.Panel):
             deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle, trainingsetindex=trainingsetindex, draw_skeleton= self.draw,trailpoints = self.trail_points.GetValue(), filtered=True)
 
         if self.trajectory.GetStringSelection() == "Yes":
-            deeplabcut.plot_trajectories(self.config, self.filelist, videotype=self.videotype.GetValue(),
-                                         shuffle=shuffle, trainingsetindex=trainingsetindex, filtered=True,
-                                         showfigures=False, destfolder=self.destfolder)
+            deeplabcut.plot_trajectories(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex, filtered=True, showfigures=False, destfolder=self.destfolder)
 
 
     def reset_analyze_videos(self,event):
