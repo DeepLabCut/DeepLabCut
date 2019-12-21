@@ -61,7 +61,7 @@ def argmax_pose_predict(scmap, offmat, stride):
     return np.array(pose)
 
 
-# modified by : Tabet Ehsainieh
+# modified by: Tabet Ehsainieh
 def getpose(image, cfg, sess, inputs, outputs, outall=False, live=False):
     '''  Extract pose  '''
     im = np.expand_dims(image, axis=0).astype(float)
