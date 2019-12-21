@@ -1,10 +1,11 @@
 """
-DeepLabCut2.0 Toolbox
+DeepLabCut2.0 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
-A Mathis, alexander.mathis@bethgelab.org
-T Nath, nath@rowland.harvard.edu
-M Mathis, mackenzie@post.harvard.edu
 
+Please see AUTHORS for contributors.
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
 """
 
 
@@ -27,43 +28,26 @@ def add_new_videos(config,videos,copy_videos=False,coords=None):
       A list containing the list of cropping coordinates of the video. The default is set to None.
     Examples
     --------
-    >>> deeplabcut.add_new_videos('/home/project/reaching-task-Tanmay-2018-08-23/config.yaml',['/data/videos/mouse5.avi'],copy_videos=False,coords=[0,100,0,200])
+    Video will be added, with cropping dimenions according to the frame dimensinos of mouse5.avi
+    >>> deeplabcut.add_new_videos('/home/project/reaching-task-Tanmay-2018-08-23/config.yaml',['/data/videos/mouse5.avi'])
+    
+    Video will be added, with cropping dimenions [0,100,0,200]
+    >>> deeplabcut.add_new_videos('/home/project/reaching-task-Tanmay-2018-08-23/config.yaml',['/data/videos/mouse5.avi'],copy_videos=False,coords=[[0,100,0,200]])
+
+    Two videos will be added, with cropping dimenions [0,100,0,200] and [0,100,0,250], respectively.
+    >>> deeplabcut.add_new_videos('/home/project/reaching-task-Tanmay-2018-08-23/config.yaml',['/data/videos/mouse5.avi','/data/videos/mouse6.avi'],copy_videos=False,coords=[[0,100,0,200],[0,100,0,250]])
 
     """
     import os
     import shutil
-    import yaml
     from pathlib import Path
 
     from deeplabcut import DEBUG
     from deeplabcut.utils import auxiliaryfunctions
     import cv2
-    
+
     # Read the config file
     cfg = auxiliaryfunctions.read_config(config)
-    
-    for idx,video in enumerate(videos):
-        try:
-           video_path = os.path.realpath(video)
-        except:
-           video_path = os.readlink(video)
-
-        vcap = cv2.VideoCapture(video_path)
-        if vcap.isOpened():
-                  # get vcap property
-           width = int(vcap.get(cv2.CAP_PROP_FRAME_WIDTH))
-           height = int(vcap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-           
-        else:
-           print("Cannot open the video file!")
-        if coords == None:
-            cfg['video_sets'].update({video_path : {'crop': ', '.join(map(str, [0, width, 0, height]))}})
-        else:
-            c = coords[idx]
-            cfg['video_sets'].update({video_path : {'crop': ', '.join(map(str, c))}})
-
-    with open(str(config), 'w') as ymlfile:
-        yaml.dump(cfg, ymlfile,default_flow_style=False)
 
     video_path = Path(config).parents[0] / 'videos'
     data_path = Path(config).parents[0] / 'labeled-data'
@@ -73,24 +57,51 @@ def add_new_videos(config,videos,copy_videos=False,coords=None):
 
     for p in dirs:
         """
-        Creates directory under data
+        Creates directory under data & perhaps copies videos (to /video)
         """
         p.mkdir(parents = True, exist_ok = True)
+    
     destinations = [video_path.joinpath(vp.name) for vp in videos]
     if copy_videos==True:
-        print("Copying the videos")
         for src, dst in zip(videos, destinations):
-            shutil.copy(os.fspath(src),os.fspath(dst)) 
+            if dst.exists():
+                pass
+            else:
+                print("Copying the videos")
+                shutil.copy(os.fspath(src),os.fspath(dst)) 
     else:
-        print("Creating the symbolic link of the video")
         for src, dst in zip(videos, destinations):
-            if dst.exists() and not DEBUG:
-                raise FileExistsError('Video {} exists already!'.format(dst))
-            try:
+            if dst.exists():
+                pass
+            else:
+                print("Creating the symbolic link of the video")
                 src = str(src)
                 dst = str(dst)
                 os.symlink(src, dst)
-            except shutil.SameFileError:
-                if not DEBUG:
-                    raise
+    
+    if copy_videos==True:
+        videos=destinations # in this case the *new* location should be added to the config file
+    # adds the video list to the config.yaml file
+    for idx,video in enumerate(videos):
+        try:
+# For windows os.path.realpath does not work and does not link to the real video. 
+           video_path = str(Path.resolve(Path(video)))
+#           video_path = os.path.realpath(video)
+        except:
+           video_path = os.readlink(video)
+
+        vcap = cv2.VideoCapture(video_path)
+        if vcap.isOpened():
+            # get vcap property
+           width = int(vcap.get(cv2.CAP_PROP_FRAME_WIDTH))
+           height = int(vcap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+           if coords == None:
+                cfg['video_sets'].update({video_path : {'crop': ', '.join(map(str, [0, width, 0, height]))}})
+           else:
+                c = coords[idx]
+                cfg['video_sets'].update({video_path : {'crop': ', '.join(map(str, c))}})
+        else:
+           print("Cannot open the video file!")
+
+    auxiliaryfunctions.write_config(config,cfg)
     print("New video was added to the project! Use the function 'extract_frames' to select frames for labeling.")

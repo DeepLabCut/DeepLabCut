@@ -1,20 +1,27 @@
 """
-DeepLabCut Toolbox
+DeepLabCut2.0 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
-A Mathis, alexander.mathis@bethgelab.org
-M Mathis, mackenzie@post.harvard.edu
+Please see AUTHORS for contributors.
 
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
 """
+
+
 import os
 import numpy as np
 import matplotlib as mpl
+import platform
 from pathlib import Path
 
 if os.environ.get('DLClight', default=False) == 'True':
     mpl.use('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
     pass
+elif platform.system() == 'Darwin':
+    mpl.use('WXAgg')
 else:
-    mpl.use('TkAgg')
+    mpl.use('TkAgg') #TkAgg
 import matplotlib.pyplot as plt
 
 def get_cmap(n, name='hsv'):
@@ -42,13 +49,13 @@ def MakeLabeledImage(DataCombined,imagenr,pcutoff,imagebasefolder,Scorers,bodypa
        for bpindex,bp in enumerate(bodyparts):
            if np.isfinite(DataCombined[loopscorer][bp]['y'][imagenr]+DataCombined[loopscorer][bp]['x'][imagenr]):
                 y,x=int(DataCombined[loopscorer][bp]['y'][imagenr]), int(DataCombined[loopscorer][bp]['x'][imagenr])
-                if 'DeepCut' in loopscorer:
+                if cfg["scorer"] not in loopscorer:
                     p=DataCombined[loopscorer][bp]['likelihood'][imagenr]
                     if p>pcutoff:
                         plt.plot(x,y,labels[1],ms=dotsize,alpha=alphavalue,color=colors(int(bpindex)))
                     else:
                         plt.plot(x,y,labels[2],ms=dotsize,alpha=alphavalue,color=colors(int(bpindex)))
-                else: #by exclusion this is the human labeler (I hope nobody has DeepCut in his name...)
+                else: #this is the human labeler
                         plt.plot(x,y,labels[0],ms=dotsize,alpha=alphavalue,color=colors(int(bpindex)))
     plt.xlim(0,w)
     plt.ylim(0,h)
@@ -57,16 +64,22 @@ def MakeLabeledImage(DataCombined,imagenr,pcutoff,imagebasefolder,Scorers,bodypa
     plt.gca().invert_yaxis()
 
 
-def PlottingandSaveLabeledFrame(DataCombined,ind,trainIndices,cfg,colors,comparisonbodyparts,DLCscorer,foldername):
+def PlottingandSaveLabeledFrame(DataCombined,ind,trainIndices,cfg,colors,comparisonbodyparts,DLCscorer,foldername,scaling=1):
         fn=Path(cfg['project_path']+'/'+DataCombined.index[ind])
         imagename=fn.parts[-1] #fn.stem+fn.suffix
         imfoldername=fn.parts[-2] #fn.suffix
         fig=plt.figure()
         ax=fig.add_subplot(1,1,1)
-        MakeLabeledImage(DataCombined,ind,cfg["pcutoff"],cfg["project_path"],[cfg["scorer"],DLCscorer],comparisonbodyparts,colors,cfg)
+        MakeLabeledImage(DataCombined,ind,cfg["pcutoff"],cfg["project_path"],[cfg["scorer"],DLCscorer],comparisonbodyparts,colors,cfg,scaling=scaling)
 
         if ind in trainIndices:
-            plt.savefig(os.path.join(foldername,'Training-'+imfoldername+'-'+imagename)) #create filename comprising videofolder + imagename
+            full_path = os.path.join(foldername,'Training-'+imfoldername+'-'+imagename)
         else:
-            plt.savefig(os.path.join(foldername,'Test-'+imfoldername+'-'+imagename))
+            full_path = os.path.join(foldername,'Test-'+imfoldername+'-'+imagename)
+
+        # windows throws error if file path is > 260 characters, can fix with prefix. see https://docs.microsoft.com/en-us/windows/desktop/fileio/naming-a-file#maximum-path-length-limitation
+        if (len(full_path) >= 260) and (os.name == 'nt'):
+            full_path = '\\\\?\\'+full_path
+        plt.savefig(full_path)
+
         plt.close("all")

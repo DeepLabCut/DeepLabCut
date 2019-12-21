@@ -1,10 +1,11 @@
 """
-DeepLabCut2.0 Toolbox
+DeepLabCut2.0 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
-A Mathis, alexander.mathis@bethgelab.org
-T Nath, nath@rowland.harvard.edu
-M Mathis, mackenzie@post.harvard.edu
+Please see AUTHORS for contributors.
 
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
 """
 
 """
@@ -19,7 +20,7 @@ import wx
 
 class DraggablePoint():
     lock = None #only one can be animated at a time
-    def __init__(self, point,bodyParts,likelihood,adjust_original_labels):
+    def __init__(self, point,bodyParts,likelihood):
         self.point = point
         self.bodyParts = bodyParts
         self.likelihood = likelihood
@@ -29,7 +30,7 @@ class DraggablePoint():
         self.annot = self.point.axes.annotate("", xy=(0,0), xytext=(20,20),textcoords="offset points",bbox=dict(boxstyle="round", fc="w"),arrowprops=dict(arrowstyle="->"))
         self.annot.set_visible(False)
         self.coords = []
-        self.adjust_original_labels = adjust_original_labels
+#        self.adjust_original_labels = adjust_original_labels
 
 
     def connect(self):
@@ -122,10 +123,10 @@ class DraggablePoint():
             contains, attrd = self.point.contains(event)
             if contains:
                 self.annot.xy = (self.point.center[0],self.point.center[1])
-                if self.adjust_original_labels == True:
-                    text = str(self.bodyParts)
-                else:
-                    text = str(self.bodyParts+',p='+ str("{0:.2f}".format(self.likelihood)))
+#                if self.adjust_original_labels == True:
+#                    text = str(self.bodyParts)
+#                else:
+                text = str(self.bodyParts+',p='+ str("{0:.2f}".format(self.likelihood)))
                 self.annot.set_text(text)
                 self.annot.get_bbox_patch().set_alpha(0.4)
                 self.annot.set_visible(True)
