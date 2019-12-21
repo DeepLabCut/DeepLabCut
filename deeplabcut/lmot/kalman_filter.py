@@ -1,6 +1,3 @@
-# Copyright 2019 by Tabet Ehsainieh.
-# All rights reserved.
-# Please see the LICENSE file that should have been included as part of this package.
 # Copyright 2019 by
 # Tabet Ehsainieh, ehsainit@informatik.uni-freiburg.de
 # All rights reserved.
