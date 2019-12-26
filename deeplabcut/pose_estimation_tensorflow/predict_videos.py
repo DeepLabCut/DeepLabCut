@@ -1,9 +1,10 @@
 """
-DeepLabCut Toolbox
+DeepLabCut2.0 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
-A Mathis, alexander.mathis@bethgelab.org
-T Nath, nath@rowland.harvard.edu
-M Mathis, mackenzie@post.harvard.edu
+Please see AUTHORS for contributors.
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
 
 """
 
@@ -171,21 +172,24 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
 
     # Load plugin predictor class
     predictor_cls = processing.get_predictor(predictor)
-
     
     ##################################################
     # Datafolder
     ##################################################
+
     Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
     if len(Videos)>0:
         #looping over videos
         for video in Videos:
             AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, predictor_cls, destfolder)
-    
-    os.chdir(str(start_path))
-    print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
-    print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
+        os.chdir(str(start_path))
+        print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
+        print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
+    else:
+        print("No video was found in the path/ or single video with path:", videos)
+        print("Perhaps the videotype is distinct from the videos in the path, I was looking for:", videotype)
 
+    return DLCscorer
 
 # Utility method used by GetPoseALL, gets a batch of frames, stores them in frame_store and returns the size of the batch
 def GetVideoBatch(cap, batch_size, cfg, frame_store) -> int:

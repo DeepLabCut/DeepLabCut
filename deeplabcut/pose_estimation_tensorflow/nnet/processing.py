@@ -559,15 +559,15 @@ class Predictor(ABC):
         :param settings: The settings for this predictor plugin. Dictionary is a map of strings, or setting names
                          to values. The actual data within the dictionary depends on return provided by get_settings
                          and what settings the user has set in deeplabcut's config.yaml.
-                         If get_settings for this predictor returns None, this method will return None...
+                         If get_settings for this predictor returns None, this method will pass None...
         """
         pass
 
     @abstractmethod
     def on_frames(self, scmap: TrackingData) -> Union[None, Pose]:
         """
-        Executed on every frame on the video, processing or stores source maps data and returns the guessed max
-        locations.
+        Executed on every batch of frames on the video, plugins should process or store source map's data and return the
+        guessed max locations, or None if storing them for post-processing.
 
         :param scmap: A TrackingData object, containing probability maps, offset maps, and all data and methods needed
                       to generate poses.
@@ -580,8 +580,8 @@ class Predictor(ABC):
     @abstractmethod
     def on_end(self, progress_bar: tqdm.tqdm) -> Union[None, Pose]:
         """
-        Executed once all frames have been run through. Should be used for post-processing, if it needs to store all
-        of the frames in order to do it's prediction algorithm.
+        Executed once all frames have been run through. Should be used for post-processing, if a plugin needs to store
+        all of the frames in order to do it's prediction algorithm.
 
         :param progress_bar: A tqdm progress bar, should be used to display post-processing progress, the max value
                              of the progress bar is set to the number of frames left...
