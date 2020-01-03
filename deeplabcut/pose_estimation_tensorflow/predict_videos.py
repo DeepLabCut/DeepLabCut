@@ -74,7 +74,7 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
         folder also needs to be passed.
 
     predictor: The prediction algorithm to use on the probability outputs of the deeplabcut neural net. Defaults to
-               "singleargmax". The options available depends on the currently available Predictor plugins in the
+               "argmax". The options available depends on the currently available Predictor plugins in the
                predictors folder.
 
     multi_output_format: Determines the multi output format used. "default" uses the default format, while
@@ -198,7 +198,7 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
         # name.
         suffixes = [f"__{i + 1}" for i in range(dlc_cfg["num_outputs"])]
         suffixes[0] = ""
-        all_joints = [bp+s for s in suffixes for bp in dlc_cfg["all_joints_names"]]
+        all_joints = [bp+s for bp in dlc_cfg["all_joints_names"] for s in suffixes]
         pdindex = pd.MultiIndex.from_product([[DLCscorer], all_joints, ['x', 'y', 'likelihood']],
                                              names=['scorer', 'bodyparts', 'coords'])
     else:
