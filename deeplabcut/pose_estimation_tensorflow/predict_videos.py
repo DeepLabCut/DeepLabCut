@@ -184,7 +184,7 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
     print('num_outputs = ', dlc_cfg['num_outputs'])
 
     # Check and make sure that this predictor supports multi output if we are currently in that mode...
-    if((dlc_cfg["num_outputs"] > 1) and (not predictor.supports_multi_output())):
+    if((dlc_cfg["num_outputs"] > 1) and (not predictor_cls.supports_multi_output())):
         raise NotImplementedError("The selected predictor plugin doesn't support multiple outputs!!!")
 
     # Name for scorer:
