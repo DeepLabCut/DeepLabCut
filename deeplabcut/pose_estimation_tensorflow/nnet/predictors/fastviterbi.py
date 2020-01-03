@@ -27,9 +27,9 @@ class FastViterbi(Predictor):
     # The amount of side block increase for the normal distribution to increase by 1...
     ND_UNIT_PER_SIDE_COUNT = 10
 
-    def __init__(self, bodyparts: List[str], num_frames: int, settings: Dict[str, Any]):
+    def __init__(self, bodyparts: Union[List[str]], num_outputs: int, num_frames: int, settings: Union[Dict[str, Any], None], video_metadata: Dict[str, Any]):
         """ Initialized a fastviterbi plugin for analyzing a video """
-        super().__init__(bodyparts, num_frames, settings)
+        super().__init__(bodyparts, num_outputs, num_frames, settings, video_metadata)
 
         # Store bodyparts and num_frames for later use, they become useful
         self._bodyparts = bodyparts
@@ -596,4 +596,8 @@ class FastViterbi(Predictor):
             return (True, "\n" + str(expected_result), "\n" + str(np.array(poses)))
         else:
             return (False, "\n" + str(expected_result), "\n" + str(np.array(poses)))
+
+    @classmethod
+    def supports_multi_output(cls) -> bool:
+        return False
 

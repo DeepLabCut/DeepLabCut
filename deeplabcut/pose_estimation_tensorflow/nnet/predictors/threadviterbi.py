@@ -23,7 +23,7 @@ class Viterbi(Predictor):
     is also more memory intensive and computationally expensive.
     """
 
-    def __init__(self, bodyparts: List[str], num_frames: int, settings: Dict[str, Any]):
+    def __init__(self, bodyparts: List[str], num_outputs: int, num_frames: int, settings: Dict[str, Any], vid_meta):
         super().__init__(bodyparts, num_frames, settings)
 
         # Store bodyparts and num_frames for later use, they become useful
@@ -301,3 +301,7 @@ class Viterbi(Predictor):
     @classmethod
     def get_tests(cls) -> Union[List[Callable[[], Tuple[bool, str, str]]], None]:
         return None
+
+    @classmethod
+    def supports_multi_output(cls) -> bool:
+        return False

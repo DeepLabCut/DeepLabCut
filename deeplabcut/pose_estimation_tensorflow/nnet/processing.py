@@ -24,16 +24,16 @@ import numpy as np
 
 class TrackingData:
     """
-    Represents tracking data recieved from the DeepLabCut neural network. Includes the source map of probabilities,
-    the location offset, scaling info and ect. Also provides many convienence methods for working with getting info
+    Represents tracking data received from the DeepLabCut neural network. Includes the source map of probabilities,
+    the location offset, scaling info and ect. Also provides many convenience methods for working with and getting info
     from this data.
     """
 
     # The default image down scaling used by DeepLabCut
-    DEFAULT_SCALE: int= 8
+    DEFAULT_SCALE: int = 8
 
 
-    def __init__(self, scmap: ndarray, locref: ndarray = None, scaling: int= DEFAULT_SCALE):
+    def __init__(self, scmap: ndarray, locref: ndarray = None, scaling: int = DEFAULT_SCALE):
         """
         Create an new track data object to store tracking data for one frame or a batch of frames
 
@@ -125,18 +125,37 @@ class TrackingData:
         """
         self._scaling = scale
 
-    def get_max_scmap_points(self) -> Tuple[ndarray, ndarray]:
+    def get_max_scmap_points(self, num_max: int = 1) -> Tuple[ndarray, ndarray]:
         """
         Gets the maximum points for each frame in the array
+
+        :param num_max: Tells the number of maximums to grab from the frame. Defaults to 1.
 
         :return: A tuple of numpy arrays, the first numpy array being the y coordinate max for each frame, the second
                  being the x coordinate max for each frame
         """
-        y_dim, x_dim = self._scmap.shape[1], self._scmap.shape[2]
-        flat_max = np.argmax(self._scmap.reshape((self._scmap.shape[0], y_dim * x_dim, self._scmap.shape[3])), axis=1)
-        return np.unravel_index(flat_max, dims=(y_dim, x_dim))
+        batchsize, ny, nx, num_joints = self._scmap.shape
+        scmap_flat = self._scmap.reshape((batchsize, nx * ny, num_joints))
+        if num_max == 1:
+            scmap_top = np.argmax(scmap_flat, axis=1)
+        else:
+            # Grab top values
+            scmap_top = np.argpartition(scmap_flat, -num_max, axis=1)[:, -num_max:]
+            for ix in range(batchsize):
+                # Sort predictions for each body part from highest to least...
+                vals = scmap_flat[ix, scmap_top[ix], np.arange(num_joints)]
+                arg = np.argsort(-vals, axis=0)
+                scmap_top[ix] = scmap_top[ix, arg, np.arange(num_joints)]
+            # Flatten out the map so arrangement is:
+            # [frame] -> [joint 1 prediction 1, joint 1 prediction 2, ... , joint 2 prediction 1, ... ]
+            # Note this mimics single prediction format...
+            scmap_top = scmap_top.swapaxes(1, 2).reshape(batchsize, num_max * num_joints)
 
-    def get_max_of_frame(self, frame: int):
+        # Convert to x, y locations....
+        return np.unravel_index(scmap_top, (ny, nx))
+
+
+    def get_max_of_frame(self, frame: int) -> Tuple[ndarray, ndarray]:
         """
         Gets the maximum points for a single frame in the array
 
@@ -147,6 +166,7 @@ class TrackingData:
         y_dim, x_dim = self._scmap.shape[1], self._scmap.shape[2]
         flat_max = np.argmax(self._scmap[frame].reshape((y_dim * x_dim, self._scmap.shape[3])), axis=0)
         return np.unravel_index(flat_max, dims=(y_dim, x_dim))
+
 
     def get_poses_for(self, points: Tuple[ndarray, ndarray]):
         """
@@ -160,18 +180,22 @@ class TrackingData:
         # Create new numpy array to store probabilities, x offsets, and y offsets...
         probs = np.zeros(x.shape)
 
+        # Get the number of predicted values for each joint for the passed maximums... We will divide the body part
+        # index by this value in order to get the correct body part in this source map...
+        num_outputs = x.shape[1] / self.get_bodypart_count()
+
         x_offsets = np.zeros(x.shape)
         y_offsets = np.zeros(y.shape)
-
 
         # Iterate the frame and body part indexes in x and y, we just use x since both are the same size
         for frame in range(x.shape[0]):
             for bp in range(x.shape[1]):
-                probs[frame, bp] = self._scmap[frame, y[frame, bp], x[frame, bp], bp]
-                # Locref is frame -> y -> x -> bodypart -> relative coordinate pair offset. if it is None, just keep all
-                # offsets as 0.
+                probs[frame, bp] = self._scmap[frame, y[frame, bp], x[frame, bp], bp // num_outputs]
+                # Locref is frame -> y -> x -> bodypart -> relative coordinate pair offset. if it is None, just keep
+                # all offsets as 0.
                 if (self._locref is not None):
-                    x_offsets[frame, bp], y_offsets[frame, bp] = self._locref[frame, y[frame, bp], x[frame, bp], bp]
+                    x_offsets[frame, bp], y_offsets[frame, bp] = self._locref[frame, y[frame, bp], x[frame, bp],
+                                                                              bp // num_outputs]
 
         # Now apply offsets to x and y to get actual x and y coordinates...
         # Done by multiplying by scale, centering in the middle of the "scale square" and then adding extra offset
@@ -545,21 +569,28 @@ class Predictor(ABC):
 
     Predictors accept a source map of data received.
     """
-
-    # Stores the test methods for a given plugin...
-    _TEST_METHODS: List[MethodType] = None
-
     @abstractmethod
-    def __init__(self, bodyparts: List[str], num_frames: int, settings: Union[Dict[str, Any], None]):
+    def __init__(self, bodyparts: Union[List[str]], num_outputs: int, num_frames: int, settings: Union[Dict[str, Any], None], video_metadata: Dict[str, Any]):
         """
         Constructor for the predictor.
 
-        :param bodyparts: The bodyparts for the dataset, a list of the string friendly names in order.
+        :param bodyparts: The body parts for the dataset, a list of the string friendly names in order. Note that if in
+                          multi-output mode, this will be a list of
+        :param num_outputs: The number of expected outputs for each body part model. Note that if this plugin doesn't
+                            support multi output mode, this will always be 1. When returning poses, all of the
+                            outputs for a single body part should be side-by-side.
+                                Ex: If the bodyparts=[Nose, Tail] and num_outputs=2, pose arrangement should be:
+                                    [Nose1, Nose2, Tail1, Tail2]
         :param num_frames: The number of total frames this predictor will be processing.
         :param settings: The settings for this predictor plugin. Dictionary is a map of strings, or setting names
                          to values. The actual data within the dictionary depends on return provided by get_settings
                          and what settings the user has set in deeplabcut's config.yaml.
                          If get_settings for this predictor returns None, this method will pass None...
+        :param video_metadata: The metadata information for this dlc instance. Includes the keys:
+                                    "fps": Original Video's frames per second
+                                    "h5-file-name": The name of the original h5 file and it's path
+                                    "duration": The duration of the video in seconds
+                                    "size": The x and y dimensions of the original video.
         """
         pass
 
@@ -654,6 +685,18 @@ class Predictor(ABC):
                  Another valid response from the test methods is to throw an exception, in which case the test is
                  considered a failure and the stack trace is printed instead of the expected/actual results.
 
+        """
+        pass
+
+    @classmethod
+    @abstractmethod
+    def supports_multi_output(cls) -> bool:
+        """
+        Get whether or not this plugin supports outputting multiple of the same body part (num_outputs > 1). Returning
+        false here will keep the plugin from being allowed to be used when num_outputs in config.yaml is greater then
+        1.
+
+        :return: A boolean, True if multiple outputs is supported, otherwise false...
         """
         pass
 

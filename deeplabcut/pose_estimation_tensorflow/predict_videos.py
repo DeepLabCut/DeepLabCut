@@ -33,7 +33,8 @@ from skimage.util import img_as_ubyte
 # Loading data, and defining model folder
 ####################################################
 
-def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gputouse=None,save_as_csv=False, destfolder=None, cropping=None, predictor = None):
+def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=0, gputouse=None, save_as_csv=False,
+                   destfolder=None, cropping=None, predictor = None, multi_output_format = "default"):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
     
@@ -75,6 +76,9 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
     predictor: The prediction algorithm to use on the probability outputs of the deeplabcut neural net. Defaults to
                "singleargmax". The options available depends on the currently available Predictor plugins in the
                predictors folder.
+
+    multi_output_format: Determines the multi output format used. "default" uses the default format, while
+    "separate-bodyparts" separates the multi output predictions such that each is its own body part.
 
     Examples
     --------
@@ -154,6 +158,16 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
     print("Using %s" % Snapshots[snapshotindex], "for model", modelfolder)
 
     ##################################################
+    # Load selected or default predictor plugin
+    ##################################################
+    # If predictor is None, change to default
+    if(predictor is None):
+        predictor = "argmax"
+
+    # Load plugin predictor class
+    predictor_cls = processing.get_predictor(predictor)
+
+    ##################################################
     # Load and setup CNN part detector
     ##################################################
 
@@ -163,21 +177,38 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
     
     #update batchsize (based on parameters in config.yaml)
     dlc_cfg['batch_size']=cfg['batch_size']
+
+    # update number of outputs
+    dlc_cfg['num_outputs'] = cfg.get('num_outputs', 1)
+
+    print('num_outputs = ', dlc_cfg['num_outputs'])
+
+    # Check and make sure that this predictor supports multi output if we are currently in that mode...
+    if((dlc_cfg["num_outputs"] > 1) and (not predictor.supports_multi_output())):
+        raise NotImplementedError("The selected predictor plugin doesn't support multiple outputs!!!")
+
     # Name for scorer:
     DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations)
     
     sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
-    pdindex = pd.MultiIndex.from_product([[DLCscorer], dlc_cfg['all_joints_names'], ['x', 'y', 'likelihood']],names=['scorer', 'bodyparts', 'coords'])
 
-    ##################################################
-    # Load selected or default predictor plugin
-    ##################################################
-    # If predictor is None, change to default
-    if(predictor is None):
-        predictor = "singleargmax"
-
-    # Load plugin predictor class
-    predictor_cls = processing.get_predictor(predictor)
+    # Set this up differently depending on the format...
+    if(multi_output_format == "separate-bodyparts"):
+        # Format which allocates new bodyparts for each prediction by simply adding "__number" to the end of the part's
+        # name.
+        suffixes = [f"__{i + 1}" for i in range(dlc_cfg["num_outputs"])]
+        suffixes[0] = ""
+        all_joints = [bp+s for s in suffixes for bp in dlc_cfg["all_joints_names"]]
+        pdindex = pd.MultiIndex.from_product([[DLCscorer], all_joints, ['x', 'y', 'likelihood']],
+                                             names=['scorer', 'bodyparts', 'coords'])
+    else:
+        # The original multi output format, multiple predictions stored under each body part
+        multi_output_format = "default"
+        suffixes = [str(i + 1) for i in range(dlc_cfg["num_outputs"])]
+        suffixes[0] = ""
+        sub_headers = [state+s for s in suffixes for state in ['x', 'y', 'likelihood']]
+        pdindex = pd.MultiIndex.from_product([[DLCscorer], dlc_cfg['all_joints_names'], sub_headers],
+                                             names=['scorer', 'bodyparts', 'coords'])
     
     ##################################################
     # Datafolder
@@ -187,7 +218,8 @@ def analyze_videos(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,gp
     if len(Videos)>0:
         #looping over videos
         for video in Videos:
-            AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, predictor_cls, destfolder)
+            AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv,
+                         predictor_cls,multi_output_format,destfolder)
         os.chdir(str(start_path))
         print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
         print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
@@ -229,7 +261,7 @@ def GetVideoBatch(cap, batch_size, cfg, frame_store) -> int:
 def GetPoseALL(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, predictor):
     """ Gets the poses for any batch size, including batch size of only 1 """
     # Create a numpy array to hold all pose prediction data...
-    pose_prediction_data = np.zeros((nframes, 3 * len(dlc_cfg["all_joints_names"])))
+    pose_prediction_data = np.zeros((nframes, 3 * len(dlc_cfg["all_joints_names"] * dlc_cfg["num_outputs"])))
 
     # Create the progress bar
     pbar = tqdm(total=nframes)
@@ -309,7 +341,7 @@ def GetPoseALL(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, pre
 
     # Check and make sure the predictor returned all frames, otherwise throw an error
     if(frames_done != nframes):
-        raise ValueError(f"The predictor algorithm did not return the same amount of frames as are in the video. "
+        raise ValueError(f"The predictor algorithm did not return the same amount of frames as are in the video.\n"
                          f"Expected Amount: {nframes}, Actual Amount Returned: {frames_done}")
 
     # We are good, return data
@@ -358,7 +390,7 @@ def GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes):
     return PredicteData,nframes
 
 
-# Utility method used by , gets the settings for the given predictor plugin
+# Utility method used by AnalyzeVideo, gets the settings for the given predictor plugin
 def GetPredictorSettings(cfg, predictor_cls):
     """ Get the predictor settings from deeplabcut config and return a dictionary for plugin to use... """
     # Grab setting blueprints for predictor plugins(list of tuples of name, desc, default val)....
@@ -383,7 +415,8 @@ def GetPredictorSettings(cfg, predictor_cls):
 
 
 
-def AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, predictor, destfolder=None):
+def AnalyzeVideo(video, DLCscorer, trainFraction, cfg, dlc_cfg, sess, inputs, outputs, pdindex, save_as_csv,
+                 predictor, multi_output_format, destfolder=None):
     ''' Helper function for analyzing a video '''
     # Note: predictor is not a string but rather the selected plugin's class
     print("Starting to analyze % ", video)
@@ -405,10 +438,18 @@ def AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,
         duration=nframes*1./fps
         size=(int(cap.get(4)),int(cap.get(3)))
 
+        # Passed to the plugin to give it some info about the video...
+        video_metadata = {
+            "fps": fps,
+            "duration": duration,
+            "size": size,
+            "h5-file-name": dataname
+        }
+
         # Create a predictor plugin instance...
         predictor_settings = GetPredictorSettings(cfg, predictor) # Grab the plugin settings for this plugin...
         print(f"Plugin {predictor.get_name()} Settings: {predictor_settings}")
-        predictor_inst = predictor(dlc_cfg['all_joints_names'], nframes, predictor_settings)
+        predictor_inst = predictor(dlc_cfg['all_joints_names'], nframes, predictor_settings, video_metadata)
         
         ny,nx=size
         print("Duration of video [s]: ", round(duration,2), ", recorded with ", round(fps,2),"fps!")
@@ -443,7 +484,9 @@ def AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,
             "Scorer": DLCscorer,
             "DLC-model-config file": dlc_cfg,
             "fps": fps,
+            "num_outputs": dlc_cfg["num_outputs"],
             "batch_size": dlc_cfg["batch_size"],
+            "multi_output_format": multi_output_format,
             "frame_dimensions": (ny, nx),
             "nframes": nframes,
             "iteration (active-learning)": cfg["iteration"],
@@ -453,8 +496,8 @@ def AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,
         }
         metadata = {'data': dictionary}
 
-        print("Saving results in %s..." %(Path(video).parents[0]))
-        auxiliaryfunctions.SaveData(PredicteData[:nframes,:], metadata, dataname, pdindex, range(nframes),save_as_csv)
+        print("Saving results in %s..."  % (Path(video).parents[0]))
+        auxiliaryfunctions.SaveData(PredicteData[:nframes,:], metadata, dataname, pdindex, range(nframes), save_as_csv)
 
 
 def GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nframes,batchsize,rgb):

@@ -13,6 +13,7 @@ import math
 import numpy as np
 from matplotlib import pyplot
 import matplotlib
+from pathlib import Path
 import cv2
 
 
@@ -21,11 +22,11 @@ class PlotterArgMax(Predictor):
     Identical to singleargmax, but plots probability frames in form of video to the user using matplotlib
     during processing...
     """
-
-    def __init__(self, bodyparts: List[str], num_frames: int, settings: Dict[str, Any]):
-        super().__init__(bodyparts, num_frames, settings)
+    def __init__(self, bodyparts: Union[List[str]], num_outputs: int, num_frames: int, settings: Union[Dict[str, Any], None], video_metadata: Dict[str, Any]):
+        super().__init__(bodyparts, num_outputs, num_frames, settings, video_metadata)
         self._parts = bodyparts
         self._num_frames = num_frames
+        self._num_outputs = num_outputs
 
         # Keeps track of how many frames
         self._current_frame = 0
@@ -35,11 +36,11 @@ class PlotterArgMax(Predictor):
         self._vid_writer = None
 
         # Name of the video file to save to
-        self.VIDEO_NAME = settings["video_name"]
+        self.VIDEO_NAME = (Path(video_metadata["h5-file-name"]).parent) / settings["video_name"]
         # Output codec to save using
         self.OUTPUT_CODEC = cv2.VideoWriter_fourcc(*settings["codec"])
         # Frames per second to use for video
-        self.OUTPUT_FPS = settings["output_fps"]
+        self.OUTPUT_FPS = video_metadata["fps"]
         # Determines if we are using log scaling...
         self.LOG_SCALE = settings["use_log_scale"]
         # Determines if we are using 3d projection...
@@ -112,7 +113,7 @@ class PlotterArgMax(Predictor):
 
 
         # Return argmax values for each frame...
-        return scmap.get_poses_for(scmap.get_max_scmap_points())
+        return scmap.get_poses_for(scmap.get_max_scmap_points(num_max=self._num_outputs))
 
 
     def on_end(self, progress_bar: tqdm.tqdm) -> Union[None, Pose]:
@@ -126,7 +127,6 @@ class PlotterArgMax(Predictor):
         return [
             ("video_name", "Name of the video file that plotting data will be saved to.", "prob-dlc.mp4"),
             ("codec", "The codec to be used by the opencv library to save info to, typically a 4-byte string.", "MPEG"),
-            ("output_fps", "The frames per second of the output video, as an number.", 15),
             ("use_log_scale", "Boolean, determines whether to apply log scaling to the frames in the video.", True),
             ("3d_projection", "Boolean, determines if probability frames should be plotted in 3d.", False),
             ("colormap", "String, determines the underlying colormap to be passed to matplotlib while plotting the "
@@ -147,9 +147,13 @@ class PlotterArgMax(Predictor):
 
     @staticmethod
     def get_description() -> str:
-        return "Identical to singleargmax, but plots probability frames in form of video to the user using \n" \
+        return "Identical to argmax, but plots probability frames in form of a video using \n" \
                "matplotlib during processing..."
 
     @classmethod
     def get_tests(cls) -> Union[List[Callable[[], Tuple[bool, str, str]]], None]:
         return None
+
+    @classmethod
+    def supports_multi_output(cls) -> bool:
+        return True
