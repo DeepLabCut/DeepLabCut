@@ -190,12 +190,12 @@ class TrackingData:
         # Iterate the frame and body part indexes in x and y, we just use x since both are the same size
         for frame in range(x.shape[0]):
             for bp in range(x.shape[1]):
-                probs[frame, bp] = self._scmap[frame, y[frame, bp], x[frame, bp], bp // num_outputs]
+                probs[frame, bp] = self._scmap[frame, y[frame, bp], x[frame, bp], int(bp // num_outputs)]
                 # Locref is frame -> y -> x -> bodypart -> relative coordinate pair offset. if it is None, just keep
                 # all offsets as 0.
                 if (self._locref is not None):
                     x_offsets[frame, bp], y_offsets[frame, bp] = self._locref[frame, y[frame, bp], x[frame, bp],
-                                                                              bp // num_outputs]
+                                                                              int(bp // num_outputs)]
 
         # Now apply offsets to x and y to get actual x and y coordinates...
         # Done by multiplying by scale, centering in the middle of the "scale square" and then adding extra offset
