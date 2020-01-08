@@ -178,11 +178,6 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
     #update batchsize (based on parameters in config.yaml)
     dlc_cfg['batch_size']=cfg['batch_size']
 
-    # update number of outputs
-    dlc_cfg['num_outputs'] = cfg.get('num_outputs', 1)
-
-    print('num_outputs = ', dlc_cfg['num_outputs'])
-
     # Check and make sure that this predictor supports multi output if we are currently in that mode...
     if((dlc_cfg["num_outputs"] > 1) and (not predictor_cls.supports_multi_output())):
         raise NotImplementedError("The selected predictor plugin doesn't support multiple outputs!!!")
@@ -191,6 +186,10 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
     DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations)
     
     sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
+
+    # update number of outputs and adjust pandas indices
+    dlc_cfg['num_outputs'] = cfg.get('num_outputs', 1)
+    print('num_outputs = ', dlc_cfg['num_outputs'])
 
     # Set this up differently depending on the format...
     if(multi_output_format == "separate-bodyparts"):
