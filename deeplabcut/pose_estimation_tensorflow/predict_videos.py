@@ -704,7 +704,7 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,traini
             print("Frames already analyzed!", dataname)
         except FileNotFoundError:
             nframes = len(framelist)
-            if nframes>1:
+            if(nframes > 0):
                 start = time.time()
                 
                 PredicteData,nframes,nx,ny=GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nframes,dlc_cfg['batch_size'],rgb)
