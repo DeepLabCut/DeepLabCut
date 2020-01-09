@@ -464,7 +464,7 @@ def AnalyzeVideo(video, DLCscorer, trainFraction, cfg, dlc_cfg, sess, inputs, ou
             nframes_metadata = int(cap.get(7))
             nframes = bruteforce_countframes_bydecoding(cap)
             print("Metadata:", nframes_metadata, "Counted:", nframes)
-            nframes += 5 # Adding buffer! [will be cropped anyway if too long]
+            # nframes += 5 # Adding buffer! [will be cropped anyway if too long] # Uhmm... NO!
             cap=cv2.VideoCapture(video) # Reopen video
         
         fps = cap.get(5) # https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
