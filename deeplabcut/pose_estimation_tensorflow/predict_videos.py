@@ -113,14 +113,16 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
 
     if gputouse is not None: #gpu selectinon
             os.environ['CUDA_VISIBLE_DEVICES'] = str(gputouse)
-    
+
+    # Set tensorflow to the correct library depending on the version...
     vers = (tf.__version__).split('.')
-    if int(vers[0])==1 and int(vers[1])>12:
-        TF=tf.compat.v1
+    if int(vers[0]) == 1 and int(vers[1]) > 12:
+        TF = tf.compat.v1
     else:
-        TF=tf
+        TF = tf
 
     TF.reset_default_graph()
+
     start_path=os.getcwd() #record cwd to return to this directory in the end
     
     cfg = auxiliaryfunctions.read_config(config)
