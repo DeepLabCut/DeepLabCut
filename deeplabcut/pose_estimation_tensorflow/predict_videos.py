@@ -33,13 +33,18 @@ from skimage.util import img_as_ubyte
 # Loading data, and defining model folder
 ####################################################
 
+
 def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=0, gputouse=None, save_as_csv=False,
-                   destfolder=None, cropping=None, predictor = None, multi_output_format = "default"):
+                   destfolder=None, cropping=None, predictor = None, multi_output_format = "default",
+                   get_nframesfrommetadata=True):
     """
-    Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
+    Makes prediction based on a trained network. The index of the trained network is specified by parameters in the
+    config file (in particular the variable 'snapshotindex')
     
-    You can crop the video (before analysis), by changing 'cropping'=True and setting 'x1','x2','y1','y2' in the config file. The same cropping parameters will then be used for creating the video.
-    Note: you can also pass cropping = [x1,x2,y1,y2] coordinates directly, that then will be used for all videos. You can of course loop over videos & pass specific coordinates for each case.
+    You can crop the video (before analysis), by changing 'cropping'=True and setting 'x1','x2','y1','y2' in the
+    config file. The same cropping parameters will then be used for creating the video.
+    Note: you can also pass cropping = [x1,x2,y1,y2] coordinates directly, that then will be used for all videos.
+    You can of course loop over videos & pass specific coordinates for each case.
 
     Output: The labels are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position \n
             in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
@@ -52,26 +57,30 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
         Full path of the config.yaml file as a string.
 
     videos : list
-        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
+        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the
+        videos with same extension are stored.
     
     videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
+        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this
+        extension are analyzed. The default is ``.avi``
 
     shuffle: int, optional
         An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list
+        in config.yaml).
     
-    gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU put None.
-    See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+    gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not
+    have a GPU put None. See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
 
     save_as_csv: bool, optional
-        Saves the predictions in a .csv file. The default is ``False``; if provided it must be either ``True`` or ``False``
+        Saves the predictions in a .csv file. The default is ``False``; if provided it must be either
+        ``True`` or ``False``
 
     destfolder: string, optional
-        Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this 
-        folder also needs to be passed.
+        Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent
+        analysis this folder also needs to be passed.
 
     predictor: The prediction algorithm to use on the probability outputs of the deeplabcut neural net. Defaults to
                "argmax". The options available depends on the currently available Predictor plugins in the
@@ -79,6 +88,11 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
 
     multi_output_format: Determines the multi output format used. "default" uses the default format, while
     "separate-bodyparts" separates the multi output predictions such that each is its own body part.
+
+    get_nframesfrommetadata: bool, Default true.
+        Some videos have wrong metadata (and thus the frame number is not accurate). If this is set to False, then the
+        video is loaded frame by frame and the number of frames is counted. This makes sure that for broken metadata
+        the output file is correct. See https://github.com/AlexEMG/DeepLabCut/issues/422
 
     Examples
     --------
@@ -199,7 +213,7 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
         # name.
         suffixes = [f"__{i + 1}" for i in range(dlc_cfg["num_outputs"])]
         suffixes[0] = ""
-        all_joints = [bp+s for bp in dlc_cfg["all_joints_names"] for s in suffixes]
+        all_joints = [bp + s for bp in dlc_cfg["all_joints_names"] for s in suffixes]
         pdindex = pd.MultiIndex.from_product([[DLCscorer], all_joints, ['x', 'y', 'likelihood']],
                                              names=['scorer', 'bodyparts', 'coords'])
     else:
@@ -207,7 +221,7 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
         multi_output_format = "default"
         suffixes = [str(i + 1) for i in range(dlc_cfg["num_outputs"])]
         suffixes[0] = ""
-        sub_headers = [state+s for s in suffixes for state in ['x', 'y', 'likelihood']]
+        sub_headers = [state + s for s in suffixes for state in ['x', 'y', 'likelihood']]
         pdindex = pd.MultiIndex.from_product([[DLCscorer], dlc_cfg['all_joints_names'], sub_headers],
                                              names=['scorer', 'bodyparts', 'coords'])
     
@@ -219,8 +233,8 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
     if len(Videos)>0:
         #looping over videos
         for video in Videos:
-            AnalyzeVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv,
-                         predictor_cls,multi_output_format,destfolder)
+            AnalyzeVideo(video, DLCscorer, trainFraction, cfg, dlc_cfg, sess, inputs, outputs, pdindex, save_as_csv,
+                         predictor_cls, multi_output_format, destfolder, get_nframesfrommetadata)
         os.chdir(str(start_path))
         print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
         print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
@@ -248,7 +262,7 @@ def GetVideoBatch(cap, batch_size, cfg, frame_store) -> int:
             else:
                 frame_store[current_frame] = img_as_ubyte(frame)
         else:
-            # If we don't we have reached the end most likely return the amount of frames we managed to get
+            # If we don't we have reached the end most likely, return the amount of frames we managed to get
             return current_frame
         # Increment frame counter
         current_frame += 1
@@ -257,8 +271,7 @@ def GetVideoBatch(cap, batch_size, cfg, frame_store) -> int:
     return current_frame
 
 
-# Method Added by Isaac Robinson, replaces old system of getting poses and uses a new plugin system for predicting
-# poses...
+# Replaces old system of getting poses and uses a new plugin system for predicting poses...
 def GetPoseALL(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, predictor):
     """ Gets the poses for any batch size, including batch size of only 1 """
     # Create a numpy array to hold all pose prediction data...
@@ -415,9 +428,20 @@ def GetPredictorSettings(cfg, predictor_cls):
     return setting_info
 
 
+def bruteforce_countframes_bydecoding(cap):
+    counter=0
+    while(cap.isOpened()):
+        ret, frame = cap.read()
+        if ret:
+            counter+=1
+        else:
+            break
+    #reset cap to frame 0!
+    return counter
+
 
 def AnalyzeVideo(video, DLCscorer, trainFraction, cfg, dlc_cfg, sess, inputs, outputs, pdindex, save_as_csv,
-                 predictor, multi_output_format, destfolder=None):
+                 predictor, multi_output_format, destfolder, get_nframesfrommetadata):
     ''' Helper function for analyzing a video '''
     # Note: predictor is not a string but rather the selected plugin's class
     print("Starting to analyze % ", video)
@@ -433,11 +457,19 @@ def AnalyzeVideo(video, DLCscorer, trainFraction, cfg, dlc_cfg, sess, inputs, ou
     except FileNotFoundError:
         print("Loading ", video)
         cap=cv2.VideoCapture(video)
+
+        if get_nframesfrommetadata:
+            nframes = int(cap.get(7))
+        else: #actually decode and check
+            nframes_metadata = int(cap.get(7))
+            nframes = bruteforce_countframes_bydecoding(cap)
+            print("Metadata:", nframes_metadata, "Counted:", nframes)
+            nframes += 5 # Adding buffer! [will be cropped anyway if too long]
+            cap=cv2.VideoCapture(video) # Reopen video
         
-        fps = cap.get(5) #https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
-        nframes = int(cap.get(7))
-        duration=nframes*1./fps
-        size=(int(cap.get(4)),int(cap.get(3)))
+        fps = cap.get(5) # https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
+        duration=nframes * 1. / fps
+        size=(int(cap.get(4)), int(cap.get(3)))
 
         # Passed to the plugin to give it some info about the video...
         video_metadata = {
@@ -454,8 +486,8 @@ def AnalyzeVideo(video, DLCscorer, trainFraction, cfg, dlc_cfg, sess, inputs, ou
                                    video_metadata)
         
         ny,nx=size
-        print("Duration of video [s]: ", round(duration,2), ", recorded with ", round(fps,2),"fps!")
-        print("Overall # of frames: ", nframes," found with (before cropping) frame dimensions: ", nx,ny)
+        print("Duration of video [s]: ", round(duration, 2), ", recorded with ", round(fps, 2),"fps!")
+        print("Overall # of frames: ", nframes," found with (before cropping) frame dimensions: ", nx, ny)
         start = time.time()
 
         print("Starting to extract posture")
@@ -464,18 +496,10 @@ def AnalyzeVideo(video, DLCscorer, trainFraction, cfg, dlc_cfg, sess, inputs, ou
         PredicteData, nframes = GetPoseALL(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes,
                                            int(dlc_cfg["batch_size"]), predictor_inst)
 
-        # Old DLC Code
-        """
-        if int(dlc_cfg["batch_size"])>1:
-            PredicteData,nframes=GetPoseF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,int(dlc_cfg["batch_size"]), dataname)
-        else:
-            PredicteData,nframes=GetPoseS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes, dataname)
-        """
-
         stop = time.time()
         
-        if cfg['cropping']==True:
-            coords=[cfg['x1'],cfg['x2'],cfg['y1'],cfg['y2']]
+        if cfg['cropping']:
+            coords=[cfg['x1'], cfg['x2'], cfg['y1'], cfg['y2']]
         else:
             coords=[0, nx, 0, ny] 
             
@@ -496,6 +520,7 @@ def AnalyzeVideo(video, DLCscorer, trainFraction, cfg, dlc_cfg, sess, inputs, ou
             "cropping": cfg['cropping'],
             "cropping_parameters": coords
         }
+
         metadata = {'data': dictionary}
 
         print("Saving results in %s..."  % (Path(video).parents[0]))
