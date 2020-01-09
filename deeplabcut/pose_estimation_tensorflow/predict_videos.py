@@ -191,7 +191,7 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
     dlc_cfg['init_weights'] = os.path.join(modelfolder , 'train', Snapshots[snapshotindex])
     trainingsiterations = (dlc_cfg['init_weights'].split(os.sep)[-1]).split('-')[-1]
     
-    #update batchsize (based on parameters in config.yaml)
+    # update batchsize (based on parameters in config.yaml)
     dlc_cfg['batch_size']=cfg['batch_size']
 
     # Name for scorer:
@@ -199,8 +199,9 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
     
     sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
 
-    # update number of outputs and adjust pandas indices
+    # Update number of outputs and adjust pandas indices
     dlc_cfg['num_outputs'] = cfg.get('num_outputs', 1)
+    # Print this out as it is not very clear what it is set to while executing this command...
     print('num_outputs = ', dlc_cfg['num_outputs'])
 
     # Check and make sure that this predictor supports multi output if we are currently in that mode...
