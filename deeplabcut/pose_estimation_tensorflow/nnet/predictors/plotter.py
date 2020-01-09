@@ -36,7 +36,7 @@ class PlotterArgMax(Predictor):
         self._vid_writer = None
 
         # Name of the video file to save to
-        self.VIDEO_NAME = (Path(video_metadata["h5-file-name"]).parent) / settings["video_name"]
+        self.VIDEO_NAME = str((Path(video_metadata["h5-file-name"]).parent) / settings["video_name"])
         # Output codec to save using
         self.OUTPUT_CODEC = cv2.VideoWriter_fourcc(*settings["codec"])
         # Frames per second to use for video
