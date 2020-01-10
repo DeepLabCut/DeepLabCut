@@ -220,9 +220,7 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
         print("Switching batchsize to 1, num_outputs (per animal) to 1 and TFGPUinference to False (all these features are not supported in this mode).")
 
     # Update number of outputs and adjust pandas indices
-    dlc_cfg['num_outputs'] = cfg.get('num_outputs', 1)
-    # Print this out as it is not very clear what it is set to while executing this command...
-    print('num_outputs = ', dlc_cfg['num_outputs'])
+    dlc_cfg['num_outputs'] = cfg.get('num_outputs', dlc_cfg.get('num_outputs', 1))
 
     # Check and make sure that this predictor supports multi output if we are currently in that mode...
     if((dlc_cfg["num_outputs"] > 1) and (not predictor_cls.supports_multi_output())):
@@ -232,9 +230,13 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg, shuffle, trainFraction, trainingsiterations=trainingsiterations)
 
     # Check and make sure num_outputs is disabled...
-    if dlc_cfg['num_outputs']>1 and TFGPUinference:
-        print("Switching to Numpy extraction code, as multiple point extraction is not supported by TF code currently.")
-        TFGPUinference=False
+    if(dlc_cfg['num_outputs'] > 1):
+        if(TFGPUinference):
+            print("Switching to Numpy extraction code, as multiple point extraction is not supported by TF code currently.")
+            TFGPUinference = False
+
+        print("Extracting ", dlc_cfg['num_outputs'], "instances per bodypart")
+
 
     # Set this up differently depending on the format...
     if(multi_output_format == "separate-bodyparts"):
@@ -642,7 +644,6 @@ def AnalyzeVideo(video, DLCscorer, DLCscorerlegacy, trainFraction, cfg, dlc_cfg,
     vname = Path(video).stem
     if destfolder is None:
         destfolder = str(Path(video).parents[0])
-    dataname = os.path.join(destfolder,vname + DLCscorer + '.h5')
 
     notanalyzed, dataname, DLCscorer=auxiliaryfunctions.CheckifNotAnalyzed(destfolder,vname,DLCscorer,DLCscorerlegacy)
 
@@ -662,26 +663,27 @@ def AnalyzeVideo(video, DLCscorer, DLCscorerlegacy, trainFraction, cfg, dlc_cfg,
         duration=nframes * 1. / fps
         size=(int(cap.get(4)), int(cap.get(3)))
 
-        # Passed to the plugin to give it some info about the video...
-        video_metadata = {
-            "fps": fps,
-            "duration": duration,
-            "size": size,
-            "h5-file-name": dataname
-        }
+        if(not dynamic[0] and not TFGPUinference):
+            # Passed to the plugin to give it some info about the video...
+            video_metadata = {
+                "fps": fps,
+                "duration": duration,
+                "size": size,
+                "h5-file-name": dataname
+            }
 
-        # Create a predictor plugin instance...
-        predictor_settings = GetPredictorSettings(cfg, predictor) # Grab the plugin settings for this plugin...
-        print(f"Plugin {predictor.get_name()} Settings: {predictor_settings}")
-        predictor_inst = predictor(dlc_cfg['all_joints_names'], dlc_cfg["num_outputs"], nframes, predictor_settings,
-                                   video_metadata)
+            # Create a predictor plugin instance...
+            predictor_settings = GetPredictorSettings(cfg, predictor) # Grab the plugin settings for this plugin...
+            print(f"Plugin {predictor.get_name()} Settings: {predictor_settings}")
+            predictor_inst = predictor(dlc_cfg['all_joints_names'], dlc_cfg["num_outputs"], nframes, predictor_settings,
+                                       video_metadata)
         
         ny,nx=size
         print("Duration of video [s]: ", round(duration, 2), ", recorded with ", round(fps, 2),"fps!")
         print("Overall # of frames: ", nframes," found with (before cropping) frame dimensions: ", nx, ny)
         start = time.time()
 
-        dynamic_analysis_state,detectiontreshold,margin=dynamic
+        dynamic_analysis_state, detectiontreshold, margin=dynamic
 
         print("Starting to extract posture")
 
@@ -730,23 +732,25 @@ def AnalyzeVideo(video, DLCscorer, DLCscorerlegacy, trainFraction, cfg, dlc_cfg,
         print("Saving results in %s..."  % (Path(video).parents[0]))
         auxiliaryfunctions.SaveData(PredictedData[:nframes,:], metadata, dataname, pdindex, range(nframes), save_as_csv)
 
+    return DLCscorer
+
 
 def GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nframes,batchsize,rgb):
-    ''' Batchwise prediction of pose  for framelist in directory'''
-    from skimage import io
+    ''' Batchwise prediction of pose for frame list in directory'''
+    #from skimage.io import imread
+    from deeplabcut.utils.auxfun_videos import imread
     print("Starting to extract posture")
     if rgb:
-        im=io.imread(os.path.join(directory,framelist[0]),mode='RGB')
+        im=imread(os.path.join(directory,framelist[0]),mode='RGB')
     else:
-        im=io.imread(os.path.join(directory,framelist[0]))
-    
+        im=imread(os.path.join(directory,framelist[0]))
+
     ny,nx,nc=np.shape(im)
     print("Overall # of frames: ", nframes," found with (before cropping) frame dimensions: ", nx,ny)
 
-    PredicteData = np.zeros((nframes, 3 * len(dlc_cfg['all_joints_names'])))
+    PredictedData = np.zeros((nframes, dlc_cfg['num_outputs'] * 3 * len(dlc_cfg['all_joints_names'])))
     batch_ind = 0 # keeps track of which image within a batch should be written to
     batch_num = 0 # keeps track of which batch you are at
-
     if cfg['cropping']:
         print("Cropping based on the x1 = %s x2 = %s y1 = %s y2 = %s. You can adjust the cropping coordinates in the config.yaml file." %(cfg['x1'], cfg['x2'],cfg['y1'], cfg['y2']))
         nx,ny=cfg['x2']-cfg['x1'],cfg['y2']-cfg['y1']
@@ -758,19 +762,19 @@ def GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nfra
             pass #good cropping box
         else:
             raise Exception('Please check the boundary of cropping!')
-    
+
     pbar=tqdm(total=nframes)
     counter=0
     step=max(10,int(nframes/100))
-    
+
     if batchsize==1:
         for counter,framename in enumerate(framelist):
-                #frame=io.imread(os.path.join(directory,framename),mode='RGB')
+                #frame=imread(os.path.join(directory,framename),mode='RGB')
                 if rgb:
-                    im=io.imread(os.path.join(directory,framename),mode='RGB')
+                    im=imread(os.path.join(directory,framename),mode='RGB')
                 else:
-                    im=io.imread(os.path.join(directory,framename))
-                    
+                    im=imread(os.path.join(directory,framename))
+
                 if counter%step==0:
                     pbar.update(step)
 
@@ -778,17 +782,17 @@ def GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nfra
                     frame= img_as_ubyte(im[cfg['y1']:cfg['y2'],cfg['x1']:cfg['x2'],:])
                 else:
                     frame = img_as_ubyte(im)
-                    
+
                 pose = predict.getpose(frame, dlc_cfg, sess, inputs, outputs)
-                PredicteData[counter, :] = pose.flatten()
+                PredictedData[counter, :] = pose.flatten()
     else:
         frames = np.empty((batchsize, ny, nx, 3), dtype='ubyte') # this keeps all the frames of a batch
         for counter,framename in enumerate(framelist):
                 if rgb:
-                    im=io.imread(os.path.join(directory,framename),mode='RGB')
+                    im=imread(os.path.join(directory,framename),mode='RGB')
                 else:
-                    im=io.imread(os.path.join(directory,framename))
-                
+                    im=imread(os.path.join(directory,framename))
+
                 if counter%step==0:
                     pbar.update(step)
 
@@ -796,78 +800,75 @@ def GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nfra
                     frames[batch_ind] = img_as_ubyte(im[cfg['y1']:cfg['y2'],cfg['x1']:cfg['x2'],:])
                 else:
                     frames[batch_ind] = img_as_ubyte(im)
-                    
+
                 if batch_ind==batchsize-1:
                     pose = predict.getposeNP(frames,dlc_cfg, sess, inputs, outputs)
-                    PredicteData[batch_num*batchsize:(batch_num+1)*batchsize, :] = pose
+                    PredictedData[batch_num*batchsize:(batch_num+1)*batchsize, :] = pose
                     batch_ind = 0
                     batch_num += 1
                 else:
                    batch_ind+=1
-            
+
         if batch_ind>0: #take care of the last frames (the batch that might have been processed)
             pose = predict.getposeNP(frames, dlc_cfg, sess, inputs, outputs) #process the whole batch (some frames might be from previous batch!)
-            PredicteData[batch_num*batchsize:batch_num*batchsize+batch_ind, :] = pose[:batch_ind,:]
+            PredictedData[batch_num*batchsize:batch_num*batchsize+batch_ind, :] = pose[:batch_ind,:]
 
     pbar.close()
-    return PredicteData,nframes,nx,ny
+    return PredictedData,nframes,nx,ny
 
 
-def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,trainingsetindex=0,gputouse=None,save_as_csv=False,rgb=True):
+def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,
+                trainingsetindex=0,gputouse=None,save_as_csv=False,rgb=True):
     """
-    Analyzed all images (of type = frametype) in a folder and stores the output in one file. 
-    
-    You can crop the frames (before analysis), by changing 'cropping'=True and setting 'x1','x2','y1','y2' in the config file. 
-    
+    Analyzed all images (of type = frametype) in a folder and stores the output in one file.
+    You can crop the frames (before analysis), by changing 'cropping'=True and setting 'x1','x2','y1','y2' in the config file.
     Output: The labels are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position \n
             in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
             in the same directory, where the video is stored. However, if the flag save_as_csv is set to True, the data can also be exported in \n
             comma-separated values format (.csv), which in turn can be imported in many programs, such as MATLAB, R, Prism, etc.
-    
     Parameters
     ----------
     config : string
         Full path of the config.yaml file as a string.
-
     directory: string
         Full path to directory containing the frames that shall be analyzed
-
     frametype: string, optional
         Checks for the file extension of the frames. Only images with this extension are analyzed. The default is ``.png``
-
     shuffle: int, optional
         An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.
-
     trainingsetindex: int, optional
         Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
-    
     gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU put None.
     See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
-
     save_as_csv: bool, optional
         Saves the predictions in a .csv file. The default is ``False``; if provided it must be either ``True`` or ``False``
-
     rbg: bool, optional.
-        Whether to load image as rgb; Note e.g. some tiffs do not alow that option in io.imread, then just set this to false.
-
+        Whether to load image as rgb; Note e.g. some tiffs do not alow that option in imread, then just set this to false.
     Examples
     --------
     If you want to analyze all frames in /analysis/project/timelapseexperiment1
     >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml','/analysis/project/timelapseexperiment1')
     --------
-    
     If you want to analyze all frames in /analysis/project/timelapseexperiment1
     >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml','/analysis/project/timelapseexperiment1', frametype='.bmp')
     --------
-    
-    Note: for test purposes one can extract all frames from a video with ffmeg, e.g. ffmpeg -i testvideo.avi thumb%04d.png 
+    Note: for test purposes one can extract all frames from a video with ffmeg, e.g. ffmpeg -i testvideo.avi thumb%04d.png
     """
     if 'TF_CUDNN_USE_AUTOTUNE' in os.environ:
         del os.environ['TF_CUDNN_USE_AUTOTUNE'] #was potentially set during training
-    
-    tf.reset_default_graph()
+
+    if gputouse is not None:  # gpu selection
+        os.environ['CUDA_VISIBLE_DEVICES'] = str(gputouse)
+
+    vers = (tf.__version__).split('.')
+    if int(vers[0]) == 1 and int(vers[1]) > 12:
+        TF = tf.compat.v1
+    else:
+        TF = tf
+
+    TF.reset_default_graph()
     start_path=os.getcwd() #record cwd to return to this directory in the end
-    
+
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg['TrainingFraction'][trainingsetindex]
     modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)))
@@ -876,7 +877,6 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,traini
         dlc_cfg = load_config(str(path_test_config))
     except FileNotFoundError:
         raise FileNotFoundError("It seems the model for shuffle %s and trainFraction %s does not exist."%(shuffle,trainFraction))
-
     # Check which snapshots are available and sort them by # iterations
     try:
       Snapshots = np.array([fn.split('.')[0]for fn in os.listdir(os.path.join(modelfolder , 'train'))if "index" in fn])
@@ -888,10 +888,10 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,traini
         snapshotindex = -1
     else:
         snapshotindex=cfg['snapshotindex']
-        
+
     increasing_indices = np.argsort([int(m.split('-')[1]) for m in Snapshots])
     Snapshots = Snapshots[increasing_indices]
-    
+
     print("Using %s" % Snapshots[snapshotindex], "for model", modelfolder)
 
     ##################################################
@@ -901,18 +901,30 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,traini
     # Check if data already was generated:
     dlc_cfg['init_weights'] = os.path.join(modelfolder , 'train', Snapshots[snapshotindex])
     trainingsiterations = (dlc_cfg['init_weights'].split(os.sep)[-1]).split('-')[-1]
-    
+
     #update batchsize (based on parameters in config.yaml)
-    dlc_cfg['batch_size']=cfg['batch_size'] 
-    
+    dlc_cfg['batch_size'] = cfg['batch_size']
+
     # Name for scorer:
-    DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations)
+    DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations)
     sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
-    pdindex = pd.MultiIndex.from_product([[DLCscorer], dlc_cfg['all_joints_names'], ['x', 'y', 'likelihood']],names=['scorer', 'bodyparts', 'coords'])
+
+    # update number of outputs and adjust pandas indices
+    dlc_cfg['num_outputs'] = cfg.get('num_outputs', 1)
+
+    xyz_labs_orig = ['x', 'y', 'likelihood']
+    suffix = [str(s+1) for s in range(dlc_cfg['num_outputs'])]
+    suffix[0] = '' # first one has empty suffix for backwards compatibility
+    xyz_labs = [x+s for s in suffix for x in xyz_labs_orig]
+
+    pdindex = pd.MultiIndex.from_product([[DLCscorer],
+                                          dlc_cfg['all_joints_names'],
+                                          xyz_labs],
+                                         names=['scorer', 'bodyparts', 'coords'])
 
     if gputouse is not None: #gpu selectinon
             os.environ['CUDA_VISIBLE_DEVICES'] = str(gputouse)
-    
+
     ##################################################
     # Loading the images
     ##################################################
@@ -924,26 +936,21 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,traini
         print("Analyzing all frames in the directory: ", directory)
         os.chdir(directory)
         framelist=np.sort([fn for fn in os.listdir(os.curdir) if (frametype in fn)])
-
-        vname = Path(directory).stem
-        dataname = os.path.join(directory,vname + DLCscorer + '.h5')
-        try:
-            # Attempt to load data...
-            pd.read_hdf(dataname)
-            print("Frames already analyzed!", dataname)
-        except FileNotFoundError:
+        vname=Path(directory).stem
+        notanalyzed,dataname,DLCscorer=auxiliaryfunctions.CheckifNotAnalyzed(directory,vname,DLCscorer,DLCscorerlegacy,flag='framestack')
+        if notanalyzed:
             nframes = len(framelist)
-            if(nframes > 0):
+            if nframes>0:
                 start = time.time()
-                
-                PredicteData,nframes,nx,ny=GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nframes,dlc_cfg['batch_size'],rgb)
+
+                PredictedData,nframes,nx,ny=GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nframes,dlc_cfg['batch_size'],rgb)
                 stop = time.time()
-                
+
                 if cfg['cropping']==True:
                     coords=[cfg['x1'],cfg['x2'],cfg['y1'],cfg['y2']]
                 else:
-                    coords=[0, nx, 0, ny] 
-                    
+                    coords=[0, nx, 0, ny]
+
                 dictionary = {
                     "start": start,
                     "stop": stop,
@@ -951,21 +958,22 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,traini
                     "Scorer": DLCscorer,
                     "config file": dlc_cfg,
                     "batch_size": dlc_cfg["batch_size"],
+                    "num_outputs": dlc_cfg["num_outputs"],
                     "frame_dimensions": (ny, nx),
                     "nframes": nframes,
                     "cropping": cfg['cropping'],
                     "cropping_parameters": coords
                 }
                 metadata = {'data': dictionary}
-        
+
                 print("Saving results in %s..." %(directory))
-                
-                auxiliaryfunctions.SaveData(PredicteData[:nframes,:], metadata, dataname, pdindex, framelist,save_as_csv)
+
+                auxiliaryfunctions.SaveData(PredictedData[:nframes,:], metadata, dataname, pdindex, framelist,save_as_csv)
                 print("The folder was analyzed. Now your research can truly start!")
                 print("If the tracking is not satisfactory for some frome, consider expanding the training set.")
             else:
                 print("No frames were found. Consider changing the path or the frametype.")
-    
+
     os.chdir(str(start_path))
 
 
