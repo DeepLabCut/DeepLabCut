@@ -278,9 +278,10 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
         os.chdir(str(start_path))
         print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
         print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
-        return DLCscorer  # Note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
     else:
         print("No video/s found. Please check your path!")
+
+    return DLCscorer
 
 # Checks if the cropping box passed by the user is a valid cropping box...
 def checkcropping(cfg, cap):
