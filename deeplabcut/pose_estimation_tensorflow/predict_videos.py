@@ -660,21 +660,6 @@ def AnalyzeVideo(video, DLCscorer, DLCscorerlegacy, trainFraction, cfg, dlc_cfg,
         fps = cap.get(5) # https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
         duration=nframes * 1. / fps
         size=(int(cap.get(4)), int(cap.get(3)))
-
-        if(not dynamic[0] and not TFGPUinference):
-            # Passed to the plugin to give it some info about the video...
-            video_metadata = {
-                "fps": fps,
-                "duration": duration,
-                "size": size,
-                "h5-file-name": dataname
-            }
-
-            # Create a predictor plugin instance...
-            predictor_settings = GetPredictorSettings(cfg, predictor) # Grab the plugin settings for this plugin...
-            print(f"Plugin {predictor.get_name()} Settings: {predictor_settings}")
-            predictor_inst = predictor(dlc_cfg['all_joints_names'], dlc_cfg["num_outputs"], nframes, predictor_settings,
-                                       video_metadata)
         
         ny,nx=size
         print("Duration of video [s]: ", round(duration, 2), ", recorded with ", round(fps, 2),"fps!")
@@ -696,6 +681,21 @@ def AnalyzeVideo(video, DLCscorer, DLCscorerlegacy, trainFraction, cfg, dlc_cfg,
                 else:
                     PredictedData, nframes=GetPoseS_GTF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes)
             else:
+                # Passed to the plugin to give it some info about the video...
+                video_metadata = {
+                    "fps": fps,
+                    "duration": duration,
+                    "size": size,
+                    "h5-file-name": dataname
+                }
+
+                # Create a predictor plugin instance...
+                predictor_settings = GetPredictorSettings(cfg, predictor)  # Grab the plugin settings for this plugin...
+                print(f"Plugin {predictor.get_name()} Settings: {predictor_settings}")
+                predictor_inst = predictor(dlc_cfg['all_joints_names'], dlc_cfg["num_outputs"], nframes,
+                                           predictor_settings,
+                                           video_metadata)
+
                 PredictedData, nframes = GetPoseALL(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes,
                                                     int(dlc_cfg["batch_size"]), predictor_inst)
 
