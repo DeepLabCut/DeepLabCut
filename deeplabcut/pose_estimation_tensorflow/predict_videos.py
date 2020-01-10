@@ -741,9 +741,9 @@ def GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nfra
     from deeplabcut.utils.auxfun_videos import imread
     print("Starting to extract posture")
     if rgb:
-        im=imread(os.path.join(directory,framelist[0]),mode='RGB')
+        im = imread(os.path.join(directory,framelist[0]),mode='RGB')
     else:
-        im=imread(os.path.join(directory,framelist[0]))
+        im = imread(os.path.join(directory,framelist[0]))
 
     ny,nx,nc=np.shape(im)
     print("Overall # of frames: ", nframes," found with (before cropping) frame dimensions: ", nx,ny)
@@ -771,9 +771,9 @@ def GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nfra
         for counter,framename in enumerate(framelist):
                 #frame=imread(os.path.join(directory,framename),mode='RGB')
                 if rgb:
-                    im=imread(os.path.join(directory,framename),mode='RGB')
+                    im = imread(os.path.join(directory,framename),mode='RGB')
                 else:
-                    im=imread(os.path.join(directory,framename))
+                    im = imread(os.path.join(directory,framename))
 
                 if counter%step==0:
                     pbar.update(step)
