@@ -12,9 +12,9 @@ from deeplabcut.pose_estimation_tensorflow.nnet.processing import Pose
 import numpy as np
 from collections import deque
 
-#TODO: Add more test methods, disable numpy warnings....
-#TODO: Add Concept of being "In the Ground..."
-#TODO: Outputing 0.99 for first frame, I think it is an error in the foward compute, although may be bug in back compute
+# TODO: Add more test methods, disable numpy warnings....
+# TODO: Add Concept of being "In the Ground..."
+# TODO: Outputing 0.99 for first frame, I think it is an error in the foward compute, although may be bug in back compute
 
 class FastViterbi(Predictor):
     """
@@ -214,6 +214,7 @@ class FastViterbi(Predictor):
 
         # Set first attribute for this bodypart to the y, x coordinates element wise.
         self._viterbi_frames[self._current_frame][bodypart * 2] = np.transpose(coords)
+
         # Get the probabilities and offsets of the first frame and store them...
         prob = scmap.get_prob_table(frame, bodypart)[coords] * (1 - self.EDGE_PROB)
         off_x, off_y = np.zeros(np.array(coords).shape) if(scmap.get_offset_map() is None) else np.transpose(
@@ -584,7 +585,7 @@ class FastViterbi(Predictor):
         expected_result = [[3, 3, 0.6621716], [3, 1, 0.6621716], [1, 1, 0.6621716], [1, 3, 0.7]]
 
         # Make the predictor...
-        predictor = cls(["part1"], track_data.get_frame_count(), {name:val for name, desc, val in cls.get_settings()})
+        predictor = cls(["part1"], 1, track_data.get_frame_count(), {name:val for name, desc, val in cls.get_settings()}, None)
 
         # Pass it data...
         predictor.on_frames(track_data)
