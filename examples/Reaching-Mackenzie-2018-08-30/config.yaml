@@ -13,13 +13,16 @@ video_sets:
 bodyparts:
 - Hand
 - Finger1
-- Finger2
-- Joystick
+- Tongue
+- Joystick1
+- Joystick2
 start: 0
 stop: 1
-numframes2pick: 20
+numframes2pick: 40
 
 # Plotting configuration
+skeleton: [['Hand', 'Finger1'], ['Joystick1', 'Joystick2']]
+skeleton_color: blue
 pcutoff: 0.4
 dotsize: 12
 alphavalue: 0.7
@@ -30,7 +33,7 @@ colormap: jet
 TrainingFraction:
 - 0.95
 iteration: 0
-resnet: 50
+default_net_type: resnet_50
 snapshotindex: -1
 batch_size: 4
 

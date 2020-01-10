@@ -1,0 +1,9 @@
+resnet_50: http://download.tensorflow.org/models/resnet_v1_50_2016_08_28.tar.gz
+resnet_101: http://download.tensorflow.org/models/resnet_v1_101_2016_08_28.tar.gz
+resnet_152: http://download.tensorflow.org/models/resnet_v1_152_2016_08_28.tar.gz
+
+#see https://github.com/tensorflow/models/tree/master/research/slim/nets/mobilenet
+mobilenet_v2_1.0: https://storage.googleapis.com/mobilenet_v2/checkpoints/mobilenet_v2_1.0_224.tgz
+mobilenet_v2_0.75: https://storage.googleapis.com/mobilenet_v2/checkpoints/mobilenet_v2_0.75_224.tgz
+mobilenet_v2_0.5: https://storage.googleapis.com/mobilenet_v2/checkpoints/mobilenet_v2_0.5_224.tgz
+mobilenet_v2_0.35: https://storage.googleapis.com/mobilenet_v2/checkpoints/mobilenet_v2_0.35_224.tgz

@@ -1,10 +1,13 @@
 """
-DeepLabCut Toolbox
+DeepLabCut2.0 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
-T Nath, nath@rowland.harvard.edu
-A Mathis, alexander.mathis@bethgelab.org
-M Mathis, mackenzie@post.harvard.edu
+Please see AUTHORS for contributors.
+
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
 """
+
 
 import sys
 import wx
@@ -47,6 +50,8 @@ class ImagePanel(wx.Panel):
         self.figure = matplotlib.figure.Figure()
         self.axes = self.figure.add_subplot(1, 1, 1)
         self.canvas = FigureCanvas(self, -1, self.figure)
+        self.orig_xlim = None
+        self.orig_ylim = None
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.sizer.Add(self.canvas, 1, wx.LEFT | wx.TOP | wx.GROW)
         self.SetSizer(self.sizer)
@@ -55,9 +60,14 @@ class ImagePanel(wx.Panel):
     def getfigure(self):
         return(self.figure)
 
-    def drawplot(self,img,img_name,itr,index,threshold,bodyparts,cmap,preview):
+    def drawplot(self,img,img_name,itr,index,threshold,bodyparts,cmap,preview,keep_view=False):
+        xlim = self.axes.get_xlim()
+        ylim = self.axes.get_ylim()
+        self.axes.clear()
         im = io.imread(img)
         ax = self.axes.imshow(im,cmap=cmap)
+        self.orig_xlim = self.axes.get_xlim()
+        self.orig_ylim = self.axes.get_ylim()
         divider = make_axes_locatable(self.axes)
         colorIndex = np.linspace(np.min(im),np.max(im),len(bodyparts))
         cax = divider.append_axes("right", size="5%", pad=0.05)
@@ -67,10 +77,18 @@ class ImagePanel(wx.Panel):
             self.axes.set_title(str(str(itr)+"/"+str(len(index)-1) +" "+ str(Path(index[itr]).stem) + " "+ " Threshold chosen is: " + str("{0:.2f}".format(threshold))))
         else:
             self.axes.set_title(str(str(itr)+"/"+str(len(index)-1) +" "+ str(Path(index[itr]).stem)))
+        if keep_view:
+            self.axes.set_xlim(xlim)
+            self.axes.set_ylim(ylim)
         self.figure.canvas.draw()
         self.toolbar = NavigationToolbar(self.canvas)
         return(self.figure,self.axes,self.canvas,self.toolbar)
 
+    def resetView(self):
+        self.axes.set_xlim(self.orig_xlim)
+        self.axes.set_ylim(self.orig_ylim)
+
+        
     def getColorIndices(self,img,bodyparts):
         """
         Returns the colormaps ticks and . The order of ticks labels is reversed.
@@ -89,11 +107,8 @@ class WidgetPanel(wx.Panel):
 
 class ScrollPanel(SP.ScrolledPanel):
     def __init__(self, parent):
-#        SP.ScrolledPanel.__init__(self, parent, -1,style=wx.SUNKEN_BORDER, **kwargs)
         SP.ScrolledPanel.__init__(self, parent, -1,style=wx.SUNKEN_BORDER)
-#        self.parent = parent
         self.SetupScrolling(scroll_x=True, scroll_y=True, scrollToTop=False)
-#        self.SetupScrolling(scroll_x=True, scrollToTop=False)
         self.Layout()
     def on_focus(self,event):
         pass
@@ -120,7 +135,7 @@ class MainFrame(wx.Frame):
     """Contains the main GUI and button boxes"""
 
     def __init__(self, parent,config):
-# Settting the GUI size and panels design
+        # Settting the GUI size and panels design
         displays = (wx.Display(i) for i in range(wx.Display.GetCount())) # Gets the number of displays
         screenSizes = [display.GetGeometry().GetSize() for display in displays] # Gets the size of each display
         index = 0 # For display 1.
@@ -137,15 +152,15 @@ class MainFrame(wx.Frame):
         self.SetSizeHints(wx.Size(self.gui_size)) #  This sets the minimum size of the GUI. It can scale now!
 ###################################################################################################################################################
 
-# Spliting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
+        # Spliting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
 
         topSplitter = wx.SplitterWindow(self)
         vSplitter = wx.SplitterWindow(topSplitter)
 
         self.image_panel = ImagePanel(vSplitter, config,self.gui_size)
         self.choice_panel = ScrollPanel(vSplitter)
-#        self.choice_panel.SetupScrolling(scroll_x=True, scroll_y=True, scrollToTop=False)
-#        self.choice_panel.SetupScrolling(scroll_x=True, scrollToTop=False)
+        # self.choice_panel.SetupScrolling(scroll_x=True, scroll_y=True, scrollToTop=False)
+        # self.choice_panel.SetupScrolling(scroll_x=True, scrollToTop=False)
         vSplitter.SplitVertically(self.image_panel,self.choice_panel, sashPosition=self.gui_size[0]*0.8)
         vSplitter.SetSashGravity(1)
         self.widget_panel = WidgetPanel(topSplitter)
@@ -156,7 +171,7 @@ class MainFrame(wx.Frame):
         self.SetSizer(sizer)
 
 ###################################################################################################################################################
-# Add Buttons to the WidgetPanel and bind them to their respective functions.
+        # Add Buttons to the WidgetPanel and bind them to their respective functions.
 
         widgetsizer = wx.WrapSizer(orient=wx.HORIZONTAL)
         self.load = wx.Button(self.widget_panel, id=wx.ID_ANY, label="Load labels")
@@ -177,7 +192,7 @@ class MainFrame(wx.Frame):
         widgetsizer.Add(self.help , 1, wx.ALL, 15)
         self.help.Bind(wx.EVT_BUTTON, self.helpButton)
         self.help.Enable(True)
-#
+
         self.zoom = wx.ToggleButton(self.widget_panel, label="Zoom")
         widgetsizer.Add(self.zoom , 1, wx.ALL, 15)
         self.zoom.Bind(wx.EVT_TOGGLEBUTTON, self.zoomButton)
@@ -196,6 +211,12 @@ class MainFrame(wx.Frame):
         self.widget_panel.SetSizer(widgetsizer)
         self.pan.Enable(False)
 
+        self.lock = wx.CheckBox(self.widget_panel, id=wx.ID_ANY, label="Lock View")
+        widgetsizer.Add(self.lock, 1, wx.ALL, 15)
+        self.lock.Bind(wx.EVT_CHECKBOX, self.lockChecked)
+        self.widget_panel.SetSizer(widgetsizer)
+        self.lock.Enable(False)
+        
         self.save = wx.Button(self.widget_panel, id=wx.ID_ANY, label="Save")
         widgetsizer.Add(self.save , 1, wx.ALL, 15)
         self.save.Bind(wx.EVT_BUTTON, self.saveDataSet)
@@ -206,17 +227,12 @@ class MainFrame(wx.Frame):
         widgetsizer.Add(self.quit , 1, wx.ALL|wx.ALIGN_RIGHT, 15)
         self.quit.Bind(wx.EVT_BUTTON, self.quitButton)
 
-#        widgetsizer.AddStretchSpacer(15)
-#        self.adjustLabelCheck = wx.CheckBox(self.widget_panel,id=wx.ID_ANY,  label = 'Adjust original labels?')
-#        widgetsizer.Add(self.adjustLabelCheck , 1, wx.ALL, 15)
-#        self.adjustLabelCheck.Bind(wx.EVT_CHECKBOX,self.adjustLabel)
-
         self.widget_panel.SetSizer(widgetsizer)
         self.widget_panel.SetSizerAndFit(widgetsizer)
         self.widget_panel.Layout()
 
 ###############################################################################################################################
-# Variable initialization
+        # Variable initialization
         self.currentDirectory = os.getcwd()
         self.index = []
         self.iter = []
@@ -238,6 +254,11 @@ class MainFrame(wx.Frame):
         self.threshold = 0.1
         self.img_size = (10,6)# (imgW, imgH)  # width, height in inches.
         self.preview = False
+        self.view_locked=False
+        # Workaround for MAC - xlim and ylim changed events seem to be triggered too often so need to make sure that the
+        # xlim and ylim have actually changed before turning zoom off
+        self.prezoom_xlim=[]
+        self.prezoom_ylim=[]
 # ###########################################################################
 # functions for button responses
 # ###########################################################################
@@ -252,13 +273,13 @@ class MainFrame(wx.Frame):
         self.Destroy()
 
     def homeButton(self,event):
-        self.toolbar.home()
+        self.image_panel.resetView()
+        self.figure.canvas.draw()
         MainFrame.updateZoomPan(self)
         self.zoom.SetValue(False)
         self.pan.SetValue(False)
         self.statusbar.SetStatusText("")
-
-
+    
     def panButton(self,event):
         if self.pan.GetValue() == True:
             self.toolbar.pan()
@@ -271,11 +292,22 @@ class MainFrame(wx.Frame):
 
     def zoomButton(self, event):
         if self.zoom.GetValue() == True:
+            # Save pre-zoom xlim and ylim values
+            self.prezoom_xlim=self.axes.get_xlim()
+            self.prezoom_ylim=self.axes.get_ylim()
             self.toolbar.zoom()
             self.statusbar.SetStatusText("Zoom On")
             self.pan.SetValue(False)
         else:
             self.toolbar.zoom()
+            self.statusbar.SetStatusText("Zoom Off")
+
+    def onZoom(self, ax):
+        # See if axis limits have actually changed
+        curr_xlim=self.axes.get_xlim()
+        curr_ylim=self.axes.get_ylim()
+        if self.zoom.GetValue() and not (self.prezoom_xlim[0]==curr_xlim[0] and self.prezoom_xlim[1]==curr_xlim[1] and self.prezoom_ylim[0]==curr_ylim[0] and self.prezoom_ylim[1]==curr_ylim[1]):
+            self.updateZoomPan()
             self.statusbar.SetStatusText("Zoom Off")
 
     def activateSlider(self,event):
@@ -300,10 +332,18 @@ class MainFrame(wx.Frame):
         self.updatedCoords = []
 
         img_name = Path(self.index[self.iter]).name
-        self.axes.clear()
+#        self.axes.clear()
         self.figure.delaxes(self.figure.axes[1])
-        self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.threshold,self.bodyparts,self.colormap,self.preview)
+        self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.threshold,self.bodyparts,self.colormap,self.preview,keep_view=True)
+        self.axes.callbacks.connect('xlim_changed', self.onZoom)
+        self.axes.callbacks.connect('ylim_changed', self.onZoom)
+        
         MainFrame.plot(self,self.img)
+
+    def lockChecked(self, event):
+        self.cb = event.GetEventObject()
+        self.view_locked=self.cb.GetValue()
+
 
     def browseDir(self, event):
         """
@@ -331,6 +371,7 @@ class MainFrame(wx.Frame):
             self.pan.Enable(True)
             self.home.Enable(True)
             self.quit.Enable(True)
+            self.lock.Enable(True)
         else:
             dlg.Destroy()
             self.Destroy()
@@ -356,20 +397,22 @@ class MainFrame(wx.Frame):
             # self.num_joints = len(self.bodyparts)
             # self.bodyparts =  bodyParts[np.sort(idx)]
             self.index = list(self.Dataframe.iloc[:,0].index)
-# Reading images
+            # Reading images
 
             self.img = os.path.join(self.project_path,self.index[self.iter])
             img_name = Path(self.img).name
             self.norm,self.colorIndex = self.image_panel.getColorIndices(self.img,self.bodyparts)
-# Adding Slider and Checkbox
+            # Adding Slider and Checkbox
 
             self.choiceBox,self.slider,self.checkBox = self.choice_panel.addCheckBoxSlider(self.bodyparts,self.file,self.markerSize)
             self.slider.Bind(wx.EVT_SLIDER, self.OnSliderScroll)
             self.checkBox.Bind(wx.EVT_CHECKBOX,self.activateSlider)
             self.slider.Enable(False)
-# Show image
-# Setting axis title:dont want to show the threshold as it is not selected yet.
+            # Show image
+            # Setting axis title:dont want to show the threshold as it is not selected yet.
             self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.threshold,self.bodyparts,self.colormap,self.preview)
+            self.axes.callbacks.connect('xlim_changed', self.onZoom)
+            self.axes.callbacks.connect('ylim_changed', self.onZoom)
 
             instruction = wx.MessageBox('1. Enter the likelihood threshold. \n\n2. Each prediction will be shown with a unique color. \n All the data points above the threshold will be marked as circle filled with a unique color. All the data points below the threshold will be marked with a hollow circle. \n\n3. Enable the checkbox to adjust the marker size. \n\n4.  Hover your mouse over data points to see the labels and their likelihood. \n\n5. Left click and drag to move the data points. \n\n6. Right click on any data point to remove it. Be careful, you cannot undo this step. \n Click once on the zoom button to zoom-in the image.The cursor will become cross, click and drag over a point to zoom in. \n Click on the zoom button again to disable the zooming function and recover the cursor. \n Use pan button to pan across the image while zoomed in. Use home button to go back to the full;default view. \n\n7. When finished click \'Save\' to save all the changes. \n\n8. Click OK to continue', 'User instructions', wx.OK | wx.ICON_INFORMATION)
 
@@ -385,11 +428,17 @@ class MainFrame(wx.Frame):
                 img_name = Path(self.img).name
                 self.axes.clear()
                 self.preview = False
+                self.figure.delaxes(self.figure.axes[1]) # Removes the axes corresponding to the colorbar
                 self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.threshold,self.bodyparts,self.colormap,self.preview)
+                self.axes.callbacks.connect('xlim_changed', self.onZoom)
+                self.axes.callbacks.connect('ylim_changed', self.onZoom)
                 MainFrame.plot(self,self.img)
                 MainFrame.saveEachImage(self)
             else:
+                self.figure.delaxes(self.figure.axes[1]) # Removes the axes corresponding to the colorbar
                 self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.threshold,self.bodyparts,self.colormap,self.preview)
+                self.axes.callbacks.connect('xlim_changed', self.onZoom)
+                self.axes.callbacks.connect('ylim_changed', self.onZoom)
                 MainFrame.plot(self,self.img)
                 MainFrame.saveEachImage(self)
 
@@ -404,13 +453,13 @@ class MainFrame(wx.Frame):
         """
         Reads the next image and enables the user to move the annotations
         """
-#  Checks for the last image and disables the Next button
+        #  Checks for the last image and disables the Next button
         if len(self.index) - self.iter == 1:
             self.next.Enable(False)
             return
         self.prev.Enable(True)
 
-# Checks if zoom/pan button is ON
+        # Checks if zoom/pan button is ON
         MainFrame.updateZoomPan(self)
 
         MainFrame.saveEachImage(self)
@@ -423,12 +472,12 @@ class MainFrame(wx.Frame):
             self.img = os.path.join(self.project_path,self.index[self.iter])
             img_name = Path(self.img).name
 
-# Plotting
-            self.axes.clear()
+            # Plotting
             self.figure.delaxes(self.figure.axes[1]) # Removes the axes corresponding to the colorbar
-            self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.threshold,self.bodyparts,self.colormap,self.preview)
-
+            self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.threshold,self.bodyparts,self.colormap,self.preview,keep_view=self.view_locked)
             im = io.imread(self.img)
+            self.axes.callbacks.connect('xlim_changed', self.onZoom)
+            self.axes.callbacks.connect('ylim_changed', self.onZoom)
             if np.max(im) == 0:
                 msg = wx.MessageBox('Invalid image. Click Yes to remove', 'Error!', wx.YES_NO | wx.ICON_WARNING)
                 if msg == 2:
@@ -439,8 +488,9 @@ class MainFrame(wx.Frame):
                 self.img = os.path.join(self.project_path,self.index[self.iter])
                 img_name = Path(self.img).name
 
-                self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.threshold,self.bodyparts,self.colormap,self.preview)
-
+                self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.threshold,self.bodyparts,self.colormap,self.preview,keep_view=self.view_locked)
+                self.axes.callbacks.connect('xlim_changed', self.onZoom)
+                self.axes.callbacks.connect('ylim_changed', self.onZoom)
             MainFrame.plot(self,self.img)
         else:
             self.next.Enable(False)
@@ -453,7 +503,7 @@ class MainFrame(wx.Frame):
 
         MainFrame.saveEachImage(self)
 
-# Checks if zoom/pan button is ON
+        # Checks if zoom/pan button is ON
         MainFrame.updateZoomPan(self)
 
         self.statusbar.SetStatusText('Working on folder: {}'.format(os.path.split(str(self.dir))[-1]))
@@ -466,15 +516,15 @@ class MainFrame(wx.Frame):
 
         if self.iter >= 0:
             self.updatedCoords = []
-# Reading Image
+            # Reading Image
             self.img = os.path.join(self.project_path,self.index[self.iter])
             img_name = Path(self.img).name
 
-# Plotting
-            self.axes.clear()
+            # Plotting
             self.figure.delaxes(self.figure.axes[1]) # Removes the axes corresponding to the colorbar
-            self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.threshold,self.bodyparts,self.colormap,self.preview)
-
+            self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.threshold,self.bodyparts,self.colormap,self.preview,keep_view=self.view_locked)
+            self.axes.callbacks.connect('xlim_changed', self.onZoom)
+            self.axes.callbacks.connect('ylim_changed', self.onZoom)
             MainFrame.plot(self,self.img)
         else:
             self.prev.Enable(False)
@@ -498,11 +548,11 @@ class MainFrame(wx.Frame):
         Opens Instructions
         """
         self.statusbar.SetStatusText('Help')
-# Checks if zoom/pan button is ON
+        # Checks if zoom/pan button is ON
         MainFrame.updateZoomPan(self)
         wx.MessageBox('1. Enter the likelihood threshold. \n\n2. All the data points above the threshold will be marked as circle filled with a unique color. All the data points below the threshold will be marked with a hollow circle. \n\n3. Enable the checkbox to adjust the marker size (you will not be able to zoom/pan/home until the next frame). \n\n4. Hover your mouse over data points to see the labels and their likelihood. \n\n5. LEFT click+drag to move the data points. \n\n6. RIGHT click on any data point to remove it. Be careful, you cannot undo this step! \n Click once on the zoom button to zoom-in the image. The cursor will become cross, click and drag over a point to zoom in. \n Click on the zoom button again to disable the zooming function and recover the cursor. \n Use pan button to pan across the image while zoomed in. Use home button to go back to the full default view. \n\n7. When finished click \'Save\' to save all the changes. \n\n8. Click OK to continue', 'User instructions', wx.OK | wx.ICON_INFORMATION)
 
-
+        
     def onChecked(self, event):
       MainFrame.saveEachImage(self)
       self.cb = event.GetEventObject()
@@ -529,20 +579,23 @@ class MainFrame(wx.Frame):
 
         MainFrame.saveEachImage(self)
 
-# Checks if zoom/pan button is ON
+        # Checks if zoom/pan button is ON
         MainFrame.updateZoomPan(self)
         self.statusbar.SetStatusText("File saved")
 
         self.Dataframe = MainFrame.check_labels(self)
+        # Overwrite machine label file
+        self.Dataframe.to_hdf(self.dataname, key='df_with_missing', mode='w')
+        
         self.Dataframe.columns.set_levels([self.scorer.replace(self.scorer,self.humanscorer)],level=0,inplace=True)
         self.Dataframe = self.Dataframe.drop('likelihood',axis=1,level=2)
 
         if Path(self.dir,'CollectedData_'+self.humanscorer+'.h5').is_file():
             print("A training dataset file is already found for this video. The refined machine labels are merged to this data!")
             DataU1 = pd.read_hdf(os.path.join(self.dir,'CollectedData_'+self.humanscorer+'.h5'), 'df_with_missing')
-# combine datasets Original Col. + corrected machinefiles:
+            # combine datasets Original Col. + corrected machinefiles:
             DataCombined = pd.concat([self.Dataframe,DataU1])
-# Now drop redundant ones keeping the first one [this will make sure that the refined machine file gets preference]
+            # Now drop redundant ones keeping the first one [this will make sure that the refined machine file gets preference]
             DataCombined = DataCombined[~DataCombined.index.duplicated(keep='first')]
             '''
             if len(self.droppedframes)>0: #i.e. frames were dropped/corrupt. also remove them from original file (if they exist!)
@@ -616,7 +669,6 @@ class MainFrame(wx.Frame):
             else:
                 self.points = [self.Dataframe[self.scorer][bp]['x'].values[self.iter],self.Dataframe[self.scorer][bp]['y'].values[self.iter],self.Dataframe[self.scorer][bp]['likelihood'].values[self.iter]]
                 self.likelihood = self.points[2]
-#                print(self.points)
 
             if self.move2corner==True:
                 ny,nx=np.shape(im)[0],np.shape(im)[1]
@@ -639,7 +691,7 @@ class MainFrame(wx.Frame):
         self.figure.canvas.draw()
 
     def updateZoomPan(self):
-            # Checks if zoom/pan button is ON
+        # Checks if zoom/pan button is ON
         if self.pan.GetValue() == True:
             self.toolbar.pan()
             self.pan.SetValue(False)
