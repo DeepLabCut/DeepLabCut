@@ -187,7 +187,7 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
     else:
         print(f"The predictor {predictor} was selected, disabling TFGPUinference and Dynamic Cropping, the plugin "
               f"system does not support either of these modes...")
-        dynamic[0] = False
+        dynamic = (False, dynamic[1], dynamic[2])
         TFGPUinference = False
 
     # Load plugin predictor class
@@ -666,7 +666,7 @@ def AnalyzeVideo(video, DLCscorer, DLCscorerlegacy, trainFraction, cfg, dlc_cfg,
         print("Overall # of frames: ", nframes," found with (before cropping) frame dimensions: ", nx, ny)
         start = time.time()
 
-        dynamic_analysis_state, detectiontreshold, margin=dynamic
+        dynamic_analysis_state, detectiontreshold, margin = dynamic
 
         print("Starting to extract posture")
 
