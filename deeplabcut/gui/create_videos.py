@@ -171,7 +171,8 @@ class Create_Labeled_Videos(wx.Panel):
         else:
             filter = True
 
-        if self.filter.GetStringSelection() == "Yes":        
+        if self.filter.GetStringSelection() == "Yes":   
+           print(self.config, displayedbodyparts=self.bodyparts) 
            deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle, trainingsetindex=trainingsetindex, save_fames=self.slow, draw_skeleton= self.draw, displayedbodyparts=self.bodyparts, trailpoints = self.trail_points.GetValue(), filtered=True)
         
         deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle, trainingsetindex=trainingsetindex, save_fames=self.slow, draw_skeleton= self.draw, displayedbodyparts=self.bodyparts, trailpoints = self.trail_points.GetValue(), filtered=False)
@@ -183,7 +184,7 @@ class Create_Labeled_Videos(wx.Panel):
         filepath= 'help.txt'
         f = open(filepath, 'w')
         sys.stdout = f
-        fnc_name = 'deeplabcut.create_labeled_videos'
+        fnc_name = 'deeplabcut.create_labeled_video'
         pydoc.help(fnc_name)
         f.close()
         sys.stdout = sys.__stdout__
