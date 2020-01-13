@@ -524,6 +524,41 @@ def mergeandsplit(config,trainindex=0,uniform=True,windows2linux=False):
 def _read_image_shape_fast(path):
     return io.imread(path).shape
 
+def format_training_data(df, train_inds, nbodyparts, project_path):
+    train_data = []
+    matlab_data = []
+
+    def to_matlab_cell(array):
+        outer = np.array([[None]], dtype=object)
+        outer[0, 0] = array.astype('int64')
+        return outer
+
+    for i in train_inds:
+        data = dict()
+        filename = df.index[i]
+        data['image'] = filename
+        img_shape = _read_image_shape_fast(os.path.join(project_path, filename))
+        try:
+            data['size'] = img_shape[2], img_shape[0], img_shape[1]
+        except IndexError:
+            data['size'] = 1, img_shape[0], img_shape[1]
+        temp = df.iloc[i].values.reshape(-1, 2)
+        joints = np.c_[range(nbodyparts), temp]
+        joints = joints[~np.isnan(joints).any(axis=1)].astype(int)
+        # Check that points lie within the image
+        inside = np.logical_and(np.logical_and(joints[:, 1] < img_shape[1], joints[:, 1] > 0),
+                                np.logical_and(joints[:, 2] < img_shape[0], joints[:, 2] > 0))
+        if not all(inside):
+            joints = joints[inside]
+        if joints.size:  # Exclude images without labels
+            data['joints'] = joints
+            train_data.append(data)
+            matlab_data.append((np.array([data['image']], dtype='U'),
+                                np.array([data['size']]),
+                                to_matlab_cell(data['joints'])))
+    matlab_data = np.asarray(matlab_data, dtype=[('image', 'O'), ('size', 'O'), ('joints', 'O')])
+    return train_data, matlab_data
+
 def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=False,userfeedback=False,
         trainIndexes=None,testIndexes=None,
         net_type=None,augmenter_type=None):
@@ -625,77 +660,33 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
             splits.append((trainFraction, shuffle, (train_inds, test_inds)))
 
     bodyparts = cfg['bodyparts']
+    nbodyparts = len(bodyparts)
     for trainFraction, shuffle, (trainIndexes, testIndexes) in splits:
-        if userfeedback:
-            trainposeconfigfile, _, _ = training.return_train_network_path(config, shuffle=shuffle, trainFraction=trainFraction)
-            if trainposeconfigfile.is_file():
-                askuser=input ("The model folder is already present. If you continue, it will overwrite the existing model (split). Do you want to continue?(yes/no): ")
-                if askuser=='no'or askuser=='No' or askuser=='N' or askuser=='No':
-                    raise Exception("Use the Shuffles argument as a list to specify a different shuffle index. Check out the help for more details.")
-
-        ####################################################
-        # Generating data structure with labeled information & frame metadata (for deep cut)
-        ####################################################
-        # Make training file!
-        data = []
-        for jj in trainIndexes:
-            H = {}
-            # load image to get dimensions:
-            filename = Data.index[jj]
-            H['image'] = filename
-            im_shape = _read_image_shape_fast(os.path.join(project_path, filename))
-
-            if len(im_shape) == 3:
-                H['size'] = np.array([im_shape[2], im_shape[0], im_shape[1]])
-            else:
-                # print "Grayscale!"
-                H['size'] = np.array([1, im_shape[0], im_shape[1]])
-
-            indexjoints=0
-            joints=np.zeros((len(bodyparts),3))*np.nan
-            for bpindex,bodypart in enumerate(bodyparts):
-                # check whether the labels are positive and inside the img
-                x_pos_n_inside = 0 <= Data[bodypart]['x'][jj] < im_shape[1]
-                y_pos_n_inside = 0 <= Data[bodypart]['y'][jj] < im_shape[0]
-                if x_pos_n_inside and y_pos_n_inside:
-                    joints[indexjoints,0]=int(bpindex)
-                    joints[indexjoints,1]=Data[bodypart]['x'][jj]
-                    joints[indexjoints,2]=Data[bodypart]['y'][jj]
-                    indexjoints+=1
-
-            joints = joints[np.where(
-                np.prod(np.isfinite(joints),
-                        1))[0], :]  # drop NaN, i.e. lines for missing body parts
-
-            assert (np.prod(np.array(joints[:, 2]) < im_shape[0])
-                    )  # y coordinate within image?
-            assert (np.prod(np.array(joints[:, 1]) < im_shape[1])
-                    )  # x coordinate within image?
-
-            H['joints'] = np.array(joints, dtype=int)
-            if np.size(joints)>0: #exclude images without labels
-                    data.append(H)
-
         if len(trainIndexes)>0:
+            if userfeedback:
+                trainposeconfigfile, _, _ = training.return_train_network_path(config, shuffle=shuffle, trainFraction=trainFraction)
+                if trainposeconfigfile.is_file():
+                    askuser=input ("The model folder is already present. If you continue, it will overwrite the existing model (split). Do you want to continue?(yes/no): ")
+                    if askuser=='no'or askuser=='No' or askuser=='N' or askuser=='No':
+                        raise Exception("Use the Shuffles argument as a list to specify a different shuffle index. Check out the help for more details.")
 
-            datafilename,metadatafilename=auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,trainFraction,shuffle,cfg)
+            ####################################################
+            # Generating data structure with labeled information & frame metadata (for deep cut)
+            ####################################################
+            # Make training file!
+            datafilename, metadatafilename = auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,
+                                                                                            trainFraction, shuffle, cfg)
+
+            ################################################################################
+            # Saving data file (convert to training file for deeper cut (*.mat))
+            ################################################################################
+            data, MatlabData = format_training_data(Data, trainIndexes, nbodyparts, project_path)
+            sio.savemat(os.path.join(project_path,datafilename), {'dataset': MatlabData})
+
             ################################################################################
             # Saving metadata (Pickle file)
             ################################################################################
             auxiliaryfunctions.SaveMetadata(os.path.join(project_path,metadatafilename),data, trainIndexes, testIndexes, trainFraction)
-            ################################################################################
-            # Saving data file (convert to training file for deeper cut (*.mat))
-            ################################################################################
-
-            DTYPE = [('image', 'O'), ('size', 'O'), ('joints', 'O')]
-            MatlabData = np.array(
-                [(np.array([data[item]['image']], dtype='U'),
-                  np.array([data[item]['size']]),
-                  boxitintoacell(data[item]['joints']))
-                 for item in range(len(data))],
-                dtype=DTYPE)
-
-            sio.savemat(os.path.join(project_path,datafilename), {'dataset': MatlabData})
 
             ################################################################################
             # Creating file structure for training &
