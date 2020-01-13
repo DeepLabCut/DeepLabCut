@@ -720,7 +720,6 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
                 "project_path": str(cfg['project_path']),
                 "net_type": net_type,
                 "dataset_type": augmenter_type,
-                "batch_size": cfg['batch_size']  # Address issue #508
             }
             trainingdata = MakeTrain_pose_yaml(items2change,path_train_config,defaultconfigfile)
             keys2save = [
