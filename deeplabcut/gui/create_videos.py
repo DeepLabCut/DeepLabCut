@@ -146,53 +146,6 @@ class Create_Labeled_Videos(wx.Panel):
         self.SetSizer(self.sizer)
         self.sizer.Fit(self)
 
-    def chooseOption(self,event):
-        if self.bodypart_choice.GetStringSelection() == 'No':
-            self.bodyparts_to_compare.Show()
-            self.getbp(event)
-            self.SetSizer(self.sizer)
-            self.sizer.Fit(self) #this sets location.
-        if self.bodypart_choice.GetStringSelection() == 'Yes':
-            self.bodyparts_to_compare.Hide()
-            self.SetSizer(self.sizer)
-            self.sizer.Fit(self)
-            self.bodyparts = 'all'    
-
-    def getbp(self,event):
-        self.bodyparts = list(self.bodyparts_to_compare.GetCheckedStrings())      
-
-    def create_videos(self,event):
-
-        shuffle = self.shuffle.GetValue()
-        trainingsetindex = self.trainingset.GetValue()
-
-        if self.filter.GetStringSelection() == "No":
-            filter = None
-        else:
-            filter = True
-
-        if self.filter.GetStringSelection() == "Yes":   
-           print(self.config, displayedbodyparts=self.bodyparts) 
-           deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle, trainingsetindex=trainingsetindex, save_fames=self.slow, draw_skeleton= self.draw, displayedbodyparts=self.bodyparts, trailpoints = self.trail_points.GetValue(), filtered=True)
-        
-        deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle, trainingsetindex=trainingsetindex, save_fames=self.slow, draw_skeleton= self.draw, displayedbodyparts=self.bodyparts, trailpoints = self.trail_points.GetValue(), filtered=False)
-
-
-
-    def help_function(self,event):
-
-        filepath= 'help.txt'
-        f = open(filepath, 'w')
-        sys.stdout = f
-        fnc_name = 'deeplabcut.create_labeled_video'
-        pydoc.help(fnc_name)
-        f.close()
-        sys.stdout = sys.__stdout__
-        help_file = open("help.txt","r+")
-        help_text = help_file.read()
-        wx.MessageBox(help_text,'Help',wx.OK | wx.ICON_INFORMATION)
-        os.remove('help.txt')
-
     def select_config(self,event):
         """
         """
@@ -220,6 +173,60 @@ class Create_Labeled_Videos(wx.Panel):
             self.slow = True
         else:
             self.slow = False
+
+    def chooseOption(self,event):
+        if self.bodypart_choice.GetStringSelection() == 'No':
+            self.bodyparts_to_compare.Show()
+            self.getbp(event)
+            self.SetSizer(self.sizer)
+            self.sizer.Fit(self) #this sets location.
+        if self.bodypart_choice.GetStringSelection() == 'Yes':
+            self.bodyparts_to_compare.Hide()
+            self.SetSizer(self.sizer)
+            self.sizer.Fit(self)
+            self.bodyparts = 'all'    
+
+    def getbp(self,event):
+        self.bodyparts = list(self.bodyparts_to_compare.GetCheckedStrings())      
+
+    def create_videos(self,event):
+
+        shuffle = self.shuffle.GetValue()
+        trainingsetindex = self.trainingset.GetValue()
+
+        if self.filter.GetStringSelection() == "No":
+            filter = None
+        else:
+            filter = True
+
+        if self.video_slow.GetStringSelection() == "Yes":
+            self.slow = True
+        else:
+            self.slow = False    
+
+        if self.filter.GetStringSelection() == "Yes":   
+           print(self.config, displayedbodyparts=self.bodyparts) 
+           deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle, trainingsetindex=trainingsetindex, save_frames=self.slow, draw_skeleton= self.draw, displayedbodyparts=self.bodyparts, trailpoints = self.trail_points.GetValue(), filtered=True)
+        
+        deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle, trainingsetindex=trainingsetindex, save_frames=self.slow, draw_skeleton= self.draw, displayedbodyparts="all", trailpoints = self.trail_points.GetValue(), filtered=False)
+
+
+
+    def help_function(self,event):
+
+        filepath= 'help.txt'
+        f = open(filepath, 'w')
+        sys.stdout = f
+        fnc_name = 'deeplabcut.create_labeled_video'
+        pydoc.help(fnc_name)
+        f.close()
+        sys.stdout = sys.__stdout__
+        help_file = open("help.txt","r+")
+        help_text = help_file.read()
+        wx.MessageBox(help_text,'Help',wx.OK | wx.ICON_INFORMATION)
+        os.remove('help.txt')
+
+
 
 
     def reset_create_videos(self,event):
