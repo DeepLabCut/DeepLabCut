@@ -11,18 +11,19 @@ Licensed under GNU Lesser General Public License v3.0
 import os
 from pathlib import Path
 
-def return_train_network_path(config,shuffle=1,trainingsetindex=0):
+
+def return_train_network_path(config, shuffle, trainFraction):
     ''' Returns the training and test pose config file names as well as the folder where the snapshot is
     Parameter
     ----------
     config : string
         Full path of the config.yaml file as a string.
 
-    shuffle: int, optional
-        Integer value specifying the shuffle index to select for training. Default is set to 1
+    shuffle: int
+        Integer value specifying the shuffle index to select for training.
 
-    trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+    trainFraction: float
+        Float specifying which training set fraction to use.
 
     Returns the triple: trainposeconfigfile, testposeconfigfile, snapshotfolder
 
@@ -31,7 +32,7 @@ def return_train_network_path(config,shuffle=1,trainingsetindex=0):
     # Read file path for pose_config file. >> pass it on
     cfg = auxiliaryfunctions.read_config(config)
 
-    modelfoldername=auxiliaryfunctions.GetModelFolder(cfg["TrainingFraction"][trainingsetindex],shuffle,cfg)
+    modelfoldername=auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)
     trainposeconfigfile=Path(os.path.join(cfg['project_path'],str(modelfoldername),"train","pose_cfg.yaml"))
     testposeconfigfile=Path(os.path.join(cfg['project_path'],str(modelfoldername),"test","pose_cfg.yaml"))
     snapshotfolder=Path(os.path.join(cfg['project_path'],str(modelfoldername),'train'))
