@@ -21,3 +21,4 @@ from deeplabcut.gui.refine_labels import *
 from deeplabcut.gui.train_network import *
 from deeplabcut.gui.welcome import *
 from deeplabcut.gui.media import *
+from deeplabcut.gui.create_videos import *

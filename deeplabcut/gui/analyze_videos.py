@@ -12,6 +12,7 @@ Licensed under GNU Lesser General Public License v3.0
 import wx
 import os,sys,pydoc
 import deeplabcut
+from deeplabcut.utils import auxiliaryfunctions
 media_path = os.path.join(deeplabcut.__path__[0], 'gui' , 'media')
 logo = os.path.join(media_path,'logo.png')
 
@@ -24,6 +25,7 @@ class Analyze_videos(wx.Panel):
         wx.Panel.__init__(self, parent=parent)
         # variable initilization
         self.filelist = []
+        self.bodyparts = []
         self.config = cfg
         self.draw = False
         # design the panel
@@ -45,7 +47,7 @@ class Analyze_videos(wx.Panel):
             self.sel_config = wx.FilePickerCtrl(self, path="",style=wx.FLP_USE_TEXTCTRL,message="Choose the config.yaml file", wildcard="*.yaml")
         else:
             self.sel_config = wx.FilePickerCtrl(self, path="",style=wx.FLP_USE_TEXTCTRL,message="Choose the config.yaml file", wildcard="config.yaml")
-        # self.sel_config = wx.FilePickerCtrl(self, path="",style=wx.FLP_USE_TEXTCTRL,message="Choose the config.yaml file", wildcard="config.yaml")
+
         self.sizer.Add(self.sel_config, pos=(2, 1),span=(1,3),flag=wx.TOP|wx.EXPAND, border=5)
         self.sel_config.SetPath(self.config)
         self.sel_config.Bind(wx.EVT_FILEPICKER_CHANGED, self.select_config)
@@ -116,9 +118,17 @@ class Analyze_videos(wx.Panel):
         self.filter.SetSelection(1)
 
         self.trajectory = wx.RadioBox(self, label='Want to plot the trajectories?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
+        self.trajectory.Bind(wx.EVT_RADIOBOX,self.chooseOption)
         self.trajectory.SetSelection(1)
 
-        self.create_labeled_videos = wx.RadioBox(self, label='Want to create labeled video(s)?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
+        config_file = auxiliaryfunctions.read_config(self.config)
+        bodyparts = config_file['bodyparts']
+        self.trajectory_to_plot = wx.CheckListBox(self, choices=bodyparts, style=0,name = "Select the bodyparts")
+        self.trajectory_to_plot.Bind(wx.EVT_CHECKLISTBOX,self.getbp)
+        self.trajectory_to_plot.SetCheckedItems(range(len(bodyparts)))
+        self.trajectory_to_plot.Hide()
+
+        self.create_labeled_videos = wx.RadioBox(self, label='Create labeled video(s)? (see next tab for more options)', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
         self.create_labeled_videos.Bind(wx.EVT_RADIOBOX, self.choose_create_labeled_video_options)
         self.create_labeled_videos.SetSelection(1)
 
@@ -137,6 +147,7 @@ class Analyze_videos(wx.Panel):
         hbox2.Add(self.csv,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         hbox2.Add(self.filter,10,wx.EXPAND|wx.TOP|wx.BOTTOM,5)
         hbox2.Add(self.trajectory,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+        hbox2.Add(self.trajectory_to_plot,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         boxsizer.Add(hbox2,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
         hbox3.Add(self.cropping,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
@@ -261,8 +272,8 @@ class Analyze_videos(wx.Panel):
             deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle, trainingsetindex=trainingsetindex, draw_skeleton= self.draw,trailpoints = self.trail_points.GetValue(), filtered=True)
 
         if self.trajectory.GetStringSelection() == "Yes":
-            deeplabcut.plot_trajectories(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex, filtered=True, showfigures=False, destfolder=self.destfolder)
-
+            deeplabcut.plot_trajectories(self.config, self.filelist, displayedbodyparts=self.bodyparts,
+                                         videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex, filtered=True, showfigures=False, destfolder=self.destfolder)
 
     def reset_analyze_videos(self,event):
         """
@@ -290,3 +301,18 @@ class Analyze_videos(wx.Panel):
             self.trail_points.Hide()
             self.SetSizer(self.sizer)
             self.sizer.Fit(self)
+
+    def chooseOption(self,event):
+        if self.trajectory.GetStringSelection() == 'Yes':
+            self.trajectory_to_plot.Show()
+            self.getbp(event)
+            self.SetSizer(self.sizer)
+            self.sizer.Fit(self) #this sets location.
+        if self.trajectory.GetStringSelection() == 'No':
+            self.trajectory_to_plot.Hide()
+            self.SetSizer(self.sizer)
+            self.sizer.Fit(self)
+            self.bodyparts = []
+
+    def getbp(self,event):
+        self.bodyparts = list(self.trajectory_to_plot.GetCheckedStrings())
