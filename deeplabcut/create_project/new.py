@@ -15,7 +15,8 @@ import cv2
 from deeplabcut import DEBUG
 import shutil
 
-def create_new_project(project, experimenter, videos, working_directory=None, copy_videos=False,videotype='.avi'):
+def create_new_project(project, experimenter, videos,
+            working_directory=None, copy_videos=False,videotype='.avi',multianimal=False):
     """Creates a new project directory, sub-directories and a basic configuration file. The configuration file is loaded with the default values. Change its parameters to your projects need.
 
     Parameters
@@ -37,6 +38,9 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
         If this is set to True, the videos are copied to the ``videos`` directory. If it is False,symlink of the videos are copied to the project/videos directory. The default is ``False``; if provided it must be either
         ``True`` or ``False``.
 
+    multianimal: bool, optional. Default: False.
+        For creating a multi-animal project (introduced in DLC 2.2)
+
     Example
     --------
     Linux/MacOs
@@ -50,6 +54,8 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
     """
     from datetime import datetime as dt
     from deeplabcut.utils import auxiliaryfunctions
+    from deeplabcut.create_project.project_templates import create_config_template
+
     date = dt.today()
     month = date.strftime("%B")
     day = date.day
@@ -91,21 +97,6 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
                 vids = vids + [i]
             videos = vids
 
-    # Import all videos in a folder or if just one video withouth [] passed, then make it a list.
-#    if isinstance(videos,str):
-#        #there are two cases:
-#        if os.path.isdir(videos): # it is a path!
-#            path=videos
-#            videos=[os.path.join(path,vp) for vp in os.listdir(path) if videotype in vp]
-#            if len(videos)==0:
-#                print("No videos found in",path,os.listdir(path))
-#                print("Perhaps change the videotype, which is currently set to:", videotype)
-#            else:
-#                print("Directory entered, " , len(videos)," videos were found.")
-#        else:
-#            if os.path.isfile(videos):
-#                videos=[videos]
-
     videos = [Path(vp) for vp in videos]
     dirs = [data_path/Path(i.stem) for i in videos]
     for p in dirs:
@@ -119,11 +110,6 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
         print("Copying the videos")
         for src, dst in zip(videos, destinations):
             shutil.copy(os.fspath(src),os.fspath(dst)) #https://www.python.org/dev/peps/pep-0519/
-            #https://github.com/AlexEMG/DeepLabCut/issues/105 (for windows)
-            #try:
-            #    #shutil.copy(src,dst)
-            #except OSError or TypeError: #https://github.com/AlexEMG/DeepLabCut/issues/105 (for windows)
-            #    shutil.copy(os.fspath(src),os.fspath(dst))
     else:
       # creates the symlinks of the video and puts it in the videos directory.
         print("Creating the symbolic link of the video")
@@ -162,8 +148,8 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
            print("Cannot open the video file!")
            video_sets=None
 
-    #        Set values to config file:
-    cfg_file,ruamelFile = auxiliaryfunctions.create_config_template()
+    #Set values to config file:
+    cfg_file,ruamelFile = create_config_template(multianimal)
     cfg_file
     cfg_file['Task']=project
     cfg_file['scorer']=experimenter
@@ -177,7 +163,6 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
     cfg_file['numframes2pick']=20
     cfg_file['TrainingFraction']=[0.95]
     cfg_file['iteration']=0
-    #cfg_file['resnet']=50
     cfg_file['default_net_type']='resnet_50'
     cfg_file['default_augmenter']='default'
     cfg_file['snapshotindex']=-1
@@ -188,12 +173,21 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
     cfg_file['batch_size']=8 #batch size during inference (video - analysis); see https://www.biorxiv.org/content/early/2018/10/30/457242
     cfg_file['corner2move2']=(50,50)
     cfg_file['move2corner']=True
+
     cfg_file['skeleton']=[['bodypart1','bodypart2'],['objectA','bodypart3']]
     cfg_file['skeleton_color']='black'
     cfg_file['pcutoff']=0.1
     cfg_file['dotsize']=12 #for plots size of dots
     cfg_file['alphavalue']=0.7 #for plots transparency of markers
     cfg_file['colormap']='jet' #for plots type of colormap
+
+    if multianimal:
+        cfg_file['multianimalproject']=multianimal
+        cfg_file['individuals']=['individual1','individual2']
+        cfg_file['multianimalbodyparts']=['bodypart1','bodypart2','bodypart3']
+        cfg_file['uniquebodyparts']=['cornerofbox']
+        cfg_file['bodyparts']='MULTI!'
+        cfg_file['skeleton']=[['bodypart1','bodypart2'],['bodypart2','bodypart3']]
 
     projconfigfile=os.path.join(str(project_path),'config.yaml')
     # Write dictionary to yaml  config file

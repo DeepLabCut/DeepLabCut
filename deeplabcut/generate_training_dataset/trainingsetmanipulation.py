@@ -30,8 +30,7 @@ from skimage import io
 
 import yaml
 from deeplabcut import DEBUG
-from deeplabcut.utils import auxiliaryfunctions, conversioncode, auxfun_models
-from deeplabcut.pose_estimation_tensorflow import training
+from deeplabcut.utils import auxiliaryfunctions, conversioncode, auxfun_models, auxfun_multianimal
 
 #matplotlib.use('Agg')
 
@@ -48,6 +47,7 @@ def comparevideolistsanddatafolders(config):
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg['video_sets'].keys()
     video_names = [Path(i).stem for i in videos]
+
     alldatafolders = [fn for fn in os.listdir(Path(config).parent / 'labeled-data') if '_labeled' not in fn]
 
     print("Config file contains:", len(video_names))
@@ -193,6 +193,7 @@ def dropimagesduetolackofannotation(config):
     ----------
     config : string
         String containing the full path of the config file in the project.
+
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg['video_sets'].keys()
@@ -217,10 +218,10 @@ def dropimagesduetolackofannotation(config):
 
         annotatedimages=[fn.split(os.sep)[-1] for fn in DC.index]
         imagelist=[fns for fns in os.listdir(str(folder)) if '.png' in fns]
-        print("PROCESSED:", folder, " now # of annotated images: ", len(annotatedimages)," in folder:", len(imagelist))
+        print("PROCESSED:", folder, " now annotated images: ", len(annotatedimages)," In folder:", len(imagelist))
 
 
-def label_frames(config,multiple=False):
+def label_frames(config,multianimal=False):
     """
     Manually label/annotate the extracted frames. Update the list of body parts you want to localize in the config.yaml file first.
 
@@ -245,14 +246,13 @@ def label_frames(config,multiple=False):
     wd = Path(config).resolve().parents[0]
     os.chdir(str(wd))
 
-    if multiple==False:
+    if multianimal==False:
         from deeplabcut.generate_training_dataset import labeling_toolbox
-
         # labeling_toolbox.show(config,Screens,scale_w,scale_h, winHack, img_scale)
         labeling_toolbox.show(config)
     else:
-        from deeplabcut.generate_training_dataset import multiple_individual_labeling_toolbox
-        multiple_individual_labeling_toolbox.show(config)
+        from deeplabcut.generate_training_dataset import multiple_individuals_labeling_toolbox
+        multiple_individuals_labeling_toolbox.show(config)
 
     os.chdir(startpath)
 
@@ -261,7 +261,7 @@ def get_cmap(n, name='jet'):
     RGB color; the keyword argument name must be a standard mpl colormap name.'''
     return plt.cm.get_cmap(name, n)
 
-def check_labels(config,Labels = ['+','.','x'],scale = 1):
+def check_labels(config, Labels = ['+','.','x'],scale = 1):
     """
     Double check if the labels were at correct locations and stored in a proper file format.\n
     This creates a new subdirectory for each video under the 'labeled-data' and all the frames are plotted with the labels.\n
@@ -287,10 +287,13 @@ def check_labels(config,Labels = ['+','.','x'],scale = 1):
     videos = cfg['video_sets'].keys()
     video_names = [Path(i).stem for i in videos]
 
-   #plotting parameters:
+    #plotting parameters:
     cc = 0 # label index / here only 0, for human labeler
-    Colorscheme = get_cmap(len( cfg['bodyparts']),cfg['colormap'])
-
+    if cfg.get('multianimalproject', False):
+        print("Plotting for data for multiple individuals.")
+        Colorscheme = get_cmap(len( cfg['uniquebodyparts']+cfg['multianimalbodyparts']),cfg['colormap'])
+    else:
+        Colorscheme = get_cmap(len( cfg['bodyparts']),cfg['colormap'])
     #folders = [Path(config).parent / 'labeled-data' /Path(i) for i in video_names]
     folders = [os.path.join(cfg['project_path'],'labeled-data',str(Path(i))) for i in video_names]
     print("Creating images with labels by %s." %cfg['scorer'])
@@ -306,6 +309,10 @@ def check_labels(config,Labels = ['+','.','x'],scale = 1):
 def MakeLabeledPlots(folder,DataCombined,cfg,Labels,Colorscheme,cc,scale):
     tmpfolder = str(folder) + '_labeled'
     auxiliaryfunctions.attempttomakefolder(tmpfolder)
+
+    if cfg.get('multianimalproject', False):
+        individuals,uniquebodyparts,multianimalbodyparts = auxfun_multianimal.extractindividualsandbodyparts(cfg)
+
     for index, imagename in enumerate(DataCombined.index.values):
         image = io.imread(os.path.join(cfg['project_path'],imagename))
         plt.axis('off')
@@ -324,15 +331,35 @@ def MakeLabeledPlots(folder,DataCombined,cfg,Labels,Colorscheme,cc,scale):
         if index==0:
             print("They are stored in the following folder: %s." %tmpfolder) #folder)
 
-        for c, bp in enumerate(cfg['bodyparts']):
-            plt.plot(
+        if cfg.get('multianimalproject', False):
+            for prfxindex,prefix in enumerate(individuals):
+                if prefix=='single':
+                    for c, bp in enumerate(cfg['uniquebodyparts']):
+                        plt.plot(
+                            DataCombined[cfg['scorer']][prefix][bp]['x'].values[index],
+                            DataCombined[cfg['scorer']][prefix][bp]['y'].values[index],
+                            Labels[cc],
+                            color=Colorscheme(c),
+                            alpha=cfg['alphavalue'],
+                            ms=cfg['dotsize'])
+                else:
+                    for c, bp in enumerate(cfg['multianimalbodyparts']):
+                        plt.plot(
+                            DataCombined[cfg['scorer']][prefix][bp]['x'].values[index],
+                            DataCombined[cfg['scorer']][prefix][bp]['y'].values[index],
+                            Labels[cc],
+                            color=Colorscheme(len(cfg['uniquebodyparts'])+c),
+                            alpha=cfg['alphavalue'],
+                            ms=cfg['dotsize'])
+        else:
+            for c, bp in enumerate(cfg['bodyparts']):
+                plt.plot(
                 DataCombined[cfg['scorer']][bp]['x'].values[index],
                 DataCombined[cfg['scorer']][bp]['y'].values[index],
                 Labels[cc],
                 color=Colorscheme(c),
                 alpha=cfg['alphavalue'],
                 ms=cfg['dotsize'])
-
         plt.xlim(0, w)
         plt.ylim(0, h)
         plt.axis('off')
