@@ -1,7 +1,7 @@
 """
 Author: Isaac Robinson
 
-Module includes methods useful to loading all plugins placed in a folder, or module
+Module includes methods useful to loading all plugins placed in a folder, or module...
 """
 
 from typing import Set
@@ -33,12 +33,10 @@ def load_plugin_classes(plugin_dir: ModuleType, plugin_metaclass: Type[T], do_re
     path = list(iter(plugin_dir.__path__))[0]
     rel_path = plugin_dir.__name__
 
-    # Used to store the plugins that have been found
     plugins: Set[Type[T]] = set()
 
     # Iterate all modules in specified directory using pkgutil, importing them if they are not in sys.modules
     for importer, package_name, ispkg in pkgutil.iter_modules([path]):
-        # Name to look for in sys.modules...
         mod_name = rel_path + "." + package_name
 
         # If the module name is not in system modules or the reload flag is set to true, perform a full load of the
@@ -47,7 +45,6 @@ def load_plugin_classes(plugin_dir: ModuleType, plugin_metaclass: Type[T], do_re
             sub_module = importer.find_module(package_name).load_module(package_name)
             sys.modules[mod_name] = sub_module
         else:
-            # Otherwise we just grab the module already loaded in sys.modules
             sub_module = sys.modules[mod_name]
 
         # Now we check if the module is a package, and if so, recursively call this method
@@ -59,7 +56,7 @@ def load_plugin_classes(plugin_dir: ModuleType, plugin_metaclass: Type[T], do_re
                 field = getattr(sub_module, item)
 
                 # Checking if the field is a class, and if the field is a direct child of the plugin class
-                if(isinstance(field, type) and (plugin_metaclass in field.__bases__)):
+                if(isinstance(field, type) and issubclass(field, plugin_metaclass) and (field != plugin_metaclass)):
                     # It is a plugin, add it to the list...
                     plugins.add(field)
 

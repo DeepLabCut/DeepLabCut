@@ -19,8 +19,7 @@ import cv2
 
 class PlotterArgMax(Predictor):
     """
-    Identical to singleargmax, but plots probability frames in form of video to the user using matplotlib
-    during processing...
+    Identical to singleargmax, but plots probability frames in form of video to the user using matplotlib...
     """
     def __init__(self, bodyparts: Union[List[str]], num_outputs: int, num_frames: int, settings: Union[Dict[str, Any], None], video_metadata: Dict[str, Any]):
         super().__init__(bodyparts, num_outputs, num_frames, settings, video_metadata)
@@ -97,17 +96,14 @@ class PlotterArgMax(Predictor):
             self._figure.tight_layout()
             self._figure.canvas.draw()
 
-            # Convert plot to cv2 image, then plot it...
             img = np.reshape(np.frombuffer(self._figure.canvas.tostring_rgb(), dtype="uint8"),
                                self._figure.canvas.get_width_height()[::-1] + (3,))[:, :, ::-1]
 
-            # If the video writer does not exist, create it now...
             if (self._vid_writer is None):
                 height, width, colors = img.shape
                 self._vid_writer = cv2.VideoWriter(self.VIDEO_NAME, self.OUTPUT_CODEC, self.OUTPUT_FPS,
                                                    (width, height))
 
-            # Write image to the video writer...
             self._vid_writer.write(img)
             self._current_frame += 1
 
@@ -117,9 +113,7 @@ class PlotterArgMax(Predictor):
 
 
     def on_end(self, progress_bar: tqdm.tqdm) -> Union[None, Pose]:
-        # Release the video writer...
         self._vid_writer.release()
-        # We are done, return None...
         return None
 
     @staticmethod
@@ -147,8 +141,7 @@ class PlotterArgMax(Predictor):
 
     @staticmethod
     def get_description() -> str:
-        return "Identical to argmax, but plots probability frames in form of a video using \n" \
-               "matplotlib during processing..."
+        return "Identical to argmax, but plots probability frames in form of a video using matplotlib..."
 
     @classmethod
     def get_tests(cls) -> Union[List[Callable[[], Tuple[bool, str, str]]], None]:

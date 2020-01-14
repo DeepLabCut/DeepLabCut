@@ -14,7 +14,7 @@ from collections import deque
 
 # TODO: Add more test methods, disable numpy warnings....
 # TODO: Add Concept of being "In the Ground..."
-# TODO: Outputing 0.99 for first frame, I think it is an error in the foward compute, although may be bug in back compute
+# TODO: Outputing 0.99 for first frame, I think it is an error in the forward compute, although may be bug in back compute
 
 class FastViterbi(Predictor):
     """

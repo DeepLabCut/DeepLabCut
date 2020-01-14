@@ -2,7 +2,8 @@
 Author: Isaac Robinson
 
 Contains Abstract Base Class for all predictor plugins, which when provided probability frames from the neural net,
-figure out where the points should be in the image. They are executed when deeplabcut.analyze_videos is run...
+figure out where the points should be in the image. They are executed when deeplabcut.analyze_videos is run with
+"predictor" argument set to a valid plugin name...
 """
 # Abstract class stuff
 from abc import ABC
@@ -18,7 +19,6 @@ import tqdm
 from deeplabcut.pose_estimation_tensorflow.util import pluginloader
 from deeplabcut.pose_estimation_tensorflow.nnet import predictors
 
-# Used by TrackData class
 import numpy as np
 
 
@@ -33,18 +33,18 @@ class TrackingData:
     DEFAULT_SCALE: int = 8
 
 
-    def __init__(self, scmap: ndarray, locref: ndarray = None, scaling: int = DEFAULT_SCALE):
+    def __init__(self, scmap: ndarray, locref: ndarray = None, stride: int = DEFAULT_SCALE):
         """
-        Create an new track data object to store tracking data for one frame or a batch of frames
+        Create an new tracking data object to store tracking data for one frame or a batch of frames
 
         :param scmap: The probability maps produced by the neural network, a 4-dimensional array containing the
                       dimensions: [frame, y location, x location, body part].
         :param locref: The "offsets" produced by DeepLabCut neural network, stored in a 5-dimensional array containing
                        the dimensions: [frame, y location, x location, bodypart, 0 for x offset or 1 for y offset]
-        :param scaling: The down scaling done to probability map to decrease it's size relative to the original video,
+        :param stride: The down scaling done to probability map to decrease it's size relative to the original video,
                         stored as an integer.
         """
-        # If scmap recieved is only 3-dimension, it is of only 1 frame, but add the dimension so it works better.
+        # If scmap received is only 3-dimension, it is of only 1 frame, so add the batch dimension so it works better.
         if(len(scmap.shape) == 3):
             self._scmap = np.expand_dims(scmap, axis=0)
         else:
@@ -55,7 +55,7 @@ class TrackingData:
         else:
             self._locref = locref
 
-        self._scaling = scaling
+        self._scaling = stride
 
 
     @classmethod
@@ -136,7 +136,8 @@ class TrackingData:
         """
         batchsize, ny, nx, num_joints = self._scmap.shape
         scmap_flat = self._scmap.reshape((batchsize, nx * ny, num_joints))
-        if num_max == 1:
+
+        if(num_max <= 1):
             scmap_top = np.argmax(scmap_flat, axis=1)
         else:
             # Grab top values
@@ -155,16 +156,29 @@ class TrackingData:
         return np.unravel_index(scmap_top, (ny, nx))
 
 
-    def get_max_of_frame(self, frame: int) -> Tuple[ndarray, ndarray]:
+    def get_max_of_frame(self, frame: int, num_outputs: int = 1) -> Tuple[ndarray, ndarray]:
         """
         Gets the maximum points for a single frame in the array
 
         :param frame: The index of the frame to get the maximum of, in form of an integer.
+        :param num_outputs: The number of predictions to make for each bodypart, defaults to 1.
         :return: A tuple of numpy arrays, the first numpy array being the y coordinate max for each body part in the
                  frame, the second being the x coordinate max for each body part in the frame
+                 Indexing: [bodypart 1, bodypart 1 prediction 2, ..., bodypart 2, ...] -> []
         """
-        y_dim, x_dim = self._scmap.shape[1], self._scmap.shape[2]
-        flat_max = np.argmax(self._scmap[frame].reshape((y_dim * x_dim, self._scmap.shape[3])), axis=0)
+        y_dim, x_dim, num_joints = self._scmap.shape[1:4]
+        scmap_flat = self._scmap[frame].reshape((y_dim * x_dim, num_joints))
+
+        if(num_outputs <= 1):
+            # When num_outputs is 1, we just grab the single maximum...
+            flat_max = np.argmax(scmap_flat, axis=0)
+        else:
+            # When num_outputs greater then 1, use partition to get multiple maximums...
+            scmap_top = np.argpartition(scmap_flat, -num_outputs, axis=0)[-num_outputs:]
+            vals = scmap_flat[scmap_top, np.arange(num_joints)]
+            arg = np.argsort(-vals, axis=0)
+            flat_max = scmap_top[arg, np.arange(num_joints)].swapaxes(1, 2).reshape(num_outputs * num_joints)
+
         return np.unravel_index(flat_max, dims=(y_dim, x_dim))
 
 
@@ -175,6 +189,8 @@ class TrackingData:
         :param points: A tuple of 2 numpy arrays, one representing the y values for each frame and body part in the
                        frame, the other being the x values represented the same way.
         :return: The Pose object representing all poses for selected points...
+
+        NOTE: This method detects when multiple predictions have been made and will still work correctly...
         """
         y, x = points
         # Create new numpy array to store probabilities, x offsets, and y offsets...
@@ -202,7 +218,6 @@ class TrackingData:
         x = x.astype("float32") * self._scaling + (0.5 * self._scaling) + x_offsets
         y = y.astype("float32") * self._scaling + (0.5 * self._scaling) + y_offsets
 
-        # Create and return a new pose object now....
         return Pose(x, y, probs)
 
 
@@ -301,7 +316,7 @@ class TrackingData:
         return self._scmap.shape[1]
 
     # Used for setting single poses....
-    def set_pose_at(self, frame: int, bodypart: int, scmap_x: int, scmap_y: int, pose_object: "Pose"):
+    def set_pose_at(self, frame: int, bodypart: int, scmap_x: int, scmap_y: int, pose_object: "Pose", output_num: int=0):
         """
         Sets the pose in a pose object to the specified x and y coordinate for a provided body part and frame.
         USE THIS METHOD TO SET POSE VALUES!!!! Pose expects correct x and y values, not the scaled down ones...
@@ -312,6 +327,8 @@ class TrackingData:
         :param scmap_x: The x value to set the pose this frame and body part to
         :param scmap_y: The y value to set the pose this this frame and body part to
         :param pose_object: The pose object to modify and change the pose at this single location in
+        :param output_num: The output number to set in the pose object(Which prediction for this bodypart?).
+                           Should only be needed if num_outputs > 1. Defaults to 0, meaning the first prediction.
         :return: Nothing, changes stored in pose_object...
         """
         # Get probability...
@@ -328,21 +345,22 @@ class TrackingData:
         scmap_y = float(scmap_y) * self._scaling + (0.5 * self._scaling) + off_y
 
         # Set values...
-        pose_object.set_x_at(frame, bodypart, scmap_x)
-        pose_object.set_y_at(frame, bodypart, scmap_y)
-        pose_object.set_prob_at(frame, bodypart, prob)
+        pose_object.set_x_at(frame, bodypart + output_num, scmap_x)
+        pose_object.set_y_at(frame, bodypart + output_num, scmap_y)
+        pose_object.set_prob_at(frame, bodypart + output_num, prob)
 
 
 class Pose:
     """
-    Class defines the poses for given amount of frames
+    Class defines the poses for given amount of frames... Note that pose has no concept of multiple predictions for
+    bodypart, but rather simply expects the multiple predictions to be stored side-by-side as multiple bodyparts...
     """
     def __init__(self, x: ndarray, y: ndarray, prob: ndarray):
         """
         Create a new Pose object, or batch of poses for frames
 
-        :param x: All x-values for these poses, in ndarray indexing format frame->body part->x-value
-        :param y: All y-values for these poses, in ndarray indexing format frame->body part->y-value
+        :param x: All x-values for these poses, in ndarray indexing format frame->body part->x-value(in video)
+        :param y: All y-values for these poses, in ndarray indexing format frame->body part->y-value(in video)
         :param prob: All probabilities for these poses, in ndarray indexing format frame->body part->p-value
         """
         self._data = np.zeros((x.shape[0], x.shape[1] * 3))
@@ -401,17 +419,18 @@ class Pose:
 
         :param frame: The index of the frame or frames to set, an integer or a slice.
         :param bodypart: The index of the bodypart or bodyparts to set, integer or a slice
-        :param scmap_coord: The coordinate to set this pose locations to, specifically the one directly selected
+        :param scmap_coord: The coordinate to set this pose's locations to, specifically the one directly selected
                             from the downscaled deeplabcut source map. It a tuple of two integer or numpy arrays of
                             integers representing x and y coordinates...
         :param offset: The offset of the source map point once scaled to fit the video. This data should be collected
                        using get_offset_map in the TrackingData object. Is a tuple of x and y floating point
                        coordinates, or numpy arrays of floating point coordinates.
-        :param prob: The probabilities the set for this pose within the pose object, between 0 and 1. Is a numpy array
+        :param prob: The probabilities set for this pose within the object, between 0 and 1. Is a numpy array
                      of floating point numbers or a single floating point number.
         :param down_scale: The downscale factor of the original source map relative to the video, an integer.
                                   this is typically collected from the method TrackingData.get_down_scaling().
-                                  Ex. Value of 8 means network output map is 1/8th the size of the original video.
+                                  Ex. Value of 8 means network output probability map is 1/8th the size of the original
+                                  video.
         :return: Nothing...
         """
         offset = (0, 0) if (offset is None) else offset
@@ -445,8 +464,8 @@ class Pose:
         """
         Sets the probability values of this batch of Poses
 
-        :param probs: An ndarray with same dimensions as this pose object, providing all probability values for given x, y
-                  points...
+        :param probs: An ndarray with same dimensions as this pose object, providing all probability values for given
+                      x, y points...
         """
         self._data[:, 2::3] = probs
 
@@ -675,7 +694,7 @@ class Predictor(ABC):
         :return: A list of callable objects(aka. methods) or None if no test methods exist. The callables in the list
                  should accept no arguments and return a tuple of 3 items, where these values should be:
 
-                    - Test Success: A Boolean, True if test was successful, otherwise false.
+                    - Test Success: A Boolean, True if test was successful, otherwise False.
 
                     - Test Expected Results: A string, a human readable string representing the expected results of this
                                              test.

@@ -23,7 +23,6 @@ class SingleArgMaxPredict(Predictor):
         return scmap.get_poses_for(scmap.get_max_scmap_points(num_max=self._num_outputs))
 
     def on_end(self, pbar) -> Union[None, Pose]:
-        # Processing is done per frame, so return None.
         return None
 
     @staticmethod

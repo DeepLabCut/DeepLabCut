@@ -239,7 +239,7 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
 
 
     # Set this up differently depending on the format...
-    if(multi_output_format == "separate-bodyparts"):
+    if(multi_output_format == "separate-bodyparts" and dlc_cfg['num_outputs'] > 1):
         # Format which allocates new bodyparts for each prediction by simply adding "__number" to the end of the part's
         # name.
         print("Outputing predictions as seperate bodyparts...")
@@ -322,31 +322,28 @@ def GetVideoBatch(cap, batch_size, cfg, frame_store) -> int:
             else:
                 frame_store[current_frame] = img_as_ubyte(frame)
         else:
-            # If we don't we have reached the end most likely, return the amount of frames we managed to get
+            # If we don't we have reached the end most likely.
             return current_frame
-        # Increment frame counter
+
         current_frame += 1
 
-    # Return the frame counter, most likely the same as batch_size at this point....
     return current_frame
 
 
 # Replaces old system of getting poses and uses a new plugin system for predicting poses...
-def GetPoseALL(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, predictor):
+def GetPoseAll(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, predictor):
     """ Gets the poses for any batch size, including batch size of only 1 """
     # Create a numpy array to hold all pose prediction data...
     pose_prediction_data = np.zeros((nframes, 3 * len(dlc_cfg["all_joints_names"] * dlc_cfg["num_outputs"])))
 
-    # Create the progress bar
     pbar = tqdm(total=nframes)
 
     ny, nx = int(cap.get(4)), int(cap.get(3))
 
-    # Perform cropping bounds check...
     if(cfg["cropping"]):
         ny, nx = checkcropping(cfg, cap)
 
-    # Create the temporary batch frame store...
+    # Create the temporary batch frame store for storing video frames...
     frame_store = np.empty((batchsize, ny, nx, 3), dtype='ubyte')
 
     # Create a counter to keep track of the progress bar
@@ -354,10 +351,8 @@ def GetPoseALL(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, pre
     prog_step = max(10, int(nframes / 100))
     current_step = 0
 
-    # Keeps track of data that has been processed
     frames_done = 0
 
-    # Iterating until we get all video frames... (Check is done at the bottom...)
     while(True):
         size = GetVideoBatch(cap, batchsize, cfg, frame_store)
         counter += size
@@ -375,22 +370,20 @@ def GetPoseALL(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, pre
             if len(scmap.shape) == 2:  # If there is a single body part, add a dimension at the end
                 scmap = np.expand_dims(scmap, axis=2)
 
-            # Run the predictor providing it the scmap, locref, and scaling using a TrackingData object
             pose = predictor.on_frames(processing.TrackingData(scmap[:size], locref, down_scale))
 
             if(pose is not None):
-                # If the predictor returned a pose, add it to the pose_prediction_data and increment the counter
-                # That keeps track of fully finished frames.
+                # If the predictor returned a pose, add it to the final data.
                 pose_prediction_data[frames_done:frames_done + pose.get_frame_count()] = pose.get_all()
                 frames_done += pose.get_frame_count()
 
         if(size < batchsize):
             # If the output frames by the video capture were less then a full batch, we have reached the end of the
-            # video, break the loop...
+            # video...
             break
 
-    pbar.update(counter - (prog_step * current_step)) # Finish the progress bar
-    pbar.close() # Close the progress bar
+    pbar.update(counter - (prog_step * current_step))
+    pbar.close()
 
     # Phase 2: Post processing...
 
@@ -404,12 +397,11 @@ def GetPoseALL(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, pre
         pose_prediction_data[frames_done:frames_done + final_poses.get_frame_count()] = final_poses.get_all()
         frames_done += final_poses.get_frame_count()
 
-    # Check and make sure the predictor returned all frames, otherwise throw an error
+    # Check and make sure the predictor returned all frames, otherwise throw an error.
     if(frames_done != nframes):
         raise ValueError(f"The predictor algorithm did not return the same amount of frames as are in the video.\n"
                          f"Expected Amount: {nframes}, Actual Amount Returned: {frames_done}")
 
-    # We are good, return data
     return pose_prediction_data, nframes
 
 
@@ -420,7 +412,6 @@ def GetPredictorSettings(cfg, predictor_cls):
     setting_info = predictor_cls.get_settings()
     name = predictor_cls.get_name()
 
-    # If it is None, return none
     if(setting_info is None):
         return None
 
@@ -696,7 +687,7 @@ def AnalyzeVideo(video, DLCscorer, DLCscorerlegacy, trainFraction, cfg, dlc_cfg,
                                            predictor_settings,
                                            video_metadata)
 
-                PredictedData, nframes = GetPoseALL(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes,
+                PredictedData, nframes = GetPoseAll(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes,
                                                     int(dlc_cfg["batch_size"]), predictor_inst)
 
 

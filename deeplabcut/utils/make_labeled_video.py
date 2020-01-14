@@ -375,8 +375,20 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
             print("Labeled video already created.")
         else:
             print("Loading ", video, "and data.")
+
             datafound,metadata,Dataframe,DLCscorer,suffix=auxiliaryfunctions.LoadAnalyzedData(str(videofolder),vname,DLCscorer,filtered) #returns boolean variable if data was found and metadata + pandas array
+
+            # Adds support for multi_output mode. Adds extra bodyparts found in the data but not in the config.yaml.
+            if(displayedbodyparts == "all"):
+                all_bp = set(bodyparts) | set(idx[1] for idx in Dataframe)
+            else:
+                all_bp = set(bodyparts) | (set(idx[1] for idx in Dataframe) & set(displayedbodyparts))
+
+            bodyparts = list(all_bp)
+
+
             videooutname=os.path.join(vname + DLCscorer+suffix+'_labeled.mp4')
+
             if datafound and not os.path.isfile(videooutname): #checking again, for this loader video could exist
                 #Loading cropping data used during analysis
                 cropping=metadata['data']["cropping"]
