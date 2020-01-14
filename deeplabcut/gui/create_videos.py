@@ -28,6 +28,7 @@ class Create_Labeled_Videos(wx.Panel):
         # variable initilization
         self.filelist = []
         self.config = cfg
+        self.bodyparts = []
         self.draw = False
         self.slow = False
         # design the panel
@@ -108,7 +109,7 @@ class Create_Labeled_Videos(wx.Panel):
         trail_pointsboxsizer = wx.StaticBoxSizer(self.trail_points_text, wx.VERTICAL)
         self.trail_points = wx.SpinCtrl(self, value='0')
         trail_pointsboxsizer.Add(self.trail_points,20, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
-    
+
 
         self.bodypart_choice = wx.RadioBox(self, label='Plot all bodyparts?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
         self.bodypart_choice.Bind(wx.EVT_RADIOBOX,self.chooseOption)
@@ -184,10 +185,10 @@ class Create_Labeled_Videos(wx.Panel):
             self.bodyparts_to_compare.Hide()
             self.SetSizer(self.sizer)
             self.sizer.Fit(self)
-            self.bodyparts = 'all'    
+            self.bodyparts = 'all'
 
     def getbp(self,event):
-        self.bodyparts = list(self.bodyparts_to_compare.GetCheckedStrings())      
+        self.bodyparts = list(self.bodyparts_to_compare.GetCheckedStrings())
 
     def create_videos(self,event):
 
@@ -202,13 +203,17 @@ class Create_Labeled_Videos(wx.Panel):
         if self.video_slow.GetStringSelection() == "Yes":
             self.slow = True
         else:
-            self.slow = False    
+            self.slow = False
 
-        if self.filter.GetStringSelection() == "Yes":   
-           print(self.config, displayedbodyparts=self.bodyparts) 
-           deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle, trainingsetindex=trainingsetindex, save_frames=self.slow, draw_skeleton= self.draw, displayedbodyparts=self.bodyparts, trailpoints = self.trail_points.GetValue(), filtered=True)
-        
-        deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle, trainingsetindex=trainingsetindex, save_frames=self.slow, draw_skeleton= self.draw, displayedbodyparts="all", trailpoints = self.trail_points.GetValue(), filtered=False)
+        if self.filter.GetStringSelection() == "Yes":
+            if len(self.bodyparts)==0:
+                self.bodyparts='all'
+
+                deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle, trainingsetindex=trainingsetindex, save_frames=self.slow, draw_skeleton= self.draw, displayedbodyparts=self.bodyparts, trailpoints = self.trail_points.GetValue(), filtered=True)
+
+        if len(self.bodyparts)==0:
+            self.bodyparts='all'
+        deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle, trainingsetindex=trainingsetindex, save_frames=self.slow, draw_skeleton= self.draw, displayedbodyparts=self.bodyparts, trailpoints = self.trail_points.GetValue(), filtered=False)
 
 
 
@@ -245,4 +250,3 @@ class Create_Labeled_Videos(wx.Panel):
             #self.SetSizer(self.sizer)
             #self.sizer.Fit(self)
             self.bodyparts_to_compare.Hide()
-     
