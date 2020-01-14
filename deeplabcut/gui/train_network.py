@@ -229,14 +229,12 @@ class Train_network(wx.Panel):
             raise FileNotFoundError("File not found!")
 
     def train_network(self,event):
-
-        shuffle = self.shuffles.GetValue()
-        trainingsetindex = self.trainingindex.GetValue()
-        max_snapshots_to_keep = self.snapshots.GetValue()
-        displayiters = self.display_iters.GetValue()
-        saveiters = self.save_iters.GetValue()
-        maxiters = self.max_iters.GetValue()
-
+        shuffle = int(self.shuffles.Children[0].GetValue())
+        trainingsetindex = int(self.trainingindex.Children[0].GetValue())
+        max_snapshots_to_keep = int(self.snapshots.Children[0].GetValue())
+        displayiters = int(self.display_iters.Children[0].GetValue())
+        saveiters = int(self.save_iters.Children[0].GetValue())
+        maxiters = int(self.max_iters.Children[0].GetValue())
         deeplabcut.train_network(self.config,shuffle,
                                  trainingsetindex,gputouse=None,
                                  max_snapshots_to_keep=max_snapshots_to_keep,

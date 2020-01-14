@@ -17,7 +17,6 @@ import argparse
 from deeplabcut.utils import auxiliaryfunctions
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
 import os
 
 # https://stackoverflow.com/questions/14720331/how-to-generate-random-colors-in-matplotlib
@@ -32,10 +31,9 @@ def Histogram(vector,color,bins):
     plt.hist(dvector,color=color,histtype='step',bins=bins)
 #    fig.colorbar(im, ax=ax)
 
-def PlottingResults(video,tmpfolder,Dataframe,scorer,cfg,showfigures,suffix='.png'):
+def PlottingResults(tmpfolder,Dataframe,scorer,cfg, bodyparts2plot, showfigures,suffix='.png'):
     ''' Plots poses vs time; pose x vs pose y; histogram of differences and likelihoods.'''
     plt.figure(figsize=(8, 6))
-    bodyparts2plot = cfg['bodyparts']
     pcutoff = cfg['pcutoff']
     colors = get_cmap(len(bodyparts2plot),name = cfg['colormap'])
     alphavalue = cfg['alphavalue']
@@ -112,7 +110,8 @@ def PlottingResults(video,tmpfolder,Dataframe,scorer,cfg,showfigures,suffix='.pn
 # Looping analysis over video
 ##################################################
 
-def plot_trajectories(config,videos,videotype='.avi',shuffle=1,trainingsetindex=0,filtered=False,showfigures=False, destfolder=None):
+def plot_trajectories(config, videos, videotype='.avi', shuffle=1, trainingsetindex=0, filtered=False,
+                      displayedbodyparts='all', showfigures=False, destfolder=None):
     """
     Plots the trajectories of various bodyparts across the video.
 
@@ -136,6 +135,12 @@ def plot_trajectories(config,videos,videotype='.avi',shuffle=1,trainingsetindex=
     filtered: bool, default false
     Boolean variable indicating if filtered output should be plotted rather than frame-by-frame predictions. Filtered version can be calculated with deeplabcut.filterpredictions
 
+    displayedbodyparts: list of strings, optional
+        This select the body parts that are plotted in the video.
+        Either ``all``, then all body parts from config.yaml are used,
+        or a list of strings that are a subset of the full list.
+        E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these two body parts.
+
     showfigures: bool, default false
     If true then plots are also displayed.
 
@@ -152,6 +157,7 @@ def plot_trajectories(config,videos,videotype='.avi',shuffle=1,trainingsetindex=
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg['TrainingFraction'][trainingsetindex]
     DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction) #automatically loads corresponding model (even training iteration based on snapshot index)
+    bodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg, displayedbodyparts)
     Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
     for video in Videos:
         print(video)
@@ -160,7 +166,6 @@ def plot_trajectories(config,videos,videotype='.avi',shuffle=1,trainingsetindex=
         else:
             videofolder=destfolder
 
-        videotype = str(Path(video).suffix)
         vname = str(Path(video).stem)
         print("Starting % ", videofolder, video)
         notanalyzed, dataname, DLCscorer=auxiliaryfunctions.CheckifNotAnalyzed(videofolder,vname,DLCscorer,DLCscorerlegacy,flag='checking')
@@ -177,7 +182,7 @@ def plot_trajectories(config,videos,videotype='.avi',shuffle=1,trainingsetindex=
                 auxiliaryfunctions.attempttomakefolder(os.path.join(basefolder,'plot-poses'))
                 tmpfolder = os.path.join(basefolder,'plot-poses', vname)
                 auxiliaryfunctions.attempttomakefolder(tmpfolder)
-                PlottingResults(video,tmpfolder,Dataframe,DLCscorer,cfg,showfigures,suffix+'.png')
+                PlottingResults(tmpfolder, Dataframe, DLCscorer, cfg, bodyparts, showfigures, suffix+'.png')
 
     print('Plots created! Please check the directory "plot-poses" within the video directory')
 

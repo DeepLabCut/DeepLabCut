@@ -191,7 +191,7 @@ Please also see our helper WIKI on selecting models: https://github.com/AlexEMG/
 
 Lastly, if you are labeling adult human data, you may also want to use a human-pretrained network. 
 A ResNet-101 pre-trained on MPII is available. You can use the following notebook to create a project that uses this network:
-- [HUMAN DEMO](https://github.com/AlexEMG/DeepLabCut/blob/master/examples/Human_Project_DEMO.ipynb) notebook
+- [HUMAN DEMO](https://github.com/AlexEMG/DeepLabCut/blob/master/examples/COLAB_Human_Project_DEMO.ipynb) notebook
 - or use the new function: `` deeplabcut.create_pretrained_human_project(..``
 - or you can add the pretrained model manually to the correct folder (then to use them set the path to the model as described in Box 2)
    - Download these and move to the pretrained folder (this will be in your site-packages, under ``../pose-tensorflow/models/pretrained``). In the terminal: 
