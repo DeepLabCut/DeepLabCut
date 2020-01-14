@@ -10,7 +10,7 @@ Licensed under GNU Lesser General Public License v3.0
 
 import os
 
-# if module is executed direcyly (i.e. `python -m deeplabcut.__init__`) launch straight into the GUI
+# if module is executed directly (i.e. `python -m deeplabcut.__init__`) launch straight into the GUI
 if os.environ.get("DLClight", default=False) == False:
     print("Starting GUI...")
     import deeplabcut
