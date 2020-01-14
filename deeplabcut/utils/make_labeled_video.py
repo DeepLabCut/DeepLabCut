@@ -292,8 +292,8 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
         If true then the individual frames created during the video generation will be deleted.
 
     displayedbodyparts: list of strings, optional
-        This select the body parts that are plotted in the video. Either ``all``, then all body parts
-        from config.yaml are used orr a list of strings that are a subset of the full list.
+        This selects the body parts that are plotted in the video. Either ``all``, then all body parts
+        from config.yaml and the data are used orr a list of strings that are a subset of the full list.
         E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these two body parts.
 
     codec: codec for labeled video. Options see http://www.fourcc.org/codecs.php [depends on your ffmpeg installation.]
