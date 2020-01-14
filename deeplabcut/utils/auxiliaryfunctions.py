@@ -418,7 +418,7 @@ def LoadAnalyzedData(videofolder,vname,DLCscorer,filtered):
             Dataframe = pd.read_hdf(fn)
             metadata=LoadVideoMetadata(os.path.join(videofolder,vname + DLCscorer + '.h5'))
             datafound=True
-            suffix='_filtered.'
+            suffix='_filtered'
             return datafound,metadata,Dataframe, DLCscorer,suffix
         except FileNotFoundError:
             print("No filtered predictions found, using frame-by-frame output instead.")
