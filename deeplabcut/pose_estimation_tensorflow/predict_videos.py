@@ -36,7 +36,7 @@ from skimage.util import img_as_ubyte
 
 def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=0, gputouse=None, save_as_csv=False,
                    destfolder=None, cropping=None, batchsize=None, predictor = None, multi_output_format = "default",
-                   get_nframesfrommetadata=True, TFGPUinference=True, dynamic=(False,.5,10)):
+                   get_nframesfrommetadata=True, TFGPUinference=True, dynamic=(False,.5,10), num_outputs = None):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the
     config file (in particular the variable 'snapshotindex')
@@ -107,6 +107,9 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
         expanded by the margin and from then on only the posture within this crop is analyzed (until the object is lost, i.e. <detectiontreshold). The
         current position is utilized for updating the crop window for the next frame (this is why the margin is important and should be set large
         enough given the movement of the animal).
+
+    num_outputs: int, default: from config.yaml, or 1 if not set in config.yaml.
+        Allows the user to set the number of predictions for bodypart, overriding the option in the config file.
 
     Examples
     --------
@@ -220,7 +223,8 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
         print("Switching batchsize to 1, num_outputs (per animal) to 1 and TFGPUinference to False (all these features are not supported in this mode).")
 
     # Update number of outputs and adjust pandas indices
-    dlc_cfg['num_outputs'] = cfg.get('num_outputs', dlc_cfg.get('num_outputs', 1))
+    dlc_cfg['num_outputs'] = max(1, cfg.get('num_outputs', dlc_cfg.get('num_outputs', 1))
+                                    if(num_outputs is None) else num_outputs)
 
     # Check and make sure that this predictor supports multi output if we are currently in that mode...
     if((dlc_cfg["num_outputs"] > 1) and (not predictor_cls.supports_multi_output())):
