@@ -220,6 +220,128 @@ def dropimagesduetolackofannotation(config):
         imagelist=[fns for fns in os.listdir(str(folder)) if '.png' in fns]
         print("PROCESSED:", folder, " now annotated images: ", len(annotatedimages)," In folder:", len(imagelist))
 
+def cropimagesandlabels(config,numcrops=10,size=(400,400),cropdata=True,userfeedback=True):
+    ''' Size in height x width '''
+    """
+    Crop images into multiple random crops (defined by numcrops) of size dimensions. If cropdata=True then the
+    annotation data is loaded and labels for cropped images are inherited. If false, then one can make crops for unlabeled folders.
+
+    Parameter
+    ----------
+    config : string
+        String containing the full path of the config file in the project.
+    """
+
+    #from deeplabcut.create_project import add
+    from skimage import io
+
+    indexlength = int(np.ceil(np.log10(numcrops)))
+    cfg = auxiliaryfunctions.read_config(config)
+    videos = cfg['video_sets'].keys()
+    video_names = [Path(i).stem for i in videos]
+    folders = [Path(config).parent / 'labeled-data' /Path(i) for i in video_names]
+
+    for folder in folders:
+        if userfeedback:
+            print("Do you want to crop frames for folder: ", folder, "?")
+            askuser=input ("(yes/no):")
+        else:
+            askuser='y'
+        if askuser=='y' or askuser=='yes' or askuser=='Y' or askuser=='Yes':
+            fn=os.path.join(str(folder),'CollectedData_' + cfg['scorer'] + '.h5')
+            if cropdata:
+                Data = pd.read_hdf(fn, 'df_with_missing')
+
+            newfolder = str(Path(folder).stem) + 'cropped'
+            output_path=Path(config).parent / 'labeled-data' / Path(newfolder)
+            auxiliaryfunctions.attempttomakefolder(output_path)
+            individuals,uniquebodyparts,multianimalbodyparts=auxfun_multianimal.extractindividualsandbodyparts(cfg)
+
+            AnnotationData=None
+            pd_index=[]
+            if cropdata:
+                for index, imagename in tqdm(enumerate(Data.index.values)):
+                    #load image
+                    image = io.imread(os.path.join(cfg['project_path'],imagename))
+                    if np.ndim(image)==2:
+                        h, w = np.shape(image)
+                    else:
+                        h, w, nc = np.shape(image)
+                    cropindex=0
+                    while cropindex<numcrops:
+                        animalincrop=False
+                        y0,x0=np.random.randint(h-size[0]),np.random.randint(w-size[1])
+                        newimname=str(Path(imagename).stem+'c'+str(cropindex).zfill(indexlength)+'.png')
+
+                        data=Data.ix[index].copy()
+                        for ind in individuals:
+                            if ind == 'single':
+                                for c, bp in enumerate(uniquebodyparts):
+                                    x,y=data[cfg['scorer'],ind,bp,'x'],data[cfg['scorer'],ind,bp,'y']
+                                    if np.isfinite(x) and np.isfinite(y):
+                                        if x>=x0 and round(x,2)<x0+size[1] and round(y,2)>=y0 and y<y0+size[0]:
+                                            data[cfg['scorer'],ind,bp,'x']=round(x,2)-x0
+                                            data[cfg['scorer'],ind,bp,'y']=round(y,2)-y0
+                                            animalincrop=True
+                                        else:
+                                            data[cfg['scorer'],ind,bp,'x']=np.nan
+                                            data[cfg['scorer'],ind,bp,'y']=np.nan
+                            else:
+                                for c, bp in enumerate(multianimalbodyparts):
+                                    x,y=data[cfg['scorer'],ind,bp,'x'],data[cfg['scorer'],ind,bp,'y']
+                                    if np.isfinite(x) and np.isfinite(y):
+                                        if x>=x0 and round(x,2)<x0+size[1] and round(y,2)>=y0 and y<y0+size[0]:
+                                            data[cfg['scorer'],ind,bp,'x']=round(x,2)-x0
+                                            data[cfg['scorer'],ind,bp,'y']=round(y,2)-y0
+                                            animalincrop=True
+                                        else:
+                                            data[cfg['scorer'],ind,bp,'x']=np.nan
+                                            data[cfg['scorer'],ind,bp,'y']=np.nan
+                        if animalincrop:
+                            cropppedimgname = os.path.join(output_path,newimname)
+                            if np.ndim(image)==2:
+                                io.imsave(cropppedimgname,image[y0:y0+size[0],x0:x0+size[1]])
+                            else:
+                                io.imsave(cropppedimgname,image[y0:y0+size[0],x0:x0+size[1],:])
+                            cropindex+=1
+
+                            pdname=os.path.join('labeled-data', newfolder,newimname)
+                            pd_index.append(os.path.join('labeled-data', newfolder,newimname))
+                            if AnnotationData is None:
+                                AnnotationData=data
+                            else:
+                                AnnotationData=pd.concat([AnnotationData, data],axis=1)
+            else:
+                imnames=[os.path.join('labeled-data',folder,fn) for fn in os.listdir(os.path.join(cfg['project_path'],'labeled-data',folder)) if '.png' in fn]
+                for index, imagename in enumerate(imnames):
+                    #load image
+                    image = io.imread(os.path.join(cfg['project_path'],imagename))
+                    if np.ndim(image)==2:
+                        h, w = np.shape(image)
+                    else:
+                        h, w, nc = np.shape(image)
+
+                    for cropindex in range(numcrops):
+                        y0,x0=np.random.randint(h-size[0]),np.random.randint(w-size[1])
+                        newimname=str(Path(imagename).stem+'c'+str(cropindex).zfill(indexlength)+'.png')
+                        cropppedimgname = os.path.join(output_path,newimname)
+                        if np.ndim(image)==2:
+                            io.imsave(cropppedimgname,image[int(y0):int(y0+size[0]),int(x0):int(x0+size[1])])
+                        else:
+                            io.imsave(cropppedimgname,image[int(y0):int(y0+size[0]),int(x0):int(x0+size[1]),:])
+            if cropdata:
+                Data=AnnotationData.T
+                Data.index=pd_index
+                fn_new=os.path.join(str(output_path),'CollectedData_' + cfg['scorer'] + '.h5')
+                Data.to_hdf(fn_new,key='df_with_missing',mode='w')
+                Data.to_csv(fn_new.split('.h5')[0]+'.csv')
+
+            cfg['video_sets'].update({os.path.join('whoknows',str(folder)+'crop.mp4') : {'crop': ', '.join(map(str, [0, size[1], 0, size[0]]))}})
+            #try:
+            #    add.add_new_videos(config,[video],coords=[0, size[0], 0, size[1]]) # make sure you pass coords as a list
+            #except:
+            #    print("Could not add folder to config file! Please do so manually",newfolder)
+
 
 def label_frames(config,multianimal=False):
     """

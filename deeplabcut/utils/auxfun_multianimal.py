@@ -74,8 +74,7 @@ def convertmultianimaltosingleanimaldata(config,userfeedback=True,target=None):
     video_names = [Path(i).stem for i in videos]
     folders = [Path(config).parent / 'labeled-data' /Path(i) for i in video_names]
 
-    prefixes = cfg['individuals']
-    #prefixes.extend(['single'])
+    prefixes, uniquebodyparts, multianimalbodyparts = extractindividualsandbodyparts(cfg)
     for folder in folders:
         if userfeedback==True:
             print("Do you want to convert the annotation file in folder:", folder, "?")
@@ -92,7 +91,7 @@ def convertmultianimaltosingleanimaldata(config,userfeedback=True,target=None):
                 print("This is a multianimal data set, converting to single...",folder)
                 for prfxindex,prefix in enumerate(prefixes):
                     if prefix=='single':
-                        for j,bpt in enumerate(cfg['uniquebodyparts']):
+                        for j,bpt in enumerate(uniquebodyparts):
                             index = pd.MultiIndex.from_product([[cfg['scorer']], [bpt], ['x', 'y']],names=['scorer', 'bodyparts', 'coords'])
                             frame = pd.DataFrame(Data[cfg['scorer']][prefix][bpt].values, columns = index, index = imindex)
                             if j==0:
@@ -100,7 +99,7 @@ def convertmultianimaltosingleanimaldata(config,userfeedback=True,target=None):
                             else:
                                 dataFrame = pd.concat([dataFrame, frame],axis=1)
                     else:
-                        for j,bpt in enumerate(cfg['multianimalbodyparts']):
+                        for j,bpt in enumerate(multianimalbodyparts):
                             index = pd.MultiIndex.from_product([[cfg['scorer']], [prefix+bpt], ['x', 'y']],names=['scorer', 'bodyparts', 'coords'])
                             frame = pd.DataFrame(Data[cfg['scorer']][prefix][bpt].values, columns = index, index = imindex)
                             if j==0:
@@ -122,7 +121,7 @@ def convertmultianimaltosingleanimaldata(config,userfeedback=True,target=None):
                 for prfxindex,prefix in enumerate(prefixes):
                     if prefix=='single':
                         if cfg['uniquebodyparts']!=[None]:
-                            for j,bpt in enumerate(cfg['uniquebodyparts']):
+                            for j,bpt in enumerate(uniquebodyparts):
                                 index = pd.MultiIndex.from_arrays(np.array([2*[cfg['scorer']], 2*[prefix], 2*[bpt], ['x', 'y']]),names=['scorer', 'individuals', 'bodyparts', 'coords'])
                                 if bpt in Data[cfg['scorer']].keys():
                                     frame = pd.DataFrame(Data[cfg['scorer']][bpt].values, columns = index, index = imindex)
@@ -136,7 +135,7 @@ def convertmultianimaltosingleanimaldata(config,userfeedback=True,target=None):
                         else:
                             dataFrame=None
                     else:
-                        for j,bpt in enumerate(cfg['multianimalbodyparts']):
+                        for j,bpt in enumerate(multianimalbodyparts):
                             index = pd.MultiIndex.from_arrays(np.array([2*[cfg['scorer']], 2*[prefix], 2*[bpt], ['x', 'y']]),names=['scorer', 'individuals', 'bodyparts', 'coords'])
                             if prefix+'_'+bpt in Data[cfg['scorer']].keys():
                                 frame = pd.DataFrame(Data[cfg['scorer']][prefix+'_'+bpt].values, columns = index, index = imindex)
