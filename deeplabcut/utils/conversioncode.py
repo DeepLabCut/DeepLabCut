@@ -146,7 +146,7 @@ def analyze_videos_converth5_to_csv(videopath,videotype='.avi'):
          PutativeOutputFiles=[fn for fn in Allh5files if vname in fn]
          for pfn in PutativeOutputFiles:
              scorer=pfn.split(vname)[1].split('.h5')[0]
-             if "DeepCut" in scorer:
+             if "DLC" in scorer or "DeepCut" in scorer:
                  DC = pd.read_hdf(pfn, 'df_with_missing')
                  print("Found output file for scorer:", scorer)
                  print("Converting to csv...")
