@@ -368,13 +368,14 @@ def label_frames(config,multianimal=False):
     wd = Path(config).resolve().parents[0]
     os.chdir(str(wd))
 
-    if multianimal==False:
+    cfg = auxiliaryfunctions.read_config(config)
+    if cfg.get('multianimalproject', False) or multianimal==True:
+        from deeplabcut.generate_training_dataset import multiple_individuals_labeling_toolbox
+        multiple_individuals_labeling_toolbox.show(config)
+    else:
         from deeplabcut.generate_training_dataset import labeling_toolbox
         # labeling_toolbox.show(config,Screens,scale_w,scale_h, winHack, img_scale)
         labeling_toolbox.show(config)
-    else:
-        from deeplabcut.generate_training_dataset import multiple_individuals_labeling_toolbox
-        multiple_individuals_labeling_toolbox.show(config)
 
     os.chdir(startpath)
 

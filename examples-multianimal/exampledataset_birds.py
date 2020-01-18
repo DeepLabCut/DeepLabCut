@@ -11,10 +11,14 @@ video=['/home/alex/Dropbox/InterestingCode/social_datasets/croppedNov18/montblan
 
 #project already created!
 
-path_config_file='/home/alex/Hacking/DLCreleases/DLCdev/examples-multianimal/MontBlanc-Daniel-2019-12-16/config.yaml'
+#path_config_file='/home/alex/Hacking/DLCreleases/DLCdev/examples-multianimal/MontBlanc-Daniel-2019-12-16/config.yaml'
+
+path_config_file='/home/alex/Hacking/DLCdev/examples-multianimal/MontBlanc-Daniel-2019-12-16/config.yaml'
 
 #print("Plot labels...")
 #deeplabcut.check_labels(path_config_file)
 
 
-deeplabcut.cropimagesandlabels(config,userfeedback=False)
+#deeplabcut.cropimagesandlabels(config,userfeedback=False)
+
+deeplabcut.label_frames(path_config_file)
