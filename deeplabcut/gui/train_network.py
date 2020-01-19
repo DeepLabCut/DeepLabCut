@@ -258,7 +258,7 @@ class Train_network(wx.Panel):
             maxiters = int(self.max_iters.Children[0].GetValue())
         else:
             maxiters = int(self.max_iters.GetValue())
-
+            
         deeplabcut.train_network(self.config,shuffle,
                                  trainingsetindex,gputouse=None,
                                  max_snapshots_to_keep=max_snapshots_to_keep,

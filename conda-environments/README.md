@@ -3,14 +3,17 @@
 
 (0) Be sure you have Anaconda 3 installed! https://www.anaconda.com/distribution/, and get familiar with using "cmd" or terminal!
 
-(1) Either go to www.deeplabcut.org to download the correct environment file:
+(1) Either go to www.deeplabcut.org (at the bottom of the page) to download the correct environment file:
 
 <p align="center">
 <img src= https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559946970288-746C71KJ8S0QHRWX6J7K/ke17ZwdGBToddI8pDm48kELMDNUlnb4MkVstKRkN11VZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIgSbWMtmBz9ZfqPOQ4lPb9Tf93k5QH8_hDHLJHb65L6A/installimage.png?format=1000w width="60%">
 </p>
 
 or download or git clone this repo (in the terminal/cmd program, while **in a folder** you wish to place DeepLabCut 
-type ``git clone https://github.com/AlexEMG/DeepLabCut.git`` Now, "cd", i.e. go into, the folder named ``conda-environments``
+type ``git clone https://github.com/AlexEMG/DeepLabCut.git``).\
+Now, always in Terminal (or Command Prompt), go to the folder named ``conda-environments`` using the command "cd" (which stands for change directory). For example, if you downloaded or cloned the repo onto your Desktop, the command may look like:\
+``cd C:\Users\YourUserName\Desktop\DeepLabCut\conda-environments``\
+To get the location right, a cool trick is to drag the folder and drop it into Terminal. Alternatively, you can (on Windows) hold SHIFT and right-click > Copy as path, or (on Mac) right-click and while in the menu press the OPTION key to reveal Copy as Pathname. 
 
 (2) Now, depending on which file you want to use (if **with GPUs**, see extra note below), open the program **terminal** or cmd where you placed the file (i.e. ``cd conda-environments``) and then type: 
 

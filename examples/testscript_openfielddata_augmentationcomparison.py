@@ -95,4 +95,4 @@ for shuffle in [2,3]:
 
 	print("Create Labeled Video and plot")
 	deeplabcut.create_labeled_video(path_config_file,[videofile_path], shuffle=shuffle)
-    deeplabcut.plot_trajectories(path_config_file, [videofile_path], shuffle=shuffle)
+	deeplabcut.plot_trajectories(path_config_file,[videofile_path], shuffle=shuffle)
