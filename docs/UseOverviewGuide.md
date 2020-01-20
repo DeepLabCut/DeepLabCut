@@ -12,8 +12,11 @@ You can have as many projects on your computer as you wish. You can have DeepLab
 <img src=  https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559758477126-B9PU1EFA7L7L1I24Z2EH/ke17ZwdGBToddI8pDm48kH6mtUjqMdETiS6k4kEkCoR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UQf4d-kVja3vCG3Q_2S8RPAcZTZ9JxgjXkf3-Un9aT84H3bqxw7fF48mhrq5Ulr0Hg/howtouseDLC2d_3d-01.png?format=500w width="60%">
  </p>
 
+ **NEW** as of 2.2 we support multi-animal projects. The workflow is highly similar, but with some key steps that differ. Please carefully review the functions below for more details. You can search/look for **maDeepLabCut** for specific steps.
+ 
  **NEW** as of 2.0.7 we support 3D analysis directly inside our package. Please see the [3D details here](/docs/Overviewof3D.md). Here are some tips for scaling up your 2D analysis: https://github.com/AlexEMG/DeepLabCut/wiki/Batch-Processing-your-Analysis
-
+ 
+ 
 You can get started by using our **demo Jupyter Notebooks** [(#1)](/docs/UseOverviewGuide.md#option-1-demo-notebooks), or use **iPython** from the program terminal/cmd [(#2)](/docs/UseOverviewGuide.md#option-2-using-the-program-terminal-start-ipython), or, as of 2.1+, you can use our Project Manager GUI [(#3)](docs/functionDetails.md#deeplabcut-project-manager-gui)!
 
 
@@ -45,7 +48,7 @@ import deeplabcut
 
 ### Option 3: using the Project Manger GUI:
 Start iPython, or if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython``, but otherwise it's the same.
-If you are using DeepLabCut on the cloud, you cannot use the GUIs and you need to first set DLClight=True. Please read more [here](https://github.com/MMathisLab/Docker4DeepLabCut2.0), and in our Protocol paper [here](https://www.nature.com/articles/s41596-019-0176-0).
+If you are using DeepLabCut on the cloud, you cannot use the GUIs and you need to first set DLClight=True. Please read more [here](https://github.com/MMathisLab/Docker4DeepLabCut2.0), and in our Nature Protocols paper [here](https://www.nature.com/articles/s41596-019-0176-0).
 
 Open an ``ipython`` session, import the package, and launch by typing in the terminal:
 ```
@@ -53,6 +56,8 @@ ipython
 import deeplabcut
 deeplabcut.launch_dlc()
 ```
+or simply enter the conda env and in the terminal type: ``python -m deeplabcut``
+
 That's it! Follow the GUI for details
 
 ### Create a New Project:
@@ -60,6 +65,7 @@ That's it! Follow the GUI for details
 ```
 deeplabcut.create_new_project(`Name of the project',`Name of the experimenter', [`Full path of video 1',`Full path of video2',`Full path of video3'], working_directory=`Full path of the working directory',copy_videos=True/False)
 ```
+**maDeepLabCut**: As of 2.2 when you create a project also pass: ``multianimal=True``
 
 - Note, if you are a Ubuntu user the path should look like: ``['/home/username/yourFolder/video1.mp4']``; if you are a Windows user, it should look like: ``[r'C:\username\yourFolder\video1.mp4']``
 - Note, you can also put ``config_path = `` in front of the above line to create the path to the config.yaml that is used in the next step, i.e. ``config_path=deeplabcut.create_project(...)``)
@@ -74,7 +80,9 @@ config_path = '/thefulloutputpath/config.yaml'
 
 ### Configure the Project:
 
-- open the **config.yaml** file (in a text editor (like atom, gedit, vim etc.)), which can be found in the subfolder created when you set your project name, to change parameters and identify label names!
+- open the **config.yaml** file (in a text editor (like atom, gedit, vim etc.)), which can be found in the subfolder created when you set your project name, to change parameters and identify label names! This is a crucial step. 
+
+**maDeepLabCut**: As of 2.2 you also need to modify the config.yaml file, see [here](functionDetails.md#b-configure-the-project).
 
 (PLEASE see more details [here](functionDetails.md#b-configure-the-project))
 
@@ -108,6 +116,13 @@ deeplabcut.extract_frames(config_path,`automatic/manual',`uniform/kmeans', crop=
 ```
 deeplabcut.label_frames(config_path)
 ```
+
+**maDeepLabCut**: As of 2.2 there is a new multi-animal labeling GUI: 
+
+```
+deeplabcut.label_frames(config_path, multianimal=True)
+```
+
 
 (more details [here](functionDetails.md#d-label-frames))
 
