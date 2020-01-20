@@ -143,7 +143,9 @@ OPTIONAL: Checking if the labels were created and stored correctly is beneficial
 is one of the most critical parts for creating the training dataset. The DeepLabCut toolbox provides a function
 ‘check_labels’ to do so. It is used as follows:
 
-    deeplabcut.check_labels(config_path)
+    deeplabcut.check_labels(config_path, visualizeindividuals=True/False)
+    
+**maDeepLabCut:** you can check and plot colors per individual or per body part, just set the flag `visualizeindividuals=True/False`
 
 For each video directory in labeled-data this function creates a subdirectory with **labeled** as a suffix. Those directories contain the frames plotted with the annotated body parts. The user can double check if the body parts are labeled correctly. If they are not correct, the user can re-load the frames (i.e. `deeplabcut.label_frames`), move them around, and click save again.
 
