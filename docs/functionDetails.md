@@ -20,7 +20,7 @@ Thus, this function requires the user to input the enter the name of the project
 Optional arguments specify the working directory, where the project directory will be created, and if the user wants to copy the videos (to the project directory). If the optional argument working\_directory is unspecified, the project directory is created in the current working directory, and if copy\_videos is unspecified symbolic links for the videos are created in the videos directory. Each symbolic link creates a reference to a video and thus eliminates the need to copy the entire video to the video directory (if the videos remain at the original location).
 
 
-    deeplabcut.create_new_project('Name of the project','Name of the experimenter', ['Full path of video 1','Full path of video2','Full path of video3'], working_directory='Full path of the working directory',copy_videos=True/False)
+    deeplabcut.create_new_project('Name of the project','Name of the experimenter', ['Full path of video 1','Full path of video2','Full path of video3'], working_directory='Full path of the working directory',copy_videos=True/False, multianimal=True/False)
            
    NOTE: Windows users, you must input paths as: ``r'C:\Users\computername\Videos\reachingvideo1.avi' `` or
 
@@ -54,6 +54,14 @@ The ``create_new_project`` step writes the following parameters to the configura
 ### (B) Configure the Project
 
 Next, open the **config.yaml** file, which was created during  **create\_new\_project**. You can edit this file in any text editor.  Familiarize yourself with the meaning of the parameters (Box 1). You can edit various parameters, in particular you must add the list of *bodyparts* (or points of interest) that you want to track.
+
+**maDeepLabCut:** You need to edit the config.yaml file to include the following items which specify the animal ID, body parts, and any unique labels:
+
+```
+cfg['individuals']=['bird1','bird2','bird3','birdx','single']
+cfg['uniquebodyparts']=['montblanc']
+cfg['multianimalbodyparts']=['wing','tip']
+```
 
  ### (C) Data Selection (extract frames)
  [DOCSTRING](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#extract_frames) 
@@ -109,7 +117,7 @@ The toolbox provides a function **label_frames** which helps the user to easily 
 an interactive graphical user interface (GUI). The user should have already named the body parts to label (points of
 interest) in the project’s configuration file by providing a list. The following command invokes the labeling toolbox.
 
-    deeplabcut.label_frames(config_path)
+    deeplabcut.label_frames(config_path, multianmial=True/False)
 
 The user needs to use the *Load Frames* button to select the directory which stores the extracted frames from one of
 the videos. Subsequently, the user can use one of the radio buttons (top right) to select a body part to label. RIGHT click to add the label. Left click to drag the label, if needed. If you label a part accidentally, you can use the middle button on your mouse to delete! If you cannot see a body part in the frame, skip over the label! Please see the ``HELP`` button for more user instructions. This auto-advances once you labeled the first body part. You can also advance to the next frame by clicking on the RIGHT arrow on your keyboard (and go to a previous frame with LEFT arrow).
@@ -125,6 +133,8 @@ simply be skipped by not applying the label anywhere on the frame.
 
 OPTIONAL: In the event of adding more labels to the existing labeled dataset, the user need to append the new
 labels to the bodyparts in the config.yaml file. Thereafter, the user can call the function **label_frames**. As of 2.0.5+: then a box will pop up and ask the user if they wish to display all parts, or only add in the new labels. Saving the labels after all the images are labelled will append the new labels to the existing labeled dataset.
+
+**CRITICAL POINT:** For multi-animal labeling, unless you can tell apart the animals, you do not need to worry about the "ID" of each animal. For example: if you have a white and black mouse label the white mouse as animal 1, and black as animal 2 across all frames. If two black mice, then the label 1 or 2 can switch between frames - no need for you to try to indentify them. The point of multi-animal DLC is to train models that can first group the correct bodyparts to individuals, then associate those points in a given video to a specific individual, which then also uses temporal information to link across the video frames.
 
 ###  (E) Check Annotated Frames
 [DOCSTRING](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#check_labels)
