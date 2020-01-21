@@ -22,14 +22,12 @@ else:
 import matplotlib.pyplot as plt
 import yaml
 from deeplabcut import DEBUG
-from deeplabcut.utils import auxiliaryfunctions, auxfun_models
+from deeplabcut.utils import auxiliaryfunctions, auxfun_models, auxfun_multianimal
 from deeplabcut.generate_training_dataset import trainingsetmanipulation
 
 def renamebodyparts(config,pairs):
     """
-
     Rename bodyparts for list of pairs, e.g. [['snout','nose']] rename snout to nose!
-
 
     TODO: FIX THIS!
     """
@@ -56,12 +54,15 @@ def renamebodyparts(config,pairs):
         df.to_csv(os.path.join(str(folder),'CollectedData_'+ cfg['scorer']+"TEST.csv"))
 
 
-def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=False):
+def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=False, net_type=None, numdigits=2):
     """
-    Creates a training dataset. Labels from all the extracted frames are merged into a single .h5 file.\n
+    Creates a training dataset for multi-animal datasets. Labels from all the extracted frames are merged into a single .h5 file.\n
     Only the videos included in the config file are used to create this dataset.\n
-    [OPTIONAL]Use the function 'add_new_video' at any stage of the project to add more videos to the project.
+    [OPTIONAL] Use the function 'add_new_video' at any stage of the project to add more videos to the project.
 
+    Imporant differences to standard:
+     - stores coordinates with numdigits as many digits
+     -
     Parameter
     ----------
     config : string
@@ -75,9 +76,10 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
 
     Example
     --------
-    >>> deeplabcut.create_training_dataset('/analysis/project/reaching-task/config.yaml',num_shuffles=1)
+    >>> deeplabcut.create_multianimaltraining_dataset('/analysis/project/reaching-task/config.yaml',num_shuffles=1)
     Windows:
-    >>> deeplabcut.create_training_dataset('C:\\Users\\Ulf\\looming-task\\config.yaml',Shuffles=[3,17,5])
+    >>> deeplabcut.create_multianimaltraining_dataset'C:\\Users\\Ulf\\looming-task\\config.yaml',Shuffles=[3,17,5])
+
     --------
     """
     from skimage import io
@@ -95,11 +97,18 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
     #actualbpts=set(Data.columns.get_level_values(0))
 
     #loading & linking pretrained models
-    net_type ='resnet_'+str(cfg['resnet'])
+    # CURRENTLY ONLY ResNet supported!
+    if net_type is None: #loading & linking pretrained models
+        net_type =cfg.get('default_net_type', 'resnet_50')
+    else:
+        if 'resnet' in net_type: # or 'mobilenet' in net_type:
+            pass
+        else:
+            raise ValueError('Currently only resnet is supported.')
+
     import deeplabcut
     parent_path = Path(os.path.dirname(deeplabcut.__file__))
     defaultconfigfile = str(parent_path / 'pose_cfg.yaml')
-
     model_path,num_shuffles=auxfun_models.Check4weights(net_type,parent_path,num_shuffles)
 
     if Shuffles==None:
@@ -107,13 +116,7 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
     else:
         Shuffles=[i for i in Shuffles if isinstance(i,int)]
 
-
-    individuals = cfg['individuals']
-    assert('single' not in individuals) #individuals is a reserved word!
-    individuals.extend(['single']) #add single body parts!
-
-    multianimalbodyparts=cfg['multianimalbodyparts'] #can appear multiple times (per individual)
-    uniquebodyparts=cfg['uniquebodyparts'] #for the parts in "single" (only appear onece!)
+    individuals,uniquebodyparts,multianimalbodyparts=auxfun_multianimal.extractindividualsandbodyparts(cfg)
 
     TrainingFraction = cfg['TrainingFraction']
     for shuffle in Shuffles: # Creating shuffles starting from 1
@@ -157,8 +160,8 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
                                     x,y=Data[prefix][socialbdpt]['x'][jj],Data[prefix][socialbdpt]['y'][jj]
                                     if 0<x and x<np.shape(im)[1] and 0<y and y<np.shape(im)[0]: #are labels in image?
                                             joints[indexjoints,0]=int(bpindex)
-                                            joints[indexjoints,1]=round(x,2)
-                                            joints[indexjoints,2]=round(y,2)
+                                            joints[indexjoints,1]=round(x,numdigits)
+                                            joints[indexjoints,2]=round(y,numdigits)
                                             indexjoints+=1
                                 except:
                                     pass

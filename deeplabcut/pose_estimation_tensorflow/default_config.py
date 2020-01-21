@@ -19,7 +19,6 @@ cfg.stride = 8.0
 cfg.weigh_part_predictions = False
 cfg.weigh_negatives = False
 cfg.fg_fraction = 0.25
-cfg.weigh_only_present_joints = False
 cfg.mean_pixel = [123.68, 116.779, 103.939]
 cfg.shuffle = True
 cfg.snapshot_prefix = "./snapshot"
@@ -45,8 +44,14 @@ cfg.dataset_type = "default"
 #you can also set this to deterministic, see https://github.com/AlexEMG/DeepLabCut/pull/324
 cfg.deterministic = False
 
+# for DLC 2.2.
+cfg.weigh_only_present_joints=False
+cfg.pairwise_huber_loss = True
+cfg.partaffinityfield_predict = False
+cfg.pairwise_predict = False
+
 # Parameters for augmentation with regard to cropping
-# Added and described in "Using DeepLabCut for 3D markerless pose estimation across species and behaviors" 
+# Added and described in "Using DeepLabCut for 3D markerless pose estimation across species and behaviors"
 # Source: https://www.nature.com/articles/s41596-019-0176-0
 cfg.crop = False
 

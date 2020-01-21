@@ -28,14 +28,12 @@ else: #standard use [wxpython supported]
     else:
         mpl.use('Agg')
     from deeplabcut import generate_training_dataset
-    from deeplabcut.generate_training_dataset import label_frames, multiple_individual_labeling_toolbox
-    from deeplabcut.generate_training_dataset import dropannotationfileentriesduetodeletedimages, comparevideolistsanddatafolders, dropimagesduetolackofannotation
-    from deeplabcut.generate_training_dataset import cropimagesandlabels
+    from deeplabcut import refine_training_dataset
+    from deeplabcut.generate_training_dataset import label_frames, dropannotationfileentriesduetodeletedimages, comparevideolistsanddatafolders, dropimagesduetolackofannotation
+    from deeplabcut.generate_training_dataset import multiple_individuals_labeling_toolbox
     from deeplabcut.generate_training_dataset import adddatasetstovideolistandviceversa,  dropduplicatesinannotatinfiles
-
     from deeplabcut.gui.launch_script import launch_dlc
 
-    from deeplabcut import refine_training_dataset
     from deeplabcut.refine_training_dataset import refine_labels
     from deeplabcut.utils import select_crop_parameters
 
@@ -55,9 +53,9 @@ from deeplabcut.pose_estimation_3d import calibrate_cameras,check_undistortion,t
 
 from deeplabcut.create_project import create_new_project, create_new_project_3d, add_new_videos, load_demo_data, create_pretrained_human_project
 from deeplabcut.generate_training_dataset import extract_frames
-from deeplabcut.generate_training_dataset import check_labels,create_training_dataset, mergeandsplit, create_training_model_comparison
-from deeplabcut.utils import create_labeled_video,plot_trajectories, auxiliaryfunctions, auxfun_videos
-from deeplabcut.utils import convertcsv2h5, convertannotationdata_fromwindows2unixstyle, analyze_videos_converth5_to_csv, convertmultianimaltosingleanimaldata
+from deeplabcut.generate_training_dataset import check_labels,create_training_dataset, mergeandsplit, create_training_model_comparison, cropimagesandlabels
+from deeplabcut.generate_training_dataset import create_multianimaltraining_dataset
+from deeplabcut.utils import create_labeled_video,plot_trajectories, auxiliaryfunctions, convertcsv2h5, convertannotationdata_fromwindows2unixstyle, analyze_videos_converth5_to_csv, auxfun_videos
 from deeplabcut.utils.auxfun_videos import ShortenVideo, DownSampleVideo
 
 from deeplabcut.version import __version__, VERSION

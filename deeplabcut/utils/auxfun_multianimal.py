@@ -16,8 +16,6 @@ def extractindividualsandbodyparts(cfg):
     individuals=cfg['individuals']
     if len(cfg['uniquebodyparts'])>0:
         individuals.append('single')
-    print(individuals,cfg['uniquebodyparts'],cfg['multianimalbodyparts'])
-
     return individuals,cfg['uniquebodyparts'],cfg['multianimalbodyparts']
 
 def SaveFullMultiAnimalData(data, metadata, dataname,suffix='_full'):

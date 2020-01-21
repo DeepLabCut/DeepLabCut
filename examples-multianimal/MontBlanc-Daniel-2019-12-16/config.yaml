@@ -4,12 +4,15 @@ scorer: Daniel
 date: Dec16
 
     # Project path (change when moving around)
-project_path: /home/alex/Hacking/DLCdev/examples-multianimal/MontBlanc-Daniel-2019-12-16
+project_path: /home/alex/Hacking/DLCreleases/DLCdev/examples-multianimal/MontBlanc-Daniel-2019-12-16
 
     # Annotation data set configuration (and individual video cropping parameters)
 video_sets:
-  videos/montblanc.mov:
-    crop: 0, 1920, 0, 1080
+  videos/montblanccropped.mov:
+    crop: 0, 400, 0, 400
+#  videos/montblanc.mov:
+#    crop: 0, 1920, 0, 1080
+
 bodyparts: MULTI!
 start: 0
 stop: 1

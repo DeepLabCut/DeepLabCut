@@ -70,6 +70,11 @@ locref_stdev: 7.2801
 intermediate_supervision: false
 intermediate_supervision_layer: 12
 
+# For multi-animal version starting with DLC 2.2
+pairwise_huber_loss: false
+partaffinityfield_predict: false
+pairwise_predict: false
+
 # all images larger with size
 # width * height > max_input_size*max_input_size are not used in training.
 # Prevents training from crashing with out of memory exception for very

@@ -31,6 +31,7 @@ from skimage import io
 import yaml
 from deeplabcut import DEBUG
 from deeplabcut.utils import auxiliaryfunctions, conversioncode, auxfun_models, auxfun_multianimal
+from deeplabcut.pose_estimation_tensorflow import training
 
 #matplotlib.use('Agg')
 
@@ -47,7 +48,6 @@ def comparevideolistsanddatafolders(config):
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg['video_sets'].keys()
     video_names = [Path(i).stem for i in videos]
-
     alldatafolders = [fn for fn in os.listdir(Path(config).parent / 'labeled-data') if '_labeled' not in fn]
 
     print("Config file contains:", len(video_names))
@@ -193,7 +193,6 @@ def dropimagesduetolackofannotation(config):
     ----------
     config : string
         String containing the full path of the config file in the project.
-
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg['video_sets'].keys()
@@ -218,22 +217,41 @@ def dropimagesduetolackofannotation(config):
 
         annotatedimages=[fn.split(os.sep)[-1] for fn in DC.index]
         imagelist=[fns for fns in os.listdir(str(folder)) if '.png' in fns]
-        print("PROCESSED:", folder, " now annotated images: ", len(annotatedimages)," In folder:", len(imagelist))
+        print("PROCESSED:", folder, " now # of annotated images: ", len(annotatedimages)," in folder:", len(imagelist))
 
-def cropimagesandlabels(config,numcrops=10,size=(400,400),cropdata=True,userfeedback=True):
-    ''' Size in height x width '''
+def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True, cropdata=True):
     """
     Crop images into multiple random crops (defined by numcrops) of size dimensions. If cropdata=True then the
     annotation data is loaded and labels for cropped images are inherited. If false, then one can make crops for unlabeled folders.
 
-    Parameter
+    This can be helpul for large frames with multiple animals. Then a smaller set of equally sized images is created.
+
+    Parameters
     ----------
     config : string
         String containing the full path of the config file in the project.
+
+    numcrops: number of random crops (around random bodypart)
+
+    size: height x width in pixels
+
+    userfeedback: bool, optional
+        If this is set to false, then all requested train/test splits are created (no matter if they already exist). If you
+        want to assure that previous splits etc. are not overwritten, then set this to True and you will be asked for each split.
+
+    cropdata: bool, default True:
+        If true creates corresponding annotation data (from ground truth)
+
+    Example
+    --------
+    for labeling the frames
+    >>> deeplabcut.cropimagesandlabels('/analysis/project/reaching-task/config.yaml')
+    --------
     """
 
     #from deeplabcut.create_project import add
     from skimage import io
+    from tqdm import tqdm
 
     indexlength = int(np.ceil(np.log10(numcrops)))
     cfg = auxiliaryfunctions.read_config(config)
@@ -268,6 +286,7 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400),cropdata=True,userfeed
                     else:
                         h, w, nc = np.shape(image)
                     cropindex=0
+                    attempts=-1
                     while cropindex<numcrops:
                         animalincrop=False
                         y0,x0=np.random.randint(h-size[0]),np.random.randint(w-size[1])
@@ -297,7 +316,8 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400),cropdata=True,userfeed
                                         else:
                                             data[cfg['scorer'],ind,bp,'x']=np.nan
                                             data[cfg['scorer'],ind,bp,'y']=np.nan
-                        if animalincrop:
+                        attempts+=1 #for images without any animals!
+                        if animalincrop or attempts>10:
                             cropppedimgname = os.path.join(output_path,newimname)
                             if np.ndim(image)==2:
                                 io.imsave(cropppedimgname,image[y0:y0+size[0],x0:x0+size[1]])
@@ -311,6 +331,7 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400),cropdata=True,userfeed
                                 AnnotationData=data
                             else:
                                 AnnotationData=pd.concat([AnnotationData, data],axis=1)
+
             else:
                 imnames=[os.path.join('labeled-data',folder,fn) for fn in os.listdir(os.path.join(cfg['project_path'],'labeled-data',folder)) if '.png' in fn]
                 for index, imagename in enumerate(imnames):
@@ -329,6 +350,7 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400),cropdata=True,userfeed
                             io.imsave(cropppedimgname,image[int(y0):int(y0+size[0]),int(x0):int(x0+size[1])])
                         else:
                             io.imsave(cropppedimgname,image[int(y0):int(y0+size[0]),int(x0):int(x0+size[1]),:])
+
             if cropdata:
                 Data=AnnotationData.T
                 Data.index=pd_index
@@ -337,13 +359,8 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400),cropdata=True,userfeed
                 Data.to_csv(fn_new.split('.h5')[0]+'.csv')
 
             cfg['video_sets'].update({os.path.join('whoknows',str(folder)+'crop.mp4') : {'crop': ', '.join(map(str, [0, size[1], 0, size[0]]))}})
-            #try:
-            #    add.add_new_videos(config,[video],coords=[0, size[0], 0, size[1]]) # make sure you pass coords as a list
-            #except:
-            #    print("Could not add folder to config file! Please do so manually",newfolder)
 
-
-def label_frames(config,multianimal=False):
+def label_frames(config,multiple=False):
     """
     Manually label/annotate the extracted frames. Update the list of body parts you want to localize in the config.yaml file first.
 
@@ -356,7 +373,6 @@ def label_frames(config,multianimal=False):
         If this is set to True, a user can label multiple individuals.
         The default is ``False``; if provided it must be either ``True`` or ``False``.
 
-
     Example
     --------
     To label multiple individuals
@@ -368,23 +384,18 @@ def label_frames(config,multianimal=False):
     wd = Path(config).resolve().parents[0]
     os.chdir(str(wd))
 
-    cfg = auxiliaryfunctions.read_config(config)
-    if cfg.get('multianimalproject', False) or multianimal==True:
-        from deeplabcut.generate_training_dataset import multiple_individuals_labeling_toolbox
-        multiple_individuals_labeling_toolbox.show(config)
-    else:
+    if multiple==False:
         from deeplabcut.generate_training_dataset import labeling_toolbox
+
         # labeling_toolbox.show(config,Screens,scale_w,scale_h, winHack, img_scale)
         labeling_toolbox.show(config)
+    else:
+        from deeplabcut.generate_training_dataset import multiple_individual_labeling_toolbox
+        multiple_individual_labeling_toolbox.show(config)
 
     os.chdir(startpath)
 
-def get_cmap(n, name='jet'):
-    '''Returns a function that maps each index in 0, 1, ..., n-1 to a distinct
-    RGB color; the keyword argument name must be a standard mpl colormap name.'''
-    return plt.cm.get_cmap(name, n)
-
-def check_labels(config, Labels = ['+','.','x'],scale = 1):
+def check_labels(config,Labels = ['+','.','x'],scale = 1,draw_skeleton=True,visualizeindividuals=True):
     """
     Double check if the labels were at correct locations and stored in a proper file format.\n
     This creates a new subdirectory for each video under the 'labeled-data' and all the frames are plotted with the labels.\n
@@ -400,30 +411,44 @@ def check_labels(config, Labels = ['+','.','x'],scale = 1):
     scale : float, default =1
         Change the relative size of the output images.
 
+    draw_skeleton: bool, default True.
+        Plot skeleton overlaid over body parts.
+
+    visualizeindividuals: bool, default True:
+        For a multianimal project the different individuals have different colors (and all bodyparts the same).
+        If False, the colors change over bodyparts rather than individuals.
+
     Example
     --------
     for labeling the frames
     >>> deeplabcut.check_labels('/analysis/project/reaching-task/config.yaml')
     --------
     """
+    from deeplabcut.utils import visualization
+
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg['video_sets'].keys()
     video_names = [Path(i).stem for i in videos]
 
-    #plotting parameters:
+   #plotting parameters:
     cc = 0 # label index / here only 0, for human labeler
-    if cfg.get('multianimalproject', False):
-        print("Plotting for data for multiple individuals.")
-        Colorscheme = get_cmap(len( cfg['uniquebodyparts']+cfg['multianimalbodyparts']),cfg['colormap'])
+    if cfg.get('multianimalproject',False):
+        individuals,uniquebodyparts,multianimalbodyparts=auxfun_multianimal.extractindividualsandbodyparts(cfg)
+        if visualizeindividuals:
+            Colorscheme = visualization.get_cmap(len(individuals),cfg['colormap'])
+        else:
+            Colorscheme = visualization.get_cmap(max(len(uniquebodyparts),len(multianimalbodyparts)),cfg['colormap'])
     else:
-        Colorscheme = get_cmap(len( cfg['bodyparts']),cfg['colormap'])
+        Colorscheme = visualization.get_cmap(len( cfg['bodyparts']),cfg['colormap'])
+
     #folders = [Path(config).parent / 'labeled-data' /Path(i) for i in video_names]
     folders = [os.path.join(cfg['project_path'],'labeled-data',str(Path(i))) for i in video_names]
     print("Creating images with labels by %s." %cfg['scorer'])
     for folder in folders:
         try:
+
             DataCombined = pd.read_hdf(os.path.join(str(folder),'CollectedData_' + cfg['scorer'] + '.h5'), 'df_with_missing')
-            MakeLabeledPlots(folder,DataCombined,cfg,Labels,Colorscheme,cc,scale)
+            visualization.MakeLabeledPlots(folder,DataCombined,cfg,Labels,Colorscheme,cc,scale,visualizeindividuals,draw_skeleton)
         except FileNotFoundError:
             print("Attention:", folder, "does not appear to have labeled data!")
 
@@ -432,10 +457,6 @@ def check_labels(config, Labels = ['+','.','x'],scale = 1):
 def MakeLabeledPlots(folder,DataCombined,cfg,Labels,Colorscheme,cc,scale):
     tmpfolder = str(folder) + '_labeled'
     auxiliaryfunctions.attempttomakefolder(tmpfolder)
-
-    if cfg.get('multianimalproject', False):
-        individuals,uniquebodyparts,multianimalbodyparts = auxfun_multianimal.extractindividualsandbodyparts(cfg)
-
     for index, imagename in enumerate(DataCombined.index.values):
         image = io.imread(os.path.join(cfg['project_path'],imagename))
         plt.axis('off')
@@ -454,35 +475,15 @@ def MakeLabeledPlots(folder,DataCombined,cfg,Labels,Colorscheme,cc,scale):
         if index==0:
             print("They are stored in the following folder: %s." %tmpfolder) #folder)
 
-        if cfg.get('multianimalproject', False):
-            for prfxindex,prefix in enumerate(individuals):
-                if prefix=='single':
-                    for c, bp in enumerate(cfg['uniquebodyparts']):
-                        plt.plot(
-                            DataCombined[cfg['scorer']][prefix][bp]['x'].values[index],
-                            DataCombined[cfg['scorer']][prefix][bp]['y'].values[index],
-                            Labels[cc],
-                            color=Colorscheme(c),
-                            alpha=cfg['alphavalue'],
-                            ms=cfg['dotsize'])
-                else:
-                    for c, bp in enumerate(cfg['multianimalbodyparts']):
-                        plt.plot(
-                            DataCombined[cfg['scorer']][prefix][bp]['x'].values[index],
-                            DataCombined[cfg['scorer']][prefix][bp]['y'].values[index],
-                            Labels[cc],
-                            color=Colorscheme(len(cfg['uniquebodyparts'])+c),
-                            alpha=cfg['alphavalue'],
-                            ms=cfg['dotsize'])
-        else:
-            for c, bp in enumerate(cfg['bodyparts']):
-                plt.plot(
+        for c, bp in enumerate(cfg['bodyparts']):
+            plt.plot(
                 DataCombined[cfg['scorer']][bp]['x'].values[index],
                 DataCombined[cfg['scorer']][bp]['y'].values[index],
                 Labels[cc],
                 color=Colorscheme(c),
                 alpha=cfg['alphavalue'],
                 ms=cfg['dotsize'])
+
         plt.xlim(0, w)
         plt.ylim(0, h)
         plt.axis('off')
