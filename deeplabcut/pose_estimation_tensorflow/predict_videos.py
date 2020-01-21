@@ -470,7 +470,8 @@ def AnalyzeVideo(video,DLCscorer,DLCscorerlegacy,trainFraction,cfg,dlc_cfg,sess,
     if notanalyzed:
         print("Loading ", video)
         cap=cv2.VideoCapture(video)
-
+        if not cap.isOpened():
+            raise IOError('Video could not be opened. Please check that the path is valid.')
         fps = cap.get(5) #https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
         nframes = int(cap.get(7))
         duration=nframes*1./fps
