@@ -441,16 +441,16 @@ def PlottingSingleFramecv2(cap,cv2,crop,coords,Dataframe,bodyparts2plot,tmpfolde
         imagename1 = os.path.join(tmpfolder,"img"+str(index).zfill(strwidth)+".png")
         imagename2 = os.path.join(tmpfolder,"img"+str(index).zfill(strwidth)+"labeled.png")
 
-        if os.path.isfile(os.path.join(tmpfolder,"img"+str(index).zfill(strwidth)+".png")):
-            pass
-        else:
+        if not os.path.isfile(imagename1):
             plt.axis('off')
-            cap.set(1,index)
+            cap.set(1, index)
             ret, frame = cap.read()
-            if ret:
-                image=img_as_ubyte(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-                if crop:
-                    image=image[int(coords[2]):int(coords[3]),int(coords[0]):int(coords[1]),:]
+            if not ret:
+                print('Frame could not be read.')
+                return
+            image = img_as_ubyte(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            if crop:
+                image = image[int(coords[2]):int(coords[3]), int(coords[0]):int(coords[1]), :]
 
             io.imsave(imagename1,image)
 
