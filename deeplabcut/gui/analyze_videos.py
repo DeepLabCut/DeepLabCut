@@ -109,7 +109,23 @@ class Analyze_videos(wx.Panel):
         self.csv.SetSelection(1)
 
         self.cropping = wx.RadioBox(self, label='Want to crop the videos?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
+        self.cropping.Bind(wx.EVT_RADIOBOX, self.input_crop_coords)
         self.cropping.SetSelection(1)
+        self.crop_text = wx.StaticBox(self, label='Crop coordinates')
+        self.crop_sizer = wx.StaticBoxSizer(self.crop_text, wx.VERTICAL)
+        self.crop_widgets = []
+        for coord in 'x1', 'x2', 'y1', 'y2':
+            temp_sizer = wx.BoxSizer(wx.HORIZONTAL)
+            label = wx.StaticText(self, label=coord)
+            text = wx.TextCtrl(self)
+            self.crop_widgets.append([label, text])
+            temp_sizer.Add(label, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+            temp_sizer.Add(text, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+            self.crop_sizer.Add(temp_sizer)
+        self.crop_sizer.ShowItems(False)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(self.cropping, 10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+        hbox.Add(self.crop_sizer, 10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
         self.dynamic = wx.RadioBox(self, label='Want to dynamically crop bodyparts?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
         self.dynamic.SetSelection(1)
@@ -150,7 +166,7 @@ class Analyze_videos(wx.Panel):
         hbox2.Add(self.trajectory_to_plot,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         boxsizer.Add(hbox2,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
-        hbox3.Add(self.cropping,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+        hbox3.Add(hbox, 10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         hbox3.Add(self.dynamic,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         hbox3.Add(self.create_labeled_videos,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         boxsizer.Add(hbox3,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
@@ -159,8 +175,6 @@ class Analyze_videos(wx.Panel):
         hbox4.Add(trail_pointsboxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         boxsizer.Add(hbox4,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
         self.sizer.Add(boxsizer, pos=(4, 0), span=(1, 10),flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT , border=10)
-
-
 
         self.help_button = wx.Button(self, label='Help')
         self.sizer.Add(self.help_button, pos=(5, 0), flag=wx.LEFT, border=10)
@@ -244,9 +258,9 @@ class Analyze_videos(wx.Panel):
             save_as_csv = False
 
         if self.cropping.GetStringSelection() == "No":
-            cropping = None
+            crop = None
         else:
-            cropping = True
+            crop = [int(text.GetValue()) for _, text in self.crop_widgets]
 
         if self.dynamic.GetStringSelection() == "No":
             dynamic = (False, .5, 10)
@@ -264,7 +278,9 @@ class Analyze_videos(wx.Panel):
         #     self.draw = True
 
 #        print(self.config,self.filelist,self.videotype.GetValue(),shuffle,trainingsetindex,gputouse=None,save_as_csv=save_as_csv,destfolder=self.destfolder,cropping=cropping)
-        deeplabcut.analyze_videos(self.config,self.filelist,videotype=self.videotype.GetValue(),shuffle=shuffle,trainingsetindex=trainingsetindex,gputouse=None,save_as_csv=save_as_csv,destfolder=self.destfolder,cropping=cropping, dynamic=dynamic)
+        deeplabcut.analyze_videos(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle,
+                                  trainingsetindex=trainingsetindex, gputouse=None, save_as_csv=save_as_csv,
+                                  destfolder=self.destfolder, crop=crop, dynamic=dynamic)
         if self.filter.GetStringSelection() == "Yes":
             deeplabcut.filterpredictions(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex, filtertype='median', windowlength=5, p_bound=0.001, ARdegree=3, MAdegree=1, alpha=0.01, save_as_csv=True, destfolder=self.destfolder)
 
@@ -291,6 +307,9 @@ class Analyze_videos(wx.Panel):
         self.filter.SetSelection(1)
         self.trajectory.SetSelection(1)
         self.cropping.SetSelection(1)
+        for _, text in self.crop_widgets:
+            text.SetValue('')
+        self.crop_sizer.ShowItems(False)
         self.dynamic.SetSelection(1)
         self.create_labeled_videos.SetSelection(1)
         self.sel_destfolder.SetPath("None")
@@ -306,13 +325,19 @@ class Analyze_videos(wx.Panel):
         if self.trajectory.GetStringSelection() == 'Yes':
             self.trajectory_to_plot.Show()
             self.getbp(event)
-            self.SetSizer(self.sizer)
-            self.sizer.Fit(self) #this sets location.
         if self.trajectory.GetStringSelection() == 'No':
             self.trajectory_to_plot.Hide()
-            self.SetSizer(self.sizer)
-            self.sizer.Fit(self)
             self.bodyparts = []
+        self.SetSizer(self.sizer)
+        self.sizer.Fit(self)
+
+    def input_crop_coords(self, event):
+        if self.cropping.GetStringSelection() == "No":
+            self.crop_sizer.ShowItems(False)
+        elif self.cropping.GetStringSelection() == "Yes":
+            self.crop_sizer.ShowItems(True)
+        self.SetSizer(self.sizer)
+        self.sizer.Fit(self)
 
     def getbp(self,event):
         self.bodyparts = list(self.trajectory_to_plot.GetCheckedStrings())

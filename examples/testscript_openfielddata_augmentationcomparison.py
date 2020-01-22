@@ -91,7 +91,7 @@ for shuffle in [2,3]:
 
 	videofile_path = os.path.join(os.getcwd(),'openfield-Pranav-2018-10-30','videos','m3v1mp4.mp4')
 
-	deeplabcut.analyze_videos(path_config_file,[videofile_path], shuffle=shuffle)
+    deeplabcut.analyze_videos(path_config_file, [videofile_path], shuffle=shuffle)
 
 	print("Create Labeled Video and plot")
 	deeplabcut.create_labeled_video(path_config_file,[videofile_path], shuffle=shuffle)
