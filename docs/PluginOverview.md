@@ -16,9 +16,8 @@ DeepLabCut currently comes with 2 "default" plugins:
 
 ### Using Plugins
 
-DeepLabCut comes with some default plugins. To list all the currently
-installed plugins, call the method below from the python or ipython 
-console:
+To list all the currently installed plugins, call the method below from
+the python or ipython console:
 
 ```python
 # Make sure you have imported DeepLabCut first.
@@ -28,8 +27,8 @@ deeplabcut.list_predictor_plugins()
 The above method will load all the currently available plugins, and
 display their names followed by their descriptions. To run one of 
 these plugins on a video, (assuming you already have a project and have 
-trained a network) simply pass the plugin's name to analyze_videos like
-below:
+a trained network) simply pass the plugin's name to analyze_videos
+like below:
 
 ```python
 deeplabcut.analyze_videos(config_path, ["/fullpath/project/videos/"], predictor="plugin_name")
@@ -208,8 +207,8 @@ which are key to the workflow of a plugin.
 
 The new api also allows for automated testing of plugins by a rather 
 primitive testing API. A plugin specifies it test methods by 
-returning a list of callable from the `get_test`. These methods should 
-accept no arguments and return a boolean and two strings. The boolean
+returning a list of callable from the `get_test` method. These methods 
+should accept no arguments and return a boolean and two strings. The boolean
 determines if the test was successful, and the two strings represent 
 the expected and actual results. In order to run plugin tests, simply
 use the `deeplabcut.test_predictor_plugin` method as shown below:
