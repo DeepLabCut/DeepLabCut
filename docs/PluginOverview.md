@@ -128,7 +128,7 @@ from typing import Union, List, Tuple, Any, Callable, Dict
 from deeplabcut.pose_estimation_tensorflow.nnet.processing import Predictor, TrackingData, Pose
 
 
-class SingleArgMaxPredict(Predictor):
+class PrintAndPredict(Predictor):
     """
     A simple example plugin which prints frames to the command line...
     """
