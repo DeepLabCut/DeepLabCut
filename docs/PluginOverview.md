@@ -3,21 +3,29 @@
 The DeepLabCut plugin system allows for the rapid development of new 
 pose prediction algorithms. These plugins accept raw probability data
 (TrackingData) from DeepLabCut and return the expected locations of 
-body parts (Poses). Below is a simple guide which entails how to create
+body parts (Poses). Below is a simple guide that describes how to create
 your own plugins and use them in DeepLabCut
 
 ### Default Plugins
 
 DeepLabCut currently comes with 2 "default" plugins:
- - "argmax": The default plugin, makes predictions by simply finding the 
+ - "argmax": The default plugin, which makes predictions by simply finding the 
    point with the highest probability within the probability frame.
  - "plotterargmax": Makes predictions in the same exact way as "argmax",
    but also outputs the probability maps to a video for visualization
 
 ### Using Plugins
 
-To list all the currently installed plugins, call the method below from
-the python or ipython console:
+Given an existing project and trained network, a prediction plugin can be 
+applied to a video by identifying the plugin in the to analyze_videos() 
+function call:
+
+```python
+deeplabcut.analyze_videos(config_path, ["/fullpath/project/videos/"], predictor="plugin_name")
+``
+
+To list all the currently installed plugins, call the list_predictor_plugins()
+from the python or ipython console:
 
 ```python
 # Make sure you have imported DeepLabCut first.
@@ -25,19 +33,13 @@ import deeplabcut
 deeplabcut.list_predictor_plugins()
 ```
 The above method will load all the currently available plugins, and
-display their names followed by their descriptions. To run one of 
-these plugins on a video, (assuming you already have a project and have 
-a trained network) simply pass the plugin's name to analyze_videos
-like below:
+display their names followed by their descriptions. `
 
-```python
-deeplabcut.analyze_videos(config_path, ["/fullpath/project/videos/"], predictor="plugin_name")
-```
 
 ##### Plugin Settings:
 
 Some plugins will come with settings that can be configured from the
-config.yaml. To list the settings of plugins, the 
+config.yaml. To list the settings of plugins,  the 
 `deeplabcut.get_predictor_settings` method can be used, as below:
 
 ```python
@@ -59,7 +61,7 @@ predictors:
     "another_setting": Value
 ```
 
-For example, the default "plotterargmax" plugin offers several settings 
+For example, the "plotterargmax" plugin offers several settings 
 which allow the user to modify the appearance of the probability maps in 
 the final rendered video. An example configuration in the config.yaml 
 is shown below:
@@ -94,14 +96,14 @@ as a prediction plugin, there are 2 requirements:
 
 ##### Creating An Example Plugin
 
-To begin, you will need to find where your DeepLabCut install is located
-at, and set it as your working directory. One way to do this is to open 
+To begin, you will need to find where your DeepLabCut install is located, 
+and set it as your working directory. One way to do this is to open 
 the ipython console and execute the commands below:
 
 ```python
 import deeplabcut
 dlcpath = list(deeplabcut.__path__)[0]
-# To just print the install directory...
+# To print the install directory...
 print(dlcpath)
 # To cd into the install directory...
 cd $dlcpath
@@ -184,11 +186,11 @@ class SingleArgMaxPredict(Predictor):
         return True
 ```
 
-Now you can run your plugin! (Look at "Using Plugins").
+Now you can run your plugin! (See "Using Plugins", above).
 
 ##### Key Predictor Methods
 Of the abstract methods overridden by a predictor plugin, there are 3
-which are key to the workflow of a plugin.
+that are key to the workflow of a plugin.
 
  - `__init__`: Where a plugin should configure settings, setup needed 
                data structures, and initialize anything else that is 
@@ -205,7 +207,7 @@ which are key to the workflow of a plugin.
 
 ##### Testing for Plugins
 
-The new api also allows for automated testing of plugins by a rather 
+The api also allows for automated testing of plugins by a rather 
 primitive testing API. A plugin specifies its test methods by 
 returning a list of callable from the `get_test` method. These methods 
 should accept no arguments and return a boolean and two strings. The boolean
