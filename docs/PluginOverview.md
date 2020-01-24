@@ -206,7 +206,7 @@ which are key to the workflow of a plugin.
 ##### Testing for Plugins
 
 The new api also allows for automated testing of plugins by a rather 
-primitive testing API. A plugin specifies it test methods by 
+primitive testing API. A plugin specifies its test methods by 
 returning a list of callable from the `get_test` method. These methods 
 should accept no arguments and return a boolean and two strings. The boolean
 determines if the test was successful, and the two strings represent 
