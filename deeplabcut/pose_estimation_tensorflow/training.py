@@ -128,11 +128,11 @@ def train_network(config,shuffle=1,trainingsetindex=0,
             os.environ['CUDA_VISIBLE_DEVICES'] = str(gputouse)
     try:
         cfg_dlc = auxiliaryfunctions.read_plainconfig(poseconfigfile)
-          if 'multi-animal' in cfg_dlc['dataset_type']:
+        if 'multi-animal' in cfg_dlc['dataset_type']:
               from deeplabcut.pose_estimation_tensorflow.train_multianimal import train
               print("Selecting multi-animal trainer")
               train(str(poseconfigfile),displayiters,saveiters,maxiters,max_to_keep=max_snapshots_to_keep,keepdeconvweights=keepdeconvweights,allow_growth=allow_growth) #pass on path and file name for pose_cfg.yaml!
-          else:
+        else:
             from deeplabcut.pose_estimation_tensorflow.train import train
             print("Selecting single-animal trainer")
             train(str(poseconfigfile),displayiters,saveiters,maxiters,max_to_keep=max_snapshots_to_keep,keepdeconvweights=keepdeconvweights,allow_growth=allow_growth) #pass on path and file name for pose_cfg.yaml!

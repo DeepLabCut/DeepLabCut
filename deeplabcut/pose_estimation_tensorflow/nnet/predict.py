@@ -1,7 +1,13 @@
-'''
-Adapted from original predict.py by Eldar Insafutdinov's implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow)
+"""
+DeepLabCut2.0 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
+https://github.com/AlexEMG/DeepLabCut
 
-Source: DeeperCut by Eldar Insafutdinov
+Please see AUTHORS for contributors.
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
+
+Adapted from DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
 
 To do faster inference on videos (with numpy based code; introduced in Oct 2018)
@@ -14,7 +20,7 @@ To do even faster inference on videos (with TensorFlow based code; introduced in
 Pretraining boosts out-of-domain robustness for pose estimation
 by Alexander Mathis, Mert Yüksekgönül, Byron Rogers, Matthias Bethge, Mackenzie W. Mathis
 https://arxiv.org/abs/1909.11229
-'''
+"""
 
 import numpy as np
 import tensorflow as tf

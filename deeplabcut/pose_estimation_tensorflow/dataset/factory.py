@@ -37,7 +37,11 @@ def create(cfg):
         print("Starting with imgaug pose-dataset loader.")
         from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset_imgaug import PoseDataset
         data = PoseDataset(cfg)
-
+        
+    elif dataset_type=='multi-animal-imgaug':
+        print("Starting with multi-animal imaug + adam pose-dataset loader.")
+        from deeplabcut.pose_estimation_tensorflow.dataset.pose_multianimal_imgaug import MAPoseDataset
+        data = MAPoseDataset(cfg)
     else:
         raise Exception("Unsupported dataset_type: \"{}\"".format(dataset_type))
 

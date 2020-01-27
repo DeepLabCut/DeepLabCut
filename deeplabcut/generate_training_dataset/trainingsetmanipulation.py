@@ -17,23 +17,13 @@ import matplotlib as mpl
 import logging
 import platform
 from functools import lru_cache
-
-
-if os.environ.get('DLClight', default=False) == 'True':
-    mpl.use('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
-elif platform.system() == 'Darwin':
-    mpl.use('WxAgg') #TkAgg
-else:
-    mpl.use('TkAgg')
-import matplotlib.pyplot as plt
 from skimage import io
+
 
 import yaml
 from deeplabcut import DEBUG
 from deeplabcut.utils import auxiliaryfunctions, conversioncode, auxfun_models, auxfun_multianimal
 from deeplabcut.pose_estimation_tensorflow import training
-
-#matplotlib.use('Agg')
 
 def comparevideolistsanddatafolders(config):
     """
@@ -248,9 +238,6 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True, cr
     >>> deeplabcut.cropimagesandlabels('/analysis/project/reaching-task/config.yaml')
     --------
     """
-
-    #from deeplabcut.create_project import add
-    from skimage import io
     from tqdm import tqdm
 
     indexlength = int(np.ceil(np.log10(numcrops)))
@@ -454,46 +441,6 @@ def check_labels(config,Labels = ['+','.','x'],scale = 1,draw_skeleton=True,visu
 
     print("If all the labels are ok, then use the function 'create_training_dataset' to create the training dataset!")
 
-def MakeLabeledPlots(folder,DataCombined,cfg,Labels,Colorscheme,cc,scale):
-    tmpfolder = str(folder) + '_labeled'
-    auxiliaryfunctions.attempttomakefolder(tmpfolder)
-    for index, imagename in enumerate(DataCombined.index.values):
-        image = io.imread(os.path.join(cfg['project_path'],imagename))
-        plt.axis('off')
-
-        if np.ndim(image)==2:
-            h, w = np.shape(image)
-        else:
-            h, w, nc = np.shape(image)
-
-        plt.figure(
-            frameon=False, figsize=(w * 1. / 100 * scale, h * 1. / 100 * scale))
-        plt.subplots_adjust(
-            left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-
-        plt.imshow(image, 'gray')
-        if index==0:
-            print("They are stored in the following folder: %s." %tmpfolder) #folder)
-
-        for c, bp in enumerate(cfg['bodyparts']):
-            plt.plot(
-                DataCombined[cfg['scorer']][bp]['x'].values[index],
-                DataCombined[cfg['scorer']][bp]['y'].values[index],
-                Labels[cc],
-                color=Colorscheme(c),
-                alpha=cfg['alphavalue'],
-                ms=cfg['dotsize'])
-
-        plt.xlim(0, w)
-        plt.ylim(0, h)
-        plt.axis('off')
-        plt.subplots_adjust(
-            left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-        plt.gca().invert_yaxis()
-
-        #plt.savefig(str(Path(tmpfolder)/imagename.split(os.sep)[-1]))
-        plt.savefig(os.path.join(tmpfolder,str(Path(imagename).name))) #create file name also on Windows for Unix projects (and vice versa)
-        plt.close("all")
 
 def boxitintoacell(joints):
     ''' Auxiliary function for creating matfile.'''

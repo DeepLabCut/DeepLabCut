@@ -1,9 +1,11 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Created on Mon Feb 11 16:38:55 2019
+DeepLabCut2.2 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
+https://github.com/AlexEMG/DeepLabCut
 
-@author: alex
+Please see AUTHORS for contributors.
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
 """
 
 from pathlib import Path
@@ -53,7 +55,6 @@ def renamebodyparts(config,pairs):
         #DC.to_hdf(fn, key='df_with_missing', mode='w')
         df.to_csv(os.path.join(str(folder),'CollectedData_'+ cfg['scorer']+"TEST.csv"))
 
-
 def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=False, net_type=None, numdigits=2):
     """
     Creates a training dataset for multi-animal datasets. Labels from all the extracted frames are merged into a single .h5 file.\n
@@ -62,7 +63,7 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
 
     Imporant differences to standard:
      - stores coordinates with numdigits as many digits
-     -
+     - creates
     Parameter
     ----------
     config : string
@@ -77,9 +78,9 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
     Example
     --------
     >>> deeplabcut.create_multianimaltraining_dataset('/analysis/project/reaching-task/config.yaml',num_shuffles=1)
-    Windows:
-    >>> deeplabcut.create_multianimaltraining_dataset'C:\\Users\\Ulf\\looming-task\\config.yaml',Shuffles=[3,17,5])
 
+    Windows:
+    >>> deeplabcut.create_multianimaltraining_dataset(r'C:\\Users\\Ulf\\looming-task\\config.yaml',Shuffles=[3,17,5])
     --------
     """
     from skimage import io
@@ -105,6 +106,13 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
             pass
         else:
             raise ValueError('Currently only resnet is supported.')
+
+    #multianimal case:
+    dataset_type='multi-animal-imgaug'
+    partaffinityfield_graph=auxfun_multianimal.getpafgraph(cfg)
+    print("Utilizing the following graph:", partaffinityfield_graph)
+    num_limbs=len(partaffinityfield_graph)
+    partaffinityfield_predict=True
 
     import deeplabcut
     parent_path = Path(os.path.dirname(deeplabcut.__file__))
@@ -237,7 +245,15 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
                     "project_path": str(cfg['project_path']),
                     "net_type": net_type,
                     "pairwise_loss_weight": .1,
-                    "pafwidth": 20
+                    "pafwidth": 20,
+                    "partaffinityfield_graph": partaffinityfield_graph,
+                    "partaffinityfield_predict": partaffinityfield_predict,
+                    "weigh_only_present_joints": False,
+                    "num_limbs": len(partaffinityfield_graph),
+                    "dataset_type": dataset_type,
+                    "optimzer": "adam",
+                    "batch_size": 16,
+                    "multi_step": [[1e-4, 7500], [5*1e-5, 12000], [1e-5, 50000]]
                 }
                 defaultconfigfile = str(Path(deeplabcut.__file__).parents[0] / 'pose_cfg.yaml')
 
@@ -245,8 +261,11 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
                 keys2save = [
                     "dataset", "num_joints", "all_joints", "all_joints_names",
                     "net_type", 'init_weights', 'global_scale', 'location_refinement',
-                    'locref_stdev', 'dataset_type', 'partaffinityfield_predict', 'pairwise_predict'
+                    'locref_stdev', 'dataset_type',
+                    'partaffinityfield_predict', 'pairwise_predict',
+                    'num_limbs', 'dataset_type'
                 ]
+
                 trainingsetmanipulation.MakeTest_pose_yaml(trainingdata, keys2save,path_test_config)
                 print("The training dataset is successfully created. Use the function 'train_network' to start training. Happy training!")
             else:

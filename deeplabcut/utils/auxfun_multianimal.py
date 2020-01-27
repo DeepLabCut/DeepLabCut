@@ -18,6 +18,31 @@ def extractindividualsandbodyparts(cfg):
         individuals.append('single')
     return individuals,cfg['uniquebodyparts'],cfg['multianimalbodyparts']
 
+def getpafgraph(cfg,printnames=True):
+    ''' auxiliary function that turns skeleton (list of connected bodypart pairs) INTO
+    list of corresponding indices '''
+    individuals,uniquebodyparts,multianimalbodyparts=extractindividualsandbodyparts(cfg)
+    # Attention this order has to be consistent (for training set creation, training, inference etc.)
+    bodypartnames=multianimalbodyparts+uniquebodyparts
+    lookupdict={bodypartnames[j]:j for j in range(len(bodypartnames))}
+    partaffinityfield_graph=[]
+    for link in cfg['skeleton']:
+        if link[0] in bodypartnames and link[1] in bodypartnames:
+            partaffinityfield_graph.append([int(lookupdict[link[0]]),int(lookupdict[link[1]])])
+        else:
+            print("Attention, parts do not exist!", link)
+
+    if printnames:
+        graph2names(cfg,partaffinityfield_graph)
+
+    return partaffinityfield_graph
+
+def graph2names(cfg,partaffinityfield_graph):
+    individuals,uniquebodyparts,multianimalbodyparts=extractindividualsandbodyparts(cfg)
+    bodypartnames=uniquebodyparts+multianimalbodyparts
+    for pair in partaffinityfield_graph:
+        print(pair,bodypartnames[pair[0]],bodypartnames[pair[1]])
+
 def SaveFullMultiAnimalData(data, metadata, dataname,suffix='_full'):
     ''' Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py '''
     with open(dataname.split('.h5')[0]+suffix+'.pickle', 'wb') as f:

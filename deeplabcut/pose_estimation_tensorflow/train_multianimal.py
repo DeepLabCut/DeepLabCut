@@ -1,5 +1,5 @@
 """
-DeepLabCut2.0 Toolbox (deeplabcut.org)
+DeepLabCut2.2 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
 
@@ -9,7 +9,6 @@ Licensed under GNU Lesser General Public License v3.0
 
 Adapted from DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
-
 """
 import logging, os
 import threading
@@ -174,7 +173,7 @@ def train(config_yaml,displayiters,saveiters,maxiters,max_to_keep=5,keepdeconvwe
     lr_gen = LearningRate(cfg)
     stats_path = Path(config_yaml).with_name('learning_stats.csv')
     lrf = open(str(stats_path), 'w')
-labcut.train_network_path(confi
+
     print("Training parameters:")
     print(cfg)
     print("Starting multi-animal training....")
