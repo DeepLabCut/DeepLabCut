@@ -221,7 +221,7 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
         return DLCscorer #note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
     else:
         print("No video/s found. Please check your path!")
-        return DLCscorer 
+        return DLCscorer
 
 def checkcropping(cfg,cap):
     print("Cropping based on the x1 = %s x2 = %s y1 = %s y2 = %s. You can adjust the cropping coordinates in the config.yaml file." %(cfg['x1'], cfg['x2'],cfg['y1'], cfg['y2']))
@@ -470,7 +470,8 @@ def AnalyzeVideo(video,DLCscorer,DLCscorerlegacy,trainFraction,cfg,dlc_cfg,sess,
     if notanalyzed:
         print("Loading ", video)
         cap=cv2.VideoCapture(video)
-
+        if not cap.isOpened():
+            raise IOError('Video could not be opened. Please check that the the file integrity.')
         fps = cap.get(5) #https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
         nframes = int(cap.get(7))
         duration=nframes*1./fps
