@@ -16,6 +16,8 @@ import os.path
 import matplotlib as mpl
 import logging
 import platform
+from functools import lru_cache
+
 
 if os.environ.get('DLClight', default=False) == 'True':
     mpl.use('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
@@ -518,6 +520,45 @@ def mergeandsplit(config,trainindex=0,uniform=True,windows2linux=False):
 
     return trainIndexes, testIndexes
 
+@lru_cache(maxsize=None)
+def _read_image_shape_fast(path):
+    return io.imread(path).shape
+
+def format_training_data(df, train_inds, nbodyparts, project_path):
+    train_data = []
+    matlab_data = []
+
+    def to_matlab_cell(array):
+        outer = np.array([[None]], dtype=object)
+        outer[0, 0] = array.astype('int64')
+        return outer
+
+    for i in train_inds:
+        data = dict()
+        filename = df.index[i]
+        data['image'] = filename
+        img_shape = _read_image_shape_fast(os.path.join(project_path, filename))
+        try:
+            data['size'] = img_shape[2], img_shape[0], img_shape[1]
+        except IndexError:
+            data['size'] = 1, img_shape[0], img_shape[1]
+        temp = df.iloc[i].values.reshape(-1, 2)
+        joints = np.c_[range(nbodyparts), temp]
+        joints = joints[~np.isnan(joints).any(axis=1)].astype(int)
+        # Check that points lie within the image
+        inside = np.logical_and(np.logical_and(joints[:, 1] < img_shape[1], joints[:, 1] > 0),
+                                np.logical_and(joints[:, 2] < img_shape[0], joints[:, 2] > 0))
+        if not all(inside):
+            joints = joints[inside]
+        if joints.size:  # Exclude images without labels
+            data['joints'] = joints
+            train_data.append(data)
+            matlab_data.append((np.array([data['image']], dtype='U'),
+                                np.array([data['size']]),
+                                to_matlab_cell(data['joints'])))
+    matlab_data = np.asarray(matlab_data, dtype=[('image', 'O'), ('size', 'O'), ('joints', 'O')])
+    return train_data, matlab_data
+
 def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=False,userfeedback=False,
         trainIndexes=None,testIndexes=None,
         net_type=None,augmenter_type=None):
@@ -546,6 +587,13 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
         If this is set to false, then all requested train/test splits are created (no matter if they already exist). If you
         want to assure that previous splits etc. are not overwritten, then set this to True and you will be asked for each split.
 
+    trainIndexes: list of lists, optional (default=None)
+        List of one or multiple lists containing train indexes.
+        A list containing two lists of training indexes will produce two splits.
+
+    testIndexes: list of lists, optional (default=None)
+        List of test indexes.
+
     net_type: string
         Type of networks. Currently resnet_50, resnet_101, resnet_152, mobilenet_v2_1.0,mobilenet_v2_0.75, mobilenet_v2_0.5, and mobilenet_v2_0.35 are supported.
 
@@ -559,7 +607,6 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
     >>> deeplabcut.create_training_dataset('C:\\Users\\Ulf\\looming-task\\config.yaml',Shuffles=[3,17,5])
     --------
     """
-    from skimage import io
     import scipy.io as sio
 
     # Loading metadata from config file:
@@ -595,127 +642,84 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
     defaultconfigfile = str(parent_path / 'pose_cfg.yaml')
     model_path,num_shuffles=auxfun_models.Check4weights(net_type,parent_path,num_shuffles) #if the model does not exist >> throws error!
 
-    if Shuffles==None:
-        Shuffles=range(1,num_shuffles+1,1)
+    if Shuffles is None:
+        Shuffles = range(1, num_shuffles + 1)
     else:
-        Shuffles=[i for i in Shuffles if isinstance(i,int)]
+        Shuffles = [i for i in Shuffles if isinstance(i, int)]
+
+    if trainIndexes is None and testIndexes is None:
+        splits = [(trainFraction, shuffle, SplitTrials(range(len(Data.index)), trainFraction))
+                  for trainFraction in cfg['TrainingFraction'] for shuffle in Shuffles]
+    else:
+        if len(trainIndexes) != len(testIndexes):
+            raise ValueError('Number of train and test indexes should be equal.')
+        splits = []
+        for shuffle, (train_inds, test_inds) in enumerate(zip(trainIndexes, testIndexes)):
+            trainFraction = len(train_inds) / (len(train_inds) + len(test_inds))
+            print(f"You passed a split with the following fraction: {int(100 * trainFraction)}%")
+            splits.append((trainFraction, shuffle, (train_inds, test_inds)))
 
     bodyparts = cfg['bodyparts']
-    TrainingFraction = cfg['TrainingFraction']
-    for shuffle in Shuffles: # Creating shuffles starting from 1
-        for trainingsetindex,trainFraction in enumerate(TrainingFraction):
+    nbodyparts = len(bodyparts)
+    for trainFraction, shuffle, (trainIndexes, testIndexes) in splits:
+        if len(trainIndexes)>0:
             if userfeedback:
-                trainposeconfigfile,testposeconfigfile,snapshotfolder =  training.return_train_network_path(config,shuffle=shuffle,trainingsetindex=trainingsetindex)
-                if os.path.isfile(trainposeconfigfile):
+                trainposeconfigfile, _, _ = training.return_train_network_path(config, shuffle=shuffle, trainFraction=trainFraction)
+                if trainposeconfigfile.is_file():
                     askuser=input ("The model folder is already present. If you continue, it will overwrite the existing model (split). Do you want to continue?(yes/no): ")
                     if askuser=='no'or askuser=='No' or askuser=='N' or askuser=='No':
                         raise Exception("Use the Shuffles argument as a list to specify a different shuffle index. Check out the help for more details.")
-                    else:
-                        pass
-            #trainIndexes, testIndexes = SplitTrials(range(len(Data.index)), trainFraction)
-            if trainIndexes is None and testIndexes is None:
-                trainIndexes, testIndexes = SplitTrials(range(len(Data.index)), trainFraction)
-            else:
-                print("You passed a split with the following fraction:", len(trainIndexes)*1./(len(testIndexes)+len(trainIndexes))*100)
+
             ####################################################
             # Generating data structure with labeled information & frame metadata (for deep cut)
             ####################################################
             # Make training file!
-            data = []
-            for jj in trainIndexes:
-                H = {}
-                # load image to get dimensions:
-                filename = Data.index[jj]
-                im = io.imread(os.path.join(cfg['project_path'],filename))
-                H['image'] = filename
+            datafilename, metadatafilename = auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,
+                                                                                            trainFraction, shuffle, cfg)
 
-                if np.ndim(im)==3:
-                    H['size'] = np.array(
-                        [np.shape(im)[2],
-                         np.shape(im)[0],
-                         np.shape(im)[1]])
-                else:
-                    # print "Grayscale!"
-                    H['size'] = np.array([1, np.shape(im)[0], np.shape(im)[1]])
+            ################################################################################
+            # Saving data file (convert to training file for deeper cut (*.mat))
+            ################################################################################
+            data, MatlabData = format_training_data(Data, trainIndexes, nbodyparts, project_path)
+            sio.savemat(os.path.join(project_path,datafilename), {'dataset': MatlabData})
 
-                indexjoints=0
-                joints=np.zeros((len(bodyparts),3))*np.nan
-                for bpindex,bodypart in enumerate(bodyparts):
-                    # check whether the labels are positive and inside the img
-                    x_pos_n_inside = 0 <= Data[bodypart]['x'][jj] < np.shape(im)[1]
-                    y_pos_n_inside = 0 <= Data[bodypart]['y'][jj] < np.shape(im)[0]
-                    if x_pos_n_inside and y_pos_n_inside:
-                        joints[indexjoints,0]=int(bpindex)
-                        joints[indexjoints,1]=Data[bodypart]['x'][jj]
-                        joints[indexjoints,2]=Data[bodypart]['y'][jj]
-                        indexjoints+=1
+            ################################################################################
+            # Saving metadata (Pickle file)
+            ################################################################################
+            auxiliaryfunctions.SaveMetadata(os.path.join(project_path,metadatafilename),data, trainIndexes, testIndexes, trainFraction)
 
-                joints = joints[np.where(
-                    np.prod(np.isfinite(joints),
-                            1))[0], :]  # drop NaN, i.e. lines for missing body parts
+            ################################################################################
+            # Creating file structure for training &
+            # Test files as well as pose_yaml files (containing training and testing information)
+            #################################################################################
+            modelfoldername=auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)
+            auxiliaryfunctions.attempttomakefolder(Path(config).parents[0] / modelfoldername,recursive=True)
+            auxiliaryfunctions.attempttomakefolder(str(Path(config).parents[0] / modelfoldername)+ '/'+ '/train')
+            auxiliaryfunctions.attempttomakefolder(str(Path(config).parents[0] / modelfoldername)+ '/'+ '/test')
 
-                assert (np.prod(np.array(joints[:, 2]) < np.shape(im)[0])
-                        )  # y coordinate within image?
-                assert (np.prod(np.array(joints[:, 1]) < np.shape(im)[1])
-                        )  # x coordinate within image?
+            path_train_config = str(os.path.join(cfg['project_path'],Path(modelfoldername),'train','pose_cfg.yaml'))
+            path_test_config = str(os.path.join(cfg['project_path'],Path(modelfoldername),'test','pose_cfg.yaml'))
+            #str(cfg['proj_path']+'/'+Path(modelfoldername) / 'test'  /  'pose_cfg.yaml')
 
-                H['joints'] = np.array(joints, dtype=int)
-                if np.size(joints)>0: #exclude images without labels
-                        data.append(H)
-
-            if len(trainIndexes)>0:
-
-                datafilename,metadatafilename=auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,trainFraction,shuffle,cfg)
-                ################################################################################
-                # Saving metadata (Pickle file)
-                ################################################################################
-                auxiliaryfunctions.SaveMetadata(os.path.join(project_path,metadatafilename),data, trainIndexes, testIndexes, trainFraction)
-                ################################################################################
-                # Saving data file (convert to training file for deeper cut (*.mat))
-                ################################################################################
-
-                DTYPE = [('image', 'O'), ('size', 'O'), ('joints', 'O')]
-                MatlabData = np.array(
-                    [(np.array([data[item]['image']], dtype='U'),
-                      np.array([data[item]['size']]),
-                      boxitintoacell(data[item]['joints']))
-                     for item in range(len(data))],
-                    dtype=DTYPE)
-
-                sio.savemat(os.path.join(project_path,datafilename), {'dataset': MatlabData})
-
-                ################################################################################
-                # Creating file structure for training &
-                # Test files as well as pose_yaml files (containing training and testing information)
-                #################################################################################
-                modelfoldername=auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)
-                auxiliaryfunctions.attempttomakefolder(Path(config).parents[0] / modelfoldername,recursive=True)
-                auxiliaryfunctions.attempttomakefolder(str(Path(config).parents[0] / modelfoldername)+ '/'+ '/train')
-                auxiliaryfunctions.attempttomakefolder(str(Path(config).parents[0] / modelfoldername)+ '/'+ '/test')
-
-                path_train_config = str(os.path.join(cfg['project_path'],Path(modelfoldername),'train','pose_cfg.yaml'))
-                path_test_config = str(os.path.join(cfg['project_path'],Path(modelfoldername),'test','pose_cfg.yaml'))
-                #str(cfg['proj_path']+'/'+Path(modelfoldername) / 'test'  /  'pose_cfg.yaml')
-
-                items2change = {
-                    "dataset": datafilename,
-                    "metadataset": metadatafilename,
-                    "num_joints": len(bodyparts),
-                    "all_joints": [[i] for i in range(len(bodyparts))],
-                    "all_joints_names": [str(bpt) for bpt in bodyparts],
-                    "init_weights": model_path,
-                    "project_path": str(cfg['project_path']),
-                    "net_type": net_type,
-                    "dataset_type": augmenter_type
-                }
-                trainingdata = MakeTrain_pose_yaml(items2change,path_train_config,defaultconfigfile)
-                keys2save = [
-                    "dataset", "num_joints", "all_joints", "all_joints_names",
-                    "net_type", 'init_weights', 'global_scale', 'location_refinement',
-                    'locref_stdev'
-                ]
-                MakeTest_pose_yaml(trainingdata, keys2save,path_test_config)
-                print("The training dataset is successfully created. Use the function 'train_network' to start training. Happy training!")
+            items2change = {
+                "dataset": datafilename,
+                "metadataset": metadatafilename,
+                "num_joints": len(bodyparts),
+                "all_joints": [[i] for i in range(len(bodyparts))],
+                "all_joints_names": [str(bpt) for bpt in bodyparts],
+                "init_weights": model_path,
+                "project_path": str(cfg['project_path']),
+                "net_type": net_type,
+                "dataset_type": augmenter_type,
+            }
+            trainingdata = MakeTrain_pose_yaml(items2change,path_train_config,defaultconfigfile)
+            keys2save = [
+                "dataset", "num_joints", "all_joints", "all_joints_names",
+                "net_type", 'init_weights', 'global_scale', 'location_refinement',
+                'locref_stdev'
+            ]
+            MakeTest_pose_yaml(trainingdata, keys2save,path_test_config)
+            print("The training dataset is successfully created. Use the function 'train_network' to start training. Happy training!")
 
 def get_largestshuffle_index(config):
     ''' Returns the largest shuffle for all dlc-models in the current iteration.'''
