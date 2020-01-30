@@ -1,7 +1,3 @@
-# Copyright 2019 by
-# Tabet Ehsainieh, ehsainit@informatik.uni-freiburg.de
-# All rights reserved.
-
 import numpy as np
 import scipy.ndimage as ndimage
 import scipy.ndimage.filters as filters

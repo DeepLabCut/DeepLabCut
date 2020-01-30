@@ -1,7 +1,3 @@
-# Copyright 2019 by
-# Tabet Ehsainieh, ehsainit@informatik.uni-freiburg.de
-# All rights reserved.
-
 import random
 
 import cv2

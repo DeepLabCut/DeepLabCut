@@ -1,8 +1,3 @@
-# Copyright 2019 by
-# Tabet Ehsainieh, ehsainit@informatik.uni-freiburg.de
-# All rights reserved.
-
-
 import numpy as np
 
 from deeplabcut.lmot.extract_local_maxima import extract_locmaxima

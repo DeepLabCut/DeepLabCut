@@ -1,7 +1,3 @@
-# Copyright 2019 by
-# Tabet Ehsainieh, ehsainit@informatik.uni-freiburg.de
-# All rights reserved.
-
 from deeplabcut.lmot.assets import get_random_color
 from deeplabcut.lmot.kalman_filter import KalmanFilter
 
