@@ -1,6 +1,4 @@
 """
-Author: Isaac Robinson
-
 Contains Abstract Base Class for all predictor plugins, which when provided probability frames from the neural net,
 figure out where the points should be in the image. They are executed when deeplabcut.analyze_videos is run with
 "predictor" argument set to a valid plugin name...

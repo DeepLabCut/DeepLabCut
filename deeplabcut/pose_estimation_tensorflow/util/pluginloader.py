@@ -1,6 +1,4 @@
 """
-Author: Isaac Robinson
-
 Module includes methods useful to loading all plugins placed in a folder, or module...
 """
 
