@@ -1,6 +1,6 @@
 # Interactive Project Manager GUI
 
-As of DeepLabCut 2.1 now provide a full front-end user experience for DeepLabCut. As some users may be more comfortable working with an interactive interface, we wanted to provide an easy-entry point to the software. All the main functionally is now available in an  easy-to-deploy GUI interface. Thus, while the many advanced features are not fully available in this Project GUI, 
+As of DeepLabCut 2.1+ now provide a full front-end user experience for DeepLabCut. As some users may be more comfortable working with an interactive interface, we wanted to provide an easy-entry point to the software. All the main functionally is now available in an  easy-to-deploy GUI interface. Thus, while the many advanced features are not fully available in this Project GUI, 
 we hope this gets more users up-and-running quickly.
 
 ## Get Started:
@@ -9,11 +9,10 @@ we hope this gets more users up-and-running quickly.
 
 or 
 
-if you already have deeplabcut installed, just go into your env then run ``pip install deeplabcut==2.1``
+if you already have deeplabcut installed, just go into your env then run `` pip install --upgrade deeplabcut``
 
-(2) Open the terminal, start ``ipython`` or ``pythonw`` (MacOS) and ``import deeplabcut`` 
+(2) Open the terminal and run: `python -m deeplabcut` or MacOS: `pythonw -m deeplabcut`
 
-(3) ``deeplabcut.launch_dlc()``
 
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572824438905-QY9XQKZ8LAJZG6BLPWOQ/ke17ZwdGBToddI8pDm48kIIa76w436aRzIF_cdFnEbEUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcLthF_aOEGVRewCT7qiippiAuU5PSJ9SSYal26FEts0MmqyMIhpMOn8vJAUvOV4MI/guilaunch.jpg?format=1000w" width="80%">

@@ -69,7 +69,7 @@ def ShortenVideo(vname,start='00:00:01',stop='00:01:00',outsuffix='short',outpat
     subprocess.call(['ffmpeg','-i',vname,'-ss',str(start),'-to',str(stop),'-c','copy',newfilename])
     return str(newfilename)
 
-def DownSampleVideo(vname,width=-1,height=200,outsuffix='cropped',outpath=None):
+def DownSampleVideo(vname,width=-1,height=200,outsuffix='downsampled',outpath=None):
     """
     Auxiliary function to downsample a video and output it to the same folder with "outsuffix" appended in its name.
     Width and height will control the new dimensions. You can also pass only height or width and set the other one to -1,

@@ -11,18 +11,19 @@ Licensed under GNU Lesser General Public License v3.0
 import os
 from pathlib import Path
 
-def return_train_network_path(config,shuffle=1,trainingsetindex=0):
+
+def return_train_network_path(config, shuffle, trainFraction):
     ''' Returns the training and test pose config file names as well as the folder where the snapshot is
     Parameter
     ----------
     config : string
         Full path of the config.yaml file as a string.
 
-    shuffle: int, optional
-        Integer value specifying the shuffle index to select for training. Default is set to 1
+    shuffle: int
+        Integer value specifying the shuffle index to select for training.
 
-    trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+    trainFraction: float
+        Float specifying which training set fraction to use.
 
     Returns the triple: trainposeconfigfile, testposeconfigfile, snapshotfolder
 
@@ -31,7 +32,7 @@ def return_train_network_path(config,shuffle=1,trainingsetindex=0):
     # Read file path for pose_config file. >> pass it on
     cfg = auxiliaryfunctions.read_config(config)
 
-    modelfoldername=auxiliaryfunctions.GetModelFolder(cfg["TrainingFraction"][trainingsetindex],shuffle,cfg)
+    modelfoldername=auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)
     trainposeconfigfile=Path(os.path.join(cfg['project_path'],str(modelfoldername),"train","pose_cfg.yaml"))
     testposeconfigfile=Path(os.path.join(cfg['project_path'],str(modelfoldername),"test","pose_cfg.yaml"))
     snapshotfolder=Path(os.path.join(cfg['project_path'],str(modelfoldername),'train'))
@@ -40,8 +41,8 @@ def return_train_network_path(config,shuffle=1,trainingsetindex=0):
 
 
 def train_network(config,shuffle=1,trainingsetindex=0,
-            max_snapshots_to_keep=5,displayiters=None,saveiters=None,maxiters=None,
-            allow_growth=False,gputouse=None,autotune=False,keepdeconvweights=True):
+                  max_snapshots_to_keep=5,displayiters=None,saveiters=None,maxiters=None,
+                  allow_growth=False,gputouse=None,autotune=False,keepdeconvweights=True):
     """Trains the network with the labels in the training dataset.
 
     Parameter
@@ -118,20 +119,19 @@ def train_network(config,shuffle=1,trainingsetindex=0,
     modelfoldername=auxiliaryfunctions.GetModelFolder(cfg["TrainingFraction"][trainingsetindex],shuffle,cfg)
     poseconfigfile=Path(os.path.join(cfg['project_path'],str(modelfoldername),"train","pose_cfg.yaml"))
     if not poseconfigfile.is_file():
-      print("The training datafile ", poseconfigfile, " is not present.")
-      print("Probably, the training dataset for this specific shuffle index was not created.")
-      print("Try with a different shuffle/trainingsetfraction or use function 'create_training_dataset' to create a new trainingdataset with this shuffle index." )
+        print("The training datafile ", poseconfigfile, " is not present.")
+        print("Probably, the training dataset for this specific shuffle index was not created.")
+        print("Try with a different shuffle/trainingsetfraction or use function 'create_training_dataset' to create a new trainingdataset with this shuffle index." )
     else:
-      # Set environment variables
-      if autotune is not False: #see: https://github.com/tensorflow/tensorflow/issues/13317
-          os.environ['TF_CUDNN_USE_AUTOTUNE'] = '0'
-      if gputouse is not None:
-        os.environ['CUDA_VISIBLE_DEVICES'] = str(gputouse)
-
-      try:
-          train(str(poseconfigfile),displayiters,saveiters,maxiters,max_to_keep=max_snapshots_to_keep,keepdeconvweights=keepdeconvweights,allow_growth=allow_growth) #pass on path and file name for pose_cfg.yaml!
-      except BaseException as e:
-          raise e
-      finally:
-          os.chdir(str(start_path))
-      print("The network is now trained and ready to evaluate. Use the function 'evaluate_network' to evaluate the network.")
+        # Set environment variables
+        if autotune is not False: #see: https://github.com/tensorflow/tensorflow/issues/13317
+            os.environ['TF_CUDNN_USE_AUTOTUNE'] = '0'
+        if gputouse is not None:
+            os.environ['CUDA_VISIBLE_DEVICES'] = str(gputouse)
+    try:
+        train(str(poseconfigfile),displayiters,saveiters,maxiters,max_to_keep=max_snapshots_to_keep,keepdeconvweights=keepdeconvweights,allow_growth=allow_growth) #pass on path and file name for pose_cfg.yaml!
+    except BaseException as e:
+        raise e
+    finally:
+        os.chdir(str(start_path))
+    print("The network is now trained and ready to evaluate. Use the function 'evaluate_network' to evaluate the network.")

@@ -33,6 +33,7 @@ mirror: False
 
 #Data loaders, i.e. with additional data augmentation options (as of 2.0.9+):
 dataset_type: default
+batch_size: 1
 #default with be with no extra dataloaders. Other options: 'tensorpack, deterministic'
 #types of datasets, see factory: deeplabcut/pose_estimation_tensorflow/dataset/factory.py
 #For deterministic, see https://github.com/AlexEMG/DeepLabCut/pull/324

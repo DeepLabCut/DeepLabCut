@@ -412,6 +412,6 @@ def plot_trajectories(_,*args,**kwargs):
     --------\n
     """
     from deeplabcut.utils import plotting
-    plotting.plot_trajectories(*args,**kwargs)
+    plotting.plot_trajectories(*args, **kwargs)
 
 ###########################################################################################################################
