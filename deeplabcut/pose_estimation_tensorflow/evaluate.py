@@ -307,7 +307,7 @@ def evaluate_network(config,Shuffles=[1],trainingsetindex=0,plotting = None,show
             elif cfg["snapshotindex"]<len(Snapshots):
                 snapindices=[cfg["snapshotindex"]]
             else:
-                print("Invalid choice, only -1 (last), any integer up to last, or all (as string)!")
+                raise ValueError("Invalid choice, only -1 (last), any integer up to last, or all (as string)!")
 
             final_result=[]
 
