@@ -22,7 +22,7 @@ function call:
 
 ```python
 deeplabcut.analyze_videos(config_path, ["/fullpath/project/videos/"], predictor="plugin_name")
-``
+```
 
 To list all the currently installed plugins, call the list_predictor_plugins()
 from the python or ipython console:
