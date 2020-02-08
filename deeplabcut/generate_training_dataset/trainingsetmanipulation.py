@@ -647,6 +647,7 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
     else:
         Shuffles = [i for i in Shuffles if isinstance(i, int)]
 
+    print(trainIndexes,testIndexes, Shuffles, augmenter_type,net_type)
     if trainIndexes is None and testIndexes is None:
         splits = [(trainFraction, shuffle, SplitTrials(range(len(Data.index)), trainFraction))
                   for trainFraction in cfg['TrainingFraction'] for shuffle in Shuffles]
@@ -655,9 +656,9 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
             raise ValueError('Number of train and test indexes should be equal.')
         splits = []
         for shuffle, (train_inds, test_inds) in enumerate(zip(trainIndexes, testIndexes)):
-            trainFraction = len(train_inds) / (len(train_inds) + len(test_inds))
+            trainFraction = len(train_inds) * 1./ (len(train_inds) + len(test_inds))
             print(f"You passed a split with the following fraction: {int(100 * trainFraction)}%")
-            splits.append((trainFraction, shuffle, (train_inds, test_inds)))
+            splits.append((trainFraction, Shuffles[shuffle], (train_inds, test_inds)))
 
     bodyparts = cfg['bodyparts']
     nbodyparts = len(bodyparts)
@@ -803,5 +804,5 @@ def create_training_model_comparison(config,trainindex=0,num_shuffles=1,net_type
             for idx_aug,aug in enumerate(augmenter_types):
                 get_max_shuffle_idx=(largestshuffleindex+idx_aug+idx_net*len(augmenter_types)+shuffle*len(augmenter_types)*len(net_types))+1 #get shuffle index; starts ith 0 so added 1
                 log_info = str("Shuffle index:" + str(get_max_shuffle_idx) + ", net_type:"+net +", augmenter_type:"+aug + ", trainsetindex:" +str(trainindex))
-                create_training_dataset(config,Shuffles=[get_max_shuffle_idx],net_type=net,trainIndexes=trainIndexes,testIndexes=testIndexes,augmenter_type=aug,userfeedback=userfeedback,windows2linux=windows2linux)
+                create_training_dataset(config,Shuffles=[get_max_shuffle_idx],net_type=net,trainIndexes=[trainIndexes],testIndexes=[testIndexes],augmenter_type=aug,userfeedback=userfeedback,windows2linux=windows2linux)
                 logger.info(log_info)
