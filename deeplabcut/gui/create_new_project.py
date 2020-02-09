@@ -101,8 +101,10 @@ class Create_new_project(wx.Panel):
         self.copy_choice.Bind(wx.EVT_CHECKBOX,self.activate_copy_videos)
         hbox3.Add(self.copy_choice)
         hbox3.AddSpacer(155)
-        self.yes = wx.RadioButton( self, -1, "No", style = wx.RB_GROUP)
-        self.no = wx.RadioButton( self, -1, "Yes")
+        self.yes = wx.RadioButton( self, -1, "Yes", style = wx.RB_GROUP)
+        self.no = wx.RadioButton( self, -1, "No")
+        self.yes.Bind(wx.EVT_RADIOBUTTON, self.select_copy_videos)
+        self.no.Bind(wx.EVT_RADIOBUTTON, self.select_copy_videos)
         self.yes.Enable(False)
         self.no.Enable(False)
         hbox3.Add(self.yes, 0, wx.ALL, -1)
@@ -227,7 +229,7 @@ class Create_new_project(wx.Panel):
         """
         self.change_copy = event.GetEventObject()
         if self.change_copy.GetValue() == True:
-            self.yes.Enable(False)
+            self.yes.Enable(True)
             self.no.Enable(True)
         else:
             self.yes.Enable(False)

@@ -115,7 +115,7 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
         p.mkdir(parents = True, exist_ok = True)
 
     destinations = [video_path.joinpath(vp.name) for vp in videos]
-    if copy_videos==True:
+    if copy_videos==True or copy_videos=="Yes":
         print("Copying the videos")
         for src, dst in zip(videos, destinations):
             shutil.copy(os.fspath(src),os.fspath(dst)) #https://www.python.org/dev/peps/pep-0519/
@@ -140,7 +140,7 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
             print('Created the symlink of {} to {}'.format(src, dst))
             videos = destinations
 
-    if copy_videos==True:
+    if copy_videos==True or copy_videos=="Yes":
         videos=destinations # in this case the *new* location should be added to the config file
 
     # adds the video list to the config.yaml file
