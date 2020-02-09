@@ -111,11 +111,10 @@ except: # if ffmpeg is broken
     newclip = VideoClip(make_frame, duration=1)
     newclip.write_videofile(newvideo,fps=30)
 
-
-deeplabcut.analyze_videos(path_config_file,[newvideo],save_as_csv=True, destfolder=dfolder, dynamic=(True,.1,5))
+deeplabcut.analyze_videos(path_config_file, [newvideo], save_as_csv=True, destfolder=dfolder, dynamic=(True, .1, 5))
 
 print("analyze again...")
-deeplabcut.analyze_videos(path_config_file,[newvideo],save_as_csv=True, destfolder=dfolder)
+deeplabcut.analyze_videos(path_config_file, [newvideo], save_as_csv=True, destfolder=dfolder)
 
 print("CREATE VIDEO")
 deeplabcut.create_labeled_video(path_config_file,[newvideo], destfolder=dfolder,save_frames=True)
@@ -173,7 +172,7 @@ except: # if ffmpeg is broken
 
 
 print("Inference with direct cropping")
-deeplabcut.analyze_videos(path_config_file,[newvideo2],destfolder=dfolder,cropping=[0,50,0,50],save_as_csv=True)
+deeplabcut.analyze_videos(path_config_file, [newvideo2], save_as_csv=True, destfolder=dfolder, crop=[0, 50, 0, 50])
 
 print("Extracting skeleton distances, filter and plot filtered output")
 deeplabcut.analyzeskeleton(path_config_file, [newvideo], save_as_csv=True, destfolder=dfolder)
