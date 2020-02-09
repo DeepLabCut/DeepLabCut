@@ -804,7 +804,7 @@ def create_training_model_comparison(config,trainindex=0,num_shuffles=1,net_type
         trainIndexes, testIndexes=mergeandsplit(config,trainindex=trainindex,uniform=True)
         for idx_net,net in enumerate(net_types):
             for idx_aug,aug in enumerate(augmenter_types):
-                get_max_shuffle_idx=(largestshuffleindex+idx_aug+idx_net*len(augmenter_types)+shuffle*len(augmenter_types)*len(net_types)) #get shuffle index; starts ith 0 so added 1
+                get_max_shuffle_idx=(largestshuffleindex+idx_aug+idx_net*len(augmenter_types)+shuffle*len(augmenter_types)*len(net_types)) 
                 log_info = str("Shuffle index:" + str(get_max_shuffle_idx) + ", net_type:"+net +", augmenter_type:"+aug + ", trainsetindex:" +str(trainindex))
                 create_training_dataset(config,Shuffles=[get_max_shuffle_idx],net_type=net,trainIndexes=[trainIndexes],testIndexes=[testIndexes],augmenter_type=aug,userfeedback=userfeedback,windows2linux=windows2linux)
                 logger.info(log_info)
