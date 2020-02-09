@@ -652,11 +652,11 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
         splits = [(trainFraction, shuffle, SplitTrials(range(len(Data.index)), trainFraction))
                   for trainFraction in cfg['TrainingFraction'] for shuffle in Shuffles]
     else:
-        if len(trainIndexes) != len(testIndexes):
-            raise ValueError('Number of train and test indexes should be equal.')
+        if len(trainIndexes) != len(testIndexes) != len(Shuffles):
+            raise ValueError('Number of Shuffles and train and test indexes should be equal.')
         splits = []
         for shuffle, (train_inds, test_inds) in enumerate(zip(trainIndexes, testIndexes)):
-            trainFraction = len(train_inds) * 1./ (len(train_inds) + len(test_inds))
+            trainFraction = round(len(train_inds) * 1./ (len(train_inds) + len(test_inds)), 2)
             print(f"You passed a split with the following fraction: {int(100 * trainFraction)}%")
             splits.append((trainFraction, Shuffles[shuffle], (train_inds, test_inds)))
 
@@ -695,8 +695,8 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
             #################################################################################
             modelfoldername=auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)
             auxiliaryfunctions.attempttomakefolder(Path(config).parents[0] / modelfoldername,recursive=True)
-            auxiliaryfunctions.attempttomakefolder(str(Path(config).parents[0] / modelfoldername)+ '/'+ '/train')
-            auxiliaryfunctions.attempttomakefolder(str(Path(config).parents[0] / modelfoldername)+ '/'+ '/test')
+            auxiliaryfunctions.attempttomakefolder(str(Path(config).parents[0] / modelfoldername)+ '/train')
+            auxiliaryfunctions.attempttomakefolder(str(Path(config).parents[0] / modelfoldername)+ '/test')
 
             path_train_config = str(os.path.join(cfg['project_path'],Path(modelfoldername),'train','pose_cfg.yaml'))
             path_test_config = str(os.path.join(cfg['project_path'],Path(modelfoldername),'test','pose_cfg.yaml'))
@@ -721,6 +721,8 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
             ]
             MakeTest_pose_yaml(trainingdata, keys2save,path_test_config)
             print("The training dataset is successfully created. Use the function 'train_network' to start training. Happy training!")
+    return splits
+
 
 def get_largestshuffle_index(config):
     ''' Returns the largest shuffle for all dlc-models in the current iteration.'''
@@ -802,7 +804,7 @@ def create_training_model_comparison(config,trainindex=0,num_shuffles=1,net_type
         trainIndexes, testIndexes=mergeandsplit(config,trainindex=trainindex,uniform=True)
         for idx_net,net in enumerate(net_types):
             for idx_aug,aug in enumerate(augmenter_types):
-                get_max_shuffle_idx=(largestshuffleindex+idx_aug+idx_net*len(augmenter_types)+shuffle*len(augmenter_types)*len(net_types))+1 #get shuffle index; starts ith 0 so added 1
+                get_max_shuffle_idx=(largestshuffleindex+idx_aug+idx_net*len(augmenter_types)+shuffle*len(augmenter_types)*len(net_types)) #get shuffle index; starts ith 0 so added 1
                 log_info = str("Shuffle index:" + str(get_max_shuffle_idx) + ", net_type:"+net +", augmenter_type:"+aug + ", trainsetindex:" +str(trainindex))
                 create_training_dataset(config,Shuffles=[get_max_shuffle_idx],net_type=net,trainIndexes=[trainIndexes],testIndexes=[testIndexes],augmenter_type=aug,userfeedback=userfeedback,windows2linux=windows2linux)
                 logger.info(log_info)
