@@ -307,7 +307,7 @@ def evaluate_network(config,Shuffles=[1],trainingsetindex=0,plotting = None,show
             elif cfg["snapshotindex"]<len(Snapshots):
                 snapindices=[cfg["snapshotindex"]]
             else:
-                print("Invalid choice, only -1 (last), any integer up to last, or all (as string)!")
+                raise ValueError("Invalid choice, only -1 (last), any integer up to last, or all (as string)!")
 
             final_result=[]
 
@@ -404,14 +404,22 @@ def evaluate_network(config,Shuffles=[1],trainingsetindex=0,plotting = None,show
     #returning to intial folder
     os.chdir(str(start_path))
 
-def make_results_file(final_result,evaluationfolder,DLCscorer):
+
+def make_results_file(final_result, evaluationfolder, DLCscorer):
     """
-    Makes result file in .h5 and csv format and saves under evaluation_results directory
+    Makes result file in .h5 and csv format and saves under evaluation_results directory.
+    If the file exists (typically, when the network has already been evaluated),
+    newer results are appended to it.
     """
     col_names = ["Training iterations:","%Training dataset","Shuffle number"," Train error(px)"," Test error(px)","p-cutoff used","Train error with p-cutoff","Test error with p-cutoff"]
-    df = pd.DataFrame(final_result, columns = col_names)
-    df.to_hdf(os.path.join(str(evaluationfolder),DLCscorer + '-results' + '.h5'),'df_with_missing',format='table',mode='w')
-    df.to_csv(os.path.join(str(evaluationfolder),DLCscorer + '-results' + '.csv'))
+    df = pd.DataFrame(final_result, columns=col_names)
+    output_path = os.path.join(str(evaluationfolder), DLCscorer + '-results.csv')
+    if os.path.exists(output_path):
+        temp = pd.read_csv(output_path, index_col=0)
+        df = pd.concat((df, temp)).reset_index(drop=True)
+    df.to_csv(output_path)
+    df.to_hdf(output_path.replace('csv', 'h5'), 'df_with_missing', format='table', mode='w')
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
