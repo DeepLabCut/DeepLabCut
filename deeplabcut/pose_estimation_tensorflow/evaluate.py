@@ -307,7 +307,7 @@ def evaluate_network(config,Shuffles=[1],trainingsetindex=0,plotting = None,show
             elif cfg["snapshotindex"]<len(Snapshots):
                 snapindices=[cfg["snapshotindex"]]
             else:
-                print("Invalid choice, only -1 (last), any integer up to last, or all (as string)!")
+                raise ValueError("Invalid choice, only -1 (last), any integer up to last, or all (as string)!")
 
             final_result=[]
 
@@ -327,8 +327,8 @@ def evaluate_network(config,Shuffles=[1],trainingsetindex=0,plotting = None,show
 
                 # Name for deeplabcut net (based on its parameters)
                 DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations)
-                notanalyzed,resultsfilename,DLCscorer=auxiliaryfunctions.CheckifNotEvaluated(str(evaluationfolder),DLCscorer,DLCscorerlegacy,Snapshots[snapindex])
                 print("Running ", DLCscorer, " with # of trainingiterations:", trainingsiterations)
+                notanalyzed,resultsfilename,DLCscorer=auxiliaryfunctions.CheckifNotEvaluated(str(evaluationfolder),DLCscorer,DLCscorerlegacy,Snapshots[snapindex])
                 if notanalyzed:
                     # Specifying state of model (snapshot / training state)
                     sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
@@ -396,22 +396,32 @@ def evaluate_network(config,Shuffles=[1],trainingsetindex=0,plotting = None,show
                         auxiliaryfunctions.attempttomakefolder(foldername)
                         Plotting(cfg,comparisonbodyparts,DLCscorer,trainIndices,DataCombined*1./scale,foldername)
 
-            make_results_file(final_result,evaluationfolder,DLCscorer)
-            print("The network is evaluated and the results are stored in the subdirectory 'evaluation_results'.")
-            print("If it generalizes well, choose the best model for prediction and update the config file with the appropriate index for the 'snapshotindex'.\nUse the function 'analyze_video' to make predictions on new videos.")
-            print("Otherwise consider retraining the network (see DeepLabCut workflow Fig 2)")
+            if len(final_result)>0: #Only append if results were calculated
+                make_results_file(final_result,evaluationfolder,DLCscorer)
+                print("The network is evaluated and the results are stored in the subdirectory 'evaluation_results'.")
+                print("If it generalizes well, choose the best model for prediction and update the config file with the appropriate index for the 'snapshotindex'.\nUse the function 'analyze_video' to make predictions on new videos.")
+                print("Otherwise consider retraining the network (see DeepLabCut workflow Fig 2)")
 
     #returning to intial folder
     os.chdir(str(start_path))
 
-def make_results_file(final_result,evaluationfolder,DLCscorer):
+
+def make_results_file(final_result, evaluationfolder, DLCscorer):
     """
-    Makes result file in .h5 and csv format and saves under evaluation_results directory
+    Makes result file in .h5 and csv format and saves under evaluation_results directory.
+    If the file exists (typically, when the network has already been evaluated),
+    newer results are appended to it.
     """
     col_names = ["Training iterations:","%Training dataset","Shuffle number"," Train error(px)"," Test error(px)","p-cutoff used","Train error with p-cutoff","Test error with p-cutoff"]
-    df = pd.DataFrame(final_result, columns = col_names)
-    df.to_hdf(os.path.join(str(evaluationfolder),DLCscorer + '-results' + '.h5'),'df_with_missing',format='table',mode='w')
-    df.to_csv(os.path.join(str(evaluationfolder),DLCscorer + '-results' + '.csv'))
+    df = pd.DataFrame(final_result, columns=col_names)
+    output_path = os.path.join(str(evaluationfolder), DLCscorer + '-results.csv')
+    if os.path.exists(output_path):
+        temp = pd.read_csv(output_path, index_col=0)
+        df = pd.concat((df, temp)).reset_index(drop=True)
+
+    df.to_csv(output_path)
+    #df.to_hdf(output_path.replace('csv', 'h5'), 'df_with_missing', format='table', mode='w')
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

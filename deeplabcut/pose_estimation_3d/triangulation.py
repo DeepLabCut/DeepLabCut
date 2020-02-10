@@ -185,7 +185,9 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,
                         scorer_name[cam_names[j]] = DLCscorer
                     else:
                         # Analyze video if score name is different
-                        DLCscorer = predict_videos.analyze_videos(config_2d,[video],videotype=videotype,shuffle=shuffle,trainingsetindex=trainingsetindex,gputouse=gputouse,destfolder=destfolder)
+                        DLCscorer = predict_videos.analyze_videos(config_2d, [video], videotype=videotype,
+                                                                  shuffle=shuffle, trainingsetindex=trainingsetindex,
+                                                                  gputouse=gputouse, destfolder=destfolder)
                         scorer_name[cam_names[j]] = DLCscorer
                         if_video_analyzed=False
                         run_triangulate = True
@@ -195,7 +197,9 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,
                         dataname.append(os.path.join(destfolder,vname + DLCscorer + '.h5'))
 
                 else: # need to do the whole jam.
-                    DLCscorer = predict_videos.analyze_videos(config_2d,[video],videotype=videotype,shuffle=shuffle,trainingsetindex=trainingsetindex,gputouse=gputouse,destfolder=destfolder)
+                    DLCscorer = predict_videos.analyze_videos(config_2d, [video], videotype=videotype, shuffle=shuffle,
+                                                              trainingsetindex=trainingsetindex, gputouse=gputouse,
+                                                              destfolder=destfolder)
                     scorer_name[cam_names[j]] = DLCscorer
                     run_triangulate = True
                     print(destfolder, vname , DLCscorer)
