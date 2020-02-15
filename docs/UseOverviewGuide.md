@@ -1,6 +1,6 @@
 ## Documentation:
 <p align="center">
-<img src= https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572293604382-W6BWA63LZ9J8R7N0QEA5/ke17ZwdGBToddI8pDm48kIw6YkRUEyoge4858uAJfaMUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYwL8IeDg6_3B-BRuF4nNrNcQkVuAT7tdErd0wQFEGFSnH9wUPiI8bGoX-EQadkbLIJwhzjIpw393-uEwSKO7VZIL9gN_Sb5I_dLwvWryjeCJg/dlc_overview-01.png?format=1000w width="80%">
+<img src=   https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572293604382-W6BWA63LZ9J8R7N0QEA5/ke17ZwdGBToddI8pDm48kIw6YkRUEyoge4858uAJfaMUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYwL8IeDg6_3B-BRuF4nNrNcQkVuAT7tdErd0wQFEGFSnH9wUPiI8bGoX-EQadkbLIJwhzjIpw393-uEwSKO7VZIL9gN_Sb5I_dLwvWryjeCJg/dlc_overview-01.png?format=1000w width="80%">
  </p>
 
 **DeepLabCut** is a software package for markerless pose estimation of animals performing various tasks. The software can manage multiple projects for various tasks. Each project is identified by the name of the project (e.g. TheBehavior), name of the experimenter (e.g. YourName), as well as the date at creation. This project folder holds a ``config.yaml`` (a text document) file containing various (project) parameters as well as links the data of the project.
@@ -11,12 +11,11 @@ You can have as many projects on your computer as you wish. You can have DeepLab
 <p align="center">
 <img src=  https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559758477126-B9PU1EFA7L7L1I24Z2EH/ke17ZwdGBToddI8pDm48kH6mtUjqMdETiS6k4kEkCoR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UQf4d-kVja3vCG3Q_2S8RPAcZTZ9JxgjXkf3-Un9aT84H3bqxw7fF48mhrq5Ulr0Hg/howtouseDLC2d_3d-01.png?format=500w width="60%">
  </p>
+ 
+**NEW** as of 2.2 we support multi-animal projects. The workflow is highly similar, but with some key steps that differ. Please carefully review the functions below for more details. You can search/look for **maDeepLabCut** for specific steps that are changed.
 
- **NEW** as of 2.2 we support multi-animal projects. The workflow is highly similar, but with some key steps that differ. Please carefully review the functions below for more details. You can search/look for **maDeepLabCut** for specific steps that are changed.
- 
- **NEW** as of 2.0.7 we support 3D analysis directly inside our package. Please see the [3D details here](/docs/Overviewof3D.md). Here are some tips for scaling up your 2D analysis: https://github.com/AlexEMG/DeepLabCut/wiki/Batch-Processing-your-Analysis
- 
- 
+ **NEW** as of 2.1+ we support a full [Project Manager GUI](/docs/PROJECT_GUI.md) to run the software. As of 2.0.7+ we support 3D analysis directly inside our package. Please see the [3D details here](/docs/Overviewof3D.md). 
+
 You can get started by using our **demo Jupyter Notebooks** [(#1)](/docs/UseOverviewGuide.md#option-1-demo-notebooks), or use **iPython** from the program terminal/cmd [(#2)](/docs/UseOverviewGuide.md#option-2-using-the-program-terminal-start-ipython), or, as of 2.1+, you can use our Project Manager GUI [(#3)](docs/functionDetails.md#deeplabcut-project-manager-gui)!
 
 
@@ -28,12 +27,23 @@ This page contains a list of the essential functions of DeepLabCut as well as de
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1560124235138-A9VEZB45SQPD5Z0BDEXA/ke17ZwdGBToddI8pDm48kKsvCFNoOAts8bgs5LXY20UUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcZaDohTswVrVk6oKw3G03bTl18OXeDyNJsBjNlGiyPYGo9Ewyd5AI5wx6CleNeBtf/dlc_steps.jpg?format=1000w" height="270">
 </p>
 
-
-### Option 1: Demo Notebooks:
+## Option 1: Demo Notebooks:
 We provide Jupyter notebooks for using DeepLabCut on both a pre-labeled dataset, and on the end user’s
 own dataset. See all the demo's [here!](/examples) Please note that GUIs are not easily supported in Jupyter in MacOS, as you need a framework build of python. While it's possible to launch them with a few tweaks, we recommend using terminal - it's more fun and still easy, so please follow the instructions below!
 
-### Option 2: using the program terminal, Start iPython*:
+## Option 2: using the Project Manger GUI:
+Start iPython, or if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython``, but otherwise it's the same.
+If you are using DeepLabCut on the cloud, you cannot use the GUIs and you need to first set DLClight=True. Please read more [here](https://github.com/MMathisLab/Docker4DeepLabCut2.0), and in our Protocol paper [here](https://www.nature.com/articles/s41596-019-0176-0).
+
+Open an ``ipython`` session, import the package, and launch by typing in the terminal:
+```
+ipython
+import deeplabcut
+deeplabcut.launch_dlc()
+```
+Or, simply open the terminal and type: `python -m deeplabcut`. That's it! Follow the GUI for details
+
+## Option 3: using the program terminal, Start iPython*:
 *please note, we provide a quick-guide of the commands at the bottom of this page.
 Also, if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython``, but otherwise it's the same.
 If you are using DeepLabCut on the cloud, you cannot use the GUIs and you need to first set DLClight=True. Please read more [here](https://github.com/MMathisLab/Docker4DeepLabCut2.0), and in our Protocol paper [here](https://www.nature.com/articles/s41596-019-0176-0).
@@ -43,22 +53,7 @@ Open an ``ipython`` session and import the package by typing in the terminal:
 ipython
 import deeplabcut
 ```
-
 **TIP:** for every function there is a associated help document that can be viewed by adding a **?** after the function name; i.e. ``deeplabcut.create_new_project?``. To exit this help screen, type ``:q``.
-
-### Option 3: using the Project Manger GUI:
-Start iPython, or if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython``, but otherwise it's the same.
-If you are using DeepLabCut on the cloud, you cannot use the GUIs and you need to first set DLClight=True. Please read more [here](https://github.com/MMathisLab/Docker4DeepLabCut2.0), and in our Nature Protocols paper [here](https://www.nature.com/articles/s41596-019-0176-0).
-
-Open an ``ipython`` session, import the package, and launch by typing in the terminal:
-```
-ipython
-import deeplabcut
-deeplabcut.launch_dlc()
-```
-or simply enter the conda env and in the terminal type: ``python -m deeplabcut``
-
-That's it! Follow the GUI for details
 
 ### Create a New Project:
 
