@@ -347,7 +347,7 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True, cr
 
             cfg['video_sets'].update({os.path.join('whoknows',str(folder)+'crop.mp4') : {'crop': ', '.join(map(str, [0, size[1], 0, size[0]]))}})
 
-def label_frames(config,multiple=False):
+def label_frames(config,multiple_individualsGUI=False):
     """
     Manually label/annotate the extracted frames. Update the list of body parts you want to localize in the config.yaml file first.
 
@@ -356,29 +356,27 @@ def label_frames(config,multiple=False):
     config : string
         String containing the full path of the config file in the project.
 
-    multiple: bool, optional
-        If this is set to True, a user can label multiple individuals.
-        The default is ``False``; if provided it must be either ``True`` or ``False``.
+    multiple_individualsGUI: bool, optional
+          If this is set to True, a user can label multiple individuals. Note for "multianimalproject=True" this is automatically used.
+          The default is ``False``; if provided it must be either ``True`` or ``False``.
 
     Example
     --------
     To label multiple individuals
-    >>> deeplabcut.label_frames('/analysis/project/reaching-task/config.yaml',multiple=True)
+    >>> deeplabcut.label_frames('/analysis/project/reaching-task/config.yaml',multiple_individualsGUI=True)
     --------
 
     """
     startpath = os.getcwd()
     wd = Path(config).resolve().parents[0]
     os.chdir(str(wd))
-
-    if multiple==False:
-        from deeplabcut.generate_training_dataset import labeling_toolbox
-
-        # labeling_toolbox.show(config,Screens,scale_w,scale_h, winHack, img_scale)
-        labeling_toolbox.show(config)
+    cfg = auxiliaryfunctions.read_config(config)
+    if cfg.get('multianimalproject', False) or multiple_individualsGUI==False:
+        from deeplabcut.generate_training_dataset import multiple_individuals_labeling_toolbox
+        multiple_individuals_labeling_toolbox.show(config)
     else:
-        from deeplabcut.generate_training_dataset import multiple_individual_labeling_toolbox
-        multiple_individual_labeling_toolbox.show(config)
+        from deeplabcut.generate_training_dataset import labeling_toolbox
+        labeling_toolbox.show(config)
 
     os.chdir(startpath)
 
