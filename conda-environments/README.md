@@ -1,4 +1,4 @@
-# Quick Anaconda Install for Windows 10, MacOS, Ubuntu 18.04!
+# Anaconda Install for Windows 10, MacOS, Ubuntu 18.04!
 ### Please use one (or more) of the supplied Anaconda environments for a fast and easy installation process.
 
 (0) Be sure you have Anaconda 3 installed! https://www.anaconda.com/distribution/, and get familiar with using "cmd" or terminal!
@@ -31,20 +31,27 @@ or
 
 ``conda env create -f dlc-ubuntu-GPU.yaml``
 
-(3) Enter your environment by running:
+(3) You can now use this environment from anywhere on your comptuer (i.e. no need to go back into the conda- folder). Just enter your environment by running:
 
 - Ubuntu/MacOS: ``source activate nameoftheenv`` (i.e. ``source activate dlc-macOS-CPU``)
 - Windows: ``activate nameoftheenv`` (i.e. ``activate dlc-windowsGPU``)
 
 Now you should see (nameofenv) on the left of your teminal screen, i.e. ``(dlc-macOS-CPU) YourName-MacBook...``
-NOTE: DO NOT run pip install deeplabcut, etc! It is already installed!!! :)
+NOTE: no need to run pip install deeplabcut, as it is already installed!!! :) 
 
-Great, that's it! 
+However, if you ever want to update your DLC, just run `pip install --upgrade deeplabcut` once you are inside your env. You can check the version by running `import deeplabcut` `deeplabcut.__version__`. Don't be afraid to update, DLC is backwards compatable with your 2.0+ projects and peformance continues to get better and new features are added nearly monthly. 
+
+**Great, that's it!**
 
 Simply run ``ipython`` or ``pythonw`` (macOS only) to lauch the terminal, ``jupyter notebook`` to lauch a browser session, or ``ipython, import deeplabcut, deeplabcut.launch_dlc()`` to use our Project Manager GUI! **Many more details** [**here**](https://github.com/AlexEMG/DeepLabCut/blob/master/docs/UseOverviewGuide.md)!
 
 
+# Creating your own customized conda env 
 
+Some users might want to create their own env. Here is an eample. In the terminal type `conda create -n DLC python=3.6 tensorflow=1.13.1` (this would be for CPU-based tensorflow; for GPU instead so `tensorflow-gpu=1.13.1`). The only thing you then need to add to the env is wxPython, which is OS dependent.  
+For Windows and MacOS, you just run `pip install -U wxPython` but for linux you need the specific wheel (https://wxpython.org/pages/downloads/index.html).
+
+# Using DLC: 
 
 Now just [**follow the user guide**](https://www.nature.com/articles/s41596-019-0176-0), to get DeepLabCut up and running in no time!
 
