@@ -32,9 +32,18 @@ def create_config_template():
 # Project path (change when moving around)
     project_path:
     \n
+# Multi-Animal Project Area:
+    multianimalproject:
+    individuals:
+    multianimalbodyparts:
+    uniquebodyparts:
+    \n
+# Original DLC bodypart naming area:
+    bodyparts:
+    \n
 # Annotation data set configuration (and individual video cropping parameters)
     video_sets:
-    bodyparts:
+    
     start:
     stop:
     numframes2pick:
