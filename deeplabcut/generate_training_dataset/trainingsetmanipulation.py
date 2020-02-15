@@ -431,7 +431,6 @@ def check_labels(config,Labels = ['+','.','x'],scale = 1,draw_skeleton=True,visu
     print("Creating images with labels by %s." %cfg['scorer'])
     for folder in folders:
         try:
-
             DataCombined = pd.read_hdf(os.path.join(str(folder),'CollectedData_' + cfg['scorer'] + '.h5'), 'df_with_missing')
             visualization.MakeLabeledPlots(folder,DataCombined,cfg,Labels,Colorscheme,cc,scale,visualizeindividuals,draw_skeleton)
         except FileNotFoundError:

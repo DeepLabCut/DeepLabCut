@@ -132,8 +132,13 @@ def MakeLabeledPlots(folder,DataCombined,cfg,Labels,Colorscheme,cc,scale,visuali
             left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
         plt.gca().invert_yaxis()
 
-        #plt.savefig(str(Path(tmpfolder)/imagename.split(os.sep)[-1]))
-        plt.savefig(os.path.join(tmpfolder,str(Path(imagename).name))) #create file name also on Windows for Unix projects (and vice versa)
+        if cfg.get('multianimalproject',False):
+            if visualizeindividuals:
+                plt.savefig(os.path.join(tmpfolder,str(Path(imagename).stem)+'_individuals'+str(Path(imagename).suffix)))
+            else:
+                plt.savefig(os.path.join(tmpfolder,str(Path(imagename).name)))
+        else:
+            plt.savefig(os.path.join(tmpfolder,str(Path(imagename).name)))
         plt.close("all")
 
 
