@@ -110,6 +110,7 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
     #multianimal case:
     dataset_type='multi-animal-imgaug'
     partaffinityfield_graph=auxfun_multianimal.getpafgraph(cfg)
+    #ATTENTION: order has to be multibodyparts, then uniquebodyparts (for indexing)
     print("Utilizing the following graph:", partaffinityfield_graph)
     num_limbs=len(partaffinityfield_graph)
     partaffinityfield_predict=True

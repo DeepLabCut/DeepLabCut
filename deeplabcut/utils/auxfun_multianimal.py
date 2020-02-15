@@ -25,9 +25,11 @@ def getpafgraph(cfg,printnames=True):
     # Attention this order has to be consistent (for training set creation, training, inference etc.)
     bodypartnames=multianimalbodyparts+uniquebodyparts
     lookupdict={bodypartnames[j]:j for j in range(len(bodypartnames))}
+    print(lookupdict)
     partaffinityfield_graph=[]
     for link in cfg['skeleton']:
         if link[0] in bodypartnames and link[1] in bodypartnames:
+            print(link,lookupdict[link[0]])
             partaffinityfield_graph.append([int(lookupdict[link[0]]),int(lookupdict[link[1]])])
         else:
             print("Attention, parts do not exist!", link)
@@ -39,7 +41,7 @@ def getpafgraph(cfg,printnames=True):
 
 def graph2names(cfg,partaffinityfield_graph):
     individuals,uniquebodyparts,multianimalbodyparts=extractindividualsandbodyparts(cfg)
-    bodypartnames=uniquebodyparts+multianimalbodyparts
+    bodypartnames=multianimalbodyparts+uniquebodyparts
     for pair in partaffinityfield_graph:
         print(pair,bodypartnames[pair[0]],bodypartnames[pair[1]])
 
