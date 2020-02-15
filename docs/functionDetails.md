@@ -162,7 +162,7 @@ For each video directory in labeled-data this function creates a subdirectory wi
 
     deeplabcut.create_training_dataset(config_path)
     
-**maDeepLabCut:** CRITICAL POINT - you must use the new function if you have a multi-animal project (and the skeleton in the config.yaml must be defined before you run this step, if not already done):
+**maDeepLabCut CRITICAL POINT**- you must use the new function if you have a multi-animal project (and the skeleton in the config.yaml must be defined before you run this step, if not already done):
     
     deeplabcut.create_multianimaltraining_dataset(config_path)
 
@@ -241,6 +241,8 @@ If the user wishes to restart the training at a specific checkpoint they can spe
 the variable ``init_weights`` in the **pose_cfg.yaml** file under the *train* subdirectory (see Box 2).
 
 **CRITICAL POINT:** It is recommended to train the ResNets or MobileNets for thousands of iterations until the loss plateaus (typically around **200,000**). The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file allows the user to alter how often the loss is displayed and how often the weights are stored.
+
+**maDeepLabCut CRITICAL POINT:** For multi-animal projects we are using not only different and new output layers, but also new data augmetnation, optimization, learning rates, and batch training defaults. Thus, please use a lower ``save_iters`` and ``maxiters``. I.e. we suggest saving every 10K-15K iterations, and only training until 50K-100K iterations. We recommend you look closely at the loss to not overfit on your data. The bonus, training time is much less!!!
 
 **Parameters:**
 
