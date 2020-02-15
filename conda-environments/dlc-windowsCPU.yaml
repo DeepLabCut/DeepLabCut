@@ -17,6 +17,7 @@
 name: dlc-windowsCPU
 dependencies:
   - python=3.6
+  - pip
   - jupyter
   - nb_conda
   - tensorflow==1.12
@@ -24,6 +25,6 @@ dependencies:
   - pytables==3.4.3
   - Shapely
   - pip:
-    - numpy==1.17.2
+    - numpy==1.16.4
     - imgaug
     - deeplabcut

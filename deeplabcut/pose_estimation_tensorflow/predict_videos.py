@@ -32,13 +32,11 @@ from skimage.util import img_as_ubyte
 # Loading data, and defining model folder
 ####################################################
 
-def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0,
-                    gputouse=None, save_as_csv=False, destfolder=None, batchsize=None,
-                    cropping=None,get_nframesfrommetadata=True, TFGPUinference=True,dynamic=(False,.5,10)):
+def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=0, gputouse=None, save_as_csv=False,
+                   destfolder=None, batchsize=None, crop=None, get_nframesfrommetadata=True, TFGPUinference=True,
+                   dynamic=(False, .5, 10)):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
-
-    You can crop the video (before analysis), by changing 'cropping'=True and setting 'x1','x2','y1','y2' in the config file. The same cropping parameters will then be used for creating the video.
 
     Output: The labels are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position \n
             in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
@@ -75,6 +73,12 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
     batchsize: int, default from pose_cfg.yaml
         Change batch size for inference; if given overwrites value in pose_cfg.yaml
 
+    crop: list, optional (default=None)
+        List of cropping coordinates as [x1, x2, y1, y2].
+        Note that the same cropping parameters will then be used for all videos.
+        If different video crops are desired, run 'analyze_videos' on individual videos
+        with the corresponding cropping coordinates.
+
     TFGPUinference: bool, default: True
         Perform inference on GPU with Tensorflow code. Introduced in "Pretraining boosts out-of-domain robustness for pose estimation" by
         Alexander Mathis, Mert Yüksekgönül, Byron Rogers, Matthias Bethge, Mackenzie W. Mathis Source: https://arxiv.org/abs/1909.11229
@@ -106,11 +110,11 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
     --------
 
     If you want to analyze multiple videos with shuffle = 2
-    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi','/analysis/project/videos/reachingvideo2.avi'], shuffle=2)
+    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi','/analysis/project/videos/reachingvideo2.avi'],shuffle=2)
 
     --------
     If you want to analyze multiple videos with shuffle = 2 and save results as an additional csv file too
-    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi','/analysis/project/videos/reachingvideo2.avi'], shuffle=2,save_as_csv=True)
+    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi','/analysis/project/videos/reachingvideo2.avi'],shuffle=2,save_as_csv=True)
     --------
 
     """
@@ -126,10 +130,10 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg['TrainingFraction'][trainingsetindex]
 
-    if cropping is not None:
+    if crop is not None:
         cfg['cropping']=True
-        cfg['x1'],cfg['x2'],cfg['y1'],cfg['y2']=cropping
-        print("Overwriting cropping parameters:", cropping)
+        cfg['x1'],cfg['x2'],cfg['y1'],cfg['y2']=crop
+        print("Overwriting cropping parameters:", crop)
         print("These are used for all videos, but won't be save to the cfg file.")
 
     modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)))
@@ -164,7 +168,7 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
     dlc_cfg['init_weights'] = os.path.join(modelfolder , 'train', Snapshots[snapshotindex])
     trainingsiterations = (dlc_cfg['init_weights'].split(os.sep)[-1]).split('-')[-1]
     # Update number of output and batchsize
-    dlc_cfg['num_outputs'] = dlc_cfg.get('num_outputs', 1)
+    dlc_cfg['num_outputs'] = cfg.get('num_outputs', dlc_cfg.get('num_outputs', 1))
 
     if batchsize==None:
         #update batchsize (based on parameters in config.yaml)
@@ -215,10 +219,13 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
         for video in Videos:
             DLCscorer=AnalyzeVideo(video,DLCscorer,DLCscorerlegacy,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder,TFGPUinference,dynamic)
 
-    os.chdir(str(start_path))
-    print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
-    print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
-    return DLCscorer #note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
+        os.chdir(str(start_path))
+        print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
+        print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
+        return DLCscorer #note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
+    else:
+        print("No video/s found. Please check your path!")
+        return DLCscorer
 
 def checkcropping(cfg,cap):
     print("Cropping based on the x1 = %s x2 = %s y1 = %s y2 = %s. You can adjust the cropping coordinates in the config.yaml file." %(cfg['x1'], cfg['x2'],cfg['y1'], cfg['y2']))
@@ -467,7 +474,8 @@ def AnalyzeVideo(video,DLCscorer,DLCscorerlegacy,trainFraction,cfg,dlc_cfg,sess,
     if notanalyzed:
         print("Loading ", video)
         cap=cv2.VideoCapture(video)
-
+        if not cap.isOpened():
+            raise IOError('Video could not be opened. Please check that the the file integrity.')
         fps = cap.get(5) #https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
         nframes = int(cap.get(7))
         duration=nframes*1./fps
@@ -652,7 +660,7 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,
     --------
 
     If you want to analyze all frames in /analysis/project/timelapseexperiment1
-    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml','/analysis/project/timelapseexperiment1', frametype='.bmp')
+    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml','/analysis/project/timelapseexperiment1')
     --------
 
     Note: for test purposes one can extract all frames from a video with ffmeg, e.g. ffmpeg -i testvideo.avi thumb%04d.png

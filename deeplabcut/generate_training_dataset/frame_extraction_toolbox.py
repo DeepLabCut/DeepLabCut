@@ -439,8 +439,6 @@ class MatplotPanel(wx.Panel):
         self.axes = self.figure.add_subplot(111)
 
 def show(config, slider_width=25):
-    import imageio
-    imageio.plugins.ffmpeg.download()
     app = wx.App()
     frame = MainFrame(None,config,slider_width).Show()
     app.MainLoop()

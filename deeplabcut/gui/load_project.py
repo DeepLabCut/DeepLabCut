@@ -77,7 +77,6 @@ class Load_project(wx.Panel):
 
     def load_project(self,event):
         print(self.config)
-#        deeplabcut.label_frames(self.config)
 
     def cancel_load_project(self,event):
         """

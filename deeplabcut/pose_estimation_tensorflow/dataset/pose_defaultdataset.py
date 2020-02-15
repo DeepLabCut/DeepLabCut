@@ -20,7 +20,17 @@ class PoseDataset:
     def __init__(self, cfg):
         self.cfg = cfg
         self.data = self.load_dataset()
+
         self.num_images = len(self.data)
+        self.max_input_sizesquare=cfg.get('max_input_size', 1500)**2
+        self.min_input_sizesquare=cfg.get('min_input_size', 64)**2
+        self.locref_scale = 1.0 / cfg.locref_stdev
+        self.stride = cfg.stride
+        self.half_stride = cfg.stride / 2
+        self.scale = cfg.global_scale
+        self.scale_jitter_lo=cfg.get('scale_jitter_lo',.75)
+        self.scale_jitter_up=cfg.get('scale_jitter_up',1.25)
+
         if self.cfg.mirror:
             self.symmetric_joints = mirror_joints_map(cfg.all_joints, cfg.num_joints)
         self.curr_img = 0
@@ -120,11 +130,7 @@ class PoseDataset:
         return self.data[imidx]
 
     def get_scale(self):
-        cfg = self.cfg
-        scale = cfg.global_scale
-        if hasattr(cfg, 'scale_jitter_lo') and hasattr(cfg, 'scale_jitter_up'):
-            scale_jitter = rand.uniform(cfg.scale_jitter_lo, cfg.scale_jitter_up)
-            scale *= scale_jitter
+        scale = rand.uniform(self.scale_jitter_lo, self.scale_jitter_up)*self.scale
         return scale
 
     def next_batch(self):
@@ -141,18 +147,12 @@ class PoseDataset:
     def is_valid_size(self, image_size, scale):
         im_width = image_size[2]
         im_height = image_size[1]
-
-        max_input_size = 100
-        if im_height < max_input_size or im_width < max_input_size:
+        input_width = im_width * scale
+        input_height = im_height * scale
+        if input_height * input_width > self.max_input_sizesquare:
             return False
-
-        if hasattr(self.cfg, 'max_input_size'):
-            max_input_size = self.cfg.max_input_size
-            input_width = im_width * scale
-            input_height = im_height * scale
-            if input_height * input_width > max_input_size * max_input_size:
-                return False
-
+        if input_height * input_width < self.min_input_sizesquare:
+            return False
         return True
 
     def make_batch(self, data_item, scale, mirror):
@@ -218,18 +218,14 @@ class PoseDataset:
         return batch
 
     def compute_target_part_scoremap(self, joint_id, coords, data_item, size, scale):
-        stride = self.cfg.stride
         dist_thresh = self.cfg.pos_dist_thresh * scale
+        dist_thresh_sq = dist_thresh ** 2
         num_joints = self.cfg.num_joints
-        half_stride = stride / 2
+
         scmap = np.zeros(cat([size, arr([num_joints])]))
         locref_size = cat([size, arr([num_joints * 2])])
         locref_mask = np.zeros(locref_size)
         locref_map = np.zeros(locref_size)
-
-        locref_scale = 1.0 / self.cfg.locref_stdev
-        dist_thresh_sq = dist_thresh ** 2
-
         width = size[1]
         height = size[0]
 
@@ -240,20 +236,20 @@ class PoseDataset:
                 j_y = np.asscalar(joint_pt[1])
 
                 # don't loop over entire heatmap, but just relevant locations
-                j_x_sm = round((j_x - half_stride) / stride)
-                j_y_sm = round((j_y - half_stride) / stride)
+                j_x_sm = round((j_x - self.half_stride) / self.stride)
+                j_y_sm = round((j_y - self.half_stride) / self.stride)
                 min_x = round(max(j_x_sm - dist_thresh - 1, 0))
                 max_x = round(min(j_x_sm + dist_thresh + 1, width - 1))
                 min_y = round(max(j_y_sm - dist_thresh - 1, 0))
                 max_y = round(min(j_y_sm + dist_thresh + 1, height - 1))
 
                 for j in range(min_y, max_y + 1):  # range(height):
-                    pt_y = j * stride + half_stride
+                    pt_y = j * self.stride + self.half_stride
                     for i in range(min_x, max_x + 1):  # range(width):
                         # pt = arr([i*stride+half_stride, j*stride+half_stride])
                         # diff = joint_pt - pt
                         # The code above is too slow in python
-                        pt_x = i * stride + half_stride
+                        pt_x = i * self.stride + self.half_stride
                         dx = j_x - pt_x
                         dy = j_y - pt_y
                         dist = dx ** 2 + dy ** 2
@@ -262,16 +258,15 @@ class PoseDataset:
                             scmap[j, i, j_id] = 1
                             locref_mask[j, i, j_id * 2 + 0] = 1
                             locref_mask[j, i, j_id * 2 + 1] = 1
-                            locref_map[j, i, j_id * 2 + 0] = dx * locref_scale
-                            locref_map[j, i, j_id * 2 + 1] = dy * locref_scale
+                            locref_map[j, i, j_id * 2 + 0] = dx * self.locref_scale
+                            locref_map[j, i, j_id * 2 + 1] = dy * self.locref_scale
 
         weights = self.compute_scmap_weights(scmap.shape, joint_id, data_item)
 
         return scmap, weights, locref_map, locref_mask
 
     def compute_scmap_weights(self, scmap_shape, joint_id, data_item):
-        cfg = self.cfg
-        if cfg.weigh_only_present_joints:
+        if self.cfg.weigh_only_present_joints:
             weights = np.zeros(scmap_shape)
             for person_joint_id in joint_id:
                 for j_id in person_joint_id:

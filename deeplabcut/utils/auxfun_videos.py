@@ -11,33 +11,16 @@ Licensed under GNU Lesser General Public License v3.0
 
 from pathlib import Path
 import subprocess, os
-from warnings import warn
-
-import numpy as np
-#import imageio
-#from skimage import io
-#from skimage.util import img_as_ubyte
-#from PIL import Image
-
 import cv2
 
 # Historically DLC used: from scipy.misc import imread, imresize >> deprecated functions
 def imread(path,mode=None):
-    a=cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
-    #print(np.max(a),np.min(a),np.median(a))
-    return a
+    return cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
 
 #https://docs.opencv.org/3.4.0/da/d54/group__imgproc__transform.html#ga5bb5a1fea74ea38e1a5445ca803ff121
 def imresize(img,size=1.0,interpolationmethod=cv2.INTER_AREA):
     if size!=1.0:
-        #height, width, depth = img.shape
-        #imgScale = W/width
-        #newX,newY = oriimg.shape[1]*imgScale, oriimg.shape[0]*imgScale
-        #a=cv2.resize(img,(int(height*size),int(width*size)))
-        a=cv2.resize(img,None,fx=size,fy=size,interpolation=interpolationmethod) #(int(height*size),int(width*size)))
-        #print(np.shape(a))
-        #print(np.max(a),np.min(a),np.median(a))
-        return a
+        return cv2.resize(img,None,fx=size,fy=size,interpolation=interpolationmethod) #(int(height*size),int(width*size)))
     else:
         return img
 
@@ -86,7 +69,7 @@ def ShortenVideo(vname,start='00:00:01',stop='00:01:00',outsuffix='short',outpat
     subprocess.call(['ffmpeg','-i',vname,'-ss',str(start),'-to',str(stop),'-c','copy',newfilename])
     return str(newfilename)
 
-def DownSampleVideo(vname,width=-1,height=200,outsuffix='cropped',outpath=None):
+def DownSampleVideo(vname,width=-1,height=200,outsuffix='downsampled',outpath=None):
     """
     Auxiliary function to downsample a video and output it to the same folder with "outsuffix" appended in its name.
     Width and height will control the new dimensions. You can also pass only height or width and set the other one to -1,

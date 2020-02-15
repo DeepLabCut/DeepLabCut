@@ -1,15 +1,17 @@
 ### DeepLabCut Project Manager GUI
 
-As of 2.1+ you can also launch a GUI to aid in project creation and modify existing projects. 
+As of 2.1+ you can also launch a GUI to aid in project creation and modify/run existing projects. 
 Simply launch `ipython` (or `pythonw` on MacOS), `import deeplabcut` then run `deeplabcut.launch_dlc()`. The below functions are available to you in an easy-to-use graphical user interface. While most functionality is available, advanced users might want the additional flexibility that command line interface offers. Read more [here](/docs/PROJECT_GUI.md).
 
 <p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1570056469743-SEGFUXMVS8YOZI7L37OS/ke17ZwdGBToddI8pDm48kLsntQCY1QWijXyGg3dq7owUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcBr4CcH-KF-rhlMRpAfkoGxF8gTXG9pG_BYoXmRkWRtNidc9E4L1Ctx8AFqW8So1U/lauch_dlc.png?format=1000w" width="60%">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572824438905-QY9XQKZ8LAJZG6BLPWOQ/ke17ZwdGBToddI8pDm48kIIa76w436aRzIF_cdFnEbEUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcLthF_aOEGVRewCT7qiippiAuU5PSJ9SSYal26FEts0MmqyMIhpMOn8vJAUvOV4MI/guilaunch.jpg?format=1000w" width="60%">
 </p>
+
+As a reminder, the core functions are described in our [Nature Protocols](https://www.nature.com/articles/s41596-019-0176-0) paper (published at the time of 2.0.6). Additional functions and features are continually added to the package. Thus, we recommend you read over the protocol and then please look to the following documentation and the doctrings. Thanks for using DeepLabCut!
 
 
 ### (A) Create a New Project
-
+[DOCSTRING](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#create_new_project) 
 
 The function **create\_new\_project** creates a new project directory, required subdirectories, and a basic project configuration file. Each project is identified by the name of the project (e.g. Reaching), name of the experimenter (e.g. YourName), as well as the date at creation.
 
@@ -18,11 +20,11 @@ Thus, this function requires the user to input the enter the name of the project
 Optional arguments specify the working directory, where the project directory will be created, and if the user wants to copy the videos (to the project directory). If the optional argument working\_directory is unspecified, the project directory is created in the current working directory, and if copy\_videos is unspecified symbolic links for the videos are created in the videos directory. Each symbolic link creates a reference to a video and thus eliminates the need to copy the entire video to the video directory (if the videos remain at the original location).
 
 
-    deeplabcut.create_new_project(`Name of the project',`Name of the experimenter', [`Full path of video 1',`Full path of video2',`Full path of video3'], working_directory=`Full path of the working directory',copy_videos=True/False)
+    deeplabcut.create_new_project('Name of the project','Name of the experimenter', ['Full path of video 1','Full path of video2','Full path of video3'], working_directory='Full path of the working directory',copy_videos=True/False)
            
-   NOTE: Windows users, you must input paths as: ``r`C:\Users\computername\Videos\reachingvideo1.avi' `` or
+   NOTE: Windows users, you must input paths as: ``r'C:\Users\computername\Videos\reachingvideo1.avi' `` or
 
-`` `C:\\Users\\computername\\Videos\\reachingvideo1.avi'`` 
+`` 'C:\\Users\\computername\\Videos\\reachingvideo1.avi'`` 
 
  (TIP: you can also place ``config_path`` in front of ``deeplabcut.create_new_project`` to create a variable that holds the path to the config.yaml file, i.e. ``config_path=deeplabcut.create_new_project(...)``)
 
@@ -37,7 +39,7 @@ This set of arguments will create a project directory with the name **Name of th
 
 **videos:** Directory of video links or videos. When **copy\_videos** is set to ``False``, this directory contains symbolic links to the videos. If it is set to ``True`` then the videos will be copied to this directory. The default is ``False``. Additionally, if the user wants to add new videos to the project at any stage, the function **add\_new\_videos** can be used. This will update the list of videos in the project's configuration file.
 
-       deeplabcut.add_new_videos(`Full path of the project configuration file*',[`full path of video 4', `full path of video 5'],copy_videos=True/False)
+       deeplabcut.add_new_videos('Full path of the project configuration file*',['full path of video 4', 'full path of video 5'],copy_videos=True/False)
 
 *Please note, *Full path of the project configuration file* will be referenced as ``config_path`` throughout this protocol.
 
@@ -53,7 +55,8 @@ The ``create_new_project`` step writes the following parameters to the configura
 
 Next, open the **config.yaml** file, which was created during  **create\_new\_project**. You can edit this file in any text editor.  Familiarize yourself with the meaning of the parameters (Box 1). You can edit various parameters, in particular you must add the list of *bodyparts* (or points of interest) that you want to track.
 
- ### (C) Data Selection
+ ### (C) Data Selection (extract frames)
+ [DOCSTRING](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#extract_frames) 
 
 **CRITICAL:** A good training dataset should consist of a sufficient number of frames that capture the
 full breadth of the behavior. This implies to select the frames from different (behavioral) sessions, different lighting and different animals, if those vary substantially (to train an invariant, robust feature detector). Thus, a good training dataset should reflect the diversity of the behavior with respect to postures, luminance conditions, background conditions, animal identities,etc. of the data that will be analyzed. For the behaviors we have tested so far, a data set of 100−200 frames gave good results [Mathis et al, 2018]. However, depending on the required accuracy and the nature of the scene statistics, more or less frames might be necessary to create the training data set. As we show in Mathis et al, you will typically need to label ~50-200 frames for robust generalization. Ultimately, in order to scale up the analysis to large collections of videos with perhaps unexpected conditions, one can also refine the data set in an adaptive way (see refinement below).
@@ -81,7 +84,7 @@ video and clusters the frames using k-means, where each frame is treated as a ve
 are then selected. This procedure makes sure that the frames look different. However, on large and long videos, this
 code is slow due to computational complexity.
 
-CRITICAL POINT: It is advisable to extract frames from a period of the video that contains interesting
+**CRITICAL POINT:** It is advisable to extract frames from a period of the video that contains interesting
 behaviors, and not extract the frames across the whole video. This can be achieved by using the start and stop
 parameters in the config.yaml file. Also, the user can change the number of frames to extract from each video using
 the numframes2extract in the config.yaml file.
@@ -100,6 +103,7 @@ bar to navigate across the video and *Grab a Frame* (or a range of frames, as of
 </p>
 
 ### (D) Label Frames 
+[DOCSTRING](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#label_frames)
 
 The toolbox provides a function **label_frames** which helps the user to easily label all the extracted frames using
 an interactive graphical user interface (GUI). The user should have already named the body parts to label (points of
@@ -123,6 +127,7 @@ OPTIONAL: In the event of adding more labels to the existing labeled dataset, th
 labels to the bodyparts in the config.yaml file. Thereafter, the user can call the function **label_frames**. As of 2.0.5+: then a box will pop up and ask the user if they wish to display all parts, or only add in the new labels. Saving the labels after all the images are labelled will append the new labels to the existing labeled dataset.
 
 ###  (E) Check Annotated Frames
+[DOCSTRING](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#check_labels)
 
 OPTIONAL: Checking if the labels were created and stored correctly is beneficial for training, since labeling
 is one of the most critical parts for creating the training dataset. The DeepLabCut toolbox provides a function
@@ -132,79 +137,94 @@ is one of the most critical parts for creating the training dataset. The DeepLab
 
 For each video directory in labeled-data this function creates a subdirectory with **labeled** as a suffix. Those directories contain the frames plotted with the annotated body parts. The user can double check if the body parts are labeled correctly. If they are not correct, the user can re-load the frames (i.e. `deeplabcut.label_frames`), move them around, and click save again.
 
-### (F) Create Training Dataset
+### (F) Create Training Dataset(s)
+[DOCSTRING](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#create_training_dataset)
 
-**CRITICAL POINT:** Only run this step **where** you are going to train the network. If you label on your laptop but move your project folder to Google Colab or AWS, lab server, etc, then run the step below on that platform! If you labeled on a Windows machine but train on Linux, this is fine as of 2.0.4+! You simply will be asked if you want to convert the data, and it will be done automatically! (it saves file sets as both Linux and Windows for you). 
+**CRITICAL POINT:** Only run this step **where** you are going to train the network. If you label on your laptop but move your project folder to Google Colab or AWS, lab server, etc, then run the step below on that platform! If you labeled on a Windows machine but train on Linux, this is fine as of 2.0.4 onwards it will be done automatically (it saves file sets as both Linux and Windows for you). 
 
-As a reminder, if you move your project folder, you must **only** change the `project_path` in the main config.yaml file - that's it - no need to change the video paths, etc! Your project is fully portable. 
+- If you move your project folder, you must **only** change the `project_path` in the main config.yaml file - that's it - no need to change the video paths, etc! Your project is fully portable. 
 
-As a reminder, if you run this on the cloud, before importing `deeplabcut` you need to suppress GUIs. As you can see in our [demo notebooks](https://github.com/AlexEMG/DeepLabCut/blob/master/examples/Colab_DEMO_mouse_openfield.ipynb) for running DLC training, evaluation, and novel video analysis on the Cloud, you must first supress GUIs - server computers don't have a screen you can interact with. So, before you launch ipython, run `export DLClight=True` (see more tips in the full PDF user-guide).
+- If you run this on the cloud, before importing `deeplabcut` you need to suppress GUIs. As you can see in our [demo notebooks](https://github.com/AlexEMG/DeepLabCut/blob/master/examples/Colab_DEMO_mouse_openfield.ipynb) for running DLC training, evaluation, and novel video analysis on the Cloud, you must first suppress GUIs - server computers don't have a screen you can interact with. So, before you launch ipython, run `export DLClight=True` (see more tips in the full PDF user-guide).
 
-Combining the labeled datasets from all the videos and splitting them will create train and test datasets. The
-training data will be used to train the network, while the test data set will be used for evaluating the network. The
-function **create_training_dataset** performs those steps.
+**OVERVIEW:** This function combines the labeled datasets from all the videos and splits them to create train and test datasets. The training data will be used to train the network, while the test data set will be used for evaluating the network. The function **create_training_dataset** performs those steps.
 
     deeplabcut.create_training_dataset(config_path)
 
-The set of arguments in the function will shuffle the combined labeled dataset and split it to create train and test
+- The set of arguments in the function will shuffle the combined labeled dataset and split it to create train and test
 sets. The subdirectory with suffix ``iteration#`` under the directory **training-datasets** stores the dataset and meta
 information, where the ``#`` is the value of ``iteration`` variable stored in the project’s configuration file (this number
 keeps track of how often the dataset was refined).
 
-OPTIONAL: If the user wishes to benchmark the performance of the DeepLabCut, they can create multiple
-training datasets by specifying an integer value to the `num_shuffles`; see the Doc string for more details.
+- OPTIONAL: If the user wishes to benchmark the performance of the DeepLabCut, they can create multiple
+training datasets by specifying an integer value to the `num_shuffles`; see the docstring for more details.
 
-Each iteration of the creation of a training dataset, will create a ``.mat`` file, which is used by the feature detectors
+- Each iteration of the creation of a training dataset, will create a ``.mat`` file, which is used by the feature detectors
 and a ``.pickle`` file which contains the meta information about the training dataset. This also creates two subdirectories
 within **dlc-models** called ``test`` and ``train``, and these each have a configuration file called pose_cfg.yaml.
 Specifically, the user can edit the **pose_cfg.yaml** within the **train** subdirectory before starting the training. These
 configuration files contain meta information with regard to the parameters of the feature detectors. Key parameters
 are listed in Box 2.
 
-At this step, the ImageNet pre-trained ResNet-50, ResNet-101 and ResNet-152 weights will be downloaded. If they do not download (you will see this downloading in the terminal, then you may not have permission to do so (something we have seen with some Windows users - see the **[WIKI troubleshooting for more help!](https://github.com/AlexEMG/DeepLabCut/wiki/Troubleshooting-Tips)**). 
+- At this step, the ImageNet pre-trained ResNet-50, ResNet-101 and ResNet-152 weights will be downloaded. If they do not download (you will see this downloading in the terminal, then you may not have permission to do so (something we have seen with some Windows users - see the **[WIKI troubleshooting for more help!](https://github.com/AlexEMG/DeepLabCut/wiki/Troubleshooting-Tips)**). 
 
-If you are labeling adult human data, you may also want to use a human-pretrained network. A ResNet-101 pre-trained on MPII is available. You can use the following notebook to create a project that uses this network, [HUMAN DEMO](https://github.com/AlexEMG/DeepLabCut/blob/master/examples/Human_Project_DEMO.ipynb), or you can add the pretrained model manually to the correct folder (then to use them, set the path to the model as described in Box 2!)
+**CRITICAL POINT:** At this step, you select the network you want to use, and any additional data augmentation (beyond our defaults). You can set ``net_type`` and ``augmenter_type`` when you call the function. 
 
-Download it and move to the pretrained folder (this will be in your site-packages, under ``../pose-tensorflow/models/pretrained``). Download with the following commands in the terminal: 
- ```
-    curl -L -O https://datasets.d2.mpi-inf.mpg.de/deepercut-models-tensorflow/mpii-single-resnet-101.data-00000-of-00001 
-    curl -L -O https://datasets.d2.mpi-inf.mpg.de/deepercut-models-tensorflow/mpii-single-resnet-101.meta
-    curl -L -O https://datasets.d2.mpi-inf.mpg.de/deepercut-models-tensorflow/mpii-single-resnet-101.index
- ```
- See Box 2 on how to specify which network is loaded for training:
+**DATA AUGMENTATION:** At this stage you can also decide what type of augmentation to use. The default loaders work well for most all tasks (as shown on www.deeplabcut.org), but there are many options, more data augmentation, intermediate supervision, etc. Please look at the [**pose_cfg.yaml**](https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml) file for a full list of parameters **you might want to change before running this step.** There are several data loaders that can be used. For example, you can use the default loader (introduced and described in the Nature Protocols paper), [TensorPack](https://github.com/tensorpack/tensorpack) for data augmentation (currently this is easiest on Linux only), or [imgaug](https://imgaug.readthedocs.io/en/latest/). You can set this by passing:``` deeplabcut.create_training_dataset(config_path, augmenter_type='imgaug')  ```
+
+The differences of the loaders are as follows:
+- default: our standard DLC 2.0 introduced in Nature Protocols variant (scaling, auto-crop augmentation)
+- imgaug: a lot of augmentation possibilities, efficient code for target map creation & batchsizes >1 supported. [will prob. become default soon]. You can set the parameters such as the batch_size in the pose_cfg.yaml file for the model you are training. 
+- tensorpack: a lot of augmentation possibilities, multi CPU support for fast processing, target maps are created less efficiently than in imgaug, does not allow batchsize>1 
+- deterministic: only useful for testing, freezes numpy seed otherwise like default
+
+Alternatively, you can set the loader (as well as other training parameters) in the **pose_cfg.yaml** file of the model that you want train. Note, to get details on the options, look at the default file: [**pose_cfg.yaml**](https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml). 
+
+**MODEL COMPARISION:** You can also test several models by creating the same test/train split for different networks. You can easily do this in the Project Manager GUI, or use the function ``deeplabcut.create_training_model_comparison(`` ([check the docstring for more details!](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#or-use-create_training_model_comparison)).
+
+Please also see our helper WIKI on selecting models: https://github.com/AlexEMG/DeepLabCut/wiki/What-neural-network-should-I-use%3F
+
+ See Box 2 on how to specify **which network is loaded for training (inlcuding your own network, etc):**
 
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1570325287859-NHCTKWOFWPVWLH8B79PS/ke17ZwdGBToddI8pDm48kApwhYXjNb7J-ZG10ZuuPUJ7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z4YTzHvnKhyp6Da-NYroOW3ZGjoBKy3azqku80C789l0uRNgJXBmK_J7vOfsoUyYccR03UZyExumRKzyR7hPRvjPGikK2uEIM-3GOD5thTJoQ/Box2-01.png?format=1000w" width="90%">
 </p>
 
+Lastly, if you are labeling adult human data, you may also want to use a human-pretrained network. 
+A ResNet-101 pre-trained on MPII is available. You can use the following notebook to create a project that uses this network:
+- [HUMAN DEMO](https://github.com/AlexEMG/DeepLabCut/blob/master/examples/COLAB_Human_Project_DEMO.ipynb) notebook
+- or use the new function: `` deeplabcut.create_pretrained_human_project(..``
+- or you can add the pretrained model manually to the correct folder (then to use them set the path to the model as described in Box 2)
+   - Download these and move to the pretrained folder (this will be in your site-packages, under ``../pose-tensorflow/models/pretrained``). In the terminal: 
+ ```
+    curl -L -O https://datasets.d2.mpi-inf.mpg.de/deepercut-models-tensorflow/mpii-single-resnet-101.data-00000-of-00001 
+    curl -L -O https://datasets.d2.mpi-inf.mpg.de/deepercut-models-tensorflow/mpii-single-resnet-101.meta
+    curl -L -O https://datasets.d2.mpi-inf.mpg.de/deepercut-models-tensorflow/mpii-single-resnet-101.index
+ ```
+
 ### (G) Train The Network
+[DOCSTRING](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#train_network)
 
 Timing: The time required to train the network mainly depends on the frame size of the dataset and the
 computer hardware. On a NVIDIA GeForce GTX 1080 Ti GPU, it takes ≈ 6 hrs to train the network for at least
 200,000 iterations. On the CPU, it will take several days to train for the same number of iterations on the same
 training dataset.
 
-The default parameters work very well for most all tasks (as shown on www.deeplabcut.org), but there are many options, including data augmentation, intermediate supervision, etc. Please look at the [**pose_cfg.yaml**](https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml) file for a full list of parameters **you might want to change before running this step.**
-
-For example, there are several data loaders that can be used. Currently, there are several options for this. For example, you can use [TensorPack](https://github.com/tensorpack/tensorpack) for data augmentation (currently this is easiest on Linux only), or [imgaug](https://imgaug.readthedocs.io/en/latest/). You can set this in your projects "dlc-models folder, ... train" then edit the **pose_cfg.yaml**. Note, to see the options, look at the default file: [**pose_cfg.yaml**](https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml)
-
 The function ‘train_network’ helps the user in training the network. It is used as follows:
 
     deeplabcut.train_network(config_path)
 
-The set of arguments in the function starts training the network for the dataset created for one specific shuffle.
+The set of arguments in the function starts training the network for the dataset created for one specific shuffle. Note that you can change the loader (imgaug/default/etc) as well as other training parameters in the **pose_cfg.yaml** file of the model that you want train (before you start training).
 
 Example parameters that one can call:
-   
-           deeplabcut.train_network(config_path,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshots_to_keep=5,autotune=False,displayiters=100,saveiters=15000, maxiters=30000)
+            deeplabcut.train_network(config_path,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshots_to_keep=5,autotune=False,displayiters=100,saveiters=15000, maxiters=30000)
 
 By default, the pre-trained ResNet networks are not in the DeepLabCut toolbox (as they are around 100MB), but they get downloaded before you train. However, if not previously downloaded from the TensorFlow model weights, it will be downloaded and stored in a subdirectory *pre-trained* under the subdirectory *models* in *Pose_Estimation_Tensorflow*. 
 At user specified iterations during training checkpoints are stored in the subdirectory *train* under the respective iteration directory.
+
 If the user wishes to restart the training at a specific checkpoint they can specify the full path of the checkpoint to
 the variable ``init_weights`` in the **pose_cfg.yaml** file under the *train* subdirectory (see Box 2).
 
-CRITICAL POINT: It is recommended to train the ResNets for thousands of iterations until the loss plateaus (typically
- around **200,000**). The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file allows the user to alter how often the loss is displayed and how often the weights are stored.
+**CRITICAL POINT:** It is recommended to train the ResNets or MobileNets for thousands of iterations until the loss plateaus (typically around **200,000**). The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file allows the user to alter how often the loss is displayed and how often the weights are stored.
 
 **Parameters:**
 
@@ -235,8 +255,8 @@ CRITICAL POINT: It is recommended to train the ResNets for thousands of iteratio
     
     
 
-
 ### (H) Evaluate the Trained Network
+[DOCSTRING](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#evaluate_network)
 
 It is important to evaluate the performance of the trained network. This performance is measured by computing
 the mean average Euclidean error (MAE; which is proportional to the average root mean square error) between the
@@ -289,6 +309,7 @@ labeled accurately
 
 
 ### (I) Novel Video Analysis:
+[DOCSTRING](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#analyze_videos)
 
 The trained network can be used to analyze new videos. The user needs to first choose a checkpoint with the best
 evaluation results for analyzing the videos. In this case, the user can enter the corresponding index of the checkpoint
@@ -299,7 +320,7 @@ analyzing the video. Novel/new videos **DO NOT have to be in the config file!** 
 
 There are several other optional inputs, such as:
 
-    deeplabcut.analyze_videos(config_path,videos,videotype='avi',shuffle=1,trainingsetindex=0,gputouse=None,save_as_csv=False, destfolder=None)
+    deeplabcut.analyze_videos(config_path,videos,videotype='avi',shuffle=1,trainingsetindex=0,gputouse=None,save_as_csv=False, destfolder=None, dynamic=(False,.5,10))
 
 The labels are stored in a [MultiIndex Pandas Array](http://pandas.pydata.org), which contains the name
 of the network, body part name, (x, y) label position in pixels, and the likelihood for each frame per body part. These
@@ -310,7 +331,17 @@ by default. You can also set a destination folder (``destfolder``) for the outpu
 
 As of 2.0.8+: you can extract multiple bodyparts, although there is no support for plotting or further analysis at this time; i.e. if you want to extract 3 snouts (as in [Figure 4 of Mathis et al, 2018 Nature Neuroscience](https://www.nature.com/articles/s41593-018-0209-y/figures/4)), you can edit the config.yaml file to contain ``num_outputs=3``. Then, when you run ``deeplabcut.analyze_videos`` it will extract the top three points (i.e. the 3 x, y, and likelihoods) and save this to the .h5 output file.
 
+### (I) Novel Video Analysis: extra features
+
+#### Dynamic-cropping of videos:
+
+As of 2.1+ we have a dynamic cropping option. Namely, if you have large frames and the animal/object occupies a smaller fraction, you can crop around your animal/object to make processing speeds faster. For example, if you have a large open field experiment but only track the mouse, this will speed up your analysis (also helpful for real-time applications). To use this simply add ``dynamic=(True,.5,10)`` when you call ``analyze_videos``. 
+
+dynamic: triple containing (state,detectiontreshold,margin)
+        If the state is true, then dynamic cropping will be performed. That means that if an object is detected (i.e. any body part > detectiontreshold), then object boundaries are computed according to the smallest/largest x position and smallest/largest y position of all body parts. This  window is expanded by the margin and from then on only the posture within this crop is analyzed (until the object is lost, i.e. <detectiontreshold). The current position is utilized for updating the crop window for the next frame (this is why the margin is important and should be set large enough given the movement of the animal).
+
 #### Filter data:
+[DOCSTRING](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#filterpredictions)
 
 You can also filter the predictions with a median filter (default; **NEW** as of 2.0.7+) or with a [SARIMAX model](https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html), if you wish. This creates a new .h5 file with the ending *_filtered* that you can use in create_labeled_data and/or plot trajectories.
 
@@ -330,6 +361,7 @@ You can also filter the predictions with a median filter (default; **NEW** as of
 </p>
 
 #### Plot Trajectories:
+[DOCSTRING](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#plot_trajectories)
 
 The plotting components of this toolbox utilizes matplotlib therefore these plots can easily be customized by
 the end user. We also provide a function to plot the trajectory of the extracted poses across the analyzed video, which
@@ -345,6 +377,7 @@ can be called by typing:
 </p>
  
 #### Create Labeled Videos:
+[DOCSTRING](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#create_labeled_video)
 
 Additionally, the toolbox provides a function to create labeled videos based on the extracted poses by plotting the
 labels on top of the frame and creating a video. There are two modes to create videos: FAST and SLOW (but higher quality!). If you want to create high-quality videos, please add ``save_frames=True``. One can use the command as follows to create multiple labeled videos:
@@ -355,11 +388,11 @@ labels on top of the frame and creating a video. There are two modes to create v
          
      deeplabcut.create_labeled_video(config_path,[‘fullpath/afolderofvideos’], videotype='.mp4', filtered=True)
      
- **NEW** as of 2.0.7: You can also optionally add a skeleton to connect points and/or add a history of points for visualization. To set the "trailing points" you need to pass ``trailpoints``: 
+ **NEW** as of 2.0.7+: You can also optionally add a skeleton to connect points and/or add a history of points for visualization. To set the "trailing points" you need to pass ``trailpoints``: 
  
     deeplabcut.create_labeled_video(config_path,[‘fullpath/afolderofvideos’], videotype='.mp4', trailpoints=10) 
 
-**NEW** as of 2.0.7: To draw a skeleton, you need to first define the pairs of connected nodes (in the ``config.yaml`` file) and set the skeleton color (in the ``config.yaml`` file). If you are using a project that was created before 2.0.7, you simply need to add these two items (``skeleton`` and  ``skeleton_color``) to your config file (This addition is fully backwards compatable, so don't worry!).
+**NEW** as of 2.0.7: To draw a skeleton, you need to first define the pairs of connected nodes (in the ``config.yaml`` file) and set the skeleton color (in the ``config.yaml`` file). If you are using a project that was created before 2.0.7, you simply need to add these two items (``skeleton`` and  ``skeleton_color``) to your config file (This addition is fully backwards compatible, so don't worry!).
 
 Here is how the ``config.yaml`` additions/edits should look (for example, on the Openfield demo data we provide):
 ```
@@ -464,7 +497,7 @@ label is shown, even when DeepLabCut is uncertain. This is necessary, so that th
 the predicted label. However, to help the user to remove all invisible body parts the low-likelihood predictions
 are shown as open circles (rather than disks).
 
-(D) Invalid images: In an unlikely event that there are any invalid images, the user should remove such an image
+(D) Invalid images: In the unlikely event that there are any invalid images, the user should remove such an image
 and their corresponding predictions, if any. Here, the GUI will prompt the user to remove an image identified
 as invalid.
 

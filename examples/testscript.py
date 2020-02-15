@@ -36,6 +36,8 @@ video=[os.path.join(basepath,'Reaching-Mackenzie-2018-08-30','videos',videoname+
 dfolder=None
 net_type='resnet_50' #'mobilenet_v2_0.35' #'resnet_50'
 augmenter_type='default' #'tensorpack'
+augmenter_type2='imgaug'
+augmenter_type3='tensorpack'
 numiter=5
 
 print("CREATING PROJECT")
@@ -109,14 +111,13 @@ except: # if ffmpeg is broken
     newclip = VideoClip(make_frame, duration=1)
     newclip.write_videofile(newvideo,fps=30)
 
-
-deeplabcut.analyze_videos(path_config_file,[newvideo],save_as_csv=True, destfolder=dfolder, dynamic=(True,.1,5))
+deeplabcut.analyze_videos(path_config_file, [newvideo], save_as_csv=True, destfolder=dfolder, dynamic=(True, .1, 5))
 
 print("analyze again...")
-deeplabcut.analyze_videos(path_config_file,[newvideo],save_as_csv=True, destfolder=dfolder)
+deeplabcut.analyze_videos(path_config_file, [newvideo], save_as_csv=True, destfolder=dfolder)
 
 print("CREATE VIDEO")
-deeplabcut.create_labeled_video(path_config_file,[newvideo], destfolder=dfolder)
+deeplabcut.create_labeled_video(path_config_file,[newvideo], destfolder=dfolder,save_frames=True)
 
 print("Making plots")
 deeplabcut.plot_trajectories(path_config_file,[newvideo], destfolder=dfolder)
@@ -137,7 +138,7 @@ print("MERGING")
 deeplabcut.merge_datasets(path_config_file)
 
 print("CREATING TRAININGSET")
-deeplabcut.create_training_dataset(path_config_file,net_type=net_type)
+deeplabcut.create_training_dataset(path_config_file,net_type=net_type,augmenter_type=augmenter_type2)
 
 cfg=deeplabcut.auxiliaryfunctions.read_config(path_config_file)
 posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(1),'train/pose_cfg.yaml')
@@ -154,8 +155,9 @@ deeplabcut.train_network(path_config_file)
 
 try: #you need ffmpeg command line interface
     #subprocess.call(['ffmpeg','-i',video[0],'-ss','00:00:00','-to','00:00:00.4','-c','copy',newvideo])
-    newvideo2=deeplabcut.ShortenVideo(video[0],start='00:00:00',stop='00:00:00.4',outsuffix='short',outpath=os.path.join(cfg['project_path'],'videos'))
-    vname=Path(newvideo).stem
+    newvideo2=deeplabcut.ShortenVideo(video[0],start='00:00:00',stop='00:00:00.4',outsuffix='short2',outpath=os.path.join(cfg['project_path'],'videos'))
+
+    vname=Path(newvideo2).stem
 except: # if ffmpeg is broken
     vname='brief'
     newvideo2=os.path.join(cfg['project_path'],'videos',vname+'.mp4')
@@ -170,7 +172,7 @@ except: # if ffmpeg is broken
 
 
 print("Inference with direct cropping")
-deeplabcut.analyze_videos(path_config_file,[newvideo2],destfolder=dfolder,cropping=[0,50,0,50],save_as_csv=True)
+deeplabcut.analyze_videos(path_config_file, [newvideo2], save_as_csv=True, destfolder=dfolder, crop=[0, 50, 0, 50])
 
 print("Extracting skeleton distances, filter and plot filtered output")
 deeplabcut.analyzeskeleton(path_config_file, [newvideo], save_as_csv=True, destfolder=dfolder)
@@ -182,7 +184,7 @@ deeplabcut.plot_trajectories(path_config_file,[newvideo2], destfolder=dfolder,fi
 
 print("CREATING TRAININGSET for shuffle 2")
 print("will be used for 3D testscript...")
-deeplabcut.create_training_dataset(path_config_file,Shuffles=[2],net_type=net_type)
+deeplabcut.create_training_dataset(path_config_file,Shuffles=[2],net_type=net_type,augmenter_type=augmenter_type3)
 
 posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(2),'train/pose_cfg.yaml')
 

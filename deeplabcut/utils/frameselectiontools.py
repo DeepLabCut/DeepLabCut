@@ -18,11 +18,11 @@ import cv2
 from tqdm import tqdm
 
 def UniformFrames(clip,numframes2pick,start,stop,Index=None):
-    ''' Temporally uniformly sampling frames in interval (start,stop). 
+    ''' Temporally uniformly sampling frames in interval (start,stop).
     Visual information of video is irrelevant for this method. This code is fast and sufficient (to extract distinct frames),
     when behavioral videos naturally covers many states.
-    
-    The variable Index allows to pass on a subindex for the frames. 
+
+    The variable Index allows to pass on a subindex for the frames.
     '''
     print("Uniformly extracting of frames from", round(start*clip.duration,2)," seconds to", round(stop*clip.duration,2), " seconds.")
     if Index is None:
@@ -43,11 +43,11 @@ def UniformFrames(clip,numframes2pick,start,stop,Index=None):
 
 #uses openCV
 def UniformFramescv2(cap,numframes2pick,start,stop,Index=None):
-    ''' Temporally uniformly sampling frames in interval (start,stop). 
+    ''' Temporally uniformly sampling frames in interval (start,stop).
     Visual information of video is irrelevant for this method. This code is fast and sufficient (to extract distinct frames),
     when behavioral videos naturally covers many states.
-    
-    The variable Index allows to pass on a subindex for the frames. 
+
+    The variable Index allows to pass on a subindex for the frames.
     '''
     nframes = int(cap.get(7))
     print("Uniformly extracting of frames from",  round(start*nframes*1./cap.get(5),2)," seconds to", round(stop*nframes*1./cap.get(5),2), " seconds.")
@@ -69,31 +69,31 @@ def UniformFramescv2(cap,numframes2pick,start,stop,Index=None):
             return list(Index)
 
 def KmeansbasedFrameselection(clip,numframes2pick,start,stop,Index=None,step=1,resizewidth=30,batchsize=100,max_iter=50,color=False):
-    ''' This code downsamples the video to a width of resizewidth. 
-    
-    The video is extracted as a numpy array, which is then clustered with kmeans, whereby each frames is treated as a vector. 
-    Frames from different clusters are then selected for labeling. This procedure makes sure that the frames "look different", 
-    i.e. different postures etc. On large videos this code is slow. 
-    
-    Consider not extracting the frames from the whole video but rather set start and stop to a period around interesting behavior. 
-    
+    ''' This code downsamples the video to a width of resizewidth.
+
+    The video is extracted as a numpy array, which is then clustered with kmeans, whereby each frames is treated as a vector.
+    Frames from different clusters are then selected for labeling. This procedure makes sure that the frames "look different",
+    i.e. different postures etc. On large videos this code is slow.
+
+    Consider not extracting the frames from the whole video but rather set start and stop to a period around interesting behavior.
+
     Note: this method can return fewer images than numframes2pick.'''
-    
+
     print("Kmeans-quantization based extracting of frames from", round(start*clip.duration,2)," seconds to", round(stop*clip.duration,2), " seconds.")
     startindex=int(np.floor(clip.fps*clip.duration*start))
     stopindex=int(np.ceil(clip.fps*clip.duration*stop))
-    
+
     if Index is None:
         Index=np.arange(startindex,stopindex,step)
     else:
         Index=np.array(Index)
         Index=Index[(Index>startindex)*(Index<stopindex)] #crop to range!
-    
+
     nframes=len(Index)
     if batchsize>nframes:
         batchsize=int(nframes/2)
-    
-    if len(Index)>=numframes2pick-1:
+
+    if len(Index)>=numframes2pick:
         clipresized=clip.resize(width=resizewidth)
         ny, nx = clipresized.size
         frame0=img_as_ubyte(clip.get_frame(0))
@@ -102,7 +102,7 @@ def KmeansbasedFrameselection(clip,numframes2pick,start,stop,Index=None,step=1,r
         else:
             ncolors=1
         print("Extracting and downsampling...",nframes, " frames from the video.")
-        
+
         if color and ncolors>1:
             DATA=np.zeros((nframes,nx*3,ny))
             for counter,index in tqdm(enumerate(Index)):
@@ -115,11 +115,11 @@ def KmeansbasedFrameselection(clip,numframes2pick,start,stop,Index=None,step=1,r
                     DATA[counter,:,:] = img_as_ubyte(clipresized.get_frame(index * 1. / clipresized.fps))
                 else: #attention: averages over color channels to keep size small / perhaps you want to use color information?
                     DATA[counter,:,:] = img_as_ubyte(np.array(np.mean(clipresized.get_frame(index * 1. / clipresized.fps),2),dtype=np.uint8))
-                    
+
         print("Kmeans clustering ... (this might take a while)")
         data = DATA - DATA.mean(axis=0)
         data=data.reshape(nframes,-1) #stacking
-        
+
         kmeans=MiniBatchKMeans(n_clusters=numframes2pick, tol=1e-3, batch_size=batchsize,max_iter=max_iter)
         kmeans.fit(data)
         frames2pick=[]
@@ -138,14 +138,14 @@ def KmeansbasedFrameselection(clip,numframes2pick,start,stop,Index=None,step=1,r
 
 def KmeansbasedFrameselectioncv2(cap,numframes2pick,start,stop,crop,coords,Index=None,step=1,resizewidth=30,batchsize=100,max_iter=50,color=False):
     ''' This code downsamples the video to a width of resizewidth.
-    The video is extracted as a numpy array, which is then clustered with kmeans, whereby each frames is treated as a vector. 
-    Frames from different clusters are then selected for labeling. This procedure makes sure that the frames "look different", 
-    i.e. different postures etc. On large videos this code is slow. 
-    
-    Consider not extracting the frames from the whole video but rather set start and stop to a period around interesting behavior. 
-    
+    The video is extracted as a numpy array, which is then clustered with kmeans, whereby each frames is treated as a vector.
+    Frames from different clusters are then selected for labeling. This procedure makes sure that the frames "look different",
+    i.e. different postures etc. On large videos this code is slow.
+
+    Consider not extracting the frames from the whole video but rather set start and stop to a period around interesting behavior.
+
     Note: this method can return fewer images than numframes2pick.
-    
+
     Attention: the flow of commands was not optimized for readability, but rather speed. This is why it might appear tedious and repetetive.'''
     nframes=cap.get(7)
     ny=int(cap.get(4))
@@ -153,23 +153,23 @@ def KmeansbasedFrameselectioncv2(cap,numframes2pick,start,stop,crop,coords,Index
     ratio=resizewidth*1./nx
     if ratio>1:
          raise Exception("Choise of resizewidth actually upsamples!")
-    
+
     print("Kmeans-quantization based extracting of frames from",  round(start*nframes*1./cap.get(5),2)," seconds to", round(stop*nframes*1./cap.get(5),2), " seconds.")
     startindex=int(np.floor(nframes*start))
     stopindex=int(np.ceil(nframes*stop))
-    
+
     if Index is None:
         Index=np.arange(startindex,stopindex,step)
     else:
         Index=np.array(Index)
         Index=Index[(Index>startindex)*(Index<stopindex)] #crop to range!
-    
+
     nframes=len(Index)
     if batchsize>nframes:
         batchsize=int(nframes/2)
-    
+
     allocated=False
-    if len(Index)>=numframes2pick-1:
+    if len(Index)>=numframes2pick:
         if np.mean(np.diff(Index))>1: #then non-consecutive indices are present, thus cap.set is required (which slows everything down!)
             print("Extracting and downsampling...",nframes, " frames from the video.")
             if color:
@@ -179,7 +179,7 @@ def KmeansbasedFrameselectioncv2(cap,numframes2pick,start,stop,crop,coords,Index
                     if ret:
                         if crop:
                             frame=frame[int(coords[2]):int(coords[3]),int(coords[0]):int(coords[1]),:]
-                        
+
                         #image=img_as_ubyte(cv2.resize(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB),None,fx=ratio,fy=ratio))
                         image=img_as_ubyte(cv2.resize(frame,None,fx=ratio,fy=ratio,interpolation=cv2.INTER_NEAREST)) #color trafo not necessary; lack thereof improves speed.
                         if not allocated: #'DATA' not in locals(): #allocate memory in first pass
@@ -207,7 +207,7 @@ def KmeansbasedFrameselectioncv2(cap,numframes2pick,start,stop,crop,coords,Index
                     if ret:
                         if crop:
                             frame=frame[int(coords[2]):int(coords[3]),int(coords[0]):int(coords[1]),:]
-                        
+
                         #image=img_as_ubyte(cv2.resize(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB),None,fx=ratio,fy=ratio))
                         image=img_as_ubyte(cv2.resize(frame,None,fx=ratio,fy=ratio,interpolation=cv2.INTER_NEAREST)) #color trafo not necessary; lack thereof improves speed.
                         if not allocated: #'DATA' not in locals(): #allocate memory in first pass
@@ -226,11 +226,11 @@ def KmeansbasedFrameselectioncv2(cap,numframes2pick,start,stop,crop,coords,Index
                             DATA=np.empty((nframes,np.shape(image)[0],np.shape(image)[1]))
                             allocated=True
                         DATA[counter,:,:] = np.mean(image,2)
-            
+
         print("Kmeans clustering ... (this might take a while)")
         data = DATA - DATA.mean(axis=0)
         data=data.reshape(nframes,-1) #stacking
-        
+
         kmeans=MiniBatchKMeans(n_clusters=numframes2pick, tol=1e-3, batch_size=batchsize,max_iter=max_iter)
         kmeans.fit(data)
         frames2pick=[]

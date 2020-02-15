@@ -441,16 +441,16 @@ def PlottingSingleFramecv2(cap,cv2,crop,coords,Dataframe,bodyparts2plot,tmpfolde
         imagename1 = os.path.join(tmpfolder,"img"+str(index).zfill(strwidth)+".png")
         imagename2 = os.path.join(tmpfolder,"img"+str(index).zfill(strwidth)+"labeled.png")
 
-        if os.path.isfile(os.path.join(tmpfolder,"img"+str(index).zfill(strwidth)+".png")):
-            pass
-        else:
+        if not os.path.isfile(imagename1):
             plt.axis('off')
-            cap.set(1,index)
+            cap.set(1, index)
             ret, frame = cap.read()
-            if ret:
-                image=img_as_ubyte(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-                if crop:
-                    image=image[int(coords[2]):int(coords[3]),int(coords[0]):int(coords[1]),:]
+            if not ret:
+                print('Frame could not be read.')
+                return
+            image = img_as_ubyte(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            if crop:
+                image = image[int(coords[2]):int(coords[3]), int(coords[0]):int(coords[1]), :]
 
             io.imsave(imagename1,image)
 
@@ -482,7 +482,7 @@ def PlottingSingleFramecv2(cap,cv2,crop,coords,Dataframe,bodyparts2plot,tmpfolde
             plt.close("all")
 
 
-def refine_labels(config):
+def refine_labels(config,multianimal=False):
     """
     Refines the labels of the outlier frames extracted from the analyzed videos.\n Helps in augmenting the training dataset.
     Use the function ``analyze_video`` to analyze a video and extracts the outlier frames using the function
@@ -505,10 +505,19 @@ def refine_labels(config):
     --------
 
     """
+
+    startpath = os.getcwd()
     wd = Path(config).resolve().parents[0]
     os.chdir(str(wd))
-    from deeplabcut.refine_training_dataset import refinement
-    refinement.show(config)
+    cfg = auxiliaryfunctions.read_config(config)
+    if multianimal==False and not cfg.get('multianimalproject',False):
+        from deeplabcut.refine_training_dataset import refinement
+        refinement.show(config)
+    else: #loading multianimal labeling GUI
+        from deeplabcut.refine_training_dataset import multiple_individuals_refinement_toolbox
+        multiple_individuals_refinement_toolbox.show(config)
+
+    os.chdir(startpath)
 
 def merge_datasets(config,forceiterate=None):
     """

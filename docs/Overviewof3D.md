@@ -1,6 +1,6 @@
 ### How to use the 3D Functionality of DeepLabCut
 
-**New:** as of deeplabcut 2.0.7+ you can create a 3D project to combine multiple cameras for 3D pose estimation. Watch a [DEMO VIDEO](https://youtu.be/Eh6oIGE4dwI) on how to use this code! (currently, update by: ``pip install deeplabcut==2.0.8``)
+**New:** as of deeplabcut 2.0.7+ you can create a 3D project to combine multiple cameras for 3D pose estimation. Watch a [DEMO VIDEO](https://youtu.be/Eh6oIGE4dwI) on how to use this code!
 
 <p align="center">
 <img src= https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1560968522350-COKR986AQESF5N1N7QNK/ke17ZwdGBToddI8pDm48kNaO57GzHjWqV-xM6jVvY6ZZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpyR5k0u27ivMv3az5DOhUvLuYQefjfUWYPEDVexVC_mSas4X78tjQKn3yE00zHvnK8/3D_maousLarger.gif?format=750w width="85%">

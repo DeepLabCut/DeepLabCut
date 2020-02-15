@@ -120,8 +120,11 @@ def read_config(configname):
                 with open(path, 'r') as ymlfile:
                   cfg = yaml.load(ymlfile,Loader=yaml.SafeLoader)
                   write_config(configname,cfg)
+            else:
+                raise
+        
     else:
-        raise FileNotFoundError ("Config file is not found. Please make sure that the file exists and/or there are no unnecessary spaces in the path of the config file!")
+        raise FileNotFoundError ("Config file is not found. Please make sure that the file exists and/or that you passed the path of the config file correctly!")
     return(cfg)
 
 def write_config(configname,cfg):
@@ -192,29 +195,6 @@ def read_pickle(filename):
 def write_pickle(filename,data):
     with open(filename, 'wb') as handle:
         pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-def create_empty_df(dataframe,scorer,flag):
-# Creates an empty dataFrame of same shape as df_side_view.
-# flag = number of coordinates. e.g. 4 for 3d,3 for 2d as we need to store the likelihood too.
-#    df = pd.read_hdf(dataframe)
-    df = dataframe
-    scorer = scorer#df.columns.get_level_values(0)[0]
-    bodyparts =  df.columns.get_level_values(1)
-    _, idx = np.unique(bodyparts, return_index=True)
-    bodyparts =  list(bodyparts[np.sort(idx)])
-    a = np.empty((df.shape[0],3))
-    a[:] = np.nan
-    dataFrame = None
-    for bodypart in bodyparts:
-        if flag == '2d':
-            pdindex = pd.MultiIndex.from_product([[scorer], [bodypart], ['x', 'y','likelihood']],
-                                             names=['scorer', 'bodyparts', 'coords'])
-        elif flag == '3d':
-            pdindex = pd.MultiIndex.from_product([[scorer], [bodypart], ['x', 'y','z']],
-                                             names=['scorer', 'bodyparts', 'coords'])
-        frame = pd.DataFrame(a, columns = pdindex,index = range(0,df.shape[0]))
-        dataFrame = pd.concat([frame,dataFrame],axis=1)
-    return(dataFrame,scorer,bodyparts)
 
 def Getlistofvideos(videos,videotype):
     from random import sample
@@ -441,7 +421,7 @@ def LoadAnalyzedData(videofolder,vname,DLCscorer,filtered):
             Dataframe = pd.read_hdf(fn)
             metadata=LoadVideoMetadata(os.path.join(videofolder,vname + DLCscorer + '.h5'))
             datafound=True
-            suffix='_filtered.'
+            suffix='_filtered'
             return datafound,metadata,Dataframe, DLCscorer,suffix
         except FileNotFoundError:
             print("No filtered predictions found, using frame-by-frame output instead.")

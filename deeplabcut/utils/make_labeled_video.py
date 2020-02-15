@@ -46,7 +46,9 @@ def get_cmap(n, name='hsv'):
     RGB color; the keyword argument name must be a standard mpl colormap name.'''
     return plt.cm.get_cmap(name, n)
 
-def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,DLCscorer,bodyparts2plot,trailpoints,cropping,x1,x2,y1,y2,bodyparts2connect,skeleton_color,draw_skeleton,displaycropped):
+def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,DLCscorer,bodyparts2plot,
+                trailpoints,cropping,x1,x2,y1,y2,
+                bodyparts2connect,skeleton_color,draw_skeleton,displaycropped):
         ''' Creating individual frames with labeled body parts and making a video'''
         colorclass=plt.cm.ScalarMappable(cmap=colormap)
         C=colorclass.to_rgba(np.linspace(0,1,len(bodyparts2plot)))
@@ -78,13 +80,13 @@ def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,DLCscorer,bodyparts2plot
         df_x = np.empty((len(bodyparts2plot),nframes))
         df_y = np.empty((len(bodyparts2plot),nframes))
         for bpindex, bp in enumerate(bodyparts2plot):
-            df_likelihood[bpindex,:]=Dataframe[DLCscorer][bp]['likelihood'].values
+            df_likelihood[bpindex,:]=Dataframe[DLCscorer,bp,'likelihood'].values
             if cropping and not displaycropped:
-                df_x[bpindex,:]=Dataframe[DLCscorer][bp]['x'].values+x1
-                df_y[bpindex,:]=Dataframe[DLCscorer][bp]['y'].values+y1
+                df_x[bpindex,:]=Dataframe[DLCscorer,bp,'x'].values+x1
+                df_y[bpindex,:]=Dataframe[DLCscorer,bp,'y'].values+y1
             else:
-                df_x[bpindex,:]=Dataframe[DLCscorer][bp]['x'].values
-                df_y[bpindex,:]=Dataframe[DLCscorer][bp]['y'].values
+                df_x[bpindex,:]=Dataframe[DLCscorer,bp,'x'].values
+                df_y[bpindex,:]=Dataframe[DLCscorer,bp,'y'].values
 
 
         for index in tqdm(range(nframes)):
@@ -117,7 +119,10 @@ def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,DLCscorer,bodyparts2plot
         clip.close()
 
 
-def CreateVideoSlow(videooutname,clip,Dataframe,tmpfolder,dotsize,colormap,alphavalue,pcutoff,trailpoints,cropping,x1,x2,y1,y2,delete,DLCscorer,bodyparts2plot,outputframerate,Frames2plot,bodyparts2connect,skeleton_color,draw_skeleton,displaycropped):
+def CreateVideoSlow(videooutname,clip,Dataframe,tmpfolder,
+                    dotsize,colormap,alphavalue,pcutoff,trailpoints,cropping,x1,x2,y1,y2,
+                    delete,DLCscorer,bodyparts2plot,outputframerate,Frames2plot,
+                    bodyparts2connect,skeleton_color,draw_skeleton,displaycropped):
     ''' Creating individual frames with labeled body parts and making a video'''
     #scorer=np.unique(Dataframe.columns.get_level_values(0))[0]
     #bodyparts2plot = list(np.unique(Dataframe.columns.get_level_values(1)))
@@ -142,13 +147,13 @@ def CreateVideoSlow(videooutname,clip,Dataframe,tmpfolder,dotsize,colormap,alpha
     df_y = np.empty((len(bodyparts2plot),nframes))
 
     for bpindex, bp in enumerate(bodyparts2plot):
-        df_likelihood[bpindex,:]=Dataframe[DLCscorer][bp]['likelihood'].values
+        df_likelihood[bpindex,:]=Dataframe[DLCscorer,bp,'likelihood'].values
         if cropping and not displaycropped:
-            df_x[bpindex,:]=Dataframe[DLCscorer][bp]['x'].values+x1
-            df_y[bpindex,:]=Dataframe[DLCscorer][bp]['y'].values+y1
+            df_x[bpindex,:]=Dataframe[DLCscorer,bp,'x'].values+x1
+            df_y[bpindex,:]=Dataframe[DLCscorer,bp,'y'].values+y1
         else:
-            df_x[bpindex,:]=Dataframe[DLCscorer][bp]['x'].values
-            df_y[bpindex,:]=Dataframe[DLCscorer][bp]['y'].values
+            df_x[bpindex,:]=Dataframe[DLCscorer,bp,'x'].values
+            df_y[bpindex,:]=Dataframe[DLCscorer,bp,'y'].values
 
     colors = get_cmap(len(bodyparts2plot),name=colormap)
     if draw_skeleton:
