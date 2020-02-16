@@ -251,8 +251,8 @@ def label_frames(config,multiple=False):
         # labeling_toolbox.show(config,Screens,scale_w,scale_h, winHack, img_scale)
         labeling_toolbox.show(config)
     else:
-        from deeplabcut.generate_training_dataset import multiple_individual_labeling_toolbox
-        multiple_individual_labeling_toolbox.show(config)
+        from deeplabcut.generate_training_dataset import multiple_individuals_labeling_toolbox
+        multiple_individuals_labeling_toolbox.show(config)
 
     os.chdir(startpath)
 
