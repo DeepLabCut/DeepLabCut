@@ -165,7 +165,8 @@ def extract_frames(config, mode='automatic', algo='kmeans', crop=False, userfeed
             else:
                 askuser = "yes"
 
-            if askuser == 'y' or askuser == 'yes' or askuser == 'Ja' or askuser == 'ha':  # multilanguage support :)
+            if askuser == 'y' or askuser == 'yes' or askuser == 'Ja' or askuser == 'ha'\
+                    or askuser == 'oui' or askuser == 'ouais':  # multilanguage support :)
                 if opencv:
                     cap = cv2.VideoCapture(video)
                     fps = cap.get(
