@@ -24,9 +24,7 @@ dependencies:
   - wxpython
   - jupyter
   - nb_conda
-  - pytables==3.4.3
   - Shapely
   - pip:
-    - numpy==1.16.4
     - deeplabcut
     - imgaug
