@@ -30,7 +30,7 @@ else: #standard use [wxpython supported]
     from deeplabcut import generate_training_dataset
     from deeplabcut import refine_training_dataset
     from deeplabcut.generate_training_dataset import label_frames, dropannotationfileentriesduetodeletedimages, comparevideolistsanddatafolders, dropimagesduetolackofannotation
-    from deeplabcut.generate_training_dataset import multiple_individual_labeling_toolbox
+    from deeplabcut.generate_training_dataset import multiple_individuals_labeling_toolbox
     from deeplabcut.generate_training_dataset import adddatasetstovideolistandviceversa,  dropduplicatesinannotatinfiles
     from deeplabcut.gui.launch_script import launch_dlc
 
