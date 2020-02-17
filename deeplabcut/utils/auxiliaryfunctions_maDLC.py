@@ -87,3 +87,4 @@ def write_config_maDLC(configname,cfg):
         cfg_file,ruamelFile = create_config_template_maDLC()
         for key in cfg.keys():
             cfg_file[key]=cfg[key]
+        ruamelFile.dump(cfg_file, cf)
