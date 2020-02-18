@@ -20,11 +20,9 @@ dependencies:
   - pip
   - jupyter
   - nb_conda
-  - tensorflow==1.12
+  - tensorflow==1.13.1
   - wxpython
-  - pytables==3.4.3
   - Shapely
   - pip:
-    - numpy==1.16.4
     - imgaug
     - deeplabcut
