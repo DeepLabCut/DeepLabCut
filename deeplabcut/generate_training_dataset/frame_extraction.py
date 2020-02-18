@@ -9,7 +9,7 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 
-def select_cropping_area(config):
+def select_cropping_area(config, videos=None):
     """
     Interactively select the cropping area of all videos in the config.
     A user interface pops up with a frame to select the cropping parameters.
@@ -20,6 +20,15 @@ def select_cropping_area(config):
     ----------
     config : string
         Full path of the config.yaml file as a string.
+
+    videos : optional (default=None)
+        List of videos whose cropping areas are to be defined. Note that full paths are required.
+        By default, all videos in the config are successively loaded.
+
+    Returns
+    -------
+    cfg : dict
+        Updated project configuration
     """
 
     import cv2
@@ -27,21 +36,27 @@ def select_cropping_area(config):
     from deeplabcut.utils import select_crop_parameters
 
     cfg = auxiliaryfunctions.read_config(config)
-    for video in cfg['video_sets']:
+
+    if videos is None:
+        videos = cfg['video_sets']
+
+    for video in videos:
         clip = cv2.VideoCapture(video)
         if not clip.isOpened():
             print('Video could not be opened. Skipping...')
             continue
 
-        frame = clip.read()[1]
-        if frame is None:
+        success, frame = clip.read()
+        if not success:
             print('Frame could not be read. Skipping...')
             continue
 
         coords = select_crop_parameters.show(config, frame[:, :, ::-1])
         cfg['video_sets'][video] = {
             'crop': ', '.join(map(str, [int(coords[0]), int(coords[1]), int(coords[2]), int(coords[3])]))}
+
     auxiliaryfunctions.write_config(config, cfg)
+    return cfg
 
 
 def extract_frames(config, mode='automatic', algo='kmeans', crop=False, userfeedback=True, cluster_step=1,
@@ -71,8 +86,9 @@ def extract_frames(config, mode='automatic', algo='kmeans', crop=False, userfeed
         Note: color information is discarded for kmeans, thus e.g. for camouflaged octopus clustering one might want to change this. 
         
     crop : bool, optional
-        If this is set to True, video frames are cropped according to corresponding the coordinates stored in the config.yaml.
-        Coordinates can be edited interactively prior to extracting frames by calling deeplabcut.select_cropping_area(config).
+        If True, video frames are cropped according to the corresponding coordinates stored in the config.yaml.
+        Alternatively, if cropping coordinates are not known yet, crop='GUI' triggers a user interface
+        where the cropping area can be manually drawn and saved.
             
     userfeedback: bool, optional
         If this is set to false during automatic mode then frames for all videos are extracted. The user can set this to true, which will result in a dialog,
@@ -100,6 +116,9 @@ def extract_frames(config, mode='automatic', algo='kmeans', crop=False, userfeed
     --------
     for selecting frames automatically with 'kmeans' and want to crop the frames.
     >>> deeplabcut.extract_frames('/analysis/project/reaching-task/config.yaml','automatic','kmeans',True)
+    --------
+    for selecting frames automatically with 'kmeans' and defining the cropping area at runtime.
+    >>> deeplabcut.extract_frames('/analysis/project/reaching-task/config.yaml','automatic','kmeans','GUI')
     --------
     for selecting frames automatically with 'kmeans' and considering the color information.
     >>> deeplabcut.extract_frames('/analysis/project/reaching-task/config.yaml','automatic','kmeans',cluster_color=True)
@@ -155,10 +174,6 @@ def extract_frames(config, mode='automatic', algo='kmeans', crop=False, userfeed
         else:
             from moviepy.editor import VideoFileClip
         for vindex, video in enumerate(videos):
-            # plt.close("all")
-            global coords
-            coords = cfg['video_sets'][video]['crop'].split(',')
-
             if userfeedback:
                 print("Do you want to extract (perhaps additional) frames for video:", video, "?")
                 askuser = input("yes/no")
@@ -188,8 +203,15 @@ def extract_frames(config, mode='automatic', algo='kmeans', crop=False, userfeed
                         if not (askuser == 'y' or askuser == 'yes' or askuser == 'Y' or askuser == 'Yes'):
                             sys.exit("Delete the frames and try again later!")
 
-                print("Extracting frames based on %s ..." % algo)
+                if crop == 'GUI':
+                    cfg = select_cropping_area(config, [video])
+                coords = cfg['video_sets'][video]['crop'].split(',')
+                if crop and not opencv:
+                    clip = clip.crop(y1=int(coords[2]), y2=int(coords[3]), x1=int(coords[0]), x2=int(coords[1]))
+                elif not crop:
+                    coords = None
 
+                print("Extracting frames based on %s ..." % algo)
                 if algo == 'uniform':
                     if opencv:
                         frames2pick = frameselectiontools.UniformFramescv2(cap, numframes2pick, start, stop)
