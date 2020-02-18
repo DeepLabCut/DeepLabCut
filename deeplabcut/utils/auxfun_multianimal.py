@@ -18,6 +18,18 @@ def extractindividualsandbodyparts(cfg):
         individuals.append('single')
     return individuals,cfg['uniquebodyparts'],cfg['multianimalbodyparts']
 
+
+def IntersectionofIndividualsandOnesGivenbyUser(cfg, individuals):
+    ''' Returns all individuals when set to 'all', otherwise all bpts that are in the intersection of comparisonbodyparts and the actual bodyparts '''
+    if 'individuals' not in cfg:  # Not a multi-animal project...
+        return ['']
+    all_indivs = extractindividualsandbodyparts(cfg)[0]
+    if individuals == "all":
+        return all_indivs
+    else:  # take only items in list that are actually bodyparts...
+        return [ind for ind in individuals if ind in all_indivs]
+
+
 def getpafgraph(cfg,printnames=True):
     ''' auxiliary function that turns skeleton (list of connected bodypart pairs) INTO
     list of corresponding indices '''
