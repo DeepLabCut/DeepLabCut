@@ -32,6 +32,8 @@ skeleton:
   - tail
 - - rightwing
   - tail
+- - tail
+  - clown
 skeleton_color: black
 pcutoff: 0.1
 dotsize: 12
