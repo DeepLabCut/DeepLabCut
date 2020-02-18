@@ -64,54 +64,55 @@ def extract_frames(config, mode='automatic', algo='kmeans', crop=False, userfeed
     """
     Extracts frames from the videos in the config.yaml file. Only the videos in the config.yaml will be used to select the frames.\n
     Use the function ``add_new_video`` at any stage of the project to add new videos to the config file and extract their frames.
-    
-    The provided function either selects frames from the videos in a randomly and temporally uniformly distributed way (uniform), \n 
-    by clustering based on visual appearance (k-means), or by manual selection. 
-    
-    Three important parameters for automatic extraction: numframes2pick, start and stop are set in the config file. 
-    
-    Please refer to the user guide for more details on methods and parameters https://www.biorxiv.org/content/biorxiv/early/2018/11/24/476531.full.pdf
-    
+
+    The provided function either selects frames from the videos in a randomly and temporally uniformly distributed way (uniform), \n
+    by clustering based on visual appearance (k-means), or by manual selection.
+
+    Three important parameters for automatic extraction: numframes2pick, start and stop are set in the config file.
+
+    Please refer to the user guide for more details on methods and parameters https://www.nature.com/articles/s41596-019-0176-0
+    or the preprint: https://www.biorxiv.org/content/biorxiv/early/2018/11/24/476531.full.pdf
+
     Parameters
     ----------
     config : string
         Full path of the config.yaml file as a string.
-        
+
     mode : string
         String containing the mode of extraction. It must be either ``automatic`` or ``manual``.
-        
-    algo : string 
+
+    algo : string
         String specifying the algorithm to use for selecting the frames. Currently, deeplabcut supports either ``kmeans`` or ``uniform`` based selection. This flag is
         only required for ``automatic`` mode and the default is ``uniform``. For uniform, frames are picked in temporally uniform way, kmeans performs clustering on downsampled frames (see user guide for details).
-        Note: color information is discarded for kmeans, thus e.g. for camouflaged octopus clustering one might want to change this. 
-        
+        Note: color information is discarded for kmeans, thus e.g. for camouflaged octopus clustering one might want to change this.
+
     crop : bool, optional
         If True, video frames are cropped according to the corresponding coordinates stored in the config.yaml.
         Alternatively, if cropping coordinates are not known yet, crop='GUI' triggers a user interface
         where the cropping area can be manually drawn and saved.
-            
+
     userfeedback: bool, optional
         If this is set to false during automatic mode then frames for all videos are extracted. The user can set this to true, which will result in a dialog,
         where the user is asked for each video if (additional/any) frames from this video should be extracted. Use this, e.g. if you have already labeled
-        some folders and want to extract data for new videos. 
-    
+        some folders and want to extract data for new videos.
+
     cluster_resizewidth: number, default: 30
         For k-means one can change the width to which the images are downsampled (aspect ratio is fixed).
-    
+
     cluster_step: number, default: 1
-        By default each frame is used for clustering, but for long videos one could only use every nth frame (set by: cluster_step). This saves memory before clustering can start, however, 
+        By default each frame is used for clustering, but for long videos one could only use every nth frame (set by: cluster_step). This saves memory before clustering can start, however,
         reading the individual frames takes longer due to the skipping.
-    
+
     cluster_color: bool, default: False
-        If false then each downsampled image is treated as a grayscale vector (discarding color information). If true, then the color channels are considered. This increases 
-        the computational complexity. 
-    
+        If false then each downsampled image is treated as a grayscale vector (discarding color information). If true, then the color channels are considered. This increases
+        the computational complexity.
+
     opencv: bool, default: True
         Uses openCV for loading & extractiong (otherwise moviepy (legacy))
-        
+
     slider_width: number, default: 25
         Width of the video frames slider, in percent of window
-        
+
     Examples
     --------
     for selecting frames automatically with 'kmeans' and want to crop the frames.
@@ -131,11 +132,11 @@ def extract_frames(config, mode='automatic', algo='kmeans', crop=False, userfeed
     --------
     for selecting frames manually, with a 60% wide frames slider
     >>> deeplabcut.extract_frames('/analysis/project/reaching-task/config.yaml','manual', slider_width=60)
-    
-    While selecting the frames manually, you do not need to specify the ``crop`` parameter in the command. Rather, you will get a prompt in the graphic user interface to choose 
+
+    While selecting the frames manually, you do not need to specify the ``crop`` parameter in the command. Rather, you will get a prompt in the graphic user interface to choose
     if you need to crop or not.
     --------
-    
+
     """
     import os
     import sys
