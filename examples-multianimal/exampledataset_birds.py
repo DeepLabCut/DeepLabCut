@@ -17,15 +17,15 @@ path_config_file='/home/alex/Hacking/DLCreleases/DLCdev/examples-multianimal/Mon
 
 print("Plot labels...")
 #deeplabcut.check_labels(path_config_file)
-#deeplabcut.check_labels(path_config_file,draw_skeleton=True,visualizeindividuals=True)
-#deeplabcut.check_labels(path_config_file,draw_skeleton=True,visualizeindividuals=False)
+deeplabcut.check_labels(path_config_file,draw_skeleton=True,visualizeindividuals=True)
+deeplabcut.check_labels(path_config_file,draw_skeleton=True,visualizeindividuals=False)
 
 print("Crop images...")
 #deeplabcut.cropimagesandlabels(path_config_file,userfeedback=False)
 #then we uncommented the large-scale full frame data > it is not used for training!
 
 print("Creating multianimal training set...")
-deeplabcut.create_multianimaltraining_dataset(path_config_file)
+#deeplabcut.create_multianimaltraining_dataset(path_config_file)
 
 #cfg=deeplabcut.utils.auxiliaryfunctions.read_config(path_config_file)
 #deeplabcut.utils.auxfun_multianimal.getpafgraph(cfg)
