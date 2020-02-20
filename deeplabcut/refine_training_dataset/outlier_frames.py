@@ -8,7 +8,6 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-
 import numpy as np
 import os
 from pathlib import Path
@@ -17,11 +16,15 @@ import statsmodels.api as sm
 from deeplabcut.utils import auxiliaryfunctions, visualization
 from deeplabcut.utils import frameselectiontools
 import argparse
-from tqdm import tqdm
+from tqdm import trange
 import matplotlib.pyplot as plt
 from skimage.util import img_as_ubyte
 
-def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,outlieralgorithm='jump',comparisonbodyparts='all',epsilon=20,p_bound=.01,ARdegree=3,MAdegree=1,alpha=.01,extractionalgorithm='kmeans',automatic=False,cluster_resizewidth=30,cluster_color=False,opencv=True,savelabeled=True, destfolder=None):
+
+def extract_outlier_frames(config, videos, videotype='avi', shuffle=1, trainingsetindex=0, outlieralgorithm='jump',
+                           comparisonbodyparts='all', epsilon=20, p_bound=.01, ARdegree=3, MAdegree=1, alpha=.01,
+                           extractionalgorithm='kmeans', automatic=False, cluster_resizewidth=30, cluster_color=False,
+                           opencv=True, savelabeled=True, destfolder=None):
     """
     Extracts the outlier frames in case, the predictions are not correct for a certain video from the cropped video running from
     start to stop as defined in config.yaml.
@@ -53,7 +56,7 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
         looks for frames with confidence below p_bound. The default is set to ``jump``.
 
     comparisonbodyparts: list of strings, optional
-        This select the body parts for which the comparisons with the outliers are carried out. Either ``all``, then all body parts
+        This selects the body parts for which the comparisons with the outliers are carried out. Either ``all``, then all body parts
         from config.yaml are used orr a list of strings that are a subset of the full list.
         E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these two body parts.
 
@@ -117,81 +120,88 @@ def extract_outlier_frames(config,videos,videotype='avi',shuffle=1,trainingsetin
     """
 
     cfg = auxiliaryfunctions.read_config(config)
-    DLCscorer,DLCscorerlegacy=auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction = cfg['TrainingFraction'][trainingsetindex])
-    Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
+    bodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg, comparisonbodyparts)
+    if not len(bodyparts):
+        raise ValueError('No valid bodyparts were selected for comparison.')
+
+    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg, shuffle, trainFraction=cfg['TrainingFraction'][
+        trainingsetindex])
+    Videos = auxiliaryfunctions.Getlistofvideos(videos, videotype)
     for video in Videos:
-      if destfolder is None:
+        if destfolder is None:
             videofolder = str(Path(video).parents[0])
-      else:
-            videofolder=destfolder
+        else:
+            videofolder = destfolder
 
-      notanalyzed,dataname,DLCscorer=auxiliaryfunctions.CheckifNotAnalyzed(videofolder,str(Path(video).stem),DLCscorer,DLCscorerlegacy,flag='checking')
-      if notanalyzed:
-          print("It seems the video has not been analyzed yet, or the video is not found! You can only refine the labels after the a video is analyzed. Please run 'analyze_video' first. Or, please double check your video file path")
-      else:
-          Dataframe = pd.read_hdf(dataname,'df_with_missing')
-          scorer=Dataframe.columns.get_level_values(0)[0] #reading scorer from
-          nframes=np.size(Dataframe.index)
-          # extract min and max index based on start stop interval.
-          startindex=max([int(np.floor(nframes*cfg['start'])),0])
-          stopindex=min([int(np.ceil(nframes*cfg['stop'])),nframes])
-          Index=np.arange(stopindex-startindex)+startindex
-          #figure out body part list:
-          bodyparts=auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg,comparisonbodyparts)
+        notanalyzed, dataname, DLCscorer = auxiliaryfunctions.CheckifNotAnalyzed(videofolder, str(Path(video).stem),
+                                                                                 DLCscorer, DLCscorerlegacy,
+                                                                                 flag='checking')
+        if notanalyzed:
+            print(
+                "It seems the video has not been analyzed yet, or the video is not found! You can only refine the labels after the a video is analyzed. Please run 'analyze_video' first. Or, please double check your video file path")
+        else:
+            Dataframe = pd.read_hdf(dataname, 'df_with_missing')
+            nframes = len(Dataframe)
+            startindex = max([int(np.floor(nframes * cfg['start'])), 0])
+            stopindex = min([int(np.ceil(nframes * cfg['stop'])), nframes])
+            Index = np.arange(stopindex - startindex) + startindex
 
-          Indices=[]
-          if outlieralgorithm=='uncertain': #necessary parameters: considered body parts and
-              for bpindex,bp in enumerate(bodyparts):
-                  if bp in cfg['bodyparts']: #filter [who knows what users put in...]
-                      p=Dataframe[scorer][bp]['likelihood'].values[Index]
-                      Indices.extend(np.where(p<p_bound)[0]+startindex) # all indices between start and stop that are below p_bound.
+            df = Dataframe.iloc[Index]
+            mask = df.columns.get_level_values('bodyparts').isin(bodyparts)
+            df_temp = df.loc[:, mask]
+            Indices = []
+            if outlieralgorithm == 'uncertain':
+                p = df_temp.xs('likelihood', level=-1, axis=1)
+                ind = df_temp.index[(p < p_bound).any(axis=1)].tolist()
+                Indices.extend(ind)
+            elif outlieralgorithm == 'jump':
+                temp_dt = df_temp.diff(axis=0) ** 2
+                temp_dt.drop('likelihood', axis=1, level=-1, inplace=True)
+                sum_ = temp_dt.sum(axis=1, level=1)
+                ind = df_temp.index[(sum_ > epsilon ** 2).any(axis=1)].tolist()
+                Indices.extend(ind)
+            elif outlieralgorithm == 'fitting':
+                d, o = compute_deviations(df_temp, bodyparts, dataname, p_bound, alpha, ARdegree, MAdegree)
+                # Some heuristics for extracting frames based on distance:
+                ind = np.flatnonzero(d > epsilon)  # time points with at least average difference of epsilon
+                if len(ind) < cfg['numframes2pick'] * 2 and len(d) > cfg['numframes2pick'] * 2:  # if too few points qualify, extract the most distant ones.
+                    ind = np.argsort(d)[::-1][:cfg['numframes2pick'] * 2]
+                Indices.extend(ind)
+            elif outlieralgorithm == 'manual':
+                wd = Path(config).resolve().parents[0]
+                os.chdir(str(wd))
+                from deeplabcut.refine_training_dataset import outlier_frame_extraction_toolbox
+                # TODO Multianimal refinement toolbox
+                scorer = Dataframe.columns.get_level_values('scorer').unique()[0]
+                outlier_frame_extraction_toolbox.show(config, video, shuffle, Dataframe, scorer, savelabeled)
 
-          elif outlieralgorithm=='jump':
-              for bpindex,bp in enumerate(bodyparts):
-                  if bp in cfg['bodyparts']: #filter [who knows what users put in...]
-                      dx=np.diff(Dataframe[scorer][bp]['x'].values[Index])
-                      dy=np.diff(Dataframe[scorer][bp]['y'].values[Index])
-                      # all indices between start and stop with jump larger than epsilon (leading up to this point!)
-                      Indices.extend(np.where((dx**2+dy**2)>epsilon**2)[0]+startindex+1)
-          elif outlieralgorithm=='fitting':
-              #deviation_dataname = str(Path(videofolder)/Path(dataname))
-              # Calculate deviatons for video
-              [d,o] = ComputeDeviations(Dataframe,cfg,bodyparts,scorer,dataname,p_bound,alpha,ARdegree,MAdegree)
+            # Run always except when the outlieralgorithm == manual.
+            if not outlieralgorithm == 'manual':
+                Indices = np.sort(list(set(Indices)))  # remove repetitions.
+                print("Method ", outlieralgorithm, " found ", len(Indices), " putative outlier frames.")
+                print("Do you want to proceed with extracting ", cfg['numframes2pick'], " of those?")
+                if outlieralgorithm == 'uncertain':
+                    print(
+                        "If this list is very large, perhaps consider changing the paramters (start, stop, p_bound, comparisonbodyparts) or use a different method.")
+                elif outlieralgorithm == 'jump':
+                    print(
+                        "If this list is very large, perhaps consider changing the paramters (start, stop, epsilon, comparisonbodyparts) or use a different method.")
+                elif outlieralgorithm == 'fitting':
+                    print(
+                        "If this list is very large, perhaps consider changing the paramters (start, stop, epsilon, ARdegree, MAdegree, alpha, comparisonbodyparts) or use a different method.")
 
-              #Some heuristics for extracting frames based on distance:
-              Indices=np.where(d>epsilon)[0] # time points with at least average difference of epsilon
+                if automatic == False:
+                    askuser = input("yes/no")
+                else:
+                    askuser = 'Ja'
 
-              if len(Index)<cfg['numframes2pick']*2 and len(d)>cfg['numframes2pick']*2: # if too few points qualify, extract the most distant ones.
-                  Indices=np.argsort(d)[::-1][:cfg['numframes2pick']*2]
-          elif outlieralgorithm=='manual':
-              wd = Path(config).resolve().parents[0]
-              os.chdir(str(wd))
-              from deeplabcut.refine_training_dataset import outlier_frame_extraction_toolbox
-
-              outlier_frame_extraction_toolbox.show(config,video,shuffle,Dataframe,scorer,savelabeled)
-          # Run always except when the outlieralgorithm == manual.
-          if not outlieralgorithm=='manual':
-              Indices=np.sort(list(set(Indices))) #remove repetitions.
-              print("Method ", outlieralgorithm, " found ", len(Indices)," putative outlier frames.")
-              print("Do you want to proceed with extracting ", cfg['numframes2pick'], " of those?")
-              if outlieralgorithm=='uncertain':
-                  print("If this list is very large, perhaps consider changing the paramters (start, stop, p_bound, comparisonbodyparts) or use a different method.")
-              elif outlieralgorithm=='jump':
-                  print("If this list is very large, perhaps consider changing the paramters (start, stop, epsilon, comparisonbodyparts) or use a different method.")
-              elif outlieralgorithm=='fitting':
-                  print("If this list is very large, perhaps consider changing the paramters (start, stop, epsilon, ARdegree, MAdegree, alpha, comparisonbodyparts) or use a different method.")
-
-              if automatic==False:
-                  askuser = input("yes/no")
-              else:
-                  askuser='Ja'
-
-              if askuser=='y' or askuser=='yes' or askuser=='Ja' or askuser=='ha': # multilanguage support :)
-                  #Now extract from those Indices!
-                  ExtractFramesbasedonPreselection(Indices,extractionalgorithm,Dataframe,dataname,scorer,video,cfg,config,opencv,cluster_resizewidth,cluster_color,savelabeled)
-              else:
-                  print("Nothing extracted, please change the parameters and start again...")
-
+                if askuser == 'y' or askuser == 'yes' or askuser == 'Ja' or askuser == 'ha':  # multilanguage support :)
+                    # Now extract from those Indices!
+                    ExtractFramesbasedonPreselection(Indices, extractionalgorithm, Dataframe, dataname, scorer, video,
+                                                     cfg, config, opencv, cluster_resizewidth, cluster_color,
+                                                     savelabeled)
+                else:
+                    print("Nothing extracted, please change the parameters and start again...")
 
 
 def convertparms2start(pn):
@@ -206,100 +216,82 @@ def convertparms2start(pn):
     else:
         return 0
 
-def FitSARIMAXModel(x,p,pcutoff,alpha,ARdegree,MAdegree,nforecast = 0,disp=False):
+
+def FitSARIMAXModel(x, p, pcutoff, alpha, ARdegree, MAdegree, nforecast=0, disp=False):
     # Seasonal Autoregressive Integrated Moving-Average with eXogenous regressors (SARIMAX)
     # see http://www.statsmodels.org/stable/statespace.html#seasonal-autoregressive-integrated-moving-average-with-exogenous-regressors-sarimax
-    Y=x.copy()
-    Y[p<pcutoff]=np.nan # Set uncertain estimates to nan (modeled as missing data)
-    if np.sum(np.isfinite(Y))>10:
+    Y = x.copy()
+    Y[p < pcutoff] = np.nan  # Set uncertain estimates to nan (modeled as missing data)
+    if np.sum(np.isfinite(Y)) > 10:
 
         # SARIMAX implemetnation has better prediction models than simple ARIMAX (however we do not use the seasonal etc. parameters!)
-        mod = sm.tsa.statespace.SARIMAX(Y.flatten(), order=(ARdegree,0,MAdegree),seasonal_order=(0, 0, 0, 0),simple_differencing=True)
-        #Autoregressive Moving Average ARMA(p,q) Model
-        #mod = sm.tsa.ARIMA(Y, order=(ARdegree,0,MAdegree)) #order=(ARdegree,0,MAdegree)
+        mod = sm.tsa.statespace.SARIMAX(Y.flatten(), order=(ARdegree, 0, MAdegree), seasonal_order=(0, 0, 0, 0),
+                                        simple_differencing=True)
+        # Autoregressive Moving Average ARMA(p,q) Model
+        # mod = sm.tsa.ARIMA(Y, order=(ARdegree,0,MAdegree)) #order=(ARdegree,0,MAdegree)
         try:
             res = mod.fit(disp=disp)
-        except ValueError: #https://groups.google.com/forum/#!topic/pystatsmodels/S_Fo53F25Rk (let's update to statsmodels 0.10.0 soon...)
-            startvalues=np.array([convertparms2start(pn) for pn in mod.param_names])
-            res= mod.fit(start_params=startvalues,disp=disp)
+        except ValueError:  # https://groups.google.com/forum/#!topic/pystatsmodels/S_Fo53F25Rk (let's update to statsmodels 0.10.0 soon...)
+            startvalues = np.array([convertparms2start(pn) for pn in mod.param_names])
+            res = mod.fit(start_params=startvalues, disp=disp)
 
-        predict = res.get_prediction(end=mod.nobs + nforecast-1)
-        return predict.predicted_mean,predict.conf_int(alpha=alpha)
+        predict = res.get_prediction(end=mod.nobs + nforecast - 1)
+        return predict.predicted_mean, predict.conf_int(alpha=alpha)
     else:
-        return np.nan*np.zeros(len(Y)),np.nan*np.zeros((len(Y),2))
+        return np.nan * np.zeros(len(Y)), np.nan * np.zeros((len(Y), 2))
 
-def ComputeDeviations(Dataframe,cfg,comparisonbodyparts,scorer,dataname,p_bound,alpha,ARdegree,MAdegree,storeoutput=None):
+
+def compute_deviations(Dataframe, comparisonbodyparts, dataname, p_bound, alpha, ARdegree, MAdegree,
+                       storeoutput=None):
     ''' Fits Seasonal AutoRegressive Integrated Moving Average with eXogenous regressors model to data and computes confidence interval
     as well as mean fit. '''
 
     print("Fitting state-space models with parameters:", ARdegree, MAdegree)
-    bpindex=0
-    ntimes=np.size(Dataframe.index)
+    df_x, df_y, df_likelihood = auxiliaryfunctions.form_data_containers(Dataframe, comparisonbodyparts)
+    nbodyparts = len(comparisonbodyparts)
+    nindividuals = len(df_x) // nbodyparts
+    preds = []
+    for ind in trange(nindividuals):
+        for bpindex in range(nbodyparts):
+            j = bpindex + ind * nbodyparts
+            x = df_x[j]
+            y = df_y[j]
+            p = df_likelihood[j]
+            meanx, CIx = FitSARIMAXModel(x, p, p_bound, alpha, ARdegree, MAdegree)
+            meany, CIy = FitSARIMAXModel(y, p, p_bound, alpha, ARdegree, MAdegree)
+            distance = np.sqrt((x - meanx) ** 2 + (y - meany) ** 2)
+            significant = (x < CIx[:, 0]) + (x > CIx[:, 1]) + (x < CIy[:, 0]) + (y > CIy[:, 1])
+            preds.append(np.c_[distance, significant, meanx, meany, CIx, CIy])
 
-    for bp in tqdm(comparisonbodyparts):
-        if bp in cfg['bodyparts']: #filter [who knows what users put in...]
-            x,y,p=Dataframe[scorer][bp]['x'].values,Dataframe[scorer][bp]['y'].values,Dataframe[scorer][bp]['likelihood'].values
-            meanx,CIx=FitSARIMAXModel(x,p,p_bound,alpha,ARdegree,MAdegree)
-            meany,CIy=FitSARIMAXModel(y,p,p_bound,alpha,ARdegree,MAdegree)
-            if storeoutput=='full': #stores both the means and the confidence interval (as well as the summary stats below)
+    columns = Dataframe.columns
+    prod = []
+    for i in range(columns.nlevels - 1):
+        prod.append(columns.get_level_values(i).unique())
+    prod.append(['distance', 'sig', 'meanx', 'meany', 'lowerCIx', 'higherCIx', 'lowerCIy', 'higherCIy'])
+    pdindex = pd.MultiIndex.from_product(prod, names=columns.names)
+    data = pd.DataFrame(np.concatenate(preds, axis=1), columns=pdindex)
+    # average distance and average # significant differences avg. over comparisonbodyparts
+    d = data.xs('distance', axis=1, level=-1).mean(axis=1).values
+    o = data.xs('sig', axis=1, level=-1).mean(axis=1).values
 
-                pdindex = pd.MultiIndex.from_product(
-                    [[scorer], [bp], ['meanx', 'meany','lowerCIx','higherCIx', 'lowerCIy','higherCIy']],
-                    names=['scorer', 'bodyparts', 'coords'])
-
-                if bpindex==0:
-                    data = pd.DataFrame(np.hstack([np.expand_dims(meanx,axis=1),np.expand_dims(meany,axis=1),CIx,CIy]), columns=pdindex)
-                else:
-                    item=pd.DataFrame(np.hstack([np.expand_dims(meanx,axis=1),np.expand_dims(meany,axis=1),CIx,CIy]), columns=pdindex)
-                    data=pd.concat([data.T, item.T]).T
-
-            pdindex = pd.MultiIndex.from_product([[scorer], [bp], ['distance','significant']],names=['scorer', 'bodyparts', 'coords'])
-            distance=np.sqrt((x-meanx)**2+(y-meany)**2)
-            significant=(x<CIx[:,0])+(x>CIx[:,1])+(x<CIy[:,0])+(y>CIy[:,1])
-
-            if bpindex==0:
-                data = pd.DataFrame(np.hstack([distance[:,np.newaxis],significant[:,np.newaxis]]), columns=pdindex)
-            else:
-                item=pd.DataFrame(np.hstack([distance[:,np.newaxis],significant[:,np.newaxis]]), columns=pdindex)
-                data=pd.concat([data.T, item.T]).T
-            bpindex+=1
-
-    bpindex=0
-    for bp in comparisonbodyparts: #calculate # outliers & and average distance.
-        if bp in cfg['bodyparts']: #filter [who knows what users put in...]
-            if bpindex==0:
-                d=data[scorer][bp]["distance"]
-                o=data[scorer][bp]["significant"]
-            else:
-                d+=data[scorer][bp]["distance"]
-                o+=data[scorer][bp]["significant"]
-            bpindex+=1
-
-    if storeoutput=='full':
-        data.to_hdf(dataname.split('.h5')[0]+'filtered.h5', 'df_with_missing', format='table', mode='w')
-        #data.to_csv(dataname.split('.h5')[0]+'filtered.csv')
-
-        if bpindex!=0:
-            return data,d*1./bpindex,o*1./bpindex #average distance and average # significant differences avg. over comparisonbodyparts
-        else:
-            return data,np.zeros(ntimes), np.zeros(ntimes)
+    if storeoutput == 'full':
+        data.to_hdf(dataname.split('.h5')[0] + 'filtered.h5', 'df_with_missing', format='table', mode='w')
+        return d, o, data
     else:
-        if bpindex!=0:
-            return d*1./bpindex,o*1./bpindex #average distance and average # significant differences avg. over comparisonbodyparts
-        else:
-            return np.zeros(ntimes), np.zeros(ntimes)
+        return d, o
 
 
-def ExtractFramesbasedonPreselection(Index,extractionalgorithm,Dataframe,dataname,scorer,video,cfg,config,opencv=True,cluster_resizewidth=30,cluster_color=False,savelabeled=True):
+def ExtractFramesbasedonPreselection(Index, extractionalgorithm, Dataframe, dataname, scorer, video, cfg, config,
+                                     opencv=True, cluster_resizewidth=30, cluster_color=False, savelabeled=True):
     from deeplabcut.create_project import add
-    start  = cfg['start']
+    start = cfg['start']
     stop = cfg['stop']
     numframes2extract = cfg['numframes2pick']
-    bodyparts=cfg['bodyparts']
+    bodyparts = cfg['bodyparts']
 
     videofolder = str(Path(video).parents[0])
     vname = str(Path(video).stem)
-    tmpfolder = os.path.join(cfg['project_path'],'labeled-data', vname)
+    tmpfolder = os.path.join(cfg['project_path'], 'labeled-data', vname)
     if os.path.isdir(tmpfolder):
         print("Frames from video", vname, " already extracted (more will be added)!")
     else:
@@ -309,53 +301,60 @@ def ExtractFramesbasedonPreselection(Index,extractionalgorithm,Dataframe,datanam
     print("Loading video...")
     if opencv:
         import cv2
-        cap=cv2.VideoCapture(video)
+        cap = cv2.VideoCapture(video)
         fps = cap.get(5)
-        duration=nframes*1./fps
-        size=(int(cap.get(4)),int(cap.get(3)))
+        duration = nframes * 1. / fps
+        size = (int(cap.get(4)), int(cap.get(3)))
     else:
         from moviepy.editor import VideoFileClip
         clip = VideoFileClip(video)
         fps = clip.fps
-        duration=clip.duration
-        size=clip.size
+        duration = clip.duration
+        size = clip.size
 
-    if  cfg['cropping']:  # one might want to adjust
-        coords = (cfg['x1'],cfg['x2'],cfg['y1'], cfg['y2'])
+    if cfg['cropping']:  # one might want to adjust
+        coords = (cfg['x1'], cfg['x2'], cfg['y1'], cfg['y2'])
     else:
         coords = None
 
-    print("Duration of video [s]: ", duration, ", recorded @ ", fps,"fps!")
-    print("Overall # of frames: ", nframes, "with (cropped) frame dimensions: ",)
-    if extractionalgorithm=='uniform':
+    print("Duration of video [s]: ", duration, ", recorded @ ", fps, "fps!")
+    print("Overall # of frames: ", nframes, "with (cropped) frame dimensions: ", )
+    if extractionalgorithm == 'uniform':
         if opencv:
-            frames2pick=frameselectiontools.UniformFramescv2(cap,numframes2extract,start,stop,Index)
+            frames2pick = frameselectiontools.UniformFramescv2(cap, numframes2extract, start, stop, Index)
         else:
-            frames2pick=frameselectiontools.UniformFrames(clip,numframes2extract,start,stop,Index)
-    elif extractionalgorithm=='kmeans':
+            frames2pick = frameselectiontools.UniformFrames(clip, numframes2extract, start, stop, Index)
+    elif extractionalgorithm == 'kmeans':
         if opencv:
-            frames2pick=frameselectiontools.KmeansbasedFrameselectioncv2(cap,numframes2extract,start,stop,cfg['cropping'],coords,Index,resizewidth=cluster_resizewidth,color=cluster_color)
+            frames2pick = frameselectiontools.KmeansbasedFrameselectioncv2(cap, numframes2extract, start, stop,
+                                                                           cfg['cropping'], coords, Index,
+                                                                           resizewidth=cluster_resizewidth,
+                                                                           color=cluster_color)
         else:
-            if  cfg['cropping']:
+            if cfg['cropping']:
                 clip = clip.crop(y1=cfg['y1'], y2=cfg['x2'], x1=cfg['x1'], x2=cfg['x2'])
-            frames2pick=frameselectiontools.KmeansbasedFrameselection(clip,numframes2extract,start,stop,Index,resizewidth=cluster_resizewidth,color=cluster_color)
+            frames2pick = frameselectiontools.KmeansbasedFrameselection(clip, numframes2extract, start, stop, Index,
+                                                                        resizewidth=cluster_resizewidth,
+                                                                        color=cluster_color)
 
     else:
         print("Please implement this method yourself! Currently the options are 'kmeans', 'jump', 'uniform'.")
-        frames2pick=[]
+        frames2pick = []
 
     # Extract frames + frames with plotted labels and store them in folder (with name derived from video name) nder labeled-data
     print("Let's select frames indices:", frames2pick)
-    colors = visualization.get_cmap(len(bodyparts),cfg['colormap'])
-    strwidth = int(np.ceil(np.log10(nframes))) #width for strings
-    for index in frames2pick: ##tqdm(range(0,nframes,10)):
+    colors = visualization.get_cmap(len(bodyparts), cfg['colormap'])
+    strwidth = int(np.ceil(np.log10(nframes)))  # width for strings
+    for index in frames2pick:  ##tqdm(range(0,nframes,10)):
         if opencv:
-            PlottingSingleFramecv2(cap,cv2,cfg['cropping'],coords,Dataframe,bodyparts,tmpfolder,index,scorer,cfg['dotsize'],cfg['pcutoff'],cfg['alphavalue'],colors,strwidth,savelabeled)
+            PlottingSingleFramecv2(cap, cv2, cfg['cropping'], coords, Dataframe, bodyparts, tmpfolder, index, scorer,
+                                   cfg['dotsize'], cfg['pcutoff'], cfg['alphavalue'], colors, strwidth, savelabeled)
         else:
-            PlottingSingleFrame(clip,Dataframe,bodyparts,tmpfolder,index,scorer,cfg['dotsize'],cfg['pcutoff'],cfg['alphavalue'],colors,strwidth,savelabeled)
+            PlottingSingleFrame(clip, Dataframe, bodyparts, tmpfolder, index, scorer, cfg['dotsize'], cfg['pcutoff'],
+                                cfg['alphavalue'], colors, strwidth, savelabeled)
         plt.close("all")
 
-    #close videos
+    # close videos
     if opencv:
         cap.release()
     else:
@@ -363,126 +362,133 @@ def ExtractFramesbasedonPreselection(Index,extractionalgorithm,Dataframe,datanam
         del clip
 
     # Extract annotations based on DeepLabCut and store in the folder (with name derived from video name) under labeled-data
-    if len(frames2pick)>0:
-        #Dataframe = pd.read_hdf(os.path.join(videofolder,dataname+'.h5'))
+    if len(frames2pick) > 0:
+        # Dataframe = pd.read_hdf(os.path.join(videofolder,dataname+'.h5'))
         DF = Dataframe.ix[frames2pick]
-        DF.index=[os.path.join('labeled-data', vname,"img"+str(index).zfill(strwidth)+".png") for index in DF.index] #exchange index number by file names.
+        DF.index = [os.path.join('labeled-data', vname, "img" + str(index).zfill(strwidth) + ".png") for index in
+                    DF.index]  # exchange index number by file names.
 
-        machinefile=os.path.join(tmpfolder,'machinelabels-iter'+str(cfg['iteration'])+'.h5')
+        machinefile = os.path.join(tmpfolder, 'machinelabels-iter' + str(cfg['iteration']) + '.h5')
         if Path(machinefile).is_file():
             Data = pd.read_hdf(machinefile, 'df_with_missing')
             DataCombined = pd.concat([Data, DF])
-            #drop duplicate labels:
+            # drop duplicate labels:
             DataCombined = DataCombined[~DataCombined.index.duplicated(keep='first')]
 
             DataCombined.to_hdf(machinefile, key='df_with_missing', mode='w')
-            DataCombined.to_csv(os.path.join(tmpfolder, "machinelabels.csv")) #this is always the most current one (as reading is from h5)
+            DataCombined.to_csv(os.path.join(tmpfolder,
+                                             "machinelabels.csv"))  # this is always the most current one (as reading is from h5)
         else:
-            DF.to_hdf(machinefile,key='df_with_missing',mode='w')
+            DF.to_hdf(machinefile, key='df_with_missing', mode='w')
             DF.to_csv(os.path.join(tmpfolder, "machinelabels.csv"))
         try:
             if cfg['cropping']:
-                add.add_new_videos(config,[video],coords=[coords]) # make sure you pass coords as a list
+                add.add_new_videos(config, [video], coords=[coords])  # make sure you pass coords as a list
             else:
-                add.add_new_videos(config,[video],coords=None)
-        except: #can we make a catch here? - in fact we should drop indices from DataCombined if they are in CollectedData.. [ideal behavior; currently this is pretty unlikely]
-            print("AUTOMATIC ADDING OF VIDEO TO CONFIG FILE FAILED! You need to do this manually for including it in the config.yaml file!")
-            print("Videopath:", video,"Coordinates for cropping:", coords)
+                add.add_new_videos(config, [video], coords=None)
+        except:  # can we make a catch here? - in fact we should drop indices from DataCombined if they are in CollectedData.. [ideal behavior; currently this is pretty unlikely]
+            print(
+                "AUTOMATIC ADDING OF VIDEO TO CONFIG FILE FAILED! You need to do this manually for including it in the config.yaml file!")
+            print("Videopath:", video, "Coordinates for cropping:", coords)
             pass
 
-        print("The outlier frames are extracted. They are stored in the subdirectory labeled-data\%s."%vname)
+        print("The outlier frames are extracted. They are stored in the subdirectory labeled-data\%s." % vname)
         print("Once you extracted frames for all videos, use 'refine_labels' to manually correct the labels.")
     else:
         print("No frames were extracted.")
 
-def PlottingSingleFrame(clip,Dataframe,bodyparts2plot,tmpfolder,index,scorer,dotsize,pcutoff,alphavalue,colors,strwidth=4,savelabeled=True):
-        ''' Label frame and save under imagename / this is already cropped (for clip) '''
-        from skimage import io
-        imagename1 = os.path.join(tmpfolder,"img"+str(index).zfill(strwidth)+".png")
-        imagename2 = os.path.join(tmpfolder,"img"+str(index).zfill(strwidth)+"labeled.png")
 
-        if os.path.isfile(os.path.join(tmpfolder,"img"+str(index).zfill(strwidth)+".png")):
-            pass
+def PlottingSingleFrame(clip, Dataframe, bodyparts2plot, tmpfolder, index, scorer, dotsize, pcutoff, alphavalue, colors,
+                        strwidth=4, savelabeled=True):
+    ''' Label frame and save under imagename / this is already cropped (for clip) '''
+    from skimage import io
+    imagename1 = os.path.join(tmpfolder, "img" + str(index).zfill(strwidth) + ".png")
+    imagename2 = os.path.join(tmpfolder, "img" + str(index).zfill(strwidth) + "labeled.png")
+
+    if os.path.isfile(os.path.join(tmpfolder, "img" + str(index).zfill(strwidth) + ".png")):
+        pass
+    else:
+        plt.axis('off')
+        image = img_as_ubyte(clip.get_frame(index * 1. / clip.fps))
+        io.imsave(imagename1, image)
+
+        if np.ndim(image) > 2:
+            h, w, nc = np.shape(image)
         else:
-            plt.axis('off')
-            image = img_as_ubyte(clip.get_frame(index * 1. / clip.fps))
-            io.imsave(imagename1,image)
+            h, w = np.shape(image)
 
-            if np.ndim(image) > 2:
-                h, w, nc = np.shape(image)
-            else:
-                h, w = np.shape(image)
+        plt.figure(frameon=False, figsize=(w * 1. / 100, h * 1. / 100))
+        plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+        plt.imshow(image)
+        for bpindex, bp in enumerate(bodyparts2plot):
+            if Dataframe[scorer][bp]['likelihood'].values[index] > pcutoff:
+                plt.plot(
+                    Dataframe[scorer][bp]['x'].values[index],
+                    Dataframe[scorer][bp]['y'].values[index], '.',
+                    color=colors(bpindex),
+                    ms=dotsize,
+                    alpha=alphavalue)
 
-            plt.figure(frameon=False, figsize=(w * 1. / 100, h * 1. / 100))
-            plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-            plt.imshow(image)
-            for bpindex, bp in enumerate(bodyparts2plot):
-                if Dataframe[scorer][bp]['likelihood'].values[index] > pcutoff:
-                    plt.plot(
-                        Dataframe[scorer][bp]['x'].values[index],
-                        Dataframe[scorer][bp]['y'].values[index],'.',
-                        color=colors(bpindex),
-                        ms=dotsize,
-                        alpha=alphavalue)
+        plt.xlim(0, w)
+        plt.ylim(0, h)
+        plt.axis('off')
+        plt.subplots_adjust(
+            left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+        plt.gca().invert_yaxis()
+        if savelabeled:
+            plt.savefig(imagename2)
+        plt.close("all")
 
-            plt.xlim(0, w)
-            plt.ylim(0, h)
-            plt.axis('off')
-            plt.subplots_adjust(
-                left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-            plt.gca().invert_yaxis()
-            if savelabeled:
-                plt.savefig(imagename2)
-            plt.close("all")
 
-def PlottingSingleFramecv2(cap,cv2,crop,coords,Dataframe,bodyparts2plot,tmpfolder,index,scorer,dotsize,pcutoff,alphavalue,colors,strwidth=4,savelabeled=True):
-        ''' Label frame and save under imagename / cap is not already cropped. '''
-        from skimage import io
-        imagename1 = os.path.join(tmpfolder,"img"+str(index).zfill(strwidth)+".png")
-        imagename2 = os.path.join(tmpfolder,"img"+str(index).zfill(strwidth)+"labeled.png")
+def PlottingSingleFramecv2(cap, cv2, crop, coords, Dataframe, bodyparts2plot, tmpfolder, index, scorer, dotsize,
+                           pcutoff, alphavalue, colors, strwidth=4, savelabeled=True):
+    ''' Label frame and save under imagename / cap is not already cropped. '''
+    from skimage import io
+    imagename1 = os.path.join(tmpfolder, "img" + str(index).zfill(strwidth) + ".png")
+    imagename2 = os.path.join(tmpfolder, "img" + str(index).zfill(strwidth) + "labeled.png")
 
-        if os.path.isfile(os.path.join(tmpfolder,"img"+str(index).zfill(strwidth)+".png")):
-            pass
+    if os.path.isfile(os.path.join(tmpfolder, "img" + str(index).zfill(strwidth) + ".png")):
+        pass
+    else:
+        plt.axis('off')
+        cap.set(1, index)
+        ret, frame = cap.read()
+        if ret:
+            image = img_as_ubyte(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            if crop:
+                image = image[int(coords[2]):int(coords[3]), int(coords[0]):int(coords[1]), :]
+
+        io.imsave(imagename1, image)
+
+        if np.ndim(image) > 2:
+            h, w, nc = np.shape(image)
         else:
-            plt.axis('off')
-            cap.set(1,index)
-            ret, frame = cap.read()
-            if ret:
-                image=img_as_ubyte(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-                if crop:
-                    image=image[int(coords[2]):int(coords[3]),int(coords[0]):int(coords[1]),:]
+            h, w = np.shape(image)
 
-            io.imsave(imagename1,image)
+        plt.figure(frameon=False, figsize=(w * 1. / 100, h * 1. / 100))
+        plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+        plt.imshow(image)
+        for bpindex, bp in enumerate(bodyparts2plot):
+            if Dataframe[scorer][bp]['likelihood'].values[index] > pcutoff:
+                plt.plot(
+                    Dataframe[scorer][bp]['x'].values[index],
+                    Dataframe[scorer][bp]['y'].values[index], '.',
+                    color=colors(bpindex),
+                    ms=dotsize,
+                    alpha=alphavalue)
 
-            if np.ndim(image) > 2:
-                h, w, nc = np.shape(image)
-            else:
-                h, w = np.shape(image)
-
-            plt.figure(frameon=False, figsize=(w * 1. / 100, h * 1. / 100))
-            plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-            plt.imshow(image)
-            for bpindex, bp in enumerate(bodyparts2plot):
-                if Dataframe[scorer][bp]['likelihood'].values[index] > pcutoff:
-                    plt.plot(
-                        Dataframe[scorer][bp]['x'].values[index],
-                        Dataframe[scorer][bp]['y'].values[index],'.',
-                        color=colors(bpindex),
-                        ms=dotsize,
-                        alpha=alphavalue)
-
-            plt.xlim(0, w)
-            plt.ylim(0, h)
-            plt.axis('off')
-            plt.subplots_adjust(
-                left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-            plt.gca().invert_yaxis()
-            if savelabeled:
-                plt.savefig(imagename2)
-            plt.close("all")
+        plt.xlim(0, w)
+        plt.ylim(0, h)
+        plt.axis('off')
+        plt.subplots_adjust(
+            left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+        plt.gca().invert_yaxis()
+        if savelabeled:
+            plt.savefig(imagename2)
+        plt.close("all")
 
 
-def refine_labels(config,multianimal=False):
+def refine_labels(config, multianimal=False):
     """
     Refines the labels of the outlier frames extracted from the analyzed videos.\n Helps in augmenting the training dataset.
     Use the function ``analyze_video`` to analyze a video and extracts the outlier frames using the function
@@ -510,16 +516,17 @@ def refine_labels(config,multianimal=False):
     wd = Path(config).resolve().parents[0]
     os.chdir(str(wd))
     cfg = auxiliaryfunctions.read_config(config)
-    if multianimal==False and not cfg.get('multianimalproject',False):
+    if multianimal == False and not cfg.get('multianimalproject', False):
         from deeplabcut.refine_training_dataset import refinement
         refinement.show(config)
-    else: #loading multianimal labeling GUI
+    else:  # loading multianimal labeling GUI
         from deeplabcut.refine_training_dataset import multiple_individuals_refinement_toolbox
         multiple_individuals_refinement_toolbox.show(config)
 
     os.chdir(startpath)
 
-def merge_datasets(config,forceiterate=None):
+
+def merge_datasets(config, forceiterate=None):
     """
     Checks if the original training dataset can be merged with the newly refined training dataset. To do so it will check
     if the frames in all extracted video sets were relabeled. If this is the case then the iterate variable is advanced by 1.
@@ -541,33 +548,36 @@ def merge_datasets(config,forceiterate=None):
     cfg = auxiliaryfunctions.read_config(config)
     config_path = Path(config).parents[0]
 
-    bf=Path(str(config_path/'labeled-data'))
-    allfolders = [os.path.join(bf,fn) for fn in os.listdir(bf) if "_labeled" not in fn] #exclude labeled data folders!
-    flagged=False
-    for findex,folder in enumerate(allfolders):
-        if os.path.isfile(os.path.join(folder,'MachineLabelsRefine.h5')): #Folder that was manually refine...
+    bf = Path(str(config_path / 'labeled-data'))
+    allfolders = [os.path.join(bf, fn) for fn in os.listdir(bf) if
+                  "_labeled" not in fn]  # exclude labeled data folders!
+    flagged = False
+    for findex, folder in enumerate(allfolders):
+        if os.path.isfile(os.path.join(folder, 'MachineLabelsRefine.h5')):  # Folder that was manually refine...
             pass
-        elif os.path.isfile(os.path.join(folder,'CollectedData_'+cfg['scorer']+'.h5')): #Folder that contains human data set...
+        elif os.path.isfile(os.path.join(folder, 'CollectedData_' + cfg[
+            'scorer'] + '.h5')):  # Folder that contains human data set...
             pass
         else:
-            print("The following folder was not manually refined,...",folder)
-            flagged=True
-            pass #this folder does not contain a MachineLabelsRefine file (not updated...)
+            print("The following folder was not manually refined,...", folder)
+            flagged = True
+            pass  # this folder does not contain a MachineLabelsRefine file (not updated...)
 
-    if flagged==False:
+    if flagged == False:
         # updates iteration by 1
-        iter_prev=cfg['iteration']
+        iter_prev = cfg['iteration']
         if not forceiterate:
-            cfg['iteration']=int(iter_prev+1)
+            cfg['iteration'] = int(iter_prev + 1)
         else:
-            cfg['iteration']=forceiterate
+            cfg['iteration'] = forceiterate
 
-        auxiliaryfunctions.write_config(config,cfg)
+        auxiliaryfunctions.write_config(config, cfg)
 
-        print("Merged data sets and updated refinement iteration to "+str(cfg['iteration'])+".")
+        print("Merged data sets and updated refinement iteration to " + str(cfg['iteration']) + ".")
         print("Now you can create a new training set for the expanded annotated images (use create_training_dataset).")
     else:
         print("Please label, or remove the un-corrected folders.")
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
