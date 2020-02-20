@@ -16,7 +16,7 @@ import os.path
 from deeplabcut.pose_estimation_tensorflow.nnet import predict
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import data_to_input
-import time
+import time, sys
 import pandas as pd
 import numpy as np
 import os
@@ -173,6 +173,10 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
         dlc_cfg['batch_size']=batchsize
         cfg['batch_size']=batchsize
 
+    if 'multi-animal' in dlc_cfg['dataset_type']:
+        dyanmic[0]=False
+        TFGPUinference=False
+
     if dynamic[0]: #state=true
         #(state,detectiontreshold,margin)=dynamic
         print("Starting analysis in dynamic cropping mode with parameters:", dynamic)
@@ -207,13 +211,17 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
                                          names=['scorer', 'bodyparts', 'coords'])
 
     ##################################################
-    # Datafolder
+    # Looping over videos
     ##################################################
     Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
-    if len(Videos)>0:
-        #looping over videos
-        for video in Videos:
-            DLCscorer=AnalyzeVideo(video,DLCscorer,DLCscorerlegacy,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder,TFGPUinference,dynamic)
+    if len(Videos)>0: 
+        if 'multi-animal' in dlc_cfg['dataset_type']:
+            from deeplabcut.pose_estimation_tensorflow.predict_multianimal import AnalyzeMultiAnimalVideo
+            for video in Videos:
+                AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder)
+        else:
+            for video in Videos:
+                DLCscorer=AnalyzeVideo(video,DLCscorer,DLCscorerlegacy,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder,TFGPUinference,dynamic)
 
         os.chdir(str(start_path))
         print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
@@ -221,7 +229,7 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
         return DLCscorer #note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
     else:
         print("No video/s found. Please check your path!")
-        return DLCscorer 
+        return DLCscorer
 
 def checkcropping(cfg,cap):
     print("Cropping based on the x1 = %s x2 = %s y1 = %s y2 = %s. You can adjust the cropping coordinates in the config.yaml file." %(cfg['x1'], cfg['x2'],cfg['y1'], cfg['y2']))
