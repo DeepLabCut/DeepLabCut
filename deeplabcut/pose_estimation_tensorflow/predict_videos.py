@@ -174,7 +174,7 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
         cfg['batch_size']=batchsize
 
     if 'multi-animal' in dlc_cfg['dataset_type']:
-        dyanmic[0]=False
+        dynamic=(False,.5,10) #setting dynamic mode to false
         TFGPUinference=False
 
     if dynamic[0]: #state=true
@@ -214,7 +214,7 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
     # Looping over videos
     ##################################################
     Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
-    if len(Videos)>0: 
+    if len(Videos)>0:
         if 'multi-animal' in dlc_cfg['dataset_type']:
             from deeplabcut.pose_estimation_tensorflow.predict_multianimal import AnalyzeMultiAnimalVideo
             for video in Videos:

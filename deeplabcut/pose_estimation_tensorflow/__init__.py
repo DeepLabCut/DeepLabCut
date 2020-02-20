@@ -12,6 +12,7 @@ from deeplabcut.pose_estimation_tensorflow.dataset import *
 from deeplabcut.pose_estimation_tensorflow.models import *
 from deeplabcut.pose_estimation_tensorflow.nnet import *
 from deeplabcut.pose_estimation_tensorflow.util import *
+from deeplabcut.pose_estimation_tensorflow.lib.nms_cython import *
 
 from deeplabcut.pose_estimation_tensorflow.config import *
 from deeplabcut.pose_estimation_tensorflow.default_config import *
