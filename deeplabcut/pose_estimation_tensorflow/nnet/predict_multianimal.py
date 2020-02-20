@@ -1,0 +1,290 @@
+'''
+Adapted from original predict.py by Eldar Insafutdinov's implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow)
+
+Source: DeeperCut by Eldar Insafutdinov
+https://github.com/eldar/pose-tensorflow
+
+
+To do faster inference on videos:
+
+"On the inference speed and video-compression robustness of DeepLabCut"
+Alexander Mathis & Richard Warren
+doi: https://doi.org/10.1101/457242
+See https://www.biorxiv.org/content/early/2018/10/30/457242
+
+'''
+
+import numpy as np
+import tensorflow as tf
+import math, os, sys
+from nms_grid import nms_grid # this needs to be installed (C-code)
+
+vers = (tf.__version__).split('.')
+if int(vers[0])==1 and int(vers[1])>12:
+    TF=tf.compat.v1
+else:
+    TF=tf
+from deeplabcut.pose_estimation_tensorflow.nnet.net_factory import pose_net
+
+def extract_cnn_output(outputs_np, cfg):
+    ''' extract locref, scmap and partaffinityfield from network '''
+    scmap = outputs_np[0]
+    scmap = np.squeeze(scmap)
+    if cfg.location_refinement:
+        locref = np.squeeze(outputs_np[1])
+        shape = locref.shape
+        locref = np.reshape(locref, (shape[0], shape[1], -1, 2))
+        locref *= cfg.locref_stdev
+    else:
+        locref=None
+    if cfg.partaffinityfield_predict and ('multi-animal' in cfg.dataset_type):
+        paf = np.squeeze(outputs_np[2])
+    else:
+        paf=None
+
+    if len(scmap.shape)==2: #for single body part!
+        scmap=np.expand_dims(scmap,axis=2)
+    return scmap, locref, paf
+
+def AssociationCosts(cfg,coordinates,partaffinitymaps,stride, half_stride,numsteps=50):
+    ''' Association costs for detections based on PAFs '''
+    Distances={}
+    ny,nx,nlimbs=np.shape(partaffinitymaps)
+    for l in range(cfg.num_limbs):
+        bp1,bp2=cfg.partaffinityfield_graph[l] #[(0,1),(1,2)
+        # get coordinates for bp1 and bp2
+        C1=coordinates[bp1]
+        C2=coordinates[bp2]
+        dist=np.zeros((len(C1),len(C2)))*np.nan
+        distopenpose=np.zeros((len(C1),len(C2)))*np.nan
+        for c1i,c1 in enumerate(C1):
+            for c2i,c2 in enumerate(C2):
+                if np.prod(np.isfinite(c1))*np.prod(np.isfinite(c2)):
+                    c1s = (c1- half_stride) / stride
+                    c2s = (c2- half_stride) / stride
+
+                    c1s[0]=np.clip(int(c1s[0]),0,nx-1)
+                    c1s[1]=np.clip(int(c1s[1]),0,ny-1)
+                    c2s[0]=np.clip(int(c2s[0]),0,nx-1)
+                    c2s[1]=np.clip(int(c2s[1]),0,ny-1)
+
+                    Lx=np.array(np.linspace(c1s[0],c2s[0],numsteps),dtype=int)
+                    Ly=np.array(np.linspace(c1s[1],c2s[1],numsteps),dtype=int)
+
+                    length=np.sqrt(np.sum((c1s-c2s)**2))
+                    if length>0:
+                        v=(c1s-c2s)*1./length
+
+                        if c1s[0]!=c2s[0]:
+                            dx=np.trapz([partaffinitymaps[Ly[i],Lx[i],2*l] for i in range(numsteps)],dx=(c1s[0]-c2s[0])*1./(length*numsteps))
+                        else:
+                            dx=0
+
+                        if c1s[1]!=c2s[1]:
+                            dy=np.trapz([partaffinitymaps[Ly[i],Lx[i],2*l+1] for i in range(numsteps)],dx=(c1s[1]-c2s[1])*1./(length*numsteps))
+                        else:
+                            dy=0
+
+                        distopenpose[c1i,c2i]=dy*v[1]+dx*v[0] #scalar product! [v unit vector dx,dy in pixel coordinats from partaffinitymap]
+                        dist[c1i,c2i]=np.sqrt(dy**2+dx**2)
+
+            Distances[l]={}
+            Distances[l]['m1']=dist
+            Distances[l]['m2']=distopenpose
+
+    return Distances
+
+#TODO: compute all the grids etc. once for the video analysis method
+# (and then just pass on the variables)
+def pos_from_grid_raw(gridpos, stride, halfstride):
+    return gridpos * stride + halfstride
+
+def make_nms_grid(nms_radius):
+    nms_radius = math.ceil(nms_radius)
+    dist_grid = np.zeros([2 * nms_radius + 1, 2 * nms_radius + 1], dtype=np.uint8)
+    for yidx in range(dist_grid.shape[0]):
+        for xidx in range(dist_grid.shape[1]):
+            if (yidx - nms_radius) ** 2 + (xidx - nms_radius) ** 2 <= nms_radius ** 2:
+                dist_grid[yidx][xidx] = 1
+    return dist_grid
+
+def extract_detections(cfg, scmap, locref, pafs, nms_radius, det_min_score):
+    ''' Extract detections correcting by locref and estimating association costs based on PAFs '''
+    Detections = {}
+    stride,halfstride=cfg.stride, cfg.stride*.5
+    num_joints = cfg.num_joints
+    # get dist_grid
+    dist_grid = make_nms_grid(nms_radius)
+    unProb = [None] * num_joints
+    unPos = [None] * num_joints
+
+    # apply nms
+    for p_idx in range(num_joints):
+        # IMPORTANT, as C++ function expects row-major
+        prob_map = np.ascontiguousarray(scmap[:, :, p_idx])
+        dets = nms_grid(prob_map, dist_grid, det_min_score)
+        cur_prob = np.zeros([len(dets), 1], dtype=np.float64)
+        cur_pos = np.zeros([len(dets), 2], dtype=np.float64)
+        #cur_pos_grid = np.zeros([len(dets), 2], dtype=np.float64)
+
+        for idx, didx in enumerate(dets):
+            ix = didx % scmap.shape[1]
+            iy = didx // scmap.shape[1]
+
+            cur_prob[idx, 0] = scmap[iy, ix, p_idx] #prob
+            #cur_pos_grid[idx, :] = pos_from_grid_raw(cfg, np.array([ix, iy])) #scmap location
+            #cur_pos[idx, :] = cur_pos_grid[idx, :] + locref[iy, ix, p_idx, :] # scmap + locrefinment!
+            #cur_pairwise[idx, :, :] = pairwise_diff[iy, ix, :, :]
+            cur_pos[idx, :] = pos_from_grid_raw(np.array([ix, iy]),stride,halfstride) + locref[iy, ix, p_idx, :] # scmap + locrefinment!
+
+        unProb[p_idx] = np.round(cur_prob,5)
+        unPos[p_idx] = np.round(cur_pos,3)
+
+    Detections['coordinates']=unPos,
+    Detections['confidence']=unProb
+    Detections['costs']=AssociationCosts(cfg,unPos,pafs,stride,halfstride)
+    return Detections
+
+def get_detectionswithcosts(image, cfg, sess, inputs, outputs, outall=False,nms_radius=5.,det_min_score=.1):
+    ''' Extract pose and association costs from PAFs '''
+    im=np.expand_dims(image, axis=0).astype(float)
+    outputs_np = sess.run(outputs, feed_dict={inputs: im})
+    scmap, locref, paf = extract_cnn_output(outputs_np, cfg)
+    detections=extract_detections(cfg, scmap, locref, paf,nms_radius=nms_radius,det_min_score=det_min_score)
+    if outall:
+        return scmap, locref, paf, detections
+    else:
+        return detections
+
+# These two functions are for evaluation specifically (one also calculates integral between gt poi)
+def extract_detection_withgroundtruth(cfg, groundtruthcoordinates, scmap, locref, pafs, nms_radius, det_min_score):
+    ''' Extract detections correcting by locref and estimating association costs based on PAFs '''
+    Detections = {}
+    num_idchannel=cfg.get('num_idchannel', 0)
+    stride,halfstride=cfg.stride, cfg.stride*.5
+    num_joints = cfg.num_joints
+    # get dist_grid
+    dist_grid = make_nms_grid(nms_radius)
+    unProb = [None] * num_joints
+    unPos = [None] * num_joints
+    unID=[None]*num_joints
+    # apply nms
+    for p_idx in range(num_joints):
+        # IMPORTANT, as C++ function expects row-major
+        prob_map = np.ascontiguousarray(scmap[:, :, p_idx])
+        dets = nms_grid(prob_map, dist_grid, det_min_score)
+        cur_prob = np.zeros([len(dets), 1], dtype=np.float64)
+        cur_pos = np.zeros([len(dets), 2], dtype=np.float64)
+        #cur_pos_grid = np.zeros([len(dets), 2], dtype=np.float64)
+
+        if num_idchannel>0:
+                    cur_id=np.zeros([len(dets), num_idchannel], dtype=np.float64)
+
+        for idx, didx in enumerate(dets):
+            ix = didx % scmap.shape[1]
+            iy = didx // scmap.shape[1]
+            cur_prob[idx, 0] = scmap[iy, ix, p_idx] #prob
+            #cur_pos_grid[idx, :] = pos_from_grid_raw(cfg, np.array([ix, iy])) #scmap location
+            #cur_pos[idx, :] = cur_pos_grid[idx, :] + locref[iy, ix, p_idx, :] # scmap + locrefinment!
+            #cur_pairwise[idx, :, :] = pairwise_diff[iy, ix, :, :]
+            cur_pos[idx, :] = pos_from_grid_raw(np.array([ix, iy]),stride,halfstride) + locref[iy, ix, p_idx, :] # scmap + locrefinment!
+            for id in range(num_idchannel):
+                cur_id[idx,id]=np.amax(scmap[iy, ix, num_joints+id])
+
+        if num_idchannel>0:
+            unID[p_idx]=np.round(cur_id,5)
+        unProb[p_idx] = np.round(cur_prob,5)
+        unPos[p_idx] = np.round(cur_pos,3)
+
+    Detections['coordinates']=unPos,
+    Detections['confidence']=unProb
+    if num_idchannel>0:
+        Detections['identity']=unID
+
+    Detections['costs']=AssociationCosts(cfg,unPos,pafs,stride,halfstride)
+    Detections['groundtruth_costs']=AssociationCosts(cfg,groundtruthcoordinates,pafs,stride,halfstride)
+    return Detections
+
+def get_detectionswithcostsandGT(image,  groundtruthcoordinates, cfg, sess, inputs, outputs, outall=False,nms_radius=5.,det_min_score=.1):
+    ''' Extract pose and association costs from PAFs '''
+    im=np.expand_dims(image, axis=0).astype(float)
+    outputs_np = sess.run(outputs, feed_dict={inputs: im})
+    scmap, locref, paf = extract_cnn_output(outputs_np, cfg)
+    #detections=extract_detections(cfg, scmap, locref, paf,nms_radius=nms_radius,det_min_score=det_min_score)
+    #extract_detection_withgroundtruth(cfg, groundtruthcoordinates, scmap, locref, pafs, nms_radius, det_min_score)
+    detections=extract_detection_withgroundtruth(cfg, groundtruthcoordinates, scmap, locref, paf, nms_radius, det_min_score)
+    if outall:
+        return scmap, locref, paf, detections
+    else:
+        return detections
+
+## Functions below implement are for batch sizes > 1:
+def extract_cnn_outputmulti(outputs_np, cfg):
+    ''' extract locref + scmap from network
+    Dimensions: image batch x imagedim1 x imagedim2 x bodypart'''
+    scmap = outputs_np[0]
+    if cfg.location_refinement:
+        locref =outputs_np[1]
+        shape = locref.shape
+        locref = np.reshape(locref, (shape[0], shape[1],shape[2], -1, 2))
+        locref *= cfg.locref_stdev
+    else:
+        locref = None
+    if cfg.partaffinityfield_predict and ('multi-animal' in cfg.dataset_type):
+        paf = outputs_np[2]
+    else:
+        paf=None
+
+    if len(scmap.shape)==2: #for single body part!
+        scmap=np.expand_dims(scmap,axis=2)
+    return scmap, locref, paf
+
+def extract_batchdetections(scmap, locref, pafs, cfg, dist_grid, num_joints,num_idchannel, stride, halfstride, det_min_score):
+    ''' Extract detections correcting by locref and estimating association costs based on PAFs '''
+    Detections = {}
+    # get dist_grid
+    unProb = [None] * num_joints
+    unPos = [None] * num_joints
+    unID=[None]*num_joints
+    # apply nms
+    for p_idx in range(num_joints):
+        # IMPORTANT, as C++ function expects row-major
+        prob_map = np.ascontiguousarray(scmap[:, :, p_idx])
+        dets = nms_grid(prob_map, dist_grid, det_min_score)
+        cur_prob = np.zeros([len(dets), 1], dtype=np.float64)
+        cur_pos = np.zeros([len(dets), 2], dtype=np.float64)
+        if num_idchannel>0:
+            cur_id=np.zeros([len(dets), num_idchannel], dtype=np.float64)
+
+        for idx, didx in enumerate(dets):
+            ix = didx % scmap.shape[1]
+            iy = didx // scmap.shape[1]
+            cur_prob[idx, 0] = scmap[iy, ix, p_idx] #prob
+            cur_pos[idx, :] = pos_from_grid_raw(np.array([ix, iy]),stride,halfstride) + locref[iy, ix, p_idx, :] # scmap + locrefinment!
+            for id in range(num_idchannel):
+                cur_id[idx,id]=np.amax(scmap[iy, ix, num_joints+id])
+
+        if num_idchannel>0:
+            unID[p_idx]=np.round(cur_id,5)
+        unProb[p_idx] = np.round(cur_prob,5)
+        unPos[p_idx] = np.round(cur_pos,3)
+
+    Detections['coordinates']=unPos,
+    Detections['confidence']=unProb
+    if num_idchannel>0:
+        Detections['identity']=unID
+    Detections['costs']=AssociationCosts(cfg,unPos,pafs,stride,halfstride)
+    return Detections
+
+def get_batchdetectionswithcosts(image, dlc_cfg, dist_grid, batchsize,num_joints,num_idchannel, stride, halfstride, det_min_score, sess, inputs, outputs, outall=False):
+    outputs_np = sess.run(outputs, feed_dict={inputs: image})
+    scmap, locref, paf = extract_cnn_outputmulti(outputs_np, dlc_cfg) #processes image batch.
+    #batchsize,ny,nx,num_joints = scmap.shape
+    detections=[]
+    for l in range(batchsize):
+        detections.append(extract_batchdetections(scmap[l], locref[l], paf[l], dlc_cfg, dist_grid, num_joints,num_idchannel, stride, halfstride, det_min_score))
+
+    if outall:
+        return scmap, locref, paf, detections
+    else:
+        return detections

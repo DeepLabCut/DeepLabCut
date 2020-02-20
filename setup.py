@@ -24,7 +24,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/AlexEMG/DeepLabCut",
-    install_requires=['certifi','chardet','click','easydict',
+    install_requires=['certifi','chardet','click','cython','easydict',
                       'h5py~=2.7','intel-openmp','imgaug',
                       'ipython','ipython-genutils',
                       'matplotlib==3.0.3','moviepy','numpy>=1.16.4','opencv-python~=3.4',
