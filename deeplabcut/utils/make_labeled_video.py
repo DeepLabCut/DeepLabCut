@@ -43,18 +43,6 @@ def get_cmap(n, name='hsv'):
     return plt.cm.get_cmap(name, n)
 
 
-def form_data_containers(Dataframe, bodyparts2plot, cropping, displaycropped, x1, y1):
-    mask = Dataframe.columns.get_level_values('bodyparts').isin(bodyparts2plot)
-    df = Dataframe.loc[:, mask]
-    df_likelihood = df.xs('likelihood', level=-1, axis=1).values.T
-    df_x = df.xs('x', level=-1, axis=1).values.T
-    df_y = df.xs('y', level=-1, axis=1).values.T
-    if cropping and not displaycropped:
-        df_x += x1
-        df_y += y1
-    return df_x, df_y, df_likelihood
-
-
 def get_segment_indices(bodyparts2connect, bodyparts2plot):
     bpts2connect = []
     for pair in bodyparts2connect:
@@ -85,7 +73,10 @@ def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,bodyparts2plot,
         print("Overall # of frames: ", nframes, "with cropped frame dimensions: ",nx,ny)
 
         print("Generating frames and creating video.")
-        df_x, df_y, df_likelihood = form_data_containers(Dataframe, bodyparts2plot, cropping, displaycropped, x1, y1)
+        df_x, df_y, df_likelihood = auxiliaryfunctions.form_data_containers(Dataframe, bodyparts2plot)
+        if cropping and not displaycropped:
+            df_x += x1
+            df_y += y1
         colorclass=plt.cm.ScalarMappable(cmap=colormap)
         nbodyparts = len(bodyparts2plot)
         nindividuals = len(df_x) // nbodyparts
@@ -160,7 +151,10 @@ def CreateVideoSlow(videooutname,clip,Dataframe, dotsize,colormap,alphavalue,pcu
     print("Duration of video [s]: ", round(duration,2), ", recorded with ", round(fps,2),"fps!")
     print("Overall # of frames: ", int(nframes), "with cropped frame dimensions: ",nx,ny)
     print("Generating frames and creating video.")
-    df_x, df_y, df_likelihood = form_data_containers(Dataframe, bodyparts2plot, cropping, displaycropped, x1, y1)
+    df_x, df_y, df_likelihood = auxiliaryfunctions.form_data_containers(Dataframe, bodyparts2plot)
+    if cropping and not displaycropped:
+        df_x += x1
+        df_y += y1
     nbodyparts = len(bodyparts2plot)
     nindividuals = len(df_x) // nbodyparts
     if 'part' in color_by:

@@ -11,11 +11,7 @@ import os, pickle, yaml
 import pandas as pd
 from pathlib import Path
 import numpy as np
-
 import ruamel.yaml
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import cv2
 
 
 def create_config_template():
@@ -306,6 +302,15 @@ def IntersectionofBodyPartsandOnesGivenbyUser(cfg,comparisonbodyparts):
             if bp in allpbts:
                 cpbpts.append(bp)
         return cpbpts
+
+
+def form_data_containers(Dataframe, bodyparts2plot):
+    mask = Dataframe.columns.get_level_values('bodyparts').isin(bodyparts2plot)
+    df = Dataframe.loc[:, mask]
+    df_likelihood = df.xs('likelihood', level=-1, axis=1).values.T
+    df_x = df.xs('x', level=-1, axis=1).values.T
+    df_y = df.xs('y', level=-1, axis=1).values.T
+    return df_x, df_y, df_likelihood
 
 '''
 mobilenet_v2_1.0:
