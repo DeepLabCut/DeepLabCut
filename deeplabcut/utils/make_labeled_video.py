@@ -16,12 +16,9 @@ You can find the directory for ffmpeg bindings by: "find / | grep ffmpeg" and th
 # Dependencies
 ####################################################
 import os.path
-#import sys
-import argparse, glob, os
-import pandas as pd
+import argparse, os
 import numpy as np
-from tqdm import tqdm
-import subprocess
+from tqdm import trange
 from pathlib import Path
 import platform
 
@@ -33,20 +30,40 @@ elif platform.system() == 'Darwin':
 else:
     mpl.use('TkAgg')
 import matplotlib.pyplot as plt
-
-from deeplabcut.utils import auxiliaryfunctions
-from deeplabcut.pose_estimation_tensorflow.config import load_config
-from skimage.util import img_as_ubyte
-from skimage.draw import circle_perimeter, circle, line,line_aa
-
+from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 from deeplabcut.utils.video_processor import VideoProcessorCV as vp # used to CreateVideo
+from matplotlib.animation import FFMpegWriter
+from skimage.util import img_as_ubyte
+from skimage.draw import circle, line_aa
+
 
 def get_cmap(n, name='hsv'):
     '''Returns a function that maps each index in 0, 1, ..., n-1 to a distinct
     RGB color; the keyword argument name must be a standard mpl colormap name.'''
     return plt.cm.get_cmap(name, n)
 
-def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,DLCscorer,bodyparts2plot,
+
+def form_data_containers(Dataframe, bodyparts2plot, cropping, displaycropped, x1, y1):
+    mask = Dataframe.columns.get_level_values('bodyparts').isin(bodyparts2plot)
+    df = Dataframe.loc[:, mask]
+    df_likelihood = df.xs('likelihood', level=-1, axis=1).values.T
+    df_x = df.xs('x', level=-1, axis=1).values.T
+    df_y = df.xs('y', level=-1, axis=1).values.T
+    if cropping and not displaycropped:
+        df_x += x1
+        df_y += y1
+    return df_x, df_y, df_likelihood
+
+
+def get_segment_indices(bodyparts2connect, bodyparts2plot):
+    bpts2connect = []
+    for pair in bodyparts2connect:
+        if all(elem in bodyparts2plot for elem in pair):
+            bpts2connect.append([bodyparts2plot.index(elem) for elem in pair])
+    return bpts2connect
+
+
+def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,bodyparts2plot,
                 trailpoints,cropping,x1,x2,y1,y2,
                 bodyparts2connect,skeleton_color,draw_skeleton,displaycropped):
         ''' Creating individual frames with labeled body parts and making a video'''
@@ -57,11 +74,7 @@ def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,DLCscorer,bodyparts2plot
         if draw_skeleton:
             color_for_skeleton = (np.array(mpl.colors.to_rgba(skeleton_color))[:3]*255).astype(np.uint8)
             #recode the bodyparts2connect into indices for df_x and df_y for speed
-            bpts2connect=[]
-            index=np.arange(len(bodyparts2plot))
-            for pair in bodyparts2connect:
-                if pair[0] in bodyparts2plot and pair[1] in bodyparts2plot:
-                    bpts2connect.append([index[pair[0]==np.array(bodyparts2plot)][0],index[pair[1]==np.array(bodyparts2plot)][0]])
+            bpts2connect = get_segment_indices(bodyparts2connect, bodyparts2plot)
 
         if displaycropped:
             ny, nx= y2-y1,x2-x1
@@ -76,52 +89,48 @@ def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,DLCscorer,bodyparts2plot
         print("Overall # of frames: ", nframes, "with cropped frame dimensions: ",nx,ny)
 
         print("Generating frames and creating video.")
-        df_likelihood = np.empty((len(bodyparts2plot),nframes))
-        df_x = np.empty((len(bodyparts2plot),nframes))
-        df_y = np.empty((len(bodyparts2plot),nframes))
-        for bpindex, bp in enumerate(bodyparts2plot):
-            df_likelihood[bpindex,:]=Dataframe[DLCscorer,bp,'likelihood'].values
-            if cropping and not displaycropped:
-                df_x[bpindex,:]=Dataframe[DLCscorer,bp,'x'].values+x1
-                df_y[bpindex,:]=Dataframe[DLCscorer,bp,'y'].values+y1
-            else:
-                df_x[bpindex,:]=Dataframe[DLCscorer,bp,'x'].values
-                df_y[bpindex,:]=Dataframe[DLCscorer,bp,'y'].values
-
-
-        for index in tqdm(range(nframes)):
+        df_x, df_y, df_likelihood = form_data_containers(Dataframe, bodyparts2plot, cropping, displaycropped, x1, y1)
+        nbodyparts = len(bodyparts2plot)
+        for index in trange(nframes):
             image = clip.load_frame()
             if displaycropped:
                     image=image[y1:y2,x1:x2]
 
-            for bpindex in range(len(bodyparts2plot)):
-                # Draw the skeleton for specific bodyparts to be connected as specified in the config file
-                if draw_skeleton:
-                    for pair in bpts2connect:
-                        if (df_likelihood[pair[0],index] > pcutoff) and (df_likelihood[pair[1],index] >pcutoff):
-#                           rr, cc,val = line_aa(int(df_y[pair[0],index]),int(df_x[pair[0],index]),int(df_y[pair[1],index]), int(df_x[pair[1],index]))
-                            rr, cc,val = line_aa(int(np.clip(df_y[pair[0],index],0,ny-1)),int(np.clip(df_x[pair[0],index],0,nx-1)), int(np.clip(df_y[pair[1],index],1,ny-1)), int(np.clip(df_x[pair[1],index],1,nx-1)))
-                            image[rr, cc,:] = color_for_skeleton
+            # Draw the skeleton for specific bodyparts to be connected as specified in the config file
+            if draw_skeleton:
+                for link in bpts2connect:
+                    for ind in range(0, len(df_x), nbodyparts):
+                        pair = link[0] + ind, link[1] + ind
+                        if np.all(df_likelihood[pair, index] > pcutoff):
+                            rr, cc, val = line_aa(int(np.clip(df_y[pair[0], index], 0, ny - 1)),
+                                                  int(np.clip(df_x[pair[0], index], 0, nx - 1)),
+                                                  int(np.clip(df_y[pair[1], index], 1, ny - 1)),
+                                                  int(np.clip(df_x[pair[1], index], 1, nx - 1)))
+                            image[rr, cc] = color_for_skeleton
 
-                if df_likelihood[bpindex,index] > pcutoff:
-                    if trailpoints>0: #plot history
-                        for k in range(min(trailpoints,index+1)):
-                            rr, cc = circle(df_y[bpindex,index-k],df_x[bpindex,index-k],dotsize,shape=(ny,nx))
-                            image[rr, cc, :] = colors[bpindex]
-                    else:
-                        xc = int(df_x[bpindex,index])
-                        yc = int(df_y[bpindex,index])
-                        rr, cc = circle(yc,xc,dotsize,shape=(ny,nx))
-                        image[rr, cc, :] = colors[bpindex]
+            for bpindex in range(nbodyparts):
+                for ind in range(0, len(df_x), nbodyparts):
+                    if df_likelihood[bpindex + ind, index] > pcutoff:
+                        if trailpoints > 0:
+                            for k in range(min(trailpoints, index + 1)):
+                                rr, cc = circle(df_y[bpindex + ind, index - k],
+                                                df_x[bpindex + ind, index - k],
+                                                dotsize,
+                                                shape=(ny, nx))
+                                image[rr, cc] = colors[bpindex]
+                        else:
+                            rr, cc = circle(df_y[bpindex + ind, index],
+                                            df_x[bpindex + ind, index],
+                                            dotsize,
+                                            shape=(ny, nx))
+                            image[rr, cc] = colors[bpindex]
 
-            frame = image
-            clip.save_frame(frame)
+            clip.save_frame(image)
         clip.close()
 
 
-def CreateVideoSlow(videooutname,clip,Dataframe,tmpfolder,
-                    dotsize,colormap,alphavalue,pcutoff,trailpoints,cropping,x1,x2,y1,y2,
-                    delete,DLCscorer,bodyparts2plot,outputframerate,Frames2plot,
+def CreateVideoSlow(videooutname,clip,Dataframe, dotsize,colormap,alphavalue,pcutoff,trailpoints,
+                    cropping,x1,x2,y1,y2,bodyparts2plot,outputframerate,Frames2plot,
                     bodyparts2connect,skeleton_color,draw_skeleton,displaycropped):
     ''' Creating individual frames with labeled body parts and making a video'''
     #scorer=np.unique(Dataframe.columns.get_level_values(0))[0]
@@ -142,27 +151,12 @@ def CreateVideoSlow(videooutname,clip,Dataframe,tmpfolder,
     print("Duration of video [s]: ", round(duration,2), ", recorded with ", round(fps,2),"fps!")
     print("Overall # of frames: ", int(nframes), "with cropped frame dimensions: ",nx,ny)
     print("Generating frames and creating video.")
-    df_likelihood = np.empty((len(bodyparts2plot),nframes))
-    df_x = np.empty((len(bodyparts2plot),nframes))
-    df_y = np.empty((len(bodyparts2plot),nframes))
-
-    for bpindex, bp in enumerate(bodyparts2plot):
-        df_likelihood[bpindex,:]=Dataframe[DLCscorer,bp,'likelihood'].values
-        if cropping and not displaycropped:
-            df_x[bpindex,:]=Dataframe[DLCscorer,bp,'x'].values+x1
-            df_y[bpindex,:]=Dataframe[DLCscorer,bp,'y'].values+y1
-        else:
-            df_x[bpindex,:]=Dataframe[DLCscorer,bp,'x'].values
-            df_y[bpindex,:]=Dataframe[DLCscorer,bp,'y'].values
-
-    colors = get_cmap(len(bodyparts2plot),name=colormap)
+    df_x, df_y, df_likelihood = form_data_containers(Dataframe, bodyparts2plot, cropping, displaycropped, x1, y1)
+    nbodyparts = len(bodyparts2plot)
+    colors = get_cmap(nbodyparts,name=colormap)
     if draw_skeleton:
-            #recode the bodyparts2connect into indices for df_x and df_y for speed
-            bpts2connect=[]
-            index=np.arange(len(bodyparts2plot))
-            for pair in bodyparts2connect:
-                if pair[0] in bodyparts2plot and pair[1] in bodyparts2plot:
-                    bpts2connect.append([index[pair[0]==np.array(bodyparts2plot)][0],index[pair[1]==np.array(bodyparts2plot)][0]])
+        #recode the bodyparts2connect into indices for df_x and df_y for speed
+        bpts2connect = get_segment_indices(bodyparts2connect, bodyparts2plot)
 
     nframes_digits=int(np.ceil(np.log10(nframes)))
     if nframes_digits>9:
@@ -176,85 +170,65 @@ def CreateVideoSlow(videooutname,clip,Dataframe,tmpfolder,
             if k>=0 and k<nframes:
                 Index.append(int(k))
 
-    for index in tqdm(range(nframes)):
-        imagename = tmpfolder + "/file"+str(index).zfill(nframes_digits)+".png"
-        if os.path.isfile(imagename):
-            image = img_as_ubyte(clip.load_frame()) #still need to read (so counter advances!)
-        else:
-            plt.axis('off')
+    # Prepare figure
+    prev_backend = plt.get_backend()
+    plt.switch_backend('agg')
+    dpi = 100
+    fig = plt.figure(frameon=False, figsize=(nx / dpi, ny / dpi))
+    ax = fig.add_subplot(111)
+
+    writer = FFMpegWriter(fps=fps, codec='h264')
+    with writer.saving(fig, videooutname, dpi=dpi):
+        for index in trange(nframes):
             image = img_as_ubyte(clip.load_frame())
             if index in Index: #then extract the frame!
                 if cropping and displaycropped:
-                        image=image[y1:y2,x1:x2]
-                else:
-                    pass
+                    image = image[y1:y2, x1:x2]
+                ax.imshow(image)
 
-                plt.figure(frameon=False, figsize=(nx * 1. / 100, ny * 1. / 100))
-                plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-                plt.imshow(image)
-
-                # Adds skeleton to the video
-                ####################
                 if draw_skeleton:
-                    for pair in bpts2connect:
-                        if (df_likelihood[pair[0],index] > pcutoff) and (df_likelihood[pair[1],index] >pcutoff):
-                                plt.plot([df_x[pair[0],index],df_x[pair[1],index]],[df_y[pair[0],index],df_y[pair[1],index]],color=skeleton_color,alpha=alphavalue)
+                    for link in bpts2connect:
+                        for ind in range(0, len(df_x), nbodyparts):
+                            pair = link[0] + ind, link[1] + ind
+                            if np.all(df_likelihood[pair, index] > pcutoff):
+                                ax.plot([df_x[pair[0], index], df_x[pair[1], index]],
+                                        [df_y[pair[0], index], df_y[pair[1], index]],
+                                        color=skeleton_color, alpha=alphavalue)
 
-                for bpindex, bp in enumerate(bodyparts2plot):
-                    if df_likelihood[bpindex,index] > pcutoff:
-                        if trailpoints>0:
-                            plt.scatter(
-                                df_x[bpindex][max(0,index-trailpoints):index],
-                                df_y[bpindex][max(0,index-trailpoints):index],
-                                s=dotsize**2,
-                                color=colors(bpindex),
-                                alpha=alphavalue*.75)
-                            #less transparent present.
-                            plt.scatter(
-                                df_x[bpindex,index],
-                                df_y[bpindex,index],
-                                s=dotsize**2,
-                                color=colors(bpindex),
-                                alpha=alphavalue)
+                for bpindex in range(nbodyparts):
+                    for ind in range(0, len(df_x), nbodyparts):
+                        if df_likelihood[bpindex + ind, index] > pcutoff:
+                            if trailpoints > 0:
+                                ax.scatter(df_x[bpindex + ind][max(0, index - trailpoints):index],
+                                           df_y[bpindex + ind][max(0, index - trailpoints):index],
+                                           s=dotsize ** 2,
+                                           color=colors(bpindex),
+                                           alpha=alphavalue * .75)
+                                # less transparent present.
+                                ax.scatter(df_x[bpindex + ind, index],
+                                           df_y[bpindex + ind, index],
+                                           s=dotsize ** 2,
+                                           color=colors(bpindex),
+                                           alpha=alphavalue)
+                            else:
+                                ax.scatter(df_x[bpindex + ind, index],
+                                           df_y[bpindex + ind, index],
+                                           s=dotsize ** 2,
+                                           color=colors(bpindex),
+                                           alpha=alphavalue)
+                ax.set_xlim(0, nx)
+                ax.set_ylim(0, ny)
+                ax.axis('off')
+                ax.invert_yaxis()
+                fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+                writer.grab_frame()
+                ax.clear()
+    clip.close()
+    print("Labeled video successfully created.")
+    plt.switch_backend(prev_backend)
 
-                        else:
-                            plt.scatter(
-                                df_x[bpindex,index],
-                                df_y[bpindex,index],
-                                s=dotsize**2,
-                                color=colors(bpindex),
-                                alpha=alphavalue)
 
-                plt.xlim(0, nx-1)
-                plt.ylim(0, ny-1)
-
-                plt.axis('off')
-                plt.subplots_adjust(
-                    left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-                plt.gca().invert_yaxis()
-                plt.savefig(imagename)
-
-                plt.close("all")
-
-    start= os.getcwd()
-    os.chdir(tmpfolder)
-    print("All labeled frames were created, now generating video...")
-    ## One can change the parameters of the video creation script below:
-    # See ffmpeg user guide: http://ffmpeg.org/ffmpeg.html#Video-and-Audio-file-format-conversion
-    #
-    try:
-        subprocess.call([
-            'ffmpeg', '-framerate',
-            str(clip.fps()), '-i', 'file%0'+str(nframes_digits)+'d.png', '-r', str(outputframerate),'../'+videooutname])
-    except FileNotFoundError:
-        print("Ffmpeg not correctly installed, see https://github.com/AlexEMG/DeepLabCut/issues/45")
-
-    if delete:
-        for file_name in glob.glob("*.png"):
-            os.remove(file_name)
-    os.chdir(start)
-
-def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,filtered=False,save_frames=False,Frames2plot=None,delete=False,displayedbodyparts='all',codec='mp4v',outputframerate=None, destfolder=None,draw_skeleton=False,trailpoints = 0,displaycropped=False):
+def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,filtered=False,save_frames=False,Frames2plot=None, displayedbodyparts='all', displayedindividuals='all', codec='mp4v',outputframerate=None, destfolder=None,draw_skeleton=False,trailpoints = 0,displaycropped=False):
     """
     Labels the bodyparts in a video. Make sure the video is already analyzed by the function 'analyze_video'
 
@@ -288,13 +262,13 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
     Frames2plot: List of indices
         If not None & save_frames=True then the frames corresponding to the index will be plotted. For example, Frames2plot=[0,11] will plot the first and the 12th frame.
 
-    delete: bool
-        If true then the individual frames created during the video generation will be deleted.
-
     displayedbodyparts: list of strings, optional
-        This select the body parts that are plotted in the video. Either ``all``, then all body parts
+        This selects the body parts that are plotted in the video. Either ``all``, then all body parts
         from config.yaml are used orr a list of strings that are a subset of the full list.
         E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these two body parts.
+
+    displayedindividuals: list of strings, optional
+        Individuals plotted in the video. By default, all individuals present in the config will be showed.
 
     codec: codec for labeled video. Options see http://www.fourcc.org/codecs.php [depends on your ffmpeg installation.]
 
@@ -341,6 +315,7 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
     DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction) #automatically loads corresponding model (even training iteration based on snapshot index)
 
     bodyparts=auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg,displayedbodyparts)
+    individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(cfg, displayedindividuals)
     if draw_skeleton:
         bodyparts2connect = cfg['skeleton']
         skeleton_color = cfg['skeleton_color']
@@ -376,6 +351,8 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
         else:
             print("Loading ", video, "and data.")
             datafound,metadata,Dataframe,DLCscorer,suffix=auxiliaryfunctions.LoadAnalyzedData(str(videofolder),vname,DLCscorer,filtered) #returns boolean variable if data was found and metadata + pandas array
+            if individuals:
+                Dataframe = Dataframe.copy().loc(axis=1)[:, individuals]
             videooutname=os.path.join(vname + DLCscorer+suffix+'_labeled.mp4')
             if datafound and not os.path.isfile(videooutname): #checking again, for this loader video could exist
                 #Loading cropping data used during analysis
@@ -386,14 +363,14 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
                     auxiliaryfunctions.attempttomakefolder(tmpfolder)
                     clip = vp(video)
 
-                    CreateVideoSlow(videooutname,clip,Dataframe,tmpfolder,cfg["dotsize"],cfg["colormap"],cfg["alphavalue"],cfg["pcutoff"],trailpoints,cropping,x1,x2,y1,y2,delete,DLCscorer,bodyparts,outputframerate,Frames2plot,bodyparts2connect,skeleton_color,draw_skeleton,displaycropped)
+                    CreateVideoSlow(videooutname,clip,Dataframe,cfg["dotsize"],cfg["colormap"],cfg["alphavalue"],cfg["pcutoff"],trailpoints,cropping,x1,x2,y1,y2,bodyparts,outputframerate,Frames2plot,bodyparts2connect,skeleton_color,draw_skeleton,displaycropped)
                 else:
                     if displaycropped: #then the cropped video + the labels is depicted
                         clip = vp(fname = video,sname = videooutname,codec=codec,sw=x2-x1,sh=y2-y1)
-                        CreateVideo(clip,Dataframe,cfg["pcutoff"],cfg["dotsize"],cfg["colormap"],DLCscorer,bodyparts,trailpoints,cropping,x1,x2,y1,y2,bodyparts2connect,skeleton_color,draw_skeleton,displaycropped)
                     else: #then the full video + the (perhaps in cropped mode analyzed labels) are depicted
                         clip = vp(fname = video,sname = videooutname,codec=codec)
-                        CreateVideo(clip,Dataframe,cfg["pcutoff"],cfg["dotsize"],cfg["colormap"],DLCscorer,bodyparts,trailpoints,cropping,x1,x2,y1,y2,bodyparts2connect,skeleton_color,draw_skeleton,displaycropped)
+                    CreateVideo(clip,Dataframe,cfg["pcutoff"],cfg["dotsize"],cfg["colormap"],bodyparts,trailpoints,cropping,x1,x2,y1,y2,bodyparts2connect,skeleton_color,draw_skeleton,displaycropped)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
