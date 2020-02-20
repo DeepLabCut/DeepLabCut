@@ -1,18 +1,15 @@
-'''
-Adapted from original predict.py by Eldar Insafutdinov's implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow)
+"""
+DeepLabCut2.2 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
+https://github.com/AlexEMG/DeepLabCut
 
-Source: DeeperCut by Eldar Insafutdinov
+Please see AUTHORS for contributors.
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
+
+Adapted from DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
-
-
-To do faster inference on videos:
-
-"On the inference speed and video-compression robustness of DeepLabCut"
-Alexander Mathis & Richard Warren
-doi: https://doi.org/10.1101/457242
-See https://www.biorxiv.org/content/early/2018/10/30/457242
-
-'''
+"""
 
 import numpy as np
 import tensorflow as tf
@@ -273,7 +270,10 @@ def extract_batchdetections(scmap, locref, pafs, cfg, dist_grid, num_joints,num_
     Detections['confidence']=unProb
     if num_idchannel>0:
         Detections['identity']=unID
-    Detections['costs']=AssociationCosts(cfg,unPos,pafs,stride,halfstride)
+    if pafs is not None:
+        Detections['costs']=AssociationCosts(cfg,unPos,pafs,stride,halfstride)
+    else:
+        Detections['costs']={}
     return Detections
 
 def get_batchdetectionswithcosts(image, dlc_cfg, dist_grid, batchsize,num_joints,num_idchannel, stride, halfstride, det_min_score, sess, inputs, outputs, outall=False):
@@ -282,8 +282,10 @@ def get_batchdetectionswithcosts(image, dlc_cfg, dist_grid, batchsize,num_joints
     #batchsize,ny,nx,num_joints = scmap.shape
     detections=[]
     for l in range(batchsize):
-        detections.append(extract_batchdetections(scmap[l], locref[l], paf[l], dlc_cfg, dist_grid, num_joints,num_idchannel, stride, halfstride, det_min_score))
-
+        if paf is None:
+            detections.append(extract_batchdetections(scmap[l], locref[l], paf, dlc_cfg, dist_grid, num_joints,num_idchannel, stride, halfstride, det_min_score))
+        else:
+            detections.append(extract_batchdetections(scmap[l], locref[l], paf[l], dlc_cfg, dist_grid, num_joints,num_idchannel, stride, halfstride, det_min_score))
     if outall:
         return scmap, locref, paf, detections
     else:
