@@ -35,7 +35,7 @@ from matplotlib.widgets import RectangleSelector
 # ###########################################################################
 class ImagePanel(wx.Panel):
 
-    def __init__(self, parent,config,video,shuffle,Dataframe,gui_size,**kwargs):
+    def __init__(self, parent, gui_size, **kwargs):
         h=gui_size[0]/2
         w=gui_size[1]/3
         wx.Panel.__init__(self, parent, -1,style=wx.SUNKEN_BORDER,size=(h,w))
@@ -75,7 +75,7 @@ class WidgetPanel(wx.Panel):
 class MainFrame(wx.Frame):
     """Contains the main GUI and button boxes"""
 
-    def __init__(self, parent,config,video,shuffle,Dataframe,scorer,savelabeled):
+    def __init__(self, parent,config,video,shuffle,Dataframe,savelabeled):
 # Settting the GUI size and panels design
         displays = (wx.Display(i) for i in range(wx.Display.GetCount())) # Gets the number of displays
         screenSizes = [display.GetGeometry().GetSize() for display in displays] # Gets the size of each display
@@ -95,7 +95,7 @@ class MainFrame(wx.Frame):
 # Spliting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
         topSplitter = wx.SplitterWindow(self)
 
-        self.image_panel = ImagePanel(topSplitter, config,video,shuffle,Dataframe,self.gui_size)
+        self.image_panel = ImagePanel(topSplitter, self.gui_size)
         self.widget_panel = WidgetPanel(topSplitter)
         
         topSplitter.SplitHorizontally(self.image_panel, self.widget_panel,sashPosition=self.gui_size[1]*0.83)#0.9
@@ -200,7 +200,6 @@ class MainFrame(wx.Frame):
         self.video_source = Path(video).resolve()
         self.shuffle = shuffle
         self.Dataframe = Dataframe
-        self.scorer = scorer
         self.savelabeled = savelabeled
         
 # Read the video file
@@ -319,7 +318,7 @@ class MainFrame(wx.Frame):
 
         self.machinefile = os.path.join(str(output_path),'machinelabels-iter'+str(self.iterationindex)+'.h5')
         name = str(fname.stem)
-        DF = self.Dataframe.ix[[self.currFrame]]
+        DF = self.Dataframe.loc[[self.currFrame]]
         DF.index=[os.path.join('labeled-data',name,"img"+str(index).zfill(self.strwidth)+".png") for index in DF.index]
         img_name = str(output_path) +'/img'+str(self.currFrame).zfill(int(np.ceil(np.log10(self.numberFrames)))) + '.png'
         labeled_img_name = str(output_path) +'/img'+str(self.currFrame).zfill(int(np.ceil(np.log10(self.numberFrames)))) + 'labeled.png'
@@ -377,7 +376,9 @@ class MainFrame(wx.Frame):
             cbar.set_ticklabels(self.bodyparts)
             for bpindex, bp in enumerate(self.bodyparts):
                 color = self.colormap(self.norm(self.colorIndex[bpindex]))
-                self.points = [self.Dataframe[self.scorer][bp]['x'].values[self.currFrame],self.Dataframe[self.scorer][bp]['y'].values[self.currFrame],1.0]
+                self.points = [self.Dataframe.xs((bp, 'x'), level=(-2, -1), axis=1).values[self.currFrame],
+                               self.Dataframe.xs((bp, 'y'), level=(-2, -1), axis=1).values[self.currFrame],
+                               1.0]
                 circle = [patches.Circle((self.points[0], self.points[1]), radius=self.markerSize, fc = color , alpha=self.alpha)]
                 self.axes.add_patch(circle[0])
             self.figure.canvas.draw()
@@ -388,12 +389,12 @@ class MainFrame(wx.Frame):
         """
         wx.MessageBox("1. Use the checkbox 'Crop?' at the bottom left if you need to crop the frame. In this case use the left mouse button to draw a box corresponding to the region of interest. Click the 'Set cropping parameters' button to add the video with the chosen crop parameters to the config file.\n\n2. Use the slider to select a frame in the entire video. \n\n3. Click Grab Frames button to save the specific frame.\n\n4. In events where you need to extract a range frames, then use the checkbox 'Range of frames' to select the starting frame index and the number of frames to extract. \n Click the update button to see the frame. Click Grab Frames to select the range of frames. \n Click OK to continue", 'Instructions to use!', wx.OK | wx.ICON_INFORMATION)
 
-def show(config,video,shuffle,Dataframe,scorer,savelabeled):
+def show(config,video,shuffle,Dataframe,savelabeled):
     app = wx.App()
-    frame = MainFrame(None,config,video,shuffle,Dataframe,scorer,savelabeled).Show()
+    frame = MainFrame(None,config,video,shuffle,Dataframe,savelabeled).Show()
     app.MainLoop()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('config','video','shuffle','Dataframe','scorer','savelabeled')
+    parser.add_argument('config','video','shuffle','Dataframe','savelabeled')
     cli_args = parser.parse_args()
