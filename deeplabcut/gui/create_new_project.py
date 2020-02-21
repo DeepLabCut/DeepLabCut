@@ -86,6 +86,7 @@ class Create_new_project(wx.Panel):
 
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
         hbox3 = wx.BoxSizer(wx.HORIZONTAL)
+        hbox4 = wx.BoxSizer(wx.HORIZONTAL)
 
         self.change_workingdir = wx.CheckBox(self, label="Select the directory where project will be created")
         hbox2.Add(self.change_workingdir)
@@ -108,6 +109,11 @@ class Create_new_project(wx.Panel):
         hbox3.Add(self.yes, 0, wx.ALL, -1)
         hbox3.Add(self.no, 0, wx.ALL, -1)
         self.boxsizer.Add(hbox3)
+
+        self.multi_choice = wx.CheckBox(self, label="Is it a multi-animal project?")
+        # self.multi_choice.Bind(wx.EVT_CHECKBOX,self.activate_copy_videos)
+        hbox4.Add(self.multi_choice)
+        self.boxsizer.Add(hbox4)
         self.sizer.Add(self.boxsizer, pos=(7, 0), span=(1, 7),flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT , border=10)
 
         self.cfg_text = wx.StaticText(self, label="Select the config file")
@@ -270,7 +276,8 @@ class Create_new_project(wx.Panel):
             self.task = self.proj_name_txt_box.GetValue()
             self.scorer = self.exp_txt_box.GetValue()
             if self.task!="" and self.scorer!="" and self.filelist!=[]:
-                self.cfg=deeplabcut.create_new_project(self.task,self.scorer,self.filelist,self.dir,self.copy)
+                self.cfg=deeplabcut.create_new_project(self.task,self.scorer,self.filelist,self.dir,self.copy,
+                                                       multianimal=self.multi_choice.IsChecked())
             else:
                 wx.MessageBox('Some of the enteries are missing.\n\nMake sure that the task and experimenter name are specified and videos are selected!', 'Error', wx.OK | wx.ICON_ERROR)
                 self.cfg = False
