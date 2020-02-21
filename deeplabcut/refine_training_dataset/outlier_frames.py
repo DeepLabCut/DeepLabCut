@@ -172,12 +172,9 @@ def extract_outlier_frames(config, videos, videotype='avi', shuffle=1, trainings
             elif outlieralgorithm == 'manual':
                 wd = Path(config).resolve().parents[0]
                 os.chdir(str(wd))
-                if cfg.get('multianimalproject', False):
-                    # TODO Multianimal outlier extraction
-                    pass
-                else:
-                    from deeplabcut.refine_training_dataset import outlier_frame_extraction_toolbox
-                    outlier_frame_extraction_toolbox.show(config, video, shuffle, df_temp, savelabeled)
+                from deeplabcut.refine_training_dataset import outlier_frame_extraction_toolbox
+                outlier_frame_extraction_toolbox.show(config, video, shuffle, df_temp,
+                                                      savelabeled, cfg.get('multianimalproject', False))
 
 
             # Run always except when the outlieralgorithm == manual.

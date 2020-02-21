@@ -11,6 +11,7 @@ Licensed under GNU Lesser General Public License v3.0
 
 from __future__ import print_function
 import wx
+import wx.lib.scrolledpanel as SP
 import cv2
 import os
 import matplotlib
@@ -18,7 +19,8 @@ import numpy as np
 from pathlib import Path
 import pandas as pd
 import argparse
-from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils import auxiliaryfunctions, visualization
+
 from deeplabcut.create_project import add
 from skimage import io
 from skimage.util import img_as_ubyte
@@ -64,18 +66,38 @@ class ImagePanel(wx.Panel):
         return norm, ticks
 
 
-
 class WidgetPanel(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent, -1,style=wx.SUNKEN_BORDER)
 
 
+class ScrollPanel(SP.ScrolledPanel):
+    def __init__(self, parent):
+        SP.ScrolledPanel.__init__(self, parent, -1,style=wx.SUNKEN_BORDER)
+        self.SetupScrolling(scroll_x=True, scroll_y=True, scrollToTop=False)
+        self.Layout()
+
+    def on_focus(self,event):
+        pass
+
+    def addRadioButtons(self):
+        """
+        Adds radio buttons for each bodypart on the right panel
+        """
+        self.choiceBox = wx.BoxSizer(wx.VERTICAL)
+        names = ['Color individuals', 'Color bodyparts']
+        self.visualization_radiobox = wx.RadioBox(self,label='Select the visualization scheme',majorDimension=1, style=wx.RA_SPECIFY_COLS, choices=names)
+        self.choiceBox.Add(self.visualization_radiobox, 0, wx.EXPAND|wx.ALL, 10)
+
+        self.SetSizerAndFit(self.choiceBox)
+        self.Layout()
+        return(self.choiceBox,self.visualization_radiobox)
 
 
 class MainFrame(wx.Frame):
     """Contains the main GUI and button boxes"""
 
-    def __init__(self, parent,config,video,shuffle,Dataframe,savelabeled):
+    def __init__(self, parent,config,video,shuffle,Dataframe,savelabeled,multianimal):
 # Settting the GUI size and panels design
         displays = (wx.Display(i) for i in range(wx.Display.GetCount())) # Gets the number of displays
         screenSizes = [display.GetGeometry().GetSize() for display in displays] # Gets the size of each display
@@ -90,15 +112,32 @@ class MainFrame(wx.Frame):
         self.statusbar.SetStatusText("")
 
         self.SetSizeHints(wx.Size(self.gui_size)) #  This sets the minimum size of the GUI. It can scale now!
-        
+
 ###################################################################################################################################################
 # Spliting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
-        topSplitter = wx.SplitterWindow(self)
+        # topSplitter = wx.SplitterWindow(self)
+        #
+        # self.image_panel = ImagePanel(topSplitter, config,video,shuffle,Dataframe,self.gui_size)
+        # self.widget_panel = WidgetPanel(topSplitter)
+        #
+        # topSplitter.SplitHorizontally(self.image_panel, self.widget_panel,sashPosition=self.gui_size[1]*0.83)#0.9
+        # topSplitter.SetSashGravity(1)
+        # sizer = wx.BoxSizer(wx.VERTICAL)
+        # sizer.Add(topSplitter, 1, wx.EXPAND)
+        # self.SetSizer(sizer)
 
-        self.image_panel = ImagePanel(topSplitter, self.gui_size)
+# Spliting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
+
+        topSplitter = wx.SplitterWindow(self)
+        vSplitter = wx.SplitterWindow(topSplitter)
+
+        self.image_panel = ImagePanel(vSplitter, self.gui_size)
+        self.choice_panel = ScrollPanel(vSplitter)
+
+        vSplitter.SplitVertically(self.image_panel,self.choice_panel, sashPosition=self.gui_size[0]*0.8)
+        vSplitter.SetSashGravity(1)
         self.widget_panel = WidgetPanel(topSplitter)
-        
-        topSplitter.SplitHorizontally(self.image_panel, self.widget_panel,sashPosition=self.gui_size[1]*0.83)#0.9
+        topSplitter.SplitHorizontally(vSplitter, self.widget_panel,sashPosition=self.gui_size[1]*0.83)#0.9
         topSplitter.SetSashGravity(1)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(topSplitter, 1, wx.EXPAND)
@@ -108,17 +147,17 @@ class MainFrame(wx.Frame):
 # Add Buttons to the WidgetPanel and bind them to their respective functions.
 
         widgetsizer = wx.WrapSizer(orient=wx.HORIZONTAL)
-        
+
         self.load_button_sizer = wx.BoxSizer(wx.VERTICAL)
         self.help_button_sizer = wx.BoxSizer(wx.VERTICAL)
-        
+
         self.help = wx.Button(self.widget_panel, id=wx.ID_ANY, label="Help")
         self.help_button_sizer.Add(self.help , 1, wx.ALL, 15)
 #        widgetsizer.Add(self.help , 1, wx.ALL, 15)
         self.help.Bind(wx.EVT_BUTTON, self.helpButton)
 
         widgetsizer.Add(self.help_button_sizer,1,wx.ALL,0)
-        
+
         self.grab = wx.Button(self.widget_panel, id=wx.ID_ANY, label="Grab Frames")
         widgetsizer.Add(self.grab , 1, wx.ALL, 15)
         self.grab.Bind(wx.EVT_BUTTON, self.grabFrame)
@@ -128,7 +167,7 @@ class MainFrame(wx.Frame):
         self.slider = wx.Slider(self.widget_panel, id=wx.ID_ANY, value = 0, minValue=0, maxValue=1,size=(200, -1), style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS )
         widgetsizer.Add(self.slider,1, wx.ALL,5)
         self.slider.Bind(wx.EVT_SLIDER, self.OnSliderScroll)
-        
+
         widgetsizer.AddStretchSpacer(5)
         self.start_frames_sizer = wx.BoxSizer(wx.VERTICAL)
         self.end_frames_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -143,7 +182,7 @@ class MainFrame(wx.Frame):
         self.checkBox = wx.CheckBox(self.widget_panel, id=wx.ID_ANY,label = 'Range of frames')
         self.checkBox.Bind(wx.EVT_CHECKBOX,self.activate_frame_range)
         self.start_frames_sizer.Add(self.checkBox,1, wx.EXPAND|wx.ALIGN_LEFT,15)
-#        
+#
         self.end_frames_sizer.AddSpacer(15)
         self.endFrame = wx.SpinCtrl(self.widget_panel, value='1', size=(160, -1))#, min=1, max=120)
         self.endFrame.Enable(False)
@@ -154,12 +193,12 @@ class MainFrame(wx.Frame):
         self.end_frames_sizer.Add(self.updateFrame,1, wx.EXPAND|wx.ALIGN_LEFT,15)
         self.updateFrame.Bind(wx.EVT_BUTTON, self.updateSlider)
         self.updateFrame.Enable(False)
-        
+
         widgetsizer.Add(self.start_frames_sizer,1,wx.ALL,0)
         widgetsizer.AddStretchSpacer(5)
         widgetsizer.Add(self.end_frames_sizer,1,wx.ALL,0)
         widgetsizer.AddStretchSpacer(15)
-        
+
         self.quit = wx.Button(self.widget_panel, id=wx.ID_ANY, label="Quit")
         widgetsizer.Add(self.quit , 1, wx.ALL, 15)
         self.quit.Bind(wx.EVT_BUTTON, self.quitButton)
@@ -167,8 +206,8 @@ class MainFrame(wx.Frame):
 
         self.widget_panel.SetSizer(widgetsizer)
         self.widget_panel.SetSizerAndFit(widgetsizer)
-        
-        
+
+
 # Variables initialization
         self.numberFrames = 0
         self.currFrame = 0
@@ -177,6 +216,7 @@ class MainFrame(wx.Frame):
         self.drs = []
         self.extract_range_frame = False
         self.firstFrame  = 0
+        self.Colorscheme = []
         # self.cropping = False
 
 # Read confing file
@@ -201,7 +241,13 @@ class MainFrame(wx.Frame):
         self.shuffle = shuffle
         self.Dataframe = Dataframe
         self.savelabeled = savelabeled
-        
+        self.multianimal = multianimal
+        if self.multianimal:
+            from deeplabcut.utils import auxfun_multianimal
+            self.individual_names,self.uniquebodyparts,self.multianimalbodyparts = auxfun_multianimal.extractindividualsandbodyparts(self.cfg)
+            self.choiceBox,self.visualization_rdb = self.choice_panel.addRadioButtons()
+            self.Colorscheme = visualization.get_cmap(len(self.individual_names),self.cfg['colormap'])
+            self.visualization_rdb.Bind(wx.EVT_RADIOBOX,self.clear_plot)
 # Read the video file
         self.vid = cv2.VideoCapture(str(self.video_source))
         self.videoPath = os.path.dirname(self.video_source)
@@ -223,6 +269,8 @@ class MainFrame(wx.Frame):
         self.update()
         self.plot_labels()
         self.widget_panel.Layout()
+
+
     def quitButton(self, event):
         """
         Quits the GUI
@@ -243,7 +291,7 @@ class MainFrame(wx.Frame):
         self.currFrame = (self.slider.GetValue())
         self.update()
         self.plot_labels()
-    
+
     def activate_frame_range(self,event):
         """
         Activates the frame range boxes
@@ -262,14 +310,13 @@ class MainFrame(wx.Frame):
             self.endFrame.Enable(False)
             self.updateFrame.Enable(False)
             self.grab.Enable(True)
-    
-    
+
     def line_select_callback(self,eclick, erelease):
         'eclick and erelease are the press and release events'
         self.new_x1, self.new_y1 = eclick.xdata, eclick.ydata
         self.new_x2, self.new_y2 = erelease.xdata, erelease.ydata
 
-            
+
     def OnSliderScroll(self, event):
         """
         Slider to scroll through the video
@@ -281,7 +328,7 @@ class MainFrame(wx.Frame):
         self.startFrame.SetValue(self.currFrame)
         self.update()
         self.plot_labels()
-    
+
 
     def update(self):
         """
@@ -304,7 +351,7 @@ class MainFrame(wx.Frame):
             self.figure.canvas.draw()
         else:
             print("Invalid frame")
-        
+
     def chooseFrame(self):
         ret, frame = self.vid.read()
         frame=img_as_ubyte(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
@@ -318,7 +365,7 @@ class MainFrame(wx.Frame):
 
         self.machinefile = os.path.join(str(output_path),'machinelabels-iter'+str(self.iterationindex)+'.h5')
         name = str(fname.stem)
-        DF = self.Dataframe.loc[[self.currFrame]]
+        DF = self.Dataframe.ix[[self.currFrame]]
         DF.index=[os.path.join('labeled-data',name,"img"+str(index).zfill(self.strwidth)+".png") for index in DF.index]
         img_name = str(output_path) +'/img'+str(self.currFrame).zfill(int(np.ceil(np.log10(self.numberFrames)))) + '.png'
         labeled_img_name = str(output_path) +'/img'+str(self.currFrame).zfill(int(np.ceil(np.log10(self.numberFrames)))) + 'labeled.png'
@@ -344,7 +391,7 @@ class MainFrame(wx.Frame):
         else:
             print("%s path not found. Please make sure that the video was added to the config file using the function 'deeplabcut.add_new_videos'.Quitting for now!" %output_path)
             self.Destroy()
-        
+
     def grabFrame(self,event):
         """
         Extracts the frame and saves in the current directory
@@ -360,6 +407,10 @@ class MainFrame(wx.Frame):
             self.vid.set(1,self.currFrame)
             self.chooseFrame()
 
+    def clear_plot(self,event):
+        self.figure.delaxes(self.figure.axes[1])
+        [p.remove() for p in reversed(self.axes.patches)]
+        self.plot_labels()
 
     def plot_labels(self):
         """
@@ -367,34 +418,95 @@ class MainFrame(wx.Frame):
         """
         self.vid.set(1,self.currFrame)
         ret, frame = self.vid.read()
-        self.norm,self.colorIndex = self.image_panel.getColorIndices(frame,self.bodyparts)
         if ret:
             frame=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             divider = make_axes_locatable(self.axes)
             cax = divider.append_axes("right", size="5%", pad=0.05)
-            cbar = self.figure.colorbar(self.ax, cax=cax,spacing='proportional', ticks=self.colorIndex)
-            cbar.set_ticklabels(self.bodyparts)
-            for bpindex, bp in enumerate(self.bodyparts):
-                color = self.colormap(self.norm(self.colorIndex[bpindex]))
-                self.points = [self.Dataframe.xs((bp, 'x'), level=(-2, -1), axis=1).values[self.currFrame],
-                               self.Dataframe.xs((bp, 'y'), level=(-2, -1), axis=1).values[self.currFrame],
-                               1.0]
-                circle = [patches.Circle((self.points[0], self.points[1]), radius=self.markerSize, fc = color , alpha=self.alpha)]
-                self.axes.add_patch(circle[0])
-            self.figure.canvas.draw()
-        
+            if self.multianimal:
+                #take into account of all the bodyparts for the colorscheme. Sort the bodyparts to have same order as in the config file
+                self.all_bodyparts = np.array(self.multianimalbodyparts + self.uniquebodyparts)
+                _,return_idx = np.unique(self.all_bodyparts,return_index = True)
+                self.all_bodyparts = list(self.all_bodyparts[np.sort(return_idx)])
+
+                if self.visualization_rdb.GetSelection() == 0: #i.e. for color scheme for individuals
+                    self.Colorscheme = visualization.get_cmap(len(self.individual_names),self.cfg['colormap'])
+                    self.norm,self.colorIndex = self.image_panel.getColorIndices(frame,self.individual_names)
+                    cbar = self.figure.colorbar(self.ax, cax=cax,spacing='proportional', ticks=self.colorIndex)
+                    cbar.set_ticklabels(self.individual_names)
+                else: #i.e. for color scheme for all bodyparts
+                    self.Colorscheme = visualization.get_cmap(len(self.all_bodyparts),self.cfg['colormap'])
+                    self.norm,self.colorIndex = self.image_panel.getColorIndices(frame,self.all_bodyparts)
+                    cbar = self.figure.colorbar(self.ax, cax=cax,spacing='proportional', ticks=self.colorIndex)
+                    cbar.set_ticklabels(self.all_bodyparts)
+
+                for ci,ind in enumerate(self.individual_names):
+                    col_idx = 0 #variable for iterating through the colorscheme for all bodyparts
+                    image_points = []
+                    if ind == 'single':
+                        if self.visualization_rdb.GetSelection() == 0:
+                            for c, bp in enumerate(self.uniquebodyparts):
+                                self.points = [self.Dataframe.xs((bp, 'x'), level=(-2, -1), axis=1).values[self.currFrame],
+                                               self.Dataframe.xs((bp, 'y'), level=(-2, -1), axis=1).values[self.currFrame],
+                                               1.0]
+                                self.circle = [patches.Circle((self.points[0], self.points[1]), radius=self.markerSize, fc = self.Colorscheme(ci) , alpha=self.alpha)]
+                                self.axes.add_patch(self.circle[0])
+                        else:
+                            for c, bp in enumerate(self.uniquebodyparts):
+                                self.points = [self.Dataframe.xs((bp, 'x'), level=(-2, -1), axis=1).values[self.currFrame],
+                                               self.Dataframe.xs((bp, 'y'), level=(-2, -1), axis=1).values[self.currFrame],
+                                               1.0]
+                                self.circle = [patches.Circle((self.points[0], self.points[1]), radius=self.markerSize, fc = self.Colorscheme(col_idx) , alpha=self.alpha)]
+                                self.axes.add_patch(self.circle[0])
+                                col_idx = col_idx + 1
+                    else:
+                        if self.visualization_rdb.GetSelection() == 0:
+                            for c, bp in enumerate(self.multianimalbodyparts):
+                                self.points = [self.Dataframe.xs((bp, 'x'), level=(-2, -1), axis=1).values[self.currFrame],
+                                               self.Dataframe.xs((bp, 'y'), level=(-2, -1), axis=1).values[self.currFrame],
+                                               1.0]
+                                self.circle = [patches.Circle((self.points[0], self.points[1]), radius=self.markerSize, fc = self.Colorscheme(ci) , alpha=self.alpha)]
+                                self.axes.add_patch(self.circle[0])
+                        else:
+                            for c, bp in enumerate(self.multianimalbodyparts):
+                                self.points = [self.Dataframe.xs((bp, 'x'), level=(-2, -1), axis=1).values[self.currFrame],
+                                               self.Dataframe.xs((bp, 'y'), level=(-2, -1), axis=1).values[self.currFrame],
+                                               1.0]
+                                self.circle = [patches.Circle((self.points[0], self.points[1]), radius=self.markerSize, fc = self.Colorscheme(col_idx) , alpha=self.alpha)]
+                                self.axes.add_patch(self.circle[0])
+                                col_idx = col_idx + 1
+                self.figure.canvas.draw()
+            else:
+                self.norm,self.colorIndex = self.image_panel.getColorIndices(frame,self.bodyparts)
+                cbar = self.figure.colorbar(self.ax, cax=cax,spacing='proportional', ticks=self.colorIndex)
+                cbar.set_ticklabels(self.bodyparts)
+                for bpindex, bp in enumerate(self.bodyparts):
+                    color = self.colormap(self.norm(self.colorIndex[bpindex]))
+                    self.points = [self.Dataframe.xs((bp, 'x'), level=(-2, -1), axis=1).values[self.currFrame],
+                                   self.Dataframe.xs((bp, 'y'), level=(-2, -1), axis=1).values[self.currFrame],
+                                   1.0]
+                    circle = [patches.Circle((self.points[0], self.points[1]), radius=self.markerSize,
+                                             fc=color, alpha=self.alpha)]
+                    self.axes.add_patch(circle[0])
+                self.figure.canvas.draw()
+        else:
+            print("Invalid frame")
+
     def helpButton(self,event):
         """
         Opens Instructions
         """
-        wx.MessageBox("1. Use the checkbox 'Crop?' at the bottom left if you need to crop the frame. In this case use the left mouse button to draw a box corresponding to the region of interest. Click the 'Set cropping parameters' button to add the video with the chosen crop parameters to the config file.\n\n2. Use the slider to select a frame in the entire video. \n\n3. Click Grab Frames button to save the specific frame.\n\n4. In events where you need to extract a range frames, then use the checkbox 'Range of frames' to select the starting frame index and the number of frames to extract. \n Click the update button to see the frame. Click Grab Frames to select the range of frames. \n Click OK to continue", 'Instructions to use!', wx.OK | wx.ICON_INFORMATION)
+        wx.MessageBox("1. Use the slider to select a frame in the entire video. \n\n2. Click Grab Frames button to save the specific frame.\
+        \n\n3. In the events where you need to extract a range of frames, then use the checkbox 'Range of frames' to select the starting frame index and the number of frames to extract.\
+        \n Click the update button to see the frame. Click Grab Frames to select the range of frames. \n\n Click OK to continue", 'Instructions to use!', wx.OK | wx.ICON_INFORMATION)
 
-def show(config,video,shuffle,Dataframe,savelabeled):
+
+def show(config,video,shuffle,Dataframe,savelabeled,multianimal):
     app = wx.App()
-    frame = MainFrame(None,config,video,shuffle,Dataframe,savelabeled).Show()
+    frame = MainFrame(None,config,video,shuffle,Dataframe,savelabeled,multianimal).Show()
     app.MainLoop()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('config','video','shuffle','Dataframe','savelabeled')
+    parser.add_argument('config','video','shuffle','Dataframe','savelabeled','multianimal')
     cli_args = parser.parse_args()
