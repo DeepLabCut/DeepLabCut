@@ -38,7 +38,8 @@ saveiters=5000
 displayiters=500
 
 print("Creating multianimal training set...")
-deeplabcut.train_network(path_config_file, shuffle=shuffle,trainingsetindex=trainingsetindex,saveiters=saveiters,displayiters=displayiters)
+deeplabcut.train_network(path_config_file, shuffle=shuffle,trainingsetindex=trainingsetindex,
+    saveiters=saveiters,displayiters=displayiters,max_snapshots_to_keep=21)
 
 ################## Analyze video
 nmspath = 'deeplabcut/pose_estimation_tensorflow/lib/nms_cython'

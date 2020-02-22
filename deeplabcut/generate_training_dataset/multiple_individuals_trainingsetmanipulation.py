@@ -264,7 +264,7 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
                     "dataset_type": dataset_type,
                     "optimzer": "adam",
                     "batch_size": 16,
-                    "multi_step": [[1e-4, 7500], [5*1e-5, 12000], [1e-5, 50000]],
+                    "multi_step": [[1e-4, 7500], [5*1e-5, 12000], [1e-5, 200000]],
                     "save_iters": 10000,
                     "display_iters": 500
                 }
