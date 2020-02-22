@@ -275,7 +275,7 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
                     "dataset", "num_joints", "all_joints", "all_joints_names",
                     "net_type", 'init_weights', 'global_scale', 'location_refinement',
                     'locref_stdev', 'dataset_type',
-                    'partaffinityfield_predict', 'pairwise_predict',
+                    'partaffinityfield_predict', 'pairwise_predict','partaffinityfield_graph',
                     'num_limbs', 'dataset_type'
                 ]
 
