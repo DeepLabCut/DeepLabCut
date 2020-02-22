@@ -39,6 +39,10 @@ def setup_pose_prediction(cfg):
     if cfg.location_refinement:
         outputs.append(net_heads['locref'])
 
+    if ('multi-animal' in cfg.dataset_type) and cfg.partaffinityfield_predict:
+        print("Activating extracting of PAFs")
+        outputs.append(net_heads['pairwise_pred'])
+
     restorer = TF.train.Saver()
     sess = TF.Session()
     sess.run(TF.global_variables_initializer())
