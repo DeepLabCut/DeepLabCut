@@ -75,6 +75,16 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
     Shuffles: list of shuffles.
         Alternatively the user can also give a list of shuffles (integers!).
 
+    windows2linux: bool.
+        The annotation files contain path formated according to your operating system. If you label on windows
+        but train & evaluate on a unix system (e.g. ubunt, colab, Mac) set this variable to True to convert the paths.
+
+    net_type: string
+        Type of networks. Currently resnet_50, resnet_101, and resnet_152 are supported (not the MobileNets!)
+
+    numdigits: int, optional
+
+
     Example
     --------
     >>> deeplabcut.create_multianimaltraining_dataset('/analysis/project/reaching-task/config.yaml',num_shuffles=1)

@@ -47,8 +47,7 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
     """
     from datetime import datetime as dt
     from deeplabcut.utils import auxiliaryfunctions
-    from deeplabcut.create_project.project_templates import create_config_template_3d
-    
+
     date = dt.today()
     month = date.strftime("%B")
     day = date.day
@@ -76,7 +75,7 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
         print('Created "{}"'.format(p))
 
     # Create config file
-    cfg_file_3d,ruamelFile_3d = create_config_template_3d()
+    cfg_file_3d,ruamelFile_3d = auxiliaryfunctions.create_config_template_3d()
     cfg_file_3d['Task']=project
     cfg_file_3d['scorer']=experimenter
     cfg_file_3d['date']=d
