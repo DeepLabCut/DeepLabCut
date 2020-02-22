@@ -53,8 +53,7 @@ def create_new_project(project, experimenter, videos,
 
     """
     from datetime import datetime as dt
-    from deeplabcut.utils import auxiliaryfunctions
-    from deeplabcut.create_project.project_templates import create_config_template
+    from deeplabcut.utils import auxiliaryfunctions, auxiliaryfunctions_maDLC
 
     date = dt.today()
     month = date.strftime("%B")
@@ -149,49 +148,80 @@ def create_new_project(project, experimenter, videos,
            video_sets=None
 
     #Set values to config file:
-    cfg_file,ruamelFile = create_config_template(multianimal)
-    cfg_file
-    cfg_file['Task']=project
-    cfg_file['scorer']=experimenter
-    cfg_file['video_sets']=video_sets
-    cfg_file['project_path']=str(project_path)
-    cfg_file['date']=d
-    cfg_file['bodyparts']=['bodypart1','bodypart2','bodypart3','objectA']
-    cfg_file['cropping']=False
-    cfg_file['start']=0
-    cfg_file['stop']=1
-    cfg_file['numframes2pick']=20
-    cfg_file['TrainingFraction']=[0.95]
-    cfg_file['iteration']=0
-    cfg_file['default_net_type']='resnet_50'
-    cfg_file['default_augmenter']='default'
-    cfg_file['snapshotindex']=-1
-    cfg_file['x1']=0
-    cfg_file['x2']=640
-    cfg_file['y1']=277
-    cfg_file['y2']=624
-    cfg_file['batch_size']=8 #batch size during inference (video - analysis); see https://www.biorxiv.org/content/early/2018/10/30/457242
-    cfg_file['corner2move2']=(50,50)
-    cfg_file['move2corner']=True
-
-    cfg_file['skeleton']=[['bodypart1','bodypart2'],['objectA','bodypart3']]
-    cfg_file['skeleton_color']='black'
-    cfg_file['pcutoff']=0.1
-    cfg_file['dotsize']=12 #for plots size of dots
-    cfg_file['alphavalue']=0.7 #for plots transparency of markers
-    cfg_file['colormap']='jet' #for plots type of colormap
-
-    if multianimal:
+    if multianimal==True:
+        cfg_file,ruamelFile = auxiliaryfunctions_maDLC.create_config_template_maDLC()
         cfg_file['multianimalproject']=multianimal
-        cfg_file['individuals']=['individual1','individual2']
+        cfg_file['individuals']=['individual1','individual2','individual3']
         cfg_file['multianimalbodyparts']=['bodypart1','bodypart2','bodypart3']
         cfg_file['uniquebodyparts']=['cornerofbox']
         cfg_file['bodyparts']='MULTI!'
         cfg_file['skeleton']=[['bodypart1','bodypart2'],['bodypart2','bodypart3']]
+        cfg_file['Task']=project
+        cfg_file['scorer']=experimenter
+        cfg_file['video_sets']=video_sets
+        cfg_file['project_path']=str(project_path)
+        cfg_file['date']=d
+        cfg_file['cropping']=False
+        cfg_file['start']=0
+        cfg_file['stop']=1
+        cfg_file['numframes2pick']=20
+        cfg_file['TrainingFraction']=[0.95]
+        cfg_file['iteration']=0
+        cfg_file['default_net_type']='resnet_50'
+        cfg_file['default_augmenter']='default'
+        cfg_file['snapshotindex']=-1
+        cfg_file['x1']=0
+        cfg_file['x2']=640
+        cfg_file['y1']=277
+        cfg_file['y2']=624
+        cfg_file['batch_size']=8 #batch size during inference (video - analysis); see https://www.biorxiv.org/content/early/2018/10/30/457242
+        cfg_file['corner2move2']=(50,50)
+        cfg_file['move2corner']=True
+        cfg_file['skeleton_color']='black'
+        cfg_file['pcutoff']=0.6
+        cfg_file['dotsize']=12 #for plots size of dots
+        cfg_file['alphavalue']=0.7 #for plots transparency of markers
+        cfg_file['colormap']='jet' #for plots type of colormap
 
-    projconfigfile=os.path.join(str(project_path),'config.yaml')
-    # Write dictionary to yaml  config file
-    auxiliaryfunctions.write_config(projconfigfile,cfg_file)
+        projconfigfile=os.path.join(str(project_path),'config.yaml')
+        # Write dictionary to yaml  config file
+        auxiliaryfunctions.write_config_maDLC(projconfigfile,cfg_file)
+
+    else:
+        cfg_file,ruamelFile = auxiliaryfunctions.create_config_template()
+        cfg_file['multianimalproject']=False
+        cfg_file['bodyparts']=['bodypart1','bodypart2','bodypart3','objectA']
+        cfg_file['skeleton']=[['bodypart1','bodypart2'],['objectA','bodypart3']]
+        cfg_file['Task']=project
+        cfg_file['scorer']=experimenter
+        cfg_file['video_sets']=video_sets
+        cfg_file['project_path']=str(project_path)
+        cfg_file['date']=d
+        cfg_file['cropping']=False
+        cfg_file['start']=0
+        cfg_file['stop']=1
+        cfg_file['numframes2pick']=20
+        cfg_file['TrainingFraction']=[0.95]
+        cfg_file['iteration']=0
+        cfg_file['default_net_type']='resnet_50'
+        cfg_file['default_augmenter']='default'
+        cfg_file['snapshotindex']=-1
+        cfg_file['x1']=0
+        cfg_file['x2']=640
+        cfg_file['y1']=277
+        cfg_file['y2']=624
+        cfg_file['batch_size']=8 #batch size during inference (video - analysis); see https://www.biorxiv.org/content/early/2018/10/30/457242
+        cfg_file['corner2move2']=(50,50)
+        cfg_file['move2corner']=True
+        cfg_file['skeleton_color']='black'
+        cfg_file['pcutoff']=0.6
+        cfg_file['dotsize']=12 #for plots size of dots
+        cfg_file['alphavalue']=0.7 #for plots transparency of markers
+        cfg_file['colormap']='jet' #for plots type of colormap
+
+        projconfigfile=os.path.join(str(project_path),'config.yaml')
+        # Write dictionary to yaml  config file
+        auxiliaryfunctions.write_config(projconfigfile,cfg_file)
 
     print('Generated "{}"'.format(project_path / 'config.yaml'))
     print("\nA new project with name %s is created at %s and a configurable file (config.yaml) is stored there. Change the parameters in this file to adapt to your project's needs.\n Once you have changed the configuration file, use the function 'extract_frames' to select frames for labeling.\n. [OPTIONAL] Use the function 'add_new_videos' to add new videos to your project (at any stage)." %(project_name,str(wd)))
