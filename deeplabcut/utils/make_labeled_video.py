@@ -209,7 +209,7 @@ def CreateVideoSlow(videooutname,clip,Dataframe, dotsize,colormap,alphavalue,pcu
                             color = colors(bpindex)
                         else:
                             color = colors(ind)
-                        if df_likelihood[bpindex + ind, index] > pcutoff:
+                        if df_likelihood[j, index] > pcutoff:
                             if trailpoints > 0:
                                 ax.scatter(df_x[j][max(0, index - trailpoints):index],
                                            df_y[j][max(0, index - trailpoints):index],

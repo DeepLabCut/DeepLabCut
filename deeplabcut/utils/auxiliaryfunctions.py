@@ -304,12 +304,12 @@ def IntersectionofBodyPartsandOnesGivenbyUser(cfg,comparisonbodyparts):
         return cpbpts
 
 
-def form_data_containers(Dataframe, bodyparts2plot):
-    mask = Dataframe.columns.get_level_values('bodyparts').isin(bodyparts2plot)
-    df = Dataframe.loc[:, mask]
-    df_likelihood = df.xs('likelihood', level=-1, axis=1).values.T
-    df_x = df.xs('x', level=-1, axis=1).values.T
-    df_y = df.xs('y', level=-1, axis=1).values.T
+def form_data_containers(df, bodyparts):
+    mask = df.columns.get_level_values('bodyparts').isin(bodyparts)
+    df_masked = df.loc[:, mask]
+    df_likelihood = df_masked.xs('likelihood', level=-1, axis=1).values.T
+    df_x = df_masked.xs('x', level=-1, axis=1).values.T
+    df_y = df_masked.xs('y', level=-1, axis=1).values.T
     return df_x, df_y, df_likelihood
 
 '''
