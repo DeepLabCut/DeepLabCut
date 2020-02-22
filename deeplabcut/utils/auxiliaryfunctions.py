@@ -13,55 +13,107 @@ from pathlib import Path
 import numpy as np
 import ruamel.yaml
 
-
-def create_config_template():
+def create_config_template(multianimal=False):
     """
     Creates a template for config.yaml file. This specific order is preserved while saving as yaml file.
     """
     import ruamel.yaml
-    yaml_str = """\
-# Project definitions (do not edit)
-    Task:
-    scorer:
-    date:
-    \n
-# Project path (change when moving around)
-    project_path:
-    \n
-# Annotation data set configuration (and individual video cropping parameters)
-    video_sets:
-    bodyparts:
-    start:
-    stop:
-    numframes2pick:
-    \n
-# Plotting configuration
-    skeleton:
-    skeleton_color:
-    pcutoff:
-    dotsize:
-    alphavalue:
-    colormap:
-    \n
-# Training,Evaluation and Analysis configuration
-    TrainingFraction:
-    iteration:
-    resnet:
-    snapshotindex:
-    batch_size:
-    \n
-# Cropping Parameters (for analysis and outlier frame detection)
-    cropping:
-#if cropping is true for analysis, then set the values here:
-    x1:
-    x2:
-    y1:
-    y2:
-    \n
-# Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
-    corner2move2:
-    move2corner:
-    """
+    if multianimal:
+        yaml_str = """\
+    # Project definitions (do not edit)
+        Task:
+        scorer:
+        date:
+        multianimalproject:
+        \n
+    # Project path (change when moving around)
+        project_path:
+        \n
+    # Annotation data set configuration (and individual video cropping parameters)
+        video_sets:
+        individuals:
+        uniquebodyparts:
+        multianimalbodyparts:
+        skeleton:
+        bodyparts:
+        start:
+        stop:
+        numframes2pick:
+        \n
+    # Plotting configuration
+        skeleton_color:
+        pcutoff:
+        dotsize:
+        alphavalue:
+        colormap:
+        \n
+    # Training,Evaluation and Analysis configuration
+        TrainingFraction:
+        iteration:
+        default_net_type:
+        default_augmenter:
+        snapshotindex:
+        batch_size:
+        \n
+    # Cropping Parameters (for analysis and outlier frame detection)
+        cropping:
+    #if cropping is true for analysis, then set the values here:
+        x1:
+        x2:
+        y1:
+        y2:
+        \n
+    # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
+        corner2move2:
+        move2corner:
+        """
+    else:
+        yaml_str = """\
+    # Project definitions (do not edit)
+        Task:
+        scorer:
+        date:
+        multianimalproject:
+        \n
+    # Project path (change when moving around)
+        project_path:
+        \n
+    # Annotation data set configuration (and individual video cropping parameters)
+        video_sets:
+        bodyparts:
+        start:
+        stop:
+        numframes2pick:
+        \n
+    # Plotting configuration
+        skeleton:
+        skeleton_color:
+        pcutoff:
+        dotsize:
+        alphavalue:
+        colormap:
+        \n
+    # Training,Evaluation and Analysis configuration
+        TrainingFraction:
+        iteration:
+        default_net_type:
+        default_augmenter:
+        snapshotindex:
+        batch_size:
+        \n
+    # Cropping Parameters (for analysis and outlier frame detection)
+        cropping:
+    #if cropping is true for analysis, then set the values here:
+        x1:
+        x2:
+        y1:
+        y2:
+        \n
+    # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
+        corner2move2:
+        move2corner:
+        """
+
     ruamelFile = ruamel.yaml.YAML()
     cfg_file = ruamelFile.load(yaml_str)
     return(cfg_file,ruamelFile)
@@ -129,7 +181,7 @@ def write_config(configname,cfg):
     """
     with open(configname, 'w') as cf:
         ruamelFile = ruamel.yaml.YAML()
-        cfg_file,ruamelFile = create_config_template()
+        cfg_file,ruamelFile = create_config_template(cfg.get('multianimalproject',False))
         for key in cfg.keys():
             cfg_file[key]=cfg[key]
 
@@ -314,13 +366,6 @@ def form_data_containers(Dataframe, bodyparts2plot):
     df_x = df.xs('x', level=-1, axis=1).values.T
     df_y = df.xs('y', level=-1, axis=1).values.T
     return df_x, df_y, df_likelihood
-
-'''
-mobilenet_v2_1.0:
-mobilenet_v2_0.75:
-mobilenet_v2_0.5:
-mobilenet_v2_0.35
-'''
 
 def GetScorerName(cfg,shuffle,trainFraction,trainingsiterations='unknown'):
     ''' Extract the scorer/network name for a particular shuffle, training fraction, etc. '''
