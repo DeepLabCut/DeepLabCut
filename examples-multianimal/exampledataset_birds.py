@@ -38,7 +38,7 @@ trainingsetindex=0
 saveiters=5000
 displayiters=500
 
-print("Creating multianimal training set...")
+print("Train...")
 #deeplabcut.train_network(path_config_file, shuffle=shuffle,trainingsetindex=trainingsetindex,
 #    saveiters=saveiters,displayiters=displayiters,max_snapshots_to_keep=21)
 

@@ -118,6 +118,7 @@ def GetPoseandCostsF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize):
     stride,halfstride=dlc_cfg.stride, dlc_cfg.stride*.5
     num_joints = dlc_cfg.num_joints
     det_min_score=dlc_cfg.minconfidence
+
     num_idchannel=dlc_cfg.get('num_idchannel', 0)
     while(cap.isOpened()):
             if counter%step==0:

@@ -13,14 +13,20 @@ def pose_net(cfg):
     if 'mobilenet' in net_type: #multi currently not supported
         print("Initializing MobileNet")
         if cfg.dataset_type=='multi-animal-imgaug':
-            raise Exception("MobileNets are currently not supported for multianimal DLC!")
+            raise Exception("MobileNets are currently not yet supported for multianimal DLC!")
+
         from deeplabcut.pose_estimation_tensorflow.nnet.pose_net_mobilenet import PoseNet
         cls = PoseNet
 
     elif 'resnet':
-        print("Initializing ResNet")
-        from deeplabcut.pose_estimation_tensorflow.nnet.pose_net import PoseNet
-        cls = PoseNet
+    	if cfg.get('stride', 8)<8: #this supports multianimal (with PAFs) or pairwise prediction
+    		print("Initialing PAFDLC with multiscale deconvolution!", cfg.get('stride', 8))
+    		from deeplabcut.pose_estimation_tensorflow.nnet.pose_netmulti import PoseNet
+    		cls = PoseNet
+    	else:
+    		print("Initializing ResNet")
+    		from deeplabcut.pose_estimation_tensorflow.nnet.pose_net import PoseNet
+    		cls = PoseNet
     else:
         raise Exception("Unsupported class of network: \"{}\"".format(net_type))
 
