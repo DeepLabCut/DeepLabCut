@@ -16,10 +16,10 @@ import os.path
 from deeplabcut.pose_estimation_tensorflow.nnet import predict_multianimal as predict
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import data_to_input
-import time
+
+import time, os
 import pandas as pd
 import numpy as np
-import os
 import argparse
 from pathlib import Path
 from tqdm import tqdm
@@ -27,7 +27,7 @@ import tensorflow as tf
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 import cv2
 from skimage.util import img_as_ubyte
-
+from easydict import EasyDict as edict
 
 def AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder=None):
     ''' Helper function for analyzing a video with multiple individuals'''
@@ -85,7 +85,6 @@ def AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,input
         print("Saving results in %s..." %(destfolder))
 
         #auxiliaryfunctions.SaveData(PredicteData[:nframes,:], metadata, dataname, pdindex, range(nframes),save_as_csv)
-        #TODO: check whether already analyze...
         auxfun_multianimal.SaveFullMultiAnimalData(PredicteData, metadata, dataname)
 
 def GetPoseandCostsF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize):
