@@ -19,11 +19,7 @@ if os.environ.get('DLClight', default=False) == 'True':
     mpl.use('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
     pass
 else:
-    mpl.use('TkAgg')
-
-import matplotlib.pyplot as plt
-import yaml
-from deeplabcut import DEBUG
+    mpl.use('wxagg')
 from deeplabcut.utils import auxiliaryfunctions, auxfun_models, auxfun_multianimal
 from deeplabcut.generate_training_dataset import trainingsetmanipulation
 
