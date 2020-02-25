@@ -142,7 +142,7 @@ def linkjoints2individuals(cfg,all_peaks,connection_all, special_k,partaffinityf
     candidate = np.array([item for sublist in all_peaks for item in sublist])
     for k in range(len(partaffinityfield_graph)):
         if k not in special_k:
-            part_as = connection_all[k][:, 0] #indices for source of limb!
+            part_as = connection_all[k][:, 0] #global? indices for source of limb!
             part_bs = connection_all[k][:, 1] #indices for target of limb (when all detections are enumerated)
             index_a, index_b =iBPTS[partaffinityfield_graph[k][0]],iBPTS[partaffinityfield_graph[k][1]] #convert in order of bpts!
             for i in range(len(connection_all[k])):  # looping over all connections for that limb
@@ -155,7 +155,7 @@ def linkjoints2individuals(cfg,all_peaks,connection_all, special_k,partaffinityf
 
                 if found == 1:
                     j = subset_idx[0]
-                    if subset[j][index_b] != part_bs[i]:
+                    if subset[j][index_b] != part_bs[i]: #WHAT ABOUT index_a??? >>>MAKE ELSE!!
                         subset[j][index_b] = part_bs[i]
                         subset[j][-1] += 1
                         subset[j][-2] += candidate[part_bs[i].astype(int), 2] + connection_all[k][i][2]
@@ -167,10 +167,11 @@ def linkjoints2individuals(cfg,all_peaks,connection_all, special_k,partaffinityf
                         subset[j1][-2:] += subset[j2][-2:]
                         subset[j1][-2] += connection_all[k][i][2]
                         subset = np.delete(subset, j2, 0)
-                    else:  # as like found == 1
+                    else:  # as like found == 1 IE >>> LINKS PART B!?!. This sounds like a bad idea for non trees!
                         subset[j1][index_b] = part_bs[i]
                         subset[j1][-1] += 1
                         subset[j1][-2] += candidate[part_bs[i].astype(int), 2] + connection_all[k][i][2]
+                        #WHAT ABOUT j2?
 
                 # if find no partA in the subset, create a new subset
                 elif not found and k < numjoints:
