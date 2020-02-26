@@ -1,4 +1,4 @@
-# dlc-windowsGPU.yaml 
+# DLC-GPU.yaml 
 
 #DeepLabCut2.0 Toolbox (deeplabcut.org)
 #© A. & M. Mathis Labs
@@ -24,7 +24,6 @@ dependencies:
   - wxpython
   - jupyter
   - nb_conda
-  - pytables==3.4.3
   - Shapely
   - pip:
     - deeplabcut
