@@ -5,8 +5,11 @@ import numpy as np
 import os
 import pandas as pd
 import pickle
-from matplotlib.widgets import Slider
+from matplotlib.path import Path
+from matplotlib.widgets import Slider, LassoSelector
 from ruamel.yaml import YAML
+
+# TODO Smart way to fill unidentified trajectories (e.g., when that could only be one ID)
 
 
 def read_config(configname):
@@ -19,6 +22,33 @@ def read_config(configname):
         return yaml.load(file)
 
 
+class PointSelector:
+    def __init__(self, ax, collection, alpha, alpha_other=0.3):
+        self.ax = ax
+        self.collection = collection
+        self.fc = collection.get_facecolors()
+        self.alpha = alpha
+        self.alpha_other = alpha_other
+        self.lasso = LassoSelector(ax, onselect=self.on_select)
+        self.inds = []
+
+    def on_select(self, verts):
+        path = Path(verts)
+        xy = self.collection.get_offsets()
+        self.inds = np.nonzero(path.contains_points(xy))[0]
+        self.fc[:, -1] = self.alpha_other
+        self.fc[self.inds, -1] = self.alpha
+        self.collection.set_color(self.fc)
+
+    def disconnect(self):
+        self.lasso.disconnect_events()
+        self.fc[:, -1] = self.alpha
+        self.collection.set_color(self.fc)
+
+    def reconnect(self):
+        self.lasso.connect_default_events()
+
+
 class IDTracker:
     def __init__(self, config):
         self.cfg = read_config(config)
@@ -29,8 +59,9 @@ class IDTracker:
         self.picked = 0
         self.picked_pair = []
         self.cuts = []
-        self.lag = 40
+        self.lag = 100
         self._swapping_pairs = None
+        self.currently_selecting = False
 
     def load_tracklets_from_pickle(self, filename):
         with open(filename, 'rb') as file:
@@ -61,7 +92,8 @@ class IDTracker:
     def _prepare_canvas(self, img):
         params = {'keymap.save': 's',
                   'keymap.back': 'left',
-                  'keymap.forward': 'right'}
+                  'keymap.forward': 'right',
+                  'keymap.yscale': 'l'}
         for k, v in params.items():
             if v in plt.rcParams[k]:
                 plt.rcParams[k].remove(v)
@@ -77,10 +109,12 @@ class IDTracker:
         colors = self.cmap(self.mapping)
         # Color in black the unidentified tracklets
         colors[len(self.cfg['individuals']) * self.nbodyparts:] = 0, 0, 0, 1
+        colors[:, -1] = self.cfg['alphavalue']
         self.im = self.ax1.imshow(img)
-        self.scat = self.ax1.scatter([], [], s=self.cfg['dotsize'] ** 2, alpha=self.cfg['alphavalue'], picker=True, zorder=2)
+        self.scat = self.ax1.scatter([], [], s=self.cfg['dotsize'] ** 2, picker=True)
         self.scat.set_offsets(self.xy[0])
         self.scat.set_color(colors)
+        self.selector = PointSelector(self.ax1, self.scat, self.cfg['alphavalue'])
         self.trails = sum([self.ax1.plot([], [], '-', lw=2, c=c) for c in colors], [])
         self.lines_x = sum([self.ax2.plot([], [], '-', lw=1, c=c, picker=5) for c in colors], [])
         self.lines_y = sum([self.ax3.plot([], [], '-', lw=1, c=c, picker=5) for c in colors], [])
@@ -89,7 +123,7 @@ class IDTracker:
         custom_lines = [plt.Line2D([0], [0], color=self.cmap(i), lw=4) for i in range(len(self.cfg['individuals']))]
         self.leg = self.fig.legend(custom_lines, self.cfg['individuals'], frameon=False, fancybox=None,
                                    ncol=len(self.cfg['individuals']), fontsize='small',
-                                   bbox_to_anchor=(0, 0.9, 1, 0.1), loc='center')  # , bbox_transform=fig.transFigure)
+                                   bbox_to_anchor=(0, 0.9, 1, 0.1), loc='center')
         for line in self.leg.get_lines():
             line.set_picker(5)
 
@@ -187,6 +221,10 @@ class IDTracker:
                 self.track_crossings[self.picked_pair][self.cuts] = ~self.track_crossings[self.picked_pair][self.cuts]
                 self.fill_shaded_areas()
                 self.cuts = []
+        elif event.key == 'enter':
+            self.selector.disconnect()
+        elif event.key == 'l':
+            self.selector.reconnect()
 
     def on_pick(self, event):
         artist = event.artist
