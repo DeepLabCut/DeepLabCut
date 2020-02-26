@@ -176,6 +176,11 @@ class IDTracker:
                 self.prob[sl, [self.picked_pair]] = self.prob[sl, [self.picked_pair[::-1]]]
                 self.display_traces()
                 self.slider.set_val(int(self.slider.val))
+        elif event.key == 'i':
+            self.xy[i, [self.picked_pair]] = self.xy[i, [self.picked_pair[::-1]]]
+            self.prob[i, [self.picked_pair]] = self.prob[i, [self.picked_pair[::-1]]]
+            self.display_traces()
+            self.slider.set_val(int(self.slider.val))
         elif event.key == 'x':
             self.cuts.append(i)
             if len(self.cuts) > 1:
