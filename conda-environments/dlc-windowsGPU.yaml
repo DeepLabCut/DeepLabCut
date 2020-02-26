@@ -13,11 +13,11 @@
 # 
 # Suggested by Jan Eglinger see https://github.com/AlexEMG/DeepLabCut/issues/112
 #
-# install: conda env create -f dlc-windowsGPU.yaml 
-# update:  conda env update -f dlc-windowsGPU.yaml 
-name: dlc-windowsGPU
+# install: conda env create -f DLC-GPU.yaml 
+# update:  conda env update -f DLC-GPU.yaml 
+name: DLC-GPU
 dependencies:
-  - python=3.6
+  - python=3.7
   - pip
   - tensorflow-gpu==1.13.1
   - cudnn=7
@@ -27,6 +27,4 @@ dependencies:
   - pytables==3.4.3
   - Shapely
   - pip:
-    - numpy==1.16.4
     - deeplabcut
-    - imgaug
