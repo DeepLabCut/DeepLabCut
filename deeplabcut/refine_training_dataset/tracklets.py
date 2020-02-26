@@ -23,30 +23,39 @@ def read_config(configname):
 
 
 class PointSelector:
-    def __init__(self, ax, collection, alpha, alpha_other=0.3):
+    def __init__(self, tracker, ax, collection, alpha, alpha_other=0.3):
+        self.tracker = tracker
         self.ax = ax
         self.collection = collection
         self.fc = collection.get_facecolors()
         self.alpha = alpha
         self.alpha_other = alpha_other
         self.lasso = LassoSelector(ax, onselect=self.on_select)
-        self.inds = []
+        self._is_connected = True
 
     def on_select(self, verts):
         path = Path(verts)
         xy = self.collection.get_offsets()
-        self.inds = np.nonzero(path.contains_points(xy))[0]
+        self.tracker.picked = np.nonzero(path.contains_points(xy))[0]
         self.fc[:, -1] = self.alpha_other
-        self.fc[self.inds, -1] = self.alpha
+        self.fc[self.tracker.picked, -1] = self.alpha
         self.collection.set_color(self.fc)
+
+    def toggle_callback(self):
+        if self._is_connected:
+            self.disconnect()
+        else:
+            self.reconnect()
 
     def disconnect(self):
         self.lasso.disconnect_events()
+        self._is_connected = False
         self.fc[:, -1] = self.alpha
         self.collection.set_color(self.fc)
 
     def reconnect(self):
         self.lasso.connect_default_events()
+        self._is_connected = True
 
 
 class IDTracker:
@@ -56,7 +65,7 @@ class IDTracker:
         self.xy = None
         self.prob = None
         self.nframes = 0
-        self.picked = 0
+        self.picked = []
         self.picked_pair = []
         self.cuts = []
         self.lag = 100
@@ -78,16 +87,17 @@ class IDTracker:
         self.times = np.arange(self.nframes)
         # TODO Perhaps improve data storage as num_indiv, num_bodypart, nframes, 3
         all_data = np.full((self.nframes, len(num_tracks), self.nbodyparts * 3), np.nan)
-        for num in num_tracks:
+        for i, num in enumerate(num_tracks):
             for k, v in tracks[num].items():
-                all_data[all_frames.index(k), num_tracks.index(num)] = v
+                all_data[all_frames.index(k), i] = v
         data = all_data.reshape(self.nframes, -1, 3)
         self._xy = data[:, :, :2]
         self.xy = self._xy.copy()
         self.prob = data[:, :, 2]
         self.mapping = [i for i in range(len(num_tracks)) for _ in range(self.nbodyparts)]  # Map a bodypart # to the animal ID it belongs to
-        self.unidentified_tracks = list(range(len(individuals) * self.nbodyparts, len(num_tracks) * self.nbodyparts))
+        self.unidentified_tracks = set(range(len(individuals) * self.nbodyparts, len(num_tracks) * self.nbodyparts))
         self.cmap = plt.cm.get_cmap(self.cfg['colormap'], len(individuals))
+        self.find_swapping_bodypart_pairs()
 
     def _prepare_canvas(self, img):
         params = {'keymap.save': 's',
@@ -114,7 +124,7 @@ class IDTracker:
         self.scat = self.ax1.scatter([], [], s=self.cfg['dotsize'] ** 2, picker=True)
         self.scat.set_offsets(self.xy[0])
         self.scat.set_color(colors)
-        self.selector = PointSelector(self.ax1, self.scat, self.cfg['alphavalue'])
+        self.selector = PointSelector(self, self.ax1, self.scat, self.cfg['alphavalue'])
         self.trails = sum([self.ax1.plot([], [], '-', lw=2, c=c) for c in colors], [])
         self.lines_x = sum([self.ax2.plot([], [], '-', lw=1, c=c, picker=5) for c in colors], [])
         self.lines_y = sum([self.ax3.plot([], [], '-', lw=1, c=c, picker=5) for c in colors], [])
@@ -161,6 +171,7 @@ class IDTracker:
                 if self.mapping[a] != self.mapping[b]:
                     pairs.append((a, b))
             self._swapping_pairs = pairs
+            self._swapping_bodyparts = np.unique(pairs)
         return self._swapping_pairs
 
     def attach_tracklet_to_id(self, picked, id):
@@ -221,46 +232,48 @@ class IDTracker:
                 self.track_crossings[self.picked_pair][self.cuts] = ~self.track_crossings[self.picked_pair][self.cuts]
                 self.fill_shaded_areas()
                 self.cuts = []
-        elif event.key == 'enter':
-            self.selector.disconnect()
         elif event.key == 'l':
-            self.selector.reconnect()
+            self.selector.toggle_callback()
 
     def on_pick(self, event):
         artist = event.artist
         if artist.axes == self.ax1:
-            self.picked = event.ind[0]
+            self.picked = event.ind
         elif artist.axes == self.ax2:
             if isinstance(artist, plt.Line2D):
-                self.picked = self.lines_x.index(artist)
+                self.picked = [self.lines_x.index(artist)]
         elif artist.axes == self.ax3:
             if isinstance(artist, plt.Line2D):
-                self.picked = self.lines_y.index(artist)
+                self.picked = [self.lines_y.index(artist)]
         else:  # Click on the legend lines
-            if self.picked in self.unidentified_tracks:  # Avoid accidental reassignment of already identified tracklets
+            # Avoid accidental reassignment of already identified tracklets
+            valid_picks = [ind for ind in self.picked if ind in self.unidentified_tracks]
+            if valid_picks:
                 num_individual = self.leg.get_lines().index(artist)
-                num_bodypart = self.picked % self.nbodyparts
-                xy = self.xy[:, self.picked]
-                p = self.prob[:, self.picked]
-                mask = ~np.isnan(xy).any(axis=1)
-                ind = num_individual * self.nbodyparts + num_bodypart
-                # Ensure that we do not overwrite an identified tracklet
-                if not np.all(np.isnan(self.xy[mask, ind])):
+                nrow = num_individual * self.nbodyparts
+                inds = [nrow + pick % self.nbodyparts for pick in valid_picks]
+                xy = self.xy[:, valid_picks]
+                p = self.prob[:, valid_picks]
+                mask = ~np.isnan(xy).any(axis=(1, 2))
+                sl = np.ix_(mask, inds)
+                # Ensure that we do not overwrite identified tracklets
+                if not np.all(np.isnan(self.xy[sl])):
                     return
-                self.xy[mask, ind] = xy[mask]
-                self.prob[mask, ind] = p[mask]
-                self.unidentified_tracks.remove(self.picked)
-                self.xy[:, self.picked] = np.nan
+                self.xy[sl] = xy[mask]
+                self.prob[sl] = p[mask]
+                for pick in valid_picks:
+                    self.unidentified_tracks.remove(pick)
+                self.xy[:, valid_picks] = np.nan
                 self.display_traces()
         self.picked_pair = []
-        for pair in self.find_swapping_bodypart_pairs():
-            if self.picked in pair:
-                self.picked_pair = pair
-                break
-        self.fill_shaded_areas()
+        if len(self.picked) == 1:
+            for pair in self.find_swapping_bodypart_pairs():
+                if self.picked[0] in pair:
+                    self.picked_pair = pair
+                    break
+        if self.picked_pair:
+            self.fill_shaded_areas()
         self.update_traces()
-        for trail in self.trails:
-            trail.set_data([], [])
         self.slider.set_val(int(self.slider.val))
 
     def on_click(self, event):
@@ -274,13 +287,16 @@ class IDTracker:
         self.scat.set_offsets(self.xy[val])
 
     def display_trails(self, val):
-        x = self.xy[max(0, val - self.lag):val + self.lag, self.picked, 0].T
-        y = self.xy[max(0, val - self.lag):val + self.lag, self.picked, 1].T
-        self.trails[self.picked].set_data(x, y)
+        for n, trail in enumerate(self.trails):
+            if n in self.picked:
+                xy = self.xy[max(0, val - self.lag):val + self.lag, n]
+                trail.set_data(*xy.T)
+            else:
+                trail.set_data([], [])
 
     def display_traces(self):
         for n, (line_x, line_y) in enumerate(zip(self.lines_x, self.lines_y)):
-            if n in np.unique(self.find_swapping_bodypart_pairs()) or n in self.unidentified_tracks:
+            if n in self._swapping_bodyparts or n in self.unidentified_tracks:
                 line_x.set_data(self.times, self.xy[:, n, 0])
                 line_y.set_data(self.times, self.xy[:, n, 1])
             else:
@@ -292,7 +308,7 @@ class IDTracker:
 
     def update_traces(self):
         for n, (line_x, line_y) in enumerate(zip(self.lines_x, self.lines_y)):
-            if n in self.picked_pair or n == self.picked:
+            if n in self.picked_pair or n in self.picked:
                 line_x.set_lw(3)
                 line_y.set_lw(3)
                 line_x.set_alpha(1)
@@ -328,3 +344,8 @@ class IDTracker:
         data = data[:, :len(self.cfg['individuals']) * self.nbodyparts]
         df = pd.DataFrame(data.reshape(self.nframes, -1), columns=columns, index=self.times)
         df.to_hdf(output_name, 'df_with_missing', format='table', mode='w')
+
+
+tracker = IDTracker('/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/silversideschooling-Valentina-2019-07-14/config.yaml')
+tracker.load_tracklets_from_pickle('/Users/Jessy/Downloads/deeplc.menidia.school4.59rpm.S11.D.shortDLC_resnet50_silversideschoolingJul14shuffle0_30000tracks.pickle')
+tracker.visualize('/Users/Jessy/Downloads/deeplc.menidia.school4.59rpm.S11.D.short.avi')
