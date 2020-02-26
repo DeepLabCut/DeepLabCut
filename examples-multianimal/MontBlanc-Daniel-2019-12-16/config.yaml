@@ -4,7 +4,7 @@ scorer: Daniel
 date: Dec16
 
     # Project path (change when moving around)
-project_path: /home/alex/Hacking/DLCreleases/DLCdev/examples-multianimal/MontBlanc-Daniel-2019-12-16
+project_path: /media/alex/dropboxdisk/Dropbox/Collaborations/Cancer/DLCdev/examples-multianimal/MontBlanc-Daniel-2019-12-16
 
     # Annotation data set configuration (and individual video cropping parameters)
 video_sets:
@@ -32,8 +32,7 @@ skeleton:
   - tail
 - - rightwing
   - tail
-- - tail
-  - clown
+
 skeleton_color: black
 pcutoff: 0.1
 dotsize: 12

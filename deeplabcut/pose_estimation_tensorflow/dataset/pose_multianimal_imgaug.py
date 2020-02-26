@@ -142,9 +142,9 @@ class MAPoseDataset:
                 batch_joints.append(arr(joint_points))
 
             batch_images.append(image)
-        #sm_size = np.ceil(target_size / (stride * 2)).astype(int) * 2
+
         sm_size = np.ceil(target_size / (stride * self.cfg.get('smfactor', 2))).astype(int) * self.cfg.get('smfactor', 2)
-        assert len(batch_images) == self.batch_size
+        #assert len(batch_images) == self.batch_size
         return batch_images, joint_ids, batch_joints, data_items, sm_size, target_size
 
     def get_targetmaps_update(self, joint_ids, joints, data_items, sm_size, target_size):

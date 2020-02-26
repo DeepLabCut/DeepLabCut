@@ -44,10 +44,10 @@ else:
     from deeplabcut.post_processing import filterpredictions, analyzeskeleton
 
 
-# Train, evaluate & predict functions / require TF
+# Train, evaluate & predict functions / all require TF
 from deeplabcut.pose_estimation_tensorflow import train_network, return_train_network_path
 from deeplabcut.pose_estimation_tensorflow import evaluate_network, return_evaluate_network_data
-from deeplabcut.pose_estimation_tensorflow import analyze_videos, analyze_time_lapse_frames
+from deeplabcut.pose_estimation_tensorflow import analyze_videos, analyze_time_lapse_frames, convert_detections2tracklets
 
 from deeplabcut.pose_estimation_3d import calibrate_cameras,check_undistortion,triangulate,create_labeled_video_3d
 

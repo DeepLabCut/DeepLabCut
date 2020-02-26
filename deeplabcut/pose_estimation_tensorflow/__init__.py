@@ -18,6 +18,7 @@ from deeplabcut.pose_estimation_tensorflow.config import *
 from deeplabcut.pose_estimation_tensorflow.default_config import *
 from deeplabcut.pose_estimation_tensorflow.evaluate import *
 from deeplabcut.pose_estimation_tensorflow.predict_videos import *
+#from deeplabcut.pose_estimation_tensorflow.predict_multianimal import convert_detections2tracklet
 from deeplabcut.pose_estimation_tensorflow.test import *
 from deeplabcut.pose_estimation_tensorflow.train import *
 from deeplabcut.pose_estimation_tensorflow.training import *

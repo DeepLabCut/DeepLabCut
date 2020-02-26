@@ -71,6 +71,16 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
     Shuffles: list of shuffles.
         Alternatively the user can also give a list of shuffles (integers!).
 
+    windows2linux: bool.
+        The annotation files contain path formated according to your operating system. If you label on windows
+        but train & evaluate on a unix system (e.g. ubunt, colab, Mac) set this variable to True to convert the paths.
+
+    net_type: string
+        Type of networks. Currently resnet_50, resnet_101, and resnet_152 are supported (not the MobileNets!)
+
+    numdigits: int, optional
+
+
     Example
     --------
     >>> deeplabcut.create_multianimaltraining_dataset('/analysis/project/reaching-task/config.yaml',num_shuffles=1)
@@ -248,9 +258,11 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
                     "weigh_only_present_joints": False,
                     "num_limbs": len(partaffinityfield_graph),
                     "dataset_type": dataset_type,
-                    "optimzer": "adam",
+                    'optimizer': "adam",
                     "batch_size": 16,
-                    "multi_step": [[1e-4, 7500], [5*1e-5, 12000], [1e-5, 50000]]
+                    "multi_step": [[1e-4, 7500], [5*1e-5, 12000], [1e-5, 200000]],
+                    "save_iters": 10000,
+                    "display_iters": 500
                 }
                 defaultconfigfile = str(Path(deeplabcut.__file__).parents[0] / 'pose_cfg.yaml')
 
@@ -259,7 +271,7 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
                     "dataset", "num_joints", "all_joints", "all_joints_names",
                     "net_type", 'init_weights', 'global_scale', 'location_refinement',
                     'locref_stdev', 'dataset_type',
-                    'partaffinityfield_predict', 'pairwise_predict',
+                    'partaffinityfield_predict', 'pairwise_predict','partaffinityfield_graph',
                     'num_limbs', 'dataset_type'
                 ]
 

@@ -1,21 +1,12 @@
-import os, sys
+import sys, os
 os.environ['DLClight']='True'
+
 import deeplabcut
 
-task='MontBlanc'
-scorer='Daniel'
+path_config_file='/media/alex/dropboxdisk/Dropbox/InterestingCode/social_datasets/croppedNov18/MultiMouse-Daniel-2019-12-16/config.yaml'
+videopath='/media/alex/dropboxdisk/Dropbox/InterestingCode/social_datasets/croppedNov18/MultiMouse-Daniel-2019-12-16/videos'
+shuffle=1
 
-video=['/home/alex/Dropbox/InterestingCode/social_datasets/croppedNov18/montblanc.mov']
-
-#print("CREATING PROJECT")
-#path_config_file=deeplabcut.create_new_project(task,scorer,video,copy_videos=True,multianimal=True)
-
-#project already created!
-
-#path_config_file='/home/alex/Hacking/DLCreleases/DLCdev/examples-multianimal/MontBlanc-Daniel-2019-12-16/config.yaml'
-
-path_config_file='/media/alex/dropboxdisk/Dropbox/Collaborations/Cancer/DLCdev/examples-multianimal/MontBlanc-Daniel-2019-12-16/config.yaml'
-videopath='/media/alex/dropboxdisk/Dropbox/Collaborations/Cancer/DLCdev/examples-multianimal/MontBlanc-Daniel-2019-12-16/videos'
 '''
 print("Plot labels...")
 #deeplabcut.check_labels(path_config_file)
@@ -25,16 +16,16 @@ print("Plot labels...")
 print("Crop images...")
 #deeplabcut.cropimagesandlabels(path_config_file,userfeedback=False)
 #then we uncommented the large-scale full frame data > it is not used for training!
-
-
-#cfg=deeplabcut.utils.auxiliaryfunctions.read_config(path_config_file)
-#deeplabcut.utils.auxfun_multianimal.getpafgraph(cfg)
-
-shuffle=0
+shuffle=2
 trainingsetindex=0
 
 print("Creating multianimal training set...")
 deeplabcut.create_multianimaltraining_dataset(path_config_file,Shuffles=[shuffle])
+
+#cfg=deeplabcut.utils.auxiliaryfunctions.read_config(path_config_file)
+#deeplabcut.utils.auxfun_multianimal.getpafgraph(cfg)
+
+
 
 saveiters=5000
 displayiters=500
@@ -57,9 +48,7 @@ cfg_dlc['minconfidence']=.01
 deeplabcut.auxiliaryfunctions.write_plainconfig(testposeconfigfile,cfg_dlc)
 
 print("Starting inference for", shuffle)
-deeplabcut.analyze_videos(path_config_file,[videopath],shuffle=shuffle,videotype='.mov')
+deeplabcut.analyze_videos(path_config_file,[videopath],shuffle=shuffle,videotype='.avi')
 '''
 
-deeplabcut.convert_detections2tracklets(path_config_file,[videopath],videotype='.mov')
-
-deeplabcut.create_labeled_video(path_config_file,[videopath],videotype='.mov')
+deeplabcut.convert_detections2tracklets(path_config_file,[videopath],videotype='.mp4')
