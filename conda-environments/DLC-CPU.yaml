@@ -22,7 +22,6 @@ dependencies:
   - nb_conda
   - tensorflow==1.14
   - wxpython
-  - pytables==3.4.3
   - Shapely
   - pip:
     - deeplabcut
