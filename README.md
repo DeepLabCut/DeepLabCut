@@ -74,7 +74,9 @@ This is an actively developed package and we welcome community development and i
 
 - For quick discussions here: [![Gitter](https://badges.gitter.im/DeepLabCut/community.svg)](https://gitter.im/DeepLabCut/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-- If you want to contribute to the code, please make a pull request that includes how you modified the code and what new functionality it has, the OS it has been tested on, and the **output of the [testscript.py](examples/testscript.py)**. Please see more [here](docs/contribute.md).
+- If you want to contribute to the code, please read our guide [here!](docs/contribute.md)
+
+- Coming soon: project road map
 
 ## References:
 
