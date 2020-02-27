@@ -103,6 +103,12 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
     Data = Data[scorer] #extract labeled data
     #actualbpts=set(Data.columns.get_level_values(0))
 
+    def strip_cropped_image_name(path):
+        filename = os.path.split(path)[1]
+        return filename.split('c')[0]
+
+    img_names = Data.index.map(strip_cropped_image_name).unique()
+
     #loading & linking pretrained models
     # CURRENTLY ONLY ResNet supported!
     if net_type is None: #loading & linking pretrained models
@@ -136,7 +142,12 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
     TrainingFraction = cfg['TrainingFraction']
     for shuffle in Shuffles: # Creating shuffles starting from 1
         for trainFraction in TrainingFraction:
-            trainIndexes, testIndexes = trainingsetmanipulation.SplitTrials(range(len(Data.index)), trainFraction)
+            train_inds_temp, test_inds_temp = trainingsetmanipulation.SplitTrials(range(len(img_names)), trainFraction)
+            # Map back to the original indices.
+            temp = [name for i, name in enumerate(img_names) if i in test_inds_temp]
+            mask = Data.index.str.contains('|'.join(temp))
+            testIndexes = np.flatnonzero(mask)
+            trainIndexes = np.flatnonzero(~mask)
 
             ####################################################
             # Generating data structure with labeled information & frame metadata (for deep cut)
