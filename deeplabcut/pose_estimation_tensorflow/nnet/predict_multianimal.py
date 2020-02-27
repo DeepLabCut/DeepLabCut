@@ -13,7 +13,6 @@ https://github.com/eldar/pose-tensorflow
 
 import numpy as np
 import tensorflow as tf
-import math, os, sys
 from nms_grid import nms_grid # this needs to be installed (C-code)
 
 vers = (tf.__version__).split('.')
@@ -97,13 +96,10 @@ def pos_from_grid_raw(gridpos, stride, halfstride):
     return gridpos * stride + halfstride
 
 def make_nms_grid(nms_radius):
-    nms_radius = math.ceil(nms_radius)
-    dist_grid = np.zeros([2 * nms_radius + 1, 2 * nms_radius + 1], dtype=np.uint8)
-    for yidx in range(dist_grid.shape[0]):
-        for xidx in range(dist_grid.shape[1]):
-            if (yidx - nms_radius) ** 2 + (xidx - nms_radius) ** 2 <= nms_radius ** 2:
-                dist_grid[yidx][xidx] = 1
-    return dist_grid
+    nms_radius = int(np.ceil(nms_radius))
+    size = np.arange(2 * nms_radius + 1)
+    xx, yy = np.meshgrid(size, size)
+    return np.where((xx - nms_radius) ** 2 + (yy - nms_radius) ** 2 <= nms_radius ** 2, 1, 0)
 
 def extract_detections(cfg, scmap, locref, pafs, nms_radius, det_min_score):
     ''' Extract detections correcting by locref and estimating association costs based on PAFs '''
