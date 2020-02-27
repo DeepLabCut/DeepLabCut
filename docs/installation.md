@@ -2,19 +2,18 @@
 
 DeepLabCut can be run on Windows, Linux, or MacOS (see more details at [technical considerations](/docs/installation.md#technical-considerations)). 
 
-## Step 1: decide on how you want to install DeepLabCut: 
-
- There are several modes of installation, and the user should decide to either use a **system-wide** (see [note below](/docs/installation.md#system-wide-considerations)), **Anaconda environment** based installation (recommended), or the supplied **Docker container** (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but Anaconda is the easiest route. 
+ There are several modes of installation, and the user should decide to either use a **system-wide** (see [note below](/docs/installation.md#system-wide-considerations)), **Anaconda environment** based installation (recommended), or the supplied **Docker container** (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but **Anaconda is the easiest route.** 
  
- ## Step 2: You need to have Python 3 installed, and we highly recommend using Anaconda to do so. Simply download the appropriate files here: https://www.anaconda.com/distribution/
+ ## Step 1: You need to have Python 3 installed, and we highly recommend using Anaconda to do so. 
+ 
+ ### Simply download the appropriate files here: https://www.anaconda.com/distribution/
  
 Anaconda is perhaps the easiest way to install Python and additional packages across various operating systems. With Anaconda you create all the dependencies in an [environment](https://conda.io/docs/user-guide/tasks/manage-environments.html) on your machine. 
 
-## Step 3: Easy install for Windows*, MacOS, Ubuntu*: please use our supplied Anaconda environments.
+## Step 2: [Easy install for Windows*, MacOS, Ubuntu*: please use our supplied Anaconda environments](https://github.com/AlexEMG/DeepLabCut/blob/master/conda-environments/README.md).
 Please click here: https://github.com/AlexEMG/DeepLabCut/blob/master/conda-environments/README.md
 
-
-*If you have a GPU, you should FIRST then **install the NVIDIA CUDA (10 or LOWER) package and an appropriate driver for your specific GPU.** Please follow the instructions found here: https://www.tensorflow.org/install/gpu, and more tips below. The order of operations matters.
+If you have a GPU, you should FIRST then **install the NVIDIA CUDA (10 or LOWER) package and an appropriate driver for your specific GPU.** Please follow the instructions found here: https://www.tensorflow.org/install/gpu, and more tips below. The order of operations matters.
 
 ## The most common "new user" hurdle is installing and using your GPU:
 - Here we provide notes on how to install and check your GPU use with TensorFlow (which is used by DeepLabCut and already installed with the Anaconda files above). Thus, you do not need to independently install tensorflow.
@@ -30,13 +29,7 @@ Here is an example on how to install **the GPU driver + CUDA 9 + optional Tensor
 
 **SECOND**, install CUDA (9.0 here): https://developer.nvidia.com/cuda-90-download-archive (Note that cuDNN, https://developer.nvidia.com/cudnn, is supplied inside the anaconda environment files, so you don't need to install it again).
 
-**THIRD:** Launch the provided Anaconda Environment File (see [here!](https://github.com/AlexEMG/DeepLabCut/tree/master/conda-environments)) or [OPTIONAL] install TensorFlow independently:
-
-Package for pip install:
-
-``pip install tensorflow-gpu==1.12`` —with GPU support (Ubuntu and Windows)
-
-Note, the version is specified by using: ``==1.12``
+**THIRD:** Launch the provided Anaconda Environment File "DLC-GPU" (see [here!](https://github.com/AlexEMG/DeepLabCut/tree/master/conda-environments)) 
 
 **FOURTH**, Please check your CUDA and [TensorFlow installation](https://www.tensorflow.org/install/) with the lines below:
 
