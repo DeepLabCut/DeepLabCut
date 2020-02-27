@@ -15,7 +15,7 @@ Now, always in Terminal (or Command Prompt), go to the folder named ``conda-envi
 ``cd C:\Users\YourUserName\Desktop\DeepLabCut\conda-environments``\
 To get the location right, a cool trick is to drag the folder and drop it into Terminal. Alternatively, you can (on Windows) hold SHIFT and right-click > Copy as path, or (on Mac) right-click and while in the menu press the OPTION key to reveal Copy as Pathname. 
 
-(2) Now, depending on which file you want to use (if **with GPUs**, see extra note below), open the program **terminal** or cmd where you placed the file (i.e. ``cd conda-environments``) and then type: 
+(2) Now, depending on which file you want to use (if **with GPUs**, see extra note below!!!), open the program **terminal** or cmd where you placed the file (i.e. ``cd conda-environments``) and then type: 
 
 ``conda env create -f DLC-CPU.yaml``
 
@@ -40,7 +40,13 @@ Simply run ``ipython`` or ``pythonw`` (macOS only) to lauch the terminal, ``jupy
 
 # Creating your own customized conda env (recommended route for Linux: Ubuntu, CentOS, Mint, etc.)
 
-Some users might want to create their own env. Here is an eample. In the terminal type `conda create -n DLC python=3.7 tensorflow=1.13.1` (this would be for CPU-based tensorflow; for GPU instead so `tensorflow-gpu=1.13.1`). The only thing you then need to add to the env is wxPython, which is OS dependent.  
+Some users might want to create their own env. Here is an eample. In the terminal type:
+
+`conda create -n DLC python=3.7 tensorflow=1.13.1` 
+
+(this would be for CPU-based tensorflow; for GPU support use `tensorflow-gpu=1.13.1`). 
+
+The only thing you then need to add to the env is wxPython, which is OS dependent.  
 For Windows and MacOS, you just run `pip install -U wxPython` but for linux you need the specific wheel (https://wxpython.org/pages/downloads/index.html).
 
 # Using DLC: 
@@ -51,6 +57,6 @@ Just as a reminder, you can exit the environment anytime and (later) come back! 
 
 Here are some conda environment management tips: https://kapeli.com/cheat_sheets/Conda.docset/Contents/Resources/Documents/index
 
-**GPUs:** The ONLY thing you need to do first if have an NVIDIA driver installed, and CUDA (currently, TensorFlow 1.13.1 is installed inside the env, so you can install CUDA 10 and an appropriate driver).
+**GPUs:** The ONLY thing you need to do **first** if have an NVIDIA GPU, NVIDIA driver installed, and CUDA <=10 (currently, TensorFlow 1.13.1 is installed inside the env, so you can install up to CUDA 10 and an appropriate driver).
 - DRIVERS: https://www.nvidia.com/Download/index.aspx
 - CUDA: https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html#verify-you-have-cuda-enabled-system
