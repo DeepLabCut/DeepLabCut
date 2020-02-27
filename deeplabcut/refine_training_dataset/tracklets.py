@@ -9,8 +9,6 @@ from matplotlib.path import Path
 from matplotlib.widgets import Slider, LassoSelector
 from ruamel.yaml import YAML
 
-# TODO Smart way to fill unidentified trajectories (e.g., when that could only be one ID)
-
 
 def read_config(configname):
     if not os.path.exists(configname):
@@ -36,7 +34,7 @@ class PointSelector:
     def on_select(self, verts):
         path = Path(verts)
         xy = self.collection.get_offsets()
-        self.tracker.picked = np.nonzero(path.contains_points(xy))[0]
+        self.tracker.picked = list(np.nonzero(path.contains_points(xy))[0])
         self.fc[:, -1] = self.alpha_other
         self.fc[self.tracker.picked, -1] = self.alpha
         self.collection.set_color(self.fc)
@@ -59,8 +57,24 @@ class PointSelector:
 
 
 class IDTracker:
-    def __init__(self, config):
+    def __init__(self, config, min_swap_frac=0.01, min_tracklet_frac=0.01):
+        """
+
+        Parameters
+        ----------
+        config : str
+            Path to a configuration file.
+        min_swap_frac : float, optional (default=0.01)
+            Relative fraction of the data below which bodypart swaps are ignored.
+            By default, swaps representing less than 1% of the total number of frames are discarded.
+        min_tracklet_frac : float, optional (default=0.01)
+            Relative fraction of the data below which unidentified tracklets are ignored.
+            By default, unidentified tracklets shorter than 1% of the total number of frames are discarded.
+        """
+
         self.cfg = read_config(config)
+        self.min_swap_frac = min_swap_frac
+        self.min_tracklet_frac = min_tracklet_frac
         self._xy = None
         self.xy = None
         self.prob = None
@@ -91,11 +105,17 @@ class IDTracker:
             for k, v in tracks[num].items():
                 all_data[all_frames.index(k), i] = v
         data = all_data.reshape(self.nframes, -1, 3)
-        self._xy = data[:, :, :2]
+        xy = data[:, :, :2]
+        # Remove the tracklets that contained too little information.
+        mask = np.sum(~np.isnan(xy).any(axis=2), axis=0)
+        to_keep = mask > self.min_tracklet_frac * self.nframes
+        self._xy = xy[:, to_keep]
         self.xy = self._xy.copy()
-        self.prob = data[:, :, 2]
-        self.mapping = [i for i in range(len(num_tracks)) for _ in range(self.nbodyparts)]  # Map a bodypart # to the animal ID it belongs to
-        self.unidentified_tracks = set(range(len(individuals) * self.nbodyparts, len(num_tracks) * self.nbodyparts))
+        self.prob = data[:, to_keep, 2]
+        ntracklets = self.xy.shape[1]
+        mapping = [i for i in range(len(num_tracks)) for _ in range(self.nbodyparts)]  # Map a bodypart # to the animal ID it belongs to
+        self.mapping = [m for m, keep in zip(mapping, to_keep) if keep]
+        self.unidentified_tracks = set(range(len(individuals) * self.nbodyparts, ntracklets * self.nbodyparts))
         self.cmap = plt.cm.get_cmap(self.cfg['colormap'], len(individuals))
         self.find_swapping_bodypart_pairs()
 
@@ -162,7 +182,7 @@ class IDTracker:
             sub = temp[:, :, np.newaxis] - temp[:, np.newaxis]
             zero_crossings = self.is_crossing_zero(sub)
             self.track_crossings = zero_crossings.all(axis=0)
-            cross = self.track_crossings.any(axis=2)
+            cross = self.track_crossings.sum(axis=2) > self.min_swap_frac * self.nframes
             mat = np.tril(cross)
             temp_pairs = np.where(mat)
             # Get only those bodypart pairs that belong to different individuals
@@ -330,7 +350,7 @@ class IDTracker:
         if img is not None:
             self.im.set_array(img)
             self.display_points(val)
-            self.display_trails(val)
+            # self.display_trails(val)
             self.update_vlines(val)
 
     def save(self, output_name):
