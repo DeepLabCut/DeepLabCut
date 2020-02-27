@@ -1,4 +1,4 @@
-# Quick Anaconda Install for Windows 10, MacOS, Ubuntu 18.04!
+# Quick Anaconda Install for Windows 10, MacOS, Ubuntu!
 ### Please use one (or more) of the supplied Anaconda environments for a fast and easy installation process.
 
 (0) Be sure you have Anaconda 3 installed! https://www.anaconda.com/distribution/, and get familiar with using "cmd" or terminal!
@@ -17,41 +17,40 @@ To get the location right, a cool trick is to drag the folder and drop it into T
 
 (2) Now, depending on which file you want to use (if **with GPUs**, see extra note below), open the program **terminal** or cmd where you placed the file (i.e. ``cd conda-environments``) and then type: 
 
-``conda env create -f dlc-macOS-CPU.yaml``
+``conda env create -f DLC-CPU.yaml``
 
 or 
 
-``conda env create -f dlc-windowsCPU.yaml``
+``conda env create -f DLC-GPU.yaml``
 
-or 
-
-``conda env create -f dlc-windowsGPU.yaml``
-
-or 
-
-``conda env create -f dlc-ubuntu-GPU.yaml``
-
-(3) Enter your environment by running:
+(3) You can now use this environment from anywhere on your comptuer (i.e. no need to go back into the conda- folder). Just enter your environment by running:
 
 - Ubuntu/MacOS: ``source activate nameoftheenv`` (i.e. ``source activate dlc-macOS-CPU``)
 - Windows: ``activate nameoftheenv`` (i.e. ``activate dlc-windowsGPU``)
 
 Now you should see (nameofenv) on the left of your teminal screen, i.e. ``(dlc-macOS-CPU) YourName-MacBook...``
-NOTE: DO NOT run pip install deeplabcut, etc! It is already installed!!! :)
+NOTE: no need to run pip install deeplabcut, as it is already installed!!! :) 
 
-Great, that's it! 
+However, if you ever want to update your DLC, just run `pip install --upgrade deeplabcut` once you are inside your env. You can check the version by running `import deeplabcut` `deeplabcut.__version__`. Don't be afraid to update, DLC is backwards compatable with your 2.0+ projects and peformance continues to get better and new features are added nearly monthly. 
+
+**Great, that's it!**
 
 Simply run ``ipython`` or ``pythonw`` (macOS only) to lauch the terminal, ``jupyter notebook`` to lauch a browser session, or ``ipython, import deeplabcut, deeplabcut.launch_dlc()`` to use our Project Manager GUI! **Many more details** [**here**](https://github.com/AlexEMG/DeepLabCut/blob/master/docs/UseOverviewGuide.md)!
 
 
+# Creating your own customized conda env 
 
+Some users might want to create their own env. Here is an eample. In the terminal type `conda create -n DLC python=3.6 tensorflow=1.13.1` (this would be for CPU-based tensorflow; for GPU instead so `tensorflow-gpu=1.13.1`). The only thing you then need to add to the env is wxPython, which is OS dependent.  
+For Windows and MacOS, you just run `pip install -U wxPython` but for linux you need the specific wheel (https://wxpython.org/pages/downloads/index.html).
 
-Now just [**follow the user guide**](https://www.nature.com/articles/s41596-019-0176-0), to get DeepLabCut up and running in no time!
+# Using DLC: 
+
+Now just [**follow the user guide**](https://www.nature.com/articles/s41596-019-0176-0) to get DeepLabCut up and running in no time!
 
 Just as a reminder, you can exit the environment anytime and (later) come back! So the environments really allow you to manage multiple packages that you might want to install on your computer. 
 
 Here are some conda environment management tips: https://kapeli.com/cheat_sheets/Conda.docset/Contents/Resources/Documents/index
 
-**GPUs:** The ONLY thing you need to do first if have an NVIDIA driver installed, and CUDA (currently, TensorFlow 1.13 is installed inside the env, so you can install CUDA 10 and an appropriate driver).
+**GPUs:** The ONLY thing you need to do first if have an NVIDIA driver installed, and CUDA (currently, TensorFlow 1.13.1 is installed inside the env, so you can install CUDA 10 and an appropriate driver).
 - DRIVERS: https://www.nvidia.com/Download/index.aspx
 - CUDA: https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html#verify-you-have-cuda-enabled-system
