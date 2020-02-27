@@ -6,7 +6,7 @@
 (1) Either go to www.deeplabcut.org (at the bottom of the page) to download the correct environment file:
 
 <p align="center">
-<img src= https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559946970288-746C71KJ8S0QHRWX6J7K/ke17ZwdGBToddI8pDm48kELMDNUlnb4MkVstKRkN11VZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIgSbWMtmBz9ZfqPOQ4lPb9Tf93k5QH8_hDHLJHb65L6A/installimage.png?format=1000w width="60%">
+<img src= https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1582763070742-Q45NTO6B5NVXISBQU9TI/ke17ZwdGBToddI8pDm48kCn9JOE-Zo6yZRQwL29ZJRUUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYy7Mythp_T-mtop-vrsUOmeInPi9iDjx9w8K4ZfjXt2dnJa5czOiI-P3uZePqbYB3W1QVt6sqQ11VFBgt-Giz29CjLISwBs8eEdxAxTptZAUg/condaexample.png?format=2500w width="60%">
 </p>
 
 or download or git clone this repo (in the terminal/cmd program, while **in a folder** you wish to place DeepLabCut 
