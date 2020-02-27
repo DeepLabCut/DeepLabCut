@@ -513,7 +513,7 @@ def merge_annotateddatasets(cfg,project_path,trainingsetfolder_full,windows2linu
 
     filename=str(str(trainingsetfolder_full)+'/'+'/CollectedData_'+cfg['scorer'])
     if windows2linux or askuser=='yes' or askuser=='y' or askuser=='Ja': #convert windows path in pandas array \\ to unix / !
-        AnnotationData=conversioncode.convertpaths_to_unixstyle(AnnotationData,filename,cfg)
+        AnnotationData=conversioncode.convertpaths_to_unixstyle(AnnotationData,filename)
         print("Annotation data converted to unix format...")
     else: #store as is
         AnnotationData.to_hdf(filename+'.h5', key='df_with_missing', mode='w')

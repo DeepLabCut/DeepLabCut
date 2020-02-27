@@ -155,34 +155,16 @@ def analyze_videos_converth5_to_csv(videopath,videotype='.avi'):
     os.chdir(str(start_path))
     print("All pose files were converted.")
 
-def pathmagic(string):
-    parts=string.split('\\')
-    if len(parts)==1:
-        return string
-    elif len(parts)==3: #this is the expected windows case, it will split into labeled-data, video, imgNR.png
-        return os.path.join(*parts) #unpack arguments from list with splat operator
-    else:
-        return string
 
-def convertpaths_to_unixstyle(Data,fn,cfg):
+def convertpaths_to_unixstyle(Data,fn):
     ''' auxiliary function that converts paths in annotation files:
         labeled-data\\video\\imgXXX.png to labeled-data/video/imgXXX.png '''
     Data.to_csv(fn + "windows" + ".csv")
-    Data.to_hdf(fn + "windows" + '.h5','df_with_missing',format='table', mode='w')
-
-    imindex=[pathmagic(s) for s in Data.index]
-    for j,bpt in enumerate(cfg['bodyparts']):
-        index = pd.MultiIndex.from_product([[cfg['scorer']], [bpt], ['x', 'y']],names=['scorer', 'bodyparts', 'coords'])
-        frame = pd.DataFrame(Data[cfg['scorer']][bpt].values, columns = index, index = imindex)
-        if j==0:
-            dataFrame=frame
-        else:
-            dataFrame = pd.concat([dataFrame, frame],axis=1)
-
-    dataFrame.to_csv(fn + ".csv")
-    dataFrame.to_hdf(fn + '.h5','df_with_missing',format='table', mode='w')
-    return dataFrame
-
+    Data.to_hdf(fn + "windows" + '.h5', 'df_with_missing', format='table', mode='w')
+    Data.index = Data.index.str.replace('\\', '/')
+    Data.to_csv(fn + ".csv")
+    Data.to_hdf(fn + '.h5', 'df_with_missing', format='table', mode='w')
+    return Data
 
 
 def merge_windowsannotationdataONlinuxsystem(cfg):
