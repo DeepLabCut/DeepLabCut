@@ -190,19 +190,16 @@ def merge_windowsannotationdataONlinuxsystem(cfg):
     corresponding in the keys in cfg['video_sets'] are not found. This function gets them directly by
     looping over all folders in labeled-data '''
 
-    AnnotationData=None
+    AnnotationData = []
     data_path = Path(cfg['project_path'],'labeled-data')
     annotationfolders=[fn for fn in os.listdir(data_path) if "_labeled" not in fn]
     print("The following folders were found:", annotationfolders)
     for folder in annotationfolders:
+        filename = os.path.join(data_path , folder, 'CollectedData_'+cfg['scorer']+'.h5')
         try:
-            data = pd.read_hdf(os.path.join(data_path , folder, 'CollectedData_'+cfg['scorer']+'.h5'),'df_with_missing')
-            if AnnotationData is None:
-                AnnotationData=data
-            else:
-                AnnotationData=pd.concat([AnnotationData, data])
-
+            data = pd.read_hdf(filename,'df_with_missing')
+            AnnotationData.append(data)
         except FileNotFoundError:
-            print(str(os.path.join(data_path , folder, 'CollectedData_'+cfg['scorer']+'.h5')), " not found (perhaps not annotated)")
+            print(filename, " not found (perhaps not annotated)")
 
     return AnnotationData

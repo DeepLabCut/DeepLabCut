@@ -477,32 +477,34 @@ def merge_annotateddatasets(cfg,project_path,trainingsetfolder_full,windows2linu
 
     Within platform comp. is straightforward. But if someone labels on windows and wants to train on a unix cluster or colab...
     """
-    AnnotationData=None
+    AnnotationData = []
     data_path = Path(os.path.join(project_path , 'labeled-data'))
     videos = cfg['video_sets'].keys()
     video_names = [Path(i).stem for i in videos]
     for i in video_names:
+        filename = str(data_path / Path(i))+'/CollectedData_'+cfg['scorer']+'.h5'
         try:
-            data = pd.read_hdf((str(data_path / Path(i))+'/CollectedData_'+cfg['scorer']+'.h5'),'df_with_missing')
-            if AnnotationData is None:
-                AnnotationData=data
-            else:
-                AnnotationData=pd.concat([AnnotationData, data])
-
+            data = pd.read_hdf(filename,'df_with_missing')
+            AnnotationData.append(data)
         except FileNotFoundError:
-            print((str(data_path / Path(i))+'/CollectedData_'+cfg['scorer']+'.h5'), " not found (perhaps not annotated)")
+            print(filename, " not found (perhaps not annotated)")
 
-    if AnnotationData is None:
+    if not len(AnnotationData):
         print("Annotation data was not found by splitting video paths (from config['video_sets']). An alternative route is taken...")
-        AnnotationData=conversioncode.merge_windowsannotationdataONlinuxsystem(cfg)
-    if AnnotationData is None:
-        print("No data was found!")
-        windowspath=False
-    else:
-        windowspath=len((AnnotationData.index[0]).split('\\'))>1 #true if the first element is in windows path format
+        AnnotationData = conversioncode.merge_windowsannotationdataONlinuxsystem(cfg)
+        if not len(AnnotationData):
+            print("No data was found!")
+            return
+
+    AnnotationData = pd.concat(AnnotationData).sort_index()
+    # When concatenating DataFrames with misaligned column labels,
+    # all sorts of reordering may happen (mainly depending on 'sort' and 'join')
+    # Ensure the 'bodyparts' level agrees with the order in the config file.
+    AnnotationData = AnnotationData.reindex(cfg['bodyparts'], axis=1, level=AnnotationData.columns.names.index('bodyparts'))
 
     # Let's check if the code is *not* run on windows (Source: #https://stackoverflow.com/questions/1325581/how-do-i-check-if-im-running-on-windows-in-python)
     # but the paths are in windows format...
+    windowspath = '\\' in AnnotationData.index[0]
     if os.name != 'nt' and windowspath and not windows2linux:
         print("It appears that the images were labeled on a Windows system, but you are currently trying to create a training set on a Unix system. \n In this case the paths should be converted. Do you want to proceed with the conversion?")
         askuser = input("yes/no")
@@ -593,6 +595,8 @@ def mergeandsplit(config,trainindex=0,uniform=True,windows2linux=False):
         Data= pd.read_hdf(fn+'.h5', 'df_with_missing')
     except FileNotFoundError:
         Data = merge_annotateddatasets(cfg,project_path,Path(os.path.join(project_path,trainingsetfolder)),windows2linux=windows2linux)
+        if Data is None:
+            return [], []
 
     Data = Data[scorer] #extract labeled data
 
@@ -713,6 +717,8 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
     auxiliaryfunctions.attempttomakefolder(Path(os.path.join(project_path,str(trainingsetfolder))),recursive=True)
 
     Data = merge_annotateddatasets(cfg,project_path,Path(os.path.join(project_path,trainingsetfolder)),windows2linux)
+    if Data is None:
+        return
     Data = Data[scorer] #extract labeled data
 
     #loading & linking pretrained models
