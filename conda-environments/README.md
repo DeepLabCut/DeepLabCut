@@ -38,9 +38,9 @@ However, if you ever want to update your DLC, just run `pip install --upgrade de
 Simply run ``ipython`` or ``pythonw`` (macOS only) to lauch the terminal, ``jupyter notebook`` to lauch a browser session, or ``ipython, import deeplabcut, deeplabcut.launch_dlc()`` to use our Project Manager GUI! **Many more details** [**here**](https://github.com/AlexEMG/DeepLabCut/blob/master/docs/UseOverviewGuide.md)!
 
 
-# Creating your own customized conda env 
+# Creating your own customized conda env (recommended route for Linux: Ubuntu, CentOS, Mint, etc.)
 
-Some users might want to create their own env. Here is an eample. In the terminal type `conda create -n DLC python=3.6 tensorflow=1.13.1` (this would be for CPU-based tensorflow; for GPU instead so `tensorflow-gpu=1.13.1`). The only thing you then need to add to the env is wxPython, which is OS dependent.  
+Some users might want to create their own env. Here is an eample. In the terminal type `conda create -n DLC python=3.7 tensorflow=1.13.1` (this would be for CPU-based tensorflow; for GPU instead so `tensorflow-gpu=1.13.1`). The only thing you then need to add to the env is wxPython, which is OS dependent.  
 For Windows and MacOS, you just run `pip install -U wxPython` but for linux you need the specific wheel (https://wxpython.org/pages/downloads/index.html).
 
 # Using DLC: 
