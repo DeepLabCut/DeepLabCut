@@ -267,7 +267,8 @@ class IDTracker:
                 self.picked = [self.lines_y.index(artist)]
         else:  # Click on the legend lines
             # Avoid accidental reassignment of already identified tracklets
-            valid_picks = [ind for ind in self.picked if ind in self.unidentified_tracks]
+            # valid_picks = [ind for ind in self.picked if ind in self.unidentified_tracks]
+            valid_picks = self.picked
             if valid_picks:
                 num_individual = self.leg.get_lines().index(artist)
                 nrow = num_individual * self.nbodyparts
@@ -275,15 +276,22 @@ class IDTracker:
                 xy = self.xy[:, valid_picks]
                 p = self.prob[:, valid_picks]
                 mask = ~np.isnan(xy).any(axis=(1, 2))
-                sl = np.ix_(mask, inds)
+                sl_inds = np.ix_(mask, inds)
+                sl_picks = np.ix_(mask, valid_picks)
                 # Ensure that we do not overwrite identified tracklets
-                if not np.all(np.isnan(self.xy[sl])):
-                    return
-                self.xy[sl] = xy[mask]
-                self.prob[sl] = p[mask]
+                # if not np.all(np.isnan(self.xy[sl])):
+                #     return
+                old_xy = self.xy[sl_inds].copy()
+                old_prob = self.prob[sl_inds].copy()
+                self.xy[sl_inds] = xy[mask]
+                self.prob[sl_inds] = p[mask]
+                self.xy[sl_picks] = old_xy
+                self.prob[sl_picks] = old_prob
                 for pick in valid_picks:
-                    self.unidentified_tracks.remove(pick)
-                self.xy[:, valid_picks] = np.nan
+                    try:
+                        self.unidentified_tracks.remove(pick)
+                    except KeyError:
+                        pass
                 self.display_traces()
         self.picked_pair = []
         if len(self.picked) == 1:
