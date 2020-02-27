@@ -195,7 +195,7 @@ def train(config_yaml,displayiters,saveiters,maxiters,max_to_keep=5,keepdeconvwe
             logging.info("iteration: {} loss: {} scmap loss: {} locref loss: {} limb loss: {} lr: {}"
                          .format(it, "{0:.4f}".format(cumloss / display_iters), "{0:.4f}".format(partloss/ display_iters), "{0:.4f}".format(locrefloss/ display_iters), "{0:.4f}".format(pwloss/ display_iters), current_lr))
 
-            lrf.write("iteration: {} loss: {} scmap loss: {} locref loss: {} limb loss: {} lr: {}"
+            lrf.write("iteration: {}, loss: {}, scmap loss: {}, locref loss: {}, limb loss: {}, lr: {}\n"
                          .format(it, "{0:.4f}".format(cumloss / display_iters), "{0:.4f}".format(partloss/ display_iters), "{0:.4f}".format(locrefloss/ display_iters), "{0:.4f}".format(pwloss/ display_iters), current_lr))
 
             cumloss,partloss,locrefloss,pwloss=0.,0.,0.,0.
