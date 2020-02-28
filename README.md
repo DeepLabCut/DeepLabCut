@@ -17,22 +17,21 @@
     <a href="https://www.mousemotorlab.org/deeplabcut/">www.deeplabcut.org</a>
 </p>
 
-DeepLabCut is a toolbox for markerless pose estimation of animals performing various tasks. [Read a short development and application summary below](https://github.com/AlexEMG/DeepLabCut#why-use-deeplabcut).
-
 <p align="center">
 <img src="http://www.people.fas.harvard.edu/~amathis/dlc/MATHIS_2018_odortrail.gif" height="220">
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3fbd0c898583417a040dfc/1547681053201/rat-grasp.gif?format=300w"  height="220">
 <img src="http://www.people.fas.harvard.edu/~amathis/dlc/MATHIS_2018_fly.gif" height="220">
 </p>
 
-# [Installation](docs/installation.md)
+DeepLabCut is a toolbox for markerless pose estimation of animals performing various tasks. [Read a short development and application summary below](https://github.com/AlexEMG/DeepLabCut#why-use-deeplabcut).
 
-How to [install DeepLabCut](docs/installation.md)
+# [Installation: how to install DeepLabCut](docs/installation.md)
+
 # [Documentation: The DeepLabCut Process](docs/UseOverviewGuide.md)
 
 An overview of the pipeline and workflow for project management.
 
-For a step-by-step user guide, please read the [Nature Protocols paper](https://doi.org/10.1038/s41596-019-0176-0)!
+For a step-by-step user guide, please also read the [Nature Protocols paper](https://doi.org/10.1038/s41596-019-0176-0)!
 
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572293604382-W6BWA63LZ9J8R7N0QEA5/ke17ZwdGBToddI8pDm48kIw6YkRUEyoge4858uAJfaMUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYwL8IeDg6_3B-BRuF4nNrNcQkVuAT7tdErd0wQFEGFSnH9wUPiI8bGoX-EQadkbLIJwhzjIpw393-uEwSKO7VZIL9gN_Sb5I_dLwvWryjeCJg/dlc_overview-01.png?format=1000w" width="95%">
@@ -70,7 +69,9 @@ This is an actively developed package and we welcome community development and i
 
 - For quick discussions here: [![Gitter](https://badges.gitter.im/DeepLabCut/community.svg)](https://gitter.im/DeepLabCut/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-- If you want to contribute to the code, please make a pull request that includes how you modified the code and what new functionality it has, the OS it has been tested on, and the **output of the [testscript.py](examples/testscript.py)**. Please see more [here](docs/contribute.md).
+- If you want to contribute to the code, please read our guide [here!](docs/contribute.md)
+
+- Coming soon: the project [road map](docs/roadmap.md)
 
 ## References:
 
