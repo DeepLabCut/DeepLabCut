@@ -29,9 +29,7 @@ DeepLabCut is a toolbox for markerless pose estimation of animals performing var
 
 # [Documentation: The DeepLabCut Process](docs/UseOverviewGuide.md)
 
-An overview of the pipeline and workflow for project management.
-
-For a step-by-step user guide, please also read the [Nature Protocols paper](https://doi.org/10.1038/s41596-019-0176-0)!
+An overview of the pipeline and workflow for project management. For a step-by-step user guide, please also read the [Nature Protocols paper](https://doi.org/10.1038/s41596-019-0176-0)!
 
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572293604382-W6BWA63LZ9J8R7N0QEA5/ke17ZwdGBToddI8pDm48kIw6YkRUEyoge4858uAJfaMUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYwL8IeDg6_3B-BRuF4nNrNcQkVuAT7tdErd0wQFEGFSnH9wUPiI8bGoX-EQadkbLIJwhzjIpw393-uEwSKO7VZIL9gN_Sb5I_dLwvWryjeCJg/dlc_overview-01.png?format=1000w" width="95%">
