@@ -57,6 +57,6 @@ Just as a reminder, you can exit the environment anytime and (later) come back! 
 
 Here are some conda environment management tips: https://kapeli.com/cheat_sheets/Conda.docset/Contents/Resources/Documents/index
 
-**GPUs:** The ONLY thing you need to do **first** if have an NVIDIA GPU, NVIDIA driver installed, and CUDA <=10 (currently, TensorFlow 1.13.1 is installed inside the env, so you can install up to CUDA 10 and an appropriate driver).
+**GPUs:** The ONLY thing you need to do **first** if you have an NVIDIA GPU, NVIDIA driver installed, and CUDA <=10 (currently, TensorFlow 1.13.1 is installed inside the env, so you can install up to CUDA 10 and an appropriate driver). Please note that only NVIDA GPUs are supported. 
 - DRIVERS: https://www.nvidia.com/Download/index.aspx
 - CUDA: https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html#verify-you-have-cuda-enabled-system
