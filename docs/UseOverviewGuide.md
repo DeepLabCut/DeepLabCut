@@ -12,7 +12,7 @@
  - [REFERENCES:](https://github.com/AlexEMG/DeepLabCut#references) read the science behind DeepLabCut
  
  
-**HOW-TO-GUIDE:**
+## HOW-TO-GUIDE:
 
 **Overview: DeepLabCut** is a software package for markerless pose estimation of animals performing various tasks. The software can manage multiple projects for various tasks. Each project is identified by the name of the project (e.g. TheBehavior), name of the experimenter (e.g. YourName), as well as the date at creation. This project folder holds a ``config.yaml`` (a text document) file containing various (project) parameters as well as links the data of the project.
 
@@ -31,7 +31,7 @@ You can have as many projects on your computer as you wish. You can have DeepLab
 As of 2.1+ we support a full [Project Manager GUI](/docs/PROJECT_GUI.md) to run the software. As of 2.0.7+ we support 3D analysis directly inside our package. Please see the [3D details here](/docs/Overviewof3D.md). 
 
 
-## Overview of the workflow:
+### Overview of the workflow:
 This page contains a list of the essential functions of DeepLabCut as well as demos. There are many optional parameters with each described function, which you can find [here](functionDetails.md). For additional assistance, you can use the [help](UseOverviewGuide.md#help) function to better understand what each function does.
 
  <p align="center">
