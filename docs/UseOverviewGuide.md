@@ -1,7 +1,7 @@
 ## Documentation:
 
  <p align="center">
-<img src= https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1582930079723-CIJ97L5Q14PE5C5VVB5H/ke17ZwdGBToddI8pDm48kJ1KQcuvke5FTEGELkUtJ-tZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIrueQmuW2z7_VjRAJlsMCy1JrSO6-zKAUtz5k3N9334U/learningpanel+%282%29.png?format=1000w width="80%">
+<img src= https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1582930941899-V5MI5K5CXSEGWMNSKDQ8/ke17ZwdGBToddI8pDm48kJ1KQcuvke5FTEGELkUtJ-tZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIrueQmuW2z7_VjRAJlsMCy1JrSO6-zKAUtz5k3N9334U/learningpanel+%283%29.png?format=1000w width="80%">
  </p>
  
  **This page provides resources for:**
@@ -14,12 +14,11 @@
  
 **HOW-TO-GUIDE:**
 
+**Overview: DeepLabCut** is a software package for markerless pose estimation of animals performing various tasks. The software can manage multiple projects for various tasks. Each project is identified by the name of the project (e.g. TheBehavior), name of the experimenter (e.g. YourName), as well as the date at creation. This project folder holds a ``config.yaml`` (a text document) file containing various (project) parameters as well as links the data of the project.
+
 <p align="center">
 <img src=   https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572293604382-W6BWA63LZ9J8R7N0QEA5/ke17ZwdGBToddI8pDm48kIw6YkRUEyoge4858uAJfaMUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYwL8IeDg6_3B-BRuF4nNrNcQkVuAT7tdErd0wQFEGFSnH9wUPiI8bGoX-EQadkbLIJwhzjIpw393-uEwSKO7VZIL9gN_Sb5I_dLwvWryjeCJg/dlc_overview-01.png?format=1000w width="80%">
  </p>
-
-**Overview: DeepLabCut** is a software package for markerless pose estimation of animals performing various tasks. The software can manage multiple projects for various tasks. Each project is identified by the name of the project (e.g. TheBehavior), name of the experimenter (e.g. YourName), as well as the date at creation. This project folder holds a ``config.yaml`` (a text document) file containing various (project) parameters as well as links the data of the project.
-
 
 You can have as many projects on your computer as you wish. You can have DeepLabCut installed in an [environment](/conda-environments) and always exit and return to this environment to run the code. You just need to point to the correct ``config.yaml`` file to [jump back in](/docs/UseOverviewGuide.md#tips-for-daily-use)! The documentation below will take you through the individual steps.
 
