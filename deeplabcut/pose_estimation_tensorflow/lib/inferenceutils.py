@@ -35,8 +35,10 @@ def individual2boundingbox(cfg,animals,X1=0):
 ##########################################################
 
 def convertdetectiondict2listoflist(dataimage,imname,BPTS,withid=False,evaluation=False):
-    ''' Arranges data into list of list of [(x, y, score, global index of detection)] (all detections per bodypart).
-    Also includes id if available. '''
+    ''' Arranges data into list of list with the following entries:
+    [(x, y, score, global index of detection)] (all detections per bodypart).
+
+    Also includes id if available. [x,y,score,global id, id] '''
     if evaluation:
         detectedcoordinates=dataimage['prediction']['coordinates'][0]
         detectedlikelihood=dataimage['prediction']['confidence']
@@ -46,24 +48,49 @@ def convertdetectiondict2listoflist(dataimage,imname,BPTS,withid=False,evaluatio
 
     all_detections=[]
     detection_counter=0
-    for part in BPTS:
+    for bpt in BPTS:
         if withid: #(x, y, likelihood, identity)
-            detections_with_likelihood = list(zip(detectedcoordinates[part][:,0], detectedcoordinates[part][:,1],
-                                        detectedlikelihood[part].flatten(),np.argmax(dataimage['identity'][part],1)))
+            detections_with_likelihood = list(zip(detectedcoordinates[bpt][:,0], detectedcoordinates[bpt][:,1],
+                                        detectedlikelihood[bpt].flatten(),np.argmax(dataimage['identity'][bpt],1)))
         else: #(x, y, likelihood)
-            detections_with_likelihood = list(zip(detectedcoordinates[part][:,0], detectedcoordinates[part][:,1],detectedlikelihood[part].flatten()))
+            detections_with_likelihood = list(zip(detectedcoordinates[bpt][:,0], detectedcoordinates[bpt][:,1],detectedlikelihood[bpt].flatten()))
         idx = range(detection_counter, detection_counter+ len(detections_with_likelihood))
         all_detections.append([detections_with_likelihood[i] + (idx[i],) for i in range(len(idx))])
         detection_counter += len(detections_with_likelihood)
+
     return all_detections
 
-def matchconnectionsevaluation(cfg, dataimage, all_peaks, iBPTS, partaffinityfield_graph, PAF):
-    ''' PAF is a subset of the indices that should be used in the PAF graph '''
-    connection_all = []
-    special_k = []
+def matchconnectionsevaluation(cfg, dataimage, all_detections, iBPTS, partaffinityfield_graph, PAF):
+    ''' Auxiliary function;  Returns list of connections (limbs) of a particular type.
+
+    Specifically, per edge a list containing is returned: [index start (global), index stop (global) score, score with detection likelihoods, index start (local), index stop (local)]
+    Thereby, index start and stop refer to the index of the bpt from the beginning to the end of the edge. Local index refers to the index within the list of bodyparts, and
+    global to the index for all the detections (in all_detections)
+
+    Parameters
+    ----------
+    cfg : dictionary
+        configuation file for inference parameters
+
+    dataimage: dict
+        predictions (detections + paf scores) for a particular image
+
+    all_detections: list of lists
+        result of convertdetectiondict2listoflist
+
+    iBPTS: list
+        source of bpts.
+
+    partaffinityfield_graph: list of part affinity matchconnections
+
+    PAF: PAF is a subset of the indices that should be used in the partaffinityfield_graph
+
+    '''
+    all_connections = []
+    missing_connections = []
     for k in range(len(partaffinityfield_graph)):
-        cand_a = all_peaks[iBPTS[partaffinityfield_graph[k][0]]] # transfer orignal bpt index to the one in all_peaks!
-        cand_b = all_peaks[iBPTS[partaffinityfield_graph[k][1]]] #
+        cand_a = all_detections[iBPTS[partaffinityfield_graph[k][0]]] # transfer orignal bpt index to the one in all_detections!
+        cand_b = all_detections[iBPTS[partaffinityfield_graph[k][1]]] #
         n_a = len(cand_a)
         n_b = len(cand_b)
         if n_a != 0 and n_b != 0:
@@ -91,19 +118,19 @@ def matchconnectionsevaluation(cfg, dataimage, all_peaks, iBPTS, partaffinityfie
                     if len(connection) >= min(n_a, n_b):
                         break
 
-            connection_all.append(connection)
+            all_connections.append(connection)
         else:
-            special_k.append(k)
-            connection_all.append([])
-    return connection_all, special_k
+            missing_connections.append(k)
+            all_connections.append([])
+    return all_connections, missing_connections
 
-def matchconnections(cfg,dataimage,all_peaks,iBPTS,partaffinityfield_graph,PAF):
+def matchconnections(cfg,dataimage,all_detections,iBPTS,partaffinityfield_graph,PAF):
     ''' PAF is a subset of indices should be used in the PAF graph '''
-    connection_all = []
-    special_k = []
+    all_connections = []
+    missing_connections = []
     for k in range(len(partaffinityfield_graph)):
-        cand_a = all_peaks[iBPTS[partaffinityfield_graph[k][0]]] # detectedcoordinates[partaffinityfield_graph[k][0]]
-        cand_b = all_peaks[iBPTS[partaffinityfield_graph[k][1]]] # detectedcoordinates[partaffinityfield_graph[k][1]]
+        cand_a = all_detections[iBPTS[partaffinityfield_graph[k][0]]] # detectedcoordinates[partaffinityfield_graph[k][0]]
+        cand_b = all_detections[iBPTS[partaffinityfield_graph[k][1]]] # detectedcoordinates[partaffinityfield_graph[k][1]]
         n_a = len(cand_a)
         n_b = len(cand_b)
         if n_a != 0 and n_b != 0:
@@ -131,21 +158,21 @@ def matchconnections(cfg,dataimage,all_peaks,iBPTS,partaffinityfield_graph,PAF):
                     if len(connection) >= min(n_a, n_b):
                         break
 
-            connection_all.append(connection)
+            all_connections.append(connection)
         else:
-            special_k.append(k)
-            connection_all.append([])
-    return connection_all, special_k
+            missing_connections.append(k)
+            all_connections.append([])
+    return all_connections, missing_connections
 
-def linkjoints2individuals(cfg,all_peaks,connection_all, special_k,partaffinityfield_graph,iBPTS,numjoints=18):
+def linkjoints2individuals(cfg,all_detections,all_connections, missing_connections,partaffinityfield_graph,iBPTS,numjoints=18):
     subset = np.empty((0, numjoints+2))
-    candidate = np.array([item for sublist in all_peaks for item in sublist])
+    candidate = np.array([item for sublist in all_detections for item in sublist])
     for k in range(len(partaffinityfield_graph)):
-        if k not in special_k:
-            part_as = connection_all[k][:, 0] #global? indices for source of limb!
-            part_bs = connection_all[k][:, 1] #indices for target of limb (when all detections are enumerated)
+        if k not in missing_connections:
+            part_as = all_connections[k][:, 0] #global? indices for source of limb!
+            part_bs = all_connections[k][:, 1] #indices for target of limb (when all detections are enumerated)
             index_a, index_b =iBPTS[partaffinityfield_graph[k][0]],iBPTS[partaffinityfield_graph[k][1]] #convert in order of bpts!
-            for i in range(len(connection_all[k])):  # looping over all connections for that limb
+            for i in range(len(all_connections[k])):  # looping over all connections for that limb
                 found = 0
                 subset_idx = [-1, -1]
                 for j in range(len(subset)):  # current number of individuals...
@@ -158,19 +185,19 @@ def linkjoints2individuals(cfg,all_peaks,connection_all, special_k,partaffinityf
                     if subset[j][index_b] != part_bs[i]: #WHAT ABOUT index_a??? >>>MAKE ELSE!!
                         subset[j][index_b] = part_bs[i]
                         subset[j][-1] += 1
-                        subset[j][-2] += candidate[part_bs[i].astype(int), 2] + connection_all[k][i][2]
+                        subset[j][-2] += candidate[part_bs[i].astype(int), 2] + all_connections[k][i][2]
                 elif found == 2:  # if found 2 and disjoint, merge them
                     j1, j2 = subset_idx
                     membership = ((subset[j1] >= 0).astype(int) + (subset[j2] >= 0).astype(int))[:-2]
                     if len(np.nonzero(membership == 2)[0]) == 0:  # merge
                         subset[j1][:-2] += (subset[j2][:-2] + 1)
                         subset[j1][-2:] += subset[j2][-2:]
-                        subset[j1][-2] += connection_all[k][i][2]
+                        subset[j1][-2] += all_connections[k][i][2]
                         subset = np.delete(subset, j2, 0)
                     else:  # as like found == 1 IE >>> LINKS PART B!?!. This sounds like a bad idea for non trees!
                         subset[j1][index_b] = part_bs[i]
                         subset[j1][-1] += 1
-                        subset[j1][-2] += candidate[part_bs[i].astype(int), 2] + connection_all[k][i][2]
+                        subset[j1][-2] += candidate[part_bs[i].astype(int), 2] + all_connections[k][i][2]
                         #WHAT ABOUT j2?
 
                 # if find no partA in the subset, create a new subset
@@ -179,7 +206,7 @@ def linkjoints2individuals(cfg,all_peaks,connection_all, special_k,partaffinityf
                     row[index_a] = part_as[i]
                     row[index_b] = part_bs[i]
                     row[-1] = 2
-                    row[-2] = sum(candidate[connection_all[k][i, :2].astype(int), 2]) + connection_all[k][i][2]
+                    row[-2] = sum(candidate[all_connections[k][i, :2].astype(int), 2]) + all_connections[k][i][2]
                     subset = np.vstack([subset, row])
 
     deleteIdx = [];
