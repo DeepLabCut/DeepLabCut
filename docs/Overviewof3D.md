@@ -1,16 +1,20 @@
 ### How to use the 3D Functionality of DeepLabCut
 
-**New:** as of deeplabcut 2.0.7+ you can create a 3D project to combine multiple cameras for 3D pose estimation. Watch a [DEMO VIDEO](https://youtu.be/Eh6oIGE4dwI) on how to use this code!
+**New:** as of deeplabcut 2.0.7+ you can create a 3D project to combine multiple (n=2) cameras for 3D pose estimation. Watch a [DEMO VIDEO](https://youtu.be/Eh6oIGE4dwI) on how to use this code. 
+
+If you want more than 2 camera support, there are several helper packages developed to work directly with DeepLabCut:
+
+:black_square_button: anipose.org | https://github.com/lambdaloop/anipose
 
 <p align="center">
 <img src= https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1560968522350-COKR986AQESF5N1N7QNK/ke17ZwdGBToddI8pDm48kNaO57GzHjWqV-xM6jVvY6ZZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpyR5k0u27ivMv3az5DOhUvLuYQefjfUWYPEDVexVC_mSas4X78tjQKn3yE00zHvnK8/3D_maousLarger.gif?format=750w width="85%">
  </p>
 
-This assumes you:
+**Our code base assumes you:**
 
 A. You have 2D videos and a DeepLabCut network to analyze them as described in the [main documentation](https://github.com/AlexEMG/DeepLabCut/blob/master/docs/UseOverviewGuide.md). This can be with multiple separate networks for each camera, or one network trained on all views (See [Nath*, Mathis* et al., 2019](https://www.biorxiv.org/content/10.1101/476531v1)).
 
-B. You are using 2 cameras for 3D (more camera support will be added in the future!).
+B. You are using 2 cameras for 3D.
 
 C. You have calibration images taken (see details below!).
 
