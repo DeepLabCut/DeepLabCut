@@ -25,8 +25,8 @@ or
 
 (3) You can now use this environment from anywhere on your comptuer (i.e. no need to go back into the conda- folder). Just enter your environment by running:
 
-- Ubuntu/MacOS: ``source activate nameoftheenv`` (i.e. ``source activate dlc-macOS-CPU``)
-- Windows: ``activate nameoftheenv`` (i.e. ``activate dlc-windowsGPU``)
+- Ubuntu/MacOS: ``source/conda activate nameoftheenv`` (i.e. on your Mac: ``conda activate DLC-CPU``)
+- Windows: ``activate nameoftheenv`` (i.e. ``activate DLC-GPU``)
 
 Now you should see (nameofenv) on the left of your teminal screen, i.e. ``(dlc-macOS-CPU) YourName-MacBook...``
 NOTE: no need to run pip install deeplabcut, as it is already installed!!! :) 
@@ -40,7 +40,7 @@ Simply run ``ipython`` or ``pythonw`` (macOS only) to lauch the terminal, ``jupy
 
 # Creating your own customized conda env (recommended route for Linux: Ubuntu, CentOS, Mint, etc.)
 
-Some users might want to create their own env. Here is an eample. In the terminal type:
+Some users might want to create their own env. Here is an example. In the terminal type:
 
 `conda create -n DLC python=3.7 tensorflow=1.13.1` 
 
