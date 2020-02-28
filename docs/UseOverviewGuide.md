@@ -1,13 +1,13 @@
 ## Documentation:
 
  <p align="center">
-<img src=   https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1582920288994-2KWQHWSP2QH3DBK4PF0Y/ke17ZwdGBToddI8pDm48kJ1KQcuvke5FTEGELkUtJ-tZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIrueQmuW2z7_VjRAJlsMCy1JrSO6-zKAUtz5k3N9334U/learningpanel+%281%29.png?format=1000w width="80%">
+<img src= https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1582930079723-CIJ97L5Q14PE5C5VVB5H/ke17ZwdGBToddI8pDm48kJ1KQcuvke5FTEGELkUtJ-tZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIrueQmuW2z7_VjRAJlsMCy1JrSO6-zKAUtz5k3N9334U/learningpanel+%282%29.png?format=1000w width="80%">
  </p>
  
  **This page provides resources for:**
  
  - [TUTORIALS:](https://www.youtube.com/channel/UC2HEbWpC_1v6i9RnDMy-dfA?view_as=subscriber) video tutorials that demonstrate various aspects of using the code base.
- - [HOW-TO-GUIDES:]() step-by-step user guidelines for using DeepLabCut on your own datasets (or on demo data)
+ - [HOW-TO-GUIDES:](/docs/UseOverviewGuide.md#overview-of-the-workflow) step-by-step user guidelines for using DeepLabCut on your own datasets (or on demo data)
  - [EXPLANATION:](https://github.com/AlexEMG/DeepLabCut/wiki) resources on understanding how DeepLabCut works (WIP)
  - [REFERENCES:](https://github.com/AlexEMG/DeepLabCut#references) read the science behind DeepLabCut
  
