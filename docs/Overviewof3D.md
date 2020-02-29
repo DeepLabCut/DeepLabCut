@@ -2,8 +2,6 @@
 
 **New:** as of deeplabcut 2.0.7+ you can create a 3D project to combine multiple (n=2) cameras for 3D pose estimation. Watch a [DEMO VIDEO](https://youtu.be/Eh6oIGE4dwI) on how to use this code. 
 
-If you want more than 2 camera support, there are several helper packages developed to work directly with DeepLabCut, i.e.: anipose.org | https://github.com/lambdaloop/anipose
-
 <p align="center">
 <img src= https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1560968522350-COKR986AQESF5N1N7QNK/ke17ZwdGBToddI8pDm48kNaO57GzHjWqV-xM6jVvY6ZZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpyR5k0u27ivMv3az5DOhUvLuYQefjfUWYPEDVexVC_mSas4X78tjQKn3yE00zHvnK8/3D_maousLarger.gif?format=750w width="85%">
  </p>
@@ -234,3 +232,13 @@ Only videos with this extension are analyzed. The default is ``.avi``
 ### If you use this code:
 
 We kindly ask that you cite [Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y) **&** [Nath*, Mathis*, et al., 2019](https://doi.org/10.1038/s41596-019-0176-0).
+
+
+## More than 2 camera support:
+
+Due to the excellent work of others, we will not have >2 cameras (via calibration support at this time). We also opt not to have them in DLC, as we want users to have the most flexibility in their systems. Here are other excellent options for you to use: 
+ 
+- anipose.org; a wrapper for 3d deeplabcut (using openCV, numpy, scipy) | https://github.com/lambdaloop/anipose
+  - it is a pip install package that uses "calligator" https://github.com/lambdaloop/calligator, and can be installed inside your DLC conda env.
+- using Argus, easywand or DLTdv w/deeplabcut https://github.com/haliaetus13/DLCconverterDLT
+   - this can be used with the the highly popular Argus or DLTdv tools for wand calibration. 
