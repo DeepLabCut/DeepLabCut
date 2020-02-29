@@ -26,7 +26,7 @@ You can have as many projects on your computer as you wish. You can have DeepLab
 <img src=  https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559758477126-B9PU1EFA7L7L1I24Z2EH/ke17ZwdGBToddI8pDm48kH6mtUjqMdETiS6k4kEkCoR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UQf4d-kVja3vCG3Q_2S8RPAcZTZ9JxgjXkf3-Un9aT84H3bqxw7fF48mhrq5Ulr0Hg/howtouseDLC2d_3d-01.png?format=500w width="60%">
  </p>
 
-**Coming soon:** as of 2.2 we support multi-animal projects. The workflow is highly similar, but with some key steps that differ. Please carefully review the functions below for more details. You can search/look for **maDeepLabCut** for specific steps that are changed.
+**Coming soon:** as of 2.2 we support multi-animal projects. The workflow is highly similar, but with some key steps that differ. Please carefully review the functions below for more details. You can search/look for **maDeepLabCut** for specific steps that are changed. But until the package (2.2) is released, these steps are not functional.
 
 As of 2.1+ we support a full [Project Manager GUI](/docs/PROJECT_GUI.md) to run the software. As of 2.0.7+ we support 3D analysis directly inside our package. Please see the [3D details here](/docs/Overviewof3D.md). 
 
