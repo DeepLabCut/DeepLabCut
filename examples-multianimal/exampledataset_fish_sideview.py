@@ -49,7 +49,21 @@ try:
 except FileExistsError:
     print("Folder exists already...")
 '''
+trainposeconfigfile,testposeconfigfile,snapshotfolder=deeplabcut.return_train_network_path(path_config_file,shuffle=shuffle)
 
+cfg_dlc=deeplabcut.auxiliaryfunctions.read_plainconfig(trainposeconfigfile)
+cfg_dlc['bank3']=128
+cfg_dlc['bank5']=128
+cfg_dlc['smfactor']=4
+cfg_dlc['stride']=4
+cfg_dlc['augmentationprobability']=.6
+cfg_dlc['weigh_only_present_joints']=False
+cfg_dlc['cropratio']=.8
+cfg_dlc['cropfactor']=.2
+cfg_dlc['rotation']=180 #can also be an integer def. -10,10 if true.
+cfg_dlc['covering']=True
+cfg_dlc['motion_blur'] = True #[["k", 7],["angle", [-90, 90]]]
+deeplabcut.auxiliaryfunctions.write_plainconfig(trainposeconfigfile,cfg_dlc)
 
 saveiters=5000
 displayiters=500
@@ -64,7 +78,7 @@ deeplabcut.train_network(path_config_file, shuffle=shuffle,trainingsetindex=trai
 nmspath = 'deeplabcut/pose_estimation_tensorflow/lib/nms_cython'
 sys.path.append(os.path.join('/usr/local/lib/python3.6/dist-packages',nmspath))
 
-trainposeconfigfile,testposeconfigfile,snapshotfolder=deeplabcut.return_train_network_path(path_config_file,shuffle=shuffle)
+
 cfg_dlc=deeplabcut.auxiliaryfunctions.read_plainconfig(testposeconfigfile)
 cfg_dlc['partaffinityfield_predict']=True
 cfg_dlc['dataset_type']='multi-animal-imgaug'
