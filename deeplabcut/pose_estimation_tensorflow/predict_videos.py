@@ -34,7 +34,7 @@ from skimage.util import img_as_ubyte
 
 def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0,
                     gputouse=None, save_as_csv=False, destfolder=None, batchsize=None,
-                    cropping=None,get_nframesfrommetadata=True, TFGPUinference=True,dynamic=(False,.5,10)):
+                    cropping=None,get_nframesfrommetadata=True, TFGPUinference=True,dynamic=(False,.5,10),modelprefix=''):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
 
@@ -132,7 +132,7 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
         print("Overwriting cropping parameters:", cropping)
         print("These are used for all videos, but won't be save to the cfg file.")
 
-    modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)))
+    modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)))
     path_test_config = Path(modelfolder) / 'test' / 'pose_cfg.yaml'
     try:
         dlc_cfg = load_config(str(path_test_config))
@@ -474,7 +474,7 @@ def AnalyzeVideo(video,DLCscorer,DLCscorerlegacy,trainFraction,cfg,dlc_cfg,sess,
     if destfolder is None:
         destfolder = str(Path(video).parents[0])
 
-    notanalyzed,dataname, DLCscorer=auxiliaryfunctions.CheckifNotAnalyzed(destfolder,vname,DLCscorer,DLCscorerlegacy)
+    notanalyzed,dataname, DLCscorer=auxiliaryfunctions.CheckifNotAnalyzed(destfolder,Path(video).stem,DLCscorer,DLCscorerlegacy)
     if notanalyzed:
         print("Loading ", video)
         cap=cv2.VideoCapture(video)
@@ -619,7 +619,7 @@ def GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nfra
 
 
 def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,
-                trainingsetindex=0,gputouse=None,save_as_csv=False,rgb=True):
+                trainingsetindex=0,gputouse=None,save_as_csv=False,rgb=True,modelprefix=''):
     """
     Analyzed all images (of type = frametype) in a folder and stores the output in one file.
 
@@ -685,7 +685,7 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,
 
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg['TrainingFraction'][trainingsetindex]
-    modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)))
+    modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)))
     path_test_config = Path(modelfolder) / 'test' / 'pose_cfg.yaml'
     try:
         dlc_cfg = load_config(str(path_test_config))
@@ -790,7 +790,7 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,
 
     os.chdir(str(start_path))
 
-def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, trainingsetindex=0, destfolder=None,BPTS=None, iBPTS=None,PAF=None):
+def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, trainingsetindex=0, destfolder=None,BPTS=None, iBPTS=None,PAF=None,modelprefix=''):
     """
     WIP function. Ulimatly, should be called at the end of deeplabcut.analyze for a multianimal project!
 
@@ -830,7 +830,7 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
     #    print("Overwriting cropping parameters:", cropping)
     #    print("These are used for all videos, but won't be save to the cfg file.")
 
-    modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)))
+    modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)))
     path_test_config = Path(modelfolder) / 'test' / 'pose_cfg.yaml'
     try:
         dlc_cfg = load_config(str(path_test_config))

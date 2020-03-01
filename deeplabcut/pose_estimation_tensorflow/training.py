@@ -11,7 +11,7 @@ Licensed under GNU Lesser General Public License v3.0
 import os
 from pathlib import Path
 
-def return_train_network_path(config, shuffle=1, trainingsetindex=0):
+def return_train_network_path(config, shuffle=1, trainingsetindex=0,modelprefix=''):
     ''' Returns the training and test pose config file names as well as the folder where the snapshot is
     Parameters
     ----------
@@ -28,7 +28,7 @@ def return_train_network_path(config, shuffle=1, trainingsetindex=0):
     '''
     from deeplabcut.utils import auxiliaryfunctions
     cfg = auxiliaryfunctions.read_config(config)
-    modelfoldername=auxiliaryfunctions.GetModelFolder(cfg["TrainingFraction"][trainingsetindex],shuffle,cfg)
+    modelfoldername=auxiliaryfunctions.GetModelFolder(cfg["TrainingFraction"][trainingsetindex],shuffle,cfg,modelprefix=modelprefix)
     trainposeconfigfile=Path(os.path.join(cfg['project_path'],str(modelfoldername),"train","pose_cfg.yaml"))
     testposeconfigfile=Path(os.path.join(cfg['project_path'],str(modelfoldername),"test","pose_cfg.yaml"))
     snapshotfolder=Path(os.path.join(cfg['project_path'],str(modelfoldername),'train'))
@@ -38,7 +38,7 @@ def return_train_network_path(config, shuffle=1, trainingsetindex=0):
 
 def train_network(config,shuffle=1,trainingsetindex=0,
                   max_snapshots_to_keep=5,displayiters=None,saveiters=None,maxiters=None,
-                  allow_growth=False,gputouse=None,autotune=False,keepdeconvweights=True):
+                  allow_growth=False,gputouse=None,autotune=False,keepdeconvweights=True,modelprefix=''):
     """Trains the network with the labels in the training dataset.
 
     Parameter
@@ -111,7 +111,7 @@ def train_network(config,shuffle=1,trainingsetindex=0,
 
     # Read file path for pose_config file. >> pass it on
     cfg = auxiliaryfunctions.read_config(config)
-    modelfoldername=auxiliaryfunctions.GetModelFolder(cfg["TrainingFraction"][trainingsetindex],shuffle,cfg)
+    modelfoldername=auxiliaryfunctions.GetModelFolder(cfg["TrainingFraction"][trainingsetindex],shuffle,cfg,modelprefix=modelprefix)
     poseconfigfile=Path(os.path.join(cfg['project_path'],str(modelfoldername),"train","pose_cfg.yaml"))
     if not poseconfigfile.is_file():
         print("The training datafile ", poseconfigfile, " is not present.")

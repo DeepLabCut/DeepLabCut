@@ -38,7 +38,8 @@ def Plotting(cfg,comparisonbodyparts,DLCscorer,trainIndices,DataCombined,foldern
     for ind in tqdm(np.arange(NumFrames)):
         visualization.PlottingandSaveLabeledFrame(DataCombined,ind,trainIndices,cfg,colors,comparisonbodyparts,DLCscorer,foldername)
 
-def return_evaluate_network_data(config,shuffle=0,trainingsetindex=0,comparisonbodyparts="all",Snapindex=None,rescale=False,fulldata=False,show_errors = True):
+def return_evaluate_network_data(config,shuffle=0,trainingsetindex=0,comparisonbodyparts="all",Snapindex=None,
+                                rescale=False,fulldata=False,show_errors = True,modelprefix=''):
     """
     Returns the results for (previously evaluated) network. deeplabcut.evaluate_network(..)
     Returns list of (per model): [trainingsiterations,trainfraction,shuffle,trainerror,testerror,pcutoff,trainerrorpcutoff,testerrorpcutoff,Snapshots[snapindex],scale,net_type]
@@ -98,7 +99,7 @@ def return_evaluate_network_data(config,shuffle=0,trainingsetindex=0,comparisonb
     ##################################################
     trainFraction=cfg["TrainingFraction"][trainingsetindex]
     datafn,metadatafn=auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,trainFraction,shuffle,cfg)
-    modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)))
+    modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)))
     path_test_config = Path(modelfolder) / 'test' / 'pose_cfg.yaml'
     # Load meta data
     data, trainIndices, testIndices, trainFraction=auxiliaryfunctions.LoadMetadata(os.path.join(cfg["project_path"],metadatafn))
@@ -179,7 +180,8 @@ def return_evaluate_network_data(config,shuffle=0,trainingsetindex=0,comparisonb
     else:
         return results
 
-def evaluate_network(config,Shuffles=[1],trainingsetindex=0,plotting = None,show_errors = True,comparisonbodyparts="all",gputouse=None, rescale=False):
+def evaluate_network(config,Shuffles=[1],trainingsetindex=0,plotting = None,
+                    show_errors = True,comparisonbodyparts="all",gputouse=None, rescale=False,modelprefix=''):
     """
 
     Evaluates the network based on the saved models at different stages of the training network.\n
@@ -277,7 +279,7 @@ def evaluate_network(config,Shuffles=[1],trainingsetindex=0,plotting = None,show
                 ##################################################
                 datafn,metadatafn=auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,trainFraction,shuffle,cfg)
 
-                modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)))
+                modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)))
                 path_test_config = Path(modelfolder) / 'test' / 'pose_cfg.yaml'
                 # Load meta data
                 data, trainIndices, testIndices, trainFraction=auxiliaryfunctions.LoadMetadata(os.path.join(cfg["project_path"],metadatafn))
@@ -291,7 +293,7 @@ def evaluate_network(config,Shuffles=[1],trainingsetindex=0,plotting = None,show
                 dlc_cfg['batch_size']=1 #in case this was edited for analysis.
 
                 #Create folder structure to store results.
-                evaluationfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetEvaluationFolder(trainFraction,shuffle,cfg)))
+                evaluationfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetEvaluationFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)))
                 auxiliaryfunctions.attempttomakefolder(evaluationfolder,recursive=True)
                 #path_train_config = modelfolder / 'train' / 'pose_cfg.yaml'
 

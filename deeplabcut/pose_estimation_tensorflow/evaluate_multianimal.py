@@ -19,7 +19,8 @@ import pandas as pd
 from tqdm import tqdm
 from pathlib import Path
 
-def evaluate_multianimal_full(config,Shuffles=[1],trainingsetindex=0,plotting = None,show_errors = True,comparisonbodyparts="all",gputouse=None,modelprefix=''):
+def evaluate_multianimal_full(config,Shuffles=[1],trainingsetindex=0,
+    plotting = None,show_errors = True,comparisonbodyparts="all",gputouse=None,modelprefix=''):
     """
     WIP multi animal project.
     """
@@ -69,7 +70,7 @@ def evaluate_multianimal_full(config,Shuffles=[1],trainingsetindex=0,plotting = 
             # Load and setup CNN part detector
             ##################################################
             datafn,metadatafn=auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,trainFraction,shuffle,cfg)
-            modelfolder=os.path.join(cfg["project_path"],modelprefix,str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)))
+            modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)))
             path_test_config = Path(modelfolder) / 'test' / 'pose_cfg.yaml'
 
             # Load meta data
@@ -87,7 +88,7 @@ def evaluate_multianimal_full(config,Shuffles=[1],trainingsetindex=0,plotting = 
             #assert(cfg['batch_size'] >1)
             #TODO: IMPLEMENT!
             #Create folder structure to store results.
-            evaluationfolder=os.path.join(cfg["project_path"],modelprefix,str(auxiliaryfunctions.GetEvaluationFolder(trainFraction,shuffle,cfg)))
+            evaluationfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetEvaluationFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)))
             auxiliaryfunctions.attempttomakefolder(evaluationfolder,recursive=True)
             #path_train_config = modelfolder / 'train' / 'pose_cfg.yaml'
 
