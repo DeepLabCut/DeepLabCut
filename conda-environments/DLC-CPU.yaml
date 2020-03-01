@@ -20,7 +20,7 @@ dependencies:
   - pip
   - jupyter
   - nb_conda
-  - tensorflow==1.14
+  - tensorflow==1.13.1
   - wxpython
   - Shapely
   - pip:
