@@ -279,7 +279,7 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True, cr
                         y0,x0=np.random.randint(h-size[0]),np.random.randint(w-size[1])
                         newimname=str(Path(imagename).stem+'c'+str(cropindex).zfill(indexlength)+'.png')
 
-                        data=Data.ix[index].copy()
+                        data=Data.iloc[index].copy()
                         for ind in individuals:
                             if ind == 'single':
                                 for c, bp in enumerate(uniquebodyparts):

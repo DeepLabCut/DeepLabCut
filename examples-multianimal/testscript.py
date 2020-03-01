@@ -120,6 +120,8 @@ deeplabcut.analyze_videos(path_config_file,[newvideo],save_as_csv=True, destfold
 print("Making plots")
 deeplabcut.plot_trajectories(path_config_file, [newvideo], destfolder=dfolder)
 
+
+
 ##############################
 ########## PREFIX TEST!
 ##############################
@@ -150,3 +152,6 @@ deeplabcut.evaluate_network(path_config_file,plotting=True,modelprefix=modelpref
 destfolder=os.path.join(projectpath,modelprefix)
 print("ANALYZE")
 deeplabcut.analyze_videos(path_config_file,[newvideo],save_as_csv=True, destfolder=destfolder, dynamic=(True,.1,5),modelprefix=modelprefix)
+
+print("Making plots")
+deeplabcut.plot_trajectories(path_config_file, [newvideo], destfolder=destfolder,modelprefix=modelprefix)

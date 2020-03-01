@@ -233,7 +233,7 @@ def CreateVideoSlow(videooutname,clip,Dataframe, dotsize,colormap,alphavalue,pcu
     plt.switch_backend(prev_backend)
 
 
-def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,filtered=False,save_frames=False,Frames2plot=None, displayedbodyparts='all', displayedindividuals='all', codec='mp4v',outputframerate=None, destfolder=None,draw_skeleton=False,trailpoints = 0,displaycropped=False, color_by='bodypart'):
+def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,filtered=False,save_frames=False,Frames2plot=None, displayedbodyparts='all', displayedindividuals='all', codec='mp4v',outputframerate=None, destfolder=None,draw_skeleton=False,trailpoints = 0,displaycropped=False, color_by='bodypart',modelprefix=''):
     """
     Labels the bodyparts in a video. Make sure the video is already analyzed by the function 'analyze_video'
 
@@ -321,7 +321,7 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
     """
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg['TrainingFraction'][trainingsetindex]
-    DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction) #automatically loads corresponding model (even training iteration based on snapshot index)
+    DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,modelprefix=modelprefix) #automatically loads corresponding model (even training iteration based on snapshot index)
 
     bodyparts=auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg,displayedbodyparts)
     individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(cfg, displayedindividuals)

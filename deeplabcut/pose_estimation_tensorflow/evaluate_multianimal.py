@@ -126,10 +126,7 @@ def evaluate_multianimal_full(config,Shuffles=[1],trainingsetindex=0,
                     trainingsiterations = (dlc_cfg['init_weights'].split(os.sep)[-1]).split('-')[-1] #read how many training siterations that corresponds to.
 
                     #name for deeplabcut net (based on its parameters)
-                    #DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations)
-
-                    #DLCscorer = auxiliaryfunctions.GetScorerNamev2(cfg,dlc_cfg,shuffle,trainFraction,trainingsiterations)
-                    DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations)
+                    DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations,modelprefix=modelprefix)
                     print("Running ", DLCscorer, " with # of trainingiterations:", trainingsiterations)
                     resultsfilename=os.path.join(str(evaluationfolder),DLCscorer + '-' + Snapshots[snapindex]+  '.h5')
                     if os.path.isfile(resultsfilename.split('.h5')[0]+'_full.pickle'):

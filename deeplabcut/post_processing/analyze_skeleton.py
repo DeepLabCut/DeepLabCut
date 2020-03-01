@@ -148,7 +148,7 @@ def analyzebone(bp1, bp2):
     return df
 
 # MAIN FUNC
-def analyzeskeleton(config, videos, videotype='avi', shuffle=1, trainingsetindex=0, save_as_csv=False, destfolder=None):
+def analyzeskeleton(config, videos, videotype='avi', shuffle=1, trainingsetindex=0, save_as_csv=False, destfolder=None,modelprefix=''):
     """
     Extracts length and orientation of each "bone" of the skeleton as defined in the config file.
 
@@ -176,7 +176,7 @@ def analyzeskeleton(config, videos, videotype='avi', shuffle=1, trainingsetindex
     """
     # Load config file, scorer and videos
     cfg = auxiliaryfunctions.read_config(config)
-    DLCscorer,DLCscorerlegacy=auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction = cfg['TrainingFraction'][trainingsetindex])
+    DLCscorer,DLCscorerlegacy=auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction = cfg['TrainingFraction'][trainingsetindex],modelprefix=modelprefix)
 
     Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
     for video in Videos:

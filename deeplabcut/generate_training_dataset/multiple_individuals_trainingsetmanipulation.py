@@ -106,6 +106,7 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
     #actualbpts=set(Data.columns.get_level_values(0))
 
     def strip_cropped_image_name(path):
+        #utility function to split different crops from same image into either train or test!
         filename = os.path.split(path)[1]
         return filename.split('c')[0]
 

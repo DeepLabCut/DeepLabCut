@@ -25,7 +25,7 @@ from skimage.util import img_as_ubyte
 def extract_outlier_frames(config, videos, videotype='avi', shuffle=1, trainingsetindex=0, outlieralgorithm='jump',
                            comparisonbodyparts='all', epsilon=20, p_bound=.01, ARdegree=3, MAdegree=1, alpha=.01,
                            extractionalgorithm='kmeans', automatic=False, cluster_resizewidth=30, cluster_color=False,
-                           opencv=True, savelabeled=True, destfolder=None):
+                           opencv=True, savelabeled=True, destfolder=None,modelprefix=''):
     """
     Extracts the outlier frames in case, the predictions are not correct for a certain video from the cropped video running from
     start to stop as defined in config.yaml.
@@ -125,8 +125,8 @@ def extract_outlier_frames(config, videos, videotype='avi', shuffle=1, trainings
     if not len(bodyparts):
         raise ValueError('No valid bodyparts were selected.')
 
-    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg, shuffle, trainFraction=cfg['TrainingFraction'][
-        trainingsetindex])
+    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg, shuffle,
+                                        trainFraction=cfg['TrainingFraction'][trainingsetindex],modelprefix=modelprefix)
     Videos = auxiliaryfunctions.Getlistofvideos(videos, videotype)
     for video in Videos:
         if destfolder is None:

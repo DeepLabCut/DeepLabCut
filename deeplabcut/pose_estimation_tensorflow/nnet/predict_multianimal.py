@@ -99,7 +99,8 @@ def make_nms_grid(nms_radius):
     nms_radius = int(np.ceil(nms_radius))
     size = np.arange(2 * nms_radius + 1)
     xx, yy = np.meshgrid(size, size)
-    return np.where((xx - nms_radius) ** 2 + (yy - nms_radius) ** 2 <= nms_radius ** 2, 1, 0)
+    dist_grid=np.where((xx - nms_radius) ** 2 + (yy - nms_radius) ** 2 <= nms_radius ** 2, 1, 0)
+    return np.array(dist_grid,dtype=np.uint8)
 
 def extract_detections(cfg, scmap, locref, pafs, nms_radius, det_min_score):
     ''' Extract detections correcting by locref and estimating association costs based on PAFs '''

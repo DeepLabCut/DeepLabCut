@@ -106,7 +106,7 @@ def PlottingResults(tmpfolder, Dataframe, cfg, bodyparts2plot, individuals2plot,
 ##################################################
 
 def plot_trajectories(config, videos, videotype='.avi', shuffle=1, trainingsetindex=0, filtered=False,
-                      displayedbodyparts='all', displayedindividuals='all', showfigures=False, destfolder=None):
+                      displayedbodyparts='all', displayedindividuals='all', showfigures=False, destfolder=None,modelprefix=''):
     """
     Plots the trajectories of various bodyparts across the video.
 
@@ -151,7 +151,7 @@ def plot_trajectories(config, videos, videotype='.avi', shuffle=1, trainingsetin
     """
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg['TrainingFraction'][trainingsetindex]
-    DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction) #automatically loads corresponding model (even training iteration based on snapshot index)
+    DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction, modelprefix=modelprefix) #automatically loads corresponding model (even training iteration based on snapshot index)
     bodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg, displayedbodyparts)
     individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(cfg, displayedindividuals)
     Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
