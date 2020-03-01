@@ -50,7 +50,7 @@ except FileExistsError:
     print("Folder exists already...")
 '''
 trainposeconfigfile,testposeconfigfile,snapshotfolder=deeplabcut.return_train_network_path(path_config_file,shuffle=shuffle)
-
+'''
 cfg_dlc=deeplabcut.auxiliaryfunctions.read_plainconfig(trainposeconfigfile)
 cfg_dlc['bank3']=128
 cfg_dlc['bank5']=128
@@ -66,14 +66,14 @@ cfg_dlc['motion_blur'] = True #[["k", 7],["angle", [-90, 90]]]
 deeplabcut.auxiliaryfunctions.write_plainconfig(trainposeconfigfile,cfg_dlc)
 
 saveiters=5000
-displayiters=500
+displayiters=100
 
 print("Creating multianimal training set...")
 #deeplabcut.train_network(path_config_file, shuffle=shuffle,trainingsetindex=trainingsetindex,saveiters=saveiters,displayiters=displayiters)
 deeplabcut.train_network(path_config_file, shuffle=shuffle,trainingsetindex=trainingsetindex,
     saveiters=saveiters,displayiters=displayiters,max_snapshots_to_keep=2,maxiters=20000)
 
-
+'''
 ################## Analyze video
 nmspath = 'deeplabcut/pose_estimation_tensorflow/lib/nms_cython'
 sys.path.append(os.path.join('/usr/local/lib/python3.6/dist-packages',nmspath))
@@ -84,6 +84,10 @@ cfg_dlc['partaffinityfield_predict']=True
 cfg_dlc['dataset_type']='multi-animal-imgaug'
 cfg_dlc['nmsradius']=5.
 cfg_dlc['minconfidence']=.01
+cfg_dlc['bank3']=128
+cfg_dlc['bank5']=128
+cfg_dlc['smfactor']=4
+cfg_dlc['stride']=4
 deeplabcut.auxiliaryfunctions.write_plainconfig(testposeconfigfile,cfg_dlc)
 
 print("Starting inference for", shuffle)
