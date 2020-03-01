@@ -89,7 +89,7 @@ class TrackletManager:
         self.swapping_pairs = []
         self.swapping_bodyparts = []
 
-    def load_from_pickle(self, filename):
+    def load_tracklets_from_pickle(self, filename):
         with open(filename, 'rb') as file:
             tracklets = pickle.load(file)
         header = tracklets.pop('header')
@@ -108,19 +108,31 @@ class TrackletManager:
         for i, num in enumerate(num_individuals):
             for k, v in tracklets[num].items():
                 all_data[frames.index(k), i] = v
-        self.data = all_data.reshape(self.nframes, -1, 3)
+        data = all_data.reshape(self.nframes, -1, 3)
+
+        # Sort data by completeness so that unidentified tracklets are always the shortest
+        xy = data[:, :, :2]
+        full_frames = np.sum(~np.isnan(xy).any(axis=2), axis=0)
+        completeness = full_frames.reshape(-1, self.nbodyparts).sum(axis=1)
+        inds = np.argsort(completeness)[::-1]
+        tracklets_sorted = [i * self.nbodyparts + j for i in inds for j in range(self.nbodyparts)]
+        data_sorted = data[:, tracklets_sorted]
+        self.data = data_sorted
 
         # Remove the tracklets that contained too little information.
-        xy = self.data[:, :, :2]
-        full_frames = np.sum(~np.isnan(xy).any(axis=2), axis=0)
-        to_keep = full_frames > self.min_tracklet_frac * self.nframes
-        self.xy = xy[:, to_keep]
-        self.prob = self.data[:, to_keep, 2]
-        self.tracklet2id = [item for item, keep in zip(tracklet2id, to_keep) if keep]
+        # full_frames_sorted = full_frames[tracklets_sorted]
+        # to_keep = full_frames_sorted > self.min_tracklet_frac * self.nframes
+        # self.xy = self.data[:, to_keep, :2]
+        # self.prob = self.data[:, to_keep, 2]
+        # self.tracklet2id = [item for item, keep in zip(tracklet2id, to_keep) if keep]
+
+        self.xy = self.data[:, :, :2]
+        self.prob = self.data[:, :, 2]
+        self.tracklet2id = tracklet2id
         self.unidentified_tracklets = set(range(self.nindividuals * self.nbodyparts, len(self.tracklet2id)))
         self.find_swapping_bodypart_pairs()
 
-    def load_from_hdf(self, filename):
+    def load_tracklets_from_hdf(self, filename):
         # Only used for now to validate the data post refinement;
         # therefore we assume data are complete.
         df = pd.read_hdf(filename)
@@ -264,7 +276,7 @@ class TrackletVisualizer:
             coll.remove()
         if self.picked_pair:
             for ax in self.ax2, self.ax3:
-                ax.fill_between(self.manager.times, *self.ax2.dataLim.intervaly, mask,
+                ax.fill_between(self.manager.times, *ax.dataLim.intervaly, mask,
                                 facecolor='darkgray', alpha=0.2)
             trans = mtransforms.blended_transform_factory(self.ax_slider.transData, self.ax_slider.transAxes)
             self.ax_slider.vlines(np.flatnonzero(mask), 0, 0.5, color='darkorange', transform=trans)
@@ -370,8 +382,9 @@ class TrackletVisualizer:
     def display_traces(self):
         for n, (line_x, line_y) in enumerate(zip(self.lines_x, self.lines_y)):
             if n in self.manager.swapping_bodyparts or n in self.manager.unidentified_tracklets:
-                line_x.set_data(self.manager.times, self.manager.xy[:, n, 0])
-                line_y.set_data(self.manager.times, self.manager.xy[:, n, 1])
+                mask = ~np.isnan(self.manager.xy[:, n])
+                line_x.set_data(self.manager.times[mask[:, 0]], self.manager.xy[mask[:, 0], n, 0])
+                line_y.set_data(self.manager.times[mask[:, 1]], self.manager.xy[mask[:, 1], n, 1])
             else:
                 line_x.set_data([], [])
                 line_y.set_data([], [])
@@ -433,9 +446,10 @@ class IDTracker:
         self.picked = []
         self.picked_pair = []
         self.cuts = []
-        self.lag = 100
+        self.lag = 30
         self._swapping_pairs = None
         self.currently_selecting = False
+        self.cmap = plt.cm.get_cmap(self.cfg['colormap'], len(self.cfg['individuals']))
 
     def fill_unidentified_tracklets(self):
         # TODO Find # of identified tracklets
@@ -461,19 +475,27 @@ class IDTracker:
             for k, v in tracks[num].items():
                 all_data[all_frames.index(k), i] = v
         data = all_data.reshape(self.nframes, -1, 3)
+
         xy = data[:, :, :2]
+        full_frames = np.sum(~np.isnan(xy).any(axis=2), axis=0)
+        # TODO Always set the least complete tracklets as unidentified
+        completeness = full_frames.reshape(-1, self.nbodyparts).sum(axis=1)
+        inds = np.argsort(completeness)[::-1]
+        tracklets_sorted = [i * self.nbodyparts + j for i in inds for j in range(self.nbodyparts)]
+        data_sorted = data[:, tracklets_sorted]
+        self.data = data_sorted
 
         # Remove the tracklets that contained too little information.
-        mask = np.sum(~np.isnan(xy).any(axis=2), axis=0)
-        to_keep = mask > self.min_tracklet_frac * self.nframes
-        self._xy = xy[:, to_keep]
-        self.xy = self._xy.copy()
-        self.prob = data[:, to_keep, 2]
+        full_frames_sorted = full_frames[tracklets_sorted]
+        # to_keep = full_frames_sorted > self.min_tracklet_frac * self.nframes
+        # self._xy = xy[:, to_keep]
+        self.xy = self.data[:, :, :2]
+        self.prob = self.data[:, :, 2]
         ntracklets = self.xy.shape[1]
         mapping = [i for i in range(len(num_tracks)) for _ in range(self.nbodyparts)]  # Map a bodypart # to the animal ID it belongs to
-        self.mapping = [m for m, keep in zip(mapping, to_keep) if keep]
+        # self.mapping = [m for m, keep in zip(mapping, to_keep) if keep]
+        self.mapping = mapping
         self.unidentified_tracks = set(range(len(individuals) * self.nbodyparts, len(self.mapping)))
-        self.cmap = plt.cm.get_cmap(self.cfg['colormap'], len(individuals))
         self.find_swapping_bodypart_pairs()
 
     def _prepare_canvas(self, img):
@@ -498,7 +520,7 @@ class IDTracker:
         colors[len(self.cfg['individuals']) * self.nbodyparts:] = 0, 0, 0, 1
         colors[:, -1] = self.cfg['alphavalue']
         self.im = self.ax1.imshow(img)
-        self.scat = self.ax1.scatter([], [], s=200, picker=True)
+        self.scat = self.ax1.scatter([], [], s=30, picker=True)
         self.scat.set_offsets(self.xy[0])
         self.scat.set_color(colors)
         self.selector = PointSelector(self, self.ax1, self.scat, self.cfg['alphavalue'])
@@ -514,7 +536,7 @@ class IDTracker:
         for line in self.leg.get_lines():
             line.set_picker(5)
 
-        self.display_traces()
+        # self.display_traces()
         self.newax = self.fig.add_axes([0.2, 0.1, 0.65, 0.03], facecolor='lightgray')
         self.slider = Slider(self.newax, '# Frame', 0, self.nframes - 1, valinit=0, valstep=1, valfmt='%i')
         self.slider.on_changed(self.on_change)
@@ -604,9 +626,11 @@ class IDTracker:
             self.display_traces()
             self.slider.set_val(int(self.slider.val))
         elif event.key == 'x':
-            self.cuts.append(i)
+            # if len(self.cuts) > 1:
+            #     self.cuts = []
+            # self.cuts.append(i)
             if len(self.cuts) > 1:
-                self.track_crossings[self.picked_pair][self.cuts] = ~self.track_crossings[self.picked_pair][self.cuts]
+                self.track_crossings[self.picked][self.cuts] = ~self.track_crossings[self.picked][self.cuts]
                 self.fill_shaded_areas()
                 self.cuts = []
         elif event.key == 'l':
@@ -632,7 +656,11 @@ class IDTracker:
                 inds = [nrow + pick % self.nbodyparts for pick in valid_picks]
                 xy = self.xy[:, valid_picks]
                 p = self.prob[:, valid_picks]
-                mask = ~np.isnan(xy).any(axis=(1, 2))
+                if len(self.cuts) != 2:
+                    mask = ~np.isnan(xy).any(axis=(1, 2))
+                else:
+                    mask = np.zeros(len(xy), dtype=bool)
+                    mask[self.cuts[0]:self.cuts[1]] = True
                 sl_inds = np.ix_(mask, inds)
                 sl_picks = np.ix_(mask, valid_picks)
                 # Ensure that we do not overwrite identified tracklets
@@ -650,6 +678,7 @@ class IDTracker:
                     except KeyError:
                         pass
                 self.display_traces()
+                self.cuts = []
         self.picked_pair = []
         if len(self.picked) == 1:
             for pair in self.find_swapping_bodypart_pairs():
@@ -682,8 +711,9 @@ class IDTracker:
     def display_traces(self):
         for n, (line_x, line_y) in enumerate(zip(self.lines_x, self.lines_y)):
             if n in self._swapping_bodyparts or n in self.unidentified_tracks:
-                line_x.set_data(self.times, self.xy[:, n, 0])
-                line_y.set_data(self.times, self.xy[:, n, 1])
+                mask = ~np.isnan(self.xy[:, n])
+                line_x.set_data(self.times[mask[:, 0]], self.xy[mask[:, 0], n, 0])
+                line_y.set_data(self.times[mask[:, 1]], self.xy[mask[:, 1], n, 1])
             else:
                 line_x.set_data([], [])
                 line_y.set_data([], [])
@@ -731,6 +761,20 @@ class IDTracker:
         df.to_hdf(output_name, 'df_with_missing', format='table', mode='w')
 
 
-tracker = IDTracker('/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/silversideschooling-Valentina-2019-07-14/config.yaml')
-tracker.load_tracklets_from_pickle('/Users/Jessy/Downloads/deeplc.menidia.school4.59rpm.S11.D.shortDLC_resnet50_silversideschoolingJul14shuffle0_30000tracks.pickle')
-tracker.visualize('/Users/Jessy/Downloads/deeplc.menidia.school4.59rpm.S11.D.short.avi')
+config = '/Users/Jessy/Downloads/data/config.yaml'
+filename = '/Users/Jessy/Downloads/data/videocompressed0DLC_resnet50_MultiMouseDec16shuffle2_20000tracks1.pickle'
+video = '/Users/Jessy/Downloads/data/videocompressed0.mp4'
+
+config = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/silversideschooling-Valentina-2019-07-14/config.yaml'
+filename = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/silversideschooling-Valentina-2019-07-14/videos/deeplc.menidia.school4.59rpm.S11.D.shortDLC_resnet50_silversideschoolingJul14shuffle0_30000tracks.pickle'
+video = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/silversideschooling-Valentina-2019-07-14/videos/deeplc.menidia.school4.59rpm.S11.D.short.avi'
+
+# tracker = IDTracker(config)
+# tracker.load_tracklets_from_pickle(filename)
+# tracker.load_tracklets_from_hdf('mice_temp3.h5')
+# tracker.visualize(video)
+
+manager = TrackletManager(config, 0, 0)
+manager.load_tracklets_from_pickle(filename)
+viz = TrackletVisualizer(manager, video, 50)
+viz.show()
