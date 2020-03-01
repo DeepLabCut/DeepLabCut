@@ -319,7 +319,7 @@ class MainFrame(wx.Frame):
 
         self.machinefile = os.path.join(str(output_path),'machinelabels-iter'+str(self.iterationindex)+'.h5')
         name = str(fname.stem)
-        DF = self.Dataframe.ix[[self.currFrame]]
+        DF = self.Dataframe.iloc[[self.currFrame]]
         DF.index=[os.path.join('labeled-data',name,"img"+str(index).zfill(self.strwidth)+".png") for index in DF.index]
         img_name = str(output_path) +'/img'+str(self.currFrame).zfill(int(np.ceil(np.log10(self.numberFrames)))) + '.png'
         labeled_img_name = str(output_path) +'/img'+str(self.currFrame).zfill(int(np.ceil(np.log10(self.numberFrames)))) + 'labeled.png'
