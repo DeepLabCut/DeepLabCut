@@ -25,7 +25,7 @@ from scipy import signal
 
 def filterpredictions(config,video,videotype='avi',shuffle=1,trainingsetindex=0,
             filtertype='median',windowlength=5,
-            p_bound=.001,ARdegree=3,MAdegree=1,alpha=.01,save_as_csv=True,destfolder=None):
+            p_bound=.001,ARdegree=3,MAdegree=1,alpha=.01,save_as_csv=True,destfolder=None,modelprefix=''):
     """
 
     Fits frame-by-frame pose predictions with ARIMA model (filtertype='arima') or median filter (default).
@@ -92,7 +92,7 @@ def filterpredictions(config,video,videotype='avi',shuffle=1,trainingsetindex=0,
     Returns filtered pandas array with the same structure as normal output of network.
     """
     cfg = auxiliaryfunctions.read_config(config)
-    DLCscorer,DLCscorerlegacy=auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction = cfg['TrainingFraction'][trainingsetindex])
+    DLCscorer,DLCscorerlegacy=auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction = cfg['TrainingFraction'][trainingsetindex],modelprefix=modelprefix)
     Videos=auxiliaryfunctions.Getlistofvideos(video,videotype)
 
     if len(Videos)>0:

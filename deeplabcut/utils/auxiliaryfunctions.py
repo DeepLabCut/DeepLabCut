@@ -479,7 +479,7 @@ def LoadAnalyzedData(videofolder,vname,DLCscorer,filtered):
     else:
         fn=os.path.join(videofolder,vname + DLCscorer + '.h5')
         suffix=''
-    try: #TODO: Check if DLCscorer is correct? (based on lookup in pickle?)
+    try: #TODO: Check if DLCscorer is the same? (based on lookup in pickle?)
         Dataframe = pd.read_hdf(fn)
         metadata=LoadVideoMetadata(fn)
         datafound=True

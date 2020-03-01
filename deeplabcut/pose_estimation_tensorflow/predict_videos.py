@@ -186,7 +186,7 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
         print("Switching batchsize to 1, num_outputs (per animal) to 1 and TFGPUinference to False (all these features are not supported in this mode).")
 
     # Name for scorer:
-    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations)
+    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations,modelprefix=modelprefix)
     if dlc_cfg['num_outputs']>1:
         if  TFGPUinference:
             print("Switching to numpy-based keypoint extraction code, as multiple point extraction is not supported by TF code currently.")
@@ -720,7 +720,7 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,
     dlc_cfg['batch_size'] = cfg['batch_size']
 
     # Name for scorer:
-    DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations)
+    DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations,modelprefix=modelprefix)
     sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
 
     # update number of outputs and adjust pandas indices
@@ -891,7 +891,7 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
     trainingsiterations = (dlc_cfg['init_weights'].split(os.sep)[-1]).split('-')[-1]
 
     # Name for scorer:
-    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations)
+    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations,modelprefix=modelprefix)
 
     ##################################################
     # Looping over videos
