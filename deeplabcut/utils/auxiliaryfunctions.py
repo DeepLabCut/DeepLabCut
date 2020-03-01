@@ -327,24 +327,23 @@ def GetTrainingSetFolder(cfg):
     iterate = 'iteration-'+str(cfg['iteration'])
     return Path(os.path.join('training-datasets',iterate,'UnaugmentedDataSet_' + Task + date))
 
-def GetModelFolder(trainFraction,shuffle,cfg):
-    Task = cfg['Task']
-    date = cfg['date']
-    iterate = 'iteration-'+str(cfg['iteration'])
-    return Path('dlc-models/'+ iterate+'/'+Task + date + '-trainset' + str(int(trainFraction * 100)) + 'shuffle' + str(shuffle))
-
-def GetEvaluationFolder(trainFraction,shuffle,cfg):
-    Task = cfg['Task']
-    date = cfg['date']
-    iterate = 'iteration-'+str(cfg['iteration'])
-    return Path('evaluation-results/'+ iterate+'/'+Task + date + '-trainset' + str(int(trainFraction * 100)) + 'shuffle' + str(shuffle))
-
 def GetDataandMetaDataFilenames(trainingsetfolder,trainFraction,shuffle,cfg):
     # Filename for metadata and data relative to project path for corresponding parameters
     metadatafn=os.path.join(str(trainingsetfolder) , 'Documentation_data-' + cfg["Task"] + "_" + str(int(trainFraction * 100)) + "shuffle" + str(shuffle) + '.pickle')
     datafn=os.path.join(str(trainingsetfolder) ,cfg["Task"] + "_" + cfg["scorer"] + str(int(100 * trainFraction)) + "shuffle" + str(shuffle)+ '.mat')
     return datafn,metadatafn
 
+def GetModelFolder(trainFraction,shuffle,cfg,modelprefix=''):
+    Task = cfg['Task']
+    date = cfg['date']
+    iterate = 'iteration-'+str(cfg['iteration'])
+    return Path(modelprefix,'dlc-models/'+ iterate+'/'+Task + date + '-trainset' + str(int(trainFraction * 100)) + 'shuffle' + str(shuffle))
+
+def GetEvaluationFolder(trainFraction,shuffle,cfg,modelprefix=''):
+    Task = cfg['Task']
+    date = cfg['date']
+    iterate = 'iteration-'+str(cfg['iteration'])
+    return Path(modelprefix,'evaluation-results/'+ iterate+'/'+Task + date + '-trainset' + str(int(trainFraction * 100)) + 'shuffle' + str(shuffle))
 
 def IntersectionofBodyPartsandOnesGivenbyUser(cfg,comparisonbodyparts):
     ''' Returns all body parts when comparisonbodyparts=='all', otherwise all bpts that are in the intersection of comparisonbodyparts and the actual bodyparts '''
@@ -367,7 +366,7 @@ def form_data_containers(df, bodyparts):
     df_y = df_masked.xs('y', level=-1, axis=1).values.T
     return df_x, df_y, df_likelihood
 
-def GetScorerName(cfg,shuffle,trainFraction,trainingsiterations='unknown'):
+def GetScorerName(cfg,shuffle,trainFraction,trainingsiterations='unknown',modelprefix=''):
     ''' Extract the scorer/network name for a particular shuffle, training fraction, etc. '''
     Task = cfg['Task']
     date = cfg['date']
@@ -380,14 +379,14 @@ def GetScorerName(cfg,shuffle,trainFraction,trainingsiterations='unknown'):
         else:
             snapshotindex=cfg['snapshotindex']
 
-        modelfolder=os.path.join(cfg["project_path"],str(GetModelFolder(trainFraction,shuffle,cfg)),'train')
+        modelfolder=os.path.join(cfg["project_path"],str(GetModelFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)),'train')
         Snapshots = np.array([fn.split('.')[0]for fn in os.listdir(modelfolder) if "index" in fn])
         increasing_indices = np.argsort([int(m.split('-')[1]) for m in Snapshots])
         Snapshots = Snapshots[increasing_indices]
         SNP=Snapshots[snapshotindex]
         trainingsiterations = (SNP.split(os.sep)[-1]).split('-')[-1]
 
-    dlc_cfg=read_plainconfig(os.path.join(cfg["project_path"],str(GetModelFolder(trainFraction,shuffle,cfg)),'train','pose_cfg.yaml'))
+    dlc_cfg=read_plainconfig(os.path.join(cfg["project_path"],str(GetModelFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)),'train','pose_cfg.yaml'))
     if 'resnet' in dlc_cfg['net_type']: #ABBREVIATE NETWORK NAMES -- esp. for mobilenet!
         netname=dlc_cfg['net_type'].replace('_','')
     else: #mobilenet >> mobnet_100; mobnet_35 etc.

@@ -121,6 +121,69 @@ class PoseNet:
         heads = self.get_net(inputs)
         return self.add_inference_layers(heads)
 
+    def inference(self,inputs):
+        ''' Direct TF inference on GPU.
+        Added with: https://arxiv.org/abs/1909.11229 
+        '''
+        heads = self.get_net(inputs)
+        locref=heads['locref']
+        probs = tf.sigmoid(heads['part_pred'])
+
+        if self.cfg.batch_size==1:
+            #assuming batchsize 1 here!
+            probs = tf.squeeze(probs, axis=0)
+            locref = tf.squeeze(locref, axis=0)
+            l_shape = tf.shape(probs)
+
+            locref = tf.reshape(locref, (l_shape[0]*l_shape[1], -1, 2))
+            probs = tf.reshape(probs , (l_shape[0]*l_shape[1], -1))
+            maxloc = tf.argmax(probs, axis=0)
+
+            loc = tf.unravel_index(maxloc, (tf.cast(l_shape[0], tf.int64), tf.cast(l_shape[1], tf.int64)))
+            maxloc = tf.reshape(maxloc, (1, -1))
+
+            joints = tf.reshape(tf.range(0, tf.cast(l_shape[2], dtype=tf.int64)), (1,-1))
+            indices = tf.transpose(tf.concat([maxloc,joints] , axis=0))
+
+            offset = tf.gather_nd(locref, indices)
+            offset = tf.gather(offset, [1,0], axis=1)
+            likelihood = tf.reshape(tf.gather_nd(probs, indices), (-1,1))
+
+            pose = self.cfg.stride*tf.cast(tf.transpose(loc), dtype=tf.float32) + self.cfg.stride*0.5 + offset*self.cfg.locref_stdev
+            pose = tf.concat([pose, likelihood], axis=1)
+
+            return {'pose': pose}
+        else:
+            #probs = tf.squeeze(probs, axis=0)
+            l_shape = tf.shape(probs) #batchsize times x times y times body parts
+            #locref = locref*cfg.locref_stdev
+            locref = tf.reshape(locref, (l_shape[0],l_shape[1],l_shape[2],l_shape[3], 2))
+            #turn into x times y time bs * bpts
+            locref=tf.transpose(locref,[1,2,0,3,4])
+            probs=tf.transpose(probs,[1,2,0,3])
+
+            #print(locref.get_shape().as_list())
+            #print(probs.get_shape().as_list())
+            l_shape = tf.shape(probs) # x times y times batch times body parts
+
+            locref = tf.reshape(locref, (l_shape[0]*l_shape[1], -1, 2))
+            probs = tf.reshape(probs , (l_shape[0]*l_shape[1],-1))
+            maxloc = tf.argmax(probs, axis=0)
+            loc = tf.unravel_index(maxloc, (tf.cast(l_shape[0], tf.int64), tf.cast(l_shape[1], tf.int64))) #tuple of max indices
+
+            maxloc = tf.reshape(maxloc, (1, -1))
+            joints = tf.reshape(tf.range(0, tf.cast(l_shape[2]*l_shape[3], dtype=tf.int64)), (1,-1))
+            indices = tf.transpose(tf.concat([maxloc,joints] , axis=0))
+
+            #extract corresponding locref x and y as well as probability
+            offset = tf.gather_nd(locref, indices)
+            offset = tf.gather(offset, [1,0], axis=1)
+            likelihood = tf.reshape(tf.gather_nd(probs, indices), (-1,1))
+
+            pose = self.cfg.stride*tf.cast(tf.transpose(loc), dtype=tf.float32) + self.cfg.stride*0.5 + offset*self.cfg.locref_stdev
+            pose = tf.concat([pose, likelihood], axis=1)
+            return {'pose': pose}
+
     def add_inference_layers(self, heads):
         ''' initialized during inference '''
         prob = tf.sigmoid(heads['part_pred'])
