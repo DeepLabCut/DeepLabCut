@@ -790,7 +790,8 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,
 
     os.chdir(str(start_path))
 
-def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, trainingsetindex=0, destfolder=None,BPTS=None, iBPTS=None,PAF=None,modelprefix=''):
+def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1,
+    trainingsetindex=0, destfolder=None,BPTS=None, iBPTS=None,PAF=None,printintermediate=False,inferencecfg=None,modelprefix=''):
     """
     WIP function. Ulimatly, should be called at the end of deeplabcut.analyze for a multianimal project!
 
@@ -819,11 +820,13 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
     from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingutils
     from deeplabcut.utils import auxfun_multianimal
     from easydict import EasyDict as edict
-    #import yaml
+    import pickle
 
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg['TrainingFraction'][trainingsetindex]
+    start_path=os.getcwd() #record cwd to return to this directory in the end
 
+    #TODO: addd cropping as in video analysis!
     #if cropping is not None:
     #    cfg['cropping']=True
     #    cfg['x1'],cfg['x2'],cfg['y1'],cfg['y2']=cropping
@@ -841,36 +844,37 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
         raise ValueError("This function is only required for multianiaml projects!")
 
     path_inference_config = Path(modelfolder) / 'test' / 'inference_cfg.yaml'
-    try:
-        inferencecfg=auxiliaryfunctions.read_plainconfig(str(path_inference_config))
-        inferencecfg = edict(inferencecfg)
-        #with open(path_inference_config, 'r') as f:
-        #    inferencecfg= edict(yaml.load(f,Loader=yaml.SafeLoader))
-    except FileNotFoundError: #TODO: set this automatically
-        #Most of these parameters would be cross validated based on evaluation!
-        inferencecfg=edict()
-        inferencecfg.variant=0
 
-        inferencecfg.minimalnumberofconnections=2 #7
-        inferencecfg.averagescore=0.1
+    if inferencecfg is None: #then load or initialize
+        try:
+            inferencecfg=auxiliaryfunctions.read_plainconfig(str(path_inference_config))
+            inferencecfg = edict(inferencecfg)
+        except FileNotFoundError: #TODO: set this automatically
+            # Most of these parameters would be cross validated based on evaluation!
+            inferencecfg=edict()
+            inferencecfg.variant=0
+            inferencecfg.minimalnumberofconnections=2 #7
+            inferencecfg.averagescore=0.1
+            inferencecfg.distnormalizationLOWER=0
+            inferencecfg.distnormalization=400
 
-        inferencecfg.distnormalizationLOWER=0
-        inferencecfg.distnormalization=400
+            inferencecfg.detectionthresholdsquare=0.1
 
-        inferencecfg.detectionthresholdsquare=0.1
+            inferencecfg.addlikelihoods=.15
+            inferencecfg.pafthreshold=0.1
+            inferencecfg.method='m1'
+            inferencecfg.withid=False #TODO: set automatically (if >0 id channels!)
+            inferencecfg.topktoplot=3
+            ## bbox variable:
+            inferencecfg.boundingboxslack=10
+            # tracker variables // JESSY: YOU CAN OPTIMIZE THOSE!
+            inferencecfg.max_age=100
+            inferencecfg.min_hits=3
+            inferencecfg.iou_threshold=.2
+            auxiliaryfunctions.write_plainconfig(str(path_inference_config), dict(inferencecfg))
 
-        inferencecfg.addlikelihoods=.15
-        inferencecfg.pafthreshold=0.1
-        inferencecfg.method='m1'
-        inferencecfg.withid=False #TODO: set automatically (if >0 id channels!)
-        inferencecfg.topktoplot=3
-        ## bbox variable:
-        inferencecfg.boundingboxslack=10
-        # tracker variables // JESSY: YOU CAN OPTIMIZE THOSE!
-        inferencecfg.max_age=100
-        inferencecfg.min_hits=3
-        inferencecfg.iou_threshold=.2
-        auxiliaryfunctions.write_plainconfig(str(path_inference_config), dict(inferencecfg))
+    else: #TODO: check if all variables present
+        inferencecfg=edict(inferencecfg)
 
     # Check which snapshots are available and sort them by # iterations
     try:
@@ -904,9 +908,11 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
             print("Processing... ", video)
             if destfolder is None:
                 destfolder = str(Path(video).parents[0])
+
             vname = Path(video).stem
             dataname = os.path.join(destfolder,vname + DLCscorer + '.h5')
             data, metadata=auxfun_multianimal.LoadFullMultiAnimalData(dataname)
+
             print("Loaded", dataname)
             DLCscorer=metadata['data']['Scorer']
             dlc_cfg=metadata['data']['DLC-model-config file']
@@ -941,23 +947,23 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
             imnames=[fn for fn in data.keys() if fn !='metadata']
             Tracks={}
             for index,imname in tqdm(enumerate(imnames)):
-                #convert detections
+                # filter detections according to inferencecfg parameters
                 all_detections=inferenceutils.convertdetectiondict2listoflist(data[imname],imname,BPTS,withid=inferencecfg.withid)
-                # get connectinos according to inferencecfg parameters
 
-                #print(all_detections)
-
+                if printintermediate:
+                    print(all_detections)
+                # filter connectinos according to inferencecfg parameters
                 connection_all, special_k=inferenceutils.matchconnections(inferencecfg,data[imname],
                                             all_detections, iBPTS, partaffinityfield_graph, PAF)
 
-                print(connection_all)
-
+                if printintermediate:
+                    print(connection_all)
                 # assemble putative subsets
                 subset, candidate=inferenceutils.linkjoints2individuals(inferencecfg, all_detections, connection_all, special_k,
                                                             linkingpartaffinityfield_graph, iBPTS, numjoints=numjoints)
 
-                print("Subset",subset)
-
+                if printintermediate:
+                    print("Subset",subset)
                 sortedindividuals=np.argsort(-subset[:,-2]) #sort by top score!
                 if len(sortedindividuals)>inferencecfg.topktoplot:
                     sortedindividuals=sortedindividuals[:inferencecfg.topktoplot]
@@ -996,7 +1002,6 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
         os.chdir(str(start_path))
         print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
         print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
-
     else:
         print("No video/s found. Please check your path!")
 
