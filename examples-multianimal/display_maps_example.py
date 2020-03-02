@@ -37,9 +37,11 @@ plt.rcParams.update(params)
 nmspath = 'deeplabcut/pose_estimation_tensorflow/lib/nms_cython'
 sys.path.append(os.path.join('/usr/local/lib/python3.6/dist-packages',nmspath))
 
-configfile='/media/alex/dropboxdisk/Dropbox/InterestingCode/social_datasets/sideviews/silversideschooling-valentina-2019-04-19/config.yaml'
+basefolder='/media/alex/dropboxdisk/Dropbox/InterestingCode/social_datasets/sideviews/silversideschooling-valentina-2019-04-19'
 
-outfolder='/media/alex/dropboxdisk/Dropbox/InterestingCode/social_datasets/sideviews/silversideschooling-valentina-2019-04-19/visualization'
+basefolder='/media/alex/dropboxdisk/Dropbox/Collaborations/Cancer/DLCdev/examples-multianimal/MontBlanc-Daniel-2019-12-16'
+configfile=os.path.join(basefolder,'config.yaml')
+outfolder=os.path.join(basefolder,'visualization')
 
 deeplabcut.auxiliaryfunctions.attempttomakefolder(outfolder)
 cfg=deeplabcut.auxiliaryfunctions.read_config(configfile)
@@ -54,8 +56,6 @@ else:
     Maps=deeplabcut.visualizemaps(configfile,0,Indices=Ind)
     with open(filename, 'wb') as f:
             pickle.dump(Maps, f,pickle.HIGHEST_PROTOCOL)
-
-
 
 plotpaf=True
 plotscmap=True #True
