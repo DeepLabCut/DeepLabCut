@@ -205,9 +205,6 @@ def GetPoseandCostsS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes):
             counter+=1
 
     pbar.close()
-
-    #print("frame 0", PredicteData[0])
-    #print("frame 1", PredicteData[1])
     PredicteData['metadata']={
         'nms radius': dlc_cfg.nmsradius,
         'minimal confidence': dlc_cfg.minconfidence,

@@ -16,6 +16,12 @@ video=['/home/alex/Dropbox/InterestingCode/social_datasets/croppedNov18/montblan
 
 path_config_file='/media/alex/dropboxdisk/Dropbox/Collaborations/Cancer/DLCdev/examples-multianimal/MontBlanc-Daniel-2019-12-16/config.yaml'
 videopath='/media/alex/dropboxdisk/Dropbox/Collaborations/Cancer/DLCdev/examples-multianimal/MontBlanc-Daniel-2019-12-16/videos'
+
+shuffle=0
+trainingsetindex=0
+
+
+
 '''
 print("Plot labels...")
 #deeplabcut.check_labels(path_config_file)
@@ -29,9 +35,6 @@ print("Crop images...")
 
 #cfg=deeplabcut.utils.auxiliaryfunctions.read_config(path_config_file)
 #deeplabcut.utils.auxfun_multianimal.getpafgraph(cfg)
-
-shuffle=0
-trainingsetindex=0
 
 print("Creating multianimal training set...")
 deeplabcut.create_multianimaltraining_dataset(path_config_file,Shuffles=[shuffle])
@@ -60,6 +63,6 @@ print("Starting inference for", shuffle)
 deeplabcut.analyze_videos(path_config_file,[videopath],shuffle=shuffle,videotype='.mov')
 '''
 
-deeplabcut.convert_detections2tracklets(path_config_file,[videopath],videotype='.mov')
+#deeplabcut.convert_detections2tracklets(path_config_file,[videopath],shuffle=shuffle,videotype='.mov')
 
-deeplabcut.create_labeled_video(path_config_file,[videopath],videotype='.mov')
+deeplabcut.create_labeled_video(path_config_file,[videopath],shuffle=shuffle,videotype='.mov')

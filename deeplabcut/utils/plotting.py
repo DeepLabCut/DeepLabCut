@@ -25,7 +25,6 @@ def get_cmap(n, name='hsv'):
     RGB color; the keyword argument name must be a standard mpl colormap name.'''
     return plt.cm.get_cmap(name, n)
 
-
 def Histogram(vector,color,bins, ax=None):
     dvector=np.diff(vector)
     dvector=dvector[np.isfinite(dvector)]
@@ -33,7 +32,6 @@ def Histogram(vector,color,bins, ax=None):
         fig = plt.figure()
         ax = fig.add_subplot(111)
     ax.hist(dvector,color=color,histtype='step',bins=bins)
-
 
 def PlottingResults(tmpfolder, Dataframe, cfg, bodyparts2plot, individuals2plot, showfigures=False, suffix='.png'):
     ''' Plots poses vs time; pose x vs pose y; histogram of differences and likelihoods.'''

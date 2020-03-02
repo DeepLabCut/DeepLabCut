@@ -22,9 +22,11 @@ from deeplabcut.pose_estimation_tensorflow.predict_videos import *
 from deeplabcut.pose_estimation_tensorflow.test import *
 from deeplabcut.pose_estimation_tensorflow.train import *
 from deeplabcut.pose_estimation_tensorflow.training import *
+from deeplabcut.pose_estimation_tensorflow.visualizemaps import *
 
+'''
 import os
 if os.environ.get('DLClight', default=False) == 'True':
     pass
 else:
-    from deeplabcut.pose_estimation_tensorflow.vis_dataset import *
+'''

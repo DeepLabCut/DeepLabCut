@@ -2,18 +2,6 @@ import os, sys
 os.environ['DLClight']='True'
 import deeplabcut
 
-task='MontBlanc'
-scorer='Daniel'
-
-video=['/home/alex/Dropbox/InterestingCode/social_datasets/croppedNov18/montblanc.mov']
-
-#print("CREATING PROJECT")
-#path_config_file=deeplabcut.create_new_project(task,scorer,video,copy_videos=True,multianimal=True)
-
-#project already created!
-
-#path_config_file='/home/alex/Hacking/DLCreleases/DLCdev/examples-multianimal/MontBlanc-Daniel-2019-12-16/config.yaml'
-
 path_config_file='/media/alex/dropboxdisk/Dropbox/InterestingCode/social_datasets/sideviews/silversideschooling-valentina-2019-04-19/config.yaml'
 videopath='/media/alex/dropboxdisk/Dropbox/InterestingCode/social_datasets/sideviews/silversideschooling-valentina-2019-04-19/videos'
 
@@ -83,15 +71,20 @@ cfg_dlc=deeplabcut.auxiliaryfunctions.read_plainconfig(testposeconfigfile)
 cfg_dlc['partaffinityfield_predict']=True
 cfg_dlc['dataset_type']='multi-animal-imgaug'
 cfg_dlc['nmsradius']=5.
-cfg_dlc['minconfidence']=.01
+cfg_dlc['minconfidence']=.1
 cfg_dlc['bank3']=128
 cfg_dlc['bank5']=128
 cfg_dlc['smfactor']=4
 cfg_dlc['stride']=4
 deeplabcut.auxiliaryfunctions.write_plainconfig(testposeconfigfile,cfg_dlc)
 
+print("Evaluating network for shuffle ", shuffle)
+deeplabcut.evaluate_network(path_config_file,Shuffles=[shuffle])
+
 print("Starting inference for", shuffle)
-deeplabcut.analyze_videos(path_config_file,[videopath],shuffle=shuffle,videotype='.avi')
+#deeplabcut.analyze_videos(path_config_file,[videopath],shuffle=shuffle,videotype='.avi')
+
+
 '''
 
 deeplabcut.convert_detections2tracklets(path_config_file,[videopath],videotype='.mov')
