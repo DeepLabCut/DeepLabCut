@@ -357,7 +357,6 @@ def IntersectionofBodyPartsandOnesGivenbyUser(cfg,comparisonbodyparts):
                 cpbpts.append(bp)
         return cpbpts
 
-
 def form_data_containers(df, bodyparts):
     mask = df.columns.get_level_values('bodyparts').isin(bodyparts)
     df_masked = df.loc[:, mask]

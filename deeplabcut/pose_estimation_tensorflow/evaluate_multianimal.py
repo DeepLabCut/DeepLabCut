@@ -40,17 +40,16 @@ def evaluate_multianimal_full(config,Shuffles=[1],trainingsetindex=0,
     if 'TF_CUDNN_USE_AUTOTUNE' in os.environ:
         del os.environ['TF_CUDNN_USE_AUTOTUNE'] #was potentially set during training
 
-
     tf.reset_default_graph()
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' #
-#    tf.logging.set_verbosity(tf.logging.WARN)
-
-    start_path=os.getcwd()
-    # Read file path for pose_config file. >> pass it on
-
     if gputouse is not None: #gpu selectinon
             os.environ['CUDA_VISIBLE_DEVICES'] = str(gputouse)
 
+    start_path=os.getcwd()
+
+    ##################################################
+    # Load data...
+    ##################################################
     cfg = auxiliaryfunctions.read_config(config)
     if trainingsetindex=='all':
         TrainingFractions=cfg["TrainingFraction"]
@@ -81,12 +80,9 @@ def evaluate_multianimal_full(config,Shuffles=[1],trainingsetindex=0,
             except FileNotFoundError:
                 raise FileNotFoundError("It seems the model for shuffle %s and trainFraction %s does not exist."%(shuffle,trainFraction))
 
-            #change batch size, if it was edited during analysis!
-            #dlc_cfg['batch_size']=1 #in case this was edited for analysis.
+            #TODO: IMPLEMENT for different batch sizes?
+            dlc_cfg['batch_size']=1 #due to differently sized images!!!
 
-            dlc_cfg['batch_size']=1 #differently sized images!!!
-            #assert(cfg['batch_size'] >1)
-            #TODO: IMPLEMENT!
             #Create folder structure to store results.
             evaluationfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetEvaluationFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)))
             auxiliaryfunctions.attempttomakefolder(evaluationfolder,recursive=True)
@@ -111,12 +107,6 @@ def evaluate_multianimal_full(config,Shuffles=[1],trainingsetindex=0,
 
                 individuals,uniquebodyparts,multianimalbodyparts=auxfun_multianimal.extractindividualsandbodyparts(cfg)
 
-                #individuals = cfg['individuals']
-                #assert('single' not in individuals) #individuals is a reserved word!
-                #if cfg['uniquebodyparts']!='None':
-                #    individuals.extend(['single']) #add single body parts!
-                #    print("Adding single label.")
-
                 final_result=[]
                 ##################################################
                 # Compute predictions over images
@@ -126,9 +116,10 @@ def evaluate_multianimal_full(config,Shuffles=[1],trainingsetindex=0,
                     trainingsiterations = (dlc_cfg['init_weights'].split(os.sep)[-1]).split('-')[-1] #read how many training siterations that corresponds to.
 
                     #name for deeplabcut net (based on its parameters)
-                    DLCscorer = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations,modelprefix=modelprefix)
+                    DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations,modelprefix=modelprefix)
                     print("Running ", DLCscorer, " with # of trainingiterations:", trainingsiterations)
-                    resultsfilename=os.path.join(str(evaluationfolder),DLCscorer + '-' + Snapshots[snapindex]+  '.h5')
+                    notanalyzed,resultsfilename,DLCscorer=auxiliaryfunctions.CheckifNotEvaluated(str(evaluationfolder),DLCscorer,DLCscorerlegacy,Snapshots[snapindex])
+
                     if os.path.isfile(resultsfilename.split('.h5')[0]+'_full.pickle'):
                             print("Model already evaluated.", resultsfilename)
                     else:
@@ -136,7 +127,7 @@ def evaluate_multianimal_full(config,Shuffles=[1],trainingsetindex=0,
                         sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
 
                         Numimages = len(Data.index)
-                        #PredicteData = np.zeros((Numimages,3 * len(dlc_cfg['all_joints_names'])))
+
                         PredicteData ={}
                         print("Analyzing data...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
@@ -165,12 +156,8 @@ def evaluate_multianimal_full(config,Shuffles=[1],trainingsetindex=0,
 
                             PredicteData[imagename]={}
                             PredicteData[imagename]['index']=imageindex
-                            #PredicteData[imagename]['prediction']=predictma.get_detectionswithcosts(frame, dlc_cfg, sess, inputs, outputs, outall=False,nms_radius=dlc_cfg.nmsradius,det_min_score=dlc_cfg.minconfidence)
-                            #get_detectionswithcostsandGT(image,  groundtruthcoordinates, cfg, sess, inputs, outputs)
                             PredicteData[imagename]['prediction']=predictma.get_detectionswithcostsandGT(frame,  groundtruthcoordinates, dlc_cfg, sess, inputs, outputs, outall=False,nms_radius=dlc_cfg.nmsradius,det_min_score=dlc_cfg.minconfidence)
                             PredicteData[imagename]['groundtruth']=[groundtruthidentity, groundtruthcoordinates,GT]
-
-
 
                         sess.close() #closes the current tf session
                         PredicteData['metadata']={
@@ -179,7 +166,7 @@ def evaluate_multianimal_full(config,Shuffles=[1],trainingsetindex=0,
                             'PAFgraph': dlc_cfg.partaffinityfield_graph,
                             "all_joints": [[i] for i in range(len(dlc_cfg.all_joints))],
                             "all_joints_names": [dlc_cfg.all_joints_names[i] for i in range(len(dlc_cfg.all_joints))],
-
+                            "stride": dlc_cfg.get('stride',8)
                             }
                         print("Done and results stored for snapshot: ", Snapshots[snapindex])
 
