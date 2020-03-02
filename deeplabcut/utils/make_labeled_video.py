@@ -125,8 +125,8 @@ def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,bodyparts2plot,
         clip.close()
 
 
-def CreateVideoSlow(videooutname,clip,Dataframe, dotsize,colormap,alphavalue,pcutoff,trailpoints,
-                    cropping,x1,x2,y1,y2,bodyparts2plot,outputframerate,Frames2plot,
+def CreateVideoSlow(videooutname,clip,Dataframe, tmpfolder, dotsize,colormap,alphavalue,pcutoff,trailpoints,
+                    cropping,x1,x2,y1,y2,delete,bodyparts2plot,outputframerate,Frames2plot,
                     bodyparts2connect,skeleton_color,draw_skeleton,displaycropped,color_by):
     ''' Creating individual frames with labeled body parts and making a video'''
     #scorer=np.unique(Dataframe.columns.get_level_values(0))[0]
@@ -183,6 +183,7 @@ def CreateVideoSlow(videooutname,clip,Dataframe, dotsize,colormap,alphavalue,pcu
     writer = FFMpegWriter(fps=fps, codec='h264')
     with writer.saving(fig, videooutname, dpi=dpi):
         for index in trange(nframes):
+            imagename = tmpfolder + "/file" + str(index).zfill(nframes_digits) + ".png"
             image = img_as_ubyte(clip.load_frame())
             if index in Index: #then extract the frame!
                 if cropping and displaycropped:
@@ -222,14 +223,15 @@ def CreateVideoSlow(videooutname,clip,Dataframe, dotsize,colormap,alphavalue,pcu
                 ax.axis('off')
                 ax.invert_yaxis()
                 fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+                if not delete:
+                    fig.savefig(imagename)
                 writer.grab_frame()
                 ax.clear()
-    clip.close()
     print("Labeled video successfully created.")
     plt.switch_backend(prev_backend)
 
 
-def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,filtered=False,save_frames=False,Frames2plot=None, displayedbodyparts='all', displayedindividuals='all', codec='mp4v',outputframerate=None, destfolder=None,draw_skeleton=False,trailpoints = 0,displaycropped=False, color_by='bodypart',modelprefix=''):
+def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,filtered=False,save_frames=False,Frames2plot=None, displayedbodyparts='all', delete=False, displayedindividuals='all', codec='mp4v',outputframerate=None, destfolder=None,draw_skeleton=False,trailpoints = 0,displaycropped=False, color_by='bodypart',modelprefix=''):
     """
     Labels the bodyparts in a video. Make sure the video is already analyzed by the function 'analyze_video'
 
@@ -262,6 +264,9 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
 
     Frames2plot: List of indices
         If not None & save_frames=True then the frames corresponding to the index will be plotted. For example, Frames2plot=[0,11] will plot the first and the 12th frame.
+
+    delete: bool
+        If true then the individual frames created during the video generation will be deleted.
 
     displayedbodyparts: list of strings, optional
         This selects the body parts that are plotted in the video. Either ``all``, then all body parts
@@ -368,7 +373,7 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
                     tmpfolder = os.path.join(str(videofolder),'temp-' + vname)
                     auxiliaryfunctions.attempttomakefolder(tmpfolder)
                     clip = vp(video)
-                    CreateVideoSlow(videooutname,clip,Dataframe,cfg["dotsize"],cfg["colormap"],cfg["alphavalue"],cfg["pcutoff"],trailpoints,cropping,x1,x2,y1,y2,bodyparts,outputframerate,Frames2plot,bodyparts2connect,skeleton_color,draw_skeleton,displaycropped,color_by)
+                    CreateVideoSlow(videooutname,clip,Dataframe,tmpfolder,cfg["dotsize"],cfg["colormap"],cfg["alphavalue"],cfg["pcutoff"],trailpoints,cropping,x1,x2,y1,y2,delete,bodyparts,outputframerate,Frames2plot,bodyparts2connect,skeleton_color,draw_skeleton,displaycropped,color_by)
                 else:
                     if displaycropped: #then the cropped video + the labels is depicted
                         clip = vp(fname = video,sname = videooutname,codec=codec,sw=x2-x1,sh=y2-y1)
