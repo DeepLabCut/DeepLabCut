@@ -49,14 +49,13 @@ Ind=[0,1,11,31] #indices for which to extract the maps!
 filename=os.path.join(outfolder,'predictedmaps.pickle')
 if os.path.isfile(filename):
     with open(filename, 'rb') as handle:
-        Data=pickle.load(handle)
+        Maps=pickle.load(handle)
 else:
-    Data=deeplabcut.visualizemaps(configfile,0,Indices=Ind)
+    Maps=deeplabcut.visualizemaps(configfile,0,Indices=Ind)
     with open(filename, 'wb') as f:
-            # Pickle the 'labeled-data' dictionary using the highest protocol available.
-            pickle.dump(Data, f,pickle.HIGHEST_PROTOCOL)
+            pickle.dump(Maps, f,pickle.HIGHEST_PROTOCOL)
 
-print("Data for images:", Data.keys())
+
 
 plotpaf=True
 plotscmap=True #True
@@ -64,6 +63,9 @@ plotlocref=True #False
 plotzoomlocref=True #True
 scale=1 #adjust scale of image
 
+#loading data for training fraction 95% and last snapshot (-1)
+Data=Maps[0.95][-1]
+print("Data for images:", Data.keys())
 for imagenr in Data.keys():
     image,scmap,locref,paf,bptnames,pagraph,imname,trainingframe=Data[imagenr]
 
