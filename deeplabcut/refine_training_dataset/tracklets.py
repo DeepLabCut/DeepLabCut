@@ -208,9 +208,9 @@ class BackgroundPlayer:
             self.can_run.wait()
             i = self.viz.slider.val + 1
             if 'F' in self.speed:
-                i += 5 * len(self.speed)
+                i += 2 * len(self.speed)
             elif 'R' in self.speed:
-                i -= 5 * len(self.speed)
+                i -= 2 * len(self.speed)
             if i > self.viz.manager.nframes:
                 i = 0
             elif i < 0:
