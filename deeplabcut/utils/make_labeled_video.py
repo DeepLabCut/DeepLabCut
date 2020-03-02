@@ -356,7 +356,7 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
             print("Loading ", video, "and data.")
             datafound,metadata,Dataframe,DLCscorer,suffix=auxiliaryfunctions.LoadAnalyzedData(str(videofolder),vname,DLCscorer,filtered) #returns boolean variable if data was found and metadata + pandas array
 
-            if individuals and datafound:
+            if all(individuals) and datafound:
                 Dataframe = Dataframe.copy().loc(axis=1)[:, individuals]
 
             videooutname=os.path.join(vname + DLCscorer+suffix+'_labeled.mp4')
