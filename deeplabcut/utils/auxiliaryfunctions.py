@@ -255,7 +255,7 @@ def Getlistofvideos(videos,videotype):
         print("Analyzing all the videos in the directory")
         videofolder= videos[0]
         os.chdir(videofolder)
-        videolist=[fn for fn in os.listdir(os.curdir) if (videotype in fn) and ('labeled.mp4' not in fn)] #exclude labeled-videos!
+        videolist=[fn for fn in os.listdir(os.curdir) if os.path.isfile(fn) and fn.endswith(videotype) and ('labeled.mp4' not in fn)] #exclude labeled-videos!
         Videos = sample(videolist,len(videolist)) # this is useful so multiple nets can be used to analzye simultanously
     else:
         if isinstance(videos,str):
