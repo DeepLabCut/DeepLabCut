@@ -126,7 +126,7 @@ def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,bodyparts2plot,
 
 
 def CreateVideoSlow(videooutname,clip,Dataframe, tmpfolder, dotsize,colormap,alphavalue,pcutoff,trailpoints,
-                    cropping,x1,x2,y1,y2,delete,bodyparts2plot,outputframerate,Frames2plot,
+                    cropping,x1,x2,y1,y2,save_frames,bodyparts2plot,outputframerate,Frames2plot,
                     bodyparts2connect,skeleton_color,draw_skeleton,displaycropped,color_by):
     ''' Creating individual frames with labeled body parts and making a video'''
     #scorer=np.unique(Dataframe.columns.get_level_values(0))[0]
@@ -223,7 +223,7 @@ def CreateVideoSlow(videooutname,clip,Dataframe, tmpfolder, dotsize,colormap,alp
                 ax.axis('off')
                 ax.invert_yaxis()
                 fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-                if not delete:
+                if save_frames:
                     fig.savefig(imagename)
                 writer.grab_frame()
                 ax.clear()
@@ -231,7 +231,10 @@ def CreateVideoSlow(videooutname,clip,Dataframe, tmpfolder, dotsize,colormap,alp
     plt.switch_backend(prev_backend)
 
 
-def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,filtered=False,save_frames=False,Frames2plot=None, displayedbodyparts='all', delete=False, displayedindividuals='all', codec='mp4v',outputframerate=None, destfolder=None,draw_skeleton=False,trailpoints = 0,displaycropped=False, color_by='bodypart',modelprefix=''):
+def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,
+    filtered=False,fastmode=True,save_frames=True,Frames2plot=None, displayedbodyparts='all', displayedindividuals='all',
+    codec='mp4v',outputframerate=None, destfolder=None,draw_skeleton=False,
+    trailpoints = 0,displaycropped=False, color_by='bodypart',modelprefix=''):
     """
     Labels the bodyparts in a video. Make sure the video is already analyzed by the function 'analyze_video'
 
@@ -258,15 +261,17 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
     videotype: string, optional
         Checks for the extension of the video in case the input is a directory.\nOnly videos with this extension are analyzed. The default is ``.avi``
 
+    fastmode: bool
+        If true uses openCV (much faster but less customization of video) vs matplotlib (if false). You can also
+        "save_frames" individually or not in the matplotlib mode (if you set the "save_frames" variable accordingly).
+        However, using matplotlib to create the frames it therefore allows much more flexible (one can set transparency of markers, crop, and easily customize).
+
     save_frames: bool
         If true creates each frame individual and then combines into a video. This variant is relatively slow as
-        it stores all individual frames. However, it uses matplotlib to create the frames and is therefore much more flexible (one can set transparency of markers, crop, and easily customize).
+        it stores all individual frames.
 
     Frames2plot: List of indices
         If not None & save_frames=True then the frames corresponding to the index will be plotted. For example, Frames2plot=[0,11] will plot the first and the 12th frame.
-
-    delete: bool
-        If true then the individual frames created during the video generation will be deleted.
 
     displayedbodyparts: list of strings, optional
         This selects the body parts that are plotted in the video. Either ``all``, then all body parts
@@ -303,7 +308,7 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
     --------
 
     If you want to create the labeled video for only 1 video and store the individual frames
-    >>> deeplabcut.create_labeled_video('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi'],save_frames=True)
+    >>> deeplabcut.create_labeled_video('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi'],fastmode=True, save_frames=True)
     --------
 
     If you want to create the labeled video for multiple videos
@@ -324,6 +329,9 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
     trainFraction = cfg['TrainingFraction'][trainingsetindex]
     DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,modelprefix=modelprefix) #automatically loads corresponding model (even training iteration based on snapshot index)
 
+    if save_frames:
+        fastmode=False #otherwise one cannot save frames
+
     bodyparts=auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg,displayedbodyparts)
     individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(cfg, displayedindividuals)
     if draw_skeleton:
@@ -333,6 +341,7 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
         bodyparts2connect = None
         skeleton_color = None
 
+    start_path=os.getcwd()
     Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
     for video in Videos:
         if destfolder is None:
@@ -369,11 +378,13 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
                 #Loading cropping data used during analysis
                 cropping=metadata['data']["cropping"]
                 [x1,x2,y1,y2]=metadata['data']["cropping_parameters"]
-                if save_frames==True:
+                if fastmode==False:
                     tmpfolder = os.path.join(str(videofolder),'temp-' + vname)
                     auxiliaryfunctions.attempttomakefolder(tmpfolder)
                     clip = vp(video)
-                    CreateVideoSlow(videooutname,clip,Dataframe,tmpfolder,cfg["dotsize"],cfg["colormap"],cfg["alphavalue"],cfg["pcutoff"],trailpoints,cropping,x1,x2,y1,y2,delete,bodyparts,outputframerate,Frames2plot,bodyparts2connect,skeleton_color,draw_skeleton,displaycropped,color_by)
+                    CreateVideoSlow(videooutname,clip,Dataframe,tmpfolder,cfg["dotsize"],cfg["colormap"],cfg["alphavalue"],cfg["pcutoff"],
+                                    trailpoints,cropping,x1,x2,y1,y2,save_frames,bodyparts,outputframerate,Frames2plot,bodyparts2connect,
+                                    skeleton_color,draw_skeleton,displaycropped,color_by)
                 else:
                     if displaycropped: #then the cropped video + the labels is depicted
                         clip = vp(fname = video,sname = videooutname,codec=codec,sw=x2-x1,sh=y2-y1)
@@ -443,7 +454,7 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
                     'ffmpeg', '-framerate',
                     str(30), '-i', 'frame%0'+str(nf)+'d.png', '-r', str(outputframerate),'../'+videooutname])
 
-                    os.chdir(folder)
+    os.chdir(start_path)
 
 
 if __name__ == '__main__':
