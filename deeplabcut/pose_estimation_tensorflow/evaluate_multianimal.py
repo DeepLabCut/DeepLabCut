@@ -20,7 +20,7 @@ from tqdm import tqdm
 from pathlib import Path
 
 def evaluate_multianimal_full(config,Shuffles=[1],trainingsetindex=0,
-    plotting = None,show_errors = True,comparisonbodyparts="all",gputouse=None,modelprefix=''):
+    plotting = None,show_errors = True,comparisonbodyparts="all",gputouse=None,modelprefix='', c_engine=False):
     """
     WIP multi animal project.
     """
@@ -156,7 +156,7 @@ def evaluate_multianimal_full(config,Shuffles=[1],trainingsetindex=0,
 
                             PredicteData[imagename]={}
                             PredicteData[imagename]['index']=imageindex
-                            PredicteData[imagename]['prediction']=predictma.get_detectionswithcostsandGT(frame,  groundtruthcoordinates, dlc_cfg, sess, inputs, outputs, outall=False,nms_radius=dlc_cfg.nmsradius,det_min_score=dlc_cfg.minconfidence)
+                            PredicteData[imagename]['prediction']=predictma.get_detectionswithcostsandGT(frame,  groundtruthcoordinates, dlc_cfg, sess, inputs, outputs, outall=False,nms_radius=dlc_cfg.nmsradius,det_min_score=dlc_cfg.minconfidence, c_engine=c_engine)
                             PredicteData[imagename]['groundtruth']=[groundtruthidentity, groundtruthcoordinates,GT]
 
                         sess.close() #closes the current tf session

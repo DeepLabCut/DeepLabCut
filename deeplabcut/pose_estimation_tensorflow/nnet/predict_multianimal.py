@@ -13,7 +13,6 @@ https://github.com/eldar/pose-tensorflow
 
 import numpy as np
 import tensorflow as tf
-from nms_grid import nms_grid # this needs to be installed (C-code)
 
 vers = (tf.__version__).split('.')
 if int(vers[0])==1 and int(vers[1])>12:
@@ -166,6 +165,7 @@ def get_detectionswithcosts(image, cfg, sess, inputs, outputs, outall=False,nms_
     outputs_np = sess.run(outputs, feed_dict={inputs: im})
     scmap, locref, paf = extract_cnn_output(outputs_np, cfg)
     if c_engine:
+        from nms_grid import nms_grid  # this needs to be installed (C-code)
         detections=extract_detections(cfg, scmap, locref, paf,nms_radius=nms_radius,det_min_score=det_min_score)
     else:
         detections = extract_detections_python(cfg, scmap, paf, nms_radius, det_min_score)
@@ -261,6 +261,7 @@ def get_detectionswithcostsandGT(image,  groundtruthcoordinates, cfg, sess, inpu
     #detections=extract_detections(cfg, scmap, locref, paf,nms_radius=nms_radius,det_min_score=det_min_score)
     #extract_detection_withgroundtruth(cfg, groundtruthcoordinates, scmap, locref, pafs, nms_radius, det_min_score)
     if c_engine:
+        from nms_grid import nms_grid  # this needs to be installed (C-code)
         detections=extract_detection_withgroundtruth(cfg, groundtruthcoordinates, scmap, locref, paf, nms_radius, det_min_score)
     else:
         detections = extract_detection_withgroundtruth_python(cfg, groundtruthcoordinates, scmap, paf, nms_radius, det_min_score)
@@ -374,6 +375,7 @@ def get_batchdetectionswithcosts(image, dlc_cfg, dist_grid, batchsize,num_joints
         else:
             paf = pafs[l]
         if c_engine:
+            from nms_grid import nms_grid  # this needs to be installed (C-code)
             dets = extract_batchdetections(scmap[l], locref[l], paf, dlc_cfg, dist_grid, num_joints,num_idchannel, stride, halfstride, det_min_score)
         else:
             radius = len(dist_grid - 1) // 2

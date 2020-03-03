@@ -29,7 +29,7 @@ import cv2
 from skimage.util import img_as_ubyte
 from easydict import EasyDict as edict
 
-def AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder=None):
+def AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder=None, c_engine=False):
     ''' Helper function for analyzing a video with multiple individuals'''
     print("Starting to analyze % ", video)
     vname = Path(video).stem
@@ -55,9 +55,9 @@ def AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,input
 
         print("Starting to extract posture")
         if int(dlc_cfg["batch_size"])>1:
-            PredicteData,nframes=GetPoseandCostsF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,int(dlc_cfg["batch_size"]))
+            PredicteData,nframes=GetPoseandCostsF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,int(dlc_cfg["batch_size"]), c_engine=c_engine)
         else:
-            PredicteData,nframes=GetPoseandCostsS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes)
+            PredicteData,nframes=GetPoseandCostsS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes, c_engine=c_engine)
 
         stop = time.time()
 
@@ -87,7 +87,7 @@ def AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,input
         #auxiliaryfunctions.SaveData(PredicteData[:nframes,:], metadata, dataname, pdindex, range(nframes),save_as_csv)
         auxfun_multianimal.SaveFullMultiAnimalData(PredicteData, metadata, dataname)
 
-def GetPoseandCostsF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize):
+def GetPoseandCostsF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize, c_engine):
     ''' Batchwise prediction of pose '''
     strwidth = int(np.ceil(np.log10(nframes))) #width for strings
     batch_ind = 0 # keeps track of which image within a batch should be written to
@@ -148,7 +148,7 @@ def GetPoseandCostsF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize):
                 if batch_ind>0:
                     #pose = predict.getposeNP(frames, dlc_cfg, sess, inputs, outputs) #process the whole batch (some frames might be from previous batch!)
                     #PredicteData[batch_num*batchsize:batch_num*batchsize+batch_ind, :] = pose[:batch_ind,:]
-                    D=predict.get_batchdetectionswithcosts(frames, dlc_cfg, dist_grid, batchsize,num_joints,num_idchannel, stride, halfstride, det_min_score, sess, inputs, outputs)
+                    D=predict.get_batchdetectionswithcosts(frames, dlc_cfg, dist_grid, batchsize,num_joints,num_idchannel, stride, halfstride, det_min_score, sess, inputs, outputs, c_engine=c_engine)
                     for l in range(batch_ind):
                         #pose = predict.getposeNP(frames,dlc_cfg, sess, inputs, outputs)
                         #PredicteData[batch_num*batchsize:(batch_num+1)*batchsize, :] = pose
@@ -167,7 +167,7 @@ def GetPoseandCostsF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize):
         }
     return PredicteData,nframes
 
-def GetPoseandCostsS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes):
+def GetPoseandCostsS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes, c_engine):
     ''' Non batch wise pose estimation for video cap.'''
     strwidth = int(np.ceil(np.log10(nframes))) #width for strings
     if cfg['cropping']:
@@ -198,7 +198,7 @@ def GetPoseandCostsS(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes):
                     frame= img_as_ubyte(frame[cfg['y1']:cfg['y2'],cfg['x1']:cfg['x2']])
                 else:
                     frame = img_as_ubyte(frame)
-                PredicteData['frame'+str(counter).zfill(strwidth)]=predict.get_detectionswithcosts(frame, dlc_cfg, sess, inputs, outputs, outall=False,nms_radius=dlc_cfg.nmsradius,det_min_score=dlc_cfg.minconfidence)
+                PredicteData['frame'+str(counter).zfill(strwidth)]=predict.get_detectionswithcosts(frame, dlc_cfg, sess, inputs, outputs, outall=False,nms_radius=dlc_cfg.nmsradius,det_min_score=dlc_cfg.minconfidence, c_engine=c_engine)
             else:
                 nframes=counter
                 break
