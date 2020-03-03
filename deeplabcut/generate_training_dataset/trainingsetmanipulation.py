@@ -500,7 +500,12 @@ def merge_annotateddatasets(cfg,project_path,trainingsetfolder_full,windows2linu
     # When concatenating DataFrames with misaligned column labels,
     # all sorts of reordering may happen (mainly depending on 'sort' and 'join')
     # Ensure the 'bodyparts' level agrees with the order in the config file.
-    AnnotationData = AnnotationData.reindex(cfg['bodyparts'], axis=1, level=AnnotationData.columns.names.index('bodyparts'))
+    if cfg.get('multianimalproject', False):
+        _, uniquebodyparts, multianimalbodyparts = auxfun_multianimal.extractindividualsandbodyparts(cfg)
+        bodyparts = uniquebodyparts + multianimalbodyparts
+    else:
+        bodyparts = cfg['bodyparts']
+    AnnotationData = AnnotationData.reindex(bodyparts, axis=1, level=AnnotationData.columns.names.index('bodyparts'))
 
     # Let's check if the code is *not* run on windows (Source: #https://stackoverflow.com/questions/1325581/how-do-i-check-if-im-running-on-windows-in-python)
     # but the paths are in windows format...
