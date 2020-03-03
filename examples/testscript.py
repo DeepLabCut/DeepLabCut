@@ -120,6 +120,7 @@ deeplabcut.analyze_videos(path_config_file,[newvideo],save_as_csv=True, destfold
 print("CREATE VIDEO")
 deeplabcut.create_labeled_video(path_config_file,[newvideo], destfolder=dfolder,save_frames=True)
 
+
 print("Making plots")
 deeplabcut.plot_trajectories(path_config_file, [newvideo], destfolder=dfolder)
 
@@ -210,3 +211,4 @@ print("ALL DONE!!! - default cases are functional.")
 print("Re-import DLC with env. variable set to test DLC light mode.")
 os.environ['DLClight']='True'
 subprocess.call(['python3',"-c","import deeplabcut"])
+
