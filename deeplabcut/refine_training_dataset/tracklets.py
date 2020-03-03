@@ -91,6 +91,7 @@ class TrackletManager:
         self.swapping_bodyparts = []
 
     def load_tracklets_from_pickle(self, filename):
+        self.filename = filename
         with open(filename, 'rb') as file:
             tracklets = pickle.load(file)
         header = tracklets.pop('header')
@@ -166,10 +167,6 @@ class TrackletManager:
             self.swapping_pairs = pairs
             self.swapping_bodyparts = np.unique(pairs).tolist()
 
-    # TODO
-    def attach_tracklet_to_id(self, picked, id):
-        pass
-
     def get_swap_indices(self, tracklet1, tracklet2):
         return np.flatnonzero(self.tracklet_swaps[tracklet1, tracklet2])
 
@@ -181,7 +178,7 @@ class TrackletManager:
             mask[i:j] = False
         return mask
 
-    def save(self, output_name):
+    def save(self, output_name=''):
         columns = pd.MultiIndex.from_product([self.scorer,
                                               self.cfg['individuals'],
                                               self.bodyparts,
@@ -191,6 +188,8 @@ class TrackletManager:
         # Trim off the then-unidentified tracklets
         data = data[:, :self.nindividuals * self.nbodyparts]
         df = pd.DataFrame(data.reshape((self.nframes, -1)), columns=columns, index=self.times)
+        if not output_name:
+            output_name = self.filename.replace('pickle', 'h5')
         df.to_hdf(output_name, 'df_with_missing', format='table', mode='w')
 
 
@@ -272,7 +271,7 @@ class TrackletVisualizer:
         self.thread_background = Thread(target=self.background.run, daemon=True)
         self.thread_background.start()
 
-    def _prepare_canvas(self, manager):
+    def _prepare_canvas(self, manager, fig):
         params = {'keymap.save': 's',
                   'keymap.back': 'left',
                   'keymap.forward': 'right',
@@ -281,7 +280,10 @@ class TrackletVisualizer:
             if v in plt.rcParams[k]:
                 plt.rcParams[k].remove(v)
 
-        self.fig = plt.figure(figsize=(13, 8))
+        if fig is None:
+            self.fig = plt.figure(figsize=(13, 8))
+        else:
+            self.fig = fig
         gs = self.fig.add_gridspec(2, 2)
         self.ax1 = self.fig.add_subplot(gs[:, 0])
         self.ax2 = self.fig.add_subplot(gs[0, 1])
@@ -322,8 +324,8 @@ class TrackletVisualizer:
         self.fig.canvas.mpl_connect('button_press_event', self.on_click)
         self.fig.canvas.mpl_connect('close_event', self.background.terminate)
 
-    def show(self):
-        self._prepare_canvas(self.manager)
+    def show(self, fig=None):
+        self._prepare_canvas(self.manager, fig)
 
     def _read_frame(self):
         frame = self.video.read()[1]
@@ -345,27 +347,13 @@ class TrackletVisualizer:
     def on_press(self, event):
         i = int(self.slider.val)
         if event.key == 'right':
-            if i < self.manager.nframes - 1:
-                self.slider.set_val(i + 1)
+            self.move_forward()
         elif event.key == 'left':
-            if i > 0:
-                self.slider.set_val(i - 1)
+            self.move_backward()
         elif event.key == 's':
-            if self.picked_pair:
-                swap_inds = self.manager.get_swap_indices(*self.picked_pair)
-                inds = np.insert(swap_inds, [0, len(swap_inds)], [0, self.manager.nframes])
-                if len(inds):
-                    ind = np.argmax(inds > i)
-                    sl = slice(inds[ind - 1], inds[ind])
-                    self.manager.xy[sl, [self.picked_pair]] = self.manager.xy[sl, [self.picked_pair[::-1]]]
-                    self.manager.prob[sl, [self.picked_pair]] = self.manager.prob[sl, [self.picked_pair[::-1]]]
-                    self.display_traces()
-                    self.slider.set_val(int(self.slider.val))
+            self.swap()
         elif event.key == 'i':
-            self.manager.xy[i, [self.picked_pair]] = self.manager.xy[i, [self.picked_pair[::-1]]]
-            self.manager.prob[i, [self.picked_pair]] = self.manager.prob[i, [self.picked_pair[::-1]]]
-            self.display_traces()
-            self.slider.set_val(int(self.slider.val))
+            self.invert()
         elif event.key == 'x':
             self.cuts.append(i)
             if len(self.cuts) > 1:
@@ -380,6 +368,36 @@ class TrackletVisualizer:
             self.background.rewind()
         elif event.key == 'tab':
             self.background.toggle()
+
+    def move_forward(self):
+        i = int(self.slider.val)
+        if i < self.manager.nframes - 1:
+            self.slider.set_val(i + 1)
+
+    def move_backward(self):
+        i = int(self.slider.val)
+        if i > 0:
+            self.slider.set_val(i - 1)
+
+    def swap(self):
+        i = int(self.slider.val)
+        if self.picked_pair:
+            swap_inds = self.manager.get_swap_indices(*self.picked_pair)
+            inds = np.insert(swap_inds, [0, len(swap_inds)], [0, self.manager.nframes])
+            if len(inds):
+                ind = np.argmax(inds > i)
+                sl = slice(inds[ind - 1], inds[ind])
+                self.manager.xy[sl, [self.picked_pair]] = self.manager.xy[sl, [self.picked_pair[::-1]]]
+                self.manager.prob[sl, [self.picked_pair]] = self.manager.prob[sl, [self.picked_pair[::-1]]]
+                self.display_traces()
+                self.slider.set_val(int(self.slider.val))
+
+    def invert(self):
+        i = int(self.slider.val)
+        self.manager.xy[i, [self.picked_pair]] = self.manager.xy[i, [self.picked_pair[::-1]]]
+        self.manager.prob[i, [self.picked_pair]] = self.manager.prob[i, [self.picked_pair[::-1]]]
+        self.display_traces()
+        self.slider.set_val(int(self.slider.val))
 
     def on_pick(self, event):
         artist = event.artist

@@ -23,6 +23,7 @@ from deeplabcut.gui.evaluate_network import Evaluate_network
 from deeplabcut.gui.extract_outlier_frames import Extract_outlier_frames
 from deeplabcut.gui.refine_labels import Refine_labels
 from deeplabcut.gui.create_videos import Create_Labeled_Videos
+from deeplabcut.gui.refine_tracklets import Refine_tracklets
 
 media_path = os.path.join(deeplabcut.__path__[0], 'gui' , 'media')
 logo = os.path.join(media_path,'logo.png')
@@ -178,6 +179,7 @@ class Create_new_project(wx.Panel):
             self.sel_vids.Enable(False)
             self.change_workingdir.Enable(False)
             self.copy_choice.Enable(False)
+            self.multi_choice.Enable(False)
             self.sel_config.Show()
             self.cfg_text.Show()
             #self.SetSizer(self.sizer)
@@ -191,6 +193,7 @@ class Create_new_project(wx.Panel):
             self.sel_vids.Enable(True)
             self.change_workingdir.Enable(True)
             self.copy_choice.Enable(True)
+            self.multi_choice.Enable(True)
             if self.sel_config.IsShown():
                 self.sel_config.Hide()
                 self.cfg_text.Hide()
@@ -295,6 +298,7 @@ class Create_new_project(wx.Panel):
         # Add all the other pages
         if self.loaded:
             self.edit_config_file.Enable(True)
+            cfg = auxiliaryfunctions.read_config(self.cfg)
             if self.parent.GetPageCount() < 3:
                 page3 = Extract_frames(self.parent,self.gui_size,self.cfg)
                 self.parent.AddPage(page3, "Extract frames")
@@ -308,6 +312,9 @@ class Create_new_project(wx.Panel):
                 self.parent.AddPage(page7, "Evaluate network")
                 page8 = Analyze_videos(self.parent,self.gui_size,self.cfg)
                 self.parent.AddPage(page8, "Analyze videos")
+                if cfg.get('multianimalproject', False):
+                    page = Refine_tracklets(self.parent, self.gui_size, self.cfg)
+                    self.parent.AddPage(page, "Refine tracklets")
                 page11 = Create_Labeled_Videos(self.parent,self.gui_size,self.cfg)
                 self.parent.AddPage(page11, "Create Videos")
                 page9 = Extract_outlier_frames(self.parent,self.gui_size,self.cfg)
