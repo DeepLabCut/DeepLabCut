@@ -14,7 +14,7 @@ from pathlib import Path
 import numpy as np
 from deeplabcut.utils import auxiliaryfunctions
 
-def convertannotationdata_fromwindows2unixstyle(config,userfeedback=True):
+def convertannotationdata_fromwindows2unixstyle(config,userfeedback=True,win2linux=True):
     """
     Converts paths in annotation file (CollectedData_*user*.h5) in labeled-data/videofolder
     from windows to linux format. This is important when one e.g. labeling on Windows, but
@@ -28,6 +28,9 @@ def convertannotationdata_fromwindows2unixstyle(config,userfeedback=True):
 
     userfeedback: bool, optional
         If true the user will be asked specifically for each folder in labeled-data if the containing csv shall be converted to hdf format.
+
+    win2linux: bool, optional.
+        By default converts from windows to linux. If false, converts from unix to windows. 
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg['video_sets'].keys()
@@ -44,7 +47,10 @@ def convertannotationdata_fromwindows2unixstyle(config,userfeedback=True):
         if askuser=='y' or askuser=='yes' or askuser=='Ja' or askuser=='ha':
             fn=os.path.join(str(folder),'CollectedData_' + cfg['scorer'])
             Data = pd.read_hdf(fn+'.h5', 'df_with_missing')
-            convertpaths_to_unixstyle(Data,fn,cfg)
+            if win2linux:
+                convertpaths_to_unixstyle(Data,fn)
+            else:
+                convertpaths_to_windowsstyle(Data,fn)
 
 def convertcsv2h5(config,userfeedback=True,scorer=None):
     """
@@ -155,13 +161,22 @@ def analyze_videos_converth5_to_csv(videopath,videotype='.avi'):
     os.chdir(str(start_path))
     print("All pose files were converted.")
 
-
 def convertpaths_to_unixstyle(Data,fn):
+    ''' auxiliary function that converts paths in annotation files:
+        labeled-data\\video\\imgXXX.png to labeled-data/video/imgXXX.png '''
+    Data.to_csv(fn + "unix" + ".csv")
+    Data.to_hdf(fn + "unix" + '.h5', 'df_with_missing', format='table', mode='w')
+    Data.index = Data.index.str.replace('\\', '/')
+    Data.to_csv(fn + ".csv")
+    Data.to_hdf(fn + '.h5', 'df_with_missing', format='table', mode='w')
+    return Data
+
+def convertpaths_to_windowsstyle(Data,fn):
     ''' auxiliary function that converts paths in annotation files:
         labeled-data\\video\\imgXXX.png to labeled-data/video/imgXXX.png '''
     Data.to_csv(fn + "windows" + ".csv")
     Data.to_hdf(fn + "windows" + '.h5', 'df_with_missing', format='table', mode='w')
-    Data.index = Data.index.str.replace('\\', '/')
+    Data.index = Data.index.str.replace('/', '\\')
     Data.to_csv(fn + ".csv")
     Data.to_hdf(fn + '.h5', 'df_with_missing', format='table', mode='w')
     return Data
