@@ -78,6 +78,7 @@ class TrackletManager:
         self.min_swap_frac = min_swap_frac
         self.min_tracklet_frac = min_tracklet_frac
 
+        self.filename = ''
         self.data = None
         self.xy = None
         self.prob = None
@@ -87,6 +88,7 @@ class TrackletManager:
         self.nindividuals = len(self.cfg['individuals'])
         self.tracklet2id = []
         self.unidentified_tracklets = set()
+        self.empty_tracklets = set()
         self.swapping_pairs = []
         self.swapping_bodyparts = []
 
@@ -100,7 +102,7 @@ class TrackletManager:
         self.nbodyparts = len(self.bodyparts)
         num_individuals = sorted(list(tracklets))
         nindividuals = len(num_individuals)
-        tracklet2id = [i for i in range(nindividuals) for _ in range(self.nbodyparts)]  # Map a bodypart # to the animal ID it belongs to
+        self.tracklet2id = [i for i in range(nindividuals) for _ in range(self.nbodyparts)]  # Map a bodypart # to the animal ID it belongs to
         frames = sorted(set([frame for tracklet in tracklets.values() for frame in tracklet]))
         self.nframes = len(frames)
         self.times = np.arange(self.nframes)
@@ -112,21 +114,23 @@ class TrackletManager:
                 all_data[frames.index(k), i] = v
         data = all_data.reshape((self.nframes, -1, 3))
 
-        # Sort data by completeness so that unidentified tracklets are always the shortest
+        # Sort data by completeness so that identified tracklets are always the longest
         xy = data[:, :, :2]
-        full_frames = np.sum(~np.isnan(xy).any(axis=2), axis=0)
-        completeness = full_frames.reshape((-1, self.nbodyparts)).sum(axis=1)
-        inds = np.argsort(completeness)[::-1]
+        comp = self.calc_completeness(xy)
+        comp_per_ind = comp.reshape((nindividuals, -1)).sum(axis=1)
+        inds = np.argsort(comp_per_ind)[::-1]
         tracklets_sorted = [i * self.nbodyparts + j for i in inds for j in range(self.nbodyparts)]
         data_sorted = data[:, tracklets_sorted]
         self.data = data_sorted
+        self.xy = self.data[:, :, :2]
+        self.prob = self.data[:, :, 2]
 
         # Remove the tracklets that contained too little information.
-        full_frames_sorted = full_frames[tracklets_sorted]
-        to_keep = full_frames_sorted > self.min_tracklet_frac * self.nframes
-        self.xy = self.data[:, to_keep, :2]
-        self.prob = self.data[:, to_keep, 2]
-        self.tracklet2id = [item for item, keep in zip(tracklet2id, to_keep) if keep]
+        comp_sorted = comp[tracklets_sorted]
+        to_keep = comp_sorted > self.min_tracklet_frac * self.nframes
+        for i in np.flatnonzero(~to_keep):
+            self.empty_tracklets.add(i)
+        # self.tracklet2id = [item for item, keep in zip(tracklet2id, to_keep) if keep]
         self.unidentified_tracklets = set(range(self.nindividuals * self.nbodyparts, len(self.tracklet2id)))
         self.find_swapping_bodypart_pairs()
 
@@ -145,8 +149,17 @@ class TrackletManager:
         self.tracklet2id = [i for i in range(len(individuals)) for _ in range(self.nbodyparts)]
         self.find_swapping_bodypart_pairs()
 
-    def find_swapping_bodypart_pairs(self):
-        if not self.swapping_pairs:
+    @staticmethod
+    def calc_completeness(xy):
+        return np.sum(~np.isnan(xy).any(axis=2), axis=0)
+
+    def update_empty_tracklets(self, xy):
+        comp = self.calc_completeness(xy)
+        for i in np.flatnonzero(comp == 0):
+            self.empty_tracklets.add(i)
+
+    def find_swapping_bodypart_pairs(self, force_find=False):
+        if not self.swapping_pairs or force_find:
             temp = np.swapaxes(self.xy, 0, 2)
             # Broadcasting makes subtraction of X and Y coordinates very efficient
             sub = temp[:, :, np.newaxis] - temp[:, np.newaxis]
@@ -469,9 +482,8 @@ class TrackletVisualizer:
     def display_traces(self):
         for n, (line_x, line_y) in enumerate(zip(self.lines_x, self.lines_y)):
             if n in self.manager.swapping_bodyparts or n in self.manager.unidentified_tracklets:
-                mask = ~np.isnan(self.manager.xy[:, n])
-                line_x.set_data(self.manager.times[mask[:, 0]], self.manager.xy[mask[:, 0], n, 0])
-                line_y.set_data(self.manager.times[mask[:, 1]], self.manager.xy[mask[:, 1], n, 1])
+                line_x.set_data(self.manager.times, self.manager.xy[:, n, 0])
+                line_y.set_data(self.manager.times, self.manager.xy[:, n, 1])
             else:
                 line_x.set_data([], [])
                 line_y.set_data([], [])
@@ -505,22 +517,3 @@ class TrackletVisualizer:
             self.display_points(val)
             self.display_trails(val)
             self.update_vlines(val)
-
-if __name__ == '__main__':
-    config = '/Users/Jessy/Downloads/data/config.yaml'
-    filename = '/Users/Jessy/Downloads/data/videocompressed0DLC_resnet50_MultiMouseDec16shuffle2_20000tracks1.pickle'
-    video = '/Users/Jessy/Downloads/data/videocompressed0.mp4'
-
-    config = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/silversideschooling-Valentina-2019-07-14/config.yaml'
-    filename = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/silversideschooling-Valentina-2019-07-14/videos/deeplc.menidia.school4.59rpm.S11.D.shortDLC_resnet50_silversideschoolingJul14shuffle0_30000tracks.pickle'
-    video = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/silversideschooling-Valentina-2019-07-14/videos/deeplc.menidia.school4.59rpm.S11.D.short.avi'
-
-    # tracker = IDTracker(config)
-    # tracker.load_tracklets_from_pickle(filename)
-    # tracker.load_tracklets_from_hdf('mice_temp3.h5')
-    # tracker.visualize(video)
-
-    manager = TrackletManager(config, 0, 0)
-    manager.load_tracklets_from_pickle(filename)
-    viz = TrackletVisualizer(manager, video, 50)
-    viz.show()
