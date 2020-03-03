@@ -60,7 +60,7 @@ def convertdetectiondict2listoflist(dataimage,imname,BPTS,withid=False,evaluatio
 
     return all_detections
 
-def matchconnectionsevaluation(cfg, dataimage, all_detections, iBPTS, partaffinityfield_graph, PAF):
+def matchconnections(cfg, dataimage, all_detections, iBPTS, partaffinityfield_graph, PAF,evaluation=False):
     ''' Auxiliary function;  Returns list of connections (limbs) of a particular type.
 
     Specifically, per edge a list containing is returned: [index start (global), index stop (global) score, score with detection likelihoods, index start (local), index stop (local)]
@@ -99,7 +99,10 @@ def matchconnectionsevaluation(cfg, dataimage, all_detections, iBPTS, partaffini
                 for j in range(n_b):
                     KK=PAF[k]
                     d=distance(np.array(cand_a[i][:2]),np.array(cand_b[j][:2]))
-                    score_with_dist_prior=abs(dataimage['prediction']['costs'][KK][cfg.method][i,j])
+                    if evaluation:
+                        score_with_dist_prior=abs(dataimage['prediction']['costs'][KK][cfg.method][i,j])
+                    else:
+                        score_with_dist_prior=abs(dataimage['costs'][KK][cfg.method][i,j])
                     si=cand_a[i][2] #detectedlikelihood[partaffinityfield_graph[k][0]][i].flatten()[0]
                     sj=cand_b[j][2] #detectedlikelihood[partaffinityfield_graph[k][1]][j].flatten()[0]
                     if score_with_dist_prior>cfg.pafthreshold and d<cfg.distnormalization and d>=cfg.distnormalizationLOWER and si*sj>cfg.detectionthresholdsquare:

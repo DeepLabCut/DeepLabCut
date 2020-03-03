@@ -506,21 +506,21 @@ class TrackletVisualizer:
             self.display_trails(val)
             self.update_vlines(val)
 
+if __name__ == '__main__':
+    config = '/Users/Jessy/Downloads/data/config.yaml'
+    filename = '/Users/Jessy/Downloads/data/videocompressed0DLC_resnet50_MultiMouseDec16shuffle2_20000tracks1.pickle'
+    video = '/Users/Jessy/Downloads/data/videocompressed0.mp4'
 
-config = '/Users/Jessy/Downloads/data/config.yaml'
-filename = '/Users/Jessy/Downloads/data/videocompressed0DLC_resnet50_MultiMouseDec16shuffle2_20000tracks1.pickle'
-video = '/Users/Jessy/Downloads/data/videocompressed0.mp4'
+    config = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/silversideschooling-Valentina-2019-07-14/config.yaml'
+    filename = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/silversideschooling-Valentina-2019-07-14/videos/deeplc.menidia.school4.59rpm.S11.D.shortDLC_resnet50_silversideschoolingJul14shuffle0_30000tracks.pickle'
+    video = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/silversideschooling-Valentina-2019-07-14/videos/deeplc.menidia.school4.59rpm.S11.D.short.avi'
 
-config = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/silversideschooling-Valentina-2019-07-14/config.yaml'
-filename = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/silversideschooling-Valentina-2019-07-14/videos/deeplc.menidia.school4.59rpm.S11.D.shortDLC_resnet50_silversideschoolingJul14shuffle0_30000tracks.pickle'
-video = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/silversideschooling-Valentina-2019-07-14/videos/deeplc.menidia.school4.59rpm.S11.D.short.avi'
+    # tracker = IDTracker(config)
+    # tracker.load_tracklets_from_pickle(filename)
+    # tracker.load_tracklets_from_hdf('mice_temp3.h5')
+    # tracker.visualize(video)
 
-# tracker = IDTracker(config)
-# tracker.load_tracklets_from_pickle(filename)
-# tracker.load_tracklets_from_hdf('mice_temp3.h5')
-# tracker.visualize(video)
-
-manager = TrackletManager(config, 0, 0)
-manager.load_tracklets_from_pickle(filename)
-viz = TrackletVisualizer(manager, video, 50)
-viz.show()
+    manager = TrackletManager(config, 0, 0)
+    manager.load_tracklets_from_pickle(filename)
+    viz = TrackletVisualizer(manager, video, 50)
+    viz.show()
