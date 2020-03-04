@@ -291,7 +291,7 @@ def extract_cnn_outputmulti(outputs_np, cfg):
         scmap=np.expand_dims(scmap,axis=2)
     return scmap, locref, paf
 
-def extract_batchdetections(scmap, locref, pafs, cfg, dist_grid, num_joints,num_idchannel, stride, halfstride, det_min_score):
+def extract_batchdetections(scmap, locref, pafs, cfg, dist_grid, num_joints,num_idchannel, stride, halfstride, det_min_score,nms_grid):
     ''' Extract detections correcting by locref and estimating association costs based on PAFs '''
     Detections = {}
     # get dist_grid
@@ -376,7 +376,7 @@ def get_batchdetectionswithcosts(image, dlc_cfg, dist_grid, batchsize,num_joints
             paf = pafs[l]
         if c_engine:
             from nms_grid import nms_grid  # this needs to be installed (C-code)
-            dets = extract_batchdetections(scmap[l], locref[l], paf, dlc_cfg, dist_grid, num_joints,num_idchannel, stride, halfstride, det_min_score)
+            dets = extract_batchdetections(scmap[l], locref[l], paf, dlc_cfg, dist_grid, num_joints,num_idchannel, stride, halfstride, det_min_score,nms_grid)
         else:
             radius = len(dist_grid - 1) // 2
             dets = extract_batchdetections_python(dlc_cfg, scmap[l], paf, radius, det_min_score)
