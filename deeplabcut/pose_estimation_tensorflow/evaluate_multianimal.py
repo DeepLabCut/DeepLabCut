@@ -20,7 +20,8 @@ from tqdm import tqdm
 from pathlib import Path
 
 def evaluate_multianimal_full(config,Shuffles=[1],trainingsetindex=0,
-    plotting = None,show_errors = True,comparisonbodyparts="all",gputouse=None,modelprefix='', c_engine=False):
+    plotting = None,show_errors = True,comparisonbodyparts="all",
+    gputouse=None,modelprefix='', c_engine=False):
     """
     WIP multi animal project.
     """

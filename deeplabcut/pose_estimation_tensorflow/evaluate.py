@@ -142,6 +142,7 @@ def return_evaluate_network_data(config,shuffle=0,trainingsetindex=0,comparisonb
 
     DATA=[]
     results=[]
+    resultsfns=[]
     for snapindex in snapindices:
         dlc_cfg['init_weights'] = os.path.join(str(modelfolder),'train',Snapshots[snapindex]) #setting weights to corresponding snapshot.
         trainingsiterations = (dlc_cfg['init_weights'].split(os.sep)[-1]).split('-')[-1] #read how many training siterations that corresponds to.
@@ -152,6 +153,7 @@ def return_evaluate_network_data(config,shuffle=0,trainingsetindex=0,comparisonb
         notanalyzed,resultsfilename,DLCscorer=auxiliaryfunctions.CheckifNotEvaluated(str(evaluationfolder),DLCscorer,DLCscorerlegacy,Snapshots[snapindex])
         #resultsfilename=os.path.join(str(evaluationfolder),DLCscorer + '-' + str(Snapshots[snapindex])+  '.h5') # + '-' + str(snapshot)+  ' #'-' + Snapshots[snapindex]+  '.h5')
         print(resultsfilename)
+        resultsfns.append(resultsfilename)
         if not notanalyzed and os.path.isfile(resultsfilename): #data exists..
             DataMachine = pd.read_hdf(resultsfilename,'df_with_missing')
             DataCombined = pd.concat([Data.T, DataMachine.T], axis=0).T
@@ -174,13 +176,17 @@ def return_evaluate_network_data(config,shuffle=0,trainingsetindex=0,comparisonb
             DATA.append([DataMachine, Data, data, trainIndices, testIndices, trainFraction, DLCscorer,comparisonbodyparts, cfg, evaluationfolder, Snapshots[snapindex]])
 
     os.chdir(start_path)
-    if fulldata==True:
-        return DATA, results
+    if returnjustfns:
+        return resultsfns
     else:
-        return results
+        if fulldata==True:
+            return DATA, results
+        else:
+            return results
 
 def evaluate_network(config,Shuffles=[1],trainingsetindex=0,plotting = None,
-                    show_errors = True,comparisonbodyparts="all",gputouse=None, rescale=False,modelprefix=''):
+                    show_errors = True,comparisonbodyparts="all",gputouse=None,
+                    rescale=False,modelprefix='',c_engine=False):
     """
 
     Evaluates the network based on the saved models at different stages of the training network.\n
@@ -234,7 +240,8 @@ def evaluate_network(config,Shuffles=[1],trainingsetindex=0,plotting = None,
     if cfg['multianimalproject']==True:
             from deeplabcut.pose_estimation_tensorflow.evaluate_multianimal import evaluate_multianimal_full
             #TODO: Make this code not so redundant!
-            evaluate_multianimal_full(config,Shuffles,trainingsetindex,plotting,show_errors,comparisonbodyparts,gputouse,modelprefix)
+            evaluate_multianimal_full(config,Shuffles,trainingsetindex,plotting,show_errors,
+                                        comparisonbodyparts,gputouse,modelprefix,c_engine=c_engine)
     else:
         from deeplabcut.utils.auxfun_videos import imread, imresize
         from deeplabcut.pose_estimation_tensorflow.nnet import predict

@@ -104,6 +104,7 @@ def make_nms_grid(nms_radius):
 
 def extract_detections(cfg, scmap, locref, pafs, nms_radius, det_min_score):
     ''' Extract detections correcting by locref and estimating association costs based on PAFs '''
+    from nms_grid import nms_grid  # this needs to be installed (C-code)
     Detections = {}
     stride,halfstride=cfg.stride, cfg.stride*.5
     num_joints = cfg.num_joints
@@ -165,7 +166,6 @@ def get_detectionswithcosts(image, cfg, sess, inputs, outputs, outall=False,nms_
     outputs_np = sess.run(outputs, feed_dict={inputs: im})
     scmap, locref, paf = extract_cnn_output(outputs_np, cfg)
     if c_engine:
-        from nms_grid import nms_grid  # this needs to be installed (C-code)
         detections=extract_detections(cfg, scmap, locref, paf,nms_radius=nms_radius,det_min_score=det_min_score)
     else:
         detections = extract_detections_python(cfg, scmap, paf, nms_radius, det_min_score)
@@ -177,6 +177,7 @@ def get_detectionswithcosts(image, cfg, sess, inputs, outputs, outall=False,nms_
 # These two functions are for evaluation specifically (one also calculates integral between gt poi)
 def extract_detection_withgroundtruth(cfg, groundtruthcoordinates, scmap, locref, pafs, nms_radius, det_min_score):
     ''' Extract detections correcting by locref and estimating association costs based on PAFs '''
+    from nms_grid import nms_grid  # this needs to be installed (C-code)
     Detections = {}
     num_idchannel=cfg.get('num_idchannel', 0)
     stride,halfstride=cfg.stride, cfg.stride*.5
@@ -261,7 +262,6 @@ def get_detectionswithcostsandGT(image,  groundtruthcoordinates, cfg, sess, inpu
     #detections=extract_detections(cfg, scmap, locref, paf,nms_radius=nms_radius,det_min_score=det_min_score)
     #extract_detection_withgroundtruth(cfg, groundtruthcoordinates, scmap, locref, pafs, nms_radius, det_min_score)
     if c_engine:
-        from nms_grid import nms_grid  # this needs to be installed (C-code)
         detections=extract_detection_withgroundtruth(cfg, groundtruthcoordinates, scmap, locref, paf, nms_radius, det_min_score)
     else:
         detections = extract_detection_withgroundtruth_python(cfg, groundtruthcoordinates, scmap, paf, nms_radius, det_min_score)
@@ -291,8 +291,9 @@ def extract_cnn_outputmulti(outputs_np, cfg):
         scmap=np.expand_dims(scmap,axis=2)
     return scmap, locref, paf
 
-def extract_batchdetections(scmap, locref, pafs, cfg, dist_grid, num_joints,num_idchannel, stride, halfstride, det_min_score,nms_grid):
+def extract_batchdetections(scmap, locref, pafs, cfg, dist_grid, num_joints,num_idchannel, stride, halfstride, det_min_score):
     ''' Extract detections correcting by locref and estimating association costs based on PAFs '''
+    from nms_grid import nms_grid  # this needs to be installed (C-code)
     Detections = {}
     # get dist_grid
     unProb = [None] * num_joints
@@ -375,8 +376,7 @@ def get_batchdetectionswithcosts(image, dlc_cfg, dist_grid, batchsize,num_joints
         else:
             paf = pafs[l]
         if c_engine:
-            from nms_grid import nms_grid  # this needs to be installed (C-code)
-            dets = extract_batchdetections(scmap[l], locref[l], paf, dlc_cfg, dist_grid, num_joints,num_idchannel, stride, halfstride, det_min_score,nms_grid)
+            dets = extract_batchdetections(scmap[l], locref[l], paf, dlc_cfg, dist_grid, num_joints,num_idchannel, stride, halfstride, det_min_score)
         else:
             radius = len(dist_grid - 1) // 2
             dets = extract_batchdetections_python(dlc_cfg, scmap[l], paf, radius, det_min_score)

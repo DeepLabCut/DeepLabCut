@@ -60,7 +60,7 @@ def convertdetectiondict2listoflist(dataimage,imname,BPTS,withid=False,evaluatio
 
     return all_detections
 
-def matchconnections(cfg, dataimage, all_detections, iBPTS, partaffinityfield_graph, PAF,evaluation=False):
+def matchconnections(cfg, dataimage, all_detections, iBPTS, partaffinityfield_graph, PAF, evaluation=False):
     ''' Auxiliary function;  Returns list of connections (limbs) of a particular type.
 
     Specifically, per edge a list containing is returned: [index start (global), index stop (global) score, score with detection likelihoods, index start (local), index stop (local)]
@@ -88,16 +88,16 @@ def matchconnections(cfg, dataimage, all_detections, iBPTS, partaffinityfield_gr
     '''
     all_connections = []
     missing_connections = []
-    for k in range(len(partaffinityfield_graph)):
-        cand_a = all_detections[iBPTS[partaffinityfield_graph[k][0]]] # transfer orignal bpt index to the one in all_detections!
-        cand_b = all_detections[iBPTS[partaffinityfield_graph[k][1]]] #
+    for edge in range(len(partaffinityfield_graph)):
+        cand_a = all_detections[iBPTS[partaffinityfield_graph[edge][0]]] # transfer orignal bpt index to the one in all_detections!
+        cand_b = all_detections[iBPTS[partaffinityfield_graph[edge][1]]] #
         n_a = len(cand_a)
         n_b = len(cand_b)
         if n_a != 0 and n_b != 0:
             connection_candidate = []
             for i in range(n_a):
                 for j in range(n_b):
-                    KK=PAF[k]
+                    KK=PAF[edge]
                     d=distance(np.array(cand_a[i][:2]),np.array(cand_b[j][:2]))
                     if evaluation:
                         score_with_dist_prior=abs(dataimage['prediction']['costs'][KK][cfg.method][i,j])
@@ -123,99 +123,67 @@ def matchconnections(cfg, dataimage, all_detections, iBPTS, partaffinityfield_gr
 
             all_connections.append(connection)
         else:
-            missing_connections.append(k)
+            missing_connections.append(edge)
             all_connections.append([])
     return all_connections, missing_connections
 
-def matchconnections(cfg,dataimage,all_detections,iBPTS,partaffinityfield_graph,PAF):
-    ''' PAF is a subset of indices should be used in the PAF graph '''
-    all_connections = []
-    missing_connections = []
-    for k in range(len(partaffinityfield_graph)):
-        cand_a = all_detections[iBPTS[partaffinityfield_graph[k][0]]] # detectedcoordinates[partaffinityfield_graph[k][0]]
-        cand_b = all_detections[iBPTS[partaffinityfield_graph[k][1]]] # detectedcoordinates[partaffinityfield_graph[k][1]]
-        n_a = len(cand_a)
-        n_b = len(cand_b)
-        if n_a != 0 and n_b != 0:
-            connection_candidate = []
-            for i in range(n_a):
-                for j in range(n_b):
-                    KK=PAF[k]
-                    d=distance(np.array(cand_a[i][:2]),np.array(cand_b[j][:2]))
-                    score_with_dist_prior=abs(dataimage['costs'][KK][cfg.method][i,j])
-                    si=cand_a[i][2] #detectedlikelihood[partaffinityfield_graph[k][0]][i].flatten()[0]
-                    sj=cand_b[j][2] #detectedlikelihood[partaffinityfield_graph[k][1]][j].flatten()[0]
-                    if score_with_dist_prior>cfg.pafthreshold and d<cfg.distnormalization and d>cfg.distnormalizationLOWER and si*sj>cfg.detectionthresholdsquare:
-                        connection_candidate.append([i, j, score_with_dist_prior,
-                                                     score_with_dist_prior + np.sqrt(si * sj)*cfg.addlikelihoods])
-
-            #sort by score!
-            connection_candidate = sorted(connection_candidate, key=lambda x: x[2], reverse=True)
-            connection = np.zeros((0, 5))
-            for c in range(len(connection_candidate)):
-                i, j, s = connection_candidate[c][0:3]
-                if i not in connection[:, 3] and j not in connection[:, 4]:
-                    ii=int(cand_a[i][-1]) #global index!
-                    jj=int(cand_b[j][-1])
-                    connection = np.vstack([connection, [ii, jj, s, i, j]])
-                    if len(connection) >= min(n_a, n_b):
-                        break
-
-            all_connections.append(connection)
-        else:
-            missing_connections.append(k)
-            all_connections.append([])
-    return all_connections, missing_connections
-
-def linkjoints2individuals(cfg,all_detections,all_connections, missing_connections,partaffinityfield_graph,iBPTS,numjoints=18):
+def linkjoints2individuals(cfg,all_detections,all_connections, missing_connections,partaffinityfield_graph,iBPTS,numjoints=18,log=False):
     subset = np.empty((0, numjoints+2))
     candidate = np.array([item for sublist in all_detections for item in sublist])
-    for k in range(len(partaffinityfield_graph)):
-        if k not in missing_connections:
-            part_as = all_connections[k][:, 0] #global? indices for source of limb!
-            part_bs = all_connections[k][:, 1] #indices for target of limb (when all detections are enumerated)
-            index_a, index_b =iBPTS[partaffinityfield_graph[k][0]],iBPTS[partaffinityfield_graph[k][1]] #convert in order of bpts!
-            for i in range(len(all_connections[k])):  # looping over all connections for that limb
+    for edge in range(len(partaffinityfield_graph)):
+        if edge not in missing_connections:
+            if log:
+                print(edge,subset)
+            part_as = all_connections[edge][:, 0] #global? indices for source of limb!
+            part_bs = all_connections[edge][:, 1] #indices for target of limb (when all detections are enumerated)
+            index_a, index_b =iBPTS[partaffinityfield_graph[edge][0]],iBPTS[partaffinityfield_graph[edge][1]] #convert in order of bpts!
+            for i in range(len(all_connections[edge])):  # looping over all connections for that limb
                 found = 0
                 subset_idx = [-1, -1]
                 for j in range(len(subset)):  # current number of individuals...
                     if (subset[j][index_a] == part_as[i] or subset[j][index_b] == part_bs[i]) and found<2: #added found<2
                         subset_idx[found] = j
                         found += 1
-
+                if log:
+                    print(found,subset_idx)
                 if found == 1:
                     j = subset_idx[0]
-                    if subset[j][index_b] != part_bs[i]: #WHAT ABOUT index_a??? >>>MAKE ELSE!!
+                    if subset[j][index_b] != part_bs[i]: #b is not target >> connect
                         subset[j][index_b] = part_bs[i]
                         subset[j][-1] += 1
-                        subset[j][-2] += candidate[part_bs[i].astype(int), 2] + all_connections[k][i][2]
-                elif found == 2:  # if found 2 and disjoint, merge them
+                        subset[j][-2] += candidate[part_bs[i].astype(int), 2] + all_connections[edge][i][2]
+                        if log:
+                            print("adding b")
+
+                    if subset[j][index_a] != part_as[i]: #a is not source >> connect
+                        subset[j][index_a] = part_as[i]
+                        subset[j][-1] += 1
+                        subset[j][-2] += candidate[part_as[i].astype(int), 2] + all_connections[edge][i][2]
+                        if log:
+                            print("adding a")
+                elif found == 2:  # if 2 found and subsets disjoint, merge them
                     j1, j2 = subset_idx
                     membership = ((subset[j1] >= 0).astype(int) + (subset[j2] >= 0).astype(int))[:-2]
                     if len(np.nonzero(membership == 2)[0]) == 0:  # merge
                         subset[j1][:-2] += (subset[j2][:-2] + 1)
                         subset[j1][-2:] += subset[j2][-2:]
-                        subset[j1][-2] += all_connections[k][i][2]
+                        subset[j1][-2] += all_connections[edge][i][2]
                         subset = np.delete(subset, j2, 0)
-                    else:  # as like found == 1 IE >>> LINKS PART B!?!. This sounds like a bad idea for non trees!
-                        subset[j1][index_b] = part_bs[i]
-                        subset[j1][-1] += 1
-                        subset[j1][-2] += candidate[part_bs[i].astype(int), 2] + all_connections[k][i][2]
-                        #WHAT ABOUT j2?
-
-                # if find no partA in the subset, create a new subset
-                elif not found and k < numjoints:
+                        if log:
+                            print("merging")
+                # if both nodes don't exist, create a new subset
+                elif not found and edge < numjoints:
                     row = -1 * np.ones(numjoints+2)
                     row[index_a] = part_as[i]
                     row[index_b] = part_bs[i]
                     row[-1] = 2
-                    row[-2] = sum(candidate[all_connections[k][i, :2].astype(int), 2]) + all_connections[k][i][2]
+                    row[-2] = sum(candidate[all_connections[edge][i, :2].astype(int), 2]) + all_connections[edge][i][2]
                     subset = np.vstack([subset, row])
-
+                    if log:
+                        print("new")
     deleteIdx = [];
-    for i in range(len(subset)):  # delete animals with too few connected bodyparts or low average score
+    for i in range(len(subset)):  # delete animal proposals with too few edges or too low average score
         if subset[i][-1] < cfg.minimalnumberofconnections or subset[i][-2]/subset[i][-1] < cfg.averagescore:
             deleteIdx.append(i)
     subset = np.delete(subset, deleteIdx, axis=0)
-    #subset = sorted(subset, key=lambda x: x[-2], reverse=True)
     return subset, candidate
