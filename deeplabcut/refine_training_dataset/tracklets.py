@@ -168,15 +168,23 @@ class TrackletManager:
 
     def find_swapping_bodypart_pairs(self, force_find=False):
         if not self.swapping_pairs or force_find:
-            temp = np.swapaxes(self.xy, 0, 2)
+            # Only keep the non-empty tracklets to accelerate computation
+            nonempty = self.nonempty_tracklets
+            xy = self.xy[:, nonempty]
+            temp = np.swapaxes(xy, 0, 2)
             # Broadcasting makes subtraction of X and Y coordinates very efficient
             sub = temp[:, :, np.newaxis] - temp[:, np.newaxis]
             with np.errstate(invalid='ignore'):  # Get rid of annoying warnings when comparing with NaNs
-                down = (sub[:, :, :, 1:] <= 0) & (sub[:, :, :, :-1] > 0)
-                up = (sub[:, :, :, 1:] > 0) & (sub[:, :, :, :-1] <= 0)
+                pos = sub > 0
+                neg = sub <= 0
+                down = neg[:, :, :, 1:] & pos[:, :, :, :-1]
+                up = pos[:, :, :, 1:] & neg[:, :, :, :-1]
                 zero_crossings = down | up
-            # ID swaps occur when X and Y simultaneously intersect each other
-            self.tracklet_swaps = zero_crossings.all(axis=0)
+            # ID swaps occur when X and Y simultaneously intersect each other.
+            # We form the whole matrix back in order to get the proper indices.
+            all_swaps = np.zeros((len(manager.tracklet2id), len(manager.tracklet2id), self.nframes - 1), dtype=bool)
+            all_swaps[np.ix_(nonempty, nonempty)] = zero_crossings.all(axis=0)
+            self.tracklet_swaps = all_swaps
             cross = self.tracklet_swaps.sum(axis=2) > self.min_swap_frac * self.nframes
             mat = np.tril(cross)
             temp_pairs = np.where(mat)
