@@ -31,7 +31,7 @@ class PointSelector:
         self.alpha_other = alpha_other
         self.lasso = LassoSelector(ax, onselect=self.on_select)
         self._is_connected = True
-        self.toggle_callback()
+        self.toggle()
 
     def on_select(self, verts):
         path = Path(verts)
@@ -41,7 +41,7 @@ class PointSelector:
         self.fc[self.tracker.picked, -1] = self.alpha
         self.collection.set_color(self.fc)
 
-    def toggle_callback(self):
+    def toggle(self):
         if self._is_connected:
             self.disconnect()
         else:
@@ -122,16 +122,16 @@ class TrackletManager:
         tracklets_sorted = [i * self.nbodyparts + j for i in inds for j in range(self.nbodyparts)]
         data_sorted = data[:, tracklets_sorted]
         self.data = data_sorted
-        self.xy = self.data[:, :, :2]
-        self.prob = self.data[:, :, 2]
+        self.xy = self.data[:, :, :2].copy()
+        self.prob = self.data[:, :, 2].copy()
 
         # Remove the tracklets that contained too little information.
         comp_sorted = comp[tracklets_sorted]
         to_keep = comp_sorted > self.min_tracklet_frac * self.nframes
         for i in np.flatnonzero(~to_keep):
             self.empty_tracklets.add(i)
-        # self.tracklet2id = [item for item, keep in zip(tracklet2id, to_keep) if keep]
-        self.unidentified_tracklets = set(range(self.nindividuals * self.nbodyparts, len(self.tracklet2id)))
+        unidentified = set(range(self.nindividuals * self.nbodyparts, len(self.tracklet2id)))
+        self.unidentified_tracklets = unidentified.difference(self.empty_tracklets)
         self.find_swapping_bodypart_pairs()
 
     def load_tracklets_from_hdf(self, filename):
@@ -149,26 +149,42 @@ class TrackletManager:
         self.tracklet2id = [i for i in range(len(individuals)) for _ in range(self.nbodyparts)]
         self.find_swapping_bodypart_pairs()
 
+    @property
+    def nonempty_tracklets(self):
+        return list(set(range(len(self.tracklet2id))).difference(self.empty_tracklets))
+
     @staticmethod
     def calc_completeness(xy):
         return np.sum(~np.isnan(xy).any(axis=2), axis=0)
 
-    def update_empty_tracklets(self, xy):
-        comp = self.calc_completeness(xy)
-        for i in np.flatnonzero(comp == 0):
-            self.empty_tracklets.add(i)
+    def swap_tracklets(self, pair, inds):
+        self.xy[inds, [pair]] = self.xy[inds, [pair[::-1]]]
+        self.prob[inds, [pair]] = self.prob[inds, [pair[::-1]]]
+
+    def cut_tracklet(self, num_tracklet, inds):
+        ind_empty = self.empty_tracklets.pop()
+        self.swap_tracklets((num_tracklet, ind_empty), inds)
+        self.unidentified_tracklets.add(ind_empty)
 
     def find_swapping_bodypart_pairs(self, force_find=False):
         if not self.swapping_pairs or force_find:
-            temp = np.swapaxes(self.xy, 0, 2)
+            # Only keep the non-empty tracklets to accelerate computation
+            nonempty = self.nonempty_tracklets
+            xy = self.xy[:, nonempty]
+            temp = np.swapaxes(xy, 0, 2)
             # Broadcasting makes subtraction of X and Y coordinates very efficient
             sub = temp[:, :, np.newaxis] - temp[:, np.newaxis]
             with np.errstate(invalid='ignore'):  # Get rid of annoying warnings when comparing with NaNs
-                down = (sub[:, :, :, 1:] <= 0) & (sub[:, :, :, :-1] > 0)
-                up = (sub[:, :, :, 1:] > 0) & (sub[:, :, :, :-1] <= 0)
+                pos = sub > 0
+                neg = sub <= 0
+                down = neg[:, :, :, 1:] & pos[:, :, :, :-1]
+                up = pos[:, :, :, 1:] & neg[:, :, :, :-1]
                 zero_crossings = down | up
-            # ID swaps occur when X and Y simultaneously intersect each other
-            self.tracklet_swaps = zero_crossings.all(axis=0)
+            # ID swaps occur when X and Y simultaneously intersect each other.
+            # We form the whole matrix back in order to get the proper indices.
+            all_swaps = np.zeros((len(manager.tracklet2id), len(manager.tracklet2id), self.nframes - 1), dtype=bool)
+            all_swaps[np.ix_(nonempty, nonempty)] = zero_crossings.all(axis=0)
+            self.tracklet_swaps = all_swaps
             cross = self.tracklet_swaps.sum(axis=2) > self.min_swap_frac * self.nframes
             mat = np.tril(cross)
             temp_pairs = np.where(mat)
@@ -305,20 +321,20 @@ class TrackletVisualizer:
         for ax in self.ax1, self.ax2, self.ax3:
             ax.axis('off')
 
-        colors = self.cmap(manager.tracklet2id)
+        self.colors = self.cmap(manager.tracklet2id)
         # Color in black the unidentified tracklets
-        colors[manager.nindividuals * manager.nbodyparts:] = 0, 0, 0, 1
-        colors[:, -1] = manager.cfg['alphavalue']
+        self.colors[manager.nindividuals * manager.nbodyparts:] = 0, 0, 0, 1
+        self.colors[:, -1] = manager.cfg['alphavalue']
 
         img = self._read_frame()
         self.im = self.ax1.imshow(img)
         self.scat = self.ax1.scatter([], [], s=manager.cfg['dotsize'] ** 2, picker=True)
         self.scat.set_offsets(manager.xy[0])
-        self.scat.set_color(colors)
+        self.scat.set_color(self.colors)
         self.selector = PointSelector(self, self.ax1, self.scat, manager.cfg['alphavalue'])
-        self.trails = sum([self.ax1.plot([], [], '-', lw=2, c=c) for c in colors], [])
-        self.lines_x = sum([self.ax2.plot([], [], '-', lw=1, c=c, picker=5) for c in colors], [])
-        self.lines_y = sum([self.ax3.plot([], [], '-', lw=1, c=c, picker=5) for c in colors], [])
+        self.trails = sum([self.ax1.plot([], [], '-', lw=2, c=c) for c in self.colors], [])
+        self.lines_x = sum([self.ax2.plot([], [], '-', lw=1, c=c, picker=5) for c in self.colors], [])
+        self.lines_y = sum([self.ax3.plot([], [], '-', lw=1, c=c, picker=5) for c in self.colors], [])
         self.vline_x = self.ax2.axvline(0, 0, 1, c='k', ls=':')
         self.vline_y = self.ax3.axvline(0, 0, 1, c='k', ls=':')
         custom_lines = [plt.Line2D([0], [0], color=self.cmap(i), lw=4) for i in range(manager.nindividuals)]
@@ -374,7 +390,7 @@ class TrackletVisualizer:
                 self.fill_shaded_areas()
                 self.cuts = []
         elif event.key == 'l':
-            self.selector.toggle_callback()
+            self.selector.toggle()
         elif event.key == 'alt+right':
             self.background.forward()
         elif event.key == 'alt+left':
@@ -400,15 +416,13 @@ class TrackletVisualizer:
             if len(inds):
                 ind = np.argmax(inds > i)
                 sl = slice(inds[ind - 1], inds[ind])
-                self.manager.xy[sl, [self.picked_pair]] = self.manager.xy[sl, [self.picked_pair[::-1]]]
-                self.manager.prob[sl, [self.picked_pair]] = self.manager.prob[sl, [self.picked_pair[::-1]]]
+                self.manager.swap_tracklets(self.picked_pair, sl)
                 self.display_traces()
                 self.slider.set_val(int(self.slider.val))
 
     def invert(self):
         i = int(self.slider.val)
-        self.manager.xy[i, [self.picked_pair]] = self.manager.xy[i, [self.picked_pair[::-1]]]
-        self.manager.prob[i, [self.picked_pair]] = self.manager.prob[i, [self.picked_pair[::-1]]]
+        self.manager.swap_tracklets(self.picked_pair, i)
         self.display_traces()
         self.slider.set_val(int(self.slider.val))
 
@@ -469,7 +483,10 @@ class TrackletVisualizer:
             self.slider.set_val(x)
 
     def display_points(self, val):
-        self.scat.set_offsets(self.manager.xy[val])
+        data = self.manager.xy[val]
+        mask = ~np.isnan(data).any(axis=1)
+        self.scat.set_offsets(data[mask])
+        self.scat.set_color(self.colors[mask])
 
     def display_trails(self, val):
         for n, trail in enumerate(self.trails):

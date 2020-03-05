@@ -149,7 +149,7 @@ def extract_detections_python(cfg, scmap, pafs, radius, threshold):
 
     for p_idx in range(num_joints):
         map_ = scmap[:, :, p_idx]
-        xy = peak_local_max(map_, min_distance=radius, threshold_rel=threshold)
+        xy = peak_local_max(map_, min_distance=radius, threshold_abs=threshold)
         prob = map_[xy[:, 0], xy[:, 1]]
         unProb[p_idx] = np.round(prob, 5)
         unPos[p_idx] = np.round(xy, 3)
@@ -168,7 +168,7 @@ def get_detectionswithcosts(image, cfg, sess, inputs, outputs, outall=False,nms_
     if c_engine:
         detections=extract_detections(cfg, scmap, locref, paf,nms_radius=nms_radius,det_min_score=det_min_score)
     else:
-        detections = extract_detections_python(cfg, scmap, paf, nms_radius, det_min_score)
+        detections = extract_detections_python(cfg, scmap, paf, int(nms_radius), det_min_score)
     if outall:
         return scmap, locref, paf, detections
     else:
@@ -236,7 +236,7 @@ def extract_detection_withgroundtruth_python(cfg, groundtruthcoordinates, scmap,
 
     for p_idx in range(num_joints):
         map_ = scmap[:, :, p_idx]
-        xy = peak_local_max(map_, min_distance=radius, threshold_rel=threshold)
+        xy = peak_local_max(map_, min_distance=radius, threshold_abs=threshold)
         prob = map_[xy[:, 0], xy[:, 1]]
         unProb[p_idx] = np.round(prob, 5)
         unPos[p_idx] = np.round(xy, 3)
@@ -264,7 +264,7 @@ def get_detectionswithcostsandGT(image,  groundtruthcoordinates, cfg, sess, inpu
     if c_engine:
         detections=extract_detection_withgroundtruth(cfg, groundtruthcoordinates, scmap, locref, paf, nms_radius, det_min_score)
     else:
-        detections = extract_detection_withgroundtruth_python(cfg, groundtruthcoordinates, scmap, paf, nms_radius, det_min_score)
+        detections = extract_detection_withgroundtruth_python(cfg, groundtruthcoordinates, scmap, paf, int(nms_radius), det_min_score)
     if outall:
         return scmap, locref, paf, detections
     else:
@@ -344,7 +344,7 @@ def extract_batchdetections_python(cfg, scmap, pafs, radius, threshold):
 
     for p_idx in range(num_joints):
         map_ = scmap[:, :, p_idx]
-        xy = peak_local_max(map_, min_distance=radius, threshold_rel=threshold)
+        xy = peak_local_max(map_, min_distance=radius, threshold_abs=threshold)
         prob = map_[xy[:, 0], xy[:, 1]]
         unProb[p_idx] = np.round(prob, 5)
         unPos[p_idx] = np.round(xy, 3)
