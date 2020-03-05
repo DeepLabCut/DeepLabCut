@@ -39,7 +39,7 @@ def Plotting(cfg,comparisonbodyparts,DLCscorer,trainIndices,DataCombined,foldern
         visualization.PlottingandSaveLabeledFrame(DataCombined,ind,trainIndices,cfg,colors,comparisonbodyparts,DLCscorer,foldername)
 
 def return_evaluate_network_data(config,shuffle=0,trainingsetindex=0,comparisonbodyparts="all",Snapindex=None,
-                                rescale=False,fulldata=False,show_errors = True,modelprefix=''):
+                                rescale=False,fulldata=False,show_errors = True,modelprefix='',returnjustfns=True):
     """
     Returns the results for (previously evaluated) network. deeplabcut.evaluate_network(..)
     Returns list of (per model): [trainingsiterations,trainfraction,shuffle,trainerror,testerror,pcutoff,trainerrorpcutoff,testerrorpcutoff,Snapshots[snapindex],scale,net_type]
@@ -154,26 +154,27 @@ def return_evaluate_network_data(config,shuffle=0,trainingsetindex=0,comparisonb
         #resultsfilename=os.path.join(str(evaluationfolder),DLCscorer + '-' + str(Snapshots[snapindex])+  '.h5') # + '-' + str(snapshot)+  ' #'-' + Snapshots[snapindex]+  '.h5')
         print(resultsfilename)
         resultsfns.append(resultsfilename)
-        if not notanalyzed and os.path.isfile(resultsfilename): #data exists..
-            DataMachine = pd.read_hdf(resultsfilename,'df_with_missing')
-            DataCombined = pd.concat([Data.T, DataMachine.T], axis=0).T
-            RMSE,RMSEpcutoff = pairwisedistances(DataCombined, cfg["scorer"], DLCscorer,cfg["pcutoff"],comparisonbodyparts)
+        if not returnjustfns:
+            if not notanalyzed and os.path.isfile(resultsfilename): #data exists..
+                DataMachine = pd.read_hdf(resultsfilename,'df_with_missing')
+                DataCombined = pd.concat([Data.T, DataMachine.T], axis=0).T
+                RMSE,RMSEpcutoff = pairwisedistances(DataCombined, cfg["scorer"], DLCscorer,cfg["pcutoff"],comparisonbodyparts)
 
-            testerror = np.nanmean(RMSE.iloc[testIndices].values.flatten())
-            trainerror = np.nanmean(RMSE.iloc[trainIndices].values.flatten())
-            testerrorpcutoff = np.nanmean(RMSEpcutoff.iloc[testIndices].values.flatten())
-            trainerrorpcutoff = np.nanmean(RMSEpcutoff.iloc[trainIndices].values.flatten())
-            if show_errors == True:
-                    print("Results for",trainingsiterations," training iterations:", int(100 * trainFraction), shuffle, "train error:",np.round(trainerror,2), "pixels. Test error:", np.round(testerror,2)," pixels.")
-                    print("With pcutoff of", cfg["pcutoff"]," train error:",np.round(trainerrorpcutoff,2), "pixels. Test error:", np.round(testerrorpcutoff,2), "pixels")
-                    print("Snapshot",Snapshots[snapindex])
+                testerror = np.nanmean(RMSE.iloc[testIndices].values.flatten())
+                trainerror = np.nanmean(RMSE.iloc[trainIndices].values.flatten())
+                testerrorpcutoff = np.nanmean(RMSEpcutoff.iloc[testIndices].values.flatten())
+                trainerrorpcutoff = np.nanmean(RMSEpcutoff.iloc[trainIndices].values.flatten())
+                if show_errors == True:
+                        print("Results for",trainingsiterations," training iterations:", int(100 * trainFraction), shuffle, "train error:",np.round(trainerror,2), "pixels. Test error:", np.round(testerror,2)," pixels.")
+                        print("With pcutoff of", cfg["pcutoff"]," train error:",np.round(trainerrorpcutoff,2), "pixels. Test error:", np.round(testerrorpcutoff,2), "pixels")
+                        print("Snapshot",Snapshots[snapindex])
 
-            r=[trainingsiterations,int(100 * trainFraction),shuffle,np.round(trainerror,2),np.round(testerror,2),cfg["pcutoff"],np.round(trainerrorpcutoff,2), np.round(testerrorpcutoff,2),Snapshots[snapindex],scale,dlc_cfg['net_type']]
-            results.append(r)
-        else:
-            print("Model not trained/evaluated!")
-        if fulldata==True:
-            DATA.append([DataMachine, Data, data, trainIndices, testIndices, trainFraction, DLCscorer,comparisonbodyparts, cfg, evaluationfolder, Snapshots[snapindex]])
+                r=[trainingsiterations,int(100 * trainFraction),shuffle,np.round(trainerror,2),np.round(testerror,2),cfg["pcutoff"],np.round(trainerrorpcutoff,2), np.round(testerrorpcutoff,2),Snapshots[snapindex],scale,dlc_cfg['net_type']]
+                results.append(r)
+            else:
+                print("Model not trained/evaluated!")
+            if fulldata==True:
+                DATA.append([DataMachine, Data, data, trainIndices, testIndices, trainFraction, DLCscorer,comparisonbodyparts, cfg, evaluationfolder, Snapshots[snapindex]])
 
     os.chdir(start_path)
     if returnjustfns:
