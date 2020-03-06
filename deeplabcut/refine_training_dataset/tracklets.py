@@ -160,13 +160,15 @@ class TrackletManager:
         return self.tracklet2id[ind]
 
     def swap_tracklets(self, tracklet1, tracklet2, inds):
-        self.xy[[tracklet1, tracklet2], inds] = self.xy[[tracklet2, tracklet1], inds]
-        self.prob[[tracklet1, tracklet2], inds] = self.prob[[tracklet2, tracklet1], inds]
+        self.xy[np.ix_([tracklet1, tracklet2], inds)] = self.xy[np.ix_([tracklet2, tracklet1], inds)]
+        self.prob[np.ix_([tracklet1, tracklet2], inds)] = self.prob[np.ix_([tracklet2, tracklet1], inds)]
 
     def cut_tracklet(self, num_tracklet, inds):
-        ind_empty = np.argmax(self.empty_tracklets)
-        self.swap_tracklets((num_tracklet, ind_empty), inds)
-        self.unidentified_tracklets.add(ind_empty)
+        if num_tracklet in np.flatnonzero(np.logical_not(self.unidentified_tracklets)):
+            ind_empty = np.argmax(self.empty_tracklets)
+            self.swap_tracklets(num_tracklet, ind_empty, inds)
+            self.unidentified_tracklets[ind_empty] = True
+            self.empty_tracklets[ind_empty] = False
 
     def find_swapping_bodypart_pairs(self, force_find=False):
         if not self.swapping_pairs or force_find:
@@ -423,7 +425,7 @@ class TrackletVisualizer:
 
     def invert(self):
         i = int(self.slider.val)
-        self.manager.swap_tracklets(self.picked_pair, i)
+        self.manager.swap_tracklets(*self.picked_pair, i)
         self.display_traces()
         self.slider.set_val(int(self.slider.val))
 
