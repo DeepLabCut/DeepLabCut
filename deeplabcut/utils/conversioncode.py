@@ -30,7 +30,7 @@ def convertannotationdata_fromwindows2unixstyle(config,userfeedback=True,win2lin
         If true the user will be asked specifically for each folder in labeled-data if the containing csv shall be converted to hdf format.
 
     win2linux: bool, optional.
-        By default converts from windows to linux. If false, converts from unix to windows. 
+        By default converts from windows to linux. If false, converts from unix to windows.
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg['video_sets'].keys()
@@ -51,6 +51,92 @@ def convertannotationdata_fromwindows2unixstyle(config,userfeedback=True,win2lin
                 convertpaths_to_unixstyle(Data,fn)
             else:
                 convertpaths_to_windowsstyle(Data,fn)
+
+## ConvertingMulti2Standard...
+def conversioncodemulti2single(config,userfeedback=True,scorer=None):
+    """
+
+    TODO: TBA.
+    """
+    cfg = auxiliaryfunctions.read_config(config)
+    videos = cfg['video_sets'].keys()
+    video_names = [Path(i).stem for i in videos]
+    folders = [Path(config).parent / 'labeled-data' /Path(i) for i in video_names]
+    if scorer==None:
+        scorer=cfg['scorer']
+
+    for folder in folders:
+        try:
+            if userfeedback==True:
+                print("Do you want to convert the csv file in folder:", folder, "?")
+                askuser = input("yes/no")
+            else:
+                askuser="yes"
+
+            if askuser=='y' or askuser=='yes' or askuser=='Ja' or askuser=='ha': # multilanguage support :)
+                fn=os.path.join(str(folder),'CollectedData_' + cfg['scorer'] + '.h5')
+                data=pd.read_hdf(fn)
+
+                #nlines,numcolumns=data.shape
+                if cfg.get('multianimalproject', False):
+                    print("Multi-animal data conversion...")
+                    #orderofindividuals=list(data.values[0,1:])
+                    #orderofbpincsv=list(data.values[1,1:])
+                    xyvalue=data.columns.get_level_values(2)
+                    scorers=data.columns.get_level_values(0) #len(orderofbpincsv)*[scorer]
+                    bpts=data.columns.get_level_values(1)
+                    orderofindividuals=['spider1']*len(bpts)
+                    #xyvalue=int(len(orderofbpincsv)/2)*['x', 'y']
+                    index=pd.MultiIndex.from_arrays(np.vstack([scorers,orderofindividuals,bpts,xyvalue]),names=['scorer', 'individuals','bodyparts', 'coords'])
+
+                    imageindex=data.index #list(data.values[3:,0])
+                    '''
+                    print("Num of images in index:", len(imageindex))
+                    images=[fns for fns in os.listdir(str(folder)) if '.png' in fns]
+                    print("Num of images in folder:", len(images))
+
+                    #assert(len(orderofbpincsv)==len(cfg['bodyparts']))
+                    print(orderofbpincsv)
+                    print(cfg['bodyparts'])
+
+                    #TODO: test len of images vs. len of imagenames for another sanity check
+                    #index = pd.MultiIndex.from_product([[scorer], orderofindividuals, orderofbpincsv, ['x', 'y']],names=['scorer', 'individuals','bodyparts', 'coords'])
+                    '''
+                    #frame = pd.DataFrame(np.array(data.values[3:,1:],dtype=float), columns = index, index = imageindex)
+                    frame = pd.DataFrame(np.array(data.values,dtype=float), columns = index, index = imageindex)
+                    print(frame.head())
+                else:
+                    #orderofbpincsv=list(data.values[0,1:-1:2])
+                    #imageindex=list(data.values[2:,0])
+
+                    #assert(len(orderofbpincsv)==len(cfg['bodyparts']))
+                    #print(orderofbpincsv)
+                    #print(cfg['bodyparts'])
+
+                    xyvalue=data.columns.get_level_values(3)
+                    scorers=data.columns.get_level_values(0) #len(orderofbpincsv)*[scorer]
+                    bpts=data.columns.get_level_values(2)
+                    #orderofindividuals=['spider1']*len(bpts)
+                    #xyvalue=int(len(orderofbpincsv)/2)*['x', 'y']
+                    index=pd.MultiIndex.from_arrays(np.vstack([scorers,bpts,xyvalue]),names=['scorer','bodyparts', 'coords'])
+                    imageindex=data.index #list(data.values[3:,0])
+
+                    #TODO: test len of images vs. len of imagenames for another sanity check
+                    #index = pd.MultiIndex.from_product([[scorer], orderofbpincsv, ['x', 'y']],names=['scorer', 'bodyparts', 'coords'])
+                    frame = pd.DataFrame(np.array(data.values,dtype=float), columns = index, index = imageindex)
+                    print(frame.head())
+                if cfg.get('multianimalproject', False):
+                    data.to_hdf(os.path.join(str(folder),'CollectedData_'+ cfg['scorer']+"single.h5"), key='df_with_missing', mode='w')
+                    data.to_csv(os.path.join(str(folder),'CollectedData_'+ cfg['scorer']+"single.csv"))
+                else:
+                    data.to_hdf(os.path.join(str(folder),'CollectedData_'+ cfg['scorer']+"multi.h5"), key='df_with_missing', mode='w')
+                    data.to_csv(os.path.join(str(folder),'CollectedData_'+ cfg['scorer']+"multi.csv"))
+
+                frame.to_hdf(os.path.join(str(folder),'CollectedData_'+ cfg['scorer']+".h5"), key='df_with_missing', mode='w')
+                frame.to_csv(os.path.join(str(folder),'CollectedData_'+ cfg['scorer']+".csv"))
+
+        except FileNotFoundError:
+            print("Attention:", folder, "does not appear to have labeled data!")
 
 def convertcsv2h5(config,userfeedback=True,scorer=None):
     """

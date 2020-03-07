@@ -110,7 +110,6 @@ def runinstance1(variant): #,Models,Shuffles,configfile,animal):
 
 #runinstance1(0)
 
-
 #run in parallel!
 numvalues=getparams(np.nan) #dumb trick!
 print("Starting, ", animal, "with ", numvalues, "variants!!!")

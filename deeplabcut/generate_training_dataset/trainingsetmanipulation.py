@@ -299,7 +299,8 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True, cr
                                         if x>=x0 and round(x,2)<x0+size[1] and round(y,2)>=y0 and y<y0+size[0]:
                                             data[cfg['scorer'],ind,bp,'x']=round(x,2)-x0
                                             data[cfg['scorer'],ind,bp,'y']=round(y,2)-y0
-                                            animalincrop=True
+                                            if 'Plat' not in bp: #FOR 
+                                                animalincrop=True
                                         else:
                                             data[cfg['scorer'],ind,bp,'x']=np.nan
                                             data[cfg['scorer'],ind,bp,'y']=np.nan
