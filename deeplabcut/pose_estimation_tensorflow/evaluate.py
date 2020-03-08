@@ -149,7 +149,9 @@ def return_evaluate_network_data(config,shuffle=0,trainingsetindex=0,comparisonb
 
         #name for deeplabcut net (based on its parameters)
         DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations,modelprefix=modelprefix)
-        print("Retrieving ", DLCscorer, " with # of trainingiterations:", trainingsiterations)
+        if not returnjustfns:
+            print("Retrieving ", DLCscorer, " with # of trainingiterations:", trainingsiterations)
+            
         notanalyzed,resultsfilename,DLCscorer=auxiliaryfunctions.CheckifNotEvaluated(str(evaluationfolder),DLCscorer,DLCscorerlegacy,Snapshots[snapindex])
         #resultsfilename=os.path.join(str(evaluationfolder),DLCscorer + '-' + str(Snapshots[snapindex])+  '.h5') # + '-' + str(snapshot)+  ' #'-' + Snapshots[snapindex]+  '.h5')
         print(resultsfilename)
