@@ -502,7 +502,7 @@ class TrackletVisualizer:
             self.slider.set_val(x)
 
     def display_points(self, val):
-        data = self.manager.xy[val]
+        data = self.manager.xy[:, val]
         self.scat.set_offsets(data)
         # mask = ~np.isnan(data).any(axis=1)
         # self.scat.set_offsets(data[mask])
