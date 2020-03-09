@@ -12,6 +12,19 @@
  - [REFERENCES:](https://github.com/AlexEMG/DeepLabCut#references) read the science behind DeepLabCut
  
  
+ ### What you need to get started:
+ 
+ - **a set of videos that span the types of behaviors you want to track.** Having 10 videos that include different backgrounds, different individuals, and differnt postures is MUCH better than 1 or 2 videos of 1 or 2 different indivduals (i.e. 10-20 frames from each of 10 videos is **much better** than 50-100 frames from 2 videos).
+ 
+ - **a computer.** If you want to use DeepLabCut on your own computer for many experiments, then you should get an NVIDIA GPU. See technical specs [here](https://github.com/AlexEMG/DeepLabCut/wiki/FAQ). In the short term, or for testing out our software you can run short demos on COLAB ([see how](https://github.com/AlexEMG/DeepLabCut/blob/master/examples/README.md)), or on your CPU.
+ 
+ 
+ ### What you DON'T need to get started:
+ 
+ - no specific cameras are required; color, monochrome, etc is all fine. If you can see what you want to measure, then this will work for you (given enough labeled-data).
+ 
+ - no specific computer is required (but see recommendations above), our software works on Linux, Windows, and MacOS, although we recommend Ubuntu. 
+ 
 ## HOW-TO-GUIDES:
 
 **Overview: DeepLabCut** is a software package for markerless pose estimation of animals performing various tasks. The software can manage multiple projects for various tasks. Each project is identified by the name of the project (e.g. TheBehavior), name of the experimenter (e.g. YourName), as well as the date at creation. This project folder holds a ``config.yaml`` (a text document) file containing various (project) parameters as well as links the data of the project.
@@ -93,7 +106,7 @@ config_path = '/thefulloutputpath/config.yaml'
 
 - open the **config.yaml** file (in a text editor (like atom, gedit, vim etc.)), which can be found in the subfolder created when you set your project name, to change parameters and identify label names! This is a crucial step. 
 
-**maDeepLabCut**: As of 2.2 you also need to modify the config.yaml file, see [here](functionDetails.md#b-configure-the-project).
+**maDeepLabCut**: As of 2.2 you also need to modify a few more parameters in the config.yaml file, see [here](functionDetails.md#b-configure-the-project).
 
 (PLEASE see more details [here](functionDetails.md#b-configure-the-project))
 
