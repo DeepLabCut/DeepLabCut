@@ -106,19 +106,31 @@ def conversioncodemulti2single(config,userfeedback=True,scorer=None):
                     frame = pd.DataFrame(np.array(data.values,dtype=float), columns = index, index = imageindex)
                     print(frame.head())
                 else:
-                    orderofbpincsv=list(data.values[0,1:-1:2])
-                    imageindex=list(data.values[2:,0])
+                    #orderofbpincsv=list(data.values[0,1:-1:2])
+                    #imageindex=list(data.values[2:,0])
 
                     #assert(len(orderofbpincsv)==len(cfg['bodyparts']))
-                    print(orderofbpincsv)
-                    print(cfg['bodyparts'])
+                    #print(orderofbpincsv)
+                    #print(cfg['bodyparts'])
+
+                    xyvalue=data.columns.get_level_values(3)
+                    scorers=data.columns.get_level_values(0) #len(orderofbpincsv)*[scorer]
+                    bpts=data.columns.get_level_values(2)
+                    #orderofindividuals=['spider1']*len(bpts)
+                    #xyvalue=int(len(orderofbpincsv)/2)*['x', 'y']
+                    index=pd.MultiIndex.from_arrays(np.vstack([scorers,bpts,xyvalue]),names=['scorer','bodyparts', 'coords'])
+                    imageindex=data.index #list(data.values[3:,0])
 
                     #TODO: test len of images vs. len of imagenames for another sanity check
-                    index = pd.MultiIndex.from_product([[scorer], orderofbpincsv, ['x', 'y']],names=['scorer', 'bodyparts', 'coords'])
-                    frame = pd.DataFrame(np.array(data.values[2:,1:],dtype=float), columns = index, index = imageindex)
-
-                data.to_hdf(os.path.join(str(folder),'CollectedData_'+ cfg['scorer']+"single.h5"), key='df_with_missing', mode='w')
-                data.to_csv(os.path.join(str(folder),'CollectedData_'+ cfg['scorer']+"single.csv"))
+                    #index = pd.MultiIndex.from_product([[scorer], orderofbpincsv, ['x', 'y']],names=['scorer', 'bodyparts', 'coords'])
+                    frame = pd.DataFrame(np.array(data.values,dtype=float), columns = index, index = imageindex)
+                    print(frame.head())
+                if cfg.get('multianimalproject', False):
+                    data.to_hdf(os.path.join(str(folder),'CollectedData_'+ cfg['scorer']+"single.h5"), key='df_with_missing', mode='w')
+                    data.to_csv(os.path.join(str(folder),'CollectedData_'+ cfg['scorer']+"single.csv"))
+                else:
+                    data.to_hdf(os.path.join(str(folder),'CollectedData_'+ cfg['scorer']+"multi.h5"), key='df_with_missing', mode='w')
+                    data.to_csv(os.path.join(str(folder),'CollectedData_'+ cfg['scorer']+"multi.csv"))
 
                 frame.to_hdf(os.path.join(str(folder),'CollectedData_'+ cfg['scorer']+".h5"), key='df_with_missing', mode='w')
                 frame.to_csv(os.path.join(str(folder),'CollectedData_'+ cfg['scorer']+".csv"))
