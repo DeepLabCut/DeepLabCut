@@ -1,3 +1,8 @@
+#Data
+/examples
+/examples-multianimal
+/benchmarking
+
 # Tensorflow checkpoints
 *.ckpt
 snapshot-*
