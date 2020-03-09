@@ -5,8 +5,9 @@ import numpy as np
 import os
 import pandas as pd
 import pickle
+from functools import partial
 from matplotlib.path import Path
-from matplotlib.widgets import Slider, LassoSelector
+from matplotlib.widgets import Slider, LassoSelector, Button
 from ruamel.yaml import YAML
 from threading import Event, Thread
 
@@ -87,6 +88,7 @@ class TrackletManager:
         self.scorer = None
         self.nindividuals = len(self.cfg['individuals'])
         self.tracklet2id = []
+        self.tracklet2bp = []
         self.unidentified_tracklets = []
         self.empty_tracklets = []
         self.swapping_pairs = []
@@ -159,6 +161,11 @@ class TrackletManager:
     def to_num_individual(self, ind):
         return self.tracklet2id[ind]
 
+    def get_nonempty(self, at):
+        data = self.xy[:, at]
+        mask = ~np.isnan(data).any(axis=1)
+        return data[mask], mask
+
     def swap_tracklets(self, tracklet1, tracklet2, inds):
         self.xy[np.ix_([tracklet1, tracklet2], inds)] = self.xy[np.ix_([tracklet2, tracklet1], inds)]
         self.prob[np.ix_([tracklet1, tracklet2], inds)] = self.prob[np.ix_([tracklet2, tracklet1], inds)]
@@ -183,8 +190,8 @@ class TrackletManager:
                 up = pos[:, :, 1:] & neg[:, :, :-1]
                 zero_crossings = down | up
             # ID swaps occur when X and Y simultaneously intersect each other.
-            tracklet_swaps = zero_crossings.all(axis=3)
-            cross = tracklet_swaps.sum(axis=2) > self.min_swap_frac * self.nframes
+            self.tracklet_swaps = zero_crossings.all(axis=3)
+            cross = self.tracklet_swaps.sum(axis=2) > self.min_swap_frac * self.nframes
             mat = np.tril(cross)
             temp_inds = np.where(mat)
             # Convert back into original indices
@@ -208,7 +215,7 @@ class TrackletManager:
             mask[i:j] = False
         return mask
 
-    def save(self, output_name=''):
+    def save(self, output_name='', *args):
         columns = pd.MultiIndex.from_product([self.scorer,
                                               self.cfg['individuals'],
                                               self.bodyparts,
@@ -216,70 +223,11 @@ class TrackletManager:
                                              names=['scorer', 'individuals', 'bodyparts', 'coords'])
         data = np.concatenate((self.xy, np.expand_dims(self.prob, axis=2)), axis=2)
         # Trim off the then-unidentified tracklets
-        data = data[:, :self.nindividuals * self.nbodyparts]
+        data = data[np.logical_not(self.unidentified_tracklets | self.empty_tracklets)]
         df = pd.DataFrame(data.reshape((self.nframes, -1)), columns=columns, index=self.times)
         if not output_name:
             output_name = self.filename.replace('pickle', 'h5')
         df.to_hdf(output_name, 'df_with_missing', format='table', mode='w')
-
-
-class BackgroundPlayer:
-    def __init__(self, viz):
-        self.viz = viz
-        self.can_run = Event()
-        self.can_run.clear()
-        self.running = True
-        self.paused = True
-        self.speed = ''
-
-    def run(self):
-        while self.running:
-            self.can_run.wait()
-            i = self.viz.slider.val + 1
-            if 'F' in self.speed:
-                i += 2 * len(self.speed)
-            elif 'R' in self.speed:
-                i -= 2 * len(self.speed)
-            if i > self.viz.manager.nframes:
-                i = 0
-            elif i < 0:
-                i = self.viz.manager.nframes
-            self.viz.slider.set_val(i)
-
-    def pause(self):
-        self.can_run.clear()
-        self.paused = True
-
-    def resume(self):
-        self.can_run.set()
-        self.paused = False
-
-    def toggle(self):
-        if self.paused:
-            self.resume()
-        else:
-            self.pause()
-
-    def forward(self):
-        speed = self.speed
-        if 'R' in speed:
-            speed = ''
-        if len(speed) < 4:
-            speed += 'F'
-        self.speed = speed
-        self.resume()
-
-    def rewind(self):
-        speed = self.speed
-        if 'F' in speed:
-            speed = ''
-        if len(speed) < 4:
-            speed += 'R'
-        self.speed = speed
-        self.resume()
-
-    def terminate(self, *args):
-        self.running = False
 
 
 class TrackletVisualizer:
@@ -293,9 +241,12 @@ class TrackletVisualizer:
         if nframes != manager.nframes:
             print('Video duration and data length do not match. Continuing nonetheless...')
         self.trail_len = trail_len
+        self.help_text = ''
+
         self.picked = []
         self.picked_pair = []
         self.cuts = []
+        self.current_mask = []
 
         self.background = BackgroundPlayer(self)
         self.thread_background = Thread(target=self.background.run, daemon=True)
@@ -324,13 +275,13 @@ class TrackletVisualizer:
 
         self.colors = self.cmap(manager.tracklet2id)
         # Color in black the unidentified tracklets
-        self.colors[manager.nindividuals * manager.nbodyparts:] = 0, 0, 0, 1
+        self.colors[manager.unidentified_tracklets | manager.empty_tracklets] = 0, 0, 0, 1
         self.colors[:, -1] = manager.cfg['alphavalue']
 
         img = self._read_frame()
         self.im = self.ax1.imshow(img)
         self.scat = self.ax1.scatter([], [], s=manager.cfg['dotsize'] ** 2, picker=True)
-        self.scat.set_offsets(manager.xy[0])
+        self.scat.set_offsets(manager.xy[:, 0])
         self.scat.set_color(self.colors)
         self.selector = PointSelector(self, self.ax1, self.scat, manager.cfg['alphavalue'])
         self.trails = sum([self.ax1.plot([], [], '-', lw=2, c=c) for c in self.colors], [])
@@ -346,9 +297,15 @@ class TrackletVisualizer:
             line.set_picker(5)
 
         self.display_traces()
-        self.ax_slider = self.fig.add_axes([0.2, 0.1, 0.65, 0.03], facecolor='lightgray')
+        self.ax_slider = self.fig.add_axes([0.1, 0.1, 0.6, 0.03], facecolor='lightgray')
         self.slider = Slider(self.ax_slider, '# Frame', 0, manager.nframes - 1, valinit=0, valstep=1, valfmt='%i')
         self.slider.on_changed(self.on_change)
+        self.ax_save = self.fig.add_axes([0.75, 0.1, 0.05, 0.03])
+        self.ax_help = self.fig.add_axes([0.8, 0.1, 0.05, 0.03])
+        self.save_button = Button(self.ax_save, 'Save')
+        self.save_button.on_clicked(partial(self.manager.save, ''))
+        self.help_button = Button(self.ax_help, 'Help')
+        self.help_button.on_clicked(self.display_help)
         self.fig.canvas.mpl_connect('pick_event', self.on_pick)
         self.fig.canvas.mpl_connect('key_press_event', self.on_press)
         self.fig.canvas.mpl_connect('button_press_event', self.on_click)
@@ -419,7 +376,7 @@ class TrackletVisualizer:
             if len(inds):
                 ind = np.argmax(inds > i)
                 sl = slice(inds[ind - 1], inds[ind])
-                self.manager.swap_tracklets(self.picked_pair, sl)
+                self.manager.swap_tracklets(*self.picked_pair, sl)
                 self.display_traces()
                 self.slider.set_val(int(self.slider.val))
 
@@ -496,14 +453,14 @@ class TrackletVisualizer:
         sl = slice(val - self.trail_len // 2, val + self.trail_len // 2)
         for n, trail in enumerate(self.trails):
             if n in self.picked:
-                xy = self.manager.xy[sl, n]
+                xy = self.manager.xy[n, sl]
                 trail.set_data(*xy.T)
             else:
                 trail.set_data([], [])
 
     def display_traces(self):
         for n, (line_x, line_y) in enumerate(zip(self.lines_x, self.lines_y)):
-            if n in self.manager.swapping_bodyparts or n in self.manager.unidentified_tracklets:
+            if n in self.manager.swapping_bodyparts or n in np.flatnonzero(self.manager.unidentified_tracklets):
                 line_x.set_data(self.manager.times, self.manager.xy[n, :, 0])
                 line_y.set_data(self.manager.times, self.manager.xy[n, :, 1])
             else:
@@ -512,6 +469,17 @@ class TrackletVisualizer:
         for ax in self.ax2, self.ax3:
             ax.relim()
             ax.autoscale_view()
+
+    def display_help(self, event):
+        if not self.help_text:
+            self.help_text = 'help needed'
+            self.text = self.fig.text(0.5, 0.5, self.help_text,
+                                      horizontalalignment='center',
+                                      verticalalignment='center',
+                                      fontsize=20, color='red')
+        else:
+            self.help_text = ''
+            self.text.remove()
 
     def update_traces(self):
         for n, (line_x, line_y) in enumerate(zip(self.lines_x, self.lines_y)):
@@ -539,3 +507,12 @@ class TrackletVisualizer:
             self.display_points(val)
             self.display_trails(val)
             self.update_vlines(val)
+
+
+def refine_tracklets(config, picklefile, video,
+                     min_swap_frac=0.01, min_tracklet_frac=0.01, trail_len=50):
+    manager = TrackletManager(config, min_swap_frac, min_tracklet_frac)
+    manager.load_tracklets_from_pickle(picklefile)
+    viz = TrackletVisualizer(manager, video, trail_len)
+    viz.show()
+    return manager

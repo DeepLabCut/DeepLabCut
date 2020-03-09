@@ -34,7 +34,7 @@ else: #standard use [wxpython supported]
     from deeplabcut.generate_training_dataset import adddatasetstovideolistandviceversa,  dropduplicatesinannotatinfiles
     from deeplabcut.gui.launch_script import launch_dlc
 
-    from deeplabcut.refine_training_dataset import refine_labels
+    from deeplabcut.refine_training_dataset import refine_labels, refine_tracklets
     from deeplabcut.utils import select_crop_parameters
 
 if os.environ.get('Colab', default=False) == 'True':
