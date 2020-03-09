@@ -918,92 +918,96 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1,
             vname = Path(video).stem
             dataname = os.path.join(destfolder,vname + DLCscorer + '.h5')
             data, metadata=auxfun_multianimal.LoadFullMultiAnimalData(dataname)
-
-            print("Loaded", dataname)
-            DLCscorer=metadata['data']['Scorer']
-            dlc_cfg=metadata['data']['DLC-model-config file']
-            nms_radius=data['metadata']['nms radius']
-            minconfidence=data['metadata']['minimal confidence']
-            partaffinityfield_graph=data['metadata']['PAFgraph']
-            all_joints=data['metadata']['all_joints']
-            all_jointnames=data['metadata']['all_joints_names']
-
-            if PAF is None:
-                PAF=np.arange(len(partaffinityfield_graph)) # THIS CAN BE A SUBSET!
-
-            partaffinityfield_graph=[partaffinityfield_graph[l] for l in PAF]
-            linkingpartaffinityfield_graph=partaffinityfield_graph
-
-            numjoints=len(all_jointnames)
-            if BPTS is None and iBPTS is None:
-                #NOTE: this can be used if only a subset is relevant. I.e. [0,1] for only first and second joint!
-                BPTS=range(numjoints)
-                iBPTS=range(numjoints) #the corresponding inverse!
-
-            #TODO: adjust this for multi + unique bodyparts!
-            #this is only for multianimal parts and uniquebodyparts as one (not one uniquebodyparts guy tracked etc. )
-            bodypartlabels=sum([3*[all_jointnames[bpt]] for bpt in BPTS],[])
-            numentries=len(bodypartlabels)
-
-            scorers=numentries*[DLCscorer]
-            xylvalue=int(len(bodypartlabels)/3)*['x', 'y','likelihood']
-            pdindex=pd.MultiIndex.from_arrays(np.vstack([scorers,bodypartlabels,xylvalue]),names=['scorer', 'bodyparts', 'coords'])
             suffix='tracks'
+            trackname=dataname.split('.h5')[0]+suffix+'.pickle'
 
-            imnames=[fn for fn in data.keys() if fn !='metadata']
-            Tracks={}
-            for index,imname in tqdm(enumerate(imnames)):
-                # filter detections according to inferencecfg parameters
-                all_detections=inferenceutils.convertdetectiondict2listoflist(data[imname],imname,BPTS,withid=inferencecfg.withid)
+            if os.path.isfile(trackname): #TODO: check if metadata are identical (same parameters!)
+                print("Tracklets already computed", dataname)
+            else:
+                print("Analyzing", dataname)
+                DLCscorer=metadata['data']['Scorer']
+                dlc_cfg=metadata['data']['DLC-model-config file']
+                nms_radius=data['metadata']['nms radius']
+                minconfidence=data['metadata']['minimal confidence']
+                partaffinityfield_graph=data['metadata']['PAFgraph']
+                all_joints=data['metadata']['all_joints']
+                all_jointnames=data['metadata']['all_joints_names']
 
-                if printintermediate:
-                    print(all_detections)
-                # filter connectinos according to inferencecfg parameters
-                connection_all, special_k=inferenceutils.matchconnections(inferencecfg,data[imname],
-                                            all_detections, iBPTS, partaffinityfield_graph, PAF)
+                if PAF is None:
+                    PAF=np.arange(len(partaffinityfield_graph)) # THIS CAN BE A SUBSET!
 
-                if printintermediate:
-                    print(connection_all)
-                # assemble putative subsets
-                subset, candidate=inferenceutils.linkjoints2individuals(inferencecfg, all_detections, connection_all, special_k,
-                                                            linkingpartaffinityfield_graph, iBPTS, numjoints=numjoints)
+                partaffinityfield_graph=[partaffinityfield_graph[l] for l in PAF]
+                linkingpartaffinityfield_graph=partaffinityfield_graph
 
-                if printintermediate:
-                    print("Subset",subset)
-                sortedindividuals=np.argsort(-subset[:,-2]) #sort by top score!
-                if len(sortedindividuals)>inferencecfg.topktoplot:
-                    sortedindividuals=sortedindividuals[:inferencecfg.topktoplot]
+                numjoints=len(all_jointnames)
+                if BPTS is None and iBPTS is None:
+                    #NOTE: this can be used if only a subset is relevant. I.e. [0,1] for only first and second joint!
+                    BPTS=range(numjoints)
+                    iBPTS=range(numjoints) #the corresponding inverse!
 
-                animals=[]
-                for n in sortedindividuals: #range(len(subset)): #number of individuals
-                    individual=np.zeros(3*numjoints)*np.nan
-                    for i in range(numjoints): #number of limbs
-                        ind = int(subset[n][i]) # bpt index in global coordinates
-                        if -1 == ind: #reached the end!
-                            continue
-                        else: #xyl=np.ones(3)*np.nan
-                            #else:
-                            #xyl = candidate[ind, :3]
-                            individual[3*i:3*i+3]=candidate[ind, :3]
-                            #>> turn into bounding box :)
+                #TODO: adjust this for multi + unique bodyparts!
+                #this is only for multianimal parts and uniquebodyparts as one (not one uniquebodyparts guy tracked etc. )
+                bodypartlabels=sum([3*[all_jointnames[bpt]] for bpt in BPTS],[])
+                numentries=len(bodypartlabels)
 
-                    animals.append(individual)
+                scorers=numentries*[DLCscorer]
+                xylvalue=int(len(bodypartlabels)/3)*['x', 'y','likelihood']
+                pdindex=pd.MultiIndex.from_arrays(np.vstack([scorers,bodypartlabels,xylvalue]),names=['scorer', 'bodyparts', 'coords'])
 
-                #get corresponding bounding boxes!
-                bb=inferenceutils.individual2boundingbox(inferencecfg,animals,0) #TODO: get cropping parameters and utilize!
-                trackers = mot_tracker.update(bb)
-                for ind, content in enumerate(trackers):
-                        tracklet_id=content[4].astype(np.int)
-                        if tracklet_id in Tracks.keys():
-                            Tracks[tracklet_id][imname]=animals[content[5].astype(np.int)]
-                        else:
-                            Tracks[tracklet_id]={}
-                            Tracks[tracklet_id][imname]=animals[content[5].astype(np.int)] #retrieve coordinates
+                imnames=[fn for fn in data.keys() if fn !='metadata']
+                Tracks={}
+                for index,imname in tqdm(enumerate(imnames)):
+                    # filter detections according to inferencecfg parameters
+                    all_detections=inferenceutils.convertdetectiondict2listoflist(data[imname],imname,BPTS,withid=inferencecfg.withid)
 
-            Tracks['header']=pdindex
-            with open(dataname.split('.h5')[0]+suffix+'.pickle', 'wb') as f:
-                    # Pickle the 'labeled-data' dictionary using the highest protocol available.
-                    pickle.dump(Tracks, f,pickle.HIGHEST_PROTOCOL)
+                    if printintermediate:
+                        print(all_detections)
+                    # filter connectinos according to inferencecfg parameters
+                    connection_all, special_k=inferenceutils.matchconnections(inferencecfg,data[imname],
+                                                all_detections, iBPTS, partaffinityfield_graph, PAF)
+
+                    if printintermediate:
+                        print(connection_all)
+                    # assemble putative subsets
+                    subset, candidate=inferenceutils.linkjoints2individuals(inferencecfg, all_detections, connection_all, special_k,
+                                                                linkingpartaffinityfield_graph, iBPTS, numjoints=numjoints)
+
+                    if printintermediate:
+                        print("Subset",subset)
+                    sortedindividuals=np.argsort(-subset[:,-2]) #sort by top score!
+                    if len(sortedindividuals)>inferencecfg.topktoplot:
+                        sortedindividuals=sortedindividuals[:inferencecfg.topktoplot]
+
+                    animals=[]
+                    for n in sortedindividuals: #range(len(subset)): #number of individuals
+                        individual=np.zeros(3*numjoints)*np.nan
+                        for i in range(numjoints): #number of limbs
+                            ind = int(subset[n][i]) # bpt index in global coordinates
+                            if -1 == ind: #reached the end!
+                                continue
+                            else: #xyl=np.ones(3)*np.nan
+                                #else:
+                                #xyl = candidate[ind, :3]
+                                individual[3*i:3*i+3]=candidate[ind, :3]
+                                #>> turn into bounding box :)
+
+                        animals.append(individual)
+
+                    #get corresponding bounding boxes!
+                    bb=inferenceutils.individual2boundingbox(inferencecfg,animals,0) #TODO: get cropping parameters and utilize!
+                    trackers = mot_tracker.update(bb)
+                    for ind, content in enumerate(trackers):
+                            tracklet_id=content[4].astype(np.int)
+                            if tracklet_id in Tracks.keys():
+                                Tracks[tracklet_id][imname]=animals[content[5].astype(np.int)]
+                            else:
+                                Tracks[tracklet_id]={}
+                                Tracks[tracklet_id][imname]=animals[content[5].astype(np.int)] #retrieve coordinates
+
+                Tracks['header']=pdindex
+                with open(trackname, 'wb') as f:
+                        # Pickle the 'labeled-data' dictionary using the highest protocol available.
+                        pickle.dump(Tracks, f,pickle.HIGHEST_PROTOCOL)
 
         os.chdir(str(start_path))
         print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
