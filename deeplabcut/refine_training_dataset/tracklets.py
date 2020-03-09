@@ -22,6 +22,65 @@ def read_config(configname):
         return yaml.load(file)
 
 
+class BackgroundPlayer:
+    def __init__(self, viz):
+        self.viz = viz
+        self.can_run = Event()
+        self.can_run.clear()
+        self.running = True
+        self.paused = True
+        self.speed = ''
+
+    def run(self):
+        while self.running:
+            self.can_run.wait()
+            i = self.viz.slider.val + 1
+            if 'F' in self.speed:
+                i += 2 * len(self.speed)
+            elif 'R' in self.speed:
+                i -= 2 * len(self.speed)
+            if i > self.viz.manager.nframes:
+                i = 0
+            elif i < 0:
+                i = self.viz.manager.nframes
+            self.viz.slider.set_val(i)
+
+    def pause(self):
+        self.can_run.clear()
+        self.paused = True
+
+    def resume(self):
+        self.can_run.set()
+        self.paused = False
+
+    def toggle(self):
+        if self.paused:
+            self.resume()
+        else:
+            self.pause()
+
+    def forward(self):
+        speed = self.speed
+        if 'R' in speed:
+            speed = ''
+        if len(speed) < 4:
+            speed += 'F'
+        self.speed = speed
+        self.resume()
+
+    def rewind(self):
+        speed = self.speed
+        if 'F' in speed:
+            speed = ''
+        if len(speed) < 4:
+            speed += 'R'
+        self.speed = speed
+        self.resume()
+
+    def terminate(self, *args):
+        self.running = False
+
+
 class PointSelector:
     def __init__(self, tracker, ax, collection, alpha, alpha_other=0.2):
         self.tracker = tracker
