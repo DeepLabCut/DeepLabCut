@@ -182,8 +182,8 @@ class TrackletManager:
         self.xy = self.data[:, :, :2]
         self.prob = self.data[:, :, 2]
         # Map a tracklet # to the animal ID it belongs to or the bodypart # it corresponds to.
-        self.tracklet2id, self.tracklet2bp = zip(*[(i, j) for i in range(nindividuals)
-                                                   for j in range(self.nbodyparts)])
+        self.tracklet2id = [i for i in range(nindividuals) for _ in range(self.nbodyparts)]
+        self.tracklet2bp = [i for _ in range(nindividuals) for i in range(self.nbodyparts)]
 
         # Identify the tracklets that contained too little information.
         comp = self.calc_completeness(self.xy)
@@ -220,7 +220,7 @@ class TrackletManager:
     def to_num_individual(self, ind):
         return self.tracklet2id[ind]
 
-    def get_nonempty(self, at):
+    def get_non_nan_elements(self, at):
         data = self.xy[:, at]
         mask = ~np.isnan(data).any(axis=1)
         return data[mask], mask
@@ -228,10 +228,12 @@ class TrackletManager:
     def swap_tracklets(self, tracklet1, tracklet2, inds):
         self.xy[np.ix_([tracklet1, tracklet2], inds)] = self.xy[np.ix_([tracklet2, tracklet1], inds)]
         self.prob[np.ix_([tracklet1, tracklet2], inds)] = self.prob[np.ix_([tracklet2, tracklet1], inds)]
+        self.tracklet2bp[tracklet1], self.tracklet2bp[tracklet2] = self.tracklet2bp[tracklet2], self.tracklet2bp[tracklet1]
 
     def cut_tracklet(self, num_tracklet, inds):
         if num_tracklet in np.flatnonzero(np.logical_not(self.unidentified_tracklets)):
             ind_empty = np.argmax(self.empty_tracklets)
+            self.tracklet2bp[ind_empty] = self.to_num_bodypart(num_tracklet)
             self.swap_tracklets(num_tracklet, ind_empty, inds)
             self.unidentified_tracklets[ind_empty] = True
             self.empty_tracklets[ind_empty] = False
@@ -305,7 +307,6 @@ class TrackletVisualizer:
         self.picked = []
         self.picked_pair = []
         self.cuts = []
-        self.current_mask = []
 
         self.background = BackgroundPlayer(self)
         self.thread_background = Thread(target=self.background.run, daemon=True)
@@ -405,7 +406,8 @@ class TrackletVisualizer:
             if len(self.cuts) > 1:
                 # self.manager.tracklet_swaps[self.picked_pair][self.cuts] = ~self.manager.tracklet_swaps[self.picked_pair][self.cuts]
                 # self.fill_shaded_areas()
-                self.manager.cut_tracklet(self.picked[0], slice(*self.cuts))
+                self.cuts[1] += 1
+                self.manager.cut_tracklet(self.picked[0], range(*self.cuts))
                 self.cuts = []
                 self.display_traces()
         elif event.key == 'l':
@@ -448,7 +450,7 @@ class TrackletVisualizer:
     def on_pick(self, event):
         artist = event.artist
         if artist.axes == self.ax1:
-            self.picked = event.ind
+            self.picked = list(event.ind)
         elif artist.axes == self.ax2:
             if isinstance(artist, plt.Line2D):
                 self.picked = [self.lines_x.index(artist)]
@@ -463,25 +465,21 @@ class TrackletVisualizer:
                 num_individual = self.leg.get_lines().index(artist)
                 nrow = num_individual * self.manager.nbodyparts
                 inds = [nrow + pick % self.manager.nbodyparts for pick in valid_picks]
-                xy = self.manager.xy[:, valid_picks]
-                p = self.manager.prob[:, valid_picks]
-                mask = ~np.isnan(xy).any(axis=(1, 2))
-                sl_inds = np.ix_(mask, inds)
-                sl_picks = np.ix_(mask, valid_picks)
+                xy = self.manager.xy[valid_picks]
+                p = self.manager.prob[valid_picks]
+                mask = ~np.isnan(xy).any(axis=(0, 2))
+                sl_inds = np.ix_(inds, mask)
+                sl_picks = np.ix_(valid_picks, mask)
                 # Ensure that we do not overwrite identified tracklets
                 # if not np.all(np.isnan(self.xy[sl])):
                 #     return
                 old_xy = self.manager.xy[sl_inds].copy()
                 old_prob = self.manager.prob[sl_inds].copy()
-                self.manager.xy[sl_inds] = xy[mask]
-                self.manager.prob[sl_inds] = p[mask]
+                self.manager.xy[sl_inds] = xy[:, mask]
+                self.manager.prob[sl_inds] = p[:, mask]
                 self.manager.xy[sl_picks] = old_xy
                 self.manager.prob[sl_picks] = old_prob
-                for pick in valid_picks:
-                    try:
-                        self.manager.unidentified_tracklets.remove(pick)
-                    except KeyError:
-                        pass
+                self.manager.unidentified_tracklets[valid_picks] = ~self.manager.unidentified_tracklets[valid_picks]
                 self.display_traces()
         self.picked_pair = []
         if len(self.picked) == 1:
@@ -504,9 +502,11 @@ class TrackletVisualizer:
     def display_points(self, val):
         data = self.manager.xy[:, val]
         self.scat.set_offsets(data)
-        # mask = ~np.isnan(data).any(axis=1)
-        # self.scat.set_offsets(data[mask])
+        # data, mask, inds = self.manager.get_non_nan_elements(val)
+        # self.scat.set_offsets(data)
         # self.scat.set_color(self.colors[mask])
+        # self.current_mask = mask
+        # self.current_inds = np.flatnonzero(mask)
 
     def display_trails(self, val):
         sl = slice(val - self.trail_len // 2, val + self.trail_len // 2)
