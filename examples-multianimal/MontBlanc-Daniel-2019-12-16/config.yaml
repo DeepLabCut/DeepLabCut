@@ -6,9 +6,11 @@ date: Dec16
     # Project path (change when moving around)
 project_path: /media/alex/dropboxdisk/Dropbox/Collaborations/Cancer/DLCdev/examples-multianimal/MontBlanc-Daniel-2019-12-16
 
+#project_path: home/alex/Dropbox/Collaborations/Cancer/DLCdev/examples-multianimal/MontBlanc-Daniel-2019-12-16
+
     # Annotation data set configuration (and individual video cropping parameters)
 video_sets:
-  videos/montblanccropped.mov:
+  videos/test011_xy01_combined.avi:
     crop: 0, 400, 0, 400
 #  videos/montblanc.mov:
 #    crop: 0, 1920, 0, 1080

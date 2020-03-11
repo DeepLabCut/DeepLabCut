@@ -14,9 +14,9 @@ global_scale: 0.8
 init_weights: /usr/local/lib/python3.6/dist-packages/deeplabcut/pose_estimation_tensorflow/models/pretrained/resnet_v1_50.ckpt
 location_refinement: true
 locref_stdev: 7.2801
-minconfidence: 0.01
+minconfidence: 0.05
 net_type: resnet_50
-nmsradius: 5.0
+nmsradius: 10.0
 num_joints: 4
 num_limbs: 6
 pairwise_predict: false
