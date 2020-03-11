@@ -16,9 +16,10 @@ from deeplabcut.utils import auxiliaryfunctions
 
 def convertannotationdata_fromwindows2unixstyle(config,userfeedback=True,win2linux=True):
     """
-    Converts paths in annotation file (CollectedData_*user*.h5) in labeled-data/videofolder
+    Converts paths in annotation file (CollectedData_*user*.h5) in labeled-data/videofolder1, etc.
+
     from windows to linux format. This is important when one e.g. labeling on Windows, but
-    wants to re-label/check_labels/ on a Linux computer.
+    wants to re-label/check_labels/ on a Linux computer (and vice versa).
 
     Note for training data annotated on Windows in Linux this is not necessary, as the data
     gets converted during training set creation.
@@ -52,10 +53,30 @@ def convertannotationdata_fromwindows2unixstyle(config,userfeedback=True,win2lin
             else:
                 convertpaths_to_windowsstyle(Data,fn)
 
-## ConvertingMulti2Standard...
-def conversioncodemulti2single(config,userfeedback=True,scorer=None):
-    """
+def convertpaths_to_unixstyle(Data,fn):
+    ''' auxiliary function that converts paths in annotation files:
+        labeled-data\\video\\imgXXX.png to labeled-data/video/imgXXX.png '''
+    Data.to_csv(fn + "windows" + ".csv")
+    Data.to_hdf(fn + "windows" + '.h5', 'df_with_missing', format='table', mode='w')
+    Data.index = Data.index.str.replace('\\', '/')
+    Data.to_csv(fn + ".csv")
+    Data.to_hdf(fn + '.h5', 'df_with_missing', format='table', mode='w')
+    return Data
 
+def convertpaths_to_windowsstyle(Data,fn):
+    ''' auxiliary function that converts paths in annotation files:
+        labeled-data\\video\\imgXXX.png to labeled-data/video/imgXXX.png '''
+    Data.to_csv(fn + "unix" + ".csv")
+    Data.to_hdf(fn + "unix" + '.h5', 'df_with_missing', format='table', mode='w')
+    Data.index = Data.index.str.replace('/', '\\')
+    Data.to_csv(fn + ".csv")
+    Data.to_hdf(fn + '.h5', 'df_with_missing', format='table', mode='w')
+    return Data
+
+
+## ConvertingMulti2Standard...
+def conversioncodemulti2single(config,userfeedback=True,multi2single=True):
+    """
     TODO: TBA.
     """
     cfg = auxiliaryfunctions.read_config(config)
@@ -68,7 +89,7 @@ def conversioncodemulti2single(config,userfeedback=True,scorer=None):
     for folder in folders:
         try:
             if userfeedback==True:
-                print("Do you want to convert the csv file in folder:", folder, "?")
+                print("Do you want to convert the labeled data in folder:", folder, "?")
                 askuser = input("yes/no")
             else:
                 askuser="yes"
@@ -78,7 +99,7 @@ def conversioncodemulti2single(config,userfeedback=True,scorer=None):
                 data=pd.read_hdf(fn)
 
                 #nlines,numcolumns=data.shape
-                if cfg.get('multianimalproject', False):
+                if multi2single: #cfg.get('multianimalproject', False):
                     print("Multi-animal data conversion...")
                     #orderofindividuals=list(data.values[0,1:])
                     #orderofbpincsv=list(data.values[1,1:])
@@ -246,26 +267,6 @@ def analyze_videos_converth5_to_csv(videopath,videotype='.avi'):
 
     os.chdir(str(start_path))
     print("All pose files were converted.")
-
-def convertpaths_to_unixstyle(Data,fn):
-    ''' auxiliary function that converts paths in annotation files:
-        labeled-data\\video\\imgXXX.png to labeled-data/video/imgXXX.png '''
-    Data.to_csv(fn + "unix" + ".csv")
-    Data.to_hdf(fn + "unix" + '.h5', 'df_with_missing', format='table', mode='w')
-    Data.index = Data.index.str.replace('\\', '/')
-    Data.to_csv(fn + ".csv")
-    Data.to_hdf(fn + '.h5', 'df_with_missing', format='table', mode='w')
-    return Data
-
-def convertpaths_to_windowsstyle(Data,fn):
-    ''' auxiliary function that converts paths in annotation files:
-        labeled-data\\video\\imgXXX.png to labeled-data/video/imgXXX.png '''
-    Data.to_csv(fn + "windows" + ".csv")
-    Data.to_hdf(fn + "windows" + '.h5', 'df_with_missing', format='table', mode='w')
-    Data.index = Data.index.str.replace('/', '\\')
-    Data.to_csv(fn + ".csv")
-    Data.to_hdf(fn + '.h5', 'df_with_missing', format='table', mode='w')
-    return Data
 
 
 def merge_windowsannotationdataONlinuxsystem(cfg):
