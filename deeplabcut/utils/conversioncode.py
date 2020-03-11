@@ -34,12 +34,10 @@ def convertannotationdata_fromwindows2unixstyle(config,userfeedback=True,win2lin
         By default converts from windows to linux. If false, converts from unix to windows.
     """
     cfg = auxiliaryfunctions.read_config(config)
-    videos = cfg['video_sets'].keys()
-    video_names = [Path(i).stem for i in videos]
-    folders = [Path(config).parent / 'labeled-data' /Path(i) for i in video_names]
+    folders = [Path(config).parent / 'labeled-data' / Path(vid).stem for vid in cfg['video_sets']]
 
     for folder in folders:
-        if userfeedback==True:
+        if userfeedback:
             print("Do you want to convert the annotationdata in folder:", folder, "?")
             askuser = input("yes/no")
         else:
@@ -65,7 +63,7 @@ def convertpaths_to_unixstyle(Data,fn):
 
 def convertpaths_to_windowsstyle(Data,fn):
     ''' auxiliary function that converts paths in annotation files:
-        labeled-data\\video\\imgXXX.png to labeled-data/video/imgXXX.png '''
+        labeled-data/video/imgXXX.png to labeled-data\\video\\imgXXX.png '''
     Data.to_csv(fn + "unix" + ".csv")
     Data.to_hdf(fn + "unix" + '.h5', 'df_with_missing', format='table', mode='w')
     Data.index = Data.index.str.replace('/', '\\')
