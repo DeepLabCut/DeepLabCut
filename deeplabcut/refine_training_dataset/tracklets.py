@@ -186,8 +186,7 @@ class TrackletManager:
         self.tracklet2bp = [i for _ in range(nindividuals) for i in range(self.nbodyparts)]
 
         # Identify the tracklets that contained too little information.
-        comp = self.calc_completeness(self.xy)
-        self.empty_tracklets = comp <= self.min_tracklet_frac * self.nframes
+        self.update_empty_mask()
         unidentified = np.zeros_like(self.empty_tracklets, dtype=bool)
         unidentified[self.nindividuals * self.nbodyparts:] = True
         self.unidentified_tracklets = unidentified & np.logical_not(self.empty_tracklets)
@@ -196,16 +195,24 @@ class TrackletManager:
     def load_tracklets_from_hdf(self, filename):
         # Only used for now to validate the data post refinement;
         # therefore we assume data are complete.
+        self.filename = filename
         df = pd.read_hdf(filename)
         self.scorer = df.columns.get_level_values('scorer').unique().to_list()
         individuals = df.columns.get_level_values('individuals').unique().to_list()
+        nindividuals = len(individuals)
         self.bodyparts = df.columns.get_level_values('bodyparts').unique().to_list()
         self.nbodyparts = len(self.bodyparts)
         self.nframes = len(df)
-        self.data = df.values.reshape((self.nframes, -1, 3))
+        self.times = np.arange(self.nframes)
+        self.data = df.values.reshape((self.nframes, -1, 3)).swapaxes(0, 1)
         self.xy = self.data[:, :, :2]
         self.prob = self.data[:, :, 2]
-        self.tracklet2id = [i for i in range(len(individuals)) for _ in range(self.nbodyparts)]
+        self.tracklet2id = [i for i in range(nindividuals) for _ in range(self.nbodyparts)]
+        self.tracklet2bp = [i for _ in range(nindividuals) for i in range(self.nbodyparts)]
+        self.update_empty_mask()
+        unidentified = np.zeros_like(self.empty_tracklets, dtype=bool)
+        unidentified[self.nindividuals * self.nbodyparts:] = True
+        self.unidentified_tracklets = unidentified & np.logical_not(self.empty_tracklets)
         self.find_swapping_bodypart_pairs()
 
     def calc_completeness(self, xy, by_individual=False):
@@ -223,7 +230,15 @@ class TrackletManager:
     def get_non_nan_elements(self, at):
         data = self.xy[:, at]
         mask = ~np.isnan(data).any(axis=1)
-        return data[mask], mask
+        return data[mask], mask, np.flatnonzero(mask)
+
+    def update_empty_mask(self):
+        comp = self.calc_completeness(self.xy)
+        self.empty_tracklets = comp <= self.min_tracklet_frac * self.nframes
+
+    def map_indices_to_original_array(self, inds, at):
+        _, _, all_inds = self.get_non_nan_elements(at)
+        return all_inds[inds]
 
     def swap_tracklets(self, tracklet1, tracklet2, inds):
         self.xy[np.ix_([tracklet1, tracklet2], inds)] = self.xy[np.ix_([tracklet2, tracklet1], inds)]
@@ -231,12 +246,11 @@ class TrackletManager:
         self.tracklet2bp[tracklet1], self.tracklet2bp[tracklet2] = self.tracklet2bp[tracklet2], self.tracklet2bp[tracklet1]
 
     def cut_tracklet(self, num_tracklet, inds):
-        if num_tracklet in np.flatnonzero(np.logical_not(self.unidentified_tracklets)):
-            ind_empty = np.argmax(self.empty_tracklets)
-            self.tracklet2bp[ind_empty] = self.to_num_bodypart(num_tracklet)
-            self.swap_tracklets(num_tracklet, ind_empty, inds)
-            self.unidentified_tracklets[ind_empty] = True
-            self.empty_tracklets[ind_empty] = False
+        ind_empty = np.argmax(self.empty_tracklets)
+        self.tracklet2bp[ind_empty] = self.to_num_bodypart(num_tracklet)
+        self.swap_tracklets(num_tracklet, ind_empty, inds)
+        self.unidentified_tracklets[ind_empty] = True
+        self.empty_tracklets[ind_empty] = False
 
     def find_swapping_bodypart_pairs(self, force_find=False):
         if not self.swapping_pairs or force_find:
@@ -284,8 +298,8 @@ class TrackletManager:
                                              names=['scorer', 'individuals', 'bodyparts', 'coords'])
         data = np.concatenate((self.xy, np.expand_dims(self.prob, axis=2)), axis=2)
         # Trim off the then-unidentified tracklets
-        data = data[np.logical_not(self.unidentified_tracklets | self.empty_tracklets)]
-        df = pd.DataFrame(data.reshape((self.nframes, -1)), columns=columns, index=self.times)
+        data = data[:self.tracklet2id.index(self.nindividuals)]
+        df = pd.DataFrame(data.swapaxes(0, 1).reshape((self.nframes, -1)), columns=columns, index=self.times)
         if not output_name:
             output_name = self.filename.replace('pickle', 'h5')
         df.to_hdf(output_name, 'df_with_missing', format='table', mode='w')
@@ -335,7 +349,7 @@ class TrackletVisualizer:
 
         self.colors = self.cmap(manager.tracklet2id)
         # Color in black the unidentified tracklets
-        self.colors[manager.unidentified_tracklets | manager.empty_tracklets] = 0, 0, 0, 1
+        self.colors[manager.nindividuals * manager.nbodyparts:] = 0, 0, 0, 1
         self.colors[:, -1] = manager.cfg['alphavalue']
 
         img = self._read_frame()
@@ -403,13 +417,15 @@ class TrackletVisualizer:
             self.invert()
         elif event.key == 'x':
             self.cuts.append(i)
+            self.ax_slider.axvline(i, color='r')
             if len(self.cuts) > 1:
                 # self.manager.tracklet_swaps[self.picked_pair][self.cuts] = ~self.manager.tracklet_swaps[self.picked_pair][self.cuts]
                 # self.fill_shaded_areas()
-                self.cuts[1] += 1
-                self.manager.cut_tracklet(self.picked[0], range(*self.cuts))
+                self.cuts.sort()
+                self.manager.cut_tracklet(self.picked[0], range(self.cuts[0], self.cuts[1] + 1))
                 self.cuts = []
                 self.display_traces()
+                self.ax_slider.lines = []
         elif event.key == 'l':
             self.selector.toggle()
         elif event.key == 'alt+right':
@@ -433,17 +449,16 @@ class TrackletVisualizer:
         i = int(self.slider.val)
         if self.picked_pair:
             swap_inds = self.manager.get_swap_indices(*self.picked_pair)
-            inds = np.insert(swap_inds, [0, len(swap_inds)], [0, self.manager.nframes])
+            inds = np.insert(swap_inds, [0, len(swap_inds)], [0, self.manager.nframes - 1])
             if len(inds):
                 ind = np.argmax(inds > i)
-                sl = slice(inds[ind - 1], inds[ind])
-                self.manager.swap_tracklets(*self.picked_pair, sl)
+                self.manager.swap_tracklets(*self.picked_pair, range(inds[ind - 1], inds[ind] + 1))
                 self.display_traces()
                 self.slider.set_val(int(self.slider.val))
 
     def invert(self):
         i = int(self.slider.val)
-        self.manager.swap_tracklets(*self.picked_pair, i)
+        self.manager.swap_tracklets(*self.picked_pair, [i])
         self.display_traces()
         self.slider.set_val(int(self.slider.val))
 
@@ -463,8 +478,8 @@ class TrackletVisualizer:
             valid_picks = self.picked
             if valid_picks:
                 num_individual = self.leg.get_lines().index(artist)
-                nrow = num_individual * self.manager.nbodyparts
-                inds = [nrow + pick % self.manager.nbodyparts for pick in valid_picks]
+                nrow = self.manager.tracklet2id.index(num_individual)
+                inds = [nrow + self.manager.to_num_bodypart(pick) for pick in valid_picks]
                 xy = self.manager.xy[valid_picks]
                 p = self.manager.prob[valid_picks]
                 mask = ~np.isnan(xy).any(axis=(0, 2))
@@ -480,6 +495,7 @@ class TrackletVisualizer:
                 self.manager.xy[sl_picks] = old_xy
                 self.manager.prob[sl_picks] = old_prob
                 self.manager.unidentified_tracklets[valid_picks] = ~self.manager.unidentified_tracklets[valid_picks]
+                self.manager.update_empty_mask()
                 self.display_traces()
         self.picked_pair = []
         if len(self.picked) == 1:
