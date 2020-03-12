@@ -5,6 +5,7 @@ import numpy as np
 import os
 import pandas as pd
 import pickle
+import re
 from functools import partial
 from matplotlib.path import Path
 from matplotlib.widgets import Slider, LassoSelector, Button, CheckButtons
@@ -166,13 +167,14 @@ class TrackletManager:
         num_individuals = sorted(list(tracklets))
         nindividuals = len(num_individuals)
         frames = sorted(set([frame for tracklet in tracklets.values() for frame in tracklet]))
-        self.nframes = len(frames)
+        self.nframes = int(re.findall('\d+', frames[-1])[0]) + 1
         self.times = np.arange(self.nframes)
 
         data = np.full((nindividuals, self.nbodyparts, self.nframes, 3), np.nan)
         for i, num in enumerate(num_individuals):
             for k, v in tracklets[num].items():
-                data[i, :, frames.index(k)] = v.reshape(-1, 3)
+                ind_frame = int(re.findall('\d+', k)[0])
+                data[i, :, ind_frame] = v.reshape(-1, 3)
         data = data.reshape((-1, self.nframes, 3))
 
         # Sort data by completeness so that identified tracklets are always the longest
@@ -183,7 +185,7 @@ class TrackletManager:
         self.data = data[inds_flat]
         self.xy = self.data[:, :, :2]
         self.prob = self.data[:, :, 2]
-        self._finalize()
+        self.finalize()
 
     def load_tracklets_from_hdf(self, filename):
         # Only used for now to validate the data post refinement;
@@ -198,9 +200,9 @@ class TrackletManager:
         self.data = df.values.reshape((self.nframes, -1, 3)).swapaxes(0, 1)
         self.xy = self.data[:, :, :2]
         self.prob = self.data[:, :, 2]
-        self._finalize()
+        self.finalize()
 
-    def _finalize(self):
+    def finalize(self):
         # Map a tracklet # to the animal ID it belongs to or the bodypart # it corresponds to.
         self.ntracklets = len(self.xy)
         nindividuals = self.ntracklets // self.nbodyparts
