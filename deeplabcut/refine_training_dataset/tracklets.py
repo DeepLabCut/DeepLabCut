@@ -143,6 +143,7 @@ class TrackletManager:
         self.data = None
         self.xy = None
         self.prob = None
+        self.ntracklets = 0
         self.nframes = 0
         self.times = []
         self.scorer = None
@@ -182,16 +183,7 @@ class TrackletManager:
         self.data = data[inds_flat]
         self.xy = self.data[:, :, :2]
         self.prob = self.data[:, :, 2]
-        # Map a tracklet # to the animal ID it belongs to or the bodypart # it corresponds to.
-        self.tracklet2id = [i for i in range(nindividuals) for _ in range(self.nbodyparts)]
-        self.tracklet2bp = [i for _ in range(nindividuals) for i in range(self.nbodyparts)]
-
-        # Identify the tracklets that contained too little information.
-        self.update_empty_mask()
-        unidentified = np.zeros_like(self.empty_tracklets, dtype=bool)
-        unidentified[self.nindividuals * self.nbodyparts:] = True
-        self.unidentified_tracklets = unidentified & np.logical_not(self.empty_tracklets)
-        self.find_swapping_bodypart_pairs()
+        self._finalize()
 
     def load_tracklets_from_hdf(self, filename):
         # Only used for now to validate the data post refinement;
@@ -199,8 +191,6 @@ class TrackletManager:
         self.filename = filename
         df = pd.read_hdf(filename)
         self.scorer = df.columns.get_level_values('scorer').unique().to_list()
-        individuals = df.columns.get_level_values('individuals').unique().to_list()
-        nindividuals = len(individuals)
         self.bodyparts = df.columns.get_level_values('bodyparts').unique().to_list()
         self.nbodyparts = len(self.bodyparts)
         self.nframes = len(df)
@@ -208,13 +198,44 @@ class TrackletManager:
         self.data = df.values.reshape((self.nframes, -1, 3)).swapaxes(0, 1)
         self.xy = self.data[:, :, :2]
         self.prob = self.data[:, :, 2]
+        self._finalize()
+
+    def _finalize(self):
+        # Map a tracklet # to the animal ID it belongs to or the bodypart # it corresponds to.
+        self.ntracklets = len(self.xy)
+        nindividuals = self.ntracklets // self.nbodyparts
         self.tracklet2id = [i for i in range(nindividuals) for _ in range(self.nbodyparts)]
         self.tracklet2bp = [i for _ in range(nindividuals) for i in range(self.nbodyparts)]
+
+        # Identify the tracklets that contained too little information.
         self.update_empty_mask()
-        unidentified = np.zeros_like(self.empty_tracklets, dtype=bool)
-        unidentified[self.nindividuals * self.nbodyparts:] = True
-        self.unidentified_tracklets = unidentified & np.logical_not(self.empty_tracklets)
+        self.unidentified_tracklets = np.zeros(self.ntracklets, dtype=bool)
+        self.unidentified_tracklets[self.nindividuals * self.nbodyparts:] = True
+        self.update_unidentified_mask()
         self.find_swapping_bodypart_pairs()
+
+    def fill_gaps_recursively(self):
+        xy = self.xy.reshape((-1, manager.nbodyparts * manager.nframes * 2))
+        prob = self.prob.reshape((-1, manager.nbodyparts * manager.nframes))
+        room = np.isnan(xy)
+        identified = range(self.nindividuals)
+        unidentified = set(range(self.nindividuals, len(room)))
+        while unidentified:
+            i = unidentified.pop()
+            mask = ~room[i]
+            for j in identified:
+                if room[j][mask].all():
+                    xy[j][mask] = xy[i][mask]
+                    xy[i][mask] = np.nan
+                    prob[j][mask[::2]] = prob[i][mask[::2]]
+                    prob[i][mask[::2]] = np.nan
+                    room[j][mask] = False
+                    continue
+        self.xy = xy.reshape((-1, self.nframes, 2))
+        self.prob = prob.reshape((-1, self.nframes))
+        self.update_empty_mask()
+        self.update_unidentified_mask()
+        self.find_swapping_bodypart_pairs(force_find=True)
 
     def calc_completeness(self, xy, by_individual=False):
         comp = np.sum(~np.isnan(xy).any(axis=2), axis=1)
@@ -236,6 +257,9 @@ class TrackletManager:
     def update_empty_mask(self):
         comp = self.calc_completeness(self.xy)
         self.empty_tracklets = comp <= self.min_tracklet_frac * self.nframes
+
+    def update_unidentified_mask(self):
+        self.unidentified_tracklets &= np.logical_not(self.empty_tracklets)
 
     def map_indices_to_original_array(self, inds, at):
         _, _, all_inds = self.get_non_nan_elements(at)
@@ -351,7 +375,7 @@ class TrackletVisualizer:
 
         self.colors = self.cmap(manager.tracklet2id)
         # Color in black the unidentified tracklets
-        self.colors[manager.nindividuals * manager.nbodyparts:] = 0, 0, 0, 1
+        self.colors[manager.unidentified_tracklets | manager.empty_tracklets] = 0, 0, 0, 1
         self.colors[:, -1] = manager.cfg['alphavalue']
 
         img = self._read_frame()
