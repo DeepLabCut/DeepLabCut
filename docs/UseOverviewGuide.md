@@ -7,7 +7,7 @@
  **This page provides resources for:**
  
  - [TUTORIALS:](https://www.youtube.com/channel/UC2HEbWpC_1v6i9RnDMy-dfA?view_as=subscriber) video tutorials that demonstrate various aspects of using the code base.
- - [HOW-TO-GUIDES:](/docs/UseOverviewGuide.md#how-to-guide) step-by-step user guidelines for using DeepLabCut on your own datasets (or on demo data)
+ - [HOW-TO-GUIDES:](/docs/UseOverviewGuide.md#how-to-guides) step-by-step user guidelines for using DeepLabCut on your own datasets (or on demo data)
  - [EXPLANATIONS:](https://github.com/AlexEMG/DeepLabCut/wiki) resources on understanding how DeepLabCut works (WIP)
  - [REFERENCES:](https://github.com/AlexEMG/DeepLabCut#references) read the science behind DeepLabCut
  
