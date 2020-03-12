@@ -14,7 +14,7 @@
  
  ### What you need to get started:
  
- - **a set of videos that span the types of behaviors you want to track.** Having 10 videos that include different backgrounds, different individuals, and differnt postures is MUCH better than 1 or 2 videos of 1 or 2 different indivduals (i.e. 10-20 frames from each of 10 videos is **much better** than 50-100 frames from 2 videos).
+ - **a set of videos that span the types of behaviors you want to track.** Having 10 videos that include different backgrounds, different individuals, and different postures is MUCH better than 1 or 2 videos of 1 or 2 different indivduals (i.e. 10-20 frames from each of 10 videos is **much better** than 50-100 frames from 2 videos).
  
  - **a computer.** If you want to use DeepLabCut on your own computer for many experiments, then you should get an NVIDIA GPU. See technical specs [here](https://github.com/AlexEMG/DeepLabCut/wiki/FAQ). In the short term, or for testing out our software you can run short demos on COLAB ([see how](https://github.com/AlexEMG/DeepLabCut/blob/master/examples/README.md)), or on your CPU.
  
