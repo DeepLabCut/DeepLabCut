@@ -84,10 +84,15 @@ def convertsingle2multi(df):
 
 
 def convertmulti2single(df):
-    levels = df.columns.levels
-    if len(levels) != 4:
+    idx = df.columns
+    if len(idx.levels) != 4:
         raise ValueError('Incompatible DataFrame. Multi-animal labeled data should be passed in.')
-    df.columns = df.columns.droplevel('individuals')
+    new_bodyparts = ['_'.join((ind, bp)) for ind, bp in zip(idx.get_level_values('individuals'),
+                                                            idx.get_level_values('bodyparts'))]
+    idx = idx.droplevel('individuals')
+    df.columns = pd.MultiIndex.from_arrays((idx.get_level_values('scorer'),
+                                            new_bodyparts,
+                                            idx.get_level_values('coords')), names=idx.names)
     return df
 
 
