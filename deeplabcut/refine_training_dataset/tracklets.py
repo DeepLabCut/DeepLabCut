@@ -148,7 +148,9 @@ class TrackletManager:
         self.nframes = 0
         self.times = []
         self.scorer = None
-        self.nindividuals = len(self.cfg['individuals'])
+        self.individuals = ['single'] if len(self.cfg['uniquebodyparts']) else []
+        self.individuals += self.cfg['individuals']
+        self.nindividuals = len(self.individuals)
         self.tracklet2id = []
         self.tracklet2bp = []
         self.unidentified_tracklets = []
@@ -161,31 +163,86 @@ class TrackletManager:
         with open(filename, 'rb') as file:
             tracklets = pickle.load(file)
         header = tracklets.pop('header')
-        self.scorer = header.get_level_values('scorer').unique().to_list()
-        self.bodyparts = header.get_level_values('bodyparts').unique().to_list()
-        self.nbodyparts = len(self.bodyparts)
-        num_individuals = sorted(list(tracklets))
-        nindividuals = len(num_individuals)
         frames = sorted(set([frame for tracklet in tracklets.values() for frame in tracklet]))
         self.nframes = int(re.findall('\d+', frames[-1])[0]) + 1
         self.times = np.arange(self.nframes)
+        num_individuals = sorted(list(tracklets))
+        bodyparts = header.get_level_values('bodyparts')
+        bodyparts_multi = self.cfg['multianimalbodyparts']
+        bodyparts_single = self.cfg['uniquebodyparts']
+        mask_multi = bodyparts.isin(bodyparts_multi)
+        mask_single = bodyparts.isin(bodyparts_single)
+        idx = list(bodyparts[mask_single]) + list(bodyparts[mask_multi]) * (self.nindividuals - 1)
+        mask_multi_new = np.isin(idx, bodyparts_multi)
+        inds_multi = np.flatnonzero(mask_multi_new)
+        mask_single_new = np.isin(idx, bodyparts_single)
+        ind_end_single = np.argmin(mask_single_new)
 
-        data = np.full((nindividuals, self.nbodyparts, self.nframes, 3), np.nan)
+        data = np.full((self.nframes, len(idx)), np.nan)
         for i, num in enumerate(num_individuals):
             for k, v in tracklets[num].items():
                 ind_frame = int(re.findall('\d+', k)[0])
-                data[i, :, ind_frame] = v.reshape(-1, 3)
-        data = data.reshape((-1, self.nframes, 3))
+                temp_single = v[mask_single]
+                temp_multi = v[mask_multi]
+                is_single = np.isnan(temp_multi).all()
+                is_free = np.isnan(data[ind_frame])
+                if is_single:
+                    has_data = ~np.isnan(temp_single)
+                    if has_data.any():
+                        temp_mask = mask_single_new.copy()
+                        temp_mask[:ind_end_single] = has_data
+                        inter = temp_mask & is_free
+                        # Where slots are available, copy the data over
+                        data[ind_frame, inter] = temp_single[inter[:ind_end_single]]
+                        # If about to overwrite data, keep tracklets with highest confidence
+                        overwrite = np.flatnonzero(temp_mask & ~is_free)
+                        if overwrite.any():
+                            better = temp_single[overwrite] > data[ind_frame, overwrite]
+                            for i in range(0, len(better), 3):
+                                if better[i + 2]:
+                                    data[ind_frame, overwrite[i:i + 3]] = temp_single[overwrite[i:i + 3]]
+                else:
+                    has_data = ~np.isnan(temp_multi)
+                    if has_data.any():
+                        # Screen for empty slots
+                        ii = inds_multi.reshape((-1, len(temp_multi)))
+                        ii = ii[:, has_data]
+                        all_free = is_free[ii].all(axis=1)
+                        multi = temp_multi[has_data]
+                        if not all_free.any():
+                            # raise ValueError('Oups, need to overwrite data in a smart way')
+                            pass
+                        elif all_free.sum() == 1:
+                            data[ind_frame, ii[np.argmax(all_free)]] = multi
+                        else:
+                            # Pick the indices yielding the smoothest continuity
+                            diff = (data[ind_frame - 1, ii] - multi).reshape((len(all_free), -1, 3))
+                            diff[np.isnan(diff)] = np.inf
+                            dist = np.nanmean(diff[:, :, :2] ** 2, axis=(1, 2))
+                            data[ind_frame, ii[np.argmin(dist)]] = multi
+                            # data[ind_frame, ii[np.argmax(all_free)]] = multi
 
-        # Sort data by completeness so that identified tracklets are always the longest
-        xy = data[:, :, :2]
-        comp_per_ind = self.calc_completeness(xy, by_individual=True)
-        inds = np.argsort(comp_per_ind)[::-1]
-        inds_flat = [ind * self.nbodyparts + j for ind in inds for j in range(self.nbodyparts)]
-        self.data = data[inds_flat]
+        self.data = data.reshape((self.nframes, -1, 3)).swapaxes(0, 1)
         self.xy = self.data[:, :, :2]
         self.prob = self.data[:, :, 2]
-        self.finalize()
+        self.tracklet2id = [0] * len(bodyparts_single) + [1] * len(bodyparts_multi) + [2] * len(bodyparts_multi)
+
+        # data = np.full((nindividuals, nbodyparts, self.nframes, 3), np.nan)
+        # for i, num in enumerate(num_individuals):
+        #     for k, v in tracklets[num].items():
+        #         ind_frame = int(re.findall('\d+', k)[0])
+        #         data[i, :, ind_frame] = v.reshape((-1, 3))
+        # data = data.reshape((-1, self.nframes, 3))
+
+        # # Sort data by completeness so that identified tracklets are always the longest
+        # xy = data[:, :, :2]
+        # comp_per_ind = self.calc_completeness(xy, by_individual=True)
+        # inds = np.argsort(comp_per_ind)[::-1]
+        # inds_flat = [ind * self.nbodyparts + j for ind in inds for j in range(self.nbodyparts)]
+        # self.data = data[inds_flat]
+        # self.xy = self.data[:, :, :2]
+        # self.prob = self.data[:, :, 2]
+        # self.finalize()
 
     def load_tracklets_from_hdf(self, filename):
         # Only used for now to validate the data post refinement;
@@ -214,7 +271,6 @@ class TrackletManager:
         self.unidentified_tracklets = np.zeros(self.ntracklets, dtype=bool)
         self.unidentified_tracklets[self.nindividuals * self.nbodyparts:] = True
         self.update_unidentified_mask()
-        self.find_swapping_bodypart_pairs()
 
     def fill_gaps_recursively(self):
         xy = self.xy.reshape((-1, manager.nbodyparts * manager.nframes * 2))
@@ -280,6 +336,7 @@ class TrackletManager:
         self.empty_tracklets[ind_empty] = False
 
     def find_swapping_bodypart_pairs(self, force_find=False):
+        # FIXME Still quite slow for large dataset...
         if not self.swapping_pairs or force_find:
             # Only keep the non-empty tracklets to accelerate computation
             nonempty = np.flatnonzero(np.logical_not(self.empty_tracklets))
@@ -319,7 +376,7 @@ class TrackletManager:
 
     def save(self, output_name='', *args):
         columns = pd.MultiIndex.from_product([self.scorer,
-                                              self.cfg['individuals'],
+                                              self.individuals,
                                               self.bodyparts,
                                               ['x', 'y', 'likelihood']],
                                              names=['scorer', 'individuals', 'bodyparts', 'coords'])
@@ -392,7 +449,7 @@ class TrackletVisualizer:
         self.vline_x = self.ax2.axvline(0, 0, 1, c='k', ls=':')
         self.vline_y = self.ax3.axvline(0, 0, 1, c='k', ls=':')
         custom_lines = [plt.Line2D([0], [0], color=self.cmap(i), lw=4) for i in range(manager.nindividuals)]
-        self.leg = self.fig.legend(custom_lines, manager.cfg['individuals'], frameon=False, fancybox=None,
+        self.leg = self.fig.legend(custom_lines, manager.individuals, frameon=False, fancybox=None,
                                    ncol=manager.nindividuals, fontsize='small',
                                    bbox_to_anchor=(0, 0.9, 1, 0.1), loc='center')
         for line in self.leg.get_lines():
