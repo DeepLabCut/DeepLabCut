@@ -164,64 +164,82 @@ class TrackletManager:
         frames = sorted(set([frame for tracklet in tracklets.values() for frame in tracklet]))
         self.nframes = int(re.findall(r'\d+', frames[-1])[0]) + 1
         self.times = np.arange(self.nframes)
-
-        # Build full labels and corresponding masks
         bodyparts = header.get_level_values('bodyparts')
         bodyparts_multi = [bp for bp in self.cfg['multianimalbodyparts'] if bp in bodyparts]
         bodyparts_single = self.cfg['uniquebodyparts']
         mask_multi = bodyparts.isin(bodyparts_multi)
         mask_single = bodyparts.isin(bodyparts_single)
         labels = list(bodyparts[mask_multi]) * self.nindividuals + list(bodyparts[mask_single])
-        inds_multi = np.flatnonzero(np.isin(labels, bodyparts_multi)).reshape((-1, sum(mask_multi)))
-        inds_single = np.flatnonzero(np.isin(labels, bodyparts_single))
 
-        data_to_fill = np.full((self.nframes, len(labels)), np.nan)
-        for num_tracklet in tracklets:
+        # Store tracklets, such that we later manipulate long chains
+        # rather than data of individual frames, yielding greater continuity.
+        temp = dict()
+        for num_tracklet in sorted(tracklets):
+            to_fill = np.full((self.nframes, len(bodyparts)), np.nan)
             for frame_name, data in tracklets[num_tracklet].items():
                 ind_frame = int(re.findall(r'\d+', frame_name)[0])
-                is_free = np.isnan(data_to_fill[ind_frame])
-                data_single = data[mask_single]
-                data_multi = data[mask_multi]
-                is_single = np.isnan(data_multi).all()
-                if is_single:
-                    has_data = ~np.isnan(data_single)
-                    if has_data.any():
-                        inds = inds_single[has_data]
-                        single = data_single[has_data]
-                        mask = is_free[inds]
-                        # Where slots are available, copy the data over
-                        data_to_fill[ind_frame, inds[mask]] = single[mask]
-                        overwrite = inds[~mask]
-                        # If about to overwrite data, keep tracklets with highest confidence
-                        if overwrite.any():
-                            more_confident = single[~mask] > data_to_fill[ind_frame, overwrite]
-                            for i in range(0, len(more_confident), 3):
-                                if more_confident[i + 2]:
-                                    data_to_fill[ind_frame, overwrite[i:i + 3]] = single[~mask][i:i + 3]
-                else:
-                    has_data = ~np.isnan(data_multi)
-                    if has_data.any():
-                        # Scan empty slots
-                        inds = inds_multi[:, has_data]
-                        multi = data_multi[has_data]
-                        all_free = is_free[inds].all(axis=1)
-                        if not all_free.sum():
-                            # TODO Overwrite based on improvement in confidence
-                            # to_be_placed = np.ones_like(multi, dtype=bool)
-                            # while to_be_placed.any():
-                            # some_free = is_free[inds].any(axis=1)
-                            print('oups')
-                            # raise ValueError('oups')
-                            # Pick the indices minimizing the average Euclidean distance over bodyparts
-                            # between the current frame and the previous one.
-                            # diff = (data_to_fill[ind_frame - 1, inds] - multi).reshape((len(all_free), -1, 3))
-                            # diff[np.isnan(diff)] = np.inf
-                            # dist = np.nanmean(diff[:, :, :2] ** 2, axis=(1, 2))
-                            # data_to_fill[ind_frame, inds[np.argmin(dist)]] = multi
-                        else:
-                            data_to_fill[ind_frame, inds[np.argmax(all_free)]] = multi
+                to_fill[ind_frame] = data
+            is_single = np.isnan(to_fill[:, mask_multi]).all()
+            if is_single:
+                to_fill = to_fill[:, mask_single]
+            else:
+                to_fill = to_fill[:, mask_multi]
+            nonempty = np.any(~np.isnan(to_fill), axis=1)
+            completeness = nonempty.sum() / self.nframes
+            temp[num_tracklet] = to_fill, completeness, is_single
+        tracklets_sorted = sorted(temp.items(), key=lambda kv: kv[1][1])
 
-        self.data = data_to_fill.reshape((self.nframes, -1, 3)).swapaxes(0, 1)
+        # Recursively fill the data containers
+        tracklets_multi = np.full((self.nindividuals, self.nframes, len(bodyparts_multi) * 3), np.nan)
+        tracklets_single = np.full((self.nframes, len(bodyparts_single) * 3), np.nan)
+        while tracklets_sorted:
+            _, (data, _, is_single) = tracklets_sorted.pop()
+            has_data = ~np.isnan(data)
+            if is_single:
+                # Where slots are available, copy the data over
+                is_free = np.isnan(tracklets_single)
+                mask = has_data & is_free
+                tracklets_single[mask] = data[mask]
+                # If about to overwrite data, keep tracklets with highest confidence
+                overwrite = has_data & ~is_free
+                if overwrite.any():
+                    rows, cols = np.nonzero(overwrite)
+                    more_confident = (data[overwrite] > tracklets_single[overwrite])[2::3]
+                    inds = np.flatnonzero(more_confident)
+                    for ind in inds:
+                        sl = slice(ind * 3, ind * 3 + 3)
+                        inds = rows[sl], cols[sl]
+                        tracklets_single[inds] = data[inds]
+            else:
+                is_free = np.isnan(tracklets_multi)
+                overwrite = has_data & ~is_free
+                overwrite_risk = np.any(overwrite, axis=(1, 2))
+                if overwrite_risk.all():
+                    # Squeeze some data into empty slots
+                    mask = has_data & is_free
+                    space_left = mask.any(axis=(1, 2))
+                    for ind in np.flatnonzero(space_left):
+                        current_mask = mask[ind]
+                        tracklets_multi[ind, current_mask] = data[current_mask]
+                        has_data[current_mask] = False
+                    # For the remaining data, overwrite where we are least confident
+                    remaining = data[has_data].reshape((-1, 3))
+                    mask3d = np.broadcast_to(has_data, (self.nindividuals,) + has_data.shape)
+                    temp = tracklets_multi[mask3d].reshape((self.nindividuals, -1, 3))
+                    diff = remaining - temp
+                    largest_diff = np.argmax(diff[:, :, 2], axis=0)
+                    prob = diff[largest_diff, range(len(largest_diff)), 2]
+                    better = np.flatnonzero(prob > 0)
+                    inds = largest_diff[better]
+                    rows, cols = np.nonzero(has_data)
+                    for i, j in zip(inds, better):
+                        sl = slice(j * 3, j * 3 + 3)
+                        tracklets_multi[i, rows[sl], cols[sl]] = remaining.flat[sl]
+                else:
+                    tracklets_multi[np.argmin(overwrite_risk), has_data] = data[has_data]
+
+        multi = tracklets_multi.swapaxes(0, 1).reshape((self.nframes, -1))
+        self.data = np.c_[multi, tracklets_single].reshape((self.nframes, -1, 3)).swapaxes(0, 1)
         self.xy = self.data[:, :, :2]
         self.prob = self.data[:, :, 2]
         self.tracklet2id = [i for i in range(0, self.nindividuals) for _ in bodyparts_multi] + \
