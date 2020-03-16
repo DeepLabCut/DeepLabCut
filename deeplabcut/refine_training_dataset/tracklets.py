@@ -137,6 +137,18 @@ class TrackletManager:
         min_tracklet_frac : float, optional (default=0.01)
             Relative fraction of the data below which tracklets are ignored.
             By default, tracklets shorter than 1% of the total number of frames are discarded.
+
+
+        Examples
+        --------
+
+        manager = TrackletManager(config_path, min_swap_frac=0, min_tracklet_frac=0)
+
+        manager.load_tracklets_from_pickle(filename)
+        # Alternatively
+        manager.load_tracklets_from_h5(filename)
+
+        manager.find_swapping_bodypart_pairs()
         """
 
         self.cfg = read_config(config)
