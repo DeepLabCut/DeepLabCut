@@ -101,7 +101,7 @@ class PointSelector:
         self.fc[:, -1] = self.alpha_other
         self.fc[self.tracker.picked, -1] = self.alpha
         self.collection.set_color(self.fc)
-        self.tracker.update_traces()
+        self.tracker.display_traces()
 
     def toggle(self):
         if self.is_connected:
@@ -112,8 +112,11 @@ class PointSelector:
     def disconnect(self):
         self.lasso.disconnect_events()
         self.is_connected = False
+        self.tracker.picked = []
+        self.tracker.picked_pair = []
         self.fc[:, -1] = self.alpha
         self.collection.set_color(self.fc)
+        self.tracker.display_traces(only_picked=False)
 
     def reconnect(self):
         self.lasso.connect_default_events()
@@ -341,8 +344,7 @@ class TrackletManager:
 class TrackletVisualizer:
     def __init__(self, manager, videoname, trail_len=50):
         self.manager = manager
-        self.labels = manager.cfg['individuals'] + (['single'] if len(manager.cfg['uniquebodyparts']) else [])
-        self.cmap = plt.cm.get_cmap(manager.cfg['colormap'], len(self.labels))
+        self.cmap = plt.cm.get_cmap(manager.cfg['colormap'], len(manager.individuals))
         self.video = cv2.VideoCapture(videoname)
         if not self.video.isOpened():
             raise IOError('Video could not be opened.')
@@ -383,8 +385,6 @@ class TrackletVisualizer:
             ax.axis('off')
 
         self.colors = self.cmap(manager.tracklet2id)
-        # Color in black the unidentified tracklets
-        # self.colors[manager.nindividuals * manager.nbodyparts:] = 0, 0, 0, 1
         self.colors[:, -1] = manager.cfg['alphavalue']
 
         img = self._read_frame()
@@ -392,20 +392,19 @@ class TrackletVisualizer:
         self.scat = self.ax1.scatter([], [], s=manager.cfg['dotsize'] ** 2, picker=True)
         self.scat.set_offsets(manager.xy[:, 0])
         self.scat.set_color(self.colors)
-        self.selector = PointSelector(self, self.ax1, self.scat, manager.cfg['alphavalue'])
         self.trails = sum([self.ax1.plot([], [], '-', lw=2, c=c) for c in self.colors], [])
         self.lines_x = sum([self.ax2.plot([], [], '-', lw=1, c=c, picker=5) for c in self.colors], [])
         self.lines_y = sum([self.ax3.plot([], [], '-', lw=1, c=c, picker=5) for c in self.colors], [])
         self.vline_x = self.ax2.axvline(0, 0, 1, c='k', ls=':')
         self.vline_y = self.ax3.axvline(0, 0, 1, c='k', ls=':')
-        custom_lines = [plt.Line2D([0], [0], color=self.cmap(i), lw=4) for i in range(len(self.labels))]
-        self.leg = self.fig.legend(custom_lines, self.labels, frameon=False, fancybox=None,
-                                   ncol=len(self.labels), fontsize='small',
+        custom_lines = [plt.Line2D([0], [0], color=self.cmap(i), lw=4)
+                        for i in range(len(manager.individuals))]
+        self.leg = self.fig.legend(custom_lines, manager.individuals, frameon=False, fancybox=None,
+                                   ncol=len(manager.individuals), fontsize='small',
                                    bbox_to_anchor=(0, 0.9, 1, 0.1), loc='center')
         for line in self.leg.get_lines():
             line.set_picker(5)
 
-        self.display_traces()
         self.ax_slider = self.fig.add_axes([0.1, 0.1, 0.6, 0.03], facecolor='lightgray')
         self.slider = Slider(self.ax_slider, '# Frame', 0, manager.nframes - 1, valinit=0, valstep=1, valfmt='%i')
         self.slider.on_changed(self.on_change)
@@ -424,6 +423,9 @@ class TrackletVisualizer:
         self.fig.canvas.mpl_connect('button_press_event', self.on_click)
         self.fig.canvas.mpl_connect('close_event', self.background.terminate)
 
+        self.selector = PointSelector(self, self.ax1, self.scat, manager.cfg['alphavalue'])
+        self.display_traces(only_picked=False)
+
     def show(self, fig=None):
         self._prepare_canvas(self.manager, fig)
 
@@ -434,10 +436,9 @@ class TrackletVisualizer:
         return frame[:, :, ::-1]
 
     def fill_shaded_areas(self):
-        mask = self.manager.get_nonoverlapping_segments(*self.picked_pair)
-        for coll in self.ax2.collections + self.ax3.collections + self.ax_slider.collections:
-            coll.remove()
+        self.clean_collections()
         if self.picked_pair:
+            mask = self.manager.get_nonoverlapping_segments(*self.picked_pair)
             for ax in self.ax2, self.ax3:
                 ax.fill_between(self.manager.times, *ax.dataLim.intervaly, mask,
                                 facecolor='darkgray', alpha=0.2)
@@ -451,8 +452,6 @@ class TrackletVisualizer:
         i = int(self.slider.val)
         if event.key == 'right':
             self.move_forward()
-        elif event.key == 'shift+right':
-            self.move_to_next_unidentified()
         elif event.key == 'left':
             self.move_backward()
         elif event.key == 's':
@@ -463,13 +462,10 @@ class TrackletVisualizer:
             self.cuts.append(i)
             self.ax_slider.axvline(i, color='r')
             if len(self.cuts) > 1:
-                # self.manager.tracklet_swaps[self.picked_pair][self.cuts] = ~self.manager.tracklet_swaps[self.picked_pair][self.cuts]
-                # self.fill_shaded_areas()
                 self.cuts.sort()
-                self.manager.cut_tracklet(self.picked[0], range(self.cuts[0], self.cuts[1] + 1))
+                self.manager.tracklet_swaps[self.picked_pair][self.cuts] = ~self.manager.tracklet_swaps[self.picked_pair][self.cuts]
+                self.fill_shaded_areas()
                 self.cuts = []
-                # self.display_traces()
-                self.update_traces()
                 self.ax_slider.lines = []
         elif event.key == 'l':
             self.selector.toggle()
@@ -485,13 +481,6 @@ class TrackletVisualizer:
         if i < self.manager.nframes - 1:
             self.slider.set_val(i + 1)
 
-    def move_to_next_unidentified(self):
-        current_ind = int(self.slider.val)
-        data = self.manager.xy[self.manager.nindividuals * self.manager.nbodyparts:, current_ind:]
-        mask = np.isnan(data).any(axis=2).all(axis=0)
-        ind = np.argmin(mask)
-        self.slider.set_val(current_ind + ind)
-
     def move_backward(self):
         i = int(self.slider.val)
         if i > 0:
@@ -505,15 +494,13 @@ class TrackletVisualizer:
             if len(inds):
                 ind = np.argmax(inds > i)
                 self.manager.swap_tracklets(*self.picked_pair, range(inds[ind - 1], inds[ind] + 1))
-                # self.display_traces()
-                self.update_traces()
+                self.display_traces()
                 self.slider.set_val(int(self.slider.val))
 
     def invert(self):
         i = int(self.slider.val)
         self.manager.swap_tracklets(*self.picked_pair, [i])
-        # self.display_traces()
-        self.update_traces()
+        self.display_traces()
         self.slider.set_val(int(self.slider.val))
 
     def on_pick(self, event):
@@ -527,44 +514,35 @@ class TrackletVisualizer:
             if isinstance(artist, plt.Line2D):
                 self.picked = [self.lines_y.index(artist)]
         else:  # Click on the legend lines
-            # Avoid accidental reassignment of already identified tracklets
-            # valid_picks = [ind for ind in self.picked if ind in self.unidentified_tracks]
-            valid_picks = self.picked
-            if valid_picks:
+            if self.picked:
                 num_individual = self.leg.get_lines().index(artist)
                 nrow = self.manager.tracklet2id.index(num_individual)
-                inds = [nrow + self.manager.to_num_bodypart(pick) for pick in valid_picks]
-                xy = self.manager.xy[valid_picks]
-                p = self.manager.prob[valid_picks]
+                inds = [nrow + self.manager.to_num_bodypart(pick) for pick in self.picked]
+                xy = self.manager.xy[self.picked]
+                p = self.manager.prob[self.picked]
                 if self.single:
                     mask = np.zeros(xy.shape[1], dtype=bool)
                     mask[int(self.slider.val)] = True
                 else:
                     mask = ~np.isnan(xy).any(axis=(0, 2))
                 sl_inds = np.ix_(inds, mask)
-                sl_picks = np.ix_(valid_picks, mask)
-                # Ensure that we do not overwrite identified tracklets
-                # if not np.all(np.isnan(self.xy[sl])):
-                #     return
+                sl_picks = np.ix_(self.picked, mask)
                 old_xy = self.manager.xy[sl_inds].copy()
                 old_prob = self.manager.prob[sl_inds].copy()
                 self.manager.xy[sl_inds] = xy[:, mask]
                 self.manager.prob[sl_inds] = p[:, mask]
                 self.manager.xy[sl_picks] = old_xy
                 self.manager.prob[sl_picks] = old_prob
-                self.manager.unidentified_tracklets[valid_picks] = ~self.manager.unidentified_tracklets[valid_picks]
-                self.manager.update_empty_mask()
-                # self.display_traces()
-                self.update_traces()
         self.picked_pair = []
         if len(self.picked) == 1:
             for pair in self.manager.swapping_pairs:
                 if self.picked[0] in pair:
                     self.picked_pair = pair
                     break
+        self.clean_collections()
+        self.display_traces()
         if self.picked_pair:
             self.fill_shaded_areas()
-        self.update_traces()
         self.slider.set_val(int(self.slider.val))
 
     def on_click(self, event):
@@ -573,15 +551,17 @@ class TrackletVisualizer:
             x = event.xdata
             self.update_vlines(x)
             self.slider.set_val(x)
+        elif event.inaxes == self.ax1 and not self.scat.contains(event)[0]:
+            self.display_traces(only_picked=False)
+            self.clean_collections()
+
+    def clean_collections(self):
+        for coll in self.ax2.collections + self.ax3.collections + self.ax_slider.collections:
+            coll.remove()
 
     def display_points(self, val):
         data = self.manager.xy[:, val]
         self.scat.set_offsets(data)
-        # data, mask, inds = self.manager.get_non_nan_elements(val)
-        # self.scat.set_offsets(data)
-        # self.scat.set_color(self.colors[mask])
-        # self.current_mask = mask
-        # self.current_inds = np.flatnonzero(mask)
 
     def display_trails(self, val):
         sl = slice(val - self.trail_len // 2, val + self.trail_len // 2)
@@ -592,9 +572,13 @@ class TrackletVisualizer:
             else:
                 trail.set_data([], [])
 
-    def display_traces(self):
+    def display_traces(self, only_picked=True):
+        if only_picked:
+            inds = self.picked + list(self.picked_pair)
+        else:
+            inds = self.manager.swapping_bodyparts
         for n, (line_x, line_y) in enumerate(zip(self.lines_x, self.lines_y)):
-            if n in self.manager.swapping_bodyparts:
+            if n in inds:
                 line_x.set_data(self.manager.times, self.manager.xy[n, :, 0])
                 line_y.set_data(self.manager.times, self.manager.xy[n, :, 1])
             else:
@@ -606,7 +590,15 @@ class TrackletVisualizer:
 
     def display_help(self, event):
         if not self.help_text:
-            self.help_text = 'help needed'
+            self.help_text = '''
+            Key I: invert the position of a pair of bodyparts
+            Key L: toggle the lasso selector
+            Key S: swap two tracklets
+            Key X: cut swapping tracklets
+            Left/Right arrow: navigate through the video
+            Tab: play/pause the video
+            Alt+Right/Left: fast forward/rewind
+            '''
             self.text = self.fig.text(0.5, 0.5, self.help_text,
                                       horizontalalignment='center',
                                       verticalalignment='center',
@@ -614,26 +606,6 @@ class TrackletVisualizer:
         else:
             self.help_text = ''
             self.text.remove()
-
-    def update_traces(self):
-        for n, (line_x, line_y) in enumerate(zip(self.lines_x, self.lines_y)):
-            if n in self.picked:
-                # line_x.set_lw(3)
-                # line_y.set_lw(3)
-                # line_x.set_alpha(1)
-                # line_y.set_alpha(1)
-                line_x.set_data(self.manager.times, self.manager.xy[n, :, 0])
-                line_y.set_data(self.manager.times, self.manager.xy[n, :, 1])
-            else:
-                # line_x.set_lw(1)
-                # line_y.set_lw(1)
-                # line_x.set_alpha(0.3)
-                # line_y.set_alpha(0.3)
-                line_x.set_data([], [])
-                line_y.set_data([], [])
-        for ax in self.ax2, self.ax3:
-            ax.relim()
-            ax.autoscale_view()
 
     def update_vlines(self, val):
         self.vline_x.set_xdata([val, val])
@@ -654,6 +626,7 @@ def refine_tracklets(config, picklefile, video,
                      min_swap_frac=0.01, min_tracklet_frac=0.01, trail_len=50):
     manager = TrackletManager(config, min_swap_frac, min_tracklet_frac)
     manager.load_tracklets_from_pickle(picklefile)
+    manager.find_swapping_bodypart_pairs()
     viz = TrackletVisualizer(manager, video, trail_len)
     viz.show()
     return manager

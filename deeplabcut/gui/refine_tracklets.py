@@ -134,6 +134,7 @@ class Refine_tracklets(wx.Panel):
         self.manager = tracklets.TrackletManager(self.config, self.slider_swap.GetValue() / 100,
                                                  self.slider_track.GetValue() / 100)
         self.manager.load_tracklets_from_pickle(self.datafile)
+        self.manager.find_swapping_bodypart_pairs()
         self.viz = tracklets.TrackletVisualizer(self.manager, self.video, 50)
         self.viz.show()
         self.save.Enable(True)
