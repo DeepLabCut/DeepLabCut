@@ -132,8 +132,8 @@ class TrackletManager:
             Relative fraction of the data below which bodypart swaps are ignored.
             By default, swaps representing less than 1% of the total number of frames are discarded.
         min_tracklet_frac : float, optional (default=0.01)
-            Relative fraction of the data below which unidentified tracklets are ignored.
-            By default, unidentified tracklets shorter than 1% of the total number of frames are discarded.
+            Relative fraction of the data below which tracklets are ignored.
+            By default, tracklets shorter than 1% of the total number of frames are discarded.
         """
 
         self.cfg = read_config(config)
@@ -144,15 +144,14 @@ class TrackletManager:
         self.data = None
         self.xy = None
         self.prob = None
-        self.ntracklets = 0
         self.nframes = 0
         self.times = []
         self.scorer = None
+        self.bodyparts = []
         self.nindividuals = len(self.cfg['individuals'])
+        self.individuals = []
         self.tracklet2id = []
         self.tracklet2bp = []
-        self.unidentified_tracklets = []
-        self.empty_tracklets = []
         self.swapping_pairs = []
         self.swapping_bodyparts = []
 
@@ -161,6 +160,7 @@ class TrackletManager:
         with open(filename, 'rb') as file:
             tracklets = pickle.load(file)
         header = tracklets.pop('header')
+        self.scorer = header.get_level_values('scorer').unique().to_list()
         frames = sorted(set([frame for tracklet in tracklets.values() for frame in tracklet]))
         self.nframes = int(re.findall(r'\d+', frames[-1])[0]) + 1
         self.times = np.arange(self.nframes)
@@ -169,7 +169,7 @@ class TrackletManager:
         bodyparts_single = self.cfg['uniquebodyparts']
         mask_multi = bodyparts.isin(bodyparts_multi)
         mask_single = bodyparts.isin(bodyparts_single)
-        labels = list(bodyparts[mask_multi]) * self.nindividuals + list(bodyparts[mask_single])
+        self.bodyparts = list(bodyparts[mask_multi]) * self.nindividuals + list(bodyparts[mask_single])
 
         # Store tracklets, such that we later manipulate long chains
         # rather than data of individual frames, yielding greater continuity.
@@ -179,14 +179,15 @@ class TrackletManager:
             for frame_name, data in tracklets[num_tracklet].items():
                 ind_frame = int(re.findall(r'\d+', frame_name)[0])
                 to_fill[ind_frame] = data
-            is_single = np.isnan(to_fill[:, mask_multi]).all()
-            if is_single:
-                to_fill = to_fill[:, mask_single]
-            else:
-                to_fill = to_fill[:, mask_multi]
             nonempty = np.any(~np.isnan(to_fill), axis=1)
             completeness = nonempty.sum() / self.nframes
-            temp[num_tracklet] = to_fill, completeness, is_single
+            if completeness >= self.min_tracklet_frac:
+                is_single = np.isnan(to_fill[:, mask_multi]).all()
+                if is_single:
+                    to_fill = to_fill[:, mask_single]
+                else:
+                    to_fill = to_fill[:, mask_multi]
+                temp[num_tracklet] = to_fill, completeness, is_single
         tracklets_sorted = sorted(temp.items(), key=lambda kv: kv[1][1])
 
         # Recursively fill the data containers
@@ -242,67 +243,36 @@ class TrackletManager:
         self.data = np.c_[multi, tracklets_single].reshape((self.nframes, -1, 3)).swapaxes(0, 1)
         self.xy = self.data[:, :, :2]
         self.prob = self.data[:, :, 2]
+        # Map a tracklet # to the animal ID it belongs to or the bodypart # it corresponds to.
+        self.individuals = self.cfg['individuals'] + (['single'] if len(self.cfg['uniquebodyparts']) else [])
         self.tracklet2id = [i for i in range(0, self.nindividuals) for _ in bodyparts_multi] + \
                            [self.nindividuals] * len(bodyparts_single)
         bps = bodyparts_multi + bodyparts_single
         map_ = dict(zip(bps, range(len(bps))))
-        self.tracklet2bp = [map_[bp] for bp in labels[::3]]
+        self.tracklet2bp = [map_[bp] for bp in self.bodyparts[::3]]
 
     def load_tracklets_from_hdf(self, filename):
-        # Only used for now to validate the data post refinement;
-        # therefore we assume data are complete.
         self.filename = filename
         df = pd.read_hdf(filename)
-        self.scorer = df.columns.get_level_values('scorer').unique().to_list()
-        self.bodyparts = df.columns.get_level_values('bodyparts').unique().to_list()
-        self.nbodyparts = len(self.bodyparts)
+        idx = df.columns
+        self.scorer = idx.get_level_values('scorer').unique().to_list()
+        self.bodyparts = idx.get_level_values('bodyparts')
         self.nframes = len(df)
         self.times = np.arange(self.nframes)
         self.data = df.values.reshape((self.nframes, -1, 3)).swapaxes(0, 1)
         self.xy = self.data[:, :, :2]
         self.prob = self.data[:, :, 2]
-        self.finalize()
-
-    def finalize(self):
-        # Map a tracklet # to the animal ID it belongs to or the bodypart # it corresponds to.
-        self.ntracklets = len(self.xy)
-        nindividuals = self.ntracklets // self.nbodyparts
-        self.tracklet2id = [i for i in range(nindividuals) for _ in range(self.nbodyparts)]
-        self.tracklet2bp = [i for _ in range(nindividuals) for i in range(self.nbodyparts)]
-
-        # Identify the tracklets that contained too little information.
-        self.update_empty_mask()
-        self.unidentified_tracklets = np.zeros(self.ntracklets, dtype=bool)
-        self.unidentified_tracklets[self.nindividuals * self.nbodyparts:] = True
-        self.update_unidentified_mask()
-
-    def fill_gaps_recursively(self):
-        xy = self.xy.reshape((-1, manager.nbodyparts * manager.nframes * 2))
-        prob = self.prob.reshape((-1, manager.nbodyparts * manager.nframes))
-        room = np.isnan(xy)
-        identified = range(self.nindividuals)
-        unidentified = set(range(self.nindividuals, len(room)))
-        while unidentified:
-            i = unidentified.pop()
-            mask = ~room[i]
-            for j in identified:
-                if room[j][mask].all():
-                    xy[j][mask] = xy[i][mask]
-                    xy[i][mask] = np.nan
-                    prob[j][mask[::2]] = prob[i][mask[::2]]
-                    prob[i][mask[::2]] = np.nan
-                    room[j][mask] = False
-                    continue
-        self.xy = xy.reshape((-1, self.nframes, 2))
-        self.prob = prob.reshape((-1, self.nframes))
-        self.update_empty_mask()
-        self.update_unidentified_mask()
-        self.find_swapping_bodypart_pairs(force_find=True)
+        individuals = idx.get_level_values('individuals')
+        self.individuals = individuals.unique().to_list()
+        self.tracklet2id = individuals.map(dict(zip(self.individuals, range(len(self.individuals))))).tolist()[::3]
+        bodyparts = self.bodyparts.unique()
+        self.tracklet2bp = self.bodyparts.map(dict(zip(bodyparts, range(len(bodyparts))))).tolist()[::3]
 
     def calc_completeness(self, xy, by_individual=False):
         comp = np.sum(~np.isnan(xy).any(axis=2), axis=1)
         if by_individual:
-            return comp.reshape(-1, self.nbodyparts).sum(axis=1)
+            inds = np.insert(np.diff(self.tracklet2id), 0, 1)
+            comp = np.add.reduceat(comp, np.flatnonzero(inds))
         return comp
 
     def to_num_bodypart(self, ind):
@@ -316,36 +286,14 @@ class TrackletManager:
         mask = ~np.isnan(data).any(axis=1)
         return data[mask], mask, np.flatnonzero(mask)
 
-    def update_empty_mask(self):
-        comp = self.calc_completeness(self.xy)
-        self.empty_tracklets = comp <= self.min_tracklet_frac * self.nframes
-
-    def update_unidentified_mask(self):
-        self.unidentified_tracklets &= np.logical_not(self.empty_tracklets)
-
-    def map_indices_to_original_array(self, inds, at):
-        _, _, all_inds = self.get_non_nan_elements(at)
-        return all_inds[inds]
-
-    def swap_tracklets(self, tracklet1, tracklet2, inds):
-        self.xy[np.ix_([tracklet1, tracklet2], inds)] = self.xy[np.ix_([tracklet2, tracklet1], inds)]
-        self.prob[np.ix_([tracklet1, tracklet2], inds)] = self.prob[np.ix_([tracklet2, tracklet1], inds)]
-        self.tracklet2bp[tracklet1], self.tracklet2bp[tracklet2] = self.tracklet2bp[tracklet2], self.tracklet2bp[tracklet1]
-
-    def cut_tracklet(self, num_tracklet, inds):
-        ind_empty = np.argmax(self.empty_tracklets)
-        self.tracklet2bp[ind_empty] = self.to_num_bodypart(num_tracklet)
-        self.swap_tracklets(num_tracklet, ind_empty, inds)
-        self.unidentified_tracklets[ind_empty] = True
-        self.empty_tracklets[ind_empty] = False
+    def swap_tracklets(self, track1, track2, inds):
+        self.xy[np.ix_([track1, track2], inds)] = self.xy[np.ix_([track2, track1], inds)]
+        self.prob[np.ix_([track1, track2], inds)] = self.prob[np.ix_([track2, track1], inds)]
+        self.tracklet2bp[track1], self.tracklet2bp[track2] = self.tracklet2bp[track2], self.tracklet2bp[track1]
 
     def find_swapping_bodypart_pairs(self, force_find=False):
-        # FIXME Still quite slow for large dataset...
         if not self.swapping_pairs or force_find:
-            # Only keep the non-empty tracklets to accelerate computation
-            nonempty = np.flatnonzero(np.logical_not(self.empty_tracklets))
-            xy = self.xy[nonempty]
-            sub = xy[:, np.newaxis] - xy  # Broadcasting makes subtraction of X and Y coordinates very efficient
+            sub = self.xy[:, np.newaxis] - self.xy  # Broadcasting for efficient subtraction of X and Y coordinates
             with np.errstate(invalid='ignore'):  # Get rid of annoying warnings when comparing with NaNs
                 pos = sub > 0
                 neg = sub <= 0
@@ -356,9 +304,7 @@ class TrackletManager:
             self.tracklet_swaps = zero_crossings.all(axis=3)
             cross = self.tracklet_swaps.sum(axis=2) > self.min_swap_frac * self.nframes
             mat = np.tril(cross)
-            temp_inds = np.where(mat)
-            # Convert back into original indices
-            temp_pairs = [nonempty[inds] for inds in temp_inds]
+            temp_pairs = np.where(mat)
             # Get only those bodypart pairs that belong to different individuals
             pairs = []
             for a, b in zip(*temp_pairs):
@@ -379,15 +325,13 @@ class TrackletManager:
         return mask
 
     def save(self, output_name='', *args):
-        # FIXME
-        columns = pd.MultiIndex.from_product([self.scorer,
-                                              self.individuals,
-                                              self.bodyparts,
-                                              ['x', 'y', 'likelihood']],
-                                             names=['scorer', 'individuals', 'bodyparts', 'coords'])
+        scorer = self.scorer * len(self.bodyparts)
+        map_ = dict(zip(range(len(self.individuals)), self.individuals))
+        individuals = [map_[ind] for ind in self.tracklet2id for _ in range(3)]
+        coords = ['x', 'y', 'likelihood'] * len(self.tracklet2id)
+        columns = pd.MultiIndex.from_arrays([scorer, individuals, self.bodyparts, coords],
+                                            names=['scorer', 'individuals', 'bodyparts', 'coords'])
         data = np.concatenate((self.xy, np.expand_dims(self.prob, axis=2)), axis=2)
-        # Trim off the then-unidentified tracklets
-        data = data[:self.nindividuals * self.nbodyparts]
         df = pd.DataFrame(data.swapaxes(0, 1).reshape((self.nframes, -1)), columns=columns, index=self.times)
         if not output_name:
             output_name = self.filename.replace('pickle', 'h5')
@@ -650,7 +594,7 @@ class TrackletVisualizer:
 
     def display_traces(self):
         for n, (line_x, line_y) in enumerate(zip(self.lines_x, self.lines_y)):
-            if n in self.manager.swapping_bodyparts or n in np.flatnonzero(self.manager.unidentified_tracklets):
+            if n in self.manager.swapping_bodyparts:
                 line_x.set_data(self.manager.times, self.manager.xy[n, :, 0])
                 line_y.set_data(self.manager.times, self.manager.xy[n, :, 1])
             else:
