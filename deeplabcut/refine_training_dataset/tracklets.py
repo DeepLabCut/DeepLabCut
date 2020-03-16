@@ -463,10 +463,11 @@ class TrackletVisualizer:
             self.ax_slider.axvline(i, color='r')
             if len(self.cuts) > 1:
                 self.cuts.sort()
-                self.manager.tracklet_swaps[self.picked_pair][self.cuts] = ~self.manager.tracklet_swaps[self.picked_pair][self.cuts]
-                self.fill_shaded_areas()
-                self.cuts = []
-                self.ax_slider.lines = []
+                if self.picked_pair:
+                    self.manager.tracklet_swaps[self.picked_pair][self.cuts] = ~self.manager.tracklet_swaps[self.picked_pair][self.cuts]
+                    self.fill_shaded_areas()
+                    self.cuts = []
+                    self.ax_slider.lines = []
         elif event.key == 'l':
             self.selector.toggle()
         elif event.key == 'alt+right':
@@ -521,11 +522,15 @@ class TrackletVisualizer:
                 inds = [nrow + self.manager.to_num_bodypart(pick) for pick in self.picked]
                 xy = self.manager.xy[self.picked]
                 p = self.manager.prob[self.picked]
+                mask = np.zeros(xy.shape[1], dtype=bool)
                 if self.single:
-                    mask = np.zeros(xy.shape[1], dtype=bool)
                     mask[int(self.slider.val)] = True
+                elif self.cuts:
+                    mask[self.cuts[0]:self.cuts[1] + 1] = True
+                    self.cuts = []
+                    self.ax_slider.lines = []
                 else:
-                    mask = ~np.isnan(xy).any(axis=(0, 2))
+                    return
                 sl_inds = np.ix_(inds, mask)
                 sl_picks = np.ix_(self.picked, mask)
                 old_xy = self.manager.xy[sl_inds].copy()
