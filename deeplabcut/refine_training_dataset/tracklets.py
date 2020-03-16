@@ -498,10 +498,11 @@ class TrackletVisualizer:
                 self.slider.set_val(int(self.slider.val))
 
     def invert(self):
-        i = int(self.slider.val)
-        self.manager.swap_tracklets(*self.picked_pair, [i])
-        self.display_traces()
-        self.slider.set_val(int(self.slider.val))
+        if self.picked_pair:
+            i = int(self.slider.val)
+            self.manager.swap_tracklets(*self.picked_pair, [i])
+            self.display_traces()
+            self.slider.set_val(int(self.slider.val))
 
     def on_pick(self, event):
         artist = event.artist
