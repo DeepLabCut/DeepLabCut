@@ -1,0 +1,10 @@
+Note: This was done in the course of my studies as a Bachelor's project in the Straw Lab at the University of Freiburg.
+The Straw Lab(https://strawlab.org/) is interested in real-time flies tracking, so the cost metric
+& other stuff were specifically chosen with the regard to the input.
+
+More Notes
+- The Kalman filter is a constant velocity model
+
+- Evaluation was done using only the initial input videos (See picture in header)
+
+- This feature merely tested on DLC2, as it was developed under DLC1
