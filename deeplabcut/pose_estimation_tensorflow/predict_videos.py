@@ -954,45 +954,12 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1,
                 xylvalue=int(len(bodypartlabels)/3)*['x', 'y','likelihood']
                 pdindex=pd.MultiIndex.from_arrays(np.vstack([scorers,bodypartlabels,xylvalue]),names=['scorer', 'bodyparts', 'coords'])
 
-                imnames=[fn for fn in data.keys() if fn !='metadata']
+                imnames=[fn for fn in data if fn != 'metadata']
                 Tracks={}
                 for index,imname in tqdm(enumerate(imnames)):
-                    # filter detections according to inferencecfg parameters
-                    all_detections=inferenceutils.convertdetectiondict2listoflist(data[imname],imname,BPTS,withid=inferencecfg.withid)
-
-                    if printintermediate:
-                        print(all_detections)
-                    # filter connectinos according to inferencecfg parameters
-                    connection_all, special_k=inferenceutils.matchconnections(inferencecfg,data[imname],
-                                                all_detections, iBPTS, partaffinityfield_graph, PAF)
-
-                    if printintermediate:
-                        print(connection_all)
-                    # assemble putative subsets
-                    subset, candidate=inferenceutils.linkjoints2individuals(inferencecfg, all_detections, connection_all, special_k,
-                                                                linkingpartaffinityfield_graph, iBPTS, numjoints=numjoints)
-
-                    if printintermediate:
-                        print("Subset",subset)
-                    sortedindividuals=np.argsort(-subset[:,-2]) #sort by top score!
-                    if len(sortedindividuals)>inferencecfg.topktoplot:
-                        sortedindividuals=sortedindividuals[:inferencecfg.topktoplot]
-
-                    animals=[]
-                    for n in sortedindividuals: #range(len(subset)): #number of individuals
-                        individual=np.zeros(3*numjoints)*np.nan
-                        for i in range(numjoints): #number of limbs
-                            ind = int(subset[n][i]) # bpt index in global coordinates
-                            if -1 == ind: #reached the end!
-                                continue
-                            else: #xyl=np.ones(3)*np.nan
-                                #else:
-                                #xyl = candidate[ind, :3]
-                                individual[3*i:3*i+3]=candidate[ind, :3]
-                                #>> turn into bounding box :)
-
-                        animals.append(individual)
-
+                    animals = inferenceutils.assemble_individuals(inferencecfg, data[imname], numjoints, BPTS, iBPTS,
+                                                                  PAF, partaffinityfield_graph, linkingpartaffinityfield_graph,
+                                                                  printintermediate)
                     #get corresponding bounding boxes!
                     bb=inferenceutils.individual2boundingbox(inferencecfg,animals,0) #TODO: get cropping parameters and utilize!
                     trackers = mot_tracker.update(bb)

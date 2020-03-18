@@ -77,7 +77,9 @@ def quantifiyassembly(dlccfg,Shuffles,configfile,modelprefix,inferencecfg,PAF=No
                 detectedlikelihood=data[imname]['prediction']['confidence']
                 groundtruthidentity, groundtruthcoordinates,GT=data[imname]['groundtruth']
 
-                all_detections=inferenceutils.convertdetectiondict2listoflist(data[imname],imname,BPTS,withid=inferencecfg.withid,evaluation=True)
+                all_detections= inferenceutils.convertdetectiondict2listoflist(data[imname], BPTS,
+                                                                               withid=inferencecfg.withid,
+                                                                               evaluation=True)
 
                 connection_all, special_k=inferenceutils.matchconnections(inferencecfg,data[imname],
                                             all_detections, iBPTS, partaffinityfield_graph, PAF,evaluation=True)

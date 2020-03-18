@@ -34,7 +34,7 @@ def individual2boundingbox(cfg,animals,X1=0):
 #### conversion & greedy bodypart matching code
 ##########################################################
 
-def convertdetectiondict2listoflist(dataimage,imname,BPTS,withid=False,evaluation=False):
+def convertdetectiondict2listoflist(dataimage, BPTS, withid=False, evaluation=False):
     ''' Arranges data into list of list with the following entries:
     [(x, y, score, global index of detection)] (all detections per bodypart).
 
@@ -187,3 +187,38 @@ def linkjoints2individuals(cfg,all_detections,all_connections, missing_connectio
             deleteIdx.append(i)
     subset = np.delete(subset, deleteIdx, axis=0)
     return subset, candidate
+
+
+def assemble_individuals(inference_cfg, data, numjoints, BPTS, iBPTS,
+                         PAF, paf_graph, paf_links, print_intermediate=False):
+    # filter detections according to inferencecfg parameters
+    all_detections = convertdetectiondict2listoflist(data, BPTS, withid=inference_cfg.withid)
+    # filter connectinos according to inferencecfg parameters
+    connection_all, special_k = matchconnections(inference_cfg, data,
+                                                 all_detections, iBPTS, paf_graph, PAF)
+    # assemble putative subsets
+    subset, candidate = linkjoints2individuals(inference_cfg, all_detections, connection_all, special_k,
+                                               paf_links, iBPTS, numjoints=numjoints)
+    if print_intermediate:
+        print(all_detections)
+        print(connection_all)
+        print(subset)
+
+    sortedindividuals = np.argsort(-subset[:, -2])  # sort by top score!
+    if len(sortedindividuals) > inference_cfg.topktoplot:
+        sortedindividuals = sortedindividuals[:inference_cfg.topktoplot]
+
+    animals = []
+    for n in sortedindividuals:  # range(len(subset)): #number of individuals
+        individual = np.zeros(3 * numjoints) * np.nan
+        for i in range(numjoints):  # number of limbs
+            ind = int(subset[n][i])  # bpt index in global coordinates
+            if -1 == ind:  # reached the end!
+                continue
+            else:  # xyl=np.ones(3)*np.nan
+                # else:
+                # xyl = candidate[ind, :3]
+                individual[3 * i:3 * i + 3] = candidate[ind, :3]
+                # >> turn into bounding box :)
+        animals.append(individual)
+    return animals
