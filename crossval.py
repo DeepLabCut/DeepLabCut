@@ -70,12 +70,15 @@ def compute_mot_metrics(inference_cfg, data, bboxes_ground_truth):
             ids_gt = ids_gt[~empty]
         dist = mm.distances.iou_matrix(bboxes_gt, bboxes_hyp, max_iou=inference_cfg['iou_threshold'])
         acc.update(ids_gt, trackers[:, 4], dist)
+    return acc
 
+
+def print_all_metrics(accumulators):
+    names = [f'iter{i + 1}' for i in range(len(accumulators))]
     mh = mm.metrics.create()
-    summary = mh.compute(acc, metrics=mm.metrics.motchallenge_metrics)
+    summary = mh.compute_many(accumulators, metrics=mm.metrics.motchallenge_metrics, names=names)
     strsummary = mm.io.render_summary(summary, formatters=mh.formatters, namemap=mm.io.motchallenge_metric_names)
     print(strsummary)
-    return acc, summary
 
 
 config_inference = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/silversideschooling-Valentina-2019-07-14/dlc-models/iteration-0/silversideschoolingJul14-trainset95shuffle1/test/inference_cfg.yaml'
@@ -94,3 +97,4 @@ thresholds = [0.5]
 for threshold in thresholds:
     testing_cfg['iou_threshold'] = threshold
     accumulators.append(compute_mot_metrics(testing_cfg, data, bboxes_ground_truth))
+print_all_metrics(accumulators)
