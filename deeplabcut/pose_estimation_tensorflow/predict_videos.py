@@ -909,9 +909,9 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1,
     Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
     print(Videos)
     if len(Videos)>0:
-        mot_tracker = trackingutils.Sort(inferencecfg)
         for video in Videos:
             print("Processing... ", video)
+            mot_tracker = trackingutils.Sort(inferencecfg)
             if destfolder is None:
                 destfolder = str(Path(video).parents[0])
 
