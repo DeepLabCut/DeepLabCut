@@ -7,6 +7,7 @@ import deeplabcut
 import pandas as pd
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingutils
 from easydict import EasyDict as edict
+from itertools import product
 from tqdm import tqdm
 
 
@@ -73,8 +74,11 @@ def compute_mot_metrics(inference_cfg, data, bboxes_ground_truth):
     return acc
 
 
-def print_all_metrics(accumulators):
-    names = [f'iter{i + 1}' for i in range(len(accumulators))]
+def print_all_metrics(accumulators, all_params=None):
+    if not all_params:
+        names = [f'iter{i + 1}' for i in range(len(accumulators))]
+    else:
+        names = ['{:.1f}_{}_{}'.format(*params) for params in all_params]
     mh = mm.metrics.create()
     summary = mh.compute_many(accumulators, metrics=mm.metrics.motchallenge_metrics, names=names)
     strsummary = mm.io.render_summary(summary, formatters=mh.formatters, namemap=mm.io.motchallenge_metric_names)
@@ -92,9 +96,13 @@ with open(full_data_file, 'rb') as file:
     data = pickle.load(file)
 
 accumulators = []
-# thresholds = np.linspace(0.1, 0.9, 9, endpoint=True)
-thresholds = [0.5]
-for threshold in thresholds:
+thresholds = np.linspace(0.1, 0.9, 5, endpoint=True)
+max_ages = [1, 3, 5, 10]
+min_hits = [1, 3, 5, 10]
+combinations = list(product(thresholds, max_ages, min_hits))
+for threshold, max_age, min_hit in combinations:
     testing_cfg['iou_threshold'] = threshold
+    testing_cfg['max_age'] = max_age
+    testing_cfg['min_hits'] = min_hit
     accumulators.append(compute_mot_metrics(testing_cfg, data, bboxes_ground_truth))
-print_all_metrics(accumulators)
+print_all_metrics(accumulators, combinations)
