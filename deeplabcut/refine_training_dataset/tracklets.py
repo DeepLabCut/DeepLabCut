@@ -170,10 +170,7 @@ class TrackletManager:
         self.swapping_pairs = []
         self.swapping_bodyparts = []
 
-    def load_tracklets_from_pickle(self, filename):
-        self.filename = filename
-        with open(filename, 'rb') as file:
-            tracklets = pickle.load(file)
+    def _load_tracklets(self, tracklets):
         header = tracklets.pop('header')
         self.scorer = header.get_level_values('scorer').unique().to_list()
         frames = sorted(set([frame for tracklet in tracklets.values() for frame in tracklet]))
@@ -258,6 +255,7 @@ class TrackletManager:
         self.data = np.c_[multi, tracklets_single].reshape((self.nframes, -1, 3)).swapaxes(0, 1)
         self.xy = self.data[:, :, :2]
         self.prob = self.data[:, :, 2]
+
         # Map a tracklet # to the animal ID it belongs to or the bodypart # it corresponds to.
         self.individuals = self.cfg['individuals'] + (['single'] if len(self.cfg['uniquebodyparts']) else [])
         self.tracklet2id = [i for i in range(0, self.nindividuals) for _ in bodyparts_multi] + \
@@ -265,6 +263,12 @@ class TrackletManager:
         bps = bodyparts_multi + bodyparts_single
         map_ = dict(zip(bps, range(len(bps))))
         self.tracklet2bp = [map_[bp] for bp in self.bodyparts[::3]]
+
+    def load_tracklets_from_pickle(self, filename):
+        self.filename = filename
+        with open(filename, 'rb') as file:
+            tracklets = pickle.load(file)
+        self._load_tracklets(tracklets)
 
     def load_tracklets_from_hdf(self, filename):
         self.filename = filename
@@ -339,15 +343,21 @@ class TrackletManager:
             mask[i:j] = False
         return mask
 
-    def save(self, output_name='', *args):
+    def flatten_data(self):
+        data = np.concatenate((self.xy, np.expand_dims(self.prob, axis=2)), axis=2)
+        return data.swapaxes(0, 1).reshape((self.nframes, -1))
+
+    def format_output(self):
         scorer = self.scorer * len(self.bodyparts)
         map_ = dict(zip(range(len(self.individuals)), self.individuals))
         individuals = [map_[ind] for ind in self.tracklet2id for _ in range(3)]
         coords = ['x', 'y', 'likelihood'] * len(self.tracklet2id)
         columns = pd.MultiIndex.from_arrays([scorer, individuals, self.bodyparts, coords],
                                             names=['scorer', 'individuals', 'bodyparts', 'coords'])
-        data = np.concatenate((self.xy, np.expand_dims(self.prob, axis=2)), axis=2)
-        df = pd.DataFrame(data.swapaxes(0, 1).reshape((self.nframes, -1)), columns=columns, index=self.times)
+        return pd.DataFrame(self.flatten_data(), columns=columns, index=self.times)
+
+    def save(self, output_name='', *args):
+        df = self.format_output()
         if not output_name:
             output_name = self.filename.replace('pickle', 'h5')
         df.to_hdf(output_name, 'df_with_missing', format='table', mode='w')

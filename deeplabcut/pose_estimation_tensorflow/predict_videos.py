@@ -963,18 +963,11 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1,
                     #get corresponding bounding boxes!
                     bb=inferenceutils.individual2boundingbox(inferencecfg,animals,0) #TODO: get cropping parameters and utilize!
                     trackers = mot_tracker.update(bb)
-                    for ind, content in enumerate(trackers):
-                            tracklet_id=content[4].astype(np.int)
-                            if tracklet_id in Tracks.keys():
-                                Tracks[tracklet_id][imname]=animals[content[5].astype(np.int)]
-                            else:
-                                Tracks[tracklet_id]={}
-                                Tracks[tracklet_id][imname]=animals[content[5].astype(np.int)] #retrieve coordinates
-
+                    trackingutils.fill_tracklets(Tracks, trackers, animals, imname)
                 Tracks['header']=pdindex
                 with open(trackname, 'wb') as f:
-                        # Pickle the 'labeled-data' dictionary using the highest protocol available.
-                        pickle.dump(Tracks, f,pickle.HIGHEST_PROTOCOL)
+                    # Pickle the 'labeled-data' dictionary using the highest protocol available.
+                    pickle.dump(Tracks, f,pickle.HIGHEST_PROTOCOL)
 
         os.chdir(str(start_path))
         print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")

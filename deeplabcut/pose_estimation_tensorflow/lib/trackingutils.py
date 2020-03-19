@@ -243,3 +243,11 @@ class Sort:
         if(len(ret)>0):
             return np.concatenate(ret)
         return np.empty((0,5))
+
+
+def fill_tracklets(tracklets, trackers, animals, imname):
+    for content in trackers:
+        tracklet_id, pred_id = content[4:].astype(np.int)
+        if tracklet_id not in tracklets:
+            tracklets[tracklet_id] = {}
+        tracklets[tracklet_id][imname] = animals[pred_id]
