@@ -347,7 +347,7 @@ class TrackletManager:
         data = np.concatenate((self.xy, np.expand_dims(self.prob, axis=2)), axis=2)
         return data.swapaxes(0, 1).reshape((self.nframes, -1))
 
-    def format_output(self):
+    def format_data(self):
         scorer = self.scorer * len(self.bodyparts)
         map_ = dict(zip(range(len(self.individuals)), self.individuals))
         individuals = [map_[ind] for ind in self.tracklet2id for _ in range(3)]
