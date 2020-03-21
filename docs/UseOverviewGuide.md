@@ -60,16 +60,20 @@ We provide Jupyter and COLAB notebooks for using DeepLabCut on both a pre-labele
 own dataset. See all the demo's [here!](/examples) Please note that GUIs are not easily supported in Jupyter in MacOS, as you need a framework build of python. While it's possible to launch them with a few tweaks, we recommend using the Project Manager GUI or terminal, so please follow the instructions below.
 
 ## Option 2: using the Project Manger GUI:
-Start iPython, or if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython``, but otherwise it's the same.
+Start iPython, or if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython`` or ``python``, but otherwise it's the same.
 If you are using DeepLabCut on the cloud, you cannot use the GUIs and you need to first set DLClight=True. Please read more [here](https://github.com/MMathisLab/Docker4DeepLabCut2.0), and in our Protocol paper [here](https://www.nature.com/articles/s41596-019-0176-0).
 
 Open an ``ipython`` session, import the package, and launch by typing in the terminal:
-```
+```python
 ipython
 import deeplabcut
 deeplabcut.launch_dlc()
 ```
-Or, simply open the terminal and type: `python -m deeplabcut`. That's it! Follow the GUI for details
+Or, simply open the terminal and type:
+```python
+python -m deeplabcut
+```
+That's it! Follow the GUI for details
 
 ## Option 3: using the program terminal, Start iPython*:
 *please note, we provide a quick-guide of the commands at the bottom of this page.
@@ -77,7 +81,7 @@ Also, if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython``, b
 If you are using DeepLabCut on the cloud, you cannot use the GUIs and you need to first set DLClight=True. Please read more [here](https://github.com/MMathisLab/Docker4DeepLabCut2.0), and in our Protocol paper [here](https://www.nature.com/articles/s41596-019-0176-0).
 
 Open an ``ipython`` session and import the package by typing in the terminal:
-```
+```python
 ipython
 import deeplabcut
 ```
@@ -86,15 +90,17 @@ import deeplabcut
 
 ### Create a New Project:
 
+```python
+deeplabcut.create_new_project('ProjectName','YourName', ['/usr/FullPath/OfVideo1.avi','/usr/FullPath/OfVideo2.avi','/usr/FullPath/OfVideo1.avi'], copy_videos = True/False)
 ```
-deeplabcut.create_new_project(`Name of the project',`Name of the experimenter', [`Full path of video 1',`Full path of video2',`Full path of video3'], working_directory=`Full path of the working directory',copy_videos=True/False)
-```
+Tip: if you want to place the project folder somewhere please pass : ``working_directory = 'FullPathOftheworkingDirectory'``
+
 **maDeepLabCut**: As of 2.2 when you create a project also pass: ``multianimal=True``
 
 - Note, if you are a Ubuntu user the path should look like: ``['/home/username/yourFolder/video1.mp4']``; if you are a Windows user, it should look like: ``[r'C:\username\yourFolder\video1.mp4']``
 - Note, you can also put ``config_path = `` in front of the above line to create the path to the config.yaml that is used in the next step, i.e. ``config_path=deeplabcut.create_project(...)``)
     - If you do not, we recommend setting a variable so this can be easily used! Once you run this step, the conig_path is printed for you once you run this line, so set a variable for ease of use, i.e. something like:
-```
+```python
 config_path = '/thefulloutputpath/config.yaml'
 ```
  - just be mindful of the formatting for Windows vs. Linux, see below.
@@ -111,11 +117,11 @@ config_path = '/thefulloutputpath/config.yaml'
 (PLEASE see more details [here](functionDetails.md#b-configure-the-project))
 
 - set the config_path (LINUX):
-```
+```python
 config_path = '/home/computername/DeepLabCut/yourprojectname/config.yaml'
 ```
 - set the config_path (WINDOWS):
-```
+```python
 config_path = r'C:\home\computername\DeepLabCut\yourprojectname\config.yaml'
 ```
 
@@ -129,21 +135,21 @@ config_path = r'C:\home\computername\DeepLabCut\yourprojectname\config.yaml'
 
 ### Select Frames to Label:
 
-```
-deeplabcut.extract_frames(config_path,`automatic/manual',`uniform/kmeans', crop=True/False)
+```python
+deeplabcut.extract_frames(config_path, mode='automatic', algo='kmeans', crop = True/False)
 ```
 
-(more details [here](functionDetails.md#c-data-selection)) *update: as of 2.0.5 ``checkcropping=True`` is dropped; you now just the option to directly draw a rectangle over the image to crop before extraction (i.e. there no need to manually change in config.yaml then check).
+(more details [here](functionDetails.md#c-data-selection)) *update: as of 2.0.5 (spring 2019) ``checkcropping=True`` is dropped; you now just the option to directly draw a rectangle over the image to crop before extraction (i.e. there no need to manually change in config.yaml then check).
 
 ### Label Frames:
 
-```
+```python
 deeplabcut.label_frames(config_path)
 ```
 
 **maDeepLabCut**: As of 2.2 there is a new multi-animal labeling GUI: 
 
-```
+```python
 deeplabcut.label_frames(config_path, multianimal=True)
 ```
 
@@ -158,7 +164,7 @@ deeplabcut.label_frames(config_path, multianimal=True)
 
 ### Check Annotated Frames:
 
-```
+```python
 deeplabcut.check_labels(config_path)
 ```
 
@@ -166,24 +172,28 @@ deeplabcut.check_labels(config_path)
 
 ### Create Training Dataset:
 
+```python
+deeplabcut.create_training_dataset(config_path)
 ```
-deeplabcut.create_training_dataset(config_path,num_shuffles=1)
+or to [compare different neural networks](/wiki/What-neural-network-should-I-use%3F) use:
+```python
+deeplabcut.create_training_model_comparision(config_path, num_shuffles=1, net_types=['resnet_50'], augmenter_types=['default', 'imgaug'] )
 ```
 
 (more details [here](functionDetails.md#f-create-training-dataset))
 
 ### Train The Network:
 
-```
-deeplabcut.train_network(config_path,shuffle=1)
+```python
+deeplabcut.train_network(config_path)
 ```
 
 (more details [here](functionDetails.md#g-train-the-network))
 
 ### Evaluate the Trained Network:
 
-```
-deeplabcut.evaluate_network(config_path,Shuffles=[1], plotting=True)
+```python
+deeplabcut.evaluate_network(config_path, plotting = True)
 ```
 
 (more details [here](functionDetails.md#h-evaluate-the-trained-network))
@@ -191,32 +201,32 @@ deeplabcut.evaluate_network(config_path,Shuffles=[1], plotting=True)
 ### Video Analysis and Plotting Results:
 - Please note that **novel videos DO NOT need to be added to the config.yaml file**. You can simply have a folder elsewhere on your computer and pass the video folder (then it will analyze all videos of the specified type (i.e. ``videotype='.mp4'``), or pass the path to the **folder** or exact video(s) you wish to analyze:
 
-```
-deeplabcut.analyze_videos(config_path,[`/fullpath/project/videos/'], videotype='.mp4', save_as_csv=True)
+```python
+deeplabcut.analyze_videos(config_path,[`/fullpath/project/videos/'], videotype='.mp4', save_as_csv = True)
 ```
 Here are some tips for scaling up your analysis: https://github.com/AlexEMG/DeepLabCut/wiki/Batch-Processing-your-Analysis
 
 You can also filter the predicted bodyparts by:
-```
-deeplabcut.filterpredictions(config_path,[`/fullpath/project/videos/reachingvideo1.avi'], shuffle=1)
+```python
+deeplabcut.filterpredictions(config_path,['/fullpath/project/videos/reachingvideo1.avi'])
 ```
 Note, this creates a file with the ending filtered.h5 that you can use for further analysis. This filtering step has many parameters, so please see the full docstring by typing: ``deeplabcut.filterpredictions?``
 
 Create videos:
-```
-deeplabcut.create_labeled_video(config_path, [`/analysis/project/videos/reachingvideo1.avi',`/fullpath/project/videos/reachingvideo2.avi'],filtered=True)
+```python
+deeplabcut.create_labeled_video(config_path, [`/analysis/project/videos/reachingvideo1.avi','/fullpath/project/videos/reachingvideo2.avi'],filtered = True)
 ```
 Plot the outputs:
-```
-deeplabcut.plot_trajectories(config_path,[`/fullpath/project/videos/reachingvideo1.avi'],filtered=True)
+```python
+deeplabcut.plot_trajectories(config_path,['/fullpath/project/videos/reachingvideo1.avi'],filtered = True)
 ```
 
 (more details [here](functionDetails.md#i-video-analysis-and-plotting-results))
 
 ### [optional] Active Learning --> Network Refinement - extract outlier frames from a video:
 
-```
-deeplabcut.extract_outlier_frames(config_path,[`videofile_path'])
+```python
+deeplabcut.extract_outlier_frames(config_path,['full/videofile_path'])
 ```
 
 (more details [here](functionDetails.md#j-refinement-extract-outlier-frames))
@@ -224,7 +234,7 @@ deeplabcut.extract_outlier_frames(config_path,[`videofile_path'])
 ### [optional] Refinement of the labels with our GUI:
 (refinement and augmentation of the training dataset)
 
-```
+```python
 deeplabcut.refine_labels(config_path)
 ```
 
@@ -234,12 +244,17 @@ deeplabcut.refine_labels(config_path)
 <img src="http://www.people.fas.harvard.edu/~amathis/dlc/refinelabels.gif" width="90%">
 </p>
 
-When done editing the labels, merge:
+When done editing the labels, merge: 
+**PRO TIP:** if you addded new data, even without refining, i.e. you added and labeled frames from new videos,  also use merge before creating a new training data set!
 
-```
+```python
 deeplabcut.merge_datasets(config_path)
 ```
-Now, create a new training set and re-train (same steps as above)!
+Now, create a new training set and re-train (same steps as above)! i.e. 
+```python
+deeplabcut.create_training_dataset(config_path)
+deeplabcut.train_network(config_path)
+```
 
 (more details [here](functionDetails.md#k-refine-labels-augmentation-of-the-training-dataset))
 
@@ -264,12 +279,12 @@ help(deeplabcut.nameofthefunction)
 <img src= https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc5abe0d9297405a428522/1556896461304/howtouseDLC-01.png?format=1000w width="80%">
  </p>
 
-You can exit an environment and easily jump back into a project by simply:
+You can always exit an conda environment and easily jump back into a project by simply:
 
 Linux/MacOS formatting example:
 ```
 source activate yourdeeplabcutEnvName
-ipython
+ipython or pythonw
 import deeplabcut
 config_path ='/home/yourprojectfolder/config.yaml'
 ```
@@ -292,10 +307,10 @@ Open ipython in the terminal:
 ``import deeplabcut``
 
 Create a new project:
-``deeplabcut.create_new_project(‘project_name’,‘experimenter’,[‘path of video 1’,‘path of video2’,..])``
+``deeplabcut.create_new_project('project_name','experimenter’,['path of video 1','path of video2',..])``
 
 Set a config_path variable for ease of use:
-        `` config_path = ‘yourdirectory/project_name/config.yaml’ ``
+        `` config_path = 'yourdirectory/project_name/config.yaml' ``
 
 Extract frames:
 ``deeplabcut.extract_frames(config_path)``
@@ -316,14 +331,13 @@ Evaluate the trained network:
 ``deeplabcut.evaluate_network(config_path)``
 
  Video analysis:
-``deeplabcut.analyze_videos(config_path, [‘path of video 1’,‘path of video2’, ...])``
+``deeplabcut.analyze_videos(config_path, ['path of folder with videos'])``
 
 Plot results (trajectories):
-``deeplabcut.plot_trajectories(config_path, [‘path of video 1’,‘path of video2’,..])``
+``deeplabcut.plot_trajectories(config_path, ['path of folder with videos'])``
 
 Create a video:
-``deeplabcut.create_labeled_video(config_path, [‘path of video 1’,‘path of video2’,..])``
-
+``deeplabcut.create_labeled_video(config_path, ['path of folder with videos'])``
 
 
 Return to [readme](../README.md).
