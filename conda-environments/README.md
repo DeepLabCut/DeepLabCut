@@ -35,7 +35,7 @@ However, if you ever want to update your DLC, just run `pip install --upgrade de
 
 **Great, that's it!**
 
-Simply run ``ipython`` or ``pythonw`` (macOS only) to lauch the terminal, ``jupyter notebook`` to lauch a browser session, or ``ipython, import deeplabcut, deeplabcut.launch_dlc()`` to use our Project Manager GUI! **Many more details** [**here**](https://github.com/AlexEMG/DeepLabCut/blob/master/docs/UseOverviewGuide.md)!
+Simply run ``ipython`` or ``pythonw`` (**macOS only**) to lauch the terminal, ``jupyter notebook`` to lauch a browser session, or ``ipython/pythonw, import deeplabcut, deeplabcut.launch_dlc()`` to use our Project Manager GUI! **Many more details** [**here**](https://github.com/AlexEMG/DeepLabCut/blob/master/docs/UseOverviewGuide.md)!
 
 
 # Creating your own customized conda env (recommended route for Linux: Ubuntu, CentOS, Mint, etc.)
