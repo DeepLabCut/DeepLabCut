@@ -46,7 +46,7 @@ Some users might want to create their own env. Here is an example. In the termin
 
 (this would be for CPU-based tensorflow; for GPU support use `tensorflow-gpu=1.13.1`). 
 
-The only thing you then need to add to the env is wxPython, which is OS dependent.  
+The only thing you then need to add to the env is deeplabcut (`pip install deeplabcut`) and wxPython, which is OS dependent.  
 For Windows and MacOS, you just run `pip install -U wxPython` but for linux you need the specific wheel (https://wxpython.org/pages/downloads/index.html).
 
 # Using DLC: 
