@@ -79,6 +79,35 @@ def compute_mot_metrics(inference_cfg, data, bboxes_ground_truth):
     return acc, tracklets
 
 
+def new_tracker_test():
+    max_age = 3
+    min_hits = 1
+    all_jointnames = data['metadata']['all_joints_names']
+    numjoints = len(all_jointnames)
+
+    sort = trackingutils.SORT(numjoints, max_age, min_hits)
+
+    partaffinityfield_graph = data['metadata']['PAFgraph']
+    PAF = np.arange(len(partaffinityfield_graph))
+    partaffinityfield_graph = [partaffinityfield_graph[l] for l in PAF]
+    linkingpartaffinityfield_graph = partaffinityfield_graph
+    BPTS = iBPTS = range(numjoints)
+    imnames = [fn for fn in list(data) if fn != 'metadata']
+
+    tracklets = dict()
+    for i, imname in enumerate(tqdm(imnames[:10])):
+        animals = inferenceutils.assemble_individuals(inference_cfg, data[imname], numjoints, BPTS, iBPTS,
+                                                      PAF, partaffinityfield_graph, linkingpartaffinityfield_graph)
+        temp = [arr.reshape((-1, 3))[:, :2] for arr in animals]
+        ret = sort.track(temp)
+        trackingutils.fill_tracklets(tracklets, ret, animals, imname)
+    tracklets['header'] = pd.MultiIndex.from_product([[''], all_jointnames, ['x', 'y', 'likelihood']],
+                                                     names=['scorer', 'bodyparts', 'coords'])
+    with open('meh.pickle', 'wb') as file:
+        pickle.dump(tracklets, file)
+    return tracklets
+
+
 def compute_mot_metrics_bboxes(inference_cfg, bboxes, bboxes_ground_truth):
     if bboxes.shape != bboxes_ground_truth.shape:
         raise ValueError('Dimension mismatch. Check the inputs.')
@@ -112,10 +141,14 @@ def print_all_metrics(accumulators, all_params=None):
 # ground_truth_file = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/silversideschooling-Valentina-2019-07-14/videos/deeplc.menidia.school4.59rpm.S11.D.shortDLC_resnet50_silversideschoolingJul14shuffle0_30000tracks.h5'
 # full_data_file = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/silversideschooling-Valentina-2019-07-14/videos/deeplc.menidia.school4.59rpm.S11.D.shortDLC_resnet50_silversideschoolingJul14shuffle1_30000_full.pickle'
 config = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/config.yaml'
-manager = TrackletManager(config, 0, 0)
 config_inference = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/inference_cfg.yaml'
-ground_truth_file = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/videocompressed0DLC_resnet50_MultiMouseDec16shuffle2_20000tracks1.h5'
-full_data_file = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/videocompressed0DLC_resnet50_MultiMouseDec16shuffle1_50000_full.pickle'
+ground_truth_file = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/videocompressed3DLC_resnet50_MultiMouseDec16shuffle2_20000tracks1.h5'
+full_data_file = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/videocompressed3DLC_resnet50_MultiMouseDec16shuffle2_20000_full.pickle'
+# config = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/Marmoset-Mackenzie-2019-05-29/config.yaml'
+# config_inference = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/Marmoset-Mackenzie-2019-05-29/inference_cfg.yaml'
+# ground_truth_file = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/Marmoset-Mackenzie-2019-05-29/ultrashort_croppedDLC_resnet50_MarmosetMay29shuffle0_20000tracks.h5'
+# full_data_file = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/Marmoset-Mackenzie-2019-05-29/ultrashort_croppedDLC_resnet50_MarmosetMay29shuffle0_20000_full.pickle'
+
 inference_cfg = edict(deeplabcut.auxiliaryfunctions.read_plainconfig(config_inference))
 testing_cfg = edict(inference_cfg.copy())
 ground_truth = pd.read_hdf(ground_truth_file)
@@ -123,10 +156,11 @@ bboxes_ground_truth = reconstruct_all_bboxes(ground_truth, inference_cfg['boundi
 with open(full_data_file, 'rb') as file:
     data = pickle.load(file)
 
+manager = TrackletManager(config, 0, 0)
 accumulators = []
 accumulators_with_loader = []
 thresholds = np.linspace(0.1, 0.9, 5, endpoint=True)
-max_ages = [1, 5, 20, 50]
+max_ages = [1, 5, 20]
 min_hits = [1, 3, 5]
 combinations = list(product(thresholds, max_ages, min_hits))
 for threshold, max_age, min_hit in combinations:
@@ -136,9 +170,9 @@ for threshold, max_age, min_hit in combinations:
     acc, tracklets = compute_mot_metrics(testing_cfg, data, bboxes_ground_truth)
     accumulators.append(acc)
     # Evaluate the effect of the tracklet loader
-    manager._load_tracklets(tracklets)
+    manager._load_tracklets(tracklets, auto_fill=True)
     df = manager.format_data()
     bboxes_with_loader = reconstruct_all_bboxes(df, testing_cfg['boundingboxslack'], to_xywh=True)
     accumulators_with_loader.append(compute_mot_metrics_bboxes(testing_cfg, bboxes_with_loader, bboxes_ground_truth))
-print_all_metrics(accumulators, combinations)
-print_all_metrics(accumulators_with_loader, combinations)
+print_all_metrics(accumulators, combinations[:39])
+print_all_metrics(accumulators_with_loader, combinations[:38])

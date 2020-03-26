@@ -30,6 +30,8 @@ from numba import jit
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 from filterpy.kalman import KalmanFilter
+from filterpy.common import kinematic_kf
+
 
 @jit
 def iou(bb_test,bb_gt):
@@ -134,6 +136,134 @@ class KalmanBoxTracker(object):
         Returns the current bounding box estimate.
         """
         return convert_x_to_bbox(self.kf.x)
+
+
+class SkeletonTracker:
+    n_trackers = 0
+
+    def __init__(self, n_bodyparts):
+        # TODO Try UKF handling all skeletons at once
+        self.kf = kinematic_kf(n_bodyparts * 2, order=1, dim_z=n_bodyparts, order_by_dim=False)
+        self.kf.Q[self.kf.dim_z:, self.kf.dim_z:] *= 0.001
+        self.kf.R[self.kf.dim_z:, self.kf.dim_z:] *= 10
+        self.kf.P[self.kf.dim_z:, self.kf.dim_z:] *= 1000
+        self.id = SkeletonTracker.n_trackers
+        SkeletonTracker.n_trackers += 1
+        self.time_since_update = 0
+        self.age = 0
+        self.time_since_update = 0
+        self.hits = 0
+        self.hit_streak = 0
+
+    def warm_up(self, pose):
+        self.kf.x[:self.kf.dim_z] = pose.reshape(-1, 1)
+
+    def update(self, pose):
+        self.kf.update(pose.reshape(-1, 1))
+        self.time_since_update = 0
+        self.hits += 1
+        self.hit_streak += 1
+
+    def predict(self):
+        self.kf.predict()
+        self.age += 1
+        if self.time_since_update > 0:
+            self.hit_streak = 0
+        self.time_since_update += 1
+        return self.state
+
+    @property
+    def state(self):
+        return self.kf.x.squeeze()[:self.kf.dim_z]
+
+
+class SORT:
+    def __init__(self, n_bodyparts, max_age=20, min_hits=3):
+        self.n_bodyparts = n_bodyparts
+        self.max_age = max_age
+        self.min_hits = min_hits
+        self.trackers = []
+        self.frame_count = 0
+
+    @staticmethod
+    def weighted_hausdorff(x, y):
+        # Modified from scipy source code:
+        # - to restrict its use to 2D
+        # - to get rid of shuffling (since arrays are only (nbodyparts * 3) element long)
+        # TODO - factor in keypoint confidence (and weight by # of observations??)
+        cmax = 0
+        for i in range(x.shape[0]):
+            no_break_occurred = True
+            cmin = np.inf
+            for j in range(y.shape[0]):
+                d = (x[i, 0] - y[j, 0]) ** 2 + (x[i, 1] - y[j, 1]) ** 2
+                if d < cmax:
+                    no_break_occurred = False
+                    break
+                if d < cmin:
+                    cmin = d
+            if cmin != np.inf and cmin > cmax and no_break_occurred:
+                cmax = cmin
+        return np.sqrt(cmax)
+
+    def calc_pairwise_hausdorff_dist(self, poses, poses_ref):
+        mat = np.zeros((len(poses), len(poses_ref)))
+        for i, pose in enumerate(poses):
+            for j, pose_ref in enumerate(poses_ref):
+                mat[i, j] = self.weighted_hausdorff(pose, pose_ref)
+        return mat
+
+    def track(self, poses):
+        self.frame_count += 1
+        if not len(self.trackers):
+            for pose in poses:
+                tracker = SkeletonTracker(self.n_bodyparts)
+                tracker.warm_up(pose)
+                self.trackers.append(tracker)
+
+        poses_ref = []
+        to_delete = []
+        for i, tracker in enumerate(self.trackers):
+            pose_ref = tracker.predict()
+            poses_ref.append(pose_ref.reshape((-1, 2)))
+            if np.isnan(pose_ref).any():
+                to_delete.append(i)
+        # for ind in reversed(to_delete):
+        #     self.trackers.pop(ind)
+
+        mat = self.calc_pairwise_hausdorff_dist(poses, poses_ref)
+        row_indices, col_indices = linear_sum_assignment(mat)
+
+        unmatched_poses = [p for p, _ in enumerate(poses) if p not in row_indices]
+        unmatched_trackers = [t for t, _ in enumerate(poses_ref) if t not in col_indices]
+        matches = np.c_[row_indices, col_indices]
+
+        animalindex = []
+        for t, tracker in enumerate(self.trackers):
+            if t not in unmatched_trackers:
+                d = matches[np.where(matches[:, 1] == t)[0], 0]
+                animalindex.append(d[0])
+                tracker.update(poses[d[0]].flatten())
+            else:
+                animalindex.append('nix')
+
+        for i in unmatched_poses:
+            tracker = SkeletonTracker(self.n_bodyparts)
+            tracker.warm_up(poses[i])
+            self.trackers.append(tracker)
+            animalindex.append(i)
+
+        ret = []
+        i = len(self.trackers)
+        for tracker in reversed(self.trackers):
+            # if tracker.time_since_update > self.max_age:
+            #     self.trackers.pop()
+            #     continue
+            d = tracker.state
+            if tracker.time_since_update < 1 and (tracker.hit_streak >= self.min_hits or self.frame_count <= self.min_hits):
+                ret.append(np.concatenate((d, [tracker.id, int(animalindex[i-1])])))
+            i -= 1
+        return ret
 
 
 def associate_detections_to_trackers(detections,trackers,iou_threshold):
@@ -247,7 +377,7 @@ class Sort:
 
 def fill_tracklets(tracklets, trackers, animals, imname):
     for content in trackers:
-        tracklet_id, pred_id = content[4:].astype(np.int)
+        tracklet_id, pred_id = content[-2:].astype(np.int)
         if tracklet_id not in tracklets:
             tracklets[tracklet_id] = {}
         tracklets[tracklet_id][imname] = animals[pred_id]
