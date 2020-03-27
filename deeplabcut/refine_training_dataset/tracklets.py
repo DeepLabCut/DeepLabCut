@@ -170,7 +170,7 @@ class TrackletManager:
         self.swapping_pairs = []
         self.swapping_bodyparts = []
 
-    def _load_tracklets(self, tracklets):
+    def _load_tracklets(self, tracklets, auto_fill):
         header = tracklets.pop('header')
         self.scorer = header.get_level_values('scorer').unique().to_list()
         frames = sorted(set([frame for tracklet in tracklets.values() for frame in tracklet]))
@@ -185,7 +185,7 @@ class TrackletManager:
 
         # Store tracklets, such that we later manipulate long chains
         # rather than data of individual frames, yielding greater continuity.
-        temp = dict()
+        tracklets_unsorted = dict()
         for num_tracklet in sorted(tracklets):
             to_fill = np.full((self.nframes, len(bodyparts)), np.nan)
             for frame_name, data in tracklets[num_tracklet].items():
@@ -199,76 +199,85 @@ class TrackletManager:
                     to_fill = to_fill[:, mask_single]
                 else:
                     to_fill = to_fill[:, mask_multi]
-                temp[num_tracklet] = to_fill, completeness, is_single
-        tracklets_sorted = sorted(temp.items(), key=lambda kv: kv[1][1])
+                tracklets_unsorted[num_tracklet] = to_fill, completeness, is_single
+        tracklets_sorted = sorted(tracklets_unsorted.items(), key=lambda kv: kv[1][1])
 
-        # Recursively fill the data containers
-        tracklets_multi = np.full((self.nindividuals, self.nframes, len(bodyparts_multi) * 3), np.nan)
-        tracklets_single = np.full((self.nframes, len(bodyparts_single) * 3), np.nan)
-        while tracklets_sorted:
-            _, (data, _, is_single) = tracklets_sorted.pop()
-            has_data = ~np.isnan(data)
-            if is_single:
-                # Where slots are available, copy the data over
-                is_free = np.isnan(tracklets_single)
-                mask = has_data & is_free
-                tracklets_single[mask] = data[mask]
-                # If about to overwrite data, keep tracklets with highest confidence
-                overwrite = has_data & ~is_free
-                if overwrite.any():
-                    rows, cols = np.nonzero(overwrite)
-                    more_confident = (data[overwrite] > tracklets_single[overwrite])[2::3]
-                    inds = np.flatnonzero(more_confident)
-                    for ind in inds:
-                        sl = slice(ind * 3, ind * 3 + 3)
-                        inds = rows[sl], cols[sl]
-                        tracklets_single[inds] = data[inds]
-            else:
-                is_free = np.isnan(tracklets_multi)
-                overwrite = has_data & ~is_free
-                overwrite_risk = np.any(overwrite, axis=(1, 2))
-                if overwrite_risk.all():
-                    # Squeeze some data into empty slots
+        if auto_fill:
+            # Recursively fill the data containers
+            tracklets_multi = np.full((self.nindividuals, self.nframes, len(bodyparts_multi) * 3), np.nan)
+            tracklets_single = np.full((self.nframes, len(bodyparts_single) * 3), np.nan)
+            while tracklets_sorted:
+                _, (data, _, is_single) = tracklets_sorted.pop()
+                has_data = ~np.isnan(data)
+                if is_single:
+                    # Where slots are available, copy the data over
+                    is_free = np.isnan(tracklets_single)
                     mask = has_data & is_free
-                    space_left = mask.any(axis=(1, 2))
-                    for ind in np.flatnonzero(space_left):
-                        current_mask = mask[ind]
-                        tracklets_multi[ind, current_mask] = data[current_mask]
-                        has_data[current_mask] = False
-                    # For the remaining data, overwrite where we are least confident
-                    remaining = data[has_data].reshape((-1, 3))
-                    mask3d = np.broadcast_to(has_data, (self.nindividuals,) + has_data.shape)
-                    temp = tracklets_multi[mask3d].reshape((self.nindividuals, -1, 3))
-                    diff = remaining - temp
-                    largest_diff = np.argmax(diff[:, :, 2], axis=0)
-                    prob = diff[largest_diff, range(len(largest_diff)), 2]
-                    better = np.flatnonzero(prob > 0)
-                    inds = largest_diff[better]
-                    rows, cols = np.nonzero(has_data)
-                    for i, j in zip(inds, better):
-                        sl = slice(j * 3, j * 3 + 3)
-                        tracklets_multi[i, rows[sl], cols[sl]] = remaining.flat[sl]
+                    tracklets_single[mask] = data[mask]
+                    # If about to overwrite data, keep tracklets with highest confidence
+                    overwrite = has_data & ~is_free
+                    if overwrite.any():
+                        rows, cols = np.nonzero(overwrite)
+                        more_confident = (data[overwrite] > tracklets_single[overwrite])[2::3]
+                        inds = np.flatnonzero(more_confident)
+                        for ind in inds:
+                            sl = slice(ind * 3, ind * 3 + 3)
+                            inds = rows[sl], cols[sl]
+                            tracklets_single[inds] = data[inds]
                 else:
-                    tracklets_multi[np.argmin(overwrite_risk), has_data] = data[has_data]
+                    is_free = np.isnan(tracklets_multi)
+                    overwrite = has_data & ~is_free
+                    overwrite_risk = np.any(overwrite, axis=(1, 2))
+                    if overwrite_risk.all():
+                        # Squeeze some data into empty slots
+                        mask = has_data & is_free
+                        space_left = mask.any(axis=(1, 2))
+                        for ind in np.flatnonzero(space_left):
+                            current_mask = mask[ind]
+                            tracklets_multi[ind, current_mask] = data[current_mask]
+                            has_data[current_mask] = False
+                        # For the remaining data, overwrite where we are least confident
+                        remaining = data[has_data].reshape((-1, 3))
+                        mask3d = np.broadcast_to(has_data, (self.nindividuals,) + has_data.shape)
+                        temp = tracklets_multi[mask3d].reshape((self.nindividuals, -1, 3))
+                        diff = remaining - temp
+                        largest_diff = np.argmax(diff[:, :, 2], axis=0)
+                        prob = diff[largest_diff, range(len(largest_diff)), 2]
+                        better = np.flatnonzero(prob > 0)
+                        inds = largest_diff[better]
+                        rows, cols = np.nonzero(has_data)
+                        for i, j in zip(inds, better):
+                            sl = slice(j * 3, j * 3 + 3)
+                            tracklets_multi[i, rows[sl], cols[sl]] = remaining.flat[sl]
+                    else:
+                        tracklets_multi[np.argmin(overwrite_risk), has_data] = data[has_data]
 
-        multi = tracklets_multi.swapaxes(0, 1).reshape((self.nframes, -1))
-        self.data = np.c_[multi, tracklets_single].reshape((self.nframes, -1, 3)).swapaxes(0, 1)
-        self.xy = self.data[:, :, :2]
-        self.prob = self.data[:, :, 2]
+            multi = tracklets_multi.swapaxes(0, 1).reshape((self.nframes, -1))
+            self.data = np.c_[multi, tracklets_single].reshape((self.nframes, -1, 3)).swapaxes(0, 1)
+            self.xy = self.data[:, :, :2]
+            self.prob = self.data[:, :, 2]
 
-        # Map a tracklet # to the animal ID it belongs to or the bodypart # it corresponds to.
-        self.individuals = self.cfg['individuals'] + (['single'] if len(self.cfg['uniquebodyparts']) else [])
-        self.tracklet2id = [i for i in range(0, self.nindividuals) for _ in bodyparts_multi] + \
-                           [self.nindividuals] * len(bodyparts_single)
-        bps = bodyparts_multi + bodyparts_single
-        map_ = dict(zip(bps, range(len(bps))))
-        self.tracklet2bp = [map_[bp] for bp in self.bodyparts[::3]]
+            # Map a tracklet # to the animal ID it belongs to or the bodypart # it corresponds to.
+            self.individuals = self.cfg['individuals'] + (['single'] if len(self.cfg['uniquebodyparts']) else [])
+            self.tracklet2id = [i for i in range(0, self.nindividuals) for _ in bodyparts_multi] + \
+                               [self.nindividuals] * len(bodyparts_single)
+            bps = bodyparts_multi + bodyparts_single
+            map_ = dict(zip(bps, range(len(bps))))
+            self.tracklet2bp = [map_[bp] for bp in self.bodyparts[::3]]
+        else:
+            tracklets_raw = np.full((len(tracklets_sorted), self.nframes, len(bodyparts)), np.nan)
+            for n, data in enumerate(tracklets_sorted[::-1]):
+                tracklets_raw[n] = data[1][0]
+            self.data = tracklets_raw.swapaxes(0, 1).reshape((self.nframes, -1, 3)).swapaxes(0, 1)
+            self.xy = self.data[:, :, :2]
+            self.prob = self.data[:, :, 2]
+            self.tracklet2id = self.tracklet2bp = [0] * self.data.shape[0]
 
-    def load_tracklets_from_pickle(self, filename):
+    def load_tracklets_from_pickle(self, filename, auto_fill=True):
         self.filename = filename
         with open(filename, 'rb') as file:
             tracklets = pickle.load(file)
-        self._load_tracklets(tracklets)
+        self._load_tracklets(tracklets, auto_fill)
 
     def load_tracklets_from_hdf(self, filename):
         self.filename = filename
@@ -357,7 +366,7 @@ class TrackletManager:
         return pd.DataFrame(self.flatten_data(), columns=columns, index=self.times)
 
     def save(self, output_name='', *args):
-        df = self.format_output()
+        df = self.format_data()
         if not output_name:
             output_name = self.filename.replace('pickle', 'h5')
         df.to_hdf(output_name, 'df_with_missing', format='table', mode='w')
@@ -366,7 +375,7 @@ class TrackletManager:
 class TrackletVisualizer:
     def __init__(self, manager, videoname, trail_len=50):
         self.manager = manager
-        self.cmap = plt.cm.get_cmap(manager.cfg['colormap'], len(manager.individuals))
+        self.cmap = plt.cm.get_cmap(manager.cfg['colormap'], len(set(manager.tracklet2id)))
         self.video = cv2.VideoCapture(videoname)
         if not self.video.isOpened():
             raise IOError('Video could not be opened.')
@@ -521,6 +530,8 @@ class TrackletVisualizer:
                 self.slider.set_val(int(self.slider.val))
 
     def invert(self):
+        if not self.picked_pair and len(self.picked) == 2:
+            self.picked_pair = self.picked
         if self.picked_pair:
             i = int(self.slider.val)
             self.manager.swap_tracklets(*self.picked_pair, [i])
