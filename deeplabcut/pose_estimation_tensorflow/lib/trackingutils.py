@@ -142,7 +142,7 @@ class SkeletonTracker:
     n_trackers = 0
 
     def __init__(self, n_bodyparts):
-        # TODO Try UKF handling all skeletons at once
+        # TODO Try particle filter (since we already have the keypoints)
         self.kf = kinematic_kf(n_bodyparts * 2, order=1, dim_z=n_bodyparts, order_by_dim=False)
         self.kf.Q[self.kf.dim_z:, self.kf.dim_z:] *= 0.001
         self.kf.R[self.kf.dim_z:, self.kf.dim_z:] *= 10
@@ -151,18 +151,17 @@ class SkeletonTracker:
         SkeletonTracker.n_trackers += 1
         self.time_since_update = 0
         self.age = 0
-        self.time_since_update = 0
         self.hits = 0
         self.hit_streak = 0
 
-    def warm_up(self, pose):
-        self.kf.x[:self.kf.dim_z] = pose.reshape(-1, 1)
-
     def update(self, pose):
-        self.kf.update(pose.reshape(-1, 1))
-        self.time_since_update = 0
-        self.hits += 1
-        self.hit_streak += 1
+        if np.isnan(pose).any():
+            self.kf.update(None)
+        else:
+            self.kf.update(pose.reshape(-1, 1))
+            self.time_since_update = 0
+            self.hits += 1
+            self.hit_streak += 1
 
     def predict(self):
         self.kf.predict()
@@ -175,6 +174,10 @@ class SkeletonTracker:
     @property
     def state(self):
         return self.kf.x.squeeze()[:self.kf.dim_z]
+
+    @state.setter
+    def state(self, pose):
+        self.kf.x[:self.kf.dim_z] = pose.reshape(-1, 1)
 
 
 class SORT:
@@ -215,21 +218,17 @@ class SORT:
 
     def track(self, poses):
         self.frame_count += 1
+
         if not len(self.trackers):
             for pose in poses:
                 tracker = SkeletonTracker(self.n_bodyparts)
-                tracker.warm_up(pose)
+                tracker.state = pose
                 self.trackers.append(tracker)
 
         poses_ref = []
-        to_delete = []
         for i, tracker in enumerate(self.trackers):
             pose_ref = tracker.predict()
             poses_ref.append(pose_ref.reshape((-1, 2)))
-            if np.isnan(pose_ref).any():
-                to_delete.append(i)
-        # for ind in reversed(to_delete):
-        #     self.trackers.pop(ind)
 
         mat = self.calc_pairwise_hausdorff_dist(poses, poses_ref)
         row_indices, col_indices = linear_sum_assignment(mat)
@@ -241,29 +240,29 @@ class SORT:
         animalindex = []
         for t, tracker in enumerate(self.trackers):
             if t not in unmatched_trackers:
-                d = matches[np.where(matches[:, 1] == t)[0], 0]
-                animalindex.append(d[0])
-                tracker.update(poses[d[0]].flatten())
+                ind = matches[matches[:, 1] == t, 0][0]
+                animalindex.append(ind)
+                tracker.update(poses[ind].flatten())
             else:
                 animalindex.append('nix')
 
         for i in unmatched_poses:
             tracker = SkeletonTracker(self.n_bodyparts)
-            tracker.warm_up(poses[i])
+            tracker.state = poses[i]
             self.trackers.append(tracker)
             animalindex.append(i)
 
-        ret = []
+        states = []
         i = len(self.trackers)
         for tracker in reversed(self.trackers):
-            # if tracker.time_since_update > self.max_age:
-            #     self.trackers.pop()
-            #     continue
-            d = tracker.state
-            if tracker.time_since_update < 1 and (tracker.hit_streak >= self.min_hits or self.frame_count <= self.min_hits):
-                ret.append(np.concatenate((d, [tracker.id, int(animalindex[i-1])])))
             i -= 1
-        return ret
+            if tracker.time_since_update > self.max_age:
+                self.trackers.pop()
+                continue
+            if (tracker.time_since_update < 1 and
+                    (tracker.hit_streak >= self.min_hits or self.frame_count <= self.min_hits)):
+                states.append(np.r_[tracker.state, [tracker.id, int(animalindex[i])]])
+        return np.stack(states)
 
 
 def associate_detections_to_trackers(detections,trackers,iou_threshold):
