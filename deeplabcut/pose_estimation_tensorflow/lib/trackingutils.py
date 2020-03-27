@@ -172,6 +172,10 @@ class SkeletonTracker:
         return self.state
 
     @property
+    def empty_state(self):
+        return np.full(self.kf.dim_z, np.nan)
+
+    @property
     def state(self):
         return self.kf.x.squeeze()[:self.kf.dim_z]
 
@@ -261,7 +265,10 @@ class SORT:
                 continue
             if (tracker.time_since_update < 1 and
                     (tracker.hit_streak >= self.min_hits or self.frame_count <= self.min_hits)):
-                states.append(np.r_[tracker.state, [tracker.id, int(animalindex[i])]])
+                state = tracker.state
+            else:
+                state = tracker.empty_state
+            states.append(np.r_[state, [tracker.id, int(animalindex[i])]])
         return np.stack(states)
 
 
