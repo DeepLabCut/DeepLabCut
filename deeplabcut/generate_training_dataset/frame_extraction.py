@@ -138,7 +138,7 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,userfeedback
                     cap=cv2.VideoCapture(video)
                     fps = cap.get(5) #https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
                     if fps == 0:
-                        warn('Skipping %s\nIt has corrupt metadata, appears to be 0 fps' % video)
+                        print('Skipping %s\nIt has corrupt metadata, appears to be 0 fps' % video)
                         continue
                     nframes = int(cap.get(7))
                     duration=nframes*1./fps
@@ -147,7 +147,7 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,userfeedback
                     clip = VideoFileClip(video)
                     fps=clip.fps
                     if fps == 0:
-                        warn('Skipping %s\nIt has corrupt metadata, appears to be 0 fps' % video)
+                        print('Skipping %s\nIt has corrupt metadata, appears to be 0 fps' % video)
                         continue
                     duration=clip.duration
                     nframes=int(np.ceil(clip.duration*1./fps))
