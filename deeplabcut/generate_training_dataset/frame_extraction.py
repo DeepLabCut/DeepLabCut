@@ -86,7 +86,6 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,userfeedback
     import sys
     import numpy as np
     from pathlib import Path
-    from warnings import warn
     from skimage import io
     from skimage.util import img_as_ubyte
     import matplotlib.pyplot as plt
