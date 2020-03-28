@@ -5,8 +5,8 @@ import deeplabcut
 
 path_config_file='/media/alex/dropboxdisk/Dropbox/InterestingCode/social_datasets/croppedNov18/MultiMouse-Daniel-2019-12-16/config.yaml'
 videopath='/media/alex/dropboxdisk/Dropbox/InterestingCode/social_datasets/croppedNov18/MultiMouse-Daniel-2019-12-16/videos'
-shuffle=1
-
+shuffle=2
+videotype='.mp4'
 '''
 print("Plot labels...")
 #deeplabcut.check_labels(path_config_file)
@@ -51,4 +51,8 @@ print("Starting inference for", shuffle)
 deeplabcut.analyze_videos(path_config_file,[videopath],shuffle=shuffle,videotype='.avi')
 '''
 
-deeplabcut.convert_detections2tracklets(path_config_file,[videopath],videotype='.mp4')
+videopath='/media/alex/dropboxdisk/Dropbox/InterestingCode/social_datasets/croppedNov18/MultiMouse-Daniel-2019-12-16/vid1'
+#deeplabcut.convert_detections2tracklets(path_config_file,[videopath],videotype='.mp4')
+
+deeplabcut.plot_trajectories(path_config_file,[videopath],shuffle=shuffle,videotype=videotype)
+deeplabcut.create_labeled_video(path_config_file,[videopath],shuffle=shuffle,videotype=videotype,save_frames=False)
