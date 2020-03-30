@@ -7,7 +7,8 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 
-Hao Wu, hwu01@g.harvard.edu contributed the original OpenCV class!
+Hao Wu, hwu01@g.harvard.edu contributed the original OpenCV class. Thanks.
+from deeplabcut.utils.video_processor import VideoProcessorCV as vp
 You can find the directory for your ffmpeg bindings by: "find / | grep ffmpeg" and then setting it.
 """
 
@@ -479,6 +480,7 @@ def create_video_with_all_detections(config, videoname, full_pickle):
     cfg = auxiliaryfunctions.read_config(config)
     with open(full_pickle, 'rb') as file:
         data = pickle.load(file)
+
     header = data.pop('metadata')
     all_jointnames = header['all_joints_names']
     numjoints = len(all_jointnames)
@@ -488,11 +490,14 @@ def create_video_with_all_detections(config, videoname, full_pickle):
     colorclass = plt.cm.ScalarMappable(cmap=cfg['colormap'])
     C = colorclass.to_rgba(np.linspace(0, 1, numjoints))
     colors = (C[:, :3] * 255).astype(np.uint8)
+
     pcutoff = cfg['pcutoff']
     dotsize = cfg['dotsize']
+
     outputname = '{}_full.mp4'.format(os.path.splitext(videoname)[0])
     clip = vp(fname=videoname, sname=outputname, codec='mp4v')
     ny, nx = clip.height(), clip.width()
+
     for n in trange(clip.nframes):
         frame = clip.load_frame()
         try:
@@ -506,7 +511,11 @@ def create_video_with_all_detections(config, videoname, full_pickle):
                         frame[rr, cc] = color
         except ValueError:  # No data stored for that particular frame
             pass
-        clip.save_frame(frame)
+        try:
+            clip.save_frame(frame)
+        except:
+            print(n,"no clue why messed up!")
+            pass
     clip.close()
 
 
