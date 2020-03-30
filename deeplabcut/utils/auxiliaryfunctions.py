@@ -245,18 +245,24 @@ def write_pickle(filename,data):
         pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 def Getlistofvideos(videos,videotype):
-    from random import sample
+    ''' Returns list of videos of videotype "videotype" in
+    folder videos or for list of videos. '''
     #checks if input is a directory
-    if [os.path.isdir(i) for i in videos] == [True]:#os.path.isdir(video)==True:
+    if [os.path.isdir(i) for i in videos] == [True]:
         """
-        Analyzes all the videos in the directory.
+        Returns all the videos in the directory.
         """
+        start_path=os.getcwd()
 
-        print("Analyzing all the videos in the directory")
+        from random import sample
+        print("Analyzing all the videos in the directory...")
         videofolder= videos[0]
+
         os.chdir(videofolder)
         videolist=[fn for fn in os.listdir(os.curdir) if os.path.isfile(fn) and fn.endswith(videotype) and 'labeled' not in fn] #exclude labeled-videos!
+
         Videos = sample(videolist,len(videolist)) # this is useful so multiple nets can be used to analzye simultanously
+        os.chdir(str(start_path))
     else:
         if isinstance(videos,str):
             if os.path.isfile(videos): # #or just one direct path!
