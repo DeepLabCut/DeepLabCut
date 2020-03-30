@@ -457,6 +457,59 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
     os.chdir(start_path)
 
 
+def create_video_with_all_detections(config, videoname, full_pickle):
+    """
+    Create a video labeled with all the detections stored in a '*_full.pickle' file.
+
+    Parameters
+    ----------
+    config : str
+        Absolute path to the config.yaml file
+
+    videoname : str
+        Absolute path to the raw video
+
+    full_pickle : str
+        Absolute path
+    """
+    from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import convertdetectiondict2listoflist
+    import pickle
+    import re
+
+    cfg = auxiliaryfunctions.read_config(config)
+    with open(full_pickle, 'rb') as file:
+        data = pickle.load(file)
+    header = data.pop('metadata')
+    all_jointnames = header['all_joints_names']
+    numjoints = len(all_jointnames)
+    bpts = range(numjoints)
+    frame_names = list(data)
+    frames = [int(re.findall(r'\d+', name)[0]) for name in frame_names]
+    colorclass = plt.cm.ScalarMappable(cmap=cfg['colormap'])
+    C = colorclass.to_rgba(np.linspace(0, 1, numjoints))
+    colors = (C[:, :3] * 255).astype(np.uint8)
+    pcutoff = cfg['pcutoff']
+    dotsize = cfg['dotsize']
+    outputname = '{}_full.mp4'.format(os.path.splitext(videoname)[0])
+    clip = vp(fname=videoname, sname=outputname, codec='mp4v')
+    ny, nx = clip.height(), clip.width()
+    for n in trange(clip.nframes):
+        frame = clip.load_frame()
+        try:
+            ind = frames.index(n)
+            dets = convertdetectiondict2listoflist(data[frame_names[ind]], bpts)
+            for i, det in enumerate(dets):
+                color = colors[i]
+                for x, y, p, _ in det:
+                    if p > pcutoff:
+                        rr, cc = circle(y, x, dotsize, shape=(ny, nx))
+                        frame[rr, cc] = color
+        except ValueError:  # No data stored for that particular frame
+            pass
+        clip.save_frame(frame)
+    clip.close()
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('config')
