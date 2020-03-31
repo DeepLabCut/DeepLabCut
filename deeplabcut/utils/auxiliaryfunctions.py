@@ -351,13 +351,15 @@ def GetEvaluationFolder(trainFraction,shuffle,cfg,modelprefix=''):
 
 def IntersectionofBodyPartsandOnesGivenbyUser(cfg,comparisonbodyparts):
     ''' Returns all body parts when comparisonbodyparts=='all', otherwise all bpts that are in the intersection of comparisonbodyparts and the actual bodyparts '''
-    allpbts = cfg['bodyparts']
-    if comparisonbodyparts=="all":
-        return allpbts
+    allbpts = cfg['bodyparts']
+    if 'MULTI' in allbpts:
+        allbpts = cfg['uniquebodyparts'] + cfg['multianimalbodyparts']
+    if comparisonbodyparts == "all":
+        return allbpts
     else: #take only items in list that are actually bodyparts...
         cpbpts=[]
         for bp in comparisonbodyparts:
-            if bp in allpbts:
+            if bp in allbpts:
                 cpbpts.append(bp)
         return cpbpts
 
