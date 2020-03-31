@@ -252,8 +252,6 @@ def Getlistofvideos(videos,videotype):
         """
         Returns all the videos in the directory.
         """
-        start_path=os.getcwd()
-
         from random import sample
         print("Analyzing all the videos in the directory...")
         videofolder= videos[0]
@@ -262,7 +260,7 @@ def Getlistofvideos(videos,videotype):
         videolist=[fn for fn in os.listdir(os.curdir) if os.path.isfile(fn) and fn.endswith(videotype) and 'labeled' not in fn] #exclude labeled-videos!
 
         Videos = sample(videolist,len(videolist)) # this is useful so multiple nets can be used to analzye simultanously
-        os.chdir(str(start_path))
+
     else:
         if isinstance(videos,str):
             if os.path.isfile(videos): # #or just one direct path!

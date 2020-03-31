@@ -458,7 +458,7 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
     os.chdir(start_path)
 
 
-def create_video_with_all_detections(config, videoname, full_pickle):
+def create_video_with_all_detections(config, videoname, full_pickle,destfolder=None):
     """
     Create a video labeled with all the detections stored in a '*_full.pickle' file.
 
@@ -494,11 +494,16 @@ def create_video_with_all_detections(config, videoname, full_pickle):
     pcutoff = cfg['pcutoff']
     dotsize = cfg['dotsize']
 
-    outputname = '{}_full.mp4'.format(os.path.splitext(videoname)[0])
+    if destfolder is None:
+        outputname = '{}_full.mp4'.format(os.path.splitext(videoname)[0])
+    else:
+        outputname = os.path.join(destfolder,str(Path(videoname).stem)+'_full.mp4')
+
     clip = vp(fname=videoname, sname=outputname, codec='mp4v')
     ny, nx = clip.height(), clip.width()
 
     for n in trange(clip.nframes):
+
         frame = clip.load_frame()
         try:
             ind = frames.index(n)
@@ -510,6 +515,7 @@ def create_video_with_all_detections(config, videoname, full_pickle):
                         rr, cc = circle(y, x, dotsize, shape=(ny, nx))
                         frame[rr, cc] = color
         except ValueError:  # No data stored for that particular frame
+            print(n,'no data')
             pass
         try:
             clip.save_frame(frame)
