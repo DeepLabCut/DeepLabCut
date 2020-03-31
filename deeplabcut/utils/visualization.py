@@ -221,7 +221,7 @@ def prepare_figure_axes(width, height, scale=1, dpi=100):
     fig = plt.figure(frameon=False, figsize=(width * scale / dpi, height * scale / dpi))
     ax = fig.add_subplot(111)
     ax.axis('off')
-    ax.xlim(0, width)
-    ax.ylim(0, height)
+    ax.set_xlim(0, width)
+    ax.set_ylim(0, height)
     ax.invert_yaxis()
     return fig, ax
