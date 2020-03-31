@@ -121,6 +121,8 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,userfeedback
             import cv2
         else:
             from moviepy.editor import VideoFileClip
+
+        has_failed = []
         for vindex,video in enumerate(videos):
             #plt.close("all")
             global coords
@@ -220,8 +222,13 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,userfeedback
                 else:
                     print("Please implement this method yourself and send us a pull request! Otherwise, choose 'uniform' or 'kmeans'.")
                     frames2pick=[]
+
+                if not len(frames2pick):
+                    print('Frame selection failed...')
+                    return
                 
                 output_path = Path(config).parents[0] / 'labeled-data' / Path(video).stem
+                is_valid = []
                 if opencv:
                     for index in frames2pick:
                             cap.set(1,index) #extract a particular frame
@@ -233,8 +240,10 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,userfeedback
                                     io.imsave(img_name,image[int(coords[2]):int(coords[3]),int(coords[0]):int(coords[1]),:]) #y1 = int(coords[2]),y2 = int(coords[3]),x1 = int(coords[0]), x2 = int(coords[1]
                                 else:
                                     io.imsave(img_name,image)
+                                is_valid.append(True)
                             else:
                                 print("Frame", index, " not found!")
+                                is_valid.append(False)
                     cap.release()
                 else:
                     for index in frames2pick:
@@ -244,18 +253,32 @@ def extract_frames(config,mode='automatic',algo='kmeans',crop=False,userfeedback
                             io.imsave(img_name,image)
                             if np.var(image)==0: #constant image
                                 print("Seems like black/constant images are extracted from your video. Perhaps consider using opencv under the hood, by setting: opencv=True")
-                                
+                            is_valid.append(True)
                         except FileNotFoundError:
                             print("Frame # ", index, " does not exist.")
-                    
-                    #close video. 
+                            is_valid.append(False)
                     clip.close()
                     del clip
+
+                if not any(is_valid):
+                    has_failed.append(True)
+                else:
+                    has_failed.append(False)
+
+        if all(has_failed):
+            print('Frame extraction failed. Video files must be corrupted.')
+            return
+        elif any(has_failed):
+            print('Although most frames were extracted, some were invalid.')
+        else:
+            print("Frames were successfully extracted.")
+        print("\nYou can now label the frames using the function 'label_frames' "
+              "(if you extracted enough frames for all videos).")
+
     else:
         print("Invalid MODE. Choose either 'manual' or 'automatic'. Check ``help(deeplabcut.extract_frames)`` on python and ``deeplabcut.extract_frames?`` \
               for ipython/jupyter notebook for more details.")
-    
-    print("\nFrames were selected.\nYou can now label the frames using the function 'label_frames' (if you extracted enough frames for all videos).")
+
 
 def line_select_callback(eclick, erelease):
         'eclick and erelease are the press and release events'
