@@ -13,7 +13,7 @@ import pandas as pd
 import numpy as np
 
 def extractindividualsandbodyparts(cfg):
-    individuals=cfg['individuals']
+    individuals=cfg['individuals'].copy()
     if len(cfg['uniquebodyparts'])>0:
         individuals.append('single')
     return individuals,cfg['uniquebodyparts'],cfg['multianimalbodyparts']
