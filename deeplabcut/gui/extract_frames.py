@@ -162,7 +162,7 @@ class Extract_frames(wx.Panel):
         else:
             crop = False
         if self.crop_choice.GetStringSelection() == 'GUI':
-            crop = GUI
+            crop = 'GUI'
         else:
             crop = False
 
