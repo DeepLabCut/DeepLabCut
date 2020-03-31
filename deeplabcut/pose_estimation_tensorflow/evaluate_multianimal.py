@@ -19,9 +19,9 @@ import pandas as pd
 from tqdm import tqdm
 from pathlib import Path
 
-def evaluate_multianimal_full(config,Shuffles=[1],trainingsetindex=0,
-    plotting = None,show_errors = True,comparisonbodyparts="all",
-    gputouse=None,modelprefix='', c_engine=False):
+def evaluate_multianimal_full(config, Shuffles=[1], trainingsetindex=0,
+    plotting=None, show_errors=True, comparisonbodyparts="all",
+    gputouse=None, modelprefix='', c_engine=False):
     """
     WIP multi animal project.
     """
@@ -62,6 +62,7 @@ def evaluate_multianimal_full(config,Shuffles=[1],trainingsetindex=0,
     Data=pd.read_hdf(os.path.join(cfg["project_path"],str(trainingsetfolder),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing')
     # Get list of body parts to evaluate network for
     comparisonbodyparts=auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg,comparisonbodyparts)
+    colors = visualization.get_cmap(len(comparisonbodyparts), name=cfg['colormap'])
     # Make folder for evaluation
     auxiliaryfunctions.attempttomakefolder(str(cfg["project_path"]+"/evaluation-results/"))
     for shuffle in Shuffles:
@@ -124,15 +125,19 @@ def evaluate_multianimal_full(config,Shuffles=[1],trainingsetindex=0,
                     if os.path.isfile(resultsfilename.split('.h5')[0]+'_full.pickle'):
                             print("Model already evaluated.", resultsfilename)
                     else:
+                        if plotting:
+                            foldername = os.path.join(str(evaluationfolder),
+                                                      'LabeledImages_' + DLCscorer + '_' + Snapshots[snapindex])
+                            auxiliaryfunctions.attempttomakefolder(foldername)
+
                         # Specifying state of model (snapshot / training state)
                         sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
-
-                        Numimages = len(Data.index)
 
                         PredicteData ={}
                         print("Analyzing data...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
-                            image = io.imread(os.path.join(cfg['project_path'],imagename))
+                            image_path = os.path.join(cfg['project_path'], imagename)
+                            image = io.imread(image_path)
                             frame = img_as_ubyte(skimage.color.gray2rgb(image))
 
                             GT=Data.iloc[imageindex]
@@ -157,8 +162,16 @@ def evaluate_multianimal_full(config,Shuffles=[1],trainingsetindex=0,
 
                             PredicteData[imagename]={}
                             PredicteData[imagename]['index']=imageindex
-                            PredicteData[imagename]['prediction']=predictma.get_detectionswithcostsandGT(frame,  groundtruthcoordinates, dlc_cfg, sess, inputs, outputs, outall=False,nms_radius=dlc_cfg.nmsradius,det_min_score=dlc_cfg.minconfidence, c_engine=c_engine)
+                            pred = predictma.get_detectionswithcostsandGT(frame,  groundtruthcoordinates, dlc_cfg, sess, inputs, outputs, outall=False,nms_radius=dlc_cfg.nmsradius,det_min_score=dlc_cfg.minconfidence, c_engine=c_engine)
+                            PredicteData[imagename]['prediction'] = pred
                             PredicteData[imagename]['groundtruth']=[groundtruthidentity, groundtruthcoordinates,GT]
+
+                            if plotting:
+                                coords_pred = pred['coordinates'][0]
+                                probs_pred = pred['confidence']
+                                fig = visualization.make_multianimal_labeled_image(frame, groundtruthcoordinates, coords_pred, probs_pred, colors,
+                                                                                   cfg['dotsize'], cfg['alphavalue'], cfg['pcutoff'])
+                                visualization.save_labeled_frame(fig, image_path, foldername, imageindex in trainIndices)
 
                         sess.close() #closes the current tf session
                         PredicteData['metadata']={
