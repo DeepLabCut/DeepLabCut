@@ -483,10 +483,10 @@ def create_video_with_all_detections(config, videoname, DLCscorername ,destfolde
 
     cfg = auxiliaryfunctions.read_config(config)
     if destfolder is None:
-        outputname = '{}_full.mp4'.format(os.path.splitext(videoname)[0])
+        outputname = '{}_full.mp4'.format(os.path.splitext(videoname)[0]+DLCscorername)
         full_pickle=os.path.join(os.path.splitext(videoname)[0]+DLCscorername+'_full.pickle')
     else:
-        outputname = os.path.join(destfolder,str(Path(videoname).stem)+'_full.mp4')
+        outputname = os.path.join(destfolder,str(Path(videoname).stem)+DLCscorername+'_full.mp4')
         full_pickle=os.path.join(destfolder,str(Path(videoname).stem)+DLCscorername+'_full.pickle')
 
     if not(os.path.isfile(outputname)):

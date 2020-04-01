@@ -232,7 +232,7 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
         os.chdir(str(start_path))
         if 'multi-animal' in dlc_cfg['dataset_type']:
           print("The videos are analyzed. Time to assemble animals and track 'em... \n Call 'create_video_with_all_detections' to check multi-animal detection quality before tracking.")
-          print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames.")        
+          print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames.")
         else:
           print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'")
           print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames.")
@@ -974,10 +974,12 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1,
                     pickle.dump(Tracks, f,pickle.HIGHEST_PROTOCOL)
 
         os.chdir(str(start_path))
-        print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
+
+        #TODO: UPDATE!!
+        print("The videos were analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
         print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
     else:
-        print("No video/s found. Please check your path!")
+        print("No video(s) found. Please check your path!")
 
 
 if __name__ == '__main__':
