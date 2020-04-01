@@ -191,6 +191,37 @@ def write_config(configname,cfg):
             cfg_file['skeleton_color'] = 'black'
         ruamelFile.dump(cfg_file, cf)
 
+
+def edit_config(configname, edits, output_name=''):
+    """
+    Convenience function to edit and save a config file from a dictionary.
+
+    Parameters
+    ----------
+    configname : string
+        String containing the full path of the config file in the project.
+    edits : dict
+        Key–value pairs to edit in config
+    output_name : string, optional (default='')
+        Overwrite the original config.yaml by default.
+        If passed in though, new filename of the edited config.
+
+    Examples
+    --------
+    config_path = 'my_stellar_lab/dlc/config.yaml'
+    edits = {'numframes2pick': 5,
+             'trainingFraction': [0.5, 0.8],
+             'skeleton': [['a', 'b'], ['b', 'c']]}
+    deeplabcut.auxiliaryfunctions.edit_config(config_path, edits)
+    """
+    cfg = read_config(configname)
+    for key, value in edits.items():
+        cfg[key] = value
+    if not output_name:
+        output_name = configname
+    write_config(output_name, cfg)
+
+
 def write_config_3d(configname,cfg):
     """
     Write structured 3D config file.
