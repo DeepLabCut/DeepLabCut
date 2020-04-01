@@ -39,7 +39,7 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
 
-    You can crop the video (before analysis), by changing 'cropping'=True and setting 'x1','x2','y1','y2' in the config file. The same cropping parameters will then be used for creating the video.
+    You can crop the area where DLC is used in the video (before analysis), by changing 'cropping'=True and setting 'x1','x2','y1','y2' in the config file. The same cropping parameters will then be used for creating the video.
 
     Output: The labels are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position \n
             in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
@@ -77,10 +77,10 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
         Change batch size for inference; if given overwrites value in pose_cfg.yaml
 
     TFGPUinference: bool, default: True
-        Perform inference on GPU with Tensorflow code. Introduced in "Pretraining boosts out-of-domain robustness for pose estimation" by
+        Perform inference on GPU with TensorFlow code. Introduced in "Pretraining boosts out-of-domain robustness for pose estimation" by
         Alexander Mathis, Mert Yüksekgönül, Byron Rogers, Matthias Bethge, Mackenzie W. Mathis Source: https://arxiv.org/abs/1909.11229
 
-    dynamic: triple containing (state,detectiontreshold,margin)
+    dynamic: triple containing (state, detectiontreshold, margin)
         If the state is true, then dynamic cropping will be performed. That means that if an object is detected (i.e. any body part > detectiontreshold),
         then object boundaries are computed according to the smallest/largest x position and smallest/largest y position of all body parts. This  window is
         expanded by the margin and from then on only the posture within this crop is analyzed (until the object is lost, i.e. <detectiontreshold). The
@@ -230,11 +230,15 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
                 DLCscorer=AnalyzeVideo(video,DLCscorer,DLCscorerlegacy,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder,TFGPUinference,dynamic)
 
         os.chdir(str(start_path))
-        print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
-        print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
+        if 'multi-animal' in dlc_cfg['dataset_type']:
+          print("The videos are analyzed. Time to assemble animals and track 'em... \n Call 'create_video_with_all_detections' to check multi-animal detection quality before tracking.")
+          print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames.")
+        else:
+          print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'")
+          print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames.")
         return DLCscorer #note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
     else:
-        print("No video/s found. Please check your path!")
+        print("No video(s) were found. Please check your paths and/or 'video_type'.")
         return DLCscorer
 
 def checkcropping(cfg,cap):
@@ -859,7 +863,7 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1,
             # Most of these parameters would be cross validated based on evaluation!
             inferencecfg=edict()
             inferencecfg.variant=0
-            inferencecfg.minimalnumberofconnections=2 #7
+            inferencecfg.minimalnumberofconnections=len(cfg['multianimalbodyparts'])/2 #reasonable default
             inferencecfg.averagescore=0.1
             inferencecfg.distnormalizationLOWER=0
             inferencecfg.distnormalization=400
@@ -870,10 +874,10 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1,
             inferencecfg.pafthreshold=0.1
             inferencecfg.method='m1'
             inferencecfg.withid=False #TODO: set automatically (if >0 id channels!)
-            inferencecfg.topktoplot=3
+            inferencecfg.topktoplot=len(cfg['individuals'])+1*(len(cfg['uniquebodyparts'])>0) #reasonable default
+
             ## bbox variable:
             inferencecfg.boundingboxslack=10
-            # tracker variables // JESSY: YOU CAN OPTIMIZE THOSE!
             inferencecfg.max_age=100
             inferencecfg.min_hits=3
             inferencecfg.iou_threshold=.2
@@ -970,10 +974,12 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1,
                     pickle.dump(Tracks, f,pickle.HIGHEST_PROTOCOL)
 
         os.chdir(str(start_path))
-        print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
+
+        #TODO: UPDATE!!
+        print("The videos were analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
         print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
     else:
-        print("No video/s found. Please check your path!")
+        print("No video(s) found. Please check your path!")
 
 
 if __name__ == '__main__':
