@@ -13,10 +13,7 @@ scorer='Daniel'
 #path_config_file=deeplabcut.create_new_project(task,scorer,video,copy_videos=True,multianimal=True)
 
 basefolder='/media/alex/dropboxdisk/Dropbox/Collaborations/Cancer/DLCdev/examples-multianimal/MontBlanc-Daniel-2019-12-16'
-#basefolder='/home/alex/Dropbox/Collaborations/Cancer/DLCdev/examples-multianimal/MontBlanc-Daniel-2019-12-16'
-#basefolder='/media/alex/dropboxdisk/Dropbox/Collaborations/Cancer/DLCdev/examples-multianimal/MontBlanc-Daniel-2019-12-16'
 videotype='mov'
-
 
 video=[os.path.join(basefolder,'videos/montblanc.mov')]
 path_config_file=os.path.join(basefolder,'config.yaml')
@@ -59,10 +56,10 @@ cfg_dlc['dataset_type']='multi-animal-imgaug'
 cfg_dlc['nmsradius']=5.
 cfg_dlc['minconfidence']=.05
 deeplabcut.auxiliaryfunctions.write_plainconfig(testposeconfigfile,cfg_dlc)
-
-print("Evaluating network for shuffle ", shuffle)
-deeplabcut.evaluate_network(path_config_file,Shuffles=[shuffle])
 '''
+print("Evaluating network for shuffle ", shuffle)
+deeplabcut.evaluate_network(path_config_file,Shuffles=[shuffle],plotting=True)
+
 
 
 ################## Analyze video #NEW:
@@ -75,9 +72,11 @@ cfg_dlc['minconfidence']=.05
 deeplabcut.auxiliaryfunctions.write_plainconfig(testposeconfigfile,cfg_dlc)
 
 print("Starting inference for", shuffle)
-deeplabcut.analyze_videos(path_config_file,[videopath],shuffle=shuffle,videotype=videotype)
-deeplabcut.analyze_videos(path_config_file,[videopath],shuffle=shuffle,videotype=videotype,c_engine=True)
+#deeplabcut.analyze_videos(path_config_file,[videopath],shuffle=shuffle,videotype=videotype)
+#deeplabcut.analyze_videos(path_config_file,[videopath],shuffle=shuffle,videotype=videotype,c_engine=True)
 
+model='DLC_resnet50_MontBlancDec16shuffle0_20000'
+deeplabcut.create_video_with_all_detections(path_config_file, video[0], model)
 
-#deeplabcut.convert_detections2tracklets(path_config_file,[videopath],shuffle=shuffle,videotype=videotype)
-#deeplabcut.create_labeled_video(path_config_file,[videopath],shuffle=shuffle,videotype=videotype)
+deeplabcut.convert_detections2tracklets(path_config_file,[videopath],shuffle=shuffle,videotype=videotype)
+deeplabcut.create_labeled_video(path_config_file,[videopath],shuffle=shuffle,videotype=videotype)

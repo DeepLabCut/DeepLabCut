@@ -505,8 +505,6 @@ def create_video_with_all_detections(config, videoname, DLCscorername ,destfolde
 
         pcutoff = cfg['pcutoff']
         dotsize = cfg['dotsize']
-
-
         clip = vp(fname=videoname, sname=outputname, codec='mp4v')
         ny, nx = clip.height(), clip.width()
 
