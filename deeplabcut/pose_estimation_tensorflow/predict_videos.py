@@ -230,8 +230,12 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
                 DLCscorer=AnalyzeVideo(video,DLCscorer,DLCscorerlegacy,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder,TFGPUinference,dynamic)
 
         os.chdir(str(start_path))
-        print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video' (single animal projects) \n or call 'create_video_with_all_detections' to check multi-animal quality before tracking is applied.")
-        print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames.")
+        if 'multi-animal' in dlc_cfg['dataset_type']:
+          print("The videos are analyzed. Time to assemble animals and track 'em... \n Call 'create_video_with_all_detections' to check multi-animal detection quality before tracking.")
+          print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames.")        
+        else:
+          print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'")
+          print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames.")
         return DLCscorer #note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
     else:
         print("No video(s) were found. Please check your paths and/or 'video_type'.")
