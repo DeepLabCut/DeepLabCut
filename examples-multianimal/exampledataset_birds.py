@@ -79,4 +79,5 @@ model='DLC_resnet50_MontBlancDec16shuffle0_20000'
 deeplabcut.create_video_with_all_detections(path_config_file, video[0], model)
 
 deeplabcut.convert_detections2tracklets(path_config_file,[videopath],shuffle=shuffle,videotype=videotype)
+
 deeplabcut.create_labeled_video(path_config_file,[videopath],shuffle=shuffle,videotype=videotype)

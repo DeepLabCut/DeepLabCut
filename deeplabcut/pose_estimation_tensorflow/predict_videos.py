@@ -874,9 +874,9 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1,
 
             ## bbox variable:
             inferencecfg.boundingboxslack=10
-            inferencecfg.max_age=100
+            inferencecfg.max_age=20
             inferencecfg.min_hits=3
-            inferencecfg.iou_threshold=.2
+            inferencecfg.iou_threshold=.5
             auxiliaryfunctions.write_plainconfig(str(path_inference_config), dict(inferencecfg))
 
     else: #TODO: check if all variables present
