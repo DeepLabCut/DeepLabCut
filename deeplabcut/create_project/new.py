@@ -160,7 +160,7 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
            video_sets[rel_video_path] = {'crop': ', '.join(map(str, [0, width, 0, height]))}
         else:
            print("Cannot open the video file! Skipping to the next one...")
-           pass
+           os.remove(video)  # Removing the video or link from the project
 
     if not len(video_sets):
         # Silently sweep the files that were already written.
