@@ -9,11 +9,11 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import os
-import yaml
 from pathlib import Path
 import cv2
 from deeplabcut import DEBUG
 import shutil
+
 
 def create_new_project(project, experimenter, videos, working_directory=None, copy_videos=False,videotype='.avi'):
     """Creates a new project directory, sub-directories and a basic configuration file. The configuration file is loaded with the default values. Change its parameters to your projects need.
@@ -162,9 +162,15 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
            print("Cannot open the video file! Skipping to the next one...")
            pass
 
+    if not len(video_sets):
+        # Silently sweep the files that were already written.
+        shutil.rmtree(project_path, ignore_errors=True)
+        print('No valid videos found. The project was not created...')
+        print('Verify the video files and recreate the project.')
+        return
+
     #        Set values to config file:
     cfg_file,ruamelFile = auxiliaryfunctions.create_config_template()
-    cfg_file
     cfg_file['Task']=project
     cfg_file['scorer']=experimenter
     cfg_file['video_sets']=video_sets
