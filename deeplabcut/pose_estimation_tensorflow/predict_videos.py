@@ -863,7 +863,7 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1,
             # Most of these parameters would be cross validated based on evaluation!
             inferencecfg=edict()
             inferencecfg.variant=0
-            inferencecfg.minimalnumberofconnections=cfg['multianimalbodyparts']/2 #reasonable default
+            inferencecfg.minimalnumberofconnections=len(cfg['multianimalbodyparts'])/2 #reasonable default
             inferencecfg.averagescore=0.1
             inferencecfg.distnormalizationLOWER=0
             inferencecfg.distnormalization=400
@@ -874,7 +874,7 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1,
             inferencecfg.pafthreshold=0.1
             inferencecfg.method='m1'
             inferencecfg.withid=False #TODO: set automatically (if >0 id channels!)
-            inferencecfg.topktoplot=cfg['individuals']+1*(len(cfg['uniquebodyparts'])>0) #reasonable default
+            inferencecfg.topktoplot=len(cfg['individuals'])+1*(len(cfg['uniquebodyparts'])>0) #reasonable default
 
             ## bbox variable:
             inferencecfg.boundingboxslack=10
