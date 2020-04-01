@@ -182,7 +182,7 @@ def make_multianimal_labeled_image(frame, coords_truth, coords_pred, probs_pred,
     for n, data in enumerate(zip(coords_truth, coords_pred, probs_pred)):
         color = colors(n)
         coord_gt, coord_pred, prob_pred = data
-        ax.plot(*coord_gt, labels[0], ms=dotsize,
+        ax.plot(*coord_gt.T, labels[0], ms=dotsize,
                 alpha=alphavalue, color=color)
         reliable = prob_pred >= pcutoff
         ax.plot(*coord_pred[reliable].T, labels[1], ms=dotsize,
