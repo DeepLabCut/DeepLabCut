@@ -478,9 +478,7 @@ def create_video_with_all_detections(config, videoname, DLCscorername ,destfolde
 
     """
     from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import convertdetectiondict2listoflist
-    import pickle
-    import re
-
+    import pickle, re
     cfg = auxiliaryfunctions.read_config(config)
     if destfolder is None:
         outputname = '{}_full.mp4'.format(os.path.splitext(videoname)[0]+DLCscorername)
