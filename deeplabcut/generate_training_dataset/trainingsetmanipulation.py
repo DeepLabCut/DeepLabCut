@@ -299,7 +299,7 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True, cr
                                         if x>=x0 and round(x,2)<x0+size[1] and round(y,2)>=y0 and y<y0+size[0]:
                                             data[cfg['scorer'],ind,bp,'x']=round(x,2)-x0
                                             data[cfg['scorer'],ind,bp,'y']=round(y,2)-y0
-                                            if 'Plat' not in bp: #FOR 
+                                            if 'Plat' not in bp: #FOR
                                                 animalincrop=True
                                         else:
                                             data[cfg['scorer'],ind,bp,'x']=np.nan
@@ -462,10 +462,16 @@ def MakeTrain_pose_yaml(itemstochange,saveasconfigfile,defaultconfigfile):
         yaml.dump(docs[0], f)
     return docs[0]
 
-def MakeTest_pose_yaml(dictionary, keys2save, saveasfile):
+def MakeTest_pose_yaml(dictionary, keys2save, saveasfile, nmsradius=None, minconfidence=None):
     dict_test = {}
     for key in keys2save:
         dict_test[key] = dictionary[key]
+
+    #adding important values for multianiaml project:
+    if nmsradius is not None:
+        dict_test['nmsradius']=nmsradius
+    if minconfidence is not None:
+        dict_test['minconfidence']=minconfidence
 
     dict_test['scoremap_dir'] = 'test'
     with open(saveasfile, "w") as f:

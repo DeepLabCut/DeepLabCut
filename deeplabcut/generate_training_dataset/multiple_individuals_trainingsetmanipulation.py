@@ -289,7 +289,9 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
                     'num_limbs', 'dataset_type'
                 ]
 
-                trainingsetmanipulation.MakeTest_pose_yaml(trainingdata, keys2save,path_test_config)
+                trainingsetmanipulation.MakeTest_pose_yaml(trainingdata, keys2save, path_test_config,
+                                                            nmsradius=5., minconfidence=0.01) #setting important def. values for inference
+
                 print("The training dataset is successfully created. Use the function 'train_network' to start training. Happy training!")
             else:
                 pass
