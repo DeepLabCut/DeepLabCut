@@ -233,7 +233,7 @@ def CreateVideoSlow(videooutname,clip,Dataframe, tmpfolder, dotsize,colormap,alp
 
 
 def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,
-    filtered=False,fastmode=True,save_frames=True,Frames2plot=None, displayedbodyparts='all', displayedindividuals='all',
+    filtered=False,fastmode=True,save_frames=False,Frames2plot=None, displayedbodyparts='all', displayedindividuals='all',
     codec='mp4v',outputframerate=None, destfolder=None,draw_skeleton=False,
     trailpoints = 0,displaycropped=False, color_by='bodypart',modelprefix=''):
     """
