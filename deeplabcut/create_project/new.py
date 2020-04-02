@@ -106,7 +106,7 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
             shutil.copy(os.fspath(src),os.fspath(dst)) #https://www.python.org/dev/peps/pep-0519/
     else:
       # creates the symlinks of the video and puts it in the videos directory.
-        print("Creating the symbolic link of the video")
+        print("Attempting to create a symbolic link of the video ...")
         for src, dst in zip(videos, destinations):
             if dst.exists() and not DEBUG:
                 raise FileExistsError('Video {} exists already!'.format(dst))
@@ -145,8 +145,8 @@ def create_new_project(project, experimenter, videos, working_directory=None, co
     if not len(video_sets):
         # Silently sweep the files that were already written.
         shutil.rmtree(project_path, ignore_errors=True)
-        print('No valid videos found. The project was not created...')
-        print('Verify the video files and recreate the project.')
+        print('WARNING: No valid videos were found. The project was not created ...')
+        print('Verify the video files and re-create the project.')
         return 'nothingcreated'
 
     #        Set values to config file:
