@@ -27,7 +27,7 @@ setuptools.setup(
     install_requires=['certifi','chardet','click','cython','easydict','filterpy',
                       'h5py','intel-openmp','imgaug',
                       'ipython','ipython-genutils','numba',
-                      'matplotlib','moviepy','numpy==1.16.4','opencv-python',
+                      'matplotlib','moviepy<=1.0.1','numpy==1.16.4','opencv-python',
                       'pandas','patsy','python-dateutil','pyyaml','requests',
                       'ruamel.yaml>=0.15.0','setuptools','scikit-image','scikit-learn',
                       'scipy','six','statsmodels','tables',
