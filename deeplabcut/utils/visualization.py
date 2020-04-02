@@ -184,6 +184,8 @@ def make_multianimal_labeled_image(frame, coords_truth, coords_pred, probs_pred,
         coord_gt, coord_pred, prob_pred = data
         ax.plot(*coord_gt.T, labels[0], ms=dotsize,
                 alpha=alphavalue, color=color)
+        if not coord_pred.shape[0]:
+            continue
         reliable = prob_pred >= pcutoff
         ax.plot(*coord_pred[reliable].T, labels[1], ms=dotsize,
                 alpha=alphavalue, color=color)
