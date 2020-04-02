@@ -43,95 +43,95 @@ for sh,net_type in enumerate(Nets): #'mobilenet_v2_1.0']): # 'resnet_50']):
         cfg=deeplabcut.auxiliaryfunctions.read_config(path_config_file)
         posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(shuffle),'train/pose_cfg.yaml')
 
-        DLC_config=deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
+        edits = dict()
+        edits['display_iters'] = 1000
+        edits['multi_step'] = [[0.005, 5000], [0.02, 100001]]
+        edits['save_iters'] = 10000
+
         if jj==4:
-            DLC_config['dataset_type']='default'
-            DLC_config['global_scale']=.25
+            edits['dataset_type']= 'default'
+            edits['global_scale']=.25
 
         elif jj==5:
-            DLC_config['dataset_type']='default'
-            DLC_config['global_scale']=.5
+            edits['dataset_type']= 'default'
+            edits['global_scale']=.5
         elif jj==6:
-            DLC_config['dataset_type']='default'
-            DLC_config['global_scale']=.75
+            edits['dataset_type']= 'default'
+            edits['global_scale']=.75
 
         elif jj==7:
-            DLC_config['dataset_type']='default'
-            DLC_config['global_scale']=1.
+            edits['dataset_type']= 'default'
+            edits['global_scale']=1.
 
         elif jj==0:
-            DLC_config['dataset_type']='imgaug'
-            DLC_config['global_scale']=.25
-            DLC_config['batch_size']=1
-            DLC_config['optimizer']='sgd'
-            DLC_config['scmap_type']='plateau'
-            DLC_config['grayscale']=True
-            DLC_config['rotation']=True
-            DLC_config['covering']=True
-            DLC_config['hist_eq']=True
-            DLC_config['motion_blur'] = True #[["k", 7],["angle", [-90, 90]]]
+            edits['dataset_type']= 'imgaug'
+            edits['global_scale']=.25
+            edits['batch_size']=1
+            edits['optimizer']= 'sgd'
+            edits['scmap_type']= 'plateau'
+            edits['grayscale']=True
+            edits['rotation']=True
+            edits['covering']=True
+            edits['hist_eq']=True
+            edits['motion_blur'] = True #[["k", 7],["angle", [-90, 90]]]
 
         elif jj==1:
-            DLC_config['dataset_type']='imgaug'
-            DLC_config['global_scale']=.5
-            DLC_config['batch_size']=1
-            DLC_config['optimizer']='sgd'
-            DLC_config['scmap_type']='plateau'
-            DLC_config['grayscale']=True
-            DLC_config['rotation']=True
-            DLC_config['covering']=True
-            DLC_config['hist_eq']=True
-            DLC_config['motion_blur'] = True #[["k", 7],["angle", [-90, 90]]]
+            edits['dataset_type']= 'imgaug'
+            edits['global_scale']=.5
+            edits['batch_size']=1
+            edits['optimizer']= 'sgd'
+            edits['scmap_type']= 'plateau'
+            edits['grayscale']=True
+            edits['rotation']=True
+            edits['covering']=True
+            edits['hist_eq']=True
+            edits['motion_blur'] = True #[["k", 7],["angle", [-90, 90]]]
 
         elif jj==2:
-            DLC_config['dataset_type']='imgaug'
-            DLC_config['global_scale']=.75
-            DLC_config['batch_size']=1
-            DLC_config['optimizer']='sgd'
-            DLC_config['scmap_type']='plateau'
-            DLC_config['grayscale']=True
-            DLC_config['rotation']=True
-            DLC_config['covering']=True
-            DLC_config['hist_eq']=True
-            DLC_config['motion_blur'] = True #[["k", 7],["angle", [-90, 90]]]
+            edits['dataset_type']= 'imgaug'
+            edits['global_scale']=.75
+            edits['batch_size']=1
+            edits['optimizer']= 'sgd'
+            edits['scmap_type']= 'plateau'
+            edits['grayscale']=True
+            edits['rotation']=True
+            edits['covering']=True
+            edits['hist_eq']=True
+            edits['motion_blur'] = True #[["k", 7],["angle", [-90, 90]]]
 
         elif jj==3:
-            DLC_config['dataset_type']='imgaug'
-            DLC_config['global_scale']=1.
-            DLC_config['batch_size']=1
-            DLC_config['optimizer']='sgd'
-            DLC_config['scmap_type']='plateau'
-            DLC_config['grayscale']=True
-            DLC_config['rotation']=True
-            DLC_config['covering']=True
-            DLC_config['hist_eq']=True
-            DLC_config['motion_blur'] = True #[["k", 7],["angle", [-90, 90]]]
-
-        DLC_config['display_iters']=1000
-        DLC_config['multi_step']=[[0.005,5000],[0.02, 100001]]
-        DLC_config['save_iters']=10000
-        deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
+            edits['dataset_type']= 'imgaug'
+            edits['global_scale']=1.
+            edits['batch_size']=1
+            edits['optimizer']= 'sgd'
+            edits['scmap_type']= 'plateau'
+            edits['grayscale']=True
+            edits['rotation']=True
+            edits['covering']=True
+            edits['hist_eq']=True
+            edits['motion_blur'] = True #[["k", 7],["angle", [-90, 90]]]
+        DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
 
         posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(shuffle),'test/pose_cfg.yaml')
-        DLC_config=deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
-        if jj==0:
-            DLC_config['global_scale']=.25
-        elif jj==1:
-            DLC_config['global_scale']=.5
-        elif jj==2:
-            DLC_config['global_scale']=.75
-        elif jj==3:
-            DLC_config['global_scale']=1.
-        elif jj==4:
-            DLC_config['global_scale']=.25
-        elif jj==5:
-            DLC_config['global_scale']=.5
-        elif jj==6:
-            DLC_config['global_scale']=.75
-        elif jj==7:
-            DLC_config['global_scale']=1.
 
-        deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
+        edits = dict()
+        if jj == 0:
+            edits['global_scale'] = .25
+        elif jj == 1:
+            edits['global_scale'] = .5
+        elif jj == 2:
+            edits['global_scale'] = .75
+        elif jj == 3:
+            edits['global_scale'] = 1.
+        elif jj == 4:
+            edits['global_scale'] = .25
+        elif jj == 5:
+            edits['global_scale'] = .5
+        elif jj == 6:
+            edits['global_scale'] = .75
+        elif jj == 7:
+            edits['global_scale'] = 1.
+        DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
 
         print("TRAIN NETWORK")
         deeplabcut.train_network(path_config_file, shuffle=shuffle,max_snapshots_to_keep=15) #,saveiters=5000,displayiters=100)

@@ -11,13 +11,12 @@ import os, pickle, yaml
 import pandas as pd
 from pathlib import Path
 import numpy as np
-import ruamel.yaml
+from ruamel.yaml import YAML
 
 def create_config_template(multianimal=False):
     """
     Creates a template for config.yaml file. This specific order is preserved while saving as yaml file.
     """
-    import ruamel.yaml
     if multianimal:
         yaml_str = """\
     # Project definitions (do not edit)
@@ -114,15 +113,14 @@ def create_config_template(multianimal=False):
         move2corner:
         """
 
-    ruamelFile = ruamel.yaml.YAML()
+    ruamelFile = YAML()
     cfg_file = ruamelFile.load(yaml_str)
-    return(cfg_file,ruamelFile)
+    return cfg_file, ruamelFile
 
 def create_config_template_3d():
     """
     Creates a template for config.yaml file for 3d project. This specific order is preserved while saving as yaml file.
     """
-    import ruamel.yaml
     yaml_str = """\
 # Project definitions (do not edit)
     Task:
@@ -147,9 +145,9 @@ def create_config_template_3d():
     camera_names:
     scorername_3d: # Enter the scorer name for the 3D output
     """
-    ruamelFile_3d = ruamel.yaml.YAML()
+    ruamelFile_3d = YAML()
     cfg_file_3d = ruamelFile_3d.load(yaml_str)
-    return(cfg_file_3d,ruamelFile_3d)
+    return cfg_file_3d, ruamelFile_3d
 
 
 def read_config(configname):
@@ -157,7 +155,7 @@ def read_config(configname):
     Reads structured config file
 
     """
-    ruamelFile = ruamel.yaml.YAML()
+    ruamelFile = YAML()
     path = Path(configname)
     if os.path.exists(path):
         try:
@@ -170,18 +168,16 @@ def read_config(configname):
                   write_config(configname,cfg)
             else:
                 raise
-
     else:
         raise FileNotFoundError ("Config file is not found. Please make sure that the file exists and/or that you passed the path of the config file correctly!")
-    return(cfg)
+    return cfg
 
 def write_config(configname,cfg):
     """
     Write structured config file.
     """
     with open(configname, 'w') as cf:
-        ruamelFile = ruamel.yaml.YAML()
-        cfg_file,ruamelFile = create_config_template(cfg.get('multianimalproject',False))
+        cfg_file, ruamelFile = create_config_template(cfg.get('multianimalproject',False))
         for key in cfg.keys():
             cfg_file[key]=cfg[key]
 
@@ -214,40 +210,39 @@ def edit_config(configname, edits, output_name=''):
              'skeleton': [['a', 'b'], ['b', 'c']]}
     deeplabcut.auxiliaryfunctions.edit_config(config_path, edits)
     """
-    cfg = read_config(configname)
+    cfg = read_plainconfig(configname)
     for key, value in edits.items():
         cfg[key] = value
     if not output_name:
         output_name = configname
-    write_config(output_name, cfg)
+    write_plainconfig(output_name, cfg)
+    return cfg
 
 
 def write_config_3d(configname,cfg):
     """
     Write structured 3D config file.
     """
-#    with open(projconfigfile, 'w') as cf:
-#        ruamelFile_3d.dump(cfg_file_3d, cf)
     with open(configname, 'w') as cf:
-        ruamelFile = ruamel.yaml.YAML()
-        cfg_file,ruamelFile = create_config_template_3d()
+        cfg_file, ruamelFile = create_config_template_3d()
         for key in cfg.keys():
-            cfg_file[key]=cfg[key]
+            cfg_file[key] = cfg[key]
         ruamelFile.dump(cfg_file, cf)
 
 def write_config_3d_template(projconfigfile,cfg_file_3d,ruamelFile_3d):
     with open(projconfigfile, 'w') as cf:
         ruamelFile_3d.dump(cfg_file_3d, cf)
 
-def read_plainconfig(filename = "pose_cfg.yaml"):
-    ''' read unstructured yaml'''
-    with open(filename, 'r') as f:
-        yaml_cfg = yaml.load(f,Loader=yaml.SafeLoader)
-    return yaml_cfg
+def read_plainconfig(configname):
+    if not os.path.exists(configname):
+        raise FileNotFoundError(
+            'Config file is not found. Please make sure that the file exists.')
+    with open(configname) as file:
+        return YAML().load(file)
 
-def write_plainconfig(configname,cfg):
-    with open(str(configname), 'w') as ymlfile:
-                yaml.dump(cfg, ymlfile,default_flow_style=False)
+def write_plainconfig(configname, cfg):
+    with open(configname, 'w') as file:
+        YAML().dump(cfg, file)
 
 def attempttomakefolder(foldername,recursive=False):
     ''' Attempts to create a folder with specified name. Does nothing if it already exists. '''
@@ -426,7 +421,9 @@ def GetScorerName(cfg,shuffle,trainFraction,trainingsiterations='unknown',modelp
         SNP=Snapshots[snapshotindex]
         trainingsiterations = (SNP.split(os.sep)[-1]).split('-')[-1]
 
-    dlc_cfg=read_plainconfig(os.path.join(cfg["project_path"],str(GetModelFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)),'train','pose_cfg.yaml'))
+    dlc_cfg= read_plainconfig(
+        os.path.join(cfg["project_path"], str(GetModelFolder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
+                     'train', 'pose_cfg.yaml'))
     if 'resnet' in dlc_cfg['net_type']: #ABBREVIATE NETWORK NAMES -- esp. for mobilenet!
         netname=dlc_cfg['net_type'].replace('_','')
     else: #mobilenet >> mobnet_100; mobnet_35 etc.

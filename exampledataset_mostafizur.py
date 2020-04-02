@@ -33,12 +33,12 @@ deeplabcut.train_network(path_config_file, shuffle=shuffle,trainingsetindex=trai
     saveiters=saveiters,displayiters=displayiters,max_snapshots_to_keep=2,maxiters=20000)
 
 trainposeconfigfile,testposeconfigfile,snapshotfolder=deeplabcut.return_train_network_path(path_config_file,shuffle=shuffle)
-cfg_dlc=deeplabcut.auxiliaryfunctions.read_plainconfig(testposeconfigfile)
-cfg_dlc['partaffinityfield_predict']=True
-cfg_dlc['dataset_type']='multi-animal-imgaug'
-cfg_dlc['nmsradius']=5.
-cfg_dlc['minconfidence']=.05
-deeplabcut.auxiliaryfunctions.write_plainconfig(testposeconfigfile,cfg_dlc)
+
+edits = {'partaffinityfield_predict': True,
+         'dataset_type': 'multi-animal-imgaug',
+         'nmsradius': 5.,
+         'minconfidence': .05}
+cfg_dlc = deeplabcut.auxiliaryfunctions.edit_config(testposeconfigfile, edits)
 
 #print("Evaluating network for shuffle ", shuffle) #not fully implemented in 2.2b1
 #deeplabcut.evaluate_network(path_config_file,Shuffles=[shuffle])
@@ -47,12 +47,11 @@ deeplabcut.auxiliaryfunctions.write_plainconfig(testposeconfigfile,cfg_dlc)
 
 ################## Analyze video #NEW:
 trainposeconfigfile,testposeconfigfile,snapshotfolder=deeplabcut.return_train_network_path(path_config_file,shuffle=shuffle)
-cfg_dlc=deeplabcut.auxiliaryfunctions.read_plainconfig(testposeconfigfile)
-cfg_dlc['partaffinityfield_predict']=True
-cfg_dlc['dataset_type']='multi-animal-imgaug'
-cfg_dlc['nmsradius']=5.
-cfg_dlc['minconfidence']=.01
-deeplabcut.auxiliaryfunctions.write_plainconfig(testposeconfigfile,cfg_dlc)
+edits = {'partaffinityfield_predict': True,
+         'dataset_type': 'multi-animal-imgaug',
+         'nmsradius': 5.,
+         'minconfidence': .01}
+cfg_dlc = deeplabcut.auxiliaryfunctions.edit_config(testposeconfigfile, edits)
 
 print("Starting inference for", shuffle)
 deeplabcut.analyze_videos(path_config_file,[videopath],shuffle=shuffle,videotype=videotype)

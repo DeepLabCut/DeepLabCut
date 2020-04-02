@@ -66,13 +66,11 @@ print('Train dataset created.')
 print('Editing pose config...')
 model_folder = auxiliaryfunctions.GetModelFolder(cfg['TrainingFraction'][0], 1, cfg, cfg['project_path'])
 pose_config_path = os.path.join(model_folder, 'train/pose_cfg.yaml')
-pose_cfg = deeplabcut.auxiliaryfunctions.read_plainconfig(pose_config_path)
-pose_cfg['global_scale'] = .1
-pose_cfg['save_iters'] = N_ITER
-pose_cfg['display_iters'] = N_ITER // 2
-pose_cfg['multi_step'] = [[0.001, N_ITER]]
-
-deeplabcut.auxiliaryfunctions.write_plainconfig(pose_config_path, pose_cfg)
+edits = {'global_scale': .1,
+         'save_iters': N_ITER,
+         'display_iters': N_ITER // 2,
+         'multi_step': [[0.001, N_ITER]]}
+deeplabcut.auxiliaryfunctions.edit_config(pose_config_path, edits)
 print('Pose config edited.')
 
 print('Training network...')

@@ -75,13 +75,12 @@ deeplabcut.create_training_dataset(path_config_file,net_type=net_type,augmenter_
 
 posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(1),'train/pose_cfg.yaml')
 
-DLC_config=deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
-DLC_config['save_iters']=numiter
-DLC_config['display_iters']=2
-DLC_config['multi_step']=[[0.001,numiter]]
-
 print("CHANGING training parameters to end quickly!")
-deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
+edits = {'save_iters': numiter,
+         'display_iters': 2,
+         'multi_step': [[0.001, numiter]]}
+DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
+
 
 print("TRAIN")
 deeplabcut.train_network(path_config_file)
@@ -141,7 +140,7 @@ deeplabcut.create_training_dataset(path_config_file,net_type=net_type)
 
 cfg=deeplabcut.auxiliaryfunctions.read_config(path_config_file)
 posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(1),'train/pose_cfg.yaml')
-DLC_config=deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
+DLC_config= deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
 DLC_config['save_iters']=numiter
 DLC_config['display_iters']=1
 DLC_config['multi_step']=[[0.001,numiter]]
@@ -169,13 +168,11 @@ deeplabcut.create_training_dataset(path_config_file,Shuffles=[2],net_type=net_ty
 
 posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(2),'train/pose_cfg.yaml')
 
-DLC_config=deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
-DLC_config['save_iters']=10
-DLC_config['display_iters']=2
-DLC_config['multi_step']=[[0.001,10]]
-
 print("CHANGING training parameters to end quickly!")
-deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
+edits = {'save_iters': 10,
+         'display_iters': 2,
+         'multi_step': [[0.001, 10]]}
+DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
 
 print("TRAINING shuffle 2")
 deeplabcut.train_network(path_config_file,shuffle=2)

@@ -61,57 +61,55 @@ for sh,net_type in enumerate(Nets): #'mobilenet_v2_1.0']): # 'resnet_50']):
         cfg=deeplabcut.auxiliaryfunctions.read_config(path_config_file)
         posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(shuffle),'train/pose_cfg.yaml')
 
-        DLC_config=deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
+        edits = {'save_iters': 10000,
+                 'display_iters': 1000,
+                 'multi_step': [[0.005,5000], [0.02, 100001]]}
         if jj==0:
-            DLC_config['dataset_type']='default'
-            DLC_config['global_scale']=.25
+            edits['dataset_type']='default'
+            edits['global_scale']=.25
         elif jj==1:
-            DLC_config['dataset_type']='default'
-            DLC_config['global_scale']=.5
+            edits['dataset_type']='default'
+            edits['global_scale']=.5
         elif jj==2:
-            DLC_config['dataset_type']='default'
-            DLC_config['global_scale']=.75
+            edits['dataset_type']='default'
+            edits['global_scale']=.75
         elif jj==3:
-            DLC_config['dataset_type']='default'
-            DLC_config['global_scale']=1.
+            edits['dataset_type']='default'
+            edits['global_scale']=1.
         elif jj==4:
-            DLC_config['dataset_type']='tensorpack'
-            DLC_config['global_scale']=.25
+            edits['dataset_type']='tensorpack'
+            edits['global_scale']=.25
         elif jj==5:
-            DLC_config['dataset_type']='tensorpack'
-            DLC_config['global_scale']=.5
+            edits['dataset_type']='tensorpack'
+            edits['global_scale']=.5
         elif jj==6:
-            DLC_config['dataset_type']='tensorpack'
-            DLC_config['global_scale']=.75
+            edits['dataset_type']='tensorpack'
+            edits['global_scale']=.75
         elif jj==7:
-            DLC_config['dataset_type']='tensorpack'
-            DLC_config['global_scale']=1.
+            edits['dataset_type']='tensorpack'
+            edits['global_scale']=1.
 
-        DLC_config['save_iters']=10000
-        DLC_config['display_iters']=1000
-        DLC_config['multi_step']=[[0.005,5000],[0.02, 100001]]
-        deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
+        DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
 
         posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(shuffle),'test/pose_cfg.yaml')
-        DLC_config=deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
+        edits = dict()
         if jj==0:
-            DLC_config['global_scale']=.25
+            edits['global_scale']=.25
         elif jj==1:
-            DLC_config['global_scale']=.5
+            edits['global_scale']=.5
         elif jj==2:
-            DLC_config['global_scale']=.75
+            edits['global_scale']=.75
         elif jj==3:
-            DLC_config['global_scale']=1.
+            edits['global_scale']=1.
         elif jj==4:
-            DLC_config['global_scale']=.25
+            edits['global_scale']=.25
         elif jj==5:
-            DLC_config['global_scale']=.5
+            edits['global_scale']=.5
         elif jj==6:
-            DLC_config['global_scale']=.75
+            edits['global_scale']=.75
         elif jj==7:
-            DLC_config['global_scale']=1.
-
-        deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
+            edits['global_scale']=1.
+        DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
 
         print("TRAIN NETWORK")
         deeplabcut.train_network(path_config_file, shuffle=shuffle,max_snapshots_to_keep=15) #,saveiters=5000,displayiters=100)

@@ -34,10 +34,7 @@ for shuffle in [1,2]:
     trainposeconfigfile,testposeconfigfile,snapshotfolder=deeplabcut.return_train_network_path(config,shuffle=shuffle,trainingsetindex=trainingsetindex)
     #cfg_dlc=deeplabcut.auxiliaryfunctions.read_plainconfig(trainposeconfigfile)
 
-    cfg_dlc=deeplabcut.auxiliaryfunctions.read_plainconfig(testposeconfigfile)
-    cfg_dlc['nmsradius']=5.
-    cfg_dlc['minconfidence']=.01
-    deeplabcut.auxiliaryfunctions.write_plainconfig(testposeconfigfile,cfg_dlc)
+    cfg_dlc = deeplabcut.auxiliaryfunctions.edit_config(testposeconfigfile, {'nmsradius': 5, 'minconfidence': .01})
 
     print("Evaluating", shuffle, trainingsetindex)
     deeplabcut.evaluate_network(config,Shuffles=[shuffle],trainingsetindex=trainingsetindex,c_engine=True)

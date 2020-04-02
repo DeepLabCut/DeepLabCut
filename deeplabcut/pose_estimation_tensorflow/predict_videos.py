@@ -857,7 +857,7 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1,
 
     if inferencecfg is None: #then load or initialize
         try:
-            inferencecfg=auxiliaryfunctions.read_plainconfig(str(path_inference_config))
+            inferencecfg= auxiliaryfunctions.read_plainconfig(str(path_inference_config))
             inferencecfg = edict(inferencecfg)
         except FileNotFoundError: #TODO: set this automatically
             # Most of these parameters would be cross validated based on evaluation!

@@ -66,17 +66,15 @@ deeplabcut.train_network(path_config_file, shuffle=shuffle,trainingsetindex=trai
 nmspath = 'deeplabcut/pose_estimation_tensorflow/lib/nms_cython'
 sys.path.append(os.path.join('/usr/local/lib/python3.6/dist-packages',nmspath))
 
-
-cfg_dlc=deeplabcut.auxiliaryfunctions.read_plainconfig(testposeconfigfile)
-cfg_dlc['partaffinityfield_predict']=True
-cfg_dlc['dataset_type']='multi-animal-imgaug'
-cfg_dlc['nmsradius']=5.
-cfg_dlc['minconfidence']=.1
-cfg_dlc['bank3']=128
-cfg_dlc['bank5']=128
-cfg_dlc['smfactor']=4
-cfg_dlc['stride']=4
-deeplabcut.auxiliaryfunctions.write_plainconfig(testposeconfigfile,cfg_dlc)
+edits = {'partaffinityfield_predict': True,
+         'dataset_type': 'multi-animal-imgaug',
+         'nmsradius': 5.,
+         'minconfidence': .1,
+         'bank3': 128,
+         'bank5': 128,
+         'smfactor': 4,
+         'stride': 4}
+cfg_dlc = deeplabcut.auxiliaryfunctions.edit_config(testposeconfigfile, edits)
 
 print("Evaluating network for shuffle ", shuffle)
 deeplabcut.evaluate_network(path_config_file,Shuffles=[shuffle])

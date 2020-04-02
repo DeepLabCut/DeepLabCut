@@ -25,17 +25,16 @@ def Cuttrainingschedule(path_config_file,shuffle,trainingsetindex=0,initweights=
     cfg=deeplabcut.auxiliaryfunctions.read_config(path_config_file)
     posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][trainingsetindex] * 100)) + 'shuffle' + str(shuffle),'train/pose_cfg.yaml')
 
-    DLC_config=deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
-    DLC_config['save_iters']=lastvalue
-    DLC_config['display_iters']=1
-    DLC_config['multi_step']=[[0.001,lastvalue]]
-    DLC_config['intermediate_supervision']=False #True
+    edits = {'save_iters': lastvalue,
+             'display_iters': 1,
+             'multi_step': [[0.001, lastvalue]],
+             'intermediate_supervision': False}
 
-    if initweights=='previteration':
-        DLC_config['init_weights']=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration']-1)+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][trainingsetindex] * 100)) + 'shuffle' + str(shuffle),'train/snapshot-'+str(lastvalue))
+    if initweights == 'previteration':
+        edits['init_weights'] = os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration']-1)+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][trainingsetindex] * 100)) + 'shuffle' + str(shuffle),'train/snapshot-'+str(lastvalue))
 
     print("CHANGING training parameters to end quickly!")
-    deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
+    DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
     return
 
 print("Imported DLC!")

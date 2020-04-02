@@ -52,23 +52,17 @@ saveiters=5000
 displayiters=100
 
 trainposeconfigfile,testposeconfigfile,snapshotfolder=deeplabcut.return_train_network_path(path_config_file,shuffle=shuffle)
-cfg_dlc=deeplabcut.auxiliaryfunctions.read_plainconfig(testposeconfigfile)
-cfg_dlc['batch_size']=16
-cfg_dlc['optimizer']='adam'
-cfg_dlc['grayscale']=True
-cfg_dlc['rotation']=20
-cfg_dlc['covering']=True
-cfg_dlc['hist_eq']=True
-cfg_dlc['fliplr']=False
-cfg_dlc['motion_blur'] = True #[["k", 7],["angle", [-90, 90]]]
-cfg_dlc['multi_step']=[[1e-4, 5000], [5*1e-5, 7500], [1e-5, 12000],[1e-6,50000]]
-
-
-#cfg_dlc['init_weights']='/media/alex/dropboxdisk/Dropbox/Collaborations/Spider/mobnet/2020_03_05_3cm_angled_camera-1-kkim-2020-03-05/dlc-models/iteration-0/2020_03_05_3cm_angled_camera-1Mar5-trainset95shuffle0/train/snapshot-50000'
-cfg_dlc['weigh_only_present_joints']=False
-
-
-deeplabcut.auxiliaryfunctions.write_plainconfig(testposeconfigfile,cfg_dlc)
+edits = {'batch_size': 16,
+         'optimizer': 'adam',
+         'grayscale': True,
+         'rotation': 20,
+         'covering': True,
+         'hist_eq': True,
+         'fliplr': False,
+         'motion_blur': True,
+         'multi_step': [[1e-4, 5000], [5*1e-5, 7500], [1e-5, 12000], [1e-6,50000]],
+         'weigh_only_present_joints': False}
+cfg_dlc= deeplabcut.auxiliaryfunctions.edit_config(testposeconfigfile, edits)
 
 print("Creating multianimal training set...")
 #deeplabcut.train_network(path_config_file, shuffle=shuffle,trainingsetindex=trainingsetindex,saveiters=saveiters,displayiters=displayiters)
