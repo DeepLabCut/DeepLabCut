@@ -344,6 +344,10 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
 
     start_path=os.getcwd()
     Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
+    if not len(Videos):
+        print("No video(s) were found. Please check your paths and/or 'video_type'.")
+        return
+
     for video in Videos:
         if destfolder is None:
             videofolder= Path(video).parents[0] #where your folder with videos is.
@@ -528,6 +532,7 @@ def create_video_with_all_detections(config, videoname, DLCscorername ,destfolde
         clip.close()
     else:
         print("Detections already plotted, ", outputname)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

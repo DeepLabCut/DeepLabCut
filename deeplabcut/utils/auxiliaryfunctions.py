@@ -533,12 +533,13 @@ def LoadAnalyzedData(videofolder,vname,DLCscorer,filtered):
         elif len(datanames)>0:
             print("The video was not analyzed with this scorer:", DLCscorer)
             print("Other scorers were found, however:", datanames)
-            if 'DeepCut_resnet' in datanames[0]: # try the legacy scorer name instead!
-                DLCscorer='DeepCut'+(datanames[0].split('DeepCut')[1]).split('.h5')[0]
+            datafile = datanames[0]
+            if 'DeepCut_resnet' in datafile: # try the legacy scorer name instead!
+                DLCscorer='DeepCut'+(datafile.split('DeepCut')[1]).split('.h5')[0]
             else:
-                DLCscorer='DLC_'+(datanames[0].split('DLC_')[1]).split('.h5')[0]
+                DLCscorer='DLC_'+(datafile.split('DLC_')[1]).split('.h5')[0]
             print("Creating output for:", DLCscorer," instead.")
-            Dataframe = pd.read_hdf(datanames[0])
-            metadata=LoadVideoMetadata(datanames[0])
+            Dataframe = pd.read_hdf(datafile)
+            metadata=LoadVideoMetadata(datafile.replace('tracks', ''))
             datafound=True
     return datafound, metadata, Dataframe, DLCscorer,suffix
