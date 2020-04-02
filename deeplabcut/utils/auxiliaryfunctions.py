@@ -335,15 +335,19 @@ def get_immediate_subdirectories(a_dir):
     return [name for name in os.listdir(a_dir)
         if os.path.isdir(os.path.join(a_dir, name))]
 
-def listfilesofaparticulartypeinfolder(a_dir,afiletype):
-    ''' List files of a particular type in a folder a_dir '''
-    return [
-        name for name in os.listdir(a_dir)
-        if afiletype in name]
+
+def grab_files_in_folder(folder, ext='', relative=True):
+    """Return the paths of files with extension *ext* present in *folder*."""
+    files = []
+    for file in os.listdir(folder):
+        if file.endswith(ext):
+            files.append(file if relative else os.path.join(folder, file))
+    return files
+
 
 def GetVideoList(filename,videopath,videtype):
     ''' Get list of videos in a path (if filetype == all), otherwise just a specific file.'''
-    videos=listfilesofaparticulartypeinfolder(videopath,videtype)
+    videos=grab_files_in_folder(videopath, videtype)
     if filename=='all':
         return videos
     else:
@@ -468,23 +472,26 @@ def CheckifPostProcessing(folder,vname,DLCscorer,DLCscorerlegacy,suffix='filtere
 
 
 def CheckifNotAnalyzed(destfolder,vname,DLCscorer,DLCscorerlegacy,flag='video'):
-    dataname = os.path.join(destfolder,vname + DLCscorer + '.h5')
-    if os.path.isfile(dataname):
-        if flag=='video':
-            print("Video already analyzed!", dataname)
-        elif flag=='framestack':
-            print("Frames already analyzed!", dataname)
-        return False, dataname, DLCscorer
+    h5files = grab_files_in_folder(destfolder, 'h5', relative=False)
+    if not len(h5files):
+        print(f'No data were found in {destfolder}.')
+        return True, h5files, DLCscorer
+
+    h5file = h5files[0]
+    if vname + DLCscorer in h5file:
+        if flag == 'video':
+            print("Video already analyzed!", h5file)
+        elif flag == 'framestack':
+            print("Frames already analyzed!", h5file)
+        return False, h5file, DLCscorer
+    elif vname + DLCscorerlegacy in h5file:
+        if flag == 'video':
+            print("Video already analyzed!", h5file)
+        elif flag == 'framestack':
+            print("Frames already analyzed!", h5file)
+        return False, h5file, DLCscorerlegacy
     else:
-        dn = os.path.join(destfolder,vname + DLCscorerlegacy + '.h5')
-        if os.path.isfile(dn):
-            if flag=='video':
-                print("Video already analyzed (with DLC<2.1)!", dn)
-            elif flag=='framestack':
-                print("Frames already analyzed (with DLC<2.1)!", dn)
-            return False, dn, DLCscorerlegacy
-        else:
-            return True, dataname, DLCscorer
+        return True, h5file, DLCscorer
 
 def CheckifNotEvaluated(folder,DLCscorer,DLCscorerlegacy,snapshot):
     dataname=os.path.join(folder,DLCscorer + '-' + str(snapshot)+  '.h5')

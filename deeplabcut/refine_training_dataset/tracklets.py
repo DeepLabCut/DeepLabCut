@@ -357,7 +357,7 @@ class TrackletManager:
         return pd.DataFrame(self.flatten_data(), columns=columns, index=self.times)
 
     def save(self, output_name='', *args):
-        df = self.format_output()
+        df = self.format_data()
         if not output_name:
             output_name = self.filename.replace('pickle', 'h5')
         df.to_hdf(output_name, 'df_with_missing', format='table', mode='w')

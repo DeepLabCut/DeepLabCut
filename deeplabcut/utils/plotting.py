@@ -152,9 +152,12 @@ def plot_trajectories(config, videos, videotype='.avi', shuffle=1, trainingsetin
     DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction, modelprefix=modelprefix) #automatically loads corresponding model (even training iteration based on snapshot index)
     bodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg, displayedbodyparts)
     individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(cfg, displayedindividuals)
-    Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
+    Videos=auxiliaryfunctions.Getlistofvideos(videos, videotype)
+    if not len(Videos):
+        print('No videos found. Make sure you passed a list of videos and that *videotype* is right.')
+        return
+
     for video in Videos:
-        print(video)
         if destfolder is None:
             videofolder = str(Path(video).parents[0])
         else:
@@ -176,9 +179,13 @@ def plot_trajectories(config, videos, videotype='.avi', shuffle=1, trainingsetin
                 auxiliaryfunctions.attempttomakefolder(os.path.join(basefolder,'plot-poses'))
                 tmpfolder = os.path.join(basefolder,'plot-poses', vname)
                 auxiliaryfunctions.attempttomakefolder(tmpfolder)
-                for individual in individuals:
-                    PlottingResults(tmpfolder, Dataframe, cfg, bodyparts, individual,
-                                    showfigures, suffix + individual + '.png')
+                # Keep only the individuals and bodyparts that were labeled
+                index = Dataframe.columns
+                labeled_animals = [ind for ind in individuals if ind in index.get_level_values('individuals')]
+                labeled_bpts = [bp for bp in bodyparts if bp in index.get_level_values('bodyparts')]
+                for animal in labeled_animals:
+                    PlottingResults(tmpfolder, Dataframe, cfg, labeled_bpts, animal,
+                                    showfigures, suffix + animal + '.png')
 
     print('Plots created! Please check the directory "plot-poses" within the video directory')
 
