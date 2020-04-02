@@ -162,7 +162,7 @@ class Extract_frames(wx.Panel):
         else:
             crop = False
         if self.crop_choice.GetStringSelection() == 'GUI':
-            crop = GUI
+            crop = 'GUI'
         else:
             crop = False
 
@@ -178,7 +178,7 @@ class Extract_frames(wx.Panel):
 
         slider_width = self.slider_width.GetValue()
 
-        deeplabcut.extract_frames(self.config,mode,algo,crop=False,userfeedback=userfeedback,cluster_step=self.cluster_step.GetValue(),cluster_resizewidth=30,cluster_color=False,opencv=opencv,slider_width=slider_width)
+        deeplabcut.extract_frames(self.config,mode,algo,crop=crop,userfeedback=userfeedback,cluster_step=self.cluster_step.GetValue(),cluster_resizewidth=30,cluster_color=False,opencv=opencv,slider_width=slider_width)
 
     def reset_extract_frames(self,event):
         """
