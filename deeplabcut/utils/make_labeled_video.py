@@ -384,9 +384,10 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
                 cropping=metadata['data']["cropping"]
                 [x1,x2,y1,y2]=metadata['data']["cropping_parameters"]
                 labeled_bpts = [bp for bp in bodyparts if bp in Dataframe.columns.get_level_values('bodyparts')]
-                if fastmode==False:
+                if not fastmode:
                     tmpfolder = os.path.join(str(videofolder),'temp-' + vname)
-                    auxiliaryfunctions.attempttomakefolder(tmpfolder)
+                    if save_frames:
+                        auxiliaryfunctions.attempttomakefolder(tmpfolder)
                     clip = vp(video)
                     CreateVideoSlow(videooutname,clip,Dataframe,tmpfolder,cfg["dotsize"],cfg["colormap"],cfg["alphavalue"],cfg["pcutoff"],
                                     trailpoints,cropping,x1,x2,y1,y2,save_frames,labeled_bpts,outputframerate,Frames2plot,bodyparts2connect,

@@ -524,7 +524,7 @@ def LoadAnalyzedData(videofolder,vname,DLCscorer,filtered):
         metadata=LoadVideoMetadata(fn)
         datafound=True
     except FileNotFoundError:
-        datanames=[fn for fn in os.listdir(os.curdir) if (vname in fn) and (".h5" in fn) and ("resnet" in fn or "mobilenet" in fn)]
+        datanames=[fn for fn in os.listdir(videofolder) if (vname in fn) and (".h5" in fn) and ("resnet" in fn or "mobilenet" in fn)]
         if len(datanames)==0:
             print("The video was not analyzed with this scorer:", DLCscorer)
             print("No other scorers were found, please use the function 'analyze_videos' first.")
