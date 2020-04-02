@@ -376,26 +376,27 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
             datafound,metadata,Dataframe,DLCscorer,suffix=auxiliaryfunctions.LoadAnalyzedData(str(videofolder),vname,DLCscorer,filtered) #returns boolean variable if data was found and metadata + pandas array
 
             if all(individuals) and datafound:
-                Dataframe = Dataframe.copy().loc(axis=1)[:, individuals]
+                Dataframe = Dataframe.loc(axis=1)[:, individuals]
 
             videooutname=os.path.join(vname + DLCscorer+suffix+'_labeled.mp4')
             if datafound and not os.path.isfile(videooutname): #checking again, for this loader video could exist
                 #Loading cropping data used during analysis
                 cropping=metadata['data']["cropping"]
                 [x1,x2,y1,y2]=metadata['data']["cropping_parameters"]
+                labeled_bpts = [bp for bp in bodyparts if bp in Dataframe.columns.get_level_values('bodyparts')]
                 if fastmode==False:
                     tmpfolder = os.path.join(str(videofolder),'temp-' + vname)
                     auxiliaryfunctions.attempttomakefolder(tmpfolder)
                     clip = vp(video)
                     CreateVideoSlow(videooutname,clip,Dataframe,tmpfolder,cfg["dotsize"],cfg["colormap"],cfg["alphavalue"],cfg["pcutoff"],
-                                    trailpoints,cropping,x1,x2,y1,y2,save_frames,bodyparts,outputframerate,Frames2plot,bodyparts2connect,
+                                    trailpoints,cropping,x1,x2,y1,y2,save_frames,labeled_bpts,outputframerate,Frames2plot,bodyparts2connect,
                                     skeleton_color,draw_skeleton,displaycropped,color_by)
                 else:
                     if displaycropped: #then the cropped video + the labels is depicted
                         clip = vp(fname = video,sname = videooutname,codec=codec,sw=x2-x1,sh=y2-y1)
                     else: #then the full video + the (perhaps in cropped mode analyzed labels) are depicted
                         clip = vp(fname = video,sname = videooutname,codec=codec)
-                    CreateVideo(clip,Dataframe,cfg["pcutoff"],cfg["dotsize"],cfg["colormap"],bodyparts,trailpoints,cropping,x1,x2,y1,y2,bodyparts2connect,skeleton_color,draw_skeleton,displaycropped,color_by)
+                    CreateVideo(clip,Dataframe,cfg["pcutoff"],cfg["dotsize"],cfg["colormap"],labeled_bpts,trailpoints,cropping,x1,x2,y1,y2,bodyparts2connect,skeleton_color,draw_skeleton,displaycropped,color_by)
             else: #check if tracks exist!
 
                 ## TODO: intergrate with standard code for dataframes.
