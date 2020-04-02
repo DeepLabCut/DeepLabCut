@@ -452,13 +452,13 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
                             plt.gca().invert_yaxis()
                             plt.savefig(outfolder+'/'+imname+'.png')
 
-                    videooutname=str(video)+'_DLC.mp4'
+                    videooutname=str(video)+'_DLClabeled.mp4'
                     outputframerate=30
                     os.chdir(outfolder)
 
                     subprocess.call([
                     'ffmpeg', '-framerate',
-                    str(30), '-i', 'frame%0'+str(strwidth)+'d.png', '-r', str(outputframerate),'../'+videooutname])
+                    str(30), '-i', 'frame%0'+str(strwidth)+'d.png', '-r', str(outputframerate), videooutname])
 
     os.chdir(start_path)
 
