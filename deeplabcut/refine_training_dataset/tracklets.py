@@ -658,3 +658,9 @@ def refine_tracklets(config, picklefile, video,
     viz = TrackletVisualizer(manager, video, trail_len)
     viz.show()
     return manager
+
+
+def convert_raw_tracks_to_h5(config, tracks_pickle, output_name=''):
+    manager = TrackletManager(config, 0, 0)
+    manager.load_tracklets_from_pickle(tracks_pickle)
+    manager.save(output_name)
