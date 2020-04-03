@@ -803,7 +803,7 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,
 def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1,
     trainingsetindex=0, destfolder=None,BPTS=None, iBPTS=None,PAF=None,printintermediate=False,inferencecfg=None,modelprefix=''):
     """
-    WIP function. Ulimately, should be called at the end of deeplabcut.analyze for a multianimal project!
+    WIP function. Ultimately, should be called at the end of deeplabcut.analyze for a multianimal project!
 
     Parameters
     ----------
@@ -851,7 +851,7 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1,
         raise FileNotFoundError("It seems the model for shuffle %s and trainFraction %s does not exist."%(shuffle,trainFraction))
 
     if 'multi-animal' not in dlc_cfg['dataset_type']:
-        raise ValueError("This function is only required for multianiaml projects!")
+        raise ValueError("This function is only required for multianimal projects!")
 
     path_inference_config = Path(modelfolder) / 'test' / 'inference_cfg.yaml'
 

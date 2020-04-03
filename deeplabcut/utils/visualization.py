@@ -189,10 +189,10 @@ def make_multianimal_labeled_image(frame, coords_truth, coords_pred, probs_pred,
             continue
 
         reliable = np.repeat(prob_pred >= pcutoff, coord_pred.shape[1], axis=1)
-        ax.plot(*coord_pred[reliable].T, labels[1], ms=dotsize,
+        ax.plot(*coord_pred[reliable[:, 0]].T, labels[1], ms=dotsize,
                 alpha=alphavalue, color=color)
         if not np.all(reliable):
-            ax.plot(*coord_pred[~reliable].T, labels[2], ms=dotsize,
+            ax.plot(*coord_pred[~reliable[:, 0]].T, labels[2], ms=dotsize,
                     alpha=alphavalue, color=color)
     fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
     return fig
