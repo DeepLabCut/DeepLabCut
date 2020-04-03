@@ -248,7 +248,7 @@ def extract_detection_withgroundtruth_python(cfg, groundtruthcoordinates, scmap,
     for p_idx in range(num_joints):
         map_ = scmap[:, :, p_idx]
         xy = peak_local_max(map_, min_distance=radius, threshold_abs=threshold)
-        prob = map_[xy[:, 0], xy[:, 1]]
+        prob = map_[xy[:, 0], xy[:, 1]][:, np.newaxis]
         pos = xy[:, ::-1] * stride + halfstride + locref[xy[:, 0], xy[:, 1], p_idx]
         unProb[p_idx] = np.round(prob, 5)
         unPos[p_idx] = np.round(pos, 3)

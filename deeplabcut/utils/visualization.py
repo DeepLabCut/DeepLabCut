@@ -188,7 +188,7 @@ def make_multianimal_labeled_image(frame, coords_truth, coords_pred, probs_pred,
         if not coord_pred.shape[0]:
             continue
 
-        reliable = np.repeat(prob_pred >= pcutoff,coord_pred.shape[1],axis=1)
+        reliable = np.repeat(prob_pred >= pcutoff, coord_pred.shape[1], axis=1)
         ax.plot(*coord_pred[reliable].T, labels[1], ms=dotsize,
                 alpha=alphavalue, color=color)
         if not np.all(reliable):
