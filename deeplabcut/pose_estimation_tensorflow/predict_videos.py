@@ -803,7 +803,7 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,
 def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1,
     trainingsetindex=0, destfolder=None,BPTS=None, iBPTS=None,PAF=None,printintermediate=False,inferencecfg=None,modelprefix=''):
     """
-    WIP function. Ulimatly, should be called at the end of deeplabcut.analyze for a multianimal project!
+    WIP function. Ulimately, should be called at the end of deeplabcut.analyze for a multianimal project!
 
     Parameters
     ----------
@@ -976,8 +976,8 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1,
         os.chdir(str(start_path))
 
         #TODO: UPDATE!!
-        print("The videos were analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
-        print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
+        print("The tracklets were created. Now you can 'refine_tracklets' \n You can create labeled videos with 'create_labeled_video'.")
+        #print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
     else:
         print("No video(s) found. Please check your path!")
 
