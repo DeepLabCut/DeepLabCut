@@ -10,8 +10,9 @@ project_path: /media/alex/dropboxdisk/Dropbox/Collaborations/Cancer/DLCdev/examp
 
     # Annotation data set configuration (and individual video cropping parameters)
 video_sets:
-  videos/test011_xy01_combined.avi:
-    crop: 0, 400, 0, 400
+  videos/montblanccropped.mov:
+    crop: 0, 1920, 0, 1080
+
 #  videos/montblanc.mov:
 #    crop: 0, 1920, 0, 1080
 
@@ -37,7 +38,7 @@ skeleton:
 
 skeleton_color: black
 pcutoff: 0.1
-dotsize: 12
+dotsize: 7
 alphavalue: 0.7
 colormap: jet
 
@@ -45,7 +46,6 @@ colormap: jet
 TrainingFraction:
 - 0.95
 iteration: 0
-resnet:
 snapshotindex: -1
 batch_size: 8
 
