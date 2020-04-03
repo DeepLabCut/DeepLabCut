@@ -463,7 +463,7 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
     os.chdir(start_path)
 
 
-def create_video_with_all_detections(config, videoname, DLCscorername ,destfolder=None):
+def create_video_with_all_detections(config, videos, DLCscorername ,destfolder=None):
     """
     Create a video labeled with all the detections stored in a '*_full.pickle' file.
 
@@ -472,8 +472,9 @@ def create_video_with_all_detections(config, videoname, DLCscorername ,destfolde
     config : str
         Absolute path to the config.yaml file
 
-    videoname : str
-        Absolute path to the raw video
+    videos : list of str
+        A list of strings containing the full paths to videos for analysis or a path to the directory,
+        where all the videos with same extension are stored.
 
     DLCscorername: str
         Name of network. E.g. 'DLC_resnet50_project_userMar23shuffle1_50000
@@ -485,54 +486,56 @@ def create_video_with_all_detections(config, videoname, DLCscorername ,destfolde
     from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import convertdetectiondict2listoflist
     import pickle, re
     cfg = auxiliaryfunctions.read_config(config)
-    if destfolder is None:
-        outputname = '{}_full.mp4'.format(os.path.splitext(videoname)[0]+DLCscorername)
-        full_pickle=os.path.join(os.path.splitext(videoname)[0]+DLCscorername+'_full.pickle')
-    else:
-        outputname = os.path.join(destfolder,str(Path(videoname).stem)+DLCscorername+'_full.mp4')
-        full_pickle=os.path.join(destfolder,str(Path(videoname).stem)+DLCscorername+'_full.pickle')
 
-    if not(os.path.isfile(outputname)):
-        print("Creating labeled video for ", str(Path(videoname).stem))
-        with open(full_pickle, 'rb') as file:
-            data = pickle.load(file)
-        header = data.pop('metadata')
-        all_jointnames = header['all_joints_names']
-        numjoints = len(all_jointnames)
-        bpts = range(numjoints)
-        frame_names = list(data)
-        frames = [int(re.findall(r'\d+', name)[0]) for name in frame_names]
-        colorclass = plt.cm.ScalarMappable(cmap=cfg['colormap'])
-        C = colorclass.to_rgba(np.linspace(0, 1, numjoints))
-        colors = (C[:, :3] * 255).astype(np.uint8)
+    for video in videos:
+        if destfolder is None:
+            outputname = '{}_full.mp4'.format(os.path.splitext(video)[0]+DLCscorername)
+            full_pickle=os.path.join(os.path.splitext(video)[0]+DLCscorername+'_full.pickle')
+        else:
+            outputname = os.path.join(destfolder,str(Path(video).stem)+DLCscorername+'_full.mp4')
+            full_pickle=os.path.join(destfolder,str(Path(video).stem)+DLCscorername+'_full.pickle')
 
-        pcutoff = cfg['pcutoff']
-        dotsize = cfg['dotsize']
-        clip = vp(fname=videoname, sname=outputname, codec='mp4v')
-        ny, nx = clip.height(), clip.width()
+        if not(os.path.isfile(outputname)):
+            print("Creating labeled video for ", str(Path(video).stem))
+            with open(full_pickle, 'rb') as file:
+                data = pickle.load(file)
+            header = data.pop('metadata')
+            all_jointnames = header['all_joints_names']
+            numjoints = len(all_jointnames)
+            bpts = range(numjoints)
+            frame_names = list(data)
+            frames = [int(re.findall(r'\d+', name)[0]) for name in frame_names]
+            colorclass = plt.cm.ScalarMappable(cmap=cfg['colormap'])
+            C = colorclass.to_rgba(np.linspace(0, 1, numjoints))
+            colors = (C[:, :3] * 255).astype(np.uint8)
 
-        for n in trange(clip.nframes):
-            frame = clip.load_frame()
-            try:
-                ind = frames.index(n)
-                dets = convertdetectiondict2listoflist(data[frame_names[ind]], bpts)
-                for i, det in enumerate(dets):
-                    color = colors[i]
-                    for x, y, p, _ in det:
-                        if p > pcutoff:
-                            rr, cc = circle(y, x, dotsize, shape=(ny, nx))
-                            frame[rr, cc] = color
-            except ValueError:  # No data stored for that particular frame
-                print(n,'no data')
-                pass
-            try:
-                clip.save_frame(frame)
-            except:
-                print(n,"frame writing error.")
-                pass
-        clip.close()
-    else:
-        print("Detections already plotted, ", outputname)
+            pcutoff = cfg['pcutoff']
+            dotsize = cfg['dotsize']
+            clip = vp(fname=video, sname=outputname, codec='mp4v')
+            ny, nx = clip.height(), clip.width()
+
+            for n in trange(clip.nframes):
+                frame = clip.load_frame()
+                try:
+                    ind = frames.index(n)
+                    dets = convertdetectiondict2listoflist(data[frame_names[ind]], bpts)
+                    for i, det in enumerate(dets):
+                        color = colors[i]
+                        for x, y, p, _ in det:
+                            if p > pcutoff:
+                                rr, cc = circle(y, x, dotsize, shape=(ny, nx))
+                                frame[rr, cc] = color
+                except ValueError:  # No data stored for that particular frame
+                    print(n,'no data')
+                    pass
+                try:
+                    clip.save_frame(frame)
+                except:
+                    print(n,"frame writing error.")
+                    pass
+            clip.close()
+        else:
+            print("Detections already plotted, ", outputname)
 
 
 if __name__ == '__main__':
