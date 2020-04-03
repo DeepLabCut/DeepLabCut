@@ -78,7 +78,7 @@ class Create_training_dataset(wx.Panel):
 
         shuffle_text = wx.StaticBox(self, label="Or set a specific shuffle indx (1 network only)")
         shuffle_text_boxsizer = wx.StaticBoxSizer(shuffle_text, wx.VERTICAL)
-        self.shuffle = wx.SpinCtrl(self, value='1',min=0,max=100)
+        self.shuffle = wx.SpinCtrl(self, value='1',min=1,max=100)
         shuffle_text_boxsizer.Add(self.shuffle,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
         trainingindex_box = wx.StaticBox(self, label="Specify the trainingset index")
