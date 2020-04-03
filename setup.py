@@ -28,7 +28,7 @@ setuptools.setup(
                       'h5py','intel-openmp','imgaug',
                       'ipython','ipython-genutils','numba',
                       'matplotlib','moviepy<=1.0.1','numpy==1.16.4','opencv-python',
-                      'pandas','patsy','python-dateutil','pyyaml','requests',
+                      'pandas>=1.0.1','patsy','python-dateutil','pyyaml','requests',
                       'ruamel.yaml>=0.15.0','setuptools','scikit-image','scikit-learn',
                       'scipy','six','statsmodels','tables',
                       'tensorpack',
