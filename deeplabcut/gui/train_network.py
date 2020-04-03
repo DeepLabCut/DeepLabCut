@@ -71,7 +71,7 @@ class Train_network(wx.Panel):
 
         shuffles_text = wx.StaticBox(self, label="Specify the shuffle")
         shuffles_text_boxsizer = wx.StaticBoxSizer(shuffles_text, wx.VERTICAL)
-        self.shuffles = wx.SpinCtrl(self, value='1',min=1,max=100)
+        self.shuffles = wx.SpinCtrl(self, value='1',min=0,max=100)
         shuffles_text_boxsizer.Add(self.shuffles,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
         trainingindex = wx.StaticBox(self, label="Specify the trainingset index")
@@ -258,7 +258,7 @@ class Train_network(wx.Panel):
             maxiters = int(self.max_iters.Children[0].GetValue())
         else:
             maxiters = int(self.max_iters.GetValue())
-            
+
         deeplabcut.train_network(self.config,shuffle,
                                  trainingsetindex,gputouse=None,
                                  max_snapshots_to_keep=max_snapshots_to_keep,

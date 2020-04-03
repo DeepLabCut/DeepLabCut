@@ -85,7 +85,7 @@ class Extract_frames(wx.Panel):
         self.cluster_step = wx.SpinCtrl(self, value='1')
         cluster_stepboxsizer.Add(self.cluster_step,20, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
-        slider_width_text = wx.StaticBox(self, label="Specify the slider width")
+        slider_width_text = wx.StaticBox(self, label="Specify the GUI slider width")
         slider_widthboxsizer = wx.StaticBoxSizer(slider_width_text, wx.VERTICAL)
         self.slider_width = wx.SpinCtrl(self, value='25')
         slider_widthboxsizer.Add(self.slider_width,20, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
