@@ -53,7 +53,7 @@ def AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,input
         cap=cv2.VideoCapture(video)
         if not cap.isOpened():
             raise IOError('Video could not be opened. Please check that the path is valid.')
-            
+
         fps = cap.get(5) #https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
         nframes = int(cap.get(7))
         duration=nframes*1./fps
@@ -174,7 +174,8 @@ def GetPoseandCostsF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize, c
         'PAFgraph': dlc_cfg.partaffinityfield_graph,
         "all_joints": [[i] for i in range(len(dlc_cfg.all_joints))],
         "all_joints_names": [dlc_cfg.all_joints_names[i] for i in range(len(dlc_cfg.all_joints))],
-        "nframes": nframes
+        "nframes": nframes,
+        "c_engine": c_engine,
         }
     return PredicteData,nframes
 

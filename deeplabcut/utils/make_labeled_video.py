@@ -7,8 +7,7 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 
-Hao Wu, hwu01@g.harvard.edu contributed the original OpenCV class. Thanks.
-from deeplabcut.utils.video_processor import VideoProcessorCV as vp
+Hao Wu, hwu01@g.harvard.edu contributed the original OpenCV class. Thanks!
 You can find the directory for your ffmpeg bindings by: "find / | grep ffmpeg" and then setting it.
 """
 
@@ -499,8 +498,11 @@ def create_video_with_all_detections(config, videos, DLCscorername ,destfolder=N
             print("Creating labeled video for ", str(Path(video).stem))
             with open(full_pickle, 'rb') as file:
                 data = pickle.load(file)
+
             header = data.pop('metadata')
+            print(header)
             all_jointnames = header['all_joints_names']
+
             numjoints = len(all_jointnames)
             bpts = range(numjoints)
             frame_names = list(data)
