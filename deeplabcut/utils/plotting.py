@@ -39,8 +39,8 @@ def PlottingResults(tmpfolder, Dataframe, cfg, bodyparts2plot, individuals2plot,
     colors = get_cmap(len(bodyparts2plot), name=cfg['colormap'])
     alphavalue = cfg['alphavalue']
     if individuals2plot:
-        Dataframe = Dataframe.copy().loc(axis=1)[:, individuals2plot]
-
+        Dataframe = Dataframe.loc(axis=1)[:, individuals2plot]
+    animal_bpts = Dataframe.columns.get_level_values('bodyparts')
     # Pose X vs pose Y
     fig1 = plt.figure(figsize=(8, 6))
     ax1 = fig1.add_subplot(111)
@@ -68,19 +68,20 @@ def PlottingResults(tmpfolder, Dataframe, cfg, bodyparts2plot, individuals2plot,
     bins = np.linspace(0, np.amax(Dataframe.max()), 100)
 
     for bpindex, bp in enumerate(bodyparts2plot):
-        prob = Dataframe.xs((bp, 'likelihood'), level=(-2, -1), axis=1).values.squeeze()
-        mask = prob < pcutoff
-        temp_x = np.ma.array(Dataframe.xs((bp, 'x'), level=(-2, -1), axis=1).values.squeeze(), mask=mask)
-        temp_y = np.ma.array(Dataframe.xs((bp, 'y'), level=(-2, -1), axis=1).values.squeeze(), mask=mask)
-        ax1.plot(temp_x, temp_y, '.', color=colors(bpindex), alpha=alphavalue)
+        if bp in animal_bpts:  # Avoid 'unique' bodyparts only present in the 'single' animal
+            prob = Dataframe.xs((bp, 'likelihood'), level=(-2, -1), axis=1).values.squeeze()
+            mask = prob < pcutoff
+            temp_x = np.ma.array(Dataframe.xs((bp, 'x'), level=(-2, -1), axis=1).values.squeeze(), mask=mask)
+            temp_y = np.ma.array(Dataframe.xs((bp, 'y'), level=(-2, -1), axis=1).values.squeeze(), mask=mask)
+            ax1.plot(temp_x, temp_y, '.', color=colors(bpindex), alpha=alphavalue)
 
-        ax2.plot(temp_x, '--', color=colors(bpindex), alpha=alphavalue)
-        ax2.plot(temp_y, '-', color=colors(bpindex), alpha=alphavalue)
+            ax2.plot(temp_x, '--', color=colors(bpindex), alpha=alphavalue)
+            ax2.plot(temp_y, '-', color=colors(bpindex), alpha=alphavalue)
 
-        ax3.plot(prob, '-', color=colors(bpindex), alpha=alphavalue)
+            ax3.plot(prob, '-', color=colors(bpindex), alpha=alphavalue)
 
-        Histogram(temp_x, colors(bpindex), bins, ax4)
-        Histogram(temp_y, colors(bpindex), bins, ax4)
+            Histogram(temp_x, colors(bpindex), bins, ax4)
+            Histogram(temp_y, colors(bpindex), bins, ax4)
 
     sm = plt.cm.ScalarMappable(cmap=plt.get_cmap(cfg['colormap']), norm=plt.Normalize(vmin=0, vmax=len(bodyparts2plot)-1))
     sm._A = []
@@ -157,6 +158,7 @@ def plot_trajectories(config, videos, videotype='.avi', shuffle=1, trainingsetin
         print('No videos found. Make sure you passed a list of videos and that *videotype* is right.')
         return
 
+    failed = []
     for video in Videos:
         if destfolder is None:
             videofolder = str(Path(video).parents[0])
@@ -169,6 +171,8 @@ def plot_trajectories(config, videos, videotype='.avi', shuffle=1, trainingsetin
 
         if notanalyzed:
             print("The video was not analyzed with this scorer:", DLCscorer)
+            failed.append(True)
+            continue
         else:
             #LoadData
             print("Loading ", video, "and data.")
@@ -186,8 +190,15 @@ def plot_trajectories(config, videos, videotype='.avi', shuffle=1, trainingsetin
                 for animal in labeled_animals:
                     PlottingResults(tmpfolder, Dataframe, cfg, labeled_bpts, animal,
                                     showfigures, suffix + animal + '.png')
+                failed.append(False)
+            else:
+                failed.append(True)
 
-    print('Plots created! Please check the directory "plot-poses" within the video directory')
+    if not all(failed):
+        print('Plots created! Please check the directory "plot-poses" within the video directory')
+    else:
+        print(f'Plots could not be created! '
+              f'Videos were not evaluated with the current scorer {DLCscorer}.')
 
 
 if __name__ == '__main__':
