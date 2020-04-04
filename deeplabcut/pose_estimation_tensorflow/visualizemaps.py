@@ -45,7 +45,7 @@ def extract_maps(config, shuffle, trainingsetindex=0, comparisonbodyparts="all",
     Examples
     --------
     If you do not want to extract the data for image 0 and 103 (of the training set).
-    >>> deeplabcut.visualizemaps(configfile,0,Indices=[0,103])
+    >>> deeplabcut.extract_maps(configfile,0,Indices=[0,103])
 
     """
     from deeplabcut.utils.auxfun_videos import imread, imresize
@@ -200,7 +200,7 @@ def extract_maps(config, shuffle, trainingsetindex=0, comparisonbodyparts="all",
                             trainingfram=True
                         DATA[imageindex]=[image,scmap,locref,paf,bptnames,pagraph,imagename,trainingfram]
                     #return DATA
-                    Maps[trainFraction][snapindex]=DATA
+                    Maps[trainFraction][Snapshots[snapindex]]=DATA
     os.chdir(str(start_path))
     return Maps
 
@@ -279,3 +279,34 @@ def visualize_paf(image, paf, pafgraph, nplots_per_row=3, step=5, labels=None):
         ax.quiver(X[::step, ::step], Y[::step, ::step], U[::step, ::step], V[::step, ::step],
                   scale=50, headaxislength=4, alpha=1, width=0.002, color='r', angles='xy')
     return fig, axes
+
+
+def save_all_maps(config, shuffle, trainingsetindex=0, comparisonbodyparts='all',
+                  gputouse=None, rescale=False, Indices=None, modelprefix='', dest_folder=None):
+    from deeplabcut.utils.auxiliaryfunctions import read_config, attempttomakefolder
+    from tqdm import tqdm
+
+    cfg = read_config(config)
+    if not dest_folder:
+        dest_folder = os.path.join(cfg['project_path'], 'maps')
+    attempttomakefolder(dest_folder)
+    dest_path = os.path.join(dest_folder, 'Img{}_{}_{}_{}_{}.png')
+
+    data = extract_maps(config, shuffle, trainingsetindex, comparisonbodyparts,
+                        gputouse, rescale, Indices, modelprefix)
+    for frac, values in data.items():
+        for snap, maps in values.items():
+            for imagenr in tqdm(maps):
+                image, scmap, locref, paf, bptnames, pafgraph, imname, trainingframe = maps[imagenr]
+                scmap, (locref_x, locref_y), paf = resize_all_maps(image, scmap, locref, paf)
+                fig1, _ = visualize_scoremaps(image, scmap, labels=bptnames)
+                fig2, _ = visualize_locrefs(image, scmap, locref_x, locref_y, labels=bptnames)
+                fig3, _ = visualize_locrefs(image, scmap, locref_x, locref_y, zoom_width=100, labels=bptnames)
+                fig4, _ = visualize_paf(image, paf, pafgraph, labels=bptnames)
+
+                label = 'train' if trainingframe else 'test'
+                fig1.savefig(dest_path.format(imagenr, 'scmap', label, frac, snap))
+                fig2.savefig(dest_path.format(imagenr, 'locref', label, frac, snap))
+                fig3.savefig(dest_path.format(imagenr, 'locrefzoom', label, frac, snap))
+                fig4.savefig(dest_path.format(imagenr, 'paf', label, frac, snap))
+                plt.close('all')
