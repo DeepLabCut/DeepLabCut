@@ -34,7 +34,7 @@ else: #standard use [wxpython supported]
     from deeplabcut.generate_training_dataset import adddatasetstovideolistandviceversa,  dropduplicatesinannotatinfiles
     from deeplabcut.gui.launch_script import launch_dlc
 
-    from deeplabcut.refine_training_dataset import refine_labels, refine_tracklets
+    from deeplabcut.refine_training_dataset import refine_labels, refine_tracklets, convert_raw_tracks_to_h5
     from deeplabcut.utils import select_crop_parameters
 
 if os.environ.get('Colab', default=False) == 'True':
@@ -48,7 +48,7 @@ else:
 from deeplabcut.pose_estimation_tensorflow import train_network, return_train_network_path
 from deeplabcut.pose_estimation_tensorflow import evaluate_network, return_evaluate_network_data
 from deeplabcut.pose_estimation_tensorflow import analyze_videos, analyze_time_lapse_frames, convert_detections2tracklets
-from deeplabcut.pose_estimation_tensorflow import visualizemaps
+from deeplabcut.pose_estimation_tensorflow import extract_maps, visualize_scoremaps, visualize_locrefs, visualize_paf
 
 from deeplabcut.pose_estimation_3d import calibrate_cameras,check_undistortion,triangulate,create_labeled_video_3d
 

@@ -8,10 +8,14 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-import logging, os
+import os
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
 
-def visualizemaps(config, shuffle, trainingsetindex=0, comparisonbodyparts="all",
-                gputouse=None, rescale=False, Indices=None, modelprefix=''):
+
+def extract_maps(config, shuffle, trainingsetindex=0, comparisonbodyparts="all",
+                 gputouse=None, rescale=False, Indices=None, modelprefix=''):
     """
     Extracts the scoremap, locref, partaffinityfields (if available).
 
@@ -200,9 +204,78 @@ def visualizemaps(config, shuffle, trainingsetindex=0, comparisonbodyparts="all"
     os.chdir(str(start_path))
     return Maps
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('config', help='Path to yaml configuration file.')
-    cli_args = parser.parse_args()
 
-    display_dataset(Path(cli_args.config).resolve())
+def resize_to_same_shape(array, array_dest):
+    shape_dest = array_dest.shape
+    return cv2.resize(array, (shape_dest[1], shape_dest[0]), interpolation=cv2.INTER_CUBIC)
+
+
+def resize_all_maps(image, scmap, locref, paf):
+    scmap = resize_to_same_shape(scmap, image)
+    locref_x = resize_to_same_shape(locref[:, :, :, 0], image)
+    locref_y = resize_to_same_shape(locref[:, :, :, 1], image)
+    paf = resize_to_same_shape(paf, image)
+    return scmap, (locref_x, locref_y), paf
+
+
+def form_grid_layout(nplots, nplots_per_row, nx, ny, labels):
+    nrows = nplots // nplots_per_row
+    fig, axes = plt.subplots(nrows, nplots_per_row, frameon=False)
+    for i, ax in enumerate(axes.flat):
+        if labels is not None:
+            ax.set_title(labels[i])
+        ax.set_xlim(0, nx)
+        ax.set_ylim(0, ny)
+        ax.axis('off')
+        ax.invert_yaxis()
+    fig.tight_layout()
+    return fig, axes
+
+
+def visualize_scoremaps(image, scmap, nplots_per_row=3, labels=None):
+    ny, nx = np.shape(image)[:2]
+    nplots = scmap.shape[2]
+    fig, axes = form_grid_layout(nplots, nplots_per_row, nx, ny, labels=labels)
+    for i, ax in enumerate(axes.flat):
+        ax.imshow(image)
+        ax.imshow(scmap[:, :, i], alpha=0.5)
+    return fig, axes
+
+
+def visualize_locrefs(image, scmap, locref_x, locref_y, step=5, zoom_width=0, nplots_per_row=3, labels=None):
+    fig, axes = visualize_scoremaps(image, scmap, nplots_per_row, labels)
+    for i, ax in enumerate(axes.flat):
+        U = locref_x[:, :, i]
+        V = locref_y[:, :, i]
+        X, Y = np.meshgrid(np.arange(U.shape[1]), np.arange(U.shape[0]))
+        M = np.zeros(U.shape, dtype='bool')
+        map_ = scmap[:, :, i]
+        M[map_ < .5] = True
+        U = np.ma.masked_array(U, mask=M)
+        V = np.ma.masked_array(V, mask=M)
+        ax.quiver(X[::step, ::step], Y[::step, ::step], U[::step, ::step], V[::step, ::step],
+                  color='r', units='x', scale_units='xy', scale=1, angles='xy')
+        if zoom_width > 0:
+            maxloc = np.unravel_index(np.argmax(map_), map_.shape)
+            ax.set_xlim(maxloc[1] - zoom_width, maxloc[1] + zoom_width)
+            ax.set_ylim(maxloc[0] + zoom_width, maxloc[0] - zoom_width)
+    return fig, axes
+
+
+def visualize_paf(image, paf, pafgraph, nplots_per_row=3, step=5, labels=None):
+    ny, nx = np.shape(image)[:2]
+    nplots = len(pafgraph)
+    titles = [(labels[i], labels[j]) for i, j in pafgraph] if labels is not None else labels
+    fig, axes = form_grid_layout(nplots, nplots_per_row, nx, ny, labels=titles)
+    for i, ax in enumerate(axes.flat):
+        ax.imshow(image)
+        U = paf[:, :, 2 * i]
+        V = paf[:, :, 2 * i + 1]
+        X, Y = np.meshgrid(np.arange(U.shape[1]), np.arange(U.shape[0]))
+        M = np.zeros(U.shape, dtype='bool')
+        M[U ** 2 + V ** 2 < 0.5 * 0.5 ** 2] = True
+        U = np.ma.masked_array(U, mask=M)
+        V = np.ma.masked_array(V, mask=M)
+        ax.quiver(X[::step, ::step], Y[::step, ::step], U[::step, ::step], V[::step, ::step],
+                  scale=50, headaxislength=4, alpha=1, width=0.002, color='r', angles='xy')
+    return fig, axes

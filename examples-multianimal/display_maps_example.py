@@ -53,7 +53,7 @@ if os.path.isfile(filename):
     with open(filename, 'rb') as handle:
         Maps=pickle.load(handle)
 else:
-    Maps=deeplabcut.visualizemaps(configfile,0,Indices=Ind)
+    Maps=deeplabcut.extract_maps(configfile, 0, Indices=Ind)
     with open(filename, 'wb') as f:
             pickle.dump(Maps, f,pickle.HIGHEST_PROTOCOL)
 
