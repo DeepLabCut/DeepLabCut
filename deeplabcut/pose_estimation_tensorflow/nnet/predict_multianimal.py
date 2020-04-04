@@ -151,6 +151,14 @@ def extract_detections(cfg, scmap, locref, pafs, nms_radius, det_min_score):
     Detections['costs']=AssociationCosts(cfg,unPos,pafs,stride,halfstride)
     return Detections
 
+
+def find_local_maxima(scmap, radius, threshold):
+    grid = peak_local_max(scmap, min_distance=radius, threshold_abs=threshold, exclude_border=False, indices=False)
+    labels = measurements.label(grid)[0]
+    xy = measurements.center_of_mass(grid, labels, range(1, np.max(labels) + 1))
+    return np.asarray(xy, dtype=np.int).reshape((-1, 2))
+
+
 def extract_detections_python(cfg, scmap, locref, pafs, radius, threshold):
     Detections = {}
     stride, halfstride = cfg.stride, cfg.stride * .5
@@ -160,8 +168,8 @@ def extract_detections_python(cfg, scmap, locref, pafs, radius, threshold):
 
     for p_idx in range(num_joints):
         map_ = scmap[:, :, p_idx]
-        xy = peak_local_max(map_, min_distance=radius, threshold_abs=threshold)
-        prob = map_[xy[:, 0], xy[:, 1]]
+        xy = find_local_maxima(map_, radius, threshold)
+        prob = map_[xy[:, 0], xy[:, 1]][:, np.newaxis]
         pos = xy[:, ::-1] * stride + halfstride + locref[xy[:, 0], xy[:, 1], p_idx]
         unProb[p_idx] = np.round(prob, 5)
         unPos[p_idx] = np.round(pos, 3)
@@ -248,10 +256,7 @@ def extract_detection_withgroundtruth_python(cfg, groundtruthcoordinates, scmap,
 
     for p_idx in range(num_joints):
         map_ = scmap[:, :, p_idx]
-        grid = peak_local_max(map_, min_distance=radius, threshold_abs=threshold, exclude_border=False, indices=False)
-        labels = measurements.label(grid)[0]
-        temp = measurements.center_of_mass(grid, labels, range(1, np.max(labels) + 1))
-        xy = np.asarray(temp, dtype=np.int).reshape((-1, 2))
+        xy = find_local_maxima(map_, radius, threshold)
         prob = map_[xy[:, 0], xy[:, 1]][:, np.newaxis]
         pos = xy[:, ::-1] * stride + halfstride + locref[xy[:, 0], xy[:, 1], p_idx]
         unProb[p_idx] = np.round(prob, 5)
@@ -360,8 +365,8 @@ def extract_batchdetections_python(cfg, scmap, locref, pafs, radius, threshold):
 
     for p_idx in range(num_joints):
         map_ = scmap[:, :, p_idx]
-        xy = peak_local_max(map_, min_distance=radius, threshold_abs=threshold)
-        prob = map_[xy[:, 0], xy[:, 1]]
+        xy = find_local_maxima(map_, radius, threshold)
+        prob = map_[xy[:, 0], xy[:, 1]][:, np.newaxis]
         pos = xy[:, ::-1] * stride + halfstride + locref[xy[:, 0], xy[:, 1], p_idx]
         unProb[p_idx] = np.round(prob, 5)
         unPos[p_idx] = np.round(pos, 3)
