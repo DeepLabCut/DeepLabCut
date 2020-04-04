@@ -281,7 +281,7 @@ def visualize_paf(image, paf, pafgraph, nplots_per_row=3, step=5, labels=None):
     return fig, axes
 
 
-def save_all_maps(config, shuffle, trainingsetindex=0, comparisonbodyparts='all',
+def extract_save_all_maps(config, shuffle, trainingsetindex=0, comparisonbodyparts='all',
                   gputouse=None, rescale=False, Indices=None, modelprefix='', dest_folder=None):
     from deeplabcut.utils.auxiliaryfunctions import read_config, attempttomakefolder
     from tqdm import tqdm
