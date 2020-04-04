@@ -20,6 +20,7 @@ if int(vers[0])==1 and int(vers[1])>12:
 else:
     TF=tf
 from skimage.feature import peak_local_max
+from scipy.ndimage import measurements
 
 
 def extract_cnn_output(outputs_np, cfg):
@@ -247,7 +248,10 @@ def extract_detection_withgroundtruth_python(cfg, groundtruthcoordinates, scmap,
 
     for p_idx in range(num_joints):
         map_ = scmap[:, :, p_idx]
-        xy = peak_local_max(map_, min_distance=radius, threshold_abs=threshold, exclude_border=False)
+        grid = peak_local_max(map_, min_distance=radius, threshold_abs=threshold, exclude_border=False, indices=False)
+        labels = measurements.label(grid)[0]
+        temp = measurements.center_of_mass(grid, labels, range(1, np.max(labels) + 1))
+        xy = np.asarray(temp, dtype=np.int).reshape((-1, 2))
         prob = map_[xy[:, 0], xy[:, 1]][:, np.newaxis]
         pos = xy[:, ::-1] * stride + halfstride + locref[xy[:, 0], xy[:, 1], p_idx]
         unProb[p_idx] = np.round(prob, 5)
