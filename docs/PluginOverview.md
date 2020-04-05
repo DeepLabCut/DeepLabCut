@@ -3,8 +3,8 @@
 The DeepLabCut plugin system allows for the rapid development of new 
 pose prediction algorithms. These plugins accept raw probability data
 (TrackingData) from DeepLabCut and return the expected locations of 
-body parts (Poses). Below is a simple guide that describes how to create
-your own plugins and use them in DeepLabCut
+body parts (Poses). Below is a simple guide that describes how to 
+create plugins and use them in DeepLabCut:
 
 ### Default Plugins
 
