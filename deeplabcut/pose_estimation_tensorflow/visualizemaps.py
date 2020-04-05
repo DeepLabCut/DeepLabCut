@@ -44,7 +44,7 @@ def extract_maps(config, shuffle, trainingsetindex=0, comparisonbodyparts="all",
 
     Examples
     --------
-    If you do not want to extract the data for image 0 and 103 (of the training set).
+    If you want to extract the data for image 0 and 103 (of the training set).
     >>> deeplabcut.extract_maps(configfile,0,Indices=[0,103])
 
     """
@@ -219,15 +219,18 @@ def resize_all_maps(image, scmap, locref, paf):
 
 
 def form_grid_layout(nplots, nplots_per_row, nx, ny, labels):
-    nrows = nplots // nplots_per_row
+    nrows =int(np.ceil(nplots / nplots_per_row))
     fig, axes = plt.subplots(nrows, nplots_per_row, frameon=False)
     for i, ax in enumerate(axes.flat):
-        if labels is not None:
-            ax.set_title(labels[i])
-        ax.set_xlim(0, nx)
-        ax.set_ylim(0, ny)
-        ax.axis('off')
-        ax.invert_yaxis()
+        if i < nplots:
+            if labels is not None:
+                ax.set_title(labels[i])
+            ax.set_xlim(0, nx)
+            ax.set_ylim(0, ny)
+            ax.axis('off')
+            ax.invert_yaxis()
+        else:
+            ax.axis('off')
     fig.tight_layout()
     return fig, axes
 
@@ -237,28 +240,31 @@ def visualize_scoremaps(image, scmap, nplots_per_row=3, labels=None):
     nplots = scmap.shape[2]
     fig, axes = form_grid_layout(nplots, nplots_per_row, nx, ny, labels=labels)
     for i, ax in enumerate(axes.flat):
-        ax.imshow(image)
-        ax.imshow(scmap[:, :, i], alpha=0.5)
+        if i < nplots:
+            ax.imshow(image)
+            ax.imshow(scmap[:, :, i], alpha=0.5)
     return fig, axes
 
 
 def visualize_locrefs(image, scmap, locref_x, locref_y, step=5, zoom_width=0, nplots_per_row=3, labels=None):
     fig, axes = visualize_scoremaps(image, scmap, nplots_per_row, labels)
+    nplots = scmap.shape[2]
     for i, ax in enumerate(axes.flat):
-        U = locref_x[:, :, i]
-        V = locref_y[:, :, i]
-        X, Y = np.meshgrid(np.arange(U.shape[1]), np.arange(U.shape[0]))
-        M = np.zeros(U.shape, dtype='bool')
-        map_ = scmap[:, :, i]
-        M[map_ < .5] = True
-        U = np.ma.masked_array(U, mask=M)
-        V = np.ma.masked_array(V, mask=M)
-        ax.quiver(X[::step, ::step], Y[::step, ::step], U[::step, ::step], V[::step, ::step],
-                  color='r', units='x', scale_units='xy', scale=1, angles='xy')
-        if zoom_width > 0:
-            maxloc = np.unravel_index(np.argmax(map_), map_.shape)
-            ax.set_xlim(maxloc[1] - zoom_width, maxloc[1] + zoom_width)
-            ax.set_ylim(maxloc[0] + zoom_width, maxloc[0] - zoom_width)
+        if i < nplots:
+            U = locref_x[:, :, i]
+            V = locref_y[:, :, i]
+            X, Y = np.meshgrid(np.arange(U.shape[1]), np.arange(U.shape[0]))
+            M = np.zeros(U.shape, dtype='bool')
+            map_ = scmap[:, :, i]
+            M[map_ < .5] = True
+            U = np.ma.masked_array(U, mask=M)
+            V = np.ma.masked_array(V, mask=M)
+            ax.quiver(X[::step, ::step], Y[::step, ::step], U[::step, ::step], V[::step, ::step],
+                      color='r', units='x', scale_units='xy', scale=1, angles='xy')
+            if zoom_width > 0:
+                maxloc = np.unravel_index(np.argmax(map_), map_.shape)
+                ax.set_xlim(maxloc[1] - zoom_width, maxloc[1] + zoom_width)
+                ax.set_ylim(maxloc[0] + zoom_width, maxloc[0] - zoom_width)
     return fig, axes
 
 
@@ -283,18 +289,19 @@ def visualize_paf(image, paf, pafgraph, nplots_per_row=3, step=5, labels=None):
 
 def extract_save_all_maps(config, shuffle, trainingsetindex=0, comparisonbodyparts='all',
                   gputouse=None, rescale=False, Indices=None, modelprefix='', dest_folder=None):
-    from deeplabcut.utils.auxiliaryfunctions import read_config, attempttomakefolder
+    from deeplabcut.utils.auxiliaryfunctions import read_config, attempttomakefolder, GetEvaluationFolder
     from tqdm import tqdm
 
     cfg = read_config(config)
-    if not dest_folder:
-        dest_folder = os.path.join(cfg['project_path'], 'maps')
-    attempttomakefolder(dest_folder)
-    dest_path = os.path.join(dest_folder, 'Img{}_{}_{}_{}_{}.png')
-
     data = extract_maps(config, shuffle, trainingsetindex, comparisonbodyparts,
                         gputouse, rescale, Indices, modelprefix)
     for frac, values in data.items():
+        if not dest_folder:
+            #dest_folder = os.path.join(cfg['project_path'], 'maps')
+            dest_folder = os.path.join(cfg["project_path"],str(GetEvaluationFolder(frac,shuffle,cfg,modelprefix=modelprefix)), 'maps')
+        attempttomakefolder(dest_folder)
+        dest_path = os.path.join(dest_folder, 'Img{}_{}_{}_{}_{}_{}.png')
+
         for snap, maps in values.items():
             for imagenr in tqdm(maps):
                 image, scmap, locref, paf, bptnames, pafgraph, imname, trainingframe = maps[imagenr]
@@ -305,8 +312,8 @@ def extract_save_all_maps(config, shuffle, trainingsetindex=0, comparisonbodypar
                 fig4, _ = visualize_paf(image, paf, pafgraph, labels=bptnames)
 
                 label = 'train' if trainingframe else 'test'
-                fig1.savefig(dest_path.format(imagenr, 'scmap', label, frac, snap))
-                fig2.savefig(dest_path.format(imagenr, 'locref', label, frac, snap))
-                fig3.savefig(dest_path.format(imagenr, 'locrefzoom', label, frac, snap))
-                fig4.savefig(dest_path.format(imagenr, 'paf', label, frac, snap))
+                fig1.savefig(dest_path.format(imagenr, 'scmap', label, shuffle, frac, snap))
+                fig2.savefig(dest_path.format(imagenr, 'locref', label, shuffle, frac, snap))
+                fig3.savefig(dest_path.format(imagenr, 'locrefzoom', label, shuffle, frac, snap))
+                fig4.savefig(dest_path.format(imagenr, 'paf', label, shuffle, frac, snap))
                 plt.close('all')
