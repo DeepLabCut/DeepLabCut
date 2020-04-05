@@ -79,7 +79,7 @@ class Create_Labeled_Videos(wx.Panel):
 
         shuffle_text = wx.StaticBox(self, label="Specify the shuffle")
         shuffle_boxsizer = wx.StaticBoxSizer(shuffle_text, wx.VERTICAL)
-        self.shuffle = wx.SpinCtrl(self, value='1',min=1,max=100)
+        self.shuffle = wx.SpinCtrl(self, value='1',min=0,max=100)
         shuffle_boxsizer.Add(self.shuffle,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
         trainingset = wx.StaticBox(self, label="Specify the trainingset index")
