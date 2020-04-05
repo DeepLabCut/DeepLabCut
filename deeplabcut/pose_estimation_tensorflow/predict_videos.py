@@ -803,7 +803,7 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,
 def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1,
     trainingsetindex=0, destfolder=None,BPTS=None, iBPTS=None,PAF=None,printintermediate=False,inferencecfg=None,modelprefix=''):
     """
-    WIP function. Ultimately, should be called at the end of deeplabcut.analyze for a multianimal project!
+    This should be called at the end of deeplabcut.analyze_videos for multianimal projects!
 
     Parameters
     ----------
@@ -825,6 +825,30 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1,
     destfolder: string, optional
         Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this
         folder also needs to be passed.
+
+    BPTS: ## TODO
+        Default is None.
+
+    iBPTS: ##TODO
+        Default is None.
+
+    PAF: ## TODO
+        Default is None.
+
+    printintermediate: ## TODO
+        Default is false.
+
+    inferencecfg: ## TODO
+        Default is None.
+
+    modelprefix:
+        Default is ''.
+
+    Examples
+    --------
+    If you want to convert detections to tracklets:
+    >>> deeplabcut.convert_detections2tracklets('/analysis/project/reaching-task/config.yaml',[]'/analysis/project/video1.mp4'], videotype='.mp4')
+    --------
 
     """
     from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingutils
