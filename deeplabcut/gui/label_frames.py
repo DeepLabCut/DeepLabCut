@@ -96,7 +96,7 @@ class Label_frames(wx.Panel):
     def check_labelF(self,event):
         dlg = wx.MessageDialog(None, "This will now plot the labeled frames afer you have finished labeling!")
         result = dlg.ShowModal()
-        deeplabcut.check_labels(self.config)
+        deeplabcut.check_labels(self.config, visualizeindividuals=False)
 
     def check_labelInd(self,event):
         dlg = wx.MessageDialog(None, "This will now plot the labeled frames afer you have finished labeling!")
