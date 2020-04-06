@@ -333,16 +333,14 @@ def get_immediate_subdirectories(a_dir):
 
 def grab_files_in_folder(folder, ext='', relative=True):
     """Return the paths of files with extension *ext* present in *folder*."""
-    files = []
     for file in os.listdir(folder):
         if file.endswith(ext):
-            files.append(file if relative else os.path.join(folder, file))
-    return files
+            yield file if relative else os.path.join(folder, file)
 
 
 def GetVideoList(filename,videopath,videtype):
     ''' Get list of videos in a path (if filetype == all), otherwise just a specific file.'''
-    videos=grab_files_in_folder(videopath, videtype)
+    videos = list(grab_files_in_folder(videopath, videtype))
     if filename=='all':
         return videos
     else:
@@ -469,7 +467,7 @@ def CheckifPostProcessing(folder,vname,DLCscorer,DLCscorerlegacy,suffix='filtere
 
 
 def CheckifNotAnalyzed(destfolder,vname,DLCscorer,DLCscorerlegacy,flag='video'):
-    h5files = grab_files_in_folder(destfolder, 'h5', relative=False)
+    h5files = list(grab_files_in_folder(destfolder, 'h5', relative=False))
     if not len(h5files):
         print(f'No data were found in {destfolder}.')
         return True, h5files, DLCscorer
@@ -504,7 +502,7 @@ def CheckifNotEvaluated(folder,DLCscorer,DLCscorerlegacy,snapshot):
             return True, dataname,DLCscorer
 
 def LoadAnalyzedData(videofolder,vname,DLCscorer,filtered):
-    if filtered==True:
+    if filtered:
         try:
             fn=os.path.join(videofolder,vname + DLCscorer + 'filtered.h5')
             Dataframe = pd.read_hdf(fn)
@@ -524,21 +522,20 @@ def LoadAnalyzedData(videofolder,vname,DLCscorer,filtered):
         metadata=LoadVideoMetadata(fn)
         datafound=True
     except FileNotFoundError:
-        datanames=[fn for fn in os.listdir(videofolder) if (vname in fn) and (".h5" in fn) and ("resnet" in fn or "mobilenet" in fn)]
+        datanames = [fn for fn in grab_files_in_folder(videofolder, 'h5')
+                     if vname in fn and ("resnet" in fn or "mobilenet" in fn)]
         if len(datanames)==0:
             print("The video was not analyzed with this scorer:", DLCscorer)
             print("No other scorers were found, please use the function 'analyze_videos' first.")
             datafound=False
             metadata,Dataframe=[],[]
         elif len(datanames)>0:
-            print("The video was not analyzed with this scorer:", DLCscorer)
-            print("Other scorers were found, however:", datanames)
             datafile = datanames[0]
             if 'DeepCut_resnet' in datafile: # try the legacy scorer name instead!
                 DLCscorer='DeepCut'+(datafile.split('DeepCut')[1]).split('.h5')[0]
             else:
                 DLCscorer='DLC_'+(datafile.split('DLC_')[1]).split('.h5')[0]
-            print("Creating output for:", DLCscorer," instead.")
+            print("Creating output for:", DLCscorer)
             Dataframe = pd.read_hdf(os.path.join(videofolder, datafile))
             metadata=LoadVideoMetadata(os.path.join(videofolder, datafile.replace('tracks', '')))
             datafound=True
