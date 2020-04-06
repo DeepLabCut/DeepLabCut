@@ -62,8 +62,8 @@ class Extract_frames(wx.Panel):
         self.method_choice.Bind(wx.EVT_RADIOBOX,self.select_extract_method)
         hbox1.Add(self.method_choice,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
-#        self.crop_choice = wx.RadioBox(self, label='Want to crop the frames?', choices=['No', 'Yes'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
-#        hbox1.Add(self.crop_choice,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+        self.crop_choice = wx.RadioBox(self, label='Want to crop the frames?', choices=['False', 'True', 'GUI'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
+        hbox1.Add(self.crop_choice,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
         self.feedback_choice = wx.RadioBox(self, label='Need user feedback?', choices=['No', 'Yes'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
         hbox1.Add(self.feedback_choice,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
@@ -85,7 +85,7 @@ class Extract_frames(wx.Panel):
         self.cluster_step = wx.SpinCtrl(self, value='1')
         cluster_stepboxsizer.Add(self.cluster_step,20, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
-        slider_width_text = wx.StaticBox(self, label="Specify the slider width")
+        slider_width_text = wx.StaticBox(self, label="Specify the GUI slider width")
         slider_widthboxsizer = wx.StaticBoxSizer(slider_width_text, wx.VERTICAL)
         self.slider_width = wx.SpinCtrl(self, value='25')
         slider_widthboxsizer.Add(self.slider_width,20, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
@@ -140,14 +140,14 @@ class Extract_frames(wx.Panel):
     def select_extract_method(self,event):
         self.method = self.method_choice.GetStringSelection()
         if self.method == "manual":
-#            self.crop_choice.Enable(False)
+            self.crop_choice.Enable(False)
             self.feedback_choice.Enable(False)
             self.opencv_choice.Enable(False)
             self.algo_choice.Enable(False)
             self.cluster_step.Enable(False)
             self.slider_width.Enable(False)
         else:
-#            self.crop_choice.Enable(True)
+            self.crop_choice.Enable(True)
             self.feedback_choice.Enable(True)
             self.opencv_choice.Enable(True)
             self.algo_choice.Enable(True)
@@ -157,10 +157,15 @@ class Extract_frames(wx.Panel):
     def extract_frames(self,event):
         mode=self.method
         algo = self.algo_choice.GetValue()
-#        if self.crop_choice.GetStringSelection() == 'Yes':
-#            crop = True
-#        else:
-#            crop = False
+        if self.crop_choice.GetStringSelection() == 'True':
+            crop = True
+        else:
+            crop = False
+        if self.crop_choice.GetStringSelection() == 'GUI':
+            crop = 'GUI'
+        else:
+            crop = False
+
         if self.feedback_choice.GetStringSelection() == 'Yes':
             userfeedback = True
         else:
@@ -173,7 +178,7 @@ class Extract_frames(wx.Panel):
 
         slider_width = self.slider_width.GetValue()
 
-        deeplabcut.extract_frames(self.config,mode,algo,crop=False,userfeedback=userfeedback,cluster_step=self.cluster_step.GetValue(),cluster_resizewidth=30,cluster_color=False,opencv=opencv,slider_width=slider_width)
+        deeplabcut.extract_frames(self.config,mode,algo,crop=crop,userfeedback=userfeedback,cluster_step=self.cluster_step.GetValue(),cluster_resizewidth=30,cluster_color=False,opencv=opencv,slider_width=slider_width)
 
     def reset_extract_frames(self,event):
         """
@@ -182,13 +187,13 @@ class Extract_frames(wx.Panel):
         self.config = []
         self.sel_config.SetPath("")
         self.method_choice.SetStringSelection("automatic")
-#        self.crop_choice.Enable(True)
+        self.crop_choice.Enable(True)
         self.feedback_choice.Enable(True)
         self.opencv_choice.Enable(True)
         self.algo_choice.Enable(True)
         self.cluster_step.Enable(True)
         self.slider_width.Enable(True)
-#        self.crop_choice.SetStringSelection("No")
+        self.crop_choice.SetStringSelection("False")
         self.feedback_choice.SetStringSelection("No")
         self.opencv_choice.SetStringSelection("Yes")
         self.algo_choice.SetValue('kmeans')

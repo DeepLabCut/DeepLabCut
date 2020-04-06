@@ -71,7 +71,7 @@ class Train_network(wx.Panel):
 
         shuffles_text = wx.StaticBox(self, label="Specify the shuffle")
         shuffles_text_boxsizer = wx.StaticBoxSizer(shuffles_text, wx.VERTICAL)
-        self.shuffles = wx.SpinCtrl(self, value='1',min=1,max=100)
+        self.shuffles = wx.SpinCtrl(self, value='1',min=0,max=100)
         shuffles_text_boxsizer.Add(self.shuffles,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
         trainingindex = wx.StaticBox(self, label="Specify the trainingset index")
@@ -229,12 +229,36 @@ class Train_network(wx.Panel):
             raise FileNotFoundError("File not found!")
 
     def train_network(self,event):
-        shuffle = int(self.shuffles.Children[0].GetValue())
-        trainingsetindex = int(self.trainingindex.Children[0].GetValue())
-        max_snapshots_to_keep = int(self.snapshots.Children[0].GetValue())
-        displayiters = int(self.display_iters.Children[0].GetValue())
-        saveiters = int(self.save_iters.Children[0].GetValue())
-        maxiters = int(self.max_iters.Children[0].GetValue())
+        if self.shuffles.Children:
+            shuffle = int(self.shuffles.Children[0].GetValue())
+        else:
+            shuffle = int(self.shuffles.GetValue())
+
+        if self.trainingindex.Children:
+            trainingsetindex = int(self.trainingindex.Children[0].GetValue())
+        else:
+            trainingsetindex = int(self.trainingindex.GetValue())
+
+        if self.snapshots.Children:
+            max_snapshots_to_keep = int(self.snapshots.Children[0].GetValue())
+        else:
+            max_snapshots_to_keep = int(self.snapshots.GetValue())
+
+        if self.display_iters.Children:
+            displayiters = int(self.display_iters.Children[0].GetValue())
+        else:
+            displayiters = int(self.display_iters.GetValue())
+
+        if self.save_iters.Children:
+            saveiters = int(self.save_iters.Children[0].GetValue())
+        else:
+            saveiters = int(self.save_iters.GetValue())
+
+        if self.max_iters.Children:
+            maxiters = int(self.max_iters.Children[0].GetValue())
+        else:
+            maxiters = int(self.max_iters.GetValue())
+
         deeplabcut.train_network(self.config,shuffle,
                                  trainingsetindex,gputouse=None,
                                  max_snapshots_to_keep=max_snapshots_to_keep,
