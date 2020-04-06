@@ -67,21 +67,22 @@ def PlottingResults(tmpfolder, Dataframe, cfg, bodyparts2plot, individuals2plot,
     ax4.set_xlabel('DeltaX and DeltaY')
     bins = np.linspace(0, np.amax(Dataframe.max()), 100)
 
-    for bpindex, bp in enumerate(bodyparts2plot):
-        if bp in animal_bpts:  # Avoid 'unique' bodyparts only present in the 'single' animal
-            prob = Dataframe.xs((bp, 'likelihood'), level=(-2, -1), axis=1).values.squeeze()
-            mask = prob < pcutoff
-            temp_x = np.ma.array(Dataframe.xs((bp, 'x'), level=(-2, -1), axis=1).values.squeeze(), mask=mask)
-            temp_y = np.ma.array(Dataframe.xs((bp, 'y'), level=(-2, -1), axis=1).values.squeeze(), mask=mask)
-            ax1.plot(temp_x, temp_y, '.', color=colors(bpindex), alpha=alphavalue)
+    with np.errstate(invalid='ignore'):
+        for bpindex, bp in enumerate(bodyparts2plot):
+            if bp in animal_bpts:  # Avoid 'unique' bodyparts only present in the 'single' animal
+                prob = Dataframe.xs((bp, 'likelihood'), level=(-2, -1), axis=1).values.squeeze()
+                mask = prob < pcutoff
+                temp_x = np.ma.array(Dataframe.xs((bp, 'x'), level=(-2, -1), axis=1).values.squeeze(), mask=mask)
+                temp_y = np.ma.array(Dataframe.xs((bp, 'y'), level=(-2, -1), axis=1).values.squeeze(), mask=mask)
+                ax1.plot(temp_x, temp_y, '.', color=colors(bpindex), alpha=alphavalue)
 
-            ax2.plot(temp_x, '--', color=colors(bpindex), alpha=alphavalue)
-            ax2.plot(temp_y, '-', color=colors(bpindex), alpha=alphavalue)
+                ax2.plot(temp_x, '--', color=colors(bpindex), alpha=alphavalue)
+                ax2.plot(temp_y, '-', color=colors(bpindex), alpha=alphavalue)
 
-            ax3.plot(prob, '-', color=colors(bpindex), alpha=alphavalue)
+                ax3.plot(prob, '-', color=colors(bpindex), alpha=alphavalue)
 
-            Histogram(temp_x, colors(bpindex), bins, ax4)
-            Histogram(temp_y, colors(bpindex), bins, ax4)
+                Histogram(temp_x, colors(bpindex), bins, ax4)
+                Histogram(temp_y, colors(bpindex), bins, ax4)
 
     sm = plt.cm.ScalarMappable(cmap=plt.get_cmap(cfg['colormap']), norm=plt.Normalize(vmin=0, vmax=len(bodyparts2plot)-1))
     sm._A = []
@@ -193,6 +194,14 @@ def plot_trajectories(config, videos, videotype='.avi', shuffle=1, trainingsetin
                 failed.append(False)
             else:
                 failed.append(True)
+                tracks_found, *_ = auxiliaryfunctions.LoadAnalyzedDetectionData(videofolder, vname, DLCscorer)
+                if tracks_found:
+                    print('Raw tracklets were found. Call "deeplabcut.refine_training_dataset.convert_raw_tracks_to_h5()"'
+                          ' prior to plotting the trajectories.')
+                else:
+                    print(f'No data were found. Make sure {video} was previously analyzed, and that '
+                          f'detections were successively converted to tracklets using "deeplabcut.convert_detections2tracklets()" '
+                          f'and "deeplabcut.refine_training_dataset.convert_raw_tracks_to_h5()".')
 
     if not all(failed):
         print('Plots created! Please check the directory "plot-poses" within the video directory')
