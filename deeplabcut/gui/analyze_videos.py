@@ -120,7 +120,10 @@ class Analyze_videos(wx.Panel):
         self.trajectory.SetSelection(1)
 
         config_file = auxiliaryfunctions.read_config(self.config)
-        bodyparts = config_file['bodyparts']
+        if config_file.get('multianimalproject', False):
+            bodyparts = config_file['multianimalbodyparts']
+        else:
+            bodyparts = config_file['bodyparts']
         self.trajectory_to_plot = wx.CheckListBox(self, choices=bodyparts, style=0,name = "Select the bodyparts")
         self.trajectory_to_plot.Bind(wx.EVT_CHECKLISTBOX,self.getbp)
         self.trajectory_to_plot.SetCheckedItems(range(len(bodyparts)))
