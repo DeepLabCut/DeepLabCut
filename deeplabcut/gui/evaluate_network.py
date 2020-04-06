@@ -75,7 +75,10 @@ class Evaluate_network(wx.Panel):
         self.bodypart_choice.Bind(wx.EVT_RADIOBOX,self.chooseOption)
 
         config_file = auxiliaryfunctions.read_config(self.config)
-        bodyparts = config_file['bodyparts']
+        if config_file.get('multianimalproject', False):
+            bodyparts = config_file['multianimalbodyparts']
+        else:
+            bodyparts = config_file['bodyparts']
         self.bodyparts_to_compare = wx.CheckListBox(self, choices=bodyparts, style=0,name = "Select the bodyparts")
         self.bodyparts_to_compare.Bind(wx.EVT_CHECKLISTBOX,self.getbp)
         self.bodyparts_to_compare.Hide()
