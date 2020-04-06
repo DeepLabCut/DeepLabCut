@@ -624,7 +624,8 @@ class Predictor(ABC):
                          If get_settings for this predictor returns None, this method will pass None...
         :param video_metadata: The metadata information for this dlc instance. Includes the keys:
                                     "fps": Original Video's frames per second
-                                    "h5-file-name": The name of the original h5 file and it's path
+                                    "h5-file-name": The name of the original h5 file and it's path, as a string.
+                                    "orig-video-path": The file path and name of the video being analyzed, as a string.
                                     "duration": The duration of the video in seconds
                                     "size": The x and y dimensions of the original video.
         """

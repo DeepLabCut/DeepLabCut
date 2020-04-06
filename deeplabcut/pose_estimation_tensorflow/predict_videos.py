@@ -681,7 +681,8 @@ def AnalyzeVideo(video, DLCscorer, DLCscorerlegacy, trainFraction, cfg, dlc_cfg,
                     "fps": fps,
                     "duration": duration,
                     "size": size,
-                    "h5-file-name": dataname
+                    "h5-file-name": dataname,
+                    "orig-video-path": video
                 }
 
                 # Create a predictor plugin instance...
