@@ -287,7 +287,7 @@ def ExtractFramesbasedonPreselection(Index, extractionalgorithm, Dataframe, data
     start = cfg['start']
     stop = cfg['stop']
     numframes2extract = cfg['numframes2pick']
-    bodyparts = cfg['bodyparts']
+    bodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg, 'all')
 
     videofolder = str(Path(video).parents[0])
     vname = str(Path(video).stem)
