@@ -26,7 +26,7 @@ class Load_project(wx.Panel):
         # variable initilization
         self.config = cfg
         # design the panel
-        self.sizer = wx.GridBagSizer(5, 5)
+        self.sizer = wx.GridBagSizer(10, 15)
 
         text = wx.StaticText(self, label="DeepLabCut Load project")
         self.sizer.Add(text, pos=(0, 0), flag=wx.TOP|wx.LEFT|wx.BOTTOM,border=15)
