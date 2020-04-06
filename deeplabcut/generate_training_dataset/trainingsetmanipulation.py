@@ -722,6 +722,10 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
 
     # Loading metadata from config file:
     cfg = auxiliaryfunctions.read_config(config)
+    if cfg.get('multianimalproject', False):
+        from deeplabcut.generate_training_dataset.multiple_individuals_trainingsetmanipulation import create_multianimaltraining_dataset
+        create_multianimaltraining_dataset(config, num_shuffles, Shuffles, windows2linux, net_type)
+
     scorer = cfg['scorer']
     project_path = cfg['project_path']
     # Create path for training sets & store data there
