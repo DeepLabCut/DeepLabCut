@@ -35,6 +35,7 @@ from matplotlib.animation import FFMpegWriter
 from skimage.util import img_as_ubyte
 from skimage.draw import circle, line_aa
 
+
 def get_cmap(n, name='hsv'):
     '''Returns a function that maps each index in 0, 1, ..., n-1 to a distinct
     RGB color; the keyword argument name must be a standard mpl colormap name.'''
@@ -46,6 +47,7 @@ def get_segment_indices(bodyparts2connect, bodyparts2plot):
         if all(elem in bodyparts2plot for elem in pair):
             bpts2connect.append([bodyparts2plot.index(elem) for elem in pair])
     return bpts2connect
+
 
 def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,bodyparts2plot,
                 trailpoints,cropping,x1,x2,y1,y2,
@@ -373,13 +375,15 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
         else:
             print("Loading ", video, "and data.")
             datafound,metadata,Dataframe,DLCscorer,suffix=auxiliaryfunctions.LoadAnalyzedData(str(videofolder),vname,DLCscorer,filtered) #returns boolean variable if data was found and metadata + pandas array
+            if datafound:  # Sweet, we've found single animal data or tracklets
+                videooutname = os.path.join(vname + DLCscorer + suffix + '_labeled.mp4')
+                if os.path.isfile(videooutname):
+                    print('Labeled video already created. Skipping...')
+                    continue
 
-            if all(individuals) and datafound:
-                Dataframe = Dataframe.loc(axis=1)[:, individuals]
+                if all(individuals):
+                    Dataframe = Dataframe.loc(axis=1)[:, individuals]
 
-            videooutname=os.path.join(vname + DLCscorer+suffix+'_labeled.mp4')
-            if datafound and not os.path.isfile(videooutname): #checking again, for this loader video could exist
-                #Loading cropping data used during analysis
                 cropping=metadata['data']["cropping"]
                 [x1,x2,y1,y2]=metadata['data']["cropping_parameters"]
                 labeled_bpts = [bp for bp in bodyparts if bp in Dataframe.columns.get_level_values('bodyparts')]
@@ -397,19 +401,24 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
                     else: #then the full video + the (perhaps in cropped mode analyzed labels) are depicted
                         clip = vp(fname = video,sname = videooutname,codec=codec)
                     CreateVideo(clip,Dataframe,cfg["pcutoff"],cfg["dotsize"],cfg["colormap"],labeled_bpts,trailpoints,cropping,x1,x2,y1,y2,bodyparts2connect,skeleton_color,draw_skeleton,displaycropped,color_by)
-            else: #check if tracks exist!
+            else:
+                # Check if tracks exist!
+                datafound, metadata, Tracks, DLCscorer = auxiliaryfunctions.LoadAnalyzedDetectionData(videofolder, vname, DLCscorer)
+                if not datafound:
+                    print('No data were found. Run "analyze_video" first.')
+                    if cfg.get('multianimalproject', False):
+                        print('Then use "convert_detections2tracklets" and re-run the current function.')
+                    continue
+                else:
+                    print('Raw detections were found. Although "convert_detections2tracklets" '
+                          'should be used first, the video will be created anyway.')
+                    ## TODO: integrate with standard code for dataframes.
+                    import pickle, cv2, subprocess
+                    from tqdm import tqdm
 
-                ## TODO: intergrate with standard code for dataframes.
-                import pickle, cv2, subprocess
-                from tqdm import tqdm
+                    scale=1
+                    pcutoff=cfg["pcutoff"]
 
-                scale=1
-                pcutoff=cfg["pcutoff"]
-
-                tracksfn=vname + DLCscorer+'tracks.pickle'
-                if os.path.isfile(tracksfn):
-                    with open(tracksfn, 'rb') as handle:
-                        Tracks=pickle.load(handle)
                     outfolder=vname
                     if not os.path.isdir(outfolder):
                         os.mkdir(outfolder)
@@ -462,7 +471,7 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
     os.chdir(start_path)
 
 
-def create_video_with_all_detections(config, videos, DLCscorername ,destfolder=None):
+def create_video_with_all_detections(config, videos, DLCscorername, destfolder=None):
     """
     Create a video labeled with all the detections stored in a '*_full.pickle' file.
 

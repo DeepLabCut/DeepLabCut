@@ -525,8 +525,6 @@ def LoadAnalyzedData(videofolder,vname,DLCscorer,filtered):
         datanames = [fn for fn in grab_files_in_folder(videofolder, 'h5')
                      if vname in fn and ("resnet" in fn or "mobilenet" in fn)]
         if len(datanames)==0:
-            print("The video was not analyzed with this scorer:", DLCscorer)
-            print("No other scorers were found, please use the function 'analyze_videos' first.")
             datafound=False
             metadata,Dataframe=[],[]
         elif len(datanames)>0:
@@ -540,3 +538,25 @@ def LoadAnalyzedData(videofolder,vname,DLCscorer,filtered):
             metadata=LoadVideoMetadata(os.path.join(videofolder, datafile.replace('tracks', '')))
             datafound=True
     return datafound, metadata, Dataframe, DLCscorer,suffix
+
+def LoadAnalyzedDetectionData(folder, vname, scorer):
+    try:
+        fn = os.path.join(folder, vname + scorer + 'tracks.pickle')
+        data = read_pickle(fn)
+        metadata = data.pop('header')
+        datafound = True
+    except FileNotFoundError:
+        # See whether we find a _full.pickle in that same folder
+        # pickles = [file for file in grab_files_in_folder(folder, 'full.pickle')
+        #            if vname in file and ('resnet' in file or 'mobilenet' in file)]
+        # if not len(pickles):
+        metadata, data = [], []
+        datafound = False
+        scorer = ''
+        # else:
+        #     pickle_file = pickles[0]
+        #     data = read_pickle(pickle_file)
+        #     metadata = read_pickle(pickle_file.replace('_full.pickle', 'includingmetadata.pickle'))
+        #     datafound = True
+        #     scorer = f'DLC{pickle_file.split("DLC")[1]}'.replace('_full.pickle', '')
+    return datafound, metadata, data, scorer
