@@ -7,11 +7,6 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
-
-####################################################
-# Dependencies
-####################################################
-
 import os.path
 from deeplabcut.pose_estimation_tensorflow.nnet import predict_multianimal as predict
 from deeplabcut.pose_estimation_tensorflow.config import load_config
@@ -29,9 +24,9 @@ import cv2
 from skimage.util import img_as_ubyte
 from easydict import EasyDict as edict
 
-def AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs,
+def AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg, dlc_cfg, sess, inputs,
             outputs,pdindex,save_as_csv, destfolder=None, c_engine=False):
-    ''' Helper function for analyzing a video with multiple individuals'''
+    ''' Helper function for analyzing a video with multiple individuals '''
     print("Starting to analyze % ", video)
     vname = Path(video).stem
     if destfolder is None:

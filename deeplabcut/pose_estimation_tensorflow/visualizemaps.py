@@ -164,7 +164,7 @@ def extract_maps(config, shuffle, trainingsetindex=0, comparisonbodyparts="all",
 
                 # Name for deeplabcut net (based on its parameters)
                 DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations)
-                notanalyzed,resultsfilename,DLCscorer=auxiliaryfunctions.CheckifNotEvaluated(str(evaluationfolder),DLCscorer,DLCscorerlegacy,Snapshots[snapindex])
+                notanalyzed, resultsfilename, DLCscorer=auxiliaryfunctions.CheckifNotEvaluated(str(evaluationfolder),DLCscorer,DLCscorerlegacy,Snapshots[snapindex])
                 print("Extracting maps for ", DLCscorer, " with # of trainingiterations:", trainingsiterations)
                 if notanalyzed:
                     # Specifying state of model (snapshot / training state)
@@ -211,10 +211,12 @@ def resize_to_same_shape(array, array_dest):
 
 
 def resize_all_maps(image, scmap, locref, paf):
+    #print(np.shape(image),np.shape(scmap),np.shape(locref),np.shape(paf))
     scmap = resize_to_same_shape(scmap, image)
     locref_x = resize_to_same_shape(locref[:, :, :, 0], image)
     locref_y = resize_to_same_shape(locref[:, :, :, 1], image)
-    paf = resize_to_same_shape(paf, image)
+    if paf is not None:
+        paf = resize_to_same_shape(paf, image)
     return scmap, (locref_x, locref_y), paf
 
 
@@ -274,21 +276,53 @@ def visualize_paf(image, paf, pafgraph, nplots_per_row=3, step=5, labels=None):
     titles = [(labels[i], labels[j]) for i, j in pafgraph] if labels is not None else labels
     fig, axes = form_grid_layout(nplots, nplots_per_row, nx, ny, labels=titles)
     for i, ax in enumerate(axes.flat):
-        ax.imshow(image)
-        U = paf[:, :, 2 * i]
-        V = paf[:, :, 2 * i + 1]
-        X, Y = np.meshgrid(np.arange(U.shape[1]), np.arange(U.shape[0]))
-        M = np.zeros(U.shape, dtype='bool')
-        M[U ** 2 + V ** 2 < 0.5 * 0.5 ** 2] = True
-        U = np.ma.masked_array(U, mask=M)
-        V = np.ma.masked_array(V, mask=M)
-        ax.quiver(X[::step, ::step], Y[::step, ::step], U[::step, ::step], V[::step, ::step],
-                  scale=50, headaxislength=4, alpha=1, width=0.002, color='r', angles='xy')
+        if i < nplots:
+            ax.imshow(image)
+            U = paf[:, :, 2 * i]
+            V = paf[:, :, 2 * i + 1]
+            X, Y = np.meshgrid(np.arange(U.shape[1]), np.arange(U.shape[0]))
+            M = np.zeros(U.shape, dtype='bool')
+            M[U ** 2 + V ** 2 < 0.5 * 0.5 ** 2] = True
+            U = np.ma.masked_array(U, mask=M)
+            V = np.ma.masked_array(V, mask=M)
+            ax.quiver(X[::step, ::step], Y[::step, ::step], U[::step, ::step], V[::step, ::step],
+                    scale=50, headaxislength=4, alpha=1, width=0.002, color='r', angles='xy')
     return fig, axes
 
 
 def extract_save_all_maps(config, shuffle, trainingsetindex=0, comparisonbodyparts='all',
-                  gputouse=None, rescale=False, Indices=None, modelprefix='', dest_folder=None):
+                  gputouse=None, rescale=False, Indices=None, modelprefix='', dest_folder=None, nplots_per_row=3):
+    """
+    Extracts the scoremap, location refinement field and part affinity field prediction of the model. The maps 
+    will be rescaled to the size of the input image and stored in the corresponding model folder in /evaluation-results.
+
+    ----------
+    config : string
+        Full path of the config.yaml file as a string.
+
+    shuffle: integer
+        integers specifying shuffle index of the training dataset. The default is 0.
+
+    trainingsetindex: int, optional
+        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml). This
+        variable can also be set to "all".
+
+    comparisonbodyparts: list of bodyparts, Default is "all".
+        The average error will be computed for those body parts only (Has to be a subset of the body parts).
+
+    Indices: default None
+        For which images shall the scmap/locref and paf be computed? Give a list of images
+
+    nplots_per_row: 3
+        Number of plots per row in grid plots.
+        
+    Examples
+    --------
+    Calculated maps for images 0, 1 and 33.
+    >>> deeplabcut.extract_save_all_maps('/analysis/project/reaching-task/config.yaml', shuffle=1,Indices=[0,1,33])
+
+    """
+
     from deeplabcut.utils.auxiliaryfunctions import read_config, attempttomakefolder, GetEvaluationFolder
     from tqdm import tqdm
 
@@ -305,15 +339,19 @@ def extract_save_all_maps(config, shuffle, trainingsetindex=0, comparisonbodypar
         for snap, maps in values.items():
             for imagenr in tqdm(maps):
                 image, scmap, locref, paf, bptnames, pafgraph, imname, trainingframe = maps[imagenr]
-                scmap, (locref_x, locref_y), paf = resize_all_maps(image, scmap, locref, paf)
-                fig1, _ = visualize_scoremaps(image, scmap, labels=bptnames)
-                fig2, _ = visualize_locrefs(image, scmap, locref_x, locref_y, labels=bptnames)
-                fig3, _ = visualize_locrefs(image, scmap, locref_x, locref_y, zoom_width=100, labels=bptnames)
-                fig4, _ = visualize_paf(image, paf, pafgraph, labels=bptnames)
-
                 label = 'train' if trainingframe else 'test'
-                fig1.savefig(dest_path.format(imagenr, 'scmap', label, shuffle, frac, snap))
-                fig2.savefig(dest_path.format(imagenr, 'locref', label, shuffle, frac, snap))
-                fig3.savefig(dest_path.format(imagenr, 'locrefzoom', label, shuffle, frac, snap))
-                fig4.savefig(dest_path.format(imagenr, 'paf', label, shuffle, frac, snap))
-                plt.close('all')
+                if not os.path.isfile(dest_path.format(imagenr, 'scmap', label, shuffle, frac, snap)):
+                    scmap, (locref_x, locref_y), paf = resize_all_maps(image, scmap, locref, paf)
+                    fig1, _ = visualize_scoremaps(image, scmap, labels=bptnames, nplots_per_row=nplots_per_row)
+                    fig2, _ = visualize_locrefs(image, scmap, locref_x, locref_y, labels=bptnames, nplots_per_row=nplots_per_row)
+                    fig3, _ = visualize_locrefs(image, scmap, locref_x, locref_y, zoom_width=100, labels=bptnames, nplots_per_row=nplots_per_row)
+                    if paf is not None:
+                        fig4, _ = visualize_paf(image, paf, pafgraph, labels=bptnames, nplots_per_row=nplots_per_row)
+
+                    fig1.savefig(dest_path.format(imagenr, 'scmap', label, shuffle, frac, snap))
+                    fig2.savefig(dest_path.format(imagenr, 'locref', label, shuffle, frac, snap))
+                    fig3.savefig(dest_path.format(imagenr, 'locrefzoom', label, shuffle, frac, snap))
+                    if paf is not None:
+                        fig4.savefig(dest_path.format(imagenr, 'paf', label, shuffle, frac, snap))
+                    
+                    plt.close('all')

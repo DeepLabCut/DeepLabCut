@@ -25,6 +25,7 @@ def evaluate_multianimal_full(config, Shuffles=[1], trainingsetindex=0,
     """
     WIP multi animal project.
     """
+
     import os
     from skimage import io
     import skimage.color
@@ -130,9 +131,10 @@ def evaluate_multianimal_full(config, Shuffles=[1], trainingsetindex=0,
                                                       'LabeledImages_' + DLCscorer + '_' + Snapshots[snapindex])
                             auxiliaryfunctions.attempttomakefolder(foldername)
 
+                        #print(dlc_cfg) 
                         # Specifying state of model (snapshot / training state)
                         sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
-
+                        
                         PredicteData ={}
                         print("Analyzing data...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
