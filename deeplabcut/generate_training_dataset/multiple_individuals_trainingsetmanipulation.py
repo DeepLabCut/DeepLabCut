@@ -14,12 +14,11 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 import os.path
-import matplotlib as mpl
+import matplotlib.pyplot as plt
 if os.environ.get('DLClight', default=False) == 'True':
-    mpl.use('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
-    pass
+    plt.switch_backend('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
 else:
-    mpl.use('wxagg')
+    plt.switch_backend('WxAgg')
 from deeplabcut.utils import auxiliaryfunctions, auxfun_models, auxfun_multianimal
 from deeplabcut.generate_training_dataset import trainingsetmanipulation
 

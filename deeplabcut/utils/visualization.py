@@ -10,19 +10,17 @@ Licensed under GNU Lesser General Public License v3.0
 
 import os
 import numpy as np
-import matplotlib as mpl
 import platform
 from pathlib import Path
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
-if os.environ.get('DLClight', default=False) == 'True':
-    mpl.use('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
-    pass
-elif platform.system() == 'Darwin':
-    mpl.use('WXAgg')
-else:
-    mpl.use('TkAgg') #TkAgg
 import matplotlib.pyplot as plt
+if os.environ.get('DLClight', default=False) == 'True':
+    plt.switch_backend('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
+elif platform.system() == 'Darwin':
+    plt.switch_backend('WxAgg')
+else:
+    plt.switch_backend('TkAgg')
 from skimage import io
 
 
