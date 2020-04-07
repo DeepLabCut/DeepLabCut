@@ -46,7 +46,7 @@ class Create_new_project(wx.Panel):
         # design the panel
         self.sizer = wx.GridBagSizer(10, 15)
 
-        text1 = wx.StaticText(self, label="DeepLabCut - Step 1. Create New Project")
+        text1 = wx.StaticText(self, label="DeepLabCut - Step 1. Create New Project, or Load a Project")
         self.sizer.Add(text1, pos=(0, 0), flag=wx.TOP|wx.LEFT|wx.BOTTOM,border=15)
 
         # Add logo of DLC
@@ -58,11 +58,11 @@ class Create_new_project(wx.Panel):
 
         # Add all the options
         self.proj = wx.RadioBox(self, label='Please choose an option:', choices=['Create new project', 'Load existing project'],majorDimension=0, style=wx.RA_SPECIFY_COLS)
-        self.sizer.Add(self.proj, pos=(2, 0), span=(1, 10), flag=wx.LEFT, border=15)
+        self.sizer.Add(self.proj, pos=(2, 0), span=(1, 15), flag=wx.LEFT, border=5)
         self.proj.Bind(wx.EVT_RADIOBOX,self.chooseOption)
 
-        line = wx.StaticLine(self)
-        self.sizer.Add(line, pos=(3, 0), span=(1, 8),flag=wx.EXPAND|wx.BOTTOM, border=10)
+#        line = wx.StaticLine(self)
+#        self.sizer.Add(line, pos=(3, 0), span=(1, 8),flag=wx.EXPAND|wx.BOTTOM, border=10)
 
         self.proj_name = wx.StaticText(self, label="Name of the project:")
         self.sizer.Add(self.proj_name, pos=(4, 0), flag=wx.LEFT, border=15)
