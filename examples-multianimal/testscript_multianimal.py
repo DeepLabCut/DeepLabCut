@@ -55,6 +55,10 @@ df.to_csv(output_path)
 df.to_hdf(output_path.replace('csv', 'h5'), 'df_with_missing', format='table', mode='w')
 print('Artificial data created.')
 
+print('Cropping and exchanging')
+deeplabcut.cropimagesandlabels(config_path, userfeedback=False)
+#Crop & exchange!
+
 print('Checking labels...')
 deeplabcut.check_labels(config_path, draw_skeleton=False)
 print('Labels checked.')

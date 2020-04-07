@@ -209,10 +209,12 @@ def dropimagesduetolackofannotation(config):
         imagelist=[fns for fns in os.listdir(str(folder)) if '.png' in fns]
         print("PROCESSED:", folder, " now # of annotated images: ", len(annotatedimages)," in folder:", len(imagelist))
 
-def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True, cropdata=True):
+def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True,
+        cropdata=True, excludealreadycropped=True, updatevideoentries=True):
     """
     Crop images into multiple random crops (defined by numcrops) of size dimensions. If cropdata=True then the
-    annotation data is loaded and labels for cropped images are inherited. If false, then one can make crops for unlabeled folders.
+    annotation data is loaded and labels for cropped images are inherited.
+    If false, then one can make crops for unlabeled folders.
 
     This can be helpul for large frames with multiple animals. Then a smaller set of equally sized images is created.
 
@@ -232,10 +234,17 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True, cr
     cropdata: bool, default True:
         If true creates corresponding annotation data (from ground truth)
 
+    excludealreadycropped: bool, def true
+        If true excludes folders that already contain _cropped in their name.
+
+    updatevideoentries, bool, default true
+        If true updates video_list entries to refer to cropped frames instead. This makes sense for subsequent processing.
+
     Example
     --------
     for labeling the frames
     >>> deeplabcut.cropimagesandlabels('/analysis/project/reaching-task/config.yaml')
+
     --------
     """
     from tqdm import tqdm
@@ -243,10 +252,18 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True, cr
     indexlength = int(np.ceil(np.log10(numcrops)))
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg['video_sets'].keys()
-    video_names = [Path(i).stem for i in videos]
-    folders = [Path(config).parent / 'labeled-data' /Path(i) for i in video_names]
 
-    for folder in folders:
+    if excludealreadycropped:
+        video_names = [(Path(i).parent, Path(i).stem, Path(i).suffix) for i in videos if "_cropped" not in str(Path(i).stem)]
+    else:
+        video_names = [(Path(i).parent, Path(i).stem, Path(i).suffix) for i in videos if "_cropped" not in str(Path(i).stem)]
+
+    #folders = [Path(config).parent / 'labeled-data' /Path(i[1]) for i in video_names]
+    if 'video_sets_original' not in cfg.keys() and updatevideoentries: #this dict is kept for storing links to original full-sized videos
+        cfg['video_sets_original']={}
+
+    for (vidpath, vidname, videotype) in video_names:
+        folder = Path(config).parent / 'labeled-data' /Path(vidname)
         if userfeedback:
             print("Do you want to crop frames for folder: ", folder, "?")
             askuser=input ("(yes/no):")
@@ -257,7 +274,7 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True, cr
             if cropdata:
                 Data = pd.read_hdf(fn, 'df_with_missing')
 
-            newfolder = str(Path(folder).stem) + 'cropped'
+            newfolder = str(Path(folder).stem) + '_cropped'
             output_path=Path(config).parent / 'labeled-data' / Path(newfolder)
             auxiliaryfunctions.attempttomakefolder(output_path)
             individuals,uniquebodyparts,multianimalbodyparts=auxfun_multianimal.extractindividualsandbodyparts(cfg)
@@ -320,7 +337,7 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True, cr
                             else:
                                 AnnotationData=pd.concat([AnnotationData, data],axis=1)
 
-            else:
+            else: #just crops images (no annotation data extracted: not sure if anybody really needs this)
                 imnames=[os.path.join('labeled-data',folder,fn) for fn in os.listdir(os.path.join(cfg['project_path'],'labeled-data',folder)) if '.png' in fn]
                 for index, imagename in enumerate(imnames):
                     #load image
@@ -339,6 +356,7 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True, cr
                         else:
                             io.imsave(cropppedimgname,image[int(y0):int(y0+size[0]),int(x0):int(x0+size[1]),:])
 
+
             if cropdata:
                 Data=AnnotationData.T
                 Data.index=pd_index
@@ -346,7 +364,14 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True, cr
                 Data.to_hdf(fn_new,key='df_with_missing',mode='w')
                 Data.to_csv(fn_new.split('.h5')[0]+'.csv')
 
-            cfg['video_sets'].update({os.path.join('whoknows',str(folder)+'crop.mp4') : {'crop': ', '.join(map(str, [0, size[1], 0, size[0]]))}})
+            if updatevideoentries and cropdata:
+                #moving old entry to _original, dropping it from video_set and update crop parameters
+                cfg['video_sets_original'][str(os.path.join(vidpath,str(vidname)+str(videotype)))] = cfg['video_sets'][str(os.path.join(vidpath,str(vidname)+str(videotype)))]
+                cfg['video_sets'].pop(str(os.path.join(vidpath,str(vidname)+str(videotype))))
+                cfg['video_sets'][os.path.join(vidpath,str(folder)+'_cropped'+str(videotype))] = {'crop': ', '.join(map(str, [0, size[1], 0, size[0]]))}
+
+    if updatevideoentries:
+        auxiliaryfunctions.write_config(config,cfg)
 
 def label_frames(config,multiple_individualsGUI=False):
     """
