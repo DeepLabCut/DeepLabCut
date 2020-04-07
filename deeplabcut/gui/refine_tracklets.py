@@ -141,6 +141,7 @@ class Refine_tracklets(wx.Panel):
 
     def save_tracklets(self, event):
         self.manager.save()
+        print("File (...tracks.h5) is saved! Now your research questions can be tackled! Thanks for using DeepLabCut!")
 
     def reset_refine_tracklets(self,event):
         """
