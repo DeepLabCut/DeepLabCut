@@ -133,26 +133,27 @@ class Video_Editing(wx.Panel):
 
     def select_videos(self,event):
         """
-        Selects the video from the directory
+        Selects the videos from the directory
         """
         cwd = os.getcwd()
-        dlg = wx.FileDialog(self, "Select videos", cwd, "", "*.*", wx.FD_MULTIPLE)
+        dlg = wx.FileDialog(self, "Select video to modify", cwd, "", "*.*", wx.FD_MULTIPLE)
         if dlg.ShowModal() == wx.ID_OK:
             self.vids = dlg.GetPaths()
-            self.filelist = self.vids[0]
-            self.sel_vids.SetLabel("Total %s Videos selected" %len(self.filelist))
+            self.filelist = (self.filelist + self.vids)#[0]
+            print(self.filelist)
+            self.sel_vids.SetLabel("%s Video selected" %len(self.filelist))
 
     def downsample_video(self,event):
         if self.rotate.GetStringSelection() == "Yes":
             self.rotate = True
         else:
             self.rotate = False
-        deeplabcut.DownSampleVideo(self.filelist, width=-1,height=self.height.GetValue(),rotateccw=self.rotate)
+        deeplabcut.DownSampleVideo(self.filelist[0], width=-1,height=self.height.GetValue(),rotateccw=self.rotate)
 
     def shorten_video(self,event):
         def sweet_time_format(val):
             return str(datetime.timedelta(seconds=val))
-        deeplabcut.ShortenVideo(self.filelist, start=sweet_time_format(self.vstart.GetValue()),stop=sweet_time_format(self.vstop.GetValue()))
+        deeplabcut.ShortenVideo(self.filelist[0], start=sweet_time_format(self.vstart.GetValue()),stop=sweet_time_format(self.vstop.GetValue()))
 
     def help_function(self,event):
 
