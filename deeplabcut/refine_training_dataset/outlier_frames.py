@@ -217,28 +217,35 @@ def convertparms2start(pn):
         return 0
 
 
-def FitSARIMAXModel(x, p, pcutoff, alpha, ARdegree, MAdegree, nforecast=0, disp=False):
+def FitSARIMAXModel(x,p,pcutoff,alpha,ARdegree,MAdegree,nforecast = 0,disp=False):
     # Seasonal Autoregressive Integrated Moving-Average with eXogenous regressors (SARIMAX)
     # see http://www.statsmodels.org/stable/statespace.html#seasonal-autoregressive-integrated-moving-average-with-exogenous-regressors-sarimax
-    Y = x.copy()
-    Y[p < pcutoff] = np.nan  # Set uncertain estimates to nan (modeled as missing data)
-    if np.sum(np.isfinite(Y)) > 10:
+    Y=x.copy()
+    Y[p<pcutoff]=np.nan # Set uncertain estimates to nan (modeled as missing data)
+    if np.sum(np.isfinite(Y))>10:
 
         # SARIMAX implemetnation has better prediction models than simple ARIMAX (however we do not use the seasonal etc. parameters!)
-        mod = sm.tsa.statespace.SARIMAX(Y.flatten(), order=(ARdegree, 0, MAdegree), seasonal_order=(0, 0, 0, 0),
-                                        simple_differencing=True)
-        # Autoregressive Moving Average ARMA(p,q) Model
-        # mod = sm.tsa.ARIMA(Y, order=(ARdegree,0,MAdegree)) #order=(ARdegree,0,MAdegree)
+        mod = sm.tsa.statespace.SARIMAX(Y.flatten(), order=(ARdegree,0,MAdegree),seasonal_order=(0, 0, 0, 0),simple_differencing=True)
+        #Autoregressive Moving Average ARMA(p,q) Model
+        #mod = sm.tsa.ARIMA(Y, order=(ARdegree,0,MAdegree)) #order=(ARdegree,0,MAdegree)
         try:
             res = mod.fit(disp=disp)
-        except ValueError:  # https://groups.google.com/forum/#!topic/pystatsmodels/S_Fo53F25Rk (let's update to statsmodels 0.10.0 soon...)
-            startvalues = np.array([convertparms2start(pn) for pn in mod.param_names])
-            res = mod.fit(start_params=startvalues, disp=disp)
+        except ValueError: #https://groups.google.com/forum/#!topic/pystatsmodels/S_Fo53F25Rk (let's update to statsmodels 0.10.0 soon...)
+            startvalues=np.array([convertparms2start(pn) for pn in mod.param_names])
+            res= mod.fit(start_params=startvalues,disp=disp)
+        except np.linalg.LinAlgError:
+            # The process is not stationary, but the default SARIMAX model tries to solve for such a distribution...
+            # Relaxing those constraints should do the job.
+            mod = sm.tsa.statespace.SARIMAX(Y.flatten(), order=(ARdegree, 0, MAdegree),
+                                            seasonal_order=(0, 0, 0, 0), simple_differencing=True,
+                                            enforce_stationarity=False, enforce_invertibility=False,
+                                            use_exact_diffuse=False)
+            res = mod.fit(disp=disp)
 
-        predict = res.get_prediction(end=mod.nobs + nforecast - 1)
-        return predict.predicted_mean, predict.conf_int(alpha=alpha)
+        predict = res.get_prediction(end=mod.nobs + nforecast-1)
+        return predict.predicted_mean,predict.conf_int(alpha=alpha)
     else:
-        return np.nan * np.zeros(len(Y)), np.nan * np.zeros((len(Y), 2))
+        return np.nan*np.zeros(len(Y)),np.nan*np.zeros((len(Y),2))
 
 
 def compute_deviations(Dataframe, comparisonbodyparts, dataname, p_bound, alpha, ARdegree, MAdegree,

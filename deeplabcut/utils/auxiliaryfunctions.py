@@ -455,18 +455,19 @@ def CheckifPostProcessing(folder,vname,DLCscorer,DLCscorerlegacy,suffix='filtere
                 print("Video already filtered...(with DLC<2.1)!", odn)
             elif suffix=='_skeleton':
                 print("Skeleton in video already processed... (with DLC<2.1)!", odn)
-
-            return False, odn, os.path.join(folder,vname + DLCscorerlegacy+ suffix+'.h5'), DLCscorerlegacy
-        else: #Was the video already analyzed?
-            if os.path.isfile(sourcedataname):
+            return False, odn, odn, DLCscorerlegacy
+        else:
+            sdn = os.path.join(folder, vname + DLCscorerlegacy + '.h5')
+            tracks = sourcedataname.replace('.h5', 'tracks.h5')
+            if os.path.isfile(sourcedataname):   #Was the video already analyzed?
                 return True, outdataname, sourcedataname, DLCscorer
-            else: #was it analyzed with DLC<2.1?
-                sdn=os.path.join(folder,vname + DLCscorerlegacy+'.h5')
-                if os.path.isfile(sdn):
-                    return True, odn, sdn, DLCscorerlegacy
-                else:
-                    print("Video not analyzed -- Run analyze_videos first.")
-                    return False, outdataname,sourcedataname, DLCscorer
+            elif os.path.isfile(sdn):   #was it analyzed with DLC<2.1?
+                return True, odn, sdn, DLCscorerlegacy
+            elif os.path.isfile(tracks):  # May be a MA project with tracklets
+                return True, tracks.replace('.h5', f'{suffix}.h5'), tracks, DLCscorer
+            else:
+                print("Video not analyzed -- Run analyze_videos first.")
+                return False, outdataname,sourcedataname, DLCscorer
 
 
 def CheckifNotAnalyzed(destfolder,vname,DLCscorer,DLCscorerlegacy,flag='video'):
