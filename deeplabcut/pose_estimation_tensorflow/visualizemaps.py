@@ -334,12 +334,13 @@ def extract_save_all_maps(config, shuffle, trainingsetindex=0, comparisonbodypar
             #dest_folder = os.path.join(cfg['project_path'], 'maps')
             dest_folder = os.path.join(cfg["project_path"],str(GetEvaluationFolder(frac,shuffle,cfg,modelprefix=modelprefix)), 'maps')
         attempttomakefolder(dest_folder)
-        dest_path = os.path.join(dest_folder, 'Img{}_{}_{}_{}_{}_{}.png')
+        dest_path = os.path.join(dest_folder, '{}_{}_{}_{}_{}_{}.png')
 
         for snap, maps in values.items():
             for imagenr in tqdm(maps):
-                image, scmap, locref, paf, bptnames, pafgraph, imname, trainingframe = maps[imagenr]
+                image, scmap, locref, paf, bptnames, pafgraph, impath, trainingframe = maps[imagenr]
                 label = 'train' if trainingframe else 'test'
+                imname = os.path.split(os.path.splitext(impath)[0])[1]
                 if not os.path.isfile(dest_path.format(imagenr, 'scmap', label, shuffle, frac, snap)):
                     scmap, (locref_x, locref_y), paf = resize_all_maps(image, scmap, locref, paf)
                     fig1, _ = visualize_scoremaps(image, scmap, labels=bptnames, nplots_per_row=nplots_per_row)
@@ -348,10 +349,10 @@ def extract_save_all_maps(config, shuffle, trainingsetindex=0, comparisonbodypar
                     if paf is not None:
                         fig4, _ = visualize_paf(image, paf, pafgraph, labels=bptnames, nplots_per_row=nplots_per_row)
 
-                    fig1.savefig(dest_path.format(imagenr, 'scmap', label, shuffle, frac, snap))
-                    fig2.savefig(dest_path.format(imagenr, 'locref', label, shuffle, frac, snap))
-                    fig3.savefig(dest_path.format(imagenr, 'locrefzoom', label, shuffle, frac, snap))
+                    fig1.savefig(dest_path.format(imname, 'scmap', label, shuffle, frac, snap))
+                    fig2.savefig(dest_path.format(imname, 'locref', label, shuffle, frac, snap))
+                    fig3.savefig(dest_path.format(imname, 'locrefzoom', label, shuffle, frac, snap))
                     if paf is not None:
-                        fig4.savefig(dest_path.format(imagenr, 'paf', label, shuffle, frac, snap))
+                        fig4.savefig(dest_path.format(imname, 'paf', label, shuffle, frac, snap))
                     
                     plt.close('all')
