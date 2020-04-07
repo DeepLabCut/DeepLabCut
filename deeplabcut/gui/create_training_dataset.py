@@ -97,7 +97,7 @@ class Create_training_dataset(wx.Panel):
         self.userfeedback = wx.RadioBox(self, label='Need user feedback?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
         self.userfeedback.SetSelection(1)
 
-        self.cropandlabel = wx.RadioBox(self, label='Crop & Label Data (Recommended)?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
+        self.cropandlabel = wx.RadioBox(self, label='Crop and Label Data (Recommended)?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
         self.cropandlabel.SetSelection(0)
 
         self.hbox2.Add(shuffle_text_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
@@ -243,7 +243,7 @@ class Create_training_dataset(wx.Panel):
             deeplabcut.cropimagesandlabels(self.config, userfeedback=userfeedback)
         else:
             random = False
-        
+
         if config_file.get('multianimalproject', False):
             deeplabcut.create_multianimaltraining_dataset(self.config,num_shuffles,Shuffles=[self.shuffle.GetValue()])
         else:
