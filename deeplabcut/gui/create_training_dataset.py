@@ -97,9 +97,14 @@ class Create_training_dataset(wx.Panel):
         self.userfeedback = wx.RadioBox(self, label='Need user feedback?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
         self.userfeedback.SetSelection(1)
 
+        self.cropandlabel = wx.RadioBox(self, label='Crop & Label Data (Recommended)?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
+        self.cropandlabel.SetSelection(0)
+
         self.hbox2.Add(shuffle_text_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         self.hbox2.Add(trainingindex_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-        self.hbox2.Add(self.userfeedback,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+
+        self.hbox3.Add(self.cropandlabel,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+        self.hbox3.Add(self.userfeedback,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
         if config_file.get('multianimalproject', False):
             print("note to user: currently model comparision is not available in maDLC")
@@ -226,13 +231,19 @@ class Create_training_dataset(wx.Panel):
         """
         """
         num_shuffles = self.shuffle.GetValue()
-        userfeedback_option = self.userfeedback.GetStringSelection()
-        if userfeedback_option=='Yes':
+        config_file = auxiliaryfunctions.read_config(self.config)
+        trainindex = self.trainingindex.GetValue()
+
+        if self.userfeedback.GetStringSelection() =='Yes':
             userfeedback = True
         else:
             userfeedback = False
-        trainindex = self.trainingindex.GetValue()
-        config_file = auxiliaryfunctions.read_config(self.config)
+
+        if self.cropandlabel.GetStringSelection() =='Yes':
+            deeplabcut.cropimagesandlabels(self.config, userfeedback=userfeedback)
+        else:
+            random = False
+        
         if config_file.get('multianimalproject', False):
             deeplabcut.create_multianimaltraining_dataset(self.config,num_shuffles,Shuffles=[self.shuffle.GetValue()])
         else:
