@@ -101,18 +101,30 @@ class Analyze_videos(wx.Panel):
 
         boxsizer.Add(hbox1,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
-        self.csv = wx.RadioBox(self, label='Want to save result(s) as csv?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
-        self.csv.SetSelection(1)
+        #dealing with maDLC:
 
-        self.dynamic = wx.RadioBox(self, label='Want to dynamically crop bodyparts?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
-        self.dynamic.SetSelection(1)
+        if self.cfg.get('multianimalproject', False):
+            print("note to user: dynamic cropping is not available in maDLC")
+        else:
+            self.csv = wx.RadioBox(self, label='Want to save result(s) as csv?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
+            self.csv.SetSelection(1)
 
-        self.filter = wx.RadioBox(self, label='Want to filter the predictions?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
-        self.filter.SetSelection(1)
+            self.dynamic = wx.RadioBox(self, label='Want to dynamically crop bodyparts?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
+            self.dynamic.SetSelection(1)
 
-        self.trajectory = wx.RadioBox(self, label='Want to plot the trajectories?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
-        self.trajectory.Bind(wx.EVT_RADIOBOX,self.chooseOption)
-        self.trajectory.SetSelection(1)
+            self.filter = wx.RadioBox(self, label='Want to filter the predictions?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
+            self.filter.SetSelection(1)
+
+            self.trajectory = wx.RadioBox(self, label='Want to plot the trajectories?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
+            self.trajectory.Bind(wx.EVT_RADIOBOX,self.chooseOption)
+            self.trajectory.SetSelection(1)
+
+            hbox2.Add(self.csv,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+            hbox2.Add(self.filter,10,wx.EXPAND|wx.TOP|wx.BOTTOM,5)
+            hbox2.Add(self.trajectory,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+            boxsizer.Add(hbox2,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+
+            hbox3.Add(self.dynamic,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
         config_file = auxiliaryfunctions.read_config(self.config)
         if config_file.get('multianimalproject', False):
@@ -139,13 +151,8 @@ class Analyze_videos(wx.Panel):
         self.trail_points_text.Hide()
         self.trail_points.Hide()
 
-        hbox2.Add(self.csv,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-        hbox2.Add(self.filter,10,wx.EXPAND|wx.TOP|wx.BOTTOM,5)
-        hbox2.Add(self.trajectory,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-        hbox2.Add(self.trajectory_to_plot,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-        boxsizer.Add(hbox2,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
-        hbox3.Add(self.dynamic,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+        hbox2.Add(self.trajectory_to_plot,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         hbox3.Add(self.create_video_with_all_detections, 10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         boxsizer.Add(hbox3,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
@@ -215,47 +222,60 @@ class Analyze_videos(wx.Panel):
         shuffle = self.shuffle.GetValue()
         trainingsetindex = self.trainingset.GetValue()
 
-        if self.csv.GetStringSelection() == "Yes":
-            save_as_csv = True
+        if self.cfg.get('multianimalproject', False):
+            print("what is going on")
         else:
-            save_as_csv = False
+            if self.csv.GetStringSelection() == "Yes":
+                save_as_csv = True
+            else:
+                save_as_csv = False
+            if self.dynamic.GetStringSelection() == "No":
+                dynamic = (False, .5, 10)
+            else:
+                dynamic = (True, .5, 10)
+            if self.filter.GetStringSelection() == "No":
+                filter = None
+            else:
+                filter = True
+
+            if self.filter.GetStringSelection() == "Yes":
+                deeplabcut.filterpredictions(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex, filtertype='median', windowlength=5, save_as_csv=True, destfolder=self.destfolder)
+
+            if self.trajectory.GetStringSelection() == "Yes":
+                deeplabcut.plot_trajectories(self.config, self.filelist, displayedbodyparts=self.bodyparts,
+                                             videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex, filtered=True, showfigures=False, destfolder=self.destfolder)
 
         if self.cfg['cropping']:
             crop = self.cfg['x1'], self.cfg['x2'], self.cfg['y1'], self.cfg['y2']
         else:
             crop = None
 
-        if self.dynamic.GetStringSelection() == "No":
-            dynamic = (False, .5, 10)
+        if self.cfg.get('multianimalproject', False):
+            scorername = deeplabcut.analyze_videos(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle,
+                                      trainingsetindex=trainingsetindex, gputouse=None, destfolder=self.destfolder, cropping=crop)
         else:
-            dynamic = (True, .5, 10)
-
-        if self.filter.GetStringSelection() == "No":
-            filter = None
-        else:
-            filter = True
-
-        scorername = deeplabcut.analyze_videos(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle,
-                                  trainingsetindex=trainingsetindex, gputouse=None, save_as_csv=save_as_csv,
-                                  destfolder=self.destfolder, cropping=crop, dynamic=dynamic)
-        if self.filter.GetStringSelection() == "Yes":
-            deeplabcut.filterpredictions(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex, filtertype='median', windowlength=5, p_bound=0.001, ARdegree=3, MAdegree=1, alpha=0.01, save_as_csv=True, destfolder=self.destfolder)
-
-        if self.trajectory.GetStringSelection() == "Yes":
-            deeplabcut.plot_trajectories(self.config, self.filelist, displayedbodyparts=self.bodyparts,
-                                         videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex, filtered=True, showfigures=False, destfolder=self.destfolder)
+            scorername = deeplabcut.analyze_videos(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle,
+                                      trainingsetindex=trainingsetindex, gputouse=None, save_as_csv=save_as_csv,
+                                      destfolder=self.destfolder, cropping=crop, dynamic=dynamic)
 
         if self.create_video_with_all_detections.GetStringSelection() == "Yes":
             trainFrac = self.cfg['TrainingFraction'][trainingsetindex]
             scorername, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(self.cfg,shuffle,trainFraction=trainFrac)
             print(scorername)
-            #scorername = 'DLC_' + netname + "_" + Task + str(date) + 'shuffle' + str(shuffle) + '_' + str(trainingsiterations)
             deeplabcut.create_video_with_all_detections(self.config, self.filelist, DLCscorername=scorername)
+
 
     def reset_analyze_videos(self,event):
         """
         Reset to default
         """
+        if self.cfg.get('multianimalproject', True):
+            self.create_video_with_all_detections.SetSelection(1)
+        else:
+            self.csv.SetSelection(1)
+            self.filter.SetSelection(1)
+            self.trajectory.SetSelection(1)
+            self.dynamic.SetSelection(1)
         self.config = []
         self.sel_config.SetPath("")
         self.videotype.SetStringSelection(".avi")
@@ -263,11 +283,6 @@ class Analyze_videos(wx.Panel):
         self.filelist = []
         self.shuffle.SetValue(1)
         self.trainingset.SetValue(0)
-        self.csv.SetSelection(1)
-        self.filter.SetSelection(1)
-        self.trajectory.SetSelection(1)
-        self.dynamic.SetSelection(1)
-        self.create_video_with_all_detections.SetSelection(1)
         self.sel_destfolder.SetPath("None")
         if self.draw_skeleton.IsShown():
             self.draw_skeleton.SetSelection(1)
