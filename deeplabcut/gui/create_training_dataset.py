@@ -102,7 +102,7 @@ class Create_training_dataset(wx.Panel):
         self.hbox2.Add(self.userfeedback,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
         if config_file.get('multianimalproject', False):
-            print("note to user: currently model comparision is for standard DeepLabCut")
+            print("note to user: currently model comparision is not available in maDLC")
             self.model_comparison_choice = 'No'
         else:
             self.model_comparison_choice = wx.RadioBox(self, label='Want to compare models?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)

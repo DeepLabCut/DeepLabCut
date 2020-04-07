@@ -32,10 +32,11 @@ class Analyze_videos(wx.Panel):
         self.draw = False
         # design the panel
         self.sizer = wx.GridBagSizer(5, 10)
-        if self.cfg.get('multianimalproject', True):
-            text = wx.StaticText(self, label="DeepLabCut - Step 7. Analyze Videos")
-        else:
+
+        if self.cfg.get('multianimalproject', False):
             text = wx.StaticText(self, label="DeepLabCut - Step 7. Analyze Videos and Detect Tracklets")
+        else:
+            text = wx.StaticText(self, label="DeepLabCut - Step 7. Analyze Videos ....")
 
         self.sizer.Add(text, pos=(0, 0), flag=wx.TOP|wx.LEFT|wx.BOTTOM,border=15)
         # Add logo of DLC
@@ -102,16 +103,13 @@ class Analyze_videos(wx.Panel):
         hbox1.Add(videotype_text_boxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         hbox1.Add(shuffle_boxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         hbox1.Add(trainingset_boxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-        hbox1.Add(destfolderboxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+        hbox2.Add(destfolderboxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
         boxsizer.Add(hbox1,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
         #dealing with maDLC:
 
         if self.cfg.get('multianimalproject', False):
-            self.tracklets = wx.RadioBox(self, label='Convert to Tracklets?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
-            self.tracklets.SetSelection(1)
-            hbox2.Add(self.tracklets,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
             self.create_video_with_all_detections = wx.RadioBox(self, label='Create video for checking detections', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
             self.create_video_with_all_detections.SetSelection(1)
