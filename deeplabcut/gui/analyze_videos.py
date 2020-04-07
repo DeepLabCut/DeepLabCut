@@ -25,14 +25,18 @@ class Analyze_videos(wx.Panel):
         wx.Panel.__init__(self, parent=parent)
         # variable initilization
         self.filelist = []
+        self.picklelist =[]
         self.bodyparts = []
         self.config = cfg
         self.cfg = auxiliaryfunctions.read_config(self.config)
         self.draw = False
         # design the panel
         self.sizer = wx.GridBagSizer(5, 10)
+        if self.cfg.get('multianimalproject', True):
+            text = wx.StaticText(self, label="DeepLabCut - Step 7. Analyze Videos")
+        else:
+            text = wx.StaticText(self, label="DeepLabCut - Step 7. Analyze Videos and Detect Tracklets")
 
-        text = wx.StaticText(self, label="DeepLabCut - Step 7. Analyze videos")
         self.sizer.Add(text, pos=(0, 0), flag=wx.TOP|wx.LEFT|wx.BOTTOM,border=15)
         # Add logo of DLC
         icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(logo))
@@ -59,6 +63,7 @@ class Analyze_videos(wx.Panel):
         self.sel_vids = wx.Button(self, label="Select videos to analyze")
         self.sizer.Add(self.sel_vids, pos=(3, 1), flag=wx.TOP|wx.EXPAND, border=5)
         self.sel_vids.Bind(wx.EVT_BUTTON, self.select_videos)
+
 
         sb = wx.StaticBox(self, label="Additional Attributes")
         boxsizer = wx.StaticBoxSizer(sb, wx.VERTICAL)
@@ -94,17 +99,25 @@ class Analyze_videos(wx.Panel):
         self.sel_destfolder.Bind(wx.EVT_FILEPICKER_CHANGED, self.select_destfolder)
         destfolderboxsizer.Add(self.sel_destfolder,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
-        hbox1.Add(videotype_text_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-        hbox1.Add(shuffle_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-        hbox1.Add(trainingset_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-        hbox1.Add(destfolderboxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+        hbox1.Add(videotype_text_boxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+        hbox1.Add(shuffle_boxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+        hbox1.Add(trainingset_boxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+        hbox1.Add(destfolderboxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
         boxsizer.Add(hbox1,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
         #dealing with maDLC:
 
         if self.cfg.get('multianimalproject', False):
-            print("note to user: dynamic cropping is not available in maDLC")
+            self.tracklets = wx.RadioBox(self, label='Convert to Tracklets?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
+            self.tracklets.SetSelection(1)
+            hbox2.Add(self.tracklets,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+
+            self.create_video_with_all_detections = wx.RadioBox(self, label='Create video for checking detections', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
+            self.create_video_with_all_detections.SetSelection(1)
+            hbox2.Add(self.create_video_with_all_detections, 10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+            boxsizer.Add(hbox2,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+
         else:
             self.csv = wx.RadioBox(self, label='Want to save result(s) as csv?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
             self.csv.SetSelection(1)
@@ -136,8 +149,7 @@ class Analyze_videos(wx.Panel):
         self.trajectory_to_plot.SetCheckedItems(range(len(bodyparts)))
         self.trajectory_to_plot.Hide()
 
-        self.create_video_with_all_detections = wx.RadioBox(self, label='Create video for checking detections (maDLC only)', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
-        self.create_video_with_all_detections.SetSelection(1)
+
 
         self.draw_skeleton = wx.RadioBox(self, label='Include the skeleton in the video?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
         self.draw_skeleton.Bind(wx.EVT_RADIOBOX, self.choose_draw_skeleton_options)
@@ -151,26 +163,30 @@ class Analyze_videos(wx.Panel):
         self.trail_points_text.Hide()
         self.trail_points.Hide()
 
-
         hbox2.Add(self.trajectory_to_plot,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-        hbox3.Add(self.create_video_with_all_detections, 10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         boxsizer.Add(hbox3,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
         hbox4.Add(self.draw_skeleton,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         hbox4.Add(trail_pointsboxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         boxsizer.Add(hbox4,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
-        self.sizer.Add(boxsizer, pos=(4, 0), span=(1, 10),flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT , border=10)
+        self.sizer.Add(boxsizer, pos=(5, 0), span=(1, 10),flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT , border=10)
+
+
 
         self.help_button = wx.Button(self, label='Help')
-        self.sizer.Add(self.help_button, pos=(5, 0), flag=wx.LEFT, border=10)
+        self.sizer.Add(self.help_button, pos=(7, 0), flag=wx.LEFT, border=10)
         self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
 
-        self.ok = wx.Button(self, label="RUN")
-        self.sizer.Add(self.ok, pos=(5, 8), flag=wx.BOTTOM|wx.RIGHT, border=10)
+        self.ok = wx.Button(self, label="Step 1: Analyze Videos")
+        self.sizer.Add(self.ok, pos=(7, 7), flag=wx.BOTTOM|wx.RIGHT, border=10)
         self.ok.Bind(wx.EVT_BUTTON, self.analyze_videos)
 
+        self.ok = wx.Button(self, label="Step 2: Convert to Tracklets")
+        self.sizer.Add(self.ok, pos=(7, 8), flag=wx.BOTTOM|wx.RIGHT, border=10)
+        self.ok.Bind(wx.EVT_BUTTON, self.convert2_tracklets)
+
         self.reset = wx.Button(self, label="Reset")
-        self.sizer.Add(self.reset, pos=(5, 1), span=(1, 1),flag=wx.BOTTOM|wx.RIGHT, border=10)
+        self.sizer.Add(self.reset, pos=(7, 1), span=(1, 1),flag=wx.BOTTOM|wx.RIGHT, border=10)
         self.reset.Bind(wx.EVT_BUTTON, self.reset_analyze_videos)
 
         self.sizer.AddGrowableCol(2)
@@ -199,6 +215,11 @@ class Analyze_videos(wx.Panel):
         """
         """
         self.config = self.sel_config.GetPath()
+
+    def convert2_tracklets(self,event):
+        shuffle = self.shuffle.GetValue()
+        trainingsetindex = self.trainingset.GetValue()
+        deeplabcut.convert_detections2tracklets(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex)
 
     def select_videos(self,event):
         """
@@ -257,6 +278,9 @@ class Analyze_videos(wx.Panel):
             scorername = deeplabcut.analyze_videos(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle,
                                       trainingsetindex=trainingsetindex, gputouse=None, save_as_csv=save_as_csv,
                                       destfolder=self.destfolder, cropping=crop, dynamic=dynamic)
+
+#        if  self.tracklets.GetStringSelection() == "Yes":
+#             deeplabcut.convert_detections2tracklets(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex)
 
         if self.create_video_with_all_detections.GetStringSelection() == "Yes":
             trainFrac = self.cfg['TrainingFraction'][trainingsetindex]
