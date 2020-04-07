@@ -132,9 +132,9 @@ class Analyze_videos(wx.Panel):
 
             hbox2.Add(self.csv,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
             hbox2.Add(self.filter,10,wx.EXPAND|wx.TOP|wx.BOTTOM,5)
-            hbox2.Add(self.trajectory,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
             boxsizer.Add(hbox2,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
+            hbox3.Add(self.trajectory,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
             hbox3.Add(self.dynamic,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
         config_file = auxiliaryfunctions.read_config(self.config)
@@ -175,13 +175,14 @@ class Analyze_videos(wx.Panel):
         self.sizer.Add(self.help_button, pos=(7, 0), flag=wx.LEFT, border=10)
         self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
 
-        self.ok = wx.Button(self, label="Step 1: Analyze Videos")
+        self.ok = wx.Button(self, label="Analyze Videos")
         self.sizer.Add(self.ok, pos=(7, 7), flag=wx.BOTTOM|wx.RIGHT, border=10)
         self.ok.Bind(wx.EVT_BUTTON, self.analyze_videos)
 
-        self.ok = wx.Button(self, label="Step 2: Convert to Tracklets")
-        self.sizer.Add(self.ok, pos=(7, 8), flag=wx.BOTTOM|wx.RIGHT, border=10)
-        self.ok.Bind(wx.EVT_BUTTON, self.convert2_tracklets)
+        if config_file.get('multianimalproject', False):
+            self.ok = wx.Button(self, label="Step 2: Convert to Tracklets")
+            self.sizer.Add(self.ok, pos=(7, 8), flag=wx.BOTTOM|wx.RIGHT, border=10)
+            self.ok.Bind(wx.EVT_BUTTON, self.convert2_tracklets)
 
         self.reset = wx.Button(self, label="Reset")
         self.sizer.Add(self.reset, pos=(7, 1), span=(1, 1),flag=wx.BOTTOM|wx.RIGHT, border=10)
