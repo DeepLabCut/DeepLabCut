@@ -800,8 +800,9 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,
 
     os.chdir(str(start_path))
 
-def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1,
-    trainingsetindex=0, destfolder=None,BPTS=None, iBPTS=None,PAF=None,printintermediate=False,inferencecfg=None,modelprefix=''):
+def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, trainingsetindex=0,
+                                 destfolder=None,BPTS=None, iBPTS=None,PAF=None,printintermediate=False,
+                                 inferencecfg=None,modelprefix='', track_method='box'):
     """
     This should be called at the end of deeplabcut.analyze_videos for multianimal projects!
 
@@ -825,6 +826,10 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1,
     destfolder: string, optional
         Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this
         folder also needs to be passed.
+
+    track_method: str, optional
+        Method uses to track animals, either 'box' or 'skeleton'.
+        By default, a constant velocity Kalman filter is used to track individual bounding boxes.
 
     BPTS: ## TODO
         Default is None.
@@ -855,6 +860,9 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1,
     from deeplabcut.utils import auxfun_multianimal
     from easydict import EasyDict as edict
     import pickle
+
+    if track_method not in ('box', 'skeleton'):
+        raise ValueError('Invalid tracking method. Only `box` and `skeleton` are currently supported.')
 
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg['TrainingFraction'][trainingsetindex]
@@ -939,10 +947,8 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1,
     if len(Videos)>0:
         for video in Videos:
             print("Processing... ", video)
-            mot_tracker = trackingutils.Sort(inferencecfg)
             if destfolder is None:
                 destfolder = str(Path(video).parents[0])
-
             vname = Path(video).stem
             dataname = os.path.join(destfolder,vname + DLCscorer + '.h5')
             data, metadata=auxfun_multianimal.LoadFullMultiAnimalData(dataname)
@@ -983,14 +989,23 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1,
                 pdindex=pd.MultiIndex.from_arrays(np.vstack([scorers,bodypartlabels,xylvalue]),names=['scorer', 'bodyparts', 'coords'])
 
                 imnames=[fn for fn in data if fn != 'metadata']
+
+                if track_method == 'box':
+                    mot_tracker = trackingutils.Sort(inferencecfg)
+                else:
+                    mot_tracker = trackingutils.SORT(numjoints, inferencecfg['max_age'], inferencecfg['min_hits'])
                 Tracks={}
                 for index,imname in tqdm(enumerate(imnames)):
                     animals = inferenceutils.assemble_individuals(inferencecfg, data[imname], numjoints, BPTS, iBPTS,
                                                                   PAF, partaffinityfield_graph, linkingpartaffinityfield_graph,
                                                                   printintermediate)
-                    #get corresponding bounding boxes!
-                    bb=inferenceutils.individual2boundingbox(inferencecfg,animals,0) #TODO: get cropping parameters and utilize!
-                    trackers = mot_tracker.update(bb)
+                    if track_method == 'box':
+                        #get corresponding bounding boxes!
+                        bb=inferenceutils.individual2boundingbox(inferencecfg,animals,0) #TODO: get cropping parameters and utilize!
+                        trackers = mot_tracker.update(bb)
+                    else:
+                        temp = [arr.reshape((-1, 3))[:, :2] for arr in animals]
+                        trackers = mot_tracker.track(temp)
                     trackingutils.fill_tracklets(Tracks, trackers, animals, imname)
                 Tracks['header']=pdindex
                 with open(trackname, 'wb') as f:
