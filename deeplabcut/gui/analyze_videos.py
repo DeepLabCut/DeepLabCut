@@ -246,7 +246,11 @@ class Analyze_videos(wx.Panel):
                                          videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex, filtered=True, showfigures=False, destfolder=self.destfolder)
 
         if self.create_video_with_all_detections.GetStringSelection() == "Yes":
-            deeplabcut.create_video_with_all_detections(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex, scorername=scorername)
+            trainFrac = self.cfg['TrainingFraction'][trainingsetindex]
+            scorername, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(self.cfg,shuffle,trainFraction=trainFrac)
+            print(scorername)
+            #scorername = 'DLC_' + netname + "_" + Task + str(date) + 'shuffle' + str(shuffle) + '_' + str(trainingsiterations)
+            deeplabcut.create_video_with_all_detections(self.config, self.filelist, DLCscorername=scorername)
 
     def reset_analyze_videos(self,event):
         """

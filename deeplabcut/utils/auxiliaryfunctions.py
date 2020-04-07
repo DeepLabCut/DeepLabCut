@@ -400,7 +400,10 @@ def form_data_containers(df, bodyparts):
     return df_x, df_y, df_likelihood
 
 def GetScorerName(cfg,shuffle,trainFraction,trainingsiterations='unknown',modelprefix=''):
-    ''' Extract the scorer/network name for a particular shuffle, training fraction, etc. '''
+    ''' Extract the scorer/network name for a particular shuffle, training fraction, etc.
+        Returns tuple of DLCscorer, DLCscorerlegacy (old naming convention)
+    '''
+
     Task = cfg['Task']
     date = cfg['date']
 
