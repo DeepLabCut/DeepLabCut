@@ -7,7 +7,7 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 
-Hao Wu, hwu01@g.harvard.edu contributed the original OpenCV class!
+Hao Wu, hwu01@g.harvard.edu contributed the original OpenCV class. Thanks!
 You can find the directory for your ffmpeg bindings by: "find / | grep ffmpeg" and then setting it.
 """
 
@@ -29,11 +29,12 @@ elif platform.system() == 'Darwin':
 else:
     mpl.use('TkAgg')
 import matplotlib.pyplot as plt
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
+from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualization
 from deeplabcut.utils.video_processor import VideoProcessorCV as vp # used to CreateVideo
 from matplotlib.animation import FFMpegWriter
 from skimage.util import img_as_ubyte
 from skimage.draw import circle, line_aa
+
 
 def get_cmap(n, name='hsv'):
     '''Returns a function that maps each index in 0, 1, ..., n-1 to a distinct
@@ -46,6 +47,7 @@ def get_segment_indices(bodyparts2connect, bodyparts2plot):
         if all(elem in bodyparts2plot for elem in pair):
             bpts2connect.append([bodyparts2plot.index(elem) for elem in pair])
     return bpts2connect
+
 
 def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,bodyparts2plot,
                 trailpoints,cropping,x1,x2,y1,y2,
@@ -232,7 +234,7 @@ def CreateVideoSlow(videooutname,clip,Dataframe, tmpfolder, dotsize,colormap,alp
 
 
 def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,
-    filtered=False,fastmode=True,save_frames=True,Frames2plot=None, displayedbodyparts='all', displayedindividuals='all',
+    filtered=False,fastmode=True,save_frames=False,Frames2plot=None, displayedbodyparts='all', displayedindividuals='all',
     codec='mp4v',outputframerate=None, destfolder=None,draw_skeleton=False,
     trailpoints = 0,displaycropped=False, color_by='bodypart',modelprefix=''):
     """
@@ -343,6 +345,10 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
 
     start_path=os.getcwd()
     Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
+    if not len(Videos):
+        print("No video(s) were found. Please check your paths and/or 'video_type'.")
+        return
+
     for video in Videos:
         if destfolder is None:
             videofolder= Path(video).parents[0] #where your folder with videos is.
@@ -369,92 +375,176 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
         else:
             print("Loading ", video, "and data.")
             datafound,metadata,Dataframe,DLCscorer,suffix=auxiliaryfunctions.LoadAnalyzedData(str(videofolder),vname,DLCscorer,filtered) #returns boolean variable if data was found and metadata + pandas array
+            if datafound:  # Sweet, we've found single animal data or tracklets
+                videooutname = os.path.join(vname + DLCscorer + suffix + '_labeled.mp4')
+                if os.path.isfile(videooutname):
+                    print('Labeled video already created. Skipping...')
+                    continue
 
-            if all(individuals) and datafound:
-                Dataframe = Dataframe.copy().loc(axis=1)[:, individuals]
+                if all(individuals):
+                    Dataframe = Dataframe.loc(axis=1)[:, individuals]
 
-            videooutname=os.path.join(vname + DLCscorer+suffix+'_labeled.mp4')
-            if datafound and not os.path.isfile(videooutname): #checking again, for this loader video could exist
-                #Loading cropping data used during analysis
                 cropping=metadata['data']["cropping"]
                 [x1,x2,y1,y2]=metadata['data']["cropping_parameters"]
-                if fastmode==False:
+                labeled_bpts = [bp for bp in bodyparts if bp in Dataframe.columns.get_level_values('bodyparts')]
+                if not fastmode:
                     tmpfolder = os.path.join(str(videofolder),'temp-' + vname)
-                    auxiliaryfunctions.attempttomakefolder(tmpfolder)
+                    if save_frames:
+                        auxiliaryfunctions.attempttomakefolder(tmpfolder)
                     clip = vp(video)
                     CreateVideoSlow(videooutname,clip,Dataframe,tmpfolder,cfg["dotsize"],cfg["colormap"],cfg["alphavalue"],cfg["pcutoff"],
-                                    trailpoints,cropping,x1,x2,y1,y2,save_frames,bodyparts,outputframerate,Frames2plot,bodyparts2connect,
+                                    trailpoints,cropping,x1,x2,y1,y2,save_frames,labeled_bpts,outputframerate,Frames2plot,bodyparts2connect,
                                     skeleton_color,draw_skeleton,displaycropped,color_by)
                 else:
                     if displaycropped: #then the cropped video + the labels is depicted
                         clip = vp(fname = video,sname = videooutname,codec=codec,sw=x2-x1,sh=y2-y1)
                     else: #then the full video + the (perhaps in cropped mode analyzed labels) are depicted
                         clip = vp(fname = video,sname = videooutname,codec=codec)
-                    CreateVideo(clip,Dataframe,cfg["pcutoff"],cfg["dotsize"],cfg["colormap"],bodyparts,trailpoints,cropping,x1,x2,y1,y2,bodyparts2connect,skeleton_color,draw_skeleton,displaycropped,color_by)
-            else: #check if tracks exist!
-
-                ## TODO: intergrate with standard code for dataframes.
-                import pickle, cv2, subprocess
-                from tqdm import tqdm
-
-                scale=1
-                pcutoff=cfg["pcutoff"]
-
-                tracksfn=vname + DLCscorer+'tracks.pickle'
-                if os.path.isfile(tracksfn):
-                    with open(tracksfn, 'rb') as handle:
-                        Tracks=pickle.load(handle)
-                    outfolder=vname
-                    if not os.path.isdir(outfolder):
-                        os.mkdir(outfolder)
-
-                    cap=cv2.VideoCapture(video)
-                    nframes = int(cap.get(7))
-                    strwidth = int(np.ceil(np.log10(nframes))) #width for strings
-                    ny=int(cap.get(4))
-                    nx=int(cap.get(3))
-                    # cropping!
-                    X2=nx #1600
-                    X1=0
-                    #nx=X2-X1
-                    numtracks=len(Tracks.keys())-1
-                    trackids=[t for t in Tracks.keys() if t!='header']
-                    cc=np.random.rand(numtracks+1,3)
-                    for index in tqdm(range(nframes)):
-                        plt.close("all")
-                        cap.set(1,index)
-                        ret, frame = cap.read()
-                        imname='frame'+str(index).zfill(strwidth)
-                        if ret and not os.path.isfile(outfolder+'/'+imname+'.png'):
-                            fig,ax=plt.subplots(frameon=False, figsize=(nx * 1. / 100*scale, ny * 1. / 100*scale))
-                            fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-                            frame=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                            plt.imshow(frame[:,X1:X2])
-                            for colorid,trackid in enumerate(trackids):
-                                if imname in Tracks[trackid].keys():
-                                    x=Tracks[trackid][imname][0::3]
-                                    y=Tracks[trackid][imname][1::3]
-                                    p=Tracks[trackid][imname][2::3]
-                                    plt.plot(x[p>pcutoff],y[p>pcutoff],'.',color=cc[colorid])
-
-                            plt.xlim(0, nx)
-                            plt.ylim(0, ny)
-                            plt.axis('off')
-                            plt.subplots_adjust(
-                                left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-                            plt.gca().invert_yaxis()
-                            plt.savefig(outfolder+'/'+imname+'.png')
-
-                    videooutname=str(video)+'_DLC.mp4'
-                    outputframerate=30
-                    nf=3 #int(np.ceil(np.log10(nframes)))
-                    os.chdir(outfolder)
-
-                    subprocess.call([
-                    'ffmpeg', '-framerate',
-                    str(30), '-i', 'frame%0'+str(nf)+'d.png', '-r', str(outputframerate),'../'+videooutname])
+                    CreateVideo(clip,Dataframe,cfg["pcutoff"],cfg["dotsize"],cfg["colormap"],labeled_bpts,trailpoints,cropping,x1,x2,y1,y2,bodyparts2connect,skeleton_color,draw_skeleton,displaycropped,color_by)
+            else:
+                # Check if tracks exist!
+                datafound, metadata, Tracks, DLCscorer = auxiliaryfunctions.LoadAnalyzedDetectionData(videofolder, vname, DLCscorer)
+                if not datafound:
+                    print('No data were found. Run "analyze_video" first.')
+                    if cfg.get('multianimalproject', False):
+                        print('Then use "convert_detections2tracklets" and re-run the current function.')
+                    continue
+                else:
+                    print('Raw detections were found. Although "convert_detections2tracklets" '
+                          'should be used first, the video will be created anyway.')
+                    ## TODO: integrate with standard code for dataframes.
+                    scale=1
+                    pcutoff=cfg["pcutoff"]
+                    _create_video_from_tracks(video, Tracks, pcutoff, scale, vname)
 
     os.chdir(start_path)
+
+
+def create_video_with_all_detections(config, videos, DLCscorername, destfolder=None):
+    """
+    Create a video labeled with all the detections stored in a '*_full.pickle' file.
+
+    Parameters
+    ----------
+    config : str
+        Absolute path to the config.yaml file
+
+    videos : list of str
+        A list of strings containing the full paths to videos for analysis or a path to the directory,
+        where all the videos with same extension are stored.
+
+    DLCscorername: str
+        Name of network. E.g. 'DLC_resnet50_project_userMar23shuffle1_50000
+
+    destfolder: string, optional
+        Specifies the destination folder that was used for storing analysis data (default is the path of the video).
+
+    """
+    from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import convertdetectiondict2listoflist
+    import pickle, re
+    cfg = auxiliaryfunctions.read_config(config)
+
+    for video in videos:
+        if destfolder is None:
+            outputname = '{}_full.mp4'.format(os.path.splitext(video)[0]+DLCscorername)
+            full_pickle=os.path.join(os.path.splitext(video)[0]+DLCscorername+'_full.pickle')
+        else:
+            outputname = os.path.join(destfolder,str(Path(video).stem)+DLCscorername+'_full.mp4')
+            full_pickle=os.path.join(destfolder,str(Path(video).stem)+DLCscorername+'_full.pickle')
+
+        if not(os.path.isfile(outputname)):
+            print("Creating labeled video for ", str(Path(video).stem))
+            with open(full_pickle, 'rb') as file:
+                data = pickle.load(file)
+
+            header = data.pop('metadata')
+            print(header)
+            all_jointnames = header['all_joints_names']
+
+            numjoints = len(all_jointnames)
+            bpts = range(numjoints)
+            frame_names = list(data)
+            frames = [int(re.findall(r'\d+', name)[0]) for name in frame_names]
+            colorclass = plt.cm.ScalarMappable(cmap=cfg['colormap'])
+            C = colorclass.to_rgba(np.linspace(0, 1, numjoints))
+            colors = (C[:, :3] * 255).astype(np.uint8)
+
+            pcutoff = cfg['pcutoff']
+            dotsize = cfg['dotsize']
+            clip = vp(fname=video, sname=outputname, codec='mp4v')
+            ny, nx = clip.height(), clip.width()
+
+            for n in trange(clip.nframes):
+                frame = clip.load_frame()
+                try:
+                    ind = frames.index(n)
+                    dets = convertdetectiondict2listoflist(data[frame_names[ind]], bpts)
+                    for i, det in enumerate(dets):
+                        color = colors[i]
+                        for x, y, p, _ in det:
+                            if p > pcutoff:
+                                rr, cc = circle(y, x, dotsize, shape=(ny, nx))
+                                frame[rr, cc] = color
+                except ValueError:  # No data stored for that particular frame
+                    print(n,'no data')
+                    pass
+                try:
+                    clip.save_frame(frame)
+                except:
+                    print(n,"frame writing error.")
+                    pass
+            clip.close()
+        else:
+            print("Detections already plotted, ", outputname)
+
+
+def _create_video_from_tracks(video, tracks, pcutoff, scale, destfolder):
+    import cv2
+    import subprocess
+    from tqdm import tqdm
+
+    if not os.path.isdir(destfolder):
+        os.mkdir(destfolder)
+
+    cap = cv2.VideoCapture(video)
+    nframes = int(cap.get(7))
+    strwidth = int(np.ceil(np.log10(nframes)))  # width for strings
+    ny = int(cap.get(4))
+    nx = int(cap.get(3))
+    # cropping!
+    X2 = nx  # 1600
+    X1 = 0
+    # nx=X2-X1
+    numtracks = len(tracks.keys()) - 1
+    trackids = [t for t in tracks.keys() if t != 'header']
+    cc = np.random.rand(numtracks + 1, 3)
+    fig, ax = visualization.prepare_figure_axes(nx, ny, scale)
+    im = ax.imshow(np.zeros((ny, nx)))
+    markers, = ax.plot([], [], '.')
+    for index in tqdm(range(nframes)):
+        cap.set(1, index)
+        ret, frame = cap.read()
+        imname = 'frame' + str(index).zfill(strwidth)
+        image_output = os.path.join(destfolder, imname + '.png')
+        if ret and not os.path.isfile(image_output):
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            im.set_data(frame[:, X1:X2])
+            for colorid, trackid in enumerate(trackids):
+                if imname in tracks[trackid]:
+                    x, y, p = tracks[trackid][imname].reshape((-1, 3)).T
+                    markers.set_xdata(x[p > pcutoff])
+                    markers.set_ydata(y[p > pcutoff])
+                    markers.set_color(cc[colorid])
+            fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+            plt.savefig(image_output)
+
+    videooutname = str(video) + '_DLClabeled.mp4'
+    outputframerate = 30
+    os.chdir(destfolder)
+
+    subprocess.call([
+        'ffmpeg', '-framerate', str(int(cap.get(5))), '-i', f'frame%0{strwidth}d.png',
+        '-r', str(outputframerate), videooutname])
 
 
 if __name__ == '__main__':

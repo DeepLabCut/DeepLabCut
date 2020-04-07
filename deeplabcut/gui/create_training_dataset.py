@@ -14,9 +14,9 @@ import os
 import sys
 import pydoc
 import deeplabcut
+from deeplabcut.utils import auxiliaryfunctions
 media_path = os.path.join(deeplabcut.__path__[0], 'gui' , 'media')
 logo = os.path.join(media_path,'logo.png')
-#import wx.lib.scrolledpanel as SP
 
 class Create_training_dataset(wx.Panel):
     """
@@ -60,25 +60,32 @@ class Create_training_dataset(wx.Panel):
         self.hbox2 = wx.BoxSizer(wx.HORIZONTAL)
         self.hbox3 = wx.BoxSizer(wx.HORIZONTAL)
 
-        net_text = wx.StaticBox(self, label="Select the network")
-        netboxsizer = wx.StaticBoxSizer(net_text, wx.VERTICAL)
-        self.net_choice = wx.ComboBox(self, style=wx.CB_READONLY)
-        options = ['resnet_50', 'resnet_101','resnet_152','mobilenet_v2_1.0','mobilenet_v2_0.75','mobilenet_v2_0.5','mobilenet_v2_0.35']
-        self.net_choice.Set(options)
-        self.net_choice.SetValue('resnet_50')
-        netboxsizer.Add(self.net_choice,20, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+        config_file = auxiliaryfunctions.read_config(self.config)
+        if config_file.get('multianimalproject', False):
+            print("note to user: currently only ResNet50-v1 is available for maDLC")
+        else:
+            net_text = wx.StaticBox(self, label="Select the network")
+            netboxsizer = wx.StaticBoxSizer(net_text, wx.VERTICAL)
+            self.net_choice = wx.ComboBox(self, style=wx.CB_READONLY)
+            options = ['resnet_50', 'resnet_101','resnet_152','mobilenet_v2_1.0','mobilenet_v2_0.75','mobilenet_v2_0.5','mobilenet_v2_0.35']
+            self.net_choice.Set(options)
+            self.net_choice.SetValue('resnet_50')
+            netboxsizer.Add(self.net_choice,20, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
-        aug_text = wx.StaticBox(self, label="Select the augmentation method")
-        augboxsizer = wx.StaticBoxSizer(aug_text, wx.VERTICAL)
-        self.aug_choice = wx.ComboBox(self, style=wx.CB_READONLY)
-        options = ['default', 'tensorpack','imgaug']
-        self.aug_choice.Set(options)
-        self.aug_choice.SetValue('default')
-        augboxsizer.Add(self.aug_choice,20, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+            aug_text = wx.StaticBox(self, label="Select the augmentation method")
+            augboxsizer = wx.StaticBoxSizer(aug_text, wx.VERTICAL)
+            self.aug_choice = wx.ComboBox(self, style=wx.CB_READONLY)
+            options = ['default', 'tensorpack','imgaug']
+            self.aug_choice.Set(options)
+            self.aug_choice.SetValue('imgaug')
+            augboxsizer.Add(self.aug_choice,20, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
-        shuffle_text = wx.StaticBox(self, label="Or set a specific shuffle indx (1 network only)")
+            self.hbox1.Add(netboxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+            self.hbox1.Add(augboxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+
+        shuffle_text = wx.StaticBox(self, label="Set a specific shuffle indx (1 network only)")
         shuffle_text_boxsizer = wx.StaticBoxSizer(shuffle_text, wx.VERTICAL)
-        self.shuffle = wx.SpinCtrl(self, value='None',min=1,max=100)
+        self.shuffle = wx.SpinCtrl(self, value='1',min=1,max=100)
         shuffle_text_boxsizer.Add(self.shuffle,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
         trainingindex_box = wx.StaticBox(self, label="Specify the trainingset index")
@@ -90,48 +97,48 @@ class Create_training_dataset(wx.Panel):
         self.userfeedback = wx.RadioBox(self, label='Need user feedback?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
         self.userfeedback.SetSelection(1)
 
-        self.hbox1.Add(netboxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-        self.hbox1.Add(augboxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-
         self.hbox2.Add(shuffle_text_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         self.hbox2.Add(trainingindex_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         self.hbox2.Add(self.userfeedback,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
+        if config_file.get('multianimalproject', False):
+            print("note to user: currently model comparision is for standard DeepLabCut")
+            self.model_comparison_choice = 'No'
+        else:
+            self.model_comparison_choice = wx.RadioBox(self, label='Want to compare models?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
+            self.model_comparison_choice.Bind(wx.EVT_RADIOBOX,self.chooseOption)
+            self.model_comparison_choice.SetSelection(1)
 
-        self.model_comparison_choice = wx.RadioBox(self, label='Want to compare models?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
-        self.model_comparison_choice.Bind(wx.EVT_RADIOBOX,self.chooseOption)
-        self.model_comparison_choice.SetSelection(1)
+            self.shuffles_text = wx.StaticBox(self, label="Specify the number of shuffles")
+            self.shuffles_text_boxsizer = wx.StaticBoxSizer(self.shuffles_text, wx.VERTICAL)
+            self.shuffles = wx.SpinCtrl(self, value='1',min=1,max=100)
+            self.shuffles_text_boxsizer.Add(self.shuffles,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
-        self.shuffles_text = wx.StaticBox(self, label="Specify the number of shuffles")
-        self.shuffles_text_boxsizer = wx.StaticBoxSizer(self.shuffles_text, wx.VERTICAL)
-        self.shuffles = wx.SpinCtrl(self, value='1',min=1,max=100)
-        self.shuffles_text_boxsizer.Add(self.shuffles,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+            networks = ['resnet_50', 'resnet_101', 'resnet_152', 'mobilenet_v2_1.0','mobilenet_v2_0.75', 'mobilenet_v2_0.5', 'mobilenet_v2_0.35']
+            augmentation_methods = ['default','tensorpack','imgaug']
+            self.network_box = wx.StaticBox(self, label="Select the networks")
+            self.network_boxsizer = wx.StaticBoxSizer(self.network_box, wx.VERTICAL)
+            self.networks_to_compare = wx.CheckListBox(self, choices=networks, style=0,name = "Select the networks")
+            self.networks_to_compare.Bind(wx.EVT_CHECKLISTBOX,self.get_network_names)
+            self.network_boxsizer.Add(self.networks_to_compare,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
-        networks = ['resnet_50', 'resnet_101', 'resnet_152', 'mobilenet_v2_1.0','mobilenet_v2_0.75', 'mobilenet_v2_0.5', 'mobilenet_v2_0.35']
-        augmentation_methods = ['default','tensorpack','imgaug']
-        self.network_box = wx.StaticBox(self, label="Select the networks")
-        self.network_boxsizer = wx.StaticBoxSizer(self.network_box, wx.VERTICAL)
-        self.networks_to_compare = wx.CheckListBox(self, choices=networks, style=0,name = "Select the networks")
-        self.networks_to_compare.Bind(wx.EVT_CHECKLISTBOX,self.get_network_names)
-        self.network_boxsizer.Add(self.networks_to_compare,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+            self.augmentation_box = wx.StaticBox(self, label="Select the augmentation methods")
+            self.augmentation_boxsizer = wx.StaticBoxSizer(self.augmentation_box, wx.VERTICAL)
+            self.augmentation_to_compare = wx.CheckListBox(self, choices=augmentation_methods, style=0,name = "Select the augmentation methods")
+            self.augmentation_to_compare.Bind(wx.EVT_CHECKLISTBOX,self.get_augmentation_method_names)
+            self.augmentation_boxsizer.Add(self.augmentation_to_compare,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
-        self.augmentation_box = wx.StaticBox(self, label="Select the augmentation methods")
-        self.augmentation_boxsizer = wx.StaticBoxSizer(self.augmentation_box, wx.VERTICAL)
-        self.augmentation_to_compare = wx.CheckListBox(self, choices=augmentation_methods, style=0,name = "Select the augmentation methods")
-        self.augmentation_to_compare.Bind(wx.EVT_CHECKLISTBOX,self.get_augmentation_method_names)
-        self.augmentation_boxsizer.Add(self.augmentation_to_compare,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+            self.hbox3.Add(self.model_comparison_choice,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+            self.hbox3.Add(self.shuffles_text_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+            self.hbox3.Add(self.network_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+            self.hbox3.Add(self.augmentation_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
-        self.hbox3.Add(self.model_comparison_choice,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-        self.hbox3.Add(self.shuffles_text_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-        self.hbox3.Add(self.network_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-        self.hbox3.Add(self.augmentation_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-
-        self.shuffles_text.Hide()
-        self.shuffles.Hide()
-        self.network_box.Hide()
-        self.networks_to_compare.Hide()
-        self.augmentation_box.Hide()
-        self.augmentation_to_compare.Hide()
+            self.shuffles_text.Hide()
+            self.shuffles.Hide()
+            self.network_box.Hide()
+            self.networks_to_compare.Hide()
+            self.augmentation_box.Hide()
+            self.augmentation_to_compare.Hide()
 
         boxsizer.Add(self.hbox1,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
         boxsizer.Add(self.hbox2,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
@@ -218,19 +225,21 @@ class Create_training_dataset(wx.Panel):
     def create_training_dataset(self,event):
         """
         """
-        num_shuffles = self.shuffles.GetValue()
+        num_shuffles = self.shuffle.GetValue()
         userfeedback_option = self.userfeedback.GetStringSelection()
         if userfeedback_option=='Yes':
             userfeedback = True
         else:
             userfeedback = False
         trainindex = self.trainingindex.GetValue()
-
-        if self.model_comparison_choice.GetStringSelection() == 'No':
-            deeplabcut.create_training_dataset(self.config,num_shuffles,Shuffles=[self.shuffle.GetValue()], userfeedback=userfeedback,net_type=self.net_choice.GetValue(),augmenter_type = self.aug_choice.GetValue())
-        if self.model_comparison_choice.GetStringSelection() == 'Yes':
-            deeplabcut.create_training_model_comparison(self.config,trainindex=trainindex, num_shuffles=num_shuffles,userfeedback=userfeedback,net_types=self.net_type,augmenter_types=self.aug_type)
-
+        config_file = auxiliaryfunctions.read_config(self.config)
+        if config_file.get('multianimalproject', False):
+            deeplabcut.create_multianimaltraining_dataset(self.config,num_shuffles,Shuffles=[self.shuffle.GetValue()])
+        else:
+            if self.model_comparison_choice.GetStringSelection() == 'No':
+                deeplabcut.create_training_dataset(self.config,num_shuffles,Shuffles=[self.shuffle.GetValue()], userfeedback=userfeedback,net_type=self.net_choice.GetValue(),augmenter_type = self.aug_choice.GetValue())
+            if self.model_comparison_choice.GetStringSelection() == 'Yes':
+                deeplabcut.create_training_model_comparison(self.config,trainindex=trainindex, num_shuffles=num_shuffles,userfeedback=userfeedback,net_types=self.net_type,augmenter_types=self.aug_type)
 
     def reset_create_training_dataset(self,event):
         """

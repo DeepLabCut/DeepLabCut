@@ -26,7 +26,7 @@ class Welcome(wx.Panel):
         wx.Panel.__init__(self, parent, -1,style=wx.SUNKEN_BORDER,size=(h,w))
 
 ##         design the panel
-        sizer = wx.GridBagSizer(5, 5)
+        sizer = wx.GridBagSizer(10, 7)
         # Add image of DLC
         icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(dlc))
         sizer.Add(icon, pos=(0, 0), span=(0, 8),flag=wx.EXPAND|wx.BOTTOM, border=10)
@@ -34,7 +34,7 @@ class Welcome(wx.Panel):
         sizer.Add(line, pos=(1, 0), span=(1, 8),flag=wx.EXPAND|wx.BOTTOM, border=10)
 
         #if editing this text make sure you add the '\n' to get the new line. The sizer is unable to format lines correctly.
-        description = "DeepLabCut™ is an open source tool for markerless\n pose estimation of user-defined body parts with deep learning.\nA. and M.W. Mathis Labs | http://www.deeplabcut.org\n\nWelcome to the DeepLabCut Project GUI!\nTo get started, please click on the 'Manage Project'\n tab to create or load an existing project."
+        description = "DeepLabCut™ is an open source tool for markerless\npose estimation of user-defined body parts with deep learning.\nA. and M.W. Mathis Labs | http://www.deeplabcut.org\n \nWelcome to the DeepLabCut Project Manager GUI!\nTo get started, please click on the 'Manage Project'\n tab to create or load an existing project. \n "
 
         self.proj_name = wx.StaticText(self, label=description,style=wx.ALIGN_CENTRE)
         sizer.Add(self.proj_name, pos=(2, 3), border=10)

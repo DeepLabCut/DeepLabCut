@@ -11,13 +11,12 @@ import os, pickle, yaml
 import pandas as pd
 from pathlib import Path
 import numpy as np
-import ruamel.yaml
+from ruamel.yaml import YAML
 
 def create_config_template(multianimal=False):
     """
     Creates a template for config.yaml file. This specific order is preserved while saving as yaml file.
     """
-    import ruamel.yaml
     if multianimal:
         yaml_str = """\
     # Project definitions (do not edit)
@@ -114,15 +113,14 @@ def create_config_template(multianimal=False):
         move2corner:
         """
 
-    ruamelFile = ruamel.yaml.YAML()
+    ruamelFile = YAML()
     cfg_file = ruamelFile.load(yaml_str)
-    return(cfg_file,ruamelFile)
+    return cfg_file, ruamelFile
 
 def create_config_template_3d():
     """
     Creates a template for config.yaml file for 3d project. This specific order is preserved while saving as yaml file.
     """
-    import ruamel.yaml
     yaml_str = """\
 # Project definitions (do not edit)
     Task:
@@ -147,9 +145,9 @@ def create_config_template_3d():
     camera_names:
     scorername_3d: # Enter the scorer name for the 3D output
     """
-    ruamelFile_3d = ruamel.yaml.YAML()
+    ruamelFile_3d = YAML()
     cfg_file_3d = ruamelFile_3d.load(yaml_str)
-    return(cfg_file_3d,ruamelFile_3d)
+    return cfg_file_3d, ruamelFile_3d
 
 
 def read_config(configname):
@@ -157,7 +155,7 @@ def read_config(configname):
     Reads structured config file
 
     """
-    ruamelFile = ruamel.yaml.YAML()
+    ruamelFile = YAML()
     path = Path(configname)
     if os.path.exists(path):
         try:
@@ -170,18 +168,16 @@ def read_config(configname):
                   write_config(configname,cfg)
             else:
                 raise
-
     else:
         raise FileNotFoundError ("Config file is not found. Please make sure that the file exists and/or that you passed the path of the config file correctly!")
-    return(cfg)
+    return cfg
 
 def write_config(configname,cfg):
     """
     Write structured config file.
     """
     with open(configname, 'w') as cf:
-        ruamelFile = ruamel.yaml.YAML()
-        cfg_file,ruamelFile = create_config_template(cfg.get('multianimalproject',False))
+        cfg_file, ruamelFile = create_config_template(cfg.get('multianimalproject',False))
         for key in cfg.keys():
             cfg_file[key]=cfg[key]
 
@@ -191,32 +187,62 @@ def write_config(configname,cfg):
             cfg_file['skeleton_color'] = 'black'
         ruamelFile.dump(cfg_file, cf)
 
+
+def edit_config(configname, edits, output_name=''):
+    """
+    Convenience function to edit and save a config file from a dictionary.
+
+    Parameters
+    ----------
+    configname : string
+        String containing the full path of the config file in the project.
+    edits : dict
+        Key–value pairs to edit in config
+    output_name : string, optional (default='')
+        Overwrite the original config.yaml by default.
+        If passed in though, new filename of the edited config.
+
+    Examples
+    --------
+    config_path = 'my_stellar_lab/dlc/config.yaml'
+    edits = {'numframes2pick': 5,
+             'trainingFraction': [0.5, 0.8],
+             'skeleton': [['a', 'b'], ['b', 'c']]}
+    deeplabcut.auxiliaryfunctions.edit_config(config_path, edits)
+    """
+    cfg = read_plainconfig(configname)
+    for key, value in edits.items():
+        cfg[key] = value
+    if not output_name:
+        output_name = configname
+    write_plainconfig(output_name, cfg)
+    return cfg
+
+
 def write_config_3d(configname,cfg):
     """
     Write structured 3D config file.
     """
-#    with open(projconfigfile, 'w') as cf:
-#        ruamelFile_3d.dump(cfg_file_3d, cf)
     with open(configname, 'w') as cf:
-        ruamelFile = ruamel.yaml.YAML()
-        cfg_file,ruamelFile = create_config_template_3d()
+        cfg_file, ruamelFile = create_config_template_3d()
         for key in cfg.keys():
-            cfg_file[key]=cfg[key]
+            cfg_file[key] = cfg[key]
         ruamelFile.dump(cfg_file, cf)
 
 def write_config_3d_template(projconfigfile,cfg_file_3d,ruamelFile_3d):
     with open(projconfigfile, 'w') as cf:
         ruamelFile_3d.dump(cfg_file_3d, cf)
 
-def read_plainconfig(filename = "pose_cfg.yaml"):
-    ''' read unstructured yaml'''
-    with open(filename, 'r') as f:
-        yaml_cfg = yaml.load(f,Loader=yaml.SafeLoader)
-    return yaml_cfg
+def read_plainconfig(configname):
+    if not os.path.exists(configname):
+        raise FileNotFoundError(
+            'Config file is not found. Please make sure that the file exists.')
+    with open(configname) as file:
+        return YAML().load(file)
 
-def write_plainconfig(configname,cfg):
-    with open(str(configname), 'w') as ymlfile:
-                yaml.dump(cfg, ymlfile,default_flow_style=False)
+def write_plainconfig(configname, cfg):
+    with open(configname, 'w') as file:
+        YAML().dump(cfg, file)
 
 def attempttomakefolder(foldername,recursive=False):
     ''' Attempts to create a folder with specified name. Does nothing if it already exists. '''
@@ -245,18 +271,22 @@ def write_pickle(filename,data):
         pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 def Getlistofvideos(videos,videotype):
-    from random import sample
+    ''' Returns list of videos of videotype "videotype" in
+    folder videos or for list of videos. '''
     #checks if input is a directory
-    if [os.path.isdir(i) for i in videos] == [True]:#os.path.isdir(video)==True:
+    if [os.path.isdir(i) for i in videos] == [True]:
         """
-        Analyzes all the videos in the directory.
+        Returns all the videos in the directory.
         """
-
-        print("Analyzing all the videos in the directory")
+        from random import sample
+        print("Analyzing all the videos in the directory...")
         videofolder= videos[0]
+
         os.chdir(videofolder)
         videolist=[fn for fn in os.listdir(os.curdir) if os.path.isfile(fn) and fn.endswith(videotype) and 'labeled' not in fn] #exclude labeled-videos!
+
         Videos = sample(videolist,len(videolist)) # this is useful so multiple nets can be used to analzye simultanously
+
     else:
         if isinstance(videos,str):
             if os.path.isfile(videos): # #or just one direct path!
@@ -300,15 +330,17 @@ def get_immediate_subdirectories(a_dir):
     return [name for name in os.listdir(a_dir)
         if os.path.isdir(os.path.join(a_dir, name))]
 
-def listfilesofaparticulartypeinfolder(a_dir,afiletype):
-    ''' List files of a particular type in a folder a_dir '''
-    return [
-        name for name in os.listdir(a_dir)
-        if afiletype in name]
+
+def grab_files_in_folder(folder, ext='', relative=True):
+    """Return the paths of files with extension *ext* present in *folder*."""
+    for file in os.listdir(folder):
+        if file.endswith(ext):
+            yield file if relative else os.path.join(folder, file)
+
 
 def GetVideoList(filename,videopath,videtype):
     ''' Get list of videos in a path (if filetype == all), otherwise just a specific file.'''
-    videos=listfilesofaparticulartypeinfolder(videopath,videtype)
+    videos = list(grab_files_in_folder(videopath, videtype))
     if filename=='all':
         return videos
     else:
@@ -347,13 +379,15 @@ def GetEvaluationFolder(trainFraction,shuffle,cfg,modelprefix=''):
 
 def IntersectionofBodyPartsandOnesGivenbyUser(cfg,comparisonbodyparts):
     ''' Returns all body parts when comparisonbodyparts=='all', otherwise all bpts that are in the intersection of comparisonbodyparts and the actual bodyparts '''
-    allpbts = cfg['bodyparts']
-    if comparisonbodyparts=="all":
-        return allpbts
+    allbpts = cfg['bodyparts']
+    if 'MULTI' in allbpts:
+        allbpts = cfg['uniquebodyparts'] + cfg['multianimalbodyparts']
+    if comparisonbodyparts == "all":
+        return allbpts
     else: #take only items in list that are actually bodyparts...
         cpbpts=[]
         for bp in comparisonbodyparts:
-            if bp in allpbts:
+            if bp in allbpts:
                 cpbpts.append(bp)
         return cpbpts
 
@@ -366,7 +400,10 @@ def form_data_containers(df, bodyparts):
     return df_x, df_y, df_likelihood
 
 def GetScorerName(cfg,shuffle,trainFraction,trainingsiterations='unknown',modelprefix=''):
-    ''' Extract the scorer/network name for a particular shuffle, training fraction, etc. '''
+    ''' Extract the scorer/network name for a particular shuffle, training fraction, etc.
+        Returns tuple of DLCscorer, DLCscorerlegacy (old naming convention)
+    '''
+
     Task = cfg['Task']
     date = cfg['date']
 
@@ -385,7 +422,9 @@ def GetScorerName(cfg,shuffle,trainFraction,trainingsiterations='unknown',modelp
         SNP=Snapshots[snapshotindex]
         trainingsiterations = (SNP.split(os.sep)[-1]).split('-')[-1]
 
-    dlc_cfg=read_plainconfig(os.path.join(cfg["project_path"],str(GetModelFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)),'train','pose_cfg.yaml'))
+    dlc_cfg= read_plainconfig(
+        os.path.join(cfg["project_path"], str(GetModelFolder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
+                     'train', 'pose_cfg.yaml'))
     if 'resnet' in dlc_cfg['net_type']: #ABBREVIATE NETWORK NAMES -- esp. for mobilenet!
         netname=dlc_cfg['net_type'].replace('_','')
     else: #mobilenet >> mobnet_100; mobnet_35 etc.
@@ -416,38 +455,42 @@ def CheckifPostProcessing(folder,vname,DLCscorer,DLCscorerlegacy,suffix='filtere
                 print("Video already filtered...(with DLC<2.1)!", odn)
             elif suffix=='_skeleton':
                 print("Skeleton in video already processed... (with DLC<2.1)!", odn)
-
-            return False, odn, os.path.join(folder,vname + DLCscorerlegacy+ suffix+'.h5'), DLCscorerlegacy
-        else: #Was the video already analyzed?
-            if os.path.isfile(sourcedataname):
+            return False, odn, odn, DLCscorerlegacy
+        else:
+            sdn = os.path.join(folder, vname + DLCscorerlegacy + '.h5')
+            tracks = sourcedataname.replace('.h5', 'tracks.h5')
+            if os.path.isfile(sourcedataname):   #Was the video already analyzed?
                 return True, outdataname, sourcedataname, DLCscorer
-            else: #was it analyzed with DLC<2.1?
-                sdn=os.path.join(folder,vname + DLCscorerlegacy+'.h5')
-                if os.path.isfile(sdn):
-                    return True, odn, sdn, DLCscorerlegacy
-                else:
-                    print("Video not analyzed -- Run analyze_videos first.")
-                    return False, outdataname,sourcedataname, DLCscorer
+            elif os.path.isfile(sdn):   #was it analyzed with DLC<2.1?
+                return True, odn, sdn, DLCscorerlegacy
+            elif os.path.isfile(tracks):  # May be a MA project with tracklets
+                return True, tracks.replace('.h5', f'{suffix}.h5'), tracks, DLCscorer
+            else:
+                print("Video not analyzed -- Run analyze_videos first.")
+                return False, outdataname,sourcedataname, DLCscorer
 
 
 def CheckifNotAnalyzed(destfolder,vname,DLCscorer,DLCscorerlegacy,flag='video'):
-    dataname = os.path.join(destfolder,vname + DLCscorer + '.h5')
-    if os.path.isfile(dataname):
-        if flag=='video':
-            print("Video already analyzed!", dataname)
-        elif flag=='framestack':
-            print("Frames already analyzed!", dataname)
-        return False, dataname, DLCscorer
+    h5files = list(grab_files_in_folder(destfolder, 'h5', relative=False))
+    if not len(h5files):
+        print(f'No data were found in {destfolder}.')
+        return True, h5files, DLCscorer
+
+    h5file = h5files[0]
+    if vname + DLCscorer in h5file:
+        if flag == 'video':
+            print("Video already analyzed!", h5file)
+        elif flag == 'framestack':
+            print("Frames already analyzed!", h5file)
+        return False, h5file, DLCscorer
+    elif vname + DLCscorerlegacy in h5file:
+        if flag == 'video':
+            print("Video already analyzed!", h5file)
+        elif flag == 'framestack':
+            print("Frames already analyzed!", h5file)
+        return False, h5file, DLCscorerlegacy
     else:
-        dn = os.path.join(destfolder,vname + DLCscorerlegacy + '.h5')
-        if os.path.isfile(dn):
-            if flag=='video':
-                print("Video already analyzed (with DLC<2.1)!", dn)
-            elif flag=='framestack':
-                print("Frames already analyzed (with DLC<2.1)!", dn)
-            return False, dn, DLCscorerlegacy
-        else:
-            return True, dataname, DLCscorer
+        return True, h5file, DLCscorer
 
 def CheckifNotEvaluated(folder,DLCscorer,DLCscorerlegacy,snapshot):
     dataname=os.path.join(folder,DLCscorer + '-' + str(snapshot)+  '.h5')
@@ -463,7 +506,7 @@ def CheckifNotEvaluated(folder,DLCscorer,DLCscorerlegacy,snapshot):
             return True, dataname,DLCscorer
 
 def LoadAnalyzedData(videofolder,vname,DLCscorer,filtered):
-    if filtered==True:
+    if filtered:
         try:
             fn=os.path.join(videofolder,vname + DLCscorer + 'filtered.h5')
             Dataframe = pd.read_hdf(fn)
@@ -483,21 +526,41 @@ def LoadAnalyzedData(videofolder,vname,DLCscorer,filtered):
         metadata=LoadVideoMetadata(fn)
         datafound=True
     except FileNotFoundError:
-        datanames=[fn for fn in os.listdir(os.curdir) if (vname in fn) and (".h5" in fn) and ("resnet" in fn or "mobilenet" in fn)]
+        datanames = [fn for fn in grab_files_in_folder(videofolder, 'h5')
+                     if vname in fn and ("resnet" in fn or "mobilenet" in fn)]
         if len(datanames)==0:
-            print("The video was not analyzed with this scorer:", DLCscorer)
-            print("No other scorers were found, please use the function 'analyze_videos' first.")
             datafound=False
             metadata,Dataframe=[],[]
         elif len(datanames)>0:
-            print("The video was not analyzed with this scorer:", DLCscorer)
-            print("Other scorers were found, however:", datanames)
-            if 'DeepCut_resnet' in datanames[0]: # try the legacy scorer name instead!
-                DLCscorer='DeepCut'+(datanames[0].split('DeepCut')[1]).split('.h5')[0]
+            datafile = datanames[0]
+            if 'DeepCut_resnet' in datafile: # try the legacy scorer name instead!
+                DLCscorer='DeepCut'+(datafile.split('DeepCut')[1]).split('.h5')[0]
             else:
-                DLCscorer='DLC_'+(datanames[0].split('DLC_')[1]).split('.h5')[0]
-            print("Creating output for:", DLCscorer," instead.")
-            Dataframe = pd.read_hdf(datanames[0])
-            metadata=LoadVideoMetadata(datanames[0])
+                DLCscorer='DLC_'+(datafile.split('DLC_')[1]).split('.h5')[0]
+            print("Creating output for:", DLCscorer)
+            Dataframe = pd.read_hdf(os.path.join(videofolder, datafile))
+            metadata=LoadVideoMetadata(os.path.join(videofolder, datafile.replace('tracks', '')))
             datafound=True
     return datafound, metadata, Dataframe, DLCscorer,suffix
+
+def LoadAnalyzedDetectionData(folder, vname, scorer):
+    try:
+        fn = os.path.join(folder, vname + scorer + 'tracks.pickle')
+        data = read_pickle(fn)
+        metadata = data.pop('header')
+        datafound = True
+    except FileNotFoundError:
+        # See whether we find a _full.pickle in that same folder
+        # pickles = [file for file in grab_files_in_folder(folder, 'full.pickle')
+        #            if vname in file and ('resnet' in file or 'mobilenet' in file)]
+        # if not len(pickles):
+        metadata, data = [], []
+        datafound = False
+        scorer = ''
+        # else:
+        #     pickle_file = pickles[0]
+        #     data = read_pickle(pickle_file)
+        #     metadata = read_pickle(pickle_file.replace('_full.pickle', 'includingmetadata.pickle'))
+        #     datafound = True
+        #     scorer = f'DLC{pickle_file.split("DLC")[1]}'.replace('_full.pickle', '')
+    return datafound, metadata, data, scorer

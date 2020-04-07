@@ -144,8 +144,8 @@ def create_new_project(project, experimenter, videos,
            height = int(vcap.get(cv2.CAP_PROP_FRAME_HEIGHT))
            video_sets[rel_video_path] = {'crop': ', '.join(map(str, [0, width, 0, height]))}
         else:
-           print("Cannot open the video file!")
-           video_sets=None
+           print("Cannot open the video file! Skipping to the next one...")
+           pass
 
     #Set values to config file:
     if multianimal==True: #parameters specific to multianimal project

@@ -25,10 +25,12 @@ else:
 import matplotlib.pyplot as plt
 from skimage import io
 
+
 def get_cmap(n, name='hsv'):
     '''Returns a function that maps each index in 0, 1, ..., n-1 to a distinct
     RGB color; the keyword argument name must be a standard mpl colormap name.'''
     return plt.cm.get_cmap(name, n)
+
 
 def MakeLabeledPlots(folder,DataCombined,cfg,Labels,Colorscheme,cc,scale,visualizeindividuals,draw_skeleton=True):
     ''' MakeLabeledPlots for check_labels '''
@@ -142,22 +144,20 @@ def MakeLabeledPlots(folder,DataCombined,cfg,Labels,Colorscheme,cc,scale,visuali
         plt.close("all")
 
 
-def MakeLabeledImage(DataCombined,imagenr,pcutoff,imagebasefolder,Scorers,bodyparts,colors,cfg,labels=['+','.','x'],scaling=1):
+def make_labeled_image(DataCombined, imagenr, pcutoff, imagebasefolder, Scorers, bodyparts, colors, cfg, labels=['+', '.', 'x'], scaling=1):
     '''Creating a labeled image with the original human labels, as well as the DeepLabCut's! '''
     from skimage import io
 
     alphavalue=cfg['alphavalue'] #.5
     dotsize=cfg['dotsize'] #=15
 
-    plt.axis('off')
     im=io.imread(os.path.join(imagebasefolder,DataCombined.index[imagenr]))
     if np.ndim(im)>2: #color image!
         h,w,numcolors=np.shape(im)
     else:
         h,w=np.shape(im)
-    plt.figure(frameon=False,figsize=(w*1./100*scaling,h*1./100*scaling))
-    plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-    plt.imshow(im,'gray')
+    fig, ax = prepare_figure_axes(w, h, scaling)
+    ax.imshow(im, 'gray')
     for scorerindex,loopscorer in enumerate(Scorers):
        for bpindex,bp in enumerate(bodyparts):
            if np.isfinite(DataCombined[loopscorer][bp]['y'][imagenr]+DataCombined[loopscorer][bp]['x'][imagenr]):
@@ -165,33 +165,67 @@ def MakeLabeledImage(DataCombined,imagenr,pcutoff,imagebasefolder,Scorers,bodypa
                 if cfg["scorer"] not in loopscorer:
                     p=DataCombined[loopscorer][bp]['likelihood'][imagenr]
                     if p>pcutoff:
-                        plt.plot(x,y,labels[1],ms=dotsize,alpha=alphavalue,color=colors(int(bpindex)))
+                        ax.plot(x,y,labels[1],ms=dotsize,alpha=alphavalue,color=colors(int(bpindex)))
                     else:
-                        plt.plot(x,y,labels[2],ms=dotsize,alpha=alphavalue,color=colors(int(bpindex)))
+                        ax.plot(x,y,labels[2],ms=dotsize,alpha=alphavalue,color=colors(int(bpindex)))
                 else: #this is the human labeler
-                        plt.plot(x,y,labels[0],ms=dotsize,alpha=alphavalue,color=colors(int(bpindex)))
-    plt.xlim(0,w)
-    plt.ylim(0,h)
-    plt.axis('off')
-    plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-    plt.gca().invert_yaxis()
+                        ax.plot(x,y,labels[0],ms=dotsize,alpha=alphavalue,color=colors(int(bpindex)))
+    fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+    return fig
 
 
-def PlottingandSaveLabeledFrame(DataCombined,ind,trainIndices,cfg,colors,comparisonbodyparts,DLCscorer,foldername,scaling=1):
+def make_multianimal_labeled_image(frame, coords_truth, coords_pred, probs_pred, colors,
+                                   dotsize=12, alphavalue=0.7, pcutoff=0.6, labels=['+', '.', 'x']):
+    h, w, numcolors = np.shape(frame)
+    fig, ax = prepare_figure_axes(w, h)
+    ax.imshow(frame, 'gray')
+    for n, data in enumerate(zip(coords_truth, coords_pred, probs_pred)):
+        color = colors(n)
+        coord_gt, coord_pred, prob_pred = data
+
+        ax.plot(*coord_gt.T, labels[0], ms=dotsize,
+                alpha=alphavalue, color=color)
+        if not coord_pred.shape[0]:
+            continue
+
+        reliable = np.repeat(prob_pred >= pcutoff, coord_pred.shape[1], axis=1)
+        ax.plot(*coord_pred[reliable[:, 0]].T, labels[1], ms=dotsize,
+                alpha=alphavalue, color=color)
+        if not np.all(reliable):
+            ax.plot(*coord_pred[~reliable[:, 0]].T, labels[2], ms=dotsize,
+                    alpha=alphavalue, color=color)
+    fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+    return fig
+
+
+def plot_and_save_labeled_frame(DataCombined, ind, trainIndices, cfg, colors, comparisonbodyparts, DLCscorer, foldername, scaling=1):
         fn=Path(cfg['project_path']+'/'+DataCombined.index[ind])
-        imagename=fn.parts[-1] #fn.stem+fn.suffix
-        imfoldername=fn.parts[-2] #fn.suffix
-        fig=plt.figure()
-        ax=fig.add_subplot(1,1,1)
-        MakeLabeledImage(DataCombined,ind,cfg["pcutoff"],cfg["project_path"],[cfg["scorer"],DLCscorer],comparisonbodyparts,colors,cfg,scaling=scaling)
-        if ind in trainIndices:
-            full_path = os.path.join(foldername,'Training-'+imfoldername+'-'+imagename)
-        else:
-            full_path = os.path.join(foldername,'Test-'+imfoldername+'-'+imagename)
+        fig = make_labeled_image(DataCombined, ind, cfg["pcutoff"], cfg["project_path"], [cfg["scorer"], DLCscorer], comparisonbodyparts, colors, cfg, scaling=scaling)
+        save_labeled_frame(fig, fn, foldername, ind in trainIndices)
 
-        # windows throws error if file path is > 260 characters, can fix with prefix. see https://docs.microsoft.com/en-us/windows/desktop/fileio/naming-a-file#maximum-path-length-limitation
-        if (len(full_path) >= 260) and (os.name == 'nt'):
-            full_path = '\\\\?\\'+full_path
-        plt.savefig(full_path)
 
-        plt.close("all")
+def save_labeled_frame(fig, image_path, dest_folder, belongs_to_train):
+    path = Path(image_path)
+    imagename = path.parts[-1]
+    imfoldername = path.parts[-2]
+    if belongs_to_train:
+        dest = '-'.join(('Training', imfoldername, imagename))
+    else:
+        dest = '-'.join(('Test', imfoldername, imagename))
+    full_path = os.path.join(dest_folder, dest)
+    # Windows throws error if file path is > 260 characters, can fix with prefix.
+    # See https://docs.microsoft.com/en-us/windows/desktop/fileio/naming-a-file#maximum-path-length-limitation
+    if len(full_path) >= 260 and os.name == 'nt':
+        full_path = '\\\\?\\' + full_path
+    fig.savefig(full_path)
+    plt.close(fig)
+
+
+def prepare_figure_axes(width, height, scale=1, dpi=100):
+    fig = plt.figure(frameon=False, figsize=(width * scale / dpi, height * scale / dpi))
+    ax = fig.add_subplot(111)
+    ax.axis('off')
+    ax.set_xlim(0, width)
+    ax.set_ylim(0, height)
+    ax.invert_yaxis()
+    return fig, ax

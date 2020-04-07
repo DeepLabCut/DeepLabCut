@@ -36,11 +36,10 @@ deeplabcut.create_training_dataset(path_config_file,Shuffles=[shuffle])
 cfg=deeplabcut.auxiliaryfunctions.read_config(path_config_file)
 posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(shuffle),'train/pose_cfg.yaml')
 
-DLC_config=deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
-DLC_config['save_iters']=10
-DLC_config['display_iters']=2
-DLC_config['multi_step']=[[0.005,15001]]
-deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
+edits = {'save_iters': 10,
+         'display_iters': 2,
+         'multi_step': [[0.005, 15001]]}
+DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
 
 
 print("TRAIN NETWORK")

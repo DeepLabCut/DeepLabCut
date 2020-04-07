@@ -39,8 +39,8 @@ def PlottingResults(tmpfolder, Dataframe, cfg, bodyparts2plot, individuals2plot,
     colors = get_cmap(len(bodyparts2plot), name=cfg['colormap'])
     alphavalue = cfg['alphavalue']
     if individuals2plot:
-        Dataframe = Dataframe.copy().loc(axis=1)[:, individuals2plot]
-
+        Dataframe = Dataframe.loc(axis=1)[:, individuals2plot]
+    animal_bpts = Dataframe.columns.get_level_values('bodyparts')
     # Pose X vs pose Y
     fig1 = plt.figure(figsize=(8, 6))
     ax1 = fig1.add_subplot(111)
@@ -67,20 +67,22 @@ def PlottingResults(tmpfolder, Dataframe, cfg, bodyparts2plot, individuals2plot,
     ax4.set_xlabel('DeltaX and DeltaY')
     bins = np.linspace(0, np.amax(Dataframe.max()), 100)
 
-    for bpindex, bp in enumerate(bodyparts2plot):
-        prob = Dataframe.xs((bp, 'likelihood'), level=(-2, -1), axis=1).values.squeeze()
-        mask = prob < pcutoff
-        temp_x = np.ma.array(Dataframe.xs((bp, 'x'), level=(-2, -1), axis=1).values.squeeze(), mask=mask)
-        temp_y = np.ma.array(Dataframe.xs((bp, 'y'), level=(-2, -1), axis=1).values.squeeze(), mask=mask)
-        ax1.plot(temp_x, temp_y, '.', color=colors(bpindex), alpha=alphavalue)
+    with np.errstate(invalid='ignore'):
+        for bpindex, bp in enumerate(bodyparts2plot):
+            if bp in animal_bpts:  # Avoid 'unique' bodyparts only present in the 'single' animal
+                prob = Dataframe.xs((bp, 'likelihood'), level=(-2, -1), axis=1).values.squeeze()
+                mask = prob < pcutoff
+                temp_x = np.ma.array(Dataframe.xs((bp, 'x'), level=(-2, -1), axis=1).values.squeeze(), mask=mask)
+                temp_y = np.ma.array(Dataframe.xs((bp, 'y'), level=(-2, -1), axis=1).values.squeeze(), mask=mask)
+                ax1.plot(temp_x, temp_y, '.', color=colors(bpindex), alpha=alphavalue)
 
-        ax2.plot(temp_x, '--', color=colors(bpindex), alpha=alphavalue)
-        ax2.plot(temp_y, '-', color=colors(bpindex), alpha=alphavalue)
+                ax2.plot(temp_x, '--', color=colors(bpindex), alpha=alphavalue)
+                ax2.plot(temp_y, '-', color=colors(bpindex), alpha=alphavalue)
 
-        ax3.plot(prob, '-', color=colors(bpindex), alpha=alphavalue)
+                ax3.plot(prob, '-', color=colors(bpindex), alpha=alphavalue)
 
-        Histogram(temp_x, colors(bpindex), bins, ax4)
-        Histogram(temp_y, colors(bpindex), bins, ax4)
+                Histogram(temp_x, colors(bpindex), bins, ax4)
+                Histogram(temp_y, colors(bpindex), bins, ax4)
 
     sm = plt.cm.ScalarMappable(cmap=plt.get_cmap(cfg['colormap']), norm=plt.Normalize(vmin=0, vmax=len(bodyparts2plot)-1))
     sm._A = []
@@ -152,9 +154,13 @@ def plot_trajectories(config, videos, videotype='.avi', shuffle=1, trainingsetin
     DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction, modelprefix=modelprefix) #automatically loads corresponding model (even training iteration based on snapshot index)
     bodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg, displayedbodyparts)
     individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(cfg, displayedindividuals)
-    Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
+    Videos=auxiliaryfunctions.Getlistofvideos(videos, videotype)
+    if not len(Videos):
+        print('No videos found. Make sure you passed a list of videos and that *videotype* is right.')
+        return
+
+    failed = []
     for video in Videos:
-        print(video)
         if destfolder is None:
             videofolder = str(Path(video).parents[0])
         else:
@@ -166,6 +172,8 @@ def plot_trajectories(config, videos, videotype='.avi', shuffle=1, trainingsetin
 
         if notanalyzed:
             print("The video was not analyzed with this scorer:", DLCscorer)
+            failed.append(True)
+            continue
         else:
             #LoadData
             print("Loading ", video, "and data.")
@@ -176,11 +184,30 @@ def plot_trajectories(config, videos, videotype='.avi', shuffle=1, trainingsetin
                 auxiliaryfunctions.attempttomakefolder(os.path.join(basefolder,'plot-poses'))
                 tmpfolder = os.path.join(basefolder,'plot-poses', vname)
                 auxiliaryfunctions.attempttomakefolder(tmpfolder)
-                for individual in individuals:
-                    PlottingResults(tmpfolder, Dataframe, cfg, bodyparts, individual,
-                                    showfigures, suffix + individual + '.png')
+                # Keep only the individuals and bodyparts that were labeled
+                index = Dataframe.columns
+                labeled_animals = [ind for ind in individuals if ind in index.get_level_values('individuals')]
+                labeled_bpts = [bp for bp in bodyparts if bp in index.get_level_values('bodyparts')]
+                for animal in labeled_animals:
+                    PlottingResults(tmpfolder, Dataframe, cfg, labeled_bpts, animal,
+                                    showfigures, suffix + animal + '.png')
+                failed.append(False)
+            else:
+                failed.append(True)
+                tracks_found, *_ = auxiliaryfunctions.LoadAnalyzedDetectionData(videofolder, vname, DLCscorer)
+                if tracks_found:
+                    print('Raw tracklets were found. Call "deeplabcut.refine_training_dataset.convert_raw_tracks_to_h5()"'
+                          ' prior to plotting the trajectories.')
+                else:
+                    print(f'No data were found. Make sure {video} was previously analyzed, and that '
+                          f'detections were successively converted to tracklets using "deeplabcut.convert_detections2tracklets()" '
+                          f'and "deeplabcut.refine_training_dataset.convert_raw_tracks_to_h5()".')
 
-    print('Plots created! Please check the directory "plot-poses" within the video directory')
+    if not all(failed):
+        print('Plots created! Please check the directory "plot-poses" within the video directory')
+    else:
+        print(f'Plots could not be created! '
+              f'Videos were not evaluated with the current scorer {DLCscorer}.')
 
 
 if __name__ == '__main__':

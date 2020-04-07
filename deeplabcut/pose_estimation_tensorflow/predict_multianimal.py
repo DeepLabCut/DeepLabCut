@@ -7,11 +7,6 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
-
-####################################################
-# Dependencies
-####################################################
-
 import os.path
 from deeplabcut.pose_estimation_tensorflow.nnet import predict_multianimal as predict
 from deeplabcut.pose_estimation_tensorflow.config import load_config
@@ -29,9 +24,9 @@ import cv2
 from skimage.util import img_as_ubyte
 from easydict import EasyDict as edict
 
-def AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs,
+def AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg, dlc_cfg, sess, inputs,
             outputs,pdindex,save_as_csv, destfolder=None, c_engine=False):
-    ''' Helper function for analyzing a video with multiple individuals'''
+    ''' Helper function for analyzing a video with multiple individuals '''
     print("Starting to analyze % ", video)
     vname = Path(video).stem
     if destfolder is None:
@@ -51,6 +46,8 @@ def AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,input
     else:
         print("Loading ", video)
         cap=cv2.VideoCapture(video)
+        if not cap.isOpened():
+            raise IOError('Video could not be opened. Please check that the path is valid.')
 
         fps = cap.get(5) #https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
         nframes = int(cap.get(7))
@@ -172,7 +169,8 @@ def GetPoseandCostsF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize, c
         'PAFgraph': dlc_cfg.partaffinityfield_graph,
         "all_joints": [[i] for i in range(len(dlc_cfg.all_joints))],
         "all_joints_names": [dlc_cfg.all_joints_names[i] for i in range(len(dlc_cfg.all_joints))],
-        "nframes": nframes
+        "nframes": nframes,
+        "c_engine": c_engine,
         }
     return PredicteData,nframes
 

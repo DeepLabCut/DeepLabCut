@@ -79,7 +79,7 @@ class Create_Labeled_Videos(wx.Panel):
 
         shuffle_text = wx.StaticBox(self, label="Specify the shuffle")
         shuffle_boxsizer = wx.StaticBoxSizer(shuffle_text, wx.VERTICAL)
-        self.shuffle = wx.SpinCtrl(self, value='1',min=1,max=100)
+        self.shuffle = wx.SpinCtrl(self, value='1',min=0,max=100)
         shuffle_boxsizer.Add(self.shuffle,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
         trainingset = wx.StaticBox(self, label="Specify the trainingset index")
@@ -115,7 +115,10 @@ class Create_Labeled_Videos(wx.Panel):
         self.bodypart_choice.Bind(wx.EVT_RADIOBOX,self.chooseOption)
 
         config_file = auxiliaryfunctions.read_config(self.config)
-        bodyparts = config_file['bodyparts']
+        if config_file.get('multianimalproject', False):
+            bodyparts = config_file['multianimalbodyparts']
+        else:
+            bodyparts = config_file['bodyparts']
         self.bodyparts_to_compare = wx.CheckListBox(self, choices=bodyparts, style=0,name = "Select the bodyparts")
         self.bodyparts_to_compare.Bind(wx.EVT_CHECKLISTBOX,self.getbp)
         self.bodyparts_to_compare.Hide()

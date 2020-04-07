@@ -26,16 +26,16 @@ class Load_project(wx.Panel):
         # variable initilization
         self.config = cfg
         # design the panel
-        self.sizer = wx.GridBagSizer(5, 5)
+        self.sizer = wx.GridBagSizer(10, 15)
 
         text = wx.StaticText(self, label="DeepLabCut Load project")
         self.sizer.Add(text, pos=(0, 0), flag=wx.TOP|wx.LEFT|wx.BOTTOM,border=15)
         # Add logo of DLC
-        icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(logo))
-        self.sizer.Add(icon, pos=(0, 4), flag=wx.TOP|wx.RIGHT|wx.ALIGN_RIGHT,border=5)
+        #icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(logo))
+        #self.sizer.Add(icon, pos=(0, 4), flag=wx.TOP|wx.RIGHT|wx.ALIGN_RIGHT,border=5)
 
         line1 = wx.StaticLine(self)
-        self.sizer.Add(line1, pos=(1, 0), span=(1, 5),flag=wx.EXPAND|wx.BOTTOM, border=10)
+        self.sizer.Add(line1, pos=(1, 0), span=(1, 15),flag=wx.EXPAND|wx.BOTTOM, border=10)
 
         self.cfg = wx.StaticText(self, label="Select the config file")
         self.sizer.Add(self.cfg, pos=(2, 0), flag=wx.TOP|wx.LEFT, border=5)
@@ -44,21 +44,20 @@ class Load_project(wx.Panel):
             self.sel_config = wx.FilePickerCtrl(self, path="",style=wx.FLP_USE_TEXTCTRL,message="Choose the config.yaml file", wildcard="*.yaml")
         else:
             self.sel_config = wx.FilePickerCtrl(self, path="",style=wx.FLP_USE_TEXTCTRL,message="Choose the config.yaml file", wildcard="config.yaml")
-        # self.sel_config = wx.FilePickerCtrl(self, path="",style=wx.FLP_USE_TEXTCTRL,message="Choose the config.yaml file", wildcard="config.yaml")
+
         if self.config == None:
             self.config = "Please select the config file"
-#            self.sel_config.SetPath("Please select the config file")
-#        else:
+
         self.sel_config.SetPath(self.config)
 
-        self.sizer.Add(self.sel_config, pos=(2, 1),span=(1,3),flag=wx.TOP|wx.EXPAND, border=5)
+        self.sizer.Add(self.sel_config, pos=(2, 1),span=(1,15),flag=wx.TOP|wx.EXPAND, border=0)
         self.sel_config.Bind(wx.EVT_FILEPICKER_CHANGED, self.select_config)
 
         button3 = wx.Button(self, label='Help')
         self.sizer.Add(button3, pos=(4, 0), flag=wx.LEFT, border=10)
 
         self.ok = wx.Button(self, label="Ok")
-        self.sizer.Add(self.ok, pos=(4, 4))
+        self.sizer.Add(self.ok, pos=(4, 5))
         self.ok.Bind(wx.EVT_BUTTON, self.load_project)
 
         self.cancel = wx.Button(self, label="Reset")

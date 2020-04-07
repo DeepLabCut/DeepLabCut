@@ -36,7 +36,7 @@ def Plotting(cfg,comparisonbodyparts,DLCscorer,trainIndices,DataCombined,foldern
     colors = visualization.get_cmap(len(comparisonbodyparts),name=cfg['colormap'])
     NumFrames=np.size(DataCombined.index)
     for ind in tqdm(np.arange(NumFrames)):
-        visualization.PlottingandSaveLabeledFrame(DataCombined,ind,trainIndices,cfg,colors,comparisonbodyparts,DLCscorer,foldername)
+        visualization.plot_and_save_labeled_frame(DataCombined, ind, trainIndices, cfg, colors, comparisonbodyparts, DLCscorer, foldername)
 
 def return_evaluate_network_data(config,shuffle=0,trainingsetindex=0,comparisonbodyparts="all",Snapindex=None,
                                 rescale=False,fulldata=False,show_errors = True,modelprefix='',returnjustfns=True):

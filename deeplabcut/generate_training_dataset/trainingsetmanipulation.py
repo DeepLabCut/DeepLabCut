@@ -209,10 +209,12 @@ def dropimagesduetolackofannotation(config):
         imagelist=[fns for fns in os.listdir(str(folder)) if '.png' in fns]
         print("PROCESSED:", folder, " now # of annotated images: ", len(annotatedimages)," in folder:", len(imagelist))
 
-def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True, cropdata=True):
+def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True,
+        cropdata=True, excludealreadycropped=True, updatevideoentries=True):
     """
     Crop images into multiple random crops (defined by numcrops) of size dimensions. If cropdata=True then the
-    annotation data is loaded and labels for cropped images are inherited. If false, then one can make crops for unlabeled folders.
+    annotation data is loaded and labels for cropped images are inherited.
+    If false, then one can make crops for unlabeled folders.
 
     This can be helpul for large frames with multiple animals. Then a smaller set of equally sized images is created.
 
@@ -232,10 +234,17 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True, cr
     cropdata: bool, default True:
         If true creates corresponding annotation data (from ground truth)
 
+    excludealreadycropped: bool, def true
+        If true excludes folders that already contain _cropped in their name.
+
+    updatevideoentries, bool, default true
+        If true updates video_list entries to refer to cropped frames instead. This makes sense for subsequent processing.
+
     Example
     --------
     for labeling the frames
     >>> deeplabcut.cropimagesandlabels('/analysis/project/reaching-task/config.yaml')
+
     --------
     """
     from tqdm import tqdm
@@ -243,10 +252,18 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True, cr
     indexlength = int(np.ceil(np.log10(numcrops)))
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg['video_sets'].keys()
-    video_names = [Path(i).stem for i in videos]
-    folders = [Path(config).parent / 'labeled-data' /Path(i) for i in video_names]
 
-    for folder in folders:
+    if excludealreadycropped:
+        video_names = [(Path(i).parent, Path(i).stem, Path(i).suffix) for i in videos if "_cropped" not in str(Path(i).stem)]
+    else:
+        video_names = [(Path(i).parent, Path(i).stem, Path(i).suffix) for i in videos if "_cropped" not in str(Path(i).stem)]
+
+    #folders = [Path(config).parent / 'labeled-data' /Path(i[1]) for i in video_names]
+    if 'video_sets_original' not in cfg.keys() and updatevideoentries: #this dict is kept for storing links to original full-sized videos
+        cfg['video_sets_original']={}
+
+    for (vidpath, vidname, videotype) in video_names:
+        folder = Path(config).parent / 'labeled-data' /Path(vidname)
         if userfeedback:
             print("Do you want to crop frames for folder: ", folder, "?")
             askuser=input ("(yes/no):")
@@ -257,7 +274,7 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True, cr
             if cropdata:
                 Data = pd.read_hdf(fn, 'df_with_missing')
 
-            newfolder = str(Path(folder).stem) + 'cropped'
+            newfolder = str(Path(folder).stem) + '_cropped'
             output_path=Path(config).parent / 'labeled-data' / Path(newfolder)
             auxiliaryfunctions.attempttomakefolder(output_path)
             individuals,uniquebodyparts,multianimalbodyparts=auxfun_multianimal.extractindividualsandbodyparts(cfg)
@@ -299,7 +316,7 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True, cr
                                         if x>=x0 and round(x,2)<x0+size[1] and round(y,2)>=y0 and y<y0+size[0]:
                                             data[cfg['scorer'],ind,bp,'x']=round(x,2)-x0
                                             data[cfg['scorer'],ind,bp,'y']=round(y,2)-y0
-                                            if 'Plat' not in bp: #FOR 
+                                            if 'Plat' not in bp: #FOR
                                                 animalincrop=True
                                         else:
                                             data[cfg['scorer'],ind,bp,'x']=np.nan
@@ -320,7 +337,7 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True, cr
                             else:
                                 AnnotationData=pd.concat([AnnotationData, data],axis=1)
 
-            else:
+            else: #just crops images (no annotation data extracted: not sure if anybody really needs this)
                 imnames=[os.path.join('labeled-data',folder,fn) for fn in os.listdir(os.path.join(cfg['project_path'],'labeled-data',folder)) if '.png' in fn]
                 for index, imagename in enumerate(imnames):
                     #load image
@@ -339,6 +356,7 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True, cr
                         else:
                             io.imsave(cropppedimgname,image[int(y0):int(y0+size[0]),int(x0):int(x0+size[1]),:])
 
+
             if cropdata:
                 Data=AnnotationData.T
                 Data.index=pd_index
@@ -346,7 +364,14 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True, cr
                 Data.to_hdf(fn_new,key='df_with_missing',mode='w')
                 Data.to_csv(fn_new.split('.h5')[0]+'.csv')
 
-            cfg['video_sets'].update({os.path.join('whoknows',str(folder)+'crop.mp4') : {'crop': ', '.join(map(str, [0, size[1], 0, size[0]]))}})
+            if updatevideoentries and cropdata:
+                #moving old entry to _original, dropping it from video_set and update crop parameters
+                cfg['video_sets_original'][str(os.path.join(vidpath,str(vidname)+str(videotype)))] = cfg['video_sets'][str(os.path.join(vidpath,str(vidname)+str(videotype)))]
+                cfg['video_sets'].pop(str(os.path.join(vidpath,str(vidname)+str(videotype))))
+                cfg['video_sets'][os.path.join(vidpath,str(folder)+'_cropped'+str(videotype))] = {'crop': ', '.join(map(str, [0, size[1], 0, size[0]]))}
+
+    if updatevideoentries:
+        auxiliaryfunctions.write_config(config,cfg)
 
 def label_frames(config,multiple_individualsGUI=False):
     """
@@ -462,10 +487,16 @@ def MakeTrain_pose_yaml(itemstochange,saveasconfigfile,defaultconfigfile):
         yaml.dump(docs[0], f)
     return docs[0]
 
-def MakeTest_pose_yaml(dictionary, keys2save, saveasfile):
+def MakeTest_pose_yaml(dictionary, keys2save, saveasfile, nmsradius=None, minconfidence=None):
     dict_test = {}
     for key in keys2save:
         dict_test[key] = dictionary[key]
+
+    #adding important values for multianiaml project:
+    if nmsradius is not None:
+        dict_test['nmsradius']=nmsradius
+    if minconfidence is not None:
+        dict_test['minconfidence']=minconfidence
 
     dict_test['scoremap_dir'] = 'test'
     with open(saveasfile, "w") as f:
@@ -716,117 +747,121 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
 
     # Loading metadata from config file:
     cfg = auxiliaryfunctions.read_config(config)
-    scorer = cfg['scorer']
-    project_path = cfg['project_path']
-    # Create path for training sets & store data there
-    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg) #Path concatenation OS platform independent
-    auxiliaryfunctions.attempttomakefolder(Path(os.path.join(project_path,str(trainingsetfolder))),recursive=True)
-
-    Data = merge_annotateddatasets(cfg,project_path,Path(os.path.join(project_path,trainingsetfolder)),windows2linux)
-    if Data is None:
-        return
-    Data = Data[scorer] #extract labeled data
-
-    #loading & linking pretrained models
-    if net_type is None: #loading & linking pretrained models
-        net_type =cfg.get('default_net_type', 'resnet_50')
+    if cfg.get('multianimalproject', False):
+        from deeplabcut.generate_training_dataset.multiple_individuals_trainingsetmanipulation import create_multianimaltraining_dataset
+        create_multianimaltraining_dataset(config, num_shuffles, Shuffles, windows2linux, net_type)
     else:
-        if 'resnet' in net_type or 'mobilenet' in net_type:
-            pass
+        scorer = cfg['scorer']
+        project_path = cfg['project_path']
+        # Create path for training sets & store data there
+        trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg) #Path concatenation OS platform independent
+        auxiliaryfunctions.attempttomakefolder(Path(os.path.join(project_path,str(trainingsetfolder))),recursive=True)
+
+        Data = merge_annotateddatasets(cfg,project_path,Path(os.path.join(project_path,trainingsetfolder)),windows2linux)
+        if Data is None:
+            return
+        Data = Data[scorer] #extract labeled data
+
+        #loading & linking pretrained models
+        if net_type is None: #loading & linking pretrained models
+            net_type =cfg.get('default_net_type', 'resnet_50')
         else:
-            raise ValueError('Invalid network type:', net_type)
+            if 'resnet' in net_type or 'mobilenet' in net_type:
+                pass
+            else:
+                raise ValueError('Invalid network type:', net_type)
 
-    if augmenter_type is None:
-        augmenter_type=cfg.get('default_augmenter', 'default')
-    else:
-        if augmenter_type in ['default','imgaug','tensorpack','deterministic']:
-            pass
+        if augmenter_type is None:
+            augmenter_type=cfg.get('default_augmenter', 'default')
         else:
-            raise ValueError('Invalid augmenter type:', augmenter_type)
+            if augmenter_type in ['default','imgaug','tensorpack','deterministic']:
+                pass
+            else:
+                raise ValueError('Invalid augmenter type:', augmenter_type)
 
-    import deeplabcut
-    parent_path = Path(os.path.dirname(deeplabcut.__file__))
-    defaultconfigfile = str(parent_path / 'pose_cfg.yaml')
-    model_path,num_shuffles=auxfun_models.Check4weights(net_type,parent_path,num_shuffles) #if the model does not exist >> throws error!
+        import deeplabcut
+        parent_path = Path(os.path.dirname(deeplabcut.__file__))
+        defaultconfigfile = str(parent_path / 'pose_cfg.yaml')
+        model_path,num_shuffles=auxfun_models.Check4weights(net_type,parent_path,num_shuffles) #if the model does not exist >> throws error!
 
-    if Shuffles is None:
-        Shuffles = range(1, num_shuffles + 1)
-    else:
-        Shuffles = [i for i in Shuffles if isinstance(i, int)]
+        if Shuffles is None:
+            Shuffles = range(1, num_shuffles + 1)
+        else:
+            Shuffles = [i for i in Shuffles if isinstance(i, int)]
 
-    if trainIndexes is None and testIndexes is None:
-        splits = [(trainFraction, shuffle, SplitTrials(range(len(Data.index)), trainFraction))
-                  for trainFraction in cfg['TrainingFraction'] for shuffle in Shuffles]
-    else:
-        if len(trainIndexes) != len(testIndexes):
-            raise ValueError('Number of train and test indexes should be equal.')
-        splits = []
-        for shuffle, (train_inds, test_inds) in enumerate(zip(trainIndexes, testIndexes)):
-            trainFraction = len(train_inds) / (len(train_inds) + len(test_inds))
-            print(f"You passed a split with the following fraction: {int(100 * trainFraction)}%")
-            splits.append((trainFraction, shuffle, (train_inds, test_inds)))
+        if trainIndexes is None and testIndexes is None:
+            splits = [(trainFraction, shuffle, SplitTrials(range(len(Data.index)), trainFraction))
+                      for trainFraction in cfg['TrainingFraction'] for shuffle in Shuffles]
+        else:
+            if len(trainIndexes) != len(testIndexes):
+                raise ValueError('Number of train and test indexes should be equal.')
+            splits = []
+            for shuffle, (train_inds, test_inds) in enumerate(zip(trainIndexes, testIndexes)):
+                trainFraction = len(train_inds) / (len(train_inds) + len(test_inds))
+                print(f"You passed a split with the following fraction: {int(100 * trainFraction)}%")
+                splits.append((trainFraction, shuffle, (train_inds, test_inds)))
 
-    bodyparts = cfg['bodyparts']
-    nbodyparts = len(bodyparts)
-    for trainFraction, shuffle, (trainIndexes, testIndexes) in splits:
-        if len(trainIndexes)>0:
-            if userfeedback:
-                trainposeconfigfile, _, _ = training.return_train_network_path(config, shuffle=shuffle, trainFraction=trainFraction)
-                if trainposeconfigfile.is_file():
-                    askuser=input ("The model folder is already present. If you continue, it will overwrite the existing model (split). Do you want to continue?(yes/no): ")
-                    if askuser=='no'or askuser=='No' or askuser=='N' or askuser=='No':
-                        raise Exception("Use the Shuffles argument as a list to specify a different shuffle index. Check out the help for more details.")
+        bodyparts = cfg['bodyparts']
+        nbodyparts = len(bodyparts)
+        for trainFraction, shuffle, (trainIndexes, testIndexes) in splits:
+            if len(trainIndexes)>0:
+                if userfeedback:
+                    trainposeconfigfile, _, _ = training.return_train_network_path(config, shuffle=shuffle, trainFraction=trainFraction)
+                    if trainposeconfigfile.is_file():
+                        askuser=input ("The model folder is already present. If you continue, it will overwrite the existing model (split). Do you want to continue?(yes/no): ")
+                        if askuser=='no'or askuser=='No' or askuser=='N' or askuser=='No':
+                            raise Exception("Use the Shuffles argument as a list to specify a different shuffle index. Check out the help for more details.")
 
-            ####################################################
-            # Generating data structure with labeled information & frame metadata (for deep cut)
-            ####################################################
-            # Make training file!
-            datafilename, metadatafilename = auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,
-                                                                                            trainFraction, shuffle, cfg)
+                ####################################################
+                # Generating data structure with labeled information & frame metadata (for deep cut)
+                ####################################################
+                # Make training file!
+                datafilename, metadatafilename = auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,
+                                                                                                trainFraction, shuffle, cfg)
 
-            ################################################################################
-            # Saving data file (convert to training file for deeper cut (*.mat))
-            ################################################################################
-            data, MatlabData = format_training_data(Data, trainIndexes, nbodyparts, project_path)
-            sio.savemat(os.path.join(project_path,datafilename), {'dataset': MatlabData})
+                ################################################################################
+                # Saving data file (convert to training file for deeper cut (*.mat))
+                ################################################################################
+                data, MatlabData = format_training_data(Data, trainIndexes, nbodyparts, project_path)
+                sio.savemat(os.path.join(project_path,datafilename), {'dataset': MatlabData})
 
-            ################################################################################
-            # Saving metadata (Pickle file)
-            ################################################################################
-            auxiliaryfunctions.SaveMetadata(os.path.join(project_path,metadatafilename),data, trainIndexes, testIndexes, trainFraction)
+                ################################################################################
+                # Saving metadata (Pickle file)
+                ################################################################################
+                auxiliaryfunctions.SaveMetadata(os.path.join(project_path,metadatafilename),data, trainIndexes, testIndexes, trainFraction)
 
-            ################################################################################
-            # Creating file structure for training &
-            # Test files as well as pose_yaml files (containing training and testing information)
-            #################################################################################
-            modelfoldername=auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)
-            auxiliaryfunctions.attempttomakefolder(Path(config).parents[0] / modelfoldername,recursive=True)
-            auxiliaryfunctions.attempttomakefolder(str(Path(config).parents[0] / modelfoldername)+ '/'+ '/train')
-            auxiliaryfunctions.attempttomakefolder(str(Path(config).parents[0] / modelfoldername)+ '/'+ '/test')
+                ################################################################################
+                # Creating file structure for training &
+                # Test files as well as pose_yaml files (containing training and testing information)
+                #################################################################################
+                modelfoldername=auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)
+                auxiliaryfunctions.attempttomakefolder(Path(config).parents[0] / modelfoldername,recursive=True)
+                auxiliaryfunctions.attempttomakefolder(str(Path(config).parents[0] / modelfoldername)+ '/'+ '/train')
+                auxiliaryfunctions.attempttomakefolder(str(Path(config).parents[0] / modelfoldername)+ '/'+ '/test')
 
-            path_train_config = str(os.path.join(cfg['project_path'],Path(modelfoldername),'train','pose_cfg.yaml'))
-            path_test_config = str(os.path.join(cfg['project_path'],Path(modelfoldername),'test','pose_cfg.yaml'))
-            #str(cfg['proj_path']+'/'+Path(modelfoldername) / 'test'  /  'pose_cfg.yaml')
+                path_train_config = str(os.path.join(cfg['project_path'],Path(modelfoldername),'train','pose_cfg.yaml'))
+                path_test_config = str(os.path.join(cfg['project_path'],Path(modelfoldername),'test','pose_cfg.yaml'))
+                #str(cfg['proj_path']+'/'+Path(modelfoldername) / 'test'  /  'pose_cfg.yaml')
 
-            items2change = {
-                "dataset": datafilename,
-                "metadataset": metadatafilename,
-                "num_joints": len(bodyparts),
-                "all_joints": [[i] for i in range(len(bodyparts))],
-                "all_joints_names": [str(bpt) for bpt in bodyparts],
-                "init_weights": model_path,
-                "project_path": str(cfg['project_path']),
-                "net_type": net_type,
-                "dataset_type": augmenter_type,
-            }
-            trainingdata = MakeTrain_pose_yaml(items2change,path_train_config,defaultconfigfile)
-            keys2save = [
-                "dataset", "num_joints", "all_joints", "all_joints_names",
-                "net_type", 'init_weights', 'global_scale', 'location_refinement',
-                'locref_stdev'
-            ]
-            MakeTest_pose_yaml(trainingdata, keys2save,path_test_config)
-            print("The training dataset is successfully created. Use the function 'train_network' to start training. Happy training!")
+                items2change = {
+                    "dataset": datafilename,
+                    "metadataset": metadatafilename,
+                    "num_joints": len(bodyparts),
+                    "all_joints": [[i] for i in range(len(bodyparts))],
+                    "all_joints_names": [str(bpt) for bpt in bodyparts],
+                    "init_weights": model_path,
+                    "project_path": str(cfg['project_path']),
+                    "net_type": net_type,
+                    "dataset_type": augmenter_type,
+                }
+                trainingdata = MakeTrain_pose_yaml(items2change,path_train_config,defaultconfigfile)
+                keys2save = [
+                    "dataset", "num_joints", "all_joints", "all_joints_names",
+                    "net_type", 'init_weights', 'global_scale', 'location_refinement',
+                    'locref_stdev'
+                ]
+                MakeTest_pose_yaml(trainingdata, keys2save,path_test_config)
+                print("The training dataset is successfully created. Use the function 'train_network' to start training. Happy training!")
 
 def get_largestshuffle_index(config):
     ''' Returns the largest shuffle for all dlc-models in the current iteration.'''
