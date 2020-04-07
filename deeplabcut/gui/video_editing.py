@@ -30,7 +30,7 @@ class Video_Editing(wx.Panel):
         """Constructor"""
         wx.Panel.__init__(self, parent=parent)
         # variable initilization
-        self.filelist = ''
+        self.filelist = []
         self.config = cfg
 
         # design the panel
