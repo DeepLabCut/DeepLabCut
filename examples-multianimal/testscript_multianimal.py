@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
+
 TASK = 'multi_birdie'
 SCORER = 'dlc_team'
 NUM_FRAMES = 5
@@ -22,10 +23,8 @@ config_path = deeplabcut.create_new_project(TASK, SCORER, [video_path],
 print('Project created.')
 
 print('Editing config...')
-cfg = auxiliaryfunctions.read_config(config_path)
-cfg['numframes2pick'] = NUM_FRAMES
-cfg['TrainingFraction'] = [TRAIN_SIZE]
-auxiliaryfunctions.write_config(config_path, cfg)
+cfg = auxiliaryfunctions.edit_config(config_path, {'numframes2pick': NUM_FRAMES,
+                                                   'TrainingFraction': [TRAIN_SIZE]})
 print('Config edited.')
 
 print('Extracting frames...')
@@ -35,7 +34,6 @@ print('Frames extracted.')
 print('Creating artificial data...')
 rel_folder = os.path.join('labeled-data', os.path.splitext(video)[0])
 image_folder = os.path.join(cfg['project_path'], rel_folder)
-images = auxiliaryfunctions.grab_files_in_folder(image_folder, 'png')
 n_animals = len(cfg['individuals'])
 animals, bodyparts_single, bodyparts_multi = auxfun_multianimal.extractindividualsandbodyparts(cfg)
 animals_id = [i for i in range(n_animals) for _ in bodyparts_multi] + [n_animals] * len(bodyparts_single)
@@ -47,7 +45,7 @@ bodyparts = [bp for _ in range(n_animals) for bp in bodyparts_multi for _ in ran
 bodyparts += [bp for bp in bodyparts_single for _ in range(2)]
 columns = pd.MultiIndex.from_arrays([scorer, individuals, bodyparts, coords],
                                     names=['scorer', 'individuals', 'bodyparts', 'coords'])
-index = [os.path.join(rel_folder, image) for image in images]
+index = [os.path.join(rel_folder, image) for image in auxiliaryfunctions.grab_files_in_folder(image_folder, 'png')]
 fake_data = np.tile(np.repeat(50 * np.arange(len(animals_id)) + 100, 2), (len(index), 1))
 df = pd.DataFrame(fake_data, index=index, columns=columns)
 output_path = os.path.join(image_folder, f'CollectedData_{SCORER}.csv')
@@ -68,9 +66,10 @@ deeplabcut.create_multianimaltraining_dataset(config_path, net_type=NET)
 print('Train dataset created.')
 
 print('Editing pose config...')
-model_folder = auxiliaryfunctions.GetModelFolder(cfg['TrainingFraction'][0], 1, cfg, cfg['project_path'])
+model_folder = auxiliaryfunctions.GetModelFolder(TRAIN_SIZE, 1, cfg, cfg['project_path'])
 pose_config_path = os.path.join(model_folder, 'train/pose_cfg.yaml')
 edits = {'global_scale': .1,
+         'batch_size': 1,
          'save_iters': N_ITER,
          'display_iters': N_ITER // 2,
          'multi_step': [[0.001, N_ITER]]}
@@ -89,20 +88,26 @@ new_video_path = deeplabcut.ShortenVideo(video_path, start='00:00:00', stop='00:
                                          outsuffix='short', outpath=os.path.join(cfg['project_path'], 'videos'))
 
 print('Analyzing video...')
-deeplabcut.analyze_videos(config_path, [new_video_path], save_as_csv=True, dynamic=(True, .1, 5))
+deeplabcut.analyze_videos(config_path, [new_video_path], 'mov', save_as_csv=True, dynamic=(True, .1, 5))
 print('Video analyzed.')
 
+print('Create video with all detections...')
+scorer, _ = auxiliaryfunctions.GetScorerName(cfg, 1, TRAIN_SIZE)
+deeplabcut.create_video_with_all_detections(config_path, [new_video_path], scorer)
+print('Video created.')
 
-#model???
-#deeplabcut.create_video_with_all_detections(path_config_file, video[0], model)
-
-
-'''
 print('Plotting trajectories...')
-deeplabcut.plot_trajectories(config_path, [new_video_path])
+deeplabcut.plot_trajectories(config_path, [new_video_path], 'mov')
 print('Trajectory plotted.')
 
 print('Creating labeled video...')
 deeplabcut.create_labeled_video(config_path, [new_video_path], save_frames=False, color_by='animal')
 print('Labeled video created.')
-'''
+
+print('Filtering predictions...')
+deeplabcut.filterpredictions(config_path, [new_video_path], 'mov')
+print('Predictions filtered.')
+
+print('Extracting outlier frames...')
+deeplabcut.extract_outlier_frames(config_path, [new_video_path], 'mov', automatic=True)
+print('Outlier frames extraacted.')
