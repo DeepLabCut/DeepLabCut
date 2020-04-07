@@ -68,10 +68,6 @@ class Analyze_videos(wx.Panel):
         hbox3 = wx.BoxSizer(wx.HORIZONTAL)
         hbox4 = wx.BoxSizer(wx.HORIZONTAL)
 
-
-#        self.shuffles = wx.SpinCtrl(self, value='1',min=1,max=100)
-#        shuffles_text_boxsizer.Add(self.shuffles,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
-
         videotype_text = wx.StaticBox(self, label="Specify the videotype")
         videotype_text_boxsizer = wx.StaticBoxSizer(videotype_text, wx.VERTICAL)
 
@@ -105,7 +101,6 @@ class Analyze_videos(wx.Panel):
 
         boxsizer.Add(hbox1,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
-
         self.csv = wx.RadioBox(self, label='Want to save result(s) as csv?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
         self.csv.SetSelection(1)
 
@@ -129,12 +124,7 @@ class Analyze_videos(wx.Panel):
         self.trajectory_to_plot.SetCheckedItems(range(len(bodyparts)))
         self.trajectory_to_plot.Hide()
 
-        self.create_labeled_videos = wx.RadioBox(self, label='Create labeled video(s)? (see next tab for more options)', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
-        self.create_labeled_videos.Bind(wx.EVT_RADIOBOX, self.choose_create_labeled_video_options)
-        self.create_labeled_videos.SetSelection(1)
-
         self.create_video_with_all_detections = wx.RadioBox(self, label='Create video for checking detections (maDLC only)', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
-        self.create_video_with_all_detections.Bind(wx.EVT_RADIOBOX, self.choose_create_labeled_video_options)
         self.create_video_with_all_detections.SetSelection(1)
 
         self.draw_skeleton = wx.RadioBox(self, label='Include the skeleton in the video?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
@@ -156,7 +146,6 @@ class Analyze_videos(wx.Panel):
         boxsizer.Add(hbox2,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
         hbox3.Add(self.dynamic,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-        hbox3.Add(self.create_labeled_videos,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         hbox3.Add(self.create_video_with_all_detections, 10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         boxsizer.Add(hbox3,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
@@ -216,25 +205,10 @@ class Analyze_videos(wx.Panel):
             self.sel_vids.SetLabel("Total %s Videos selected" %len(self.filelist))
 
     def choose_draw_skeleton_options(self,event):
-        # if self.draw_skeleton.IsShow():
         if self.draw_skeleton.GetStringSelection() == "Yes":
             self.draw = True
         else:
             self.draw = False
-
-    def choose_create_labeled_video_options(self,event):
-        if self.create_labeled_videos.GetStringSelection() == "Yes":
-            self.draw_skeleton.Show()
-            self.trail_points_text.Show()
-            self.trail_points.Show()
-            self.SetSizer(self.sizer)
-            self.sizer.Fit(self)
-        else:
-            self.draw_skeleton.Hide()
-            self.trail_points_text.Hide()
-            self.trail_points.Hide()
-            self.SetSizer(self.sizer)
-            self.sizer.Fit(self)
 
     def analyze_videos(self,event):
 
@@ -261,20 +235,11 @@ class Analyze_videos(wx.Panel):
         else:
             filter = True
 
-        # if self.draw_skeleton.GetStringSelection() == "Yes":
-        #     self.draw = True
-        # else:
-        #     self.draw = True
-
-#        print(self.config,self.filelist,self.videotype.GetValue(),shuffle,trainingsetindex,gputouse=None,save_as_csv=save_as_csv,destfolder=self.destfolder,cropping=cropping)
         scorername = deeplabcut.analyze_videos(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle,
                                   trainingsetindex=trainingsetindex, gputouse=None, save_as_csv=save_as_csv,
-                                  destfolder=self.destfolder, crop=crop, dynamic=dynamic)
+                                  destfolder=self.destfolder, cropping=crop, dynamic=dynamic)
         if self.filter.GetStringSelection() == "Yes":
             deeplabcut.filterpredictions(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex, filtertype='median', windowlength=5, p_bound=0.001, ARdegree=3, MAdegree=1, alpha=0.01, save_as_csv=True, destfolder=self.destfolder)
-
-        if self.create_labeled_videos.GetStringSelection() == "Yes":
-            deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle, trainingsetindex=trainingsetindex, draw_skeleton= self.draw,trailpoints = self.trail_points.GetValue(), filtered=True)
 
         if self.trajectory.GetStringSelection() == "Yes":
             deeplabcut.plot_trajectories(self.config, self.filelist, displayedbodyparts=self.bodyparts,
@@ -292,14 +257,13 @@ class Analyze_videos(wx.Panel):
         self.videotype.SetStringSelection(".avi")
         self.sel_vids.SetLabel("Select videos to analyze")
         self.filelist = []
-#        self.gpu.SetValue(-1)
         self.shuffle.SetValue(1)
         self.trainingset.SetValue(0)
         self.csv.SetSelection(1)
         self.filter.SetSelection(1)
         self.trajectory.SetSelection(1)
         self.dynamic.SetSelection(1)
-        self.create_labeled_videos.SetSelection(1)
+        self.create_video_with_all_detections.SetSelection(1)
         self.sel_destfolder.SetPath("None")
         if self.draw_skeleton.IsShown():
             self.draw_skeleton.SetSelection(1)

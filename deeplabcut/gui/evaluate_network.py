@@ -56,7 +56,7 @@ class Evaluate_network(wx.Panel):
         boxsizer = wx.StaticBoxSizer(sb, wx.VERTICAL)
 
         self.hbox1 = wx.BoxSizer(wx.HORIZONTAL)
-#        self.hbox2 = wx.BoxSizer(wx.HORIZONTAL)
+        self.hbox2 = wx.BoxSizer(wx.HORIZONTAL)
 
         shuffles_text = wx.StaticBox(self, label="Specify the shuffle")
         shuffles_text_boxsizer = wx.StaticBoxSizer(shuffles_text, wx.VERTICAL)
@@ -88,11 +88,12 @@ class Evaluate_network(wx.Panel):
         self.hbox1.Add(shuffles_text_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         self.hbox1.Add(trainingset_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         self.hbox1.Add(self.plot_choice,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-        self.hbox1.Add(self.bodypart_choice,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-        self.hbox1.Add(self.bodyparts_to_compare,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+
+        self.hbox2.Add(self.bodypart_choice,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+        self.hbox2.Add(self.bodyparts_to_compare,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
         boxsizer.Add(self.hbox1,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
-#        boxsizer.Add(self.hbox2,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+        boxsizer.Add(self.hbox2,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
         self.sizer.Add(boxsizer, pos=(3, 0), span=(1, 5),flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT , border=10)
 

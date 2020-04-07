@@ -18,6 +18,7 @@ from deeplabcut.gui.extract_frames import Extract_frames
 from deeplabcut.gui.label_frames import Label_frames
 from deeplabcut.gui.create_training_dataset import Create_training_dataset
 from deeplabcut.gui.train_network import Train_network
+from deeplabcut.gui.video_editing import Video_Editing
 from deeplabcut.gui.analyze_videos import Analyze_videos
 from deeplabcut.gui.evaluate_network import Evaluate_network
 from deeplabcut.gui.extract_outlier_frames import Extract_outlier_frames
@@ -50,14 +51,14 @@ class Create_new_project(wx.Panel):
 
         # Add logo of DLC
         icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(logo))
-        self.sizer.Add(icon, pos=(0,7), flag=wx.TOP|wx.RIGHT|wx.ALIGN_RIGHT,border=5)
+        self.sizer.Add(icon, pos=(0,10), flag=wx.TOP|wx.RIGHT|wx.ALIGN_RIGHT,border=10)
 
         line = wx.StaticLine(self)
-        self.sizer.Add(line, pos=(1, 0), span=(1, 8),flag=wx.EXPAND|wx.BOTTOM, border=10)
+        self.sizer.Add(line, pos=(1, 0), span=(1, 15),flag=wx.EXPAND|wx.BOTTOM, border=5)
 
         # Add all the options
         self.proj = wx.RadioBox(self, label='Please choose an option:', choices=['Create new project', 'Load existing project'],majorDimension=0, style=wx.RA_SPECIFY_COLS)
-        self.sizer.Add(self.proj, pos=(2, 0), span=(1, 5), flag=wx.LEFT, border=15)
+        self.sizer.Add(self.proj, pos=(2, 0), span=(1, 10), flag=wx.LEFT, border=15)
         self.proj.Bind(wx.EVT_RADIOBOX,self.chooseOption)
 
         line = wx.StaticLine(self)
@@ -115,7 +116,7 @@ class Create_new_project(wx.Panel):
         # self.multi_choice.Bind(wx.EVT_CHECKBOX,self.activate_copy_videos)
         hbox4.Add(self.multi_choice)
         self.boxsizer.Add(hbox4)
-        self.sizer.Add(self.boxsizer, pos=(7, 0), span=(1, 7),flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT , border=10)
+        self.sizer.Add(self.boxsizer, pos=(7, 0), span=(1, 10),flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT , border=10)
 
         self.cfg_text = wx.StaticText(self, label="Select the config file")
         self.sizer.Add(self.cfg_text, pos=(8, 0), flag=wx.LEFT|wx.EXPAND, border=15)
@@ -302,21 +303,30 @@ class Create_new_project(wx.Panel):
             if self.parent.GetPageCount() < 3:
                 page3 = Extract_frames(self.parent,self.gui_size,self.cfg)
                 self.parent.AddPage(page3, "Extract frames")
+
                 page4 = Label_frames(self.parent,self.gui_size,self.cfg)
                 self.parent.AddPage(page4, "Label frames")
+
                 page5 = Create_training_dataset(self.parent,self.gui_size,self.cfg)
                 self.parent.AddPage(page5, "Create training dataset")
+
                 page6 = Train_network(self.parent,self.gui_size,self.cfg)
                 self.parent.AddPage(page6, "Train network")
+
                 page7 = Evaluate_network(self.parent,self.gui_size,self.cfg)
                 self.parent.AddPage(page7, "Evaluate network")
+
+                page12 = Video_Editing(self.parent,self.gui_size,self.cfg)
+                self.parent.AddPage(page12, "Video editor")
+
                 page8 = Analyze_videos(self.parent,self.gui_size,self.cfg)
                 self.parent.AddPage(page8, "Analyze videos")
+
                 if cfg.get('multianimalproject', False):
                     page = Refine_tracklets(self.parent, self.gui_size, self.cfg)
                     self.parent.AddPage(page, "Refine tracklets")
                 page11 = Create_Labeled_Videos(self.parent,self.gui_size,self.cfg)
-                self.parent.AddPage(page11, "Create Videos")
+                self.parent.AddPage(page11, "Create videos")
                 page9 = Extract_outlier_frames(self.parent,self.gui_size,self.cfg)
                 self.parent.AddPage(page9, "Extract outlier frames")
                 page10 = Refine_labels(self.parent,self.gui_size,self.cfg,page5)
