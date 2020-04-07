@@ -69,7 +69,10 @@ class Evaluate_network(wx.Panel):
         trainingset_boxsizer.Add(self.trainingset,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
         self.plot_choice = wx.RadioBox(self, label='Want to plot predictions?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
-        self.plot_choice.SetSelection(1)
+        self.plot_choice.SetSelection(0)
+
+        self.plot_scoremaps = wx.RadioBox(self, label='Want to plot maps (ALL images): scoremaps, PAFs, locrefs?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
+        self.plot_scoremaps.SetSelection(1)
 
         self.bodypart_choice = wx.RadioBox(self, label='Compare all bodyparts?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
         self.bodypart_choice.Bind(wx.EVT_RADIOBOX,self.chooseOption)
@@ -82,14 +85,13 @@ class Evaluate_network(wx.Panel):
         self.bodyparts_to_compare = wx.CheckListBox(self, choices=bodyparts, style=0,name = "Select the bodyparts")
         self.bodyparts_to_compare.Bind(wx.EVT_CHECKLISTBOX,self.getbp)
         self.bodyparts_to_compare.Hide()
-#        self.SetSizer(self.sizer)
-#        self.sizer.Fit(self)
 
-        self.hbox1.Add(shuffles_text_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-        self.hbox1.Add(trainingset_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-        self.hbox1.Add(self.plot_choice,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+        self.hbox1.Add(shuffles_text_boxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+        self.hbox1.Add(trainingset_boxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+        self.hbox1.Add(self.plot_scoremaps,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
-        self.hbox2.Add(self.bodypart_choice,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+        self.hbox2.Add(self.plot_choice,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+        self.hbox2.Add(self.bodypart_choice,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         self.hbox2.Add(self.bodyparts_to_compare,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
         boxsizer.Add(self.hbox1,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
@@ -101,9 +103,13 @@ class Evaluate_network(wx.Panel):
         self.sizer.Add(self.help_button, pos=(4, 0), flag=wx.LEFT, border=10)
         self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
 
-        self.ok = wx.Button(self, label="Ok")
+        self.ok = wx.Button(self, label="RUN")
         self.sizer.Add(self.ok, pos=(4, 4))
         self.ok.Bind(wx.EVT_BUTTON, self.evaluate_network)
+
+        self.ok = wx.Button(self, label="Plot 3 test maps (only)")
+        self.sizer.Add(self.ok, pos=(4, 3))
+        self.ok.Bind(wx.EVT_BUTTON, self.plot_maps)
 
         self.cancel = wx.Button(self, label="Reset")
         self.sizer.Add(self.cancel, pos=(4, 1), span=(1, 1),flag=wx.BOTTOM|wx.RIGHT, border=10)
@@ -150,6 +156,12 @@ class Evaluate_network(wx.Panel):
         """
         self.config = self.sel_config.GetPath()
 
+    def plot_maps(self, event):
+        shuffle = self.shuffles.GetValue()
+        #if self.plot_scoremaps.GetStringSelection() == "Yes":
+        deeplabcut.extract_save_all_maps(self.config, shuffle=shuffle, Indices=[0,1,5])
+
+
     def evaluate_network(self,event):
 
         #shuffle = self.shuffle.GetValue()
@@ -161,9 +173,13 @@ class Evaluate_network(wx.Panel):
         else:
             plotting = False
 
+        if self.plot_scoremaps.GetStringSelection() == "Yes":
+                shuffle = self.shuffles.GetValue()
+                deeplabcut.extract_save_all_maps(self.config, shuffle=shuffle)
+
         if len(self.bodyparts)==0:
             self.bodyparts='all'
-        deeplabcut.evaluate_network(self.config,Shuffles=shuffle,trainingsetindex=trainingsetindex,plotting=plotting,show_errors=True,comparisonbodyparts=self.bodyparts,gputouse=None)
+        deeplabcut.evaluate_network(self.config,Shuffles=shuffle,trainingsetindex=trainingsetindex,plotting=plotting,show_errors=True,comparisonbodyparts=self.bodyparts)
 
     def cancel_evaluate_network(self,event):
         """

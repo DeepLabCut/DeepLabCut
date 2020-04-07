@@ -31,8 +31,8 @@ class Load_project(wx.Panel):
         text = wx.StaticText(self, label="DeepLabCut Load project")
         self.sizer.Add(text, pos=(0, 0), flag=wx.TOP|wx.LEFT|wx.BOTTOM,border=15)
         # Add logo of DLC
-        icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(logo))
-        self.sizer.Add(icon, pos=(0, 4), flag=wx.TOP|wx.RIGHT|wx.ALIGN_RIGHT,border=5)
+        #icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(logo))
+        #self.sizer.Add(icon, pos=(0, 4), flag=wx.TOP|wx.RIGHT|wx.ALIGN_RIGHT,border=5)
 
         line1 = wx.StaticLine(self)
         self.sizer.Add(line1, pos=(1, 0), span=(1, 15),flag=wx.EXPAND|wx.BOTTOM, border=10)

@@ -50,8 +50,8 @@ class Create_new_project(wx.Panel):
         self.sizer.Add(text1, pos=(0, 0), flag=wx.TOP|wx.LEFT|wx.BOTTOM,border=15)
 
         # Add logo of DLC
-        icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(logo))
-        self.sizer.Add(icon, pos=(0,10), flag=wx.TOP|wx.RIGHT|wx.ALIGN_RIGHT,border=10)
+        #icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(logo))
+        #self.sizer.Add(icon, pos=(0,10), flag=wx.TOP|wx.RIGHT|wx.ALIGN_RIGHT,border=10)
 
         line = wx.StaticLine(self)
         self.sizer.Add(line, pos=(1, 0), span=(1, 15),flag=wx.EXPAND|wx.BOTTOM, border=5)
