@@ -488,7 +488,7 @@ def export_model(_, *args, **kwargs):
 
 
 
-    from deeplabcut import export
-    export.export_model(*args, **kwargs)
+    from deeplabcut import export_model
+    export_model(*args, **kwargs)
 
 ###########################################################################################################################
