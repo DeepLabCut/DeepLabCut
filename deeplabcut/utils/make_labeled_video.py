@@ -520,7 +520,7 @@ def _create_video_from_tracks(video, tracks, pcutoff, scale, destfolder):
     cc = np.random.rand(numtracks + 1, 3)
     fig, ax = visualization.prepare_figure_axes(nx, ny, scale)
     im = ax.imshow(np.zeros((ny, nx)))
-    markers, = ax.plot([], [], '.')
+    markers = sum([ax.plot([], [], '.', c=c) for c in cc], [])
     for index in tqdm(range(nframes)):
         cap.set(1, index)
         ret, frame = cap.read()
@@ -529,12 +529,10 @@ def _create_video_from_tracks(video, tracks, pcutoff, scale, destfolder):
         if ret and not os.path.isfile(image_output):
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             im.set_data(frame[:, X1:X2])
-            for colorid, trackid in enumerate(trackids):
+            for n, trackid in enumerate(trackids):
                 if imname in tracks[trackid]:
                     x, y, p = tracks[trackid][imname].reshape((-1, 3)).T
-                    markers.set_xdata(x[p > pcutoff])
-                    markers.set_ydata(y[p > pcutoff])
-                    markers.set_color(cc[colorid])
+                    markers[n].set_data(x[p > pcutoff], y[p > pcutoff])
             fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
             plt.savefig(image_output)
 
