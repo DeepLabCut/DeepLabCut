@@ -17,16 +17,15 @@ DEBUG = True and 'DEBUG' in os.environ and os.environ['DEBUG']
 from deeplabcut import DEBUG
 
 # DLClight version does not support GUIs. Importing accordingly
-import matplotlib as mpl
+import matplotlib.pyplot as plt
 if os.environ.get('DLClight', default=False) == 'True':
     print("DLC loaded in light mode; you cannot use any GUI (labeling, relabeling and standalone GUI)")
-    mpl.use('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
-    pass
+    plt.switch_backend('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
 else: #standard use [wxpython supported]
     if platform.system() == 'Darwin': #for OSX use WXAgg
-        mpl.use('WXAgg')
+        plt.switch_backend('WXAgg')
     else:
-        mpl.use('Agg')
+        plt.switch_backend('Agg')
     from deeplabcut import generate_training_dataset
     from deeplabcut import refine_training_dataset
     from deeplabcut.generate_training_dataset import label_frames, dropannotationfileentriesduetodeletedimages, comparevideolistsanddatafolders, dropimagesduetolackofannotation
