@@ -456,6 +456,7 @@ class TrackletVisualizer:
 
         self.selector = PointSelector(self, self.ax1, self.scat, manager.cfg['alphavalue'])
         self.display_traces(only_picked=False)
+        plt.show()
 
     def show(self, fig=None):
         self._prepare_canvas(self.manager, fig)
