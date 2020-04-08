@@ -34,7 +34,7 @@ class Create_Labeled_Videos(wx.Panel):
         # design the panel
         self.sizer = wx.GridBagSizer(5, 5)
 
-        text = wx.StaticText(self, label="DeepLabCut - Create Labeled Videos (more functionality)")
+        text = wx.StaticText(self, label="DeepLabCut - Create Labeled Videos")
         self.sizer.Add(text, pos=(0, 0), flag=wx.TOP|wx.LEFT|wx.BOTTOM,border=15)
         # Add logo of DLC
         icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(logo))
@@ -92,6 +92,12 @@ class Create_Labeled_Videos(wx.Panel):
         hbox1.Add(trainingset_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         boxsizer.Add(hbox1,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
         self.sizer.Add(boxsizer, pos=(4, 0), span=(1, 5),flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT , border=10)
+
+        self.cfg = auxiliaryfunctions.read_config(self.config)
+        if self.cfg.get('multianimalproject', False):
+            self.plot_idv = wx.RadioBox(self, label='Create video with animal ID colored?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
+            self.plot_idv.SetSelection(1)
+            hbox3.Add(self.plot_idv,10,wx.EXPAND|wx.TOP|wx.BOTTOM,10)
 
         self.draw_skeleton = wx.RadioBox(self, label='Include the skeleton in the video?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
         self.draw_skeleton.Bind(wx.EVT_RADIOBOX, self.choose_draw_skeleton_options)
@@ -172,6 +178,12 @@ class Create_Labeled_Videos(wx.Panel):
         else:
             self.draw = False
 
+    def plot_idv_options(self,event):
+        if self.plot_idv.GetStringSelection() == "Yes":
+            self.plot_idv = True
+        else:
+            self.plot_idv = False
+
     def choose_video_slow_options(self,event):
         if self.video_slow.GetStringSelection() == "Yes":
             self.slow = True
@@ -208,15 +220,20 @@ class Create_Labeled_Videos(wx.Panel):
         else:
             self.slow = False
 
+        if self.plot_idv.GetStringSelection() == "Yes":
+            color_by ='individual'
+        else:
+            color_by='bodypart'
+
         if self.filter.GetStringSelection() == "Yes":
             if len(self.bodyparts)==0:
                 self.bodyparts='all'
 
-                deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle, trainingsetindex=trainingsetindex, save_frames=self.slow, draw_skeleton= self.draw, displayedbodyparts=self.bodyparts, trailpoints = self.trail_points.GetValue(), filtered=True)
+                deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle, trainingsetindex=trainingsetindex, save_frames=self.slow, draw_skeleton= self.draw, displayedbodyparts=self.bodyparts, trailpoints = self.trail_points.GetValue(), filtered=True, color_by=color_by)
 
         if len(self.bodyparts)==0:
             self.bodyparts='all'
-        deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle, trainingsetindex=trainingsetindex, save_frames=self.slow, draw_skeleton= self.draw, displayedbodyparts=self.bodyparts, trailpoints = self.trail_points.GetValue(), filtered=False)
+        deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle, trainingsetindex=trainingsetindex, save_frames=self.slow, draw_skeleton= self.draw, displayedbodyparts=self.bodyparts, trailpoints = self.trail_points.GetValue(), filtered=False, color_by=color_by)
 
 
 
