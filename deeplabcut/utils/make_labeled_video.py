@@ -21,13 +21,14 @@ from tqdm import trange
 from pathlib import Path
 import platform
 
-import matplotlib.pyplot as plt
+import matplotlib as mpl
 if os.environ.get('DLClight', default=False) == 'True':
-    plt.switch_backend('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
+    mpl.use('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
 elif platform.system() == 'Darwin':
-    plt.switch_backend('WxAgg')
+    mpl.use('WxAgg') #TkAgg
 else:
-    plt.switch_backend('TkAgg')
+    mpl.use('TkAgg')
+import matplotlib.pyplot as plt
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualization
 from deeplabcut.utils.video_processor import VideoProcessorCV as vp # used to CreateVideo
 from matplotlib.animation import FFMpegWriter
