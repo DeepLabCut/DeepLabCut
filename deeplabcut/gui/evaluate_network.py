@@ -60,7 +60,7 @@ class Evaluate_network(wx.Panel):
 
         shuffles_text = wx.StaticBox(self, label="Specify the shuffle")
         shuffles_text_boxsizer = wx.StaticBoxSizer(shuffles_text, wx.VERTICAL)
-        self.shuffles = wx.SpinCtrl(self, value='1',min=1,max=100)
+        self.shuffles = wx.SpinCtrl(self, value='1',min=0,max=100)
         shuffles_text_boxsizer.Add(self.shuffles,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
         trainingset = wx.StaticBox(self, label="Specify the trainingset index")

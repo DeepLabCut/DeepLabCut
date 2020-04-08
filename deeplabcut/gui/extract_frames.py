@@ -85,7 +85,7 @@ class Extract_frames(wx.Panel):
         self.cluster_step = wx.SpinCtrl(self, value='1')
         cluster_stepboxsizer.Add(self.cluster_step,20, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
-        slider_width_text = wx.StaticBox(self, label="Specify the slider width")
+        slider_width_text = wx.StaticBox(self, label="Specify the GUI slider width")
         slider_widthboxsizer = wx.StaticBoxSizer(slider_width_text, wx.VERTICAL)
         self.slider_width = wx.SpinCtrl(self, value='25')
         slider_widthboxsizer.Add(self.slider_width,20, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
@@ -162,7 +162,7 @@ class Extract_frames(wx.Panel):
         else:
             crop = False
         if self.crop_choice.GetStringSelection() == 'GUI':
-            crop = GUI
+            crop = 'GUI'
         else:
             crop = False
 
@@ -178,7 +178,7 @@ class Extract_frames(wx.Panel):
 
         slider_width = self.slider_width.GetValue()
 
-        deeplabcut.extract_frames(self.config,mode,algo,crop=False,userfeedback=userfeedback,cluster_step=self.cluster_step.GetValue(),cluster_resizewidth=30,cluster_color=False,opencv=opencv,slider_width=slider_width)
+        deeplabcut.extract_frames(self.config,mode,algo,crop=crop,userfeedback=userfeedback,cluster_step=self.cluster_step.GetValue(),cluster_resizewidth=30,cluster_color=False,opencv=opencv,slider_width=slider_width)
 
     def reset_extract_frames(self,event):
         """

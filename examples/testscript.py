@@ -16,11 +16,11 @@ It produces nothing of interest scientifically.
 task='TEST' # Enter the name of your experiment Task
 scorer='Alex' # Enter the name of the experimenter/labeler
 
-
 import os,  subprocess, deeplabcut
 from pathlib import Path
 import pandas as pd
 import numpy as np
+import platform
 
 print("Imported DLC!")
 basepath=os.path.dirname(os.path.abspath('testscript.py'))
@@ -35,9 +35,15 @@ video=[os.path.join(basepath,'Reaching-Mackenzie-2018-08-30','videos',videoname+
 
 dfolder=None
 net_type='resnet_50' #'mobilenet_v2_0.35' #'resnet_50'
-augmenter_type='default' 
+augmenter_type='default'
 augmenter_type2='imgaug'
-augmenter_type3='tensorpack' #Does not work on WINDOWS!
+
+if platform.system() == 'Darwin' or platform.system()=='Windows':
+    print("On Windows/OSX tensorpack is not tested by default.")
+    augmenter_type3='imgaug'
+else:
+    augmenter_type3='tensorpack' #Does not work on WINDOWS
+
 numiter=5
 
 print("CREATING PROJECT")
