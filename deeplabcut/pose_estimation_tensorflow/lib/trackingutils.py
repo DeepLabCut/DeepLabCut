@@ -155,10 +155,15 @@ class SkeletonTracker:
         self.hit_streak = 0
 
     def update(self, pose):
-        if np.isnan(pose).any():
-            self.kf.update(None)
+        flat = pose.reshape((-1, 1))
+        empty = np.isnan(flat).squeeze()
+        if empty.any():
+            H = self.kf.H.copy()
+            H[empty] = 0
+            flat[empty] = 0
+            self.kf.update(flat, H=H)
         else:
-            self.kf.update(pose.reshape(-1, 1))
+            self.kf.update(flat)
             self.time_since_update = 0
             self.hits += 1
             self.hit_streak += 1
@@ -181,7 +186,12 @@ class SkeletonTracker:
 
     @state.setter
     def state(self, pose):
-        self.kf.x[:self.kf.dim_z] = pose.reshape(-1, 1)
+        curr_pose = pose.copy()
+        empty = np.isnan(curr_pose).all(axis=1)
+        if empty.any():
+            fill = np.nanmean(pose, axis=0)
+            curr_pose[empty] = fill
+        self.kf.x[:self.kf.dim_z] = curr_pose.reshape((-1, 1))
 
 
 class SORT:
@@ -246,9 +256,9 @@ class SORT:
             if t not in unmatched_trackers:
                 ind = matches[matches[:, 1] == t, 0][0]
                 animalindex.append(ind)
-                tracker.update(poses[ind].flatten())
+                tracker.update(poses[ind])
             else:
-                animalindex.append('nix')
+                animalindex.append(-1)
 
         for i in unmatched_poses:
             tracker = SkeletonTracker(self.n_bodyparts)
@@ -263,11 +273,12 @@ class SORT:
             if tracker.time_since_update > self.max_age:
                 self.trackers.pop()
                 continue
-            if (tracker.time_since_update < 1 and
-                    (tracker.hit_streak >= self.min_hits or self.frame_count <= self.min_hits)):
-                state = tracker.state
-            else:
-                state = tracker.empty_state
+            # FIXME Something wrong going on here, empty state too often...
+            # if (tracker.time_since_update < 1 and
+            #         (tracker.hit_streak >= self.min_hits or self.frame_count <= self.min_hits)):
+            state = tracker.predict()
+            # else:
+            #     state = tracker.empty_state
             states.append(np.r_[state, [tracker.id, int(animalindex[i])]])
         return np.stack(states)
 
@@ -386,4 +397,9 @@ def fill_tracklets(tracklets, trackers, animals, imname):
         tracklet_id, pred_id = content[-2:].astype(np.int)
         if tracklet_id not in tracklets:
             tracklets[tracklet_id] = {}
-        tracklets[tracklet_id][imname] = animals[pred_id]
+        if pred_id != -1:
+            tracklets[tracklet_id][imname] = animals[pred_id]
+        else:  # Resort to the tracker prediction
+            xy = np.asarray(content[:-2])
+            pred = np.insert(xy, range(2, len(xy) + 1, 2), 1)
+            tracklets[tracklet_id][imname] = pred

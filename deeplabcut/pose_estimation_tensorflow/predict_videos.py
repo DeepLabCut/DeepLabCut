@@ -956,7 +956,7 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
             trackname=dataname.split('.h5')[0]+suffix+'.pickle'
 
             if os.path.isfile(trackname): #TODO: check if metadata are identical (same parameters!)
-                print("Tracklets already computed", dataname)
+                print("Tracklets already computed", trackname)
             else:
                 print("Analyzing", dataname)
                 DLCscorer=metadata['data']['Scorer']
