@@ -415,7 +415,7 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
                     ## TODO: integrate with standard code for dataframes.
                     scale=1
                     pcutoff=cfg["pcutoff"]
-                    _create_video_from_tracks(video, Tracks, pcutoff, scale, vname)
+                    _create_video_from_tracks(video, Tracks, vname, pcutoff, scale)
 
     os.chdir(start_path)
 
@@ -498,7 +498,7 @@ def create_video_with_all_detections(config, videos, DLCscorername, destfolder=N
             print("Detections already plotted, ", outputname)
 
 
-def _create_video_from_tracks(video, tracks, pcutoff, scale, destfolder):
+def _create_video_from_tracks(video, tracks, destfolder, pcutoff=0.6, scale=1):
     import cv2
     import subprocess
     from tqdm import tqdm
@@ -533,6 +533,8 @@ def _create_video_from_tracks(video, tracks, pcutoff, scale, destfolder):
                 if imname in tracks[trackid]:
                     x, y, p = tracks[trackid][imname].reshape((-1, 3)).T
                     markers[n].set_data(x[p > pcutoff], y[p > pcutoff])
+                else:
+                    markers[n].set_data([], [])
             fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
             plt.savefig(image_output)
 
