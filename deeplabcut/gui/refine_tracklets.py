@@ -70,13 +70,13 @@ class Refine_tracklets(wx.Panel):
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         slider_swap_text = wx.StaticBox(self, label="Specify the min swap fraction")
         slider_swap_sizer = wx.StaticBoxSizer(slider_swap_text, wx.VERTICAL)
-        self.slider_swap = wx.SpinCtrl(self, value='1')
+        self.slider_swap = wx.SpinCtrl(self, value='0')
         slider_swap_sizer.Add(self.slider_swap, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
         hbox.Add(slider_swap_sizer, 10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
         slider_track_text = wx.StaticBox(self, label="Specify the min relative tracklet length")
         slider_track_sizer = wx.StaticBoxSizer(slider_track_text, wx.VERTICAL)
-        self.slider_track = wx.SpinCtrl(self, value='1')
+        self.slider_track = wx.SpinCtrl(self, value='0')
         slider_track_sizer.Add(self.slider_track, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
         hbox.Add(slider_track_sizer, 10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
@@ -135,7 +135,7 @@ class Refine_tracklets(wx.Panel):
                                                  self.slider_track.GetValue() / 100)
         self.manager.load_tracklets_from_pickle(self.datafile)
         self.manager.find_swapping_bodypart_pairs()
-        self.viz = tracklets.TrackletVisualizer(self.manager, self.video, 50)
+        self.viz = tracklets.TrackletVisualizer(self.manager, self.video, 30)
         self.viz.show()
         self.save.Enable(True)
 
