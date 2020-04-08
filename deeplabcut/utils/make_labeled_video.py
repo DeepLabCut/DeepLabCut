@@ -547,6 +547,13 @@ def _create_video_from_tracks(video, tracks, destfolder, pcutoff=0.6, scale=1):
         '-r', str(outputframerate), videooutname])
 
 
+def create_video_from_pickled_tracks(video, pickle_file, destfolder=''):
+    if not destfolder:
+        destfolder = os.path.splitext(video)[0]
+    tracks = auxiliaryfunctions.read_pickle(pickle_file)
+    _create_video_from_tracks(video, tracks, destfolder)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('config')
