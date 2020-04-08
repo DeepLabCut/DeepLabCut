@@ -411,7 +411,7 @@ class Pose:
         :param value_offset: An integer representing the offset of the desired values in stored data
         :return: Slice or integer, being the fixed indexing to actually get the body parts
         """
-        if(isinstance(index, int)):
+        if(isinstance(index, (int, np.integer))):
             # Since all data is all stored together, multiply by 3 and add the offset...
             return (index * 3) + value_offset
         elif(isinstance(index, slice)):
