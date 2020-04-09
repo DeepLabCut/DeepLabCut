@@ -1,26 +1,17 @@
 import cv2
+import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
 import numpy as np
-import os
 import pandas as pd
 import pickle
 import re
+from deeplabcut.utils.auxiliaryfunctions import read_config
+from deeplabcut.generate_training_dataset import auxfun_drag_label_multiple_individuals
 from functools import partial
 from matplotlib.path import Path
 from matplotlib.widgets import Slider, LassoSelector, Button, CheckButtons
-from ruamel.yaml import YAML
 from threading import Event, Thread
-
-
-def read_config(configname):
-    if not os.path.exists(configname):
-        raise FileNotFoundError(
-            'Config file is not found. Please make sure that the file exists and/or '
-            'there are no unnecessary spaces in the path of the config file!')
-    with open(configname) as file:
-        yaml = YAML()
-        return yaml.load(file)
 
 
 class BackgroundPlayer:
@@ -169,6 +160,7 @@ class TrackletManager:
         self.tracklet2bp = []
         self.swapping_pairs = []
         self.swapping_bodyparts = []
+        self._label_pairs = None
 
     def _load_tracklets(self, tracklets, auto_fill):
         header = tracklets.pop('header')
@@ -264,6 +256,7 @@ class TrackletManager:
             bps = bodyparts_multi + bodyparts_single
             map_ = dict(zip(bps, range(len(bps))))
             self.tracklet2bp = [map_[bp] for bp in self.bodyparts[::3]]
+            self._label_pairs = self.get_label_pairs()
         else:
             tracklets_raw = np.full((len(tracklets_sorted), self.nframes, len(bodyparts)), np.nan)
             for n, data in enumerate(tracklets_sorted[::-1]):
@@ -356,13 +349,19 @@ class TrackletManager:
         data = np.concatenate((self.xy, np.expand_dims(self.prob, axis=2)), axis=2)
         return data.swapaxes(0, 1).reshape((self.nframes, -1))
 
-    def format_data(self):
+    def format_multiindex(self):
         scorer = self.scorer * len(self.bodyparts)
         map_ = dict(zip(range(len(self.individuals)), self.individuals))
         individuals = [map_[ind] for ind in self.tracklet2id for _ in range(3)]
         coords = ['x', 'y', 'likelihood'] * len(self.tracklet2id)
-        columns = pd.MultiIndex.from_arrays([scorer, individuals, self.bodyparts, coords],
-                                            names=['scorer', 'individuals', 'bodyparts', 'coords'])
+        return pd.MultiIndex.from_arrays([scorer, individuals, self.bodyparts, coords],
+                                         names=['scorer', 'individuals', 'bodyparts', 'coords'])
+
+    def get_label_pairs(self):
+        return list(self.format_multiindex().droplevel(['scorer', 'coords']).unique())
+
+    def format_data(self):
+        columns = self.format_multiindex()
         return pd.DataFrame(self.flatten_data(), columns=columns, index=self.times)
 
     def save(self, output_name='', *args):
@@ -385,6 +384,7 @@ class TrackletVisualizer:
         self.trail_len = trail_len
         self.help_text = ''
         self.single = False
+        self.draggable = False
 
         self.picked = []
         self.picked_pair = []
@@ -394,6 +394,8 @@ class TrackletVisualizer:
         self.thread_background = Thread(target=self.background.run, daemon=True)
         self.thread_background.start()
 
+        self.dps = []
+
     def _prepare_canvas(self, manager, fig):
         params = {'keymap.save': 's',
                   'keymap.back': 'left',
@@ -402,6 +404,9 @@ class TrackletVisualizer:
         for k, v in params.items():
             if v in plt.rcParams[k]:
                 plt.rcParams[k].remove(v)
+
+        self.dotsize = manager.cfg['dotsize']
+        self.alpha = manager.cfg['alphavalue']
 
         if fig is None:
             self.fig = plt.figure(figsize=(13, 8))
@@ -416,11 +421,11 @@ class TrackletVisualizer:
             ax.axis('off')
 
         self.colors = self.cmap(manager.tracklet2id)
-        self.colors[:, -1] = manager.cfg['alphavalue']
+        self.colors[:, -1] = self.alpha
 
         img = self._read_frame()
         self.im = self.ax1.imshow(img)
-        self.scat = self.ax1.scatter([], [], s=manager.cfg['dotsize'] ** 2, picker=True)
+        self.scat = self.ax1.scatter([], [], s=self.dotsize, picker=True)
         self.scat.set_offsets(manager.xy[:, 0])
         self.scat.set_color(self.colors)
         self.trails = sum([self.ax1.plot([], [], '-', lw=2, c=c) for c in self.colors], [])
@@ -442,19 +447,22 @@ class TrackletVisualizer:
         self.ax_save = self.fig.add_axes([0.75, 0.1, 0.05, 0.03])
         self.ax_help = self.fig.add_axes([0.8, 0.1, 0.05, 0.03])
         self.ax_check = self.fig.add_axes([0.85, 0.1, 0.05, 0.03])
+        self.ax_drag = self.fig.add_axes([0.90, 0.1, 0.05, 0.03])
         self.save_button = Button(self.ax_save, 'Save')
         self.save_button.on_clicked(partial(self.manager.save, ''))
         self.help_button = Button(self.ax_help, 'Help')
         self.help_button.on_clicked(self.display_help)
         self.check_button = CheckButtons(self.ax_check, ['Single'])
         self.check_button.on_clicked(self.toggle_single_frame_edit)
+        self.drag_toggle = CheckButtons(self.ax_drag, ['Draggable'])
+        self.drag_toggle.on_clicked(self.toggle_draggable_points)
 
         self.fig.canvas.mpl_connect('pick_event', self.on_pick)
         self.fig.canvas.mpl_connect('key_press_event', self.on_press)
         self.fig.canvas.mpl_connect('button_press_event', self.on_click)
         self.fig.canvas.mpl_connect('close_event', self.background.terminate)
 
-        self.selector = PointSelector(self, self.ax1, self.scat, manager.cfg['alphavalue'])
+        self.selector = PointSelector(self, self.ax1, self.scat, self.alpha)
         self.display_traces(only_picked=False)
         plt.show()
 
@@ -479,6 +487,69 @@ class TrackletVisualizer:
 
     def toggle_single_frame_edit(self, event):
         self.single = not self.single
+
+    def toggle_draggable_points(self, event):
+        self.draggable = not self.draggable
+        if self.draggable:
+            self.scat.set_offsets([])
+            self.add_draggable_points()
+            self.fig.canvas.draw_idle()
+        else:
+            self.save_coords()
+            self.clean_points()
+            self.display_points(int(self.slider.val))
+            self.fig.canvas.draw_idle()
+
+    def add_point(self, center, animal, bodypart, **kwargs):
+        circle = patches.Circle(center, **kwargs)
+        self.ax1.add_patch(circle)
+        dp = auxfun_drag_label_multiple_individuals.DraggablePoint(circle, animal, bodypart)
+        dp.connect()
+        self.dps.append(dp)
+
+    def clean_points(self):
+        for dp in self.dps:
+            dp.annot.set_visible(False)
+            dp.disconnect()
+        self.dps = []
+        for patch in self.ax1.patches[::-1]:
+            patch.remove()
+
+    def add_draggable_points(self):
+        self.clean_points()
+        xy, _, inds = self.manager.get_non_nan_elements(int(self.slider.val))
+        for i, (animal, bodypart) in enumerate(self.manager._label_pairs):
+            if i in inds:
+                coords = xy[inds == i].squeeze()
+                self.add_point(coords, animal, bodypart,
+                               radius=self.dotsize, fc=self.colors[i], alpha=self.alpha)
+
+    def save_coords(self):
+        curr_frame = int(self.slider.val)
+        coords, nonempty, inds = self.manager.get_non_nan_elements(curr_frame)
+        for dp in self.dps:
+            label = dp.individual_names, dp.bodyParts
+            ind = self.manager._label_pairs.index(label)
+            coords[np.flatnonzero(inds == ind)[0]] = dp.point.center
+        self.manager.xy[nonempty, curr_frame] = coords
+
+    def on_scroll(self, event):
+        cur_xlim = self.ax1.get_xlim()
+        cur_ylim = self.ax1.get_ylim()
+        xdata = event.xdata
+        ydata = event.ydata
+        if event.button == 'up':
+            scale_factor = 0.5
+        elif event.button == 'down':
+            scale_factor = 2
+        else:  # This should never happen anyway
+            scale_factor = 1
+
+        self.ax1.set_xlim([xdata - (xdata - cur_xlim[0]) / scale_factor,
+                          xdata + (cur_xlim[1] - xdata) / scale_factor])
+        self.ax1.set_ylim([ydata - (ydata - cur_ylim[0]) / scale_factor,
+                          ydata + (cur_ylim[1] - ydata) / scale_factor])
+        self.fig.canvas.draw()  # TODO Blit ax1
 
     def on_press(self, event):
         i = int(self.slider.val)
@@ -588,7 +659,7 @@ class TrackletVisualizer:
     def on_click(self, event):
         if event.inaxes in (self.ax2, self.ax3) and event.button == 1 \
                 and not any(line.contains(event)[0] for line in self.lines_x + self.lines_y):
-            x = event.xdata
+            x = max(0, min(event.xdata, self.manager.nframes - 1))
             self.update_vlines(x)
             self.slider.set_val(x)
         elif event.inaxes == self.ax1 and not self.scat.contains(event)[0]:
