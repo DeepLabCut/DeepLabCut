@@ -179,7 +179,8 @@ class Evaluate_network(wx.Panel):
 
         if len(self.bodyparts)==0:
             self.bodyparts='all'
-        deeplabcut.evaluate_network(self.config,Shuffles=shuffle,trainingsetindex=trainingsetindex,plotting=plotting,show_errors=True,comparisonbodyparts=self.bodyparts)
+        deeplabcut.evaluate_network(self.config,Shuffles=shuffle,trainingsetindex=trainingsetindex,
+                                       plotting=plotting,show_errors=True,comparisonbodyparts=self.bodyparts)
 
     def cancel_evaluate_network(self,event):
         """

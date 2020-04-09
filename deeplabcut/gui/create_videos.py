@@ -101,7 +101,7 @@ class Create_Labeled_Videos(wx.Panel):
 
         self.draw_skeleton = wx.RadioBox(self, label='Include the skeleton in the video?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
         self.draw_skeleton.Bind(wx.EVT_RADIOBOX, self.choose_draw_skeleton_options)
-        self.draw_skeleton.SetSelection(0)
+        self.draw_skeleton.SetSelection(1)
 
         self.filter = wx.RadioBox(self, label='Use filtered predictions?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
         self.filter.SetSelection(1)
@@ -265,7 +265,7 @@ class Create_Labeled_Videos(wx.Panel):
         self.shuffle.SetValue(1)
         self.trainingset.SetValue(0)
         if self.draw_skeleton.IsShown():
-            self.draw_skeleton.SetSelection(0)
+            self.draw_skeleton.SetSelection(1)
             #self.SetSizer(self.sizer)
             #self.sizer.Fit(self)
             self.bodyparts_to_compare.Hide()
