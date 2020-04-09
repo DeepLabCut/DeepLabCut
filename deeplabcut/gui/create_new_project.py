@@ -38,6 +38,7 @@ class Create_new_project(wx.Panel):
         wx.Panel.__init__(self, parent, -1,style=wx.SUNKEN_BORDER,size=(h,w))
         # variable initilization
         self.filelist = []
+        self.filelistnew = []
         self.dir = None
         self.copy = False
         self.cfg = None
@@ -46,7 +47,7 @@ class Create_new_project(wx.Panel):
         # design the panel
         self.sizer = wx.GridBagSizer(10, 15)
 
-        text1 = wx.StaticText(self, label="DeepLabCut - Step 1. Create New Project, or Load a Project")
+        text1 = wx.StaticText(self, label="DeepLabCut - Step 1. Create New Project or Load a Project")
         self.sizer.Add(text1, pos=(0, 0), flag=wx.TOP|wx.LEFT|wx.BOTTOM,border=15)
 
         # Add logo of DLC
@@ -125,6 +126,7 @@ class Create_new_project(wx.Panel):
             self.sel_config = wx.FilePickerCtrl(self, path="",style=wx.FLP_USE_TEXTCTRL,message="Choose the config.yaml file", wildcard="*.yaml")
         else:
             self.sel_config = wx.FilePickerCtrl(self, path="",style=wx.FLP_USE_TEXTCTRL,message="Choose the config.yaml file", wildcard="config.yaml")
+
         self.sizer.Add(self.sel_config, pos=(8, 1),span=(1,3),flag=wx.TOP|wx.EXPAND, border=5)
         self.sel_config.Bind(wx.EVT_BUTTON, self.create_new_project)
         self.sel_config.SetPath("")
@@ -132,26 +134,47 @@ class Create_new_project(wx.Panel):
         self.sel_config.Hide()
         self.cfg_text.Hide()
 
+        self.sel_vids_new = wx.Button(self, label="Load New Videos")
+        self.sizer.Add(self.sel_vids_new, pos=(9, 2), flag=wx.TOP|wx.EXPAND, border=5)
+        self.sel_vids_new.Bind(wx.EVT_BUTTON, self.select_new_videos)
+        self.sel_vids_new.Enable(False)
+
         self.help_button = wx.Button(self, label='Help')
-        self.sizer.Add(self.help_button, pos=(9, 0), flag=wx.LEFT, border=10)
+        self.sizer.Add(self.help_button, pos=(10, 0), flag=wx.LEFT, border=10)
         self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
 
         self.ok = wx.Button(self, label="Ok")
-        self.sizer.Add(self.ok, pos=(9, 4))
+        self.sizer.Add(self.ok, pos=(9, 5))
         self.ok.Bind(wx.EVT_BUTTON, self.create_new_project)
 
         self.edit_config_file = wx.Button(self, label="Edit config file")
-        self.sizer.Add(self.edit_config_file, pos=(9, 2))
+        self.sizer.Add(self.edit_config_file, pos=(10, 4))
         self.edit_config_file.Bind(wx.EVT_BUTTON, self.edit_config)
         self.edit_config_file.Enable(False)
 
         self.reset = wx.Button(self, label="Reset")
-        self.sizer.Add(self.reset, pos=(9, 1),flag=wx.BOTTOM|wx.RIGHT, border=10)
+        self.sizer.Add(self.reset, pos=(10, 1),flag=wx.BOTTOM|wx.RIGHT, border=10)
         self.reset.Bind(wx.EVT_BUTTON, self.reset_project)
         self.sizer.AddGrowableCol(2)
 
+        self.addvid = wx.Button(self, label="Add New Videos")
+        self.sizer.Add(self.addvid, pos=(10, 2))
+        self.addvid.Bind(wx.EVT_BUTTON, self.add_videos)
+        self.addvid.Enable(False)
+
         self.SetSizer(self.sizer)
         self.sizer.Fit(self)
+
+    def select_new_videos(self,event):
+        """
+        Selects the videos from the directory
+        """
+        cwd = os.getcwd()
+        dlg = wx.FileDialog(self, "Select new videos to load", cwd, "", "*.*", wx.FD_MULTIPLE)
+        if dlg.ShowModal() == wx.ID_OK:
+            self.addvids = dlg.GetPaths()
+            self.filelistnew = self.filelistnew + self.addvids
+            self.sel_vids_new.SetLabel("Total %s Videos selected" %len(self.filelistnew))
 
     def help_function(self,event):
 
@@ -175,14 +198,17 @@ class Create_new_project(wx.Panel):
                 self.sel_config.SetPath(self.cfg)
             self.proj_name.Enable(False)
             self.proj_name_txt_box.Enable(False)
-            self.exp.Enable(False)
+            #self.exp.Enable(False)
+            self.vids.Enable(False)
             self.exp_txt_box.Enable(False)
             self.sel_vids.Enable(False)
+            self.sel_vids_new.Enable(False)
             self.change_workingdir.Enable(False)
             self.copy_choice.Enable(False)
             self.multi_choice.Enable(False)
             self.sel_config.Show()
             self.cfg_text.Show()
+            self.addvid.Enable(False)
             #self.SetSizer(self.sizer)
             #self.sizer.Add(self.sizer, pos=(3, 0), span=(1, 8),flag=wx.EXPAND|wx.BOTTOM, border=15)
             self.sizer.Fit(self)
@@ -192,6 +218,7 @@ class Create_new_project(wx.Panel):
             self.exp.Enable(True)
             self.exp_txt_box.Enable(True)
             self.sel_vids.Enable(True)
+            self.sel_vids_new.Enable(False)
             self.change_workingdir.Enable(True)
             self.copy_choice.Enable(True)
             self.multi_choice.Enable(True)
@@ -201,7 +228,7 @@ class Create_new_project(wx.Panel):
 #                self.ok.Enable(False)
 #            else:
 #                self.ok.Enable(True)
-
+            self.addvid.Enable(False)
             self.SetSizer(self.sizer)
             self.sizer.Fit(self)
 
@@ -275,6 +302,8 @@ class Create_new_project(wx.Panel):
             else:
                 wx.MessageBox('Project Loaded!', 'Info', wx.OK | wx.ICON_INFORMATION)
                 self.loaded = True
+                self.sel_vids_new.Enable(True)
+                self.addvid.Enable(True)
                 self.edit_config_file.Enable(True)
         else:
             self.task = self.proj_name_txt_box.GetValue()
@@ -333,6 +362,11 @@ class Create_new_project(wx.Panel):
                 self.parent.AddPage(page10, "Refine labels")
                 self.edit_config_file.Enable(True)
 
+    def add_videos(self, event):
+        print("adding new videos to be able to label ...")
+        self.cfg = self.sel_config.GetPath()
+        deeplabcut.add_new_videos(self.cfg, self.filelistnew)
+
     def reset_project(self,event):
         self.loaded=False
         if self.sel_config.IsShown():
@@ -350,9 +384,12 @@ class Create_new_project(wx.Panel):
         self.edit_config_file.Enable(False)
         self.proj_name.Enable(True)
         self.proj_name_txt_box.Enable(True)
+        self.multi_choice.Enable(True)
         self.exp.Enable(True)
         self.exp_txt_box.Enable(True)
         self.sel_vids.Enable(True)
+        self.addvid.Enable(False)
+        self.sel_vids_new.Enable(False)
         self.change_workingdir.Enable(True)
         self.copy_choice.Enable(True)
 
