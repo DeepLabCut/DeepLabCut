@@ -26,7 +26,7 @@ class BackgroundPlayer:
     def run(self):
         while self.running:
             self.can_run.wait()
-            i = self.viz.slider.val + 1
+            i = self.viz.curr_frame + 1
             if 'F' in self.speed:
                 i += 2 * len(self.speed)
             elif 'R' in self.speed:
@@ -93,8 +93,9 @@ class PointSelector:
         self.fc[self.tracker.picked, -1] = self.alpha
         self.collection.set_color(self.fc)
         self.tracker.display_traces()
+        self.tracker.fig.canvas.draw_idle()  # Force wx backend to redraw the figure
 
-    def toggle(self):
+    def toggle(self, *args):
         if self.is_connected:
             self.disconnect()
         else:
@@ -108,6 +109,7 @@ class PointSelector:
         self.fc[:, -1] = self.alpha
         self.collection.set_color(self.fc)
         self.tracker.display_traces(only_picked=False)
+        self.tracker.fig.canvas.draw_idle()  # Force wx backend to redraw the figure
 
     def reconnect(self):
         self.lasso.connect_default_events()
@@ -383,8 +385,9 @@ class TrackletVisualizer:
             print('Video duration and data length do not match. Continuing nonetheless...')
         self.trail_len = trail_len
         self.help_text = ''
-        self.single = False
         self.draggable = False
+        self._curr_frame = 0
+        self.curr_frame = 0
 
         self.picked = []
         self.picked_pair = []
@@ -441,21 +444,23 @@ class TrackletVisualizer:
         for line in self.leg.get_lines():
             line.set_picker(5)
 
-        self.ax_slider = self.fig.add_axes([0.1, 0.1, 0.6, 0.03], facecolor='lightgray')
-        self.slider = Slider(self.ax_slider, '# Frame', 0, manager.nframes - 1, valinit=0, valstep=1, valfmt='%i')
+        self.ax_slider = self.fig.add_axes([0.1, 0.1, 0.5, 0.03], facecolor='lightgray')
+        self.slider = Slider(self.ax_slider, '# Frame', self.curr_frame, manager.nframes - 1,
+                             valinit=0, valstep=1, valfmt='%i')
         self.slider.on_changed(self.on_change)
-        self.ax_save = self.fig.add_axes([0.75, 0.1, 0.05, 0.03])
-        self.ax_help = self.fig.add_axes([0.8, 0.1, 0.05, 0.03])
-        self.ax_check = self.fig.add_axes([0.85, 0.1, 0.05, 0.03])
-        self.ax_drag = self.fig.add_axes([0.90, 0.1, 0.05, 0.03])
+        self.ax_save = self.fig.add_axes([0.65, 0.1, 0.05, 0.03])
+        self.ax_help = self.fig.add_axes([0.7, 0.1, 0.05, 0.03])
+        self.ax_drag = self.fig.add_axes([0.75, 0.1, 0.05, 0.03])
+        self.ax_lasso = self.fig.add_axes([0.80, 0.1, 0.05, 0.03])
+        self.ax_flag = self.fig.add_axes([0.85, 0.1, 0.05, 0.03])
         self.save_button = Button(self.ax_save, 'Save')
         self.save_button.on_clicked(partial(self.manager.save, ''))
         self.help_button = Button(self.ax_help, 'Help')
         self.help_button.on_clicked(self.display_help)
-        self.check_button = CheckButtons(self.ax_check, ['Single'])
-        self.check_button.on_clicked(self.toggle_single_frame_edit)
-        self.drag_toggle = CheckButtons(self.ax_drag, ['Draggable'])
+        self.drag_toggle = CheckButtons(self.ax_drag, ['Drag'])
         self.drag_toggle.on_clicked(self.toggle_draggable_points)
+        self.flag_button = Button(self.ax_flag, 'Flag')
+        self.flag_button.on_clicked(self.flag_frame)
 
         self.fig.canvas.mpl_connect('pick_event', self.on_pick)
         self.fig.canvas.mpl_connect('key_press_event', self.on_press)
@@ -463,6 +468,8 @@ class TrackletVisualizer:
         self.fig.canvas.mpl_connect('close_event', self.player.terminate)
 
         self.selector = PointSelector(self, self.ax1, self.scat, self.alpha)
+        self.lasso_toggle = CheckButtons(self.ax_lasso, ['Lasso'])
+        self.lasso_toggle.on_clicked(self.selector.toggle)
         self.display_traces(only_picked=False)
         self.ax1_background = self.fig.canvas.copy_from_bbox(self.ax1.bbox)
         plt.show()
@@ -486,19 +493,17 @@ class TrackletVisualizer:
             trans = mtransforms.blended_transform_factory(self.ax_slider.transData, self.ax_slider.transAxes)
             self.ax_slider.vlines(np.flatnonzero(mask), 0, 0.5, color='darkorange', transform=trans)
 
-    def toggle_single_frame_edit(self, event):
-        self.single = not self.single
-
     def toggle_draggable_points(self, event):
         self.draggable = not self.draggable
         if self.draggable:
+            self._curr_frame = self.curr_frame
             self.scat.set_offsets([])
             self.add_draggable_points()
             self.fig.canvas.draw_idle()
         else:
             self.save_coords()
             self.clean_points()
-            self.display_points(int(self.slider.val))
+            self.display_points(self._curr_frame)
             self.fig.canvas.draw_idle()
 
     def add_point(self, center, animal, bodypart, **kwargs):
@@ -518,7 +523,7 @@ class TrackletVisualizer:
 
     def add_draggable_points(self):
         self.clean_points()
-        xy, _, inds = self.manager.get_non_nan_elements(int(self.slider.val))
+        xy, _, inds = self.manager.get_non_nan_elements(self.curr_frame)
         for i, (animal, bodypart) in enumerate(self.manager._label_pairs):
             if i in inds:
                 coords = xy[inds == i].squeeze()
@@ -526,13 +531,16 @@ class TrackletVisualizer:
                                radius=self.dotsize, fc=self.colors[i], alpha=self.alpha)
 
     def save_coords(self):
-        curr_frame = int(self.slider.val)
-        coords, nonempty, inds = self.manager.get_non_nan_elements(curr_frame)
+        coords, nonempty, inds = self.manager.get_non_nan_elements(self._curr_frame)
         for dp in self.dps:
             label = dp.individual_names, dp.bodyParts
             ind = self.manager._label_pairs.index(label)
             coords[np.flatnonzero(inds == ind)[0]] = dp.point.center
-        self.manager.xy[nonempty, curr_frame] = coords
+        self.manager.xy[nonempty, self._curr_frame] = coords
+
+    def flag_frame(self, *args):
+        self.cuts.append(self.curr_frame)
+        self.ax_slider.axvline(self.curr_frame, color='r')
 
     def on_scroll(self, event):
         cur_xlim = self.ax1.get_xlim()
@@ -553,7 +561,6 @@ class TrackletVisualizer:
         self.fig.canvas.draw()  # TODO Blit ax1
 
     def on_press(self, event):
-        i = int(self.slider.val)
         if event.key == 'right':
             self.move_forward()
         elif event.key == 'left':
@@ -563,8 +570,7 @@ class TrackletVisualizer:
         elif event.key == 'i':
             self.invert()
         elif event.key == 'x':
-            self.cuts.append(i)
-            self.ax_slider.axvline(i, color='r')
+            self.flag_frame()
             if len(self.cuts) > 1:
                 self.cuts.sort()
                 if self.picked_pair:
@@ -582,34 +588,32 @@ class TrackletVisualizer:
             self.player.toggle()
 
     def move_forward(self):
-        i = int(self.slider.val)
-        if i < self.manager.nframes - 1:
-            self.slider.set_val(i + 1)
+        if self.curr_frame < self.manager.nframes - 1:
+            self.curr_frame += 1
+            self.slider.set_val(self.curr_frame)
 
     def move_backward(self):
-        i = int(self.slider.val)
-        if i > 0:
-            self.slider.set_val(i - 1)
+        if self.curr_frame > 0:
+            self.curr_frame -= 1
+            self.slider.set_val(self.curr_frame)
 
     def swap(self):
-        i = int(self.slider.val)
         if self.picked_pair:
             swap_inds = self.manager.get_swap_indices(*self.picked_pair)
             inds = np.insert(swap_inds, [0, len(swap_inds)], [0, self.manager.nframes - 1])
             if len(inds):
-                ind = np.argmax(inds > i)
+                ind = np.argmax(inds > self.curr_frame)
                 self.manager.swap_tracklets(*self.picked_pair, range(inds[ind - 1], inds[ind] + 1))
                 self.display_traces()
-                self.slider.set_val(int(self.slider.val))
+                self.slider.set_val(self.curr_frame)
 
     def invert(self):
         if not self.picked_pair and len(self.picked) == 2:
             self.picked_pair = self.picked
         if self.picked_pair:
-            i = int(self.slider.val)
-            self.manager.swap_tracklets(*self.picked_pair, [i])
+            self.manager.swap_tracklets(*self.picked_pair, [self.curr_frame])
             self.display_traces()
-            self.slider.set_val(int(self.slider.val))
+            self.slider.set_val(self.curr_frame)
 
     def on_pick(self, event):
         artist = event.artist
@@ -629,10 +633,8 @@ class TrackletVisualizer:
                 xy = self.manager.xy[self.picked]
                 p = self.manager.prob[self.picked]
                 mask = np.zeros(xy.shape[1], dtype=bool)
-                if self.single:
-                    mask[int(self.slider.val)] = True
-                elif self.cuts:
-                    mask[self.cuts[0]:self.cuts[1] + 1] = True
+                if len(self.cuts) > 1:
+                    mask[self.cuts[-2]:self.cuts[-1] + 1] = True
                     self.cuts = []
                     self.ax_slider.lines = []
                 else:
@@ -655,7 +657,7 @@ class TrackletVisualizer:
         self.display_traces()
         if self.picked_pair:
             self.fill_shaded_areas()
-        self.slider.set_val(int(self.slider.val))
+        self.slider.set_val(self.curr_frame)
 
     def on_click(self, event):
         if event.inaxes in (self.ax2, self.ax3) and event.button == 1 \
@@ -724,14 +726,18 @@ class TrackletVisualizer:
         self.vline_y.set_xdata([val, val])
 
     def on_change(self, val):
-        val = int(val)
-        self.video.set(cv2.CAP_PROP_POS_FRAMES, val)
+        self.curr_frame = int(val)
+        self.video.set(cv2.CAP_PROP_POS_FRAMES, self.curr_frame)
         img = self._read_frame()
         if img is not None:
+            # Automatically disable the draggable points
+            if self.draggable:
+                self.drag_toggle.set_active(False)
+
             self.im.set_array(img)
-            self.display_points(val)
-            self.display_trails(val)
-            self.update_vlines(val)
+            self.display_points(self.curr_frame)
+            self.display_trails(self.curr_frame)
+            self.update_vlines(self.curr_frame)
 
 
 def refine_tracklets(config, picklefile, video,
