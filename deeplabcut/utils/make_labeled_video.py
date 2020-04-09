@@ -503,7 +503,7 @@ def create_video_with_all_detections(config, videos, DLCscorername, destfolder=N
             print("Detections already plotted, ", outputname)
 
 
-def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff=0.6, scale=1):
+def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff, scale=1):
     import cv2
     import subprocess
     from tqdm import tqdm
@@ -551,14 +551,14 @@ def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff=0.
         '-r', str(outputframerate), output_name])
 
 
-def create_video_from_pickled_tracks(video, pickle_file, destfolder='', output_name=''):
+def create_video_from_pickled_tracks(video, pickle_file, destfolder='', output_name='', pcutoff=0.6):
     if not destfolder:
         destfolder = os.path.splitext(video)[0]
     if not output_name:
         video_name, ext = os.path.splitext(os.path.split(video)[1])
         output_name = video_name + 'DLClabeled' + ext
     tracks = auxiliaryfunctions.read_pickle(pickle_file)
-    _create_video_from_tracks(video, tracks, destfolder, output_name)
+    _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff)
 
 
 if __name__ == '__main__':
