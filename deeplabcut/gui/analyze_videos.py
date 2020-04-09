@@ -113,8 +113,17 @@ class Analyze_videos(wx.Panel):
 
             self.create_video_with_all_detections = wx.RadioBox(self, label='Create video for checking detections', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
             self.create_video_with_all_detections.SetSelection(1)
-            hbox2.Add(self.create_video_with_all_detections, 10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-            boxsizer.Add(hbox2,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+            hbox2.Add(self.create_video_with_all_detections, 5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+            boxsizer.Add(hbox2,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+
+            tracker_text = wx.StaticBox(self, label="Specify the Tracker Method!")
+            tracker_text_boxsizer = wx.StaticBoxSizer(tracker_text, wx.VERTICAL)
+
+            trackertypes = ['skeleton', 'clowncats', 'box']
+            self.trackertypes = wx.ComboBox(self,choices = trackertypes,style = wx.CB_READONLY)
+            self.trackertypes.SetValue('box')
+            tracker_text_boxsizer.Add(self.trackertypes,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+            hbox2.Add(tracker_text_boxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
         else:
             self.csv = wx.RadioBox(self, label='Want to save result(s) as csv?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
@@ -218,7 +227,8 @@ class Analyze_videos(wx.Panel):
     def convert2_tracklets(self,event):
         shuffle = self.shuffle.GetValue()
         trainingsetindex = self.trainingset.GetValue()
-        deeplabcut.convert_detections2tracklets(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex)
+        deeplabcut.convert_detections2tracklets(self.config, self.filelist, videotype=self.videotype.GetValue(),
+                                                    shuffle=shuffle, trainingsetindex=trainingsetindex, track_method=self.trackertypes.GetValue())
 
     def select_videos(self,event):
         """
