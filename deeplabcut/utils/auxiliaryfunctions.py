@@ -539,7 +539,7 @@ def LoadAnalyzedData(videofolder,vname,DLCscorer,filtered):
                 DLCscorer='DLC_'+(datafile.split('DLC_')[1]).split('.h5')[0]
             print("Creating output for:", DLCscorer)
             Dataframe = pd.read_hdf(os.path.join(videofolder, datafile))
-            metadata=LoadVideoMetadata(os.path.join(videofolder, datafile.replace('tracks', '')))
+            metadata=LoadVideoMetadata(os.path.join(videofolder, datafile.replace('tracks', '').replace('filtered', '')))
             datafound=True
     return datafound, metadata, Dataframe, DLCscorer,suffix
 

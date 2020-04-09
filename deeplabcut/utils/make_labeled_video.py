@@ -379,8 +379,9 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
         else:
             print("Loading ", video, "and data.")
             datafound,metadata,Dataframe,DLCscorer,suffix=auxiliaryfunctions.LoadAnalyzedData(str(videofolder),vname,DLCscorer,filtered) #returns boolean variable if data was found and metadata + pandas array
+            s = '_idv' if color_by == 'individuals' else '_bp'
+            videooutname = os.path.join(vname + DLCscorer + suffix + s + '_labeled.mp4')
             if datafound:  # Sweet, we've found single animal data or tracklets
-                videooutname = os.path.join(vname + DLCscorer + suffix + '_labeled.mp4')
                 if os.path.isfile(videooutname):
                     print('Labeled video already created. Skipping...')
                     continue
@@ -419,7 +420,7 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
                     ## TODO: integrate with standard code for dataframes.
                     scale=1
                     pcutoff=cfg["pcutoff"]
-                    _create_video_from_tracks(video, Tracks, vname, pcutoff, scale)
+                    _create_video_from_tracks(video, Tracks, vname, videooutname, pcutoff, scale)
 
     os.chdir(start_path)
 
@@ -502,7 +503,7 @@ def create_video_with_all_detections(config, videos, DLCscorername, destfolder=N
             print("Detections already plotted, ", outputname)
 
 
-def _create_video_from_tracks(video, tracks, destfolder, pcutoff=0.6, scale=1):
+def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff=0.6, scale=1):
     import cv2
     import subprocess
     from tqdm import tqdm
@@ -542,20 +543,22 @@ def _create_video_from_tracks(video, tracks, destfolder, pcutoff=0.6, scale=1):
             fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
             plt.savefig(image_output)
 
-    videooutname = str(video) + '_DLClabeled.mp4'
     outputframerate = 30
     os.chdir(destfolder)
 
     subprocess.call([
         'ffmpeg', '-framerate', str(int(cap.get(5))), '-i', f'frame%0{strwidth}d.png',
-        '-r', str(outputframerate), videooutname])
+        '-r', str(outputframerate), output_name])
 
 
-def create_video_from_pickled_tracks(video, pickle_file, destfolder=''):
+def create_video_from_pickled_tracks(video, pickle_file, destfolder='', output_name=''):
     if not destfolder:
         destfolder = os.path.splitext(video)[0]
+    if not output_name:
+        video_name, ext = os.path.splitext(os.path.split(video)[1])
+        output_name = video_name + 'DLClabeled' + ext
     tracks = auxiliaryfunctions.read_pickle(pickle_file)
-    _create_video_from_tracks(video, tracks, destfolder)
+    _create_video_from_tracks(video, tracks, destfolder, output_name)
 
 
 if __name__ == '__main__':
