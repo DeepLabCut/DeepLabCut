@@ -12,6 +12,7 @@ Licensed under GNU Lesser General Public License v3.0
 import wx
 import os,sys,pydoc
 import deeplabcut
+from deeplabcut.utils import auxiliaryfunctions
 media_path = os.path.join(deeplabcut.__path__[0], 'gui' , 'media')
 logo = os.path.join(media_path,'logo.png')
 
@@ -60,10 +61,13 @@ class Label_frames(wx.Panel):
         self.check.Bind(wx.EVT_BUTTON, self.check_labelF)
         self.check.Enable(True)
 
-        self.check = wx.Button(self, label="Check Individuals (maDLC only)")
-        sizer.Add(self.check, pos=(5, 3), flag=wx.BOTTOM|wx.RIGHT, border=10)
-        self.check.Bind(wx.EVT_BUTTON, self.check_labelInd)
-        self.check.Enable(True)
+        self.cfg = auxiliaryfunctions.read_config(self.config)
+        if self.cfg.get('multianimalproject', False):
+
+            self.check = wx.Button(self, label="Check Labels Individuals")
+            sizer.Add(self.check, pos=(5, 3), flag=wx.BOTTOM|wx.RIGHT, border=10)
+            self.check.Bind(wx.EVT_BUTTON, self.check_labelInd)
+            self.check.Enable(True)
 
         self.ok = wx.Button(self, label="Label Frames")
         sizer.Add(self.ok, pos=(4, 4))
