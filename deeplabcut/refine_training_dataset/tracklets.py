@@ -390,9 +390,9 @@ class TrackletVisualizer:
         self.picked_pair = []
         self.cuts = []
 
-        self.background = BackgroundPlayer(self)
-        self.thread_background = Thread(target=self.background.run, daemon=True)
-        self.thread_background.start()
+        self.player = BackgroundPlayer(self)
+        self.thread_player = Thread(target=self.player.run, daemon=True)
+        self.thread_player.start()
 
         self.dps = []
 
@@ -460,10 +460,11 @@ class TrackletVisualizer:
         self.fig.canvas.mpl_connect('pick_event', self.on_pick)
         self.fig.canvas.mpl_connect('key_press_event', self.on_press)
         self.fig.canvas.mpl_connect('button_press_event', self.on_click)
-        self.fig.canvas.mpl_connect('close_event', self.background.terminate)
+        self.fig.canvas.mpl_connect('close_event', self.player.terminate)
 
         self.selector = PointSelector(self, self.ax1, self.scat, self.alpha)
         self.display_traces(only_picked=False)
+        self.ax1_background = self.fig.canvas.copy_from_bbox(self.ax1.bbox)
         plt.show()
 
     def show(self, fig=None):
@@ -574,11 +575,11 @@ class TrackletVisualizer:
         elif event.key == 'l':
             self.selector.toggle()
         elif event.key == 'alt+right':
-            self.background.forward()
+            self.player.forward()
         elif event.key == 'alt+left':
-            self.background.rewind()
+            self.player.rewind()
         elif event.key == 'tab':
-            self.background.toggle()
+            self.player.toggle()
 
     def move_forward(self):
         i = int(self.slider.val)
