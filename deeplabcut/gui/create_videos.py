@@ -179,9 +179,9 @@ class Create_Labeled_Videos(wx.Panel):
 
     def plot_idv_options(self,event):
         if self.plot_idv.GetStringSelection() == "Yes":
-            self.plot_idv = True
+            self.plot_idv = 'individual'
         else:
-            self.plot_idv = False
+            self.plot_idv = 'bodypart'
 
     def choose_video_slow_options(self,event):
         if self.video_slow.GetStringSelection() == "Yes":
