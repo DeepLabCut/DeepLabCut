@@ -541,6 +541,15 @@ class TrackletVisualizer:
     def flag_frame(self, *args):
         self.cuts.append(self.curr_frame)
         self.ax_slider.axvline(self.curr_frame, color='r')
+        if len(self.cuts) == 2:
+            self.cuts.sort()
+            mask = np.zeros_like(self.manager.times, dtype=bool)
+            mask[self.cuts[0]:self.cuts[1] + 1] = True
+            for ax in self.ax2, self.ax3:
+                ax.fill_between(self.manager.times, *ax.dataLim.intervaly, mask,
+                                facecolor='darkgray', alpha=0.2)
+            trans = mtransforms.blended_transform_factory(self.ax_slider.transData, self.ax_slider.transAxes)
+            self.ax_slider.vlines(np.flatnonzero(mask), 0, 0.5, color='darkorange', transform=trans)
 
     def on_scroll(self, event):
         cur_xlim = self.ax1.get_xlim()
@@ -578,6 +587,15 @@ class TrackletVisualizer:
                     self.fill_shaded_areas()
                     self.cuts = []
                     self.ax_slider.lines = []
+        elif event.key == 'backspace':
+            try:
+                self.cuts.pop()
+                self.ax_slider.lines.pop()
+                if not len(self.cuts) == 2:
+                    self.clean_collections()
+                self.fig.canvas.draw_idle()
+            except IndexError:
+                pass
         elif event.key == 'l':
             self.selector.toggle()
         elif event.key == 'alt+right':
@@ -637,6 +655,7 @@ class TrackletVisualizer:
                     mask[self.cuts[-2]:self.cuts[-1] + 1] = True
                     self.cuts = []
                     self.ax_slider.lines = []
+                    self.clean_collections()
                 else:
                     return
                 sl_inds = np.ix_(inds, mask)
