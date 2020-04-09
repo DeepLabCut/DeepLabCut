@@ -143,8 +143,8 @@ class Analyze_videos(wx.Panel):
             hbox2.Add(self.filter,10,wx.EXPAND|wx.TOP|wx.BOTTOM,5)
             boxsizer.Add(hbox2,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
-            hbox3.Add(self.trajectory,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
             hbox3.Add(self.dynamic,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+            hbox3.Add(self.trajectory,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
         config_file = auxiliaryfunctions.read_config(self.config)
         if config_file.get('multianimalproject', False):
@@ -166,11 +166,11 @@ class Analyze_videos(wx.Panel):
         self.trail_points_text = wx.StaticBox(self, label="Specify the number of trail points")
         trail_pointsboxsizer = wx.StaticBoxSizer(self.trail_points_text, wx.VERTICAL)
         self.trail_points = wx.SpinCtrl(self, value='1')
-        trail_pointsboxsizer.Add(self.trail_points,20, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+        trail_pointsboxsizer.Add(self.trail_points,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
         self.trail_points_text.Hide()
         self.trail_points.Hide()
 
-        hbox2.Add(self.trajectory_to_plot,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+        hbox3.Add(self.trajectory_to_plot,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         boxsizer.Add(hbox3,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
         hbox4.Add(self.draw_skeleton,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
@@ -192,6 +192,11 @@ class Analyze_videos(wx.Panel):
             self.ok = wx.Button(self, label="Step 2: Convert to Tracklets")
             self.sizer.Add(self.ok, pos=(7, 8), flag=wx.BOTTOM|wx.RIGHT, border=10)
             self.ok.Bind(wx.EVT_BUTTON, self.convert2_tracklets)
+
+
+            #self.ok = wx.Button(self, label="Step 2: Qual check Tracklets")
+            #self.sizer.Add(self.ok, pos=(8, 8), flag=wx.BOTTOM|wx.RIGHT, border=10)
+            #self.ok.Bind(wx.EVT_BUTTON, self.video_tracklets)
 
         self.reset = wx.Button(self, label="Reset")
         self.sizer.Add(self.reset, pos=(7, 1), span=(1, 1),flag=wx.BOTTOM|wx.RIGHT, border=10)
@@ -229,6 +234,11 @@ class Analyze_videos(wx.Panel):
         trainingsetindex = self.trainingset.GetValue()
         deeplabcut.convert_detections2tracklets(self.config, self.filelist, videotype=self.videotype.GetValue(),
                                                     shuffle=shuffle, trainingsetindex=trainingsetindex, track_method=self.trackertypes.GetValue())
+
+    #def video_tracklets(self,event):
+    #    shuffle = self.shuffle.GetValue()
+    #    trainingsetindex = self.trainingset.GetValue()
+    #    deeplabcut.create_video_from_pickled_tracks(self.filelist, picklefile, pcutoff=0.6)
 
     def select_videos(self,event):
         """
@@ -273,20 +283,20 @@ class Analyze_videos(wx.Panel):
 
             if self.trajectory.GetStringSelection() == "Yes":
                 deeplabcut.plot_trajectories(self.config, self.filelist, displayedbodyparts=self.bodyparts,
-                                             videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex, filtered=True, showfigures=False, destfolder=self.destfolder)
+                                               videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex, filtered=True, showfigures=False, destfolder=self.destfolder)
 
-        if self.cfg['cropping']:
+        if self.cfg['cropping']=='True':
             crop = self.cfg['x1'], self.cfg['x2'], self.cfg['y1'], self.cfg['y2']
         else:
             crop = None
 
         if self.cfg.get('multianimalproject', False):
             scorername = deeplabcut.analyze_videos(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle,
-                                      trainingsetindex=trainingsetindex, gputouse=None, destfolder=self.destfolder, cropping=crop)
+                                                     trainingsetindex=trainingsetindex, gputouse=None, destfolder=self.destfolder, cropping=crop)
         else:
             scorername = deeplabcut.analyze_videos(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle,
-                                      trainingsetindex=trainingsetindex, gputouse=None, save_as_csv=save_as_csv,
-                                      destfolder=self.destfolder, cropping=crop, dynamic=dynamic)
+                                                     trainingsetindex=trainingsetindex, gputouse=None, save_as_csv=save_as_csv,
+                                                      destfolder=self.destfolder, cropping=crop, dynamic=dynamic)
 
 #        if  self.tracklets.GetStringSelection() == "Yes":
 #             deeplabcut.convert_detections2tracklets(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex)
