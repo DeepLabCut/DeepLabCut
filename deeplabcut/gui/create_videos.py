@@ -110,7 +110,6 @@ class Create_Labeled_Videos(wx.Panel):
         self.video_slow.Bind(wx.EVT_RADIOBOX, self.choose_video_slow_options)
         self.video_slow.SetSelection(1)
 
-
         self.trail_points_text = wx.StaticBox(self, label="Specify the number of trail points")
         trail_pointsboxsizer = wx.StaticBoxSizer(self.trail_points_text, wx.VERTICAL)
         self.trail_points = wx.SpinCtrl(self, value='0')
@@ -266,7 +265,7 @@ class Create_Labeled_Videos(wx.Panel):
         self.shuffle.SetValue(1)
         self.trainingset.SetValue(0)
         if self.draw_skeleton.IsShown():
-            self.draw_skeleton.SetSelection(1)
+            self.draw_skeleton.SetSelection(0)
             #self.SetSizer(self.sizer)
             #self.sizer.Fit(self)
             self.bodyparts_to_compare.Hide()
