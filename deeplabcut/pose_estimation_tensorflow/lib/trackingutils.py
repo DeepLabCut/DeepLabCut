@@ -7,7 +7,7 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 
-Code adapted from:
+class SORT code adapted from:
 
 SORT: A Simple, Online and Realtime Tracker
 Copyright (C) 2016 Alex Bewley alex@dynamicdetection.com
@@ -24,6 +24,8 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+class SkeletonTracker developed for DLC 2.2.
 """
 from __future__ import print_function
 from numba import jit

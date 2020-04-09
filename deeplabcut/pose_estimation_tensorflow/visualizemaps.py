@@ -44,7 +44,7 @@ def extract_maps(config, shuffle, trainingsetindex=0, comparisonbodyparts="all",
 
     Examples
     --------
-    If you want to extract the data for image 0 and 103 (of the training set).
+    If you want to extract the data for image 0 and 103 (of the training set) for model trained with shuffle 0.
     >>> deeplabcut.extract_maps(configfile,0,Indices=[0,103])
 
     """
@@ -87,6 +87,7 @@ def extract_maps(config, shuffle, trainingsetindex=0, comparisonbodyparts="all",
 
     if gputouse is not None: #gpu selectinon
             os.environ['CUDA_VISIBLE_DEVICES'] = str(gputouse)
+    
     if trainingsetindex=='all':
         TrainingFractions=cfg["TrainingFraction"]
     else:
@@ -155,7 +156,6 @@ def extract_maps(config, shuffle, trainingsetindex=0, comparisonbodyparts="all",
             else:
                 scale=1
 
-            pagraph=dlc_cfg['partaffinityfield_graph']
             bptnames=[dlc_cfg['all_joints_names'][i] for i in range(len(dlc_cfg['all_joints']))]
 
             for snapindex in snapindices:
@@ -163,44 +163,48 @@ def extract_maps(config, shuffle, trainingsetindex=0, comparisonbodyparts="all",
                 trainingsiterations = (dlc_cfg['init_weights'].split(os.sep)[-1]).split('-')[-1] #read how many training siterations that corresponds to.
 
                 # Name for deeplabcut net (based on its parameters)
-                DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations)
-                notanalyzed, resultsfilename, DLCscorer=auxiliaryfunctions.CheckifNotEvaluated(str(evaluationfolder),DLCscorer,DLCscorerlegacy,Snapshots[snapindex])
-                print("Extracting maps for ", DLCscorer, " with # of trainingiterations:", trainingsiterations)
-                if notanalyzed:
-                    # Specifying state of model (snapshot / training state)
-                    sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
-                    Numimages = len(Data.index)
-                    PredicteData = np.zeros((Numimages,3 * len(dlc_cfg['all_joints_names'])))
-                    print("Analyzing data...")
-                    if Indices is None:
-                        Indices=enumerate(Data.index)
+                #DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations)
+                #notanalyzed, resultsfilename, DLCscorer=auxiliaryfunctions.CheckifNotEvaluated(str(evaluationfolder),DLCscorer,DLCscorerlegacy,Snapshots[snapindex])
+                #print("Extracting maps for ", DLCscorer, " with # of trainingiterations:", trainingsiterations)
+                #if notanalyzed: #this only applies to ask if h5 exists...
+                
+                # Specifying state of model (snapshot / training state)
+                sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
+                Numimages = len(Data.index)
+                PredicteData = np.zeros((Numimages,3 * len(dlc_cfg['all_joints_names'])))
+                print("Analyzing data...")
+                if Indices is None:
+                    Indices=enumerate(Data.index)
+                else:
+                    Ind = [Data.index[j] for j in Indices]
+                    Indices=enumerate(Ind)
+
+                DATA={}
+                for imageindex, imagename in tqdm(Indices):
+                    image = imread(os.path.join(cfg['project_path'],imagename),mode='RGB')
+                    if scale!=1:
+                        image = imresize(image, scale)
+
+                    image_batch = data_to_input(image)
+                    # Compute prediction with the CNN
+                    outputs_np = sess.run(outputs, feed_dict={inputs: image_batch})
+
+                    if cfg.get('multianimalproject',False):
+                        scmap, locref, paf= predictma.extract_cnn_output(outputs_np, dlc_cfg)
+                        pagraph=dlc_cfg['partaffinityfield_graph']
                     else:
-                        Ind = [Data.index[j] for j in Indices]
-                        Indices=enumerate(Ind)
+                        scmap, locref = predict.extract_cnn_output(outputs_np, dlc_cfg)
+                        paf = None
+                        pagraph=[]
 
-                    DATA={}
-                    for imageindex, imagename in tqdm(Indices):
-                        image = imread(os.path.join(cfg['project_path'],imagename),mode='RGB')
-                        if scale!=1:
-                            image = imresize(image, scale)
-
-                        image_batch = data_to_input(image)
-                        # Compute prediction with the CNN
-                        outputs_np = sess.run(outputs, feed_dict={inputs: image_batch})
-
-                        if cfg.get('multianimalproject',False):
-                            scmap, locref, paf= predictma.extract_cnn_output(outputs_np, dlc_cfg)
-                        else:
-                            scmap, locref = predict.extract_cnn_output(outputs_np, dlc_cfg)
-                            paf = None
-
-                        if imageindex in testIndices:
-                            trainingfram=False
-                        else:
-                            trainingfram=True
-                        DATA[imageindex]=[image,scmap,locref,paf,bptnames,pagraph,imagename,trainingfram]
-                    #return DATA
-                    Maps[trainFraction][Snapshots[snapindex]]=DATA
+                    if imageindex in testIndices:
+                        trainingfram=False
+                    else:
+                        trainingfram=True
+                    
+                    DATA[imageindex]=[image, scmap,locref ,paf ,bptnames ,pagraph ,imagename ,trainingfram]
+                #return DATA
+                Maps[trainFraction][Snapshots[snapindex]]=DATA
     os.chdir(str(start_path))
     return Maps
 
@@ -329,6 +333,8 @@ def extract_save_all_maps(config, shuffle, trainingsetindex=0, comparisonbodypar
     cfg = read_config(config)
     data = extract_maps(config, shuffle, trainingsetindex, comparisonbodyparts,
                         gputouse, rescale, Indices, modelprefix)
+
+    print("Saving plots...")
     for frac, values in data.items():
         if not dest_folder:
             #dest_folder = os.path.join(cfg['project_path'], 'maps')

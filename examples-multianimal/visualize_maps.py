@@ -8,9 +8,9 @@ import deeplabcut
 
 # Fully integrated version that stores plots in /evaluation-results just like other results.
 
-path_config_file = '/examplepath/config.yaml'
-
-
+#path_config_file = '/examplepath/config.yaml'
+path_config_file='/media/alex/dropboxdisk/Dropbox/Collaborations/Cancer/DLCdev/examples/TEST-Alex-2020-04-09/config.yaml'
+shuffle=1
 deeplabcut.extract_save_all_maps(path_config_file, shuffle=shuffle) #, Indices=[0, 5])
 
 '''
