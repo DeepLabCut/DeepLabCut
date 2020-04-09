@@ -493,7 +493,7 @@ class TrackletVisualizer:
             trans = mtransforms.blended_transform_factory(self.ax_slider.transData, self.ax_slider.transAxes)
             self.ax_slider.vlines(np.flatnonzero(mask), 0, 0.5, color='darkorange', transform=trans)
 
-    def toggle_draggable_points(self, event):
+    def toggle_draggable_points(self, *args):
         self.draggable = not self.draggable
         if self.draggable:
             self._curr_frame = self.curr_frame
@@ -598,6 +598,8 @@ class TrackletVisualizer:
                 pass
         elif event.key == 'l':
             self.selector.toggle()
+        elif event.key == 'd':
+            self.toggle_draggable_points()
         elif event.key == 'alt+right':
             self.player.forward()
         elif event.key == 'alt+left':
