@@ -256,7 +256,7 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True,
     if excludealreadycropped:
         video_names = [(Path(i).parent, Path(i).stem, Path(i).suffix) for i in videos if "_cropped" not in str(Path(i).stem)]
     else:
-        video_names = [(Path(i).parent, Path(i).stem, Path(i).suffix) for i in videos if "_cropped" not in str(Path(i).stem)]
+        video_names = [(Path(i).parent, Path(i).stem, Path(i).suffix) for i in videos]
 
     #folders = [Path(config).parent / 'labeled-data' /Path(i[1]) for i in video_names]
     if 'video_sets_original' not in cfg.keys() and updatevideoentries: #this dict is kept for storing links to original full-sized videos
@@ -289,11 +289,12 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True,
                         h, w = np.shape(image)
                     else:
                         h, w, nc = np.shape(image)
+
                     cropindex=0
                     attempts=-1
                     while cropindex<numcrops:
                         animalincrop=False
-                        y0,x0=np.random.randint(h-size[0]),np.random.randint(w-size[1])
+                        y0,x0=np.random.randint(h-size[0]), np.random.randint(w-size[1])
                         newimname=str(Path(imagename).stem+'c'+str(cropindex).zfill(indexlength)+'.png')
 
                         data=Data.iloc[index].copy()
@@ -321,13 +322,14 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True,
                                         else:
                                             data[cfg['scorer'],ind,bp,'x']=np.nan
                                             data[cfg['scorer'],ind,bp,'y']=np.nan
+
                         attempts+=1 #for images without any animals!
                         if animalincrop or attempts>10:
                             cropppedimgname = os.path.join(output_path,newimname)
                             if np.ndim(image)==2:
-                                io.imsave(cropppedimgname,image[y0:y0+size[0],x0:x0+size[1]])
+                                io.imsave(cropppedimgname, image[y0:y0+size[0], x0:x0+size[1]])
                             else:
-                                io.imsave(cropppedimgname,image[y0:y0+size[0],x0:x0+size[1],:])
+                                io.imsave(cropppedimgname, image[y0:y0+size[0], x0:x0+size[1],:])
                             cropindex+=1
 
                             pdname=os.path.join('labeled-data', newfolder,newimname)
@@ -349,6 +351,7 @@ def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True,
 
                     for cropindex in range(numcrops):
                         y0,x0=np.random.randint(h-size[0]),np.random.randint(w-size[1])
+
                         newimname=str(Path(imagename).stem+'c'+str(cropindex).zfill(indexlength)+'.png')
                         cropppedimgname = os.path.join(output_path,newimname)
                         if np.ndim(image)==2:
