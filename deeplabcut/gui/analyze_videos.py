@@ -300,12 +300,12 @@ class Analyze_videos(wx.Panel):
 
 #        if  self.tracklets.GetStringSelection() == "Yes":
 #             deeplabcut.convert_detections2tracklets(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex)
-
-        if self.create_video_with_all_detections.GetStringSelection() == "Yes":
-            trainFrac = self.cfg['TrainingFraction'][trainingsetindex]
-            scorername, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(self.cfg,shuffle,trainFraction=trainFrac)
-            print(scorername)
-            deeplabcut.create_video_with_all_detections(self.config, self.filelist, DLCscorername=scorername)
+        if self.cfg.get('multianimalproject', False):
+            if self.create_video_with_all_detections.GetStringSelection() == "Yes":
+                trainFrac = self.cfg['TrainingFraction'][trainingsetindex]
+                scorername, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(self.cfg,shuffle,trainFraction=trainFrac)
+                print(scorername)
+                deeplabcut.create_video_with_all_detections(self.config, self.filelist, DLCscorername=scorername)
 
 
     def reset_analyze_videos(self,event):
