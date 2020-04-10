@@ -211,51 +211,26 @@ class Create_Labeled_Videos(wx.Panel):
         #self.filelist = self.filelist + self.vids
 
         if self.filter.GetStringSelection() == "No":
-            filter = None
+            filtered = False
         else:
-            filter = True
+            filtered = True
 
         if self.video_slow.GetStringSelection() == "Yes":
             self.slow = True
         else:
             self.slow = False
-        config_file = auxiliaryfunctions.read_config(self.config)
-        if config_file.get('multianimalproject', False):
-            if self.plot_idv.GetStringSelection() == "Yes":
-                color_by ='individual'
-            else:
-                color_by='bodypart'
+        if self.plot_idv.GetStringSelection() == "Yes":
+            color_by ='individual'
         else:
-            color_by=None
+            color_by='bodypart'
 
-        if self.filter.GetStringSelection() == "Yes":
-            if len(self.bodyparts)==0:
-                self.bodyparts='all'
+        if len(self.bodyparts) == 0:
+            self.bodyparts = 'all'
 
-                config_file = auxiliaryfunctions.read_config(self.config)
-                if config_file.get('multianimalproject', False):
-                    deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle,
-                                                     trainingsetindex=trainingsetindex, save_frames=self.slow, draw_skeleton= self.draw,
-                                                     displayedbodyparts=self.bodyparts, trailpoints = self.trail_points.GetValue(),
-                                                     filtered=True, color_by=color_by)
-                else:
-                    deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle,
-                                                     trainingsetindex=trainingsetindex, save_frames=self.slow, draw_skeleton= self.draw,
-                                                     displayedbodyparts=self.bodyparts, trailpoints = self.trail_points.GetValue(),
-                                                     filtered=True)
-
-        if len(self.bodyparts)==0:
-            self.bodyparts='all'
-        if config_file.get('multianimalproject', False):
-            deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle,
-                                             trainingsetindex=trainingsetindex, save_frames=self.slow, draw_skeleton= self.draw,
-                                             displayedbodyparts=self.bodyparts, trailpoints = self.trail_points.GetValue(),
-                                             filtered=True, color_by=color_by)
-        else:
-            deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle,
-                                             trainingsetindex=trainingsetindex, save_frames=self.slow, draw_skeleton= self.draw,
-                                             displayedbodyparts=self.bodyparts, trailpoints = self.trail_points.GetValue(),
-                                             filtered=True)
+        deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle,
+                                         trainingsetindex=trainingsetindex, save_frames=self.slow, draw_skeleton=self.draw,
+                                         displayedbodyparts=self.bodyparts, trailpoints=self.trail_points.GetValue(),
+                                         filtered=filtered, color_by=color_by)
 
     def help_function(self,event):
 
@@ -270,9 +245,6 @@ class Create_Labeled_Videos(wx.Panel):
         help_text = help_file.read()
         wx.MessageBox(help_text,'Help',wx.OK | wx.ICON_INFORMATION)
         os.remove('help.txt')
-
-
-
 
     def reset_create_videos(self,event):
         """
