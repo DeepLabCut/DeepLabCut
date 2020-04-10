@@ -208,7 +208,7 @@ class Create_Labeled_Videos(wx.Panel):
 
         shuffle = self.shuffle.GetValue()
         trainingsetindex = self.trainingset.GetValue()
-        self.filelist = self.filelist + self.vids
+        #self.filelist = self.filelist + self.vids
 
         if self.filter.GetStringSelection() == "No":
             filter = None
