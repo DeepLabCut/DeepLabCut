@@ -288,14 +288,18 @@ class Analyze_videos(wx.Panel):
             scorername = deeplabcut.analyze_videos(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle,
                                                      trainingsetindex=trainingsetindex, gputouse=None, destfolder=self.destfolder, cropping=crop)
             if self.filter.GetStringSelection() == "Yes":
-                deeplabcut.filterpredictions(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex, filtertype='median', windowlength=5, save_as_csv=True, destfolder=self.destfolder)
+                deeplabcut.filterpredictions(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle,
+                                              trainingsetindex=trainingsetindex, filtertype='median', windowlength=5, save_as_csv=True,
+                                              destfolder=self.destfolder)
 
         else:
             scorername = deeplabcut.analyze_videos(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle,
                                                      trainingsetindex=trainingsetindex, gputouse=None, save_as_csv=save_as_csv,
                                                       destfolder=self.destfolder, cropping=crop, dynamic=dynamic)
             if self.filter.GetStringSelection() == "Yes":
-                deeplabcut.filterpredictions(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex, filtertype='median', windowlength=5, save_as_csv=True, destfolder=self.destfolder)
+                deeplabcut.filterpredictions(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle,
+                                                trainingsetindex=trainingsetindex, filtertype='median', windowlength=5,
+                                                save_as_csv=True, destfolder=self.destfolder)
 
         if self.cfg.get('multianimalproject', False):
             if self.create_video_with_all_detections.GetStringSelection() == "Yes":
