@@ -246,7 +246,6 @@ def write_plainconfig(configname, cfg):
 
 def attempttomakefolder(foldername,recursive=False):
     ''' Attempts to create a folder with specified name. Does nothing if it already exists. '''
-
     try:
         os.path.isdir(foldername)
     except TypeError: #https://www.python.org/dev/peps/pep-0519/
@@ -303,7 +302,7 @@ def SaveData(PredicteData, metadata, dataname, pdindex, imagenames,save_as_csv):
     if save_as_csv:
         print("Saving csv poses!")
         DataMachine.to_csv(dataname.split('.h5')[0]+'.csv')
-    DataMachine.to_hdf(dataname, 'df_with_missing', format='table', mode='w')
+        DataMachine.to_hdf(dataname, 'df_with_missing', format='table', mode='w')
     with open(dataname.split('.h5')[0] + 'includingmetadata.pickle', 'wb') as f:
         # Pickle the 'data' dictionary using the highest protocol available.
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
@@ -565,3 +564,4 @@ def LoadAnalyzedDetectionData(folder, vname, scorer):
         #     datafound = True
         #     scorer = f'DLC{pickle_file.split("DLC")[1]}'.replace('_full.pickle', '')
     return datafound, metadata, data, scorer
+
