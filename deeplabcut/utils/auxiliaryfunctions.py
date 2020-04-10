@@ -472,7 +472,6 @@ def CheckifPostProcessing(folder,vname,DLCscorer,DLCscorerlegacy,suffix='filtere
 def CheckifNotAnalyzed(destfolder,vname,DLCscorer,DLCscorerlegacy,flag='video'):
     h5files = list(grab_files_in_folder(destfolder, 'h5', relative=False))
     if not len(h5files):
-        print(f'No data were found in {destfolder}.')
         dataname = os.path.join(destfolder, vname + DLCscorer + '.h5')
         return True, dataname, DLCscorer
 
@@ -537,7 +536,6 @@ def LoadAnalyzedData(videofolder,vname,DLCscorer,filtered):
                 DLCscorer='DeepCut'+(datafile.split('DeepCut')[1]).split('.h5')[0]
             else:
                 DLCscorer='DLC_'+(datafile.split('DLC_')[1]).split('.h5')[0]
-            print("Creating output for:", DLCscorer)
             Dataframe = pd.read_hdf(os.path.join(videofolder, datafile))
             metadata=LoadVideoMetadata(os.path.join(videofolder, datafile.replace('tracks', '').replace('filtered', '')))
             datafound=True

@@ -130,7 +130,6 @@ class VideoProcessorCV(VideoProcessor):
         self.nc = 3
         if self.nframes == -1 or self.nframes>all_frames:
             self.nframes = all_frames
-        print(self.nframes)
 
     def create_video(self):
         fourcc = cv2.VideoWriter_fourcc(*self.codec)
