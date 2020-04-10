@@ -300,10 +300,10 @@ def Getlistofvideos(videos,videotype):
 def SaveData(PredicteData, metadata, dataname, pdindex, imagenames,save_as_csv):
     ''' Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py '''
     DataMachine = pd.DataFrame(PredicteData, columns=pdindex, index=imagenames)
-    DataMachine.to_hdf(dataname, 'df_with_missing', format='table', mode='w')
     if save_as_csv:
         print("Saving csv poses!")
         DataMachine.to_csv(dataname.split('.h5')[0]+'.csv')
+    DataMachine.to_hdf(dataname, 'df_with_missing', format='table', mode='w')
     with open(dataname.split('.h5')[0] + 'includingmetadata.pickle', 'wb') as f:
         # Pickle the 'data' dictionary using the highest protocol available.
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
@@ -474,7 +474,8 @@ def CheckifNotAnalyzed(destfolder,vname,DLCscorer,DLCscorerlegacy,flag='video'):
     h5files = list(grab_files_in_folder(destfolder, 'h5', relative=False))
     if not len(h5files):
         print(f'No data were found in {destfolder}.')
-        return True, h5files, DLCscorer
+        dataname = os.path.join(destfolder, vname + DLCscorer + '.h5')
+        return True, dataname, DLCscorer
 
     h5file = h5files[0]
     if vname + DLCscorer in h5file:
