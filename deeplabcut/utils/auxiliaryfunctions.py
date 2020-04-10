@@ -475,21 +475,22 @@ def CheckifNotAnalyzed(destfolder,vname,DLCscorer,DLCscorerlegacy,flag='video'):
         dataname = os.path.join(destfolder, vname + DLCscorer + '.h5')
         return True, dataname, DLCscorer
 
-    h5file = h5files[0]
-    if vname + DLCscorer in h5file:
-        if flag == 'video':
-            print("Video already analyzed!", h5file)
-        elif flag == 'framestack':
-            print("Frames already analyzed!", h5file)
-        return False, h5file, DLCscorer
-    elif vname + DLCscorerlegacy in h5file:
-        if flag == 'video':
-            print("Video already analyzed!", h5file)
-        elif flag == 'framestack':
-            print("Frames already analyzed!", h5file)
-        return False, h5file, DLCscorerlegacy
-    else:
-        return True, h5file, DLCscorer
+    # Iterate over data files and stop as soon as one matching the scorer is found
+    for h5file in h5files:
+        if vname + DLCscorer in h5file:
+            if flag == 'video':
+                print("Video already analyzed!", h5file)
+            elif flag == 'framestack':
+                print("Frames already analyzed!", h5file)
+            return False, h5file, DLCscorer
+        elif vname + DLCscorerlegacy in h5file:
+            if flag == 'video':
+                print("Video already analyzed!", h5file)
+            elif flag == 'framestack':
+                print("Frames already analyzed!", h5file)
+            return False, h5file, DLCscorerlegacy
+    return True, h5file, DLCscorer
+
 
 def CheckifNotEvaluated(folder,DLCscorer,DLCscorerlegacy,snapshot):
     dataname=os.path.join(folder,DLCscorer + '-' + str(snapshot)+  '.h5')
