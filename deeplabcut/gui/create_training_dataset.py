@@ -242,12 +242,11 @@ class Create_training_dataset(wx.Panel):
         else:
             userfeedback = False
 
-        if self.cropandlabel.GetStringSelection() =='Yes':
-            deeplabcut.cropimagesandlabels(self.config, userfeedback=userfeedback)
-        else:
-            random = False
-
         if config_file.get('multianimalproject', False):
+            if self.cropandlabel.GetStringSelection() =='Yes':
+                deeplabcut.cropimagesandlabels(self.config, userfeedback=userfeedback)
+            else:
+                random = False
             deeplabcut.create_multianimaltraining_dataset(self.config,num_shuffles,Shuffles=[self.shuffle.GetValue()])
         else:
             if self.model_comparison_choice.GetStringSelection() == 'No':
