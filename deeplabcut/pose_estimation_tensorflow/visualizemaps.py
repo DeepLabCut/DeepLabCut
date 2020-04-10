@@ -64,18 +64,7 @@ def extract_maps(config, shuffle, trainingsetindex=0, comparisonbodyparts="all",
 
     import pandas as pd
     from pathlib import Path
-    import platform
     import numpy as np
-    import platform
-    import matplotlib as mpl
-    if os.environ.get('DLClight', default=False) == 'True':
-        mpl.use('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
-        pass
-    elif platform.system() == 'Darwin':
-        mpl.use('WXAgg')
-    else:
-        mpl.use('TkAgg') #TkAgg
-    import matplotlib.pyplot as plt
 
     TF.reset_default_graph()
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' #
