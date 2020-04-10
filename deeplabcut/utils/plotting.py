@@ -186,9 +186,8 @@ def plot_trajectories(config, videos, videotype='.avi', shuffle=1, trainingsetin
                 auxiliaryfunctions.attempttomakefolder(tmpfolder)
                 # Keep only the individuals and bodyparts that were labeled
                 index = Dataframe.columns
-                labeled_animals = [ind for ind in individuals if ind in index.get_level_values('individuals')]
                 labeled_bpts = [bp for bp in bodyparts if bp in index.get_level_values('bodyparts')]
-                for animal in labeled_animals:
+                for animal in individuals:
                     PlottingResults(tmpfolder, Dataframe, cfg, labeled_bpts, animal,
                                     showfigures, suffix + animal + '.png')
                 failed.append(False)
