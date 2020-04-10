@@ -278,12 +278,6 @@ class Analyze_videos(wx.Panel):
             else:
                 filter = True
 
-            if self.filter.GetStringSelection() == "Yes":
-                deeplabcut.filterpredictions(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex, filtertype='median', windowlength=5, save_as_csv=True, destfolder=self.destfolder)
-
-            if self.trajectory.GetStringSelection() == "Yes":
-                deeplabcut.plot_trajectories(self.config, self.filelist, displayedbodyparts=self.bodyparts,
-                                               videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex, filtered=True, showfigures=False, destfolder=self.destfolder)
 
         if self.cfg['cropping']=='True':
             crop = self.cfg['x1'], self.cfg['x2'], self.cfg['y1'], self.cfg['y2']
@@ -309,6 +303,10 @@ class Analyze_videos(wx.Panel):
                 scorername, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(self.cfg,shuffle,trainFraction=trainFrac)
                 print(scorername)
                 deeplabcut.create_video_with_all_detections(self.config, self.filelist, DLCscorername=scorername)
+
+        if self.trajectory.GetStringSelection() == "Yes":
+            deeplabcut.plot_trajectories(self.config, self.filelist, displayedbodyparts=self.bodyparts,
+                                           videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex, filtered=True, showfigures=False, destfolder=self.destfolder)
 
 
     def reset_analyze_videos(self,event):
