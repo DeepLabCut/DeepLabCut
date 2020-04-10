@@ -78,7 +78,7 @@ def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,bodyparts2plot,
         colorclass=plt.cm.ScalarMappable(cmap=colormap)
         nbodyparts = len(bodyparts2plot)
         nindividuals = len(df_x) // nbodyparts
-        if 'part' in color_by:
+        if color_by == 'bodypart':
             C = colorclass.to_rgba(np.linspace(0, 1, nbodyparts))
         else:
             C = colorclass.to_rgba(np.linspace(0, 1, nindividuals))
@@ -105,7 +105,7 @@ def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,bodyparts2plot,
             for bpindex in range(nbodyparts):
                 for ind in range(nindividuals):
                     j = bpindex + ind * nbodyparts
-                    if 'part' in color_by:
+                    if color_by == 'bodypart':
                         color = colors[bpindex]
                     else:
                         color = colors[ind]
@@ -379,7 +379,7 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
         else:
             print("Loading ", video, "and data.")
             datafound,metadata,Dataframe,DLCscorer,suffix=auxiliaryfunctions.LoadAnalyzedData(str(videofolder),vname,DLCscorer,filtered) #returns boolean variable if data was found and metadata + pandas array
-            s = '_idv' if color_by == 'individuals' else '_bp'
+            s = '_idv' if color_by == 'individual' else '_bp'
             videooutname = os.path.join(vname + DLCscorer + suffix + s + '_labeled.mp4')
             if datafound:  # Sweet, we've found single animal data or tracklets
                 if os.path.isfile(videooutname):
