@@ -290,6 +290,7 @@ class TrackletManager:
         self.tracklet2id = individuals.map(dict(zip(self.individuals, range(len(self.individuals))))).tolist()[::3]
         bodyparts = self.bodyparts.unique()
         self.tracklet2bp = self.bodyparts.map(dict(zip(bodyparts, range(len(bodyparts))))).tolist()[::3]
+        self._label_pairs = list(idx.droplevel(['scorer', 'coords']).unique())
 
     def calc_completeness(self, xy, by_individual=False):
         comp = np.sum(~np.isnan(xy).any(axis=2), axis=1)
@@ -761,10 +762,13 @@ class TrackletVisualizer:
             self.update_vlines(self.curr_frame)
 
 
-def refine_tracklets(config, picklefile, video,
-                     min_swap_frac=0.01, min_tracklet_frac=0.01, trail_len=50):
+def refine_tracklets(config, pickle_or_h5_file, video,
+                     min_swap_frac=0., min_tracklet_frac=0., trail_len=50):
     manager = TrackletManager(config, min_swap_frac, min_tracklet_frac)
-    manager.load_tracklets_from_pickle(picklefile)
+    if pickle_or_h5_file.endswith('pickle'):
+        manager.load_tracklets_from_pickle(pickle_or_h5_file)
+    else:
+        manager.load_tracklets_from_hdf(pickle_or_h5_file)
     manager.find_swapping_bodypart_pairs()
     viz = TrackletVisualizer(manager, video, trail_len)
     viz.show()
