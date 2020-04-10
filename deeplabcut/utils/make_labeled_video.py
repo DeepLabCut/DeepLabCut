@@ -157,10 +157,10 @@ def CreateVideoSlow(videooutname,clip,Dataframe, tmpfolder, dotsize,colormap,alp
         df_y += y1
     nbodyparts = len(bodyparts2plot)
     nindividuals = len(df_x) // nbodyparts
-    if 'part' in color_by:
-        colors = get_cmap(nbodyparts, name=colormap)
-    else:
+    if color_by == 'individual':
         colors = get_cmap(nindividuals, name=colormap)
+    else:
+        colors = get_cmap(nbodyparts, name=colormap)
     if draw_skeleton:
         #recode the bodyparts2connect into indices for df_x and df_y for speed
         bpts2connect = get_segment_indices(bodyparts2connect, bodyparts2plot)
