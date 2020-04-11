@@ -76,7 +76,6 @@ class Analyze_videos(wx.Panel):
 
         videotype_text = wx.StaticBox(self, label="Specify the videotype")
         videotype_text_boxsizer = wx.StaticBoxSizer(videotype_text, wx.VERTICAL)
-
         videotypes = ['.avi', '.mp4', '.mov']
         self.videotype = wx.ComboBox(self,choices = videotypes,style = wx.CB_READONLY)
         self.videotype.SetValue('.avi')
@@ -118,7 +117,6 @@ class Analyze_videos(wx.Panel):
 
             tracker_text = wx.StaticBox(self, label="Specify the Tracker Method!")
             tracker_text_boxsizer = wx.StaticBoxSizer(tracker_text, wx.VERTICAL)
-
             trackertypes = ['skeleton', 'box', 'clowncats']
             self.trackertypes = wx.ComboBox(self,choices = trackertypes,style = wx.CB_READONLY)
             self.trackertypes.SetValue('box')
