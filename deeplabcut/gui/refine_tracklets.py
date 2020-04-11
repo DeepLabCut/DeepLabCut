@@ -63,7 +63,7 @@ class Refine_tracklets(wx.Panel):
         self.data_text = wx.StaticText(self, label="Select the tracklet data")
         sizer.Add(self.data_text, pos=(4, 0), flag=wx.TOP | wx.LEFT, border=5)
         self.sel_datafile = wx.FilePickerCtrl(self, path="", style=wx.FLP_USE_TEXTCTRL,
-                                              message="Open tracklet data", wildcard="Pickle files (*.pickle)|*.pickle")
+                                              message="Open tracklet data")#wildcard="Pickle files (*.pickle)|*.pickle")
         sizer.Add(self.sel_datafile, pos=(4, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND, border=5)
         self.sel_datafile.Bind(wx.EVT_FILEPICKER_CHANGED, self.select_datafile)
 
@@ -80,6 +80,12 @@ class Refine_tracklets(wx.Panel):
         slider_track_sizer.Add(self.slider_track, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
         hbox.Add(slider_track_sizer, 10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
+        traillength_text = wx.StaticBox(self, label="Trail Length (visualization)")
+        traillength_sizer = wx.StaticBoxSizer(traillength_text, wx.VERTICAL)
+        self.length_track = wx.SpinCtrl(self, value='25')
+        traillength_sizer.Add(self.length_track, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+        hbox.Add(traillength_sizer, 10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+
         sizer.Add(hbox, pos=(5, 0), flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT , border=10)
 
         self.help_button = wx.Button(self, label='Help')
@@ -89,12 +95,12 @@ class Refine_tracklets(wx.Panel):
         self.ok = wx.Button(self, label="Ok")
         sizer.Add(self.ok, pos=(6, 3))
         self.ok.Bind(wx.EVT_BUTTON, self.refine_tracklets)
-
+        '''
         self.save = wx.Button(self, label='Save')
         sizer.Add(self.save, pos=(6, 4))
         self.save.Bind(wx.EVT_BUTTON, self.save_tracklets)
         self.save.Enable(False)
-
+        '''
         self.reset = wx.Button(self, label="Reset")
         sizer.Add(self.reset, pos=(6, 1), flag=wx.BOTTOM|wx.RIGHT, border=10)
         self.reset.Bind(wx.EVT_BUTTON, self.reset_refine_tracklets)
@@ -131,6 +137,10 @@ class Refine_tracklets(wx.Panel):
         self.video = self.sel_video.GetPath()
 
     def refine_tracklets(self,event):
+
+        deeplabcut.refine_tracklets(self.config, self.datafile, self.video,
+                     self.slider_swap.GetValue() / 100, self.slider_track.GetValue() / 100, trail_len=50)
+        '''
         self.manager = tracklets.TrackletManager(self.config, self.slider_swap.GetValue() / 100,
                                                  self.slider_track.GetValue() / 100)
         self.manager.load_tracklets_from_pickle(self.datafile)
@@ -138,11 +148,13 @@ class Refine_tracklets(wx.Panel):
         self.viz = tracklets.TrackletVisualizer(self.manager, self.video, 30)
         self.viz.show()
         self.save.Enable(True)
+        '''
 
+    '''
     def save_tracklets(self, event):
         self.manager.save()
         print("File (...tracks.h5) is saved! Now your research questions can be tackled! Thanks for using DeepLabCut!")
-
+    '''
     def reset_refine_tracklets(self,event):
         """
         Reset to default
@@ -155,4 +167,5 @@ class Refine_tracklets(wx.Panel):
         self.sel_video.SetPath("")
         self.slider_swap.SetValue(1)
         self.slider_track.SetValue(1)
-        self.save.Enable(False)
+        self.length_track.SetValue(25)
+        #self.save.Enable(False)
