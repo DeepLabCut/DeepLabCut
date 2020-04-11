@@ -230,7 +230,7 @@ class Create_Labeled_Videos(wx.Panel):
             if len(self.bodyparts)==0:
                 self.bodyparts='all'
 
-                deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle,
+            deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle,
                                                  trainingsetindex=trainingsetindex, save_frames=self.slow, draw_skeleton= self.draw,
                                                  displayedbodyparts=self.bodyparts, trailpoints = self.trail_points.GetValue(),
                                                  filtered=filtered, color_by=color_by)
