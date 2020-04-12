@@ -198,7 +198,7 @@ class Create_new_project(wx.Panel):
                 self.sel_config.SetPath(self.cfg)
             self.proj_name.Enable(False)
             self.proj_name_txt_box.Enable(False)
-            #self.exp.Enable(False)
+            self.exp.Enable(False)
             self.vids.Enable(False)
             self.exp_txt_box.Enable(False)
             self.sel_vids.Enable(False)
