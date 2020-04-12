@@ -355,14 +355,14 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
         return
 
     for video in Videos:
+        videofolder = Path(video).parents[0]
         if destfolder is None:
-            videofolder = Path(video).parents[0] #where your folder with videos is.
-        else:
-            videofolder = destfolder
+            destfolder = videofolder  #where your folder with videos is.
+        auxiliaryfunctions.attempttomakefolder(destfolder)
 
-        os.chdir(str(videofolder)) #THE VIDEO IS STILL IN THE VIDEO FOLDER
+        os.chdir(destfolder) #THE VIDEO IS STILL IN THE VIDEO FOLDER
         videotype = Path(video).suffix
-        print("Starting % ", videofolder, videos)
+        print("Starting % ", destfolder, videos)
         vname = str(Path(video).stem)
 
         #if notanalyzed:
@@ -421,7 +421,7 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
                     ## TODO: integrate with standard code for dataframes.
                     scale=1
                     pcutoff=cfg["pcutoff"]
-                    _create_video_from_tracks(video, Tracks, vname, videooutname, pcutoff, scale)
+                    _create_video_from_tracks(video, Tracks, destfolder, videooutname, pcutoff, scale)
 
     os.chdir(start_path)
 
@@ -451,12 +451,13 @@ def create_video_with_all_detections(config, videos, DLCscorername, destfolder=N
     cfg = auxiliaryfunctions.read_config(config)
 
     for video in videos:
+        videofolder = os.path.splitext(video)[0]
         if destfolder is None:
-            outputname = '{}_full.mp4'.format(os.path.splitext(video)[0]+DLCscorername)
-            full_pickle=os.path.join(os.path.splitext(video)[0]+DLCscorername+'_full.pickle')
+            outputname = '{}_full.mp4'.format(videofolder+DLCscorername)
         else:
+            auxiliaryfunctions.attempttomakefolder(destfolder)
             outputname = os.path.join(destfolder,str(Path(video).stem)+DLCscorername+'_full.mp4')
-            full_pickle=os.path.join(destfolder,str(Path(video).stem)+DLCscorername+'_full.pickle')
+        full_pickle = os.path.join(videofolder + DLCscorername + '_full.pickle')
 
         if not(os.path.isfile(outputname)):
             print("Creating labeled video for ", str(Path(video).stem))
@@ -464,7 +465,6 @@ def create_video_with_all_detections(config, videos, DLCscorername, destfolder=N
                 data = pickle.load(file)
 
             header = data.pop('metadata')
-            print(header)
             all_jointnames = header['all_joints_names']
 
             numjoints = len(all_jointnames)
