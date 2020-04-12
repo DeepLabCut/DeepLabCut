@@ -107,11 +107,11 @@ class MainFrame(wx.Frame):
         """
         Quits the GUI
         """
-        self.statusbar.SetStatusText("")
-        dlg = wx.MessageDialog(None,"Are you sure?", "Quit!",wx.YES_NO | wx.ICON_WARNING)
-        result = dlg.ShowModal()
-        if result == wx.ID_YES:
-            self.Destroy()
+        #self.statusbar.SetStatusText("")
+        #dlg = wx.MessageDialog(None,"Are you sure?", "Quit!",wx.YES_NO | wx.ICON_WARNING)
+        #result = dlg.ShowModal()
+        #if result == wx.ID_YES:
+        self.Destroy()
 
     def show_image(self):
         self.figure,self.axes,self.canvas = self.image_panel.getfigure()
