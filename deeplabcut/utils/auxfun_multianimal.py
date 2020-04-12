@@ -16,8 +16,7 @@ def extractindividualsandbodyparts(cfg):
     individuals=cfg['individuals'].copy()
     if len(cfg['uniquebodyparts'])>0:
         individuals.append('single')
-    return individuals,cfg['uniquebodyparts'],cfg['multianimalbodyparts']
-
+    return individuals, cfg['uniquebodyparts'], cfg['multianimalbodyparts']
 
 def IntersectionofIndividualsandOnesGivenbyUser(cfg, individuals):
     ''' Returns all individuals when set to 'all', otherwise all bpts that are in the intersection of comparisonbodyparts and the actual bodyparts '''
@@ -28,7 +27,6 @@ def IntersectionofIndividualsandOnesGivenbyUser(cfg, individuals):
         return all_indivs
     else:  # take only items in list that are actually bodyparts...
         return [ind for ind in individuals if ind in all_indivs]
-
 
 def getpafgraph(cfg,printnames=True):
     ''' auxiliary function that turns skeleton (list of connected bodypart pairs) INTO
@@ -89,7 +87,7 @@ def SaveMultiAnimalData(PredicteData, metadata, dataname, pdindex, imagenames,sa
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
 
-from deeplabcut.utils.auxiliaryfunctions import read_config
+from deeplabcut.utils.auxiliaryfunctions import read_config, read_config, read_plainconfig, write_plainconfig
 from pathlib import Path
 def returnlabelingdata(config):
     ''' Returns a specific labeleing data set -- the user will be asked which one. '''
@@ -104,7 +102,6 @@ def returnlabelingdata(config):
                 fn=os.path.join(str(folder),'CollectedData_' + cfg['scorer'] + '.h5')
                 Data=pd.read_hdf(fn)
                 return Data
-
 
 def convertmultianimaltosingleanimaldata(config,userfeedback=True,target=None):
     ''' Convert multi animal to single animal code and vice versa. Note that by providing target='single'/'multi' this will be target! '''
@@ -195,3 +192,35 @@ def convertmultianimaltosingleanimaldata(config,userfeedback=True,target=None):
 
                 DataFrame.to_hdf(fn + '.h5','df_with_missing',format='table', mode='w')
                 DataFrame.to_csv(fn + ".csv")
+
+
+def read_inferencecfg(path_inference_config,cfg):
+    from easydict import EasyDict as edict
+    # Loads inferencecfg or initializes it.
+    try:
+        inferencecfg= read_plainconfig(str(path_inference_config))
+        inferencecfg = edict(inferencecfg)
+    except FileNotFoundError: #TODO: set this automatically
+        # Most of these parameters would be cross validated based on evaluation!
+        inferencecfg=edict()
+        inferencecfg.variant=0
+        inferencecfg.minimalnumberofconnections=len(cfg['multianimalbodyparts'])/2 #reasonable default
+        inferencecfg.averagescore=0.1
+        inferencecfg.distnormalizationLOWER=0
+        inferencecfg.distnormalization=400
+
+        inferencecfg.detectionthresholdsquare=0.1
+
+        inferencecfg.addlikelihoods=.15
+        inferencecfg.pafthreshold=0.1
+        inferencecfg.method='m1'
+        inferencecfg.withid=False #TODO: set automatically (if >0 id channels!)
+        inferencecfg.topktoplot=len(cfg['individuals'])+1*(len(cfg['uniquebodyparts'])>0) #reasonable default
+
+        ## bbox variable:
+        inferencecfg.boundingboxslack=10
+        inferencecfg.max_age=100
+        inferencecfg.min_hits=3
+        inferencecfg.iou_threshold=.2
+        write_plainconfig(str(path_inference_config), dict(inferencecfg))
+    return inferencecfg

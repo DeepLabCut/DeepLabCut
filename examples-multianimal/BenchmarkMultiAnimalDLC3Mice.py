@@ -10,7 +10,8 @@ import numpy as np
 
 from pathlib import Path
 import os, sys
-os.environ['DLClight']='True'
+#os.environ['DLClight']='True'
+
 import deeplabcut
 import shutil
 
@@ -27,7 +28,7 @@ projectpath='/media/alex/dropboxdisk/Dropbox/InterestingCode/social_datasets/cro
 config=os.path.join(projectpath,'config.yaml')
 
 trainingsetindex=0
-
+'''
 destfolder=None #os.path.join(projectpath,modelprefix)
 for shuffle in [1,2]:
 
@@ -38,3 +39,10 @@ for shuffle in [1,2]:
 
     print("Evaluating", shuffle, trainingsetindex)
     deeplabcut.evaluate_network(config,Shuffles=[shuffle],trainingsetindex=trainingsetindex,c_engine=True)
+
+'''
+
+#deeplabcut.pose_estimation_tensorflow.calculatepafdistancebounds(config, shuffle=1)
+
+videopath='/media/alex/dropboxdisk/Dropbox/InterestingCode/social_datasets/croppedNov18/MultiMouse-Daniel-2019-12-16/vidtest'
+deeplabcut.convert_detections2tracklets(config,[videopath],videotype='.mp4',edgewisecondition=True)

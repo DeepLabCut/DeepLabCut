@@ -801,8 +801,8 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,
     os.chdir(str(start_path))
 
 def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, trainingsetindex=0,
-                                 destfolder=None,BPTS=None, iBPTS=None,PAF=None,printintermediate=False,
-                                 inferencecfg=None,modelprefix='', track_method='box'):
+                                 destfolder=None,BPTS=None, iBPTS=None,PAF=None, printintermediate=False,
+                                 inferencecfg=None,modelprefix='', track_method = 'box',edgewisecondition=False):
     """
     This should be called at the end of deeplabcut.analyze_videos for multianimal projects!
 
@@ -886,38 +886,12 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
         raise ValueError("This function is only required for multianimal projects!")
 
     path_inference_config = Path(modelfolder) / 'test' / 'inference_cfg.yaml'
-
     if inferencecfg is None: #then load or initialize
-        try:
-            inferencecfg= auxiliaryfunctions.read_plainconfig(str(path_inference_config))
-            inferencecfg = edict(inferencecfg)
-        except FileNotFoundError: #TODO: set this automatically
-            # Most of these parameters would be cross validated based on evaluation!
-            inferencecfg=edict()
-            inferencecfg.variant=0
-            inferencecfg.minimalnumberofconnections=len(cfg['multianimalbodyparts'])/2 #reasonable default
-            inferencecfg.averagescore=0.1
-            inferencecfg.distnormalizationLOWER=0
-            inferencecfg.distnormalization=400
-
-            inferencecfg.detectionthresholdsquare=0.1
-
-            inferencecfg.addlikelihoods=.15
-            inferencecfg.pafthreshold=0.1
-            inferencecfg.method='m1'
-            inferencecfg.withid=False #TODO: set automatically (if >0 id channels!)
-            inferencecfg.topktoplot=len(cfg['individuals'])+1*(len(cfg['uniquebodyparts'])>0) #reasonable default
-
-            ## bbox variable:
-            inferencecfg.boundingboxslack=10
-            inferencecfg.max_age=100
-            inferencecfg.min_hits=3
-            inferencecfg.iou_threshold=.2
-            auxiliaryfunctions.write_plainconfig(str(path_inference_config), dict(inferencecfg))
-
+        inferencecfg=auxfun_multianimal.read_inferencecfg(path_inference_config,cfg)
     else: #TODO: check if all variables present
         inferencecfg=edict(inferencecfg)
 
+    
     # Check which snapshots are available and sort them by # iterations
     try:
       Snapshots = np.array([fn.split('.')[0]for fn in os.listdir(os.path.join(modelfolder , 'train'))if "index" in fn])
@@ -966,6 +940,17 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
                 partaffinityfield_graph=data['metadata']['PAFgraph']
                 all_joints=data['metadata']['all_joints']
                 all_jointnames=data['metadata']['all_joints_names']
+
+                if edgewisecondition:
+                    edge=partaffinityfield_graph[0]
+                    if str(edge[0])+'_'+str(edge[1]) not in inferencecfg.keys():
+                        from deeplabcut.pose_estimation_tensorflow import calculatepafdistancebounds
+                        inferencecfg=calculatepafdistancebounds(config, shuffle, trainingsetindex)
+                    upperbound=[inferencecfg[str(edge[0])+'_'+str(edge[1])]['intra_max'] for edge in partaffinityfield_graph]
+                    print(upperbound)
+                
+                assert(0==1)
+                        
 
                 if PAF is None:
                     PAF=np.arange(len(partaffinityfield_graph)) # THIS CAN BE A SUBSET!

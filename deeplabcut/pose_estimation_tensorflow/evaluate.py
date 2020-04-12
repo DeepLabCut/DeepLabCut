@@ -29,9 +29,104 @@ def pairwisedistances(DataCombined,scorer1,scorer2,pcutoff=-1,bodyparts=None):
     else:
             Pointwisesquareddistance=(DataCombined[scorer1][bodyparts]-DataCombined[scorer2][bodyparts])**2
             RMSE=np.sqrt(Pointwisesquareddistance.xs('x',level=1,axis=1)+Pointwisesquareddistance.xs('y',level=1,axis=1)) #Euclidean distance (proportional to RMSE)
-            return RMSE,RMSE[mask]
+            return RMSE, RMSE[mask]
+
+def distance(v,w):
+    return np.sqrt(np.sum((v-w)**2))
+    
+def calculatepafdistancebounds(config,shuffle=0,trainingsetindex=0,modelprefix='' ,numdigits=0 ,onlytrain=False):
+    """
+    Returns distances along paf edges in train/test data
+    
+    ----------
+    config : string
+        Full path of the config.yaml file as a string.
+
+    shuffle: integer
+        integers specifying shuffle index of the training dataset. The default is 0.
+
+    trainingsetindex: int, optional
+        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml). This
+        variable can also be set to "all".
+
+    numdigits: number of digits to round for distances.
+
+    """
+    import os
+    import matplotlib.pyplot as plt
+    from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
+    from deeplabcut.pose_estimation_tensorflow.config import load_config
+    # Read file path for pose_config file. >> pass it on
+    cfg = auxiliaryfunctions.read_config(config)
+
+    if cfg['multianimalproject']==True:
+        individuals, uniquebodyparts, multianimalbodyparts=auxfun_multianimal.extractindividualsandbodyparts(cfg)
+
+        # Loading human annotatated data
+        trainingsetfolder=auxiliaryfunctions.GetTrainingSetFolder(cfg)
+        trainFraction=cfg["TrainingFraction"][trainingsetindex]
+        datafn, metadatafn=auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,trainFraction,shuffle,cfg)
+        modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)))
+        
+        # Load meta data & annotations
+        data, trainIndices, testIndices, trainFraction=auxiliaryfunctions.LoadMetadata(os.path.join(cfg["project_path"],metadatafn))
+        Data=pd.read_hdf(os.path.join(cfg["project_path"],str(trainingsetfolder),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing')[cfg["scorer"]]
+
+        path_test_config = Path(modelfolder) / 'test' / 'pose_cfg.yaml'
+        dlc_cfg = load_config(str(path_test_config))
+        
+        #get the graph!
+        partaffinityfield_graph= dlc_cfg.partaffinityfield_graph
+        jointnames = [dlc_cfg.all_joints_names[i] for i in range(len(dlc_cfg.all_joints))]
+
+        #jointindices = [[i] for i in range(len(dlc_cfg.all_joints))]
+        #partaffinityfield_graph=auxfun_multianimal.getpafgraph(cfg)
+
+        #plt.figure()
+        Cutoff={}
+        
+        path_inference_config = Path(modelfolder) / 'test' / 'inference_cfg.yaml'
+        inferencecfg = auxfun_multianimal.read_inferencecfg(path_inference_config,cfg)
+        
+        #inferencecfg={}
+        for pi, edge in enumerate(partaffinityfield_graph):
+            j1,j2=jointnames[edge[0]],jointnames[edge[1]]
+            ds_within=[]
+            ds_across=[]
+            for ind in individuals:
+                for ind2 in individuals:
+                    if ind!='single' and ind2!='single':
+                        distances = np.sqrt((Data[ind,j1,'x']-Data[ind2,j1,'x'])**2+(Data[ind,j1,'y']-Data[ind2,j2,'y'])**2)
+                        if onlytrain: #extracts only distances on training data.
+                            distances = distances.iloc[trainIndices]
+
+                        #source=np.array(Data[ind,j1,'x'][jj],Data[ind,j1,'y'][jj])
+                        #target=np.array(Data[ind2,j1,'x'][jj],Data[ind2,j2,'y'][jj])
+                        if ind==ind2:
+                            
+                            ds_within.extend(distances.values.flatten())
+                        else:
+                            ds_across.extend(distances.values.flatten())
+            
+            edgeencoding=str(edge[0])+'_'+str(edge[1])
+            inferencecfg[edgeencoding]={}
+            inferencecfg[edgeencoding]['intra_max']=str(round(np.nanmax(ds_within),numdigits))
+            inferencecfg[edgeencoding]['intra_min']=str(round(np.nanmin(ds_within),numdigits))
+            inferencecfg[edgeencoding]['inter_max']=str(round(np.nanmax(ds_within),numdigits))
+            inferencecfg[edgeencoding]['inter_min']=str(round(np.nanmin(ds_within),numdigits))
+            #print(inferencecfg)
+            #plt.subplot(len(partaffinityfield_graph),1,pi+1)
+            #plt.hist(ds_within,bins=np.linspace(0,100,21),color='red')
+            #plt.hist(ds_across,bins=np.linspace(0,100,21),color='blue')
+
+        auxiliaryfunctions.write_plainconfig(str(path_inference_config), dict(inferencecfg))
+        return inferencecfg
+    else:
+        print("You might as well bring owls to Athens.")
+        return {}
 
 def Plotting(cfg,comparisonbodyparts,DLCscorer,trainIndices,DataCombined,foldername):
+    ''' Function used for plotting GT and predictions '''
     from deeplabcut.utils import visualization
     colors = visualization.get_cmap(len(comparisonbodyparts),name=cfg['colormap'])
     NumFrames=np.size(DataCombined.index)

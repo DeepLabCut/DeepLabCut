@@ -26,7 +26,7 @@ def individual2boundingbox(cfg,animals,X1=0):
     for id,individual in enumerate(animals):
         boundingboxes[id,0:4:2]=minmax(individual[::3]+X1,slack=cfg.boundingboxslack)
         boundingboxes[id,1:4:2]=minmax(individual[1::3],slack=cfg.boundingboxslack)
-        boundingboxes[id,4]=np.nanmean(individual[2::3]) #average likelihood of all bpts!
+        boundingboxes[id,4]=np.nanmean(individual[2::3]) #average likelihood of all bpts
 
     return boundingboxes
 
