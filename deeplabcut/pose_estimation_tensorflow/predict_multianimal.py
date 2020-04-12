@@ -29,10 +29,11 @@ def AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg, dlc_cfg, sess, in
     ''' Helper function for analyzing a video with multiple individuals '''
     print("Starting to analyze % ", video)
     vname = Path(video).stem
+    videofolder = str(Path(video).parents[0])
     if destfolder is None:
-        destfolder = str(Path(video).parents[0])
-
-    dataname = os.path.join(destfolder,vname + DLCscorer + '.h5')
+        destfolder = videofolder
+    auxiliaryfunctions.attempttomakefolder(destfolder)
+    dataname = os.path.join(destfolder, vname + DLCscorer + '.h5')
     #TODO: remove comparison code:
     '''
     if c_engine:
@@ -42,7 +43,7 @@ def AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg, dlc_cfg, sess, in
     '''
 
     if os.path.isfile(dataname.split('.h5')[0]+'_full.pickle'):
-            print("Video already analyzed!", dataname)
+        print("Video already analyzed!", dataname)
     else:
         print("Loading ", video)
         cap=cv2.VideoCapture(video)

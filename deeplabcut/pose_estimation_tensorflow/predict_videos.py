@@ -483,7 +483,7 @@ def AnalyzeVideo(video,DLCscorer,DLCscorerlegacy,trainFraction,cfg,dlc_cfg,sess,
 
     if destfolder is None:
         destfolder = str(Path(video).parents[0])
-
+    auxiliaryfunctions.attempttomakefolder(destfolder)
     notanalyzed,dataname, DLCscorer=auxiliaryfunctions.CheckifNotAnalyzed(destfolder,Path(video).stem,DLCscorer,DLCscorerlegacy)
     if notanalyzed:
         print("Loading ", video)
@@ -540,7 +540,7 @@ def AnalyzeVideo(video,DLCscorer,DLCscorerlegacy,trainFraction,cfg,dlc_cfg,sess,
         }
         metadata = {'data': dictionary}
 
-        print("Saving results in %s..." %(Path(video).parents[0]))
+        print(f"Saving results in {destfolder}...")
         auxiliaryfunctions.SaveData(PredictedData[:nframes,:], metadata, dataname, pdindex, range(nframes),save_as_csv)
         return DLCscorer
     else:
@@ -929,14 +929,16 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
     if len(Videos)>0:
         for video in Videos:
             print("Processing... ", video)
+            videofolder = str(Path(video).parents[0])
             if destfolder is None:
-                destfolder = str(Path(video).parents[0])
+                destfolder = videofolder
+            auxiliaryfunctions.attempttomakefolder(destfolder)
             vname = Path(video).stem
-            dataname = os.path.join(destfolder,vname + DLCscorer + '.h5')
+            dataname = os.path.join(videofolder, vname + DLCscorer + '.h5')
             data, metadata=auxfun_multianimal.LoadFullMultiAnimalData(dataname)
-            suffix='tracks'
+            suffix = f'_{track_method}_tracks'
             trackname=dataname.split('.h5')[0]+suffix+'.pickle'
-
+            trackname = trackname.replace(videofolder, destfolder)
             if os.path.isfile(trackname): #TODO: check if metadata are identical (same parameters!)
                 print("Tracklets already computed", trackname)
             else:
