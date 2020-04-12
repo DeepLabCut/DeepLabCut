@@ -44,5 +44,12 @@ for shuffle in [1,2]:
 
 #deeplabcut.pose_estimation_tensorflow.calculatepafdistancebounds(config, shuffle=1)
 
-videopath='/media/alex/dropboxdisk/Dropbox/InterestingCode/social_datasets/croppedNov18/MultiMouse-Daniel-2019-12-16/vidtest'
-deeplabcut.convert_detections2tracklets(config,[videopath],videotype='.mp4',edgewisecondition=True)
+
+for edge in [True]: #[False, True]:
+    print("processing", str(edge))
+    videopath='/media/alex/dropboxdisk/Dropbox/InterestingCode/social_datasets/croppedNov18/MultiMouse-Daniel-2019-12-16/videotest/'+str(edge)
+    deeplabcut.convert_detections2tracklets(config,[videopath],videotype='.mp4',edgewisecondition=edge, destfolder=os.path.join(videopath)) #,str(edge)))
+    
+    #deeplabcut.create_video_with_all_detections(config,[videopath],videotype='.mp4',destfolder=os.path.join(videopath,str(edge)))
+    deeplabcut.create_labeled_video(config,[videopath],videotype='.mp4', destfolder=os.path.join(videopath)) #,str(edge)))  
+    #deeplabcut.plot_trajectories(config,[videopath],videotype='.mp4',destfolder=os.path.join(videopath,str(edge)))

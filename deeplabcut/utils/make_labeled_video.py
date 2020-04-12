@@ -349,17 +349,18 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
 
     start_path=os.getcwd()
     Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
+    
     if not len(Videos):
         print("No video(s) were found. Please check your paths and/or 'video_type'.")
         return
 
     for video in Videos:
         if destfolder is None:
-            videofolder= Path(video).parents[0] #where your folder with videos is.
+            videofolder = Path(video).parents[0] #where your folder with videos is.
         else:
-            videofolder=destfolder
+            videofolder = destfolder
 
-        os.chdir(str(videofolder))
+        os.chdir(str(videofolder)) #THE VIDEO IS STILL IN THE VIDEO FOLDER
         videotype = Path(video).suffix
         print("Starting % ", videofolder, videos)
         vname = str(Path(video).stem)
@@ -378,7 +379,7 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
             print("Labeled video already created.")
         else:
             print("Loading ", video, "and data.")
-            datafound,metadata,Dataframe,DLCscorer,suffix=auxiliaryfunctions.LoadAnalyzedData(str(videofolder),vname,DLCscorer,filtered) #returns boolean variable if data was found and metadata + pandas array
+            datafound, metadata, Dataframe,DLCscorer,suffix=auxiliaryfunctions.LoadAnalyzedData(str(videofolder),vname,DLCscorer,filtered) #returns boolean variable if data was found and metadata + pandas array
             s = '_idv' if color_by == 'individual' else '_bp'
             videooutname = os.path.join(vname + DLCscorer + suffix + s + '_labeled.mp4')
             if datafound:  # Sweet, we've found single animal data or tracklets
@@ -415,7 +416,7 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
                         print('Then use "convert_detections2tracklets" and re-run the current function.')
                     continue
                 else:
-                    print('Raw detections were found. Although "convert_detections2tracklets" '
+                    print('Tracklets were found. Although "convert_detections2tracklets" '
                           'should be used first, the video will be created anyway.')
                     ## TODO: integrate with standard code for dataframes.
                     scale=1
@@ -510,7 +511,7 @@ def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff, s
 
     if not os.path.isdir(destfolder):
         os.mkdir(destfolder)
-
+    
     cap = cv2.VideoCapture(video)
     nframes = int(cap.get(7))
     strwidth = int(np.ceil(np.log10(nframes)))  # width for strings

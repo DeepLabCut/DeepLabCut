@@ -210,7 +210,6 @@ def read_inferencecfg(path_inference_config,cfg):
         inferencecfg.distnormalization=400
 
         inferencecfg.detectionthresholdsquare=0.1
-
         inferencecfg.addlikelihoods=.15
         inferencecfg.pafthreshold=0.1
         inferencecfg.method='m1'

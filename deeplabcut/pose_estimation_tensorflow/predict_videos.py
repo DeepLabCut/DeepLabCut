@@ -891,7 +891,15 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
     else: #TODO: check if all variables present
         inferencecfg=edict(inferencecfg)
 
-    
+    if edgewisecondition:
+        path_inferencebounds_config = Path(modelfolder) / 'test' / 'inferencebounds.yaml'
+        try:
+            inferenceboundscfg=auxiliaryfunctions.read_plainconfig(path_inferencebounds_config)
+        except FileNotFoundError:
+            print("Computing distances...")
+            from deeplabcut.pose_estimation_tensorflow import calculatepafdistancebounds
+            inferenceboundscfg = calculatepafdistancebounds(config, shuffle, trainingsetindex)
+            auxiliaryfunctions.write_plainconfig(path_inferencebounds_config,inferenceboundscfg)
     # Check which snapshots are available and sort them by # iterations
     try:
       Snapshots = np.array([fn.split('.')[0]for fn in os.listdir(os.path.join(modelfolder , 'train'))if "index" in fn])
@@ -942,15 +950,14 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
                 all_jointnames=data['metadata']['all_joints_names']
 
                 if edgewisecondition:
-                    edge=partaffinityfield_graph[0]
-                    if str(edge[0])+'_'+str(edge[1]) not in inferencecfg.keys():
-                        from deeplabcut.pose_estimation_tensorflow import calculatepafdistancebounds
-                        inferencecfg=calculatepafdistancebounds(config, shuffle, trainingsetindex)
-                    upperbound=[inferencecfg[str(edge[0])+'_'+str(edge[1])]['intra_max'] for edge in partaffinityfield_graph]
-                    print(upperbound)
-                
-                assert(0==1)
-                        
+                    upperbound = np.array([float(inferenceboundscfg[str(edge[0])+'_'+str(edge[1])]['intra_max']) for edge in partaffinityfield_graph])
+                    lowerbound = np.array([float(inferenceboundscfg[str(edge[0])+'_'+str(edge[1])]['intra_min']) for edge in partaffinityfield_graph])                       
+                    upperbound*=1.25
+                    lowerbound*=.5 #SLACK!
+                    print(upperbound,lowerbound)
+                else:
+                    lowerbound=None
+                    upperbound=None
 
                 if PAF is None:
                     PAF=np.arange(len(partaffinityfield_graph)) # THIS CAN BE A SUBSET!
@@ -979,11 +986,12 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
                     mot_tracker = trackingutils.Sort(inferencecfg)
                 else:
                     mot_tracker = trackingutils.SORT(numjoints, inferencecfg['max_age'], inferencecfg['min_hits'])
+                
                 Tracks={}
                 for index,imname in tqdm(enumerate(imnames)):
                     animals = inferenceutils.assemble_individuals(inferencecfg, data[imname], numjoints, BPTS, iBPTS,
                                                                   PAF, partaffinityfield_graph, linkingpartaffinityfield_graph,
-                                                                  printintermediate)
+                                                                  lowerbound,upperbound,printintermediate)
                     if track_method == 'box':
                         #get corresponding bounding boxes!
                         bb=inferenceutils.individual2boundingbox(inferencecfg,animals,0) #TODO: get cropping parameters and utilize!

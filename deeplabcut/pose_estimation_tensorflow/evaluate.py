@@ -85,10 +85,8 @@ def calculatepafdistancebounds(config,shuffle=0,trainingsetindex=0,modelprefix='
         #plt.figure()
         Cutoff={}
         
-        path_inference_config = Path(modelfolder) / 'test' / 'inference_cfg.yaml'
-        inferencecfg = auxfun_multianimal.read_inferencecfg(path_inference_config,cfg)
-        
-        #inferencecfg={}
+        path_inferencebounds_config = Path(modelfolder) / 'test' / 'inferencebounds.yaml'
+        inferenceboundscfg={}
         for pi, edge in enumerate(partaffinityfield_graph):
             j1,j2=jointnames[edge[0]],jointnames[edge[1]]
             ds_within=[]
@@ -103,24 +101,24 @@ def calculatepafdistancebounds(config,shuffle=0,trainingsetindex=0,modelprefix='
                         #source=np.array(Data[ind,j1,'x'][jj],Data[ind,j1,'y'][jj])
                         #target=np.array(Data[ind2,j1,'x'][jj],Data[ind2,j2,'y'][jj])
                         if ind==ind2:
-                            
                             ds_within.extend(distances.values.flatten())
                         else:
                             ds_across.extend(distances.values.flatten())
             
             edgeencoding=str(edge[0])+'_'+str(edge[1])
-            inferencecfg[edgeencoding]={}
-            inferencecfg[edgeencoding]['intra_max']=str(round(np.nanmax(ds_within),numdigits))
-            inferencecfg[edgeencoding]['intra_min']=str(round(np.nanmin(ds_within),numdigits))
-            inferencecfg[edgeencoding]['inter_max']=str(round(np.nanmax(ds_within),numdigits))
-            inferencecfg[edgeencoding]['inter_min']=str(round(np.nanmin(ds_within),numdigits))
-            #print(inferencecfg)
+            inferenceboundscfg[edgeencoding]={}
+            inferenceboundscfg[edgeencoding]['intra_max']=str(round(np.nanmax(ds_within),numdigits))
+            inferenceboundscfg[edgeencoding]['intra_min']=str(round(np.nanmin(ds_within),numdigits))
+            inferenceboundscfg[edgeencoding]['inter_max']=str(round(np.nanmax(ds_across),numdigits))
+            inferenceboundscfg[edgeencoding]['inter_min']=str(round(np.nanmin(ds_across),numdigits))
+
+            print(inferenceboundscfg)
             #plt.subplot(len(partaffinityfield_graph),1,pi+1)
             #plt.hist(ds_within,bins=np.linspace(0,100,21),color='red')
             #plt.hist(ds_across,bins=np.linspace(0,100,21),color='blue')
 
-        auxiliaryfunctions.write_plainconfig(str(path_inference_config), dict(inferencecfg))
-        return inferencecfg
+        auxiliaryfunctions.write_plainconfig(str(path_inferencebounds_config), dict(inferenceboundscfg))
+        return inferenceboundscfg
     else:
         print("You might as well bring owls to Athens.")
         return {}

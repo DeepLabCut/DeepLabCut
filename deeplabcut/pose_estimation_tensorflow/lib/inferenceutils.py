@@ -60,7 +60,7 @@ def convertdetectiondict2listoflist(dataimage, BPTS, withid=False, evaluation=Fa
 
     return all_detections
 
-def matchconnections(cfg, dataimage, all_detections, iBPTS, partaffinityfield_graph, PAF, evaluation=False):
+def extractstrongconnections(cfg, dataimage, all_detections, iBPTS, partaffinityfield_graph, PAF,lowerbound=None, upperbound=None, evaluation=False):
     ''' Auxiliary function;  Returns list of connections (limbs) of a particular type.
 
     Specifically, per edge a list containing is returned: [index start (global), index stop (global) score, score with detection likelihoods, index start (local), index stop (local)]
@@ -89,7 +89,7 @@ def matchconnections(cfg, dataimage, all_detections, iBPTS, partaffinityfield_gr
     all_connections = []
     missing_connections = []
     for edge in range(len(partaffinityfield_graph)):
-        cand_a = all_detections[iBPTS[partaffinityfield_graph[edge][0]]] # transfer orignal bpt index to the one in all_detections!
+        cand_a = all_detections[iBPTS[partaffinityfield_graph[edge][0]]] # convert bpt index to the one in all_detections!
         cand_b = all_detections[iBPTS[partaffinityfield_graph[edge][1]]] #
         n_a = len(cand_a)
         n_b = len(cand_b)
@@ -97,18 +97,22 @@ def matchconnections(cfg, dataimage, all_detections, iBPTS, partaffinityfield_gr
             connection_candidate = []
             for i in range(n_a):
                 for j in range(n_b):
-                    KK=PAF[edge]
-                    d=distance(np.array(cand_a[i][:2]),np.array(cand_b[j][:2]))
-                    if evaluation:
-                        score_with_dist_prior=abs(dataimage['prediction']['costs'][KK][cfg.method][i,j])
+                    d=distance(np.array(cand_a[i][:2]),np.array(cand_b[j][:2])) #TODO: put into PAF cost code, as we anyway calculate distances
+                    if evaluation: 
+                        score_with_dist_prior=abs(dataimage['prediction']['costs'][PAF[edge]][cfg.method][i,j])
                     else:
-                        score_with_dist_prior=abs(dataimage['costs'][KK][cfg.method][i,j])
-                    si=cand_a[i][2] #detectedlikelihood[partaffinityfield_graph[k][0]][i].flatten()[0]
-                    sj=cand_b[j][2] #detectedlikelihood[partaffinityfield_graph[k][1]][j].flatten()[0]
-                    if score_with_dist_prior>cfg.pafthreshold and d<cfg.distnormalization and d>=cfg.distnormalizationLOWER and si*sj>cfg.detectionthresholdsquare:
-                        connection_candidate.append([i, j, score_with_dist_prior,
-                                                     score_with_dist_prior + np.sqrt(si * sj)*cfg.addlikelihoods])
-
+                        score_with_dist_prior=abs(dataimage['costs'][PAF[edge]][cfg.method][i,j])
+                    si=cand_a[i][2] #likelihoood for detection
+                    sj=cand_b[j][2]
+                    if lowerbound is None and upperbound is None:
+                        if score_with_dist_prior>cfg.pafthreshold and d<cfg.distnormalization and d>=cfg.distnormalizationLOWER and si*sj>cfg.detectionthresholdsquare:
+                            connection_candidate.append([i, j, score_with_dist_prior,
+                                                        score_with_dist_prior + np.sqrt(si * sj)*cfg.addlikelihoods])
+                    else: # partaffinityconnectionwise distance bounds, tailored!
+                        if score_with_dist_prior>cfg.pafthreshold and d<upperbound[edge] and d>=lowerbound[edge] and si*sj>cfg.detectionthresholdsquare:
+                            connection_candidate.append([i, j, score_with_dist_prior,
+                                                        score_with_dist_prior + np.sqrt(si * sj)*cfg.addlikelihoods])
+            
             #sort candidate connections by score!
             connection_candidate = sorted(connection_candidate, key=lambda x: x[2], reverse=True)
             connection = np.zeros((0, 5))
@@ -190,14 +194,18 @@ def linkjoints2individuals(cfg,all_detections,all_connections, missing_connectio
 
 
 def assemble_individuals(inference_cfg, data, numjoints, BPTS, iBPTS,
-                         PAF, paf_graph, paf_links, print_intermediate=False):
+                         PAF, paf_graph, paf_links, 
+                         lowerbound, upperbound,print_intermediate=False):
+    
     # filter detections according to inferencecfg parameters
     all_detections = convertdetectiondict2listoflist(data, BPTS, withid=inference_cfg.withid)
-    # filter connectinos according to inferencecfg parameters
-    connection_all, special_k = matchconnections(inference_cfg, data,
-                                                 all_detections, iBPTS, paf_graph, PAF)
+    
+    # filter connections according to inferencecfg parameters
+    connection_all, missing_connections = extractstrongconnections(inference_cfg, data,
+                                                 all_detections, iBPTS, 
+                                                 paf_graph, PAF, lowerbound, upperbound)
     # assemble putative subsets
-    subset, candidate = linkjoints2individuals(inference_cfg, all_detections, connection_all, special_k,
+    subset, candidate = linkjoints2individuals(inference_cfg, all_detections, connection_all, missing_connections,
                                                paf_links, iBPTS, numjoints=numjoints)
     if print_intermediate:
         print(all_detections)
