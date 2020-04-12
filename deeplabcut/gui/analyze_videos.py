@@ -44,7 +44,7 @@ class Analyze_videos(wx.Panel):
         self.sizer.Add(icon, pos=(0, 9), flag=wx.TOP|wx.RIGHT|wx.ALIGN_RIGHT,border=5)
 
         line1 = wx.StaticLine(self)
-        self.sizer.Add(line1, pos=(1, 0), span=(1, 10),flag=wx.EXPAND|wx.BOTTOM, border=10)
+        self.sizer.Add(line1, pos=(1, 0), span=(1, 9),flag=wx.EXPAND|wx.BOTTOM, border=10)
 
         self.cfg_text = wx.StaticText(self, label="Select the config file")
         self.sizer.Add(self.cfg_text, pos=(2, 0), flag=wx.TOP|wx.LEFT, border=10)
@@ -79,30 +79,34 @@ class Analyze_videos(wx.Panel):
         videotypes = ['.avi', '.mp4', '.mov']
         self.videotype = wx.ComboBox(self,choices = videotypes,style = wx.CB_READONLY)
         self.videotype.SetValue('.avi')
-        videotype_text_boxsizer.Add(self.videotype,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+        videotype_text_boxsizer.Add(self.videotype,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
         shuffle_text = wx.StaticBox(self, label="Specify the shuffle")
         shuffle_boxsizer = wx.StaticBoxSizer(shuffle_text, wx.VERTICAL)
         self.shuffle = wx.SpinCtrl(self, value='1',min=0,max=100)
-        shuffle_boxsizer.Add(self.shuffle,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+        shuffle_boxsizer.Add(self.shuffle,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
         trainingset = wx.StaticBox(self, label="Specify the trainingset index")
         trainingset_boxsizer = wx.StaticBoxSizer(trainingset, wx.VERTICAL)
         self.trainingset = wx.SpinCtrl(self, value='0',min=0,max=100)
-        trainingset_boxsizer.Add(self.trainingset,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+        trainingset_boxsizer.Add(self.trainingset,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
-        destfolder_text = wx.StaticBox(self, label="Specify destination folder")
-        destfolderboxsizer = wx.StaticBoxSizer(destfolder_text, wx.VERTICAL)
-        self.sel_destfolder = wx.DirPickerCtrl(self, path="",style=wx.FLP_USE_TEXTCTRL,message="Choose the destination folder")
-        self.sel_destfolder.SetPath("None")
-        self.destfolder = None
-        self.sel_destfolder.Bind(wx.EVT_FILEPICKER_CHANGED, self.select_destfolder)
-        destfolderboxsizer.Add(self.sel_destfolder,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+        if self.cfg.get('multianimalproject', False):
+            pass
+        else:
+            #removing this as several downstream maDLC steps don't support dest_folder at this time:
+            destfolder_text = wx.StaticBox(self, label="Specify destination folder")
+            destfolderboxsizer = wx.StaticBoxSizer(destfolder_text, wx.VERTICAL)
+            self.sel_destfolder = wx.DirPickerCtrl(self, path="",style=wx.FLP_USE_TEXTCTRL,message="Choose the destination folder")
+            self.sel_destfolder.SetPath("None")
+            self.destfolder = None
+            self.sel_destfolder.Bind(wx.EVT_FILEPICKER_CHANGED, self.select_destfolder)
+            destfolderboxsizer.Add(self.sel_destfolder,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+            hbox2.Add(destfolderboxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
         hbox1.Add(videotype_text_boxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         hbox1.Add(shuffle_boxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         hbox1.Add(trainingset_boxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-        hbox2.Add(destfolderboxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
         boxsizer.Add(hbox1,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
@@ -191,11 +195,6 @@ class Analyze_videos(wx.Panel):
             self.sizer.Add(self.ok, pos=(7, 8), flag=wx.BOTTOM|wx.RIGHT, border=10)
             self.ok.Bind(wx.EVT_BUTTON, self.convert2_tracklets)
 
-
-            #self.ok = wx.Button(self, label="Step 2: Qual check Tracklets")
-            #self.sizer.Add(self.ok, pos=(8, 8), flag=wx.BOTTOM|wx.RIGHT, border=10)
-            #self.ok.Bind(wx.EVT_BUTTON, self.video_tracklets)
-
         self.reset = wx.Button(self, label="Reset")
         self.sizer.Add(self.reset, pos=(7, 1), span=(1, 1),flag=wx.BOTTOM|wx.RIGHT, border=10)
         self.reset.Bind(wx.EVT_BUTTON, self.reset_analyze_videos)
@@ -261,7 +260,7 @@ class Analyze_videos(wx.Panel):
         trainingsetindex = self.trainingset.GetValue()
 
         if self.cfg.get('multianimalproject', False):
-            print("what is going on")
+            print("Analyzing ... ")
         else:
             if self.csv.GetStringSelection() == "Yes":
                 save_as_csv = True
@@ -276,6 +275,7 @@ class Analyze_videos(wx.Panel):
             else:
                 filter = True
 
+            dest_folder = self.sel_destfolder.GetPath()
 
         if self.cfg['cropping']=='True':
             crop = self.cfg['x1'], self.cfg['x2'], self.cfg['y1'], self.cfg['y2']
@@ -284,7 +284,7 @@ class Analyze_videos(wx.Panel):
 
         if self.cfg.get('multianimalproject', False):
             scorername = deeplabcut.analyze_videos(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle,
-                                                     trainingsetindex=trainingsetindex, gputouse=None, destfolder=self.destfolder, cropping=crop)
+                                                     trainingsetindex=trainingsetindex, gputouse=None, cropping=crop)
             if self.create_video_with_all_detections.GetStringSelection() == "Yes":
                 trainFrac = self.cfg['TrainingFraction'][trainingsetindex]
                 scorername, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(self.cfg,shuffle,trainFraction=trainFrac)
@@ -294,17 +294,19 @@ class Analyze_videos(wx.Panel):
 
 
         else:
+            print("Placing output files at: "+dest_folder)
             scorername = deeplabcut.analyze_videos(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle,
                                                      trainingsetindex=trainingsetindex, gputouse=None, save_as_csv=save_as_csv,
-                                                      destfolder=self.destfolder, cropping=crop, dynamic=dynamic)
+                                                      destfolder=dest_folder, cropping=crop, dynamic=dynamic)
             if self.filter.GetStringSelection() == "Yes":
                 deeplabcut.filterpredictions(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle,
                                                 trainingsetindex=trainingsetindex, filtertype='median', windowlength=5,
-                                                save_as_csv=True, destfolder=self.destfolder)
+                                                save_as_csv=True, destfolder=dest_folder)
 
             if self.trajectory.GetStringSelection() == "Yes":
                 deeplabcut.plot_trajectories(self.config, self.filelist, displayedbodyparts=self.bodyparts,
-                                               videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex, filtered=True, showfigures=False, destfolder=self.destfolder)
+                                               videotype=self.videotype.GetValue(), shuffle=shuffle, trainingsetindex=trainingsetindex,
+                                               filtered=True, showfigures=False, destfolder=dest_folder)
 
 
     def reset_analyze_videos(self,event):
