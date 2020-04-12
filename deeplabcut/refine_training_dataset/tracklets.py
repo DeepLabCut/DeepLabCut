@@ -551,6 +551,7 @@ class TrackletVisualizer:
                                 facecolor='darkgray', alpha=0.2)
             trans = mtransforms.blended_transform_factory(self.ax_slider.transData, self.ax_slider.transAxes)
             self.ax_slider.vlines(np.flatnonzero(mask), 0, 0.5, color='darkorange', transform=trans)
+        self.fig.canvas.draw_idle()
 
     def on_scroll(self, event):
         cur_xlim = self.ax1.get_xlim()
@@ -589,14 +590,26 @@ class TrackletVisualizer:
                     self.cuts = []
                     self.ax_slider.lines = []
         elif event.key == 'backspace':
-            try:
-                self.cuts.pop()
-                self.ax_slider.lines.pop()
-                if not len(self.cuts) == 2:
-                    self.clean_collections()
-                self.fig.canvas.draw_idle()
-            except IndexError:
-                pass
+            if not self.dps:  # Last flag deletion
+                try:
+                    self.cuts.pop()
+                    self.ax_slider.lines.pop()
+                    if not len(self.cuts) == 2:
+                        self.clean_collections()
+                except IndexError:
+                    pass
+            else:  # Smart point removal
+                i = np.nanargmin([self.calc_distance(*dp.point.center, event.xdata, event.ydata)
+                                  for dp in self.dps])
+                closest_dp = self.dps[i]
+                label = closest_dp.individual_names, closest_dp.bodyParts
+                closest_dp.disconnect()
+                closest_dp.point.remove()
+                self.dps.remove(closest_dp)
+                ind = self.manager._label_pairs.index(label)
+                self.manager.xy[ind, self._curr_frame] = np.nan
+                self.manager.prob[ind, self._curr_frame] = np.nan
+            self.fig.canvas.draw_idle()
         elif event.key == 'l':
             self.selector.toggle()
         elif event.key == 'd':
@@ -760,6 +773,10 @@ class TrackletVisualizer:
             self.display_points(self.curr_frame)
             self.display_trails(self.curr_frame)
             self.update_vlines(self.curr_frame)
+
+    @staticmethod
+    def calc_distance(x1, y1, x2, y2):
+        return np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
 
 def refine_tracklets(config, pickle_or_h5_file, video,
