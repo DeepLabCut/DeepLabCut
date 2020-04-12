@@ -64,14 +64,14 @@ class MainFrame(wx.Frame):
         self.statusbar.SetStatusText("")
 
         self.SetSizeHints(wx.Size(self.gui_size)) #  This sets the minimum size of the GUI. It can scale now!
-        
+
 ###################################################################################################################################################
 # Spliting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
         topSplitter = wx.SplitterWindow(self)
 
         self.image_panel = ImagePanel(topSplitter, config,self.gui_size)
         self.widget_panel = WidgetPanel(topSplitter)
-        
+
         topSplitter.SplitHorizontally(self.image_panel, self.widget_panel,sashPosition=self.gui_size[1]*0.83)#0.9
         topSplitter.SetSashGravity(1)
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -94,24 +94,24 @@ class MainFrame(wx.Frame):
         self.widget_panel.SetSizer(widgetsizer)
         self.widget_panel.SetSizerAndFit(widgetsizer)
         self.widget_panel.Layout()
-        
+
 # Variables initialization
         self.image = image
         self.coords = []
         self.figure = Figure()
         self.axes = self.figure.add_subplot(111)
-        self.cfg = auxiliaryfunctions.read_config(config)
+        #self.cfg = auxiliaryfunctions.read_config(config)
         MainFrame.show_image(self)
 
     def quitButton(self, event):
         """
         Quits the GUI
         """
-        self.statusbar.SetStatusText("")
-        dlg = wx.MessageDialog(None,"Are you sure?", "Quit!",wx.YES_NO | wx.ICON_WARNING)
-        result = dlg.ShowModal()
-        if result == wx.ID_YES:
-            self.Destroy()
+        #self.statusbar.SetStatusText("")
+        #dlg = wx.MessageDialog(None,"Are you sure?", "Quit!",wx.YES_NO | wx.ICON_WARNING)
+        #result = dlg.ShowModal()
+        #if result == wx.ID_YES:
+        self.Destroy()
 
     def show_image(self):
         self.figure,self.axes,self.canvas = self.image_panel.getfigure()
@@ -119,8 +119,8 @@ class MainFrame(wx.Frame):
         self.figure.canvas.draw()
         self.cid = RectangleSelector(self.axes, self.line_select_callback,drawtype='box', useblit=False,button=[1], minspanx=5, minspany=5,spancoords='pixels',interactive=True)
         self.canvas.mpl_connect('key_press_event', self.cid)
-        
-        
+
+
     def line_select_callback(self,eclick, erelease):
         'eclick and erelease are the press and release events'
         global coords
@@ -129,7 +129,7 @@ class MainFrame(wx.Frame):
         coords = [str(int(new_x1)),str(int(new_x2)),str(int(new_y1)),str(int(new_y2))]
         self.coords = coords
         return(self.coords)
-        
+
     def helpButton(self,event):
         """
         Opens Instructions

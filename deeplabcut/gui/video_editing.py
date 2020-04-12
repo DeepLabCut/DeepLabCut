@@ -70,13 +70,6 @@ class Video_Editing(wx.Panel):
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
 
-        videotype_text = wx.StaticBox(self, label="Specify the videotype")
-        videotype_text_boxsizer = wx.StaticBoxSizer(videotype_text, wx.VERTICAL)
-        videotypes = ['.avi', '.mp4', '.mov']
-        self.videotype = wx.ComboBox(self,choices = videotypes,style = wx.CB_READONLY)
-        self.videotype.SetValue('.avi')
-        videotype_text_boxsizer.Add(self.videotype,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
-
         video_height = wx.StaticBox(self, label="Donwsample: specify the video height")
         vheight_boxsizer = wx.StaticBoxSizer(video_height, wx.VERTICAL)
         self.height = wx.SpinCtrl(self, value='256',min=0,max=1000)
@@ -85,11 +78,10 @@ class Video_Editing(wx.Panel):
         self.rotate = wx.RadioBox(self, label='Donwsample: rotate video?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
         self.rotate.SetSelection(1)
 
-        hbox1.Add(videotype_text_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         hbox1.Add(vheight_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         hbox1.Add(self.rotate,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         boxsizer.Add(hbox1,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
-        self.sizer.Add(boxsizer, pos=(4, 0), span=(1, 6),flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT , border=10)
+        self.sizer.Add(boxsizer, pos=(4, 0), span=(1, 5),flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT , border=10)
 
         video_start = wx.StaticBox(self, label="Shorten: start time (sec)")
         vstart_boxsizer = wx.StaticBoxSizer(video_start, wx.VERTICAL)
@@ -110,12 +102,16 @@ class Video_Editing(wx.Panel):
         self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
 
         self.ok = wx.Button(self, label="DOWNSAMPLE")
-        self.sizer.Add(self.ok, pos=(5, 3))
+        self.sizer.Add(self.ok, pos=(5, 2))
         self.ok.Bind(wx.EVT_BUTTON, self.downsample_video)
 
         self.ok = wx.Button(self, label="SHORTEN")
-        self.sizer.Add(self.ok, pos=(5, 4))
+        self.sizer.Add(self.ok, pos=(5, 3))
         self.ok.Bind(wx.EVT_BUTTON, self.shorten_video)
+
+        self.ok = wx.Button(self, label="CROP")
+        self.sizer.Add(self.ok, pos=(5, 4))
+        self.ok.Bind(wx.EVT_BUTTON, self.crop_video)
 
         self.reset = wx.Button(self, label="Reset")
         self.sizer.Add(self.reset, pos=(5, 1), span=(1, 1),flag=wx.BOTTOM|wx.RIGHT, border=10)
@@ -140,7 +136,6 @@ class Video_Editing(wx.Panel):
         if dlg.ShowModal() == wx.ID_OK:
             self.vids = dlg.GetPaths()
             self.filelist = (self.filelist + self.vids)#[0]
-            print(self.filelist)
             self.sel_vids.SetLabel("%s Video selected" %len(self.filelist))
 
     def downsample_video(self,event):
@@ -154,6 +149,9 @@ class Video_Editing(wx.Panel):
         def sweet_time_format(val):
             return str(datetime.timedelta(seconds=val))
         deeplabcut.ShortenVideo(self.filelist[0], start=sweet_time_format(self.vstart.GetValue()),stop=sweet_time_format(self.vstop.GetValue()))
+
+    def crop_video(self,event):
+        deeplabcut.CropVideo(self.config, self.filelist[0], useGUI=True)
 
     def help_function(self,event):
 

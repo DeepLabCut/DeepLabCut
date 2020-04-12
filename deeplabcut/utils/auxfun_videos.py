@@ -71,6 +71,77 @@ def ShortenVideo(vname,start='00:00:01',stop='00:01:00',outsuffix='short',outpat
     #subprocess.call(['ffmpeg','-i',vname,'-ss',str(start),'-to',str(stop),'-c:v','copy','-c:a', newfilename])
     return str(newfilename)
 
+def CropVideo(config,vname,width=256,height=256,origin1=0, origin2=0,outsuffix='cropped',outpath=None, useGUI=False):
+    """
+    Auxiliary function to crop a video and output it to the same folder with "outsuffix" appended in its name.
+    Width and height will control the new dimensions.
+
+    Returns the full path to the downsampled video!
+
+    ffmpeg -i in.mp4 -filter:v "crop=out_w:out_h:x:y" out.mp4
+
+    Parameter
+    ----------
+    vname : string
+        A string containing the full path of the video.
+
+    width: int
+        width of output video
+
+    height: int
+        height of output video.
+
+    outsuffix: str
+        Suffix for output videoname (see example).
+
+    outpath: str
+        Output path for saving video to (by default will be the same folder as the video)
+
+    rotateccw: bool
+        Default false, rotates counter-clockwise if true.
+
+    Linux/MacOs
+    >>> deeplabcut.CropVideo('/data/videos/mouse1.avi')
+
+    Crops the video using default values and saves it in /data/videos as mouse1cropped.avi
+
+    Windows:
+    >>> =deeplabcut.CropVideo('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi', width=220,height=320,outsuffix='cropped')
+
+    Crops the video to a width of 220 and height of 320 starting at the origin (top left) and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1cropped.avi
+    """
+    if outpath is None:
+        vidpath=os.path.dirname(vname)
+    else:
+        vidpath=outpath
+
+    if useGUI:
+        print("Please, select your coordinates (draw from top left to bottom right ...)")
+        from deeplabcut.utils import auxiliaryfunctions
+        from deeplabcut.utils import select_crop_parameters
+        clip = cv2.VideoCapture(vname)
+        if not clip.isOpened():
+            print('Video could not be opened. Skipping...')
+
+        success, frame = clip.read()
+        if not success:
+            print('Frame could not be read. Skipping...')
+
+        coords = select_crop_parameters.show(config, frame[:, :, ::-1])
+        origin1 = coords[0]
+        origin2 = coords[2]
+        width = coords[1]
+        height = coords[3]
+        print(coords)
+        print(origin1, origin2, width, height)
+
+    newfilename=os.path.join(vidpath,str(Path(vname).stem)+str(outsuffix)+str(Path(vname).suffix))
+    print("Cropping and saving to name", newfilename)
+    command = f"ffmpeg -i {vname} -filter:v crop={width}:{height}:{origin1}:{origin2} -c:a copy {newfilename}"
+    subprocess.call(command, shell=True)
+    return str(newfilename)
+
+
 def DownSampleVideo(vname,width=-1,height=200,outsuffix='downsampled',outpath=None,rotateccw=False):
     """
     Auxiliary function to downsample a video and output it to the same folder with "outsuffix" appended in its name.
