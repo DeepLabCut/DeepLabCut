@@ -76,7 +76,6 @@ class Analyze_videos(wx.Panel):
 
         videotype_text = wx.StaticBox(self, label="Specify the videotype")
         videotype_text_boxsizer = wx.StaticBoxSizer(videotype_text, wx.VERTICAL)
-
         videotypes = ['.avi', '.mp4', '.mov']
         self.videotype = wx.ComboBox(self,choices = videotypes,style = wx.CB_READONLY)
         self.videotype.SetValue('.avi')
@@ -118,7 +117,6 @@ class Analyze_videos(wx.Panel):
 
             tracker_text = wx.StaticBox(self, label="Specify the Tracker Method!")
             tracker_text_boxsizer = wx.StaticBoxSizer(tracker_text, wx.VERTICAL)
-
             trackertypes = ['skeleton', 'box', 'clowncats']
             self.trackertypes = wx.ComboBox(self,choices = trackertypes,style = wx.CB_READONLY)
             self.trackertypes.SetValue('box')
@@ -287,10 +285,6 @@ class Analyze_videos(wx.Panel):
         if self.cfg.get('multianimalproject', False):
             scorername = deeplabcut.analyze_videos(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle,
                                                      trainingsetindex=trainingsetindex, gputouse=None, destfolder=self.destfolder, cropping=crop)
-            if self.filter.GetStringSelection() == "Yes":
-                deeplabcut.filterpredictions(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle,
-                                              trainingsetindex=trainingsetindex, filtertype='median', windowlength=5, save_as_csv=True,
-                                              destfolder=self.destfolder)
 
         else:
             scorername = deeplabcut.analyze_videos(self.config, self.filelist, videotype=self.videotype.GetValue(), shuffle=shuffle,

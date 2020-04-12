@@ -63,7 +63,7 @@ class Refine_tracklets(wx.Panel):
         self.data_text = wx.StaticText(self, label="Select the tracklet data")
         sizer.Add(self.data_text, pos=(4, 0), flag=wx.TOP | wx.LEFT, border=5)
         self.sel_datafile = wx.FilePickerCtrl(self, path="", style=wx.FLP_USE_TEXTCTRL,
-                                              message="Open tracklet data", wildcard="Pickle files (*.pickle)|*.pickle")
+                                              message="Open tracklet data")#wildcard="Pickle files (*.pickle)|*.pickle")
         sizer.Add(self.sel_datafile, pos=(4, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND, border=5)
         self.sel_datafile.Bind(wx.EVT_FILEPICKER_CHANGED, self.select_datafile)
 
@@ -80,36 +80,88 @@ class Refine_tracklets(wx.Panel):
         slider_track_sizer.Add(self.slider_track, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
         hbox.Add(slider_track_sizer, 10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
+        traillength_text = wx.StaticBox(self, label="Trail Length (visualization)")
+        traillength_sizer = wx.StaticBoxSizer(traillength_text, wx.VERTICAL)
+        self.length_track = wx.SpinCtrl(self, value='25')
+        traillength_sizer.Add(self.length_track, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+        hbox.Add(traillength_sizer, 10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+
         sizer.Add(hbox, pos=(5, 0), flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT , border=10)
 
-        self.help_button = wx.Button(self, label='Help')
-        sizer.Add(self.help_button, pos=(6, 0), flag=wx.LEFT, border=10)
-        self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
+        #NEW ROW:
+        hbox2 = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.ok = wx.Button(self, label="Ok")
+        videotype_text = wx.StaticBox(self, label="Specify the videotype")
+        videotype_text_boxsizer = wx.StaticBoxSizer(videotype_text, wx.VERTICAL)
+        videotypes = ['.avi', '.mp4', '.mov']
+        self.videotype = wx.ComboBox(self,choices = videotypes,style = wx.CB_READONLY)
+        self.videotype.SetValue('.avi')
+        videotype_text_boxsizer.Add(self.videotype,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+
+        shuffle_text = wx.StaticBox(self, label="Specify the shuffle")
+        shuffle_boxsizer = wx.StaticBoxSizer(shuffle_text, wx.VERTICAL)
+        self.shuffle = wx.SpinCtrl(self, value='1',min=0,max=100)
+        shuffle_boxsizer.Add(self.shuffle,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+
+        trainingset = wx.StaticBox(self, label="Specify the trainingset index")
+        trainingset_boxsizer = wx.StaticBoxSizer(trainingset, wx.VERTICAL)
+        self.trainingset = wx.SpinCtrl(self, value='0',min=0,max=100)
+        trainingset_boxsizer.Add(self.trainingset,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+
+        filter_text = wx.StaticBox(self, label="filter type")
+        filter_sizer = wx.StaticBoxSizer(filter_text, wx.VERTICAL)
+        filtertypes = ['median']
+        self.filter_track = wx.ComboBox(self,choices = filtertypes,style = wx.CB_READONLY)
+        self.filter_track.SetValue('median')
+        filter_sizer.Add(self.filter_track, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+
+        filterlength_text = wx.StaticBox(self, label="filter: window length")
+        filterlength_sizer = wx.StaticBoxSizer(filterlength_text, wx.VERTICAL)
+        self.filterlength_track = wx.SpinCtrl(self, value='5')
+        filterlength_sizer.Add(self.filterlength_track, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+
+        hbox2.Add(videotype_text_boxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+        hbox2.Add(shuffle_boxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+        hbox2.Add(trainingset_boxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+        hbox2.Add(filter_sizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+        hbox2.Add(filterlength_sizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+        sizer.Add(hbox2, pos=(7, 0), flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT , border=10)
+
+        self.ok = wx.Button(self, label="Step1: Launch GUI")
         sizer.Add(self.ok, pos=(6, 3))
         self.ok.Bind(wx.EVT_BUTTON, self.refine_tracklets)
 
-        self.save = wx.Button(self, label='Save')
-        sizer.Add(self.save, pos=(6, 4))
-        self.save.Bind(wx.EVT_BUTTON, self.save_tracklets)
-        self.save.Enable(False)
+        self.help_button = wx.Button(self, label='Help')
+        sizer.Add(self.help_button, pos=(8, 0), flag=wx.LEFT, border=10)
+        self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
 
         self.reset = wx.Button(self, label="Reset")
-        sizer.Add(self.reset, pos=(6, 1), flag=wx.BOTTOM|wx.RIGHT, border=10)
+        sizer.Add(self.reset, pos=(8, 1), flag=wx.BOTTOM|wx.RIGHT, border=10)
         self.reset.Bind(wx.EVT_BUTTON, self.reset_refine_tracklets)
+
+        self.filter = wx.Button(self, label=" Step2: Filter Tracks")
+        sizer.Add(self.filter, pos=(8, 3), flag=wx.BOTTOM|wx.RIGHT, border=10)
+        self.filter.Bind(wx.EVT_BUTTON, self.filter_after_refinement)
 
         sizer.AddGrowableCol(2)
 
         self.SetSizer(sizer)
         sizer.Fit(self)
 
+
+    def filter_after_refinement(self,event): #why is video type needed?
+        shuffle = self.shuffle.GetValue()
+        trainingsetindex = self.trainingset.GetValue()
+        deeplabcut.filterpredictions(self.config, [self.video], videotype= self.videotype.GetValue(),
+                                          shuffle=shuffle, trainingsetindex=trainingsetindex,
+                                          filtertype=self.filter_track.GetValue(), windowlength=self.filterlength_track.GetValue())
+
     def help_function(self,event):
 
         filepath= 'help.txt'
         f = open(filepath, 'w')
         sys.stdout = f
-        fnc_name = 'deeplabcut.refine_training_dataset.tracklets.TrackletManager'
+        fnc_name = 'deeplabcut.refine_tracklets'
         pydoc.help(fnc_name)
         f.close()
         sys.stdout = sys.__stdout__
@@ -131,6 +183,10 @@ class Refine_tracklets(wx.Panel):
         self.video = self.sel_video.GetPath()
 
     def refine_tracklets(self,event):
+
+        deeplabcut.refine_tracklets(self.config, self.datafile, self.video,
+                     self.slider_swap.GetValue() / 100, self.slider_track.GetValue() / 100, trail_len=50)
+        '''
         self.manager = tracklets.TrackletManager(self.config, self.slider_swap.GetValue() / 100,
                                                  self.slider_track.GetValue() / 100)
         self.manager.load_tracklets_from_pickle(self.datafile)
@@ -138,11 +194,13 @@ class Refine_tracklets(wx.Panel):
         self.viz = tracklets.TrackletVisualizer(self.manager, self.video, 30)
         self.viz.show()
         self.save.Enable(True)
+        '''
 
+    '''
     def save_tracklets(self, event):
         self.manager.save()
         print("File (...tracks.h5) is saved! Now your research questions can be tackled! Thanks for using DeepLabCut!")
-
+    '''
     def reset_refine_tracklets(self,event):
         """
         Reset to default
@@ -155,4 +213,5 @@ class Refine_tracklets(wx.Panel):
         self.sel_video.SetPath("")
         self.slider_swap.SetValue(1)
         self.slider_track.SetValue(1)
-        self.save.Enable(False)
+        self.length_track.SetValue(25)
+        #self.save.Enable(False)
