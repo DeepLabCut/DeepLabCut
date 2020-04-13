@@ -122,18 +122,18 @@ def CropVideo(config,vname,width=256,height=256,origin1=0, origin2=0,outsuffix='
         clip = cv2.VideoCapture(vname)
         if not clip.isOpened():
             print('Video could not be opened. Skipping...')
+            return
 
-        success, frame = clip.read()
-        if not success:
-            print('Frame could not be read. Skipping...')
+        success = False
+        # Read the video until a frame is successfully read
+        while not success:
+            success, frame = clip.read()
 
         coords = select_crop_parameters.show(config, frame[:, :, ::-1])
         origin1 = coords[0]
         origin2 = coords[2]
-        width = coords[1]
-        height = coords[3]
-        print(coords)
-        print(origin1, origin2, width, height)
+        width = int(coords[1]) - int(coords[0])
+        height = int(coords[3]) - int(coords[2])
 
     newfilename=os.path.join(vidpath,str(Path(vname).stem)+str(outsuffix)+str(Path(vname).suffix))
     print("Cropping and saving to name", newfilename)
