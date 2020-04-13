@@ -101,16 +101,10 @@ class Create_new_project(wx.Panel):
         hbox2.Add(self.sel_wd,0, wx.ALL, -1)
         self.boxsizer.Add(hbox2)
 
-        self.copy_choice = wx.CheckBox(self, label="Do you want to copy the videos?")
+        self.copy_choice = wx.CheckBox(self, label="Copy the videos")
         self.copy_choice.Bind(wx.EVT_CHECKBOX,self.activate_copy_videos)
         hbox3.Add(self.copy_choice)
         hbox3.AddSpacer(155)
-        self.yes = wx.RadioButton( self, -1, "No", style = wx.RB_GROUP)
-        self.no = wx.RadioButton( self, -1, "Yes")
-        self.yes.Enable(False)
-        self.no.Enable(False)
-        hbox3.Add(self.yes, 0, wx.ALL, -1)
-        hbox3.Add(self.no, 0, wx.ALL, -1)
         self.boxsizer.Add(hbox3)
 
         self.multi_choice = wx.CheckBox(self, label="Is it a multi-animal project?")
@@ -264,11 +258,9 @@ class Create_new_project(wx.Panel):
         """
         self.change_copy = event.GetEventObject()
         if self.change_copy.GetValue() == True:
-            self.yes.Enable(False)
-            self.no.Enable(True)
+            self.copy = True
         else:
-            self.yes.Enable(False)
-            self.no.Enable(False)
+            self.copy = False
 
     def activate_change_wd(self,event):
         """
@@ -280,9 +272,6 @@ class Create_new_project(wx.Panel):
         else:
             self.sel_wd.Enable(False)
 
-    def select_copy_videos(self, event):
-        btn = event.GetEventObject()
-        self.copy = btn.GetLabel()
 
     def select_working_dir(self,event):
         cwd = os.getcwd()
@@ -308,8 +297,9 @@ class Create_new_project(wx.Panel):
         else:
             self.task = self.proj_name_txt_box.GetValue()
             self.scorer = self.exp_txt_box.GetValue()
+
             if self.task!="" and self.scorer!="" and self.filelist!=[]:
-                self.cfg=deeplabcut.create_new_project(self.task,self.scorer,self.filelist,self.dir,self.copy,
+                self.cfg=deeplabcut.create_new_project(self.task,self.scorer,self.filelist,self.dir,copy_videos=self.copy,
                                                        multianimal=self.multi_choice.IsChecked())
             else:
                 wx.MessageBox('Some of the enteries are missing.\n\nMake sure that the task and experimenter name are specified and videos are selected!', 'Error', wx.OK | wx.ICON_ERROR)
@@ -401,6 +391,6 @@ class Create_new_project(wx.Panel):
             self.change_copy.SetValue(False)
         except:
             pass
-        self.yes.Enable(False)
-        self.no.Enable(False)
+        #self.yes.Enable(False)
+        #self.no.Enable(False)
         self.sel_wd.Enable(False)
