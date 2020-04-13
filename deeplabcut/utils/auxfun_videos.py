@@ -132,8 +132,11 @@ def CropVideo(config,vname,width=256,height=256,origin1=0, origin2=0,outsuffix='
         coords = select_crop_parameters.show(config, frame[:, :, ::-1])
         origin1 = coords[0]
         origin2 = coords[2]
-        width = coords[1]
-        height = coords[3]
+        width = int(coords[1]) - int(coords[0])
+        height = int(coords[3]) - int(coords[2])
+        #width = coords[1]
+        #height = coords[3]
+        print(origin1, origin2, width, height)
 
     newfilename=os.path.join(vidpath,str(Path(vname).stem)+str(outsuffix)+str(Path(vname).suffix))
     print("Cropping and saving to name", newfilename)
