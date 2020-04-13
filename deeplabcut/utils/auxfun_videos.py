@@ -118,10 +118,11 @@ def CropVideo(vname,width=256,height=256,origin1=0, origin2=0,outsuffix='cropped
     if useGUI:
         print("Please, select your coordinates (draw from top left to bottom right ...)")
         coords = draw_bbox(vname)
-        if coords:
-            origin1, origin2 = coords[:2]
-            width = int(coords[2]) - int(coords[0])
-            height = int(coords[3]) - int(coords[1])
+        if not coords:
+            return
+        origin1, origin2 = coords[:2]
+        width = int(coords[2]) - int(coords[0])
+        height = int(coords[3]) - int(coords[1])
 
     newfilename=os.path.join(vidpath,str(Path(vname).stem)+str(outsuffix)+str(Path(vname).suffix))
     print("Cropping and saving to name", newfilename)
@@ -222,6 +223,7 @@ def draw_bbox(video):
     rs = RectangleSelector(ax, line_select_callback, drawtype='box',
                            minspanx=5, minspany=5, interactive=True, spancoords='pixels',
                            rectprops=dict(facecolor='red', edgecolor='black', alpha=0.5, fill=True))
+    plt.show()
     fig.canvas.start_event_loop(timeout=-1)
     plt.close(fig)
     return bbox
