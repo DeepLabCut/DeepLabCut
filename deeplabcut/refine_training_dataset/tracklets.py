@@ -500,12 +500,11 @@ class TrackletVisualizer:
             self._curr_frame = self.curr_frame
             self.scat.set_offsets([])
             self.add_draggable_points()
-            self.fig.canvas.draw_idle()
         else:
             self.save_coords()
             self.clean_points()
             self.display_points(self._curr_frame)
-            self.fig.canvas.draw_idle()
+        self.fig.canvas.draw_idle()
 
     def add_point(self, center, animal, bodypart, **kwargs):
         circle = patches.Circle(center, **kwargs)
@@ -611,9 +610,9 @@ class TrackletVisualizer:
                 self.manager.prob[ind, self._curr_frame] = np.nan
             self.fig.canvas.draw_idle()
         elif event.key == 'l':
-            self.selector.toggle()
+            self.lasso_toggle.set_active(not self.lasso_toggle.get_active)
         elif event.key == 'd':
-            self.toggle_draggable_points()
+            self.drag_toggle.set_active(not self.drag_toggle.get_active)
         elif event.key == 'alt+right':
             self.player.forward()
         elif event.key == 'alt+left':
