@@ -182,6 +182,10 @@ def extract_frames(config, mode='automatic', algo='kmeans', crop=False, userfeed
                     clip = VideoFileClip(video)
                     fps = clip.fps
                     nframes = int(np.ceil(clip.duration * 1. / fps))
+                if not nframes:
+                    print('Video could not be opened. Skipping...')
+                    continue
+
                 indexlength = int(np.ceil(np.log10(nframes)))
 
                 fname = Path(video)
