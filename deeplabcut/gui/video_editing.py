@@ -151,7 +151,7 @@ class Video_Editing(wx.Panel):
         deeplabcut.ShortenVideo(self.filelist[0], start=sweet_time_format(self.vstart.GetValue()),stop=sweet_time_format(self.vstop.GetValue()))
 
     def crop_video(self,event):
-        deeplabcut.CropVideo(self.config, self.filelist[0], useGUI=True)
+        deeplabcut.CropVideo(self.filelist[0], useGUI=True)
 
     def help_function(self,event):
 
