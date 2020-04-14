@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pickle
 import re
-from deeplabcut.utils.auxiliaryfunctions import read_config
+from deeplabcut.utils.auxiliaryfunctions import read_config, attempttomakefolder
 from deeplabcut.generate_training_dataset import auxfun_drag_label_multiple_individuals
 from functools import partial
 from matplotlib.path import Path
@@ -143,7 +143,7 @@ class TrackletManager:
 
         manager.find_swapping_bodypart_pairs()
         """
-
+        self.config = config
         self.cfg = read_config(config)
         self.min_swap_frac = min_swap_frac
         self.min_tracklet_frac = min_tracklet_frac
@@ -151,6 +151,7 @@ class TrackletManager:
         self.filename = ''
         self.data = None
         self.xy = None
+        self._xy = None
         self.prob = None
         self.nframes = 0
         self.times = []
@@ -273,6 +274,7 @@ class TrackletManager:
         with open(filename, 'rb') as file:
             tracklets = pickle.load(file)
         self._load_tracklets(tracklets, auto_fill)
+        self._xy = self.xy.copy()
 
     def load_tracklets_from_hdf(self, filename):
         self.filename = filename
@@ -291,6 +293,7 @@ class TrackletManager:
         bodyparts = self.bodyparts.unique()
         self.tracklet2bp = self.bodyparts.map(dict(zip(bodyparts, range(len(bodyparts))))).tolist()[::3]
         self._label_pairs = list(idx.droplevel(['scorer', 'coords']).unique())
+        self._xy = self.xy.copy()
 
     def calc_completeness(self, xy, by_individual=False):
         comp = np.sum(~np.isnan(xy).any(axis=2), axis=1)
@@ -367,6 +370,10 @@ class TrackletManager:
         columns = self.format_multiindex()
         return pd.DataFrame(self.flatten_data(), columns=columns, index=self.times)
 
+    def find_edited_frames(self):
+        mask = np.isclose(self.xy, self._xy, equal_nan=True).all(axis=(0, 2))
+        return np.flatnonzero(~mask)
+
     def save(self, output_name='', *args):
         df = self.format_data()
         if not output_name:
@@ -378,11 +385,12 @@ class TrackletVisualizer:
     def __init__(self, manager, videoname, trail_len=50):
         self.manager = manager
         self.cmap = plt.cm.get_cmap(manager.cfg['colormap'], len(set(manager.tracklet2id)))
+        self.videoname = videoname
         self.video = cv2.VideoCapture(videoname)
         if not self.video.isOpened():
             raise IOError('Video could not be opened.')
-        nframes = int(self.video.get(cv2.CAP_PROP_FRAME_COUNT))
-        if nframes != manager.nframes:
+        self.nframes = int(self.video.get(cv2.CAP_PROP_FRAME_COUNT))
+        if self.nframes != manager.nframes:
             print('Video duration and data length do not match. Continuing nonetheless...')
         self.trail_len = trail_len
         self.help_text = ''
@@ -500,12 +508,11 @@ class TrackletVisualizer:
             self._curr_frame = self.curr_frame
             self.scat.set_offsets([])
             self.add_draggable_points()
-            self.fig.canvas.draw_idle()
         else:
             self.save_coords()
             self.clean_points()
             self.display_points(self._curr_frame)
-            self.fig.canvas.draw_idle()
+        self.fig.canvas.draw_idle()
 
     def add_point(self, center, animal, bodypart, **kwargs):
         circle = patches.Circle(center, **kwargs)
@@ -611,9 +618,9 @@ class TrackletVisualizer:
                 self.manager.prob[ind, self._curr_frame] = np.nan
             self.fig.canvas.draw_idle()
         elif event.key == 'l':
-            self.selector.toggle()
+            self.lasso_toggle.set_active(not self.lasso_toggle.get_active)
         elif event.key == 'd':
-            self.toggle_draggable_points()
+            self.drag_toggle.set_active(not self.drag_toggle.get_active)
         elif event.key == 'alt+right':
             self.player.forward()
         elif event.key == 'alt+left':
@@ -778,6 +785,72 @@ class TrackletVisualizer:
     def calc_distance(x1, y1, x2, y2):
         return np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
+    def export_to_training_data(self):
+        import os
+        from skimage import io
+
+        inds = self.manager.find_edited_frames()
+        if not len(inds):
+            print('No frames have been manually edited.')
+            return
+
+        # Save additional frames to the labeled-data directory
+        strwidth = int(np.ceil(np.log10(self.nframes)))
+        vname = os.path.splitext(os.path.basename(self.videoname))[0]
+        tmpfolder = os.path.join(self.manager.cfg['project_path'], 'labeled-data', vname)
+        if os.path.isdir(tmpfolder):
+            print("Frames from video", vname, " already extracted (more will be added)!")
+        else:
+            attempttomakefolder(tmpfolder)
+        index = []
+        for ind in inds:
+            imagename = os.path.join(tmpfolder, "img" + str(ind).zfill(strwidth) + ".png")
+            index.append(os.path.join(*imagename.rsplit(os.path.sep, 3)[-3:]))
+            if not os.path.isfile(imagename):
+                self.video.set(cv2.CAP_PROP_POS_FRAMES, ind)
+                frame = self._read_frame()
+                if frame is None:
+                    print('Frame could not be read. Skipping...')
+                    continue
+                frame = frame.astype(np.ubyte)
+                if self.manager.cfg['cropping']:
+                    x1, x2, y1, y2 = [int(self.manager.cfg[key]) for key in ('x1', 'x2', 'y1', 'y2')]
+                    frame = frame[y1:y2, x1:x2]
+                io.imsave(imagename, frame)
+
+        # Store the newly-refined data
+        data = self.manager.format_data()
+        df = data.iloc[inds]
+        df.index = index
+        machinefile = os.path.join(tmpfolder, 'machinelabels-iter' + str(self.manager.cfg['iteration']) + '.h5')
+        if os.path.isfile(machinefile):
+            df_old = pd.read_hdf(machinefile, 'df_with_missing')
+            df_joint = pd.concat([df_old, df])
+            df_joint = df_joint[~df_joint.index.duplicated(keep='first')]
+            df_joint.to_hdf(machinefile, key='df_with_missing', mode='w')
+            df_joint.to_csv(os.path.join(tmpfolder, "machinelabels.csv"))
+        else:
+            df.to_hdf(machinefile, key='df_with_missing', mode='w')
+            df.to_csv(os.path.join(tmpfolder, "machinelabels.csv"))
+
+        # Merge with the already existing annotated data
+        df.columns.set_levels([self.manager.cfg['scorer']], level='scorer', inplace=True)
+        df.drop('likelihood', level='coords', axis=1, inplace=True)
+        output_path = os.path.join(tmpfolder, f'CollectedData_{self.manager.cfg["scorer"]}.h5')
+        if os.path.isfile(output_path):
+            print("A training dataset file is already found for this video. The refined machine labels are merged to this data!")
+            df_orig = pd.read_hdf(output_path, 'df_with_missing')
+            df_joint = pd.concat([df, df_orig])
+            # Now drop redundant ones keeping the first one [this will make sure that the refined machine file gets preference]
+            df_joint = df_joint[~df_joint.index.duplicated(keep='first')]
+            df_joint.sort_index(inplace=True)
+            df_joint.to_hdf(output_path, key='df_with_missing', mode='w')
+            df_joint.to_csv(output_path.replace('h5', 'csv'))
+        else:
+            df.sort_index(inplace=True)
+            df.to_hdf(output_path, key='df_with_missing', mode='w')
+            df.to_csv(output_path.replace('h5', 'csv'))
+
 
 def refine_tracklets(config, pickle_or_h5_file, video,
                      min_swap_frac=0., min_tracklet_frac=0., trail_len=50):
@@ -796,3 +869,12 @@ def convert_raw_tracks_to_h5(config, tracks_pickle, output_name=''):
     manager = TrackletManager(config, 0, 0)
     manager.load_tracklets_from_pickle(tracks_pickle)
     manager.save(output_name)
+
+
+config = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/silversideschooling-Valentina-2019-07-14/config.yaml'
+file = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/silversideschooling-Valentina-2019-07-14/videos/deeplc.menidia.school4.59rpm.S11.D.shortDLC_resnet50_silversideschoolingJul14shuffle0_30000tracks.h5'
+video = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/silversideschooling-Valentina-2019-07-14/videos/deeplc.menidia.school4.59rpm.S11.D.short.avi'
+manager = TrackletManager(config, 0, 0)
+manager.load_tracklets_from_hdf(file)
+viz = TrackletVisualizer(manager, video)
+viz.show()
