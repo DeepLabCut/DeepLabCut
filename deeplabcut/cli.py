@@ -478,16 +478,6 @@ def export_model(_, *args, **kwargs):
     \tThis is necessary to export to the model zoo, but not for live inference.
     """
 
-    print("ARGS :: ")
-    print(args)
-
-    print('\n\n')
-
-    print("KWARGS :: ")
-    print(kwargs)
-
-
-
     from deeplabcut import export_model
     export_model(*args, **kwargs)
 
