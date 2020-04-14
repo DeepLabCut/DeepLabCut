@@ -248,7 +248,7 @@ def export_model(cfg_path, iteration=None, shuffle=1, trainingsetindex=0, TFGPUi
     except FileNotFoundError:
         FileNotFoundError("The config.yaml file at %s does not exist." % cfg_path)
 
-    cfg['project_path'] = os.path.dirname(cfg_path)
+    cfg['project_path'] = os.path.dirname(os.path.realpath(cfg_path))
     cfg['iteration'] = iteration if iteration is not None else cfg['iteration']
     cfg['batch_size'] = cfg['batch_size'] if cfg['batch_size'] > 1 else 2
 
