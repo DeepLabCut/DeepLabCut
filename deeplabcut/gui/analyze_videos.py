@@ -320,6 +320,7 @@ class Analyze_videos(wx.Panel):
             self.filter.SetSelection(1)
             self.trajectory.SetSelection(1)
             self.dynamic.SetSelection(1)
+            self.sel_destfolder.SetPath("None")
         self.config = []
         self.sel_config.SetPath("")
         self.videotype.SetStringSelection(".avi")
@@ -327,7 +328,6 @@ class Analyze_videos(wx.Panel):
         self.filelist = []
         self.shuffle.SetValue(1)
         self.trainingset.SetValue(0)
-        self.sel_destfolder.SetPath("None")
         if self.draw_skeleton.IsShown():
             self.draw_skeleton.SetSelection(1)
             self.draw_skeleton.Hide()
