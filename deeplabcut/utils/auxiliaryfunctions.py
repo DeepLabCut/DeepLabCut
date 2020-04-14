@@ -169,7 +169,7 @@ def read_config(configname):
             else:
                 raise
     else:
-        raise FileNotFoundError ("Config file is not found. Please make sure that the file exists and/or that you passed the path of the config file correctly!")
+        raise FileNotFoundError(f"Config file {configname} is not found. Please make sure that the file exists and/or that you passed the path of the config file correctly!")
     return cfg
 
 def write_config(configname,cfg):
