@@ -20,8 +20,8 @@ from tqdm import tqdm
 from pathlib import Path
 
 def evaluate_multianimal_full(config, Shuffles=[1], trainingsetindex=0,
-    plotting=None, show_errors=True, comparisonbodyparts="all",
-    gputouse=None, modelprefix='', c_engine=False):
+                                plotting=None, show_errors=True, comparisonbodyparts="all",
+                                gputouse=None, modelprefix='', c_engine=False):
     """
     WIP multi animal project.
     """
@@ -144,6 +144,7 @@ def evaluate_multianimal_full(config, Shuffles=[1], trainingsetindex=0,
 
                             GT=Data.iloc[imageindex]
 
+                            #Storing GT data as dictionary, so it can be used for integrals 
                             groundtruthcoordinates=[]
                             groundtruthidentity=[]
                             for bptindex, bpt in enumerate(dlc_cfg["all_joints_names"]):
@@ -164,9 +165,10 @@ def evaluate_multianimal_full(config, Shuffles=[1], trainingsetindex=0,
 
                             PredicteData[imagename]={}
                             PredicteData[imagename]['index']=imageindex
+                            
                             pred = predictma.get_detectionswithcostsandGT(frame,  groundtruthcoordinates, dlc_cfg, sess, inputs, outputs, outall=False,nms_radius=dlc_cfg.nmsradius,det_min_score=dlc_cfg.minconfidence, c_engine=c_engine)
                             PredicteData[imagename]['prediction'] = pred
-                            PredicteData[imagename]['groundtruth']=[groundtruthidentity, groundtruthcoordinates,GT]
+                            PredicteData[imagename]['groundtruth']=[groundtruthidentity, groundtruthcoordinates, GT]
 
                             if plotting:
                                 coords_pred = pred['coordinates'][0]
@@ -226,7 +228,8 @@ def evaluate_multianimal_crossvalidate(config,Shuffles=[1], trainingsetindex=0,
 
     # Loading human annotatated data
     trainingsetfolder=auxiliaryfunctions.GetTrainingSetFolder(cfg)
-    Data=pd.read_hdf(os.path.join(cfg["project_path"],str(trainingsetfolder),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing')
+    Data = pd.read_hdf(os.path.join(cfg["project_path"],str(trainingsetfolder),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing')
+
     # Get list of body parts to evaluate network for
     comparisonbodyparts=auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg,comparisonbodyparts)
     # Make folder for evaluation
@@ -273,7 +276,7 @@ def evaluate_multianimal_crossvalidate(config,Shuffles=[1], trainingsetindex=0,
                 else:
                     print("Invalid choice, only -1 (last), any integer up to last, or all (as string)!")
 
-                individuals,uniquebodyparts,multianimalbodyparts=auxfun_multianimal.extractindividualsandbodyparts(cfg)
+                individuals,uniquebodyparts,multianimalbodyparts = auxfun_multianimal.extractindividualsandbodyparts(cfg)
 
                 final_result=[]
                 ##################################################
@@ -303,6 +306,7 @@ def evaluate_multianimal_crossvalidate(config,Shuffles=[1], trainingsetindex=0,
                             PredicteData[imagename]['index']=imageindex
                             PredicteData[imagename]['prediction']=predictma.get_detectionswithcostsandGT(frame,  groundtruthcoordinates, dlc_cfg, sess, inputs, outputs, outall=False,nms_radius=dlc_cfg.nmsradius,det_min_score=dlc_cfg.minconfidence)
                             PredicteData[imagename]['groundtruth']=[groundtruthidentity, groundtruthcoordinates,GT]
+
                         PredicteData['metadata']={
                             'nms radius': dlc_cfg.nmsradius,
                             'minimal confidence': dlc_cfg.minconfidence,
@@ -327,9 +331,3 @@ def evaluate_multianimal_crossvalidate(config,Shuffles=[1], trainingsetindex=0,
 
     #returning to intial folder
     os.chdir(str(start_path))
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('config')
-    cli_args = parser.parse_args()

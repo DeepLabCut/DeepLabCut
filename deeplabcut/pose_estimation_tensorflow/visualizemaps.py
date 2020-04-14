@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def extract_maps(config, shuffle, trainingsetindex=0, comparisonbodyparts="all",
+def extract_maps(config, shuffle=0, trainingsetindex=0, comparisonbodyparts="all",
                  gputouse=None, rescale=False, Indices=None, modelprefix=''):
     """
     Extracts the scoremap, locref, partaffinityfields (if available).
@@ -283,7 +283,7 @@ def visualize_paf(image, paf, pafgraph, nplots_per_row=3, step=5, labels=None):
     return fig, axes
 
 
-def extract_save_all_maps(config, shuffle, trainingsetindex=0, comparisonbodyparts='all',
+def extract_save_all_maps(config, shuffle=1, trainingsetindex=0, comparisonbodyparts='all',
                   gputouse=None, rescale=False, Indices=None, modelprefix='', dest_folder=None, nplots_per_row=3):
     """
     Extracts the scoremap, location refinement field and part affinity field prediction of the model. The maps 
@@ -294,7 +294,7 @@ def extract_save_all_maps(config, shuffle, trainingsetindex=0, comparisonbodypar
         Full path of the config.yaml file as a string.
 
     shuffle: integer
-        integers specifying shuffle index of the training dataset. The default is 0.
+        integers specifying shuffle index of the training dataset. The default is 1.
 
     trainingsetindex: int, optional
         Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml). This

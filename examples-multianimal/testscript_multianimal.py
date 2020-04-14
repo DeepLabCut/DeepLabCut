@@ -68,7 +68,7 @@ print('Train dataset created.')
 print('Editing pose config...')
 model_folder = auxiliaryfunctions.GetModelFolder(TRAIN_SIZE, 1, cfg, cfg['project_path'])
 pose_config_path = os.path.join(model_folder, 'train/pose_cfg.yaml')
-edits = {'global_scale': .1,
+edits = {'global_scale': .5,
          'batch_size': 1,
          'save_iters': N_ITER,
          'display_iters': N_ITER // 2,
@@ -83,6 +83,10 @@ print('Network trained.')
 print('Evaluating network...')
 deeplabcut.evaluate_network(config_path, plotting=True)
 print('Network evaluated.')
+
+print('Extracting maps...')
+deeplabcut.extract_save_all_maps(config_path)
+
 
 new_video_path = deeplabcut.ShortenVideo(video_path, start='00:00:00', stop='00:00:00.4',
                                          outsuffix='short', outpath=os.path.join(cfg['project_path'], 'videos'))

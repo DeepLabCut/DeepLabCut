@@ -52,8 +52,11 @@ def AssociationCosts(cfg,coordinates,partaffinitymaps,stride, half_stride,numste
         # get coordinates for bp1 and bp2
         C1=coordinates[bp1]
         C2=coordinates[bp2]
+        
         dist=np.zeros((len(C1),len(C2)))*np.nan
         distopenpose=np.zeros((len(C1),len(C2)))*np.nan
+        L2distance=np.zeros((len(C1),len(C2)))*np.nan
+
         for c1i,c1 in enumerate(C1):
             for c2i,c2 in enumerate(C2):
                 if np.prod(np.isfinite(c1))*np.prod(np.isfinite(c2)):
@@ -69,6 +72,8 @@ def AssociationCosts(cfg,coordinates,partaffinitymaps,stride, half_stride,numste
                     Ly=np.array(np.linspace(c1s[1],c2s[1],numsteps),dtype=int)
 
                     length=np.sqrt(np.sum((c1s-c2s)**2))
+                    
+                    L2distance[c1i,c2i]=length #storing length
                     if length>0:
                         v=(c1s-c2s)*1./length
 
@@ -88,6 +93,7 @@ def AssociationCosts(cfg,coordinates,partaffinitymaps,stride, half_stride,numste
             Distances[l]={}
             Distances[l]['m1']=dist
             Distances[l]['m2']=distopenpose
+            Distances[l]['distance']=L2distance
 
     return Distances
 
@@ -103,17 +109,6 @@ def make_nms_grid(nms_radius):
     dist_grid=np.where((xx - nms_radius) ** 2 + (yy - nms_radius) ** 2 <= nms_radius ** 2, 1, 0)
     return np.array(dist_grid,dtype=np.uint8)
 
-'''
-import math
-def make_nms_grid(nms_radius):
-    nms_radius = math.ceil(nms_radius)
-    dist_grid = np.zeros([2 * nms_radius + 1, 2 * nms_radius + 1], dtype=np.uint8)
-    for yidx in range(dist_grid.shape[0]):
-        for xidx in range(dist_grid.shape[1]):
-            if (yidx - nms_radius) ** 2 + (xidx - nms_radius) ** 2 <= nms_radius ** 2:
-                dist_grid[yidx][xidx] = 1
-    return dist_grid
-'''
 def extract_detections(cfg, scmap, locref, pafs, nms_radius, det_min_score):
     ''' Extract detections correcting by locref and estimating association costs based on PAFs '''
     from nms_grid import nms_grid  # this needs to be installed (C-code)
@@ -151,13 +146,11 @@ def extract_detections(cfg, scmap, locref, pafs, nms_radius, det_min_score):
     Detections['costs']=AssociationCosts(cfg,unPos,pafs,stride,halfstride)
     return Detections
 
-
 def find_local_maxima(scmap, radius, threshold):
     grid = peak_local_max(scmap, min_distance=radius, threshold_abs=threshold, exclude_border=False, indices=False)
     labels = measurements.label(grid)[0]
     xy = measurements.center_of_mass(grid, labels, range(1, np.max(labels) + 1))
     return np.asarray(xy, dtype=np.int).reshape((-1, 2))
-
 
 def extract_detections_python(cfg, scmap, locref, pafs, radius, threshold):
     Detections = {}
