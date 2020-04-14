@@ -108,7 +108,7 @@ def create_labeled_video_3d(config,path,videofolder=None,start=0,end=None,trailp
             print("Video already created...")
         else:
             string_to_remove = str(Path(triangulate_file).suffix)
-            pickle_file = triangulate_file.replace(string_to_remove,'_includingmetadata.pickle')
+            pickle_file = triangulate_file.replace(string_to_remove,'_meta.pickle')
             metadata_ = auxiliaryfunctions_3d.LoadMetadata3d(pickle_file)
 
             base_filename_cam1 = str(Path(file[1]).stem).split(videotype)[0] # required for searching the filtered file

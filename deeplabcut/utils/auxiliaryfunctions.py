@@ -303,13 +303,13 @@ def SaveData(PredicteData, metadata, dataname, pdindex, imagenames,save_as_csv):
         print("Saving csv poses!")
         DataMachine.to_csv(dataname.split('.h5')[0]+'.csv')
     DataMachine.to_hdf(dataname, 'df_with_missing', format='table', mode='w')
-    with open(dataname.split('.h5')[0] + 'includingmetadata.pickle', 'wb') as f:
+    with open(dataname.split('.h5')[0] + '_meta.pickle', 'wb') as f:
         # Pickle the 'data' dictionary using the highest protocol available.
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
 def LoadVideoMetadata(dataname):
     ''' Load meta data from analyzed video, created by predict_videos.py '''
-    with open(dataname.split('.h5')[0] + 'includingmetadata.pickle', 'rb') as f: #same as in SaveData!
+    with open(dataname.split('.h5')[0] + '_meta.pickle', 'rb') as f: #same as in SaveData!
         metadata= pickle.load(f)
         return metadata
 
@@ -559,7 +559,7 @@ def LoadAnalyzedDetectionData(folder, vname, scorer):
         # else:
         #     pickle_file = pickles[0]
         #     data = read_pickle(pickle_file)
-        #     metadata = read_pickle(pickle_file.replace('_full.pickle', 'includingmetadata.pickle'))
+        #     metadata = read_pickle(pickle_file.replace('full.pickle', 'meta.pickle'))
         #     datafound = True
         #     scorer = f'DLC{pickle_file.split("DLC")[1]}'.replace('_full.pickle', '')
     return datafound, metadata, data, scorer
