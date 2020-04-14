@@ -40,8 +40,13 @@ def load_plugin_classes(plugin_dir: ModuleType, plugin_metaclass: Type[T], do_re
         # If the module name is not in system modules or the reload flag is set to true, perform a full load of the
         # modules...
         if((mod_name not in sys.modules) or do_reload):
-            sub_module = importer.find_module(package_name).load_module(package_name)
-            sys.modules[mod_name] = sub_module
+            try:
+                sub_module = importer.find_module(package_name).load_module(package_name)
+                sys.modules[mod_name] = sub_module
+            except Exception as e:
+                print(f"Can't load '{mod_name}'. Due to issue below:")
+                print(e)
+                continue
         else:
             sub_module = sys.modules[mod_name]
 
