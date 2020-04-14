@@ -562,8 +562,8 @@ def merge_datasets(config, forceiterate=None):
     config_path = Path(config).parents[0]
 
     bf = Path(str(config_path / 'labeled-data'))
-    allfolders = [os.path.join(bf, fn) for fn in os.listdir(bf) if
-                  "_labeled" not in fn]  # exclude labeled data folders!
+    allfolders = [os.path.join(bf, fn) for fn in os.listdir(bf)
+                  if "_labeled" not in fn and not fn.startswith('.')]  # exclude labeled data folders and temporary files
     flagged = False
     for findex, folder in enumerate(allfolders):
         if os.path.isfile(os.path.join(folder, 'MachineLabelsRefine.h5')):  # Folder that was manually refine...
@@ -576,7 +576,7 @@ def merge_datasets(config, forceiterate=None):
             flagged = True
             pass  # this folder does not contain a MachineLabelsRefine file (not updated...)
 
-    if flagged == False:
+    if not flagged:
         # updates iteration by 1
         iter_prev = cfg['iteration']
         if not forceiterate:
