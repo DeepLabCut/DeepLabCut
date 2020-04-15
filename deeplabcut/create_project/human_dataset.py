@@ -135,9 +135,11 @@ def create_pretrained_human_project(project,experimenter,videos,working_director
     video_dir = os.path.join(config['project_path'],'videos')
 
     if analyzevideo==True:
+        print("Analyzing video...")
         # Analyze the videos
         deeplabcut.analyze_videos(cfg,[video_dir],videotype,save_as_csv=True)
     if createlabeledvideo==True:
+        print("Plotting results...")
         deeplabcut.create_labeled_video(cfg,[video_dir],videotype, draw_skeleton=True)
         deeplabcut.plot_trajectories(cfg, [video_dir], videotype)
     return cfg, path_train_config

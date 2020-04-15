@@ -34,7 +34,7 @@ def individual2boundingbox(cfg,animals,X1=0):
 #### conversion & greedy bodypart matching code
 ##########################################################
 
-def convertdetectiondict2listoflist(dataimage, BPTS, withid=False, evaluation=False):
+def convertdetectiondict2listoflist(dataimage, BPTS, withid = False, evaluation  =False):
     ''' Arranges data into list of list with the following entries:
     [(x, y, score, global index of detection)] (all detections per bodypart).
 

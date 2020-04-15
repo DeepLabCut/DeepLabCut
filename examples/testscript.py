@@ -31,7 +31,7 @@ video=[os.path.join(basepath,'Reaching-Mackenzie-2018-08-30','videos',videoname+
 #videoname='baby4hin2min'
 #video=[os.path.join('/home/alex/Desktop/Data',videoname+'.mp4')]
 #to test destination folder:
-#dfolder=basepath
+#dfolder=basepath #TEST THIS!
 
 dfolder=None
 net_type='resnet_50' #'mobilenet_v2_0.35' #'resnet_50'
@@ -181,7 +181,7 @@ except: # if ffmpeg is broken
 
 
 print("Inference with direct cropping")
-deeplabcut.analyze_videos(path_config_file, [newvideo2], save_as_csv=True, destfolder=dfolder, crop=[0, 50, 0, 50])
+deeplabcut.analyze_videos(path_config_file, [newvideo2], save_as_csv=True, destfolder=dfolder, cropping = [0, 50, 0, 50])
 
 print("Extracting skeleton distances, filter and plot filtered output")
 deeplabcut.analyzeskeleton(path_config_file, [newvideo2], save_as_csv=True, destfolder=dfolder)
