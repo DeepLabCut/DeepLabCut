@@ -106,7 +106,8 @@ def PlottingResults(tmpfolder, Dataframe, cfg, bodyparts2plot, individuals2plot,
 ##################################################
 
 def plot_trajectories(config, videos, videotype='.avi', shuffle=1, trainingsetindex=0, filtered=False,
-                      displayedbodyparts='all', displayedindividuals='all', showfigures=False, destfolder=None,modelprefix=''):
+                      displayedbodyparts='all', displayedindividuals='all', showfigures=False, destfolder=None,
+                      modelprefix='', track_method='box'):
     """
     Plots the trajectories of various bodyparts across the video.
 
@@ -175,32 +176,29 @@ def plot_trajectories(config, videos, videotype='.avi', shuffle=1, trainingsetin
             failed.append(True)
             continue
         else:
-            #LoadData
             print("Loading ", video, "and data.")
-            datafound,metadata,Dataframe,DLCscorer,suffix=auxiliaryfunctions.LoadAnalyzedData(str(videofolder),vname,DLCscorer,filtered) #returns boolean variable if data was found and metadata + pandas array
-            if datafound:
-                basefolder=videofolder
-                auxiliaryfunctions.attempttomakefolder(basefolder)
-                auxiliaryfunctions.attempttomakefolder(os.path.join(basefolder,'plot-poses'))
-                tmpfolder = os.path.join(basefolder,'plot-poses', vname)
-                auxiliaryfunctions.attempttomakefolder(tmpfolder)
-                # Keep only the individuals and bodyparts that were labeled
-                index = Dataframe.columns
-                labeled_bpts = [bp for bp in bodyparts if bp in index.get_level_values('bodyparts')]
-                for animal in individuals:
-                    PlottingResults(tmpfolder, Dataframe, cfg, labeled_bpts, animal,
-                                    showfigures, suffix + animal + '.png')
+            try:
+                df, _, _, suffix = auxiliaryfunctions.load_analyzed_data(video, DLCscorer, filtered, track_method)
                 failed.append(False)
-            else:
+                tmpfolder = os.path.join(videofolder, 'plot-poses', vname)
+                auxiliaryfunctions.attempttomakefolder(tmpfolder, recursive=True)
+                # Keep only the individuals and bodyparts that were labeled
+                labeled_bpts = [bp for bp in bodyparts if bp in df.columns.get_level_values('bodyparts')]
+                for animal in individuals:
+                    PlottingResults(tmpfolder, df, cfg, labeled_bpts, animal,
+                                    showfigures, suffix + animal + '.png')
+            except FileNotFoundError as e:
                 failed.append(True)
-                tracks_found, *_ = auxiliaryfunctions.LoadAnalyzedDetectionData(videofolder, vname, DLCscorer)
-                if tracks_found:
-                    print('Raw tracklets were found. Call "deeplabcut.refine_training_dataset.convert_raw_tracks_to_h5()"'
+                print(e)
+                try:
+                    _ = auxiliaryfunctions.load_detection_data(video, DLCscorer, track_method)
+                    print('Call "deeplabcut.refine_training_dataset.convert_raw_tracks_to_h5()"'
                           ' prior to plotting the trajectories.')
-                else:
-                    print(f'No data were found. Make sure {video} was previously analyzed, and that '
+                except FileNotFoundError as e:
+                    print(e)
+                    print(f'Make sure {video} was previously analyzed, and that '
                           f'detections were successively converted to tracklets using "deeplabcut.convert_detections2tracklets()" '
-                          f'and "deeplabcut.refine_training_dataset.convert_raw_tracks_to_h5()".')
+                          f'and "deeplabcut.convert_raw_tracks_to_h5()".')
 
     if not all(failed):
         print('Plots created! Please check the directory "plot-poses" within the video directory')

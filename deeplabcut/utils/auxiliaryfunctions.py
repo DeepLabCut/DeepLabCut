@@ -307,11 +307,6 @@ def SaveData(PredicteData, metadata, dataname, pdindex, imagenames,save_as_csv):
         # Pickle the 'data' dictionary using the highest protocol available.
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
-def LoadVideoMetadata(dataname):
-    ''' Load meta data from analyzed video, created by predict_videos.py '''
-    with open(dataname.split('.h5')[0] + '_meta.pickle', 'rb') as f: #same as in SaveData!
-        metadata= pickle.load(f)
-        return metadata
 
 def SaveMetadata(metadatafilename, data, trainIndexes, testIndexes, trainFraction):
         with open(metadatafilename, 'wb') as f:
@@ -505,62 +500,51 @@ def CheckifNotEvaluated(folder,DLCscorer,DLCscorerlegacy,snapshot):
         else:
             return True, dataname,DLCscorer
 
-def LoadAnalyzedData(videofolder,vname,DLCscorer,filtered):
-    if filtered:
-        try:
-            fn=os.path.join(videofolder,vname + DLCscorer + 'filtered.h5')
-            Dataframe = pd.read_hdf(fn)
-            metadata=LoadVideoMetadata(os.path.join(videofolder,vname + DLCscorer + '.h5'))
-            datafound=True
-            suffix='_filtered'
-            return datafound,metadata,Dataframe, DLCscorer,suffix
-        except FileNotFoundError:
-            print("No filtered predictions found, using frame-by-frame output instead.")
-            fn=os.path.join(videofolder,vname + DLCscorer + '.h5')
-            suffix=''
-    else:
-        fn=os.path.join(videofolder,vname + DLCscorer + '.h5')
-        suffix=''
-    try: #TODO: Check if DLCscorer is the same? (based on lookup in pickle?)
-        Dataframe = pd.read_hdf(fn)
-        metadata=LoadVideoMetadata(fn)
-        datafound=True
-    except FileNotFoundError:
-        datanames = [fn for fn in grab_files_in_folder(videofolder, 'h5')
-                     if vname in fn and ("resnet" in fn or "mobilenet" in fn)]
-        if len(datanames)==0:
-            datafound=False
-            metadata,Dataframe=[],[]
-        elif len(datanames)>0:
-            datafile = datanames[0]
-            if 'DeepCut_resnet' in datafile: # try the legacy scorer name instead!
-                DLCscorer='DeepCut'+(datafile.split('DeepCut')[1]).split('.h5')[0]
-            else:
-                DLCscorer='DLC_'+(datafile.split('DLC_')[1]).split('.h5')[0]
-            Dataframe = pd.read_hdf(os.path.join(videofolder, datafile))
-            metadata=LoadVideoMetadata(os.path.join(videofolder, datafile.replace('tracks', '').replace('filtered', '')))
-            datafound=True
-    return datafound, metadata, Dataframe, DLCscorer,suffix
 
-def LoadAnalyzedDetectionData(folder, vname, scorer):
-    try:
-        fn = os.path.join(folder, vname + scorer + 'tracks.pickle')
-        data = read_pickle(fn)
-        metadata = data.pop('header')
-        datafound = True
-    except FileNotFoundError:
-        # See whether we find a _full.pickle in that same folder
-        # pickles = [file for file in grab_files_in_folder(folder, 'full.pickle')
-        #            if vname in file and ('resnet' in file or 'mobilenet' in file)]
-        # if not len(pickles):
-        metadata, data = [], []
-        datafound = False
-        scorer = ''
-        # else:
-        #     pickle_file = pickles[0]
-        #     data = read_pickle(pickle_file)
-        #     metadata = read_pickle(pickle_file.replace('full.pickle', 'meta.pickle'))
-        #     datafound = True
-        #     scorer = f'DLC{pickle_file.split("DLC")[1]}'.replace('_full.pickle', '')
-    return datafound, metadata, data, scorer
+def load_video_metadata(video, scorer):
+    # For backward compatibility, let us search the substring 'meta'
+    folder = os.path.dirname(video)
+    videoname = os.path.splitext(os.path.basename(video))[0]
+    scorer_legacy = scorer.replace('DLC', 'DeeperCut')
+    meta = [file for file in grab_files_in_folder(folder, 'pickle', relative=False)
+            if 'meta' in file and videoname in file and (scorer in file or scorer_legacy in file)]
+    if not len(meta):
+        raise FileNotFoundError(f'No metadata found in {folder} '
+                                f'for video {videoname} and scorer {scorer}.')
+    return read_pickle(meta[0])
 
+
+def load_analyzed_data(video, scorer, filtered=False, track_method=''):
+    """Find potential data files from the hints given to the function."""
+    folder = os.path.dirname(video)
+    videoname = os.path.splitext(os.path.basename(video))[0]
+    scorer_legacy = scorer.replace('DLC', 'DeeperCut')
+    suffix = 'filtered' if filtered else ''
+    candidates = [file for file in grab_files_in_folder(folder, 'h5', relative=False)
+                  if all(sub in file for sub in (videoname, track_method, suffix))
+                  and (scorer in file or scorer_legacy in file)]
+    if not len(candidates):
+        msg = f'No {"un" if not filtered else ""}filtered data file found in {folder} ' \
+              f'for video {videoname} and scorer {scorer}'
+        if track_method:
+            msg += f' and {track_method} tracker'
+        msg += '.'
+        raise FileNotFoundError(msg)
+
+    n_candidates = len(candidates)
+    if n_candidates > 1:  # This should not be happening anyway...
+        print(f'{n_candidates} possible data files were found. Picking the first by default...')
+    filepath = candidates[0]
+    df = pd.read_hdf(filepath)
+    scorer = scorer if scorer in filepath else scorer_legacy
+    return df, filepath, scorer, suffix
+
+
+def load_detection_data(video, scorer, track_method):
+    folder = os.path.dirname(video)
+    videoname = os.path.splitext(os.path.basename(video))[0]
+    filepath = os.path.splitext(video)[0] + scorer + f'_{track_method}.pickle'
+    if not os.path.isfile(filepath):
+        raise FileNotFoundError(f'No detection data found in {folder} for video {videoname}, '
+                                f'scorer {scorer}, and tracker {track_method}')
+    return read_pickle(filepath)
