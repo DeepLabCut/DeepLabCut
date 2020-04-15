@@ -185,7 +185,7 @@ deeplabcut.analyze_videos(path_config_file, [newvideo2], save_as_csv=True, destf
 
 print("Extracting skeleton distances, filter and plot filtered output")
 deeplabcut.analyzeskeleton(path_config_file, [newvideo2], save_as_csv=True, destfolder=dfolder)
-deeplabcut.filterpredictions(path_config_file,[newvideo2])
+deeplabcut.filterpredictions(path_config_file,[newvideo2], destfolder=dfolder)
 
 #deeplabcut.create_labeled_video(path_config_file,[newvideo], destfolder=dfolder,filtered=True)
 deeplabcut.create_labeled_video(path_config_file,[newvideo2], destfolder=dfolder,displaycropped=True,filtered=True)
