@@ -802,7 +802,7 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,
 
 def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, trainingsetindex=0,
                                  destfolder=None,BPTS=None, iBPTS=None,PAF=None, printintermediate=False,
-                                 inferencecfg=None,modelprefix='', track_method = 'box',edgewisecondition=False):
+                                 inferencecfg=None,modelprefix='', track_method='box',edgewisecondition=False):
     """
     This should be called at the end of deeplabcut.analyze_videos for multianimal projects!
 
@@ -925,7 +925,6 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
     # Looping over videos
     ##################################################
     Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
-    print(Videos)
     if len(Videos)>0:
         for video in Videos:
             print("Processing... ", video)
@@ -936,8 +935,7 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
             vname = Path(video).stem
             dataname = os.path.join(videofolder, vname + DLCscorer + '.h5')
             data, metadata=auxfun_multianimal.LoadFullMultiAnimalData(dataname)
-            suffix = f'_{track_method}_tracks'
-            trackname=dataname.split('.h5')[0]+suffix+'.pickle'
+            trackname=dataname.split('.h5')[0] + f'_{track_method}.pickle'
             trackname = trackname.replace(videofolder, destfolder)
             if os.path.isfile(trackname): #TODO: check if metadata are identical (same parameters!)
                 print("Tracklets already computed", trackname)

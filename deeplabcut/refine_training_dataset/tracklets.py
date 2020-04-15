@@ -869,12 +869,3 @@ def convert_raw_tracks_to_h5(config, tracks_pickle, output_name=''):
     manager = TrackletManager(config, 0, 0)
     manager.load_tracklets_from_pickle(tracks_pickle)
     manager.save(output_name)
-
-
-config = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/silversideschooling-Valentina-2019-07-14/config.yaml'
-file = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/silversideschooling-Valentina-2019-07-14/videos/deeplc.menidia.school4.59rpm.S11.D.shortDLC_resnet50_silversideschoolingJul14shuffle0_30000tracks.h5'
-video = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/silversideschooling-Valentina-2019-07-14/videos/deeplc.menidia.school4.59rpm.S11.D.short.avi'
-manager = TrackletManager(config, 0, 0)
-manager.load_tracklets_from_hdf(file)
-viz = TrackletVisualizer(manager, video)
-viz.show()

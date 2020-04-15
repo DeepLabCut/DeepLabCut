@@ -240,7 +240,7 @@ def CreateVideoSlow(videooutname,clip,Dataframe, tmpfolder, dotsize,colormap,alp
 def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,
     filtered=False,fastmode=True,save_frames=False,Frames2plot=None, displayedbodyparts='all', displayedindividuals='all',
     codec='mp4v',outputframerate=None, destfolder=None,draw_skeleton=False,
-    trailpoints = 0,displaycropped=False, color_by='bodypart',modelprefix=''):
+    trailpoints=0,displaycropped=False, color_by='bodypart',modelprefix='', track_method=''):
     """
     Labels the bodyparts in a video. Make sure the video is already analyzed by the function 'analyze_video'
 
@@ -379,49 +379,51 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
             print("Labeled video already created.")
         else:
             print("Loading ", video, "and data.")
-            datafound, metadata, Dataframe,DLCscorer,suffix=auxiliaryfunctions.LoadAnalyzedData(str(videofolder),vname,DLCscorer,filtered) #returns boolean variable if data was found and metadata + pandas array
-            s = '_idv' if color_by == 'individual' else '_bp'
-            videooutname = os.path.join(vname + DLCscorer + suffix + s + '_labeled.mp4')
-            if datafound:  # Sweet, we've found single animal data or tracklets
+            try:
+                df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(destfolder, vname, DLCscorer, filtered, track_method)
+                metadata = auxiliaryfunctions.load_video_metadata(destfolder, vname, DLCscorer)
+                s = '_idv' if color_by == 'individual' else '_bp'
+                videooutname = filepath.replace('.h5', f'{s}_labeled.mp4')
                 if os.path.isfile(videooutname):
                     print('Labeled video already created. Skipping...')
                     continue
 
                 if all(individuals):
-                    Dataframe = Dataframe.loc(axis=1)[:, individuals]
-
-                cropping=metadata['data']["cropping"]
-                [x1,x2,y1,y2]=metadata['data']["cropping_parameters"]
-                labeled_bpts = [bp for bp in bodyparts if bp in Dataframe.columns.get_level_values('bodyparts')]
+                    df = df.loc(axis=1)[:, individuals]
+                cropping = metadata['data']["cropping"]
+                [x1, x2, y1, y2] = metadata['data']["cropping_parameters"]
+                labeled_bpts = [bp for bp in bodyparts if bp in df.columns.get_level_values('bodyparts')]
                 if not fastmode:
-                    tmpfolder = os.path.join(str(videofolder),'temp-' + vname)
+                    tmpfolder = os.path.join(str(videofolder), 'temp-' + vname)
                     if save_frames:
                         auxiliaryfunctions.attempttomakefolder(tmpfolder)
                     clip = vp(video)
-                    CreateVideoSlow(videooutname,clip,Dataframe,tmpfolder,cfg["dotsize"],cfg["colormap"],cfg["alphavalue"],cfg["pcutoff"],
-                                    trailpoints,cropping,x1,x2,y1,y2,save_frames,labeled_bpts,outputframerate,Frames2plot,bodyparts2connect,
-                                    skeleton_color,draw_skeleton,displaycropped,color_by)
+                    CreateVideoSlow(videooutname, clip, df, tmpfolder, cfg["dotsize"], cfg["colormap"],
+                                    cfg["alphavalue"], cfg["pcutoff"],
+                                    trailpoints, cropping, x1, x2, y1, y2, save_frames, labeled_bpts,
+                                    outputframerate, Frames2plot, bodyparts2connect,
+                                    skeleton_color, draw_skeleton, displaycropped, color_by)
                 else:
-                    if displaycropped: #then the cropped video + the labels is depicted
-                        clip = vp(fname = video,sname = videooutname,codec=codec,sw=x2-x1,sh=y2-y1)
-                    else: #then the full video + the (perhaps in cropped mode analyzed labels) are depicted
-                        clip = vp(fname = video,sname = videooutname,codec=codec)
-                    CreateVideo(clip,Dataframe,cfg["pcutoff"],cfg["dotsize"],cfg["colormap"],labeled_bpts,trailpoints,cropping,x1,x2,y1,y2,bodyparts2connect,skeleton_color,draw_skeleton,displaycropped,color_by)
-            else:
-                # Check if tracks exist!
-                datafound, metadata, Tracks, DLCscorer = auxiliaryfunctions.LoadAnalyzedDetectionData(videofolder, vname, DLCscorer)
-                if not datafound:
-                    print('No data were found. Run "analyze_video" first.')
+                    if displaycropped:  # then the cropped video + the labels is depicted
+                        clip = vp(fname=video, sname=videooutname, codec=codec, sw=x2 - x1, sh=y2 - y1)
+                    else:  # then the full video + the (perhaps in cropped mode analyzed labels) are depicted
+                        clip = vp(fname=video, sname=videooutname, codec=codec)
+                    CreateVideo(clip, df, cfg["pcutoff"], cfg["dotsize"], cfg["colormap"], labeled_bpts,
+                                trailpoints, cropping, x1, x2, y1, y2, bodyparts2connect, skeleton_color,
+                                draw_skeleton, displaycropped, color_by)
+
+            except FileNotFoundError as e:
+                print(e)
+                # Check whether tracks exist to print a more meaningful statement
+                try:
+                    _ = auxiliaryfunctions.load_detection_data(video, DLCscorer, track_method)
+                    print('Run "convert_detections2tracklets" first.')
+                except FileNotFoundError as e:
+                    print(e)
+                    print('Run "analyze_video first.')
                     if cfg.get('multianimalproject', False):
                         print('Then use "convert_detections2tracklets" and re-run the current function.')
                     continue
-                else:
-                    print('Tracklets were found. Although "convert_detections2tracklets" '
-                          'should be used first, the video will be created anyway.')
-                    ## TODO: integrate with standard code for dataframes.
-                    scale=1
-                    pcutoff=cfg["pcutoff"]
-                    _create_video_from_tracks(video, Tracks, destfolder, videooutname, pcutoff, scale)
 
     os.chdir(start_path)
 

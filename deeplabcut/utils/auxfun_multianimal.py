@@ -61,7 +61,7 @@ def SaveFullMultiAnimalData(data, metadata, dataname,suffix='_full'):
             # Pickle the 'labeled-data' dictionary using the highest protocol available.
             pickle.dump(data, f,pickle.HIGHEST_PROTOCOL)
     #if suffix=='_full': #save metadata!
-    with open(dataname.split('.h5')[0] + 'includingmetadata.pickle', 'wb') as f:
+    with open(dataname.split('.h5')[0] + '_meta.pickle', 'wb') as f:
             # Pickle the 'labeled-data' dictionary using the highest protocol available.
             pickle.dump(metadata, f,pickle.HIGHEST_PROTOCOL)
 
@@ -69,7 +69,7 @@ def LoadFullMultiAnimalData(dataname):
     ''' Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py '''
     with open(dataname.split('.h5')[0]+'_full.pickle', 'rb') as handle:
         data=pickle.load(handle)
-    with open(dataname.split('.h5')[0] + 'includingmetadata.pickle', 'rb') as handle:
+    with open(dataname.split('.h5')[0] + '_meta.pickle', 'rb') as handle:
         metadata=pickle.load(handle)
     return data, metadata
 
@@ -82,7 +82,7 @@ def SaveMultiAnimalData(PredicteData, metadata, dataname, pdindex, imagenames,sa
     if save_as_csv:
         print("Saving csv poses!")
         DataMachine.to_csv(dataname.split('.h5')[0]+'.csv')
-    with open(dataname.split('.h5')[0] + 'includingmetadata.pickle', 'wb') as f:
+    with open(dataname.split('.h5')[0] + '_meta.pickle', 'wb') as f:
         # Pickle the 'data' dictionary using the highest protocol available.
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
