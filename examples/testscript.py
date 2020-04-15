@@ -181,7 +181,7 @@ except: # if ffmpeg is broken
 
 
 print("Inference with direct cropping")
-deeplabcut.analyze_videos(path_config_file, [newvideo2], save_as_csv=True, destfolder=dfolder, cropping = [0, 50, 0, 50])
+deeplabcut.analyze_videos(path_config_file, [newvideo2], save_as_csv=True, destfolder=dfolder, crop=[0, 50, 0, 50])
 
 print("Extracting skeleton distances, filter and plot filtered output")
 deeplabcut.analyzeskeleton(path_config_file, [newvideo2], save_as_csv=True, destfolder=dfolder)
