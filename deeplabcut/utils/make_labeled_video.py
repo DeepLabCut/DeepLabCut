@@ -240,7 +240,7 @@ def CreateVideoSlow(videooutname,clip,Dataframe, tmpfolder, dotsize,colormap,alp
 def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetindex=0,
     filtered=False,fastmode=True,save_frames=False,Frames2plot=None, displayedbodyparts='all', displayedindividuals='all',
     codec='mp4v',outputframerate=None, destfolder=None,draw_skeleton=False,
-    trailpoints = 0,displaycropped=False, color_by='bodypart',modelprefix='', track_method='box'):
+    trailpoints=0,displaycropped=False, color_by='bodypart',modelprefix='', track_method=''):
     """
     Labels the bodyparts in a video. Make sure the video is already analyzed by the function 'analyze_video'
 
@@ -380,8 +380,8 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
         else:
             print("Loading ", video, "and data.")
             try:
-                df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(video, DLCscorer, filtered, track_method)
-                metadata = auxiliaryfunctions.load_video_metadata(video, DLCscorer)
+                df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(destfolder, vname, DLCscorer, filtered, track_method)
+                metadata = auxiliaryfunctions.load_video_metadata(destfolder, vname, DLCscorer)
                 s = '_idv' if color_by == 'individual' else '_bp'
                 videooutname = filepath.replace('.h5', f'{s}_labeled.mp4')
                 if os.path.isfile(videooutname):

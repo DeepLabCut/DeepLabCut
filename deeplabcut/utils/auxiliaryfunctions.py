@@ -501,11 +501,9 @@ def CheckifNotEvaluated(folder,DLCscorer,DLCscorerlegacy,snapshot):
             return True, dataname,DLCscorer
 
 
-def load_video_metadata(video, scorer):
+def load_video_metadata(folder, videoname, scorer):
     # For backward compatibility, let us search the substring 'meta'
-    folder = os.path.dirname(video)
-    videoname = os.path.splitext(os.path.basename(video))[0]
-    scorer_legacy = scorer.replace('DLC', 'DeeperCut')
+    scorer_legacy = scorer.replace('DLC', 'DeepCut')
     meta = [file for file in grab_files_in_folder(folder, 'pickle', relative=False)
             if 'meta' in file and videoname in file and (scorer in file or scorer_legacy in file)]
     if not len(meta):
@@ -514,15 +512,17 @@ def load_video_metadata(video, scorer):
     return read_pickle(meta[0])
 
 
-def load_analyzed_data(video, scorer, filtered=False, track_method=''):
+def load_analyzed_data(folder, videoname, scorer, filtered=False, track_method=''):
     """Find potential data files from the hints given to the function."""
-    folder = os.path.dirname(video)
-    videoname = os.path.splitext(os.path.basename(video))[0]
-    scorer_legacy = scorer.replace('DLC', 'DeeperCut')
-    suffix = 'filtered' if filtered else ''
-    candidates = [file for file in grab_files_in_folder(folder, 'h5', relative=False)
-                  if all(sub in file for sub in (videoname, track_method, suffix))
-                  and (scorer in file or scorer_legacy in file)]
+    scorer_legacy = scorer.replace('DLC', 'DeepCut')
+    suffix = '_filtered' if filtered else ''
+    candidates = []
+    for file in grab_files_in_folder(folder, 'h5', relative=False):
+        if all(((scorer in file or scorer_legacy in file),
+                videoname in file,
+                track_method in file,
+                (filtered and 'filtered' in file) or (not filtered and 'filtered' not in file))):
+            candidates.append(file)
     if not len(candidates):
         msg = f'No {"un" if not filtered else ""}filtered data file found in {folder} ' \
               f'for video {videoname} and scorer {scorer}'
