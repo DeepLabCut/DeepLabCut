@@ -184,8 +184,8 @@ print("Inference with direct cropping")
 deeplabcut.analyze_videos(path_config_file, [newvideo2], save_as_csv=True, destfolder=dfolder, crop=[0, 50, 0, 50])
 
 print("Extracting skeleton distances, filter and plot filtered output")
-deeplabcut.analyzeskeleton(path_config_file, [newvideo], save_as_csv=True, destfolder=dfolder)
-deeplabcut.filterpredictions(path_config_file,[newvideo])
+deeplabcut.analyzeskeleton(path_config_file, [newvideo2], save_as_csv=True, destfolder=dfolder)
+deeplabcut.filterpredictions(path_config_file,[newvideo2])
 
 #deeplabcut.create_labeled_video(path_config_file,[newvideo], destfolder=dfolder,filtered=True)
 deeplabcut.create_labeled_video(path_config_file,[newvideo2], destfolder=dfolder,displaycropped=True,filtered=True)
