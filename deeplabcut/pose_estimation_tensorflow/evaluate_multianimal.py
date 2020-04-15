@@ -71,7 +71,7 @@ def evaluate_multianimal_full(config, Shuffles=[1], trainingsetindex=0,
             ##################################################
             # Load and setup CNN part detector
             ##################################################
-            datafn,metadatafn=auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,trainFraction,shuffle,cfg)
+            datafn, metadatafn = auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,trainFraction,shuffle,cfg)
             modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)))
             path_test_config = Path(modelfolder) / 'test' / 'pose_cfg.yaml'
 
@@ -119,7 +119,7 @@ def evaluate_multianimal_full(config, Shuffles=[1], trainingsetindex=0,
                     trainingsiterations = (dlc_cfg['init_weights'].split(os.sep)[-1]).split('-')[-1] #read how many training siterations that corresponds to.
 
                     #name for deeplabcut net (based on its parameters)
-                    DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations,modelprefix=modelprefix)
+                    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations,modelprefix=modelprefix)
                     print("Running ", DLCscorer, " with # of trainingiterations:", trainingsiterations)
                     notanalyzed,resultsfilename,DLCscorer=auxiliaryfunctions.CheckifNotEvaluated(str(evaluationfolder),DLCscorer,DLCscorerlegacy,Snapshots[snapindex])
 
