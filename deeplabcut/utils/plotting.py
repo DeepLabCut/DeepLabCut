@@ -107,7 +107,7 @@ def PlottingResults(tmpfolder, Dataframe, cfg, bodyparts2plot, individuals2plot,
 
 def plot_trajectories(config, videos, videotype='.avi', shuffle=1, trainingsetindex=0, filtered=False,
                       displayedbodyparts='all', displayedindividuals='all', showfigures=False, destfolder=None,
-                      modelprefix='', track_method='box'):
+                      modelprefix='', track_method=''):
     """
     Plots the trajectories of various bodyparts across the video.
 

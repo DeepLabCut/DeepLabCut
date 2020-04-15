@@ -516,11 +516,16 @@ def load_analyzed_data(folder, videoname, scorer, filtered=False, track_method='
     """Find potential data files from the hints given to the function."""
     scorer_legacy = scorer.replace('DLC', 'DeepCut')
     suffix = '_filtered' if filtered else ''
+    tracker = ''
+    if track_method == 'skeleton':
+        tracker = 'sk'
+    elif track_method == 'box':
+        tracker = 'bx'
     candidates = []
     for file in grab_files_in_folder(folder, 'h5', relative=False):
         if all(((scorer in file or scorer_legacy in file),
                 videoname in file,
-                track_method in file,
+                (tracker in file if tracker else not ('skeleton' in file or 'box' in file)),
                 (filtered and 'filtered' in file) or (not filtered and 'filtered' not in file))):
             candidates.append(file)
     if not len(candidates):
@@ -543,7 +548,14 @@ def load_analyzed_data(folder, videoname, scorer, filtered=False, track_method='
 def load_detection_data(video, scorer, track_method):
     folder = os.path.dirname(video)
     videoname = os.path.splitext(os.path.basename(video))[0]
-    filepath = os.path.splitext(video)[0] + scorer + f'_{track_method}.pickle'
+    if track_method == 'skeleton':
+        tracker = 'sk'
+    elif track_method == 'box':
+        tracker = 'bx'
+    else:
+        raise ValueError(f'Unrecognized track_method={track_method}')
+
+    filepath = os.path.splitext(video)[0] + scorer + f'_{tracker}.pickle'
     if not os.path.isfile(filepath):
         raise FileNotFoundError(f'No detection data found in {folder} for video {videoname}, '
                                 f'scorer {scorer}, and tracker {track_method}')

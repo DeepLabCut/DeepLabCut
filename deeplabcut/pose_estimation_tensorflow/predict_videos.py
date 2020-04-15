@@ -939,7 +939,8 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
             vname = Path(video).stem
             dataname = os.path.join(videofolder, vname + DLCscorer + '.h5')
             data, metadata=auxfun_multianimal.LoadFullMultiAnimalData(dataname)
-            trackname=dataname.split('.h5')[0] + f'_{track_method}.pickle'
+            method = 'sk' if track_method == 'skeleton' else 'bx'
+            trackname=dataname.split('.h5')[0] + f'_{method}.pickle'
             trackname = trackname.replace(videofolder, destfolder)
             if os.path.isfile(trackname): #TODO: check if metadata are identical (same parameters!)
                 print("Tracklets already computed", trackname)
