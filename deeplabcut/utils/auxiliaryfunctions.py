@@ -504,12 +504,12 @@ def CheckifNotEvaluated(folder,DLCscorer,DLCscorerlegacy,snapshot):
 def load_video_metadata(folder, videoname, scorer):
     # For backward compatibility, let us search the substring 'meta'
     scorer_legacy = scorer.replace('DLC', 'DeepCut')
-    meta = [file for file in grab_files_in_folder(folder, 'pickle', relative=False)
-            if 'meta' in file and videoname in file and (scorer in file or scorer_legacy in file)]
+    meta = [file for file in grab_files_in_folder(folder, 'pickle')
+            if 'meta' in file and (file.startswith(videoname + scorer) or file.startswith(videoname + scorer_legacy))]
     if not len(meta):
         raise FileNotFoundError(f'No metadata found in {folder} '
                                 f'for video {videoname} and scorer {scorer}.')
-    return read_pickle(meta[0])
+    return read_pickle(os.path.join(folder, meta[0]))
 
 
 def load_analyzed_data(folder, videoname, scorer, filtered=False, track_method=''):
@@ -522,9 +522,8 @@ def load_analyzed_data(folder, videoname, scorer, filtered=False, track_method='
     elif track_method == 'box':
         tracker = 'bx'
     candidates = []
-    for file in grab_files_in_folder(folder, 'h5', relative=False):
-        if all(((scorer in file or scorer_legacy in file),
-                videoname in file,
+    for file in grab_files_in_folder(folder, 'h5'):
+        if all(((file.startswith(videoname + scorer) or file.startswith(videoname + scorer_legacy)),
                 (tracker in file if tracker else not ('skeleton' in file or 'box' in file)),
                 (filtered and 'filtered' in file) or (not filtered and 'filtered' not in file))):
             candidates.append(file)
@@ -539,7 +538,7 @@ def load_analyzed_data(folder, videoname, scorer, filtered=False, track_method='
     n_candidates = len(candidates)
     if n_candidates > 1:  # This should not be happening anyway...
         print(f'{n_candidates} possible data files were found. Picking the first by default...')
-    filepath = candidates[0]
+    filepath = os.path.join(folder, candidates[0])
     df = pd.read_hdf(filepath)
     scorer = scorer if scorer in filepath else scorer_legacy
     return df, filepath, scorer, suffix

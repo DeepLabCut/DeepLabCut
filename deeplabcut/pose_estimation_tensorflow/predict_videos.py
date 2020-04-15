@@ -488,8 +488,10 @@ def AnalyzeVideo(video,DLCscorer,DLCscorerlegacy,trainFraction,cfg,dlc_cfg,sess,
     if destfolder is None:
         destfolder = str(Path(video).parents[0])
     auxiliaryfunctions.attempttomakefolder(destfolder)
-    notanalyzed,dataname, DLCscorer=auxiliaryfunctions.CheckifNotAnalyzed(destfolder,Path(video).stem,DLCscorer,DLCscorerlegacy)
-    if notanalyzed:
+    vname = Path(video).stem
+    try:
+        _ = auxiliaryfunctions.load_analyzed_data(destfolder, vname, DLCscorer)
+    except FileNotFoundError:
         print("Loading ", video)
         cap=cv2.VideoCapture(video)
 
@@ -545,9 +547,9 @@ def AnalyzeVideo(video,DLCscorer,DLCscorerlegacy,trainFraction,cfg,dlc_cfg,sess,
         metadata = {'data': dictionary}
 
         print(f"Saving results in {destfolder}...")
+        dataname = os.path.join(destfolder, vname + DLCscorer + '.h5')
         auxiliaryfunctions.SaveData(PredictedData[:nframes,:], metadata, dataname, pdindex, range(nframes),save_as_csv)
-        return DLCscorer
-    else:
+    finally:
         return DLCscorer
 
 def GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nframes,batchsize,rgb):
