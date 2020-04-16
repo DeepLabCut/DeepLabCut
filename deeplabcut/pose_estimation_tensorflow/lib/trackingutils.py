@@ -282,7 +282,9 @@ class SORT:
             # else:
             #     state = tracker.empty_state
             states.append(np.r_[state, [tracker.id, int(animalindex[i])]])
-        return np.stack(states)
+        if len(states) > 0:
+            return np.stack(states)
+        return np.empty((0, self.n_bodyparts * 2 + 2))
 
 
 def associate_detections_to_trackers(detections,trackers,iou_threshold):
