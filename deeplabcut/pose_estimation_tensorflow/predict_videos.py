@@ -34,7 +34,7 @@ from skimage.util import img_as_ubyte
 
 def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0,
                    gputouse=None, save_as_csv=False, destfolder=None, batchsize=None,
-                   crop=None,get_nframesfrommetadata=True, TFGPUinference=True,
+                   cropping=None,get_nframesfrommetadata=True, TFGPUinference=True,
                    dynamic=(False,.5,10),modelprefix='', c_engine=False):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
@@ -74,7 +74,7 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
     batchsize: int, default from pose_cfg.yaml
         Change batch size for inference; if given overwrites value in pose_cfg.yaml
 
-    crop: list, optional (default=None)
+    cropping: list, optional (default=None)
         List of cropping coordinates as [x1, x2, y1, y2].
         Note that the same cropping parameters will then be used for all videos.
         If different video crops are desired, run 'analyze_videos' on individual videos
@@ -136,10 +136,10 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg['TrainingFraction'][trainingsetindex]
 
-    if crop is not None:
+    if cropping is not None:
         cfg['cropping'] = True
-        cfg['x1'], cfg['x2'], cfg['y1'], cfg['y2'] = crop
-        print("Overwriting cropping parameters:", crop)
+        cfg['x1'], cfg['x2'], cfg['y1'], cfg['y2'] = cropping
+        print("Overwriting cropping parameters:", cropping)
         print("These are used for all videos, but won't be save to the cfg file.")
 
     modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)))

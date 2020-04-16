@@ -14,7 +14,7 @@ It produces nothing of interest scientifically.
 """
 
 task='TEST' # Enter the name of your experiment Task
-scorer='Alex' # Enter the name of the experimenter/labeler
+scorer='Jessy' # Enter the name of the experimenter/labeler
 
 import os,  subprocess, deeplabcut
 from pathlib import Path
@@ -23,7 +23,8 @@ import numpy as np
 import platform
 
 print("Imported DLC!")
-basepath=os.path.dirname(os.path.abspath('testscript.py'))
+# basepath=os.path.dirname(os.path.abspath('testscript.py'))
+basepath = os.path.dirname('/Users/Jessy/Documents/PycharmProjects/dlcdev/examples/testscript.py')
 videoname='reachingvideo1'
 video=[os.path.join(basepath,'Reaching-Mackenzie-2018-08-30','videos',videoname+'.avi')]
 
@@ -33,7 +34,7 @@ video=[os.path.join(basepath,'Reaching-Mackenzie-2018-08-30','videos',videoname+
 #to test destination folder:
 #dfolder=basepath #TEST THIS!
 
-dfolder=None
+dfolder='/Users/Jessy/Desktop/tryy'
 net_type='resnet_50' #'mobilenet_v2_0.35' #'resnet_50'
 augmenter_type='default'
 augmenter_type2='imgaug'
@@ -181,7 +182,7 @@ except: # if ffmpeg is broken
 
 
 print("Inference with direct cropping")
-deeplabcut.analyze_videos(path_config_file, [newvideo2], save_as_csv=True, destfolder=dfolder, crop=[0, 50, 0, 50])
+deeplabcut.analyze_videos(path_config_file, [newvideo2], save_as_csv=True, destfolder=dfolder, cropping=[0, 50, 0, 50])
 
 print("Extracting skeleton distances, filter and plot filtered output")
 deeplabcut.analyzeskeleton(path_config_file, [newvideo2], save_as_csv=True, destfolder=dfolder)
