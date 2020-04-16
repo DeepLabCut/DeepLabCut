@@ -23,8 +23,7 @@ import numpy as np
 import platform
 
 print("Imported DLC!")
-# basepath=os.path.dirname(os.path.abspath('testscript.py'))
-basepath = os.path.dirname('/Users/Jessy/Documents/PycharmProjects/dlcdev/examples/testscript.py')
+basepath=os.path.dirname(os.path.abspath('testscript.py'))
 videoname='reachingvideo1'
 video=[os.path.join(basepath,'Reaching-Mackenzie-2018-08-30','videos',videoname+'.avi')]
 
