@@ -106,9 +106,15 @@ deeplabcut.convert_detections2tracklets(config_path, [new_video_path], 'mov', tr
 print('Detections converted.')
 
 print('Create data file...')
-picklefile = os.path.splitext(new_video_path)[0] + scorer + '_bx.pickle'
-deeplabcut.convert_raw_tracks_to_h5(config_path, picklefile)
-deeplabcut.convert_raw_tracks_to_h5(config_path, picklefile.replace('bx', 'sk'))
+picklefile = os.path.splitext(new_video_path)[0] + scorer + '_sk.pickle'
+try:
+    deeplabcut.convert_raw_tracks_to_h5(config_path, picklefile)
+    deeplabcut.convert_raw_tracks_to_h5(config_path, picklefile.replace('sk', 'bx'))
+except IOError:
+    print('Empty tracklets properly caught! Using fake data rather...')
+    df = pd.read_hdf(os.path.join(image_folder, f'CollectedData_{SCORER}.h5'))
+    df.to_hdf(picklefile.replace('pickle', 'h5'), 'df_with_missing', format='table', mode='w')
+    df.to_hdf(picklefile.replace('sk', 'bx').replace('pickle', 'h5'), 'df_with_missing', format='table', mode='w')
 
 print('Plotting trajectories...')
 deeplabcut.plot_trajectories(config_path, [new_video_path], 'mov', track_method='box')
