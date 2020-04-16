@@ -169,6 +169,9 @@ class TrackletManager:
         header = tracklets.pop('header')
         self.scorer = header.get_level_values('scorer').unique().to_list()
         frames = sorted(set([frame for tracklet in tracklets.values() for frame in tracklet]))
+        if not len(frames):
+            raise IOError('Tracklets are empty.')
+
         self.nframes = int(re.findall(r'\d+', frames[-1])[0]) + 1
         self.times = np.arange(self.nframes)
         bodyparts = header.get_level_values('bodyparts')

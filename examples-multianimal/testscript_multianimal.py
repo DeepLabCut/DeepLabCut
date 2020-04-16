@@ -100,18 +100,32 @@ scorer, _ = auxiliaryfunctions.GetScorerName(cfg, 1, TRAIN_SIZE)
 deeplabcut.create_video_with_all_detections(config_path, [new_video_path], scorer)
 print('Video created.')
 
+print('Convert detections...')
+deeplabcut.convert_detections2tracklets(config_path, [new_video_path], 'mov', track_method='box')
+deeplabcut.convert_detections2tracklets(config_path, [new_video_path], 'mov', track_method='skeleton')
+print('Detections converted.')
+
+print('Create data file...')
+picklefile = os.path.splitext(new_video_path)[0] + scorer + '_bx.pickle'
+deeplabcut.convert_raw_tracks_to_h5(config_path, picklefile)
+deeplabcut.convert_raw_tracks_to_h5(config_path, picklefile.replace('bx', 'sk'))
+
 print('Plotting trajectories...')
-deeplabcut.plot_trajectories(config_path, [new_video_path], 'mov')
+deeplabcut.plot_trajectories(config_path, [new_video_path], 'mov', track_method='box')
+deeplabcut.plot_trajectories(config_path, [new_video_path], 'mov', track_method='skeleton')
 print('Trajectory plotted.')
 
 print('Creating labeled video...')
-deeplabcut.create_labeled_video(config_path, [new_video_path], save_frames=False, color_by='animal')
+deeplabcut.create_labeled_video(config_path, [new_video_path], 'mov',
+                                save_frames=False, color_by='individual', track_method='box')
+deeplabcut.create_labeled_video(config_path, [new_video_path], 'mov',
+                                save_frames=False, color_by='bodypart', track_method='skeleton')
 print('Labeled video created.')
 
 print('Filtering predictions...')
-deeplabcut.filterpredictions(config_path, [new_video_path], 'mov')
+deeplabcut.filterpredictions(config_path, [new_video_path], 'mov', track_method='box')
 print('Predictions filtered.')
 
 print('Extracting outlier frames...')
-deeplabcut.extract_outlier_frames(config_path, [new_video_path], 'mov', automatic=True)
+deeplabcut.extract_outlier_frames(config_path, [new_video_path], 'mov', automatic=True, track_method='box')
 print('Outlier frames extraacted.')
