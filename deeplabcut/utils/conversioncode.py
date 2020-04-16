@@ -73,6 +73,8 @@ def convertpaths_to_windowsstyle(Data,fn):
 
 
 def convertsingle2multi(df):
+    '''auxiliary function that converts standard DLC CollectedData.h5 files into maDLC compatabile files:
+    '''
     idx = df.columns
     levels = idx.levels
     if len(levels) != 3:
@@ -84,6 +86,8 @@ def convertsingle2multi(df):
 
 
 def convertmulti2single(df):
+    '''auxiliary function that converts maDLC CollectedData.h5 files into single animal files (drops 'indv'):
+    '''
     idx = df.columns
     if len(idx.levels) != 4:
         raise ValueError('Incompatible DataFrame. Multi-animal labeled data should be passed in.')
@@ -99,7 +103,7 @@ def convertmulti2single(df):
 ## ConvertingMulti2Standard...
 def conversioncodemulti2single(config,userfeedback=True,multi2single=True):
     """
-    TODO: TBA.
+    function that converts maDLC CollectedData.h5 files into single animal DLC style files (drops 'indv')
     """
     cfg = auxiliaryfunctions.read_config(config)
     folders = [Path(config).parent / 'labeled-data' / Path(vid).stem for vid in cfg['video_sets']]
