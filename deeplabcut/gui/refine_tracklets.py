@@ -148,13 +148,14 @@ class Refine_tracklets(wx.Panel):
         self.SetSizer(sizer)
         sizer.Fit(self)
 
-
     def filter_after_refinement(self,event): #why is video type needed?
         shuffle = self.shuffle.GetValue()
         trainingsetindex = self.trainingset.GetValue()
+        tracker = 'skeleton' if os.path.splitext(self.datafile)[0].endswith('sk') else 'box'
         deeplabcut.filterpredictions(self.config, [self.video], videotype= self.videotype.GetValue(),
-                                          shuffle=shuffle, trainingsetindex=trainingsetindex,
-                                          filtertype=self.filter_track.GetValue(), windowlength=self.filterlength_track.GetValue())
+                                     shuffle=shuffle, trainingsetindex=trainingsetindex,
+                                     filtertype=self.filter_track.GetValue(), track_method=tracker,
+                                     windowlength=self.filterlength_track.GetValue())
 
     def help_function(self,event):
 
@@ -183,24 +184,9 @@ class Refine_tracklets(wx.Panel):
         self.video = self.sel_video.GetPath()
 
     def refine_tracklets(self,event):
-
         deeplabcut.refine_tracklets(self.config, self.datafile, self.video,
                      self.slider_swap.GetValue() / 100, self.slider_track.GetValue() / 100, trail_len=50)
-        '''
-        self.manager = tracklets.TrackletManager(self.config, self.slider_swap.GetValue() / 100,
-                                                 self.slider_track.GetValue() / 100)
-        self.manager.load_tracklets_from_pickle(self.datafile)
-        self.manager.find_swapping_bodypart_pairs()
-        self.viz = tracklets.TrackletVisualizer(self.manager, self.video, 30)
-        self.viz.show()
-        self.save.Enable(True)
-        '''
 
-    '''
-    def save_tracklets(self, event):
-        self.manager.save()
-        print("File (...tracks.h5) is saved! Now your research questions can be tackled! Thanks for using DeepLabCut!")
-    '''
     def reset_refine_tracklets(self,event):
         """
         Reset to default

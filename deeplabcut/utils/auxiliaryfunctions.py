@@ -537,7 +537,8 @@ def load_analyzed_data(folder, videoname, scorer, filtered=False, track_method='
 
     n_candidates = len(candidates)
     if n_candidates > 1:  # This should not be happening anyway...
-        print(f'{n_candidates} possible data files were found. Picking the first by default...')
+        print(f'{n_candidates} possible data files were found: {candidates}.\n'
+              f'Picking the first by default...')
     filepath = os.path.join(folder, candidates[0])
     df = pd.read_hdf(filepath)
     scorer = scorer if scorer in filepath else scorer_legacy

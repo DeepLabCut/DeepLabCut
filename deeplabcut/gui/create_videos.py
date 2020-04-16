@@ -136,6 +136,16 @@ class Create_Labeled_Videos(wx.Panel):
         hbox3.Add(self.filter,10,wx.EXPAND|wx.TOP|wx.BOTTOM,10)
         hbox3.Add(self.bodypart_choice,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
         hbox3.Add(self.bodyparts_to_compare,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+
+        if self.cfg.get('multianimalproject', False):
+            tracker_text = wx.StaticBox(self, label="Specify the Tracker Method!")
+            tracker_text_boxsizer = wx.StaticBoxSizer(tracker_text, wx.VERTICAL)
+            trackertypes = ['skeleton', 'box', 'clowncats']
+            self.trackertypes = wx.ComboBox(self,choices = trackertypes,style = wx.CB_READONLY)
+            self.trackertypes.SetValue('box')
+            tracker_text_boxsizer.Add(self.trackertypes,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+            hbox3.Add(tracker_text_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+
         boxsizer.Add(hbox3,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
         self.help_button = wx.Button(self, label='Help')
@@ -233,7 +243,7 @@ class Create_Labeled_Videos(wx.Panel):
             deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle,
                                                  trainingsetindex=trainingsetindex, save_frames=self.slow, draw_skeleton= self.draw,
                                                  displayedbodyparts=self.bodyparts, trailpoints = self.trail_points.GetValue(),
-                                                 filtered=filtered, color_by=color_by)
+                                                 filtered=filtered, color_by=color_by, track_method=self.trackertypes.GetValue())
 
 
         if len(self.bodyparts)==0:
