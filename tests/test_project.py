@@ -1,7 +1,7 @@
 import os
 os.environ['DLClight'] = 'True'
 import pytest
-from deeplabcut import create_new_project
+from deeplabcut import add_new_videos, create_new_project
 from deeplabcut.utils import auxiliaryfunctions
 
 
@@ -27,16 +27,32 @@ def empty_project_multi(tmpdir):
 
 
 @pytest.fixture()
-def empty_projects(request):
+def project_single(tmpdir):
+    project = 'single'
+    experimenter = 'dlc'
+    config_path = create_new_project(project, experimenter, [videos[0]], tmpdir)
+    return config_path, tmpdir
+
+
+@pytest.fixture()
+def project_multi(tmpdir):
+    project = 'multi'
+    experimenter = 'dlc'
+    config_path = create_new_project(project, experimenter, [videos[0]], tmpdir, multianimal=True)
+    return config_path, tmpdir
+
+
+@pytest.fixture()
+def fake_project(request):
     return request.getfixturevalue(request.param)
 
 
 # Hacky solution to pass fixtures to 'parametrize'
 # See https://github.com/pytest-dev/pytest/issues/349
-@pytest.mark.parametrize('empty_projects', ['empty_project_single', 'empty_project_multi'],
-                         indirect=['empty_projects'])
-def test_new_project_no_video(empty_projects):
-    config_path, _ = empty_projects
+@pytest.mark.parametrize('fake_project', ['empty_project_single', 'empty_project_multi'],
+                         indirect=['fake_project'])
+def test_new_project_no_video(fake_project):
+    config_path, _ = fake_project
     assert config_path == 'nothingcreated'
     project_path = os.path.dirname(config_path)
     assert not os.path.isdir(project_path)
@@ -64,3 +80,31 @@ def test_new_project(tmpdir, videos, copy_videos, multi):
         assert os.path.isfile(video_path)
     else:
         assert os.path.islink(video_path)
+
+
+@pytest.mark.parametrize('fake_project, videos, copy_videos',
+                         [('project_single', [videos[1]], False),
+                          ('project_multi', [videos[1]], True)],
+                         indirect=['fake_project'])
+def test_add_videos(fake_project, videos, copy_videos):
+    config_path, _ = fake_project
+    add_new_videos(config_path, videos, copy_videos)
+    cfg = auxiliaryfunctions.read_config(config_path)
+    assert len(cfg['video_sets']) == 2
+    config_folder = os.path.dirname(config_path)
+    video_path = os.path.join(config_folder, 'videos', os.path.split(videos[0])[1])
+    if copy_videos:
+        assert os.path.isfile(video_path)
+    else:
+        assert os.path.islink(video_path)
+
+
+@pytest.mark.parametrize('fake_project', ['project_single', 'project_multi'],
+                         indirect=['fake_project'])
+def test_add_videos_corrupted(capsys, fake_project):
+    config_path, tmpdir = fake_project
+    empty_dir = tmpdir.mkdir('empty')
+    fake_vid = empty_dir.join('fake.avi')
+    add_new_videos(config_path, [fake_vid])
+    out, _ = capsys.readouterr()
+    assert 'Cannot open' in out

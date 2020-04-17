@@ -62,7 +62,7 @@ def add_new_videos(config,videos,copy_videos=False,coords=None):
         p.mkdir(parents = True, exist_ok = True)
     
     destinations = [video_path.joinpath(vp.name) for vp in videos]
-    if copy_videos==True:
+    if copy_videos:
         for src, dst in zip(videos, destinations):
             if dst.exists():
                 pass
@@ -79,7 +79,7 @@ def add_new_videos(config,videos,copy_videos=False,coords=None):
                 dst = str(dst)
                 os.symlink(src, dst)
     
-    if copy_videos==True:
+    if copy_videos:
         videos=destinations # in this case the *new* location should be added to the config file
     # adds the video list to the config.yaml file
     for idx,video in enumerate(videos):
@@ -95,11 +95,11 @@ def add_new_videos(config,videos,copy_videos=False,coords=None):
             # get vcap property
            width = int(vcap.get(cv2.CAP_PROP_FRAME_WIDTH))
            height = int(vcap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-           if coords == None:
-                cfg['video_sets'].update({video_path : {'crop': ', '.join(map(str, [0, width, 0, height]))}})
-           else:
+           if coords is not None:
                 c = coords[idx]
                 cfg['video_sets'].update({video_path : {'crop': ', '.join(map(str, c))}})
+           else:
+                cfg['video_sets'].update({video_path : {'crop': ', '.join(map(str, [0, width, 0, height]))}})
         else:
            print("Cannot open the video file!")
 
