@@ -21,7 +21,8 @@ class PlotterArgMax(Predictor):
     """
     Identical to singleargmax, but plots probability frames in form of video to the user using matplotlib...
     """
-    def __init__(self, bodyparts: Union[List[str]], num_outputs: int, num_frames: int, settings: Union[Dict[str, Any], None], video_metadata: Dict[str, Any]):
+    def __init__(self, bodyparts: Union[List[str]], num_outputs: int, num_frames: int,
+                 settings: Union[Dict[str, Any], None], video_metadata: Dict[str, Any]):
         super().__init__(bodyparts, num_outputs, num_frames, settings, video_metadata)
         self._parts = bodyparts
         self._num_frames = num_frames
@@ -135,8 +136,8 @@ class PlotterArgMax(Predictor):
         self._vid_writer.release()
         return None
 
-    @staticmethod
-    def get_settings() -> Union[List[Tuple[str, str, Any]], None]:
+    @classmethod
+    def get_settings(cls) -> Union[List[Tuple[str, str, Any]], None]:
         return [
             ("video_name", "Name of the video file that plotting data will be saved to. Can use $VIDEO to place the "
                            "name of original video somewhere in the text.", "$VIDEO-prob-dlc.mp4"),
@@ -155,13 +156,9 @@ class PlotterArgMax(Predictor):
              None)
         ]
 
-    @staticmethod
-    def get_name() -> str:
+    @classmethod
+    def get_name(cls) -> str:
         return "plotterargmax"
-
-    @staticmethod
-    def get_description() -> str:
-        return "Identical to argmax, but plots probability frames in form of a video using matplotlib..."
 
     @classmethod
     def get_tests(cls) -> Union[List[Callable[[], Tuple[bool, str, str]]], None]:

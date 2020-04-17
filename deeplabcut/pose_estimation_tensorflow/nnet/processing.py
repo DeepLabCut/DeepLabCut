@@ -605,7 +605,8 @@ class Predictor(ABC):
     several Pose objects providing the predicted locations of body parts in the original video...
     """
     @abstractmethod
-    def __init__(self, bodyparts: Union[List[str]], num_outputs: int, num_frames: int, settings: Union[Dict[str, Any], None], video_metadata: Dict[str, Any]):
+    def __init__(self, bodyparts: Union[List[str]], num_outputs: int, num_frames: int,
+                 settings: Union[Dict[str, Any], None], video_metadata: Dict[str, Any]):
         """
         Constructor for the predictor. Should be used by plugins to initialize key data structures and settings.
 
@@ -660,9 +661,9 @@ class Predictor(ABC):
         pass
 
 
-    @staticmethod
+    @classmethod
     @abstractmethod
-    def get_name() -> str:
+    def get_name(cls) -> str:
         """
         Get the name of this predictor plugin, the name is used when selecting a predictor in the
         deeplabcut.analyze_videos method.
@@ -672,21 +673,24 @@ class Predictor(ABC):
         pass
 
 
-    @staticmethod
-    @abstractmethod
-    def get_description() -> str:
+    @classmethod
+    def get_description(cls) -> str:
         """
         Get the description of this plugin, the equivalent of a doc-string for this plugin, it is displayed when
-        user lists available plugins.
+        user lists available plugins. Does not have to be overridden, and defaults to returning the sanitized docstring
+        of this class.
 
         :return: The description/summary of this plugin as a string.
         """
-        pass
+        if(cls.__doc__ is None):
+            return "None"
+        else:
+            return " ".join(cls.__doc__.split())
 
 
-    @staticmethod
+    @classmethod
     @abstractmethod
-    def get_settings() -> Union[List[Tuple[str, str, Any]], None]:
+    def get_settings(cls) -> Union[List[Tuple[str, str, Any]], None]:
         """
         Get the configurable or available settings for this predictor plugin.
 

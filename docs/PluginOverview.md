@@ -160,20 +160,15 @@ class PrintAndPredict(Predictor):
         """
         return None
 
-    @staticmethod
-    def get_settings() -> Union[List[Tuple[str, str, Any]], None]:
+    @classmethod
+    def get_settings(cls) -> Union[List[Tuple[str, str, Any]], None]:
         """ Plugin offers no settings """
         return None
 
-    @staticmethod
-    def get_name() -> str:
+    @classmethod
+    def get_name(cls) -> str:
         """ Plugin Name goes here """
         return "example_plugin"
-
-    @staticmethod
-    def get_description() -> str:
-        """  """
-        return ("Prints frames to screen, nothing special...")
 
     @classmethod
     def get_tests(cls) -> Union[List[Callable[[], Tuple[bool, str, str]]], None]:

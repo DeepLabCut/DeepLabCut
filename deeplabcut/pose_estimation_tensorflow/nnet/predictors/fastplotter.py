@@ -199,18 +199,12 @@ class FastPlotterArgMax(Predictor):
         return None
 
 
-    @staticmethod
-    def get_name() -> str:
+    @classmethod
+    def get_name(cls) -> str:
         return "fast_plotterargmax"
 
-    @staticmethod
-    def get_description() -> str:
-        return ("Identical to plotterargmax, but avoids using matplotlib to generate probability maps, and instead"
-                "directly uses cv2 to generate the plots. This means it runs much faster, but doesn't offer as much"
-                "customization nor a 3D mode...")
-
-    @staticmethod
-    def get_settings() -> Union[List[Tuple[str, str, Any]], None]:
+    @classmethod
+    def get_settings(cls) -> Union[List[Tuple[str, str, Any]], None]:
         font_options = "\n".join([f"\t - {key}" for key in _load_cv2_fonts()])
         colormap_options = "\n".join(f"\t - {key}" for key in _load_cv2_colormaps())
 
