@@ -9,14 +9,14 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import os
-import yaml
 from pathlib import Path
 import cv2
 from deeplabcut import DEBUG
 import shutil
 
-def create_new_project(project, experimenter, videos,
-            working_directory=None, copy_videos=False,videotype='.avi',multianimal=False):
+
+def create_new_project(project, experimenter, videos, working_directory=None,
+                       copy_videos=False, videotype='.avi', multianimal=False):
     """Creates a new project directory, sub-directories and a basic configuration file. The configuration file is loaded with the default values. Change its parameters to your projects need.
 
     Parameters
@@ -111,7 +111,7 @@ def create_new_project(project, experimenter, videos,
             shutil.copy(os.fspath(src),os.fspath(dst)) #https://www.python.org/dev/peps/pep-0519/
     else:
       # creates the symlinks of the video and puts it in the videos directory.
-        print("Creating the symbolic link of the video")
+        print("Attempting to create a symbolic link of the video ...")
         for src, dst in zip(videos, destinations):
             if dst.exists() and not DEBUG:
                 raise FileExistsError('Video {} exists already!'.format(dst))
@@ -145,7 +145,14 @@ def create_new_project(project, experimenter, videos,
            video_sets[rel_video_path] = {'crop': ', '.join(map(str, [0, width, 0, height]))}
         else:
            print("Cannot open the video file! Skipping to the next one...")
-           pass
+           os.remove(video)  # Removing the video or link from the project
+
+    if not len(video_sets):
+        # Silently sweep the files that were already written.
+        shutil.rmtree(project_path, ignore_errors=True)
+        print('WARNING: No valid videos were found. The project was not created ...')
+        print('Verify the video files and re-create the project.')
+        return 'nothingcreated'
 
     #Set values to config file:
     if multianimal==True: #parameters specific to multianimal project
