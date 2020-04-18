@@ -35,17 +35,6 @@ else: #TODO: check if all variables present
     inferencecfg=edict(inferencecfg)
 '''
 
-def metric(df1,df2,pcutoff=0):
-    #mask=df2.xs('likelihood',level=1,axis=1)>=pcutoff
-    
-    dist=(df1-df2)**2
-    RMSE=np.sqrt(dist.xs('x',level=1,axis=1)+dist.xs('y',level=1,axis=1)) #bpt-element wise RMSE
-
-    return np.nanmean(RMSE)
-
-from scipy.optimize import linear_sum_assignment
-
-
 inferencecfg=edict()
 inferencecfg.minimalnumberofconnections=3
 inferencecfg.averagescore=.2
@@ -65,11 +54,6 @@ inferencecfg.variant=0 #
 TrainIndices=[]
 TestIndices=[]
 individuals, uniquebodyparts,multianimalbodyparts = auxfun_multianimal.extractindividualsandbodyparts(cfg)
-
-trainingsetfolder=auxiliaryfunctions.GetTrainingSetFolder(cfg)
-Data = pd.read_hdf(os.path.join(cfg["project_path"],str(trainingsetfolder),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing')
-
-
 for shuffle, shuffleval in enumerate(Shuffles):
     #DLCdev version:
     #fns=deeplabcut.return_evaluate_network_data(configfile,shuffle=shuffleval,trainingsetindex=0,modelprefix=modelprefix,returnjustfns=True)
@@ -115,6 +99,8 @@ for shuffle, shuffleval in enumerate(Shuffles):
     numanimals=len(individuals)-1*(len(uniquebodyparts)>0) #number of individuals in ground truth (excluding single!)
     nummultianimalparts=len(cfg['multianimalbodyparts'])
 
+trainingsetfolder=auxiliaryfunctions.GetTrainingSetFolder(cfg)
+Data = pd.read_hdf(os.path.join(cfg["project_path"],str(trainingsetfolder),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing')
     
 imgid=33
 #for imgid in tqdm(range(numimages)):
@@ -134,6 +120,8 @@ if imgid ==33:
 
 
 bodyparts=[all_jointnames[i] for i in BPTS]
+#columnindex = pd.MultiIndex.from_product([bodyparts, ['x', 'y','likelihood']],names=['bodyparts', 'coords'])
+
 detectedindividuals=[str(j) for j in range(len(subsets))]
 columnindex = pd.MultiIndex.from_product([detectedindividuals, bodyparts, ['x', 'y','likelihood']],names=['individuals','bodyparts', 'coords'])
 
@@ -152,26 +140,60 @@ for sj, subset in enumerate(subsets):
 if sj>0:
     DF=pd.DataFrame(detections, columns=columnindex, index=[imname])
 
+def metric(df1,df2,pcutoff=0):
+    #mask=df2.xs('likelihood',level=1,axis=1)>=pcutoff
+    
+    dist=(df1-df2)**2
+    RMSE=np.sqrt(dist.xs('x',level=1,axis=1)+dist.xs('y',level=1,axis=1)) #bpt-element wise RMSE
+
+    return np.nanmean(RMSE)
+
+from scipy.optimize import linear_sum_assignment
 
 mat=np.zeros((len(individuals),len(detectedindividuals)))*np.nan
-# distance for each detection and ground truth pose
+# distance for each detection and ground truth object
 for i, individual in enumerate(individuals):
     for j, ind in enumerate(detectedindividuals):
         rmse = metric(GT[cfg['scorer']][individual], DF[ind])
 
-        mat[i, j] = rmse #rmse 
+        mat[i, j] = rmse
 
 row_indices, col_indices = linear_sum_assignment(mat)
-
-columnindex = pd.MultiIndex.from_product([individuals, ['rmse', 'f1','likelihood']],names=['individuals','metrics'])
-
-#DF=pd.DataFrame(detections, columns=columnindex, index=[imname])
 
 #calculate metrics for the matches:
 for i, individual in enumerate(individuals): 
     match=detectedindividuals[col_indices[i]]
     
-    df,dg=GT[cfg['scorer']][individual], DF[str(col_indices[i])]
-    rmse = mat[i, col_indices[i]]
+    rmse=mat[i, col_indices[i]]
 
-    #closest distance! rmse!
+
+    nearestrmse=
+
+
+
+RMSE[shuffle,imgid,:,:]=np.sqrt(np.sum((ComparisonCoordinates[:,:,1,:]-ComparisonCoordinates[:,:,0,:])**2,axis=2)).T
+
+            ##misses (annotated bpts that were not detected)
+            StatsperBpt[shuffle,imgid,0,:]=np.sum(np.isfinite(ComparisonCoordinates[:,:,1,:])*np.isnan(ComparisonCoordinates[:,:,0,:]),axis=(0,2))/2
+            Stats[shuffle,imgid,0]=np.sum(StatsperBpt[shuffle,imgid,0,:])
+
+            ## hits (annotated bpts that were detected)
+            StatsperBpt[shuffle,imgid,1,:]=np.sum(np.isfinite(ComparisonCoordinates[:,:,1,:])*np.isfinite(ComparisonCoordinates[:,:,0,:]),axis=(0,2))/2
+            Stats[shuffle,imgid,1]=np.sum(StatsperBpt[shuffle,imgid,1,:]) #don't count x & y twice!
+
+            ## additional detections >> algo detected bpt, but human did not label...
+            StatsperBpt[shuffle,imgid,2,:]=np.sum(np.isnan(ComparisonCoordinates[:,:,1,:])*np.isfinite(ComparisonCoordinates[:,:,0,:]),axis=(0,2))/2
+            Stats[shuffle,imgid,2]=np.sum(StatsperBpt[shuffle,imgid,2,:])
+
+            #samples
+            StatsperBpt[shuffle,imgid,3,:]=np.sum((np.isfinite(ComparisonCoordinates[:,:,1,:])+np.isfinite(ComparisonCoordinates[:,:,0,:]))>0,axis=(0,2))/2
+            Stats[shuffle,imgid,3]=np.sum(StatsperBpt[shuffle,imgid,3,:])
+
+            #numbpts by human!
+            StatsperBpt[shuffle,imgid,4,:]=np.sum(np.isfinite(ComparisonCoordinates[:,:,1,:]),axis=(0,2))/2
+            Stats[shuffle,imgid,4]=np.sum(StatsperBpt[shuffle,imgid,4,:])
+
+            #num animals!
+            Stats[shuffle,imgid,5]=np.sum(np.any(np.isfinite(ComparisonCoordinates[:,:,1,:]),axis=(1,2)))
+
+
