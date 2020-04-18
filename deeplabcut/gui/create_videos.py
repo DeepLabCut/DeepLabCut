@@ -34,7 +34,7 @@ class Create_Labeled_Videos(wx.Panel):
         # design the panel
         self.sizer = wx.GridBagSizer(5, 5)
 
-        text = wx.StaticText(self, label="DeepLabCut - Create Labeled Videos")
+        text = wx.StaticText(self, label="DeepLabCut - Create Labeled Videos (more functionality)")
         self.sizer.Add(text, pos=(0, 0), flag=wx.TOP|wx.LEFT|wx.BOTTOM,border=15)
         # Add logo of DLC
         icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(logo))
@@ -93,15 +93,9 @@ class Create_Labeled_Videos(wx.Panel):
         boxsizer.Add(hbox1,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
         self.sizer.Add(boxsizer, pos=(4, 0), span=(1, 5),flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT , border=10)
 
-        self.cfg = auxiliaryfunctions.read_config(self.config)
-        if self.cfg.get('multianimalproject', False):
-            self.plot_idv = wx.RadioBox(self, label='Create video with animal ID colored?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
-            self.plot_idv.SetSelection(1)
-            hbox3.Add(self.plot_idv,10,wx.EXPAND|wx.TOP|wx.BOTTOM,10)
-
         self.draw_skeleton = wx.RadioBox(self, label='Include the skeleton in the video?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
         self.draw_skeleton.Bind(wx.EVT_RADIOBOX, self.choose_draw_skeleton_options)
-        self.draw_skeleton.SetSelection(1)
+        self.draw_skeleton.SetSelection(0)
 
         self.filter = wx.RadioBox(self, label='Use filtered predictions?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
         self.filter.SetSelection(1)
@@ -109,6 +103,7 @@ class Create_Labeled_Videos(wx.Panel):
         self.video_slow = wx.RadioBox(self, label='Create a higher quality video? (slow)', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
         self.video_slow.Bind(wx.EVT_RADIOBOX, self.choose_video_slow_options)
         self.video_slow.SetSelection(1)
+
 
         self.trail_points_text = wx.StaticBox(self, label="Specify the number of trail points")
         trail_pointsboxsizer = wx.StaticBoxSizer(self.trail_points_text, wx.VERTICAL)
@@ -120,10 +115,7 @@ class Create_Labeled_Videos(wx.Panel):
         self.bodypart_choice.Bind(wx.EVT_RADIOBOX,self.chooseOption)
 
         config_file = auxiliaryfunctions.read_config(self.config)
-        if config_file.get('multianimalproject', False):
-            bodyparts = config_file['multianimalbodyparts']
-        else:
-            bodyparts = config_file['bodyparts']
+        bodyparts = config_file['bodyparts']
         self.bodyparts_to_compare = wx.CheckListBox(self, choices=bodyparts, style=0,name = "Select the bodyparts")
         self.bodyparts_to_compare.Bind(wx.EVT_CHECKLISTBOX,self.getbp)
         self.bodyparts_to_compare.Hide()
@@ -136,16 +128,6 @@ class Create_Labeled_Videos(wx.Panel):
         hbox3.Add(self.filter,10,wx.EXPAND|wx.TOP|wx.BOTTOM,10)
         hbox3.Add(self.bodypart_choice,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
         hbox3.Add(self.bodyparts_to_compare,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
-
-        if self.cfg.get('multianimalproject', False):
-            tracker_text = wx.StaticBox(self, label="Specify the Tracker Method!")
-            tracker_text_boxsizer = wx.StaticBoxSizer(tracker_text, wx.VERTICAL)
-            trackertypes = ['skeleton', 'box', 'clowncats']
-            self.trackertypes = wx.ComboBox(self,choices = trackertypes,style = wx.CB_READONLY)
-            self.trackertypes.SetValue('box')
-            tracker_text_boxsizer.Add(self.trackertypes,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
-            hbox3.Add(tracker_text_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-
         boxsizer.Add(hbox3,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
         self.help_button = wx.Button(self, label='Help')
@@ -187,12 +169,6 @@ class Create_Labeled_Videos(wx.Panel):
         else:
             self.draw = False
 
-    def plot_idv_options(self,event):
-        if self.plot_idv.GetStringSelection() == "Yes":
-            self.plot_idv = 'individual'
-        else:
-            self.plot_idv = 'bodypart'
-
     def choose_video_slow_options(self,event):
         if self.video_slow.GetStringSelection() == "Yes":
             self.slow = True
@@ -218,41 +194,27 @@ class Create_Labeled_Videos(wx.Panel):
 
         shuffle = self.shuffle.GetValue()
         trainingsetindex = self.trainingset.GetValue()
-        #self.filelist = self.filelist + self.vids
 
         if self.filter.GetStringSelection() == "No":
-            filtered = False
+            filter = None
         else:
-            filtered = True
+            filter = True
 
         if self.video_slow.GetStringSelection() == "Yes":
             self.slow = True
         else:
             self.slow = False
 
-        config_file = auxiliaryfunctions.read_config(self.config)
-        if config_file.get('multianimalproject', False):
-            if self.plot_idv.GetStringSelection() == "Yes":
-                color_by ='individual'
-            else:
-                color_by='bodypart'
-
+        if self.filter.GetStringSelection() == "Yes":
             if len(self.bodyparts)==0:
                 self.bodyparts='all'
 
-            deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle,
-                                                 trainingsetindex=trainingsetindex, save_frames=self.slow, draw_skeleton= self.draw,
-                                                 displayedbodyparts=self.bodyparts, trailpoints = self.trail_points.GetValue(),
-                                                 filtered=filtered, color_by=color_by, track_method=self.trackertypes.GetValue())
-
+                deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle, trainingsetindex=trainingsetindex, save_frames=self.slow, draw_skeleton= self.draw, displayedbodyparts=self.bodyparts, trailpoints = self.trail_points.GetValue(), filtered=True)
 
         if len(self.bodyparts)==0:
             self.bodyparts='all'
+        deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle, trainingsetindex=trainingsetindex, save_frames=self.slow, draw_skeleton= self.draw, displayedbodyparts=self.bodyparts, trailpoints = self.trail_points.GetValue(), filtered=False)
 
-            deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle,
-                                             color_by='bodypart', trainingsetindex=trainingsetindex, save_frames=self.slow,
-                                             draw_skeleton= self.draw, displayedbodyparts=self.bodyparts,
-                                             trailpoints = self.trail_points.GetValue(),filtered=filtered)
 
 
     def help_function(self,event):
@@ -268,6 +230,9 @@ class Create_Labeled_Videos(wx.Panel):
         help_text = help_file.read()
         wx.MessageBox(help_text,'Help',wx.OK | wx.ICON_INFORMATION)
         os.remove('help.txt')
+
+
+
 
     def reset_create_videos(self,event):
         """
