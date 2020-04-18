@@ -1,3 +1,8 @@
+#Data
+/examples
+/examples-multianimal
+/benchmarking
+
 # Tensorflow checkpoints
 *.ckpt
 snapshot-*
@@ -20,7 +25,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/

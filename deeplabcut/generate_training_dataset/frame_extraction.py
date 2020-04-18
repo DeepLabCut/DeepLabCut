@@ -30,30 +30,17 @@ def select_cropping_area(config, videos=None):
     cfg : dict
         Updated project configuration
     """
-
-    import cv2
-    from deeplabcut.utils import auxiliaryfunctions
-    from deeplabcut.utils import select_crop_parameters
+    from deeplabcut.utils import auxiliaryfunctions, auxfun_videos
 
     cfg = auxiliaryfunctions.read_config(config)
-
     if videos is None:
         videos = cfg['video_sets']
 
     for video in videos:
-        clip = cv2.VideoCapture(video)
-        if not clip.isOpened():
-            print('Video could not be opened. Skipping...')
-            continue
-
-        success, frame = clip.read()
-        if not success:
-            print('Frame could not be read. Skipping...')
-            continue
-
-        coords = select_crop_parameters.show(config, frame[:, :, ::-1])
-        cfg['video_sets'][video] = {
-            'crop': ', '.join(map(str, [int(coords[0]), int(coords[1]), int(coords[2]), int(coords[3])]))}
+        coords = auxfun_videos.draw_bbox(video)
+        if coords:
+            cfg['video_sets'][video] = {
+                'crop': ', '.join(map(str, [int(coords[0]), int(coords[2]), int(coords[1]), int(coords[3])]))}
 
     auxiliaryfunctions.write_config(config, cfg)
     return cfg
@@ -195,6 +182,10 @@ def extract_frames(config, mode='automatic', algo='kmeans', crop=False, userfeed
                     clip = VideoFileClip(video)
                     fps = clip.fps
                     nframes = int(np.ceil(clip.duration * 1. / fps))
+                if not nframes:
+                    print('Video could not be opened. Skipping...')
+                    continue
+
                 indexlength = int(np.ceil(np.log10(nframes)))
 
                 fname = Path(video)

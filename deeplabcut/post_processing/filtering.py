@@ -24,8 +24,8 @@ from scipy import signal
 
 
 def filterpredictions(config,video,videotype='avi',shuffle=1,trainingsetindex=0,
-            filtertype='median',windowlength=5,
-            p_bound=.001,ARdegree=3,MAdegree=1,alpha=.01,save_as_csv=True,destfolder=None):
+                      filtertype='median',windowlength=5, p_bound=.001,ARdegree=3,MAdegree=1,alpha=.01,
+                      save_as_csv=True,destfolder=None,modelprefix='', track_method=''):
     """
 
     Fits frame-by-frame pose predictions with ARIMA model (filtertype='arima') or median filter (default).
@@ -92,44 +92,53 @@ def filterpredictions(config,video,videotype='avi',shuffle=1,trainingsetindex=0,
     Returns filtered pandas array with the same structure as normal output of network.
     """
     cfg = auxiliaryfunctions.read_config(config)
-    DLCscorer,DLCscorerlegacy=auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction = cfg['TrainingFraction'][trainingsetindex])
+    DLCscorer,DLCscorerlegacy=auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction = cfg['TrainingFraction'][trainingsetindex],modelprefix=modelprefix)
     Videos=auxiliaryfunctions.Getlistofvideos(video,videotype)
 
-    if len(Videos)>0:
-        for video in Videos:
-            if destfolder is None:
-                destfolder = str(Path(video).parents[0])
+    if not len(Videos):
+        print("No video(s) were found. Please check your paths and/or 'video_type'.")
+        return
 
-            print("Filtering with %s model %s"%(filtertype,video))
-            videofolder = destfolder
-            vname=Path(video).stem
-            notanalyzed,outdataname,sourcedataname,scorer=auxiliaryfunctions.CheckifPostProcessing(destfolder,vname,DLCscorer,DLCscorerlegacy,suffix='filtered')
-            if notanalyzed:
-                    Dataframe = pd.read_hdf(sourcedataname,'df_with_missing')
-                    for bpindex,bp in tqdm(enumerate(cfg['bodyparts'])):
-                        pdindex = pd.MultiIndex.from_product([[scorer], [bp], ['x', 'y','likelihood']],names=['scorer', 'bodyparts', 'coords'])
-                        x,y,p=Dataframe[scorer][bp]['x'].values,Dataframe[scorer][bp]['y'].values,Dataframe[scorer][bp]['likelihood'].values
+    for video in Videos:
+        if destfolder is None:
+            destfolder = str(Path(video).parents[0])
 
-                        if filtertype=='arima':
-                            meanx,CIx=FitSARIMAXModel(x,p,p_bound,alpha,ARdegree,MAdegree,False)
-                            meany,CIy=FitSARIMAXModel(y,p,p_bound,alpha,ARdegree,MAdegree,False)
+        print("Filtering with %s model %s"%(filtertype,video))
+        vname=Path(video).stem
 
-                            meanx[0]=x[0]
-                            meany[0]=y[0]
-                        else:
-                            meanx=signal.medfilt(x,kernel_size=windowlength)
-                            meany=signal.medfilt(y,kernel_size=windowlength)
+        try:
+            _ = auxiliaryfunctions.load_analyzed_data(destfolder, vname, DLCscorer, True, track_method)
+            print(f'Data from {vname} were already filtered. Skipping...')
+        except FileNotFoundError:  # Data haven't been filtered yet
+            try:
+                df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(destfolder, vname, DLCscorer, track_method=track_method)
+                nrows = df.shape[0]
+                if filtertype == 'arima':
+                    temp = df.values.reshape((nrows, -1, 3))
+                    placeholder = np.empty_like(temp)
+                    for i in range(temp.shape[1]):
+                        x, y, p = temp[:, i].T
+                        meanx, _ = FitSARIMAXModel(x, p, p_bound, alpha, ARdegree, MAdegree, False)
+                        meany, _ = FitSARIMAXModel(y, p, p_bound, alpha, ARdegree, MAdegree, False)
+                        meanx[0] = x[0]
+                        meany[0] = y[0]
+                        placeholder[:, i] = np.c_[meanx, meany, p]
+                    data = pd.DataFrame(placeholder.reshape((nrows, -1)),
+                                        columns=df.columns,
+                                        index=df.index)
+                else:
+                    data = df.copy()
+                    mask = data.columns.get_level_values('coords') != 'likelihood'
+                    data.loc[:, mask] = df.loc[:, mask].apply(signal.medfilt, args=(windowlength,), axis=0)
+                outdataname = filepath.replace('.h5', '_filtered.h5')
+                data.to_hdf(outdataname, 'df_with_missing', format='table', mode='w')
+                if save_as_csv:
+                    print("Saving filtered csv poses!")
+                    data.to_csv(outdataname.split('.h5')[0] + '.csv')
+            except FileNotFoundError as e:
+                print(e)
+                continue
 
-                        if bpindex==0:
-                            data = pd.DataFrame(np.hstack([np.expand_dims(meanx,axis=1),np.expand_dims(meany,axis=1),np.expand_dims(p,axis=1)]), columns=pdindex)
-                        else:
-                            item=pd.DataFrame(np.hstack([np.expand_dims(meanx,axis=1),np.expand_dims(meany,axis=1),np.expand_dims(p,axis=1)]), columns=pdindex)
-                            data=pd.concat([data.T, item.T]).T
-
-                    data.to_hdf(outdataname, 'df_with_missing', format='table', mode='w')
-                    if save_as_csv:
-                        print("Saving filtered csv poses!")
-                        data.to_csv(outdataname.split('.h5')[0]+'.csv')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

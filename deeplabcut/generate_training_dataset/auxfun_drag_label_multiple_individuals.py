@@ -141,4 +141,3 @@ class DraggablePoint:
         self.point.figure.canvas.mpl_disconnect(self.cidrelease)
         self.point.figure.canvas.mpl_disconnect(self.cidmotion)
         self.point.figure.canvas.mpl_disconnect(self.cidhover)
-        self.point.figure.canvas.mpl_disconnect(self.cidkey)

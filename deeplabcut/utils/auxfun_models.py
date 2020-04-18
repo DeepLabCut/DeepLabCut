@@ -42,7 +42,7 @@ def Downloadweights(modeltype,model_path):
     from io import BytesIO
 
     target_dir = model_path.parents[0]
-    neturls=auxiliaryfunctions.read_plainconfig(target_dir / 'pretrained_model_urls.yaml')
+    neturls= auxiliaryfunctions.read_plainconfig(target_dir / 'pretrained_model_urls.yaml')
     try:
         url = neturls[modeltype]
         print("Downloading a ImageNet-pretrained model from {}....".format(url))

@@ -16,7 +16,7 @@ import os.path
 from deeplabcut.pose_estimation_tensorflow.nnet import predict
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import data_to_input
-import time
+import time, sys
 import pandas as pd
 import numpy as np
 import os
@@ -32,9 +32,10 @@ from skimage.util import img_as_ubyte
 # Loading data, and defining model folder
 ####################################################
 
-def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=0, gputouse=None, save_as_csv=False,
-                   destfolder=None, batchsize=None, crop=None, get_nframesfrommetadata=True, TFGPUinference=True,
-                   dynamic=(False, .5, 10)):
+def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0,
+                   gputouse=None, save_as_csv=False, destfolder=None, batchsize=None,
+                   cropping=None,get_nframesfrommetadata=True, TFGPUinference=True,
+                   dynamic=(False,.5,10),modelprefix='', c_engine=False):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
 
@@ -73,22 +74,27 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
     batchsize: int, default from pose_cfg.yaml
         Change batch size for inference; if given overwrites value in pose_cfg.yaml
 
-    crop: list, optional (default=None)
+    cropping: list, optional (default=None)
         List of cropping coordinates as [x1, x2, y1, y2].
         Note that the same cropping parameters will then be used for all videos.
         If different video crops are desired, run 'analyze_videos' on individual videos
         with the corresponding cropping coordinates.
 
     TFGPUinference: bool, default: True
-        Perform inference on GPU with Tensorflow code. Introduced in "Pretraining boosts out-of-domain robustness for pose estimation" by
+        Perform inference on GPU with TensorFlow code. Introduced in "Pretraining boosts out-of-domain robustness for pose estimation" by
         Alexander Mathis, Mert Yüksekgönül, Byron Rogers, Matthias Bethge, Mackenzie W. Mathis Source: https://arxiv.org/abs/1909.11229
 
-    dynamic: triple containing (state,detectiontreshold,margin)
+    dynamic: triple containing (state, detectiontreshold, margin)
         If the state is true, then dynamic cropping will be performed. That means that if an object is detected (i.e. any body part > detectiontreshold),
         then object boundaries are computed according to the smallest/largest x position and smallest/largest y position of all body parts. This  window is
         expanded by the margin and from then on only the posture within this crop is analyzed (until the object is lost, i.e. <detectiontreshold). The
         current position is utilized for updating the crop window for the next frame (this is why the margin is important and should be set large
         enough given the movement of the animal).
+
+    c_engine: bool, optional (default=False)
+        If True, uses C code to detect 2D local maxima for multianimal inference.
+        Pure-Python functions are used by default, which, although slower, do not require the user
+        to install Cython and compile external code.
 
     Examples
     --------
@@ -130,13 +136,13 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg['TrainingFraction'][trainingsetindex]
 
-    if crop is not None:
-        cfg['cropping']=True
-        cfg['x1'],cfg['x2'],cfg['y1'],cfg['y2']=crop
-        print("Overwriting cropping parameters:", crop)
+    if cropping is not None:
+        cfg['cropping'] = True
+        cfg['x1'], cfg['x2'], cfg['y1'], cfg['y2'] = cropping
+        print("Overwriting cropping parameters:", cropping)
         print("These are used for all videos, but won't be save to the cfg file.")
 
-    modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)))
+    modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)))
     path_test_config = Path(modelfolder) / 'test' / 'pose_cfg.yaml'
     try:
         dlc_cfg = load_config(str(path_test_config))
@@ -177,6 +183,10 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
         dlc_cfg['batch_size']=batchsize
         cfg['batch_size']=batchsize
 
+    if 'multi-animal' in dlc_cfg['dataset_type']:
+        dynamic=(False,.5,10) #setting dynamic mode to false
+        TFGPUinference=False
+
     if dynamic[0]: #state=true
         #(state,detectiontreshold,margin)=dynamic
         print("Starting analysis in dynamic cropping mode with parameters:", dynamic)
@@ -186,7 +196,7 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
         print("Switching batchsize to 1, num_outputs (per animal) to 1 and TFGPUinference to False (all these features are not supported in this mode).")
 
     # Name for scorer:
-    DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations)
+    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations,modelprefix=modelprefix)
     if dlc_cfg['num_outputs']>1:
         if  TFGPUinference:
             print("Switching to numpy-based keypoint extraction code, as multiple point extraction is not supported by TF code currently.")
@@ -211,20 +221,28 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
                                          names=['scorer', 'bodyparts', 'coords'])
 
     ##################################################
-    # Datafolder
+    # Looping over videos
     ##################################################
     Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
     if len(Videos)>0:
-        #looping over videos
-        for video in Videos:
-            DLCscorer=AnalyzeVideo(video,DLCscorer,DLCscorerlegacy,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder,TFGPUinference,dynamic)
+        if 'multi-animal' in dlc_cfg['dataset_type']:
+            from deeplabcut.pose_estimation_tensorflow.predict_multianimal import AnalyzeMultiAnimalVideo
+            for video in Videos:
+                AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder, c_engine=c_engine)
+        else:
+            for video in Videos:
+                DLCscorer=AnalyzeVideo(video,DLCscorer,DLCscorerlegacy,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder,TFGPUinference,dynamic)
 
         os.chdir(str(start_path))
-        print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'.")
-        print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
+        if 'multi-animal' in dlc_cfg['dataset_type']:
+          print("The videos are analyzed. Time to assemble animals and track 'em... \n Call 'create_video_with_all_detections' to check multi-animal detection quality before tracking.")
+          print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames.")
+        else:
+          print("The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'")
+          print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames.")
         return DLCscorer #note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
     else:
-        print("No video/s found. Please check your path!")
+        print("No video(s) were found. Please check your paths and/or 'video_type'.")
         return DLCscorer
 
 def checkcropping(cfg,cap):
@@ -466,12 +484,14 @@ def GetPoseDynamic(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,detectiontresh
 def AnalyzeVideo(video,DLCscorer,DLCscorerlegacy,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder=None,TFGPUinference=True,dynamic=(False,.5,10)):
     ''' Helper function for analyzing a video. '''
     print("Starting to analyze % ", video)
-    vname = Path(video).stem
+
     if destfolder is None:
         destfolder = str(Path(video).parents[0])
-
-    notanalyzed,dataname, DLCscorer=auxiliaryfunctions.CheckifNotAnalyzed(destfolder,vname,DLCscorer,DLCscorerlegacy)
-    if notanalyzed:
+    auxiliaryfunctions.attempttomakefolder(destfolder)
+    vname = Path(video).stem
+    try:
+        _ = auxiliaryfunctions.load_analyzed_data(destfolder, vname, DLCscorer)
+    except FileNotFoundError:
         print("Loading ", video)
         cap=cv2.VideoCapture(video)
         if not cap.isOpened():
@@ -527,10 +547,10 @@ def AnalyzeVideo(video,DLCscorer,DLCscorerlegacy,trainFraction,cfg,dlc_cfg,sess,
         }
         metadata = {'data': dictionary}
 
-        print("Saving results in %s..." %(Path(video).parents[0]))
+        print(f"Saving results in {destfolder}...")
+        dataname = os.path.join(destfolder, vname + DLCscorer + '.h5')
         auxiliaryfunctions.SaveData(PredictedData[:nframes,:], metadata, dataname, pdindex, range(nframes),save_as_csv)
-        return DLCscorer
-    else:
+    finally:
         return DLCscorer
 
 def GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nframes,batchsize,rgb):
@@ -616,7 +636,7 @@ def GetPosesofFrames(cfg,dlc_cfg, sess, inputs, outputs,directory,framelist,nfra
 
 
 def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,
-                trainingsetindex=0,gputouse=None,save_as_csv=False,rgb=True):
+                trainingsetindex=0,gputouse=None,save_as_csv=False,rgb=True,modelprefix=''):
     """
     Analyzed all images (of type = frametype) in a folder and stores the output in one file.
 
@@ -682,7 +702,7 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,
 
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg['TrainingFraction'][trainingsetindex]
-    modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)))
+    modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)))
     path_test_config = Path(modelfolder) / 'test' / 'pose_cfg.yaml'
     try:
         dlc_cfg = load_config(str(path_test_config))
@@ -717,7 +737,7 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,
     dlc_cfg['batch_size'] = cfg['batch_size']
 
     # Name for scorer:
-    DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations)
+    DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations,modelprefix=modelprefix)
     sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
 
     # update number of outputs and adjust pandas indices
@@ -786,6 +806,221 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,
                 print("No frames were found. Consider changing the path or the frametype.")
 
     os.chdir(str(start_path))
+
+def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, trainingsetindex=0,
+                                 destfolder=None,BPTS=None, iBPTS=None,PAF=None, printintermediate=False,
+                                 inferencecfg=None,modelprefix='', track_method='box',edgewisecondition=False):
+    """
+    This should be called at the end of deeplabcut.analyze_videos for multianimal projects!
+
+    Parameters
+    ----------
+    config : string
+        Full path of the config.yaml file as a string.
+
+    videos : list
+        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
+
+    videotype: string, optional
+        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
+
+    shuffle: int, optional
+        An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.
+
+    trainingsetindex: int, optional
+        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+
+    destfolder: string, optional
+        Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this
+        folder also needs to be passed.
+
+    track_method: str, optional
+        Method uses to track animals, either 'box' or 'skeleton'.
+        By default, a constant velocity Kalman filter is used to track individual bounding boxes.
+
+    BPTS: ## TODO
+        Default is None.
+
+    iBPTS: ##TODO
+        Default is None.
+
+    PAF: ## TODO
+        Default is None.
+
+    printintermediate: ## TODO
+        Default is false.
+
+    inferencecfg: ## TODO
+        Default is None.
+
+    modelprefix:
+        Default is ''.
+
+    Examples
+    --------
+    If you want to convert detections to tracklets:
+    >>> deeplabcut.convert_detections2tracklets('/analysis/project/reaching-task/config.yaml',[]'/analysis/project/video1.mp4'], videotype='.mp4')
+    --------
+
+    """
+    from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingutils
+    from deeplabcut.utils import auxfun_multianimal
+    from easydict import EasyDict as edict
+    import pickle
+
+    if track_method not in ('box', 'skeleton'):
+        raise ValueError('Invalid tracking method. Only `box` and `skeleton` are currently supported.')
+
+    cfg = auxiliaryfunctions.read_config(config)
+    trainFraction = cfg['TrainingFraction'][trainingsetindex]
+    start_path=os.getcwd() #record cwd to return to this directory in the end
+
+    #TODO: addd cropping as in video analysis!
+    #if cropping is not None:
+    #    cfg['cropping']=True
+    #    cfg['x1'],cfg['x2'],cfg['y1'],cfg['y2']=cropping
+    #    print("Overwriting cropping parameters:", cropping)
+    #    print("These are used for all videos, but won't be save to the cfg file.")
+
+    modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)))
+    path_test_config = Path(modelfolder) / 'test' / 'pose_cfg.yaml'
+    try:
+        dlc_cfg = load_config(str(path_test_config))
+    except FileNotFoundError:
+        raise FileNotFoundError("It seems the model for shuffle %s and trainFraction %s does not exist."%(shuffle,trainFraction))
+
+    if 'multi-animal' not in dlc_cfg['dataset_type']:
+        raise ValueError("This function is only required for multianimal projects!")
+
+    path_inference_config = Path(modelfolder) / 'test' / 'inference_cfg.yaml'
+    if inferencecfg is None: #then load or initialize
+        inferencecfg=auxfun_multianimal.read_inferencecfg(path_inference_config,cfg)
+    else: #TODO: check if all variables present
+        inferencecfg=edict(inferencecfg)
+
+    if edgewisecondition:
+        path_inferencebounds_config = Path(modelfolder) / 'test' / 'inferencebounds.yaml'
+        try:
+            inferenceboundscfg=auxiliaryfunctions.read_plainconfig(path_inferencebounds_config)
+        except FileNotFoundError:
+            print("Computing distances...")
+            from deeplabcut.pose_estimation_tensorflow import calculatepafdistancebounds
+            inferenceboundscfg = calculatepafdistancebounds(config, shuffle, trainingsetindex)
+            auxiliaryfunctions.write_plainconfig(path_inferencebounds_config,inferenceboundscfg)
+    # Check which snapshots are available and sort them by # iterations
+    try:
+      Snapshots = np.array([fn.split('.')[0]for fn in os.listdir(os.path.join(modelfolder , 'train'))if "index" in fn])
+    except FileNotFoundError:
+      raise FileNotFoundError("Snapshots not found! It seems the dataset for shuffle %s has not been trained/does not exist.\n Please train it before using it to analyze videos.\n Use the function 'train_network' to train the network for shuffle %s."%(shuffle,shuffle))
+
+    if cfg['snapshotindex'] == 'all':
+        print("Snapshotindex is set to 'all' in the config.yaml file. Running video analysis with all snapshots is very costly! Use the function 'evaluate_network' to choose the best the snapshot. For now, changing snapshot index to -1!")
+        snapshotindex = -1
+    else:
+        snapshotindex=cfg['snapshotindex']
+
+    increasing_indices = np.argsort([int(m.split('-')[1]) for m in Snapshots])
+    Snapshots = Snapshots[increasing_indices]
+    print("Using %s" % Snapshots[snapshotindex], "for model", modelfolder)
+    dlc_cfg['init_weights'] = os.path.join(modelfolder , 'train', Snapshots[snapshotindex])
+    trainingsiterations = (dlc_cfg['init_weights'].split(os.sep)[-1]).split('-')[-1]
+
+    # Name for scorer:
+    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations=trainingsiterations,modelprefix=modelprefix)
+
+    ##################################################
+    # Looping over videos
+    ##################################################
+    Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
+    if len(Videos)>0:
+        for video in Videos:
+            print("Processing... ", video)
+            videofolder = str(Path(video).parents[0])
+            if destfolder is None:
+                destfolder = videofolder
+            auxiliaryfunctions.attempttomakefolder(destfolder)
+            vname = Path(video).stem
+            dataname = os.path.join(videofolder, vname + DLCscorer + '.h5')
+            data, metadata=auxfun_multianimal.LoadFullMultiAnimalData(dataname)
+            method = 'sk' if track_method == 'skeleton' else 'bx'
+            trackname=dataname.split('.h5')[0] + f'_{method}.pickle'
+            trackname = trackname.replace(videofolder, destfolder)
+            if os.path.isfile(trackname): #TODO: check if metadata are identical (same parameters!)
+                print("Tracklets already computed", trackname)
+            else:
+                print("Analyzing", dataname)
+                DLCscorer=metadata['data']['Scorer']
+                dlc_cfg=metadata['data']['DLC-model-config file']
+                nms_radius=data['metadata']['nms radius']
+                minconfidence=data['metadata']['minimal confidence']
+                partaffinityfield_graph=data['metadata']['PAFgraph']
+                all_joints=data['metadata']['all_joints']
+                all_jointnames=data['metadata']['all_joints_names']
+
+                if edgewisecondition:
+                    upperbound = np.array([float(inferenceboundscfg[str(edge[0])+'_'+str(edge[1])]['intra_max']) for edge in partaffinityfield_graph])
+                    lowerbound = np.array([float(inferenceboundscfg[str(edge[0])+'_'+str(edge[1])]['intra_min']) for edge in partaffinityfield_graph])
+                    upperbound*=1.25
+                    lowerbound*=.5 #SLACK!
+                    print(upperbound,lowerbound)
+                else:
+                    lowerbound=None
+                    upperbound=None
+
+                if PAF is None:
+                    PAF=np.arange(len(partaffinityfield_graph)) # THIS CAN BE A SUBSET!
+
+                partaffinityfield_graph=[partaffinityfield_graph[l] for l in PAF]
+                linkingpartaffinityfield_graph=partaffinityfield_graph
+
+                numjoints=len(all_jointnames)
+                if BPTS is None and iBPTS is None:
+                    #NOTE: this can be used if only a subset is relevant. I.e. [0,1] for only first and second joint!
+                    BPTS=range(numjoints)
+                    iBPTS=range(numjoints) #the corresponding inverse!
+
+                #TODO: adjust this for multi + unique bodyparts!
+                #this is only for multianimal parts and uniquebodyparts as one (not one uniquebodyparts guy tracked etc. )
+                bodypartlabels=sum([3*[all_jointnames[bpt]] for bpt in BPTS],[])
+                numentries=len(bodypartlabels)
+
+                scorers=numentries*[DLCscorer]
+                xylvalue=int(len(bodypartlabels)/3)*['x', 'y','likelihood']
+                pdindex=pd.MultiIndex.from_arrays(np.vstack([scorers,bodypartlabels,xylvalue]),names=['scorer', 'bodyparts', 'coords'])
+
+                imnames=[fn for fn in data if fn != 'metadata']
+
+                if track_method == 'box':
+                    mot_tracker = trackingutils.Sort(inferencecfg)
+                else:
+                    mot_tracker = trackingutils.SORT(numjoints, inferencecfg['max_age'], inferencecfg['min_hits'])
+
+                Tracks={}
+                for index,imname in tqdm(enumerate(imnames)):
+                    animals = inferenceutils.assemble_individuals(inferencecfg, data[imname], numjoints, BPTS, iBPTS,
+                                                                  PAF, partaffinityfield_graph, linkingpartaffinityfield_graph,
+                                                                  lowerbound,upperbound,printintermediate)
+                    if track_method == 'box':
+                        #get corresponding bounding boxes!
+                        bb=inferenceutils.individual2boundingbox(inferencecfg,animals,0) #TODO: get cropping parameters and utilize!
+                        trackers = mot_tracker.update(bb)
+                    else:
+                        temp = [arr.reshape((-1, 3))[:, :2] for arr in animals]
+                        trackers = mot_tracker.track(temp)
+                    trackingutils.fill_tracklets(Tracks, trackers, animals, imname)
+                Tracks['header']=pdindex
+                with open(trackname, 'wb') as f:
+                    # Pickle the 'labeled-data' dictionary using the highest protocol available.
+                    pickle.dump(Tracks, f,pickle.HIGHEST_PROTOCOL)
+
+        os.chdir(str(start_path))
+
+        #TODO: UPDATE!!
+        print("The tracklets were created. Now you can 'refine_tracklets' \n You can create labeled videos with 'create_labeled_video'.")
+        #print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
+    else:
+        print("No video(s) found. Please check your path!")
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

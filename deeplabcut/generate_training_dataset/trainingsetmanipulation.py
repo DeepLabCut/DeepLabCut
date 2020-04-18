@@ -17,23 +17,13 @@ import matplotlib as mpl
 import logging
 import platform
 from functools import lru_cache
-
-
-if os.environ.get('DLClight', default=False) == 'True':
-    mpl.use('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
-elif platform.system() == 'Darwin':
-    mpl.use('WxAgg') #TkAgg
-else:
-    mpl.use('TkAgg')
-import matplotlib.pyplot as plt
 from skimage import io
+
 
 import yaml
 from deeplabcut import DEBUG
-from deeplabcut.utils import auxiliaryfunctions, conversioncode, auxfun_models
+from deeplabcut.utils import auxiliaryfunctions, conversioncode, auxfun_models, auxfun_multianimal
 from deeplabcut.pose_estimation_tensorflow import training
-
-#matplotlib.use('Agg')
 
 def comparevideolistsanddatafolders(config):
     """
@@ -219,8 +209,174 @@ def dropimagesduetolackofannotation(config):
         imagelist=[fns for fns in os.listdir(str(folder)) if '.png' in fns]
         print("PROCESSED:", folder, " now # of annotated images: ", len(annotatedimages)," in folder:", len(imagelist))
 
+def cropimagesandlabels(config,numcrops=10,size=(400,400), userfeedback=True,
+        cropdata=True, excludealreadycropped=True, updatevideoentries=True):
+    """
+    Crop images into multiple random crops (defined by numcrops) of size dimensions. If cropdata=True then the
+    annotation data is loaded and labels for cropped images are inherited.
+    If false, then one can make crops for unlabeled folders.
 
-def label_frames(config,multiple=False,imtypes=['*.png']):
+    This can be helpul for large frames with multiple animals. Then a smaller set of equally sized images is created.
+
+    Parameters
+    ----------
+    config : string
+        String containing the full path of the config file in the project.
+
+    numcrops: number of random crops (around random bodypart)
+
+    size: height x width in pixels
+
+    userfeedback: bool, optional
+        If this is set to false, then all requested train/test splits are created (no matter if they already exist). If you
+        want to assure that previous splits etc. are not overwritten, then set this to True and you will be asked for each split.
+
+    cropdata: bool, default True:
+        If true creates corresponding annotation data (from ground truth)
+
+    excludealreadycropped: bool, def true
+        If true excludes folders that already contain _cropped in their name.
+
+    updatevideoentries, bool, default true
+        If true updates video_list entries to refer to cropped frames instead. This makes sense for subsequent processing.
+
+    Example
+    --------
+    for labeling the frames
+    >>> deeplabcut.cropimagesandlabels('/analysis/project/reaching-task/config.yaml')
+
+    --------
+    """
+    from tqdm import tqdm
+
+    indexlength = int(np.ceil(np.log10(numcrops)))
+    cfg = auxiliaryfunctions.read_config(config)
+    videos = cfg['video_sets'].keys()
+
+    if excludealreadycropped:
+        video_names = [(Path(i).parent, Path(i).stem, Path(i).suffix) for i in videos if "_cropped" not in str(Path(i).stem)]
+    else:
+        video_names = [(Path(i).parent, Path(i).stem, Path(i).suffix) for i in videos]
+
+    #folders = [Path(config).parent / 'labeled-data' /Path(i[1]) for i in video_names]
+    if 'video_sets_original' not in cfg.keys() and updatevideoentries: #this dict is kept for storing links to original full-sized videos
+        cfg['video_sets_original']={}
+
+    for (vidpath, vidname, videotype) in video_names:
+        folder = Path(config).parent / 'labeled-data' /Path(vidname)
+        if userfeedback:
+            print("Do you want to crop frames for folder: ", folder, "?")
+            askuser=input ("(yes/no):")
+        else:
+            askuser='y'
+        if askuser=='y' or askuser=='yes' or askuser=='Y' or askuser=='Yes':
+            fn=os.path.join(str(folder),'CollectedData_' + cfg['scorer'] + '.h5')
+            if cropdata:
+                Data = pd.read_hdf(fn, 'df_with_missing')
+
+            newfolder = str(Path(folder).stem) + '_cropped'
+            output_path=Path(config).parent / 'labeled-data' / Path(newfolder)
+            auxiliaryfunctions.attempttomakefolder(output_path)
+            individuals,uniquebodyparts,multianimalbodyparts=auxfun_multianimal.extractindividualsandbodyparts(cfg)
+
+            AnnotationData=None
+            pd_index=[]
+            if cropdata:
+                for index, imagename in tqdm(enumerate(Data.index.values)):
+                    #load image
+                    image = io.imread(os.path.join(cfg['project_path'],imagename))
+                    if np.ndim(image)==2:
+                        h, w = np.shape(image)
+                    else:
+                        h, w, nc = np.shape(image)
+
+                    cropindex=0
+                    attempts=-1
+                    while cropindex<numcrops:
+                        animalincrop=False
+                        y0,x0=np.random.randint(h-size[0]), np.random.randint(w-size[1])
+                        newimname=str(Path(imagename).stem+'c'+str(cropindex).zfill(indexlength)+'.png')
+
+                        data=Data.iloc[index].copy()
+                        for ind in individuals:
+                            if ind == 'single':
+                                for c, bp in enumerate(uniquebodyparts):
+                                    x,y=data[cfg['scorer'],ind,bp,'x'],data[cfg['scorer'],ind,bp,'y']
+                                    if np.isfinite(x) and np.isfinite(y):
+                                        if x>=x0 and round(x,2)<x0+size[1] and round(y,2)>=y0 and y<y0+size[0]:
+                                            data[cfg['scorer'],ind,bp,'x']=round(x,2)-x0
+                                            data[cfg['scorer'],ind,bp,'y']=round(y,2)-y0
+                                            animalincrop=True
+                                        else:
+                                            data[cfg['scorer'],ind,bp,'x']=np.nan
+                                            data[cfg['scorer'],ind,bp,'y']=np.nan
+                            else:
+                                for c, bp in enumerate(multianimalbodyparts):
+                                    x,y=data[cfg['scorer'],ind,bp,'x'],data[cfg['scorer'],ind,bp,'y']
+                                    if np.isfinite(x) and np.isfinite(y):
+                                        if x>=x0 and round(x,2)<x0+size[1] and round(y,2)>=y0 and y<y0+size[0]:
+                                            data[cfg['scorer'],ind,bp,'x']=round(x,2)-x0
+                                            data[cfg['scorer'],ind,bp,'y']=round(y,2)-y0
+                                            if 'Plat' not in bp: #FOR
+                                                animalincrop=True
+                                        else:
+                                            data[cfg['scorer'],ind,bp,'x']=np.nan
+                                            data[cfg['scorer'],ind,bp,'y']=np.nan
+
+                        attempts+=1 #for images without any animals!
+                        if animalincrop or attempts>10:
+                            cropppedimgname = os.path.join(output_path,newimname)
+                            if np.ndim(image)==2:
+                                io.imsave(cropppedimgname, image[y0:y0+size[0], x0:x0+size[1]])
+                            else:
+                                io.imsave(cropppedimgname, image[y0:y0+size[0], x0:x0+size[1],:])
+                            cropindex+=1
+
+                            pdname=os.path.join('labeled-data', newfolder,newimname)
+                            pd_index.append(os.path.join('labeled-data', newfolder,newimname))
+                            if AnnotationData is None:
+                                AnnotationData=data
+                            else:
+                                AnnotationData=pd.concat([AnnotationData, data],axis=1)
+
+            else: #just crops images (no annotation data extracted: not sure if anybody really needs this)
+                imnames=[os.path.join('labeled-data',folder,fn) for fn in os.listdir(os.path.join(cfg['project_path'],'labeled-data',folder)) if '.png' in fn]
+                for index, imagename in enumerate(imnames):
+                    #load image
+                    image = io.imread(os.path.join(cfg['project_path'],imagename))
+                    if np.ndim(image)==2:
+                        h, w = np.shape(image)
+                    else:
+                        h, w, nc = np.shape(image)
+
+                    for cropindex in range(numcrops):
+                        y0,x0=np.random.randint(h-size[0]),np.random.randint(w-size[1])
+
+                        newimname=str(Path(imagename).stem+'c'+str(cropindex).zfill(indexlength)+'.png')
+                        cropppedimgname = os.path.join(output_path,newimname)
+                        if np.ndim(image)==2:
+                            io.imsave(cropppedimgname,image[int(y0):int(y0+size[0]),int(x0):int(x0+size[1])])
+                        else:
+                            io.imsave(cropppedimgname,image[int(y0):int(y0+size[0]),int(x0):int(x0+size[1]),:])
+
+
+            if cropdata:
+                Data=AnnotationData.T
+                Data.index=pd_index
+                fn_new=os.path.join(str(output_path),'CollectedData_' + cfg['scorer'] + '.h5')
+                Data.to_hdf(fn_new,key='df_with_missing',mode='w')
+                Data.to_csv(fn_new.split('.h5')[0]+'.csv')
+
+            if updatevideoentries and cropdata:
+                #moving old entry to _original, dropping it from video_set and update crop parameters
+                cfg['video_sets_original'][str(os.path.join(vidpath,str(vidname)+str(videotype)))] = cfg['video_sets'][str(os.path.join(vidpath,str(vidname)+str(videotype)))]
+                cfg['video_sets'].pop(str(os.path.join(vidpath,str(vidname)+str(videotype))))
+                cfg['video_sets'][os.path.join(vidpath,str(folder)+'_cropped'+str(videotype))] = {'crop': ', '.join(map(str, [0, size[1], 0, size[0]]))}
+
+    if updatevideoentries:
+        auxiliaryfunctions.write_config(config,cfg)
+
+def label_frames(config,multiple_individualsGUI=False, imtypes=['*.png']):
     """
     Manually label/annotate the extracted frames. Update the list of body parts you want to localize in the config.yaml file first.
 
@@ -229,9 +385,9 @@ def label_frames(config,multiple=False,imtypes=['*.png']):
     config : string
         String containing the full path of the config file in the project.
 
-    multiple: bool, optional
-        If this is set to True, a user can label multiple individuals.
-        The default is ``False``; if provided it must be either ``True`` or ``False``.
+    multiple_individualsGUI: bool, optional
+          If this is set to True, a user can label multiple individuals. Note for "multianimalproject=True" this is automatically used.
+          The default is ``False``; if provided it must be either ``True`` or ``False``.
 
     imtypes: list of imagetypes to look for in folder to be labeled. By default only png images are considered.
 
@@ -240,36 +396,28 @@ def label_frames(config,multiple=False,imtypes=['*.png']):
     Standard use case:
     >>> deeplabcut.label_frames('/myawesomeproject/reaching4thestars/config.yaml')
 
-    To label multiple individuals
-    >>> deeplabcut.label_frames('/analysis/project/reaching-task/config.yaml',multiple=True)
+    To label multiple individuals (without having a multiple individuals project); otherwise this GUI is loaded automatically
+    >>> deeplabcut.label_frames('/analysis/project/reaching-task/config.yaml',multiple_individualsGUI=True)
 
     To label other image types
     >>> label_frames(config,multiple=False,imtypes=['*.jpg','*.jpeg'])
-
     --------
 
     """
     startpath = os.getcwd()
     wd = Path(config).resolve().parents[0]
     os.chdir(str(wd))
-
-    if multiple==False:
-        from deeplabcut.generate_training_dataset import labeling_toolbox
-
-        # labeling_toolbox.show(config,Screens,scale_w,scale_h, winHack, img_scale)
-        labeling_toolbox.show(config,imtypes=imtypes)
-    else:
+    cfg = auxiliaryfunctions.read_config(config)
+    if cfg.get('multianimalproject', False) or multiple_individualsGUI:
         from deeplabcut.generate_training_dataset import multiple_individuals_labeling_toolbox
         multiple_individuals_labeling_toolbox.show(config)
+    else:
+        from deeplabcut.generate_training_dataset import labeling_toolbox
+        labeling_toolbox.show(config,imtypes=imtypes)
 
     os.chdir(startpath)
 
-def get_cmap(n, name='jet'):
-    '''Returns a function that maps each index in 0, 1, ..., n-1 to a distinct
-    RGB color; the keyword argument name must be a standard mpl colormap name.'''
-    return plt.cm.get_cmap(name, n)
-
-def check_labels(config,Labels = ['+','.','x'],scale = 1):
+def check_labels(config,Labels = ['+','.','x'],scale = 1,draw_skeleton=True,visualizeindividuals=True):
     """
     Double check if the labels were at correct locations and stored in a proper file format.\n
     This creates a new subdirectory for each video under the 'labeled-data' and all the frames are plotted with the labels.\n
@@ -285,19 +433,35 @@ def check_labels(config,Labels = ['+','.','x'],scale = 1):
     scale : float, default =1
         Change the relative size of the output images.
 
+    draw_skeleton: bool, default True.
+        Plot skeleton overlaid over body parts.
+
+    visualizeindividuals: bool, default True:
+        For a multianimal project the different individuals have different colors (and all bodyparts the same).
+        If False, the colors change over bodyparts rather than individuals.
+
     Example
     --------
     for labeling the frames
     >>> deeplabcut.check_labels('/analysis/project/reaching-task/config.yaml')
     --------
     """
+    from deeplabcut.utils import visualization
+
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg['video_sets'].keys()
     video_names = [Path(i).stem for i in videos]
 
    #plotting parameters:
     cc = 0 # label index / here only 0, for human labeler
-    Colorscheme = get_cmap(len( cfg['bodyparts']),cfg['colormap'])
+    if cfg.get('multianimalproject',False):
+        individuals,uniquebodyparts,multianimalbodyparts=auxfun_multianimal.extractindividualsandbodyparts(cfg)
+        if visualizeindividuals:
+            Colorscheme = visualization.get_cmap(len(individuals),cfg['colormap'])
+        else:
+            Colorscheme = visualization.get_cmap(max(len(uniquebodyparts),len(multianimalbodyparts)),cfg['colormap'])
+    else:
+        Colorscheme = visualization.get_cmap(len( cfg['bodyparts']),cfg['colormap'])
 
     #folders = [Path(config).parent / 'labeled-data' /Path(i) for i in video_names]
     folders = [os.path.join(cfg['project_path'],'labeled-data',str(Path(i))) for i in video_names]
@@ -305,52 +469,12 @@ def check_labels(config,Labels = ['+','.','x'],scale = 1):
     for folder in folders:
         try:
             DataCombined = pd.read_hdf(os.path.join(str(folder),'CollectedData_' + cfg['scorer'] + '.h5'), 'df_with_missing')
-            MakeLabeledPlots(folder,DataCombined,cfg,Labels,Colorscheme,cc,scale)
+            visualization.MakeLabeledPlots(folder,DataCombined,cfg,Labels,Colorscheme,cc,scale,visualizeindividuals,draw_skeleton)
         except FileNotFoundError:
             print("Attention:", folder, "does not appear to have labeled data!")
 
     print("If all the labels are ok, then use the function 'create_training_dataset' to create the training dataset!")
 
-def MakeLabeledPlots(folder,DataCombined,cfg,Labels,Colorscheme,cc,scale):
-    tmpfolder = str(folder) + '_labeled'
-    auxiliaryfunctions.attempttomakefolder(tmpfolder)
-    for index, imagename in enumerate(DataCombined.index.values):
-        image = io.imread(os.path.join(cfg['project_path'],imagename))
-        plt.axis('off')
-
-        if np.ndim(image)==2:
-            h, w = np.shape(image)
-        else:
-            h, w, nc = np.shape(image)
-
-        plt.figure(
-            frameon=False, figsize=(w * 1. / 100 * scale, h * 1. / 100 * scale))
-        plt.subplots_adjust(
-            left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-
-        plt.imshow(image, 'gray')
-        if index==0:
-            print("They are stored in the following folder: %s." %tmpfolder) #folder)
-
-        for c, bp in enumerate(cfg['bodyparts']):
-            plt.plot(
-                DataCombined[cfg['scorer']][bp]['x'].values[index],
-                DataCombined[cfg['scorer']][bp]['y'].values[index],
-                Labels[cc],
-                color=Colorscheme(c),
-                alpha=cfg['alphavalue'],
-                ms=cfg['dotsize'])
-
-        plt.xlim(0, w)
-        plt.ylim(0, h)
-        plt.axis('off')
-        plt.subplots_adjust(
-            left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-        plt.gca().invert_yaxis()
-
-        #plt.savefig(str(Path(tmpfolder)/imagename.split(os.sep)[-1]))
-        plt.savefig(os.path.join(tmpfolder,str(Path(imagename).name))) #create file name also on Windows for Unix projects (and vice versa)
-        plt.close("all")
 
 def boxitintoacell(joints):
     ''' Auxiliary function for creating matfile.'''
@@ -374,10 +498,16 @@ def MakeTrain_pose_yaml(itemstochange,saveasconfigfile,defaultconfigfile):
         yaml.dump(docs[0], f)
     return docs[0]
 
-def MakeTest_pose_yaml(dictionary, keys2save, saveasfile):
+def MakeTest_pose_yaml(dictionary, keys2save, saveasfile, nmsradius=None, minconfidence=None):
     dict_test = {}
     for key in keys2save:
         dict_test[key] = dictionary[key]
+
+    #adding important values for multianiaml project:
+    if nmsradius is not None:
+        dict_test['nmsradius']=nmsradius
+    if minconfidence is not None:
+        dict_test['minconfidence']=minconfidence
 
     dict_test['scoremap_dir'] = 'test'
     with open(saveasfile, "w") as f:
@@ -390,32 +520,39 @@ def merge_annotateddatasets(cfg,project_path,trainingsetfolder_full,windows2linu
 
     Within platform comp. is straightforward. But if someone labels on windows and wants to train on a unix cluster or colab...
     """
-    AnnotationData=None
+    AnnotationData = []
     data_path = Path(os.path.join(project_path , 'labeled-data'))
     videos = cfg['video_sets'].keys()
     video_names = [Path(i).stem for i in videos]
     for i in video_names:
+        filename = str(data_path / Path(i))+'/CollectedData_'+cfg['scorer']+'.h5'
         try:
-            data = pd.read_hdf((str(data_path / Path(i))+'/CollectedData_'+cfg['scorer']+'.h5'),'df_with_missing')
-            if AnnotationData is None:
-                AnnotationData=data
-            else:
-                AnnotationData=pd.concat([AnnotationData, data])
-
+            data = pd.read_hdf(filename,'df_with_missing')
+            AnnotationData.append(data)
         except FileNotFoundError:
-            print((str(data_path / Path(i))+'/CollectedData_'+cfg['scorer']+'.h5'), " not found (perhaps not annotated)")
+            print(filename, " not found (perhaps not annotated)")
 
-    if AnnotationData is None:
+    if not len(AnnotationData):
         print("Annotation data was not found by splitting video paths (from config['video_sets']). An alternative route is taken...")
-        AnnotationData=conversioncode.merge_windowsannotationdataONlinuxsystem(cfg)
-    if AnnotationData is None:
-        print("No data was found!")
-        windowspath=False
+        AnnotationData = conversioncode.merge_windowsannotationdataONlinuxsystem(cfg)
+        if not len(AnnotationData):
+            print("No data was found!")
+            return
+
+    AnnotationData = pd.concat(AnnotationData).sort_index()
+    # When concatenating DataFrames with misaligned column labels,
+    # all sorts of reordering may happen (mainly depending on 'sort' and 'join')
+    # Ensure the 'bodyparts' level agrees with the order in the config file.
+    if cfg.get('multianimalproject', False):
+        _, uniquebodyparts, multianimalbodyparts = auxfun_multianimal.extractindividualsandbodyparts(cfg)
+        bodyparts = uniquebodyparts + multianimalbodyparts
     else:
-        windowspath=len((AnnotationData.index[0]).split('\\'))>1 #true if the first element is in windows path format
+        bodyparts = cfg['bodyparts']
+    AnnotationData = AnnotationData.reindex(bodyparts, axis=1, level=AnnotationData.columns.names.index('bodyparts'))
 
     # Let's check if the code is *not* run on windows (Source: #https://stackoverflow.com/questions/1325581/how-do-i-check-if-im-running-on-windows-in-python)
     # but the paths are in windows format...
+    windowspath = '\\' in AnnotationData.index[0]
     if os.name != 'nt' and windowspath and not windows2linux:
         print("It appears that the images were labeled on a Windows system, but you are currently trying to create a training set on a Unix system. \n In this case the paths should be converted. Do you want to proceed with the conversion?")
         askuser = input("yes/no")
@@ -424,7 +561,7 @@ def merge_annotateddatasets(cfg,project_path,trainingsetfolder_full,windows2linu
 
     filename=str(str(trainingsetfolder_full)+'/'+'/CollectedData_'+cfg['scorer'])
     if windows2linux or askuser=='yes' or askuser=='y' or askuser=='Ja': #convert windows path in pandas array \\ to unix / !
-        AnnotationData=conversioncode.convertpaths_to_unixstyle(AnnotationData,filename,cfg)
+        AnnotationData=conversioncode.convertpaths_to_unixstyle(AnnotationData,filename)
         print("Annotation data converted to unix format...")
     else: #store as is
         AnnotationData.to_hdf(filename+'.h5', key='df_with_missing', mode='w')
@@ -506,6 +643,8 @@ def mergeandsplit(config,trainindex=0,uniform=True,windows2linux=False):
         Data= pd.read_hdf(fn+'.h5', 'df_with_missing')
     except FileNotFoundError:
         Data = merge_annotateddatasets(cfg,project_path,Path(os.path.join(project_path,trainingsetfolder)),windows2linux=windows2linux)
+        if Data is None:
+            return [], []
 
     Data = Data[scorer] #extract labeled data
 
@@ -619,41 +758,47 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
 
     # Loading metadata from config file:
     cfg = auxiliaryfunctions.read_config(config)
-    scorer = cfg['scorer']
-    project_path = cfg['project_path']
-    # Create path for training sets & store data there
-    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg) #Path concatenation OS platform independent
-    auxiliaryfunctions.attempttomakefolder(Path(os.path.join(project_path,str(trainingsetfolder))),recursive=True)
-
-    Data = merge_annotateddatasets(cfg,project_path,Path(os.path.join(project_path,trainingsetfolder)),windows2linux)
-    Data = Data[scorer] #extract labeled data
-
-    #loading & linking pretrained models
-    if net_type is None: #loading & linking pretrained models
-        net_type =cfg.get('default_net_type', 'resnet_50')
+    if cfg.get('multianimalproject', False):
+        from deeplabcut.generate_training_dataset.multiple_individuals_trainingsetmanipulation import create_multianimaltraining_dataset
+        create_multianimaltraining_dataset(config, num_shuffles, Shuffles, windows2linux, net_type)
     else:
-        if 'resnet' in net_type or 'mobilenet' in net_type:
-            pass
+        scorer = cfg['scorer']
+        project_path = cfg['project_path']
+        # Create path for training sets & store data there
+        trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg) #Path concatenation OS platform independent
+        auxiliaryfunctions.attempttomakefolder(Path(os.path.join(project_path,str(trainingsetfolder))),recursive=True)
+
+        Data = merge_annotateddatasets(cfg,project_path,Path(os.path.join(project_path,trainingsetfolder)),windows2linux)
+        if Data is None:
+            return
+        Data = Data[scorer] #extract labeled data
+
+        #loading & linking pretrained models
+        if net_type is None: #loading & linking pretrained models
+            net_type =cfg.get('default_net_type', 'resnet_50')
         else:
-            raise ValueError('Invalid network type:', net_type)
+            if 'resnet' in net_type or 'mobilenet' in net_type:
+                pass
+            else:
+                raise ValueError('Invalid network type:', net_type)
 
-    if augmenter_type is None:
-        augmenter_type=cfg.get('default_augmenter', 'default')
-    else:
-        if augmenter_type in ['default','imgaug','tensorpack','deterministic']:
-            pass
+        if augmenter_type is None:
+            augmenter_type=cfg.get('default_augmenter', 'default')
         else:
-            raise ValueError('Invalid augmenter type:', augmenter_type)
+            if augmenter_type in ['default','imgaug','tensorpack','deterministic']:
+                pass
+            else:
+                raise ValueError('Invalid augmenter type:', augmenter_type)
 
-    import deeplabcut
-    parent_path = Path(os.path.dirname(deeplabcut.__file__))
-    defaultconfigfile = str(parent_path / 'pose_cfg.yaml')
-    model_path,num_shuffles=auxfun_models.Check4weights(net_type,parent_path,num_shuffles) #if the model does not exist >> throws error!
+        import deeplabcut
+        parent_path = Path(os.path.dirname(deeplabcut.__file__))
+        defaultconfigfile = str(parent_path / 'pose_cfg.yaml')
+        model_path,num_shuffles=auxfun_models.Check4weights(net_type,parent_path,num_shuffles) #if the model does not exist >> throws error!
 
-    if Shuffles is None:
-        Shuffles = range(1, num_shuffles + 1)
-    else:
-        Shuffles = [i for i in Shuffles if isinstance(i, int)]
+        if Shuffles is None:
+            Shuffles = range(1, num_shuffles + 1)
+        else:
+            Shuffles = [i for i in Shuffles if isinstance(i, int)]
 
     #print(trainIndexes,testIndexes, Shuffles, augmenter_type,net_type)
     if trainIndexes is None and testIndexes is None:

@@ -34,8 +34,9 @@ else: #standard use [wxpython supported]
     from deeplabcut.generate_training_dataset import adddatasetstovideolistandviceversa,  dropduplicatesinannotatinfiles
     from deeplabcut.gui.launch_script import launch_dlc
 
-    from deeplabcut.refine_training_dataset import refine_labels
+    from deeplabcut.refine_training_dataset import refine_labels, refine_tracklets
     from deeplabcut.utils import select_crop_parameters
+    from deeplabcut.refine_training_dataset.tracklets import convert_raw_tracks_to_h5
 
 if os.environ.get('Colab', default=False) == 'True':
     print("Project loaded in colab-mode. Apparently Colab has trouble loading statsmodels, so the smoothing & outlier frame extraction is disabled. Sorry!")
@@ -44,17 +45,20 @@ else:
     from deeplabcut.post_processing import filterpredictions, analyzeskeleton
 
 
-# Train, evaluate & predict functions / require TF
+# Train, evaluate & predict functions / all require TF
 from deeplabcut.pose_estimation_tensorflow import train_network, return_train_network_path
 from deeplabcut.pose_estimation_tensorflow import evaluate_network, return_evaluate_network_data
-from deeplabcut.pose_estimation_tensorflow import analyze_videos, analyze_time_lapse_frames
+from deeplabcut.pose_estimation_tensorflow import analyze_videos, analyze_time_lapse_frames, convert_detections2tracklets
+from deeplabcut.pose_estimation_tensorflow import extract_maps, visualize_scoremaps, visualize_locrefs, visualize_paf, extract_save_all_maps
 
 from deeplabcut.pose_estimation_3d import calibrate_cameras,check_undistortion,triangulate,create_labeled_video_3d
 
 from deeplabcut.create_project import create_new_project, create_new_project_3d, add_new_videos, load_demo_data, create_pretrained_human_project
-from deeplabcut.generate_training_dataset import extract_frames, select_cropping_area
-from deeplabcut.generate_training_dataset import check_labels,create_training_dataset, mergeandsplit, create_training_model_comparison
-from deeplabcut.utils import create_labeled_video,plot_trajectories, auxiliaryfunctions, convertcsv2h5, convertannotationdata_fromwindows2unixstyle, analyze_videos_converth5_to_csv, auxfun_videos
-from deeplabcut.utils.auxfun_videos import ShortenVideo, DownSampleVideo
+from deeplabcut.generate_training_dataset import extract_frames
+from deeplabcut.generate_training_dataset import check_labels,create_training_dataset, mergeandsplit, create_training_model_comparison, cropimagesandlabels
+from deeplabcut.generate_training_dataset import create_multianimaltraining_dataset
+from deeplabcut.utils import create_labeled_video, create_video_with_all_detections, plot_trajectories, auxiliaryfunctions
+from deeplabcut.utils import conversioncodemulti2single, convertcsv2h5, convertannotationdata_fromwindows2unixstyle, analyze_videos_converth5_to_csv, auxfun_videos
+from deeplabcut.utils.auxfun_videos import ShortenVideo, DownSampleVideo, CropVideo
 
 from deeplabcut.version import __version__, VERSION

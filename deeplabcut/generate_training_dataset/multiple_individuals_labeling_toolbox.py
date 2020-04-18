@@ -458,8 +458,10 @@ class MainFrame(wx.Frame):
         self.cfg = auxiliaryfunctions.read_config(self.config_file)
         self.scorer = self.cfg['scorer']
         individuals, uniquebodyparts, multianimalbodyparts = auxfun_multianimal.extractindividualsandbodyparts(self.cfg)
+
         self.multibodyparts = multianimalbodyparts
         self.uniquebodyparts = uniquebodyparts
+        self.individual_names = individuals
 
         self.videos = self.cfg['video_sets'].keys()
         self.markerSize = self.cfg['dotsize']
@@ -467,7 +469,7 @@ class MainFrame(wx.Frame):
         self.colormap = plt.get_cmap(self.cfg['colormap'])
         self.colormap = self.colormap.reversed()
         self.project_path=self.cfg['project_path']
-        self.individual_names = self.cfg['individuals']
+
         if self.uniquebodyparts == []:
             self.are_unique_bodyparts_present = False
 
