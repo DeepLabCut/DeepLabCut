@@ -469,7 +469,7 @@ class MainFrame(wx.Frame):
         self.colormap = plt.get_cmap(self.cfg['colormap'])
         self.colormap = self.colormap.reversed()
         self.project_path=self.cfg['project_path']
-        
+
         if self.uniquebodyparts == []:
             self.are_unique_bodyparts_present = False
 

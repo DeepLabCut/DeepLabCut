@@ -14,7 +14,7 @@ It produces nothing of interest scientifically.
 """
 
 task='TEST' # Enter the name of your experiment Task
-scorer='Jessy' # Enter the name of the experimenter/labeler
+scorer='Alex' # Enter the name of the experimenter/labeler
 
 import os,  subprocess, deeplabcut
 from pathlib import Path
@@ -31,9 +31,9 @@ video=[os.path.join(basepath,'Reaching-Mackenzie-2018-08-30','videos',videoname+
 #videoname='baby4hin2min'
 #video=[os.path.join('/home/alex/Desktop/Data',videoname+'.mp4')]
 #to test destination folder:
-#dfolder=basepath #TEST THIS!
+#dfolder=basepath
 
-dfolder='/Users/Jessy/Desktop/tryy'
+dfolder=None
 net_type='resnet_50' #'mobilenet_v2_0.35' #'resnet_50'
 augmenter_type='default'
 augmenter_type2='imgaug'
@@ -181,11 +181,11 @@ except: # if ffmpeg is broken
 
 
 print("Inference with direct cropping")
-deeplabcut.analyze_videos(path_config_file, [newvideo2], save_as_csv=True, destfolder=dfolder, cropping=[0, 50, 0, 50])
+deeplabcut.analyze_videos(path_config_file, [newvideo2], save_as_csv=True, destfolder=dfolder, crop=[0, 50, 0, 50])
 
 print("Extracting skeleton distances, filter and plot filtered output")
-deeplabcut.analyzeskeleton(path_config_file, [newvideo2], save_as_csv=True, destfolder=dfolder)
-deeplabcut.filterpredictions(path_config_file,[newvideo2], destfolder=dfolder)
+deeplabcut.analyzeskeleton(path_config_file, [newvideo], save_as_csv=True, destfolder=dfolder)
+deeplabcut.filterpredictions(path_config_file,[newvideo])
 
 #deeplabcut.create_labeled_video(path_config_file,[newvideo], destfolder=dfolder,filtered=True)
 deeplabcut.create_labeled_video(path_config_file,[newvideo2], destfolder=dfolder,displaycropped=True,filtered=True)

@@ -137,7 +137,7 @@ def create_pretrained_human_project(project,experimenter,videos,working_director
     if analyzevideo==True:
         print("Analyzing video...")
         # Analyze the videos
-        deeplabcut.analyze_videos(cfg,[video_dir],videotype,save_as_csv=True)
+        deeplabcut.analyze_videos(cfg, [video_dir], videotype, save_as_csv=True)
     if createlabeledvideo==True:
         print("Plotting results...")
         deeplabcut.create_labeled_video(cfg,[video_dir],videotype, draw_skeleton=True)

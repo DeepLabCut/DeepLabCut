@@ -116,11 +116,11 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
     --------
 
     If you want to analyze multiple videos with shuffle = 2
-    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi','/analysis/project/videos/reachingvideo2.avi'], shuffle=2)
+    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi','/analysis/project/videos/reachingvideo2.avi'],shuffle=2)
 
     --------
     If you want to analyze multiple videos with shuffle = 2 and save results as an additional csv file too
-    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi','/analysis/project/videos/reachingvideo2.avi'], shuffle=2,save_as_csv=True)
+    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi','/analysis/project/videos/reachingvideo2.avi'],shuffle=2,save_as_csv=True)
     --------
 
     """
@@ -494,7 +494,8 @@ def AnalyzeVideo(video,DLCscorer,DLCscorerlegacy,trainFraction,cfg,dlc_cfg,sess,
     except FileNotFoundError:
         print("Loading ", video)
         cap=cv2.VideoCapture(video)
-
+        if not cap.isOpened():
+            raise IOError('Video could not be opened. Please check that the the file integrity.')
         fps = cap.get(5) #https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
         nframes = int(cap.get(7))
         duration=nframes*1./fps
@@ -679,7 +680,7 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,
     --------
 
     If you want to analyze all frames in /analysis/project/timelapseexperiment1
-    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml','/analysis/project/timelapseexperiment1', frametype='.bmp')
+    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml','/analysis/project/timelapseexperiment1')
     --------
 
     Note: for test purposes one can extract all frames from a video with ffmeg, e.g. ffmpeg -i testvideo.avi thumb%04d.png
@@ -958,7 +959,7 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
 
                 if edgewisecondition:
                     upperbound = np.array([float(inferenceboundscfg[str(edge[0])+'_'+str(edge[1])]['intra_max']) for edge in partaffinityfield_graph])
-                    lowerbound = np.array([float(inferenceboundscfg[str(edge[0])+'_'+str(edge[1])]['intra_min']) for edge in partaffinityfield_graph])                       
+                    lowerbound = np.array([float(inferenceboundscfg[str(edge[0])+'_'+str(edge[1])]['intra_min']) for edge in partaffinityfield_graph])
                     upperbound*=1.25
                     lowerbound*=.5 #SLACK!
                     print(upperbound,lowerbound)
@@ -993,7 +994,7 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
                     mot_tracker = trackingutils.Sort(inferencecfg)
                 else:
                     mot_tracker = trackingutils.SORT(numjoints, inferencecfg['max_age'], inferencecfg['min_hits'])
-                
+
                 Tracks={}
                 for index,imname in tqdm(enumerate(imnames)):
                     animals = inferenceutils.assemble_individuals(inferencecfg, data[imname], numjoints, BPTS, iBPTS,
