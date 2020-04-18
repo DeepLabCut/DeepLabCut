@@ -504,7 +504,7 @@ def CheckifNotEvaluated(folder,DLCscorer,DLCscorerlegacy,snapshot):
             return True, dataname,DLCscorer
 
 
-def load_video_metadata(folder, videoname, scorer):
+def find_video_metadata(folder, videoname, scorer):
     # For backward compatibility, let us search the substring 'meta'
     scorer_legacy = scorer.replace('DLC', 'DeepCut')
     meta = [file for file in grab_files_in_folder(folder, 'pickle')
@@ -512,10 +512,14 @@ def load_video_metadata(folder, videoname, scorer):
     if not len(meta):
         raise FileNotFoundError(f'No metadata found in {folder} '
                                 f'for video {videoname} and scorer {scorer}.')
-    return read_pickle(os.path.join(folder, meta[0]))
+    return os.path.join(folder, meta[0])
 
 
-def load_analyzed_data(folder, videoname, scorer, filtered=False, track_method=''):
+def load_video_metadata(folder, videoname, scorer):
+    return read_pickle(find_video_metadata(folder, videoname, scorer))
+
+
+def find_analyzed_data(folder, videoname, scorer, filtered=False, track_method=''):
     """Find potential data files from the hints given to the function."""
     scorer_legacy = scorer.replace('DLC', 'DeepCut')
     suffix = '_filtered' if filtered else ''
@@ -527,7 +531,7 @@ def load_analyzed_data(folder, videoname, scorer, filtered=False, track_method='
     candidates = []
     for file in grab_files_in_folder(folder, 'h5'):
         if all(((file.startswith(videoname + scorer) or file.startswith(videoname + scorer_legacy)),
-                (tracker in file if tracker else not ('skeleton' in file or 'box' in file)),
+                (tracker in file if tracker else not ('sk' in file or 'bx' in file)),
                 (filtered and 'filtered' in file) or (not filtered and 'filtered' not in file))):
             candidates.append(file)
     if not len(candidates):
@@ -543,8 +547,13 @@ def load_analyzed_data(folder, videoname, scorer, filtered=False, track_method='
         print(f'{n_candidates} possible data files were found: {candidates}.\n'
               f'Picking the first by default...')
     filepath = os.path.join(folder, candidates[0])
-    df = pd.read_hdf(filepath)
     scorer = scorer if scorer in filepath else scorer_legacy
+    return filepath, scorer, suffix
+
+
+def load_analyzed_data(folder, videoname, scorer, filtered=False, track_method=''):
+    filepath, scorer, suffix = find_analyzed_data(folder, videoname, scorer, filtered, track_method)
+    df = pd.read_hdf(filepath)
     return df, filepath, scorer, suffix
 
 
