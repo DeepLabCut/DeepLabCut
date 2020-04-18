@@ -32,7 +32,6 @@ from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as Navigat
 # Class for GUI MainFrame
 # ###########################################################################
 class ImagePanel(wx.Panel):
-
     def __init__(self, parent,config,gui_size,**kwargs):
         h=gui_size[0]/2
         w=gui_size[1]/3
@@ -125,7 +124,7 @@ class ScrollPanel(SP.ScrolledPanel):
 class MainFrame(wx.Frame):
     """Contains the main GUI and button boxes"""
 
-    def __init__(self, parent,config):
+    def __init__(self, parent, config, imtypes):
 # Settting the GUI size and panels design
         displays = (wx.Display(i) for i in range(wx.Display.GetCount())) # Gets the number of displays
         screenSizes = [display.GetGeometry().GetSize() for display in displays] # Gets the size of each display
@@ -133,6 +132,7 @@ class MainFrame(wx.Frame):
         screenWidth = screenSizes[index][0]
         screenHeight = screenSizes[index][1]
         self.gui_size = (screenWidth*0.7,screenHeight*0.85)
+        self.imtypes = imtypes #imagetypes to look for in folder e.g. *.png
 
         wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = 'DeepLabCut2.0 - Labeling ToolBox',
                             size = wx.Size(self.gui_size), pos = wx.DefaultPosition, style = wx.RESIZE_BORDER|wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
@@ -434,7 +434,15 @@ class MainFrame(wx.Frame):
         self.colormap = plt.get_cmap(self.cfg['colormap'])
         self.colormap = self.colormap.reversed()
         self.project_path=self.cfg['project_path']
-        self.index =np.sort([fn for fn in glob.glob(os.path.join(self.dir,'*.png')) if ('labeled.png' not in fn)])
+        
+        imlist=[]
+        for imtype in self.imtypes:
+            imlist.extend([fn for fn in glob.glob(os.path.join(self.dir,imtype)) if ('labeled.png' not in fn)])
+        
+        if len(imlist)==0:
+            print("No images found!!")
+            
+        self.index =np.sort(imlist)
         self.statusbar.SetStatusText('Working on folder: {}'.format(os.path.split(str(self.dir))[-1]))
         self.relativeimagenames=['labeled'+n.split('labeled')[1] for n in self.index]#[n.split(self.project_path+'/')[1] for n in self.index]
 
@@ -673,9 +681,9 @@ class MainFrame(wx.Frame):
             self.toolbar.zoom()
             self.zoom.SetValue(False)
 
-def show(config):
+def show(config,imtypes=['*.png']):
     app = wx.App()
-    frame = MainFrame(None,config).Show()
+    frame = MainFrame(None, config, imtypes).Show()
     app.MainLoop()
 
 

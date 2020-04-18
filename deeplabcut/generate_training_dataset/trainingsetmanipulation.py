@@ -220,7 +220,7 @@ def dropimagesduetolackofannotation(config):
         print("PROCESSED:", folder, " now # of annotated images: ", len(annotatedimages)," in folder:", len(imagelist))
 
 
-def label_frames(config,multiple=False):
+def label_frames(config,multiple=False,imtypes=['*.png']):
     """
     Manually label/annotate the extracted frames. Update the list of body parts you want to localize in the config.yaml file first.
 
@@ -233,11 +233,19 @@ def label_frames(config,multiple=False):
         If this is set to True, a user can label multiple individuals.
         The default is ``False``; if provided it must be either ``True`` or ``False``.
 
+    imtypes: list of imagetypes to look for in folder to be labeled. By default only png images are considered.
 
     Example
     --------
+    Standard use case:
+    >>> deeplabcut.label_frames('/myawesomeproject/reaching4thestars/config.yaml')
+
     To label multiple individuals
     >>> deeplabcut.label_frames('/analysis/project/reaching-task/config.yaml',multiple=True)
+
+    To label other image types
+    >>> label_frames(config,multiple=False,imtypes=['*.jpg','*.jpeg'])
+
     --------
 
     """
@@ -249,7 +257,7 @@ def label_frames(config,multiple=False):
         from deeplabcut.generate_training_dataset import labeling_toolbox
 
         # labeling_toolbox.show(config,Screens,scale_w,scale_h, winHack, img_scale)
-        labeling_toolbox.show(config)
+        labeling_toolbox.show(config,imtypes=imtypes)
     else:
         from deeplabcut.generate_training_dataset import multiple_individuals_labeling_toolbox
         multiple_individuals_labeling_toolbox.show(config)

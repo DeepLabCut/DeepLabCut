@@ -16,11 +16,11 @@ It produces nothing of interest scientifically.
 task='TEST' # Enter the name of your experiment Task
 scorer='Alex' # Enter the name of the experimenter/labeler
 
-
 import os,  subprocess, deeplabcut
 from pathlib import Path
 import pandas as pd
 import numpy as np
+import platform
 
 print("Imported DLC!")
 basepath=os.path.dirname(os.path.abspath('testscript.py'))
@@ -35,9 +35,15 @@ video=[os.path.join(basepath,'Reaching-Mackenzie-2018-08-30','videos',videoname+
 
 dfolder=None
 net_type='resnet_50' #'mobilenet_v2_0.35' #'resnet_50'
-augmenter_type='default' #'tensorpack'
+augmenter_type='default'
 augmenter_type2='imgaug'
-augmenter_type3='tensorpack'
+
+if platform.system() == 'Darwin' or platform.system()=='Windows':
+    print("On Windows/OSX tensorpack is not tested by default.")
+    augmenter_type3='imgaug'
+else:
+    augmenter_type3='tensorpack' #Does not work on WINDOWS
+
 numiter=5
 
 print("CREATING PROJECT")
@@ -111,11 +117,10 @@ except: # if ffmpeg is broken
     newclip = VideoClip(make_frame, duration=1)
     newclip.write_videofile(newvideo,fps=30)
 
-
-deeplabcut.analyze_videos(path_config_file,[newvideo],save_as_csv=True, destfolder=dfolder, dynamic=(True,.1,5))
+deeplabcut.analyze_videos(path_config_file, [newvideo], save_as_csv=True, destfolder=dfolder, dynamic=(True, .1, 5))
 
 print("analyze again...")
-deeplabcut.analyze_videos(path_config_file,[newvideo],save_as_csv=True, destfolder=dfolder)
+deeplabcut.analyze_videos(path_config_file, [newvideo], save_as_csv=True, destfolder=dfolder)
 
 print("CREATE VIDEO")
 deeplabcut.create_labeled_video(path_config_file,[newvideo], destfolder=dfolder,save_frames=True)
@@ -125,6 +130,9 @@ deeplabcut.plot_trajectories(path_config_file,[newvideo], destfolder=dfolder)
 
 print("EXTRACT OUTLIERS")
 deeplabcut.extract_outlier_frames(path_config_file,[newvideo],outlieralgorithm='jump',epsilon=0,automatic=True, destfolder=dfolder)
+
+deeplabcut.extract_outlier_frames(path_config_file,[newvideo],outlieralgorithm='Fitting',automatic=True, destfolder=dfolder)
+
 file=os.path.join(cfg['project_path'],'labeled-data',vname,"machinelabels-iter"+ str(cfg['iteration']) + '.h5')
 
 print("RELABELING")
@@ -173,7 +181,7 @@ except: # if ffmpeg is broken
 
 
 print("Inference with direct cropping")
-deeplabcut.analyze_videos(path_config_file,[newvideo2],destfolder=dfolder,cropping=[0,50,0,50],save_as_csv=True)
+deeplabcut.analyze_videos(path_config_file, [newvideo2], save_as_csv=True, destfolder=dfolder, crop=[0, 50, 0, 50])
 
 print("Extracting skeleton distances, filter and plot filtered output")
 deeplabcut.analyzeskeleton(path_config_file, [newvideo], save_as_csv=True, destfolder=dfolder)
@@ -183,8 +191,11 @@ deeplabcut.filterpredictions(path_config_file,[newvideo])
 deeplabcut.create_labeled_video(path_config_file,[newvideo2], destfolder=dfolder,displaycropped=True,filtered=True)
 deeplabcut.plot_trajectories(path_config_file,[newvideo2], destfolder=dfolder,filtered=True)
 
+print("ALL DONE!!! - default cases without Tensorpack loader are functional.")
+
 print("CREATING TRAININGSET for shuffle 2")
 print("will be used for 3D testscript...")
+# TENSORPACK could fail in WINDOWS...
 deeplabcut.create_training_dataset(path_config_file,Shuffles=[2],net_type=net_type,augmenter_type=augmenter_type3)
 
 posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(2),'train/pose_cfg.yaml')
@@ -202,9 +213,6 @@ deeplabcut.train_network(path_config_file,shuffle=2,allow_growth=True)
 
 print("ANALYZING some individual frames")
 deeplabcut.analyze_time_lapse_frames(path_config_file,os.path.join(cfg['project_path'],'labeled-data/reachingvideo1/'))
-print("Attempting to ANALYZING some individual frames..")
-deeplabcut.analyze_time_lapse_frames(path_config_file,os.path.join(cfg['project_path'],'labeled-data/reachingvideo1/'))
-
 
 print("ALL DONE!!! - default cases are functional.")
 print("Re-import DLC with env. variable set to test DLC light mode.")

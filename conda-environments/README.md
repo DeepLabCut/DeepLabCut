@@ -25,8 +25,8 @@ or
 
 (3) You can now use this environment from anywhere on your comptuer (i.e. no need to go back into the conda- folder). Just enter your environment by running:
 
-- Ubuntu/MacOS: ``source activate nameoftheenv`` (i.e. ``source activate dlc-macOS-CPU``)
-- Windows: ``activate nameoftheenv`` (i.e. ``activate dlc-windowsGPU``)
+- Ubuntu/MacOS: ``source/conda activate nameoftheenv`` (i.e. on your Mac: ``conda activate DLC-CPU``)
+- Windows: ``activate nameoftheenv`` (i.e. ``activate DLC-GPU``)
 
 Now you should see (nameofenv) on the left of your teminal screen, i.e. ``(dlc-macOS-CPU) YourName-MacBook...``
 NOTE: no need to run pip install deeplabcut, as it is already installed!!! :) 
@@ -35,18 +35,18 @@ However, if you ever want to update your DLC, just run `pip install --upgrade de
 
 **Great, that's it!**
 
-Simply run ``ipython`` or ``pythonw`` (macOS only) to lauch the terminal, ``jupyter notebook`` to lauch a browser session, or ``ipython, import deeplabcut, deeplabcut.launch_dlc()`` to use our Project Manager GUI! **Many more details** [**here**](https://github.com/AlexEMG/DeepLabCut/blob/master/docs/UseOverviewGuide.md)!
+Simply run ``ipython`` or ``pythonw`` (**macOS only**) to lauch the terminal, ``jupyter notebook`` to lauch a browser session, or ``ipython/pythonw, import deeplabcut, deeplabcut.launch_dlc()`` to use our Project Manager GUI! **Many more details** [**here**](https://github.com/AlexEMG/DeepLabCut/blob/master/docs/UseOverviewGuide.md)!
 
 
 # Creating your own customized conda env (recommended route for Linux: Ubuntu, CentOS, Mint, etc.)
 
-Some users might want to create their own env. Here is an eample. In the terminal type:
+Some users might want to create their own env. Here is an example. In the terminal type:
 
 `conda create -n DLC python=3.7 tensorflow=1.13.1` 
 
 (this would be for CPU-based tensorflow; for GPU support use `tensorflow-gpu=1.13.1`). 
 
-The only thing you then need to add to the env is wxPython, which is OS dependent.  
+The only thing you then need to add to the env is deeplabcut (`pip install deeplabcut`) and wxPython, which is OS dependent.  
 For Windows and MacOS, you just run `pip install -U wxPython` but for linux you need the specific wheel (https://wxpython.org/pages/downloads/index.html).
 
 # Using DLC: 
@@ -57,6 +57,6 @@ Just as a reminder, you can exit the environment anytime and (later) come back! 
 
 Here are some conda environment management tips: https://kapeli.com/cheat_sheets/Conda.docset/Contents/Resources/Documents/index
 
-**GPUs:** The ONLY thing you need to do **first** if have an NVIDIA GPU, NVIDIA driver installed, and CUDA <=10 (currently, TensorFlow 1.13.1 is installed inside the env, so you can install up to CUDA 10 and an appropriate driver).
+**GPUs:** The ONLY thing you need to do **first** if you have an NVIDIA GPU, NVIDIA driver installed, and CUDA <=10 (currently, TensorFlow 1.13.1 is installed inside the env, so you can install up to CUDA 10 and an appropriate driver). Please note that only NVIDA GPUs are supported. 
 - DRIVERS: https://www.nvidia.com/Download/index.aspx
 - CUDA: https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html#verify-you-have-cuda-enabled-system
