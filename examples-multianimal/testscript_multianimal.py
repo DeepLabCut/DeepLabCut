@@ -5,6 +5,7 @@ import deeplabcut
 import numpy as np
 import pandas as pd
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
+from deeplabcut.refine_training_dataset.tracklets import convert_raw_tracks_to_h5
 
 
 TASK = 'multi_birdie'
@@ -109,11 +110,17 @@ print('Detections converted.')
 print('Create data file...')
 picklefile = os.path.splitext(new_video_path)[0] + scorer + '_sk.pickle'
 try:
-    deeplabcut.convert_raw_tracks_to_h5(config_path, picklefile)
-    deeplabcut.convert_raw_tracks_to_h5(config_path, picklefile.replace('sk', 'bx'))
+    convert_raw_tracks_to_h5(config_path, picklefile)
+    convert_raw_tracks_to_h5(config_path, picklefile.replace('sk', 'bx'))
 except IOError:
     print('Empty tracklets properly caught! Using fake data rather...')
-    df = pd.read_hdf(os.path.join(image_folder, f'CollectedData_{SCORER}.h5'))
+    temp = pd.read_hdf(os.path.join(image_folder, f'CollectedData_{SCORER}.h5'))
+    # Need to add the 'likelihood' level value to simulate analyzed data
+    # Ugliest hack in the history of pandas
+    columns = temp.columns.to_series().unstack([0, 1, 2]).append(pd.Series(None, name='likelihood')).unstack().index
+    data = np.ones((temp.shape[0], temp.shape[1] // 2 * 3))
+    data.reshape((data.shape[0], -1, 3))[:, :, :2] = temp.values.reshape((temp.shape[0], -1, 2))
+    df = pd.DataFrame(data, columns=columns)
     df.to_hdf(picklefile.replace('pickle', 'h5'), 'df_with_missing', format='table', mode='w')
     df.to_hdf(picklefile.replace('sk', 'bx').replace('pickle', 'h5'), 'df_with_missing', format='table', mode='w')
 
@@ -135,4 +142,4 @@ print('Predictions filtered.')
 
 print('Extracting outlier frames...')
 deeplabcut.extract_outlier_frames(config_path, [new_video_path], 'mov', automatic=True, track_method='box')
-print('Outlier frames extraacted.')
+print('Outlier frames extracted.')
