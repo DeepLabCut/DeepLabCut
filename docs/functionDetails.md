@@ -57,12 +57,41 @@ The ``create_new_project`` step writes the following parameters to the configura
 
 Next, open the **config.yaml** file, which was created during  **create\_new\_project**. You can edit this file in any text editor.  Familiarize yourself with the meaning of the parameters (Box 1). You can edit various parameters, in particular you must add the list of *bodyparts* (or points of interest) that you want to track.
 
-**maDeepLabCut:** You need to edit the config.yaml file to **modify the following items** which specify the animal ID, body parts, and any unique labels. You should also define a 'skeleton' at this time in the config.yaml file: 
+**maDeepLabCut:** You need to edit the config.yaml file to **modify the following items** which specify the animal ID, body parts, and any unique labels. You should also define an over-conencted 'skeleton' at this time in the config.yaml file. For example, for a "simple" 4 body part animal see the example skeleton. This is crucial: 
 
 ```python
-cfg['individuals']=['bird1','bird2','bird3','birdx','single']
-cfg['uniquebodyparts']=['montblanc']
-cfg['multianimalbodyparts']=['wing','tip']
+individuals:
+- bird1
+- bird2
+- bird3
+- bird4
+- bird5
+- bird6
+- bird7
+- bird8
+
+uniquebodyparts:
+- montblanc
+
+multianimalbodyparts:
+- head
+- tail
+- leftwing
+- rightwing
+
+skeleton:
+- - head
+  - tail
+- - leftwing
+  - rightwing
+- - head
+  - leftwing
+- - head
+  - rightwing
+- - leftwing
+  - tail
+- - rightwing
+  - tail
 ```
 
  ### (C) Data Selection (extract frames)
@@ -119,7 +148,7 @@ The toolbox provides a function **label_frames** which helps the user to easily 
 an interactive graphical user interface (GUI). The user should have already named the body parts to label (points of
 interest) in the project’s configuration file by providing a list. The following command invokes the labeling toolbox.
 ```python
-deeplabcut.label_frames(config_path, multianimal = True/False)
+deeplabcut.label_frames(config_path)
 ```
 The user needs to use the *Load Frames* button to select the directory which stores the extracted frames from one of
 the videos. Subsequently, the user can use one of the radio buttons (top right) to select a body part to label. RIGHT click to add the label. Left click to drag the label, if needed. If you label a part accidentally, you can use the middle button on your mouse to delete! If you cannot see a body part in the frame, skip over the label! Please see the ``HELP`` button for more user instructions. This auto-advances once you labeled the first body part. You can also advance to the next frame by clicking on the RIGHT arrow on your keyboard (and go to a previous frame with LEFT arrow).
@@ -136,7 +165,7 @@ simply be skipped by not applying the label anywhere on the frame.
 OPTIONAL: In the event of adding more labels to the existing labeled dataset, the user need to append the new
 labels to the bodyparts in the config.yaml file. Thereafter, the user can call the function **label_frames**. As of 2.0.5+: then a box will pop up and ask the user if they wish to display all parts, or only add in the new labels. Saving the labels after all the images are labelled will append the new labels to the existing labeled dataset.
 
-**maDeepLabCut CRITICAL POINT:** For multi-animal labeling, unless you can tell apart the animals, you do not need to worry about the "ID" of each animal. For example: if you have a white and black mouse label the white mouse as animal 1, and black as animal 2 across all frames. If two black mice, then the label 1 or 2 can switch between frames - no need for you to try to indentify them. The point of multi-animal DLC is to train models that can first group the correct bodyparts to individuals, then associate those points in a given video to a specific individual, which then also uses temporal information to link across the video frames.
+**maDeepLabCut CRITICAL POINT:** For multi-animal labeling, unless you can tell apart the animals, you do not need to worry about the "ID" of each animal. For example: if you have a white and black mouse label the white mouse as animal 1, and black as animal 2 across all frames. If two black mice, then the label 1 or 2 can switch between frames - no need for you to try to indentify them. If you have 2 black mice but one always has a optical fiber (for example), then DO label then consistantly as animal1 and animal_fiber (for example). The point of multi-animal DLC is to train models that can first group the correct bodyparts to individuals, then associate those points in a given video to a specific individual, which then also uses temporal information to link across the video frames.
 
 ###  (E) Check Annotated Frames
 [DOCSTRING](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#check_labels)
@@ -147,7 +176,7 @@ is one of the most critical parts for creating the training dataset. The DeepLab
 ```python
 deeplabcut.check_labels(config_path, visualizeindividuals = True/False)
  ```   
-**maDeepLabCut:** you can check and plot colors per individual or per body part, just set the flag `visualizeindividuals=True/False`
+**maDeepLabCut:** you can check and plot colors per individual or per body part, just set the flag `visualizeindividuals=True/False`. Note, you can run this twice in both states to see both images.
 
 For each video directory in labeled-data this function creates a subdirectory with **labeled** as a suffix. Those directories contain the frames plotted with the annotated body parts. The user can double check if the body parts are labeled correctly. If they are not correct, the user can re-load the frames (i.e. `deeplabcut.label_frames`), move them around, and click save again.
 

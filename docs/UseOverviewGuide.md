@@ -61,7 +61,7 @@ own dataset. See all the demo's [here!](/examples) Please note that GUIs are not
 
 ## Option 2: using the Project Manger GUI:
 Start iPython, or if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython`` or ``python``, but otherwise it's the same.
-If you are using DeepLabCut on the cloud, you cannot use the GUIs and you need to first set DLClight=True. Please read more [here](https://github.com/MMathisLab/Docker4DeepLabCut2.0), and in our Protocol paper [here](https://www.nature.com/articles/s41596-019-0176-0).
+If you are using DeepLabCut on the cloud, you cannot use the GUIs and you need to first set DLClight=True. Please read more [here](https://github.com/DeepLabCut/Docker4DeepLabCut2.0), and in our Nature Protocols paper [here](https://www.nature.com/articles/s41596-019-0176-0).
 
 Open an ``ipython`` session, import the package, and launch by typing in the terminal:
 ```python
@@ -91,11 +91,12 @@ import deeplabcut
 ### Create a New Project:
 
 ```python
-deeplabcut.create_new_project('ProjectName','YourName', ['/usr/FullPath/OfVideo1.avi','/usr/FullPath/OfVideo2.avi','/usr/FullPath/OfVideo1.avi'], copy_videos = True/False)
+deeplabcut.create_new_project('ProjectName','YourName', ['/usr/FullPath/OfVideo1.avi','/usr/FullPath/OfVideo2.avi','/usr/FullPath/OfVideo1.avi'], 
+              copy_videos = True/False, multianimal=True/False)
 ```
 Tip: if you want to place the project folder somewhere please pass : ``working_directory = 'FullPathOftheworkingDirectory'``
 
-**maDeepLabCut**: As of 2.2 when you create a project also pass: ``multianimal=True``
+**maDeepLabCut**: As of 2.2 when you create a project also pass: ``multianimal=True``. Even if you don't have multiple animals, but want to use the added tools, you can set this to be true. 
 
 - Note, if you are a Ubuntu user the path should look like: ``['/home/username/yourFolder/video1.mp4']``; if you are a Windows user, it should look like: ``[r'C:\username\yourFolder\video1.mp4']``
 - Note, you can also put ``config_path = `` in front of the above line to create the path to the config.yaml that is used in the next step, i.e. ``config_path=deeplabcut.create_project(...)``)
@@ -147,12 +148,7 @@ deeplabcut.extract_frames(config_path, mode='automatic', algo='kmeans', crop = T
 deeplabcut.label_frames(config_path)
 ```
 
-**maDeepLabCut**: As of 2.2 there is a new multi-animal labeling GUI: 
-
-```python
-deeplabcut.label_frames(config_path, multianimal=True)
-```
-
+**maDeepLabCut**: As of 2.2 there is a new multi-animal labeling GUI (as long as in your `config.yaml` says `multianimalproject: true` at the top, this will automatically launch). 
 
 (more details [here](functionDetails.md#d-label-frames))
 
@@ -167,8 +163,14 @@ deeplabcut.label_frames(config_path, multianimal=True)
 ```python
 deeplabcut.check_labels(config_path)
 ```
+**maDeepLabCut**: you can also look at both bodypart labeling (standard) and indivudal IDs by also passing `visualizeindividuals=True`
 
 (more details [here](functionDetails.md#e-check-annotated-frames))
+
+- Note, we also have a new, optional, functional to crop frames /labels for more efficient training. You can call this before you create a training dataset by:
+```python
+deeplabcut.cropimagesandlabels(path_config_file, userfeedback=False)
+```
 
 ### Create Training Dataset:
 
@@ -179,7 +181,10 @@ or to [compare different neural networks](/wiki/What-neural-network-should-I-use
 ```python
 deeplabcut.create_training_model_comparision(config_path, num_shuffles=1, net_types=['resnet_50'], augmenter_types=['default', 'imgaug'] )
 ```
-
+**maDeepLabCut**:
+```python
+deeplabcut.create_multianimaltraining_dataset(path_config_file)
+```
 (more details [here](functionDetails.md#f-create-training-dataset))
 
 ### Train The Network:
@@ -192,25 +197,60 @@ deeplabcut.train_network(config_path)
 
 ### Evaluate the Trained Network:
 
+Here, for traditional projects you will get a pixel distance metric and you should inspect the indivudal frames:
 ```python
 deeplabcut.evaluate_network(config_path, plotting = True)
 ```
+**maDeepLabCut**: (or on normal projects!)
+
+You can also plot the scoremaps, locref layers, and PAFs:
+```python
+deeplabcut.extract_save_all_maps(path_config_file, shuffle=shuffle, Indices=[0, 5])
+```
+- you can drop "Indices" to run this on all training/testing images (this is slow!)
 
 (more details [here](functionDetails.md#h-evaluate-the-trained-network))
 
-### Video Analysis and Plotting Results:
+### Video Analysis:
 - Please note that **novel videos DO NOT need to be added to the config.yaml file**. You can simply have a folder elsewhere on your computer and pass the video folder (then it will analyze all videos of the specified type (i.e. ``videotype='.mp4'``), or pass the path to the **folder** or exact video(s) you wish to analyze:
 
 ```python
 deeplabcut.analyze_videos(config_path,[`/fullpath/project/videos/'], videotype='.mp4', save_as_csv = True)
 ```
-Here are some tips for scaling up your analysis: https://github.com/AlexEMG/DeepLabCut/wiki/Batch-Processing-your-Analysis
+**maDeepLabCut**: there is a new step that allows you to plot *all* detections first. This allows you to check the pose-estimation quality before tracking of individuals! We recommend doing this step when you are running quality checks on new videos, etc. Once you have optimized pose-estimation and tracking, this is not required. `scorername` can be gotten from `scorername = deeplabcut.analyze_videos (...)` or just looking at the name of the DLC scorer in the folder name, h5 file, etc.
+
+```python
+deeplabcut.create_video_with_all_detections(path_config_file, [videofile_path], scorername)
+```
+
+### Assemble Tracklets in maDeepLabCut:
+- Now that you have detections (which are saved as a pickle file, not h5, btw), we need to assemble and track the animals. 
+
+First, you need to convert detections to tracklets. This step have several tracker types (`track_method`), and we recommend testing which one works best on your data. 
+
+```python
+deeplabcut.convert_detections2tracklets(path_config_file, [videofile_path], videotype='mp4',
+                                                    shuffle=1, trainingsetindex=0, track_method=' ')
+```
+
+Secondly, you have the option to refine the tracklets. If there are both "major" ID swaps, i.e. perhaps when animals cross, or micro-refine the individual body points. You will load the ...trackle.pickle file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an .h5 file (akind to what you might be used to from standard DLC. You can also load this to refine (again) incase you find another issue, etc. 
+
+```python
+deeplabcut.WIP
+```
+
+
+### Once you have analzyed video data:
+
+Firstly, Here are some tips for scaling up your video analysis, including looping over many folders for batch processing: https://github.com/AlexEMG/DeepLabCut/wiki/Batch-Processing-your-Analysis
 
 You can also filter the predicted bodyparts by:
 ```python
 deeplabcut.filterpredictions(config_path,['/fullpath/project/videos/reachingvideo1.avi'])
 ```
 Note, this creates a file with the ending filtered.h5 that you can use for further analysis. This filtering step has many parameters, so please see the full docstring by typing: ``deeplabcut.filterpredictions?``
+
+### Plotting Results:
 
 Create videos:
 ```python
