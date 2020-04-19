@@ -12,6 +12,7 @@ Licensed under GNU Lesser General Public License v3.0
 import wx
 import os,sys,pydoc
 import deeplabcut
+from deeplabcut.utils import auxiliaryfunctions
 media_path = os.path.join(deeplabcut.__path__[0], 'gui' , 'media')
 logo = os.path.join(media_path,'logo.png')
 
@@ -55,10 +56,18 @@ class Label_frames(wx.Panel):
         sizer.Add(self.help_button, pos=(4, 0), flag=wx.LEFT, border=10)
         self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
 
-        self.check = wx.Button(self, label="Check Labeled Frames")
-        sizer.Add(self.check, pos=(4, 3), flag=wx.BOTTOM|wx.RIGHT, border=10)
+        self.check = wx.Button(self, label="Check Labels!")
+        sizer.Add(self.check, pos=(5, 4), flag=wx.BOTTOM|wx.RIGHT, border=10)
         self.check.Bind(wx.EVT_BUTTON, self.check_labelF)
         self.check.Enable(True)
+
+        self.cfg = auxiliaryfunctions.read_config(self.config)
+        if self.cfg.get('multianimalproject', False):
+
+            self.check = wx.Button(self, label="Check Labels Individuals")
+            sizer.Add(self.check, pos=(5, 3), flag=wx.BOTTOM|wx.RIGHT, border=10)
+            self.check.Bind(wx.EVT_BUTTON, self.check_labelInd)
+            self.check.Enable(True)
 
         self.ok = wx.Button(self, label="Label Frames")
         sizer.Add(self.ok, pos=(4, 4))
@@ -91,7 +100,12 @@ class Label_frames(wx.Panel):
     def check_labelF(self,event):
         dlg = wx.MessageDialog(None, "This will now plot the labeled frames afer you have finished labeling!")
         result = dlg.ShowModal()
-        deeplabcut.check_labels(self.config)
+        deeplabcut.check_labels(self.config, visualizeindividuals=False)
+
+    def check_labelInd(self,event):
+        dlg = wx.MessageDialog(None, "This will now plot the labeled frames afer you have finished labeling!")
+        result = dlg.ShowModal()
+        deeplabcut.check_labels(self.config, visualizeindividuals=True)
 
     def select_config(self,event):
         """
