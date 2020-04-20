@@ -5,6 +5,8 @@ from deeplabcut.utils import auxiliaryfunctions
 
 
 TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
+videos = [os.path.join(TEST_DATA_DIR, 'vid1.mov'),
+          os.path.join(TEST_DATA_DIR, 'vid2.mov')]
 SINGLE_CONFIG_PATH = os.path.join(TEST_DATA_DIR, 'single-dlc-2020-04-17/config.yaml')
 MULTI_CONFIG_PATH = os.path.join(TEST_DATA_DIR, 'multi-dlc-2020-04-17/config.yaml')
 
@@ -48,6 +50,37 @@ def test_edit_config(tmpdir):
     cfg = auxiliaryfunctions.read_config(output_path)
     assert all(cfg[k] == v for k, v in edits.items())
 
+
+def test_get_list_of_videos():
+    vids = auxiliaryfunctions.Getlistofvideos([TEST_DATA_DIR], 'mov')
+    assert isinstance(vids, list)
+    assert len(vids) == 2
+
+    assert len(auxiliaryfunctions.Getlistofvideos(videos, 'mov')) == 2
+
+    vids = auxiliaryfunctions.Getlistofvideos(videos[0], 'mov')
+    assert isinstance(vids, list)
+    assert len(vids) == 1
+
+    assert len(auxiliaryfunctions.Getlistofvideos(videos[0], 'avi')) == 1
+    assert len(vids) == 1
+
+    assert not len(auxiliaryfunctions.Getlistofvideos([TEST_DATA_DIR], 'avi'))
+
+
+def test_grab_files_in_folder(mocker):
+    mocker.patch.object(os, 'listdir', return_value=['file.h5', 'datah5.pickle'])
+    files = list(auxiliaryfunctions.grab_files_in_folder('folder', 'h5', relative=False))
+    assert len(files) == 1
+    assert files[0].startswith('folder')
+
+
+def test_intersection_bodyparts(cfg_single, cfg_multi):
+    assert len(auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg_single, 'all')) == 4
+    assert len(auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg_single, ['bodypart1'])) == 1
+    assert not len(auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg_single, ['none']))
+    assert len(auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg_multi, 'all')) == 4
+    
 
 @pytest.mark.parametrize('suffix', ['_meta', 'includingmetadata'])
 def test_find_video_metadata(tmpdir, mocker, suffix):

@@ -288,8 +288,8 @@ def Getlistofvideos(videos,videotype):
 
     else:
         if isinstance(videos,str):
-            if os.path.isfile(videos): # #or just one direct path!
-                Videos=[v for v in videos if os.path.isfile(v) and 'labeled' not in v]
+            if os.path.isfile(videos) and 'labeled' not in videos: # #or just one direct path!
+                Videos=[videos]
             else:
                 Videos=[]
         else:
