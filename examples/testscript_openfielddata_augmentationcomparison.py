@@ -60,6 +60,7 @@ cfg=deeplabcut.auxiliaryfunctions.read_config(path_config_file)
 
 
 deeplabcut.load_demo_data(path_config_file)
+maxiters=100000
 
 ##create one split and make Shuffle 2 and 3 have the same split.
 '''
@@ -80,7 +81,7 @@ deeplabcut.create_training_model_comparison(path_config_file,num_shuffles=1,net_
 
 for shuffle in [2,3]:
 	print("TRAIN NETWORK", shuffle)
-	deeplabcut.train_network(path_config_file, shuffle=shuffle,saveiters=10000,displayiters=200,maxiters=5,max_snapshots_to_keep=11)
+	deeplabcut.train_network(path_config_file, shuffle=shuffle,saveiters=10000,displayiters=200,maxiters=maxiters,max_snapshots_to_keep=11)
 
 	print("EVALUATE")
 	deeplabcut.evaluate_network(path_config_file, Shuffles=[shuffle],plotting=True)

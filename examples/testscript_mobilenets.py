@@ -105,16 +105,17 @@ for shuffle,net_type in enumerate(['mobilenet_v2_0.35','resnet_50']): #'mobilene
         # Make super short video (so the analysis is quick!)
         newvideo=deeplabcut.ShortenVideo(video[0],start='00:00:00',stop='00:00:00.4',outsuffix='short',outpath=os.path.join(cfg['project_path'],'videos'))
         vname=Path(newvideo).stem
-    deeplabcut.analyze_videos(path_config_file, [newvideo], shuffle=shuffle, save_as_csv=True, destfolder=dfolder)
+
+    deeplabcut.analyze_videos(path_config_file, [newvideo], shuffle=shuffle, save_as_csv=True, destfolder=dfolder, videotype='avi')
 
     print("CREATE VIDEO")
-    deeplabcut.create_labeled_video(path_config_file,[newvideo],shuffle=shuffle, destfolder=dfolder)
+    deeplabcut.create_labeled_video(path_config_file,[newvideo],shuffle=shuffle, destfolder=dfolder, videotype='avi')
 
     print("Making plots")
-    deeplabcut.plot_trajectories(path_config_file,[newvideo],shuffle=shuffle, destfolder=dfolder)
+    deeplabcut.plot_trajectories(path_config_file,[newvideo],shuffle=shuffle, destfolder=dfolder, videotype='avi')
 
     print("EXTRACT OUTLIERS")
-    deeplabcut.extract_outlier_frames(path_config_file,[newvideo],shuffle=shuffle,outlieralgorithm='jump',epsilon=0,automatic=True, destfolder=dfolder)
+    deeplabcut.extract_outlier_frames(path_config_file,[newvideo],shuffle=shuffle,outlieralgorithm='jump',epsilon=0,automatic=True, destfolder=dfolder, videotype='avi')
     file=os.path.join(cfg['project_path'],'labeled-data',vname,"machinelabels-iter"+ str(cfg['iteration']) + '.h5')
 
     print("RELABELING")

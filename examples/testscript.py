@@ -27,6 +27,7 @@ basepath=os.path.dirname(os.path.abspath('testscript.py'))
 videoname='reachingvideo1'
 video=[os.path.join(basepath,'Reaching-Mackenzie-2018-08-30','videos',videoname+'.avi')]
 
+
 # For testing a color video:
 #videoname='baby4hin2min'
 #video=[os.path.join('/home/alex/Desktop/Data',videoname+'.mp4')]
@@ -34,7 +35,7 @@ video=[os.path.join(basepath,'Reaching-Mackenzie-2018-08-30','videos',videoname+
 #dfolder=basepath
 
 dfolder=None
-net_type='resnet_50' #'mobilenet_v2_0.35' 
+net_type='resnet_50' #'mobilenet_v2_0.35' #'resnet_50'
 augmenter_type='default'
 augmenter_type2='imgaug'
 
@@ -75,6 +76,7 @@ dataFrame.to_csv(os.path.join(cfg['project_path'],'labeled-data',videoname,"Coll
 dataFrame.to_hdf(os.path.join(cfg['project_path'],'labeled-data',videoname,"CollectedData_" + scorer + '.h5'),'df_with_missing',format='table', mode='w')
 
 print("Plot labels...")
+
 deeplabcut.check_labels(path_config_file)
 
 print("CREATING TRAININGSET")
@@ -181,8 +183,8 @@ print("Inference with direct cropping")
 deeplabcut.analyze_videos(path_config_file, [newvideo2], save_as_csv=True, destfolder=dfolder, cropping=[0, 50, 0, 50])
 
 print("Extracting skeleton distances, filter and plot filtered output")
-deeplabcut.analyzeskeleton(path_config_file, [newvideo], save_as_csv=True, destfolder=dfolder)
-deeplabcut.filterpredictions(path_config_file,[newvideo])
+deeplabcut.analyzeskeleton(path_config_file, [newvideo2], save_as_csv=True, destfolder=dfolder)
+deeplabcut.filterpredictions(path_config_file,[newvideo2], destfolder=dfolder)
 
 #deeplabcut.create_labeled_video(path_config_file,[newvideo], destfolder=dfolder,filtered=True)
 deeplabcut.create_labeled_video(path_config_file,[newvideo2], destfolder=dfolder,displaycropped=True,filtered=True)
@@ -206,7 +208,7 @@ print("CHANGING training parameters to end quickly!")
 deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
 
 print("TRAINING shuffle 2, with smaller allocated memory")
-deeplabcut.train_network(path_config_file,shuffle=2,allow_growth=True)
+deeplabcut.train_network(path_config_file, shuffle=2, allow_growth=True)
 
 print("ANALYZING some individual frames")
 deeplabcut.analyze_time_lapse_frames(path_config_file,os.path.join(cfg['project_path'],'labeled-data/reachingvideo1/'))

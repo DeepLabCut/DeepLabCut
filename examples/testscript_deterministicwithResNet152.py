@@ -103,4 +103,4 @@ deeplabcut.train_network(path_config_file)
 print("TRAIN again... the same losses!")
 deeplabcut.train_network(path_config_file)
 
-print("ALL DONE!!! - default cases are functional.")
+print("ALL DONE!!! - deterministic at least runs... were the losses identical?")
