@@ -3,11 +3,7 @@ os.environ['DLClight'] = 'True'
 import pytest
 from deeplabcut import add_new_videos, create_new_project
 from deeplabcut.utils import auxiliaryfunctions
-
-
-TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
-videos = [os.path.join(TEST_DATA_DIR, 'vid1.mov'),
-          os.path.join(TEST_DATA_DIR, 'vid2.mov')]
+from tests import conftest
 
 
 @pytest.fixture()
@@ -26,27 +22,6 @@ def empty_project_multi(tmpdir):
     return config_path, tmpdir
 
 
-@pytest.fixture()
-def project_single(tmpdir):
-    project = 'single'
-    experimenter = 'dlc'
-    config_path = create_new_project(project, experimenter, [videos[0]], tmpdir)
-    return config_path, tmpdir
-
-
-@pytest.fixture()
-def project_multi(tmpdir):
-    project = 'multi'
-    experimenter = 'dlc'
-    config_path = create_new_project(project, experimenter, [videos[0]], tmpdir, multianimal=True)
-    return config_path, tmpdir
-
-
-@pytest.fixture()
-def fake_project(request):
-    return request.getfixturevalue(request.param)
-
-
 # Hacky solution to pass fixtures to 'parametrize'
 # See https://github.com/pytest-dev/pytest/issues/349
 @pytest.mark.parametrize('fake_project', ['empty_project_single', 'empty_project_multi'],
@@ -59,8 +34,8 @@ def test_new_project_no_video(fake_project):
 
 
 @pytest.mark.parametrize('videos, copy_videos, multi',
-                         [([TEST_DATA_DIR], False, False),
-                          (videos, True, True)])
+                         [([conftest.TEST_DATA_DIR], False, False),
+                          (conftest.videos, True, True)])
 def test_new_project(tmpdir, videos, copy_videos, multi):
     project = 'single'
     experimenter = 'dlc'
@@ -83,8 +58,8 @@ def test_new_project(tmpdir, videos, copy_videos, multi):
 
 
 @pytest.mark.parametrize('fake_project, videos, copy_videos',
-                         [('project_single', [videos[1]], False),
-                          ('project_multi', [videos[1]], True)],
+                         [('project_single', [conftest.videos[1]], False),
+                          ('project_multi', [conftest.videos[1]], True)],
                          indirect=['fake_project'])
 def test_add_videos(fake_project, videos, copy_videos):
     config_path, _ = fake_project

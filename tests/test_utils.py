@@ -2,23 +2,7 @@ import os
 os.environ['DLClight'] = 'True'
 import pytest
 from deeplabcut.utils import auxiliaryfunctions
-
-
-TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
-videos = [os.path.join(TEST_DATA_DIR, 'vid1.mov'),
-          os.path.join(TEST_DATA_DIR, 'vid2.mov')]
-SINGLE_CONFIG_PATH = os.path.join(TEST_DATA_DIR, 'single-dlc-2020-04-17/config.yaml')
-MULTI_CONFIG_PATH = os.path.join(TEST_DATA_DIR, 'multi-dlc-2020-04-17/config.yaml')
-
-
-@pytest.fixture()
-def cfg_single():
-    return auxiliaryfunctions.read_config(SINGLE_CONFIG_PATH)
-
-
-@pytest.fixture()
-def cfg_multi():
-    return auxiliaryfunctions.read_config(MULTI_CONFIG_PATH)
+from tests import conftest
 
 
 def test_read_config_invalid_path(tmpdir):
@@ -39,7 +23,7 @@ def test_write_config(tmpdir, monkeypatch, cfg_single):
 
 
 def test_edit_config(tmpdir):
-    config_path = os.path.join(TEST_DATA_DIR, 'single-dlc-2020-04-17/config.yaml')
+    config_path = conftest.SINGLE_CONFIG_PATH
     output_path = tmpdir.join('config.yaml')
     edits = {'project_path': 'nowhere',
              'new_key': 'new_value',
@@ -52,20 +36,20 @@ def test_edit_config(tmpdir):
 
 
 def test_get_list_of_videos():
-    vids = auxiliaryfunctions.Getlistofvideos([TEST_DATA_DIR], 'mov')
+    vids = auxiliaryfunctions.Getlistofvideos([conftest.TEST_DATA_DIR], 'mov')
     assert isinstance(vids, list)
     assert len(vids) == 2
 
-    assert len(auxiliaryfunctions.Getlistofvideos(videos, 'mov')) == 2
+    assert len(auxiliaryfunctions.Getlistofvideos(conftest.videos, 'mov')) == 2
 
-    vids = auxiliaryfunctions.Getlistofvideos(videos[0], 'mov')
+    vids = auxiliaryfunctions.Getlistofvideos(conftest.videos[0], 'mov')
     assert isinstance(vids, list)
     assert len(vids) == 1
 
-    assert len(auxiliaryfunctions.Getlistofvideos(videos[0], 'avi')) == 1
+    assert len(auxiliaryfunctions.Getlistofvideos(conftest.videos[0], 'avi')) == 1
     assert len(vids) == 1
 
-    assert not len(auxiliaryfunctions.Getlistofvideos([TEST_DATA_DIR], 'avi'))
+    assert not len(auxiliaryfunctions.Getlistofvideos([conftest.TEST_DATA_DIR], 'avi'))
 
 
 def test_grab_files_in_folder(mocker):
@@ -80,7 +64,7 @@ def test_intersection_bodyparts(cfg_single, cfg_multi):
     assert len(auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg_single, ['bodypart1'])) == 1
     assert not len(auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg_single, ['none']))
     assert len(auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg_multi, 'all')) == 4
-    
+
 
 @pytest.mark.parametrize('suffix', ['_meta', 'includingmetadata'])
 def test_find_video_metadata(tmpdir, mocker, suffix):
