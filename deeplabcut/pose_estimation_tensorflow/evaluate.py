@@ -333,7 +333,7 @@ def evaluate_network(config,Shuffles=[1],trainingsetindex=0,plotting = None,
     from deeplabcut.utils import auxiliaryfunctions
     cfg = auxiliaryfunctions.read_config(config)
 
-    if cfg['multianimalproject']==True:
+    if cfg.get('multianimalproject', False):
             from deeplabcut.pose_estimation_tensorflow.evaluate_multianimal import evaluate_multianimal_full
             #TODO: Make this code not so redundant!
             evaluate_multianimal_full(config,Shuffles,trainingsetindex,plotting,show_errors,

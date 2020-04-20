@@ -706,9 +706,10 @@ def format_training_data(df, train_inds, nbodyparts, project_path):
     matlab_data = np.asarray(matlab_data, dtype=[('image', 'O'), ('size', 'O'), ('joints', 'O')])
     return train_data, matlab_data
 
-def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=False,userfeedback=False,
-        trainIndexes=None,testIndexes=None,
-        net_type=None,augmenter_type=None):
+def create_training_dataset(config,num_shuffles=1,Shuffles=None,
+                            windows2linux=False, userfeedback=False,
+                            trainIndexes=None, testIndexes=None,
+                            net_type=None, augmenter_type=None):
     """
     Creates a training dataset. Labels from all the extracted frames are merged into a single .h5 file.\n
     Only the videos included in the config file are used to create this dataset.\n
@@ -854,7 +855,6 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
             path_train_config = str(os.path.join(cfg['project_path'],Path(modelfoldername),'train','pose_cfg.yaml'))
             path_test_config = str(os.path.join(cfg['project_path'],Path(modelfoldername),'test','pose_cfg.yaml'))
             #str(cfg['proj_path']+'/'+Path(modelfoldername) / 'test'  /  'pose_cfg.yaml')
-
             items2change = {
                 "dataset": datafilename,
                 "metadataset": metadatafilename,

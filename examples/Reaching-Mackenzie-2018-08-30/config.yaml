@@ -34,6 +34,7 @@ TrainingFraction:
 - 0.95
 iteration: 0
 default_net_type: resnet_50
+default_augmenter: default
 snapshotindex: -1
 batch_size: 4
 

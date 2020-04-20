@@ -34,7 +34,7 @@ video=[os.path.join(basepath,'Reaching-Mackenzie-2018-08-30','videos',videoname+
 #dfolder=basepath
 
 dfolder=None
-net_type='resnet_50' #'mobilenet_v2_0.35' #'resnet_50'
+net_type='resnet_50' #'mobilenet_v2_0.35' 
 augmenter_type='default'
 augmenter_type2='imgaug'
 
@@ -75,7 +75,6 @@ dataFrame.to_csv(os.path.join(cfg['project_path'],'labeled-data',videoname,"Coll
 dataFrame.to_hdf(os.path.join(cfg['project_path'],'labeled-data',videoname,"CollectedData_" + scorer + '.h5'),'df_with_missing',format='table', mode='w')
 
 print("Plot labels...")
-
 deeplabcut.check_labels(path_config_file)
 
 print("CREATING TRAININGSET")
@@ -101,7 +100,7 @@ print("CUT SHORT VIDEO AND ANALYZE (with dynamic cropping!)")
 
 # Make super short video (so the analysis is quick!)
 
-try: #you need ffmpeg command line interface
+try: #you need ffmpeg
     #subprocess.call(['ffmpeg','-i',video[0],'-ss','00:00:00','-to','00:00:00.4','-c','copy',newvideo])
     newvideo=deeplabcut.ShortenVideo(video[0],start='00:00:00',stop='00:00:00.4',outsuffix='short',outpath=os.path.join(cfg['project_path'],'videos'))
     vname=Path(newvideo).stem
@@ -162,10 +161,9 @@ deeplabcut.auxiliaryfunctions.write_config(posefile,DLC_config)
 print("TRAIN")
 deeplabcut.train_network(path_config_file)
 
-try: #you need ffmpeg command line interface
+try: #you need ffmpeg
     #subprocess.call(['ffmpeg','-i',video[0],'-ss','00:00:00','-to','00:00:00.4','-c','copy',newvideo])
     newvideo2=deeplabcut.ShortenVideo(video[0],start='00:00:00',stop='00:00:00.4',outsuffix='short2',outpath=os.path.join(cfg['project_path'],'videos'))
-
     vname=Path(newvideo2).stem
 except: # if ffmpeg is broken
     vname='brief'
@@ -178,7 +176,6 @@ except: # if ffmpeg is broken
 
     newclip = VideoClip(make_frame, duration=1)
     newclip.write_videofile(newvideo2,fps=30)
-
 
 print("Inference with direct cropping")
 deeplabcut.analyze_videos(path_config_file, [newvideo2], save_as_csv=True, destfolder=dfolder, cropping=[0, 50, 0, 50])
