@@ -1,0 +1,62 @@
+    # Project definitions (do not edit)
+Task: multi
+scorer: dlc
+date: Apr21
+multianimalproject: true
+
+    # Project path (change when moving around)
+project_path: /Users/Jessy/Documents/PycharmProjects/dlcdev/tests/data/multi-dlc-2020-04-21
+
+    # Annotation data set configuration (and individual video cropping parameters)
+video_sets:
+  /Users/Jessy/Documents/PycharmProjects/dlcdev/tests/data/vid1.mov:
+    crop: 0, 832, 0, 747
+individuals:
+- individual1
+- individual2
+- individual3
+uniquebodyparts:
+- cornerofbox
+multianimalbodyparts:
+- bodypart1
+- bodypart2
+- bodypart3
+skeleton:
+- - bodypart1
+  - bodypart2
+- - bodypart2
+  - bodypart3
+bodyparts: MULTI!
+start: 0
+stop: 1
+numframes2pick: 5
+
+    # Plotting configuration
+skeleton_color: black
+pcutoff: 0.6
+dotsize: 12
+alphavalue: 0.7
+colormap: jet
+
+    # Training,Evaluation and Analysis configuration
+TrainingFraction:
+- 0.8
+iteration: 0
+default_net_type: resnet_50
+default_augmenter: multi-animal-imgaug
+snapshotindex: -1
+batch_size: 8
+
+    # Cropping Parameters (for analysis and outlier frame detection)
+cropping: false
+    #if cropping is true for analysis, then set the values here:
+x1: 0
+x2: 640
+y1: 277
+y2: 624
+
+    # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
+corner2move2:
+- 50
+- 50
+move2corner: true

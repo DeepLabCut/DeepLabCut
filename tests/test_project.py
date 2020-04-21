@@ -58,8 +58,8 @@ def test_new_project(tmpdir, videos, copy_videos, multi):
 
 
 @pytest.mark.parametrize('fake_project, videos, copy_videos',
-                         [('project_single', [conftest.videos[1]], False),
-                          ('project_multi', [conftest.videos[1]], True)],
+                         [('project_single', [conftest.videos[0]], False),
+                          ('project_multi', [conftest.videos[0]], True)],
                          indirect=['fake_project'])
 def test_add_videos(fake_project, videos, copy_videos):
     config_path, _ = fake_project

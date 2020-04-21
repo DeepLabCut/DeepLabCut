@@ -1,0 +1,2 @@
+model_checkpoint_path: "/Users/Jessy/Documents/PycharmProjects/dlcdev/tests/data/multi-dlc-2020-04-21/dlc-models/iteration-0/multiApr21-trainset80shuffle1/train/snapshot-5"
+all_model_checkpoint_paths: "/Users/Jessy/Documents/PycharmProjects/dlcdev/tests/data/multi-dlc-2020-04-21/dlc-models/iteration-0/multiApr21-trainset80shuffle1/train/snapshot-5"

@@ -236,7 +236,7 @@ def write_config_3d_template(projconfigfile,cfg_file_3d,ruamelFile_3d):
 def read_plainconfig(configname):
     if not os.path.exists(configname):
         raise FileNotFoundError(
-            'Config file is not found. Please make sure that the file exists.')
+            f'Config {configname} is not found. Please make sure that the file exists.')
     with open(configname) as file:
         return YAML().load(file)
 

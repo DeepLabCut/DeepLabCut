@@ -1,0 +1,56 @@
+    # Project definitions (do not edit)
+Task: single
+scorer: dlc
+date: Apr21
+multianimalproject: false
+
+    # Project path (change when moving around)
+project_path: /Users/Jessy/Documents/PycharmProjects/dlcdev/tests/data/single-dlc-2020-04-21
+
+    # Annotation data set configuration (and individual video cropping parameters)
+video_sets:
+  /Users/Jessy/Documents/PycharmProjects/dlcdev/tests/data/vid1.mov:
+    crop: 0, 832, 0, 747
+bodyparts:
+- bodypart1
+- bodypart2
+- bodypart3
+- objectA
+start: 0
+stop: 1
+numframes2pick: 5
+
+    # Plotting configuration
+skeleton:
+- - bodypart1
+  - bodypart2
+- - objectA
+  - bodypart3
+skeleton_color: black
+pcutoff: 0.6
+dotsize: 12
+alphavalue: 0.7
+colormap: jet
+
+    # Training,Evaluation and Analysis configuration
+TrainingFraction:
+- 0.8
+iteration: 0
+default_net_type: resnet_50
+default_augmenter: default
+snapshotindex: -1
+batch_size: 1
+
+    # Cropping Parameters (for analysis and outlier frame detection)
+cropping: false
+    #if cropping is true for analysis, then set the values here:
+x1: 0
+x2: 640
+y1: 277
+y2: 624
+
+    # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
+corner2move2:
+- 50
+- 50
+move2corner: true

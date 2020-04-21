@@ -1,0 +1,56 @@
+all_joints:
+- - 0
+- - 1
+- - 2
+- - 3
+all_joints_names:
+- bodypart1
+- bodypart2
+- bodypart3
+- cornerofbox
+batch_size: 1
+bottomheight: 400
+crop: true
+cropratio: 0.4
+dataset: training-datasets/iteration-0/UnaugmentedDataSet_multiApr21/multi_dlc80shuffle1.pickle
+dataset_type: multi-animal-imgaug
+display_iters: 1
+global_scale: 0.5
+init_weights: /Users/Jessy/Documents/PycharmProjects/dlcdev/deeplabcut/pose_estimation_tensorflow/models/pretrained/resnet_v1_50.ckpt
+intermediate_supervision: false
+intermediate_supervision_layer: 12
+leftwidth: 400
+location_refinement: true
+locref_huber_loss: true
+locref_loss_weight: 0.05
+locref_stdev: 7.2801
+max_input_size: 1500
+metadataset: training-datasets/iteration-0/UnaugmentedDataSet_multiApr21/Documentation_data-multi_80shuffle1.pickle
+min_input_size: 64
+minsize: 100
+mirror: false
+multi_step:
+- - 0.001
+  - 5
+net_type: resnet_50
+num_joints: 4
+num_limbs: 2
+optimizer: adam
+pafwidth: 20
+pairwise_huber_loss: false
+pairwise_loss_weight: 0.1
+pairwise_predict: false
+partaffinityfield_graph:
+- - 0
+  - 1
+- - 1
+  - 2
+partaffinityfield_predict: true
+pos_dist_thresh: 17
+project_path: /Users/Jessy/Documents/PycharmProjects/dlcdev/tests/data/multi-dlc-2020-04-21
+rightwidth: 400
+save_iters: 5
+scale_jitter_lo: 0.5
+scale_jitter_up: 1.25
+topheight: 400
+weigh_only_present_joints: false
