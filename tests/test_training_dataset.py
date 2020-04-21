@@ -4,11 +4,12 @@ os.environ['DLClight'] = 'True'
 import pandas as pd
 import pytest
 from deeplabcut import create_multianimaltraining_dataset
-from deeplabcut.generate_training_dataset import trainingsetmanipulation, frame_extraction
+from deeplabcut.generate_training_dataset import trainingsetmanipulation, frame_extraction, check_labels
 from deeplabcut.utils.auxiliaryfunctions import read_config, grab_files_in_folder, get_labeled_data_folder
 from deeplabcut.utils import auxfun_models
 from deeplabcut.utils.auxfun_multianimal import extractindividualsandbodyparts
 from tests import conftest
+from skimage import io
 
 
 @pytest.mark.parametrize('fake_project, algo, crop',
@@ -88,3 +89,22 @@ def test_create_training_dataset_multi(mocker, project_multi, network):
 
     mocker.patch.object(auxfun_models, 'Downloadweights', return_value=None)  # Avoid downloading weights
     create_multianimaltraining_dataset(config_path, net_type=network)
+
+
+@pytest.mark.parametrize('fake_project, scale, draw_skeleton, visualizeindividuals',
+                         [('project_single', 1, True, False),
+                          ('project_multi', 0.5, False, True)],
+                         indirect=['fake_project'])
+def test_check_labels(fake_project, scale, draw_skeleton, visualizeindividuals):
+    config_path, tmpdir = fake_project
+    labels = ['+', '.', 'x']
+    check_labels(config_path, labels, scale, draw_skeleton, visualizeindividuals)
+    cfg = read_config(config_path)
+    video = list(cfg['video_sets'])[0]
+    _, width, _, height = list(map(int, cfg['video_sets'][video]['crop'].split(',')))
+    image_folder = get_labeled_data_folder(cfg, video) + '_labeled'
+    images = list(grab_files_in_folder(image_folder, 'png', False))
+    assert len(images) == conftest.NUM_FRAMES
+    image = io.imread(images[0])
+    assert image.shape[0] == int(height * scale)
+    assert image.shape[1] == int(width * scale)
