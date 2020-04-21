@@ -11,7 +11,7 @@ def test_read_config_invalid_path(tmpdir):
         auxiliaryfunctions.read_config(fake_config)
 
 
-def test_write_config(tmpdir, monkeypatch, cfg_single):
+def test_write_config(tmpdir, cfg_single):
     output_path = tmpdir.join('config.yaml')
     cfg_single.pop('project_path')
     cfg_single.pop('skeleton')

@@ -193,7 +193,8 @@ def extract_frames(config, mode='automatic', algo='kmeans', crop=False, userfeed
 
                 if output_path.exists():
                     if len(os.listdir(output_path)):
-                        askuser = input("The directory already contains some frames. Do you want to add to it?(yes/no): ")
+                        if userfeedback:
+                            askuser = input("The directory already contains some frames. Do you want to add to it?(yes/no): ")
                         if not (askuser == 'y' or askuser == 'yes' or askuser == 'Y' or askuser == 'Yes'):
                             sys.exit("Delete the frames and try again later!")
 

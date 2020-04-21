@@ -77,9 +77,9 @@ def test_add_videos(fake_project, videos, copy_videos):
 @pytest.mark.parametrize('fake_project', ['project_single', 'project_multi'],
                          indirect=['fake_project'])
 def test_add_videos_corrupted(capsys, fake_project):
-    config_path, tmpdir = fake_project
-    empty_dir = tmpdir.mkdir('empty')
-    fake_vid = empty_dir.join('fake.avi')
+    config_path, folder = fake_project
+    empty_dir = folder.mktemp('empty')
+    fake_vid = empty_dir / 'fake.avi'
     add_new_videos(config_path, [fake_vid])
     out, _ = capsys.readouterr()
     assert 'Cannot open' in out

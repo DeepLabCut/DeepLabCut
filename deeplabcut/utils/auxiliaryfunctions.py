@@ -385,6 +385,10 @@ def IntersectionofBodyPartsandOnesGivenbyUser(cfg,comparisonbodyparts):
                 cpbpts.append(bp)
         return cpbpts
 
+def get_labeled_data_folder(cfg, video):
+    videoname = os.path.splitext(os.path.basename(video))[0]
+    return os.path.join(cfg['project_path'], 'labeled-data', videoname)
+
 def form_data_containers(df, bodyparts):
     mask = df.columns.get_level_values('bodyparts').isin(bodyparts)
     df_masked = df.loc[:, mask]
