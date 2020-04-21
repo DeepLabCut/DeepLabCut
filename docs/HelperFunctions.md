@@ -73,5 +73,11 @@ deeplabcut.load_demo_data
 deeplabcut.merge_datasets
 ```
 
+### New: model export function:
 
+This function allows you to export a well-trained model for real-time applications, etc. 
+
+```python
+deeplabcut.model_export(cfg_path, iteration=None, shuffle=1, trainingsetindex=0, TFGPUinference=True, overwrite=False, make_tar=True)
+```
 
