@@ -5,14 +5,14 @@ from deeplabcut.utils import auxiliaryfunctions
 from tests import conftest
 
 
-def test_read_config_invalid_path(tmpdir):
-    fake_config = tmpdir.join('fake_config.yaml')
+def test_read_config_invalid_path(tmp_path):
+    fake_config = str(tmp_path / 'fake_config.yaml')
     with pytest.raises(FileNotFoundError):
         auxiliaryfunctions.read_config(fake_config)
 
 
-def test_write_config(tmpdir, cfg_single):
-    output_path = tmpdir.join('config.yaml')
+def test_write_config(tmp_path, cfg_single):
+    output_path = str(tmp_path / 'config.yaml')
     cfg_single.pop('project_path')
     cfg_single.pop('skeleton')
     auxiliaryfunctions.write_config(output_path, cfg_single)
@@ -22,15 +22,15 @@ def test_write_config(tmpdir, cfg_single):
     assert cfg['project_path'] is None
 
 
-def test_edit_config(tmpdir):
+def test_edit_config(tmp_path):
     config_path = conftest.SINGLE_CONFIG_PATH
-    output_path = tmpdir.join('config.yaml')
+    output_path = str(tmp_path / 'config.yaml')
     edits = {'project_path': 'nowhere',
              'new_key': 'new_value',
              'numframes2pick': 4,
              'TrainingFraction': [0.8],
              'multianimalproject': True}
-    auxiliaryfunctions.edit_config(config_path, edits, output_path)
+    auxiliaryfunctions.edit_config(config_path, edits, str(output_path))
     cfg = auxiliaryfunctions.read_config(output_path)
     assert all(cfg[k] == v for k, v in edits.items())
 
@@ -67,25 +67,25 @@ def test_intersection_bodyparts(cfg_single, cfg_multi):
 
 
 @pytest.mark.parametrize('suffix', ['_meta', 'includingmetadata'])
-def test_find_video_metadata(tmpdir, mocker, suffix):
+def test_find_video_metadata(tmp_path, mocker, suffix):
     videoname = 'vid'
     scorer = 'DLCscorer'
     file = f'{videoname}{scorer}{suffix}.pickle'
     mocker.patch.object(auxiliaryfunctions, 'grab_files_in_folder', return_value=[file])
-    meta = auxiliaryfunctions.find_video_metadata(tmpdir, videoname, scorer)
-    assert meta == tmpdir.join(file)
+    meta = auxiliaryfunctions.find_video_metadata(str(tmp_path), videoname, scorer)
+    assert meta == str(tmp_path / file)
 
 
-def test_find_video_metadata_not_found(tmpdir):
+def test_find_video_metadata_not_found(tmp_path):
     with pytest.raises(FileNotFoundError):
-        _ = auxiliaryfunctions.load_video_metadata(tmpdir, '', '')
+        _ = auxiliaryfunctions.load_video_metadata(str(tmp_path), '', '')
 
 
 @pytest.mark.parametrize('filtered, track_method',
                          [(False, ''), (True, ''),
                           (False, 'box'), (True, 'box'),
                           (False, 'skeleton'), (True, 'skeleton')])
-def test_find_analyzed_data(tmpdir, capsys, mocker, filtered, track_method):
+def test_find_analyzed_data(tmp_path, capsys, mocker, filtered, track_method):
     videoname = 'vid'
     scorer = 'DLCscorer'
     files = [f'{videoname}{scorer}.h5',
@@ -95,7 +95,7 @@ def test_find_analyzed_data(tmpdir, capsys, mocker, filtered, track_method):
              f'{videoname}{scorer}_sk.h5',
              f'{videoname}{scorer}_sk_filtered.h5']
     mocker.patch.object(auxiliaryfunctions, 'grab_files_in_folder', return_value=files)
-    filepath, scorer_found, suffix_found = auxiliaryfunctions.find_analyzed_data(tmpdir, videoname, scorer,
+    filepath, scorer_found, suffix_found = auxiliaryfunctions.find_analyzed_data(str(tmp_path), videoname, scorer,
                                                                                  filtered, track_method)
     tracker = ''
     if track_method == 'skeleton':
@@ -103,14 +103,14 @@ def test_find_analyzed_data(tmpdir, capsys, mocker, filtered, track_method):
     elif track_method == 'box':
         tracker = '_bx'
     suffix = '_filtered' if filtered else ''
-    assert filepath == tmpdir.join(f'{videoname}{scorer}{tracker}{suffix}.h5')
+    assert filepath == str(tmp_path / f'{videoname}{scorer}{tracker}{suffix}.h5')
     assert scorer_found == scorer
     assert suffix_found == suffix
 
 
 @pytest.mark.parametrize('filtered, track_method',
                          [(True, ''), (True, 'box'), (False, 'skeleton')])
-def test_find_analyzed_data_not_found(tmpdir, mocker, filtered, track_method):
+def test_find_analyzed_data_not_found(tmp_path, mocker, filtered, track_method):
     videoname = 'vid'
     scorer = 'DLCscorer'
     # Let us try to fool the data finder
@@ -119,5 +119,5 @@ def test_find_analyzed_data_not_found(tmpdir, mocker, filtered, track_method):
              f'{videoname}{scorer}_sk_filtered.h5']
     mocker.patch.object(auxiliaryfunctions, 'grab_files_in_folder', return_value=files)
     with pytest.raises(FileNotFoundError):
-        _ = auxiliaryfunctions.find_analyzed_data(tmpdir, videoname, scorer,
+        _ = auxiliaryfunctions.find_analyzed_data(tmp_path, videoname, scorer,
                                                   filtered, track_method)

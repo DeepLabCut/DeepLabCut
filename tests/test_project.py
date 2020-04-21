@@ -7,19 +7,19 @@ from tests import conftest
 
 
 @pytest.fixture()
-def empty_project_single(tmpdir):
+def empty_project_single(tmp_path):
     project = 'single'
     experimenter = 'dlc'
-    config_path = create_new_project(project, experimenter, [], tmpdir)
-    return config_path, tmpdir
+    config_path = create_new_project(project, experimenter, [], str(tmp_path))
+    return config_path, tmp_path
 
 
 @pytest.fixture()
-def empty_project_multi(tmpdir):
+def empty_project_multi(tmp_path):
     project = 'multi'
     experimenter = 'dlc'
-    config_path = create_new_project(project, experimenter, [], tmpdir, multianimal=True)
-    return config_path, tmpdir
+    config_path = create_new_project(project, experimenter, [], str(tmp_path), multianimal=True)
+    return config_path, tmp_path
 
 
 # Hacky solution to pass fixtures to 'parametrize'
