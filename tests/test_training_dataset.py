@@ -24,7 +24,12 @@ def test_extract_frames(fake_project, algo, crop):
     assert len(list(grab_files_in_folder(image_folder, 'png'))) == cfg['numframes2pick']
 
 
-def test_create_training_dataset(project_single):
+@pytest.mark.parametrize('network, aug',
+                         [('resnet_50', 'default'),
+                          ('resnet_101', 'imgaug'),
+                          ('mobilenet_v2_1.0', 'tensorpack'),
+                          ('mobilenet_v2_0.35', 'deterministic')])
+def test_create_training_dataset(mocker, project_single, network, aug):
     config_path, tmpdir = project_single
 
     # Add artificial data
@@ -46,8 +51,10 @@ def test_create_training_dataset(project_single):
     train_inds, test_inds = zip(*[trainingsetmanipulation.SplitTrials(range(conftest.NUM_FRAMES), frac)
                                   for frac in fracs])
     shuffles = [1] * len(fracs)
+    mocker.patch.object(auxfun_models, 'Downloadweights', return_value=None)  # Avoid downloading weights
     splits = trainingsetmanipulation.create_training_dataset(config_path, Shuffles=shuffles,
-                                                             trainIndexes=train_inds, testIndexes=test_inds)
+                                                             trainIndexes=train_inds, testIndexes=test_inds,
+                                                             net_type=network, augmenter_type=aug)
     actual_fracs = [split[0] for split in splits]
     np.testing.assert_array_almost_equal(fracs, actual_fracs, decimal=1)
 
