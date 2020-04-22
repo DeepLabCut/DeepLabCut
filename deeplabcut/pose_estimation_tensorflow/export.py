@@ -208,22 +208,20 @@ def tf_to_pb(sess, checkpoint, output, output_dir=None):
                               initializer_nodes='')
 
 
-def export_model(cfg_path, iteration=None, shuffle=1, trainingsetindex=0, snapshotindex=None, TFGPUinference=True, overwrite=False, make_tar=True):
+def export_model(cfg_path, shuffle=1, trainingsetindex=0, snapshotindex=None,
+                iteration=None, TFGPUinference=True, overwrite=False, make_tar=True):
     '''
 
-    Export DLC models for the model zoo or for live inference.
-    Saves the pose configuration, snapshot files, and frozen graph of the model to
-        a directory named exported-models within the project directory
+    Export DeepLabCut models for the model zoo or for live inference.
+
+    Saves the pose configuration, snapshot files, and frozen TF graph of the model to
+    directory named exported-models within the project directory
 
     Parameters
     -----------
 
     cfg_path : string
         path to the DLC Project config.yaml file
-
-    iteration : int, optional
-        the model iteration you wish to export.
-        If None, uses the iteration listed in the config file
 
     shuffle : int, optional
         the shuffle of the model to export. default = 1
@@ -232,7 +230,12 @@ def export_model(cfg_path, iteration=None, shuffle=1, trainingsetindex=0, snapsh
         the index of the training fraction for the model you wish to export. default = 1
 
     snapshotindex : int, optional
-        the snapshot index for the weights you wish to export. If None, uses the snapshotindex as defined in 'config.yaml'. Default = None
+        the snapshot index for the weights you wish to export. If None,
+        uses the snapshotindex as defined in 'config.yaml'. Default = None
+
+    iteration : int, optional
+        The model iteration (active learning loop) you wish to export. If None,
+        the iteration listed in the config file is used.
 
     TFGPUinference : bool, optional
         use the tensorflow inference model? Default = True
@@ -244,6 +247,12 @@ def export_model(cfg_path, iteration=None, shuffle=1, trainingsetindex=0, snapsh
     make_tar : bool, optional
         Do you want to compress the exported directory to a tar file? Default = True
         This is necessary to export to the model zoo, but not for live inference.
+
+    Example:
+    --------
+    Export the first stored snapshot for model trained with shuffle 3:
+    >>> deeplabcut.export_model('/analysis/project/reaching-task/config.yaml',shuffle=3, snapshotindex=-1)
+    --------
     '''
 
     ### read config file
