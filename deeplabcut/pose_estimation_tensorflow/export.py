@@ -127,7 +127,7 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True):
       raise FileNotFoundError("Snapshots not found! It seems the dataset for shuffle %s has not been trained/does not exist.\n Please train it before trying to export.\n Use the function 'train_network' to train the network for shuffle %s."%(shuffle,shuffle))
 
     if len(Snapshots) == 0:
-        raise FileNotFoundError("The train folder for iteration %s and shuffle %s exists, but no snapshots were found.\n Please train this model before trying to export.\n Use the function 'train_network' to train the network for iteration %s shuffle %s." %(iteration, shuffle, iteration, shuffle))
+        raise FileNotFoundError("The train folder for iteration %s and shuffle %s exists, but no snapshots were found.\n Please train this model before trying to export.\n Use the function 'train_network' to train the network for iteration %s shuffle %s." %(cfg['iteration'], shuffle, cfg['iteration'], shuffle))
 
     if cfg['snapshotindex'] == 'all':
         print("Snapshotindex is set to 'all' in the config.yaml file. Running video analysis with all snapshots is very costly! Use the function 'evaluate_network' to choose the best the snapshot. For now, changing snapshot index to -1!")
