@@ -127,7 +127,7 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True):
       raise FileNotFoundError("Snapshots not found! It seems the dataset for shuffle %s has not been trained/does not exist.\n Please train it before trying to export.\n Use the function 'train_network' to train the network for shuffle %s."%(shuffle,shuffle))
 
     if len(Snapshots) == 0:
-        raise FileNotFoundError("The train folder for iteration %s and shuffle %s exists, but no snapshots were found.\n Please train this model before trying to export.\n Use the function 'train_network' to train the network for iteration %s shuffle %s."%(iteration, shuffle, iteration, shuffle)")
+        raise FileNotFoundError("The train folder for iteration %s and shuffle %s exists, but no snapshots were found.\n Please train this model before trying to export.\n Use the function 'train_network' to train the network for iteration %s shuffle %s." %(iteration, shuffle, iteration, shuffle))
 
     if cfg['snapshotindex'] == 'all':
         print("Snapshotindex is set to 'all' in the config.yaml file. Running video analysis with all snapshots is very costly! Use the function 'evaluate_network' to choose the best the snapshot. For now, changing snapshot index to -1!")
@@ -270,7 +270,7 @@ def export_model(cfg_path, iteration=None, shuffle=1, trainingsetindex=0, snapsh
     if not os.path.isdir(export_dir):
         os.mkdir(export_dir)
 
-    sub_dir_name = 'DLC_%s_%s' % (cfg['Task'], dlc_cfg['net_type'])
+    sub_dir_name = 'DLC_%s_%s_iteration-%d_shuffle-%d' % (cfg['Task'], dlc_cfg['net_type'], cfg['iteration'], shuffle)
     full_export_dir = os.path.normpath(export_dir + '/' + sub_dir_name)
 
     if os.path.isdir(full_export_dir):
