@@ -415,3 +415,79 @@ def plot_trajectories(_,*args,**kwargs):
     plotting.plot_trajectories(*args, **kwargs)
 
 ###########################################################################################################################
+@main.command(context_settings=CONTEXT_SETTINGS)
+@click.argument('cfg-path', nargs=1, type=click.STRING)
+@click.option('-i', '--iteration', 'iteration',
+                default = None,
+                required = False,
+                type = int,
+                help = 'the model iteration you wish to export. If None, uses the iteration listed in the config file')
+@click.option('-s', '--shuffle', 'shuffle',
+              default = 1,
+              required = False,
+              type = int,
+              help = 'the shuffle of the model to export. Default is set to 1.')
+@click.option('-t', '--trainingsetindex', 'trainingsetindex',
+              default = 0,
+              required = False,
+              type = int,
+              help = 'the index of the training fraction for the model you wish to export. default = 0')
+@click.option('-n', '--snapshotindex', 'snapshotindex',
+              default = None,
+              required = False,
+              type = int,
+              help = 'the snapshot index for the weights you wish to export')
+@click.option('--TFGPUinference/--NPinference', 'TFGPUinference',
+              default = True,
+              required = False,
+              help = 'use the tensorflow inference model? Default = True')
+@click.option('--overwrite', '-o',
+              is_flag = True,
+              required = False,
+              help = 'if the model you wish to export has already been exported, whether to overwrite. default = False')
+@click.option('--make-tar/--no-tar', 'make_tar',
+              default = True,
+              required = False,
+              help = 'Do you want to compress the exported directory to a tar file? Default = True')
+@click.pass_context
+def export_model(_, *args, **kwargs):
+    """
+    Export DLC models for the model zoo or for live inference.\n
+    Saves the pose configuration, snapshot files, and frozen graph of the model to a directory named exported-models within the project directory
+
+    Parameters
+    -----------
+
+    cfg_path : string\n
+    \tpath to the DLC Project config.yaml file
+
+    iteration : int, optional\n
+    \tthe model iteration you wish to export.\n
+    \tIf None, uses the iteration listed in the config file
+
+    shuffle : int, optional\n
+    \tthe shuffle of the model to export. default = 1
+
+    trainingsetindex : int, optional\n
+    \tthe index of the training fraction for the model you wish to export. default = 1
+
+    snapshotindex : int, optional\n
+    \tthe snapshot index for the weights you wish to export.\n
+    \tIf None, uses the snapshotindex as defined in 'config.yaml'. Default = None
+
+    TFGPUinference : bool, optional\n
+    \tuse the tensorflow inference model? Default = True\n
+    \tFor inference using DeepLabCut-live, it is recommended to set TFGPIinference=False
+
+    overwrite : bool, optional\n
+    \tif the model you wish to export has already been exported, whether to overwrite. default = False
+
+    make_tar : bool, optional\n
+    \tDo you want to compress the exported directory to a tar file? Default = True\n
+    \tThis is necessary to export to the model zoo, but not for live inference.
+    """
+
+    from deeplabcut import export_model
+    export_model(*args, **kwargs)
+
+###########################################################################################################################

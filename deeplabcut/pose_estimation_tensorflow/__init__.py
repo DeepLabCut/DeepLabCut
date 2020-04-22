@@ -16,6 +16,7 @@ from deeplabcut.pose_estimation_tensorflow.util import *
 from deeplabcut.pose_estimation_tensorflow.config import *
 from deeplabcut.pose_estimation_tensorflow.default_config import *
 from deeplabcut.pose_estimation_tensorflow.evaluate import *
+from deeplabcut.pose_estimation_tensorflow.export import *
 from deeplabcut.pose_estimation_tensorflow.predict_videos import *
 from deeplabcut.pose_estimation_tensorflow.test import *
 from deeplabcut.pose_estimation_tensorflow.train import *
