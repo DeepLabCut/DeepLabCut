@@ -115,10 +115,17 @@ for shuffle, shuffleval in enumerate(Shuffles):
     numanimals=len(individuals)-1*(len(uniquebodyparts)>0) #number of individuals in ground truth (excluding single!)
     nummultianimalparts=len(cfg['multianimalbodyparts'])
 
-    
-imgid=33
-#for imgid in tqdm(range(numimages)):
-if imgid ==33:
+    len(individuals)
+
+    ResultsUBPTs=np.zeros((numuniquebodyparts*3,numimages))*np.nan #TODO assign for example with uniquepbt
+
+    macolumnindex = pd.MultiIndex.from_product([numanimals-int(numuniquebodyparts>0), cfg['multianimalbodyparts'], ['x', 'y','likelihood']],names=['individuals','bodyparts', 'coords'])
+    ResultsMAPTS=np.zeros((nummultianimalparts*3, numanimals-int(numuniquebodyparts>0),numimages))*np.nan
+
+    ## for pandas array to hold individually detected subsets
+    bodyparts=[all_jointnames[i] for i in BPTS]
+    elements=3 * numjoints
+    for imgid in tqdm(range(numimages)):
         imname=imnames[imgid]
         detectedcoordinates = data[imname]['prediction']['coordinates'][0]
         detectedlikelihood = data[imname]['prediction']['confidence']
@@ -132,46 +139,57 @@ if imgid ==33:
         subsets, candidate = inferenceutils.linkjoints2individuals(inferencecfg, all_detections, connection_all, missing_connections,
                                                     partaffinityfield_graph, iBPTS, numjoints=numjoints,log=False)
 
+        detectedindividuals=[str(j) for j in range(len(subsets))]
+        detections = np.zeros((1, elements*len(detectedindividuals))) * np.nan
+        #recode the data into a pandas array
+        for sj, subset in enumerate(subsets):
+            if subset is not None:
+                for i in range(numjoints):  # number of joints
+                    ind = int(subset[i])  # bpt index in global coordinates
+                    if -1 == ind:  # not assigned
+                        continue
+                    else:  # xyl=np.ones(3)*np.nan
+                        detections[0, elements*sj + 3 * i: elements*sj + 3 * i + 3] = candidate[ind, :3]
 
-bodyparts=[all_jointnames[i] for i in BPTS]
-detectedindividuals=[str(j) for j in range(len(subsets))]
-columnindex = pd.MultiIndex.from_product([detectedindividuals, bodyparts, ['x', 'y','likelihood']],names=['individuals','bodyparts', 'coords'])
+        if len(subsets)>0:
+            columnindex = pd.MultiIndex.from_product([detectedindividuals, bodyparts, ['x', 'y','likelihood']],names=['individuals','bodyparts', 'coords'])
+            DF=pd.DataFrame(detections, columns=columnindex, index=[imname])
 
-elements=3 * numjoints
-detections = np.zeros((1, elements*len(detectedindividuals))) * np.nan
-#recode the data into a pandas array
-for sj, subset in enumerate(subsets):
-    if subset is not None:
-            for i in range(numjoints):  # number of joints
-                ind = int(subset[i])  # bpt index in global coordinates
-                if -1 == ind:  # not assigned
-                    continue
-                else:  # xyl=np.ones(3)*np.nan
-                    detections[0, elements*sj + 3 * i: elements*sj + 3 * i + 3] = candidate[ind, :3]
+            # calc. distance for each detection and ground truth pose
+            mat = np.zeros((len(individuals),len(detectedindividuals)))+np.inf
+            for i, individual in enumerate(individuals):
+                for j, ind in enumerate(detectedindividuals):
+                    rmse = metric(GT[cfg['scorer']][individual], DF[ind])
+                    if np.isfinite(rmse):
+                        mat[i, j] = rmse #rmse 
+                    
 
-if sj>0:
-    DF=pd.DataFrame(detections, columns=columnindex, index=[imname])
+            # find least cost assignment
+            row_indices, col_indices = linear_sum_assignment(mat)
+            #for i, individual in enumerate(individuals): 
+            #    #match=detectedindividuals[col_indices[i]]
+            for posi,i in enumerate(row_indices):
+                ResultsMAPTS[:,i,imgid]=DF[str(col_indices[posi])].values.flatten()
 
-
-mat=np.zeros((len(individuals),len(detectedindividuals)))*np.nan
-# distance for each detection and ground truth pose
-for i, individual in enumerate(individuals):
-    for j, ind in enumerate(detectedindividuals):
-        rmse = metric(GT[cfg['scorer']][individual], DF[ind])
-
-        mat[i, j] = rmse #rmse 
-
-row_indices, col_indices = linear_sum_assignment(mat)
-
-columnindex = pd.MultiIndex.from_product([individuals, ['rmse', 'f1','likelihood']],names=['individuals','metrics'])
+    #if nec. stack the single animal stuff!
+    #ResultsMAPTS.reshape(-1,numimages)
+    #Data=pd.DataFrame(ResultsMAPTS.reshape(-1,numimages).T, columns=macolumnindex, index=Data.index)
 
 #DF=pd.DataFrame(detections, columns=columnindex, index=[imname])
+#for i, individual in enumerate(individuals): 
+#    match=detectedindividuals[col_indices[i]]
+'''    
+#columnindex = pd.MultiIndex.from_product([individuals, ['rmse', 'f1','likelihood']],names=['individuals','metrics'])
 
 #calculate metrics for the matches:
-for i, individual in enumerate(individuals): 
-    match=detectedindividuals[col_indices[i]]
-    
-    df,dg=GT[cfg['scorer']][individual], DF[str(col_indices[i])]
+#for i, individual in enumerate(individuals): 
+#    #match=detectedindividuals[col_indices[i]]
+#    ResultsMAPTS[:,i,]=DF[str(col_indices[i])].values.flatten()
+
+    #df,dg=GT[cfg['scorer']][individual], DF[str(col_indices[i])]
     rmse = mat[i, col_indices[i]]
+    ResultsMAPTS
+    #ResultsUBPTs # how did you set those?
 
     #closest distance! rmse!
+'''
