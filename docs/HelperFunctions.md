@@ -73,7 +73,7 @@ deeplabcut.load_demo_data
 
 deeplabcut.merge_datasets
 
-deeplabcut.model_export
+deeplabcut.export_model
 
 ```
 
@@ -84,6 +84,6 @@ This function allows you to export a well-trained model for real-time applicatio
 - One such example use case is with the [Bonsai-DeepLabCut](https://github.com/bonsai-rx/deeplabcut) plug in. Namely, you need to first export your trained model from DLC, then follow the instructions for Bonsai-specific use.
 
 ```python
-deeplabcut.model_export(cfg_path, iteration=None, shuffle=1, trainingsetindex=0, TFGPUinference=True, overwrite=False, make_tar=True)
+deeplabcut.export_model(cfg_path, iteration=None, shuffle=1, trainingsetindex=0, snapshotindex=None, TFGPUinference=True, overwrite=False, make_tar=True)
 ```
 
