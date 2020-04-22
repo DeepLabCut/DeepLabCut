@@ -122,9 +122,12 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True):
 
     # Check which snapshots are available and sort them by # iterations
     try:
-      Snapshots = np.array([fn.split('.')[0]for fn in os.listdir(os.path.join(model_folder , 'train'))if "index" in fn])
+      Snapshots = np.array([fn.split('.')[0] for fn in os.listdir(os.path.join(model_folder , 'train')) if "index" in fn])
     except FileNotFoundError:
-      raise FileNotFoundError("Snapshots not found! It seems the dataset for shuffle %s has not been trained/does not exist.\n Please train it before using it to analyze videos.\n Use the function 'train_network' to train the network for shuffle %s."%(shuffle,shuffle))
+      raise FileNotFoundError("Snapshots not found! It seems the dataset for shuffle %s has not been trained/does not exist.\n Please train it before trying to export.\n Use the function 'train_network' to train the network for shuffle %s."%(shuffle,shuffle))
+
+    if len(Snapshots) == 0:
+        raise FileNotFoundError("The train folder for iteration %s and shuffle %s exists, but no snapshots were found.\n Please train this model before trying to export.\n Use the function 'train_network' to train the network for iteration %s shuffle %s."%(iteration, shuffle, iteration, shuffle)")
 
     if cfg['snapshotindex'] == 'all':
         print("Snapshotindex is set to 'all' in the config.yaml file. Running video analysis with all snapshots is very costly! Use the function 'evaluate_network' to choose the best the snapshot. For now, changing snapshot index to -1!")
@@ -132,13 +135,8 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True):
     else:
         snapshotindex = cfg['snapshotindex']
 
-    try:
-        increasing_indices = np.argsort([int(m.split('-')[1]) for m in Snapshots])
-        Snapshots = Snapshots[increasing_indices]
-    except Exception:
-        Snapshots = np.array([s for s in Snapshots if 'snapshot' in s])
-        increasing_indices = np.argsort([int(m.replace('snapshot-', '')) for m in Snapshots])
-        Snapshots = Snapshots[increasing_indices]
+    increasing_indices = np.argsort([int(m.split('-')[1]) for m in Snapshots])
+    Snapshots = Snapshots[increasing_indices]
 
     ####################################
     ### Load and setup CNN part detector
