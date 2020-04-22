@@ -432,6 +432,11 @@ def plot_trajectories(_,*args,**kwargs):
               required = False,
               type = int,
               help = 'the index of the training fraction for the model you wish to export. default = 0')
+@click.option('-n', '--snapshotindex', 'snapshotindex',
+              default = None,
+              required = False,
+              type = int,
+              help = 'the snapshot index for the weights you wish to export')
 @click.option('--TFGPUinference/--NPinference', 'TFGPUinference',
               default = True,
               required = False,
@@ -465,6 +470,10 @@ def export_model(_, *args, **kwargs):
 
     trainingsetindex : int, optional\n
     \tthe index of the training fraction for the model you wish to export. default = 1
+
+    snapshotindex : int, optional\n
+    \tthe snapshot index for the weights you wish to export.\n
+    \tIf None, uses the snapshotindex as defined in 'config.yaml'. Default = None
 
     TFGPUinference : bool, optional\n
     \tuse the tensorflow inference model? Default = True\n

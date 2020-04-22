@@ -143,7 +143,6 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True):
     dlc_cfg['init_weights'] = os.path.join(model_folder, 'train', Snapshots[snapshotindex])
     trainingsiterations = (dlc_cfg['init_weights'].split(os.sep)[-1]).split('-')[-1]
     dlc_cfg['num_outputs'] = cfg.get('num_outputs', dlc_cfg.get('num_outputs', 1))
-    #dlc_cfg['batch_size'] = cfg['batch_size']
     dlc_cfg['batch_size'] = None
 
     # load network
@@ -206,7 +205,7 @@ def tf_to_pb(sess, checkpoint, output, output_dir=None):
                               initializer_nodes='')
 
 
-def export_model(cfg_path, iteration=None, shuffle=1, trainingsetindex=0, TFGPUinference=True, overwrite=False, make_tar=True):
+def export_model(cfg_path, iteration=None, shuffle=1, trainingsetindex=0, snapshotindex=None, TFGPUinference=True, overwrite=False, make_tar=True):
     '''
 
     Export DLC models for the model zoo or for live inference.
@@ -228,6 +227,9 @@ def export_model(cfg_path, iteration=None, shuffle=1, trainingsetindex=0, TFGPUi
 
     trainingsetindex : int, optional
         the index of the training fraction for the model you wish to export. default = 1
+
+    snapshotindex : int, optional
+        the snapshot index for the weights you wish to export. If None, uses the snapshotindex as defined in 'config.yaml'. Default = None
 
     TFGPUinference : bool, optional
         use the tensorflow inference model? Default = True
@@ -251,6 +253,7 @@ def export_model(cfg_path, iteration=None, shuffle=1, trainingsetindex=0, TFGPUi
     cfg['project_path'] = os.path.dirname(os.path.realpath(cfg_path))
     cfg['iteration'] = iteration if iteration is not None else cfg['iteration']
     cfg['batch_size'] = cfg['batch_size'] if cfg['batch_size'] > 1 else 2
+    cfg['snapshotindex'] = snapshotindex if snapshotindex is not None else cfg['snapshotindex']
 
     ### load model
 
