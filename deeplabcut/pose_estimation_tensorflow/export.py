@@ -87,7 +87,7 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True):
     Parameters:
     -----------
     cfg : dict
-        Configuration read from the project's cfg.yaml file
+        Configuration read from the project's main config.yaml file
 
     shuffle : int, optional
         which shuffle to use
@@ -130,7 +130,7 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True):
         raise FileNotFoundError("The train folder for iteration %s and shuffle %s exists, but no snapshots were found.\n Please train this model before trying to export.\n Use the function 'train_network' to train the network for iteration %s shuffle %s." %(cfg['iteration'], shuffle, cfg['iteration'], shuffle))
 
     if cfg['snapshotindex'] == 'all':
-        print("Snapshotindex is set to 'all' in the config.yaml file. Running video analysis with all snapshots is very costly! Use the function 'evaluate_network' to choose the best the snapshot. For now, changing snapshot index to -1!")
+        print("Snapshotindex is set to 'all' in the config.yaml file. Changing snapshot index to -1!")
         snapshotindex = -1
     else:
         snapshotindex = cfg['snapshotindex']
@@ -168,7 +168,7 @@ def tf_to_pb(sess, checkpoint, output, output_dir=None):
     '''
 
     Saves a frozen tensorflow graph (a protobuf file).
-    See https://leimao.github.io/blog/Save-Load-Inference-From-TF-Frozen-Graph/
+    See also https://leimao.github.io/blog/Save-Load-Inference-From-TF-Frozen-Graph/
 
     Parameters
     ----------
