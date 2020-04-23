@@ -16,18 +16,20 @@
  
  - **a set of videos that span the types of behaviors you want to track.** Having 10 videos that include different backgrounds, different individuals, and different postures is MUCH better than 1 or 2 videos of 1 or 2 different indivduals (i.e. 10-20 frames from each of 10 videos is **much better** than 50-100 frames from 2 videos).
  
- - **a computer.** If you want to use DeepLabCut on your own computer for many experiments, then you should get an NVIDIA GPU. See technical specs [here](https://github.com/AlexEMG/DeepLabCut/wiki/FAQ). In the short term, or for testing out our software you can run short demos on COLAB ([see how](https://github.com/AlexEMG/DeepLabCut/blob/master/examples/README.md)), or on your CPU.
+ - **minimally, a computer w/a CPU.** If you want to use DeepLabCut on your own computer for many experiments, then you should get an NVIDIA GPU. See technical specs [here](https://github.com/AlexEMG/DeepLabCut/wiki/FAQ). You can also use cloud computing resources, including COLAB ([see how](https://github.com/AlexEMG/DeepLabCut/blob/master/examples/README.md)).
  
  
  ### What you DON'T need to get started:
  
- - no specific cameras are required; color, monochrome, etc is all fine. If you can see what you want to measure, then this will work for you (given enough labeled-data).
+ - no specific cameras/videos are required; color, monochrome, etc is all fine. If you can see what you want to measure, then this will work for you (given enough labeled-data).
  
  - no specific computer is required (but see recommendations above), our software works on Linux, Windows, and MacOS, although we recommend Ubuntu. 
  
 ## HOW-TO-GUIDES:
 
 **Overview: DeepLabCut** is a software package for markerless pose estimation of animals performing various tasks. The software can manage multiple projects for various tasks. Each project is identified by the name of the project (e.g. TheBehavior), name of the experimenter (e.g. YourName), as well as the date at creation. This project folder holds a ``config.yaml`` (a text document) file containing various (project) parameters as well as links the data of the project.
+
+**We also have structured a getting started with DeepLabCut course [here](https://github.com/DeepLabCut/DeepLabCut-Workshop-Materials/blob/master/summer_course2020.md)**
 
 <p align="center">
 <img src=   https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572293604382-W6BWA63LZ9J8R7N0QEA5/ke17ZwdGBToddI8pDm48kIw6YkRUEyoge4858uAJfaMUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYwL8IeDg6_3B-BRuF4nNrNcQkVuAT7tdErd0wQFEGFSnH9wUPiI8bGoX-EQadkbLIJwhzjIpw393-uEwSKO7VZIL9gN_Sb5I_dLwvWryjeCJg/dlc_overview-01.png?format=1000w width="80%">
@@ -39,7 +41,7 @@ You can have as many projects on your computer as you wish. You can have DeepLab
 <img src=  https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559758477126-B9PU1EFA7L7L1I24Z2EH/ke17ZwdGBToddI8pDm48kH6mtUjqMdETiS6k4kEkCoR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UQf4d-kVja3vCG3Q_2S8RPAcZTZ9JxgjXkf3-Un9aT84H3bqxw7fF48mhrq5Ulr0Hg/howtouseDLC2d_3d-01.png?format=500w width="60%">
  </p>
 
-**Coming soon:** as of 2.2 we support multi-animal projects. The workflow is highly similar, but with some key steps that differ. Please carefully review the functions below for more details. You can search/look for **maDeepLabCut** for specific steps that are changed. But until the package (2.2) is released, these steps are not functional.
+**Coming soon:** as of 2.2 we support multi-animal projects. The workflow is highly similar, but with some key steps that differ. Please carefully review the functions below for more details. You can search/look for **maDeepLabCut** for specific steps that are changed.
 
 As of 2.1+ we support a full [Project Manager GUI](/docs/PROJECT_GUI.md) to run the software. As of 2.0.7+ we support 3D analysis directly inside our package. Please see the [3D details here](/docs/Overviewof3D.md). 
 
@@ -230,15 +232,14 @@ First, you need to convert detections to tracklets. This step have several track
 
 ```python
 deeplabcut.convert_detections2tracklets(path_config_file, [videofile_path], videotype='mp4',
-                                                    shuffle=1, trainingsetindex=0, track_method=' ')
+                                                    shuffle=1, trainingsetindex=0, track_method='')
 ```
 
-Secondly, you have the option to refine the tracklets. If there are both "major" ID swaps, i.e. perhaps when animals cross, or micro-refine the individual body points. You will load the ...trackle.pickle file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an .h5 file (akind to what you might be used to from standard DLC. You can also load this to refine (again) incase you find another issue, etc. 
+Secondly, you have the option to refine the tracklets. If there are both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akind to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc! 
 
 ```python
-deeplabcut.WIP
+deeplabcut.refine_tracklets(path_config_file, pickle_or_h5_file, videofile_path, min_swap_frac=0.0, min_tracklet_frac=0.0, trail_len=50)
 ```
-
 
 ### Once you have analzyed video data:
 
