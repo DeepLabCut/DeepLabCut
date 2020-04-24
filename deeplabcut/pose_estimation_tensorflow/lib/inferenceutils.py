@@ -194,16 +194,18 @@ def linkjoints2individuals(cfg,all_detections,all_connections, missing_connectio
 
 
 def assemble_individuals(inference_cfg, data, numjoints, BPTS, iBPTS,
-                         PAF, paf_graph, paf_links, 
-                         lowerbound, upperbound,print_intermediate=False):
+                         PAF, paf_graph, paf_links, lowerbound=None, upperbound=None,
+                         evaluation=False, print_intermediate=False):
     
     # filter detections according to inferencecfg parameters
-    all_detections = convertdetectiondict2listoflist(data, BPTS, withid=inference_cfg.withid)
+    all_detections = convertdetectiondict2listoflist(data, BPTS, withid=inference_cfg.withid,
+                                                     evaluation=evaluation)
     
     # filter connections according to inferencecfg parameters
     connection_all, missing_connections = extractstrongconnections(inference_cfg, data,
-                                                 all_detections, iBPTS, 
-                                                 paf_graph, PAF, lowerbound, upperbound)
+                                                                   all_detections, iBPTS,
+                                                                   paf_graph, PAF, lowerbound, upperbound,
+                                                                   evaluation=evaluation)
     # assemble putative subsets
     subset, candidate = linkjoints2individuals(inference_cfg, all_detections, connection_all, missing_connections,
                                                paf_links, iBPTS, numjoints=numjoints)
