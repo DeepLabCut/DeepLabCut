@@ -99,7 +99,8 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
     trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg) #Path concatenatn OS platform independent
     auxiliaryfunctions.attempttomakefolder(Path(os.path.join(project_path,str(trainingsetfolder))),recursive=True)
 
-    Data = trainingsetmanipulation.merge_annotateddatasets(cfg,project_path,Path(os.path.join(project_path,trainingsetfolder)),windows2linux)
+    Data = trainingsetmanipulation.merge_annotateddatasets(cfg, Path(os.path.join(project_path, trainingsetfolder)),
+                                                           windows2linux)
     if Data is None:
         return
     Data = Data[scorer] #extract labeled data

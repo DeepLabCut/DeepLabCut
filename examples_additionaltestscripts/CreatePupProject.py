@@ -42,7 +42,8 @@ for projectpath in [p1]:
     # Get the data:
     trainingsetfolder = deeplabcut.auxiliaryfunctions.GetTrainingSetFolder(cfg)
     deeplabcut.auxiliaryfunctions.attempttomakefolder(Path(os.path.join(projectpath,str(trainingsetfolder))),recursive=True)
-    Data = deeplabcut.generate_training_dataset.trainingsetmanipulation.merge_annotateddatasets(cfg,projectpath,Path(os.path.join(projectpath,trainingsetfolder)),windows2linux=False)
+    Data = deeplabcut.generate_training_dataset.trainingsetmanipulation.merge_annotateddatasets(cfg, Path(
+        os.path.join(projectpath, trainingsetfolder)), windows2linux=False)
 
     fraction=cfg['TrainingFraction'][0]
 

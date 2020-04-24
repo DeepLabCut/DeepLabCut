@@ -457,7 +457,7 @@ def MakeTest_pose_yaml(dictionary, keys2save, saveasfile, nmsradius=None, mincon
     with open(saveasfile, "w") as f:
         yaml.dump(dict_test, f)
 
-def merge_annotateddatasets(cfg,project_path,trainingsetfolder_full,windows2linux):
+def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
     """
     Merges all the h5 files for all labeled-datasets (from individual videos).
     This is a bit of a mess because of cross platform compatablity.
@@ -465,13 +465,13 @@ def merge_annotateddatasets(cfg,project_path,trainingsetfolder_full,windows2linu
     Within platform comp. is straightforward. But if someone labels on windows and wants to train on a unix cluster or colab...
     """
     AnnotationData = []
-    data_path = Path(os.path.join(project_path , 'labeled-data'))
+    data_path = Path(os.path.join(cfg['project_path'], 'labeled-data'))
     videos = cfg['video_sets'].keys()
     video_names = [Path(i).stem for i in videos]
     for i in video_names:
         filename = str(data_path / Path(i))+'/CollectedData_'+cfg['scorer']+'.h5'
         try:
-            data = pd.read_hdf(filename,'df_with_missing')
+            data = pd.read_hdf(filename, 'df_with_missing')
             AnnotationData.append(data)
         except FileNotFoundError:
             print(filename, " not found (perhaps not annotated)")
@@ -586,7 +586,8 @@ def mergeandsplit(config,trainindex=0,uniform=True,windows2linux=False):
     try:
         Data= pd.read_hdf(fn+'.h5', 'df_with_missing')
     except FileNotFoundError:
-        Data = merge_annotateddatasets(cfg,project_path,Path(os.path.join(project_path,trainingsetfolder)),windows2linux=windows2linux)
+        Data = merge_annotateddatasets(cfg, Path(os.path.join(project_path, trainingsetfolder)),
+                                       windows2linux=windows2linux)
         if Data is None:
             return [], []
 
@@ -713,7 +714,7 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,
         trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg) #Path concatenation OS platform independent
         auxiliaryfunctions.attempttomakefolder(Path(os.path.join(project_path,str(trainingsetfolder))),recursive=True)
 
-        Data = merge_annotateddatasets(cfg,project_path,Path(os.path.join(project_path,trainingsetfolder)),windows2linux)
+        Data = merge_annotateddatasets(cfg, Path(os.path.join(project_path, trainingsetfolder)), windows2linux)
         if Data is None:
             return
         Data = Data[scorer] #extract labeled data
