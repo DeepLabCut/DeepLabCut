@@ -103,7 +103,7 @@ def returnlabelingdata(config):
                 Data=pd.read_hdf(fn)
                 return Data
 
-def convertmultianimaltosingleanimaldata(config,userfeedback=True,target=None):
+def convert2_maDLC(config,userfeedback=True,target=None):
     ''' Convert multi animal to single animal code and vice versa. Note that by providing target='single'/'multi' this will be target! '''
     cfg = read_config(config)
     videos = cfg['video_sets'].keys()

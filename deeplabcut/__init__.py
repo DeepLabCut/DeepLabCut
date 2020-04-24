@@ -58,7 +58,7 @@ from deeplabcut.generate_training_dataset import extract_frames
 from deeplabcut.generate_training_dataset import check_labels,create_training_dataset, mergeandsplit, create_training_model_comparison, cropimagesandlabels
 from deeplabcut.generate_training_dataset import create_multianimaltraining_dataset
 from deeplabcut.utils import create_labeled_video, create_video_with_all_detections, plot_trajectories, auxiliaryfunctions
-from deeplabcut.utils import conversioncodemulti2single, convertcsv2h5, convertannotationdata_fromwindows2unixstyle, analyze_videos_converth5_to_csv, auxfun_videos
+from deeplabcut.utils import convert2_maDLC, convertcsv2h5, convertannotationdata_fromwindows2unixstyle, analyze_videos_converth5_to_csv, auxfun_videos
 from deeplabcut.utils.auxfun_videos import ShortenVideo, DownSampleVideo, CropVideo
 
 from deeplabcut.version import __version__, VERSION
