@@ -34,9 +34,9 @@ else: #standard use [wxpython supported]
     from deeplabcut.generate_training_dataset import adddatasetstovideolistandviceversa,  dropduplicatesinannotatinfiles
     from deeplabcut.gui.launch_script import launch_dlc
 
-    from deeplabcut.refine_training_dataset import refine_labels, refine_tracklets
+    from deeplabcut.refine_training_dataset import refine_labels
     from deeplabcut.utils import select_crop_parameters
-    from deeplabcut.refine_training_dataset.tracklets import convert_raw_tracks_to_h5
+    from deeplabcut.refine_training_dataset.tracklets import refine_tracklets, convert_raw_tracks_to_h5
 
 if os.environ.get('Colab', default=False) == 'True':
     print("Project loaded in colab-mode. Apparently Colab has trouble loading statsmodels, so the smoothing & outlier frame extraction is disabled. Sorry!")
