@@ -61,8 +61,10 @@ class Extract_outlier_frames(wx.Panel):
 
         sb = wx.StaticBox(self, label="Optional Attributes")
         boxsizer = wx.StaticBoxSizer(sb, wx.VERTICAL)
+        boxsizer2 = wx.StaticBoxSizer(sb, wx.VERTICAL)
 
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
+        hbox2 = wx.BoxSizer(wx.HORIZONTAL)
 
         videotype_text = wx.StaticBox(self, label="Specify the videotype")
         videotype_text_boxsizer = wx.StaticBoxSizer(videotype_text, wx.VERTICAL)
@@ -91,7 +93,7 @@ class Extract_outlier_frames(wx.Panel):
         hbox1.Add(videotype_text_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         hbox1.Add(shuffles_text_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         hbox1.Add(trainingindex_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-        hbox1.Add(outlier_algo_text_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+        hbox2.Add(outlier_algo_text_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
         if self.cfg.get('multianimalproject', False):
             tracker_text = wx.StaticBox(self, label="Specify the Tracker Method!")
@@ -100,22 +102,24 @@ class Extract_outlier_frames(wx.Panel):
             self.trackertypes = wx.ComboBox(self,choices = trackertypes,style = wx.CB_READONLY)
             self.trackertypes.SetValue('box')
             tracker_text_boxsizer.Add(self.trackertypes,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
-            hbox1.Add(tracker_text_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+            hbox2.Add(tracker_text_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         boxsizer.Add(hbox1,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+        boxsizer2.Add(hbox2,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
         self.sizer.Add(boxsizer, pos=(4, 0), span=(1, 5),flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT , border=10)
+        self.sizer.Add(boxsizer2, pos=(5, 0), span=(1, 5),flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT , border=10)
 
         self.help_button = wx.Button(self, label='Help')
-        self.sizer.Add(self.help_button, pos=(5, 0), flag=wx.LEFT, border=10)
+        self.sizer.Add(self.help_button, pos=(6, 0), flag=wx.LEFT, border=10)
         self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
 
         self.ok = wx.Button(self, label="Ok")
-        self.sizer.Add(self.ok, pos=(5, 4))
+        self.sizer.Add(self.ok, pos=(6, 4))
         self.ok.Bind(wx.EVT_BUTTON, self.extract_outlier_frames)
 
         self.reset = wx.Button(self, label="Reset")
-        self.sizer.Add(self.reset, pos=(5, 1), span=(1, 1),flag=wx.BOTTOM|wx.RIGHT, border=10)
+        self.sizer.Add(self.reset, pos=(6, 1), span=(1, 1),flag=wx.BOTTOM|wx.RIGHT, border=10)
         self.reset.Bind(wx.EVT_BUTTON, self.reset_extract_outlier_frames)
 
         self.sizer.AddGrowableCol(2)
