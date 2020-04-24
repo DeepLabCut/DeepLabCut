@@ -466,7 +466,7 @@ class TrackletVisualizer:
         self.ax_save = self.fig.add_axes([0.80, 0.1, 0.05, 0.03])
         self.ax_help = self.fig.add_axes([0.85, 0.1, 0.05, 0.03])
         self.save_button = Button(self.ax_save, 'Save')
-        self.save_button.on_clicked(partial(self.manager.save, ''))
+        self.save_button.on_clicked(self.save)
         self.help_button = Button(self.ax_help, 'Help')
         self.help_button.on_clicked(self.display_help)
         self.drag_toggle = CheckButtons(self.ax_drag, ['Drag'])
@@ -787,6 +787,10 @@ class TrackletVisualizer:
     @staticmethod
     def calc_distance(x1, y1, x2, y2):
         return np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+
+    def save(self, *args):
+        self.save_coords()
+        self.manager.save()
 
     def export_to_training_data(self):
         import os
