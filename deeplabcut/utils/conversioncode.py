@@ -253,10 +253,15 @@ def merge_windowsannotationdataONlinuxsystem(cfg):
 
     AnnotationData = []
     data_path = Path(cfg['project_path'],'labeled-data')
-    annotationfolders=[fn for fn in os.listdir(data_path) if "_labeled" not in fn]
+    use_cropped = cfg.get('croppedtraining', False)
+    annotationfolders = []
+    for elem in auxiliaryfunctions.grab_files_in_folder(data_path, relative=False):
+        if os.path.isdir(elem) and ((use_cropped and elem.endswith('_cropped')) or
+                                    not (use_cropped or '_cropped' in elem)):
+            annotationfolders.append(elem)
     print("The following folders were found:", annotationfolders)
     for folder in annotationfolders:
-        filename = os.path.join(data_path , folder, 'CollectedData_'+cfg['scorer']+'.h5')
+        filename = os.path.join(folder, 'CollectedData_'+cfg['scorer']+'.h5')
         try:
             data = pd.read_hdf(filename,'df_with_missing')
             AnnotationData.append(data)

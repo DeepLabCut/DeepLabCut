@@ -155,7 +155,7 @@ def create_new_project(project, experimenter, videos, working_directory=None,
         return 'nothingcreated'
 
     #Set values to config file:
-    if multianimal==True: #parameters specific to multianimal project
+    if multianimal: #parameters specific to multianimal project
         cfg_file,ruamelFile = auxiliaryfunctions.create_config_template(multianimal)
         cfg_file['multianimalproject']=multianimal
         cfg_file['individuals']=['individual1','individual2','individual3']
@@ -164,6 +164,7 @@ def create_new_project(project, experimenter, videos, working_directory=None,
         cfg_file['bodyparts']='MULTI!'
         cfg_file['skeleton']=[['bodypart1','bodypart2'],['bodypart2','bodypart3']]
         cfg_file['default_augmenter']='multi-animal-imgaug'
+        cfg_file['croppedtraining'] = False
     else:
         cfg_file,ruamelFile = auxiliaryfunctions.create_config_template()
         cfg_file['multianimalproject']=False

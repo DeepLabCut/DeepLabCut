@@ -317,8 +317,8 @@ def cropimagesandlabels(config,numcrops=10, size=(400,400), userfeedback=True,
                 cfg['video_sets'].pop(str(os.path.join(vidpath,str(vidname)+str(videotype))))
                 cfg['video_sets'][os.path.join(vidpath,str(folder)+'_cropped'+str(videotype))] = {'crop': ', '.join(map(str, [0, size[1], 0, size[0]]))}
 
-    if updatevideoentries:
-        auxiliaryfunctions.write_config(config,cfg)
+    cfg['croppedtraining'] = True
+    auxiliaryfunctions.write_config(config,cfg)
 
 def label_frames(config,multiple_individualsGUI=False, imtypes=['*.png']):
     """
@@ -469,7 +469,9 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
     videos = cfg['video_sets'].keys()
     video_names = [Path(i).stem for i in videos]
     for i in video_names:
-        filename = str(data_path / Path(i))+'/CollectedData_'+cfg['scorer']+'.h5'
+        if cfg.get('croppedtraining', False):
+            i += '_cropped'
+        filename = os.path.join(data_path / i, f'CollectedData_{cfg["scorer"]}.h5')
         try:
             data = pd.read_hdf(filename, 'df_with_missing')
             AnnotationData.append(data)
