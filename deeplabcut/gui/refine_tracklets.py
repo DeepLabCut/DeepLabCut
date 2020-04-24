@@ -185,7 +185,7 @@ class Refine_tracklets(wx.Panel):
 
     def refine_tracklets(self,event):
         deeplabcut.refine_tracklets(self.config, self.datafile, self.video,
-                     self.slider_swap.GetValue() / 100, self.slider_track.GetValue() / 100, trail_len=50)
+                     self.slider_swap.GetValue() / 100, self.slider_track.GetValue() / 100, trail_len=self.length_track.GetValue())
 
     def reset_refine_tracklets(self,event):
         """
