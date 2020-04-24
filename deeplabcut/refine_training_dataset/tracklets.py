@@ -865,7 +865,7 @@ def refine_tracklets(config, pickle_or_h5_file, video,
     manager.find_swapping_bodypart_pairs()
     viz = TrackletVisualizer(manager, video, trail_len)
     viz.show()
-    return manager
+    return manager, viz
 
 
 def convert_raw_tracks_to_h5(config, tracks_pickle, output_name=''):

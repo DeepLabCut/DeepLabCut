@@ -29,6 +29,8 @@ class Refine_tracklets(wx.Panel):
         self.config = cfg
         self.datafile = ''
         self.video = ''
+        self.manager = None
+        self.viz = None
         # design the panel
         sizer = wx.GridBagSizer(5, 5)
 
@@ -143,6 +145,11 @@ class Refine_tracklets(wx.Panel):
         sizer.Add(self.filter, pos=(8, 3), flag=wx.BOTTOM|wx.RIGHT, border=10)
         self.filter.Bind(wx.EVT_BUTTON, self.filter_after_refinement)
 
+        self.export = wx.Button(self, label='Optional: Merge refined data')
+        sizer.Add(self.export, pos=(10, 3), flag=wx.BOTTOM|wx.RIGHT, border=10)
+        self.export.Bind(wx.EVT_BUTTON, self.export_data)
+        self.export.Disable()
+
         sizer.AddGrowableCol(2)
 
         self.SetSizer(sizer)
@@ -156,6 +163,9 @@ class Refine_tracklets(wx.Panel):
                                      shuffle=shuffle, trainingsetindex=trainingsetindex,
                                      filtertype=self.filter_track.GetValue(), track_method=tracker,
                                      windowlength=self.filterlength_track.GetValue())
+
+    def export_data(self, event):
+        self.viz.export_to_training_data()
 
     def help_function(self,event):
 
@@ -184,8 +194,10 @@ class Refine_tracklets(wx.Panel):
         self.video = self.sel_video.GetPath()
 
     def refine_tracklets(self,event):
-        deeplabcut.refine_tracklets(self.config, self.datafile, self.video,
-                     self.slider_swap.GetValue() / 100, self.slider_track.GetValue() / 100, trail_len=self.length_track.GetValue())
+        self.manager, self.viz = deeplabcut.refine_tracklets(self.config, self.datafile, self.video,
+                                                             self.slider_swap.GetValue() / 100, self.slider_track.GetValue() / 100,
+                                                             trail_len=self.length_track.GetValue())
+        self.export.Enable()
 
     def reset_refine_tracklets(self,event):
         """
