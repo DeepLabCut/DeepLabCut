@@ -41,18 +41,27 @@ You can have as many projects on your computer as you wish. You can have DeepLab
 <img src=  https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559758477126-B9PU1EFA7L7L1I24Z2EH/ke17ZwdGBToddI8pDm48kH6mtUjqMdETiS6k4kEkCoR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UQf4d-kVja3vCG3Q_2S8RPAcZTZ9JxgjXkf3-Un9aT84H3bqxw7fF48mhrq5Ulr0Hg/howtouseDLC2d_3d-01.png?format=500w width="60%">
  </p>
 
-**Coming soon:** as of 2.2 we support multi-animal projects. The workflow is highly similar, but with some key steps that differ. Please carefully review the functions below for more details. You can search/look for **maDeepLabCut** for specific steps that are changed.
-
 As of 2.1+ we support a full [Project Manager GUI](/docs/PROJECT_GUI.md) to run the software. As of 2.0.7+ we support 3D analysis directly inside our package. Please see the [3D details here](/docs/Overviewof3D.md). 
 
 
 ### Overview of the workflow:
 This page contains a list of the essential functions of DeepLabCut as well as demos. There are many optional parameters with each described function, which you can find [here](functionDetails.md). For additional assistance, you can use the [help](UseOverviewGuide.md#help) function to better understand what each function does.
 
+#### Workflow 2.0:
+
  <p align="center">
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5cca272524a69435c3251c40/1556752170424/flowfig.jpg?format=1000w" height="270">
+  
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1560124235138-A9VEZB45SQPD5Z0BDEXA/ke17ZwdGBToddI8pDm48kKsvCFNoOAts8bgs5LXY20UUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcZaDohTswVrVk6oKw3G03bTl18OXeDyNJsBjNlGiyPYGo9Ewyd5AI5wx6CleNeBtf/dlc_steps.jpg?format=1000w" height="270">
 </p>
+
+#### Highly similar workflow for 2.2+ (and your 2.X projects are still full compatible with this format):
+
+**Coming soon:** as of 2.2 we support multi-animal projects. The workflow is highly similar, but with some key steps that differ. Please carefully review the functions below for more details. You can search/look for **maDeepLabCut** for specific steps that are changed.
+
+ <p align="center">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1587769981819-MQTWHOFRSEVRQCJJJ3WV/ke17ZwdGBToddI8pDm48kC35rDtt7orAfBnUphidUjFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PImr0R2dpGVvtLOUccqmg3rERuQynZZO7wgiB_e1DQPsY/workflow.png?format=1000w" height="570">
+ </p>
 
 
 Great - now that you get the overall workflow, let's jump in. Here, you have several options. [**Option 1**](/docs/UseOverviewGuide.md#option-1-demo-notebooks) is good for a quick demo on our data. [**Option 2**](/docs/UseOverviewGuide.md#option-2-using-the-program-terminal-start-ipython) is the perfect place for beginners who want to start using DeepLabCut on your own data. [**Option 3**](docs/functionDetails.md#deeplabcut-project-manager-gui) is best for more advanced users, as with the terminal interface you get the most versatility and options.  
