@@ -481,7 +481,8 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
             data = pd.read_hdf(filename, 'df_with_missing')
             AnnotationData.append(data)
         except FileNotFoundError:
-            print(filename, " not found (perhaps not annotated)")
+            print(filename, " not found (perhaps not annotated). If training on cropped data, "
+                            "make sure to call `cropimagesandlabels` prior to creating the dataset.")
 
     if not len(AnnotationData):
         print("Annotation data was not found by splitting video paths (from config['video_sets']). An alternative route is taken...")
