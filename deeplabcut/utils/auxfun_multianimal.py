@@ -103,7 +103,79 @@ def returnlabelingdata(config):
                 Data=pd.read_hdf(fn)
                 return Data
 
-def convert2_maDLC(config,userfeedback=True,target=None):
+def convert2_maDLC(config, userfeedback=True, forceindividual=None):
+    """
+    Converts single animal annotation file into a multianimal annotation file,
+    by introducing an individuals column with either the first individual
+    in individuals list in config.yaml or whatever is passsed via "forceindividual".
+
+    ----------
+    config : string
+        Full path of the config.yaml file as a string.
+
+    userfeedback: bool, optional
+            If this is set to false during automatic mode then frames for all videos are extracted. The user can set this to true, which will result in a dialog,
+            where the user is asked for each video if (additional/any) frames from this video should be extracted. Use this, e.g. if you have already labeled
+            some folders and want to extract data for new videos.
+
+    forceindividual: None default
+            If a string is given that is used in the individuals column.
+
+    Examples
+    --------
+    Converts data to introduce the first individual in individuals list in config.yaml
+    >>> deeplabcut.convert2_maDLC('/socialrearing-task/config.yaml')
+    --------
+    Converts data to introduce individuals label mus 17
+    >>> deeplabcut.convert2_maDLC('/socialrearing-task/config.yaml', forceindividual='mus17')
+    """
+
+    cfg = read_config(config)
+    videos = cfg['video_sets'].keys()
+    video_names = [Path(i).stem for i in videos]
+    folders = [Path(config).parent / 'labeled-data' /Path(i) for i in video_names]
+
+    individuals, uniquebodyparts, multianimalbodyparts = extractindividualsandbodyparts(cfg)
+    if forceindividual is None:
+        if 'single' in individuals:
+            individuals.remove('single')
+            if len(individuals)==0:
+                print("At least one individual should exist...")
+            else:
+                forceindividual=individuals[0]
+    for folder in folders:
+        if userfeedback==True:
+            print("Do you want to convert the annotation file in folder:", folder, "?")
+            askuser = input("yes/no")
+        else:
+            askuser="yes"
+
+        if askuser=='y' or askuser=='yes' or askuser=='Ja' or askuser=='ha': # multilanguage support :)
+            fn=os.path.join(str(folder),'CollectedData_' + cfg['scorer'])
+            Data=pd.read_hdf(fn+ '.h5','df_with_missing')
+            imindex=Data.index
+            print("This is a single animal data set, converting to multi...",folder)
+            for j,bpt in enumerate(multianimalbodyparts):
+                index = pd.MultiIndex.from_arrays(np.array([2*[cfg['scorer']], 2*[str(forceindividual)], 2*[bpt], ['x', 'y']]),
+                                                    names=['scorer', 'individuals', 'bodyparts', 'coords'])
+
+                if bpt in Data[cfg['scorer']].keys():
+                    frame = pd.DataFrame(Data[cfg['scorer']][bpt].values, columns = index, index = imindex)
+                else:
+                    frame = pd.DataFrame(np.ones((len(imindex),2))*np.nan, columns = index, index = imindex)
+
+                if j==0:
+                    dataFrame=frame
+                else:
+                    dataFrame = pd.concat([dataFrame, frame],axis=1)
+
+                Data.to_hdf(fn + 'singleanimal.h5','df_with_missing',format='table', mode='w')
+                Data.to_csv(fn + "singleanimal.csv")
+
+                dataFrame.to_hdf(fn + '.h5','df_with_missing',format='table', mode='w')
+                dataFrame.to_csv(fn + ".csv")
+
+def convert_single2multiplelegacyAM(config,userfeedback=True,target=None):
     ''' Convert multi animal to single animal code and vice versa. Note that by providing target='single'/'multi' this will be target! '''
     cfg = read_config(config)
     videos = cfg['video_sets'].keys()
