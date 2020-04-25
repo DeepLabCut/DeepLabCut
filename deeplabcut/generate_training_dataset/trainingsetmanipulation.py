@@ -281,14 +281,20 @@ def cropimagesandlabels(config,numcrops=10, size=(400,400), userfeedback=True,
             images = cfg['project_path'] + sep + df.index
             if sep != os.path.sep:
                 images = images.str.replace(sep, os.path.sep)
-            ic = io.imread_collection(images.to_list())
+            # Avoid cropping already cropped images
+            cropped_images = auxiliaryfunctions.grab_files_in_folder(output_path, 'png')
+            cropped_names = set(map(lambda x: x.split('c')[0], cropped_images))
+            imnames = [im for im in images.to_list() if Path(im).stem not in cropped_names]
+            ic = io.imread_collection(imnames)
             for i in trange(len(ic)):
                 frame = ic[i]
+                imagename = os.path.relpath(ic.files[i], cfg['project_path'])
+                ind = np.flatnonzero(df.index == imagename)[0]
                 h, w = np.shape(frame)[:2]
                 cropindex = 0
                 attempts = -1
                 while cropindex < numcrops:
-                    dd = data[i].copy()
+                    dd = data[ind].copy()
                     y0, x0 = np.random.randint(h - size[0]), np.random.randint(w - size[1])
                     with np.errstate(invalid='ignore'):
                         within = np.all((dd >= [x0, y0]) & (dd < [x0 + size[1], y0 + size[0]]), axis=1)
@@ -297,9 +303,8 @@ def cropimagesandlabels(config,numcrops=10, size=(400,400), userfeedback=True,
                         dd[~within] = np.nan
                     attempts += 1
                     if within.any() or attempts > 10:
-                        imagename = os.path.relpath(ic.files[i], cfg['project_path'])
                         newimname = str(Path(imagename).stem + 'c' + str(cropindex).zfill(indexlength) + '.png')
-                        cropppedimgname = os.path.join(output_path,newimname)
+                        cropppedimgname = os.path.join(output_path, newimname)
                         io.imsave(cropppedimgname, frame[y0:y0 + size[0], x0:x0 + size[1]])
                         cropindex += 1
                         pd_index.append(os.path.join('labeled-data', newfolder,newimname))
