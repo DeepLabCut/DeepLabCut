@@ -27,9 +27,8 @@ from pathlib import Path
 
 # Loading example data set
 path_config_file = os.path.join(os.getcwd(),'openfield-Pranav-2018-10-30/config.yaml')
-#deeplabcut.load_demo_data(path_config_file)
+deeplabcut.load_demo_data(path_config_file)
 
-#shuffle=11 #>> imageio functions!
 shuffle=12
 
 deeplabcut.create_training_dataset(path_config_file,Shuffles=[shuffle])

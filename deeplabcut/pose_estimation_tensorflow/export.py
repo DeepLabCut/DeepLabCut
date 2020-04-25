@@ -8,14 +8,19 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-
 import os
 import numpy as np
 import ruamel.yaml
 import glob
 import shutil
 import tarfile
-import tensorflow.compat.v1 as tf
+
+import tensorflow as tf
+vers = (tf.__version__).split('.')
+if int(vers[0]) == 1 and int(vers[1]) > 12:
+    TF = tf.compat.v1
+else:
+    TF = tf
 from tensorflow.python.tools import freeze_graph
 
 from deeplabcut.utils import auxiliaryfunctions

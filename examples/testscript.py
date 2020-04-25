@@ -214,6 +214,10 @@ deeplabcut.train_network(path_config_file,shuffle=2,allow_growth=True)
 print("ANALYZING some individual frames")
 deeplabcut.analyze_time_lapse_frames(path_config_file,os.path.join(cfg['project_path'],'labeled-data/reachingvideo1/'))
 
+print("Export model...")
+deeplabcut.export_model(path_config_file,shuffle=2,make_tar=False)
+
+
 print("ALL DONE!!! - default cases are functional.")
 print("Re-import DLC with env. variable set to test DLC light mode.")
 os.environ['DLClight']='True'
