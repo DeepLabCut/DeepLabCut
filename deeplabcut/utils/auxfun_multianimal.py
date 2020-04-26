@@ -139,10 +139,10 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
     if forceindividual is None:
         if 'single' in individuals:
             individuals.remove('single')
-            if len(individuals)==0:
-                print("At least one individual should exist...")
-            else:
-                forceindividual=individuals[0]
+        if len(individuals)==0:
+            print("At least one individual should exist...")
+        else:
+            forceindividual=individuals[0]
     for folder in folders:
         if userfeedback==True:
             print("Do you want to convert the annotation file in folder:", folder, "?")
