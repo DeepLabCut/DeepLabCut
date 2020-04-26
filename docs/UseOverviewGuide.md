@@ -8,7 +8,7 @@
  
  - [TUTORIALS:](https://www.youtube.com/channel/UC2HEbWpC_1v6i9RnDMy-dfA?view_as=subscriber) video tutorials that demonstrate various aspects of using the code base.
  - [HOW-TO-GUIDES:](/docs/UseOverviewGuide.md#how-to-guides) step-by-step user guidelines for using DeepLabCut on your own datasets (or on demo data)
- - [EXPLANATIONS:](https://github.com/AlexEMG/DeepLabCut/wiki) resources on understanding how DeepLabCut works (WIP)
+ - [EXPLANATIONS:](https://github.com/AlexEMG/DeepLabCut/wiki) resources on understanding how DeepLabCut works
  - [REFERENCES:](https://github.com/AlexEMG/DeepLabCut#references) read the science behind DeepLabCut
  
 :movie_camera: Getting Started: [a video tutorial on navigating the documentation!](https://www.youtube.com/watch?v=A9qZidI7tL8)
@@ -29,7 +29,7 @@
  
 ## HOW-TO-GUIDES:
 
-- ***:purple_heart: [Overview of the entire DLC workflow]()***
+- ***:purple_heart: [Overview of the entire DLC workflow](/docs/UseOverviewGuide.md#overview)***
 - ***:blue_heart: [Important Information on how to use DLC in different scenarios (single vs multianimal)]()***
 - ***:green_heart: [The different ways to use DLC: standalone GUI, Jupyter/COLAB Notebooks, and in the terminal.]()***
 ***
@@ -68,15 +68,7 @@ You can have as many projects on your computer as you wish. You can have DeepLab
 <img src=  https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559758477126-B9PU1EFA7L7L1I24Z2EH/ke17ZwdGBToddI8pDm48kH6mtUjqMdETiS6k4kEkCoR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UQf4d-kVja3vCG3Q_2S8RPAcZTZ9JxgjXkf3-Un9aT84H3bqxw7fF48mhrq5Ulr0Hg/howtouseDLC2d_3d-01.png?format=500w width="60%">
  </p>
 
-## Important information on using DeepLabCut:
-
-Great - now that you get the overall workflow let's jump in! Here, you have several options. 
-
-[**Option 1**](/docs/UseOverviewGuide.md#option-1-demo-notebooks) is good for a quick demo on our data. 
-
-[**Option 2**](/docs/UseOverviewGuide.md#option-2-using-the-program-terminal-start-ipython) is the perfect place for beginners who want to start using DeepLabCut on your own data. 
-
-[**Option 3**](docs/functionDetails.md#deeplabcut-project-manager-gui) is best for more advanced users, as with the terminal interface you get the most versatility and options.  
+### Important information on using DeepLabCut:
 
 We highly recommend first using **DeepLabCut for a single animal senario** to understand the workflow - even if it's just our demo data. Multi-animal tracking is more complex - i.e. it has several decisions the user needs to make. Then, when you are ready you can jump into 2.2. 
 
@@ -103,6 +95,16 @@ We highly recommend using 2.2 first in the Project Manager GUI. This will allow 
 - **I have a pre-2.2 single animal project, but I want to use 2.2:**
 
 Please read [this convert 2 maDLC guide.]
+
+### The options for using DeepLabCut:
+
+Great - now that you get the overall workflow let's jump in! Here, you have several options. 
+
+[**Option 1**](/docs/UseOverviewGuide.md#option-1-demo-notebooks) is good for a quick demo on our data. 
+
+[**Option 2**](/docs/UseOverviewGuide.md#option-2-using-the-program-terminal-start-ipython) is the perfect place for beginners who want to start using DeepLabCut on your own data. 
+
+[**Option 3**](docs/functionDetails.md#deeplabcut-project-manager-gui) is best for more advanced users, as with the terminal interface you get the most versatility and options.  
 
 
 ## Option 1: Demo Notebooks:
