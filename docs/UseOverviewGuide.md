@@ -70,24 +70,24 @@ You can have as many projects on your computer as you wish. You can have DeepLab
 
 ### Important information on using DeepLabCut:
 
-We highly recommend first using **DeepLabCut for a single animal senario** to understand the workflow - even if it's just our demo data. Multi-animal tracking is more complex - i.e. it has several decisions the user needs to make. Then, when you are ready you can jump into 2.2. 
+We recommend first using **DeepLabCut for a single animal senario** to understand the workflow - even if it's just our demo data. Multi-animal tracking is more complex - i.e. it has several decisions the user needs to make. Then, when you are ready you can jump into 2.2...
 
 #### Additional information for getting started with maDeepLabCut (aka DeepLabCut 2.2):
 
-We highly recommend using 2.2 first in the Project Manager GUI. This will allow you to get used to the additional steps by being walked through the process. Then, you can always use all the functions in your favorite IDE, notbooks, etc. 
+We highly recommend using 2.2 first in the Project Manager GUI ([Option 3](docs/functionDetails.md#deeplabcut-project-manager-gui)). This will allow you to get used to the additional steps by being walked through the process. Then, you can always use all the functions in your favorite IDE, notbooks, etc. 
 
 - **I have single animal videos, but I want to use DLC2.2:**
    - quick start: when you `create_new project` just set the flag `multianimal=True`. 
 
-:movie_camera:[VIDEO TUTORIAL AVAILABLE!]()
+:movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://youtu.be/JDsa8R5J0nQ)
 
 
-- **I have multiple *idential-looking animals* in my videos, but I want to use DLC2.2:**
+- **I have multiple *idential-looking animals* in my videos and I need to use DLC2.2:**
    - quick start: when you `create_new project` set the flag `multianimal=True`. If you can't tell them apart, you can assign the "indiviual" ID to any animal in each frame. See this [labeling w/2.2 demo video](https://www.youtube.com/watch?v=_qbEqNKApsI)
 
 :movie_camera:[VIDEO TUTORIAL AVAILABLE!]()
 
-- **I have multiple animals, *but I can tell them apart,* in my videos, but I want to use DLC2.2:**
+- **I have multiple animals, *but I can tell them apart,* in my videos and want to use DLC2.2:**
    - quick start: when you `create_new project` set the flag `multianimal=True`. And always label the "individual" ID name the same; i.e. if you have mouse1 and mouse2 but mouse2 always has a miniscope, in every frame label mouse2 consistently. See this [labeling w/2.2 demo video](https://www.youtube.com/watch?v=_qbEqNKApsI)
 
 :movie_camera:[VIDEO TUTORIAL AVAILABLE!]()
