@@ -11,6 +11,8 @@
  - [EXPLANATIONS:](https://github.com/AlexEMG/DeepLabCut/wiki) resources on understanding how DeepLabCut works (WIP)
  - [REFERENCES:](https://github.com/AlexEMG/DeepLabCut#references) read the science behind DeepLabCut
  
+:movie_camera: Getting Started: [a video tutorial on navigating the documentation!](https://www.youtube.com/watch?v=A9qZidI7tL8)
+ 
  
  ### What you need to get started:
  
@@ -55,9 +57,9 @@ This page contains a list of the essential functions of DeepLabCut as well as de
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1560124235138-A9VEZB45SQPD5Z0BDEXA/ke17ZwdGBToddI8pDm48kKsvCFNoOAts8bgs5LXY20UUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcZaDohTswVrVk6oKw3G03bTl18OXeDyNJsBjNlGiyPYGo9Ewyd5AI5wx6CleNeBtf/dlc_steps.jpg?format=1000w" height="270">
 </p>
 
-#### Highly similar workflow for 2.2+ (and your 2.X projects are still full compatible with this format):
+#### :mega: There is a highly similar workflow for 2.2+ (and your 2.X projects are still full compatible with this format!):
 
-**Coming soon:** as of 2.2 we support multi-animal projects. The workflow is highly similar, but with some key steps that differ. Please carefully review the functions below for more details. You can search/look for **maDeepLabCut** for specific steps that are changed.
+**:purple_heart: DLC 2.2:** as of 2.2 we support multi-animal projects (it also can be used on single animals too). The workflow is highly similar, but with some key steps that differ. Please carefully review the functions below for more details. You can search/look for **maDeepLabCut** for specific steps that are changed.
 
  <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1587769981819-MQTWHOFRSEVRQCJJJ3WV/ke17ZwdGBToddI8pDm48kC35rDtt7orAfBnUphidUjFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PImr0R2dpGVvtLOUccqmg3rERuQynZZO7wgiB_e1DQPsY/workflow.png?format=1000w" height="570">
@@ -67,10 +69,14 @@ This page contains a list of the essential functions of DeepLabCut as well as de
 Great - now that you get the overall workflow, let's jump in. Here, you have several options. [**Option 1**](/docs/UseOverviewGuide.md#option-1-demo-notebooks) is good for a quick demo on our data. [**Option 2**](/docs/UseOverviewGuide.md#option-2-using-the-program-terminal-start-ipython) is the perfect place for beginners who want to start using DeepLabCut on your own data. [**Option 3**](docs/functionDetails.md#deeplabcut-project-manager-gui) is best for more advanced users, as with the terminal interface you get the most versatility and options.  
 
 ## Option 1: Demo Notebooks:
+:movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=DRT-Cq2vdWs)
+
 We provide Jupyter and COLAB notebooks for using DeepLabCut on both a pre-labeled dataset, and on the end user’s
 own dataset. See all the demo's [here!](/examples) Please note that GUIs are not easily supported in Jupyter in MacOS, as you need a framework build of python. While it's possible to launch them with a few tweaks, we recommend using the Project Manager GUI or terminal, so please follow the instructions below.
 
 ## Option 2: using the Project Manger GUI:
+:movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=KcXogR-p5Ak)
+
 Start iPython, or if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython`` or ``python``, but otherwise it's the same.
 If you are using DeepLabCut on the cloud, you cannot use the GUIs and you need to first set DLClight=True. Please read more [here](https://github.com/DeepLabCut/Docker4DeepLabCut2.0), and in our Nature Protocols paper [here](https://www.nature.com/articles/s41596-019-0176-0).
 
@@ -86,7 +92,11 @@ python -m deeplabcut
 ```
 That's it! Follow the GUI for details
 
+
+
 ## Option 3: using the program terminal, Start iPython*:
+:movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=7xwOhUcIGio)
+
 *please note, we provide a quick-guide of the commands at the bottom of this page.
 Also, if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython``, but otherwise it's the same.
 If you are using DeepLabCut on the cloud, you cannot use the GUIs and you need to first set DLClight=True. Please read more [here](https://github.com/MMathisLab/Docker4DeepLabCut2.0), and in our Protocol paper [here](https://www.nature.com/articles/s41596-019-0176-0).
@@ -145,6 +155,7 @@ config_path = r'C:\home\computername\DeepLabCut\yourprojectname\config.yaml'
 <img src="http://www.people.fas.harvard.edu/~amathis/dlc/startdeeplabcut.gif" width="90%">
 </p>
 
+
 ### Select Frames to Label:
 
 ```python
@@ -192,6 +203,9 @@ or to [compare different neural networks](/wiki/What-neural-network-should-I-use
 ```python
 deeplabcut.create_training_model_comparision(config_path, num_shuffles=1, net_types=['resnet_50'], augmenter_types=['default', 'imgaug'] )
 ```
+:movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=WXCVr6xAcCA)
+
+
 **maDeepLabCut**:
 ```python
 deeplabcut.create_multianimaltraining_dataset(path_config_file)
@@ -212,6 +226,9 @@ Here, for traditional projects you will get a pixel distance metric and you shou
 ```python
 deeplabcut.evaluate_network(config_path, plotting = True)
 ```
+
+:movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=bgfnz1wtlpo)
+
 **maDeepLabCut**: (or on normal projects!)
 
 You can also plot the scoremaps, locref layers, and PAFs:
@@ -226,25 +243,27 @@ deeplabcut.extract_save_all_maps(path_config_file, shuffle=shuffle, Indices=[0, 
 - Please note that **novel videos DO NOT need to be added to the config.yaml file**. You can simply have a folder elsewhere on your computer and pass the video folder (then it will analyze all videos of the specified type (i.e. ``videotype='.mp4'``), or pass the path to the **folder** or exact video(s) you wish to analyze:
 
 ```python
-deeplabcut.analyze_videos(config_path,[`/fullpath/project/videos/'], videotype='.mp4', save_as_csv = True)
+deeplabcut.analyze_videos(config_path,['/fullpath/project/videos/'], videotype='.mp4', save_as_csv = True)
 ```
 **maDeepLabCut**: there is a new step that allows you to plot *all* detections first. This allows you to check the pose-estimation quality before tracking of individuals! We recommend doing this step when you are running quality checks on new videos, etc. Once you have optimized pose-estimation and tracking, this is not required. `scorername` can be gotten from `scorername = deeplabcut.analyze_videos (...)` or just looking at the name of the DLC scorer in the folder name, h5 file, etc.
 
 ```python
-deeplabcut.create_video_with_all_detections(path_config_file, [videofile_path], scorername)
+deeplabcut.create_video_with_all_detections(path_config_file, ['videofile_path'], scorername)
 ```
 
-### Assemble Tracklets in maDeepLabCut:
+### Assemble & Refine Tracklets in maDeepLabCut:
+
+:movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://youtu.be/bEuBKB7eqmk)
 - Now that you have detections (which are saved as a pickle file, not h5, btw), we need to assemble and track the animals. 
 
 First, you need to convert detections to tracklets. This step have several tracker types (`track_method`), and we recommend testing which one works best on your data. 
 
 ```python
-deeplabcut.convert_detections2tracklets(path_config_file, [videofile_path], videotype='mp4',
+deeplabcut.convert_detections2tracklets(path_config_file, ['videofile_path'], videotype='mp4',
                                                     shuffle=1, trainingsetindex=0, track_method='')
 ```
 
-Secondly, you have the option to refine the tracklets. If there are both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akind to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc! 
+Secondly, you have the option to refine the tracklets. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akind to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc! 
 
 ```python
 deeplabcut.refine_tracklets(path_config_file, pickle_or_h5_file, videofile_path, min_swap_frac=0.0, min_tracklet_frac=0.0, trail_len=50)
@@ -261,6 +280,16 @@ deeplabcut.filterpredictions(config_path,['/fullpath/project/videos/reachingvide
 Note, this creates a file with the ending filtered.h5 that you can use for further analysis. This filtering step has many parameters, so please see the full docstring by typing: ``deeplabcut.filterpredictions?``
 
 ### Plotting Results:
+
+- **NOTE :bulb::mega::** before you create a video, you should set what threshold to use for plotting. This is set in the `config.yaml` file as `pcutoff` - if you have a well trained network, this should be high, i.e. set it to `0.8` or higher!
+
+
+- You can also determine a good `pcutoff` value by looking at the likelihood plot created during `plot_trajectories`:
+
+Plot the outputs:
+```python
+deeplabcut.plot_trajectories(config_path,['/fullpath/project/videos/reachingvideo1.avi'],filtered = True)
+```
 
 Create videos:
 ```python
