@@ -65,19 +65,19 @@ class Create_new_project(wx.Panel):
 #        line = wx.StaticLine(self)
 #        self.sizer.Add(line, pos=(3, 0), span=(1, 8),flag=wx.EXPAND|wx.BOTTOM, border=10)
 
-        self.proj_name = wx.StaticText(self, label="Name of the project:")
+        self.proj_name = wx.StaticText(self, label="Name of the Project:")
         self.sizer.Add(self.proj_name, pos=(4, 0), flag=wx.LEFT, border=15)
 
         self.proj_name_txt_box = wx.TextCtrl(self)
-        self.sizer.Add(self.proj_name_txt_box, pos=(4, 1), span=(1, 2), flag=wx.TOP|wx.EXPAND)
+        self.sizer.Add(self.proj_name_txt_box, pos=(4, 1), flag=wx.TOP|wx.EXPAND)
 
         self.exp = wx.StaticText(self, label="Name of the experimenter:")
         self.sizer.Add(self.exp, pos=(5, 0), flag=wx.LEFT|wx.TOP, border=15)
 
         self.exp_txt_box = wx.TextCtrl(self)
-        self.sizer.Add(self.exp_txt_box, pos=(5, 1), span=(1, 2), flag=wx.TOP|wx.EXPAND,border=5)
+        self.sizer.Add(self.exp_txt_box, pos=(5, 1), flag=wx.TOP|wx.EXPAND,border=5)
 
-        self.vids = wx.StaticText(self, label="Choose the videos:")
+        self.vids = wx.StaticText(self, label="Choose Videos:")
         self.sizer.Add(self.vids, pos=(6, 0), flag=wx.TOP|wx.LEFT, border=10)
 
         self.sel_vids = wx.Button(self, label="Load Videos")
