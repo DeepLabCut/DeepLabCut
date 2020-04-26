@@ -165,37 +165,31 @@ def convertcsv2h5(config,userfeedback=True,scorer=None):
     videos = cfg['video_sets'].keys()
     video_names = [Path(i).stem for i in videos]
     folders = [Path(config).parent / 'labeled-data' /Path(i) for i in video_names]
-    if scorer==None:
-        scorer=cfg['scorer']
+    if not scorer:
+        scorer = cfg['scorer']
 
     for folder in folders:
         try:
-            if userfeedback==True:
+            if userfeedback:
                 print("Do you want to convert the csv file in folder:", folder, "?")
                 askuser = input("yes/no")
             else:
-                askuser="yes"
+                askuser = "yes"
 
-            if askuser=='y' or askuser=='yes' or askuser=='Ja' or askuser=='ha': # multilanguage support :)
-                fn=os.path.join(str(folder),'CollectedData_' + cfg['scorer'] + '.csv')
-                data=pd.read_csv(fn)
-
-                #nlines,numcolumns=data.shape
-
-                orderofbpincsv=list(data.values[0,1:-1:2])
-                imageindex=list(data.values[2:,0])
-
-                #assert(len(orderofbpincsv)==len(cfg['bodyparts']))
-                print(orderofbpincsv)
-                print(cfg['bodyparts'])
-
-                #TODO: test len of images vs. len of imagenames for another sanity check
-
-                index = pd.MultiIndex.from_product([[scorer], orderofbpincsv, ['x', 'y']],names=['scorer', 'bodyparts', 'coords'])
-                frame = pd.DataFrame(np.array(data.values[2:,1:],dtype=float), columns = index, index = imageindex)
-
-                frame.to_hdf(os.path.join(str(folder),'CollectedData_'+ cfg['scorer']+".h5"), key='df_with_missing', mode='w')
-                frame.to_csv(fn)
+            if askuser in ('y', 'yes', 'Ja', 'ha', 'oui'):  # multilanguage support :)
+                fn = os.path.join(str(folder), 'CollectedData_' + cfg['scorer'] + '.csv')
+                # Determine whether the data are single- or multi-animal without loading into memory
+                # simply by checking whether 'individuals' is in the second line of the CSV.
+                with open(fn) as datafile:
+                    next(datafile)
+                    if 'individuals' in next(datafile):
+                        header = list(range(4))
+                    else:
+                        header = list(range(3))
+                data = pd.read_csv(fn, index_col=0, header=header)
+                data.columns = data.columns.set_levels([scorer], level='scorer')
+                data.to_hdf(fn.replace('.csv', '.h5'), key='df_with_missing', mode='w')
+                data.to_csv(fn)
         except FileNotFoundError:
             print("Attention:", folder, "does not appear to have labeled data!")
 
