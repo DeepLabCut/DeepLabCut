@@ -29,7 +29,13 @@
  
 ## HOW-TO-GUIDES:
 
-**Overview: DeepLabCut** is a software package for markerless pose estimation of animals performing various tasks. The software can manage multiple projects for various tasks. Each project is identified by the name of the project (e.g. TheBehavior), name of the experimenter (e.g. YourName), as well as the date at creation. This project folder holds a ``config.yaml`` (a text document) file containing various (project) parameters as well as links the data of the project.
+- ***:purple_heart: [Overview of the entire DLC workflow]()***
+- ***:blue_heart: [Important Information on how to use DLC in different scenarios (single vs multianimal)]()***
+- ***:green_heart: [The different ways to use DLC: standalone GUI, Jupyter/COLAB Notebooks, and in the terminal.]()***
+***
+
+### Overview: 
+**DeepLabCut** is a software package for markerless pose estimation of animals performing various tasks. The software can manage multiple projects for various tasks. Each project is identified by the name of the project (e.g. TheBehavior), name of the experimenter (e.g. YourName), as well as the date at creation. This project folder holds a ``config.yaml`` (a text document) file containing various (project) parameters as well as links the data of the project.
 
 **NEW: We also have structured a getting started with DeepLabCut course [here!](https://github.com/DeepLabCut/DeepLabCut-Workshop-Materials/blob/master/summer_course2020.md)**
 
@@ -49,7 +55,7 @@ This page contains a list of the essential functions of DeepLabCut as well as de
 
 :mega: **NOTE:** There is a highly similar workflow for 2.2+ (and your 2.X projects are still full compatible with this format!). 
 
-**:purple_heart: DLC 2.2:** as of 2.2 we support "multi-animal projects," but these new features can also be used on single animals too (you will simply still start a project in a "multianimal project."). The workflow is highly similar, but with some key steps that differ. Please carefully review the functions below for more details. You can search/look for **maDeepLabCut** for specific steps that are changed.
+**:purple_heart: DLC 2.2:** as of 2.2 we support "multi-animal projects," but these new features can also be used on single animals too (details below). The workflow is highly similar, but with some key steps that differ. Please carefully review the functions below for more details. You can search/look for **maDeepLabCut** for specific steps that are changed.
 
  <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1587769981819-MQTWHOFRSEVRQCJJJ3WV/ke17ZwdGBToddI8pDm48kC35rDtt7orAfBnUphidUjFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PImr0R2dpGVvtLOUccqmg3rERuQynZZO7wgiB_e1DQPsY/workflow.png?format=1000w" height="570">
@@ -62,7 +68,7 @@ You can have as many projects on your computer as you wish. You can have DeepLab
 <img src=  https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559758477126-B9PU1EFA7L7L1I24Z2EH/ke17ZwdGBToddI8pDm48kH6mtUjqMdETiS6k4kEkCoR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UQf4d-kVja3vCG3Q_2S8RPAcZTZ9JxgjXkf3-Un9aT84H3bqxw7fF48mhrq5Ulr0Hg/howtouseDLC2d_3d-01.png?format=500w width="60%">
  </p>
 
-## HOW TO use DeepLabCut:
+## Important information on using DeepLabCut:
 
 Great - now that you get the overall workflow let's jump in! Here, you have several options. 
 
@@ -78,17 +84,25 @@ We highly recommend first using **DeepLabCut for a single animal senario** to un
 
 We highly recommend using 2.2 first in the Project Manager GUI. This will allow you to get used to the additional steps by being walked through the process. Then, you can always use all the functions in your favorite IDE, notbooks, etc. 
 
-- I have single animal videos, but I want to use DLC2.2:
+- **I have single animal videos, but I want to use DLC2.2:**
+   - quick start: when you `create_new project` just set the flag `multianimal=True`. 
 
 :movie_camera:[VIDEO TUTORIAL AVAILABLE!]()
 
-- I have multiple *idential-looking animals* in my videos, but I want to use DLC2.2:
+
+- **I have multiple *idential-looking animals* in my videos, but I want to use DLC2.2:**
+   - quick start: when you `create_new project` set the flag `multianimal=True`. If you can't tell them apart, you can assign the "indiviual" ID to any animal in each frame. See this [labeling w/2.2 demo video](https://www.youtube.com/watch?v=_qbEqNKApsI)
 
 :movie_camera:[VIDEO TUTORIAL AVAILABLE!]()
 
-- I have a pre-2.2 single animal project, but I want to use 2.2:
+- **I have multiple animals, *but I can tell them apart,* in my videos, but I want to use DLC2.2:**
+   - quick start: when you `create_new project` set the flag `multianimal=True`. And always label the "individual" ID name the same; i.e. if you have mouse1 and mouse2 but mouse2 always has a miniscope, in every frame label mouse2 consistently. See this [labeling w/2.2 demo video](https://www.youtube.com/watch?v=_qbEqNKApsI)
 
+:movie_camera:[VIDEO TUTORIAL AVAILABLE!]()
 
+- **I have a pre-2.2 single animal project, but I want to use 2.2:**
+
+Please read [this convert 2 maDLC guide.]
 
 
 ## Option 1: Demo Notebooks:
@@ -116,11 +130,9 @@ python -m deeplabcut
 That's it! Follow the GUI for details
 
 
-
 ## Option 3: using the program terminal, Start iPython*:
 :movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=7xwOhUcIGio)
 
-*please note, we provide a quick-guide of the commands at the bottom of this page.
 Also, if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython``, but otherwise it's the same.
 If you are using DeepLabCut on the cloud, you cannot use the GUIs and you need to first set DLClight=True. Please read more [here](https://github.com/MMathisLab/Docker4DeepLabCut2.0), and in our Protocol paper [here](https://www.nature.com/articles/s41596-019-0176-0).
 
