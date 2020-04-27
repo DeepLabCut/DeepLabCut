@@ -133,7 +133,8 @@ def compute_mot_metrics_new_tracker(inference_cfg, data, bboxes_ground_truth):
     return acc, tracklets
 
 
-def compute_crossval_metrics(config_path, inference_cfg, shuffle=1, trainingsetindex=0, modelprefix='',snapshotindex=-1):
+def compute_crossval_metrics(config_path, inference_cfg, shuffle=1, trainingsetindex=0, 
+                                modelprefix='',snapshotindex=-1,dcorr=5):
     fns = return_evaluate_network_data(config_path, shuffle=shuffle,
                                        trainingsetindex=trainingsetindex, modelprefix=modelprefix)
 
@@ -143,13 +144,13 @@ def compute_crossval_metrics(config_path, inference_cfg, shuffle=1, trainingseti
     params = set_up_evaluation(data)
 
     n_images = len(params['imnames'])
-    stats = np.full((n_images, 5), np.nan)  # RMSE, hits, misses, false_pos, num_detections
+    stats = np.full((n_images, 7), np.nan)  # RMSE, hits, misses, false_pos, num_detections, pck
     columns = ['train_iter', 'train_frac', 'shuffle']
-    columns += ['_'.join((b, a)) for a in ('train', 'test') for b in ('rmse', 'misses', 'hits', 'falsepos', 'ndetects')]
+    columns += ['_'.join((b, a)) for a in ('train', 'test') for b in ('rmse',  'hits', 'misses', 'falsepos', 'ndetects', 'pck', 'rpck')]
     for n, imname in enumerate(params['imnames']):
         animals = inferenceutils.assemble_individuals(inference_cfg, data[imname], params['num_joints'],
-                                                      params['bpts'], params['ibpts'], params['paf'],
-                                                      params['paf_graph'], params['paf_links'], evaluation=True)
+                                                        params['bpts'], params['ibpts'], params['paf'],
+                                                        params['paf_graph'], params['paf_links'], evaluation=True)
         n_animals = len(animals)
         if n_animals:
             _, _, GT = data[imname]['groundtruth']
@@ -162,6 +163,7 @@ def compute_crossval_metrics(config_path, inference_cfg, shuffle=1, trainingseti
                 for i in range(len(gt)):
                     for j in range(len(animals)):
                         mat[i, j] = np.sqrt(np.nanmean(np.sum((gt[i] - ani[j, :, :2]) ** 2, axis=1)))
+            
             mat[np.isnan(mat)] = np.nanmax(mat) + 1
             row_indices, col_indices = linear_sum_assignment(mat)
             stats[n, 0] = mat[row_indices, col_indices].mean() #rmse
@@ -177,8 +179,25 @@ def compute_crossval_metrics(config_path, inference_cfg, shuffle=1, trainingseti
             stats[n, 3] = np.logical_and(~gt_matched, dlc_matched).sum() #additional detections
             stats[n, 4] = n_animals
 
+            numgtpts=gt_annot.sum() 
+            #animal & bpt-wise distance!
+            if numgtpts>0:
+                #corrkps=np.sum((gt[row_indices]-ani[col_indices])**2,axis=2)<dcorr**2
+                dists=np.sum((gt[row_indices]-ani[col_indices])**2,axis=2)
+                corrkps=dists[np.isfinite(dists)]<dcorr**2
+                pck = corrkps.sum()*1./numgtpts  #weigh by actually annotated ones! 
+
+                rpck=np.sum(np.exp(-dists[np.isfinite(dists)]*1./dcorr**2))*1./numgtpts
+
+            else:
+                pck = 1. #does that make sense? As a convention fully correct...
+                rpck= 1.
+            stats[n, 5] = pck
+            stats[n, 5] = rpck
+
     train_iter = int(predictionsfn.split('-')[-1].split('.')[0])
     train_frac = int(predictionsfn.split('trainset')[1].split('shuffle')[0])
+
     with warnings.catch_warnings():
         warnings.simplefilter('ignore', category=RuntimeWarning)
         res = np.r_[train_iter, train_frac, shuffle,
@@ -189,7 +208,7 @@ def compute_crossval_metrics(config_path, inference_cfg, shuffle=1, trainingseti
 
 
 def bayesian_search(config_path, shuffle=1, trainingsetindex=0, target='rmse_test',
-                    maximize=False, init_points=20, n_iter=50, acq='ei'):
+                    maximize=False, init_points=20, n_iter=50, acq='ei',dcorr=5):
     inferencecfg = edict()
     inferencecfg.withid = False
     inferencecfg.method = 'm1'
@@ -224,9 +243,11 @@ def bayesian_search(config_path, shuffle=1, trainingsetindex=0, target='rmse_tes
         inferencecfg.addlikelihoods = addlikelihoods
         inferencecfg.pafthreshold = pafthreshold
 
-        stats = compute_crossval_metrics(config_path, inferencecfg, shuffle,trainingsetindex)
+        stats = compute_crossval_metrics(config_path, inferencecfg, shuffle,trainingsetindex,dcorr=dcorr)
         val = stats[target].values[0]
-        #print("rmse", stats['rmse_test'].values[0], "miss", stats['misses_test'].values[0], "hit", stats['hits_test'].values[0])
+        print("rmse", stats['rmse_test'].values[0], "miss", stats['misses_test'].values[0], "hit", stats['hits_test'].values[0])
+        print("pck", stats['pck_test'].values[0], "pck", stats['pck_train'].values[0])
+        print("rpck", stats['rpck_test'].values[0], "rpck", stats['rpck_train'].values[0])
         #val = stats['rmse_test'].values[0]*(1+stats['misses_test'].values[0]*1./stats['hits_test'].values[0])
         if np.isnan(val):
             val = 1e9
