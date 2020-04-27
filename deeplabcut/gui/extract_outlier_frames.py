@@ -61,7 +61,6 @@ class Extract_outlier_frames(wx.Panel):
 
         sb = wx.StaticBox(self, label="Optional Attributes")
         boxsizer = wx.StaticBoxSizer(sb, wx.VERTICAL)
-        boxsizer2 = wx.StaticBoxSizer(sb, wx.VERTICAL)
 
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
@@ -105,10 +104,9 @@ class Extract_outlier_frames(wx.Panel):
             hbox2.Add(tracker_text_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         boxsizer.Add(hbox1,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
-        boxsizer2.Add(hbox2,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+        boxsizer.Add(hbox2,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
         self.sizer.Add(boxsizer, pos=(4, 0), span=(1, 5),flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT , border=10)
-        self.sizer.Add(boxsizer2, pos=(5, 0), span=(1, 5),flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT , border=10)
 
         self.help_button = wx.Button(self, label='Help')
         self.sizer.Add(self.help_button, pos=(6, 0), flag=wx.LEFT, border=10)
