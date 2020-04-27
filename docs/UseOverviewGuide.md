@@ -100,11 +100,11 @@ Please read [this convert 2 maDLC guide.]
 
 Great - now that you get the overall workflow let's jump in! Here, you have several options. 
 
-[**Option 1**](/docs/UseOverviewGuide.md#option-1-demo-notebooks) is good for a quick demo on our data. 
+[**Option 1**] DEMOs: (/docs/UseOverviewGuide.md#option-1-demo-notebooks) for a quick introduction to DLC on our data. 
 
-[**Option 2**](/docs/UseOverviewGuide.md#option-2-using-the-program-terminal-start-ipython) is the perfect place for beginners who want to start using DeepLabCut on your own data. 
+[**Option 2**] Standalone GUI: (docs/functionDetails.md#deeplabcut-project-manager-gui) is the perfect place for beginners who want to start using DeepLabCut on your own data. 
 
-[**Option 3**](docs/functionDetails.md#deeplabcut-project-manager-gui) is best for more advanced users, as with the terminal interface you get the most versatility and options.  
+[**Option 3**] In the terminal: (/docs/UseOverviewGuide.md#option-2-using-the-program-terminal-start-ipython) is best for more advanced users, as with the terminal interface you get the most versatility and options.  
 
 
 ## Option 1: Demo Notebooks:
@@ -171,7 +171,7 @@ config_path = '/thefulloutputpath/config.yaml'
 
 - open the **config.yaml** file (in a text editor (like atom, gedit, vim etc.)), which can be found in the subfolder created when you set your project name, to change parameters and identify label names! This is a crucial step. 
 
-**maDeepLabCut**: As of 2.2 you also need to modify a few more parameters in the config.yaml file, see [here](functionDetails.md#b-configure-the-project).
+**maDeepLabCut**: As of 2.2 you also must to modify a few more parameters in the config.yaml file, **see [here](functionDetails.md#b-configure-the-project).**
 
 (PLEASE see more details [here](functionDetails.md#b-configure-the-project))
 
