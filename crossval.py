@@ -133,7 +133,7 @@ def compute_mot_metrics_new_tracker(inference_cfg, data, bboxes_ground_truth):
     return acc, tracklets
 
 
-def compute_crossval_metrics(config_path, inference_cfg, shuffle=1, trainingsetindex=0, 
+def compute_crossval_metrics(config_path, inference_cfg, shuffle=1, trainingsetindex=0,
                                 modelprefix='',snapshotindex=-1,dcorr=5):
     fns = return_evaluate_network_data(config_path, shuffle=shuffle,
                                        trainingsetindex=trainingsetindex, modelprefix=modelprefix)
@@ -163,7 +163,7 @@ def compute_crossval_metrics(config_path, inference_cfg, shuffle=1, trainingseti
                 for i in range(len(gt)):
                     for j in range(len(animals)):
                         mat[i, j] = np.sqrt(np.nanmean(np.sum((gt[i] - ani[j, :, :2]) ** 2, axis=1)))
-            
+
             mat[np.isnan(mat)] = np.nanmax(mat) + 1
             row_indices, col_indices = linear_sum_assignment(mat)
             stats[n, 0] = mat[row_indices, col_indices].mean() #rmse
@@ -179,13 +179,13 @@ def compute_crossval_metrics(config_path, inference_cfg, shuffle=1, trainingseti
             stats[n, 3] = np.logical_and(~gt_matched, dlc_matched).sum() #additional detections
             stats[n, 4] = n_animals
 
-            numgtpts=gt_annot.sum() 
+            numgtpts=gt_annot.sum()
             #animal & bpt-wise distance!
             if numgtpts>0:
                 #corrkps=np.sum((gt[row_indices]-ani[col_indices])**2,axis=2)<dcorr**2
                 dists=np.sum((gt[row_indices]-ani[col_indices])**2,axis=2)
                 corrkps=dists[np.isfinite(dists)]<dcorr**2
-                pck = corrkps.sum()*1./numgtpts  #weigh by actually annotated ones! 
+                pck = corrkps.sum()*1./numgtpts  #weigh by actually annotated ones!
 
                 rpck=np.sum(np.exp(-dists[np.isfinite(dists)]*1./dcorr**2))*1./numgtpts
 
