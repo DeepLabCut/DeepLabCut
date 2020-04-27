@@ -76,6 +76,8 @@ We recommend first using **DeepLabCut for a single animal senario** to understan
 
 We highly recommend using 2.2 first in the Project Manager GUI ([Option 3](docs/functionDetails.md#deeplabcut-project-manager-gui)). This will allow you to get used to the additional steps by being walked through the process. Then, you can always use all the functions in your favorite IDE, notbooks, etc. 
 
+##### *What scenario do you have?* 
+
 - **I have single animal videos, but I want to use DLC2.2:**
    - quick start: when you `create_new project` just set the flag `multianimal=True`. 
 
