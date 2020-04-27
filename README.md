@@ -24,7 +24,7 @@
 </p>
 
 DeepLabCut is a toolbox for markerless pose estimation of animals performing various tasks. [Read a short development and application summary below](https://github.com/AlexEMG/DeepLabCut#why-use-deeplabcut).
-:purple_heart: DeepLabCut now supports multi-animal pose estimation.
+:purple_heart: DeepLabCut now supports multi-animal pose estimation (beta release).
 
 # [Installation: how to install DeepLabCut](docs/installation.md)
 
