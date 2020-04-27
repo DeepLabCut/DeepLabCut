@@ -95,7 +95,8 @@ def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,bodyparts2plot,
                     for ind in range(0, len(df_x), nbodyparts):
                         pair = link[0] + ind, link[1] + ind
                         with np.errstate(invalid='ignore'):
-                            if np.all(df_likelihood[pair, index] > pcutoff):
+                            if np.all(df_likelihood[pair, index] > pcutoff) and not \
+                                    (np.any(np.isnan(df_x[pair, index])) or np.any(np.isnan(df_y[pair, index]))):
                                 rr, cc, val = line_aa(int(np.clip(df_y[pair[0], index], 0, ny - 1)),
                                                       int(np.clip(df_x[pair[0], index], 0, nx - 1)),
                                                       int(np.clip(df_y[pair[1], index], 1, ny - 1)),
