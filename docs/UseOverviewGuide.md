@@ -76,6 +76,8 @@ We recommend first using **DeepLabCut for a single animal senario** to understan
 
 We highly recommend using 2.2 first in the Project Manager GUI ([Option 3](docs/functionDetails.md#deeplabcut-project-manager-gui)). This will allow you to get used to the additional steps by being walked through the process. Then, you can always use all the functions in your favorite IDE, notbooks, etc. 
 
+##### *What scenario do you have?* 
+
 - **I have single animal videos, but I want to use DLC2.2:**
    - quick start: when you `create_new project` just set the flag `multianimal=True`. 
 
@@ -94,17 +96,17 @@ We highly recommend using 2.2 first in the Project Manager GUI ([Option 3](docs/
 
 - **I have a pre-2.2 single animal project, but I want to use 2.2:**
 
-Please read [this convert 2 maDLC guide.]
+Please read [this convert 2 maDLC guide](/docs/convert_maDLC.md)
 
 ### The options for using DeepLabCut:
 
 Great - now that you get the overall workflow let's jump in! Here, you have several options. 
 
-[**Option 1**](/docs/UseOverviewGuide.md#option-1-demo-notebooks) is good for a quick demo on our data. 
+[**Option 1**](/docs/UseOverviewGuide.md#option-1-demo-notebooks) DEMOs: for a quick introduction to DLC on our data. 
 
-[**Option 2**](/docs/UseOverviewGuide.md#option-2-using-the-program-terminal-start-ipython) is the perfect place for beginners who want to start using DeepLabCut on your own data. 
+[**Option 2**](/docs/UseOverviewGuide.md#option-2-using-the-project-manger-gui) Standalone GUI: is the perfect place for beginners who want to start using DeepLabCut on your own data. 
 
-[**Option 3**](docs/functionDetails.md#deeplabcut-project-manager-gui) is best for more advanced users, as with the terminal interface you get the most versatility and options.  
+[**Option 3**](/docs/UseOverviewGuide.md#option-3-using-the-program-terminal-start-ipython) In the terminal: is best for more advanced users, as with the terminal interface you get the most versatility and options.  
 
 
 ## Option 1: Demo Notebooks:
@@ -171,7 +173,7 @@ config_path = '/thefulloutputpath/config.yaml'
 
 - open the **config.yaml** file (in a text editor (like atom, gedit, vim etc.)), which can be found in the subfolder created when you set your project name, to change parameters and identify label names! This is a crucial step. 
 
-**maDeepLabCut**: As of 2.2 you also need to modify a few more parameters in the config.yaml file, see [here](functionDetails.md#b-configure-the-project).
+**maDeepLabCut**: As of 2.2 you also must to modify a few more parameters in the config.yaml file, **see [here](functionDetails.md#b-configure-the-project).**
 
 (PLEASE see more details [here](functionDetails.md#b-configure-the-project))
 

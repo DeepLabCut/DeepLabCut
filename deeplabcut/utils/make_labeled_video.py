@@ -350,7 +350,7 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
 
     start_path=os.getcwd()
     Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
-    
+
     if not len(Videos):
         print("No video(s) were found. Please check your paths and/or 'video_type'.")
         return
@@ -455,12 +455,14 @@ def create_video_with_all_detections(config, videos, DLCscorername, destfolder=N
 
     for video in videos:
         videofolder = os.path.splitext(video)[0]
+
         if destfolder is None:
             outputname = '{}_full.mp4'.format(videofolder+DLCscorername)
+            full_pickle = os.path.join(videofolder + DLCscorername + '_full.pickle')
         else:
             auxiliaryfunctions.attempttomakefolder(destfolder)
             outputname = os.path.join(destfolder,str(Path(video).stem)+DLCscorername+'_full.mp4')
-        full_pickle = os.path.join(videofolder + DLCscorername + '_full.pickle')
+            full_pickle = os.path.join(destfolder,str(Path(video).stem) + DLCscorername + '_full.pickle')
 
         if not(os.path.isfile(outputname)):
             print("Creating labeled video for ", str(Path(video).stem))
@@ -514,7 +516,7 @@ def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff, s
 
     if not os.path.isdir(destfolder):
         os.mkdir(destfolder)
-    
+
     cap = cv2.VideoCapture(video)
     nframes = int(cap.get(7))
     strwidth = int(np.ceil(np.log10(nframes)))  # width for strings

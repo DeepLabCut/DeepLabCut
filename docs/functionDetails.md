@@ -61,37 +61,35 @@ Next, open the **config.yaml** file, which was created during  **create\_new\_pr
 
 ```python
 individuals:
-- bird1
-- bird2
-- bird3
-- bird4
-- bird5
-- bird6
-- bird7
-- bird8
+- mouse1
+- mouse2
 
 uniquebodyparts:
-- montblanc
+- topleftcorner
+- toprightcorner
 
 multianimalbodyparts:
-- head
-- tail
-- leftwing
-- rightwing
+- snout
+- leftear
+- rightear
+- tailbase
 
 skeleton:
-- - head
-  - tail
-- - leftwing
-  - rightwing
-- - head
-  - leftwing
-- - head
-  - rightwing
-- - leftwing
-  - tail
-- - rightwing
-  - tail
+- - snout
+  - tailbase
+- - snout
+  - leftear
+- - snout
+  - rightear
+- - leftear
+  - rightear
+- - leftear
+  - tailbase
+- - rightear
+  - tailbase
+  
+- - topleftcorner
+  - toprightcorner
 ```
 
  ### (C) Data Selection (extract frames)

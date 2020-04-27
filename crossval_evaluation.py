@@ -2,11 +2,11 @@ import numpy as np
 import os
 
 os.environ['DLClight'] = 'True'
+
 import pickle
 import deeplabcut
 import pandas as pd
 from easydict import EasyDict as edict
-from itertools import product
 from tqdm import tqdm
 
 import deeplabcut, pickle, os, sys
@@ -16,35 +16,12 @@ import pandas as pd
 
 #sys.path.append(os.path.join('/media/alex/dropboxdisk/Dropbox/Collaborations/Cancer/DLCdev/deeplabcut/pose_estimation_tensorflow/lib'))
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingutils
-
+import crossval
 
 projectpath='/media/alex/dropboxdisk/Dropbox/InterestingCode/social_datasets/croppedNov18/MultiMouse-Daniel-2019-12-16'
 configfile=os.path.join(projectpath,'config.yaml')
 
 cfg=deeplabcut.auxiliaryfunctions.read_config(configfile)
-Shuffles=[2]
-modelprefix=''
-PAF=None
-
-####
-'''
-path_inference_config = Path(modelfolder) / 'test' / 'inference_cfg.yaml'
-if inferencecfg is None: #then load or initialize
-    inferencecfg=auxfun_multianimal.read_inferencecfg(path_inference_config,cfg)
-else: #TODO: check if all variables present
-    inferencecfg=edict(inferencecfg)
-'''
-
-def metric(df1,df2,pcutoff=0):
-    #mask=df2.xs('likelihood',level=1,axis=1)>=pcutoff
-    
-    dist=(df1-df2)**2
-    RMSE=np.sqrt(dist.xs('x',level=1,axis=1)+dist.xs('y',level=1,axis=1)) #bpt-element wise RMSE
-
-    return np.nanmean(RMSE)
-
-from scipy.optimize import linear_sum_assignment
-
 
 inferencecfg=edict()
 inferencecfg.minimalnumberofconnections=3
@@ -55,141 +32,120 @@ inferencecfg.detectionthresholdsquare=.1
 inferencecfg.addlikelihoods=0.
 inferencecfg.pafthreshold=.1
 inferencecfg.method='m1'
-
 inferencecfg.withid=False
 inferencecfg.slack=10
 inferencecfg.variant=0 #
+inferencecfg.topktoplot=3 #THIS SHOULD BE Larger than # animals!
 
+#example use case for running
+#data=crossval.compute_crossval_metrics(configfile, inferencecfg, shuffle=2, trainingsetindex=0)
 
-#def quantifiyassembly(cfg, Shuffles, configfile, modelprefix,inferencecfg,PAF=None,printoutput=False,calculatemask=False):
-TrainIndices=[]
-TestIndices=[]
-individuals, uniquebodyparts,multianimalbodyparts = auxfun_multianimal.extractindividualsandbodyparts(cfg)
+#inferencecfg, opt = crossval.bayesian_search(configfile, shuffle=2, trainingsetindex=0, target='rmse_test', init_points=20, n_iter=50, acq='ei')
 
-trainingsetfolder=auxiliaryfunctions.GetTrainingSetFolder(cfg)
-Data = pd.read_hdf(os.path.join(cfg["project_path"],str(trainingsetfolder),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing')
+inferencecfg, opt = crossval.bayesian_search(configfile, shuffle=2, trainingsetindex=0, target='pck_test', 
+                                                init_points=20, n_iter=50, acq='ei',dcorr=5,maximize=True)
 
+'''
+dcorr=5 #pixel distance cutoff
 
-for shuffle, shuffleval in enumerate(Shuffles):
-    #DLCdev version:
-    #fns=deeplabcut.return_evaluate_network_data(configfile,shuffle=shuffleval,trainingsetindex=0,modelprefix=modelprefix,returnjustfns=True)
-    #sDLC version:
-    fns=deeplabcut.return_evaluate_network_data(configfile,shuffle=shuffleval,trainingsetindex=0,modelprefix=modelprefix)
-    #print(fns)
-    dataname=fns[-1]
+config_path=configfile
+inference_cfg=inferencecfg
+shuffle=2
+trainingsetindex=0
+modelprefix=''
+snapshotindex=-1
 
-    ########### Loading full detection file!
-    data, metadata=deeplabcut.utils.auxfun_multianimal.LoadFullMultiAnimalData(dataname)
+import motmetrics as mm
+import numpy as np
+import os
+os.environ['DLClight'] = 'True'
+import pickle
+import deeplabcut
+import pandas as pd
+import warnings
+from bayes_opt import BayesianOptimization
+from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingutils
+from deeplabcut import return_evaluate_network_data
+from deeplabcut.utils import auxfun_multianimal
+from deeplabcut.refine_training_dataset.tracklets import TrackletManager
+from easydict import EasyDict as edict
+from itertools import product
+from scipy.optimize import linear_sum_assignment
+from tqdm import tqdm
+fns = return_evaluate_network_data(config_path, shuffle=shuffle,
+                                   trainingsetindex=trainingsetindex, modelprefix=modelprefix)
 
-    #print(dataname,shuffleval)
-    trainIndices=metadata['data']['trainIndices']
-    testIndices=metadata['data']['testIndices']
-    DLCscorer=metadata['data']['Scorer']
-    dlc_cfg=metadata['data']['DLC-model-config file']
+def set_up_evaluation(data):
+    params = dict()
+    params['joint_names'] = data['metadata']['all_joints_names']
+    params['num_joints'] = len(params['joint_names'])
+    partaffinityfield_graph = data['metadata']['PAFgraph']
+    params['paf'] = np.arange(len(partaffinityfield_graph))
+    params['paf_graph'] = params['paf_links'] = [partaffinityfield_graph[l] for l in params['paf']]
+    params['bpts'] = params['ibpts'] = range(params['num_joints'])
+    params['imnames'] = [fn for fn in list(data) if fn != 'metadata']
+    return params
 
-    TrainIndices.append(trainIndices)
-    TestIndices.append(testIndices)
+predictionsfn = fns[snapshotindex]
+data, metadata = auxfun_multianimal.LoadFullMultiAnimalData(predictionsfn)
 
-    nms_radius=data['metadata']['nms radius']
-    minconfidence=data['metadata']['minimal confidence']
-    partaffinityfield_graph=data['metadata']['PAFgraph']
-    all_joints=data['metadata']['all_joints']
-    all_jointnames=data['metadata']['all_joints_names']
+params = set_up_evaluation(data)
 
-    numjoints=len(all_joints)
-
-    if PAF is None:
-        PAF=np.arange(len(partaffinityfield_graph))
-
-    partaffinityfield_graph=[partaffinityfield_graph[l] for l in PAF]
-
-    BPTS=range(numjoints) 
-    iBPTS=BPTS 
-
-    numjoints=len(BPTS)
-    numlimbs=len(partaffinityfield_graph)
-    imnames=np.sort([fn for fn in data.keys() if fn !='metadata'])
-    numimages=len(imnames)
-
-    numuniquebodyparts=len(uniquebodyparts)
-    numanimals=len(individuals)-1*(len(uniquebodyparts)>0) #number of individuals in ground truth (excluding single!)
-    nummultianimalparts=len(cfg['multianimalbodyparts'])
-
-    len(individuals)
-
-    ResultsUBPTs=np.zeros((numuniquebodyparts*3,numimages))*np.nan #TODO assign for example with uniquepbt
-
-    macolumnindex = pd.MultiIndex.from_product([numanimals-int(numuniquebodyparts>0), cfg['multianimalbodyparts'], ['x', 'y','likelihood']],names=['individuals','bodyparts', 'coords'])
-    ResultsMAPTS=np.zeros((nummultianimalparts*3, numanimals-int(numuniquebodyparts>0),numimages))*np.nan
-
-    ## for pandas array to hold individually detected subsets
-    bodyparts=[all_jointnames[i] for i in BPTS]
-    elements=3 * numjoints
-    for imgid in tqdm(range(numimages)):
-        imname=imnames[imgid]
-        detectedcoordinates = data[imname]['prediction']['coordinates'][0]
-        detectedlikelihood = data[imname]['prediction']['confidence']
-        groundtruthidentity, groundtruthcoordinates, GT=data[imname]['groundtruth']
-
-        all_detections = inferenceutils.convertdetectiondict2listoflist(data[imname],BPTS,withid=inferencecfg.withid,evaluation=True)
-
-        connection_all, missing_connections = inferenceutils.extractstrongconnections(inferencecfg,data[imname],
-                                    all_detections, iBPTS, partaffinityfield_graph, PAF,evaluation=True)
+n_images = len(params['imnames'])
+stats = np.full((n_images, 6), np.nan)  # RMSE, hits, misses, false_pos, num_detections, pck
+columns = ['train_iter', 'train_frac', 'shuffle']
+columns += ['_'.join((b, a)) for a in ('train', 'test') for b in ('rmse', 'misses', 'hits', 'falsepos', 'ndetects', 'pck')]
+for n, imname in enumerate(params['imnames']):
+    animals = inferenceutils.assemble_individuals(inference_cfg, data[imname], params['num_joints'],
+                                                    params['bpts'], params['ibpts'], params['paf'],
+                                                    params['paf_graph'], params['paf_links'], evaluation=True)
+    n_animals = len(animals)
+    if n_animals:
+        _, _, GT = data[imname]['groundtruth']
+        GT = GT.droplevel('scorer').unstack(level=['bodyparts', 'coords'])
+        gt = GT.values.reshape((GT.shape[0], -1, 2))
+        ani = np.stack(animals).reshape((n_animals, -1, 3))[:, :gt.shape[1], :2]
+        mat = np.full((gt.shape[0], n_animals), np.nan)
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', category=RuntimeWarning)
+            for i in range(len(gt)):
+                for j in range(len(animals)):
+                    mat[i, j] = np.sqrt(np.nanmean(np.sum((gt[i] - ani[j, :, :2]) ** 2, axis=1)))
         
-        subsets, candidate = inferenceutils.linkjoints2individuals(inferencecfg, all_detections, connection_all, missing_connections,
-                                                    partaffinityfield_graph, iBPTS, numjoints=numjoints,log=False)
+        mat[np.isnan(mat)] = np.nanmax(mat) + 1
+        row_indices, col_indices = linear_sum_assignment(mat)
+        stats[n, 0] = mat[row_indices, col_indices].mean() #rmse
 
-        detectedindividuals=[str(j) for j in range(len(subsets))]
-        detections = np.zeros((1, elements*len(detectedindividuals))) * np.nan
-        #recode the data into a pandas array
-        for sj, subset in enumerate(subsets):
-            if subset is not None:
-                for i in range(numjoints):  # number of joints
-                    ind = int(subset[i])  # bpt index in global coordinates
-                    if -1 == ind:  # not assigned
-                        continue
-                    else:  # xyl=np.ones(3)*np.nan
-                        detections[0, elements*sj + 3 * i: elements*sj + 3 * i + 3] = candidate[ind, :3]
+        gt_annot = np.any(~np.isnan(gt), axis=2)
+        gt_matched = gt_annot[row_indices].flatten()
 
-        if len(subsets)>0:
-            columnindex = pd.MultiIndex.from_product([detectedindividuals, bodyparts, ['x', 'y','likelihood']],names=['individuals','bodyparts', 'coords'])
-            DF=pd.DataFrame(detections, columns=columnindex, index=[imname])
+        dlc_annot = np.any(~np.isnan(ani), axis=2) #DLC assemblies
+        dlc_matched = dlc_annot[col_indices].flatten()
 
-            # calc. distance for each detection and ground truth pose
-            mat = np.zeros((len(individuals),len(detectedindividuals)))+np.inf
-            for i, individual in enumerate(individuals):
-                for j, ind in enumerate(detectedindividuals):
-                    rmse = metric(GT[cfg['scorer']][individual], DF[ind])
-                    if np.isfinite(rmse):
-                        mat[i, j] = rmse #rmse 
-                    
+        stats[n, 1] = np.logical_and(gt_matched, dlc_matched).sum() #hits
+        stats[n, 2] = gt_annot.sum() - stats[n, 1] #misses
+        stats[n, 3] = np.logical_and(~gt_matched, dlc_matched).sum() #additional detections
+        stats[n, 4] = n_animals
 
-            # find least cost assignment
-            row_indices, col_indices = linear_sum_assignment(mat)
-            #for i, individual in enumerate(individuals): 
-            #    #match=detectedindividuals[col_indices[i]]
-            for posi,i in enumerate(row_indices):
-                ResultsMAPTS[:,i,imgid]=DF[str(col_indices[posi])].values.flatten()
+        numgtpts=gt_annot.sum() 
+        #animal & bpt-wise distance!
+        if numgtpts>0:
+            #corrkps=np.sum((gt[row_indices]-ani[col_indices])**2,axis=2)<dcorr**2
+            dists=np.sum((gt[row_indices]-ani[col_indices])**2,axis=2)
+            corrkps=dists[np.isfinite(dists)]<dcorr**2
+            pck = corrkps.sum()*1./numgtpts  #weigh by actually annotated ones! 
+        else:
+            pck = 1. #does that make sense? As a convention fully correct...
+        
+        stats[n, 5] = pck
 
-    #if nec. stack the single animal stuff!
-    #ResultsMAPTS.reshape(-1,numimages)
-    #Data=pd.DataFrame(ResultsMAPTS.reshape(-1,numimages).T, columns=macolumnindex, index=Data.index)
+train_iter = int(predictionsfn.split('-')[-1].split('.')[0])
+train_frac = int(predictionsfn.split('trainset')[1].split('shuffle')[0])
 
-#DF=pd.DataFrame(detections, columns=columnindex, index=[imname])
-#for i, individual in enumerate(individuals): 
-#    match=detectedindividuals[col_indices[i]]
-'''    
-#columnindex = pd.MultiIndex.from_product([individuals, ['rmse', 'f1','likelihood']],names=['individuals','metrics'])
+with warnings.catch_warnings():
+    warnings.simplefilter('ignore', category=RuntimeWarning)
+    res = np.r_[train_iter, train_frac, shuffle,
+                np.nanmean(stats[metadata['data']['trainIndices']], axis=0),
+                np.nanmean(stats[metadata['data']['testIndices']], axis=0)]
 
-#calculate metrics for the matches:
-#for i, individual in enumerate(individuals): 
-#    #match=detectedindividuals[col_indices[i]]
-#    ResultsMAPTS[:,i,]=DF[str(col_indices[i])].values.flatten()
-
-    #df,dg=GT[cfg['scorer']][individual], DF[str(col_indices[i])]
-    rmse = mat[i, col_indices[i]]
-    ResultsMAPTS
-    #ResultsUBPTs # how did you set those?
-
-    #closest distance! rmse!
 '''
