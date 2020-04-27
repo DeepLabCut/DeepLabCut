@@ -7,9 +7,12 @@ import deeplabcut
 import pandas as pd
 import warnings
 from bayes_opt import BayesianOptimization
+from bayes_opt.logger import JSONLogger
+from bayes_opt.event import Events
+from bayes_opt.util import load_logs
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingutils
 from deeplabcut import return_evaluate_network_data
-from deeplabcut.utils import auxfun_multianimal
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.refine_training_dataset.tracklets import TrackletManager
 from easydict import EasyDict as edict
 from itertools import product
@@ -208,7 +211,7 @@ def compute_crossval_metrics(config_path, inference_cfg, shuffle=1, trainingseti
 
 
 def bayesian_search(config_path, shuffle=1, trainingsetindex=0, target='rmse_test',
-                    maximize=False, init_points=20, n_iter=50, acq='ei',dcorr=5):
+                    maximize=False, init_points=20, n_iter=50, acq='ei',dcorr=5, log_file=None):
     inferencecfg = edict()
     inferencecfg.withid = False
     inferencecfg.method = 'm1'
@@ -275,6 +278,14 @@ def bayesian_search(config_path, shuffle=1, trainingsetindex=0, target='rmse_tes
         return val
 
     opt = BayesianOptimization(f=dlc_hyperparams, pbounds=pbounds, random_state=42)
+    if log_file:
+        load_logs(opt, log_file)
+    cfg = auxiliaryfunctions.read_config(config_path)
+    evaluationfolder = os.path.join(cfg["project_path"], str(
+        auxiliaryfunctions.GetEvaluationFolder(cfg["TrainingFraction"][int(trainingsetindex)], shuffle, cfg)))
+
+    logger = JSONLogger(path=os.path.join(evaluationfolder, 'opti_log.json'))
+    opt.subscribe(Events.OPTIMIZATION_STEP, logger)
     opt.maximize(init_points=init_points, n_iter=n_iter, acq=acq)
 
     inferencecfg.update(opt.max['params'])
