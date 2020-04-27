@@ -252,6 +252,21 @@ class MainFrame(wx.Frame):
             self.nextLabel(event=None)
         elif event.GetKeyCode() == wx.WXK_UP:
             self.previousLabel(event=None)
+        elif event.GetKeyCode() == wx.WXK_BACK:
+            pos_abs = event.GetPosition()
+            inv = self.axes.transData.inverted()
+            pos_rel = list(inv.transform(pos_abs))
+            pos_rel[1] = self.axes.get_ylim()[0] - pos_rel[1]  # Recall y-axis is inverted
+            i = np.nanargmin([self.calc_distance(*dp.point.center, *pos_rel) for dp in self.drs])
+            closest_dp = self.drs[i]
+            msg = wx.MessageBox('Do you want to remove the label %s ?' % closest_dp.bodyParts, 'Remove!',
+                                wx.YES_NO | wx.ICON_WARNING)
+            if msg == 2:
+                closest_dp.delete_data()
+
+    @staticmethod
+    def calc_distance(x1, y1, x2, y2):
+        return np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
     def activateSlider(self,event):
         """
