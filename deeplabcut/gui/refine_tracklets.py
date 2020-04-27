@@ -162,7 +162,7 @@ class Refine_tracklets(wx.Panel):
         deeplabcut.filterpredictions(self.config, [self.video], videotype= self.videotype.GetValue(),
                                      shuffle=shuffle, trainingsetindex=trainingsetindex,
                                      filtertype=self.filter_track.GetValue(), track_method=tracker,
-                                     windowlength=self.filterlength_track.GetValue())
+                                     windowlength=self.filterlength_track.GetValue(), save_as_csv=False)
 
     def export_data(self, event):
         self.viz.export_to_training_data()
