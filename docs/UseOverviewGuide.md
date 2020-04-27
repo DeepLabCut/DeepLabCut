@@ -100,11 +100,11 @@ Please read [this convert 2 maDLC guide.]
 
 Great - now that you get the overall workflow let's jump in! Here, you have several options. 
 
-[**Option 1**] DEMOs: (/docs/UseOverviewGuide.md#option-1-demo-notebooks) for a quick introduction to DLC on our data. 
+[**Option 1**](/docs/UseOverviewGuide.md#option-1-demo-notebooks) DEMOs: for a quick introduction to DLC on our data. 
 
-[**Option 2**] Standalone GUI: (docs/functionDetails.md#deeplabcut-project-manager-gui) is the perfect place for beginners who want to start using DeepLabCut on your own data. 
+[**Option 2**](docs/functionDetails.md#deeplabcut-project-manager-gui) Standalone GUI: is the perfect place for beginners who want to start using DeepLabCut on your own data. 
 
-[**Option 3**] In the terminal: (/docs/UseOverviewGuide.md#option-2-using-the-program-terminal-start-ipython) is best for more advanced users, as with the terminal interface you get the most versatility and options.  
+[**Option 3**](/docs/UseOverviewGuide.md#option-2-using-the-program-terminal-start-ipython) In the terminal: is best for more advanced users, as with the terminal interface you get the most versatility and options.  
 
 
 ## Option 1: Demo Notebooks:
