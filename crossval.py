@@ -186,8 +186,7 @@ def compute_crossval_metrics(config_path, inference_cfg, shuffle=1, trainingseti
                 dists=np.sum((gt[row_indices]-ani[col_indices])**2,axis=2)
                 corrkps=dists[np.isfinite(dists)]<dcorr**2
                 pck = corrkps.sum()*1./numgtpts  #weigh by actually annotated ones!
-
-                rpck=np.sum(np.exp(-dists[np.isfinite(dists)]*1./dcorr**2))*1./numgtpts
+                rpck=np.sum(np.exp(-dists[np.isfinite(dists)]*1./(2*dcorr**2)))*1./numgtpts
 
             else:
                 pck = 1. #does that make sense? As a convention fully correct...
