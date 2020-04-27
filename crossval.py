@@ -215,7 +215,7 @@ def bayesian_search(config_path, shuffle=1, trainingsetindex=0, target='rmse_tes
     inferencecfg.method = 'm1'
     inferencecfg.slack = 10
     inferencecfg.variant = 0
-    inferencecfg.topktoplot = 3 #np.inf
+    inferencecfg.topktoplot = np.inf
     inferencecfg.distnormalization=400
     inferencecfg.distnormalizationLOWER=5
     inferencecfg.addlikelihoods=.1
