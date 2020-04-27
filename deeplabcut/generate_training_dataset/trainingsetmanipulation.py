@@ -251,7 +251,7 @@ def cropimagesandlabels(config,numcrops=10, size=(400,400), userfeedback=True,
     videos = cfg['video_sets'].keys()
 
     if excludealreadycropped:
-        video_names = [(Path(i).parent, Path(i).stem, Path(i).suffix) for i in videos if "cropped" not in str(Path(i).stem)]
+        video_names = [(Path(i).parent, Path(i).stem, Path(i).suffix) for i in videos if "_cropped" not in str(Path(i).stem)]
     else:
         video_names = [(Path(i).parent, Path(i).stem, Path(i).suffix) for i in videos]
 
