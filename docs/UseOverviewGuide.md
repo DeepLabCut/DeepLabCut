@@ -96,7 +96,7 @@ We highly recommend using 2.2 first in the Project Manager GUI ([Option 3](docs/
 
 - **I have a pre-2.2 single animal project, but I want to use 2.2:**
 
-Please read [this convert 2 maDLC guide.]
+Please read [this convert 2 maDLC guide](/docs/convert_maDLC.md)
 
 ### The options for using DeepLabCut:
 
