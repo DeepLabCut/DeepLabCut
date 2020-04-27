@@ -819,7 +819,7 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,
         for trainFraction, shuffle, (trainIndexes, testIndexes) in splits:
             if len(trainIndexes)>0:
                 if userfeedback:
-                    trainposeconfigfile, _, _ = training.return_train_network_path(config, shuffle=shuffle)
+                    trainposeconfigfile, _, _ = training.return_train_network_path(config, shuffle=shuffle, trainingsetindex=cfg['TrainingFraction'].index(trainFraction))
                     if trainposeconfigfile.is_file():
                         askuser=input ("The model folder is already present. If you continue, it will overwrite the existing model (split). Do you want to continue?(yes/no): ")
                         if askuser=='no'or askuser=='No' or askuser=='N' or askuser=='No':

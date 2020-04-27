@@ -42,9 +42,13 @@ inferencecfg.topktoplot=3 #THIS SHOULD BE Larger than # animals!
 
 #inferencecfg, opt = crossval.bayesian_search(configfile, shuffle=2, trainingsetindex=0, target='rmse_test', init_points=20, n_iter=50, acq='ei')
 
-inferencecfg, opt = crossval.bayesian_search(configfile, shuffle=2, trainingsetindex=0, target='pck_test', 
-                                                init_points=20, n_iter=50, acq='ei',dcorr=5,maximize=True)
+inferencecfg, opt = crossval.bayesian_search(configfile, shuffle=2, trainingsetindex=0, target='rpck_test', 
+                                                init_points=25, n_iter=100, acq='ei',dcorr=5,maximize=True)
 
+print(inferencecfg)
+
+data=crossval.compute_crossval_metrics(configfile, inferencecfg, shuffle=2, trainingsetindex=0)
+print(data)
 '''
 dcorr=5 #pixel distance cutoff
 
