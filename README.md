@@ -17,9 +17,10 @@
 </p>
 
 <p align="center">
-<img src="http://www.people.fas.harvard.edu/~amathis/dlc/MATHIS_2018_odortrail.gif" height="220">
-<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3fbd0c898583417a040dfc/1547681053201/rat-grasp.gif?format=300w"  height="220">
-<img src="http://www.people.fas.harvard.edu/~amathis/dlc/MATHIS_2018_fly.gif" height="220">
+<img src="http://www.people.fas.harvard.edu/~amathis/dlc/MATHIS_2018_odortrail.gif" height="180">
+<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3fbd0c898583417a040dfc/1547681053201/rat-grasp.gif?format=300w" height="180">
+<img src="http://www.people.fas.harvard.edu/~amathis/dlc/MATHIS_2018_fly.gif" height="180">
+<img src="shorturl.at/ckxMP" height="120">
 </p>
 
 DeepLabCut is a toolbox for markerless pose estimation of animals performing various tasks. [Read a short development and application summary below](https://github.com/AlexEMG/DeepLabCut#why-use-deeplabcut).
