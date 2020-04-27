@@ -445,34 +445,30 @@ class MainFrame(wx.Frame):
                     if ind == 'single':
                         if self.visualization_rdb.GetSelection() == 0:
                             for c, bp in enumerate(self.uniquebodyparts):
-                                self.points = [self.Dataframe.xs((bp, 'x'), level=(-2, -1), axis=1).values[self.currFrame],
-                                               self.Dataframe.xs((bp, 'y'), level=(-2, -1), axis=1).values[self.currFrame],
-                                               1.0]
-                                self.circle = [patches.Circle((self.points[0], self.points[1]), radius=self.markerSize, fc = self.Colorscheme(ci) , alpha=self.alpha)]
-                                self.axes.add_patch(self.circle[0])
+                                pts = self.Dataframe.xs((ind, bp), level=('individuals', 'bodyparts'), axis=1).values
+                                self.circle = patches.Circle(pts[self.currFrame, :2], radius=self.markerSize,
+                                                             fc=self.Colorscheme(ci), alpha=self.alpha)
+                                self.axes.add_patch(self.circle)
                         else:
                             for c, bp in enumerate(self.uniquebodyparts):
-                                self.points = [self.Dataframe.xs((bp, 'x'), level=(-2, -1), axis=1).values[self.currFrame],
-                                               self.Dataframe.xs((bp, 'y'), level=(-2, -1), axis=1).values[self.currFrame],
-                                               1.0]
-                                self.circle = [patches.Circle((self.points[0], self.points[1]), radius=self.markerSize, fc = self.Colorscheme(col_idx) , alpha=self.alpha)]
-                                self.axes.add_patch(self.circle[0])
+                                pts = self.Dataframe.xs((ind, bp), level=('individuals', 'bodyparts'), axis=1).values
+                                self.circle = patches.Circle(pts[self.currFrame, :2], radius=self.markerSize,
+                                                             fc=self.Colorscheme(col_idx), alpha=self.alpha)
+                                self.axes.add_patch(self.circle)
                                 col_idx = col_idx + 1
                     else:
                         if self.visualization_rdb.GetSelection() == 0:
                             for c, bp in enumerate(self.multianimalbodyparts):
-                                self.points = [self.Dataframe.xs((bp, 'x'), level=(-2, -1), axis=1).values[self.currFrame],
-                                               self.Dataframe.xs((bp, 'y'), level=(-2, -1), axis=1).values[self.currFrame],
-                                               1.0]
-                                self.circle = [patches.Circle((self.points[0], self.points[1]), radius=self.markerSize, fc = self.Colorscheme(ci) , alpha=self.alpha)]
-                                self.axes.add_patch(self.circle[0])
+                                pts = self.Dataframe.xs((ind, bp), level=('individuals', 'bodyparts'), axis=1).values
+                                self.circle = patches.Circle(pts[self.currFrame, :2], radius=self.markerSize,
+                                                             fc=self.Colorscheme(ci), alpha=self.alpha)
+                                self.axes.add_patch(self.circle)
                         else:
                             for c, bp in enumerate(self.multianimalbodyparts):
-                                self.points = [self.Dataframe.xs((bp, 'x'), level=(-2, -1), axis=1).values[self.currFrame],
-                                               self.Dataframe.xs((bp, 'y'), level=(-2, -1), axis=1).values[self.currFrame],
-                                               1.0]
-                                self.circle = [patches.Circle((self.points[0], self.points[1]), radius=self.markerSize, fc = self.Colorscheme(col_idx) , alpha=self.alpha)]
-                                self.axes.add_patch(self.circle[0])
+                                pts = self.Dataframe.xs((ind, bp), level=('individuals', 'bodyparts'), axis=1).values
+                                self.circle = patches.Circle(pts[self.currFrame, :2], radius=self.markerSize,
+                                                             fc=self.Colorscheme(col_idx), alpha=self.alpha)
+                                self.axes.add_patch(self.circle)
                                 col_idx = col_idx + 1
                 self.figure.canvas.draw()
             else:

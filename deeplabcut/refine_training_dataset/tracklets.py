@@ -8,7 +8,6 @@ import pickle
 import re
 from deeplabcut.utils.auxiliaryfunctions import read_config, attempttomakefolder
 from deeplabcut.generate_training_dataset import auxfun_drag_label_multiple_individuals
-from functools import partial
 from matplotlib.path import Path
 from matplotlib.widgets import Slider, LassoSelector, Button, CheckButtons
 from threading import Event, Thread
