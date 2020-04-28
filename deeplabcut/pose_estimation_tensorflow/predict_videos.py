@@ -838,23 +838,28 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
         Method uses to track animals, either 'box' or 'skeleton'.
         By default, a constant velocity Kalman filter is used to track individual bounding boxes.
 
-    BPTS: ## TODO
-        Default is None.
+    BPTS: Default is None: all bodyparts are used.
+        Pass list of indices if only certain bodyparts should be used (advanced).
 
-    iBPTS: ##TODO
-        Default is None.
+    iBPTS: Default is None: all bodyparts are used.
+        The inverse indices from BPTS. 
+        TODO: calculate from BPTS
 
-    PAF: ## TODO
-        Default is None.
+    PAF: Default is None: all connections are used.
+        Pass list of indices if only certain connections should be used (advanced).
 
     printintermediate: ## TODO
         Default is false.
 
-    inferencecfg: ## TODO
-        Default is None.
+    inferencecfg: Default is None.
+        Configuaration file for inference (assembly of individuals). Ideally
+        should be optained from cross validation (during evaluation). By default
+        the parameters are loaded from inference_cfg.yaml, but these get_level_values
+        can be overwritten.
 
-    modelprefix:
-        Default is ''.
+    edgewisecondition: bool, default False.
+        If true pairwise Euclidean distances of limbs (connections in PAF) will be
+        estimated from the annotated data and used for excluding possible connections.
 
     Examples
     --------
@@ -907,7 +912,7 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
             from deeplabcut.pose_estimation_tensorflow import calculatepafdistancebounds
             inferenceboundscfg = calculatepafdistancebounds(config, shuffle, trainingsetindex)
             auxiliaryfunctions.write_plainconfig(path_inferencebounds_config,inferenceboundscfg)
-            
+
     # Check which snapshots are available and sort them by # iterations
     try:
       Snapshots = np.array([fn.split('.')[0]for fn in os.listdir(os.path.join(modelfolder , 'train'))if "index" in fn])
