@@ -258,7 +258,8 @@ def evaluate_multianimal_crossvalidate(config,Shuffles=[1], trainingsetindex=0, 
         #                target='rpck_test', maximize=True, init_points=20, n_iter=50, acq='ei', log_file=None, # bayes optimizer
         #                dcorr=5, leastbpts=3,printing=True)
         #
-        inferencecfg, opt = crossvalutils.bayesian_search(config, inferencecfg, pbounds,edgewisecondition=edgewisecondition, shuffle=0, trainingsetindex=0, target='rpck_test', 
+        inferencecfg, opt = crossvalutils.bayesian_search(config, inferencecfg, pbounds,edgewisecondition=edgewisecondition,
+                                                          shuffle=shuffle, trainingsetindex=trainingsetindex, target='rpck_test',
                                                         init_points=7, n_iter=2, acq='ei',maximize=True,
                                                         dcorr=5,leastbpts=3,modelprefix=modelprefix)
 
