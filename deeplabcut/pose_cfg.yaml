@@ -6,7 +6,6 @@ all_joints_names: willbeautomaticallyupdatedbycreate_training_datasetcode
 init_weights: willbeautomaticallyupdatedbycreate_training_datasetcode
 project_path: willbeautomaticallyupdatedbycreate_training_datasetcode
 
-
 # Hyperparameters below worked well for our tasks in
 # Mathis et al. Nature Neuroscience
 # https://www.nature.com/articles/s41593-018-0209-y

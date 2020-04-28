@@ -253,7 +253,7 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
 
                 path_train_config = str(os.path.join(cfg['project_path'],Path(modelfoldername),'train','pose_cfg.yaml'))
                 path_test_config = str(os.path.join(cfg['project_path'],Path(modelfoldername),'test','pose_cfg.yaml'))
-                #str(cfg['proj_path']+'/'+Path(modelfoldername) / 'test'  /  'pose_cfg.yaml')
+                path_inference_config = str(os.path.join(cfg['project_path'],Path(modelfoldername),'test','inference_cfg.yaml'))
 
                 jointnames=[str(bpt) for bpt in multianimalbodyparts]
                 jointnames.extend([str(bpt) for bpt in uniquebodyparts])
@@ -279,8 +279,8 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
                     "save_iters": 10000,
                     "display_iters": 500
                 }
-                defaultconfigfile = str(Path(deeplabcut.__file__).parents[0] / 'pose_cfg.yaml')
 
+                defaultconfigfile = str(Path(deeplabcut.__file__).parents[0] / 'pose_cfg.yaml')
                 trainingdata = trainingsetmanipulation.MakeTrain_pose_yaml(items2change,path_train_config,defaultconfigfile)
                 keys2save = [
                     "dataset", "num_joints", "all_joints", "all_joints_names",
@@ -292,6 +292,15 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
 
                 trainingsetmanipulation.MakeTest_pose_yaml(trainingdata, keys2save, path_test_config,
                                                             nmsradius=5., minconfidence=0.01) #setting important def. values for inference
+
+                #Setting inference cfg file:
+                defaultinference_configfile = str(Path(deeplabcut.__file__).parents[0] / 'inference_cfg.yaml')
+                items2change = {
+                    "minimalnumberofconnections": int(len(cfg['multianimalbodyparts'])/2),
+                    "topktoplot": len(cfg['individuals'])+1*(len(cfg['uniquebodyparts'])>0)
+                }
+                #TODO:   "distnormalization":  could be calculated here based on data and set
+                trainingsetmanipulation.MakeInference_yaml(items2change, path_inference_config,defaultinference_configfile)
 
                 print("The training dataset is successfully created. Use the function 'train_network' to start training. Happy training!")
             else:

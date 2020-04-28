@@ -294,7 +294,7 @@ def cropimagesandlabels(config,numcrops=10, size=(400,400), userfeedback=True,
                 cropindex = 0
                 attempts = -1
                 while cropindex < numcrops:
-                    dd = data[ind].copy()
+                    dd =  np.array(data[ind].copy(),dtype=float)
                     y0, x0 = np.random.randint(h - size[0]), np.random.randint(w - size[1])
                     with np.errstate(invalid='ignore'):
                         within = np.all((dd >= [x0, y0]) & (dd < [x0 + size[1], y0 + size[0]]), axis=1)
@@ -431,15 +431,18 @@ def boxitintoacell(joints):
     outer[0, 0] = np.array(joints, dtype='int64')
     return outer
 
-def MakeTrain_pose_yaml(itemstochange,saveasconfigfile,defaultconfigfile):
-    raw = open(defaultconfigfile).read()
+def ParseYaml(configfile):
+    raw = open(configfile).read()
     docs = []
     for raw_doc in raw.split('\n---'):
         try:
             docs.append(yaml.load(raw_doc,Loader=yaml.SafeLoader))
         except SyntaxError:
             docs.append(raw_doc)
+    return docs
 
+def MakeTrain_pose_yaml(itemstochange,saveasconfigfile,defaultconfigfile):
+    docs=ParseYaml(defaultconfigfile)
     for key in itemstochange.keys():
         docs[0][key] = itemstochange[key]
 
@@ -461,6 +464,15 @@ def MakeTest_pose_yaml(dictionary, keys2save, saveasfile, nmsradius=None, mincon
     dict_test['scoremap_dir'] = 'test'
     with open(saveasfile, "w") as f:
         yaml.dump(dict_test, f)
+
+def MakeInference_yaml(itemstochange,saveasconfigfile,defaultconfigfile):
+    docs=ParseYaml(defaultconfigfile)
+    for key in itemstochange.keys():
+        docs[0][key] = itemstochange[key]
+
+    with open(saveasconfigfile, "w") as f:
+        yaml.dump(docs[0], f)
+    return docs[0]
 
 def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
     """

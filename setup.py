@@ -35,7 +35,7 @@ setuptools.setup(
                       'tensorpack','tqdm','wheel'],
     scripts=['deeplabcut/pose_estimation_tensorflow/models/pretrained/download.sh'],
     packages=setuptools.find_packages(),
-    data_files=[('deeplabcut',['deeplabcut/pose_cfg.yaml',
+    data_files=[('deeplabcut',['deeplabcut/pose_cfg.yaml','deeplabcut/inference_cfg.yaml',
     'deeplabcut/pose_estimation_tensorflow/models/pretrained/pretrained_model_urls.yaml',
     'deeplabcut/gui/media/logo.png','deeplabcut/gui/media/dlc_1-01.png',
     'deeplabcut/pose_estimation_tensorflow/lib/nms_cython/nms_grid.pyx',
