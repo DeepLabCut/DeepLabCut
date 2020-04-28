@@ -10,11 +10,9 @@ project_path: /media/alex/dropboxdisk/Dropbox/Collaborations/Cancer/DLCdev/examp
 
     # Annotation data set configuration (and individual video cropping parameters)
 video_sets:
-  videos/montblanccropped.mov:
+  videos/montblanc.mov:
     crop: 0, 1920, 0, 1080
 
-#  videos/montblanc.mov:
-#    crop: 0, 1920, 0, 1080
 
 bodyparts: MULTI!
 start: 0
