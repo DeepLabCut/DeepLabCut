@@ -264,7 +264,8 @@ def evaluate_multianimal_crossvalidate(config,Shuffles=[1], trainingsetindex=0, 
                                                         dcorr=5,leastbpts=3,modelprefix=modelprefix)
 
         #print(inferencecfg)
-        DataOptParams=crossvalutils.compute_crossval_metrics(config, inferencecfg, shuffle, trainingsetindex=0,modelprefix=modelprefix)
+        DataOptParams=crossvalutils.compute_crossval_metrics(config, inferencecfg, shuffle,
+                                                             trainingsetindex=trainingsetindex,modelprefix=modelprefix)
         
         path_inference_config=str(path_inference_config)
         print("Quantification:", DataOptParams.head())

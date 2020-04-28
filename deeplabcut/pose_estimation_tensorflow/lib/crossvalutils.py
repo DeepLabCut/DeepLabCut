@@ -294,5 +294,6 @@ def bayesian_search(config_path, inferencecfg, pbounds,edgewisecondition=True,
 
     inferencecfg.update(opt.max['params'])
     inferencecfg.minimalnumberofconnections = int(inferencecfg.minimalnumberofconnections)
-
+    inferencecfg.detectionthresholdsquare = float(np.round(inferencecfg.detectionthresholdsquare, 2))
+    inferencecfg.pafthreshold = float(np.round(inferencecfg.pafthreshold, 2))
     return inferencecfg, opt
