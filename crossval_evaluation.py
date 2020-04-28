@@ -19,6 +19,10 @@ from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingut
 import crossval
 
 projectpath='/media/alex/dropboxdisk/Dropbox/InterestingCode/social_datasets/croppedNov18/MultiMouse-Daniel-2019-12-16'
+
+projectpath = '/media/alex/dropboxdisk/Dropbox/InterestingCode/social_datasets/MultiMouse-Daniel-2019-12-16'
+modelprefix = 'simplebaseline'
+
 configfile=os.path.join(projectpath,'config.yaml')
 
 cfg=deeplabcut.auxiliaryfunctions.read_config(configfile)
@@ -42,15 +46,21 @@ inferencecfg.topktoplot=3 #THIS SHOULD BE Larger than # animals!
 
 #inferencecfg, opt = crossval.bayesian_search(configfile, shuffle=2, trainingsetindex=0, target='rmse_test', init_points=20, n_iter=50, acq='ei')
 
-inferencecfg, opt = crossval.bayesian_search(configfile, shuffle=2, trainingsetindex=0, target='rpck_test', 
-                                                init_points=25, n_iter=100, acq='ei',dcorr=5,maximize=True)
+
+inferencecfg, opt = crossval.bayesian_search(configfile, shuffle=0, trainingsetindex=0, target='pck_test', 
+                                                init_points=7, n_iter=50, acq='ei',maximize=True, 
+                                                dcorr=6,leastbpts=3,modelprefix=modelprefix)
 
 print(inferencecfg)
-
-data=crossval.compute_crossval_metrics(configfile, inferencecfg, shuffle=2, trainingsetindex=0)
+data=crossval.compute_crossval_metrics(configfile, inferencecfg, shuffle=0, trainingsetindex=0,modelprefix=modelprefix)
 print(data)
+
+
+
+
 '''
 dcorr=5 #pixel distance cutoff
+leastbpts=3 #at least 3 bpts
 
 config_path=configfile
 inference_cfg=inferencecfg
@@ -108,16 +118,37 @@ for n, imname in enumerate(params['imnames']):
         _, _, GT = data[imname]['groundtruth']
         GT = GT.droplevel('scorer').unstack(level=['bodyparts', 'coords'])
         gt = GT.values.reshape((GT.shape[0], -1, 2))
+        
+        if leastbpts>0: #ONLY KEEP animals with at least as many bpts (to get rid of crops that cannot be assembled)
+            gt = gt[np.nansum(gt,axis=(1,2))>leastbpts]
+
         ani = np.stack(animals).reshape((n_animals, -1, 3))[:, :gt.shape[1], :2]
         mat = np.full((gt.shape[0], n_animals), np.nan)
+        mat2 = np.full((gt.shape[0], n_animals), np.nan)
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', category=RuntimeWarning)
+            
             for i in range(len(gt)):
+                numpts=np.nansum(gt[i]>0)//2
                 for j in range(len(animals)):
-                    mat[i, j] = np.sqrt(np.nanmean(np.sum((gt[i] - ani[j, :, :2]) ** 2, axis=1)))
-        
+                    #RMSE loss gt to detection
+                    mat[i, j] = np.sqrt(np.nanmean(np.sum((gt[i] - ani[j, :, :2]) ** 2, axis=1))) #average over bpts
+                    # rpck loss:
+                    if numpts > 0:
+                        dists=np.nanmean((gt[i]-ani[j])**2,axis=1) #squared dist per bpt!
+                        mat2[i, j] = -np.sum(np.exp(-dists[np.isfinite(dists)]*1./(2*dcorr**2)))*1./numpts
+                    else:
+                        mat2[i, j] = -1.
+                    
         mat[np.isnan(mat)] = np.nanmax(mat) + 1
+
+        row_indices2, col_indices2 = linear_sum_assignment(mat2)
         row_indices, col_indices = linear_sum_assignment(mat)
+        for i,r in enumerate(row_indices2):
+
+        print('RMSE:', row_indices,row_indices2)
+        print("rpck:", col_indices,col_indices2)
+
         stats[n, 0] = mat[row_indices, col_indices].mean() #rmse
 
         gt_annot = np.any(~np.isnan(gt), axis=2)
@@ -138,6 +169,7 @@ for n, imname in enumerate(params['imnames']):
             dists=np.sum((gt[row_indices]-ani[col_indices])**2,axis=2)
             corrkps=dists[np.isfinite(dists)]<dcorr**2
             pck = corrkps.sum()*1./numgtpts  #weigh by actually annotated ones! 
+            rpck=np.sum(np.exp(-dists[np.isfinite(dists)]*1./(2*dcorr**2)))*1./numgtpts
         else:
             pck = 1. #does that make sense? As a convention fully correct...
         
@@ -151,5 +183,6 @@ with warnings.catch_warnings():
     res = np.r_[train_iter, train_frac, shuffle,
                 np.nanmean(stats[metadata['data']['trainIndices']], axis=0),
                 np.nanmean(stats[metadata['data']['testIndices']], axis=0)]
+
 
 '''

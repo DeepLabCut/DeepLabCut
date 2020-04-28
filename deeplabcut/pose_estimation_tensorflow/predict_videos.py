@@ -142,7 +142,7 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
         print("Overwriting cropping parameters:", cropping)
         print("These are used for all videos, but won't be save to the cfg file.")
 
-    modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)))
+    modelfolder = os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)))
     path_test_config = Path(modelfolder) / 'test' / 'pose_cfg.yaml'
     try:
         dlc_cfg = load_config(str(path_test_config))
@@ -907,6 +907,7 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
             from deeplabcut.pose_estimation_tensorflow import calculatepafdistancebounds
             inferenceboundscfg = calculatepafdistancebounds(config, shuffle, trainingsetindex)
             auxiliaryfunctions.write_plainconfig(path_inferencebounds_config,inferenceboundscfg)
+            
     # Check which snapshots are available and sort them by # iterations
     try:
       Snapshots = np.array([fn.split('.')[0]for fn in os.listdir(os.path.join(modelfolder , 'train'))if "index" in fn])

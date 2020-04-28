@@ -33,7 +33,7 @@ sys.path.append(os.path.join('/usr/local/lib/python3.6/dist-packages',nmspath))
 #projectpath='/home/alex/Dropbox/InterestingCode/social_datasets/Marmoset-Mackenzie-2019-05-29'
 projectpath='/media/alex/dropboxdisk/Dropbox/InterestingCode/social_datasets/MultiMouse-Daniel-2019-12-16'
 config=os.path.join(projectpath,'config.yaml')
-
+cfg=deeplabcut.auxiliaryfunctions.read_config(config)
 #deeplabcut.check_labels(config)
 
 #print("Crop images...")
@@ -53,7 +53,7 @@ trainingsetindex=0
 videopath=os.path.join(projectpath,'videos')
 destfolder=os.path.join(projectpath,modelprefix)
 
-for shuffle in [0, 1,2]:
+for shuffle in [1, 2]:
     trainposeconfigfile,testposeconfigfile,snapshotfolder=deeplabcut.return_train_network_path(config,shuffle=shuffle,trainingsetindex=trainingsetindex,modelprefix=modelprefix)
     cfg_dlc=deeplabcut.auxiliaryfunctions.read_plainconfig(trainposeconfigfile)
 
@@ -79,14 +79,26 @@ for shuffle in [0, 1,2]:
     cfg_dlc = deeplabcut.auxiliaryfunctions.edit_config(testposeconfigfile, {'nmsradius': 5, 'minconfidence': .01})
 
     print("Evaluating", shuffle, trainingsetindex)
-    deeplabcut.evaluate_network(config,Shuffles=[shuffle],trainingsetindex=trainingsetindex,c_engine=True,modelprefix=modelprefix)
+    #deeplabcut.evaluate_network(config,Shuffles=[shuffle],trainingsetindex=trainingsetindex,c_engine=True,modelprefix=modelprefix)
 
-    #deeplabcut.pose_estimation_tensorflow.calculatepafdistancebounds(config, shuffle=1)
+    deeplabcut.pose_estimation_tensorflow.calculatepafdistancebounds(config, shuffle=shuffle)
     print("Evaluating", shuffle, trainingsetindex)
-    deeplabcut.evaluate_network(config,Shuffles=[shuffle],trainingsetindex=trainingsetindex,c_engine=False,plotting=True,modelprefix=modelprefix)
-    deeplabcut.extract_save_all_maps(config,shuffle=shuffle,trainingsetindex=trainingsetindex,modelprefix=modelprefix)
-
+    deeplabcut.evaluate_network(config,Shuffles=[shuffle],trainingsetindex=trainingsetindex,c_engine=c_engine,plotting=True,modelprefix=modelprefix)
+    #deeplabcut.extract_save_all_maps(config,shuffle=shuffle,trainingsetindex=trainingsetindex,modelprefix=modelprefix)
+    
+    '''
     print("Analyze video", shuffle, trainingsetindex)
-    deeplabcut.convert_detections2tracklets(config,[videopath],videotype='.mp4', destfolder=destfolder,modelprefix=modelprefix)
-    deeplabcut.create_labeled_video(config,[videopath],videotype='.mp4', destfolder=destfolder,modelprefix=modelprefix)
+    deeplabcut.analyze_videos(config,[videopath],videotype='.mp4',shuffle=shuffle,trainingsetindex=trainingsetindex, destfolder=destfolder,modelprefix = modelprefix)
+
+    trainFrac = cfg['TrainingFraction'][trainingsetindex]
+    scorername, DLCscorerlegacy = deeplabcut.auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction=trainFrac,modelprefix=modelprefix)
+    
+    videos=[fn for fn in os.listdir(videopath) if '.mp4' in fn]
+    for vid in videos:
+        deeplabcut.create_video_with_all_detections(config,[os.path.join(videopath,vid)],destfolder=destfolder,DLCscorername=scorername)
+    '''
+
+    #videotype='.mp4',shuffle=shuffle,trainingsetindex=trainingsetindex, destfolder=destfolder,modelprefix=modelprefix)
+    #deeplabcut.convert_detections2tracklets(config,[videopath],videotype='.mp4',shuffle=shuffle,trainingsetindex=trainingsetindex, destfolder=destfolder,modelprefix=modelprefix)
+    #deeplabcut.create_labeled_video(config,[videopath],videotype='.mp4',shuffle=shuffle,trainingsetindex=trainingsetindex, destfolder=destfolder,modelprefix=modelprefix)
     

@@ -279,7 +279,7 @@ def read_inferencecfg(path_inference_config,cfg):
         inferencecfg.minimalnumberofconnections=len(cfg['multianimalbodyparts'])/2 #reasonable default
         inferencecfg.averagescore=0.1
         inferencecfg.distnormalizationLOWER=0
-        inferencecfg.distnormalization=400
+        inferencecfg.distnormalization=400 #SET??
 
         inferencecfg.detectionthresholdsquare=0.1
         inferencecfg.addlikelihoods=.15
