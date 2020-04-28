@@ -238,9 +238,9 @@ def evaluate_multianimal_crossvalidate(config,Shuffles=[1], trainingsetindex=0, 
         modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)))
         path_inference_config = Path(modelfolder) / 'test' / 'inference_cfg.yaml'
         if inferencecfg is None: #then load or initialize
-            inferencecfg=auxfun_multianimal.read_inferencecfg(path_inference_config,cfg)
+            inferencecfg = auxfun_multianimal.read_inferencecfg(path_inference_config,cfg)
         else: #TODO: check if all variables present
-            inferencecfg=edict(inferencecfg)
+            inferencecfg = edict(inferencecfg)
 
         '''
         inferencecfg = edict()
@@ -259,18 +259,19 @@ def evaluate_multianimal_crossvalidate(config,Shuffles=[1], trainingsetindex=0, 
         #                dcorr=5, leastbpts=3,printing=True)
         #
         inferencecfg, opt = crossvalutils.bayesian_search(config, inferencecfg, pbounds,edgewisecondition=edgewisecondition, shuffle=0, trainingsetindex=0, target='rpck_test', 
-                                                        init_points=7, n_iter=50, acq='ei',maximize=True, 
+                                                        init_points=7, n_iter=2, acq='ei',maximize=True,
                                                         dcorr=5,leastbpts=3,modelprefix=modelprefix)
 
         #print(inferencecfg)
-        DataOptParams=crossvalutils.compute_crossval_metrics(config, inferencecfg, shuffle0, trainingsetindex=0,modelprefix=modelprefix)
+        DataOptParams=crossvalutils.compute_crossval_metrics(config, inferencecfg, shuffle, trainingsetindex=0,modelprefix=modelprefix)
         
-        print("Quantification:", data.head())
-        DataOptParams.to_hdf(path_inference_config.split('yaml')[0]+'.h5', 'df_with_missing', format='table', mode='w')
-        DataOptParams.to_csv(path_inference_config.split('yaml')[0]+'.csv')
+        path_inference_config=str(path_inference_config)
+        print("Quantification:", DataOptParams.head())
+        DataOptParams.to_hdf(path_inference_config.split('.yaml')[0]+'.h5', 'df_with_missing', format='table', mode='w')
+        DataOptParams.to_csv(path_inference_config.split('.yaml')[0]+'.csv')
 
         print("Saving optimal inference parameters...")
-        auxiliaryfunctinos.write_plainconfig(str(path_inference_config), dict(inferencecfg))
+        auxiliaryfunctions.write_plainconfig(path_inference_config, dict(inferencecfg))
         
         
         #auxfun_multianimal.write_inferencecfg(path_inference_config,cfg)

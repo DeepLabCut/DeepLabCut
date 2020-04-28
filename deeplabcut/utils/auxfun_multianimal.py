@@ -294,4 +294,5 @@ def read_inferencecfg(path_inference_config,cfg):
         inferencecfg.min_hits=3
         inferencecfg.iou_threshold=.2
         write_plainconfig(str(path_inference_config), dict(inferencecfg))
+        
     return inferencecfg
