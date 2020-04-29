@@ -251,14 +251,11 @@ def bayesian_search(config_path, inferencecfg, pbounds,edgewisecondition=True,
         lowerbound=None
         upperbound=None
 
-
-    def dlc_hyperparams(pafthreshold,
-                        detectionthresholdsquare,
-                        minimalnumberofconnections):
-
-        inferencecfg.minimalnumberofconnections = int(minimalnumberofconnections)
-        inferencecfg.detectionthresholdsquare = detectionthresholdsquare
-        inferencecfg.pafthreshold = pafthreshold
+    def dlc_hyperparams(**kwargs):
+        inferencecfg.update(kwargs)
+        # Ensure type consistency
+        for k, (bound, _) in pbounds.items():
+            inferencecfg[k] = type(bound)(inferencecfg[k])
 
         stats = compute_crossval_metrics_preloadeddata(params, columns, inferencecfg, data,
                                                         trainIndices, testIndices,train_iter,
@@ -295,7 +292,9 @@ def bayesian_search(config_path, inferencecfg, pbounds,edgewisecondition=True,
     opt.maximize(init_points=init_points, n_iter=n_iter, acq=acq)
 
     inferencecfg.update(opt.max['params'])
-    inferencecfg.minimalnumberofconnections = int(inferencecfg.minimalnumberofconnections)
-    inferencecfg.detectionthresholdsquare = float(np.round(inferencecfg.detectionthresholdsquare, 2))
-    inferencecfg.pafthreshold = float(np.round(inferencecfg.pafthreshold, 2))
+    for k, (bound, _) in pbounds.items():
+        tmp = type(bound)(inferencecfg[k])
+        if isinstance(tmp, np.floating):
+            tmp = np.round(tmp, 2).item()
+        inferencecfg[k] = tmp
     return inferencecfg, opt
