@@ -2,65 +2,15 @@
 Task: MontBlanc
 scorer: Daniel
 date: Dec16
+multianimalproject: true
 
     # Project path (change when moving around)
 project_path: /media/alex/dropboxdisk/Dropbox/Collaborations/Cancer/DLCdev/examples-multianimal/MontBlanc-Daniel-2019-12-16
 
-#project_path: home/alex/Dropbox/Collaborations/Cancer/DLCdev/examples-multianimal/MontBlanc-Daniel-2019-12-16
-
     # Annotation data set configuration (and individual video cropping parameters)
 video_sets:
-  videos/montblanc.mov:
-    crop: 0, 1920, 0, 1080
-
-
-bodyparts: MULTI!
-start: 0
-stop: 1
-numframes2pick: 20
-
-    # Plotting configuration
-skeleton:
-- - head
-  - tail
-- - leftwing
-  - rightwing
-- - head
-  - leftwing
-- - head
-  - rightwing
-- - leftwing
-  - tail
-- - rightwing
-  - tail
-
-skeleton_color: black
-pcutoff: 0.1
-dotsize: 7
-alphavalue: 0.7
-colormap: jet
-
-    # Training,Evaluation and Analysis configuration
-TrainingFraction:
-- 0.95
-iteration: 0
-snapshotindex: -1
-batch_size: 8
-
-    # Cropping Parameters (for analysis and outlier frame detection)
-cropping: false
-    #if cropping is true for analysis, then set the values here:
-x1: 0
-x2: 640
-y1: 277
-y2: 624
-
-    # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
-corner2move2:
-- 50
-- 50
-move2corner: true
-multianimalproject: true
+  ? /media/alex/dropboxdisk/Dropbox/Collaborations/Cancer/DLCdev/examples-multianimal/MontBlanc-Daniel-2019-12-16/labeled-data/montblanc_cropped.mov
+  : crop: 0, 400, 0, 400
 individuals:
 - bird1
 - bird2
@@ -76,5 +26,57 @@ multianimalbodyparts:
 - tail
 - leftwing
 - rightwing
+skeleton:
+- - head
+  - tail
+- - leftwing
+  - rightwing
+- - head
+  - leftwing
+- - head
+  - rightwing
+- - leftwing
+  - tail
+- - rightwing
+  - tail
+
+bodyparts: MULTI!
+start: 0
+stop: 1
+numframes2pick: 20
+
+    # Plotting configuration
+skeleton_color: black
+pcutoff: 0.1
+dotsize: 7
+alphavalue: 0.7
+colormap: jet
+
+    # Training,Evaluation and Analysis configuration
+TrainingFraction:
+- 0.95
+iteration: 0
 default_net_type: resnet_50
 default_augmenter: default
+snapshotindex: -1
+batch_size: 8
+
+    # Cropping Parameters (for analysis and outlier frame detection)
+cropping: false
+croppedtraining: true
+    #if cropping is true for analysis, then set the values here:
+x1: 0
+x2: 640
+y1: 277
+y2: 624
+
+    # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
+corner2move2:
+- 50
+- 50
+move2corner: true
+video_sets_original:
+  videos/montblanc.mov:
+    crop: 0, 1920, 0, 1080
+
+
