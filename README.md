@@ -56,7 +56,7 @@ In 2018, we demonstrated the capabilities for [trail tracking](https://vnmurthyl
 **DeepLabCut** is embedding in a larger open-source eco-system, providing behavioral tracking for neuroscience, ecology, medical, and technical applications. Moreover, many new tools are being actively developed. See [DLC-Utils](https://github.com/DeepLabCut/DLCutils) for some helper code.
 
 <p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588179179050-VIFO6AZ5ZK1BUOU9WIUW/ke17ZwdGBToddI8pDm48kIX24IsDPzy6M4KUaihfICJZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIxtGUdkzp028KVNnpOijF3PweOM5su6FUQHO6Wkh72Nw/DLCecoSystem.gif?format=1000w" width="80%">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588186937724-05EHG16NQ2Y8ADNIJBEH/ke17ZwdGBToddI8pDm48kIX24IsDPzy6M4KUaihfICJZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIxtGUdkzp028KVNnpOijF3PweOM5su6FUQHO6Wkh72Nw/dlcecosys.gif?format=2500w" width="80%">
 </p>
 
 ## Code contributors:
