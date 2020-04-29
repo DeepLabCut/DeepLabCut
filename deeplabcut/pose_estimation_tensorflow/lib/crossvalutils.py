@@ -64,7 +64,7 @@ def compute_crossval_metrics(config_path, inference_cfg, shuffle=1, trainingseti
             _, _, GT = data[imname]['groundtruth']
             GT = GT.droplevel('scorer').unstack(level=['bodyparts', 'coords'])
             gt = GT.values.reshape((GT.shape[0], -1, 2))
-            
+
             if leastbpts>0: #ONLY KEEP animals with at least as many bpts (to get rid of crops that cannot be assembled)
                     gt = gt[np.nansum(gt,axis=(1,2))>leastbpts]
 
@@ -76,36 +76,37 @@ def compute_crossval_metrics(config_path, inference_cfg, shuffle=1, trainingseti
                     for j in range(len(animals)):
                         mat[i, j] = np.sqrt(np.nanmean(np.sum((gt[i] - ani[j, :, :2]) ** 2, axis=1)))
 
-            mat[np.isnan(mat)] = np.nanmax(mat) + 1
-            row_indices, col_indices = linear_sum_assignment(mat)
-            stats[n, 0] = mat[row_indices, col_indices].mean() #rmse
+            if np.size(mat)>0:
+                mat[np.isnan(mat)] = np.nanmax(mat) + 1
+                row_indices, col_indices = linear_sum_assignment(mat)
+                stats[n, 0] = mat[row_indices, col_indices].mean() #rmse
 
-            gt_annot = np.any(~np.isnan(gt), axis=2)
-            gt_matched = gt_annot[row_indices].flatten()
+                gt_annot = np.any(~np.isnan(gt), axis=2)
+                gt_matched = gt_annot[row_indices].flatten()
 
-            dlc_annot = np.any(~np.isnan(ani), axis=2) #DLC assemblies
-            dlc_matched = dlc_annot[col_indices].flatten()
+                dlc_annot = np.any(~np.isnan(ani), axis=2) #DLC assemblies
+                dlc_matched = dlc_annot[col_indices].flatten()
 
-            stats[n, 1] = np.logical_and(gt_matched, dlc_matched).sum() #hits
-            stats[n, 2] = gt_annot.sum() - stats[n, 1] #misses
-            stats[n, 3] = np.logical_and(~gt_matched, dlc_matched).sum() #additional detections
-            stats[n, 4] = n_animals
+                stats[n, 1] = np.logical_and(gt_matched, dlc_matched).sum() #hits
+                stats[n, 2] = gt_annot.sum() - stats[n, 1] #misses
+                stats[n, 3] = np.logical_and(~gt_matched, dlc_matched).sum() #additional detections
+                stats[n, 4] = n_animals
 
-            numgtpts=gt_annot.sum()
-            #animal & bpt-wise distance!
-            if numgtpts>0:
-                #corrkps=np.sum((gt[row_indices]-ani[col_indices])**2,axis=2)<dcorr**2
-                dists=np.sum((gt[row_indices]-ani[col_indices])**2,axis=2)
-                corrkps=dists[np.isfinite(dists)]<dcorr**2
-                pck = corrkps.sum()*1./numgtpts  #weigh by actually annotated ones!
-                rpck=np.sum(np.exp(-dists[np.isfinite(dists)]*1./(2*dcorr**2)))*1./numgtpts
+                numgtpts=gt_annot.sum()
+                #animal & bpt-wise distance!
+                if numgtpts>0:
+                    #corrkps=np.sum((gt[row_indices]-ani[col_indices])**2,axis=2)<dcorr**2
+                    dists=np.sum((gt[row_indices]-ani[col_indices])**2,axis=2)
+                    corrkps=dists[np.isfinite(dists)]<dcorr**2
+                    pck = corrkps.sum()*1./numgtpts  #weigh by actually annotated ones!
+                    rpck=np.sum(np.exp(-dists[np.isfinite(dists)]*1./(2*dcorr**2)))*1./numgtpts
 
-            else:
-                pck = 1. #does that make sense? As a convention fully correct...
-                rpck= 1.
+                else:
+                    pck = 1. #does that make sense? As a convention fully correct...
+                    rpck= 1.
 
-            stats[n, 5] = pck
-            stats[n, 6] = rpck
+                stats[n, 5] = pck
+                stats[n, 6] = rpck
 
     train_iter = int(predictionsfn.split('-')[-1].split('.')[0])
     train_frac = int(predictionsfn.split('trainset')[1].split('shuffle')[0])
@@ -119,7 +120,7 @@ def compute_crossval_metrics(config_path, inference_cfg, shuffle=1, trainingseti
     return pd.DataFrame(res.reshape((1, -1)), columns=columns)
 
 
-def compute_crossval_metrics_preloadeddata(params, columns, inference_cfg, data, trainIndices, 
+def compute_crossval_metrics_preloadeddata(params, columns, inference_cfg, data, trainIndices,
                                         testIndices,train_iter,train_frac,shuffle,lowerbound,upperbound,
                                         dcorr,leastbpts):
     n_images = len(params['imnames'])
@@ -134,13 +135,13 @@ def compute_crossval_metrics_preloadeddata(params, columns, inference_cfg, data,
                                                         params['paf_graph'], params['paf_links'],
                                                         lowerbound,upperbound,
                                                         evaluation=True)
-                                                                
+
         n_animals = len(animals)
         if n_animals:
             _, _, GT = data[imname]['groundtruth']
             GT = GT.droplevel('scorer').unstack(level=['bodyparts', 'coords'])
             gt = GT.values.reshape((GT.shape[0], -1, 2))
-            
+
             if leastbpts>0: #ONLY KEEP animals with at least as many bpts (to get rid of crops that cannot be assembled)
                     gt = gt[np.nansum(gt,axis=(1,2))>leastbpts]
 
@@ -152,36 +153,37 @@ def compute_crossval_metrics_preloadeddata(params, columns, inference_cfg, data,
                     for j in range(len(animals)):
                         mat[i, j] = np.sqrt(np.nanmean(np.sum((gt[i] - ani[j, :, :2]) ** 2, axis=1)))
 
-            mat[np.isnan(mat)] = np.nanmax(mat) + 1
-            row_indices, col_indices = linear_sum_assignment(mat)
-            stats[n, 0] = mat[row_indices, col_indices].mean() #rmse
+            if np.size(mat)>0:
+                mat[np.isnan(mat)] = np.nanmax(mat) + 1
+                row_indices, col_indices = linear_sum_assignment(mat)
+                stats[n, 0] = mat[row_indices, col_indices].mean() #rmse
 
-            gt_annot = np.any(~np.isnan(gt), axis=2)
-            gt_matched = gt_annot[row_indices].flatten()
+                gt_annot = np.any(~np.isnan(gt), axis=2)
+                gt_matched = gt_annot[row_indices].flatten()
 
-            dlc_annot = np.any(~np.isnan(ani), axis=2) #DLC assemblies
-            dlc_matched = dlc_annot[col_indices].flatten()
+                dlc_annot = np.any(~np.isnan(ani), axis=2) #DLC assemblies
+                dlc_matched = dlc_annot[col_indices].flatten()
 
-            stats[n, 1] = np.logical_and(gt_matched, dlc_matched).sum() #hits
-            stats[n, 2] = gt_annot.sum() - stats[n, 1] #misses
-            stats[n, 3] = np.logical_and(~gt_matched, dlc_matched).sum() #additional detections
-            stats[n, 4] = n_animals
+                stats[n, 1] = np.logical_and(gt_matched, dlc_matched).sum() #hits
+                stats[n, 2] = gt_annot.sum() - stats[n, 1] #misses
+                stats[n, 3] = np.logical_and(~gt_matched, dlc_matched).sum() #additional detections
+                stats[n, 4] = n_animals
 
-            numgtpts=gt_annot.sum()
-            #animal & bpt-wise distance!
-            if numgtpts>0:
-                #corrkps=np.sum((gt[row_indices]-ani[col_indices])**2,axis=2)<dcorr**2
-                dists=np.sum((gt[row_indices]-ani[col_indices])**2,axis=2)
-                corrkps=dists[np.isfinite(dists)]<dcorr**2
-                pck = corrkps.sum()*1./numgtpts  #weigh by actually annotated ones!
-                rpck=np.sum(np.exp(-dists[np.isfinite(dists)]*1./(2*dcorr**2)))*1./numgtpts
+                numgtpts=gt_annot.sum()
+                #animal & bpt-wise distance!
+                if numgtpts>0:
+                    #corrkps=np.sum((gt[row_indices]-ani[col_indices])**2,axis=2)<dcorr**2
+                    dists=np.sum((gt[row_indices]-ani[col_indices])**2,axis=2)
+                    corrkps=dists[np.isfinite(dists)]<dcorr**2
+                    pck = corrkps.sum()*1./numgtpts  #weigh by actually annotated ones!
+                    rpck=np.sum(np.exp(-dists[np.isfinite(dists)]*1./(2*dcorr**2)))*1./numgtpts
 
-            else:
-                pck = 1. #does that make sense? As a convention fully correct...
-                rpck= 1.
+                else:
+                    pck = 1. #does that make sense? As a convention fully correct...
+                    rpck= 1.
 
-            stats[n, 5] = pck
-            stats[n, 6] = rpck
+                stats[n, 5] = pck
+                stats[n, 6] = rpck
 
     with warnings.catch_warnings():
         warnings.simplefilter('ignore', category=RuntimeWarning)
@@ -193,14 +195,14 @@ def compute_crossval_metrics_preloadeddata(params, columns, inference_cfg, data,
 
 
 def bayesian_search(config_path, inferencecfg, pbounds,edgewisecondition=True,
-                    shuffle=1, trainingsetindex=0, modelprefix='',snapshotindex=-1, 
+                    shuffle=1, trainingsetindex=0, modelprefix='',snapshotindex=-1,
                     target='rpck_test', maximize=True, init_points=20, n_iter=50, acq='ei', log_file=None, # bayes optimizer
                     dcorr=5, leastbpts=3,printing=True): #
     ''' Obviously needs to be cleaned up :) '''
 
     if 'rpck' in target:
         assert(maximize==True)
-    
+
     if 'rmse' in target:
         assert(maximize==False)
 
@@ -219,7 +221,7 @@ def bayesian_search(config_path, inferencecfg, pbounds,edgewisecondition=True,
     params = set_up_evaluation(data)
     columns = ['train_iter', 'train_frac', 'shuffle']
     columns += ['_'.join((b, a)) for a in ('train', 'test') for b in ('rmse',  'hits', 'misses', 'falsepos', 'ndetects', 'pck', 'rpck')]
-    
+
     train_iter = trainingsetindex #int(predictionsfn.split('-')[-1].split('.')[0])
     train_frac = cfg['TrainingFraction'][train_iter] #int(predictionsfn.split('trainset')[1].split('shuffle')[0])
     trainIndices=metadata['data']['trainIndices']
@@ -258,8 +260,8 @@ def bayesian_search(config_path, inferencecfg, pbounds,edgewisecondition=True,
         inferencecfg.detectionthresholdsquare = detectionthresholdsquare
         inferencecfg.pafthreshold = pafthreshold
 
-        stats = compute_crossval_metrics_preloadeddata(params, columns, inferencecfg, data, 
-                                                        trainIndices, testIndices,train_iter, 
+        stats = compute_crossval_metrics_preloadeddata(params, columns, inferencecfg, data,
+                                                        trainIndices, testIndices,train_iter,
                                                         train_frac,shuffle,lowerbound,upperbound,
                                                         dcorr=dcorr,leastbpts=leastbpts)
 
@@ -267,12 +269,12 @@ def bayesian_search(config_path, inferencecfg, pbounds,edgewisecondition=True,
         #                                    dcorr=dcorr,leastbpts=leastbpts,modelprefix=modelprefix)
 
         val = stats[target].values[0]
-        
+
         #print("pck", stats['pck_test'].values[0], "pck", stats['pck_train'].values[0])
         if printing:
             print("rpck", stats['rpck_test'].values[0], "rpck train:", stats['rpck_train'].values[0])
             print("rmse", stats['rmse_test'].values[0], "miss", stats['misses_test'].values[0], "hit", stats['hits_test'].values[0])
-        
+
         #val = stats['rmse_test'].values[0]*(1+stats['misses_test'].values[0]*1./stats['hits_test'].values[0])
         if np.isnan(val):
             if maximize:
@@ -282,11 +284,11 @@ def bayesian_search(config_path, inferencecfg, pbounds,edgewisecondition=True,
         return val
 
     opt = BayesianOptimization(f=dlc_hyperparams, pbounds=pbounds, random_state=42)
-    
+
     #Saving log file
     if log_file:
         load_logs(opt, log_file)
-        
+
     logger = JSONLogger(path=os.path.join(evaluationfolder, 'opti_log'+DLCscorer+'.json'))
 
     opt.subscribe(Events.OPTIMIZATION_STEP, logger)

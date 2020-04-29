@@ -131,10 +131,10 @@ def evaluate_multianimal_full(config, Shuffles=[1], trainingsetindex=0,
                                                       'LabeledImages_' + DLCscorer + '_' + Snapshots[snapindex])
                             auxiliaryfunctions.attempttomakefolder(foldername)
 
-                        #print(dlc_cfg) 
+                        #print(dlc_cfg)
                         # Specifying state of model (snapshot / training state)
                         sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
-                        
+
                         PredicteData ={}
                         print("Analyzing data...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
@@ -144,7 +144,7 @@ def evaluate_multianimal_full(config, Shuffles=[1], trainingsetindex=0,
 
                             GT=Data.iloc[imageindex]
 
-                            #Storing GT data as dictionary, so it can be used for integrals 
+                            #Storing GT data as dictionary, so it can be used for integrals
                             groundtruthcoordinates=[]
                             groundtruthidentity=[]
                             for bptindex, bpt in enumerate(dlc_cfg["all_joints_names"]):
@@ -165,7 +165,7 @@ def evaluate_multianimal_full(config, Shuffles=[1], trainingsetindex=0,
 
                             PredicteData[imagename]={}
                             PredicteData[imagename]['index']=imageindex
-                            
+
                             pred = predictma.get_detectionswithcostsandGT(frame,  groundtruthcoordinates, dlc_cfg, sess, inputs, outputs, outall=False,nms_radius=dlc_cfg.nmsradius,det_min_score=dlc_cfg.minconfidence, c_engine=c_engine)
                             PredicteData[imagename]['prediction'] = pred
                             PredicteData[imagename]['groundtruth']=[groundtruthidentity, groundtruthcoordinates, GT]
@@ -205,12 +205,12 @@ def evaluate_multianimal_full(config, Shuffles=[1], trainingsetindex=0,
 
 def evaluate_multianimal_crossvalidate(config,Shuffles=[1], trainingsetindex=0, modelprefix='',
                                        inferencecfg=None, pbounds=None, edgewisecondition=True,
-                                       init_points=10, n_iter=20):
+                                       init_points=10, n_iter=20, dcorr=10,leastbpts=1):
     """
     TODO: expand and make this not so sloppy:
 
-    Crossvalidate inference parameters on evaluation data. They will be then used for inference! 
-    This is a crucial step. The most important variable is minimalnumberofconnections. Pass 
+    Crossvalidate inference parameters on evaluation data. They will be then used for inference!
+    This is a crucial step. The most important variable is minimalnumberofconnections. Pass
     a reasonable range to optimze (e.g. if you have 5 edges from 1 to 5. If you have 4 bpts
     and 11 connections from 3 to 9. )
 
@@ -228,6 +228,12 @@ def evaluate_multianimal_crossvalidate(config,Shuffles=[1], trainingsetindex=0, 
         Number of iterations of Bayesian optimization to perform.
         The larger it is, the higher the likelihood of finding a good extremum.
 
+    dcorr: distance thereshold for pck
+
+    leastbpts: integer (should be a small number)
+        If an animals has less or equal as many body parts in an image it will not be used
+        for cross validation. Imagine e.g. if one a single bodyparts is there.
+
     TODO integrate with standard evaluation for multi!
     """
     from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
@@ -236,41 +242,39 @@ def evaluate_multianimal_crossvalidate(config,Shuffles=[1], trainingsetindex=0, 
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg['TrainingFraction'][trainingsetindex]
 
+    #wild guesses for a wide range:
+    maxconnections=len(cfg['skeleton'])
+    minconnections=1 #len(cfg['multianimalbodyparts'])-1
+
     _pbounds = {
         'pafthreshold': (0.05, 0.7),
         'detectionthresholdsquare': (0.01, 0.9),  # TODO: set to minimum (from pose_cfg.yaml)
-        'minimalnumberofconnections': (4, 15),
+        'minimalnumberofconnections': (minconnections, maxconnections),
     }
     if pbounds is not None:
         _pbounds.update(pbounds)
 
     for shuffle in Shuffles:
         modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)))
+        path_inference_config = Path(modelfolder) / 'test' / 'test_cfg.yaml'
+
+
         path_inference_config = Path(modelfolder) / 'test' / 'inference_cfg.yaml'
         if inferencecfg is None: #then load or initialize
             inferencecfg = auxfun_multianimal.read_inferencecfg(path_inference_config,cfg)
         else: #TODO: check if all variables present
             inferencecfg = edict(inferencecfg)
 
-        '''
-        inferencecfg = edict()
-        #irrelevant variables:
-        inferencecfg.withid = False
-        inferencecfg.method = 'm1'
-        inferencecfg.slack = 10
-        inferencecfg.variant = 0
-        '''
-        
         inferencecfg.topktoplot = np.inf
         inferencecfg, opt = crossvalutils.bayesian_search(config, inferencecfg, _pbounds,edgewisecondition=edgewisecondition,
                                                           shuffle=shuffle, trainingsetindex=trainingsetindex, target='rpck_test',
                                                           init_points=init_points, n_iter=n_iter, acq='ei',maximize=True,
-                                                          dcorr=5,leastbpts=3,modelprefix=modelprefix)
+                                                          dcorr=dcorr,leastbpts=leastbpts,modelprefix=modelprefix)
 
         #print(inferencecfg)
         DataOptParams=crossvalutils.compute_crossval_metrics(config, inferencecfg, shuffle,
                                                              trainingsetindex=trainingsetindex,modelprefix=modelprefix)
-        
+
         path_inference_config=str(path_inference_config)
         print("Quantification:", DataOptParams.head())
         DataOptParams.to_hdf(path_inference_config.split('.yaml')[0]+'.h5', 'df_with_missing', format='table', mode='w')
@@ -278,34 +282,6 @@ def evaluate_multianimal_crossvalidate(config,Shuffles=[1], trainingsetindex=0, 
 
         print("Saving optimal inference parameters...")
         auxiliaryfunctions.write_plainconfig(path_inference_config, dict(inferencecfg))
-        
-        
+
+
         #auxfun_multianimal.write_inferencecfg(path_inference_config,cfg)
-        '''
-        pbounds = {
-            'distnormalization': (100, 500),
-            'distnormalizationLOWER': (0, 50),
-            'pafthreshold': (0.05, 0.5),
-            'addlikelihoods': (0, 1),
-            'detectionthresholdsquare': (0.01, 0.9),
-            'minimalnumberofconnections': (4, 12),
-            'averagescore': (0.1, 1)
-        }
-        def dlc_hyperparams(distnormalization,
-                            distnormalizationLOWER,
-                            pafthreshold,
-                            addlikelihoods,
-                            detectionthresholdsquare,
-                            minimalnumberofconnections,
-                            averagescore):
-
-            inferencecfg.minimalnumberofconnections = int(minimalnumberofconnections)
-            inferencecfg.averagescore = averagescore
-
-            inferencecfg.distnormalization = distnormalization
-            inferencecfg.distnormalizationLOWER = distnormalizationLOWER
-            inferencecfg.detectionthresholdsquare = detectionthresholdsquare
-            inferencecfg.addlikelihoods = addlikelihoods
-            inferencecfg.pafthreshold = pafthreshold
-
-        '''

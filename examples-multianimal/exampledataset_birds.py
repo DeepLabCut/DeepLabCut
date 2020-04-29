@@ -8,11 +8,14 @@ sys.path.append(os.path.join('/usr/local/lib/python3.6/dist-packages',nmspath))
 task='MontBlanc'
 scorer='Daniel'
 
+saveiters=4000
+displayiters=500
+maxiters=12000
 
 #print("CREATING PROJECT")
 #path_config_file=deeplabcut.create_new_project(task,scorer,video,copy_videos=True,multianimal=True)
 basefolder='/media/alex/dropboxdisk/Dropbox/Collaborations/Cancer/DLCdev/examples-multianimal/MontBlanc-Daniel-2019-12-16'
-videotype='mov'
+videotype='.mov'
 
 video=[os.path.join(basefolder,'videos/montblanc.mov')]
 path_config_file=os.path.join(basefolder,'config.yaml')
@@ -39,9 +42,7 @@ print("Plot labels...") #NEW:
 print("Creating multianimal training set...")
 deeplabcut.create_multianimaltraining_dataset(path_config_file,Shuffles=[shuffle])
 
-saveiters=4000
-displayiters=500
-maxiters=12000
+
 print("Creating multianimal training set...")
 
 deeplabcut.train_network(path_config_file, shuffle=shuffle,trainingsetindex=trainingsetindex,
@@ -54,7 +55,7 @@ cfg_dlc['dataset_type']='multi-animal-imgaug'
 cfg_dlc['nmsradius']=5.
 cfg_dlc['minconfidence']=.05
 deeplabcut.auxiliaryfunctions.write_plainconfig(testposeconfigfile,cfg_dlc)
-'''
+
 print("Evaluating network for shuffle ", shuffle)
 deeplabcut.evaluate_network(path_config_file,Shuffles=[shuffle],plotting=True)
 deeplabcut.evaluate_multianimal_crossvalidate(path_config_file,Shuffles=[shuffle])
@@ -74,5 +75,11 @@ deeplabcut.analyze_videos(path_config_file,[videopath],shuffle=shuffle,videotype
 model='DLC_resnet50_MontBlancDec16shuffle'+str(shuffle)+'_'+str(maxiters)
 deeplabcut.create_video_with_all_detections(path_config_file, [video[0]], model)
 
-deeplabcut.convert_detections2tracklets(path_config_file,[videopath],shuffle=shuffle,videotype=videotype)
-deeplabcut.create_labeled_video(path_config_file,[videopath],shuffle=shuffle,videotype=videotype)
+tracks_pickle=deeplabcut.convert_detections2tracklets(path_config_file,[videopath],shuffle=shuffle,videotype=videotype)
+'''
+
+tracks_pickle=os.path.join(videopath,'montblancDLC_resnet50_MontBlancDec16shuffle0_12000_bx.pickle')
+#deeplabcut.convert_raw_tracks_to_h5(path_config_file,)
+#deeplabcut.convert_raw_tracks_to_h5(path_config_file, tracks_pickle)
+#deeplabcut.create_labeled_video(path_config_file,[videopath],shuffle=shuffle,videotype=videotype,track_method='box')
+deeplabcut.create_labeled_video(path_config_file,[videopath],shuffle=shuffle,videotype=videotype,track_method='box',color_by='individual')
