@@ -204,7 +204,8 @@ def evaluate_multianimal_full(config, Shuffles=[1], trainingsetindex=0,
     os.chdir(str(start_path))
 
 def evaluate_multianimal_crossvalidate(config,Shuffles=[1], trainingsetindex=0, modelprefix='',
-    inferencecfg=None, pbounds=None,edgewisecondition=True):
+                                       inferencecfg=None, pbounds=None, edgewisecondition=True,
+                                       init_points=10, n_iter=20):
     """
     TODO: expand and make this not so sloppy:
 
@@ -219,6 +220,14 @@ def evaluate_multianimal_crossvalidate(config,Shuffles=[1], trainingsetindex=0, 
             'minimalnumberofconnections': (4, 15),
         }
 
+    init_points : int, optional (default=10)
+        Number of random initial explorations.
+        Probing random regions helps diversify the exploration space.
+
+    n_iter : int, optional (default=20)
+        Number of iterations of Bayesian optimization to perform.
+        The larger it is, the higher the likelihood of finding a good extremum.
+
     TODO integrate with standard evaluation for multi!
     """
     from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
@@ -227,13 +236,14 @@ def evaluate_multianimal_crossvalidate(config,Shuffles=[1], trainingsetindex=0, 
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg['TrainingFraction'][trainingsetindex]
 
-    if pbounds is None:
-        pbounds = {
-            'pafthreshold': (0.05, 0.7),
-            'detectionthresholdsquare': (0.01, 0.9), #TODO: set to minimum (from pose_cfg.yaml)
-            'minimalnumberofconnections': (4, 15),
-        }
-        
+    _pbounds = {
+        'pafthreshold': (0.05, 0.7),
+        'detectionthresholdsquare': (0.01, 0.9),  # TODO: set to minimum (from pose_cfg.yaml)
+        'minimalnumberofconnections': (4, 15),
+    }
+    if pbounds is not None:
+        _pbounds.update(pbounds)
+
     for shuffle in Shuffles:
         modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)))
         path_inference_config = Path(modelfolder) / 'test' / 'inference_cfg.yaml'
@@ -252,16 +262,10 @@ def evaluate_multianimal_crossvalidate(config,Shuffles=[1], trainingsetindex=0, 
         '''
         
         inferencecfg.topktoplot = np.inf
-        
-        #bayesian_search(config_path, inferencecfg, pbounds,edgewisecondition=edgewisecondition,
-        #                shuffle=1, trainingsetindex=0, modelprefix='',snapshotindex=-1, 
-        #                target='rpck_test', maximize=True, init_points=20, n_iter=50, acq='ei', log_file=None, # bayes optimizer
-        #                dcorr=5, leastbpts=3,printing=True)
-        #
-        inferencecfg, opt = crossvalutils.bayesian_search(config, inferencecfg, pbounds,edgewisecondition=edgewisecondition,
+        inferencecfg, opt = crossvalutils.bayesian_search(config, inferencecfg, _pbounds,edgewisecondition=edgewisecondition,
                                                           shuffle=shuffle, trainingsetindex=trainingsetindex, target='rpck_test',
-                                                        init_points=7, n_iter=2, acq='ei',maximize=True,
-                                                        dcorr=5,leastbpts=3,modelprefix=modelprefix)
+                                                          init_points=init_points, n_iter=n_iter, acq='ei',maximize=True,
+                                                          dcorr=5,leastbpts=3,modelprefix=modelprefix)
 
         #print(inferencecfg)
         DataOptParams=crossvalutils.compute_crossval_metrics(config, inferencecfg, shuffle,
