@@ -57,7 +57,7 @@ deeplabcut.auxiliaryfunctions.write_plainconfig(testposeconfigfile,cfg_dlc)
 '''
 print("Evaluating network for shuffle ", shuffle)
 deeplabcut.evaluate_network(path_config_file,Shuffles=[shuffle],plotting=True)
-deeplabcut.evaluate_multianimal_crossvalidate(path_config_fil,Shuffles=[shuffle])
+deeplabcut.evaluate_multianimal_crossvalidate(path_config_file,Shuffles=[shuffle])
 
 ################## Analyze video #NEW:
 trainposeconfigfile,testposeconfigfile,snapshotfolder=deeplabcut.return_train_network_path(path_config_file,shuffle=shuffle)
