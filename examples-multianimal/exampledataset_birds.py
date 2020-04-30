@@ -1,5 +1,5 @@
 import os, sys
-os.environ['DLClight']='True'
+#os.environ['DLClight']='True'
 import deeplabcut
 
 nmspath = 'deeplabcut/pose_estimation_tensorflow/lib/nms_cython'
@@ -75,11 +75,21 @@ deeplabcut.analyze_videos(path_config_file,[videopath],shuffle=shuffle,videotype
 model='DLC_resnet50_MontBlancDec16shuffle'+str(shuffle)+'_'+str(maxiters)
 deeplabcut.create_video_with_all_detections(path_config_file, [video[0]], model)
 
-tracks_pickle=deeplabcut.convert_detections2tracklets(path_config_file,[videopath],shuffle=shuffle,videotype=videotype)
-'''
 
-tracks_pickle=os.path.join(videopath,'montblancDLC_resnet50_MontBlancDec16shuffle0_12000_bx.pickle')
+tm='skeleton' #'box'
+deeplabcut.convert_detections2tracklets(path_config_file,[videopath],shuffle=shuffle,videotype=videotype,track_method=tm)
+
+if tm=='box':
+    tracks_pickle=os.path.join(videopath,'montblancDLC_resnet50_MontBlancDec16shuffle0_12000_bx.pickle')
+else:
+    tracks_pickle=os.path.join(videopath,'montblancDLC_resnet50_MontBlancDec16shuffle0_12000_sk.pickle')
+
 #deeplabcut.convert_raw_tracks_to_h5(path_config_file,)
-#deeplabcut.convert_raw_tracks_to_h5(path_config_file, tracks_pickle)
-#deeplabcut.create_labeled_video(path_config_file,[videopath],shuffle=shuffle,videotype=videotype,track_method='box')
+deeplabcut.convert_raw_tracks_to_h5(path_config_file, tracks_pickle)
+deeplabcut.create_labeled_video(path_config_file,[videopath],shuffle=shuffle,videotype=videotype,track_method=tm)
 deeplabcut.create_labeled_video(path_config_file,[videopath],shuffle=shuffle,videotype=videotype,track_method='box',color_by='individual')
+
+
+deeplabcut.extract_outlier_frames(path_config_file,[videopath],shuffle=shuffle,videotype=videotype,track_method=tm,epsilon=40)
+
+'''

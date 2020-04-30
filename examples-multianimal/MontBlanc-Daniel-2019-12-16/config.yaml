@@ -11,6 +11,8 @@ project_path: /media/alex/dropboxdisk/Dropbox/Collaborations/Cancer/DLCdev/examp
 video_sets:
   ? /media/alex/dropboxdisk/Dropbox/Collaborations/Cancer/DLCdev/examples-multianimal/MontBlanc-Daniel-2019-12-16/labeled-data/montblanc_cropped.mov
   : crop: 0, 400, 0, 400
+  ? /media/alex/dropboxdisk/Dropbox/Collaborations/Cancer/DLCdev/examples-multianimal/MontBlanc-Daniel-2019-12-16/videos/montblanc.mov
+  : crop: 0, 1920, 0, 1080
 individuals:
 - bird1
 - bird2
@@ -43,7 +45,7 @@ skeleton:
 bodyparts: MULTI!
 start: 0
 stop: 1
-numframes2pick: 20
+numframes2pick: 7
 
     # Plotting configuration
 skeleton_color: black
@@ -63,7 +65,7 @@ batch_size: 8
 
     # Cropping Parameters (for analysis and outlier frame detection)
 cropping: false
-croppedtraining: true
+croppedtraining: false #true
     #if cropping is true for analysis, then set the values here:
 x1: 0
 x2: 640

@@ -85,8 +85,8 @@ print('Network trained.')
 print('Evaluating network...')
 deeplabcut.evaluate_network(config_path, plotting=True)
 deeplabcut.evaluate_multianimal_crossvalidate(config_path)
-
 print('Network evaluated.')
+
 
 new_video_path = deeplabcut.ShortenVideo(video_path, start='00:00:00', stop='00:00:00.4',
                                          outsuffix='short', outpath=os.path.join(cfg['project_path'], 'videos'))
@@ -106,7 +106,6 @@ deeplabcut.convert_detections2tracklets(config_path, [new_video_path], 'mov', tr
 deeplabcut.convert_detections2tracklets(config_path, [new_video_path], 'mov', track_method='skeleton')
 
 
-'''
 print('Extracting maps...')
 deeplabcut.extract_save_all_maps(config_path)
 
@@ -164,4 +163,3 @@ print('Predictions filtered.')
 print('Extracting outlier frames...')
 deeplabcut.extract_outlier_frames(config_path, [new_video_path], 'mov', automatic=True, track_method='box')
 print('Outlier frames extracted.')
-'''''

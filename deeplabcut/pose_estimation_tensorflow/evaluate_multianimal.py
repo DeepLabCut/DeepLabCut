@@ -203,38 +203,78 @@ def evaluate_multianimal_full(config, Shuffles=[1], trainingsetindex=0,
     #returning to intial folder
     os.chdir(str(start_path))
 
-def evaluate_multianimal_crossvalidate(config,Shuffles=[1], trainingsetindex=0, modelprefix='',
-                                       inferencecfg=None, pbounds=None, edgewisecondition=True,
-                                       init_points=10, n_iter=20, dcorr=10,leastbpts=1):
+def evaluate_multianimal_crossvalidate(config, Shuffles=[1], trainingsetindex=0,  pbounds=None, edgewisecondition=True, target='rpck_train',
+                                       inferencecfg=None, init_points=20, n_iter=50, dcorr=10., leastbpts=1, printingintermediatevalues=True, modelprefix=''):
     """
-    TODO: expand and make this not so sloppy:
+    Crossvalidate inference parameters on evaluation data; optimal parametrs will be stored in " inference_cfg.yaml".
 
-    Crossvalidate inference parameters on evaluation data. They will be then used for inference!
-    This is a crucial step. The most important variable is minimalnumberofconnections. Pass
-    a reasonable range to optimze (e.g. if you have 5 edges from 1 to 5. If you have 4 bpts
-    and 11 connections from 3 to 9. )
+    They will then be then used for inference (for analysis of videos). Performs Bayesian Optimization with https://github.com/fmfn/BayesianOptimization
 
-    pbounds = {
-            'pafthreshold': (0.05, 0.7),
-            'detectionthresholdsquare': (0.01, 0.9), #set to minimum (from pose_cfg.yaml)
-            'minimalnumberofconnections': (4, 15),
-        }
+    This is a crucial step. The most important variable (in inferencecfg) to cross-validate is minimalnumberofconnections. Pass
+    a reasonable range to optimze (e.g. if you have 5 edges from 1 to 5. If you have 4 bpts and 11 connections from 3 to 9).
 
-    init_points : int, optional (default=10)
-        Number of random initial explorations.
-        Probing random regions helps diversify the exploration space.
+    config: string
+        Full path of the config.yaml file as a string.
 
-    n_iter : int, optional (default=20)
+    videos: list
+        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
+
+    videotype: string, optional
+        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
+
+    shuffle: int, optional
+        An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.
+
+    trainingsetindex: int, optional
+        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+
+    pbounds: dictionary of variables with ranges to crossvalidate.
+        By default: pbounds = {
+                        'pafthreshold': (0.05, 0.7),
+                        'detectionthresholdsquare': (0, 0.9),
+                        'minimalnumberofconnections': (1, # connections in your skeleton),
+                    }
+
+    inferencecfg: dict, OPTIONAL
+        For the variables that are *not* crossvalidated the parameters from inference_cfg.yaml are used, or
+        you can overwrite them by passing a dictinary with your preferred parameters.
+
+    edgewisecondition: bool, default True
+        Estimates Euclidean distances for each skeleton edge and uses those distance for excluding possible connections.
+        If false, uses only one distance for all bodyparts (which is obviously suboptimal).
+
+    target: string, default='rpck_train'
+        What metric to optimize. Options are pck/rpck/rmse on train/test set.
+
+    init_points: int, optional (default=10)
+        Number of random initial explorations. Probing random regions helps diversify the exploration space.
+        Parameter from BayesianOptimization.
+
+    n_iter: int, optional (default=20)
         Number of iterations of Bayesian optimization to perform.
         The larger it is, the higher the likelihood of finding a good extremum.
+        Parameter from BayesianOptimization.
 
-    dcorr: distance thereshold for pck
+    dcorr: float,
+        Distance thereshold for percent correct keypoints / relative percent correct keypoints (see paper).
 
     leastbpts: integer (should be a small number)
         If an animals has less or equal as many body parts in an image it will not be used
-        for cross validation. Imagine e.g. if one a single bodyparts is there.
+        for cross validation. Imagine e.g. if only a single bodypart is present, then
+        if animals need a certain minimal number of bodyparts for assembly (minimalnumberofconnections),
+        this might not be predictable.
 
-    TODO integrate with standard evaluation for multi!
+    printingintermediatevalues: bool, default True
+        If intermediate metrics RMSE/hits/.. per sample should be printed.
+
+
+    Examples
+    --------
+    first run evalute:
+    deeplabcut.evaluate_network(path_config_file,Shuffles=[shuffle],plotting=True)
+
+    Then e.g. for finding inference parameters to minimize rmse on test set:
+    deeplabcut.evaluate_multianimal_crossvalidate(path_config_file,Shuffles=[shuffle],target='rmse_test',)
     """
     from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
     from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
@@ -248,11 +288,17 @@ def evaluate_multianimal_crossvalidate(config,Shuffles=[1], trainingsetindex=0, 
 
     _pbounds = {
         'pafthreshold': (0.05, 0.7),
-        'detectionthresholdsquare': (0.01, 0.9),  # TODO: set to minimum (from pose_cfg.yaml)
+        'detectionthresholdsquare': (0, 0.9),  # TODO: set to minimum (from pose_cfg.yaml)
         'minimalnumberofconnections': (minconnections, maxconnections),
     }
     if pbounds is not None:
         _pbounds.update(pbounds)
+
+    if 'rpck' in target or 'pck' in target:
+        maximize=True
+
+    if 'rmse' in target:
+        maximize=False
 
     for shuffle in Shuffles:
         modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)))
@@ -267,8 +313,8 @@ def evaluate_multianimal_crossvalidate(config,Shuffles=[1], trainingsetindex=0, 
 
         inferencecfg.topktoplot = np.inf
         inferencecfg, opt = crossvalutils.bayesian_search(config, inferencecfg, _pbounds,edgewisecondition=edgewisecondition,
-                                                          shuffle=shuffle, trainingsetindex=trainingsetindex, target='rpck_test',
-                                                          init_points=init_points, n_iter=n_iter, acq='ei',maximize=True,
+                                                          shuffle=shuffle, trainingsetindex=trainingsetindex, target=target,maximize=maximize,
+                                                          init_points=init_points, n_iter=n_iter, acq='ei',
                                                           dcorr=dcorr,leastbpts=leastbpts,modelprefix=modelprefix)
 
         #print(inferencecfg)
@@ -276,12 +322,8 @@ def evaluate_multianimal_crossvalidate(config,Shuffles=[1], trainingsetindex=0, 
                                                              trainingsetindex=trainingsetindex,modelprefix=modelprefix)
 
         path_inference_config=str(path_inference_config)
-        print("Quantification:", DataOptParams.head())
+        #print("Quantification:", DataOptParams.head())
         DataOptParams.to_hdf(path_inference_config.split('.yaml')[0]+'.h5', 'df_with_missing', format='table', mode='w')
         DataOptParams.to_csv(path_inference_config.split('.yaml')[0]+'.csv')
-
         print("Saving optimal inference parameters...")
         auxiliaryfunctions.write_plainconfig(path_inference_config, dict(inferencecfg))
-
-
-        #auxfun_multianimal.write_inferencecfg(path_inference_config,cfg)

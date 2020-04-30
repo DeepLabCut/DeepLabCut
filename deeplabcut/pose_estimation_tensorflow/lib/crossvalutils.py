@@ -197,8 +197,7 @@ def compute_crossval_metrics_preloadeddata(params, columns, inference_cfg, data,
 def bayesian_search(config_path, inferencecfg, pbounds,edgewisecondition=True,
                     shuffle=1, trainingsetindex=0, modelprefix='',snapshotindex=-1,
                     target='rpck_test', maximize=True, init_points=20, n_iter=50, acq='ei', log_file=None, # bayes optimizer
-                    dcorr=5, leastbpts=3,printing=True): #
-    ''' Obviously needs to be cleaned up :) '''
+                    dcorr=5, leastbpts=3,printingintermediatevalues=True): #
 
     if 'rpck' in target:
         assert(maximize==True)
@@ -266,9 +265,7 @@ def bayesian_search(config_path, inferencecfg, pbounds,edgewisecondition=True,
         #                                    dcorr=dcorr,leastbpts=leastbpts,modelprefix=modelprefix)
 
         val = stats[target].values[0]
-
-        #print("pck", stats['pck_test'].values[0], "pck", stats['pck_train'].values[0])
-        if printing:
+        if printingintermediatevalues:
             print("rpck", stats['rpck_test'].values[0], "rpck train:", stats['rpck_train'].values[0])
             print("rmse", stats['rmse_test'].values[0], "miss", stats['misses_test'].values[0], "hit", stats['hits_test'].values[0])
 

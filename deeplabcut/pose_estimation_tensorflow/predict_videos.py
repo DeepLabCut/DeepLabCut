@@ -46,10 +46,10 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
 
     Parameters
     ----------
-    config : string
+    config: string
         Full path of the config.yaml file as a string.
 
-    videos : list
+    videos: list
         A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
 
     videotype: string, optional
@@ -842,7 +842,7 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
         Pass list of indices if only certain bodyparts should be used (advanced).
 
     iBPTS: Default is None: all bodyparts are used.
-        The inverse indices from BPTS. 
+        The inverse indices from BPTS.
         TODO: calculate from BPTS
 
     PAF: Default is None: all connections are used.
