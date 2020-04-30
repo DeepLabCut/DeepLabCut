@@ -76,7 +76,7 @@ def compute_crossval_metrics(config_path, inference_cfg, shuffle=1, trainingseti
                     for j in range(len(animals)):
                         mat[i, j] = np.sqrt(np.nanmean(np.sum((gt[i] - ani[j, :, :2]) ** 2, axis=1)))
 
-            if np.size(mat)>0:
+            if np.nansum(mat)>0: #also assures at least one not nan np.size(mat)>0:
                 mat[np.isnan(mat)] = np.nanmax(mat) + 1
                 row_indices, col_indices = linear_sum_assignment(mat)
                 stats[n, 0] = mat[row_indices, col_indices].mean() #rmse
@@ -153,7 +153,7 @@ def compute_crossval_metrics_preloadeddata(params, columns, inference_cfg, data,
                     for j in range(len(animals)):
                         mat[i, j] = np.sqrt(np.nanmean(np.sum((gt[i] - ani[j, :, :2]) ** 2, axis=1)))
 
-            if np.size(mat)>0:
+            if np.nansum(mat)>0: #np.size(mat)>0:
                 mat[np.isnan(mat)] = np.nanmax(mat) + 1
                 row_indices, col_indices = linear_sum_assignment(mat)
                 stats[n, 0] = mat[row_indices, col_indices].mean() #rmse

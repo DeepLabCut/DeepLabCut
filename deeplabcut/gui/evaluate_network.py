@@ -108,7 +108,7 @@ class Evaluate_network(wx.Panel):
             infg_boxsizer = wx.StaticBoxSizer(infg, wx.VERTICAL)
             self.infg = wx.SpinCtrl(self, value='0',min=0,max=1)
             infg_boxsizer.Add(self.infg,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
-#init_points=10, n_iter=20, dcorr=10, leastbpts=1
+# dcorr=10, leastbpts=1
             inpts = wx.StaticBox(self, label="Specify the Inital Points")
             inpts_boxsizer = wx.StaticBoxSizer(inpts, wx.VERTICAL)
             self.inpts = wx.SpinCtrl(self, value='10',min=0,max=100)
@@ -119,7 +119,7 @@ class Evaluate_network(wx.Panel):
             self.n_iter = wx.SpinCtrl(self, value='20',min=0,max=100)
             n_iter_boxsizer.Add(self.n_iter,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
-            self.inf_cfg_text = wx.Button(self, label="Edit the Cross Validation Parameters")
+            self.inf_cfg_text = wx.Button(self, label="Edit the inference_config.yaml")
             self.inf_cfg_text.Bind(wx.EVT_BUTTON, self.edit_inf_config)
 
             self.edgeWise = wx.RadioBox(self, label='Use Edges?', choices=['True', 'False'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
@@ -265,7 +265,7 @@ class Evaluate_network(wx.Panel):
         #Read from edited inf. file first ...
         print(self.inf_cfg_path)
         deeplabcut.evaluate_multianimal_crossvalidate(self.config, Shuffles=shuffle, trainingsetindex=trainingsetindex,
-                                                          inferencecfg=self.inf_cfg_path, edgewisecondition=self.edgeWise.GetStringSelection(),
+                                                          edgewisecondition=self.edgeWise.GetStringSelection(),
                                                           init_points = self.inpts.GetValue(), n_iter= self.n_iter.GetValue())
 
     def cancel_evaluate_network(self,event):
