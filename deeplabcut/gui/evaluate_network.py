@@ -104,11 +104,11 @@ class Evaluate_network(wx.Panel):
         self.sizer.Add(boxsizer, pos=(3, 0), span=(1, 5),flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT , border=10)
 
         if config_file.get('multianimalproject', False):
-            infg = wx.StaticBox(self, label="Specify the Inference Confidience")
+            infg = wx.StaticBox(self, label="Least # of Bpts to be considered")
             infg_boxsizer = wx.StaticBoxSizer(infg, wx.VERTICAL)
-            self.infg = wx.SpinCtrl(self, value='0',min=0,max=1)
+            self.infg = wx.SpinCtrl(self, value='1',min=0,max=100)
             infg_boxsizer.Add(self.infg,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
-# dcorr=10, leastbpts=1
+# dcorr=10,
             inpts = wx.StaticBox(self, label="Specify the Inital Points")
             inpts_boxsizer = wx.StaticBoxSizer(inpts, wx.VERTICAL)
             self.inpts = wx.SpinCtrl(self, value='10',min=0,max=100)
@@ -265,7 +265,7 @@ class Evaluate_network(wx.Panel):
         #Read from edited inf. file first ...
         print(self.inf_cfg_path)
         deeplabcut.evaluate_multianimal_crossvalidate(self.config, Shuffles=shuffle, trainingsetindex=trainingsetindex,
-                                                          edgewisecondition=self.edgeWise.GetStringSelection(),
+                                                          edgewisecondition=self.edgeWise.GetStringSelection(), leastbpts=self.infg.GetValue(),
                                                           init_points = self.inpts.GetValue(), n_iter= self.n_iter.GetValue())
 
     def cancel_evaluate_network(self,event):
