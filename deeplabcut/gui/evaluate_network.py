@@ -53,7 +53,7 @@ class Evaluate_network(wx.Panel):
         self.sel_config.Bind(wx.EVT_FILEPICKER_CHANGED, self.select_config)
 
 
-        sb = wx.StaticBox(self, label="Optional Attributes")
+        sb = wx.StaticBox(self, label="Attributes")
         boxsizer = wx.StaticBoxSizer(sb, wx.VERTICAL)
 
         self.hbox1 = wx.BoxSizer(wx.HORIZONTAL)
@@ -257,16 +257,16 @@ class Evaluate_network(wx.Panel):
                                        plotting=plotting,show_errors=True,comparisonbodyparts=self.bodyparts)
 
     def cross_validate(self, event):
-        print("in the works")
         trainingsetindex = self.trainingset.GetValue()
         shuffle = [self.shuffles.GetValue()]
         cfg = auxiliaryfunctions.read_config(self.config)
         trainFraction = cfg['TrainingFraction'][trainingsetindex]
         self.inf_cfg_path = os.path.join(cfg['project_path'],auxiliaryfunctions.GetModelFolder(trainFraction, self.shuffles.GetValue(),cfg),'test','inference_cfg.yaml')
         #Read from edited inf. file first ...
+        print(self.inf_cfg_path)
         deeplabcut.evaluate_multianimal_crossvalidate(self.config, Shuffles=shuffle, trainingsetindex=trainingsetindex,
                                                           inferencecfg=self.inf_cfg_path, edgewisecondition=self.edgeWise.GetStringSelection(),
-                                                          init_point = self.inpts.GetValue(), n_iter= self.n_iter.GetValue())
+                                                          init_points = self.inpts.GetValue(), n_iter= self.n_iter.GetValue())
 
     def cancel_evaluate_network(self,event):
         """
