@@ -7,3 +7,10 @@ mobilenet_v2_1.0: https://storage.googleapis.com/mobilenet_v2/checkpoints/mobile
 mobilenet_v2_0.75: https://storage.googleapis.com/mobilenet_v2/checkpoints/mobilenet_v2_0.75_224.tgz
 mobilenet_v2_0.5: https://storage.googleapis.com/mobilenet_v2/checkpoints/mobilenet_v2_0.5_224.tgz
 mobilenet_v2_0.35: https://storage.googleapis.com/mobilenet_v2/checkpoints/mobilenet_v2_0.35_224.tgz
+
+#modelzoo:
+full_human: http://deeplabcut.rowland.harvard.edu/models/DLC_human_fullbody_resnet_101.tar.gz
+mouse_forelimb:
+mouse_topview:
+dogs:
+horses:
