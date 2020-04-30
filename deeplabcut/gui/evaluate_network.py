@@ -106,13 +106,18 @@ class Evaluate_network(wx.Panel):
         if config_file.get('multianimalproject', False):
             infg = wx.StaticBox(self, label="Specify the Inference Confidience")
             infg_boxsizer = wx.StaticBoxSizer(infg, wx.VERTICAL)
-            self.infg = wx.SpinCtrl(self, value='0.4',min=0,max=1)
+            self.infg = wx.SpinCtrl(self, value='0',min=0,max=1)
             infg_boxsizer.Add(self.infg,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+#init_points=10, n_iter=20, dcorr=10, leastbpts=1
+            inpts = wx.StaticBox(self, label="Specify the Inital Points")
+            inpts_boxsizer = wx.StaticBoxSizer(inpts, wx.VERTICAL)
+            self.inpts = wx.SpinCtrl(self, value='10',min=0,max=100)
+            inpts_boxsizer.Add(self.inpts,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
-            #pbds = wx.StaticBox(self, label="Specify the Pbounds")
-            #pbds_boxsizer = wx.StaticBoxSizer(pbds, wx.VERTICAL)
-            #self.pbds = wx.SpinCtrl(self, value='0',min=0,max=100)
-            #pbds_boxsizer.Add(self.pbds,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+            n_iter = wx.StaticBox(self, label="Specify the # of iterations")
+            n_iter_boxsizer = wx.StaticBoxSizer(n_iter, wx.VERTICAL)
+            self.n_iter = wx.SpinCtrl(self, value='20',min=0,max=100)
+            n_iter_boxsizer.Add(self.n_iter,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
             self.inf_cfg_text = wx.Button(self, label="Edit the Cross Validation Parameters")
             self.inf_cfg_text.Bind(wx.EVT_BUTTON, self.edit_inf_config)
@@ -121,6 +126,8 @@ class Evaluate_network(wx.Panel):
             self.edgeWise.SetSelection(0)
 
             self.hbox3.Add(infg_boxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+            self.hbox3.Add(n_iter_boxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+            self.hbox3.Add(inpts_boxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
             self.hbox3.Add(self.edgeWise,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
             self.hbox3.Add(self.inf_cfg_text,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
             boxsizer.Add(self.hbox3,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
@@ -130,7 +137,11 @@ class Evaluate_network(wx.Panel):
         self.sizer.Add(self.help_button, pos=(4, 0), flag=wx.LEFT, border=10)
         self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
 
-        self.ok = wx.Button(self, label="Step1: RUN")
+        self.help2_button = wx.Button(self, label='Help (X-val)')
+        self.sizer.Add(self.help2_button, pos=(5, 0), flag=wx.LEFT, border=10)
+        self.help2_button.Bind(wx.EVT_BUTTON, self.help_val_function)
+
+        self.ok = wx.Button(self, label="Step1: Evaluate Network")
         self.sizer.Add(self.ok, pos=(4, 3))
         self.ok.Bind(wx.EVT_BUTTON, self.evaluate_network)
 
@@ -167,6 +178,21 @@ class Evaluate_network(wx.Panel):
         wx.MessageBox(help_text,'Help',wx.OK | wx.ICON_INFORMATION)
         help_file.close()
         os.remove('help.txt')
+
+    def help_val_function(self,event):
+
+        filepath= 'help2.txt'
+        f = open(filepath, 'w')
+        sys.stdout = f
+        fnc_name = 'deeplabcut.evaluate_multianimal_crossvalidate'
+        pydoc.help(fnc_name)
+        f.close()
+        sys.stdout = sys.__stdout__
+        help_file = open("help2.txt","r+")
+        help_text = help_file.read()
+        wx.MessageBox(help_text,'Help (X-val)',wx.OK | wx.ICON_INFORMATION)
+        help_file.close()
+        os.remove('help2.txt')
 
     def chooseOption(self,event):
         if self.bodypart_choice.GetStringSelection() == 'No':
@@ -234,11 +260,13 @@ class Evaluate_network(wx.Panel):
         print("in the works")
         trainingsetindex = self.trainingset.GetValue()
         shuffle = [self.shuffles.GetValue()]
+        cfg = auxiliaryfunctions.read_config(self.config)
+        trainFraction = cfg['TrainingFraction'][trainingsetindex]
+        self.inf_cfg_path = os.path.join(cfg['project_path'],auxiliaryfunctions.GetModelFolder(trainFraction, self.shuffles.GetValue(),cfg),'test','inference_cfg.yaml')
         #Read from edited inf. file first ...
         deeplabcut.evaluate_multianimal_crossvalidate(self.config, Shuffles=shuffle, trainingsetindex=trainingsetindex,
-                                                          inferencecfg=self.infg.GetValue(), edgewisecondition=self.edgeWise.GetStringSelection())
-
-        deeplabcut.evaluate_multianimal_crossvalidate(path_config_file,Shuffles=[shuffle])
+                                                          inferencecfg=self.inf_cfg_path, edgewisecondition=self.edgeWise.GetStringSelection(),
+                                                          init_point = self.inpts.GetValue(), n_iter= self.n_iter.GetValue())
 
     def cancel_evaluate_network(self,event):
         """
