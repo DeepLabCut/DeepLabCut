@@ -11,6 +11,7 @@ Licensed under GNU Lesser General Public License v3.0
 
 import wx
 import os,sys,pydoc
+import webbrowser,subprocess
 import deeplabcut
 media_path = os.path.join(deeplabcut.__path__[0], 'gui' , 'media')
 logo = os.path.join(media_path,'logo.png')
@@ -57,6 +58,9 @@ class Evaluate_network(wx.Panel):
 
         self.hbox1 = wx.BoxSizer(wx.HORIZONTAL)
         self.hbox2 = wx.BoxSizer(wx.HORIZONTAL)
+        self.hbox3 = wx.BoxSizer(wx.HORIZONTAL)
+
+        config_file = auxiliaryfunctions.read_config(self.config)
 
         shuffles_text = wx.StaticBox(self, label="Specify the shuffle")
         shuffles_text_boxsizer = wx.StaticBoxSizer(shuffles_text, wx.VERTICAL)
@@ -77,7 +81,6 @@ class Evaluate_network(wx.Panel):
         self.bodypart_choice = wx.RadioBox(self, label='Compare all bodyparts?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
         self.bodypart_choice.Bind(wx.EVT_RADIOBOX,self.chooseOption)
 
-        config_file = auxiliaryfunctions.read_config(self.config)
         if config_file.get('multianimalproject', False):
             bodyparts = config_file['multianimalbodyparts']
         else:
@@ -97,18 +100,48 @@ class Evaluate_network(wx.Panel):
         boxsizer.Add(self.hbox1,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
         boxsizer.Add(self.hbox2,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
+
         self.sizer.Add(boxsizer, pos=(3, 0), span=(1, 5),flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT , border=10)
+
+        if config_file.get('multianimalproject', False):
+            infg = wx.StaticBox(self, label="Specify the Inference Confidience")
+            infg_boxsizer = wx.StaticBoxSizer(infg, wx.VERTICAL)
+            self.infg = wx.SpinCtrl(self, value='0.4',min=0,max=1)
+            infg_boxsizer.Add(self.infg,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+
+            #pbds = wx.StaticBox(self, label="Specify the Pbounds")
+            #pbds_boxsizer = wx.StaticBoxSizer(pbds, wx.VERTICAL)
+            #self.pbds = wx.SpinCtrl(self, value='0',min=0,max=100)
+            #pbds_boxsizer.Add(self.pbds,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+
+            self.inf_cfg_text = wx.Button(self, label="Edit the Cross Validation Parameters")
+            self.inf_cfg_text.Bind(wx.EVT_BUTTON, self.edit_inf_config)
+
+            self.edgeWise = wx.RadioBox(self, label='Use Edges?', choices=['True', 'False'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
+            self.edgeWise.SetSelection(0)
+
+            self.hbox3.Add(infg_boxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+            self.hbox3.Add(self.edgeWise,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+            self.hbox3.Add(self.inf_cfg_text,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+            boxsizer.Add(self.hbox3,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+
 
         self.help_button = wx.Button(self, label='Help')
         self.sizer.Add(self.help_button, pos=(4, 0), flag=wx.LEFT, border=10)
         self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
 
-        self.ok = wx.Button(self, label="RUN")
-        self.sizer.Add(self.ok, pos=(4, 4))
+        self.ok = wx.Button(self, label="Step1: RUN")
+        self.sizer.Add(self.ok, pos=(4, 3))
         self.ok.Bind(wx.EVT_BUTTON, self.evaluate_network)
 
-        self.ok = wx.Button(self, label="Plot 3 test maps (only)")
-        self.sizer.Add(self.ok, pos=(4, 3))
+        if config_file.get('multianimalproject', False):
+
+            self.ok = wx.Button(self, label="Step2: X-validate")
+            self.sizer.Add(self.ok, pos=(4, 4))
+            self.ok.Bind(wx.EVT_BUTTON, self.cross_validate)
+
+        self.ok = wx.Button(self, label="Optional: Plot 3 test maps")
+        self.sizer.Add(self.ok, pos=(5, 3))
         self.ok.Bind(wx.EVT_BUTTON, self.plot_maps)
 
         self.cancel = wx.Button(self, label="Reset")
@@ -152,14 +185,29 @@ class Evaluate_network(wx.Panel):
 
 
     def select_config(self,event):
-        """
-        """
         self.config = self.sel_config.GetPath()
 
     def plot_maps(self, event):
         shuffle = self.shuffles.GetValue()
         #if self.plot_scoremaps.GetStringSelection() == "Yes":
         deeplabcut.extract_save_all_maps(self.config, shuffle=shuffle, Indices=[0,1,5])
+
+    def edit_inf_config(self, event):
+        # Read the infer config file
+        cfg = auxiliaryfunctions.read_config(self.config)
+        trainingsetindex = self.trainingset.GetValue()
+        trainFraction = cfg['TrainingFraction'][trainingsetindex]
+        self.inf_cfg_path = os.path.join(cfg['project_path'],auxiliaryfunctions.GetModelFolder(trainFraction, self.shuffles.GetValue(),cfg),'test','inference_cfg.yaml')
+        # let the user open the file with default text editor. Also make it mac compatible
+        if sys.platform=='darwin':
+            self.file_open_bool = subprocess.call(['open',self.inf_cfg_path])
+            self.file_open_bool = True
+        else:
+            self.file_open_bool = webbrowser.open(self.inf_cfg_path)
+        if self.file_open_bool:
+            self.inf_cfg = auxiliaryfunctions.read_config(self.inf_cfg_path)
+        else:
+            raise FileNotFoundError("File not found!")
 
 
     def evaluate_network(self,event):
@@ -181,6 +229,16 @@ class Evaluate_network(wx.Panel):
             self.bodyparts='all'
         deeplabcut.evaluate_network(self.config,Shuffles=shuffle,trainingsetindex=trainingsetindex,
                                        plotting=plotting,show_errors=True,comparisonbodyparts=self.bodyparts)
+
+    def cross_validate(self, event):
+        print("in the works")
+        trainingsetindex = self.trainingset.GetValue()
+        shuffle = [self.shuffles.GetValue()]
+        #Read from edited inf. file first ...
+        deeplabcut.evaluate_multianimal_crossvalidate(self.config, Shuffles=shuffle, trainingsetindex=trainingsetindex,
+                                                          inferencecfg=self.infg.GetValue(), edgewisecondition=self.edgeWise.GetStringSelection())
+
+        deeplabcut.evaluate_multianimal_crossvalidate(path_config_file,Shuffles=[shuffle])
 
     def cancel_evaluate_network(self,event):
         """
