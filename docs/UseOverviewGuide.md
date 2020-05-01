@@ -31,7 +31,7 @@
 
 - ***:purple_heart: [Overview of the entire DLC workflow](/docs/UseOverviewGuide.md#overview)***
 - ***:blue_heart: [Important Information on how to use DLC in different scenarios (single vs multianimal)](/docs/UseOverviewGuide.md#important-information-on-using-deeplabcut)***
-- ***:green_heart: [The different ways to use DLC: standalone GUI, Jupyter/COLAB Notebooks, and in the terminal.]()***
+- ***:green_heart: [The different ways to use DLC: standalone GUI, Jupyter/COLAB Notebooks, and in the terminal.](/docs/UseOverviewGuide.md#the-options-for-using-deeplabcut)***
 ***
 
 ### Overview: 
