@@ -265,8 +265,16 @@ Here, for traditional projects you will get a pixel distance metric and you shou
 ```python
 deeplabcut.evaluate_network(config_path, plotting = True)
 ```
-
 :movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=bgfnz1wtlpo)
+
+**maDeepLabCut [CRITICAL POINT]:**
+
+You need to cross validate parameters before inference. Here, you will run the new function:
+```python
+deeplabcut.evaluate_multianimal_crossvalidate(config_path, Shuffles=[1], edgewisecondition=True, leastbpts=1, init_points=20, n_iter=50)
+```
+We highly suggest that you read the docstring for this function to edit inputs appropraitely. 
+
 
 **maDeepLabCut**: (or on normal projects!)
 
