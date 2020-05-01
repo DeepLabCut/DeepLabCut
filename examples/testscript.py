@@ -27,7 +27,6 @@ basepath=os.path.dirname(os.path.abspath('testscript.py'))
 videoname='reachingvideo1'
 video=[os.path.join(basepath,'Reaching-Mackenzie-2018-08-30','videos',videoname+'.avi')]
 
-
 # For testing a color video:
 #videoname='baby4hin2min'
 #video=[os.path.join('/home/alex/Desktop/Data',videoname+'.mp4')]
@@ -102,7 +101,7 @@ print("CUT SHORT VIDEO AND ANALYZE (with dynamic cropping!)")
 
 # Make super short video (so the analysis is quick!)
 
-try: #you need ffmpeg
+try: #you need ffmpeg command line interface
     #subprocess.call(['ffmpeg','-i',video[0],'-ss','00:00:00','-to','00:00:00.4','-c','copy',newvideo])
     newvideo=deeplabcut.ShortenVideo(video[0],start='00:00:00',stop='00:00:00.4',outsuffix='short',outpath=os.path.join(cfg['project_path'],'videos'))
     vname=Path(newvideo).stem
@@ -163,9 +162,10 @@ deeplabcut.auxiliaryfunctions.write_config(posefile,DLC_config)
 print("TRAIN")
 deeplabcut.train_network(path_config_file)
 
-try: #you need ffmpeg
+try: #you need ffmpeg command line interface
     #subprocess.call(['ffmpeg','-i',video[0],'-ss','00:00:00','-to','00:00:00.4','-c','copy',newvideo])
     newvideo2=deeplabcut.ShortenVideo(video[0],start='00:00:00',stop='00:00:00.4',outsuffix='short2',outpath=os.path.join(cfg['project_path'],'videos'))
+
     vname=Path(newvideo2).stem
 except: # if ffmpeg is broken
     vname='brief'
@@ -179,12 +179,13 @@ except: # if ffmpeg is broken
     newclip = VideoClip(make_frame, duration=1)
     newclip.write_videofile(newvideo2,fps=30)
 
+
 print("Inference with direct cropping")
 deeplabcut.analyze_videos(path_config_file, [newvideo2], save_as_csv=True, destfolder=dfolder, cropping=[0, 50, 0, 50])
 
 print("Extracting skeleton distances, filter and plot filtered output")
 deeplabcut.analyzeskeleton(path_config_file, [newvideo2], save_as_csv=True, destfolder=dfolder)
-deeplabcut.filterpredictions(path_config_file,[newvideo2], destfolder=dfolder)
+deeplabcut.filterpredictions(path_config_file,[newvideo2])
 
 #deeplabcut.create_labeled_video(path_config_file,[newvideo], destfolder=dfolder,filtered=True)
 deeplabcut.create_labeled_video(path_config_file,[newvideo2], destfolder=dfolder,displaycropped=True,filtered=True)
@@ -208,10 +209,14 @@ print("CHANGING training parameters to end quickly!")
 deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
 
 print("TRAINING shuffle 2, with smaller allocated memory")
-deeplabcut.train_network(path_config_file, shuffle=2, allow_growth=True)
+deeplabcut.train_network(path_config_file,shuffle=2,allow_growth=True)
 
 print("ANALYZING some individual frames")
 deeplabcut.analyze_time_lapse_frames(path_config_file,os.path.join(cfg['project_path'],'labeled-data/reachingvideo1/'))
+
+print("Export model...")
+deeplabcut.export_model(path_config_file,shuffle=2,make_tar=False)
+
 
 print("ALL DONE!!! - default cases are functional.")
 print("Re-import DLC with env. variable set to test DLC light mode.")

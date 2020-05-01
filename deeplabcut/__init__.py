@@ -51,6 +51,7 @@ from deeplabcut.pose_estimation_tensorflow import evaluate_network, return_evalu
 
 from deeplabcut.pose_estimation_tensorflow import analyze_videos, analyze_time_lapse_frames, convert_detections2tracklets
 from deeplabcut.pose_estimation_tensorflow import extract_maps, visualize_scoremaps, visualize_locrefs, visualize_paf, extract_save_all_maps
+from deeplabcut.pose_estimation_tensorflow import export_model
 
 from deeplabcut.pose_estimation_3d import calibrate_cameras,check_undistortion,triangulate,create_labeled_video_3d
 
