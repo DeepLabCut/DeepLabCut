@@ -239,8 +239,9 @@ class MainFrame(wx.Frame):
         self.index = []
         self.iter = []
         self.threshold = []
-        self.file = []
+        self.file = 0
         self.updatedCoords = []
+        self.dataFrame = None
         self.drs = []
         cfg = auxiliaryfunctions.read_config(config)
         self.humanscorer = cfg['scorer']
@@ -253,7 +254,7 @@ class MainFrame(wx.Frame):
         self.iterationindex = cfg['iteration']
         self.project_path=cfg['project_path']
         self.bodyparts = cfg['bodyparts']
-        self.threshold = 0.1
+        self.threshold = 0.4
         self.img_size = (10,6)# (imgW, imgH)  # width, height in inches.
         self.preview = False
         self.view_locked=False
@@ -636,16 +637,17 @@ class MainFrame(wx.Frame):
 
         nextFilemsg = wx.MessageBox('File saved. Do you want to refine another file?', 'Repeat?', wx.YES_NO | wx.ICON_INFORMATION)
         if nextFilemsg == 2:
-            self.file = 0
-            self.axes.clear()
+            self.file = 1
+            #self.buttonCounter = []
+            self.updatedCoords = []
+            self.dataFrame = None
+            self.prev.Enable(False)
+            #self.bodyparts = []
             self.figure.delaxes(self.figure.axes[1])
+            self.axes.clear()
             self.choiceBox.Clear(True)
             MainFrame.updateZoomPan(self)
-            self.load.Enable(True)
-            # self.slider.Enable(False)
-            # self.checkBox.Enable(False)
             MainFrame.browseDir(self, event)
-
 
 # ###########################################################################
 # Other functions
