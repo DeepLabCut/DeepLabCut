@@ -8,7 +8,6 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-
 import sys
 import wx
 import os
@@ -73,10 +72,12 @@ class ImagePanel(wx.Panel):
         cax = divider.append_axes("right", size="5%", pad=0.05)
         cbar = self.figure.colorbar(ax, cax=cax,spacing='proportional', ticks=colorIndex)
         cbar.set_ticklabels(bodyparts[::-1])
+
         if preview == False:
             self.axes.set_title(str(str(itr)+"/"+str(len(index)-1) +" "+ str(Path(index[itr]).stem) + " "+ " Threshold chosen is: " + str("{0:.2f}".format(threshold))))
         else:
             self.axes.set_title(str(str(itr)+"/"+str(len(index)-1) +" "+ str(Path(index[itr]).stem)))
+
         if keep_view:
             self.axes.set_xlim(xlim)
             self.axes.set_ylim(ylim)
@@ -84,11 +85,12 @@ class ImagePanel(wx.Panel):
         self.toolbar = NavigationToolbar(self.canvas)
         return(self.figure,self.axes,self.canvas,self.toolbar)
 
+
     def resetView(self):
         self.axes.set_xlim(self.orig_xlim)
         self.axes.set_ylim(self.orig_ylim)
 
-        
+
     def getColorIndices(self,img,bodyparts):
         """
         Returns the colormaps ticks and . The order of ticks labels is reversed.
@@ -216,7 +218,7 @@ class MainFrame(wx.Frame):
         self.lock.Bind(wx.EVT_CHECKBOX, self.lockChecked)
         self.widget_panel.SetSizer(widgetsizer)
         self.lock.Enable(False)
-        
+
         self.save = wx.Button(self.widget_panel, id=wx.ID_ANY, label="Save")
         widgetsizer.Add(self.save , 1, wx.ALL, 15)
         self.save.Bind(wx.EVT_BUTTON, self.saveDataSet)
@@ -239,6 +241,7 @@ class MainFrame(wx.Frame):
         self.threshold = []
         self.file = 0
         self.updatedCoords = []
+        self.dataFrame = None
         self.drs = []
         cfg = auxiliaryfunctions.read_config(config)
         self.humanscorer = cfg['scorer']
@@ -251,7 +254,7 @@ class MainFrame(wx.Frame):
         self.iterationindex = cfg['iteration']
         self.project_path=cfg['project_path']
         self.bodyparts = cfg['bodyparts']
-        self.threshold = 0.1
+        self.threshold = 0.4
         self.img_size = (10,6)# (imgW, imgH)  # width, height in inches.
         self.preview = False
         self.view_locked=False
@@ -268,9 +271,34 @@ class MainFrame(wx.Frame):
             self.nextImage(event=None)
         elif event.GetKeyCode() == wx.WXK_LEFT:
             self.prevImage(event=None)
+        elif event.GetKeyCode() == wx.WXK_BACK:
+            pos_abs = event.GetPosition()
+            inv = self.axes.transData.inverted()
+            pos_rel = list(inv.transform(pos_abs))
+            pos_rel[1] = self.axes.get_ylim()[0] - pos_rel[1]  # Recall y-axis is inverted
+            i = np.nanargmin([self.calc_distance(*dp.point.center, *pos_rel) for dp in self.drs])
+            closest_dp = self.drs[i]
+            msg = wx.MessageBox('Do you want to remove the label %s ?' % closest_dp.bodyParts, 'Remove!',
+                                wx.YES_NO | wx.ICON_WARNING)
+            if msg == 2:
+                closest_dp.delete_data()
+
+    @staticmethod
+    def calc_distance(x1, y1, x2, y2):
+        return np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
     def closewindow(self, event):
         self.Destroy()
+
+    def delete_data(self):
+        self.press = None
+        DraggablePoint.lock = None
+        self.point.set_animated(False)
+        self.background = None
+        self.final_point = (np.nan, np.nan, self.individual_names, self.bodyParts)
+        self.point.center = (np.nan, np.nan)
+        self.coords.append(self.final_point)
+        self.point.figure.canvas.draw()
 
     def homeButton(self,event):
         self.image_panel.resetView()
@@ -279,7 +307,7 @@ class MainFrame(wx.Frame):
         self.zoom.SetValue(False)
         self.pan.SetValue(False)
         self.statusbar.SetStatusText("")
-    
+
     def panButton(self,event):
         if self.pan.GetValue() == True:
             self.toolbar.pan()
@@ -337,7 +365,7 @@ class MainFrame(wx.Frame):
         self.figure,self.axes,self.canvas,self.toolbar = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.threshold,self.bodyparts,self.colormap,self.preview,keep_view=True)
         self.axes.callbacks.connect('xlim_changed', self.onZoom)
         self.axes.callbacks.connect('ylim_changed', self.onZoom)
-        
+
         MainFrame.plot(self,self.img)
 
     def lockChecked(self, event):
@@ -354,11 +382,11 @@ class MainFrame(wx.Frame):
         self.statusbar.SetStatusText("Looking for a folder to start refining...")
         cwd = os.path.join(os.getcwd(),'labeled-data')
 #        dlg = wx.FileDialog(self, "Choose the machinelabels file for current iteration.",cwd, "",wildcard=fname,style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
-        print(platform.system())
-        if platform.system()=='Darwin':  
-            dlg = wx.FileDialog(self, "Choose the machinelabels file for current iteration.",cwd, fname ,wildcard="(*.h5)|*.h5",style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) 
+        platform.system()
+        if platform.system()=='Darwin':
+            dlg = wx.FileDialog(self, "Select the machinelabels-iterX.h5 file.",cwd, fname ,wildcard="(*.h5)|*.h5",style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         else:
-            dlg = wx.FileDialog(self, "Choose the machinelabels file for current iteration.",cwd, "",wildcard=fname,style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+            dlg = wx.FileDialog(self, "Select the machinelabels-iterX.h5 file.",cwd, "",wildcard=fname,style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
 
         if dlg.ShowModal() == wx.ID_OK:
             self.data_file = dlg.GetPath()
@@ -420,7 +448,7 @@ class MainFrame(wx.Frame):
                 """
                 If ok is selected then the image is updated with the thresholded value of the likelihood
                 """
-                textBox = wx.TextEntryDialog(self, "Select the likelihood threshold",caption = "Enter the threshold",value="0.1")
+                textBox = wx.TextEntryDialog(self, "Select the likelihood threshold",caption = "Enter the threshold",value="0.4")
                 textBox.ShowModal()
                 self.threshold = float(textBox.GetValue())
                 textBox.Destroy()
@@ -542,7 +570,7 @@ class MainFrame(wx.Frame):
             self.Destroy()
         else:
             self.save.Enable(True)
-        
+
     def helpButton(self,event):
         """
         Opens Instructions
@@ -552,7 +580,7 @@ class MainFrame(wx.Frame):
         MainFrame.updateZoomPan(self)
         wx.MessageBox('1. Enter the likelihood threshold. \n\n2. All the data points above the threshold will be marked as circle filled with a unique color. All the data points below the threshold will be marked with a hollow circle. \n\n3. Enable the checkbox to adjust the marker size (you will not be able to zoom/pan/home until the next frame). \n\n4. Hover your mouse over data points to see the labels and their likelihood. \n\n5. LEFT click+drag to move the data points. \n\n6. RIGHT click on any data point to remove it. Be careful, you cannot undo this step! \n Click once on the zoom button to zoom-in the image. The cursor will become cross, click and drag over a point to zoom in. \n Click on the zoom button again to disable the zooming function and recover the cursor. \n Use pan button to pan across the image while zoomed in. Use home button to go back to the full default view. \n\n7. When finished click \'Save\' to save all the changes. \n\n8. Click OK to continue', 'User instructions', wx.OK | wx.ICON_INFORMATION)
 
-        
+
     def onChecked(self, event):
       MainFrame.saveEachImage(self)
       self.cb = event.GetEventObject()
@@ -586,7 +614,7 @@ class MainFrame(wx.Frame):
         self.Dataframe = MainFrame.check_labels(self)
         # Overwrite machine label file
         self.Dataframe.to_hdf(self.dataname, key='df_with_missing', mode='w')
-        
+
         self.Dataframe.columns.set_levels([self.scorer.replace(self.scorer,self.humanscorer)],level=0,inplace=True)
         self.Dataframe = self.Dataframe.drop('likelihood',axis=1,level=2)
 
@@ -620,13 +648,15 @@ class MainFrame(wx.Frame):
         nextFilemsg = wx.MessageBox('File saved. Do you want to refine another file?', 'Repeat?', wx.YES_NO | wx.ICON_INFORMATION)
         if nextFilemsg == 2:
             self.file = 1
-            self.axes.clear()
+            #self.buttonCounter = []
+            self.updatedCoords = []
+            self.dataFrame = None
+            self.prev.Enable(False)
+            #self.bodyparts = []
             self.figure.delaxes(self.figure.axes[1])
+            self.axes.clear()
             self.choiceBox.Clear(True)
             MainFrame.updateZoomPan(self)
-            self.load.Enable(True)
-            # self.slider.Enable(False)
-            # self.checkBox.Enable(False)
             MainFrame.browseDir(self, event)
 
 # ###########################################################################
