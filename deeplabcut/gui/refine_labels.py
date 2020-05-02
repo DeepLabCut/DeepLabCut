@@ -55,7 +55,7 @@ class Refine_labels(wx.Panel):
         sizer.Add(self.help_button, pos=(4, 0), flag=wx.LEFT, border=10)
         self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
 
-        self.ok = wx.Button(self, label="Ok")
+        self.ok = wx.Button(self, label="LAUNCH")
         sizer.Add(self.ok, pos=(4, 4))
         self.ok.Bind(wx.EVT_BUTTON, self.refine_labels)
 
