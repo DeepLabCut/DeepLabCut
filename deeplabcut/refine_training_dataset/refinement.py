@@ -290,6 +290,16 @@ class MainFrame(wx.Frame):
     def closewindow(self, event):
         self.Destroy()
 
+    def delete_data(self):
+        self.press = None
+        DraggablePoint.lock = None
+        self.point.set_animated(False)
+        self.background = None
+        self.final_point = (np.nan, np.nan, self.individual_names, self.bodyParts)
+        self.point.center = (np.nan, np.nan)
+        self.coords.append(self.final_point)
+        self.point.figure.canvas.draw()
+
     def homeButton(self,event):
         self.image_panel.resetView()
         self.figure.canvas.draw()

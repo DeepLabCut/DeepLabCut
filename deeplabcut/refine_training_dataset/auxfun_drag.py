@@ -74,7 +74,7 @@ class DraggablePoint():
             if msg == 2:
                 self.remove_data()
 
-    def remove_data(self):
+    def delete_data(self):
         self.press = None
         DraggablePoint.lock = None
         self.point.set_animated(False)
