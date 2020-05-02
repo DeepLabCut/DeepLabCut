@@ -750,6 +750,10 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,
 
         if augmenter_type is None:
             augmenter_type=cfg.get('default_augmenter', 'default')
+            if augmenter_type is None: #this could be in config.yaml for old projects!
+                #updating variable if null/None! #backwardscompatability
+                auxiliaryfunctions.edit_config(config, {'default_augmenter': 'default'})
+                augmenter_type = 'default'
         else:
             if augmenter_type in ['default','imgaug','tensorpack','deterministic']:
                 pass
