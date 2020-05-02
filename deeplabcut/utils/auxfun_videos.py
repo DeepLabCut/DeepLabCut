@@ -66,8 +66,70 @@ def ShortenVideo(vname,start='00:00:01',stop='00:01:00',outsuffix='short',outpat
     #TODO check if those times exist...
     newfilename=os.path.join(vidpath,str(Path(vname).stem)+str(outsuffix)+str(Path(vname).suffix))
     print("Slicing and saving to name", newfilename)
-    subprocess.call(['ffmpeg','-i',vname,'-ss',str(start),'-to',str(stop),'-c','copy',newfilename])
+    command = f"ffmpeg -i {vname} -ss {start} -to {stop} -c:a copy {newfilename}"
+    subprocess.call(command, shell=True)
+    #subprocess.call(['ffmpeg','-i',vname,'-ss',str(start),'-to',str(stop),'-c:v','copy','-c:a', newfilename])
     return str(newfilename)
+
+def CropVideo(vname,width=256,height=256,origin1=0, origin2=0,outsuffix='cropped',outpath=None, useGUI=False):
+    """
+    Auxiliary function to crop a video and output it to the same folder with "outsuffix" appended in its name.
+    Width and height will control the new dimensions.
+
+    Returns the full path to the downsampled video!
+
+    ffmpeg -i in.mp4 -filter:v "crop=out_w:out_h:x:y" out.mp4
+
+    Parameter
+    ----------
+    vname : string
+        A string containing the full path of the video.
+
+    width: int
+        width of output video
+
+    height: int
+        height of output video.
+
+    outsuffix: str
+        Suffix for output videoname (see example).
+
+    outpath: str
+        Output path for saving video to (by default will be the same folder as the video)
+
+    rotateccw: bool
+        Default false, rotates counter-clockwise if true.
+
+    Linux/MacOs
+    >>> deeplabcut.CropVideo('/data/videos/mouse1.avi')
+
+    Crops the video using default values and saves it in /data/videos as mouse1cropped.avi
+
+    Windows:
+    >>> =deeplabcut.CropVideo('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi', width=220,height=320,outsuffix='cropped')
+
+    Crops the video to a width of 220 and height of 320 starting at the origin (top left) and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1cropped.avi
+    """
+    if outpath is None:
+        vidpath=os.path.dirname(vname)
+    else:
+        vidpath=outpath
+
+    if useGUI:
+        print("Please, select your coordinates (draw from top left to bottom right ...)")
+        coords = draw_bbox(vname)
+        if not coords:
+            return
+        origin1, origin2 = coords[:2]
+        width = int(coords[2]) - int(coords[0])
+        height = int(coords[3]) - int(coords[1])
+
+    newfilename=os.path.join(vidpath,str(Path(vname).stem)+str(outsuffix)+str(Path(vname).suffix))
+    print("Cropping and saving to name", newfilename)
+    command = f"ffmpeg -i {vname} -filter:v crop={width}:{height}:{origin1}:{origin2} -c:a copy {newfilename}"
+    subprocess.call(command, shell=True)
+    return str(newfilename)
+
 
 def DownSampleVideo(vname,width=-1,height=200,outsuffix='downsampled',outpath=None,rotateccw=False):
     """
@@ -95,7 +157,7 @@ def DownSampleVideo(vname,width=-1,height=200,outsuffix='downsampled',outpath=No
         Output path for saving video to (by default will be the same folder as the video)
 
     rotateccw: bool
-        Default false, rotates counter-clockwise if true. 
+        Default false, rotates counter-clockwise if true.
 
     Linux/MacOs
     >>> deeplabcut.DownSampleVideo('/data/videos/mouse1.avi')
@@ -120,3 +182,48 @@ def DownSampleVideo(vname,width=-1,height=200,outsuffix='downsampled',outpath=No
         command = f"ffmpeg -i {vname} -filter:v scale={width}:{height} -c:a copy {newfilename}"
     subprocess.call(command, shell=True)
     return str(newfilename)
+
+
+def draw_bbox(video):
+    import matplotlib.pyplot as plt
+    from matplotlib.widgets import RectangleSelector, Button
+
+    clip = cv2.VideoCapture(video)
+    if not clip.isOpened():
+        print('Video could not be opened. Skipping...')
+        return
+
+    success = False
+    # Read the video until a frame is successfully read
+    while not success:
+        success, frame = clip.read()
+
+    bbox = [0, frame.shape[1], 0, frame.shape[0]]
+
+    def line_select_callback(eclick, erelease):
+        bbox[:2] = int(eclick.xdata), int(eclick.ydata)  # x1, y1
+        bbox[2:] = int(erelease.xdata), int(erelease.ydata)  # x2, y2
+
+    def validate_crop(*args):
+        fig.canvas.stop_event_loop()
+
+    def display_help(*args):
+        print('1. Use left click to select the region of interest. A red box will be drawn around the selected region. \n\n2. Use the corner points to expand the box and center to move the box around the image. \n\n3. Click ')
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.imshow(frame[:, :, ::-1])
+    ax_help = fig.add_axes([0.9, 0.2, 0.1, 0.1])
+    ax_save = fig.add_axes([0.9, 0.1, 0.1, 0.1])
+    crop_button = Button(ax_save, 'Crop')
+    crop_button.on_clicked(validate_crop)
+    help_button = Button(ax_help, 'Help')
+    help_button.on_clicked(display_help)
+
+    rs = RectangleSelector(ax, line_select_callback, drawtype='box',
+                           minspanx=5, minspany=5, interactive=True, spancoords='pixels',
+                           rectprops=dict(facecolor='red', edgecolor='black', alpha=0.5, fill=True))
+    plt.show()
+    fig.canvas.start_event_loop(timeout=-1)
+    plt.close(fig)
+    return bbox
