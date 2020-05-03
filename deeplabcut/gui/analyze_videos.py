@@ -97,12 +97,13 @@ class Analyze_videos(wx.Panel):
             #removing this as several downstream maDLC steps don't support dest_folder at this time:
             destfolder_text = wx.StaticBox(self, label="Specify destination folder")
             destfolderboxsizer = wx.StaticBoxSizer(destfolder_text, wx.VERTICAL)
-            self.sel_destfolder = wx.DirPickerCtrl(self, path="",style=wx.FLP_USE_TEXTCTRL,message="Choose the destination folder")
-            self.sel_destfolder.SetPath("None")
-            self.destfolder = None
-            self.sel_destfolder.Bind(wx.EVT_FILEPICKER_CHANGED, self.select_destfolder)
-            destfolderboxsizer.Add(self.sel_destfolder,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
-            hbox2.Add(destfolderboxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+            self.change_workingdir = wx.CheckBox(self, label="optional destination folder")
+            hbox2.Add(self.change_workingdir)
+            self.change_workingdir.Bind(wx.EVT_CHECKBOX,self.activate_change_wd)
+            self.sel_wd = wx.Button(self, label="Browse")
+            self.sel_wd.Enable(False)
+            self.sel_wd.Bind(wx.EVT_BUTTON, self.select_destfolder)
+            hbox2.Add(self.sel_wd,0, wx.ALL, -1)
 
         hbox1.Add(videotype_text_boxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         hbox1.Add(shuffle_boxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
@@ -204,6 +205,16 @@ class Analyze_videos(wx.Panel):
         self.SetSizer(self.sizer)
         self.sizer.Fit(self)
 
+    def activate_change_wd(self,event):
+        """
+        Activates the option to change the working directory
+        """
+        self.change_wd = event.GetEventObject()
+        if self.change_wd.GetValue() == True:
+            self.sel_wd.Enable(True)
+        else:
+            self.sel_wd.Enable(False)
+
     def help_function(self,event):
 
         filepath= 'help.txt'
@@ -219,7 +230,10 @@ class Analyze_videos(wx.Panel):
         os.remove('help.txt')
 
     def select_destfolder(self,event):
-        self.destfolder = self.sel_destfolder.GetPath()
+        cwd = os.getcwd()
+        dlg = wx.DirDialog(self, "Choose the directory where your project will be saved:",cwd, style = wx.DD_DEFAULT_STYLE)
+        if dlg.ShowModal() == wx.ID_OK:
+            self.dir = dlg.GetPath()
 
     def select_config(self,event):
         """
@@ -275,7 +289,7 @@ class Analyze_videos(wx.Panel):
             else:
                 filter = True
 
-            dest_folder = self.sel_destfolder.GetPath()
+            dest_folder = self.dir
 
         if self.cfg['cropping']=='True':
             crop = self.cfg['x1'], self.cfg['x2'], self.cfg['y1'], self.cfg['y2']
@@ -320,7 +334,7 @@ class Analyze_videos(wx.Panel):
             self.filter.SetSelection(1)
             self.trajectory.SetSelection(1)
             self.dynamic.SetSelection(1)
-            self.sel_destfolder.SetPath("None")
+            self.select_destfolder.SetPath("None")
         self.config = []
         self.sel_config.SetPath("")
         self.videotype.SetStringSelection(".avi")
