@@ -57,7 +57,9 @@ The ``create_new_project`` step writes the following parameters to the configura
 
 Next, open the **config.yaml** file, which was created during  **create\_new\_project**. You can edit this file in any text editor.  Familiarize yourself with the meaning of the parameters (Box 1). You can edit various parameters, in particular you must add the list of *bodyparts* (or points of interest) that you want to track.
 
-**maDeepLabCut:** You need to edit the config.yaml file to **modify the following items** which specify the animal ID, body parts, and any unique labels. You should also define an over-conencted 'skeleton' at this time in the config.yaml file. For example, for a "simple" 4 body part animal see the example skeleton. This is crucial: 
+**maDeepLabCut:** You need to edit the config.yaml file to **modify the following items** which specify the animal ID, body parts, and any unique labels. You should also define an over-conencted 'skeleton' at this time in the config.yaml file. For example, for a "simple" 4 body part animal see the example skeleton. Note, we also highly recommend that you use **more bodypoints** that you might otherwise have, i.e., labeling along the spine/tail for 8 bodypoints would be better than four.
+
+Modifying the config.yaml is crucial, especially connecting the skeleton: 
 
 ```python
 individuals:
@@ -166,6 +168,8 @@ OPTIONAL: In the event of adding more labels to the existing labeled dataset, th
 labels to the bodyparts in the config.yaml file. Thereafter, the user can call the function **label_frames**. As of 2.0.5+: then a box will pop up and ask the user if they wish to display all parts, or only add in the new labels. Saving the labels after all the images are labelled will append the new labels to the existing labeled dataset.
 
 **maDeepLabCut CRITICAL POINT:** For multi-animal labeling, unless you can tell apart the animals, you do not need to worry about the "ID" of each animal. For example: if you have a white and black mouse label the white mouse as animal 1, and black as animal 2 across all frames. If two black mice, then the ID label 1 or 2 can switch between frames - no need for you to try to indentify them (but always label consistently within a frame). If you have 2 black mice but one always has a optical fiber (for example), then DO label then consistantly as animal1 and animal_fiber (for example). The point of multi-animal DLC is to train models that can first group the correct bodyparts to individuals, then associate those points in a given video to a specific individual, which then also uses temporal information to link across the video frames.
+
+Note, we also highly recommend that you use more bodypoints that you might otherwise have, i.e. see the example below.
 
 Example Labeling with maDeepLabCut:
 - note you should within an animal be consistent, i.e. all bodyparts on mouse1 should be on mouse1, but across frames "mouse1" can be any of the black mice (as here it is nearly impossible to tell them apart visually). IF you can tell them apart, do label consistently!
