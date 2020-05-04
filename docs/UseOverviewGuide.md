@@ -16,7 +16,7 @@
  
  ### What you need to get started:
  
- - **a set of videos that span the types of behaviors you want to track.** Having 10 videos that include different backgrounds, different individuals, and different postures is MUCH better than 1 or 2 videos of 1 or 2 different indivduals (i.e. 10-20 frames from each of 10 videos is **much better** than 50-100 frames from 2 videos).
+ - **a set of videos that span the types of behaviors you want to track.** Having 10 videos that include different backgrounds, different individuals, and different postures is MUCH better than 1 or 2 videos of 1 or 2 different individuals (i.e. 10-20 frames from each of 10 videos is **much better** than 50-100 frames from 2 videos).
  
  - **minimally, a computer w/a CPU.** If you want to use DeepLabCut on your own computer for many experiments, then you should get an NVIDIA GPU. See technical specs [here](https://github.com/AlexEMG/DeepLabCut/wiki/FAQ). You can also use cloud computing resources, including COLAB ([see how](https://github.com/AlexEMG/DeepLabCut/blob/master/examples/README.md)).
  
@@ -30,7 +30,7 @@
 ## HOW-TO-GUIDES:
 
 - ***:purple_heart: [Overview of the entire DLC workflow](/docs/UseOverviewGuide.md#overview)***
-- ***:blue_heart: [Important Information on how to use DLC in different scenarios (single vs multianimal)](/docs/UseOverviewGuide.md#important-information-on-using-deeplabcut)***
+- ***:blue_heart: [Important Information on how to use DLC in different scenarios (single vs multi animal)](/docs/UseOverviewGuide.md#important-information-on-using-deeplabcut)***
 - ***:green_heart: [The different ways to use DLC: standalone GUI, Jupyter/COLAB Notebooks, and in the terminal.](/docs/UseOverviewGuide.md#the-options-for-using-deeplabcut)***
 ***
 
@@ -53,7 +53,7 @@ This page contains a list of the essential functions of DeepLabCut as well as de
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1560124235138-A9VEZB45SQPD5Z0BDEXA/ke17ZwdGBToddI8pDm48kKsvCFNoOAts8bgs5LXY20UUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcZaDohTswVrVk6oKw3G03bTl18OXeDyNJsBjNlGiyPYGo9Ewyd5AI5wx6CleNeBtf/dlc_steps.jpg?format=1000w" height="270">
 </p>
 
-:mega: **NOTE:** There is a highly similar workflow for 2.2+ (and your 2.X projects are still full compatible with this format!). 
+:mega: **NOTE:** There is a highly similar workflow for 2.2+ (and your 2.X projects are still fully compatible with this format!). 
 
 **:purple_heart: DLC 2.2:** as of 2.2 we support "multi-animal projects," but these new features can also be used on single animals too (details below). The workflow is highly similar, but with some key steps that differ. Please carefully review the functions below for more details. You can search/look for **maDeepLabCut** for specific steps that are changed.
 
@@ -70,11 +70,11 @@ You can have as many projects on your computer as you wish. You can have DeepLab
 
 ### Important information on using DeepLabCut:
 
-We recommend first using **DeepLabCut for a single animal senario** to understand the workflow - even if it's just our demo data. Multi-animal tracking is more complex - i.e. it has several decisions the user needs to make. Then, when you are ready you can jump into 2.2...
+We recommend first using **DeepLabCut for a single animal scenario** to understand the workflow - even if it's just our demo data. Multi-animal tracking is more complex - i.e. it has several decisions the user needs to make. Then, when you are ready you can jump into 2.2...
 
 #### Additional information for getting started with maDeepLabCut (aka DeepLabCut 2.2):
 
-We highly recommend using 2.2 first in the Project Manager GUI ([Option 3](docs/functionDetails.md#deeplabcut-project-manager-gui)). This will allow you to get used to the additional steps by being walked through the process. Then, you can always use all the functions in your favorite IDE, notbooks, etc. 
+We highly recommend using 2.2 first in the Project Manager GUI ([Option 3](docs/functionDetails.md#deeplabcut-project-manager-gui)). This will allow you to get used to the additional steps by being walked through the process. Then, you can always use all the functions in your favorite IDE, notebooks, etc. 
 
 ##### *What scenario do you have?* 
 
@@ -84,8 +84,8 @@ We highly recommend using 2.2 first in the Project Manager GUI ([Option 3](docs/
 :movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://youtu.be/JDsa8R5J0nQ)
 
 
-- **I have multiple *idential-looking animals* in my videos and I need to use DLC2.2:**
-   - quick start: when you `create_new project` set the flag `multianimal=True`. If you can't tell them apart, you can assign the "indiviual" ID to any animal in each frame. See this [labeling w/2.2 demo video](https://www.youtube.com/watch?v=_qbEqNKApsI)
+- **I have multiple *identical-looking animals* in my videos and I need to use DLC2.2:**
+   - quick start: when you `create_new project` set the flag `multianimal=True`. If you can't tell them apart, you can assign the "individual" ID to any animal in each frame. See this [labeling w/2.2 demo video](https://www.youtube.com/watch?v=_qbEqNKApsI)
 
 :movie_camera:[VIDEO TUTORIAL AVAILABLE!]()
 
@@ -115,7 +115,7 @@ Great - now that you get the overall workflow let's jump in! Here, you have seve
 We provide Jupyter and COLAB notebooks for using DeepLabCut on both a pre-labeled dataset, and on the end user’s
 own dataset. See all the demo's [here!](/examples) Please note that GUIs are not easily supported in Jupyter in MacOS, as you need a framework build of python. While it's possible to launch them with a few tweaks, we recommend using the Project Manager GUI or terminal, so please follow the instructions below.
 
-## Option 2: using the Project Manger GUI:
+## Option 2: using the Project Manager GUI:
 :movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=KcXogR-p5Ak)
 
 Start iPython, or if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython`` or ``python``, but otherwise it's the same.
@@ -201,7 +201,7 @@ config_path = r'C:\home\computername\DeepLabCut\yourprojectname\config.yaml'
 deeplabcut.extract_frames(config_path, mode='automatic', algo='kmeans', crop = True/False)
 ```
 
-(more details [here](functionDetails.md#c-data-selection)) *update: as of 2.0.5 (spring 2019) ``checkcropping=True`` is dropped; you now just the option to directly draw a rectangle over the image to crop before extraction (i.e. there no need to manually change in config.yaml then check).
+(more details [here](functionDetails.md#c-data-selection)) *update: as of 2.0.5 (spring 2019) ``checkcropping=True`` is dropped; you now just have the option to directly draw a rectangle over the image to crop before extraction (i.e. there no need to manually change in config.yaml then check).
 
 ### Label Frames:
 
@@ -224,7 +224,7 @@ deeplabcut.label_frames(config_path)
 ```python
 deeplabcut.check_labels(config_path)
 ```
-**maDeepLabCut**: you can also look at both bodypart labeling (standard) and indivudal IDs by also passing `visualizeindividuals=True`
+**maDeepLabCut**: you can also look at both bodypart labeling (standard) and individual IDs by also passing `visualizeindividuals=True`
 
 (more details [here](functionDetails.md#e-check-annotated-frames))
 
@@ -261,7 +261,7 @@ deeplabcut.train_network(config_path)
 
 ### Evaluate the Trained Network:
 
-Here, for traditional projects you will get a pixel distance metric and you should inspect the indivudal frames:
+Here, for traditional projects you will get a pixel distance metric and you should inspect the individual frames:
 ```python
 deeplabcut.evaluate_network(config_path, plotting = True)
 ```
@@ -273,7 +273,7 @@ You need to cross validate parameters before inference. Here, you will run the n
 ```python
 deeplabcut.evaluate_multianimal_crossvalidate(config_path, Shuffles=[1], edgewisecondition=True, leastbpts=1, init_points=20, n_iter=50)
 ```
-We highly suggest that you read the docstring for this function to edit inputs appropraitely. 
+We highly suggest that you read the docstring for this function to edit inputs appropriately. 
 
 
 **maDeepLabCut**: (or on normal projects!)
@@ -303,20 +303,20 @@ deeplabcut.create_video_with_all_detections(path_config_file, ['videofile_path']
 :movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://youtu.be/bEuBKB7eqmk)
 - Now that you have detections (which are saved as a pickle file, not h5, btw), we need to assemble and track the animals. 
 
-First, you need to convert detections to tracklets. This step have several tracker types (`track_method`), and we recommend testing which one works best on your data. 
+First, you need to convert detections to tracklets. This step has several tracker types (`track_method`), and we recommend testing which one works best on your data. 
 
 ```python
 deeplabcut.convert_detections2tracklets(path_config_file, ['videofile_path'], videotype='mp4',
                                                     shuffle=1, trainingsetindex=0, track_method='')
 ```
 
-Secondly, you have the option to refine the tracklets. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akind to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc! 
+Secondly, you have the option to refine the tracklets. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc! 
 
 ```python
 deeplabcut.refine_tracklets(path_config_file, pickle_or_h5_file, videofile_path, min_swap_frac=0.0, min_tracklet_frac=0.0, trail_len=50)
 ```
 
-### Once you have analzyed video data:
+### Once you have analyzed video data:
 
 Firstly, Here are some tips for scaling up your video analysis, including looping over many folders for batch processing: https://github.com/AlexEMG/DeepLabCut/wiki/Batch-Processing-your-Analysis
 
@@ -328,7 +328,7 @@ Note, this creates a file with the ending filtered.h5 that you can use for furth
 
 ### Plotting Results:
 
-- **NOTE :bulb::mega::** before you create a video, you should set what threshold to use for plotting. This is set in the `config.yaml` file as `pcutoff` - if you have a well trained network, this should be high, i.e. set it to `0.8` or higher!
+- **NOTE :bulb::mega::** Before you create a video, you should set what threshold to use for plotting. This is set in the `config.yaml` file as `pcutoff` - if you have a well trained network, this should be high, i.e. set it to `0.8` or higher!
 
 
 - You can also determine a good `pcutoff` value by looking at the likelihood plot created during `plot_trajectories`:
@@ -371,7 +371,7 @@ deeplabcut.refine_labels(config_path)
 </p>
 
 When done editing the labels, merge: 
-**PRO TIP:** if you addded new data, even without refining, i.e. you added and labeled frames from new videos,  also use merge before creating a new training data set!
+**PRO TIP:** if you added new data, even without refining, i.e. you added and labeled frames from new videos,  also use merge before creating a new training data set!
 
 ```python
 deeplabcut.merge_datasets(config_path)
@@ -422,9 +422,9 @@ import deeplabcut
 config_path = r'C:\home\yourprojectfolder\config.yaml'
 ```
 
-Now, you can run any of the functions desribed in this documentation.
+Now, you can run any of the functions described in this documentation.
 
-There is also helper code to further analyze your data or scale up analsis here: https://github.com/AlexEMG/DLCutils/
+There is also helper code to further analyze your data or scale up analysis here: https://github.com/AlexEMG/DLCutils/
 
 ### QUICK GUIDE:
 **The 12 main steps to take you from project creation to analyzed videos:**
@@ -467,3 +467,4 @@ Create a video:
 
 
 Return to [readme](../README.md).
+
