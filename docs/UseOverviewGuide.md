@@ -87,12 +87,12 @@ We highly recommend using 2.2 first in the Project Manager GUI ([Option 3](docs/
 - **I have multiple *identical-looking animals* in my videos and I need to use DLC2.2:**
    - quick start: when you `create_new project` set the flag `multianimal=True`. If you can't tell them apart, you can assign the "individual" ID to any animal in each frame. See this [labeling w/2.2 demo video](https://www.youtube.com/watch?v=_qbEqNKApsI)
 
-:movie_camera:[VIDEO TUTORIAL AVAILABLE!]()
+:movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://youtu.be/Kp-stcTm77g)
 
 - **I have multiple animals, *but I can tell them apart,* in my videos and want to use DLC2.2:**
    - quick start: when you `create_new project` set the flag `multianimal=True`. And always label the "individual" ID name the same; i.e. if you have mouse1 and mouse2 but mouse2 always has a miniscope, in every frame label mouse2 consistently. See this [labeling w/2.2 demo video](https://www.youtube.com/watch?v=_qbEqNKApsI)
 
-:movie_camera:[VIDEO TUTORIAL AVAILABLE!]()
+:movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/Kp-stcTm77g) - ALSO, if you can tell them apart, label animals them consistently! 
 
 - **I have a pre-2.2 single animal project, but I want to use 2.2:**
 
