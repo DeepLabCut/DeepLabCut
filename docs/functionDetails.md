@@ -369,6 +369,23 @@ labeled accurately
 
 • consider labeling additional images and make another iteration of the training data set
 
+**maDeepLabCut - [CRITICAL POINT]:**
+
+You need to cross validate parameters before inference. Here, you will run the new function:
+
+```python
+deeplabcut.evaluate_multianimal_crossvalidate(config_path, Shuffles=[1], edgewisecondition=True, leastbpts=1, init_points=20, n_iter=50)
+```
+We highly suggest that you read the docstring for this function to edit inputs appropraitely.
+
+**maDeepLabCut: (or on normal projects!)**
+
+You can also plot the scoremaps, locref layers, and PAFs:
+
+```python
+deeplabcut.extract_save_all_maps(path_config_file, shuffle=shuffle, Indices=[0, 5])
+```
+you can drop "Indices" to run this on all training/testing images (this is slow!)
 
 ### (I) Novel Video Analysis:
 [DOCSTRING](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#analyze_videos)
