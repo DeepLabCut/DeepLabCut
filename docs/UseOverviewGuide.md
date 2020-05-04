@@ -81,13 +81,13 @@ We highly recommend using 2.2 first in the Project Manager GUI ([Option 3](docs/
 - **I have single animal videos, but I want to use DLC2.2:**
    - quick start: when you `create_new project` just set the flag `multianimal=True`. 
 
-:movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://youtu.be/JDsa8R5J0nQ)
+:movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/JDsa8R5J0nQ)
 
 
 - **I have multiple *identical-looking animals* in my videos and I need to use DLC2.2:**
    - quick start: when you `create_new project` set the flag `multianimal=True`. If you can't tell them apart, you can assign the "individual" ID to any animal in each frame. See this [labeling w/2.2 demo video](https://www.youtube.com/watch?v=_qbEqNKApsI)
 
-:movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://youtu.be/Kp-stcTm77g)
+:movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/Kp-stcTm77g)
 
 - **I have multiple animals, *but I can tell them apart,* in my videos and want to use DLC2.2:**
    - quick start: when you `create_new project` set the flag `multianimal=True`. And always label the "individual" ID name the same; i.e. if you have mouse1 and mouse2 but mouse2 always has a miniscope, in every frame label mouse2 consistently. See this [labeling w/2.2 demo video](https://www.youtube.com/watch?v=_qbEqNKApsI)
@@ -110,13 +110,13 @@ Great - now that you get the overall workflow let's jump in! Here, you have seve
 
 
 ## Option 1: Demo Notebooks:
-:movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=DRT-Cq2vdWs)
+:movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=DRT-Cq2vdWs)
 
 We provide Jupyter and COLAB notebooks for using DeepLabCut on both a pre-labeled dataset, and on the end user’s
 own dataset. See all the demo's [here!](/examples) Please note that GUIs are not easily supported in Jupyter in MacOS, as you need a framework build of python. While it's possible to launch them with a few tweaks, we recommend using the Project Manager GUI or terminal, so please follow the instructions below.
 
 ## Option 2: using the Project Manager GUI:
-:movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=KcXogR-p5Ak)
+:movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=KcXogR-p5Ak)
 
 Start iPython, or if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython`` or ``python``, but otherwise it's the same.
 If you are using DeepLabCut on the cloud, you cannot use the GUIs and you need to first set DLClight=True. Please read more [here](https://github.com/DeepLabCut/Docker4DeepLabCut2.0), and in our Nature Protocols paper [here](https://www.nature.com/articles/s41596-019-0176-0).
@@ -135,7 +135,7 @@ That's it! Follow the GUI for details
 
 
 ## Option 3: using the program terminal, Start iPython*:
-:movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=7xwOhUcIGio)
+:movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=7xwOhUcIGio)
 
 Also, if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython``, but otherwise it's the same.
 If you are using DeepLabCut on the cloud, you cannot use the GUIs and you need to first set DLClight=True. Please read more [here](https://github.com/MMathisLab/Docker4DeepLabCut2.0), and in our Protocol paper [here](https://www.nature.com/articles/s41596-019-0176-0).
