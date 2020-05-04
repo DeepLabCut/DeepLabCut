@@ -92,6 +92,8 @@ skeleton:
   - toprightcorner
 ```
 
+**Note**, if you don't have uniquebodyparts please format as: `uniquebodyparts: []`. Also, it is crucial you connect the skeleton, and "over-connect" it, as shown above.
+
  ### (C) Data Selection (extract frames)
  [DOCSTRING](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#extract_frames) 
 
