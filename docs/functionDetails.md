@@ -370,15 +370,6 @@ labeled accurately
 
 • consider labeling additional images and make another iteration of the training data set
 
-**maDeepLabCut - [CRITICAL POINT]:**
-
-You need to cross validate parameters before inference. Here, you will run the new function:
-
-```python
-deeplabcut.evaluate_multianimal_crossvalidate(config_path, Shuffles=[1], edgewisecondition=True, leastbpts=1, init_points=20, n_iter=50)
-```
-We highly suggest that you read the docstring for this function to edit inputs appropriately.
-
 **maDeepLabCut: (or on normal projects!)**
 
 You can also plot the scoremaps, locref layers, and PAFs:
@@ -387,6 +378,15 @@ You can also plot the scoremaps, locref layers, and PAFs:
 deeplabcut.extract_save_all_maps(path_config_file, shuffle=shuffle, Indices=[0, 5])
 ```
 you can drop "Indices" to run this on all training/testing images (this is slow!)
+
+**maDeepLabCut - [CRITICAL POINT]:**
+
+You need to cross validate parameters before inference. Here, you will run the new function:
+
+```python
+deeplabcut.evaluate_multianimal_crossvalidate(config_path, Shuffles=[1], edgewisecondition=True, leastbpts=1, init_points=20, n_iter=50)
+```
+We highly suggest that you read the docstring for this function to edit inputs appropriately.
 
 ### (I) Novel Video Analysis:
 [DOCSTRING](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#analyze_videos)
@@ -402,14 +402,38 @@ There are several other optional inputs, such as:
 ```python
 deeplabcut.analyze_videos(config_path,videos,videotype='avi',shuffle=1,trainingsetindex=0,gputouse=None,save_as_csv=False, destfolder=None, dynamic=(True,.5,10))
 ```
-The labels are stored in a [MultiIndex Pandas Array](http://pandas.pydata.org), which contains the name
-of the network, body part name, (x, y) label position in pixels, and the likelihood for each frame per body part. These
+For single-animal projects, the labels are stored in a [MultiIndex Pandas Array](http://pandas.pydata.org), which contains the name of the network, body part name, (x, y) label position in pixels, and the likelihood for each frame per body part. These
 arrays are stored in an efficient Hierarchical Data Format (HDF) in the same directory, where the video is stored.
 However, if the flag ``save_as_csv`` is set to ``True``, the data can also be exported in comma-separated values format
 (.csv), which in turn can be imported in many programs, such as MATLAB, R, Prism, etc.; This flag is set to ``False``
 by default. You can also set a destination folder (``destfolder``) for the output files by passing a path of the folder you wish to write to.
 
 As of 2.0.8+: you can extract multiple bodyparts, although there is no support for plotting or further analysis at this time; i.e. if you want to extract 3 snouts (as in [Figure 4 of Mathis et al, 2018 Nature Neuroscience](https://www.nature.com/articles/s41593-018-0209-y/figures/4)), you can edit the config.yaml file to contain ``num_outputs=3``. Then, when you run ``deeplabcut.analyze_videos`` it will extract the top three points (i.e. the 3 x, y, and likelihoods) and save this to the .h5 output file.
+
+### **maDeepLabCut - [CRITICAL POINT]:** Assemble & Refine Tracklets
+
+In D2.2+ you get out a `.pickle` file from `analyze_videos`, not the final `.h5` file. You can now load this pickle file in the refine tracklets GUI. This allows you to swap any errors in identity, and refine any individual bodyparts in the image. 
+
+First, you need to convert detections to tracklets. This step has several tracker types (`track_method`), and we recommend testing which one works best on your data. 
+
+```python
+deeplabcut.convert_detections2tracklets(path_config_file, ['videofile_path'], videotype='mp4',
+                                                    shuffle=1, trainingsetindex=0, track_method='box')
+```
+
+Secondly, you have the option to refine the tracklets. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc! 
+
+```python
+deeplabcut.refine_tracklets(path_config_file, pickle_or_h5_file, videofile_path, min_swap_frac=0.0, min_tracklet_frac=0.0, trail_len=50)
+```
+
+Watch the longer video here: :movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/bEuBKB7eqmk)
+
+Short demo:  
+
+ <p align="center">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588690928000-90ZMRIM8SN6QE20ZOMNX/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/refineDEMO.gif?format=750w" width="70%">
+</p>
 
 ### (I) Novel Video Analysis: extra features
 
