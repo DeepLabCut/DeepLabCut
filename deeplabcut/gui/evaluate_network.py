@@ -72,7 +72,7 @@ class Evaluate_network(wx.Panel):
         self.trainingset = wx.SpinCtrl(self, value='0',min=0,max=100)
         trainingset_boxsizer.Add(self.trainingset,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
-        self.plot_choice = wx.RadioBox(self, label='Want to plot predictions?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
+        self.plot_choice = wx.RadioBox(self, label='Want to plot predictions (as in standard DLC projects)?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
         self.plot_choice.SetSelection(0)
 
         self.plot_scoremaps = wx.RadioBox(self, label='Want to plot maps (ALL images): scoremaps, PAFs, locrefs?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
@@ -108,16 +108,23 @@ class Evaluate_network(wx.Panel):
             infg_boxsizer = wx.StaticBoxSizer(infg, wx.VERTICAL)
             self.infg = wx.SpinCtrl(self, value='1',min=0,max=100)
             infg_boxsizer.Add(self.infg,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
-# dcorr=10,
+
             inpts = wx.StaticBox(self, label="Specify the Inital Points")
             inpts_boxsizer = wx.StaticBoxSizer(inpts, wx.VERTICAL)
-            self.inpts = wx.SpinCtrl(self, value='10',min=0,max=100)
+            self.inpts = wx.SpinCtrl(self, value='20',min=0,max=100)
             inpts_boxsizer.Add(self.inpts,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
             n_iter = wx.StaticBox(self, label="Specify the # of iterations")
             n_iter_boxsizer = wx.StaticBoxSizer(n_iter, wx.VERTICAL)
-            self.n_iter = wx.SpinCtrl(self, value='20',min=0,max=100)
+            self.n_iter = wx.SpinCtrl(self, value='50',min=0,max=300)
             n_iter_boxsizer.Add(self.n_iter,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+
+            target_text = wx.StaticBox(self, label="Specify the Target to optimize!")
+            target_text_boxsizer = wx.StaticBoxSizer(target_text, wx.VERTICAL)
+            targettypes = ['rpck_train','rpck_test','rmse_test','rmse_train']
+            self.targettypes = wx.ComboBox(self,choices = targettypes,style = wx.CB_READONLY)
+            self.targettypes.SetValue('rpck_train')
+            target_text_boxsizer.Add(self.targettypes,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
             self.inf_cfg_text = wx.Button(self, label="Edit the inference_config.yaml")
             self.inf_cfg_text.Bind(wx.EVT_BUTTON, self.edit_inf_config)
@@ -128,6 +135,7 @@ class Evaluate_network(wx.Panel):
             self.hbox3.Add(infg_boxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
             self.hbox3.Add(n_iter_boxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
             self.hbox3.Add(inpts_boxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+            self.hbox3.Add(target_text_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
             self.hbox3.Add(self.edgeWise,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
             self.hbox3.Add(self.inf_cfg_text,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
             boxsizer.Add(self.hbox3,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
@@ -264,9 +272,10 @@ class Evaluate_network(wx.Panel):
         self.inf_cfg_path = os.path.join(cfg['project_path'],auxiliaryfunctions.GetModelFolder(trainFraction, self.shuffles.GetValue(),cfg),'test','inference_cfg.yaml')
         #Read from edited inf. file first ...
         print(self.inf_cfg_path)
+        print("optimizing parameters using "+self.targettypes.GetValue()+" as a target...")
         deeplabcut.evaluate_multianimal_crossvalidate(self.config, Shuffles=shuffle, trainingsetindex=trainingsetindex,
                                                           edgewisecondition=self.edgeWise.GetStringSelection(), leastbpts=self.infg.GetValue(),
-                                                          init_points = self.inpts.GetValue(), n_iter= self.n_iter.GetValue())
+                                                          init_points = self.inpts.GetValue(), n_iter= self.n_iter.GetValue(), target=self.targettypes.GetValue())
 
     def cancel_evaluate_network(self,event):
         """
