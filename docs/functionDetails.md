@@ -379,12 +379,12 @@ deeplabcut.extract_save_all_maps(path_config_file, shuffle=shuffle, Indices=[0, 
 ```
 you can drop "Indices" to run this on all training/testing images (this is slow!)
 
-**maDeepLabCut - [CRITICAL POINT]:**
+### Cross Validation of Inference parameters (a maDeepLabCut CRITICAL POINT!):
 
-You need to cross validate parameters before inference. Here, you will run the new function:
+You need to cross validate parameters before inference. Here, you will run the new function (below) that will smartly try to optimize your inference_config.yaml file. You can also manually edit this file, if needed!
 
 ```python
-deeplabcut.evaluate_multianimal_crossvalidate(config_path, Shuffles=[1], edgewisecondition=True, leastbpts=1, init_points=20, n_iter=50)
+deeplabcut.evaluate_multianimal_crossvalidate(config_path, Shuffles=[1], edgewisecondition=True, leastbpts=1, init_points=20, n_iter=50, target='rpck_train')
 ```
 :movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/jKsU1vb8ovQ)
  <p align="left">
