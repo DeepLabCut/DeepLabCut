@@ -386,7 +386,31 @@ You need to cross validate parameters before inference. Here, you will run the n
 ```python
 deeplabcut.evaluate_multianimal_crossvalidate(config_path, Shuffles=[1], edgewisecondition=True, leastbpts=1, init_points=20, n_iter=50)
 ```
+:movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/jKsU1vb8ovQ)
+ <p align="left">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588885538200-7I6SJEI1X01D1RBIZHLQ/ke17ZwdGBToddI8pDm48kBRS62vpZS4MerMh6g1w8_57gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UUpRlwtclUJaAEBUrSF41mb8w1ynVah_hFT_qJaL1gehm4bjm9DAHF2kOsIZRJKXnA/eval.png?format=1000w" width="50%">
+</p>
+
 We highly suggest that you read the docstring for this function to edit inputs appropriately.
+You also can edit the `inference_config.yaml` file. Here is a description of the parameters:
+
+```
+variant: 0
+minimalnumberofconnections: 4
+averagescore: 0.1
+distnormalizationLOWER: 0
+distnormalization: 400
+detectionthresholdsquare: 0
+addlikelihoods: 0.15
+pafthreshold: 0.15139643821853171
+method: m1
+withid: false
+topktoplot: .inf
+boundingboxslack: 10
+max_age: 100
+min_hits: 3
+iou_threshold: 0.2
+```
 
 ### (I) Novel Video Analysis:
 [DOCSTRING](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#analyze_videos)
@@ -421,16 +445,14 @@ deeplabcut.convert_detections2tracklets(path_config_file, ['videofile_path'], vi
                                                     shuffle=1, trainingsetindex=0, track_method='box')
 ```
 
-Secondly, you have the option to refine the tracklets. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc! 
+Secondly, you need to refine the tracklets. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc! 
 
 ```python
 deeplabcut.refine_tracklets(path_config_file, pickle_or_h5_file, videofile_path, min_swap_frac=0.0, min_tracklet_frac=0.0, trail_len=50)
 ```
-
-Watch the longer video here: :movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/bEuBKB7eqmk)
+:movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/bEuBKB7eqmk)
 
 Short demo:  
-
  <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588690928000-90ZMRIM8SN6QE20ZOMNX/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/refineDEMO.gif?format=750w" width="70%">
 </p>
