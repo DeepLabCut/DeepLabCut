@@ -160,9 +160,9 @@ def create_new_project(project, experimenter, videos, working_directory=None,
         cfg_file['multianimalproject']=multianimal
         cfg_file['individuals']=['individual1','individual2','individual3']
         cfg_file['multianimalbodyparts']=['bodypart1','bodypart2','bodypart3']
-        cfg_file['uniquebodyparts']=['cornerofbox']
+        cfg_file['uniquebodyparts']=[]
         cfg_file['bodyparts']='MULTI!'
-        cfg_file['skeleton']=[['bodypart1','bodypart2'],['bodypart2','bodypart3']]
+        cfg_file['skeleton']=[['bodypart1','bodypart2'],['bodypart2','bodypart3'], ['bodypart1','bodypart3']]
         cfg_file['default_augmenter']='multi-animal-imgaug'
     else:
         cfg_file,ruamelFile = auxiliaryfunctions.create_config_template()
@@ -197,7 +197,7 @@ def create_new_project(project, experimenter, videos, working_directory=None,
     cfg_file['pcutoff']=0.6
     cfg_file['dotsize']=12 #for plots size of dots
     cfg_file['alphavalue']=0.7 #for plots transparency of markers
-    cfg_file['colormap']='spring' #for plots type of colormap
+    cfg_file['colormap']='plasma' #for plots type of colormap
 
     projconfigfile=os.path.join(str(project_path),'config.yaml')
     # Write dictionary to yaml  config file
