@@ -116,7 +116,7 @@ We provide Jupyter and COLAB notebooks for using DeepLabCut on both a pre-labele
 own dataset. See all the demo's [here!](/examples) Please note that GUIs are not easily supported in Jupyter in MacOS, as you need a framework build of python. While it's possible to launch them with a few tweaks, we recommend using the Project Manager GUI or terminal, so please follow the instructions below.
 
 ## Option 2: using the Project Manager GUI:
-:movie_camera: [VIDEO TUTORIAL!](https://www.youtube.com/watch?v=KcXogR-p5Ak) [VIDEO TUTORIAL#2!](https://youtu.be/Kp-stcTm77g) 
+:movie_camera: [VIDEO TUTORIAL!](https://www.youtube.com/watch?v=KcXogR-p5Ak) :movie_camera: [VIDEO TUTORIAL#2!](https://youtu.be/Kp-stcTm77g) 
 
 Start iPython, or if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython`` or ``python``, but otherwise it's the same.
 If you are using DeepLabCut on the cloud, you cannot use the GUIs and you need to first set DLClight=True. Please read more [here](https://github.com/DeepLabCut/Docker4DeepLabCut2.0), and in our Nature Protocols paper [here](https://www.nature.com/articles/s41596-019-0176-0).
