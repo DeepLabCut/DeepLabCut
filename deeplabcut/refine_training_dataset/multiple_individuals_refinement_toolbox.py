@@ -141,7 +141,7 @@ class MainFrame(wx.Frame):
         screenHeight = screenSizes[index][1]
         self.gui_size = (screenWidth*0.7,screenHeight*0.85)
 
-        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = 'DeepLabCut2.0 - Refinement ToolBox',
+        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = 'DeepLabCut - Refinement ToolBox',
                             size = wx.Size(self.gui_size), pos = wx.DefaultPosition, style = wx.RESIZE_BORDER|wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
         self.statusbar = self.CreateStatusBar()
         self.statusbar.SetStatusText("")
