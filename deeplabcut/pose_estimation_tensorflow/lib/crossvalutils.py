@@ -21,7 +21,7 @@ from bayes_opt.event import Events
 from bayes_opt.util import load_logs
 
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingutils
-from deeplabcut import return_evaluate_network_data
+from deeplabcut.pose_estimation_tensorflow import return_evaluate_network_data
 
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from easydict import EasyDict as edict
@@ -52,6 +52,8 @@ def compute_crossval_metrics(config_path, inference_cfg, shuffle=1, trainingseti
     params = set_up_evaluation(data)
 
     n_images = len(params['imnames'])
+    poses = []
+    poses_gt = []
     stats = np.full((n_images, 7), np.nan)  # RMSE, hits, misses, false_pos, num_detections, pck
     columns = ['train_iter', 'train_frac', 'shuffle']
     columns += ['_'.join((b, a)) for a in ('train', 'test') for b in ('rmse',  'hits', 'misses', 'falsepos', 'ndetects', 'pck', 'rpck')]
@@ -64,11 +66,14 @@ def compute_crossval_metrics(config_path, inference_cfg, shuffle=1, trainingseti
             _, _, GT = data[imname]['groundtruth']
             GT = GT.droplevel('scorer').unstack(level=['bodyparts', 'coords'])
             gt = GT.values.reshape((GT.shape[0], -1, 2))
+            poses_gt.append(gt)
 
             if leastbpts>0: #ONLY KEEP animals with at least as many bpts (to get rid of crops that cannot be assembled)
                     gt = gt[np.nansum(gt,axis=(1,2))>leastbpts]
 
-            ani = np.stack(animals).reshape((n_animals, -1, 3))[:, :gt.shape[1], :2]
+            temp = np.stack(animals).reshape((n_animals, -1, 3))
+            poses.append(temp)
+            ani = temp[:, :gt.shape[1], :2]
             mat = np.full((gt.shape[0], n_animals), np.nan)
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore', category=RuntimeWarning)
@@ -117,7 +122,7 @@ def compute_crossval_metrics(config_path, inference_cfg, shuffle=1, trainingseti
                     np.nanmean(stats[metadata['data']['trainIndices']], axis=0),
                     np.nanmean(stats[metadata['data']['testIndices']], axis=0)]
 
-    return pd.DataFrame(res.reshape((1, -1)), columns=columns)
+    return pd.DataFrame(res.reshape((1, -1)), columns=columns), poses_gt, poses
 
 
 def compute_crossval_metrics_preloadeddata(params, columns, inference_cfg, data, trainIndices,

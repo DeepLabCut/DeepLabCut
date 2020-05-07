@@ -16,8 +16,14 @@ import argparse
 import pickle
 import numpy as np
 import pandas as pd
+import skimage.color
+from deeplabcut.pose_estimation_tensorflow.config import load_config
+from deeplabcut.utils import visualization
 from tqdm import tqdm
 from pathlib import Path
+from skimage import io
+from skimage.util import img_as_ubyte
+
 
 def evaluate_multianimal_full(config, Shuffles=[1], trainingsetindex=0,
                                 plotting=None, show_errors=True, comparisonbodyparts="all",
@@ -27,14 +33,10 @@ def evaluate_multianimal_full(config, Shuffles=[1], trainingsetindex=0,
     """
 
     import os
-    from skimage import io
-    import skimage.color
-    from skimage.util import img_as_ubyte
 
     from deeplabcut.pose_estimation_tensorflow.nnet import predict
     from deeplabcut.pose_estimation_tensorflow.nnet import predict_multianimal as predictma
-    from deeplabcut.utils import auxiliaryfunctions, visualization, auxfun_multianimal
-    from deeplabcut.pose_estimation_tensorflow.config import load_config
+    from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
     from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import data_to_input
 
     import tensorflow as tf
@@ -203,8 +205,10 @@ def evaluate_multianimal_full(config, Shuffles=[1], trainingsetindex=0,
     #returning to intial folder
     os.chdir(str(start_path))
 
-def evaluate_multianimal_crossvalidate(config, Shuffles=[1], trainingsetindex=0,  pbounds=None, edgewisecondition=True, target='rpck_train',
-                                       inferencecfg=None, init_points=20, n_iter=50, dcorr=10., leastbpts=1, printingintermediatevalues=True, modelprefix=''):
+
+def evaluate_multianimal_crossvalidate(config, Shuffles=[1], trainingsetindex=0,  pbounds=None, edgewisecondition=True,
+                                       target='rpck_train', inferencecfg=None, init_points=20, n_iter=50, dcorr=10.,
+                                       leastbpts=1, printingintermediatevalues=True, modelprefix='', plotting=False):
     """
     Crossvalidate inference parameters on evaluation data; optimal parametrs will be stored in " inference_cfg.yaml".
 
@@ -281,6 +285,10 @@ def evaluate_multianimal_crossvalidate(config, Shuffles=[1], trainingsetindex=0,
     from easydict import EasyDict as edict
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg['TrainingFraction'][trainingsetindex]
+    trainingsetfolder=auxiliaryfunctions.GetTrainingSetFolder(cfg)
+    Data=pd.read_hdf(os.path.join(cfg["project_path"],str(trainingsetfolder),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing')
+    comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg, 'all')
+    colors = visualization.get_cmap(len(comparisonbodyparts), name=cfg['colormap'])
 
     #wild guesses for a wide range:
     maxconnections=len(cfg['skeleton'])
@@ -301,9 +309,33 @@ def evaluate_multianimal_crossvalidate(config, Shuffles=[1], trainingsetindex=0,
         maximize=False
 
     for shuffle in Shuffles:
-        modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)))
-        path_inference_config = Path(modelfolder) / 'test' / 'test_cfg.yaml'
+        evaluationfolder = os.path.join(cfg["project_path"], str(
+            auxiliaryfunctions.GetEvaluationFolder(trainFraction, shuffle, cfg, modelprefix=modelprefix)))
+        auxiliaryfunctions.attempttomakefolder(evaluationfolder, recursive=True)
 
+        datafn, metadatafn = auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder, trainFraction, shuffle,
+                                                                            cfg)
+        _, trainIndices, testIndices, _ = auxiliaryfunctions.LoadMetadata(
+            os.path.join(cfg["project_path"], metadatafn))
+        modelfolder=os.path.join(cfg["project_path"],str(auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg,modelprefix=modelprefix)))
+        path_test_config = Path(modelfolder) / 'test' / 'pose_cfg.yaml'
+        try:
+            dlc_cfg = load_config(str(path_test_config))
+        except FileNotFoundError:
+            raise FileNotFoundError(
+                "It seems the model for shuffle %s and trainFraction %s does not exist." % (shuffle, trainFraction))
+
+        # Check which snapshots are available and sort them by # iterations
+        Snapshots = np.array(
+            [fn.split('.')[0] for fn in os.listdir(os.path.join(str(modelfolder), 'train')) if "index" in fn])
+        snapindex = -1
+        dlc_cfg['init_weights'] = os.path.join(str(modelfolder), 'train',
+                                               Snapshots[snapindex])  # setting weights to corresponding snapshot.
+        trainingsiterations = (dlc_cfg['init_weights'].split(os.sep)[-1]).split('-')[
+            -1]  # read how many training siterations that corresponds to.
+
+        DLCscorer, _ = auxiliaryfunctions.GetScorerName(cfg, shuffle, trainFraction, trainingsiterations,
+                                                        modelprefix=modelprefix)
 
         path_inference_config = Path(modelfolder) / 'test' / 'inference_cfg.yaml'
         if inferencecfg is None: #then load or initialize
@@ -318,8 +350,8 @@ def evaluate_multianimal_crossvalidate(config, Shuffles=[1], trainingsetindex=0,
                                                           dcorr=dcorr,leastbpts=leastbpts,modelprefix=modelprefix)
 
         #print(inferencecfg)
-        DataOptParams=crossvalutils.compute_crossval_metrics(config, inferencecfg, shuffle,
-                                                             trainingsetindex=trainingsetindex,modelprefix=modelprefix)
+        DataOptParams, poses_gt, poses = crossvalutils.compute_crossval_metrics(config, inferencecfg, shuffle,
+                                                                                trainingsetindex, modelprefix)
 
         path_inference_config=str(path_inference_config)
         #print("Quantification:", DataOptParams.head())
@@ -327,3 +359,18 @@ def evaluate_multianimal_crossvalidate(config, Shuffles=[1], trainingsetindex=0,
         DataOptParams.to_csv(path_inference_config.split('.yaml')[0]+'.csv')
         print("Saving optimal inference parameters...")
         auxiliaryfunctions.write_plainconfig(path_inference_config, dict(inferencecfg))
+
+        if plotting:
+            foldername = os.path.join(str(evaluationfolder),
+                                      'LabeledImages_' + DLCscorer + '_' + Snapshots[snapindex])
+            auxiliaryfunctions.attempttomakefolder(foldername)
+            for imageindex, imagename in tqdm(enumerate(Data.index)):
+                image_path = os.path.join(cfg['project_path'], imagename)
+                image = io.imread(image_path)
+                frame = img_as_ubyte(skimage.color.gray2rgb(image))
+                groundtruthcoordinates = poses_gt[imageindex]
+                coords_pred = poses[imageindex][:, :, :2]
+                probs_pred = poses[imageindex][:, :, -1:]
+                fig = visualization.make_multianimal_labeled_image(frame, groundtruthcoordinates, coords_pred, probs_pred,
+                                                                   colors, cfg['dotsize'], cfg['alphavalue'], cfg['pcutoff'])
+                visualization.save_labeled_frame(fig, image_path, foldername, imageindex in trainIndices)

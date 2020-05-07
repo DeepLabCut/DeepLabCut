@@ -294,7 +294,7 @@ def cropimagesandlabels(config,numcrops=10, size=(400,400), userfeedback=True,
                 cropindex = 0
                 attempts = -1
                 while cropindex < numcrops:
-                    dd =  np.array(data[ind].copy(),dtype=float)
+                    dd = np.array(data[ind].copy(), dtype=float)
                     y0, x0 = np.random.randint(h - size[0]), np.random.randint(w - size[1])
                     with np.errstate(invalid='ignore'):
                         within = np.all((dd >= [x0, y0]) & (dd < [x0 + size[1], y0 + size[0]]), axis=1)
