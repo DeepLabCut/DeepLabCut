@@ -219,6 +219,7 @@ class Create_Labeled_Videos(wx.Panel):
         shuffle = self.shuffle.GetValue()
         trainingsetindex = self.trainingset.GetValue()
         #self.filelist = self.filelist + self.vids
+        print("Creating a video with the "+self.trackertypes.GetValue()+" tracker method!")
 
         if self.filter.GetStringSelection() == "No":
             filtered = False
@@ -252,7 +253,7 @@ class Create_Labeled_Videos(wx.Panel):
         deeplabcut.create_labeled_video(self.config,self.filelist,self.videotype.GetValue(),shuffle=shuffle,
                                              color_by='bodypart', trainingsetindex=trainingsetindex, save_frames=self.slow,
                                              draw_skeleton= self.draw, displayedbodyparts=self.bodyparts,
-                                             trailpoints = self.trail_points.GetValue(),filtered=filtered)
+                                             trailpoints = self.trail_points.GetValue(),filtered=filtered, track_method=self.trackertypes.GetValue())
 
 
     def help_function(self,event):
