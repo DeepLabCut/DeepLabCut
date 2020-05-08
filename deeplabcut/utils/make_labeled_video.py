@@ -92,8 +92,8 @@ def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,bodyparts2plot,
             # Draw the skeleton for specific bodyparts to be connected as specified in the config file
             if draw_skeleton:
                 for link in bpts2connect:
-                    for ind in range(0, len(df_x), nbodyparts):
-                        pair = link[0] + ind, link[1] + ind
+                    for ind in range(nindividuals):
+                        pair = link[0] + ind * nbodyparts, link[1] + ind * nbodyparts
                         with np.errstate(invalid='ignore'):
                             if np.all(df_likelihood[pair, index] > pcutoff) and not \
                                     (np.any(np.isnan(df_x[pair, index])) or np.any(np.isnan(df_y[pair, index]))):
@@ -197,8 +197,8 @@ def CreateVideoSlow(videooutname,clip,Dataframe, tmpfolder, dotsize,colormap,alp
 
                 if draw_skeleton:
                     for link in bpts2connect:
-                        for ind in range(0, len(df_x), nbodyparts):
-                            pair = link[0] + ind, link[1] + ind
+                        for ind in range(nindividuals):
+                            pair = link[0] + ind * nbodyparts, link[1] + ind * nbodyparts
                             with np.errstate(invalid='ignore'):
                                 if np.all(df_likelihood[pair, index] > pcutoff):
                                     ax.plot([df_x[pair[0], index], df_x[pair[1], index]],
