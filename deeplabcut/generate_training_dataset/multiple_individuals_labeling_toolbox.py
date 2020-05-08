@@ -302,7 +302,7 @@ class MainFrame(wx.Frame):
         MainFrame.updateZoomPan(self)
         self.updatedCoords = []
         self.markerSize = self.change_marker_size.GetValue()
-        self.edgewidth = self.markerSize // 2
+        self.edgewidth = self.markerSize // 8
         img_name = Path(self.index[self.iter]).name
         self.figure,self.axes,self.canvas,self.toolbar,self.image_axis = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.multibodyparts,self.colormap,keep_view=True)
         self.axes.callbacks.connect('xlim_changed', self.onZoom)
@@ -485,7 +485,7 @@ class MainFrame(wx.Frame):
 
         self.videos = self.cfg['video_sets'].keys()
         self.markerSize = self.cfg['dotsize']
-        self.edgewidth = self.markerSize // 2
+        self.edgewidth = self.markerSize // 8
         self.alpha = self.cfg['alphavalue']
         self.colormap = plt.get_cmap(self.cfg['colormap'])
         self.colormap = self.colormap.reversed()
