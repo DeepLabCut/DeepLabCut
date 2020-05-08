@@ -358,7 +358,23 @@ def evaluate_multianimal_crossvalidate(config, Shuffles=[1], trainingsetindex=0,
         DataOptParams.to_hdf(path_inference_config.split('.yaml')[0]+'.h5', 'df_with_missing', format='table', mode='w')
         DataOptParams.to_csv(path_inference_config.split('.yaml')[0]+'.csv')
         print("Saving optimal inference parameters...")
+        print(DataOptParams.to_string())
         auxiliaryfunctions.write_plainconfig(path_inference_config, dict(inferencecfg))
+
+        # Store best predictions
+        max_indivs = max(pose.shape[0] for pose in poses)
+        _, bodyparts_single, bodyparts_multi = auxfun_multianimal.extractindividualsandbodyparts(cfg)
+        bpts = bodyparts_multi + bodyparts_single
+        container = np.full((len(poses), max_indivs * len(bpts) * 3), np.nan)
+        for n, pose in enumerate(poses):
+            temp = pose.flatten()
+            container[n, :len(temp)] = temp
+        header = pd.MultiIndex.from_product([[DLCscorer],
+                                             [f'individual{i}' for i in range(1, max_indivs + 1)],
+                                             bpts, ['x', 'y', 'likelihood']],
+                                            names=['scorer', 'individuals', 'bodyparts', 'coords'])
+        df = pd.DataFrame(container, columns=header)
+        df.to_hdf(os.path.join(evaluationfolder, f'{DLCscorer}.h5'), key='df_with_missing')
 
         if plotting:
             foldername = os.path.join(str(evaluationfolder),
