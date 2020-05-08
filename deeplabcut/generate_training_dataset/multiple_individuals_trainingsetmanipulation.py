@@ -188,11 +188,10 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
                                 #if socialbdpt in actualbpts:
                                 try:
                                     x,y=Data[prefix][socialbdpt]['x'][jj],Data[prefix][socialbdpt]['y'][jj]
-                                    if 0<x and x<np.shape(im)[1] and 0<y and y<np.shape(im)[0]: #are labels in image?
-                                            joints[indexjoints,0]=int(bpindex)
-                                            joints[indexjoints,1]=round(x,numdigits)
-                                            joints[indexjoints,2]=round(y,numdigits)
-                                            indexjoints+=1
+                                    joints[indexjoints,0]=int(bpindex)
+                                    joints[indexjoints,1]=round(x,numdigits)
+                                    joints[indexjoints,2]=round(y,numdigits)
+                                    indexjoints+=1
                                 except:
                                     pass
                     else:
@@ -202,22 +201,19 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
                                 #if socialbdpt in actualbpts:
                                 try:
                                     x,y=Data[prefix][socialbdpt]['x'][jj],Data[prefix][socialbdpt]['y'][jj]
-                                    if 0<x and x<np.shape(im)[1] and 0<y and y<np.shape(im)[0]: #are labels in image?
-                                            joints[indexjoints,0]=len(multianimalbodyparts)+int(bpindex)
-                                            joints[indexjoints,1]=round(x,2)
-                                            joints[indexjoints,2]=round(y,2)
-                                            indexjoints+=1
+                                    joints[indexjoints,0]=len(multianimalbodyparts)+int(bpindex)
+                                    joints[indexjoints,1]=round(x,2)
+                                    joints[indexjoints,2]=round(y,2)
+                                    indexjoints+=1
                                 except:
                                     pass
-                    joints = joints[np.where(
-                        np.prod(np.isfinite(joints),
-                                1))[0], :]  # drop NaN, i.e. lines for missing body parts
 
-                    #print("TEST:", filename,joints)
-                    assert (np.prod(np.array(joints[:, 2]) < np.shape(im)[0])
-                            )  # y coordinate within image?
-                    assert (np.prod(np.array(joints[:, 1]) < np.shape(im)[1])
-                            )  # x coordinate within image?
+                    # Drop missing body parts
+                    joints = joints[~np.isnan(joints).any(axis=1)]
+                    # Drop points lying outside the image
+                    inside = np.logical_and.reduce((joints[:, 1] < im.shape[1], joints[:, 1] > 0,
+                                                    joints[:, 2] < im.shape[0], joints[:, 2] > 0))
+                    joints = joints[inside]
 
                     if np.size(joints)>0: #exclude images without labels
                         jointsannotated=True
