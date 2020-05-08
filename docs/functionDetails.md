@@ -563,9 +563,9 @@ This function has various other parameters, in particular the user can set the `
 
 NEW, as of 2.0.7+: You can save the "skeleton" that was applied in ``create_labeled_videos`` for more computations. Namely,  it extracts length and orientation of each "bone" of the skeleton as defined in the **config.yaml** file. You can use the function by:
 
-``python
+```python
 deeplabcut.analyzeskeleton(config, video, videotype='avi', shuffle=1, trainingsetindex=0, save_as_csv=False, destfolder=None)
-``
+```
 See more details here: https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/post_processing/analyze_skeleton.py
 
 
@@ -633,9 +633,9 @@ and their corresponding predictions, if any. Here, the GUI will prompt the user 
 as invalid.
 
 The labels for extracted putative outlier frames can be refined by opening the GUI:
-
-    deeplabcut.refine_labels(config_path)
-
+```python
+deeplabcut.refine_labels(config_path)
+```
 This will launch a GUI where the user can refine the labels (Figure 6).
 
 Use the ‘Load Labels’ button to select one of the subdirectories, where the extracted frames are stored. Every label will be identified by a unique color. For better chances to identify the low-confidence labels, specify the threshold of the likelihood. This changes the body parts with likelihood below this threshold to appear as circles and the ones above as solid disks while retaining the same color scheme. Next, to adjust the position of the label, hover the mouse over the labels to identify the specific body part, left click and drag it to a different location. To delete a specific label, right click on the label (once a label is deleted, it cannot be retrieved).
