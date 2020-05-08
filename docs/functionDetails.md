@@ -168,7 +168,7 @@ labels to the bodyparts in the config.yaml file. Thereafter, the user can call t
 
 Note, we also highly recommend that you use more bodypoints that you might otherwise have, i.e. see the example below.
 
-Example Labeling with maDeepLabCut:
+**Example Labeling with maDeepLabCut:**
 - note you should within an animal be consistent, i.e. all bodyparts on mouse1 should be on mouse1, but across frames "mouse1" can be any of the black mice (as here it is nearly impossible to tell them apart visually). IF you can tell them apart, do label consistently!
 
 <p align="center">
@@ -207,7 +207,7 @@ For each video directory in labeled-data this function creates a subdirectory wi
 ```python
 deeplabcut.create_training_dataset(config_path, augmenter_type = 'imgaug')
 ``` 
-**maDeepLabCut CRITICAL POINT**- you must use the new function if you have a multi-animal project (and the skeleton in the config.yaml must be defined before you run this step, if not already done):
+**maDeepLabCut CRITICAL POINT**- you must use the new function if you have a multi-animal project (and the skeleton in the `config.yaml` must be defined before you run this step, if not already done):
 ```python  
     deeplabcut.create_multianimaltraining_dataset(config_path)
 ```
@@ -233,10 +233,10 @@ are listed in Box 2.
 **DATA AUGMENTATION:** At this stage you can also decide what type of augmentation to use. The default loaders work well for most all tasks (as shown on www.deeplabcut.org), but there are many options, more data augmentation, intermediate supervision, etc. Please look at the [**pose_cfg.yaml**](https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml) file for a full list of parameters **you might want to change before running this step.** There are several data loaders that can be used. For example, you can use the default loader (introduced and described in the Nature Protocols paper), [TensorPack](https://github.com/tensorpack/tensorpack) for data augmentation (currently this is easiest on Linux only), or [imgaug](https://imgaug.readthedocs.io/en/latest/). We recommend `imgaug`. You can set this by passing:``` deeplabcut.create_training_dataset(config_path, augmenter_type='imgaug')  ```
 
 The differences of the loaders are as follows:
-- default: our standard DLC 2.0 introduced in Nature Protocols variant (scaling, auto-crop augmentation)
-- imgaug: a lot of augmentation possibilities, efficient code for target map creation & batch sizes >1 supported. [will prob. become default soon]. You can set the parameters such as the batch_size in the pose_cfg.yaml file for the model you are training. 
-- tensorpack: a lot of augmentation possibilities, multi CPU support for fast processing, target maps are created less efficiently than in imgaug, does not allow batch size>1 
-- deterministic: only useful for testing, freezes numpy seed otherwise like default
+- `default`: our standard DLC 2.0 introduced in Nature Protocols variant (scaling, auto-crop augmentation)
+- `imgaug`: a lot of augmentation possibilities, efficient code for target map creation & batch sizes >1 supported. [will prob. become default soon]. You can set the parameters such as the `batch_size` in the `pose_cfg.yaml` file for the model you are training. 
+- `tensorpack`: a lot of augmentation possibilities, multi CPU support for fast processing, target maps are created less efficiently than in imgaug, does not allow batch size>1 
+- `deterministic`: only useful for testing, freezes numpy seed otherwise like default
 
 Alternatively, you can set the loader (as well as other training parameters) in the **pose_cfg.yaml** file of the model that you want to train. Note, to get details on the options, look at the default file: [**pose_cfg.yaml**](https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml). 
 
@@ -265,11 +265,6 @@ curl -L -O https://datasets.d2.mpi-inf.mpg.de/deepercut-models-tensorflow/mpii-s
 ### (G) Train The Network
 [DOCSTRING](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#train_network)
 
-Timing: The time required to train the network mainly depends on the frame size of the dataset and the
-computer hardware. On a NVIDIA GeForce GTX 1080 Ti GPU, it takes ≈ 6 hrs to train the network for at least
-200,000 iterations. On the CPU, it will take several days to train for the same number of iterations on the same
-training dataset.
-
 The function ‘train_network’ helps the user in training the network. It is used as follows:
 ```python
 deeplabcut.train_network(config_path)
@@ -277,15 +272,19 @@ deeplabcut.train_network(config_path)
 The set of arguments in the function starts training the network for the dataset created for one specific shuffle. Note that you can change the loader (imgaug/default/etc) as well as other training parameters in the **pose_cfg.yaml** file of the model that you want to train (before you start training).
 
 Example parameters that one can call:
-            deeplabcut.train_network(config_path,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshots_to_keep=5,autotune=False,displayiters=100,saveiters=15000, maxiters=30000)
-
+```python          deeplabcut.train_network(config_path,shuffle=1,trainingsetindex=0,gputouse=None,max_snapshots_to_keep=5,autotune=False,displayiters=100,saveiters=15000, maxiters=30000)
+```
 By default, the pretrained ResNet networks are not in the DeepLabCut toolbox (as they are around 100MB), but they get downloaded before you train. However, if not previously downloaded from the TensorFlow model weights, it will be downloaded and stored in a subdirectory *pre-trained* under the subdirectory *models* in *Pose_Estimation_Tensorflow*. 
 At user specified iterations during training checkpoints are stored in the subdirectory *train* under the respective iteration directory.
 
 If the user wishes to restart the training at a specific checkpoint they can specify the full path of the checkpoint to
 the variable ``init_weights`` in the **pose_cfg.yaml** file under the *train* subdirectory (see Box 2).
 
-**CRITICAL POINT:** It is recommended to train the ResNets or MobileNets for thousands of iterations until the loss plateaus (typically around **200,000**). The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file allows the user to alter how often the loss is displayed and how often the weights are stored.
+**CRITICAL POINT:** It is recommended to train the ResNets or MobileNets for thousands of iterations until the loss plateaus (typically around **200,000**). 
+
+If you use **maDeepLabCut** the recommended training iterations is **50K-100K** (it automatically stops at 200K!), as we use Adam and batch-training. 
+
+The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file allows the user to alter how often the loss is displayed and how often the weights are stored.
 
 **maDeepLabCut CRITICAL POINT:** For multi-animal projects we are using not only different and new output layers, but also new data augmentation, optimization, learning rates, and batch training defaults. Thus, please use a lower ``save_iters`` and ``maxiters``. I.e. we suggest saving every 10K-15K iterations, and only training until 50K-100K iterations. We recommend you look closely at the loss to not overfit on your data. The bonus, training time is much less!!!
 
@@ -316,7 +315,6 @@ the pose_config.yaml file for the corresponding project. If None, the value from
 
 maxiters: This sets how many iterations to train. This variable is set in pose_config.yaml. However, you can overwrite it with this. If None, the value from there is used, otherwise it is overwritten! Default: None
 ```    
-    
 
 ### (H) Evaluate the Trained Network
 [DOCSTRING](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#evaluate_network)
@@ -381,7 +379,7 @@ you can drop "Indices" to run this on all training/testing images (this is slow!
 
 ### Cross Validation of Inference parameters (a maDeepLabCut CRITICAL POINT!):
 
-You need to cross validate parameters before inference. Here, you will run the new function (below) that will smartly try to optimize your inference_config.yaml file. You can also manually edit this file, if needed!
+You need to cross validate parameters before inference. Here, you will run the new function (below) that will smartly try to optimize your `inference_config.yaml` file. You can also manually edit this file afterwards, if needed!
 
 ```python
 deeplabcut.evaluate_multianimal_crossvalidate(config_path, Shuffles=[1], edgewisecondition=True, leastbpts=1, init_points=20, n_iter=50, target='rpck_train')
@@ -398,14 +396,14 @@ You also can edit the `inference_config.yaml` file. Here is a description of the
 variant: 0
 minimalnumberofconnections: 4
 averagescore: 0.1
-distnormalizationLOWER: 0
+distnormalizationLOWER: 0 <--- if no body parts can be in the same space, increase this.
 distnormalization: 400
 detectionthresholdsquare: 0
 addlikelihoods: 0.15
 pafthreshold: 0.15139643821853171
 method: m1
 withid: false
-topktoplot: .inf
+topktoplot: .inf <--- maximum number of animals one expects to see; we assume "infinity;" better to over-estimate than under
 boundingboxslack: 10
 max_age: 100
 min_hits: 3
@@ -434,9 +432,9 @@ by default. You can also set a destination folder (``destfolder``) for the outpu
 
 As of 2.0.8+: you can extract multiple bodyparts, although there is no support for plotting or further analysis at this time; i.e. if you want to extract 3 snouts (as in [Figure 4 of Mathis et al, 2018 Nature Neuroscience](https://www.nature.com/articles/s41593-018-0209-y/figures/4)), you can edit the config.yaml file to contain ``num_outputs=3``. Then, when you run ``deeplabcut.analyze_videos`` it will extract the top three points (i.e. the 3 x, y, and likelihoods) and save this to the .h5 output file.
 
-### **maDeepLabCut - [CRITICAL POINT]:** Assemble & Refine Tracklets
+**maDeepLabCut [CRITICAL POINT] - Assemble & Refine Tracklets:
 
-In D2.2+ you get out a `.pickle` file from `analyze_videos`, not the final `.h5` file. You can now load this pickle file in the refine tracklets GUI. This allows you to swap any errors in identity, and refine any individual bodyparts in the image. 
+In DLC2.2+ you get out a `.pickle` file from `analyze_videos`, not the final `.h5` file. You can now load this pickle file in the refine tracklets GUI. This allows you to swap any errors in identity, and refine any individual bodyparts in the image. 
 
 First, you need to convert detections to tracklets. This step has several tracker types (`track_method`), and we recommend testing which one works best on your data. 
 
