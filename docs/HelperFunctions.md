@@ -61,6 +61,8 @@ deeplabcut.ShortenVideo
 
 deeplabcut.DownSampleVideo
 
+deeplabcut.CropVideo
+
 deeplabcut.adddatasetstovideolistandviceversa
 
 deeplabcut.comparevideolistsanddatafolders
