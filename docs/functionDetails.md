@@ -388,11 +388,11 @@ deeplabcut.evaluate_multianimal_crossvalidate(config_path, Shuffles=[1], edgewis
 ```
 :movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/jKsU1vb8ovQ)
  <p align="left">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588885538200-7I6SJEI1X01D1RBIZHLQ/ke17ZwdGBToddI8pDm48kBRS62vpZS4MerMh6g1w8_57gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UUpRlwtclUJaAEBUrSF41mb8w1ynVah_hFT_qJaL1gehm4bjm9DAHF2kOsIZRJKXnA/eval.png?format=1000w" width="50%">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588964838417-EQ1OA4QTZIU98DCEHPTJ/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/ezgif.com-video-to-gif+%287%29.gif?format=750w" width="50%">
 </p>
 
 We highly suggest that you read the docstring for this function to edit inputs appropriately.
-You also can edit the `inference_config.yaml` file. Here is a description of the parameters:
+You also can edit the `inference_config.yaml` file. [Here](/deeplabcut/inference_cfg.yaml) is the full description of the parameters. Here is a quick-start:
 
 ```
 variant: 0
