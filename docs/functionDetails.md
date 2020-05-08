@@ -395,10 +395,14 @@ We highly suggest that you read the docstring for this function to edit inputs a
 You also can edit the `inference_config.yaml` file. [Here](/deeplabcut/inference_cfg.yaml) is the full description of the parameters. Here is a quick-start:
 
 ```
+THESE ARE ALL SMARTLY X-VALIDATED:
 variant: 0
 minimalnumberofconnections: 4
 averagescore: 0.1
-distnormalizationLOWER: 0 <--- if no body parts can be in the same space, increase this.
+# before assembly exclude all bpts more apart than:
+distnormalization: 1000
+# and closer than:
+distnormalizationLOWER: 0 <--- if no body parts can be in the same space, consider increasing this.
 distnormalization: 400
 detectionthresholdsquare: 0
 addlikelihoods: 0.15
@@ -406,8 +410,11 @@ pafthreshold: 0.15139643821853171
 method: m1
 withid: false
 topktoplot: .inf <--- maximum number of animals one expects to see; we assume "infinity;" better to over-estimate than under
+##########################
+THESE ARE NOT X-VALIDATED: (i.e. you should test them out!):
+##########################
 boundingboxslack: 10
-max_age: 100
+max_age: 100 <--- maximum duration of a lost tracklet before it's considered a "new animal" (in frames)
 min_hits: 3
 iou_threshold: 0.2
 ```
