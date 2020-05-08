@@ -392,7 +392,8 @@ class TrackletVisualizer:
         if not self.video.isOpened():
             raise IOError('Video could not be opened.')
         self.nframes = int(self.video.get(cv2.CAP_PROP_FRAME_COUNT))
-        if self.nframes != manager.nframes:
+        # Take into consideration imprecise OpenCV estimation of total number of frames
+        if abs(self.nframes - manager.nframes) >= 0.05 * manager.nframes:
             print('Video duration and data length do not match. Continuing nonetheless...')
         self.trail_len = trail_len
         self.help_text = ''
