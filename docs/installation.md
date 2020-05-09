@@ -1,4 +1,4 @@
-# How To Install DeepLabCut2.x+:
+# How To Install DeepLabCut:
 
 DeepLabCut can be run on Windows, Linux, or MacOS (see more details at [technical considerations](/docs/installation.md#technical-considerations)). 
 
