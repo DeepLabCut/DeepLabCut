@@ -1,4 +1,4 @@
-# Quick Anaconda Install for Windows 10, MacOS, Ubuntu!
+# Quick Anaconda Install!
 ### Please use one (or more) of the supplied Anaconda environments for a fast and easy installation process.
 
 (0) Be sure you have Anaconda 3 installed! https://www.anaconda.com/distribution/, and get familiar with using "cmd" or terminal!
