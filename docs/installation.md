@@ -10,7 +10,7 @@ DeepLabCut can be run on Windows, Linux, or MacOS (see more details at [technica
  
 Anaconda is perhaps the easiest way to install Python and additional packages across various operating systems. With Anaconda you create all the dependencies in an [environment](https://conda.io/docs/user-guide/tasks/manage-environments.html) on your machine. 
 
-## Step 2: [Easy install for Windows, MacOS, Ubuntu: please use our supplied Anaconda environments](https://github.com/AlexEMG/DeepLabCut/blob/master/conda-environments/README.md).
+## Step 2: [Easy install: please use our supplied Anaconda environments](https://github.com/AlexEMG/DeepLabCut/blob/master/conda-environments/README.md).
 Please click [here](https://github.com/AlexEMG/DeepLabCut/blob/master/conda-environments/README.md) to get these files (and more info). 
 
 **CRITICAL:** If you have a GPU, you should FIRST then **install the NVIDIA CUDA (10 or LOWER) package and an appropriate driver for your specific GPU**, then you can use the supplied conda file. Please follow the instructions found here https://www.tensorflow.org/install/gpu, and more tips below, to install the correct version of CUDA and your graphic card driver. The order of operations matters.
