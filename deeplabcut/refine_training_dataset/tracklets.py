@@ -196,7 +196,8 @@ class TrackletManager:
                     to_fill = to_fill[:, mask_single]
                 else:
                     to_fill = to_fill[:, mask_multi]
-                tracklets_unsorted[num_tracklet] = to_fill, completeness, is_single
+                if to_fill.size:
+                    tracklets_unsorted[num_tracklet] = to_fill, completeness, is_single
         tracklets_sorted = sorted(tracklets_unsorted.items(), key=lambda kv: kv[1][1])
 
         if auto_fill:
