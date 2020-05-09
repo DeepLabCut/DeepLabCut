@@ -13,6 +13,6 @@ If you want to contribute to the code, please make a [pull request](https://gith
 - if it's a function that also can be used in downstream steps (i.e. could be plotted) we ask you (1) highlight this, and (2) idealy you provide that functionality as well. If you have any questions, please reach out: admin@deeplabcut.org 
 
 DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals: 
-- the [authors](https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS)
-- [contributors](https://github.com/AlexEMG/DeepLabCut/graphs/contributors) 
+- the [authors](/AUTHORS)
+- [contributors](https://github.com/DeepLabCut/DeepLabCut/graphs/contributors) 
 
