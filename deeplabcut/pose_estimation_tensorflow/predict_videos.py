@@ -1014,6 +1014,28 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
                         temp = [arr.reshape((-1, 3))[:, :2] for arr in animals]
                         trackers = mot_tracker.track(temp)
                     trackingutils.fill_tracklets(Tracks, trackers, animals, imname)
+
+                    # Test whether the unique bodyparts have been assembled
+                    # TODO Perhaps easier to check whether links were defined in the PAF graph?
+                    inds_unique = [all_jointnames.index(bp) for bp in cfg['uniquebodyparts']]
+                    if not any(np.isfinite(a.reshape((-1, 3))[inds_unique]).all() for a in animals):
+                        single = np.full((numjoints, 3), np.nan)
+                        single_dets = inferenceutils.convertdetectiondict2listoflist(data[imname], inds_unique)
+                        for ind, dets in zip(inds_unique, single_dets):
+                            if len(dets) == 1:
+                                single[ind] = dets[0][:3]
+                            elif len(dets) > 1:
+                                best = sorted(dets, key=lambda x: x[2], reverse=True)[0]
+                                single[ind] = best[:3]
+                        # Find an unused tracklet ID for the 'unique' bodyparts
+                        tracklet_id = 0
+                        while True:
+                            if tracklet_id not in Tracks:
+                                break
+                            tracklet_id += 1
+                        Tracks[tracklet_id] = {}
+                        Tracks[tracklet_id][imname] = single.flatten()
+
                 Tracks['header']=pdindex
                 with open(trackname, 'wb') as f:
                     # Pickle the 'labeled-data' dictionary using the highest protocol available.
