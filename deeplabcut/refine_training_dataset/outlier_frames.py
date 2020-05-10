@@ -419,24 +419,26 @@ def PlottingSingleFrame(clip, Dataframe, bodyparts2plot, tmpfolder, index, dotsi
             else:
                 h, w = np.shape(image)
 
-            df_x, df_y, df_likelihood = auxiliaryfunctions.form_data_containers(Dataframe, bodyparts2plot)
-            nbodyparts = len(bodyparts2plot)
-            nindividuals = len(df_x) // nbodyparts
+            bpts = Dataframe.columns.get_level_values('bodyparts')
+            all_bpts = bpts.values[::3]
+            df_x, df_y, df_likelihood = Dataframe.values.reshape((Dataframe.shape[0], -1, 3)).T
+            bplist = bpts.unique().to_list()
+            if Dataframe.columns.nlevels == 3:
+                map2bp = list(range(len(all_bpts)))
+            else:
+                map2bp = [bplist.index(bp) for bp in all_bpts]
+            keep = np.flatnonzero(np.isin(all_bpts, bodyparts2plot))
 
             plt.figure(frameon=False, figsize=(w * 1. / 100, h * 1. / 100))
             plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
             plt.imshow(image)
-            for bpindex in range(nbodyparts):
-                for ind in range(nindividuals):
-                    j = bpindex + ind * nbodyparts
-                    color = colors(bpindex)
-                    if df_likelihood[bpindex + ind, index] > pcutoff:
-                        plt.scatter(df_x[j, index],
-                                    df_y[j, index],
-                                    s=dotsize ** 2,
-                                    color=color,
-                                    alpha=alphavalue)
-
+            for i, ind in enumerate(keep):
+                if df_likelihood[ind, index] > pcutoff:
+                    plt.scatter(df_x[ind, index],
+                                df_y[ind, index],
+                                s=dotsize ** 2,
+                                color=colors(map2bp[i]),
+                                alpha=alphavalue)
             plt.xlim(0, w)
             plt.ylim(0, h)
             plt.axis('off')
@@ -472,24 +474,26 @@ def PlottingSingleFramecv2(cap, crop, coords, Dataframe, bodyparts2plot, tmpfold
             else:
                 h, w = np.shape(image)
 
-            df_x, df_y, df_likelihood = auxiliaryfunctions.form_data_containers(Dataframe, bodyparts2plot)
-            nbodyparts = len(bodyparts2plot)
-            nindividuals = len(df_x) // nbodyparts
+            bpts = Dataframe.columns.get_level_values('bodyparts')
+            all_bpts = bpts.values[::3]
+            df_x, df_y, df_likelihood = Dataframe.values.reshape((Dataframe.shape[0], -1, 3)).T
+            bplist = bpts.unique().to_list()
+            if Dataframe.columns.nlevels == 3:
+                map2bp = list(range(len(all_bpts)))
+            else:
+                map2bp = [bplist.index(bp) for bp in all_bpts]
+            keep = np.flatnonzero(np.isin(all_bpts, bodyparts2plot))
 
             plt.figure(frameon=False, figsize=(w * 1. / 100, h * 1. / 100))
             plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
             plt.imshow(image)
-            for bpindex in range(nbodyparts):
-                for ind in range(nindividuals):
-                    j = bpindex + ind * nbodyparts
-                    color = colors(bpindex)
-                    if df_likelihood[bpindex + ind, index] > pcutoff:
-                        plt.scatter(df_x[j, index],
-                                    df_y[j, index],
-                                    s=dotsize ** 2,
-                                    color=color,
-                                    alpha=alphavalue)
-
+            for i, ind in enumerate(keep):
+                if df_likelihood[ind, index] > pcutoff:
+                    plt.scatter(df_x[ind, index],
+                                df_y[ind, index],
+                                s=dotsize ** 2,
+                                color=colors(map2bp[i]),
+                                alpha=alphavalue)
             plt.xlim(0, w)
             plt.ylim(0, h)
             plt.axis('off')
