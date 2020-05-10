@@ -377,13 +377,14 @@ def IntersectionofBodyPartsandOnesGivenbyUser(cfg,comparisonbodyparts):
     ''' Returns all body parts when comparisonbodyparts=='all', otherwise all bpts that are in the intersection of comparisonbodyparts and the actual bodyparts '''
     allbpts = cfg['bodyparts']
     if 'MULTI' in allbpts:
-        allbpts = cfg['uniquebodyparts'] + cfg['multianimalbodyparts']
+        allbpts = cfg['multianimalbodyparts'] + cfg['uniquebodyparts']
     if comparisonbodyparts == "all":
         return allbpts
     else: #take only items in list that are actually bodyparts...
         cpbpts=[]
-        for bp in comparisonbodyparts:
-            if bp in allbpts:
+        # Ensure same order as in config.yaml
+        for bp in allbpts:
+            if bp in comparisonbodyparts:
                 cpbpts.append(bp)
         return cpbpts
 

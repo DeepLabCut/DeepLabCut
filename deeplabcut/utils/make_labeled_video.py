@@ -393,7 +393,7 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
                     df = df.loc(axis=1)[:, individuals]
                 cropping = metadata['data']["cropping"]
                 [x1, x2, y1, y2] = metadata['data']["cropping_parameters"]
-                labeled_bpts = [bp for bp in bodyparts if bp in df.columns.get_level_values('bodyparts')]
+                labeled_bpts = [bp for bp in df.columns.get_level_values('bodyparts').unique() if bp in bodyparts]
                 if not fastmode:
                     tmpfolder = os.path.join(str(videofolder), 'temp-' + vname)
                     if save_frames:

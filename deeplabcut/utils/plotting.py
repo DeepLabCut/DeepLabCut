@@ -175,7 +175,7 @@ def plot_trajectories(config, videos, videotype='.avi', shuffle=1, trainingsetin
             tmpfolder = os.path.join(videofolder, 'plot-poses', vname)
             auxiliaryfunctions.attempttomakefolder(tmpfolder, recursive=True)
             # Keep only the individuals and bodyparts that were labeled
-            labeled_bpts = [bp for bp in bodyparts if bp in df.columns.get_level_values('bodyparts')]
+            labeled_bpts = [bp for bp in df.columns.get_level_values('bodyparts').unique() if bp in bodyparts]
             for animal in individuals:
                 PlottingResults(tmpfolder, df, cfg, labeled_bpts, animal,
                                 showfigures, suffix + animal + '.png')
