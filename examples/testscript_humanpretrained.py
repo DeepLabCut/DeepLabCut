@@ -14,9 +14,18 @@ basepath=os.path.dirname(os.path.abspath('testscript.py'))
 videoname='reachingvideo1'
 video=[os.path.join(basepath,'Reaching-Mackenzie-2018-08-30','videos',videoname+'.avi')]
 
+#legacy mode:
+'''
 configfile, path_train_config=deeplabcut.create_pretrained_human_project(Task, YourName,video,
                                                                         videotype='avi', analyzevideo=True,
                                                                         createlabeledvideo=True, copy_videos=False) #must leave copy_videos=True
+'''
+#new way:
+configfile, path_train_config=deeplabcut.create_pretrained_project(Task, YourName,video,model='full_human',
+                                                                        videotype='avi', analyzevideo=True,
+                                                                        createlabeledvideo=True, copy_videos=False) #must leave copy_videos=True
+
+
 lastvalue=5
 DLC_config= deeplabcut.auxiliaryfunctions.read_plainconfig(path_train_config)
 pretrainedDeeperCutweights=DLC_config['init_weights']
