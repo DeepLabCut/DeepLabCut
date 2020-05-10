@@ -41,11 +41,13 @@ def get_cmap(n, name='hsv'):
     RGB color; the keyword argument name must be a standard mpl colormap name.'''
     return plt.cm.get_cmap(name, n)
 
-def get_segment_indices(bodyparts2connect, bodyparts2plot):
+
+def get_segment_indices(bodyparts2connect, all_bpts):
     bpts2connect = []
     for pair in bodyparts2connect:
-        if all(elem in bodyparts2plot for elem in pair):
-            bpts2connect.append([bodyparts2plot.index(elem) for elem in pair])
+        if all(elem in all_bpts for elem in pair):
+            bpts2connect.extend(zip(*(np.flatnonzero(all_bpts == pair[0]),
+                                      np.flatnonzero(all_bpts == pair[1]))))
     return bpts2connect
 
 
@@ -56,7 +58,8 @@ def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,bodyparts2plot,
         if draw_skeleton:
             color_for_skeleton = (np.array(mpl.colors.to_rgba(skeleton_color))[:3]*255).astype(np.uint8)
             #recode the bodyparts2connect into indices for df_x and df_y for speed
-            bpts2connect = get_segment_indices(bodyparts2connect, bodyparts2plot)
+            all_bpts = Dataframe.columns.get_level_values('bodyparts').values[::3]
+            bpts2connect = get_segment_indices(bodyparts2connect, all_bpts)
 
         if displaycropped:
             ny, nx= y2-y1,x2-x1
@@ -91,17 +94,15 @@ def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,bodyparts2plot,
 
             # Draw the skeleton for specific bodyparts to be connected as specified in the config file
             if draw_skeleton:
-                for link in bpts2connect:
-                    for ind in range(nindividuals):
-                        pair = link[0] + ind * nbodyparts, link[1] + ind * nbodyparts
-                        with np.errstate(invalid='ignore'):
-                            if np.all(df_likelihood[pair, index] > pcutoff) and not \
-                                    (np.any(np.isnan(df_x[pair, index])) or np.any(np.isnan(df_y[pair, index]))):
-                                rr, cc, val = line_aa(int(np.clip(df_y[pair[0], index], 0, ny - 1)),
-                                                      int(np.clip(df_x[pair[0], index], 0, nx - 1)),
-                                                      int(np.clip(df_y[pair[1], index], 1, ny - 1)),
-                                                      int(np.clip(df_x[pair[1], index], 1, nx - 1)))
-                                image[rr, cc] = color_for_skeleton
+                for bpt1, bpt2 in bpts2connect:
+                    with np.errstate(invalid='ignore'):
+                        if (np.all(df_likelihood[[bpt1, bpt2], index] > pcutoff) and not
+                        (np.any(np.isnan(df_x[[bpt1, bpt2], index])) or np.any(np.isnan(df_y[[bpt1, bpt2], index])))):
+                            rr, cc, val = line_aa(int(np.clip(df_y[bpt1, index], 0, ny - 1)),
+                                                  int(np.clip(df_x[bpt1, index], 0, nx - 1)),
+                                                  int(np.clip(df_y[bpt2, index], 1, ny - 1)),
+                                                  int(np.clip(df_x[bpt2, index], 1, nx - 1)))
+                            image[rr, cc] = color_for_skeleton
 
             for bpindex in range(nbodyparts):
                 for ind in range(nindividuals):
@@ -164,7 +165,8 @@ def CreateVideoSlow(videooutname,clip,Dataframe, tmpfolder, dotsize,colormap,alp
         colors = get_cmap(nbodyparts, name=colormap)
     if draw_skeleton:
         #recode the bodyparts2connect into indices for df_x and df_y for speed
-        bpts2connect = get_segment_indices(bodyparts2connect, bodyparts2plot)
+        all_bpts = Dataframe.columns.get_level_values('bodyparts').values[::3]
+        bpts2connect = get_segment_indices(bodyparts2connect, all_bpts)
 
     nframes_digits=int(np.ceil(np.log10(nframes)))
     if nframes_digits>9:
@@ -196,14 +198,12 @@ def CreateVideoSlow(videooutname,clip,Dataframe, tmpfolder, dotsize,colormap,alp
                 ax.imshow(image)
 
                 if draw_skeleton:
-                    for link in bpts2connect:
-                        for ind in range(nindividuals):
-                            pair = link[0] + ind * nbodyparts, link[1] + ind * nbodyparts
-                            with np.errstate(invalid='ignore'):
-                                if np.all(df_likelihood[pair, index] > pcutoff):
-                                    ax.plot([df_x[pair[0], index], df_x[pair[1], index]],
-                                            [df_y[pair[0], index], df_y[pair[1], index]],
-                                            color=skeleton_color, alpha=alphavalue)
+                    for bpt1, bpt2 in bpts2connect:
+                        with np.errstate(invalid='ignore'):
+                            if np.all(df_likelihood[[bpt1, bpt2], index] > pcutoff):
+                                ax.plot([df_x[bpt1, index], df_x[bpt2, index]],
+                                        [df_y[bpt1, index], df_y[bpt2, index]],
+                                        color=skeleton_color, alpha=alphavalue)
 
                 for bpindex in range(nbodyparts):
                     for ind in range(nindividuals):
