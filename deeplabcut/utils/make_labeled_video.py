@@ -103,14 +103,14 @@ def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,bodyparts2plot,
             C = colorclass.to_rgba(np.linspace(0, 1, nindividuals))
         colors=(C[:,:3]*255).astype(np.uint8)
 
-        for index in trange(nframes):
-            image = clip.load_frame()
-            if displaycropped:
-                    image=image[y1:y2,x1:x2]
+        with np.errstate(invalid='ignore'):
+            for index in trange(nframes):
+                image = clip.load_frame()
+                if displaycropped:
+                        image=image[y1:y2,x1:x2]
 
-            # Draw the skeleton for specific bodyparts to be connected as specified in the config file
-            if draw_skeleton:
-                with np.errstate(invalid='ignore'):
+                # Draw the skeleton for specific bodyparts to be connected as specified in the config file
+                if draw_skeleton:
                     for bpt1, bpt2 in bpts2connect:
                         if (np.all(df_likelihood[[bpt1, bpt2], index] > pcutoff) and
                                 not (np.any(np.isnan(df_x[[bpt1, bpt2], index])) or
@@ -121,28 +121,26 @@ def CreateVideo(clip,Dataframe,pcutoff,dotsize,colormap,bodyparts2plot,
                                                   int(np.clip(df_x[bpt2, index], 1, nx - 1)))
                             image[rr, cc] = color_for_skeleton
 
-            with np.errstate(invalid='ignore'):
                 for ind, num_bp, num_ind in bpts2color:
-                    if color_by == 'bodypart':
-                        color = colors[num_bp]
-                    else:
-                        color = colors[num_ind]
                     if df_likelihood[ind, index] > pcutoff:
+                        if color_by == 'bodypart':
+                            color = colors[num_bp]
+                        else:
+                            color = colors[num_ind]
                         if trailpoints > 0:
-                            for k in range(min(trailpoints, index + 1)):
+                            for k in range(1, min(trailpoints, index + 1)):
                                 rr, cc = circle(df_y[ind, index - k],
                                                 df_x[ind, index - k],
                                                 dotsize,
                                                 shape=(ny, nx))
                                 image[rr, cc] = color
-                        else:
-                            rr, cc = circle(df_y[ind, index],
-                                            df_x[ind, index],
-                                            dotsize,
-                                            shape=(ny, nx))
-                            image[rr, cc] = color
+                        rr, cc = circle(df_y[ind, index],
+                                        df_x[ind, index],
+                                        dotsize,
+                                        shape=(ny, nx))
+                        image[rr, cc] = color
 
-            clip.save_frame(image)
+                clip.save_frame(image)
         clip.close()
 
 
@@ -168,22 +166,35 @@ def CreateVideoSlow(videooutname,clip,Dataframe, tmpfolder, dotsize,colormap,alp
     print("Duration of video [s]: ", round(duration,2), ", recorded with ", round(fps,2),"fps!")
     print("Overall # of frames: ", int(nframes), "with cropped frame dimensions: ",nx,ny)
     print("Generating frames and creating video.")
-    df_x = Dataframe.xs('x', level=-1, axis=1).values.T
-    df_y = Dataframe.xs('y', level=-1, axis=1).values.T
-    df_likelihood = Dataframe.xs('likelihood', level=-1, axis=1).values.T
+    df_x, df_y, df_likelihood = Dataframe.values.reshape((nframes, -1, 3)).T
     if cropping and not displaycropped:
         df_x += x1
         df_y += y1
-    nbodyparts = len(bodyparts2plot)
-    nindividuals = len(df_x) // nbodyparts
+
+    bpts = Dataframe.columns.get_level_values('bodyparts')
+    all_bpts = bpts.values[::3]
+    if draw_skeleton:
+        bpts2connect = get_segment_indices(bodyparts2connect, all_bpts)
+
+    bplist = bpts.unique().to_list()
+    nbodyparts = len(bplist)
+    if Dataframe.columns.nlevels == 3:
+        nindividuals = 1
+        map2bp = list(range(len(all_bpts)))
+        map2id = [0 for _ in map2bp]
+    else:
+        nindividuals = len(Dataframe.columns.get_level_values('individuals').unique())
+        map2bp = [bplist.index(bp) for bp in all_bpts]
+        nbpts_per_ind = Dataframe.groupby(level='individuals', axis=1).size().values // 3
+        map2id = []
+        for i, j in enumerate(nbpts_per_ind):
+            map2id.extend([i] * j)
+    keep = np.flatnonzero(np.isin(all_bpts, bodyparts2plot))
+    bpts2color = [(ind, map2bp[ind], map2id[ind]) for ind in keep]
     if color_by == 'individual':
         colors = get_cmap(nindividuals, name=colormap)
     else:
         colors = get_cmap(nbodyparts, name=colormap)
-    if draw_skeleton:
-        #recode the bodyparts2connect into indices for df_x and df_y for speed
-        all_bpts = Dataframe.columns.get_level_values('bodyparts').values[::3]
-        bpts2connect = get_segment_indices(bodyparts2connect, all_bpts)
 
     nframes_digits=int(np.ceil(np.log10(nframes)))
     if nframes_digits>9:
@@ -205,7 +216,7 @@ def CreateVideoSlow(videooutname,clip,Dataframe, tmpfolder, dotsize,colormap,alp
     ax = fig.add_subplot(111)
 
     writer = FFMpegWriter(fps=fps, codec='h264')
-    with writer.saving(fig, videooutname, dpi=dpi):
+    with writer.saving(fig, videooutname, dpi=dpi), np.errstate(invalid='ignore'):
         for index in trange(nframes):
             imagename = tmpfolder + "/file" + str(index).zfill(nframes_digits) + ".png"
             image = img_as_ubyte(clip.load_frame())
@@ -216,32 +227,28 @@ def CreateVideoSlow(videooutname,clip,Dataframe, tmpfolder, dotsize,colormap,alp
 
                 if draw_skeleton:
                     for bpt1, bpt2 in bpts2connect:
-                        with np.errstate(invalid='ignore'):
-                            if np.all(df_likelihood[[bpt1, bpt2], index] > pcutoff):
-                                ax.plot([df_x[bpt1, index], df_x[bpt2, index]],
-                                        [df_y[bpt1, index], df_y[bpt2, index]],
-                                        color=skeleton_color, alpha=alphavalue)
+                        if np.all(df_likelihood[[bpt1, bpt2], index] > pcutoff):
+                            ax.plot([df_x[bpt1, index], df_x[bpt2, index]],
+                                    [df_y[bpt1, index], df_y[bpt2, index]],
+                                    color=skeleton_color, alpha=alphavalue)
 
-                for bpindex in range(nbodyparts):
-                    for ind in range(nindividuals):
-                        j = bpindex + ind * nbodyparts
-                        if 'part' in color_by:
-                            color = colors(bpindex)
+                for ind, num_bp, num_ind in bpts2color:
+                    if df_likelihood[ind, index] > pcutoff:
+                        if color_by == 'bodypart':
+                            color = colors(num_bp)
                         else:
-                            color = colors(ind)
-                        with np.errstate(invalid='ignore'):
-                            if df_likelihood[j, index] > pcutoff:
-                                if trailpoints > 0:
-                                    ax.scatter(df_x[j][max(0, index - trailpoints):index],
-                                               df_y[j][max(0, index - trailpoints):index],
-                                               s=dotsize ** 2,
-                                               color=color,
-                                               alpha=alphavalue * .75)
-                                ax.scatter(df_x[j, index],
-                                           df_y[j, index],
-                                           s=dotsize ** 2,
-                                           color=color,
-                                           alpha=alphavalue)
+                            color = colors(num_ind)
+                        if trailpoints > 0:
+                            ax.scatter(df_x[ind][max(0, index - trailpoints):index],
+                                       df_y[ind][max(0, index - trailpoints):index],
+                                       s=dotsize ** 2,
+                                       color=color,
+                                       alpha=alphavalue * .75)
+                        ax.scatter(df_x[ind, index],
+                                   df_y[ind, index],
+                                   s=dotsize ** 2,
+                                   color=color,
+                                   alpha=alphavalue)
                 ax.set_xlim(0, nx)
                 ax.set_ylim(0, ny)
                 ax.axis('off')
