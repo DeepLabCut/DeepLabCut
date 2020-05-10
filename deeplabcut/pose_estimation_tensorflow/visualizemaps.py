@@ -284,7 +284,7 @@ def visualize_paf(image, paf, pafgraph, nplots_per_row=3, step=5, labels=None):
 
 
 def extract_save_all_maps(config, shuffle=1, trainingsetindex=0, comparisonbodyparts='all',
-                  gputouse=None, rescale=False, Indices=None, modelprefix='', dest_folder=None, nplots_per_row=3):
+                  gputouse=None, rescale=False, Indices=None, modelprefix='', dest_folder=None, nplots_per_row=None):
     """
     Extracts the scoremap, location refinement field and part affinity field prediction of the model. The maps 
     will be rescaled to the size of the input image and stored in the corresponding model folder in /evaluation-results.
@@ -306,8 +306,8 @@ def extract_save_all_maps(config, shuffle=1, trainingsetindex=0, comparisonbodyp
     Indices: default None
         For which images shall the scmap/locref and paf be computed? Give a list of images
 
-    nplots_per_row: 3
-        Number of plots per row in grid plots.
+    nplots_per_row: int, optional (default=None)
+        Number of plots per row in grid plots. By default, calculated to approximate a squared grid of plots
         
     Examples
     --------
@@ -322,6 +322,11 @@ def extract_save_all_maps(config, shuffle=1, trainingsetindex=0, comparisonbodyp
     cfg = read_config(config)
     data = extract_maps(config, shuffle, trainingsetindex, comparisonbodyparts,
                         gputouse, rescale, Indices, modelprefix)
+
+    if not nplots_per_row:
+        from deeplabcut.utils import auxiliaryfunctions
+        bpts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg, comparisonbodyparts)
+        nplots_per_row = np.floor(np.sqrt(len(bpts)))
 
     print("Saving plots...")
     for frac, values in data.items():
