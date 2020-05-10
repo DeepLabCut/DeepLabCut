@@ -157,7 +157,7 @@ def extract_outlier_frames(config, videos, videotype='avi', shuffle=1, trainings
                 ind = df_temp.index[(sum_ > epsilon ** 2).any(axis=1)].tolist()
                 Indices.extend(ind)
             elif outlieralgorithm == 'fitting':
-                d, o = compute_deviations(df_temp, bodyparts, dataname, p_bound, alpha, ARdegree, MAdegree)
+                d, o = compute_deviations(df_temp, dataname, p_bound, alpha, ARdegree, MAdegree)
                 # Some heuristics for extracting frames based on distance:
                 ind = np.flatnonzero(d > epsilon)  # time points with at least average difference of epsilon
                 if len(ind) < cfg['numframes2pick'] * 2 and len(d) > cfg['numframes2pick'] * 2:  # if too few points qualify, extract the most distant ones.
@@ -246,27 +246,23 @@ def FitSARIMAXModel(x,p,pcutoff,alpha,ARdegree,MAdegree,nforecast = 0,disp=False
         return np.nan*np.zeros(len(Y)),np.nan*np.zeros((len(Y),2))
 
 
-def compute_deviations(Dataframe, comparisonbodyparts, dataname, p_bound, alpha, ARdegree, MAdegree,
+def compute_deviations(Dataframe, dataname, p_bound, alpha, ARdegree, MAdegree,
                        storeoutput=None):
     ''' Fits Seasonal AutoRegressive Integrated Moving Average with eXogenous regressors model to data and computes confidence interval
     as well as mean fit. '''
 
     print("Fitting state-space models with parameters:", ARdegree, MAdegree)
-    df_x, df_y, df_likelihood = auxiliaryfunctions.form_data_containers(Dataframe, comparisonbodyparts)
-    nbodyparts = len(comparisonbodyparts)
-    nindividuals = len(df_x) // nbodyparts
+    df_x, df_y, df_likelihood = Dataframe.values.reshape((Dataframe.shape[0], -1, 3)).T
     preds = []
-    for ind in trange(nindividuals):
-        for bpindex in range(nbodyparts):
-            j = bpindex + ind * nbodyparts
-            x = df_x[j]
-            y = df_y[j]
-            p = df_likelihood[j]
-            meanx, CIx = FitSARIMAXModel(x, p, p_bound, alpha, ARdegree, MAdegree)
-            meany, CIy = FitSARIMAXModel(y, p, p_bound, alpha, ARdegree, MAdegree)
-            distance = np.sqrt((x - meanx) ** 2 + (y - meany) ** 2)
-            significant = (x < CIx[:, 0]) + (x > CIx[:, 1]) + (x < CIy[:, 0]) + (y > CIy[:, 1])
-            preds.append(np.c_[distance, significant, meanx, meany, CIx, CIy])
+    for row in range(len(df_x)):
+        x = df_x[row]
+        y = df_y[row]
+        p = df_likelihood[row]
+        meanx, CIx = FitSARIMAXModel(x, p, p_bound, alpha, ARdegree, MAdegree)
+        meany, CIy = FitSARIMAXModel(y, p, p_bound, alpha, ARdegree, MAdegree)
+        distance = np.sqrt((x - meanx) ** 2 + (y - meany) ** 2)
+        significant = (x < CIx[:, 0]) + (x > CIx[:, 1]) + (x < CIy[:, 0]) + (y > CIy[:, 1])
+        preds.append(np.c_[distance, significant, meanx, meany, CIx, CIy])
 
     columns = Dataframe.columns
     prod = []
