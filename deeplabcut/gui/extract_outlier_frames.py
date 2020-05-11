@@ -12,6 +12,7 @@ Licensed under GNU Lesser General Public License v3.0
 import wx
 import os,sys,pydoc
 import deeplabcut
+from deeplabcut import utils
 media_path = os.path.join(deeplabcut.__path__[0], 'gui' , 'media')
 logo = os.path.join(media_path,'logo.png')
 
@@ -25,7 +26,7 @@ class Extract_outlier_frames(wx.Panel):
 
         # variable initilization
         self.config = cfg
-        self.cfg = deeplabcut.utils.read_config(cfg)
+        self.cfg = utils.read_config(cfg)
         self.filelist = []
         # design the panel
         self.sizer = wx.GridBagSizer(5, 5)

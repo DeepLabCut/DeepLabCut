@@ -12,7 +12,8 @@ Licensed under GNU Lesser General Public License v3.0
 import wx
 import os,sys,pydoc
 import deeplabcut
-from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils import auxiliaryfunctions, skeleton
+
 media_path = os.path.join(deeplabcut.__path__[0], 'gui' , 'media')
 logo = os.path.join(media_path,'logo.png')
 
@@ -61,6 +62,11 @@ class Label_frames(wx.Panel):
         self.check.Bind(wx.EVT_BUTTON, self.check_labelF)
         self.check.Enable(True)
 
+        self.build = wx.Button(self, label='Build skeleton')
+        sizer.Add(self.build, pos=(5, 5), flag=wx.BOTTOM|wx.RIGHT, border=10)
+        self.build.Bind(wx.EVT_BUTTON, self.build_skeleton)
+        self.build.Enable(True)
+
         self.cfg = auxiliaryfunctions.read_config(self.config)
         if self.cfg.get('multianimalproject', False):
 
@@ -106,6 +112,9 @@ class Label_frames(wx.Panel):
         dlg = wx.MessageDialog(None, "This will now plot the labeled frames afer you have finished labeling!")
         result = dlg.ShowModal()
         deeplabcut.check_labels(self.config, visualizeindividuals=True)
+
+    def build_skeleton(self, event):
+        skeleton.SkeletonBuilder(self.config)
 
     def select_config(self,event):
         """

@@ -36,6 +36,7 @@ else: #standard use [wxpython supported]
 
     from deeplabcut.refine_training_dataset import refine_labels
     from deeplabcut.utils import select_crop_parameters
+    from deeplabcut.utils.skeleton import SkeletonBuilder
     from deeplabcut.refine_training_dataset.tracklets import refine_tracklets
 
 if os.environ.get('Colab', default=False) == 'True':
