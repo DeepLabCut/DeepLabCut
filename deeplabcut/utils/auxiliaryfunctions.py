@@ -115,8 +115,8 @@ def read_config(configname):
         try:
             with open(path, 'r') as f:
                 cfg = ruamelFile.load(f)
-                cfg['project_path'] = configname.replace('/config.yaml',
-                                                         '')  # update path to current location of config.yaml
+                # update path to current location of config.yaml
+                cfg['project_path'] = configname.replace(f'{os.path.sep}config.yaml', '')
                 write_config(configname, cfg)
         except Exception as err:
             if err.args[2] == "could not determine a constructor for the tag '!!python/tuple'":
