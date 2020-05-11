@@ -88,6 +88,7 @@ class SkeletonBuilder:
         self.export_button = Button(ax_export, 'Export')
         self.export_button.on_clicked(self.export)
         self.fig.canvas.mpl_connect('pick_event', self.on_pick)
+        plt.show()
 
     def clear(self, *args):
         self.inds.clear()
