@@ -69,8 +69,8 @@ class SkeletonBuilder:
         return row, col
 
     def show(self):
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
+        self.fig = plt.figure()
+        ax = self.fig.add_subplot(111)
         ax.axis('off')
         lo = np.min(self.xy, axis=0)
         hi = np.max(self.xy, axis=0)
@@ -87,13 +87,13 @@ class SkeletonBuilder:
         ax.invert_yaxis()
 
         self.lasso = LassoSelector(ax, onselect=self.on_select)
-        ax_clear = fig.add_axes([0.85, 0.55, 0.1, 0.1])
-        ax_export = fig.add_axes([0.85, 0.45, 0.1, 0.1])
+        ax_clear = self.fig.add_axes([0.85, 0.55, 0.1, 0.1])
+        ax_export = self.fig.add_axes([0.85, 0.45, 0.1, 0.1])
         self.clear_button = Button(ax_clear, 'Clear')
         self.clear_button.on_clicked(self.clear)
         self.export_button = Button(ax_export, 'Export')
         self.export_button.on_clicked(self.export)
-        fig.canvas.mpl_connect('pick_event', self.on_pick)
+        self.fig.canvas.mpl_connect('pick_event', self.on_pick)
 
     def clear(self, *args):
         self.inds.clear()
@@ -119,6 +119,7 @@ class SkeletonBuilder:
             self.inds.add(pair_sorted)
             self.segs.add(tuple(map(tuple, self.xy[pair_sorted, :])))
         self.lines.set_segments(self.segs)
+        self.fig.canvas.draw_idle()
 
     @staticmethod
     def all_visible(df):
