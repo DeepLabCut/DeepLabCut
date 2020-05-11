@@ -86,7 +86,7 @@ If you perform the system-wide installation, and the computer has other Python p
 
 - Computer:
 
-     - For reference, we use e.g. Dell workstations (79xx series) with **Ubuntu 16.04 LTS or 18.04 LTS** and run a Docker container that has TensorFlow, etc. installed (https://github.com/MMathisLab/Docker4DeepLabCut2.0).
+     - For reference, we use e.g. Dell workstations (79xx series) with **Ubuntu 16.04 LTS or 18.04 LTS** and run a Docker container that has TensorFlow, etc. installed (https://github.com/DeepLabCut/Docker4DeepLabCut2.0).
 
 - Computer Hardware:
      - Ideally, you will use a strong GPU with at least 8GB memory such as the [NVIDIA GeForce 1080 Ti or 2080 Ti](https://www.nvidia.com/en-us/shop/geforce/?page=1&limit=9&locale=en-us).  A GPU is not necessary, but on a CPU the (training and evaluation) code is considerably slower (10x) for ResNets, but MobileNets are faster (see WIKI). You might also consider using cloud computing services like [Google cloud/amazon web services](https://github.com/AlexEMG/DeepLabCut/issues/47) or Google Colaboratory.
