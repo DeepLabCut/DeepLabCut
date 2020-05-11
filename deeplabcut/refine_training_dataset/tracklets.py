@@ -7,7 +7,7 @@ import pandas as pd
 import pickle
 import re
 from deeplabcut.utils.auxiliaryfunctions import read_config, attempttomakefolder
-from deeplabcut.generate_training_dataset import auxfun_drag_label_multiple_individuals
+from deeplabcut import generate_training_dataset
 from matplotlib.path import Path
 from matplotlib.widgets import Slider, LassoSelector, Button, CheckButtons
 from threading import Event, Thread
@@ -521,7 +521,7 @@ class TrackletVisualizer:
     def add_point(self, center, animal, bodypart, **kwargs):
         circle = patches.Circle(center, **kwargs)
         self.ax1.add_patch(circle)
-        dp = auxfun_drag_label_multiple_individuals.DraggablePoint(circle, animal, bodypart)
+        dp = generate_training_dataset.auxfun_drag_label_multiple_individuals.DraggablePoint(circle, animal, bodypart)
         dp.connect()
         self.dps.append(dp)
 
