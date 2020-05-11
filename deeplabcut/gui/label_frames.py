@@ -63,7 +63,7 @@ class Label_frames(wx.Panel):
         self.check.Enable(True)
 
         self.build = wx.Button(self, label='Build skeleton')
-        sizer.Add(self.build, pos=(5, 5), flag=wx.BOTTOM|wx.RIGHT, border=10)
+        sizer.Add(self.build, pos=(4, 3), flag=wx.BOTTOM|wx.RIGHT, border=10)
         self.build.Bind(wx.EVT_BUTTON, self.build_skeleton)
         self.build.Enable(True)
 
