@@ -29,19 +29,13 @@ class SkeletonBuilder:
     def __init__(self, config_path):
         self.config_path = config_path
         self.cfg = read_config(config_path)
-        datafile = f'CollectedData_{self.cfg["scorer"]}.h5'
-        if not self.cfg.get('croppedtraining', False):
-            folder = os.path.join(self.cfg['project_path'],
-                                  'training-datasets',
-                                  f'iteration-{self.cfg["iteration"]}',
-                                  f'UnaugmentedDataSet_{self.cfg["Task"]}{self.cfg["date"]}')
-        else:  # Find uncropped labeled data
-            root = os.path.join(self.cfg['project_path'], 'labeled-data')
-            for dir_ in os.listdir(root):
-                folder = os.path.join(root, dir_)
-                if os.path.isdir(folder) and not any(folder.endswith(s) for s in ('cropped', 'labeled')):
-                    break
-        self.df = pd.read_hdf(os.path.join(folder, datafile))
+        # Find uncropped labeled data
+        root = os.path.join(self.cfg['project_path'], 'labeled-data')
+        for dir_ in os.listdir(root):
+            folder = os.path.join(root, dir_)
+            if os.path.isdir(folder) and not any(folder.endswith(s) for s in ('cropped', 'labeled')):
+                break
+        self.df = pd.read_hdf(os.path.join(folder, f'CollectedData_{self.cfg["scorer"]}.h5'))
         row, col = self.pick_labeled_frame()
         if 'individuals' in self.df.columns.names:
             self.df = self.df.xs(col, axis=1, level='individuals')
