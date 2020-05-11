@@ -8,18 +8,18 @@ We suggest watching this video on how to navigate the docs: **Click on the image
 - **NEW: A DeepLabCut Course** we have put together a "course" on the science of DeepLabCut and how to use it. [CLICK HERE](https://github.com/DeepLabCut/DeepLabCut-Workshop-Materials/blob/master/summer_course2020.md). 
 
 
-- :computer: [How to install DeepLabCut](docs/installation.md)
+- :computer: [How to install DeepLabCut](/installation.md)
 
-- :chart_with_upwards_trend: [Overview of How to use DLC & each function](docs/UseOverviewGuide.md) 
+- :chart_with_upwards_trend: [Overview of How to use DLC & each function](/UseOverviewGuide.md) 
    - [Many more details on each function](docs/functionDetails.md) (they are also linked within the "Overview!")
 
 - :high_brightness: More details on how to use our "Stand Alone" [DeepLabCut Project Manager GUI](docs/PROJECT_GUI.md)
    
- - [DeepLabCut 3D](docs/Overviewof3D.md)
+ - [DeepLabCut 3D](/Overviewof3D.md)
  
- - [Helper functions](docs/HelperFunctions.md)
+ - [Helper functions](/HelperFunctions.md)
  
- - [Developer Road Map!](docs/roadmap.md)
+ - [Developer Road Map!](/roadmap.md)
  
  - [How to Contribute to DeepLabCut](/CONTRIBUTING.md) and the [Code of Conduct](/CODE_OF_CONDUCT.md)
  
