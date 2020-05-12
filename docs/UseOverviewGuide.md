@@ -55,7 +55,7 @@ This page contains a list of the essential functions of DeepLabCut as well as de
 
 :mega: **NOTE:** There is a highly similar workflow for 2.2+ (and your 2.X projects are still fully compatible with this format!). 
 
-**:purple_heart: DLC 2.2:** as of 2.2 we support "multi-animal projects," but these new features can also be used on single animals too (details below). The workflow is highly similar, but with some key steps that differ. Please carefully review the functions below for more details. You can search/look for **maDeepLabCut** for specific steps that are changed.
+**:purple_heart: DLC 2.2:** as of 2.2 we support "multi-animal projects," but these new features can also be used on single animals too (details below). The workflow is highly similar, but with a few key additional steps. Please carefully review the functions below for more details. You can search/look for **maDeepLabCut** for specific steps that are changed.
 
  <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1587769981819-MQTWHOFRSEVRQCJJJ3WV/ke17ZwdGBToddI8pDm48kC35rDtt7orAfBnUphidUjFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PImr0R2dpGVvtLOUccqmg3rERuQynZZO7wgiB_e1DQPsY/workflow.png?format=1000w" height="570">
@@ -173,7 +173,7 @@ config_path = '/thefulloutputpath/config.yaml'
 
 - open the **config.yaml** file (in a text editor (like atom, gedit, vim etc.)), which can be found in the subfolder created when you set your project name, to change parameters and identify label names! This is a crucial step. 
 
-**maDeepLabCut**: As of 2.2 you also must to modify a few more parameters in the config.yaml file, **see [here](functionDetails.md#b-configure-the-project).**
+**maDeepLabCut**: As of 2.2 you also *must* modify a few more parameters in the `config.yaml` file, **see [here](functionDetails.md#b-configure-the-project).**
 
 (PLEASE see more details [here](functionDetails.md#b-configure-the-project))
 
