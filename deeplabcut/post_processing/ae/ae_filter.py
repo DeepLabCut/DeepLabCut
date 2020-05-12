@@ -1,3 +1,4 @@
+import os
 from . import data_input
 from .layered_ae import AE
 
@@ -17,15 +18,11 @@ def filter(cfg, points, p, p_bound, num_epoch=1000):
                         input_size=len(train_data_noisy[0]),
                         output_size=len(train_data_denoised[0]))
     batch_s = min(512, len(train_data_noisy))
-    ae = AE(network_arch, batch_s, num_epoch)
+    ae = AE(network_arch, batch_s, num_epoch, os.path.join(cfg['project_path'], 'videos'))
     ae.train(train_data_noisy, train_data_inter, train_data_denoised)
 
     parallel_data, _ = data_obj.get_all_original_data()
     denoised_data = ae.reconstruct(parallel_data)
 
-    return_data = data_obj.reconstruct_original_data(denoised_data)
-
-    mean_x = return_data[:, [2 * i for i in range(int(len(return_data[0]) / 2))]]
-    mean_y = return_data[:, [2 * i + 1 for i in range(int(len(return_data[0]) / 2))]]
-    return mean_x, mean_y
+    return data_obj.reconstruct_original_data(denoised_data)
 

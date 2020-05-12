@@ -12,7 +12,7 @@ def map_pred3(sample, output_size, batch_size):
 
 
 class AE:
-    def __init__(self, network_arch, batch_size, train_epochs, model_path=dirname + "/training_output/ae_model",
+    def __init__(self, network_arch, batch_size, train_epochs, model_dir,
                  model_summary="train_summary", saved_model=False):
         tf.reset_default_graph()
         encode1, encode2, encode3, decode0, decode1, decode2, latent_size, input_size, output_size = [network_arch[i]
@@ -25,7 +25,7 @@ class AE:
         self.intermediate_size = output_size * 3
         self.output_size = output_size
         self.time_pair = int(input_size / output_size)
-        self.model_path = model_path
+        self.model_path = os.path.join(model_dir, 'training_output', 'ae_model')
 
         # Data input pipeline
         # inputData = (train_data_noisy, train_data_denoised)
