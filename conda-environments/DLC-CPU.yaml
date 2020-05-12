@@ -21,7 +21,7 @@ dependencies:
   - jupyter
   - nb_conda
   - tensorflow==1.13.1
-  - wxpython
+  - wxpython==4.0.7.post2
   - Shapely
   - pip:
     - deeplabcut
