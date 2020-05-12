@@ -10,7 +10,4 @@ mobilenet_v2_0.35: https://storage.googleapis.com/mobilenet_v2/checkpoints/mobil
 
 #modelzoo:
 full_human: http://deeplabcut.rowland.harvard.edu/models/DLC_human_fullbody_resnet_101.tar.gz
-mouse_forelimb:
-mouse_topview:
-dogs:
-horses:
+primate_face: http://deeplabcut.rowland.harvard.edu/models/DLC_primate_face_resnet_50_iteration-1_shuffle-1.tar.gz

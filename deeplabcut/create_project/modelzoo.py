@@ -38,9 +38,9 @@ def MakeTest_pose_yaml(dictionary, keys2save, saveasfile):
         dict_test[key] = dictionary[key]
     dict_test['scoremap_dir'] = 'test'
     dict_test['global_scale'] = 1.0
-
-    with open(saveasfile, "w") as f:
-        yaml.dump(dict_test, f)
+    auxiliaryfunctions.write_plainconfig(saveasfile, dict_test)
+    #with open(saveasfile, "w") as f:
+    #    yaml.dump(dict_test, f)
 
 def create_pretrained_human_project(project,experimenter,videos,working_directory=None,copy_videos=False,
                                     videotype='.avi',createlabeledvideo=True, analyzevideo=True):
@@ -112,13 +112,11 @@ def create_pretrained_project(project, experimenter, videos, model='full_human',
 
     --------
     """
-
-    Modeloptions=['full_human'] #just expand this list with new projects
+    Modeloptions=['full_human','primate_face'] #just expand this list with new projects
 
     if model in Modeloptions:
         cwd = os.getcwd()
         cfg = deeplabcut.create_new_project(project,experimenter,videos,working_directory,copy_videos,videotype)
-
         if trainFraction is not None:
             auxiliaryfunctions.edit_config(cfg, {'TrainingFraction': [tranFraction]})
 
@@ -128,7 +126,6 @@ def create_pretrained_project(project, experimenter, videos, model='full_human',
             config['skeleton'] = [['ankle1', 'knee1'],['ankle2', 'knee2'],['knee1', 'hip1'],['knee2', 'hip2'],['hip1', 'hip2'], ['shoulder1', 'shoulder2'], ['shoulder1', 'hip1'], ['shoulder2', 'hip2'], ['shoulder1', 'elbow1'], ['shoulder2', 'elbow2'], ['chin', 'forehead'], ['elbow1', 'wrist1'], ['elbow2', 'wrist2']]
             config['default_net_type']='resnet_101'
         else:  #just make a case and put the stuff you want.
-
             pass
         auxiliaryfunctions.write_config(cfg,config)
         config = auxiliaryfunctions.read_config(cfg)
@@ -141,23 +138,33 @@ def create_pretrained_project(project, experimenter, videos, model='full_human',
         test_dir.mkdir(parents=True,exist_ok=True)
 
         modelfoldername=auxiliaryfunctions.GetModelFolder(trainFraction=config['TrainingFraction'][0],shuffle=1,cfg=config)
-
         path_train_config = str(os.path.join(config['project_path'],Path(modelfoldername),'train','pose_cfg.yaml'))
         path_test_config = str(os.path.join(config['project_path'],Path(modelfoldername),'test','pose_cfg.yaml'))
 
         # Download the weights and put then in appropriate directory
-
-        os.chdir(train_dir)
-
         print("Checking if the weights are already available, otherwise I will download them!")
         if model == 'full_human':
-            weightfilename=auxfun_models.download_mpii_weigths(train_dir)
+            os.chdir(train_dir)
+            weightfilename=auxfun_models.download_mpii_weights(train_dir)
+            bodyparts = config['bodyparts']
+            net_type ='resnet_101' #could be read from cfg!
+
+            auxfun_models.DownloadModel(model, train_dir)
             #could also use this if it was proper!
             # note that here we copy the snapshots + pose_cfg into /dlc-models/,,,,/train
             # and then also download the corresponding backbone (below)
             #weightfilename=auxfun_models.Downloadweights(modeltype, model_dir)
+        elif model =='primate_face':
+            auxfun_models.DownloadModel(model, train_dir)
+
         else:
             pass #just copy your fav. weights there..
+
+        pose_cfg = deeplabcut.auxiliaryfunctions.read_plainconfig(path_train_config)
+        net_type=pose_cfg['net_type']
+        bodyparts=pose_cfg['all_joints_names']
+
+        auxiliaryfunctions.edit_config(cfg, {'bodyparts': pose_cfg['all_joints_names']})
 
         # Create the pose_config.yaml files
         parent_path = Path(os.path.dirname(deeplabcut.__file__))
@@ -165,14 +172,10 @@ def create_pretrained_project(project, experimenter, videos, model='full_human',
         trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(config)
         datafilename,metadatafilename=auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,trainFraction=config['TrainingFraction'][0],shuffle=1,cfg=config)
 
-        if model == 'full_human':
-            bodyparts = config['bodyparts']
-            net_type ='resnet_101' #could be read from cfg!
-
-        #downloading corresponding backbone e.g. resnet_101...
+        #downloading corresponding backbone e.g. resnet_101/...
         num_shuffles= 1
         model_path, num_shuffles=auxfun_models.Check4weights(net_type, parent_path, num_shuffles)
-
+        '''
         items2change = {"dataset": 'dataset-test.mat',#datafilename,
                             "metadataset": metadatafilename,
                             "num_joints": len(bodyparts),
@@ -183,15 +186,17 @@ def create_pretrained_project(project, experimenter, videos, model='full_human',
                             "net_type": net_type,
                             "dataset_type": "default"
                         }
+
         trainingdata = MakeTrain_pose_yaml(items2change,path_train_config,defaultconfigfile)
+        '''
 
         keys2save = ["dataset", "dataset_type","num_joints", "all_joints", "all_joints_names",
                             "net_type", 'init_weights', 'global_scale', 'location_refinement',
                             'locref_stdev']
-        MakeTest_pose_yaml(trainingdata, keys2save,path_test_config)
+
+        MakeTest_pose_yaml(pose_cfg, keys2save, path_test_config)
 
         video_dir = os.path.join(config['project_path'],'videos')
-
         if analyzevideo==True:
             print("Analyzing video...")
             # Analyze the videos
@@ -200,6 +205,7 @@ def create_pretrained_project(project, experimenter, videos, model='full_human',
             print("Plotting results...")
             deeplabcut.create_labeled_video(cfg,[video_dir],videotype, draw_skeleton=True)
             deeplabcut.plot_trajectories(cfg, [video_dir], videotype)
+
         os.chdir(cwd)
         return cfg, path_train_config
 
