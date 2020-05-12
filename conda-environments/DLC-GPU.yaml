@@ -21,7 +21,7 @@ dependencies:
   - pip
   - tensorflow-gpu==1.13.1
   - cudnn=7
-  - wxpython
+  - wxpython==4.0.7.post2
   - jupyter
   - nb_conda
   - Shapely
