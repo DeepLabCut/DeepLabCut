@@ -7,19 +7,13 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
-import numpy as np
-import os
-from pathlib import Path
-import pandas as pd
-
-from deeplabcut.utils import auxiliaryfunctions, visualization
-from deeplabcut.utils import frameselectiontools
-from deeplabcut.refine_training_dataset.outlier_frames import FitSARIMAXModel
-
 import argparse
-from tqdm import tqdm
-import matplotlib.pyplot as plt
-from skimage.util import img_as_ubyte
+import numpy as np
+import pandas as pd
+from deeplabcut.post_processing.ae import ae_filter
+from deeplabcut.refine_training_dataset.outlier_frames import FitSARIMAXModel
+from deeplabcut.utils import auxiliaryfunctions
+from pathlib import Path
 from scipy import signal
 
 
@@ -46,7 +40,7 @@ def filterpredictions(config,video,videotype='avi',shuffle=1,trainingsetindex=0,
         Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
 
     filtertype: string
-        Select which filter, 'arima' or 'median' filter.
+        Select which filter, 'arima', 'median' or 'ae' filter.
 
     windowlength: int
         For filtertype='median' filters the input array using a local window-size given by windowlength. The array will automatically be zero-padded.
@@ -111,7 +105,8 @@ def filterpredictions(config,video,videotype='avi',shuffle=1,trainingsetindex=0,
             print(f'Data from {vname} were already filtered. Skipping...')
         except FileNotFoundError:  # Data haven't been filtered yet
             try:
-                df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(destfolder, vname, DLCscorer, track_method=track_method)
+                df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(destfolder, vname, DLCscorer,
+                                                                           track_method=track_method)
                 nrows = df.shape[0]
                 if filtertype == 'arima':
                     temp = df.values.reshape((nrows, -1, 3))
@@ -126,10 +121,16 @@ def filterpredictions(config,video,videotype='avi',shuffle=1,trainingsetindex=0,
                     data = pd.DataFrame(placeholder.reshape((nrows, -1)),
                                         columns=df.columns,
                                         index=df.index)
-                else:
+                elif filtertype == 'median':
                     data = df.copy()
                     mask = data.columns.get_level_values('coords') != 'likelihood'
                     data.loc[:, mask] = df.loc[:, mask].apply(signal.medfilt, args=(windowlength,), axis=0)
+                elif filtertype == 'ae':
+                    data = df.copy()
+                    mask_data = data.columns.get_level_values('coords').isin(('x', 'y'))
+                    poses = data.loc[:, mask_data].values
+                    prob = data.loc[:, ~mask_data].values
+                    data.loc[:, mask_data] = ae_filter.filter(cfg, poses, prob, p_bound)
                 outdataname = filepath.replace('.h5', '_filtered.h5')
                 data.to_hdf(outdataname, 'df_with_missing', format='table', mode='w')
                 if save_as_csv:
