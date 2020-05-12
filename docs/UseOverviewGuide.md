@@ -342,10 +342,6 @@ Create videos:
 ```python
 deeplabcut.create_labeled_video(config_path, [`/analysis/project/videos/reachingvideo1.avi','/fullpath/project/videos/reachingvideo2.avi'],filtered = True)
 ```
-Plot the outputs:
-```python
-deeplabcut.plot_trajectories(config_path,['/fullpath/project/videos/reachingvideo1.avi'],filtered = True)
-```
 
 (more details [here](functionDetails.md#i-video-analysis-and-plotting-results))
 
@@ -425,46 +421,6 @@ config_path = r'C:\home\yourprojectfolder\config.yaml'
 Now, you can run any of the functions described in this documentation.
 
 There is also helper code to further analyze your data or scale up analysis here: https://github.com/AlexEMG/DLCutils/
-
-### QUICK GUIDE:
-**The 12 main steps to take you from project creation to analyzed videos:**
-
-Open ipython in the terminal:
-``import deeplabcut``
-
-Create a new project:
-``deeplabcut.create_new_project('project_name','experimenter’,['path of video 1','path of video2',..])``
-
-Set a config_path variable for ease of use:
-        `` config_path = 'yourdirectory/project_name/config.yaml' ``
-
-Extract frames:
-``deeplabcut.extract_frames(config_path)``
-
-Label frames:
-  `` deeplabcut.label_frames(config_path)``
-
- Check labels [OPTIONAL]:
-   ``deeplabcut.check_labels(config_path)``
-
- Create training dataset:
- `` deeplabcut.create_training_dataset(config_path)``
-
- Train the network:
-``deeplabcut.train_network(config_path)``
-
-Evaluate the trained network:
-``deeplabcut.evaluate_network(config_path)``
-
- Video analysis:
-``deeplabcut.analyze_videos(config_path, ['path of folder with videos'])``
-
-Plot results (trajectories):
-``deeplabcut.plot_trajectories(config_path, ['path of folder with videos'])``
-
-Create a video:
-``deeplabcut.create_labeled_video(config_path, ['path of folder with videos'])``
-
 
 Return to [readme](../README.md).
 
