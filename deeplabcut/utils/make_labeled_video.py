@@ -407,7 +407,10 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
             try:
                 df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(destfolder, vname, DLCscorer, filtered, track_method)
                 metadata = auxiliaryfunctions.load_video_metadata(destfolder, vname, DLCscorer)
-                s = '_id' if color_by == 'individual' else '_bp'
+                if cfg.get('multianimalproject', False):
+                    s = '_id' if color_by == 'individual' else '_bp'
+                else:
+                    s = ''
                 videooutname = filepath.replace('.h5', f'{s}_labeled.mp4')
                 if os.path.isfile(videooutname):
                     print('Labeled video already created. Skipping...')
