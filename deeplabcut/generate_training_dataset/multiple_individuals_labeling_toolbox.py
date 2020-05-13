@@ -278,6 +278,7 @@ class MainFrame(wx.Frame):
                                 'Remove!', wx.YES_NO | wx.ICON_WARNING)
             if msg == 2:
                 closest_dp.delete_data()
+                self.buttonCounter[closest_dp.individual_names].remove(closest_dp.bodyParts)
 
     @staticmethod
     def calc_distance(x1, y1, x2, y2):
