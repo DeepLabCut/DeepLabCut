@@ -466,6 +466,7 @@ class MainFrame(wx.Frame):
         else:
             dlg.Destroy()
             self.Close(True)
+            return
         dlg.Destroy()
 
 # Enabling the zoom, pan and home buttons
