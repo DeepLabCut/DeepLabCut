@@ -337,6 +337,7 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
 
     """
     cfg = auxiliaryfunctions.read_config(config)
+    start_path=os.getcwd() #record cwd to return to this directory in the end
     trainFraction = cfg['TrainingFraction'][trainingsetindex]
     DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction) #automatically loads corresponding model (even training iteration based on snapshot index)
 
@@ -394,6 +395,8 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
                     else: #then the full video + the (perhaps in cropped mode analyzed labels) are depicted
                         clip = vp(fname = video,sname = videooutname,codec=codec)
                         CreateVideo(clip,Dataframe,cfg["pcutoff"],cfg["dotsize"],cfg["colormap"],DLCscorer,bodyparts,trailpoints,cropping,x1,x2,y1,y2,bodyparts2connect,skeleton_color,draw_skeleton,displaycropped)
+
+    os.chdir(str(start_path))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

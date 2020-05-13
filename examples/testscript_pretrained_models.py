@@ -2,12 +2,10 @@
 Testscript human network
 
 '''
-
 import os,  subprocess, deeplabcut
 from pathlib import Path
 import pandas as pd
 import numpy as np
-
 
 Task = 'human_dancing'
 YourName = 'teamDLC'
@@ -16,11 +14,20 @@ basepath=os.path.dirname(os.path.abspath('testscript.py'))
 videoname='reachingvideo1'
 video=[os.path.join(basepath,'Reaching-Mackenzie-2018-08-30','videos',videoname+'.avi')]
 
+#legacy mode:
+'''
+configfile, path_train_config=deeplabcut.create_pretrained_human_project(Task, YourName,video,
+                                                                        videotype='avi', analyzevideo=True,
+                                                                        createlabeledvideo=True, copy_videos=False) #must leave copy_videos=True
+'''
+#new way:
+configfile, path_train_config=deeplabcut.create_pretrained_project(Task, YourName,video,model='full_human',
+                                                                        videotype='avi', analyzevideo=True,
+                                                                        createlabeledvideo=True, copy_videos=False) #must leave copy_videos=True
 
-configfile, path_train_config=deeplabcut.create_pretrained_human_project(Task, YourName,video, videotype='avi', analyzevideo=False, createlabeledvideo=False, copy_videos=False) #must leave copy_videos=True
 
 lastvalue=5
-DLC_config=deeplabcut.auxiliaryfunctions.read_plainconfig(path_train_config)
+DLC_config= deeplabcut.auxiliaryfunctions.read_plainconfig(path_train_config)
 pretrainedDeeperCutweights=DLC_config['init_weights']
 
 print("EXTRACTING FRAMES")
@@ -42,12 +49,11 @@ dataFrame.to_csv(os.path.join(cfg['project_path'],'labeled-data',videoname,"Coll
 dataFrame.to_hdf(os.path.join(cfg['project_path'],'labeled-data',videoname,"CollectedData_" + cfg['scorer'] + '.h5'),'df_with_missing',format='table', mode='w')
 
 deeplabcut.create_training_dataset(configfile,Shuffles=[1])
-DLC_config=deeplabcut.auxiliaryfunctions.read_plainconfig(path_train_config)
-DLC_config['save_iters']=lastvalue
-DLC_config['display_iters']=1
-DLC_config['multi_step']=[[0.001,lastvalue]]
-DLC_config['init_weights']=pretrainedDeeperCutweights.split('.index')[0]
-deeplabcut.auxiliaryfunctions.write_plainconfig(path_train_config,DLC_config)
+edits = {'save_iters': lastvalue,
+         'display_iters': 1,
+         'multi_step': [[0.001, lastvalue]],
+         'init_weights': pretrainedDeeperCutweights.split('.index')[0]}
+DLC_config = deeplabcut.auxiliaryfunctions.edit_config(path_train_config, edits)
 
 deeplabcut.train_network(configfile,shuffle=1)
 
@@ -72,14 +78,11 @@ for index,bodypart in enumerate(cfg['bodyparts']):
 dataFrame.to_csv(os.path.join(cfg['project_path'],'labeled-data',videoname,"CollectedData_" + cfg['scorer'] + ".csv"))
 dataFrame.to_hdf(os.path.join(cfg['project_path'],'labeled-data',videoname,"CollectedData_" + cfg['scorer'] + '.h5'),'df_with_missing',format='table', mode='w')
 
-
-deeplabcut.create_training_dataset(configfile,Shuffles=[1])
-DLC_config=deeplabcut.auxiliaryfunctions.read_plainconfig(path_train_config)
-DLC_config['save_iters']=lastvalue
-DLC_config['display_iters']=1
-DLC_config['multi_step']=[[0.001,lastvalue]]
-DLC_config['init_weights']=pretrainedDeeperCutweights.split('.index')[0]
-deeplabcut.auxiliaryfunctions.write_plainconfig(path_train_config,DLC_config)
+edits = {'save_iters': lastvalue,
+         'display_iters': 1,
+         'multi_step': [[0.001, lastvalue]],
+         'init_weights': pretrainedDeeperCutweights.split('.index')[0]}
+DLC_config = deeplabcut.auxiliaryfunctions.edit_config(path_train_config, edits)
 
 #deeplabcut.train_network(configfile,shuffle=1) #>> fails one body part too much!
 deeplabcut.train_network(configfile,shuffle=1,keepdeconvweights=False)

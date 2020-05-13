@@ -224,6 +224,7 @@ def analyze_videos(config, videos, videotype='avi', shuffle=1, trainingsetindex=
         print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
         return DLCscorer #note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
     else:
+        os.chdir(str(start_path))
         print("No video/s found. Please check your path!")
         return DLCscorer
 

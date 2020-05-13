@@ -31,7 +31,7 @@ from deeplabcut.pose_estimation_tensorflow.nnet import predict
 def create_deploy_config_template():
     '''
 
-    CURRENTLY NOT IMPLEMENTED
+    TODO: WIP
 
     Creates a template for config.yaml file.
     This specific order is preserved while saving as yaml file.
@@ -82,12 +82,11 @@ def write_deploy_config(configname, cfg):
         ruamelFile.dump(cfg_file, cf)
 
 
-def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True):
+def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True,modelprefix=''):
     '''
 
     Loads a tensorflow session with a DLC model from the associated configuration
-
-    return a tensorflow session with DLC model given cfg and shuffle
+    Return a tensorflow session with DLC model given cfg and shuffle
 
     Parameters:
     -----------
@@ -117,11 +116,13 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True):
     ########################
 
     train_fraction = cfg['TrainingFraction'][trainingsetindex]
-    model_folder = os.path.join(cfg['project_path'], str(auxiliaryfunctions.GetModelFolder(train_fraction, shuffle, cfg)))
+    model_folder = os.path.join(cfg['project_path'], str(auxiliaryfunctions.GetModelFolder(train_fraction, shuffle, cfg, modelprefix=modelprefix)))
     path_test_config = os.path.normpath(model_folder + '/test/pose_cfg.yaml')
+    path_train_config = os.path.normpath(model_folder + '/train/pose_cfg.yaml')
 
     try:
         dlc_cfg = load_config(str(path_test_config))
+        dlc_cfg_train = load_config(str(path_train_config))
     except FileNotFoundError:
         raise FileNotFoundError("It seems the model for shuffle %s and trainFraction %s does not exist."%(shuffle, train_fraction))
 
@@ -166,7 +167,7 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True):
 
     input = tf.get_default_graph().get_operations()[0].name
 
-    return sess, input, output, dlc_cfg
+    return sess, input, output, dlc_cfg_train
 
 
 def tf_to_pb(sess, checkpoint, output, output_dir=None):
@@ -214,7 +215,7 @@ def tf_to_pb(sess, checkpoint, output, output_dir=None):
 
 
 def export_model(cfg_path, shuffle=1, trainingsetindex=0, snapshotindex=None,
-                iteration=None, TFGPUinference=True, overwrite=False, make_tar=True):
+                iteration=None, TFGPUinference=True, overwrite=False, make_tar=True, wipepaths=False, modelprefix=''):
     '''
 
     Export DeepLabCut models for the model zoo or for live inference.
@@ -253,6 +254,9 @@ def export_model(cfg_path, shuffle=1, trainingsetindex=0, snapshotindex=None,
         Do you want to compress the exported directory to a tar file? Default = True
         This is necessary to export to the model zoo, but not for live inference.
 
+    wipepaths : bool, optional
+        Removes the actual path of your project and the init_weights from pose_cfg.
+
     Example:
     --------
     Export the first stored snapshot for model trained with shuffle 3:
@@ -274,7 +278,7 @@ def export_model(cfg_path, shuffle=1, trainingsetindex=0, snapshotindex=None,
 
     ### load model
 
-    sess, input, output, dlc_cfg = load_model(cfg, shuffle, trainingsetindex, TFGPUinference)
+    sess, input, output, dlc_cfg = load_model(cfg, shuffle, trainingsetindex, TFGPUinference,modelprefix)
     ckpt = dlc_cfg['init_weights']
     model_dir = os.path.dirname(ckpt)
 
@@ -299,7 +303,13 @@ def export_model(cfg_path, shuffle=1, trainingsetindex=0, snapshotindex=None,
     dlc_cfg = dict(dlc_cfg)
     sorted_cfg = {}
     for key, value in sorted(dlc_cfg.items()):
-        sorted_cfg[key] = value
+        if wipepaths:
+            if key in ['init_weights','project_path','snapshot_prefix']:
+                sorted_cfg[key] = "TBA"
+            else:
+                sorted_cfg[key] = value
+        else:
+            sorted_cfg[key] = value
 
     pose_cfg_file = os.path.normpath(full_export_dir + '/pose_cfg.yaml')
     ruamel_file = ruamel.yaml.YAML()

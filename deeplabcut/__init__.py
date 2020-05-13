@@ -52,7 +52,8 @@ from deeplabcut.pose_estimation_tensorflow import export_model
 
 from deeplabcut.pose_estimation_3d import calibrate_cameras,check_undistortion,triangulate,create_labeled_video_3d
 
-from deeplabcut.create_project import create_new_project, create_new_project_3d, add_new_videos, load_demo_data, create_pretrained_human_project
+from deeplabcut.create_project import create_new_project, create_new_project_3d, add_new_videos, load_demo_data
+from deeplabcut.create_project import create_pretrained_project, create_pretrained_human_project
 from deeplabcut.generate_training_dataset import extract_frames, select_cropping_area
 from deeplabcut.generate_training_dataset import check_labels,create_training_dataset, mergeandsplit, create_training_model_comparison
 from deeplabcut.utils import create_labeled_video,plot_trajectories, auxiliaryfunctions, convertcsv2h5, convertannotationdata_fromwindows2unixstyle, analyze_videos_converth5_to_csv, auxfun_videos

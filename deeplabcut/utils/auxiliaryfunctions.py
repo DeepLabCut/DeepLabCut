@@ -115,16 +115,17 @@ def read_config(configname):
         try:
             with open(path, 'r') as f:
                 cfg = ruamelFile.load(f)
-                # update path to current location of config.yaml
-                cfg['project_path'] = configname.replace(f'{os.path.sep}config.yaml', '')
-                write_config(configname, cfg)
-        except Exception as err:
-            if err.args[2] == "could not determine a constructor for the tag '!!python/tuple'":
-                with open(path, 'r') as ymlfile:
-                    cfg = yaml.load(ymlfile, Loader=yaml.SafeLoader)
+                # update path to current location of config.yaml (if different)
+                if cfg['project_path'] != configname.replace(f'{os.path.sep}config.yaml', ''):
                     write_config(configname, cfg)
-            else:
-                raise
+        except Exception as err:
+            if len(err.args)>2:
+                if err.args[2] == "could not determine a constructor for the tag '!!python/tuple'":
+                    with open(path, 'r') as ymlfile:
+                        cfg = yaml.load(ymlfile, Loader=yaml.SafeLoader)
+                        write_config(configname, cfg)
+                else:
+                    raise
 
     else:
         raise FileNotFoundError(
@@ -173,6 +174,36 @@ def read_plainconfig(filename = "pose_cfg.yaml"):
 def write_plainconfig(configname,cfg):
     with open(str(configname), 'w') as ymlfile:
                 yaml.dump(cfg, ymlfile,default_flow_style=False)
+
+def edit_config(configname, edits, output_name=''):
+    """
+    Convenience function to edit and save a config file from a dictionary.
+
+    Parameters
+    ----------
+    configname : string
+        String containing the full path of the config file in the project.
+    edits : dict
+        Key–value pairs to edit in config
+    output_name : string, optional (default='')
+        Overwrite the original config.yaml by default.
+        If passed in though, new filename of the edited config.
+
+    Examples
+    --------
+    config_path = 'my_stellar_lab/dlc/config.yaml'
+    edits = {'numframes2pick': 5,
+             'trainingFraction': [0.5, 0.8],
+             'skeleton': [['a', 'b'], ['b', 'c']]}
+    deeplabcut.auxiliaryfunctions.edit_config(config_path, edits)
+    """
+    cfg = read_plainconfig(configname)
+    for key, value in edits.items():
+        cfg[key] = value
+    if not output_name:
+        output_name = configname
+    write_plainconfig(output_name, cfg)
+    return cfg
 
 def attempttomakefolder(foldername,recursive=False):
     ''' Attempts to create a folder with specified name. Does nothing if it already exists. '''
@@ -283,11 +314,11 @@ def GetTrainingSetFolder(cfg):
     iterate = 'iteration-'+str(cfg['iteration'])
     return Path(os.path.join('training-datasets',iterate,'UnaugmentedDataSet_' + Task + date))
 
-def GetModelFolder(trainFraction,shuffle,cfg):
+def GetModelFolder(trainFraction,shuffle,cfg,modelprefix=''):
     Task = cfg['Task']
     date = cfg['date']
     iterate = 'iteration-'+str(cfg['iteration'])
-    return Path('dlc-models/'+ iterate+'/'+Task + date + '-trainset' + str(int(trainFraction * 100)) + 'shuffle' + str(shuffle))
+    return Path(modelprefix,'dlc-models/'+ iterate+'/'+Task + date + '-trainset' + str(int(trainFraction * 100)) + 'shuffle' + str(shuffle))
 
 def GetEvaluationFolder(trainFraction,shuffle,cfg):
     Task = cfg['Task']
