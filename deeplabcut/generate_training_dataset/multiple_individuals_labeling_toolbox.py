@@ -591,53 +591,6 @@ class MainFrame(wx.Frame):
         self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
         self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
 
-        # Checking if user added a new label
-#        if self.new_Multibodyparts==[] and self.new_UniqueBodyparts==[]: # i.e. no new labels
-#            self.figure,self.axes,self.canvas,self.toolbar,self.image_axis = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.multibodyparts,self.colormap,keep_view=self.view_locked)
-#            self.axes.callbacks.connect('xlim_changed', self.onZoom)
-#            self.axes.callbacks.connect('ylim_changed', self.onZoom)
-#            self.image_panel.addcolorbar(self.img,self.image_axis,self.iter,self.multibodyparts,self.colormap)
-#            # Only show the bodyparts corresponding to single
-#            if self.individual_names[0] == 'single':
-#                self.choiceBox,self.individualrdb,self.rdb,self.change_marker_size,self.checkBox = self.choice_panel.addRadioButtons(self.uniquebodyparts,self.individual_names,self.file,self.markerSize)
-#            else:
-#                self.choiceBox,self.individualrdb,self.rdb,self.change_marker_size,self.checkBox = self.choice_panel.addRadioButtons(self.multibodyparts,self.individual_names,self.file,self.markerSize)
-#
-#            self.individualrdb.Bind(wx.EVT_RADIOBOX,self.select_individual)
-#
-#            # Get the color index, depending on if single is selcted or not.
-#            if self.rdb.GetStringSelection=="single":
-#                self.norm,self.colorIndex = self.image_panel.getColorIndices(self.img,self.uniquebodyparts)
-#            else:
-#                self.norm,self.colorIndex = self.image_panel.getColorIndices(self.img,self.multibodyparts)
-#            self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
-#        else:
-#            # Found new labels in either multiple bodyparts or unique bodyparts
-#            dlg = wx.MessageDialog(None,"New label found in the config file. Do you want to see all the other labels?", "New label found",wx.YES_NO | wx.ICON_WARNING)
-#            result = dlg.ShowModal()
-#            if result == wx.ID_NO:
-#                if self.new_Multibodyparts!=[]:
-#                    self.multibodyparts = self.new_Multibodyparts
-#                if self.new_UniqueBodyparts!=[]:
-#                    self.uniquebodyparts = self.new_UniqueBodyparts
-#
-#            self.dataFrame = MainFrame.create_dataframe(self,self.dataFrame,self.relativeimagenames,self.individual_names,self.new_UniqueBodyparts,self.new_Multibodyparts)
-#            self.figure,self.axes,self.canvas,self.toolbar,self.image_axis = self.image_panel.drawplot(self.img,img_name,self.iter,self.index,self.multibodyparts,self.colormap,keep_view=self.view_locked)
-#            self.axes.callbacks.connect('xlim_changed', self.onZoom)
-#            self.axes.callbacks.connect('ylim_changed', self.onZoom)
-#            self.image_panel.addcolorbar(self.img,self.image_axis,self.iter,self.multibodyparts,self.colormap)
-#
-#            if self.individual_names[0] == 'single':
-#                self.choiceBox,self.individualrdb,self.rdb,self.change_marker_size,self.checkBox = self.choice_panel.addRadioButtons(self.uniquebodyparts,self.individual_names,self.file,self.markerSize)
-#            else:
-#                self.choiceBox,self.individualrdb,self.rdb,self.change_marker_size,self.checkBox = self.choice_panel.addRadioButtons(self.multibodyparts,self.individual_names,self.file,self.markerSize)
-#            self.individualrdb.Bind(wx.EVT_RADIOBOX,self.select_individual)
-#            if self.rdb.GetStringSelection=="single":
-#                self.norm,self.colorIndex = self.image_panel.getColorIndices(self.img,self.uniquebodyparts)
-#            else:
-#                self.norm,self.colorIndex = self.image_panel.getColorIndices(self.img,self.multibodyparts)
-#            self.cidClick = self.canvas.mpl_connect('button_press_event', self.onClick)
-
         self.checkBox.Bind(wx.EVT_CHECKBOX,self.activateSlider)
         self.change_marker_size.Bind(wx.EVT_SLIDER,self.OnSliderScroll)
 
@@ -666,8 +619,9 @@ class MainFrame(wx.Frame):
 
     def select_individual(self,event):
         individualName = self.individualrdb.GetStringSelection()
+        self.change_marker_size.Hide()
+        self.change_marker_size.Destroy()
         if individualName =='single':
-            self.change_marker_size.Hide()
             self.checkBox.Hide()
             self.individualrdb.Hide()
             self.rdb.Hide()
@@ -679,7 +633,6 @@ class MainFrame(wx.Frame):
             self.checkBox.Bind(wx.EVT_CHECKBOX,self.activateSlider)
             self.change_marker_size.Bind(wx.EVT_SLIDER,self.OnSliderScroll)
         else:
-            self.change_marker_size.Hide()
             self.checkBox.Hide()
             self.individualrdb.Hide()
             self.rdb.Hide()
