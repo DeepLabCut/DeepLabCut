@@ -76,7 +76,7 @@ class SkeletonBuilder:
         ax.set_xlim(center[0] - w / 2, center[0] + w / 2)
         ax.set_ylim(center[1] - h / 2, center[1] + h / 2)
         ax.imshow(self.image)
-        ax.scatter(*self.xy.T)
+        ax.scatter(*self.xy.T, s=self.cfg['dotsize'] ** 2)
         ax.add_collection(self.lines)
         ax.invert_yaxis()
 
@@ -100,15 +100,16 @@ class SkeletonBuilder:
         write_config(self.config_path, self.cfg)
 
     def on_pick(self, event):
-        removed = event.artist.get_segments().pop(event.ind[0])
-        self.segs.remove(tuple(map(tuple, removed)))
-        self.inds.remove(tuple(self.tree.query(removed)[1]))
+        if event.mouseevent.button == 3:
+            removed = event.artist.get_segments().pop(event.ind[0])
+            self.segs.remove(tuple(map(tuple, removed)))
+            self.inds.remove(tuple(self.tree.query(removed)[1]))
 
     def on_select(self, verts):
         self.path = Path(verts)
         self.verts = verts
-        _, inds = self.tree.query(verts, p=1)
-        inds_unique = list(OrderedDict.fromkeys(inds))
+        inds = self.tree.query_ball_point(verts, 5)
+        inds_unique = [lst[0] for lst in inds if len(lst)]
         for pair in zip(inds_unique, inds_unique[1:]):
             pair_sorted = tuple(sorted(pair))
             self.inds.add(pair_sorted)
