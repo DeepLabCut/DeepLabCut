@@ -100,10 +100,13 @@ skeleton:
 ```python
 deeplabcut.SkeletonBuilder(config_path)
 ```
+:movie_camera: [How to Connect The Skeleton](https://www.youtube.com/watch?v=fQSJ0S08UyY)
+
+
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589256735280-SCN7CROSJNJWCDS6EK5T/ke17ZwdGBToddI8pDm48kB08p9-rNkpPD7A3fw8YFjZZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIno0kSvzOWihTW1zp8-1-7mzYxUQjsVr2n3nmNdVcso4/bodyparts-skeleton.png?format=1000w" width="400">
 
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589256082747-XCTA71MSZ7KY8PV3T7JC/ke17ZwdGBToddI8pDm48kKGh0ZNnJ9MTTLicuExk7LJZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxzzK4qdI7K5EFpIvc8zt90hdx4ALSbeXm-0Ca82iFvLhrQyWF7BS87SWNQPNhx7pg/antSkeleton.gif?format=750w" width="400">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589410182515-9SJO9MML6CNCXBAWQ6Z6/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/ezgif.com-video-to-gif+%2811%29.gif?format=750w" width="400">
 </p>
 </p>
 
