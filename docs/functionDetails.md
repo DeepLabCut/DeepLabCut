@@ -97,7 +97,9 @@ skeleton:
 **Note**, if you don't have uniquebodyparts please format as: `uniquebodyparts: []`. Also, it is crucial you connect the skeleton, and "over-connect" it, as shown above.
 
 **HOW TO CONENCT YOUR SKELETON:** For example, let's say you have the following bodyparts (left). What you might connect for plotting is in the middle, but what we ask you to do for training is on the far right (note, you can edit this after training to indeed plot just as in the middle!). You can connect the skeleton by typing the "edges" as shown above, or you can use our helper GUI (far right):
-
+```python
+deeplabcut.SkeletonBuilder(config_path)
+```
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589256735280-SCN7CROSJNJWCDS6EK5T/ke17ZwdGBToddI8pDm48kB08p9-rNkpPD7A3fw8YFjZZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIno0kSvzOWihTW1zp8-1-7mzYxUQjsVr2n3nmNdVcso4/bodyparts-skeleton.png?format=1000w" width="400">
 
