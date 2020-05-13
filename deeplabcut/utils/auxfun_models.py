@@ -29,9 +29,9 @@ def Check4weights(modeltype,parent_path,num_shuffles):
 
     if num_shuffles>0:
         if not model_path.is_file():
-            Downloadweights(modeltype,model_path)
+            Downloadweights(modeltype, model_path)
 
-    return str(model_path),num_shuffles
+    return str(model_path), num_shuffles
 
 def Downloadweights(modeltype,model_path):
     """
@@ -53,7 +53,7 @@ def Downloadweights(modeltype,model_path):
         print("Model does not exist: ", modeltype)
         print("Pick one of the following: ", neturls.keys())
 
-def DownloadModel(modelname,target_dir):
+def DownloadModel(modelname, target_dir):
     """
     Downloads a DeepLabCut Model Zoo Project
     """
@@ -78,7 +78,7 @@ def DownloadModel(modelname,target_dir):
                 member.path = member.path[l:]
                 yield member
 
-    #TODO: update how path is obtained
+    #TODO: update how DLC path is obtained
     import deeplabcut
     neturls= auxiliaryfunctions.read_plainconfig(os.path.join(os.path.dirname(deeplabcut.__file__),'pose_estimation_tensorflow/models/pretrained/pretrained_model_urls.yaml'))
     if modelname in neturls.keys():
@@ -89,7 +89,7 @@ def DownloadModel(modelname,target_dir):
         pbar = tqdm(unit='B', total=total_size, position=0)
         filename, _ = urllib.request.urlretrieve(url, reporthook=show_progress)
         with tarfile.open(filename, mode='r:gz') as tar:
-            tar.extractall(target_dir,members=tarfilenamecutting(tar))
+            tar.extractall(target_dir, members = tarfilenamecutting(tar))
     else:
         models=[fn for fn in neturls.keys() if 'resnet_' not in fn and 'mobilenet_' not in fn]
         print("Model does not exist: ", modelname)
@@ -110,4 +110,5 @@ def download_mpii_weights(wd):
             break # not checking all the 3 files.
         else:
             urllib.request.urlretrieve(i, filename)
+
     return filename

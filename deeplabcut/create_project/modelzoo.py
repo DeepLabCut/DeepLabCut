@@ -1,5 +1,5 @@
 """
-DeepLabCut2.0 Toolbox (deeplabcut.org)
+DeepLabCut 2.1.8 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
 
@@ -14,7 +14,6 @@ import subprocess
 import yaml
 from pathlib import Path
 from deeplabcut.utils import auxiliaryfunctions, auxfun_models
-
 
 def MakeTrain_pose_yaml(itemstochange,saveasconfigfile,defaultconfigfile):
     raw = open(defaultconfigfile).read()
@@ -32,6 +31,11 @@ def MakeTrain_pose_yaml(itemstochange,saveasconfigfile,defaultconfigfile):
         yaml.dump(docs[0], f)
     return docs[0]
 
+def UpdateTrain_pose_yaml(dict_train, dict2change, saveasfile):
+    for key in dict2change.keys():
+        dict_train[key] = dict2change[key]
+    auxiliaryfunctions.write_plainconfig(saveasfile, dict_train)
+
 def MakeTest_pose_yaml(dictionary, keys2save, saveasfile):
     dict_test = {}
     for key in keys2save:
@@ -43,7 +47,7 @@ def MakeTest_pose_yaml(dictionary, keys2save, saveasfile):
     #    yaml.dump(dict_test, f)
 
 def create_pretrained_human_project(project,experimenter,videos,working_directory=None,copy_videos=False,
-                                    videotype='.avi',createlabeledvideo=True, analyzevideo=True):
+                                    videotype='.mp4',createlabeledvideo=True, analyzevideo=True):
     """
     LEGACY FUNCTION will be deprecated.
 
@@ -63,7 +67,7 @@ def create_pretrained_human_project(project,experimenter,videos,working_director
 
 
 def create_pretrained_project(project, experimenter, videos, model='full_human',
-                                working_directory=None,copy_videos=False,videotype='.avi',
+                                working_directory=None,copy_videos=False,videotype=None,
                                 createlabeledvideo=True, analyzevideo=True, trainFraction=None):
     """
     Creates a new project directory, sub-directories and a basic configuration file.
@@ -91,7 +95,7 @@ def create_pretrained_project(project, experimenter, videos, model='full_human',
     working_directory : string, optional
         The directory where the project will be created. The default is the ``current working directory``; if provided, it must be a string.
 
-    copy_videos : bool, optional
+    copy_videos : bool, optional  ON WINDOWS: TRUE is often necessary!
         If this is set to True, the videos are copied to the ``videos`` directory. If it is False,symlink of the videos are copied to the project/videos directory. The default is ``False``; if provided it must be either
         ``True`` or ``False``.
 
@@ -103,17 +107,18 @@ def create_pretrained_project(project, experimenter, videos, model='full_human',
 
     Example
     --------
-    Linux/MacOs
-    >>> deeplabcut.create_pretrained_project('humanstrokestudy','Linus',['/data/videos/homosapiens1.avi'],'/analysis/project/',copy_videos=False)
+    Linux/MacOs loading full_human model and analzying video /homosapiens1.avi
+    >>> deeplabcut.create_pretrained_project('humanstrokestudy','Linus',['/data/videos/homosapiens1.avi'], copy_videos=False)
+
+    Loading full_cat model and analzying video "felixfeliscatus3.avi"
+    >>> deeplabcut.create_pretrained_project('humanstrokestudy','Linus',['/data/videos/felixfeliscatus3.avi'], model='full_cat')
 
     Windows:
-    >>> deeplabcut.create_pretrained_project('humanstrokestudy','Bill',[r'C:\yourusername\rig-95\Videos\reachingvideo1.avi'],r'C:\yourusername\analysis\project' copy_videos=False)
+    >>> deeplabcut.create_pretrained_project('humanstrokestudy','Bill',[r'C:\yourusername\rig-95\Videos\reachingvideo1.avi'],r'C:\yourusername\analysis\project' copy_videos=True)
     Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \ \ )
 
-    --------
     """
-    Modeloptions=['full_human','primate_face'] #just expand this list with new projects
-
+    Modeloptions=['full_human','full_cat','full_dog','primate_face'] #just expand this list with new projects
     if model in Modeloptions:
         cwd = os.getcwd()
         cfg = deeplabcut.create_new_project(project,experimenter,videos,working_directory,copy_videos,videotype)
@@ -126,8 +131,10 @@ def create_pretrained_project(project, experimenter, videos, model='full_human',
             config['skeleton'] = [['ankle1', 'knee1'],['ankle2', 'knee2'],['knee1', 'hip1'],['knee2', 'hip2'],['hip1', 'hip2'], ['shoulder1', 'shoulder2'], ['shoulder1', 'hip1'], ['shoulder2', 'hip2'], ['shoulder1', 'elbow1'], ['shoulder2', 'elbow2'], ['chin', 'forehead'], ['elbow1', 'wrist1'], ['elbow2', 'wrist2']]
             config['default_net_type']='resnet_101'
         else:  #just make a case and put the stuff you want.
+            #TBD: 'partaffinityfield_graph' >> use to set skeleton!
             pass
-        auxiliaryfunctions.write_config(cfg,config)
+
+        auxiliaryfunctions.write_config(cfg, config)
         config = auxiliaryfunctions.read_config(cfg)
 
         train_dir = Path(os.path.join(config['project_path'],str(auxiliaryfunctions.GetModelFolder(trainFraction=config['TrainingFraction'][0],shuffle=1,cfg=config)),'train'))
@@ -142,29 +149,19 @@ def create_pretrained_project(project, experimenter, videos, model='full_human',
         path_test_config = str(os.path.join(config['project_path'],Path(modelfoldername),'test','pose_cfg.yaml'))
 
         # Download the weights and put then in appropriate directory
-        print("Checking if the weights are already available, otherwise I will download them!")
-        if model == 'full_human':
-            os.chdir(train_dir)
-            weightfilename=auxfun_models.download_mpii_weights(train_dir)
-            bodyparts = config['bodyparts']
-            net_type ='resnet_101' #could be read from cfg!
-
-            auxfun_models.DownloadModel(model, train_dir)
-            #could also use this if it was proper!
-            # note that here we copy the snapshots + pose_cfg into /dlc-models/,,,,/train
-            # and then also download the corresponding backbone (below)
-            #weightfilename=auxfun_models.Downloadweights(modeltype, model_dir)
-        elif model =='primate_face':
-            auxfun_models.DownloadModel(model, train_dir)
-
-        else:
-            pass #just copy your fav. weights there..
+        print("Dowloading weights...")
+        auxfun_models.DownloadModel(model, train_dir)
 
         pose_cfg = deeplabcut.auxiliaryfunctions.read_plainconfig(path_train_config)
-        net_type=pose_cfg['net_type']
-        bodyparts=pose_cfg['all_joints_names']
-
-        auxiliaryfunctions.edit_config(cfg, {'bodyparts': pose_cfg['all_joints_names']})
+        print(path_train_config)
+        #Updating config file:
+        dict = {"default_net_type": pose_cfg['net_type'],
+                "default_augmenter": pose_cfg['dataset_type'],
+                "bodyparts": pose_cfg['all_joints_names'],
+                "skeleton": [], #TODO: update with paf_graph
+                "dotsize": 6,
+            }
+        auxiliaryfunctions.edit_config(cfg, dict)
 
         # Create the pose_config.yaml files
         parent_path = Path(os.path.dirname(deeplabcut.__file__))
@@ -172,24 +169,15 @@ def create_pretrained_project(project, experimenter, videos, model='full_human',
         trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(config)
         datafilename,metadatafilename=auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,trainFraction=config['TrainingFraction'][0],shuffle=1,cfg=config)
 
-        #downloading corresponding backbone e.g. resnet_101/...
-        num_shuffles= 1
-        model_path, num_shuffles=auxfun_models.Check4weights(net_type, parent_path, num_shuffles)
-        '''
-        items2change = {"dataset": 'dataset-test.mat',#datafilename,
-                            "metadataset": metadatafilename,
-                            "num_joints": len(bodyparts),
-                            "all_joints": [[i] for i in range(len(bodyparts))],
-                            "all_joints_names": [str(bpt) for bpt in bodyparts],
-                            "init_weights": weightfilename.split('.index')[0],
-                            "project_path": str(config['project_path']),
-                            "net_type": net_type,
-                            "dataset_type": "default"
-                        }
+        #downloading base encoder
+        model_path, num_shuffles=auxfun_models.Check4weights(pose_cfg['net_type'], parent_path, num_shuffles= 1)
+        snapshotname=[fn for fn in os.listdir(train_dir) if '.meta' in fn][0].split('.meta')[0]
+        # Update pose_cfg (train and test)
+        dict2change = {'init_weights': str(os.path.join(train_dir,snapshotname)),
+                        'project_path': str(config['project_path']),
+                       }
 
-        trainingdata = MakeTrain_pose_yaml(items2change,path_train_config,defaultconfigfile)
-        '''
-
+        UpdateTrain_pose_yaml(pose_cfg, dict2change, path_train_config)
         keys2save = ["dataset", "dataset_type","num_joints", "all_joints", "all_joints_names",
                             "net_type", 'init_weights', 'global_scale', 'location_refinement',
                             'locref_stdev']
@@ -197,11 +185,11 @@ def create_pretrained_project(project, experimenter, videos, model='full_human',
         MakeTest_pose_yaml(pose_cfg, keys2save, path_test_config)
 
         video_dir = os.path.join(config['project_path'],'videos')
-        if analyzevideo==True:
+        if analyzevideo == True:
             print("Analyzing video...")
-            # Analyze the videos
             deeplabcut.analyze_videos(cfg, [video_dir], videotype, save_as_csv=True)
-        if createlabeledvideo==True:
+
+        if createlabeledvideo == True:
             print("Plotting results...")
             deeplabcut.create_labeled_video(cfg,[video_dir],videotype, draw_skeleton=True)
             deeplabcut.plot_trajectories(cfg, [video_dir], videotype)
