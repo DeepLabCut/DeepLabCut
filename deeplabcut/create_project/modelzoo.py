@@ -15,6 +15,9 @@ import yaml
 from pathlib import Path
 from deeplabcut.utils import auxiliaryfunctions, auxfun_models
 
+Modeloptions=['full_human','full_cat','full_dog','primate_face'] #just expand this list with new projects
+
+
 def MakeTrain_pose_yaml(itemstochange,saveasconfigfile,defaultconfigfile):
     raw = open(defaultconfigfile).read()
     docs = []
@@ -122,8 +125,7 @@ def create_pretrained_project(project, experimenter, videos, model='full_human',
     Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \ \ )
 
     """
-    Modeloptions=['full_human','full_cat','full_dog','primate_face'] #just expand this list with new projects
-    if model in Modeloptions:
+    if model in globals()['Modeloptions']:
         cwd = os.getcwd()
 
         cfg = deeplabcut.create_new_project(project, experimenter, videos, working_directory, copy_videos, videotype)
