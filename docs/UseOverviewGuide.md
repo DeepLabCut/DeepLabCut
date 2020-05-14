@@ -234,7 +234,7 @@ deeplabcut.cropimagesandlabels(path_config_file, userfeedback=False)
 ```
 #### Reminder: Build your skeleton connections before you create a training set! 
 
-If you did not do this already be sure to define a skeleton in the `config.yaml` - See [more here for cruical details](docs/functionDetails.md#b-configure-the-project-).
+If you did not do this already be sure to define a skeleton in the `config.yaml` - See [more here for cruical details](functionDetails.md#b-configure-the-project-).
 
 There is also a graphical way to define your skeleton:
 ```python
