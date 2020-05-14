@@ -19,7 +19,7 @@ from skimage.util import img_as_ubyte
 
 
 def AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg, dlc_cfg, sess, inputs,
-            outputs,pdindex,save_as_csv, destfolder=None, c_engine=False):
+            outputs,pdindex,save_as_csv, destfolder=None, c_engine=False, robust_nframes=False):
     ''' Helper function for analyzing a video with multiple individuals '''
     print("Starting to analyze % ", video)
     vname = Path(video).stem
@@ -44,7 +44,10 @@ def AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg, dlc_cfg, sess, in
         if not cap.isOpened():
             raise IOError('Video could not be opened. Please check that the path is valid.')
 
-        nframes = auxfun_videos.get_nframes_robust(video)
+        if robust_nframes:
+            nframes = auxfun_videos.get_nframes_robust(video)
+        else:
+            nframes = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         duration = auxfun_videos.get_duration(video)
         fps = nframes / duration
         size=(int(cap.get(4)),int(cap.get(3)))

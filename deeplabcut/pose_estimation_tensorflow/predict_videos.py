@@ -35,7 +35,7 @@ from skimage.util import img_as_ubyte
 def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0,
                    gputouse=None, save_as_csv=False, destfolder=None, batchsize=None,
                    cropping=None,get_nframesfrommetadata=True, TFGPUinference=True,
-                   dynamic=(False,.5,10),modelprefix='', c_engine=False):
+                   dynamic=(False,.5,10),modelprefix='', c_engine=False, robust_nframes=False):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
 
@@ -95,6 +95,11 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
         If True, uses C code to detect 2D local maxima for multianimal inference.
         Pure-Python functions are used by default, which, although slower, do not require the user
         to install Cython and compile external code.
+
+    robust_nframes: bool, optional (default=False)
+        Evaluate a video's number of frames in a robust manner.
+        This option is slower (as the whole video is read frame-by-frame),
+        but does not rely on metadata, hence its robustness against file corruption.
 
     Examples
     --------
@@ -228,7 +233,8 @@ def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0
         if 'multi-animal' in dlc_cfg['dataset_type']:
             from deeplabcut.pose_estimation_tensorflow.predict_multianimal import AnalyzeMultiAnimalVideo
             for video in Videos:
-                AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder, c_engine=c_engine)
+                AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,
+                                        save_as_csv, destfolder, c_engine=c_engine, robust_nframes=robust_nframes)
         else:
             for video in Videos:
                 DLCscorer=AnalyzeVideo(video,DLCscorer,DLCscorerlegacy,trainFraction,cfg,dlc_cfg,sess,inputs, outputs,pdindex,save_as_csv, destfolder,TFGPUinference,dynamic)
