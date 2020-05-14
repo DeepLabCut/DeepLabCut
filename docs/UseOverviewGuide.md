@@ -232,6 +232,17 @@ deeplabcut.check_labels(config_path)
 ```python
 deeplabcut.cropimagesandlabels(path_config_file, userfeedback=False)
 ```
+#### Reminder: Build your skeleton connections before you create a training set! 
+
+If you did not do this already be sure to define a skeleton in the `config.yaml` - See [more here for cruical details](docs/functionDetails.md#b-configure-the-project-).
+
+There is also a graphical way to define your skeleton:
+```python
+deeplabcut.SkeletonBuilder(config_path)
+```
+<p align="center">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589410182515-9SJO9MML6CNCXBAWQ6Z6/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/ezgif.com-video-to-gif+%2811%29.gif?format=750w" width="80%">
+</p>
 
 ### Create Training Dataset:
 
