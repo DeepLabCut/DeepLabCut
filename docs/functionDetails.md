@@ -457,7 +457,7 @@ by default. You can also set a destination folder (``destfolder``) for the outpu
 
 As of 2.0.8+: you can extract multiple bodyparts, although there is no support for plotting or further analysis at this time; i.e. if you want to extract 3 snouts (as in [Figure 4 of Mathis et al, 2018 Nature Neuroscience](https://www.nature.com/articles/s41593-018-0209-y/figures/4)), you can edit the config.yaml file to contain ``num_outputs=3``. Then, when you run ``deeplabcut.analyze_videos`` it will extract the top three points (i.e. the 3 x, y, and likelihoods) and save this to the .h5 output file.
 
-### **maDeepLabCut [CRITICAL POINT] - Assemble & Refine Tracklets:
+### maDeepLabCut [CRITICAL POINT] - Assemble & Refine Tracklets:
 
 :movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/bEuBKB7eqmk)
 
@@ -475,6 +475,17 @@ Secondly, you need to refine the tracklets. You can fix both "major" ID swaps, i
 ```python
 deeplabcut.refine_tracklets(path_config_file, pickle_or_h5_file, videofile_path, min_swap_frac=0.0, min_tracklet_frac=0.0, trail_len=50)
 ```
+HOT KEYS IN THE GUI:
+```
+Key D: activate "drag" so you can adjust bodyparts in that particular frame
+Key I: invert the position of a pair of bodyparts
+Key L: toggle the lasso selector
+Key S: swap two tracklets
+Key X: cut swapping tracklets
+Left/Right arrow: navigate through the video
+Tab: play/pause the video
+Alt+Right/Left: fast forward/rewind
+```
 :movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/bEuBKB7eqmk)
 
 Short demo:  
@@ -484,7 +495,7 @@ Short demo:
 
 ### (I) Novel Video Analysis: extra features
 
-#### Dynamic-cropping of videos:
+#### Dynamic-cropping of videos (single animal pose estimation):
 
 As of 2.1+ we have a dynamic cropping option. Namely, if you have large frames and the animal/object occupies a smaller fraction, you can crop around your animal/object to make processing speeds faster. For example, if you have a large open field experiment but only track the mouse, this will speed up your analysis (also helpful for real-time applications). To use this simply add ``dynamic=(True,.5,10)`` when you call ``analyze_videos``. 
 
