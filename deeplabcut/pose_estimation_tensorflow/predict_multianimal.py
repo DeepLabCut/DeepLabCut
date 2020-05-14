@@ -9,20 +9,14 @@ Licensed under GNU Lesser General Public License v3.0
 """
 import os.path
 from deeplabcut.pose_estimation_tensorflow.nnet import predict_multianimal as predict
-from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import data_to_input
-
 import time, os
-import pandas as pd
 import numpy as np
-import argparse
 from pathlib import Path
 from tqdm import tqdm
-import tensorflow as tf
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
+from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, auxfun_videos
 import cv2
 from skimage.util import img_as_ubyte
-from easydict import EasyDict as edict
+
 
 def AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg, dlc_cfg, sess, inputs,
             outputs,pdindex,save_as_csv, destfolder=None, c_engine=False):
@@ -50,9 +44,9 @@ def AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg, dlc_cfg, sess, in
         if not cap.isOpened():
             raise IOError('Video could not be opened. Please check that the path is valid.')
 
-        fps = cap.get(5) #https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
-        nframes = int(cap.get(7))
-        duration=nframes*1./fps
+        nframes = auxfun_videos.get_nframes_robust(video)
+        duration = auxfun_videos.get_duration(video)
+        fps = nframes / duration
         size=(int(cap.get(4)),int(cap.get(3)))
 
         ny,nx=size
