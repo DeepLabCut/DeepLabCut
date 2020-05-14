@@ -751,6 +751,7 @@ class TrackletVisualizer:
     def display_help(self, event):
         if not self.help_text:
             self.help_text = '''
+            Key D: activate "drag" so you can adjust bodyparts in that particular frame
             Key I: invert the position of a pair of bodyparts
             Key L: toggle the lasso selector
             Key S: swap two tracklets
@@ -762,7 +763,7 @@ class TrackletVisualizer:
             self.text = self.fig.text(0.5, 0.5, self.help_text,
                                       horizontalalignment='center',
                                       verticalalignment='center',
-                                      fontsize=20, color='red')
+                                      fontsize=12, color='red')
         else:
             self.help_text = ''
             self.text.remove()
