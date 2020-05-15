@@ -12,6 +12,7 @@ Licensed under GNU Lesser General Public License v3.0
 import wx
 import os,sys,pydoc
 import deeplabcut
+import webbrowser,subprocess
 from deeplabcut.utils import auxiliaryfunctions
 media_path = os.path.join(deeplabcut.__path__[0], 'gui' , 'media')
 logo = os.path.join(media_path,'logo.png')
@@ -120,13 +121,18 @@ class Analyze_videos(wx.Panel):
             hbox2.Add(self.create_video_with_all_detections, 5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
             boxsizer.Add(hbox2,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
-            tracker_text = wx.StaticBox(self, label="Specify the Tracker Method!")
+            tracker_text = wx.StaticBox(self, label="Specify the Tracker Method (you can try each)")
             tracker_text_boxsizer = wx.StaticBoxSizer(tracker_text, wx.VERTICAL)
-            trackertypes = ['skeleton', 'box', 'clowncats']
+            trackertypes = ['skeleton', 'box']
             self.trackertypes = wx.ComboBox(self,choices = trackertypes,style = wx.CB_READONLY)
             self.trackertypes.SetValue('box')
             tracker_text_boxsizer.Add(self.trackertypes,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
             hbox2.Add(tracker_text_boxsizer,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+
+            self.overwrite = wx.RadioBox(self, label='Overwrite tracking files (set to yes if you edit inference parameters)', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
+            self.overwrite.SetSelection(1)
+            hbox2.Add(self.overwrite, 5, 5)
+            boxsizer.Add(hbox2,0, 5)
 
         else:
             self.csv = wx.RadioBox(self, label='Want to save result(s) as csv?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
@@ -193,8 +199,12 @@ class Analyze_videos(wx.Panel):
 
         if config_file.get('multianimalproject', False):
             self.ok = wx.Button(self, label="Step 2: Convert to Tracklets")
-            self.sizer.Add(self.ok, pos=(7, 8), flag=wx.BOTTOM|wx.RIGHT, border=10)
+            self.sizer.Add(self.ok, pos=(7, 8), border=10)
             self.ok.Bind(wx.EVT_BUTTON, self.convert2_tracklets)
+
+            self.inf_cfg_text = wx.Button(self, label="Edit the inference_config.yaml")
+            self.sizer.Add(self.inf_cfg_text, pos=(8, 8), border=10)
+            self.inf_cfg_text.Bind(wx.EVT_BUTTON, self.edit_inf_config)
 
         self.reset = wx.Button(self, label="Reset")
         self.sizer.Add(self.reset, pos=(7, 1), span=(1, 1),flag=wx.BOTTOM|wx.RIGHT, border=10)
@@ -204,6 +214,23 @@ class Analyze_videos(wx.Panel):
 
         self.SetSizer(self.sizer)
         self.sizer.Fit(self)
+
+    def edit_inf_config(self, event):
+        # Read the infer config file
+        cfg = auxiliaryfunctions.read_config(self.config)
+        trainingsetindex = self.trainingset.GetValue()
+        trainFraction = cfg['TrainingFraction'][trainingsetindex]
+        self.inf_cfg_path = os.path.join(cfg['project_path'],auxiliaryfunctions.GetModelFolder(trainFraction, self.shuffle.GetValue(),cfg),'test','inference_cfg.yaml')
+        # let the user open the file with default text editor. Also make it mac compatible
+        if sys.platform=='darwin':
+            self.file_open_bool = subprocess.call(['open',self.inf_cfg_path])
+            self.file_open_bool = True
+        else:
+            self.file_open_bool = webbrowser.open(self.inf_cfg_path)
+        if self.file_open_bool:
+            self.inf_cfg = auxiliaryfunctions.read_config(self.inf_cfg_path)
+        else:
+            raise FileNotFoundError("File not found!")
 
     def activate_change_wd(self,event):
         """
@@ -243,8 +270,12 @@ class Analyze_videos(wx.Panel):
     def convert2_tracklets(self,event):
         shuffle = self.shuffle.GetValue()
         trainingsetindex = self.trainingset.GetValue()
+        if self.overwrite.GetStringSelection() == "Yes":
+            overwrite = True
+        else:
+            overwrite = False
         deeplabcut.convert_detections2tracklets(self.config, self.filelist, videotype=self.videotype.GetValue(),
-                                                    shuffle=shuffle, trainingsetindex=trainingsetindex, track_method=self.trackertypes.GetValue())
+                                                    shuffle=shuffle, trainingsetindex=trainingsetindex, overwrite=overwrite, track_method=self.trackertypes.GetValue())
 
     #def video_tracklets(self,event):
     #    shuffle = self.shuffle.GetValue()

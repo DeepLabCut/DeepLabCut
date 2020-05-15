@@ -81,7 +81,7 @@ class Create_new_project(wx.Panel):
         self.sizer.Add(self.vids, pos=(6, 0), flag=wx.TOP|wx.LEFT, border=10)
 
         self.sel_vids = wx.Button(self, label="Load Videos")
-        self.sizer.Add(self.sel_vids, pos=(6, 1), flag=wx.TOP|wx.EXPAND, border=6)
+        self.sizer.Add(self.sel_vids, pos=(6, 1), flag=wx.TOP|wx.EXPAND, border=10)
         self.sel_vids.Bind(wx.EVT_BUTTON, self.select_videos)
 #
         sb = wx.StaticBox(self, label="Optional Attributes")
@@ -193,7 +193,7 @@ class Create_new_project(wx.Panel):
             self.proj_name.Enable(False)
             self.proj_name_txt_box.Enable(False)
             self.exp.Enable(False)
-            self.vids.Enable(False)
+            #self.vids.Enable(False)
             self.exp_txt_box.Enable(False)
             self.sel_vids.Enable(False)
             self.sel_vids_new.Enable(False)

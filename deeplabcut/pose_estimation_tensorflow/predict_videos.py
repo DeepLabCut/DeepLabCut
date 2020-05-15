@@ -813,7 +813,7 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,
 
     os.chdir(str(start_path))
 
-def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, trainingsetindex=0,
+def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, trainingsetindex=0, overwrite=False,
                                  destfolder=None,BPTS=None, iBPTS=None,PAF=None, printintermediate=False,
                                  inferencecfg=None,modelprefix='', track_method='box',edgewisecondition=False):
     """
@@ -835,6 +835,9 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
 
     trainingsetindex: int, optional
         Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+
+    overwrite: bool, optional.
+        Overwrite tracks file i.e. recompute tracks from full detections and overwrite.
 
     destfolder: string, optional
         Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this
@@ -957,8 +960,9 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
             method = 'sk' if track_method == 'skeleton' else 'bx'
             trackname=dataname.split('.h5')[0] + f'_{method}.pickle'
             trackname = trackname.replace(videofolder, destfolder)
-            if os.path.isfile(trackname): #TODO: check if metadata are identical (same parameters!)
+            if os.path.isfile(trackname) and not overwrite: #TODO: check if metadata are identical (same parameters!)
                 print("Tracklets already computed", trackname)
+                print("Set overwrite = True to overwrite.")
             else:
                 print("Analyzing", dataname)
                 DLCscorer=metadata['data']['Scorer']
@@ -1050,7 +1054,7 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
         os.chdir(str(start_path))
 
         #TODO: UPDATE!!
-        print("The tracklets were created. Now you can 'refine_tracklets' \n You can create labeled videos with 'create_labeled_video'.")
+        print("The tracklets were created. Now you can 'refine_tracklets' ")
         #print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
     else:
         print("No video(s) found. Please check your path!")

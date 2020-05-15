@@ -191,8 +191,6 @@ Note, we also highly recommend that you use more bodypoints that you might other
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588028248844-43RXXUNLE1VKJDKGGVFO/ke17ZwdGBToddI8pDm48kAxoZwLd0g_s-irkR9O2vUhZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxFjgZOWy5voI9x7QCcY8v6pdjAnJRY2VhSKj43SxhWXRPK8F08AQobuqKWFB6l9T0/labelingdemo.gif?format=750w" width="70%">
 </p>
 
-
-
 ###  (E) Check Annotated Frames
 [DOCSTRING](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#check_labels)
 
@@ -250,9 +248,9 @@ are listed in Box 2.
 
 The differences of the loaders are as follows:
 - `default`: our standard DLC 2.0 introduced in Nature Protocols variant (scaling, auto-crop augmentation)
-- `imgaug`: a lot of augmentation possibilities, efficient code for target map creation & batch sizes >1 supported. [will prob. become default soon]. You can set the parameters such as the `batch_size` in the `pose_cfg.yaml` file for the model you are training. 
+- `imgaug`: a lot of augmentation possibilities, efficient code for target map creation & batch sizes >1 supported. You can set the parameters such as the `batch_size` in the `pose_cfg.yaml` file for the model you are training. 
 - `tensorpack`: a lot of augmentation possibilities, multi CPU support for fast processing, target maps are created less efficiently than in imgaug, does not allow batch size>1 
-- `deterministic`: only useful for testing, freezes numpy seed otherwise like default
+- `deterministic`: only useful for testing, freezes numpy seed; otherwise like default.
 
 Alternatively, you can set the loader (as well as other training parameters) in the **pose_cfg.yaml** file of the model that you want to train. Note, to get details on the options, look at the default file: [**pose_cfg.yaml**](https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml). 
 
@@ -267,9 +265,7 @@ Please also see our helper WIKI on selecting models: https://github.com/AlexEMG/
 </p>
 
 Lastly, if you are labeling adult human data, you may also want to use a human-pretrained network. 
-A ResNet-101 pre-trained on MPII is available. You can use the following notebook to create a project that uses this network:
-- [HUMAN DEMO](https://github.com/AlexEMG/DeepLabCut/blob/master/examples/COLAB_Human_Project_DEMO.ipynb) notebook
-- or use the new function: `` deeplabcut.create_pretrained_human_project(..``
+A ResNet-101 pre-trained on MPII is available.
 - or you can add the pretrained model manually to the correct folder (then to use them set the path to the model as described in Box 2)
    - Download these and move to the pretrained folder (this will be in your site-packages, under ``../pose-tensorflow/models/pretrained``). In the terminal: 
  ```python
@@ -289,16 +285,16 @@ The set of arguments in the function starts training the network for the dataset
 
 Example parameters that one can call:
 ```python
-deeplabcut.train_network(config_path, shuffle=1, trainingsetindex=0, gputouse=None, max_snapshots_to_keep=5, autotune=False, displayiters=100, saveiters=15000, maxiters=30000)
+deeplabcut.train_network(config_path, shuffle=1, trainingsetindex=0, gputouse=None, max_snapshots_to_keep=5, autotune=False, displayiters=100, saveiters=15000, maxiters=30000, allow_growth=True)
 ```
 
-By default, the pretrained ResNet networks are not in the DeepLabCut toolbox (as they are around 100MB), but they get downloaded before you train. However, if not previously downloaded from the TensorFlow model weights, it will be downloaded and stored in a subdirectory *pre-trained* under the subdirectory *models* in *Pose_Estimation_Tensorflow*. 
+By default, the pretrained networks are not in the DeepLabCut toolbox (as they are around 100MB each), but they get downloaded before you train. However, if not previously downloaded from the TensorFlow model weights, it will be downloaded and stored in a subdirectory *pre-trained* under the subdirectory *models* in *Pose_Estimation_Tensorflow*. 
 At user specified iterations during training checkpoints are stored in the subdirectory *train* under the respective iteration directory.
 
 If the user wishes to restart the training at a specific checkpoint they can specify the full path of the checkpoint to
 the variable ``init_weights`` in the **pose_cfg.yaml** file under the *train* subdirectory (see Box 2).
 
-**CRITICAL POINT:** It is recommended to train the ResNets or MobileNets for thousands of iterations until the loss plateaus (typically around **200,000**). 
+**CRITICAL POINT:** It is recommended to train the ResNets or MobileNets for thousands of iterations until the loss plateaus (typically around **200,000**) if you use batch size 1. If you want to batch train, we recommend using Adam, see more here: https://github.com/AlexEMG/DeepLabCut/wiki/Data-Augmentation. 
 
 If you use **maDeepLabCut** the recommended training iterations is **50K-100K** (it automatically stops at 200K!), as we use Adam and batch-training. 
 
@@ -343,7 +339,7 @@ manual labels and the ones predicted by DeepLabCut. The MAE is saved as a comma 
 for all pairs and only likely pairs (>p-cutoff). This helps to exclude, for example, occluded body parts. One of the
 strengths of DeepLabCut is that due to the probabilistic output of the scoremap, it can, if sufficiently trained, also
 reliably report if a body part is visible in a given frame. (see discussions of finger tips in reaching and the Drosophila
-legs during 3D behavior in [11]). The evaluation results are computed by typing:
+legs during 3D behavior in [Mathis et al, 2018]). The evaluation results are computed by typing:
 ```python
 deeplabcut.evaluate_network(config_path,Shuffles=[1], plotting=True)
 ```
@@ -371,7 +367,7 @@ The plots can be customized by editing the **config.yaml** file (i.e. the colorm
 transparency of labels (alphavalue) can be modified). By default each body part is plotted in a different color
 (governed by the colormap) and the plot labels indicate their source. Note that by default the human labels are
 plotted as plus (‘+’), DeepLabCut’s predictions either as ‘.’ (for confident predictions with likelihood > p-cutoff) and
-’x’ for (likelihood <= p-cutoff).
+’x’ for (likelihood <= `pcutoff`).
 
 The evaluation results for each shuffle of the training dataset are stored in a unique subdirectory in a newly created
 directory ‘evaluation-results’ in the project directory. The user can visually inspect if the distance between the labeled
@@ -457,7 +453,7 @@ by default. You can also set a destination folder (``destfolder``) for the outpu
 
 As of 2.0.8+: you can extract multiple bodyparts, although there is no support for plotting or further analysis at this time; i.e. if you want to extract 3 snouts (as in [Figure 4 of Mathis et al, 2018 Nature Neuroscience](https://www.nature.com/articles/s41593-018-0209-y/figures/4)), you can edit the config.yaml file to contain ``num_outputs=3``. Then, when you run ``deeplabcut.analyze_videos`` it will extract the top three points (i.e. the 3 x, y, and likelihoods) and save this to the .h5 output file.
 
-### **maDeepLabCut [CRITICAL POINT] - Assemble & Refine Tracklets:
+### maDeepLabCut [CRITICAL POINT] - Assemble & Refine Tracklets:
 
 :movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/bEuBKB7eqmk)
 
@@ -475,6 +471,17 @@ Secondly, you need to refine the tracklets. You can fix both "major" ID swaps, i
 ```python
 deeplabcut.refine_tracklets(path_config_file, pickle_or_h5_file, videofile_path, min_swap_frac=0.0, min_tracklet_frac=0.0, trail_len=50)
 ```
+HOT KEYS IN THE GUI:
+```
+Key D: activate "drag" so you can adjust bodyparts in that particular frame
+Key I: invert the position of a pair of bodyparts
+Key L: toggle the lasso selector
+Key S: swap two tracklets
+Key X: cut swapping tracklets
+Left/Right arrow: navigate through the video
+Tab: play/pause the video
+Alt+Right/Left: fast forward/rewind
+```
 :movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/bEuBKB7eqmk)
 
 Short demo:  
@@ -484,7 +491,7 @@ Short demo:
 
 ### (I) Novel Video Analysis: extra features
 
-#### Dynamic-cropping of videos:
+#### Dynamic-cropping of videos (single animal pose estimation):
 
 As of 2.1+ we have a dynamic cropping option. Namely, if you have large frames and the animal/object occupies a smaller fraction, you can crop around your animal/object to make processing speeds faster. For example, if you have a large open field experiment but only track the mouse, this will speed up your analysis (also helpful for real-time applications). To use this simply add ``dynamic=(True,.5,10)`` when you call ``analyze_videos``. 
 

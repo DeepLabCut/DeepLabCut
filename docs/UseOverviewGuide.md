@@ -173,7 +173,7 @@ config_path = '/thefulloutputpath/config.yaml'
 
 - open the **config.yaml** file (in a text editor (like atom, gedit, vim etc.)), which can be found in the subfolder created when you set your project name, to change parameters and identify label names! This is a crucial step. 
 
-**maDeepLabCut**: As of 2.2 you also *must* modify a few more parameters in the `config.yaml` file, **see [here](functionDetails.md#b-configure-the-project).**
+**maDeepLabCut**: As of 2.2 you also **must** modify a few more parameters in the `config.yaml` file, **see [here](functionDetails.md#b-configure-the-project-).**
 
 (PLEASE see more details [here](functionDetails.md#b-configure-the-project))
 
@@ -234,7 +234,7 @@ deeplabcut.cropimagesandlabels(path_config_file, userfeedback=False)
 ```
 #### Reminder: Build your skeleton connections before you create a training set! 
 
-If you did not do this already be sure to define a skeleton in the `config.yaml` - See [more here for cruical details](docs/functionDetails.md#b-configure-the-project-).
+If you did not do this already be sure to define a skeleton in the `config.yaml` - See [more here for cruical details](functionDetails.md#b-configure-the-project-).
 
 There is also a graphical way to define your skeleton:
 ```python
