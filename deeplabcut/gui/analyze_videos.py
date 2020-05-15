@@ -286,7 +286,7 @@ class Analyze_videos(wx.Panel):
         else:
             overwrite = False
         deeplabcut.convert_detections2tracklets(self.config, self.filelist, videotype=self.videotype.GetValue(),
-                                                    shuffle=shuffle, trainingsetindex=trainingsetindex, overwrite=overwrite, track_method=self.trackertypes.GetValue())
+                                                    shuffle=shuffle, trainingsetindex=trainingsetindex, edgewisecondition=True, overwrite=overwrite, track_method=self.trackertypes.GetValue())
 
     #def video_tracklets(self,event):
     #    shuffle = self.shuffle.GetValue()
