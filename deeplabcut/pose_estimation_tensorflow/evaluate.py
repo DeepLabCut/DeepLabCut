@@ -362,7 +362,7 @@ def evaluate_network(config,Shuffles=[1],trainingsetindex=0,plotting = None,show
                     DataMachine.to_hdf(resultsfilename,'df_with_missing',format='table',mode='w')
 
                     print("Done and results stored for snapshot: ", Snapshots[snapindex])
-                    DataCombined = pd.concat([Data.T, DataMachine.T], axis=0).T
+                    DataCombined = pd.concat([Data.T, DataMachine.T], axis=0, sort=False).T
 
                     RMSE,RMSEpcutoff = pairwisedistances(DataCombined, cfg["scorer"], DLCscorer,cfg["pcutoff"],comparisonbodyparts)
                     testerror = np.nanmean(RMSE.iloc[testIndices].values.flatten())
