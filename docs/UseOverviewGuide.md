@@ -280,11 +280,13 @@ deeplabcut.evaluate_network(config_path, plotting = True)
 
 **maDeepLabCut [CRITICAL POINT]:**
 
-You need to cross validate parameters before inference. Here, you will run the new function:
+You need to **cross validate parameters** before inference. Here, you will run the new function:
 ```python
 deeplabcut.evaluate_multianimal_crossvalidate(config_path, Shuffles=[1], edgewisecondition=True, leastbpts=1, init_points=20, n_iter=50)
 ```
 We highly suggest that you read the docstring for this function to edit inputs appropriately. 
+
+([Here is more information](functionDetails.md#cross-validation-of-inference-parameters-a-madeeplabcut-critical-point))
 
 
 **maDeepLabCut**: (or on normal projects!)
@@ -320,6 +322,7 @@ First, you need to convert detections to tracklets. This step has several tracke
 deeplabcut.convert_detections2tracklets(path_config_file, ['videofile_path'], videotype='mp4',
                                                     shuffle=1, trainingsetindex=0, track_method='')
 ```
+You should **cross-validate** the tracking parameters. ([Here is more information](functionDetails.md#cross-validation-of-inference-parameters-a-madeeplabcut-critical-point))
 
 Secondly, you need to refine the tracklets. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc! 
 
