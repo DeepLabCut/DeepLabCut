@@ -509,7 +509,7 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
     # Ensure the 'bodyparts' level agrees with the order in the config file.
     if cfg.get('multianimalproject', False):
         _, uniquebodyparts, multianimalbodyparts = auxfun_multianimal.extractindividualsandbodyparts(cfg)
-        bodyparts = uniquebodyparts + multianimalbodyparts
+        bodyparts = multianimalbodyparts + uniquebodyparts
     else:
         bodyparts = cfg['bodyparts']
     AnnotationData = AnnotationData.reindex(bodyparts, axis=1, level=AnnotationData.columns.names.index('bodyparts'))
