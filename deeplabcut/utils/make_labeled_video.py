@@ -442,16 +442,7 @@ def create_labeled_video(config,videos,videotype='avi',shuffle=1,trainingsetinde
 
             except FileNotFoundError as e:
                 print(e)
-                # Check whether tracks exist to print a more meaningful statement
-                try:
-                    _ = auxiliaryfunctions.load_detection_data(video, DLCscorer, track_method)
-                    print('Run "convert_detections2tracklets" first.')
-                except FileNotFoundError as e:
-                    print(e)
-                    print('Run "analyze_video first.')
-                    if cfg.get('multianimalproject', False):
-                        print('Then use "convert_detections2tracklets" and re-run the current function.')
-                    continue
+                continue
 
     os.chdir(start_path)
 
