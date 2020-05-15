@@ -1,6 +1,8 @@
-### How to use the 3D Functionality of DeepLabCut
+# 3D DeepLabCut <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589578632599-HQENUYUIBI9KYTZA2WXV/ke17ZwdGBToddI8pDm48kBgERiRoVg6XJpnbAnG076FZw-zPPgdn4jUwVcJE1ZvWhcwhEtWJXoshNdA9f1qD7Y5_KuY_fkOEvGrDVB8aRb13EC_7Ld97nVeJG4MMJk1tqSdWG3KOMGCA68a4XjyT5g/3D.png?format=300w" width="350" title="DLC-3D" alt="DLC 3D" align="right" vspace = "50">
 
-**New:** as of deeplabcut 2.0.7+ you can create a 3D project to combine multiple (n=2) cameras for 3D pose estimation. Watch a [DEMO VIDEO](https://youtu.be/Eh6oIGE4dwI) on how to use this code. 
+We also support 2-camera triangulation based 3D pose estimation. Here, you can create a 3D project to combine multiple (n=2) cameras for 3D pose estimation. 
+
+:movie_camera: Watch a [DEMO VIDEO](https://youtu.be/Eh6oIGE4dwI) on how to use this code! 
 
 <p align="center">
 <img src= https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1560968522350-COKR986AQESF5N1N7QNK/ke17ZwdGBToddI8pDm48kNaO57GzHjWqV-xM6jVvY6ZZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpyR5k0u27ivMv3az5DOhUvLuYQefjfUWYPEDVexVC_mSas4X78tjQKn3yE00zHvnK8/3D_maousLarger.gif?format=750w width="85%">
@@ -13,6 +15,15 @@ A. You have 2D videos and a DeepLabCut network to analyze them as described in t
 B. You are using 2 cameras for 3D.
 
 C. You have calibration images taken (see details below!).
+
+**If you need more than 2 camera support:**
+Due to the excellent work of others, we will not have >2 cameras (via calibration) support at this time. We also opt not to have them in DLC, as we want users to have the most flexibility in their systems. Here are other excellent options for you to use: 
+ 
+- **[anipose.org](https://anipose.readthedocs.io/en/latest/)**; a wrapper for 3D deeplabcut (using openCV, numpy, scipy, etc.) | https://github.com/lambdaloop/anipose
+  - it provides >3 camera support! And us built to work directly with DeepLabCut.
+  
+- using Argus, easywand or DLTdv w/deeplabcut https://github.com/haliaetus13/DLCconverterDLT
+   - this can be used with the the highly popular Argus or DLTdv tools for wand calibration. 
 
 
 ### (1) Create a New 3D Project:
@@ -230,13 +241,3 @@ zlim: list
 ### If you use this code:
 
 We kindly ask that you cite [Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y) **&** [Nath*, Mathis*, et al., 2019](https://doi.org/10.1038/s41596-019-0176-0).
-
-
-## More than 2 camera support:
-
-Due to the excellent work of others, we will not have >2 cameras (via calibration) support at this time. We also opt not to have them in DLC, as we want users to have the most flexibility in their systems. Here are other excellent options for you to use: 
- 
-- anipose.org; a wrapper for 3d deeplabcut (using openCV, numpy, scipy) | https://github.com/lambdaloop/anipose
-  - it is a pip install package that uses "calligator" https://github.com/lambdaloop/calligator, and can be installed inside your DLC conda env.
-- using Argus, easywand or DLTdv w/deeplabcut https://github.com/haliaetus13/DLCconverterDLT
-   - this can be used with the the highly popular Argus or DLTdv tools for wand calibration. 
