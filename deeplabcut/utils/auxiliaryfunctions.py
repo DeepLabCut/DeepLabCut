@@ -532,13 +532,13 @@ def find_analyzed_data(folder, videoname, scorer, filtered=False, track_method='
     suffix = '_filtered' if filtered else ''
     tracker = ''
     if track_method == 'skeleton':
-        tracker = 'sk'
+        tracker = '_sk'
     elif track_method == 'box':
-        tracker = 'bx'
+        tracker = '_bx'
     candidates = []
     for file in grab_files_in_folder(folder, 'h5'):
         if all(((file.startswith(videoname + scorer) or file.startswith(videoname + scorer_legacy)),
-                (tracker in file if tracker else not ('sk' in file or 'bx' in file)),
+                (tracker in file if tracker else not ('_sk' in file or '_bx' in file)),
                 (filtered and 'filtered' in file) or (not filtered and 'filtered' not in file))):
             candidates.append(file)
     if not len(candidates):
