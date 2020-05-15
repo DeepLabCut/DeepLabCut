@@ -11,7 +11,7 @@ We suggest watching this video on how to navigate the docs: **Click on the image
 - :computer: [How to install DeepLabCut](/docs/installation.md)
 
 - :chart_with_upwards_trend: [Overview of How to use DLC & each function](/docs/UseOverviewGuide.md) 
-   - [Many more details on each function](docs/functionDetails.md) (they are also linked within the "Overview!")
+   - [Many more details on each function](functionDetails.md) (they are also linked within the "Overview!")
 
 - :high_brightness: More details on how to use our "Stand Alone" [DeepLabCut Project Manager GUI](/docs/PROJECT_GUI.md)
    
