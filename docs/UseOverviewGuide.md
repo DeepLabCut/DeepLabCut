@@ -257,8 +257,15 @@ deeplabcut.create_training_model_comparision(config_path, num_shuffles=1, net_ty
 
 
 **maDeepLabCut**:
+
+For mutli-animal training we use batch processing. This means that we'd like the data to be similarly sized. You can of course have differing size of images you label (and we suggest cropping out useless pixels!). So, we have a new function that can pre-process your data to be compatible with batch training. Please run this function before you `create_multianmialtraining_dataset`:
+
 ```python
-deeplabcut.create_multianimaltraining_dataset(path_config_file)
+deeplabcut.cropimagesandlabels(path_config_file)
+```
+Then run:
+```python
+deeplabcut.create_multianimaltraining_dataset(path_config_file, allow_growth=True)
 ```
 (more details [here](functionDetails.md#f-create-training-dataset))
 
@@ -329,6 +336,11 @@ Secondly, you need to refine the tracklets. You can fix both "major" ID swaps, i
 ```python
 deeplabcut.refine_tracklets(path_config_file, pickle_or_h5_file, videofile_path, min_swap_frac=0.0, min_tracklet_frac=0.0, trail_len=50)
 ```
+
+Short demo:  
+ <p align="center">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588690928000-90ZMRIM8SN6QE20ZOMNX/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/refineDEMO.gif?format=750w" width="70%">
+</p>
 
 ### Once you have analyzed video data:
 
