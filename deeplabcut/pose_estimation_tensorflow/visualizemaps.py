@@ -326,7 +326,7 @@ def extract_save_all_maps(config, shuffle=1, trainingsetindex=0, comparisonbodyp
     if not nplots_per_row:
         from deeplabcut.utils import auxiliaryfunctions
         bpts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg, comparisonbodyparts)
-        nplots_per_row = np.floor(np.sqrt(len(bpts)))
+        nplots_per_row = int(np.floor(np.sqrt(len(bpts))))
 
     print("Saving plots...")
     for frac, values in data.items():
