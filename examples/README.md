@@ -43,9 +43,9 @@ Here is a demo of us using the Colab Notebooks: https://www.youtube.com/watch?v=
 
 Ready to take your pose estimation to a new dimension? As of 2.0.7+ we support 3D within the package. Please check out the dedicated 3D_Demo_DeepLabCut.ipynb above for more details!
 
-## Using Human pre-trained networks:
+## Using the DLC Model Zoo:
 
-We provide a COLAB notebook (COLAB_Human_Project_DEMO.ipynb) that allows you to immediately analyze videos using a human pre-trained network. Here, your videos should include frames that are around 300 by 300 pixels (although it does not need to be square) for optimal performance. As of 2.0.9, we provide tools to downsample and shorten videos within the toolbox. This code will also create a new project folder so you can refine, add new bodyparts or label other objects, and re-train. Launch COLAB here: [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/AlexEMG/DeepLabCut/blob/master/examples/COLAB_Human_Project_DEMO.ipynb)
+We provide a COLAB notebook to use the growing number of networks that are trained on specific animals/scenarios. Read more here: http://www.mousemotorlab.org/dlc-modelzoo. This code will also create a new project folder so you can refine, add new bodyparts or label other objects, and re-train. Launch COLAB here: [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/AlexEMG/DeepLabCut/blob/master/examples/COLAB_DLC_ModelZoo.ipynb)
 
 ## Using Python/iPython:
 
