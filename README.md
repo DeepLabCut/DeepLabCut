@@ -152,7 +152,6 @@ VERSION 1.0: The initial, Nature Neuroscience version of [DeepLabCut](https://ww
 
 ## News (and in the news):
 
-- May 2020: We are releasing our beta version of 2.2. Much more to come! Feedback welcome.
 - May 2020: We released the [DeepLabCut Model Zoo](http://www.mousemotorlab.org/dlc-modelzoo), that comes with pre-trained models for dogs, cats, humans, primate faces.. 
 - Mar 2020: Inspired by suggestions we heard at this weeks CZI's Essential Open Source Software meeting in Berkeley we updated our [docs](docs/UseOverviewGuide.md). Let us know what you think!
 - Feb 2020: DCL 2.2. with strong multi-animal support will soon be released. Check out the [sneak peek](https://twitter.com/DeepLabCut/status/1231272002528448515)
