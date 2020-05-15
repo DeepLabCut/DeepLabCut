@@ -363,8 +363,7 @@ def evaluate_multianimal_crossvalidate(config, Shuffles=[1], trainingsetindex=0,
 
         # Store best predictions
         max_indivs = max(pose.shape[0] for pose in poses)
-        _, bodyparts_single, bodyparts_multi = auxfun_multianimal.extractindividualsandbodyparts(cfg)
-        bpts = bodyparts_multi + bodyparts_single
+        bpts = dlc_cfg['all_joints_names']
         container = np.full((len(poses), max_indivs * len(bpts) * 3), np.nan)
         for n, pose in enumerate(poses):
             temp = pose.flatten()
