@@ -62,7 +62,7 @@ class Extract_frames(wx.Panel):
         self.method_choice.Bind(wx.EVT_RADIOBOX,self.select_extract_method)
         hbox1.Add(self.method_choice,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
-        self.crop_choice = wx.RadioBox(self, label='Want to crop the frames?', choices=['False', 'True', 'GUI'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
+        self.crop_choice = wx.RadioBox(self, label='Want to crop the frames?', choices=['False', 'True (read from config file)', 'GUI'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
         hbox1.Add(self.crop_choice,5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
         self.feedback_choice = wx.RadioBox(self, label='Need user feedback?', choices=['No', 'Yes'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
@@ -157,10 +157,9 @@ class Extract_frames(wx.Panel):
     def extract_frames(self,event):
         mode=self.method
         algo = self.algo_choice.GetValue()
-        if self.crop_choice.GetStringSelection() == 'True':
+        if self.crop_choice.GetStringSelection() == 'True (read from config file)':
             crop = True
-        else:
-            crop = False
+
         if self.crop_choice.GetStringSelection() == 'GUI':
             crop = 'GUI'
         else:
@@ -177,8 +176,9 @@ class Extract_frames(wx.Panel):
             opencv = False
 
         slider_width = self.slider_width.GetValue()
-
-        deeplabcut.extract_frames(self.config,mode,algo,crop=crop,userfeedback=userfeedback,cluster_step=self.cluster_step.GetValue(),cluster_resizewidth=30,cluster_color=False,opencv=opencv,slider_width=slider_width)
+        deeplabcut.extract_frames(self.config,mode,algo,crop=crop,userfeedback=userfeedback,
+                                    cluster_step=self.cluster_step.GetValue(),cluster_resizewidth=30,
+                                    cluster_color=False,opencv=opencv,slider_width=slider_width)
 
     def reset_extract_frames(self,event):
         """

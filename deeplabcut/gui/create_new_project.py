@@ -107,9 +107,9 @@ class Create_new_project(wx.Panel):
         hbox3.AddSpacer(155)
         self.boxsizer.Add(hbox3)
 
-        self.multi_choice = wx.CheckBox(self, label="Is it a multi-animal project?")
-        self.multi_choice.Bind(wx.EVT_CHECKBOX,self.activate_copy_videos)
-        hbox4.Add(self.multi_choice)
+        #self.multi_choice = wx.CheckBox(self, label="Is it a multi-animal project?")
+        #self.multi_choice.Bind(wx.EVT_CHECKBOX,self.activate_copy_videos)
+        #hbox4.Add(self.multi_choice)
         self.boxsizer.Add(hbox4)
         self.sizer.Add(self.boxsizer, pos=(7, 0), span=(1, 10),flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT , border=10)
 
@@ -199,7 +199,7 @@ class Create_new_project(wx.Panel):
             self.sel_vids_new.Enable(False)
             self.change_workingdir.Enable(False)
             self.copy_choice.Enable(False)
-            self.multi_choice.Enable(False)
+            #self.multi_choice.Enable(False)
             self.sel_config.Show()
             self.cfg_text.Show()
             self.addvid.Enable(False)
@@ -215,7 +215,7 @@ class Create_new_project(wx.Panel):
             self.sel_vids_new.Enable(False)
             self.change_workingdir.Enable(True)
             self.copy_choice.Enable(True)
-            self.multi_choice.Enable(True)
+            #self.multi_choice.Enable(True)
             if self.sel_config.IsShown():
                 self.sel_config.Hide()
                 self.cfg_text.Hide()
@@ -291,16 +291,15 @@ class Create_new_project(wx.Panel):
             else:
                 wx.MessageBox('Project Loaded!', 'Info', wx.OK | wx.ICON_INFORMATION)
                 self.loaded = True
+                self.edit_config_file.Enable(True)
                 self.sel_vids_new.Enable(True)
                 self.addvid.Enable(True)
-                self.edit_config_file.Enable(True)
         else:
             self.task = self.proj_name_txt_box.GetValue()
             self.scorer = self.exp_txt_box.GetValue()
 
             if self.task!="" and self.scorer!="" and self.filelist!=[]:
-                self.cfg=deeplabcut.create_new_project(self.task,self.scorer,self.filelist,self.dir,copy_videos=self.copy,
-                                                       multianimal=self.multi_choice.IsChecked())
+                self.cfg=deeplabcut.create_new_project(self.task,self.scorer,self.filelist,self.dir,copy_videos=self.copy)
             else:
                 wx.MessageBox('Some of the enteries are missing.\n\nMake sure that the task and experimenter name are specified and videos are selected!', 'Error', wx.OK | wx.ICON_ERROR)
                 self.cfg = False
@@ -353,8 +352,9 @@ class Create_new_project(wx.Panel):
                 self.edit_config_file.Enable(True)
 
     def add_videos(self, event):
-        print("adding new videos to be able to label ...")
+        print("adding selected new videos to the project ...")
         self.cfg = self.sel_config.GetPath()
+        self.filelistnew = self.filelistnew + self.addvids
         deeplabcut.add_new_videos(self.cfg, self.filelistnew)
 
     def reset_project(self,event):
@@ -374,7 +374,7 @@ class Create_new_project(wx.Panel):
         self.edit_config_file.Enable(False)
         self.proj_name.Enable(True)
         self.proj_name_txt_box.Enable(True)
-        self.multi_choice.Enable(True)
+        #self.multi_choice.Enable(True)
         self.exp.Enable(True)
         self.exp_txt_box.Enable(True)
         self.sel_vids.Enable(True)
