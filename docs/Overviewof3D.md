@@ -1,6 +1,6 @@
 # *3*DeepLabCut <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589578632599-HQENUYUIBI9KYTZA2WXV/ke17ZwdGBToddI8pDm48kBgERiRoVg6XJpnbAnG076FZw-zPPgdn4jUwVcJE1ZvWhcwhEtWJXoshNdA9f1qD7Y5_KuY_fkOEvGrDVB8aRb13EC_7Ld97nVeJG4MMJk1tqSdWG3KOMGCA68a4XjyT5g/3D.png?format=300w" width="350" title="DLC-3D" alt="DLC 3D" align="right" vspace = "50">
 
-We support 2-camera based 3D pose estimation!
+We support 2-camera based 3D pose estimation
 
 :movie_camera: Watch a [DEMO VIDEO](https://youtu.be/Eh6oIGE4dwI) on how to use this code! 
 
