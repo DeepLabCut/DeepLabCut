@@ -10,7 +10,7 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import wx
-import os,sys,pydoc
+import os,sys,pydoc, platform
 import deeplabcut
 import webbrowser,subprocess
 from deeplabcut.utils import auxiliaryfunctions
@@ -42,10 +42,10 @@ class Analyze_videos(wx.Panel):
         self.sizer.Add(text, pos=(0, 0), flag=wx.TOP|wx.LEFT|wx.BOTTOM,border=15)
         # Add logo of DLC
         icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(logo))
-        self.sizer.Add(icon, pos=(0, 9), flag=wx.TOP|wx.RIGHT|wx.ALIGN_RIGHT,border=5)
+        self.sizer.Add(icon, pos=(0, 8), flag=wx.TOP|wx.RIGHT|wx.ALIGN_RIGHT,border=5)
 
         line1 = wx.StaticLine(self)
-        self.sizer.Add(line1, pos=(1, 0), span=(1, 9),flag=wx.EXPAND|wx.BOTTOM, border=10)
+        self.sizer.Add(line1, pos=(1, 0), span=(1, 8),flag=wx.EXPAND|wx.BOTTOM, border=10)
 
         self.cfg_text = wx.StaticText(self, label="Select the config file")
         self.sizer.Add(self.cfg_text, pos=(2, 0), flag=wx.TOP|wx.LEFT, border=10)
@@ -204,27 +204,44 @@ class Analyze_videos(wx.Panel):
         self.sizer.Add(self.help_button, pos=(7, 0), flag=wx.LEFT, border=10)
         self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
 
-        self.ok = wx.Button(self, label="Analyze Videos")
-        self.sizer.Add(self.ok, pos=(7, 7), flag=wx.BOTTOM|wx.RIGHT, border=10)
+        self.ok = wx.Button(self, label="Step 1: Analyze Videos")
+        self.sizer.Add(self.ok, pos=(7, 6), flag=wx.BOTTOM|wx.RIGHT, border=10)
         self.ok.Bind(wx.EVT_BUTTON, self.analyze_videos)
 
         if config_file.get('multianimalproject', False):
             self.ok = wx.Button(self, label="Step 2: Convert to Tracklets")
-            self.sizer.Add(self.ok, pos=(7, 8), border=10)
+            self.sizer.Add(self.ok, pos=(7, 7), border=10)
             self.ok.Bind(wx.EVT_BUTTON, self.convert2_tracklets)
 
-            self.inf_cfg_text = wx.Button(self, label="Edit the inference_config.yaml")
-            self.sizer.Add(self.inf_cfg_text, pos=(8, 8), border=10)
+            self.inf_cfg_text = wx.Button(self, label="Edit inference_config.yaml")
+            self.sizer.Add(self.inf_cfg_text, pos=(8, 7), border=10)
             self.inf_cfg_text.Bind(wx.EVT_BUTTON, self.edit_inf_config)
 
         self.reset = wx.Button(self, label="Reset")
         self.sizer.Add(self.reset, pos=(7, 1), span=(1, 1),flag=wx.BOTTOM|wx.RIGHT, border=10)
         self.reset.Bind(wx.EVT_BUTTON, self.reset_analyze_videos)
 
+        self.edit_config_file = wx.Button(self, label="Edit config.yaml")
+        self.sizer.Add(self.edit_config_file, pos=(8, 6))
+        self.edit_config_file.Bind(wx.EVT_BUTTON, self.edit_config)
+
         self.sizer.AddGrowableCol(2)
 
         self.SetSizer(self.sizer)
         self.sizer.Fit(self)
+
+    def edit_config(self, event):
+        """
+        """
+        if platform.system() == 'Darwin':
+            self.file_open_bool = subprocess.call(['open',self.config])
+            self.file_open_bool = True
+        else:
+            self.file_open_bool = webbrowser.open(self.config)
+        if self.file_open_bool:
+            self.pose_cfg = auxiliaryfunctions.read_config(self.config)
+        else:
+            raise FileNotFoundError("File not found!")
 
     def edit_inf_config(self, event):
         # Read the infer config file
