@@ -71,7 +71,7 @@ def ShortenVideo(vname,start='00:00:01',stop='00:01:00',outsuffix='short',outpat
     #subprocess.call(['ffmpeg','-i',vname,'-ss',str(start),'-to',str(stop),'-c:v','copy','-c:a', newfilename])
     return str(newfilename)
 
-def CropVideo(vname,width=256,height=256,origin1=0, origin2=0,outsuffix='cropped',outpath=None, useGUI=False):
+def CropVideo(vname, width=256, height=256, origin_x=0, origin_y=0, outsuffix='cropped', outpath=None, useGUI=False):
     """
     Auxiliary function to crop a video and output it to the same folder with "outsuffix" appended in its name.
     Width and height will control the new dimensions.
@@ -91,6 +91,9 @@ def CropVideo(vname,width=256,height=256,origin1=0, origin2=0,outsuffix='cropped
     height: int
         height of output video.
 
+    origin_x, origin_y: int
+        x- and y- axis origin of bounding box for cropping. 
+    
     outsuffix: str
         Suffix for output videoname (see example).
 
@@ -120,13 +123,13 @@ def CropVideo(vname,width=256,height=256,origin1=0, origin2=0,outsuffix='cropped
         coords = draw_bbox(vname)
         if not coords:
             return
-        origin1, origin2 = coords[:2]
+        origin_x, origin_y = coords[:2]
         width = int(coords[2]) - int(coords[0])
         height = int(coords[3]) - int(coords[1])
 
     newfilename=os.path.join(vidpath,str(Path(vname).stem)+str(outsuffix)+str(Path(vname).suffix))
     print("Cropping and saving to name", newfilename)
-    command = f"ffmpeg -i {vname} -filter:v crop={width}:{height}:{origin1}:{origin2} -c:a copy {newfilename}"
+    command = f"ffmpeg -i {vname} -filter:v crop={width}:{height}:{origin_x}:{origin_y} -c:a copy {newfilename}"
     subprocess.call(command, shell=True)
     return str(newfilename)
 
