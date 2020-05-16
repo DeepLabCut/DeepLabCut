@@ -76,7 +76,7 @@ def extract_maps(config, shuffle=0, trainingsetindex=0, comparisonbodyparts="all
 
     if gputouse is not None: #gpu selectinon
             os.environ['CUDA_VISIBLE_DEVICES'] = str(gputouse)
-    
+
     if trainingsetindex=='all':
         TrainingFractions=cfg["TrainingFraction"]
     else:
@@ -156,7 +156,7 @@ def extract_maps(config, shuffle=0, trainingsetindex=0, comparisonbodyparts="all
                 #notanalyzed, resultsfilename, DLCscorer=auxiliaryfunctions.CheckifNotEvaluated(str(evaluationfolder),DLCscorer,DLCscorerlegacy,Snapshots[snapindex])
                 #print("Extracting maps for ", DLCscorer, " with # of trainingiterations:", trainingsiterations)
                 #if notanalyzed: #this only applies to ask if h5 exists...
-                
+
                 # Specifying state of model (snapshot / training state)
                 sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
                 Numimages = len(Data.index)
@@ -190,7 +190,7 @@ def extract_maps(config, shuffle=0, trainingsetindex=0, comparisonbodyparts="all
                         trainingfram=False
                     else:
                         trainingfram=True
-                    
+
                     DATA[imageindex]=[image, scmap,locref ,paf ,bptnames ,pagraph ,imagename ,trainingfram]
                 #return DATA
                 Maps[trainFraction][Snapshots[snapindex]]=DATA
@@ -219,7 +219,7 @@ def form_grid_layout(nplots, nplots_per_row, nx, ny, labels):
     for i, ax in enumerate(axes.flat):
         if i < nplots:
             if labels is not None:
-                ax.set_title(labels[i])
+                ax.set_title(labels[i], fontsize = 8)
             ax.set_xlim(0, nx)
             ax.set_ylim(0, ny)
             ax.axis('off')
@@ -286,7 +286,7 @@ def visualize_paf(image, paf, pafgraph, nplots_per_row=3, step=5, labels=None):
 def extract_save_all_maps(config, shuffle=1, trainingsetindex=0, comparisonbodyparts='all',
                   gputouse=None, rescale=False, Indices=None, modelprefix='', dest_folder=None, nplots_per_row=None):
     """
-    Extracts the scoremap, location refinement field and part affinity field prediction of the model. The maps 
+    Extracts the scoremap, location refinement field and part affinity field prediction of the model. The maps
     will be rescaled to the size of the input image and stored in the corresponding model folder in /evaluation-results.
 
     ----------
@@ -308,7 +308,7 @@ def extract_save_all_maps(config, shuffle=1, trainingsetindex=0, comparisonbodyp
 
     nplots_per_row: int, optional (default=None)
         Number of plots per row in grid plots. By default, calculated to approximate a squared grid of plots
-        
+
     Examples
     --------
     Calculated maps for images 0, 1 and 33.
@@ -354,5 +354,5 @@ def extract_save_all_maps(config, shuffle=1, trainingsetindex=0, comparisonbodyp
                     fig3.savefig(dest_path.format(imname, 'locrefzoom', label, shuffle, frac, snap))
                     if paf is not None:
                         fig4.savefig(dest_path.format(imname, 'paf', label, shuffle, frac, snap))
-                    
+
                     plt.close('all')
