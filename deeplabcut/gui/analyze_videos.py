@@ -126,7 +126,7 @@ class Analyze_videos(wx.Panel):
             self.create_video_with_all_detections = wx.RadioBox(self, label='Create video for checking detections', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
             self.create_video_with_all_detections.SetSelection(1)
             self.hbox2.Add(self.create_video_with_all_detections, 5, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-            #boxsizer.Add(self.hbox2,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
+
 
             tracker_text = wx.StaticBox(self, label="Specify the Tracker Method (you can try each)")
             tracker_text_boxsizer = wx.StaticBoxSizer(tracker_text, wx.VERTICAL)
@@ -139,7 +139,7 @@ class Analyze_videos(wx.Panel):
             self.overwrite = wx.RadioBox(self, label='Overwrite tracking files (set to yes if you edit inference parameters)', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
             self.overwrite.SetSelection(1)
             self.hbox2.Add(self.overwrite, 5, 5)
-            #boxsizer.Add(self.hbox2,0, 5)
+            boxsizer.Add(self.hbox2,0, 5)
 
 
 
@@ -161,7 +161,7 @@ class Analyze_videos(wx.Panel):
 
             self.hbox2.Add(self.csv,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
             self.hbox2.Add(self.filter,10,wx.EXPAND|wx.TOP|wx.BOTTOM,5)
-            self.boxsizer.Add(self.hbox2,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+            #self.boxsizer.Add(self.hbox2,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
             self.hbox3.Add(self.dynamic,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
             self.hbox3.Add(self.trajectory,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
