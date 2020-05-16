@@ -441,7 +441,7 @@ class TrackletVisualizer:
 
         img = self._read_frame()
         self.im = self.ax1.imshow(img)
-        self.scat = self.ax1.scatter([], [], s=self.dotsize, picker=True)
+        self.scat = self.ax1.scatter([], [], s=self.dotsize ** 2, picker=True)
         self.scat.set_offsets(manager.xy[:, 0])
         self.scat.set_color(self.colors)
         self.trails = sum([self.ax1.plot([], [], '-', lw=2, c=c) for c in self.colors], [])
@@ -458,9 +458,13 @@ class TrackletVisualizer:
             line.set_picker(5)
 
         self.ax_slider = self.fig.add_axes([0.1, 0.1, 0.5, 0.03], facecolor='lightgray')
+        self.ax_slider2 = self.fig.add_axes([0.1, 0.05, 0.3, 0.03], facecolor='darkorange')
         self.slider = Slider(self.ax_slider, '# Frame', self.curr_frame, manager.nframes - 1,
                              valinit=0, valstep=1, valfmt='%i')
         self.slider.on_changed(self.on_change)
+        self.slider2 = Slider(self.ax_slider2, 'Marker size', 1, 30,
+                              valinit=self.dotsize, valstep=1, valfmt='%i')
+        self.slider2.on_changed(self.update_dotsize)
         self.ax_drag = self.fig.add_axes([0.65, 0.1, 0.05, 0.03])
         self.ax_lasso = self.fig.add_axes([0.7, 0.1, 0.05, 0.03])
         self.ax_flag = self.fig.add_axes([0.75, 0.1, 0.05, 0.03])
@@ -785,6 +789,10 @@ class TrackletVisualizer:
             self.display_points(self.curr_frame)
             self.display_trails(self.curr_frame)
             self.update_vlines(self.curr_frame)
+
+    def update_dotsize(self, val):
+        self.dotsize = val
+        self.scat.set_sizes([self.dotsize ** 2])
 
     @staticmethod
     def calc_distance(x1, y1, x2, y2):
