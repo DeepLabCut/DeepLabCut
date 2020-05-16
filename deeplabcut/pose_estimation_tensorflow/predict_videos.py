@@ -1009,7 +1009,10 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
                 if track_method == 'box':
                     mot_tracker = trackingutils.Sort(inferencecfg)
                 else:
-                    mot_tracker = trackingutils.SORT(numjoints, inferencecfg['max_age'], inferencecfg['min_hits'])
+                    mot_tracker = trackingutils.SORT(numjoints,
+                                                     inferencecfg['max_age'],
+                                                     inferencecfg['min_hits'],
+                                                     inferencecfg.get('oks_threshold', 0.5))
 
                 Tracks={}
                 for index,imname in tqdm(enumerate(imnames)):

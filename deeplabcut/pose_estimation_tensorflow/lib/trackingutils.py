@@ -197,10 +197,11 @@ class SkeletonTracker:
 
 
 class SORT:
-    def __init__(self, n_bodyparts, max_age=20, min_hits=3):
+    def __init__(self, n_bodyparts, max_age=20, min_hits=3, oks_threshold=0.5):
         self.n_bodyparts = n_bodyparts
         self.max_age = max_age
         self.min_hits = min_hits
+        self.oks_threshold = oks_threshold
         self.trackers = []
         self.frame_count = 0
 
@@ -225,11 +226,28 @@ class SORT:
                 cmax = cmin
         return np.sqrt(cmax)
 
+    @staticmethod
+    def object_keypoint_similarity(x, y):
+        mask = ~np.isnan(x * y).all(axis=1)  # Intersection visible keypoints
+        xx = x[mask]
+        yy = y[mask]
+        dist = np.linalg.norm(xx - yy, axis=1)
+        scale = np.sqrt(np.product(np.ptp(yy, axis=0)))  # square root of bounding box area
+        oks = np.exp(-0.5 * (dist / (0.05 * scale)) ** 2)
+        return np.mean(oks)
+
     def calc_pairwise_hausdorff_dist(self, poses, poses_ref):
         mat = np.zeros((len(poses), len(poses_ref)))
         for i, pose in enumerate(poses):
             for j, pose_ref in enumerate(poses_ref):
                 mat[i, j] = self.weighted_hausdorff(pose, pose_ref)
+        return mat
+
+    def calc_pairwise_oks(self, poses, poses_ref):
+        mat = np.zeros((len(poses), len(poses_ref)))
+        for i, pose in enumerate(poses):
+            for j, pose_ref in enumerate(poses_ref):
+                mat[i, j] = self.object_keypoint_similarity(pose, pose_ref)
         return mat
 
     def track(self, poses):
@@ -246,12 +264,23 @@ class SORT:
             pose_ref = tracker.predict()
             poses_ref.append(pose_ref.reshape((-1, 2)))
 
-        mat = self.calc_pairwise_hausdorff_dist(poses, poses_ref)
-        row_indices, col_indices = linear_sum_assignment(mat)
+        mat = self.calc_pairwise_oks(poses, poses_ref)
+        row_indices, col_indices = linear_sum_assignment(mat, maximize=True)
 
         unmatched_poses = [p for p, _ in enumerate(poses) if p not in row_indices]
         unmatched_trackers = [t for t, _ in enumerate(poses_ref) if t not in col_indices]
-        matches = np.c_[row_indices, col_indices]
+        # Remove matched detections with low OKS
+        matches = []
+        for row, col in zip(row_indices, col_indices):
+            if mat[row, col] < self.oks_threshold:
+                unmatched_poses.append(row)
+                unmatched_trackers.append(col)
+            else:
+                matches.append([row, col])
+        if not len(matches):
+            matches = np.empty((0, 2), dtype=int)
+        else:
+            matches = np.stack(matches)
 
         animalindex = []
         for t, tracker in enumerate(self.trackers):
