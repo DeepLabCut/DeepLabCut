@@ -8,7 +8,7 @@ We support 2-camera based 3D pose estimation!
 
 A. You have 2D videos and a DeepLabCut network to analyze them as described in the [main documentation](https://github.com/AlexEMG/DeepLabCut/blob/master/docs/UseOverviewGuide.md). This can be with multiple separate networks for each camera, or one network trained on all views (See [Nath*, Mathis* et al., 2019](https://www.biorxiv.org/content/10.1101/476531v1)).
 
-B. You are using 2 cameras for 3D.
+B. You are using 2 cameras for 3D*.
 
 C. You have calibration images taken (see details below!).
 
@@ -18,11 +18,11 @@ C. You have calibration images taken (see details below!).
 
 
 
-**If you need more than 2 camera support:**
+***If you need more than 2 camera support:**
 Due to the excellent work of others, we will not have >2 cameras (via calibration) support at this time. We also opt not to have them in DLC, as we want users to have the most flexibility in their systems. Here are other excellent options for you to use: 
  
-- **[anipose.org](https://anipose.readthedocs.io/en/latest/)**; a wrapper for 3D deeplabcut (using openCV, numpy, scipy, etc.) | https://github.com/lambdaloop/anipose
-  - it provides >3 camera support! And us built to work directly with DeepLabCut.
+- **[anipose.org](https://anipose.readthedocs.io/en/latest/)**; a wrapper for 3D deeplabcut https://github.com/lambdaloop/anipose
+  - it provides >3 camera support and is built to work directly with DeepLabCut. You can `pip install anipose` into your DLC conda environment.
   
 - using Argus, easywand or DLTdv w/deeplabcut https://github.com/haliaetus13/DLCconverterDLT
    - this can be used with the the highly popular Argus or DLTdv tools for wand calibration. 
