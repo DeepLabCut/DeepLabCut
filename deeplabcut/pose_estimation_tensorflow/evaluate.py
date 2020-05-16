@@ -362,7 +362,7 @@ def evaluate_network(config,Shuffles=[1],trainingsetindex=0,plotting = None,show
                     DataMachine.to_hdf(resultsfilename,'df_with_missing',format='table',mode='w')
 
                     print("Done and results stored for snapshot: ", Snapshots[snapindex])
-                    DataCombined = pd.concat([Data.T, DataMachine.T], axis=0).T
+                    DataCombined = pd.concat([Data.T, DataMachine.T], axis=0, sort=False).T
 
                     RMSE,RMSEpcutoff = pairwisedistances(DataCombined, cfg["scorer"], DLCscorer,cfg["pcutoff"],comparisonbodyparts)
                     testerror = np.nanmean(RMSE.iloc[testIndices].values.flatten())
@@ -390,7 +390,7 @@ def evaluate_network(config,Shuffles=[1],trainingsetindex=0,plotting = None,show
                 else:
                     DataMachine = pd.read_hdf(resultsfilename,'df_with_missing')
                     if plotting == True:
-                        DataCombined = pd.concat([Data.T, DataMachine.T], axis=0).T
+                        DataCombined = pd.concat([Data.T, DataMachine.T], axis=0, sort=False).T
                         print("Plotting...(attention scale might be inconsistent in comparison to when data was analyzed; i.e. if you used rescale)")
                         foldername=os.path.join(str(evaluationfolder),'LabeledImages_' + DLCscorer + '_' + Snapshots[snapindex])
                         auxiliaryfunctions.attempttomakefolder(foldername)
