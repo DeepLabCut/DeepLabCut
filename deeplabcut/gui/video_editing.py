@@ -70,12 +70,12 @@ class Video_Editing(wx.Panel):
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
 
-        video_height = wx.StaticBox(self, label="Donwsample: specify the video height")
+        video_height = wx.StaticBox(self, label="Downsample - specify the video height (aspect ratio fixed):")
         vheight_boxsizer = wx.StaticBoxSizer(video_height, wx.VERTICAL)
         self.height = wx.SpinCtrl(self, value='256',min=0,max=1000)
         vheight_boxsizer.Add(self.height,1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
 
-        self.rotate = wx.RadioBox(self, label='Donwsample: rotate video?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
+        self.rotate = wx.RadioBox(self, label='Downsample: rotate video?', choices=['Yes', 'No'],majorDimension=1, style=wx.RA_SPECIFY_COLS)
         self.rotate.SetSelection(1)
 
         hbox1.Add(vheight_boxsizer,10, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)

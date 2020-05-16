@@ -354,8 +354,11 @@ class Create_new_project(wx.Panel):
     def add_videos(self, event):
         print("adding selected new videos to the project ...")
         self.cfg = self.sel_config.GetPath()
-        self.filelistnew = self.filelistnew + self.addvids
-        deeplabcut.add_new_videos(self.cfg, self.filelistnew)
+        if len(self.filelistnew)>0:
+            self.filelistnew = self.filelistnew + self.addvids
+            deeplabcut.add_new_videos(self.cfg, self.filelistnew)
+        else:
+            print("Please select videos to add first. Click 'Load New Videos'...")
 
     def reset_project(self,event):
         self.loaded=False
