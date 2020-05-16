@@ -4,10 +4,6 @@ We support 2-camera based 3D pose estimation!
 
 :movie_camera: Watch a [DEMO VIDEO](https://youtu.be/Eh6oIGE4dwI) on how to use this code! 
 
-<p align="center">
-<img src= https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1560968522350-COKR986AQESF5N1N7QNK/ke17ZwdGBToddI8pDm48kNaO57GzHjWqV-xM6jVvY6ZZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpyR5k0u27ivMv3az5DOhUvLuYQefjfUWYPEDVexVC_mSas4X78tjQKn3yE00zHvnK8/3D_maousLarger.gif?format=750w width="85%">
- </p>
-
 **Our code base assumes you:**
 
 A. You have 2D videos and a DeepLabCut network to analyze them as described in the [main documentation](https://github.com/AlexEMG/DeepLabCut/blob/master/docs/UseOverviewGuide.md). This can be with multiple separate networks for each camera, or one network trained on all views (See [Nath*, Mathis* et al., 2019](https://www.biorxiv.org/content/10.1101/476531v1)).
@@ -15,6 +11,12 @@ A. You have 2D videos and a DeepLabCut network to analyze them as described in t
 B. You are using 2 cameras for 3D.
 
 C. You have calibration images taken (see details below!).
+
+<p align="center">
+<img src= https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1560968522350-COKR986AQESF5N1N7QNK/ke17ZwdGBToddI8pDm48kNaO57GzHjWqV-xM6jVvY6ZZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpyR5k0u27ivMv3az5DOhUvLuYQefjfUWYPEDVexVC_mSas4X78tjQKn3yE00zHvnK8/3D_maousLarger.gif?format=750w width="85%">
+ </p>
+
+
 
 **If you need more than 2 camera support:**
 Due to the excellent work of others, we will not have >2 cameras (via calibration) support at this time. We also opt not to have them in DLC, as we want users to have the most flexibility in their systems. Here are other excellent options for you to use: 
