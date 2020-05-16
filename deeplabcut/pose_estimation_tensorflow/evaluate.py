@@ -107,10 +107,19 @@ def calculatepafdistancebounds(config,shuffle=0,trainingsetindex=0,modelprefix='
 
             edgeencoding=str(edge[0])+'_'+str(edge[1])
             inferenceboundscfg[edgeencoding]={}
-            inferenceboundscfg[edgeencoding]['intra_max']=str(round(np.nanmax(ds_within),numdigits))
-            inferenceboundscfg[edgeencoding]['intra_min']=str(round(np.nanmin(ds_within),numdigits))
-            inferenceboundscfg[edgeencoding]['inter_max']=str(round(np.nanmax(ds_across),numdigits))
-            inferenceboundscfg[edgeencoding]['inter_min']=str(round(np.nanmin(ds_across),numdigits))
+            if len(ds_within)>0:
+                inferenceboundscfg[edgeencoding]['intra_max']=str(round(np.nanmax(ds_within),numdigits))
+                inferenceboundscfg[edgeencoding]['intra_min']=str(round(np.nanmin(ds_within),numdigits))
+            else:
+                inferenceboundscfg[edgeencoding]['intra_max']=str(1e5) #large number (larger than any image diameter)
+                inferenceboundscfg[edgeencoding]['intra_min']=str(1e5)
+
+            if len(ds_across)>0: #NOTE: these distances are currently not used, but are interesting to compare to intra_*
+                inferenceboundscfg[edgeencoding]['inter_max']=str(round(np.nanmax(ds_across),numdigits))
+                inferenceboundscfg[edgeencoding]['inter_min']=str(round(np.nanmin(ds_across),numdigits))
+            else:
+                inferenceboundscfg[edgeencoding]['inter_max']=str(1e5) #large number (larger than any image diameter)
+                inferenceboundscfg[edgeencoding]['inter_min']=str(1e5)
 
             print(inferenceboundscfg)
             #plt.subplot(len(partaffinityfield_graph),1,pi+1)
