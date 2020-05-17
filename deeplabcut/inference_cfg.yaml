@@ -16,10 +16,16 @@ detectionthresholdsquare: 0.1
 # Filtering connections:
 # Least strength of a paf cost (to be included in assembly)
 pafthreshold: 0.1
+
 # before assembly exclude all bpts more apart than:
 distnormalization: 1000
 # and closer than:
 distnormalizationLOWER: 0
+
+#For edgewisecondition (slack variables)
+upperbound_factor: 1.25 # edges that are > upperbound_factor * maximum edge length
+lowerbound_factor: .5   # edges that are < lowerbound_factor * minimum edge length
+
 # weighing an edge by paf costs + addlikelihoods*geometric mean of detection likelihood
 addlikelihoods: .15
 method: 'm1'

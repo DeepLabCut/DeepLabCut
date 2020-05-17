@@ -131,10 +131,6 @@ def compute_crossval_metrics_preloadeddata(params, columns, inference_cfg, data,
     n_images = len(params['imnames'])
     stats = np.full((n_images, 7), np.nan)  # RMSE, hits, misses, false_pos, num_detections, pck, rpck
     for n, imname in enumerate(params['imnames']):
-        #animals = inferenceutils.assemble_individuals(inference_cfg, data[imname], params['num_joints'],
-        #                                                params['bpts'], params['ibpts'], params['paf'],
-        #                                                params['paf_graph'], params['paf_links'], evaluation=True)
-
         animals = inferenceutils.assemble_individuals(inference_cfg, data[imname], params['num_joints'],
                                                         params['bpts'], params['ibpts'], params['paf'],
                                                         params['paf_graph'], params['paf_links'],
@@ -248,9 +244,9 @@ def bayesian_search(config_path, inferencecfg, pbounds,edgewisecondition=True,
         partaffinityfield_graph=params['paf_graph']
         upperbound = np.array([float(inferenceboundscfg[str(edge[0])+'_'+str(edge[1])]['intra_max']) for edge in partaffinityfield_graph])
         lowerbound = np.array([float(inferenceboundscfg[str(edge[0])+'_'+str(edge[1])]['intra_min']) for edge in partaffinityfield_graph])
-        upperbound*=1.25
-        lowerbound*=.5 #SLACK!
-        print(upperbound,lowerbound)
+
+        upperbound*=inferencecfg['upperbound_factor'] 
+        lowerbound*=inferencecfg['lowerbound_factor']
     else:
         lowerbound=None
         upperbound=None
