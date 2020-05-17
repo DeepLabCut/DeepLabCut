@@ -23,10 +23,11 @@ if os.environ.get('DLClight', default=False) == 'True':
     mpl.use('AGG') #anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
     pass
 else: #standard use [wxpython supported]
-    if platform.system() == 'Darwin': #for OSX use WXAgg
+    if platform.system() == 'Darwin': #for OsX use WXAgg
         mpl.use('WXAgg')
     else:
         mpl.use('Agg')
+
     from deeplabcut import generate_training_dataset
     from deeplabcut import refine_training_dataset
     from deeplabcut.generate_training_dataset import label_frames, dropannotationfileentriesduetodeletedimages, comparevideolistsanddatafolders, dropimagesduetolackofannotation
@@ -36,10 +37,6 @@ else: #standard use [wxpython supported]
 
     from deeplabcut.refine_training_dataset import refine_labels
     from deeplabcut.utils import select_crop_parameters
-
-if os.environ.get('Colab', default=False) == 'True':
-    print("Project loaded in colab-mode. Apparently Colab has trouble loading statsmodels, so the smoothing & outlier frame extraction is disabled. Sorry!")
-else:
     from deeplabcut.refine_training_dataset import extract_outlier_frames, merge_datasets
     from deeplabcut.post_processing import filterpredictions, analyzeskeleton
 

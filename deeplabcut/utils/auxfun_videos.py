@@ -10,7 +10,7 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 from pathlib import Path
-import subprocess, os
+import subprocess, os, platform
 import cv2
 
 # Historically DLC used: from scipy.misc import imread, imresize >> deprecated functions
@@ -92,8 +92,8 @@ def CropVideo(vname, width=256, height=256, origin_x=0, origin_y=0, outsuffix='c
         height of output video.
 
     origin_x, origin_y: int
-        x- and y- axis origin of bounding box for cropping. 
-    
+        x- and y- axis origin of bounding box for cropping.
+
     outsuffix: str
         Suffix for output videoname (see example).
 
@@ -225,9 +225,13 @@ def draw_bbox(video):
 
     rs = RectangleSelector(ax, line_select_callback, drawtype='box',
                            minspanx=5, minspany=5, interactive=True, spancoords='pixels',
-                           rectprops=dict(facecolor='red', edgecolor='black', alpha=0.5, fill=True))
+                           rectprops=dict(facecolor='red', edgecolor='black', alpha=0.3, fill=True))
     plt.show()
-    fig.canvas.start_event_loop(timeout=-1)
+    if platform.system() == 'Darwin': #for OSX use WXAgg
+        fig.canvas.start_event_loop(timeout=-1)
+    else:
+        fig.canvas.stop_event_loop()
+
     plt.close(fig)
     return bbox
 

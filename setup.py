@@ -17,8 +17,8 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="deeplabcut",
-    version="2.1.8b0",
-    author="A. & M. Mathis Labs",
+    version="2.1.8",
+    author="A. & M.W. Mathis Labs",
     author_email="alexander.mathis@bethgelab.org",
     description="Markerless pose-estimation of user-defined features with deep learning",
     long_description=long_description,
