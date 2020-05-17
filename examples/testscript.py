@@ -130,7 +130,6 @@ deeplabcut.plot_trajectories(path_config_file,[newvideo], destfolder=dfolder)
 
 print("EXTRACT OUTLIERS")
 deeplabcut.extract_outlier_frames(path_config_file,[newvideo],outlieralgorithm='jump',epsilon=0,automatic=True, destfolder=dfolder)
-
 deeplabcut.extract_outlier_frames(path_config_file,[newvideo],outlieralgorithm='Fitting',automatic=True, destfolder=dfolder)
 
 file=os.path.join(cfg['project_path'],'labeled-data',vname,"machinelabels-iter"+ str(cfg['iteration']) + '.h5')
