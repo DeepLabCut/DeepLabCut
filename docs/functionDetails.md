@@ -430,13 +430,7 @@ min_hits: 3
 iou_threshold: 0.2 
 ```
 
-**How do I pick optimal Tracking Parameters?** Firstly, you should run the different trackers (to start we offer "box" and "skeleton") and we find they work well for different types of data. You can fun this function for both to get started. We recommend using the Project Manager GUI, as this allows for seamless testing of parameters. Namely, you can run the "Convert to Tracklets", load in the "Refine Tracklets" tab, go back to "Analyze Videos" and then set overwrite tracking file to "yes", edit the `inference_config.yaml` and test the above parameters tracking parameters. 
-
-Short Demo:
- <p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589678687447-LXVEATSUIZ7II6DD8YRP/ke17ZwdGBToddI8pDm48kKSiEl9pzIZ0SUtfTTAywBBZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpySe6pW8v0A-r5HvKO3RBJfk1pBw94SeYKc1nWQkerhaz8CZBGxI5A7dH-Zmei7Jv0/xvalTRACKING.gif?format=750w" width="90%">
-</p>
-
+**How do I pick optimal Tracking Parameters?** How to set the tracking parameters in the `inference_cfg.yaml` is discussed after you start to analyze a video (below).
 
 
 ### (I) Novel Video Analysis:
@@ -453,13 +447,23 @@ There are several other optional inputs, such as:
 ```python
 deeplabcut.analyze_videos(config_path,videos,videotype='avi',shuffle=1,trainingsetindex=0,gputouse=None,save_as_csv=False, destfolder=None, dynamic=(True,.5,10))
 ```
-For single-animal projects, the labels are stored in a [MultiIndex Pandas Array](http://pandas.pydata.org), which contains the name of the network, body part name, (x, y) label position in pixels, and the likelihood for each frame per body part. These
+For **single-animal projects**, the labels are stored in a [MultiIndex Pandas Array](http://pandas.pydata.org), which contains the name of the network, body part name, (x, y) label position in pixels, and the likelihood for each frame per body part. These
 arrays are stored in an efficient Hierarchical Data Format (HDF) in the same directory, where the video is stored.
 However, if the flag ``save_as_csv`` is set to ``True``, the data can also be exported in comma-separated values format
 (.csv), which in turn can be imported in many programs, such as MATLAB, R, Prism, etc.; This flag is set to ``False``
 by default. You can also set a destination folder (``destfolder``) for the output files by passing a path of the folder you wish to write to.
 
-As of 2.0.8+: you can extract multiple bodyparts, although there is no support for plotting or further analysis at this time; i.e. if you want to extract 3 snouts (as in [Figure 4 of Mathis et al, 2018 Nature Neuroscience](https://www.nature.com/articles/s41593-018-0209-y/figures/4)), you can edit the config.yaml file to contain ``num_outputs=3``. Then, when you run ``deeplabcut.analyze_videos`` it will extract the top three points (i.e. the 3 x, y, and likelihoods) and save this to the .h5 output file.
+**maDeepLabCut** when you analyze a video you can also create a video with all detections. We recommend setting the `pcutoff` very low to look at all detections. You can simply edit the `config.yaml` and set this to ~`0.1`. This is a simple check box in the Project Manager GUI (to make the video, and to edit the config):
+
+ <p align="center">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589738226812-8KWG8O3IBCEFZT4GFENE/ke17ZwdGBToddI8pDm48kELeFAVhzqyBOZmBDvJyM59Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpx9YEa6Z7fB5poBKnTh-33wwtSIXuHkXE-d4XHgUZ4QxZqdnssblR-82lYauZzcjOM/editconfigs.png?format=750w" width="30%">
+</p>
+
+Otherwise run:
+```python
+scorername, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(config_path,shuffle,trainFraction)
+deeplabcut.create_video_with_all_detections(config_path, video_path, DLCscorername=scorername)
+ ```
 
 ### maDeepLabCut [CRITICAL POINT] - Assemble & Refine Tracklets:
 
@@ -474,7 +478,26 @@ deeplabcut.convert_detections2tracklets(path_config_file, ['videofile_path'], vi
                                                     shuffle=1, trainingsetindex=0, track_method='box')
 ```
 
-Secondly, you need to refine the tracklets. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc! 
+**How do I pick optimal Tracking Parameters?** 
+
+**Firstly,** you should run the different trackers (to start we offer `box` and `skeleton`) as we find they work well for different types of data. You can run this function for both tracker types on the same video to get started. 
+
+We recommend using the Project Manager GUI, as this allows for seamless testing of parameters. Namely, you can run the "Convert to Tracklets", load in the "Refine Tracklets" tab and look at the output, go back to "Analyze Videos", set overwrite tracking file to "yes", edit the `inference_config.yaml` and test the tracking parameters:
+```
+##########################
+TRACKING: THESE ARE NOT X-VALIDATED: (i.e. you should test them out!):
+##########################
+boundingboxslack: 10
+max_age: 100 <--- maximum duration of a lost tracklet before it's considered a "new animal" (in frames)
+min_hits: 3
+iou_threshold: 0.2 
+```
+Short Demo:
+ <p align="center">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589678687447-LXVEATSUIZ7II6DD8YRP/ke17ZwdGBToddI8pDm48kKSiEl9pzIZ0SUtfTTAywBBZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpySe6pW8v0A-r5HvKO3RBJfk1pBw94SeYKc1nWQkerhaz8CZBGxI5A7dH-Zmei7Jv0/xvalTRACKING.gif?format=750w" width="90%">
+</p>
+
+**Secondly,** you need to refine the tracklets. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc! 
 
 ```python
 deeplabcut.refine_tracklets(path_config_file, pickle_or_h5_file, videofile_path, min_swap_frac=0.0, min_tracklet_frac=0.0, trail_len=50)
