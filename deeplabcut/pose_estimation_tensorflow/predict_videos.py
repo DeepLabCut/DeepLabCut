@@ -35,7 +35,7 @@ from skimage.util import img_as_ubyte
 def analyze_videos(config,videos, videotype='avi', shuffle=1, trainingsetindex=0,
                    gputouse=None, save_as_csv=False, destfolder=None, batchsize=None,
                    cropping=None,get_nframesfrommetadata=True, TFGPUinference=True,
-                   dynamic=(False,.5,10),modelprefix='', c_engine=False, robust_nframes=False):
+                   dynamic=(False,.5,10), modelprefix='', c_engine=False, robust_nframes=False):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
 

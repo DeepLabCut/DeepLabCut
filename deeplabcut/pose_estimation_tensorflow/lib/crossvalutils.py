@@ -245,7 +245,7 @@ def bayesian_search(config_path, inferencecfg, pbounds,edgewisecondition=True,
         upperbound = np.array([float(inferenceboundscfg[str(edge[0])+'_'+str(edge[1])]['intra_max']) for edge in partaffinityfield_graph])
         lowerbound = np.array([float(inferenceboundscfg[str(edge[0])+'_'+str(edge[1])]['intra_min']) for edge in partaffinityfield_graph])
 
-        upperbound*=inferencecfg['upperbound_factor'] 
+        upperbound*=inferencecfg['upperbound_factor']
         lowerbound*=inferencecfg['lowerbound_factor']
     else:
         lowerbound=None
@@ -295,4 +295,5 @@ def bayesian_search(config_path, inferencecfg, pbounds,edgewisecondition=True,
         if isinstance(tmp, np.floating):
             tmp = np.round(tmp, 2).item()
         inferencecfg[k] = tmp
+        
     return inferencecfg, opt

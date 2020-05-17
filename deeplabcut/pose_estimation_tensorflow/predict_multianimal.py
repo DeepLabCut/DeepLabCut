@@ -21,6 +21,7 @@ from skimage.util import img_as_ubyte
 def AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg, dlc_cfg, sess, inputs,
             outputs,pdindex,save_as_csv, destfolder=None, c_engine=False, robust_nframes=False):
     ''' Helper function for analyzing a video with multiple individuals '''
+
     print("Starting to analyze % ", video)
     vname = Path(video).stem
     videofolder = str(Path(video).parents[0])
@@ -28,6 +29,7 @@ def AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg, dlc_cfg, sess, in
         destfolder = videofolder
     auxiliaryfunctions.attempttomakefolder(destfolder)
     dataname = os.path.join(destfolder, vname + DLCscorer + '.h5')
+
     #TODO: remove comparison code:
     '''
     if c_engine:
@@ -88,8 +90,8 @@ def AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg, dlc_cfg, sess, in
         metadata = {'data': dictionary}
         print("Saving results in %s..." %(destfolder))
 
-        #auxiliaryfunctions.SaveData(PredicteData[:nframes,:], metadata, dataname, pdindex, range(nframes),save_as_csv)
         auxfun_multianimal.SaveFullMultiAnimalData(PredicteData, metadata, dataname)
+        
 
 def GetPoseandCostsF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,batchsize, c_engine):
     ''' Batchwise prediction of pose '''
