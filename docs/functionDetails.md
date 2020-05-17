@@ -393,23 +393,22 @@ you can drop "Indices" to run this on all training/testing images (this is slow!
 
 ### Cross Validation of Inference parameters (a maDeepLabCut CRITICAL POINT!):
 
-You need to cross validate parameters before inference. Here, you will run the new function (below) that will smartly try to optimize your `inference_config.yaml` file. You can also manually edit this file afterwards, if needed!
+You need to cross validate parameters before inference. Here, you will run the new function (below) that will smartly try to optimize your `inference_config.yaml` file. You can also manually edit this file afterwards (more below). But, this first part will validate the parameters and optimize the hits/misses, RMSE, and percent correct keypoints (Tracking we deal with below).
 
 ```python
 deeplabcut.evaluate_multianimal_crossvalidate(config_path, Shuffles=[1], edgewisecondition=True, leastbpts=1, init_points=20, n_iter=50, target='rpck_train')
 ```
 :movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/jKsU1vb8ovQ)
- <p align="left">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588964838417-EQ1OA4QTZIU98DCEHPTJ/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/ezgif.com-video-to-gif+%287%29.gif?format=750w" width="50%">
+ <p align="center">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588964838417-EQ1OA4QTZIU98DCEHPTJ/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/ezgif.com-video-to-gif+%287%29.gif?format=750w" width="90%">
 </p>
 
-We highly suggest that you read the docstring for this function to edit inputs appropriately.
-You also can edit the `inference_config.yaml` file. [Here](/deeplabcut/inference_cfg.yaml) is the full description of the parameters. Here is a quick-start:
+We highly suggest that you read the docstring for this function to edit inputs appropriately if you don't run with our suggested defaults. Of course, you also can edit the `inference_config.yaml` file. [Here](/deeplabcut/inference_cfg.yaml) is the full description of the parameters. Here is a quick-start:
 
 ```
 THESE ARE ALL SMARTLY X-VALIDATED:
 variant: 0
-minimalnumberofconnections: 4
+minimalnumberofconnections: 4 <--- if you have a lot of "missing data" in frames, consider lowering.
 averagescore: 0.1
 # before assembly exclude all bpts more apart than:
 distnormalization: 1000
@@ -423,13 +422,22 @@ method: m1
 withid: false
 topktoplot: .inf <--- maximum number of animals one expects to see; we assume "infinity;" better to over-estimate than under
 ##########################
-THESE ARE NOT X-VALIDATED: (i.e. you should test them out!):
+TRACKING: THESE ARE NOT X-VALIDATED: (i.e. you should test them out!):
 ##########################
 boundingboxslack: 10
 max_age: 100 <--- maximum duration of a lost tracklet before it's considered a "new animal" (in frames)
 min_hits: 3
-iou_threshold: 0.2
+iou_threshold: 0.2 
 ```
+
+**How do I pick optimal Tracking Parameters?** Firstly, you should run the different trackers (to start we offer "box" and "skeleton") and we find they work well for different types of data. You can fun this function for both to get started. We recommend using the Project Manager GUI, as this allows for seamless testing of parameters. Namely, you can run the "Convert to Tracklets", load in the "Refine Tracklets" tab, go back to "Analyze Videos" and then set overwrite tracking file to "yes", edit the `inference_config.yaml` and test the above parameters tracking parameters. 
+
+Short Demo:
+ <p align="center">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589678687447-LXVEATSUIZ7II6DD8YRP/ke17ZwdGBToddI8pDm48kKSiEl9pzIZ0SUtfTTAywBBZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpySe6pW8v0A-r5HvKO3RBJfk1pBw94SeYKc1nWQkerhaz8CZBGxI5A7dH-Zmei7Jv0/xvalTRACKING.gif?format=750w" width="90%">
+</p>
+
+
 
 ### (I) Novel Video Analysis:
 [DOCSTRING](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#analyze_videos)
