@@ -815,7 +815,7 @@ def analyze_time_lapse_frames(config,directory,frametype='.png',shuffle=1,
 
 def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, trainingsetindex=0, overwrite=False,
                                  destfolder=None,BPTS=None, iBPTS=None,PAF=None, printintermediate=False,
-                                 inferencecfg=None,modelprefix='', track_method='box',edgewisecondition=False):
+                                 inferencecfg=None,modelprefix='', track_method='box',edgewisecondition=True):
     """
     This should be called at the end of deeplabcut.analyze_videos for multianimal projects!
 
