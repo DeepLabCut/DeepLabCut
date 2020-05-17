@@ -75,7 +75,7 @@ This is an actively developed package and we welcome community development and i
 
 - If you want to contribute to the code, please read our guide [here!](CONTRIBUTING.md)
 
-- Coming soon: the project [road map](docs/roadmap.md)
+- The project [road map](docs/roadmap.md). Get in touch with us if you want to help!
 
 ## References:
 
