@@ -23,7 +23,10 @@ elif platform.system() == 'Darwin':
 else:
     mpl.use('TkAgg') #TkAgg
 import matplotlib.pyplot as plt
+from deeplabcut.utils.auxiliaryfunctions import attempttomakefolder
+from matplotlib.collections import LineCollection
 from skimage import io
+from tqdm import trange
 
 
 def get_cmap(n, name='hsv'):
@@ -221,7 +224,7 @@ def save_labeled_frame(fig, image_path, dest_folder, belongs_to_train):
     plt.close(fig)
 
 
-def prepare_figure_axes(width, height, scale=1, dpi=100):
+def prepare_figure_axes(width, height, scale=1., dpi=100):
     fig = plt.figure(frameon=False, figsize=(width * scale / dpi, height * scale / dpi))
     ax = fig.add_subplot(111)
     ax.axis('off')
@@ -229,3 +232,97 @@ def prepare_figure_axes(width, height, scale=1, dpi=100):
     ax.set_ylim(0, height)
     ax.invert_yaxis()
     return fig, ax
+
+
+def make_labeled_images_from_dataframe(df, cfg, destfolder='', scale=1., dpi=100,
+                                       keypoint='+', draw_skeleton=True, color_by='bodypart'):
+    """
+    Write labeled frames to disk from a DataFrame.
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame containing the labeled data. Typically, the DataFrame is obtained
+        through pandas.read_csv() or pandas.read_hdf().
+    cfg : dict
+        Project configuration.
+    destfolder : string, optional
+        Destination folder into which images will be stored. By default, same location as the labeled data.
+        Note that the folder will be created if it does not exist.
+    scale : float, optional
+        Up/downscale the output dimensions.
+        By default, outputs are of the same dimensions as the original images.
+    dpi : int, optional
+        Output resolution. 100 dpi by default.
+    keypoint : str, optional
+        Keypoint appearance. By default, keypoints are marked by a + sign.
+        Refer to https://matplotlib.org/3.2.1/api/markers_api.html for a list of all possible options.
+    draw_skeleton : bool, optional
+        Whether to draw the animal skeleton as defined in *cfg*. True by default.
+    color_by : str, optional
+        Color scheme of the keypoints. Must be either 'bodypart' or 'individual'.
+        By default, keypoints are colored relative to the bodypart they represent.
+    """
+
+    bodyparts = df.columns.get_level_values('bodyparts')
+    bodypart_names = bodyparts.unique()
+    nbodyparts = len(bodypart_names)
+    bodyparts = bodyparts[::2]
+
+    if color_by == 'bodypart':
+        map_ = bodyparts.map(dict(zip(bodypart_names, range(nbodyparts))))
+        cmap = get_cmap(nbodyparts, cfg['colormap'])
+        colors = cmap(map_)
+    elif color_by == 'individual':
+        try:
+            individuals = df.columns.get_level_values('individuals')
+            individual_names = individuals.unique().to_list()
+            nindividuals = len(individual_names)
+            individuals = individuals[::2]
+            map_ = individuals.map(dict(zip(individual_names, range(nindividuals))))
+            cmap = get_cmap(nindividuals, cfg['colormap'])
+            colors = cmap(map_)
+        except KeyError as e:
+            raise Exception('Coloring by individuals is only valid for multi-animal data') from e
+    else:
+        raise ValueError('`color_by` must be either `bodypart` or `individual`.')
+
+    bones = []
+    if draw_skeleton:
+        for bp1, bp2 in cfg['skeleton']:
+            match1, match2 = [], []
+            for j, bp in enumerate(bodyparts):
+                if bp == bp1:
+                    match1.append(j)
+                elif bp == bp2:
+                    match2.append(j)
+            bones.extend(zip(match1, match2))
+    ind_bones = tuple(zip(*bones))
+
+    sep = '/' if '/' in df.index[0] else '\\'
+    images = cfg['project_path'] + sep + df.index
+    if sep != os.path.sep:
+        images = images.str.replace(sep, os.path.sep)
+    if not destfolder:
+        destfolder = os.path.dirname(images[0])
+    tmpfolder = destfolder + '_labeled'
+    attempttomakefolder(tmpfolder)
+    ic = io.imread_collection(images.to_list())
+
+    h, w = ic[0].shape[:2]
+    fig, ax = prepare_figure_axes(w, h, scale, dpi)
+    im = ax.imshow(np.zeros((h, w)), 'gray')
+    scat = ax.scatter([], [], s=cfg['dotsize'], alpha=cfg['alphavalue'], marker=keypoint)
+    scat.set_color(colors)
+    xy = df.values.reshape((df.shape[0], -1, 2))
+    segs = xy[:, ind_bones].swapaxes(1, 2)
+    coll = LineCollection([], colors=cfg['skeleton_color'])
+    ax.add_collection(coll)
+    for i in trange(len(ic)):
+        coords = xy[i]
+        im.set_array(ic[i])
+        scat.set_offsets(coords)
+        if ind_bones:
+            coll.set_segments(segs[i])
+        imagename = os.path.basename(ic.files[i])
+        fig.savefig(os.path.join(tmpfolder, imagename.replace('.png', f'_{color_by}.png')))
+    plt.close(fig)

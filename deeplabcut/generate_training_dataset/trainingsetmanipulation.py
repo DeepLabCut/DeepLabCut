@@ -401,24 +401,14 @@ def check_labels(config,Labels = ['+','.','x'],scale = 1,draw_skeleton=True,visu
     videos = cfg['video_sets'].keys()
     video_names = [Path(i).stem for i in videos]
 
-   #plotting parameters:
-    cc = 0 # label index / here only 0, for human labeler
-    if cfg.get('multianimalproject',False):
-        individuals,uniquebodyparts,multianimalbodyparts=auxfun_multianimal.extractindividualsandbodyparts(cfg)
-        if visualizeindividuals:
-            Colorscheme = visualization.get_cmap(len(individuals),cfg['colormap'])
-        else:
-            Colorscheme = visualization.get_cmap(max(len(uniquebodyparts),len(multianimalbodyparts)),cfg['colormap'])
-    else:
-        Colorscheme = visualization.get_cmap(len( cfg['bodyparts']),cfg['colormap'])
-
-    #folders = [Path(config).parent / 'labeled-data' /Path(i) for i in video_names]
     folders = [os.path.join(cfg['project_path'],'labeled-data',str(Path(i))) for i in video_names]
     print("Creating images with labels by %s." %cfg['scorer'])
     for folder in folders:
         try:
             DataCombined = pd.read_hdf(os.path.join(str(folder),'CollectedData_' + cfg['scorer'] + '.h5'), 'df_with_missing')
-            visualization.MakeLabeledPlots(folder,DataCombined,cfg,Labels,Colorscheme,cc,scale,visualizeindividuals,draw_skeleton)
+            color_by = 'individual' if visualizeindividuals else 'bodypart'
+            visualization.make_labeled_images_from_dataframe(DataCombined, cfg, folder, scale, keypoint=Labels[0],
+                                                             draw_skeleton=draw_skeleton, color_by=color_by)
         except FileNotFoundError:
             print("Attention:", folder, "does not appear to have labeled data!")
 
