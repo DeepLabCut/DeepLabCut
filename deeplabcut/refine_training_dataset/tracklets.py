@@ -266,7 +266,8 @@ class TrackletManager:
         else:
             tracklets_raw = np.full((len(tracklets_sorted), self.nframes, len(bodyparts)), np.nan)
             for n, data in enumerate(tracklets_sorted[::-1]):
-                tracklets_raw[n] = data[1][0]
+                xy = data[1][0]
+                tracklets_raw[n, :, :xy.shape[1]] = xy
             self.data = tracklets_raw.swapaxes(0, 1).reshape((self.nframes, -1, 3)).swapaxes(0, 1)
             self.xy = self.data[:, :, :2]
             self.prob = self.data[:, :, 2]
