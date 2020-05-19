@@ -146,8 +146,8 @@ class SkeletonTracker:
     def __init__(self, n_bodyparts):
         # TODO Try particle filter (since we already have the keypoints)
         self.kf = kinematic_kf(n_bodyparts * 2, order=1, dim_z=n_bodyparts, order_by_dim=False)
-        self.kf.Q[self.kf.dim_z:, self.kf.dim_z:] *= 0.001
-        self.kf.R[self.kf.dim_z:, self.kf.dim_z:] *= 10
+        self.kf.Q[self.kf.dim_z:, self.kf.dim_z:] *= 10
+        self.kf.R[self.kf.dim_z:, self.kf.dim_z:] *= 0.01
         self.kf.P[self.kf.dim_z:, self.kf.dim_z:] *= 1000
         self.id = SkeletonTracker.n_trackers
         SkeletonTracker.n_trackers += 1
