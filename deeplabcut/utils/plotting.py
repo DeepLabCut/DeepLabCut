@@ -49,16 +49,16 @@ def PlottingResults(tmpfolder, Dataframe, cfg, bodyparts2plot, individuals2plot,
     ax1.invert_yaxis()
 
     # Poses vs time
-    fig2 = plt.figure(figsize=(30, 10))
+    fig2 = plt.figure(figsize=(10, 3))
     ax2 = fig2.add_subplot(111)
     ax2.set_xlabel('Frame Index')
     ax2.set_ylabel('X-(dashed) and Y- (solid) position in pixels')
 
     # Likelihoods
-    fig3 = plt.figure(figsize=(30, 10))
+    fig3 = plt.figure(figsize=(10, 3))
     ax3 = fig3.add_subplot(111)
     ax3.set_xlabel('Frame Index')
-    ax3.set_ylabel('Likelihood')
+    ax3.set_ylabel('Likelihood (use to set pcutoff)')
 
     # Histograms
     fig4 = plt.figure()
