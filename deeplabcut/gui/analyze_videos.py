@@ -517,14 +517,14 @@ class Analyze_videos(wx.Panel):
         """
         Reset to default
         """
-        if self.cfg.get("multianimalproject", True):
+        if self.cfg.get("multianimalproject", False):
             self.create_video_with_all_detections.SetSelection(1)
         else:
             self.csv.SetSelection(1)
             self.filter.SetSelection(1)
             self.trajectory.SetSelection(1)
             self.dynamic.SetSelection(1)
-            self.select_destfolder.SetPath("None")
+            #self.select_destfolder.SetPath("None")
         self.config = []
         self.sel_config.SetPath("")
         self.videotype.SetStringSelection(".avi")
