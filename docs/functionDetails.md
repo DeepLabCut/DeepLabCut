@@ -434,6 +434,13 @@ min_hits: 3
 iou_threshold: 0.2 
 ```
 
+After this process is complete you will get the following metrics in the terminal, and your `inference_cfg.yaml` is updated:
+```
+Saving optimal inference parameters...
+   train_iter  train_frac  shuffle  rmse_train  hits_train  misses_train  falsepos_train  ndetects_train  pck_train  rpck_train  rmse_test  hits_test  misses_test  falsepos_test  ndetects_test  pck_test  rpck_test
+0     50000.0        95.0      1.0   36.681365     9.89759     11.645783         0.63494        1.761446   0.306809    0.288352   33.81332      8.675       13.025           0.45          1.625  0.286614   0.264459
+```
+
 **How do I pick optimal Tracking Parameters?** How to set the tracking parameters in the `inference_cfg.yaml` is discussed after you start to analyze a video (below).
 
 
@@ -460,7 +467,7 @@ by default. You can also set a destination folder (``destfolder``) for the outpu
 **maDeepLabCut** when you analyze a video you can also create a video with all detections. We recommend setting the `pcutoff` very low to look at all detections. You can simply edit the `config.yaml` and set this to ~`0.1`. This is a simple check box in the Project Manager GUI (to make the video, and to edit the config):
 
  <p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589738226812-8KWG8O3IBCEFZT4GFENE/ke17ZwdGBToddI8pDm48kELeFAVhzqyBOZmBDvJyM59Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpx9YEa6Z7fB5poBKnTh-33wwtSIXuHkXE-d4XHgUZ4QxZqdnssblR-82lYauZzcjOM/editconfigs.png?format=750w" width="30%">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589738226812-8KWG8O3IBCEFZT4GFENE/ke17ZwdGBToddI8pDm48kELeFAVhzqyBOZmBDvJyM59Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpx9YEa6Z7fB5poBKnTh-33wwtSIXuHkXE-d4XHgUZ4QxZqdnssblR-82lYauZzcjOM/editconfigs.png?format=750w" width="50%">
 </p>
 
 Otherwise run:
