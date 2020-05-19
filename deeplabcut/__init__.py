@@ -11,8 +11,9 @@ Licensed under GNU Lesser General Public License v3.0
 import os
 import platform
 
-# Supress tensorflow warning messages
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+# Suppress tensorflow warning messages
+import tensorflow as tf
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 DEBUG = True and 'DEBUG' in os.environ and os.environ['DEBUG']
 from deeplabcut import DEBUG
 
