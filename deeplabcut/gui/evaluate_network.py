@@ -182,7 +182,7 @@ class Evaluate_network(wx.Panel):
 
             self.edgeWise = wx.RadioBox(
                 self,
-                label="Use Edges?",
+                label="Use Edges (keep as true)",
                 choices=["True", "False"],
                 majorDimension=1,
                 style=wx.RA_SPECIFY_COLS,
