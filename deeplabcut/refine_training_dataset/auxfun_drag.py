@@ -72,7 +72,7 @@ class DraggablePoint():
             """
             msg = wx.MessageBox('Do you want to remove %s ? You cannot undo this step!'%self.bodyParts, 'Remove!', wx.YES_NO | wx.ICON_WARNING)
             if msg == 2:
-                self.remove_data()
+                self.delete_data()
 
     def delete_data(self):
         self.press = None

@@ -1057,7 +1057,7 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
         os.chdir(str(start_path))
 
         #TODO: UPDATE!!
-        print("The tracklets were created. Now you can 'refine_tracklets' ")
+        print("The tracklets were created. Now you can 'refine_tracklets'.")
         #print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
     else:
         print("No video(s) found. Please check your path!")
