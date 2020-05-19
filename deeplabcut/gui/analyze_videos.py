@@ -228,12 +228,21 @@ class Analyze_videos(wx.Panel):
                 majorDimension=1,
                 style=wx.RA_SPECIFY_COLS,
             )
+
+            self.showfigs = wx.RadioBox(
+                self,
+                label="Want plots to pop up?",
+                choices=["Yes", "No"],
+                majorDimension=1,
+                style=wx.RA_SPECIFY_COLS,
+            )
+
             self.trajectory.Bind(wx.EVT_RADIOBOX, self.chooseOption)
             self.trajectory.SetSelection(1)
 
-            self.hbox2.Add(self.csv, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-            self.hbox2.Add(self.filter, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-            # self.boxsizer.Add(self.hbox2,0, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+            self.hbox2.Add(self.csv, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+            self.hbox2.Add(self.filter, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+            self.hbox2.Add(self.showfigs, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
             self.hbox3.Add(self.dynamic, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
             self.hbox3.Add(self.trajectory, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
@@ -502,6 +511,10 @@ class Analyze_videos(wx.Panel):
                 )
 
             if self.trajectory.GetStringSelection() == "Yes":
+                if self.showfigs.GetStringSelection() == "No":
+                    showfig = False
+                else:
+                    showfig = True
                 deeplabcut.plot_trajectories(
                     self.config,
                     self.filelist,
@@ -510,7 +523,7 @@ class Analyze_videos(wx.Panel):
                     shuffle=shuffle,
                     trainingsetindex=trainingsetindex,
                     filtered=True,
-                    showfigures=True,
+                    showfigures=showfig,
                 )
 
     def reset_analyze_videos(self, event):
