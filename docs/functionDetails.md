@@ -407,13 +407,14 @@ We highly suggest that you read the docstring for this function to edit inputs a
 
 ```
 THESE ARE ALL SMARTLY X-VALIDATED:
+(so plesae only change them if you know what you are doing :)
 variant: 0
 minimalnumberofconnections: 4 <--- if you have a lot of "missing data" in frames, consider lowering.
 averagescore: 0.1
 # before assembly exclude all bpts more apart than:
 distnormalization: 1000
 # and closer than:
-distnormalizationLOWER: 0 <--- if no body parts can be in the same space, consider increasing this.
+distnormalizationLOWER: 0 <--- if no body parts can be in the same space, consider increasing this (if edges was set to False, this is used).
 distnormalization: 400
 detectionthresholdsquare: 0
 addlikelihoods: 0.15
@@ -421,8 +422,11 @@ pafthreshold: 0.15139643821853171
 method: m1
 withid: false
 topktoplot: .inf <--- maximum number of animals one expects to see; we assume "infinity;" better to over-estimate than under
+upperbound_factor: 1.25
+lowerbound_factor: .75
+
 ##########################
-TRACKING: THESE ARE NOT X-VALIDATED: (i.e. you should test them out!):
+TRACKING: THESE ARE NOT X-VALIDATED: (i.e. you should test them out! See more below):
 ##########################
 boundingboxslack: 10
 max_age: 100 <--- maximum duration of a lost tracklet before it's considered a "new animal" (in frames)
