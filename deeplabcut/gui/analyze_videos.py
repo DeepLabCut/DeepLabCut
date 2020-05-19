@@ -115,21 +115,21 @@ class Analyze_videos(wx.Panel):
         self.trainingset = wx.SpinCtrl(self, value="0", min=0, max=100)
         trainingset_boxsizer.Add(self.trainingset, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
-        if self.cfg.get("multianimalproject", False):
-            pass
-        else:
+        #if self.cfg.get("multianimalproject", False):
+            #pass
+        #else:
             # removing this as several downstream maDLC steps don't support dest_folder at this time:
-            destfolder_text = wx.StaticBox(self, label="Specify destination folder")
-            destfolderboxsizer = wx.StaticBoxSizer(destfolder_text, wx.VERTICAL)
-            self.change_workingdir = wx.CheckBox(
-                self, label="optional destination folder"
-            )
-            self.hbox2.Add(self.change_workingdir)
-            self.change_workingdir.Bind(wx.EVT_CHECKBOX, self.activate_change_wd)
-            self.sel_wd = wx.Button(self, label="Browse")
-            self.sel_wd.Enable(False)
-            self.sel_wd.Bind(wx.EVT_BUTTON, self.select_destfolder)
-            self.hbox2.Add(self.sel_wd, 0, wx.ALL, -1)
+            #destfolder_text = wx.StaticBox(self, label="Specify destination folder")
+            #destfolderboxsizer = wx.StaticBoxSizer(destfolder_text, wx.VERTICAL)
+            #self.change_workingdir = wx.CheckBox(
+            #    self, label="optional destination folder"
+            #)
+            #self.hbox2.Add(self.change_workingdir)
+            #self.change_workingdir.Bind(wx.EVT_CHECKBOX, self.activate_change_wd)
+            #self.sel_wd = wx.Button(self, label="Browse")
+            #self.sel_wd.Enable(False)
+            #self.sel_wd.Bind(wx.EVT_BUTTON, self.select_destfolder)
+            #self.hbox2.Add(self.sel_wd, 0, wx.ALL, -1)
 
         self.hbox1.Add(videotype_text_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         self.hbox1.Add(shuffle_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
@@ -379,17 +379,6 @@ class Analyze_videos(wx.Panel):
         wx.MessageBox(help_text, "Help", wx.OK | wx.ICON_INFORMATION)
         os.remove("help.txt")
 
-    def select_destfolder(self, event):
-        cwd = os.getcwd()
-        dlg = wx.DirDialog(
-            self,
-            "Choose the directory where your project will be saved:",
-            cwd,
-            style=wx.DD_DEFAULT_STYLE,
-        )
-        if dlg.ShowModal() == wx.ID_OK:
-            self.dir = dlg.GetPath()
-
     def select_config(self, event):
         """
         """
@@ -458,8 +447,6 @@ class Analyze_videos(wx.Panel):
             else:
                 filter = True
 
-            dest_folder = self.dir
-
         if self.cfg["cropping"] == "True":
             crop = self.cfg["x1"], self.cfg["x2"], self.cfg["y1"], self.cfg["y2"]
         else:
@@ -491,7 +478,6 @@ class Analyze_videos(wx.Panel):
                 )
 
         else:
-            print("Placing output files at: " + dest_folder)
             scorername = deeplabcut.analyze_videos(
                 self.config,
                 self.filelist,
@@ -500,7 +486,6 @@ class Analyze_videos(wx.Panel):
                 trainingsetindex=trainingsetindex,
                 gputouse=None,
                 save_as_csv=save_as_csv,
-                destfolder=dest_folder,
                 cropping=crop,
                 dynamic=dynamic,
             )
@@ -514,7 +499,6 @@ class Analyze_videos(wx.Panel):
                     filtertype="median",
                     windowlength=5,
                     save_as_csv=True,
-                    destfolder=dest_folder,
                 )
 
             if self.trajectory.GetStringSelection() == "Yes":
@@ -526,8 +510,7 @@ class Analyze_videos(wx.Panel):
                     shuffle=shuffle,
                     trainingsetindex=trainingsetindex,
                     filtered=True,
-                    showfigures=False,
-                    destfolder=dest_folder,
+                    showfigures=True,
                 )
 
     def reset_analyze_videos(self, event):
