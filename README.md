@@ -23,7 +23,7 @@
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588014385061-6HA5RSD4ETBFVSD8R547/ke17ZwdGBToddI8pDm48kLyW1liujvcx7mp5osyaH61Zw-zPPgdn4jUwVcJE1ZvWhcwhEtWJXoshNdA9f1qD7Sn5EHp5ffw70kWDv5IdoCwQFuuJNKK_dG37osgdmxm5k0Yq7uiJIG_-lMb52Fc-iw/ezgif.com-resize.gif?format=300w" height="160">
 </p>
 
-DeepLabCut is a toolbox for markerless pose estimation of animals performing various tasks. [Read a short development and application summary below](https://github.com/AlexEMG/DeepLabCut#why-use-deeplabcut).
+DeepLabCut™ is a toolbox for markerless pose estimation of animals performing various tasks. [Read a short development and application summary below](https://github.com/AlexEMG/DeepLabCut#why-use-deeplabcut).
 :purple_heart: DeepLabCut now supports multi-animal pose estimation (beta release).
 
 # [Installation: how to install DeepLabCut](docs/installation.md)
@@ -158,9 +158,9 @@ This package includes graphical user interfaces to label your data, and take you
 VERSION 1.0: The initial, Nature Neuroscience version of [DeepLabCut](https://www.nature.com/articles/s41593-018-0209-y) can be found in the history of git, or here: https://github.com/AlexEMG/DeepLabCut/releases/tag/1.11
 
 ## News (and in the news):
-
-- Mar 2020: Inspired by suggestions we heard at this weeks CZI's Essential Open Source Software meeting in Berkley we updated our [docs](docs/UseOverviewGuide.md). Let us know what you think!
-- Feb 2020: DCL 2.2. with strong multi-animal support will soon be released. Check out the [sneak peek](https://twitter.com/DeepLabCut/status/1231272002528448515)
+- May 2020: maDLC (DLC 2.2) beta is released!
+- Mar 2020: Inspired by suggestions we heard at this weeks CZI's Essential Open Source Software meeting in Berkeley, CA we updated our [docs](docs/UseOverviewGuide.md). Let us know what you think!
+- Feb 2020: DLC 2.2 with strong multi-animal support will soon be released. Check out the [sneak peek](https://twitter.com/DeepLabCut/status/1231272002528448515)
 - Nov 2019: DeepLabCut was recognized by the Chan Zuckerberg Initiative (CZI) with funding to support this project. Read more in the [Harvard Gazette](https://news.harvard.edu/gazette/story/newsplus/harvard-researchers-awarded-czi-open-source-award/), on [CZI's Essential Open Source Software for Science site](https://chanzuckerberg.com/eoss/proposals/) and in their [Medium post](https://medium.com/@cziscience/how-open-source-software-contributors-are-accelerating-biomedicine-1a5f50f6846a)
 - Oct 2019: DLC 2.1 released with lots of updates. In particular, a Project Manager GUI, MobileNetsV2, and augmentation packages (Imgaug and Tensorpack). For detailed updates see [releases](https://github.com/AlexEMG/DeepLabCut/releases)
 - Sept 2019: We published two preprints. One showing that [ImageNet pretraining contributes to robustness](https://arxiv.org/abs/1909.11229) and a [review on animal pose estimation](https://arxiv.org/abs/1909.13868). Check them out!
