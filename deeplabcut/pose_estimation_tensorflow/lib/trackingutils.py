@@ -264,23 +264,25 @@ class SORT:
             pose_ref = tracker.predict()
             poses_ref.append(pose_ref.reshape((-1, 2)))
 
-        mat = self.calc_pairwise_oks(poses, poses_ref)
-        row_indices, col_indices = linear_sum_assignment(mat, maximize=True)
+        # mat = self.calc_pairwise_oks(poses, poses_ref)
+        mat = self.calc_pairwise_hausdorff_dist(poses, poses_ref)
+        row_indices, col_indices = linear_sum_assignment(mat, maximize=False)
 
         unmatched_poses = [p for p, _ in enumerate(poses) if p not in row_indices]
         unmatched_trackers = [t for t, _ in enumerate(poses_ref) if t not in col_indices]
         # Remove matched detections with low OKS
-        matches = []
-        for row, col in zip(row_indices, col_indices):
-            if mat[row, col] < self.oks_threshold:
-                unmatched_poses.append(row)
-                unmatched_trackers.append(col)
-            else:
-                matches.append([row, col])
-        if not len(matches):
-            matches = np.empty((0, 2), dtype=int)
-        else:
-            matches = np.stack(matches)
+        # matches = []
+        # for row, col in zip(row_indices, col_indices):
+        #     if mat[row, col] < self.oks_threshold:
+        #         unmatched_poses.append(row)
+        #         unmatched_trackers.append(col)
+        #     else:
+        #         matches.append([row, col])
+        # if not len(matches):
+        #     matches = np.empty((0, 2), dtype=int)
+        # else:
+        #     matches = np.stack(matches)
+        matches = np.c_[row_indices, col_indices]
 
         animalindex = []
         for t, tracker in enumerate(self.trackers):
@@ -304,12 +306,11 @@ class SORT:
             if tracker.time_since_update > self.max_age:
                 self.trackers.pop()
                 continue
-            # FIXME Something wrong going on here, empty state too often...
-            # if (tracker.time_since_update < 1 and
-            #         (tracker.hit_streak >= self.min_hits or self.frame_count <= self.min_hits)):
-            state = tracker.predict()
-            # else:
-            #     state = tracker.empty_state
+            if (tracker.time_since_update < 1 and
+                    (tracker.hit_streak >= self.min_hits or self.frame_count <= self.min_hits)):
+                state = tracker.predict()
+            else:
+                state = tracker.empty_state
             states.append(np.r_[state, [tracker.id, int(animalindex[i])]])
         if len(states) > 0:
             return np.stack(states)
