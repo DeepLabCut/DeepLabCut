@@ -310,6 +310,7 @@ def make_labeled_images_from_dataframe(df, cfg, destfolder='', scale=1., dpi=100
 
     h, w = ic[0].shape[:2]
     fig, ax = prepare_figure_axes(w, h, scale, dpi)
+    fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
     im = ax.imshow(np.zeros((h, w)), 'gray')
     scat = ax.scatter([], [], s=cfg['dotsize'], alpha=cfg['alphavalue'], marker=keypoint)
     scat.set_color(colors)
@@ -323,9 +324,7 @@ def make_labeled_images_from_dataframe(df, cfg, destfolder='', scale=1., dpi=100
         im.set_array(ic[i])
         if ind_bones:
             coll.set_segments(segs[i])
-
         scat.set_offsets(coords)
-
         imagename = os.path.basename(ic.files[i])
         fig.savefig(os.path.join(tmpfolder, imagename.replace('.png', f'_{color_by}.png')))
     plt.close(fig)
