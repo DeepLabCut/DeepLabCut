@@ -366,7 +366,7 @@ def label_frames(config,multiple_individualsGUI=False, imtypes=['*.png']):
 
     os.chdir(startpath)
 
-def check_labels(config, Labels = ['+','.','x'], scale = 1, draw_skeleton=True, visualizeindividuals=True):
+def check_labels(config, Labels = ['+','.','x'], scale = 1, dpi=100, draw_skeleton=True, visualizeindividuals=True):
     """
     Double check if the labels were at correct locations and stored in a proper file format.\n
     This creates a new subdirectory for each video under the 'labeled-data' and all the frames are plotted with the labels.\n
@@ -382,6 +382,9 @@ def check_labels(config, Labels = ['+','.','x'], scale = 1, draw_skeleton=True, 
     scale : float, default =1
         Change the relative size of the output images.
 
+    dpi : int, optional
+        Output resolution. 100 dpi by default.
+
     draw_skeleton: bool, default True.
         Plot skeleton overlaid over body parts.
 
@@ -395,6 +398,7 @@ def check_labels(config, Labels = ['+','.','x'], scale = 1, draw_skeleton=True, 
     >>> deeplabcut.check_labels('/analysis/project/reaching-task/config.yaml')
     --------
     """
+
     from deeplabcut.utils import visualization
 
     cfg = auxiliaryfunctions.read_config(config)
@@ -407,7 +411,7 @@ def check_labels(config, Labels = ['+','.','x'], scale = 1, draw_skeleton=True, 
         try:
             DataCombined = pd.read_hdf(os.path.join(str(folder),'CollectedData_' + cfg['scorer'] + '.h5'), 'df_with_missing')
             color_by = 'individual' if visualizeindividuals else 'bodypart'
-            visualization.make_labeled_images_from_dataframe(DataCombined, cfg, folder, scale, keypoint=Labels[0],
+            visualization.make_labeled_images_from_dataframe(DataCombined, cfg, folder, scale, dpi=dpi, keypoint=Labels[0],
                                                              draw_skeleton=draw_skeleton, color_by=color_by)
         except FileNotFoundError:
             print("Attention:", folder, "does not appear to have labeled data!")
