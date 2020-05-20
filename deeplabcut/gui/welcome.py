@@ -20,7 +20,6 @@ dlc = os.path.join(media_path, "dlc_1-01.png")
 
 class Welcome(wx.Panel):
     def __init__(self, parent, gui_size):
-        wx.Panel.__init__(self, parent)
         h = gui_size[0]
         w = gui_size[1]
         wx.Panel.__init__(self, parent, -1, style=wx.SUNKEN_BORDER, size=(h, w))

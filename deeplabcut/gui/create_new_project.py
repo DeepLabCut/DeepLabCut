@@ -32,7 +32,6 @@ logo = os.path.join(media_path, "logo.png")
 
 class Create_new_project(wx.Panel):
     def __init__(self, parent, gui_size):
-        wx.Panel.__init__(self, parent)
         self.gui_size = gui_size
         self.parent = parent
         h = gui_size[0]
