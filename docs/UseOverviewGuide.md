@@ -23,7 +23,7 @@
  
  ### What you DON'T need to get started:
  
- - no specific cameras/videos are required; color, monochrome, etc is all fine. If you can see what you want to measure, then this will work for you (given enough labeled-data).
+ - no specific cameras/videos are required; color, monochrome, etc., is all fine. If you can see what you want to measure, then this will work for you (given enough labeled data).
  
  - no specific computer is required (but see recommendations above), our software works on Linux, Windows, and MacOS, although we recommend Ubuntu. 
  
@@ -151,8 +151,8 @@ import deeplabcut
 ### Create a New Project:
 
 ```python
-deeplabcut.create_new_project('ProjectName','YourName', ['/usr/FullPath/OfVideo1.avi','/usr/FullPath/OfVideo2.avi','/usr/FullPath/OfVideo1.avi'], 
-              copy_videos = True/False, multianimal=True/False)
+deeplabcut.create_new_project('ProjectName','YourName', ['/usr/FullPath/OfVideo1.avi', '/usr/FullPath/OfVideo2.avi', '/usr/FullPath/OfVideo1.avi'], 
+              copy_videos=True/False, multianimal=True/False)
 ```
 Tip: if you want to place the project folder somewhere please pass : ``working_directory = 'FullPathOftheworkingDirectory'``
 
@@ -198,7 +198,7 @@ config_path = r'C:\home\computername\DeepLabCut\yourprojectname\config.yaml'
 ### Select Frames to Label:
 
 ```python
-deeplabcut.extract_frames(config_path, mode='automatic', algo='kmeans', crop = True/False)
+deeplabcut.extract_frames(config_path, mode='automatic', algo='kmeans', crop=True/False)
 ```
 
 (more details [here](functionDetails.md#c-data-selection)) *update: as of 2.0.5 (spring 2019) ``checkcropping=True`` is dropped; you now just have the option to directly draw a rectangle over the image to crop before extraction (i.e. there no need to manually change in config.yaml then check).
@@ -281,7 +281,7 @@ deeplabcut.train_network(config_path)
 
 Here, for traditional projects you will get a pixel distance metric and you should inspect the individual frames:
 ```python
-deeplabcut.evaluate_network(config_path, plotting = True)
+deeplabcut.evaluate_network(config_path, plotting=True)
 ```
 :movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=bgfnz1wtlpo)
 

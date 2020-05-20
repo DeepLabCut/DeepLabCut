@@ -42,7 +42,7 @@ deeplabcut.create_new_project_3d('ProjectName','NameofLabeler',num_cameras = 2)
 ```
 TIP 1: you can also pass ``working_directory=`Full path of the working directory'`` if you want to place this folder somewhere beside the current directory you are working in. If the optional argument ``working_directory`` is unspecified, the project directory is created in the current working directory.
 
-TIP 2: you can also place ``config_path3d`` in front of ``deeplabcut.create_new_project_3d`` to create a variable that holds the path to the config.yaml file, i.e. ``config_path3d=deeplabcut.create_new_project_3d(...`` Or, set this variable for easy use. Please note that ``config_path3d = 'Full path of the 3D project configuration file'``.
+TIP 2: you can also place ``config_path3d`` in front of ``deeplabcut.create_new_project_3d`` to create a variable that holds the path to the config.yaml file, i.e. ``config_path3d=deeplabcut.create_new_project_3d(...`` Or, set this variable for easy use. Please note that ``config_path3d='Full path of the 3D project configuration file'``.
 
  This function will create a project directory with the name **Name of the project+name of the experimenter+date of creation of the project+3d** in the **Working directory**. The project directory will have subdirectories: **calibration_images**, **camera_matrix**, **corners**, and **undistortion**.  All the outputs generated during the course of a project will be stored in one of these subdirectories, thus allowing each project to be curated in separation from other projects.
 
@@ -101,7 +101,7 @@ To begin, please place your images into the **calibration_images** directory.
 Then, run:
 
 ```python
-deeplabcut.calibrate_cameras(config_path3d, cbrow = 8, cbcol = 6, calibrate = False, alpha = 0.9)
+deeplabcut.calibrate_cameras(config_path3d, cbrow=8, cbcol=6, calibrate=False, alpha=0.9)
 ```
 NOTE: you need to specify how many rows (``cbrow``) and columns (``cbcol``) your checkerboard has. Also, first set the variable ``calibrate`` to **False**, so you can remove any faulty images. You need to visually inspect the output to check for the detected corners and select those pair of images where the corners are correctly detected. Please note, If the scaling parameter ``alpha=0``, it returns undistorted image with minimum unwanted pixels. So it may even remove some pixels at image corners. If ``alpha=1``, all pixels are retained with some extra black images.
 
@@ -115,7 +115,7 @@ Here is what they might look like:
 Once all the set of images are selected (namely, delete from the folder any bad pairs!) where the corners and their orders are detected correctly, then the two cameras can be calibrated using:
 
 ```python
-deeplabcut.calibrate_cameras(config_path3d, cbrow = 8, cbcol = 6, calibrate = True, alpha = 0.9)
+deeplabcut.calibrate_cameras(config_path3d, cbrow=8, cbcol=6, calibrate=True, alpha=0.9)
 ```
 
 This computes the intrinsic and extrinsic parameters for each camera. A re-projection error is also computed using the intrinsic and extrinsic parameters which provide an estimate of how good the parameters are. The transformation between the two cameras are estimated and the cameras are stereo calibrated. Furthermore, the above function brings both the camera image plane to the same plane by computing the stereo rectification. These parameters are stored as a pickle file named as `stereo_params.pickle` under the directory `camera_matrix`.
@@ -127,7 +127,7 @@ Once you have run this for the project, you do not need to do so again (unless y
 In order to check how well the stereo calibration is, it is recommended to undistort the calibration images and the corner points using camera matrices and project these undistorted points on the undistorted images to check if they align correctly. This can be done in deeplabcut as:
 
 ```python
-deeplabcut.check_undistortion(config_path3d, cbrow = 8, cbcol = 6)
+deeplabcut.check_undistortion(config_path3d, cbrow=8, cbcol=6)
 ```
 
 Each calibration image is undistorted and saved under the directory ``undistortion``. A plot with a pair of undistorted camera images with its undistorted corner points overlaid is also stored. Please visually inspect this image. All the undistorted corner points from all the calibration images are triangulated and plotted for the user to visualize for any undistortion related errors. If they are not correct, go check and revise the calibration images (then repeat the calibration and this step)!
@@ -158,7 +158,7 @@ If there are no errors in the undistortion, then the pose from the 2 cameras can
 Next, pass the ``config_path3d`` and now the video folder path, which is the path to the **folder** where all the videos from two cameras are stored. The triangulation can be done in deeplabcut by typing:
 
 ```python
-deeplabcut.triangulate(config_path3d,'/yourcomputer/fullpath/videofolder', filterpredictions = True/False)
+deeplabcut.triangulate(config_path3d, '/yourcomputer/fullpath/videofolder', filterpredictions=True/False)
 ```
 NOTE: Windows users, you must input paths as: ``r`C:\Users\computername\videofolder' `` or ``C:\\Users\\computername\\videofolder'``.
 
@@ -203,7 +203,7 @@ The **triangulated file** is now saved under the same directory where the video 
 In order to visualize both the 2D videos with tracked points plut the pose in 3D, the user can create a 3D video for certain frames (these are large files, so we advise just looking at a subset of frames). The user can specify the config file, the **path of the triangulated file folder**, and specify the start and end frame indices to create a 3D labeled video. Note that the ``triangulated_file_folder`` is where the newly created file that ends with ``yourDLC_3D_scorername.h5`` is located. This can be done using:
 
 ```python
-deeplabcut.create_labeled_video_3d(config_path,['triangulated_file_folder'],start=50,end=250)
+deeplabcut.create_labeled_video_3d(config_path, ['triangulated_file_folder'], start=50, end=250)
 ```
 
 **TIP:** (see more parameters below) You can set how the axis of the 3D plot on the far right looks by changing the variables ``xlim``, ``ylim``, ``zlim`` and ``view``. Your checkerboard_3d.png image which was created above will show you the axis ranges. Here is an example:

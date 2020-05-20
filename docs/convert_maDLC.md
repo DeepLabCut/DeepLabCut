@@ -3,7 +3,7 @@
 
 If you have a pre-2.2 project (`labeled-data`) with a **single animal** that you want to use with DLC 2.2, i.e. use your older data to now train the new multi-task deep neural network, here is what you need to do. 
 
-(1) we recommend you make a back-up of your project folder. 
+(1) We recommend you make a back-up of your project folder. 
 
 (2) Open your `config.yaml` file (in any text editor, or python IDE such as PyCharm, Spyder, VScode, atom, etc). 
 
@@ -27,7 +27,7 @@ individuals:
 
 - `"uniquebodyparts: []` can stay blank. This is used in "true" multi-animal scenarios where you might have other unique objects (i.e. 2 individual black mice plus the corners of the box)
 
-- Please move your "bodyparts:" to "multianimalbodyparts:" (they must stay the same names! i.e.)
+- Please move your "bodyparts:" to "multianimalbodyparts:" (bodypart names must stay the same!)
 ```python
 multianimalbodyparts:
 - snout
@@ -37,11 +37,11 @@ multianimalbodyparts:
 ```
 then you can set `bodyparts: MULTI!`
 
-(3) save the config.yaml (be sure to double check for spacing or typos first!) and then run:
+(3) Save the config.yaml (be sure to double check for spacing or typos first!) and then run:
 ```python
 deeplabcut.convert2_maDLC(path_config_file, userfeedback=True)
 ```
 
-Now you will see that your data within `labeled-data` are converted to a new format, and the single animal format was saved for you under a new file named `CollectedData_ ...singleanimal.h5` and `.csv` as a back up!
+Now you will see that your data within `labeled-data` are converted to a new format, and the single animal format was saved for you under a new file named `CollectedData_ ...singleanimal.h5` and `.csv` as a back-up!
 
-(4) Now, you can load this project `config.yaml` in the Project Manager GUI and create a multianimal training set and beginning training! 
+(4) Now, you can load this project `config.yaml` in the Project Manager GUI and create a multi-animal training set to begin training! 
