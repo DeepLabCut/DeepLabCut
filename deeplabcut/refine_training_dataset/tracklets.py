@@ -239,10 +239,13 @@ class TrackletManager:
                         mask3d = np.broadcast_to(has_data, (self.nindividuals,) + has_data.shape)
                         temp = tracklets_multi[mask3d].reshape((self.nindividuals, -1, 3))
                         diff = remaining - temp
-                        largest_diff = np.argmax(diff[:, :, 2], axis=0)
-                        prob = diff[largest_diff, range(len(largest_diff)), 2]
+                        # Find keypoints closest to the remaining data
+                        dist = np.sqrt(diff[:, :, 0] ** 2 + diff[:, :, 1] ** 2)
+                        closest = np.argmin(dist, axis=0)
+                        # Only overwrite if improving confidence
+                        prob = diff[closest, range(len(closest)), 2]
                         better = np.flatnonzero(prob > 0)
-                        inds = largest_diff[better]
+                        inds = closest[better]
                         rows, cols = np.nonzero(has_data)
                         for i, j in zip(inds, better):
                             sl = slice(j * 3, j * 3 + 3)
