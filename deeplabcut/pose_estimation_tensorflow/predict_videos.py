@@ -909,8 +909,9 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
     path_inference_config = Path(modelfolder) / 'test' / 'inference_cfg.yaml'
     if inferencecfg is None: #then load or initialize
         inferencecfg=auxfun_multianimal.read_inferencecfg(path_inference_config,cfg)
-    else: #TODO: check if all variables present
+    else:
         inferencecfg=edict(inferencecfg)
+        auxfun_multianimal.check_inferencecfg_sanity(cfg, inferencecfg)
 
     if edgewisecondition:
         path_inferencebounds_config = Path(modelfolder) / 'test' / 'inferencebounds.yaml'
@@ -1056,7 +1057,6 @@ def convert_detections2tracklets(config, videos, videotype='avi', shuffle=1, tra
 
         os.chdir(str(start_path))
 
-        #TODO: UPDATE!!
         print("The tracklets were created. Now you can 'refine_tracklets'.")
         #print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
     else:

@@ -78,9 +78,9 @@ def DownloadModel(modelname, target_dir):
                 member.path = member.path[l:]
                 yield member
 
-    #TODO: update how DLC path is obtained
-    import deeplabcut
-    neturls= auxiliaryfunctions.read_plainconfig(os.path.join(os.path.dirname(deeplabcut.__file__),'pose_estimation_tensorflow/models/pretrained/pretrained_model_urls.yaml'))
+    dlc_path = auxiliaryfunctions.get_deeplabcut_path()
+    neturls = auxiliaryfunctions.read_plainconfig(os.path.join(dlc_path, 'pose_estimation_tensorflow', 'models',
+                                                               'pretrained', 'pretrained_model_urls.yaml'))
     if modelname in neturls.keys():
         url = neturls[modelname]
         response = urllib.request.urlopen(url)

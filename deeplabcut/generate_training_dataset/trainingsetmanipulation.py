@@ -7,7 +7,7 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
-
+import cv2
 from pathlib import Path
 import os
 import numpy as np
@@ -16,11 +16,10 @@ import os.path
 import logging
 from functools import lru_cache
 from skimage import io
-
-
 import yaml
 from deeplabcut.utils import auxiliaryfunctions, conversioncode, auxfun_models, auxfun_multianimal
 from deeplabcut.pose_estimation_tensorflow import training
+
 
 def comparevideolistsanddatafolders(config):
     """
@@ -41,29 +40,24 @@ def comparevideolistsanddatafolders(config):
     print("Labeled-data contains:", len(alldatafolders))
 
     for vn in video_names:
-        if vn in alldatafolders:
-            pass
-        else:
+        if vn not in alldatafolders:
             print(vn, " is missing as a folder!")
 
     for vn in alldatafolders:
-        if vn in video_names:
-            pass
-        else:
+        if vn not in video_names:
             print(vn, " is missing in config file!")
 
 
-def adddatasetstovideolistandviceversa(config,prefix,width,height,suffix='.mp4'):
+def adddatasetstovideolistandviceversa(config):
     """
     First run comparevideolistsanddatafolders(config) to compare the folders in labeled-data and the ones listed under video_sets (in the config file).
     If you detect differences this function can be used to maker sure each folder has a video entry & vice versa.
 
     It corrects this problem in the following way:
 
-    If a folder in labeled-data does not contain a video entry in the config file then the prefix path will be added in front of the name of the labeled-data folder and combined
-    with the suffix variable as an ending. Width and height will be added as cropping variables as passed on. TODO: This should be written from the actual images!
-
     If a video entry in the config file does not contain a folder in labeled-data, then the entry is removed.
+    If a folder in labeled-data does not contain a video entry in the config file then the prefix path will be added in front of the name of the labeled-data folder and combined
+    with the suffix variable as an ending. Width and height will be added as cropping variables as passed on.
 
     Handle with care!
 
@@ -71,43 +65,47 @@ def adddatasetstovideolistandviceversa(config,prefix,width,height,suffix='.mp4')
     ----------
     config : string
         String containing the full path of the config file in the project.
-
     """
     cfg = auxiliaryfunctions.read_config(config)
-    videos = cfg['video_sets'].keys()
+    videos = cfg['video_sets']
     video_names = [Path(i).stem for i in videos]
 
-    alldatafolders = [fn for fn in os.listdir(Path(config).parent / 'labeled-data') if '_labeled' not in fn]
+    alldatafolders = [fn for fn in os.listdir(Path(config).parent / 'labeled-data')
+                      if '_labeled' not in fn and not fn.startswith('.')]
 
     print("Config file contains:", len(video_names))
     print("Labeled-data contains:", len(alldatafolders))
 
     toberemoved=[]
     for vn in video_names:
-        if vn in alldatafolders:
-            pass
-        else:
+        if vn not in alldatafolders:
             print(vn, " is missing as a labeled folder >> removing key!")
-            for fullvideo in cfg['video_sets'].keys():
+            for fullvideo in videos:
                 if vn in fullvideo:
                     toberemoved.append(fullvideo)
 
     for vid in toberemoved:
-        del cfg['video_sets'][vid]
+        del videos[vid]
 
     #Load updated lists:
-    videos = cfg['video_sets'].keys()
     video_names = [Path(i).stem for i in videos]
-
     for vn in alldatafolders:
-        if vn in video_names:
-            pass
-        else:
+        if vn not in video_names:
             print(vn, " is missing in config file >> adding it!")
-            #cfg['video_sets'][vn]
-            cfg['video_sets'].update({os.path.join(prefix,vn+suffix) : {'crop': ', '.join(map(str, [0, width, 0, height]))}})
+            # Find the corresponding video file
+            found = False
+            for file in os.listdir(os.path.join(cfg['project_path'], 'videos')):
+                if os.path.splitext(file)[0] == vn:
+                    found = True
+                    break
+            if found:
+                video_path = os.path.join(cfg['project_path'], 'videos', file)
+                clip = cv2.VideoCapture(video_path)
+                width = int(clip.get(cv2.CAP_PROP_FRAME_WIDTH))
+                height = int(clip.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                videos.update({video_path: {'crop': ', '.join(map(str, [0, width, 0, height]))}})
 
-    auxiliaryfunctions.write_config(config,cfg)
+    auxiliaryfunctions.write_config(config, cfg)
 
 
 def dropduplicatesinannotatinfiles(config):

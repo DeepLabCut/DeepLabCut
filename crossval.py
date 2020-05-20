@@ -456,7 +456,7 @@ def evaluate_skeleton_tracker():
         tracker.update(mouse[i])
         mouse_pred2[i] = tracker.state
 
-    # TODO UKF not worth the cost, no remarkable diff vs KF
+    # UKF not worth the cost, no remarkable diff vs KF...
     # from filterpy.kalman import UnscentedKalmanFilter, MerweScaledSigmaPoints
     #
     # def hx(x):

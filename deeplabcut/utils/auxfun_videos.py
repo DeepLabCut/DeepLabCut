@@ -24,7 +24,7 @@ def imresize(img,size=1.0,interpolationmethod=cv2.INTER_AREA):
     else:
         return img
 
-def ShortenVideo(vname,start='00:00:01',stop='00:01:00',outsuffix='short',outpath=None):
+def ShortenVideo(vname, start='00:00:01', stop='00:01:00', outsuffix='short', outpath=None):
     """
     Auxiliary function to shorten video and output with outsuffix appended.
     to the same folder from start (hours:minutes:seconds) to stop (hours:minutes:seconds).
@@ -58,12 +58,20 @@ def ShortenVideo(vname,start='00:00:01',stop='00:01:00',outsuffix='short',outpat
 
     Extracts (sub)video from minute 17 to 22 and and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1brief.avi
     """
-    if outpath is None:
-        vidpath=os.path.dirname(vname)
+    if not outpath:
+        vidpath = os.path.dirname(vname)
     else:
-        vidpath=outpath
+        vidpath = outpath
 
-    #TODO check if those times exist...
+    def to_seconds(time):
+        h, m, s = time.split(':')
+        return int(h) * 3600 + int(m) * 60 + int(s)
+
+    clip = cv2.VideoCapture(vname)
+    dur = clip.get(cv2.CAP_PROP_FRAME_COUNT) // clip.get(cv2.CAP_PROP_FPS)
+    if not to_seconds(start) < to_seconds(stop) <= dur:
+        raise ValueError('Invalid start or stop timestamps.')
+
     newfilename=os.path.join(vidpath,str(Path(vname).stem)+str(outsuffix)+str(Path(vname).suffix))
     print("Slicing and saving to name", newfilename)
     command = f"ffmpeg -i {vname} -ss {start} -to {stop} -c:a copy {newfilename}"

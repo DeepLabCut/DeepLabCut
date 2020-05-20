@@ -340,8 +340,9 @@ def evaluate_multianimal_crossvalidate(config, Shuffles=[1], trainingsetindex=0,
         path_inference_config = Path(modelfolder) / 'test' / 'inference_cfg.yaml'
         if inferencecfg is None: #then load or initialize
             inferencecfg = auxfun_multianimal.read_inferencecfg(path_inference_config,cfg)
-        else: #TODO: check if all variables present
+        else:
             inferencecfg = edict(inferencecfg)
+            auxfun_multianimal.check_inferencecfg_sanity(cfg, inferencecfg)
 
         inferencecfg.topktoplot = np.inf
         inferencecfg, opt = crossvalutils.bayesian_search(config, inferencecfg, _pbounds,edgewisecondition=edgewisecondition,

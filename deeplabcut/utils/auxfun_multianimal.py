@@ -11,6 +11,7 @@ Licensed under GNU Lesser General Public License v3.0
 import os, pickle
 import pandas as pd
 import numpy as np
+from easydict import EasyDict as edict
 
 def extractindividualsandbodyparts(cfg):
     individuals=cfg['individuals'].copy()
@@ -72,19 +73,6 @@ def LoadFullMultiAnimalData(dataname):
     with open(dataname.split('.h5')[0] + '_meta.pickle', 'rb') as handle:
         metadata=pickle.load(handle)
     return data, metadata
-
-#TODO: FIX THIS FUNCTION!
-def SaveMultiAnimalData(PredicteData, metadata, dataname, pdindex, imagenames,save_as_csv):
-    ''' Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py '''
-    #TODO: update!
-    DataMachine = pd.DataFrame(PredicteData, columns=pdindex, index=imagenames)
-    DataMachine.to_hdf(dataname, 'df_with_missing', format='table', mode='w')
-    if save_as_csv:
-        print("Saving csv poses!")
-        DataMachine.to_csv(dataname.split('.h5')[0]+'.csv')
-    with open(dataname.split('.h5')[0] + '_meta.pickle', 'wb') as f:
-        # Pickle the 'data' dictionary using the highest protocol available.
-        pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
 
 from deeplabcut.utils.auxiliaryfunctions import read_config, read_config, read_plainconfig, write_plainconfig
@@ -266,33 +254,43 @@ def convert_single2multiplelegacyAM(config,userfeedback=True,target=None):
                 DataFrame.to_csv(fn + ".csv")
 
 
+def form_default_inferencecfg(cfg):
+    # Most of these parameters would be cross validated based on evaluation!
+    inferencecfg = edict()
+    inferencecfg.variant = 0
+    inferencecfg.minimalnumberofconnections = len(cfg['multianimalbodyparts']) / 2  # reasonable default
+    inferencecfg.averagescore = 0.1
+    inferencecfg.distnormalizationLOWER = 0
+    inferencecfg.distnormalization = 400  # SET??
+
+    inferencecfg.detectionthresholdsquare = 0.1
+    inferencecfg.addlikelihoods = .15
+    inferencecfg.pafthreshold = 0.1
+    inferencecfg.method = 'm1'
+    inferencecfg.withid = False  # TODO: set automatically (if >0 id channels!)
+    inferencecfg.topktoplot = len(cfg['individuals']) + 1 * (len(cfg['uniquebodyparts']) > 0)  # reasonable default
+
+    ## bbox variable:
+    inferencecfg.boundingboxslack = 10
+    inferencecfg.max_age = 100
+    inferencecfg.min_hits = 3
+    inferencecfg.iou_threshold = .2
+    return inferencecfg
+
+
+def check_inferencecfg_sanity(cfg, inferencecfg):
+    template = form_default_inferencecfg(cfg)
+    missing = [key for key in template if key not in inferencecfg]
+    if missing:
+        raise KeyError(f'Keys {", ".join(missing)} are missing in the inferencecfg.')
+
+
 def read_inferencecfg(path_inference_config,cfg):
-    from easydict import EasyDict as edict
-    # Loads inferencecfg or initializes it.
+    """Load inferencecfg or initialize it."""
     try:
         inferencecfg= read_plainconfig(str(path_inference_config))
         inferencecfg = edict(inferencecfg)
-    except FileNotFoundError: #TODO: set this automatically
-        # Most of these parameters would be cross validated based on evaluation!
-        inferencecfg=edict()
-        inferencecfg.variant=0
-        inferencecfg.minimalnumberofconnections=len(cfg['multianimalbodyparts'])/2 #reasonable default
-        inferencecfg.averagescore=0.1
-        inferencecfg.distnormalizationLOWER=0
-        inferencecfg.distnormalization=400 #SET??
-
-        inferencecfg.detectionthresholdsquare=0.1
-        inferencecfg.addlikelihoods=.15
-        inferencecfg.pafthreshold=0.1
-        inferencecfg.method='m1'
-        inferencecfg.withid=False #TODO: set automatically (if >0 id channels!)
-        inferencecfg.topktoplot=len(cfg['individuals'])+1*(len(cfg['uniquebodyparts'])>0) #reasonable default
-
-        ## bbox variable:
-        inferencecfg.boundingboxslack=10
-        inferencecfg.max_age=100
-        inferencecfg.min_hits=3
-        inferencecfg.iou_threshold=.2
+    except FileNotFoundError:
+        inferencecfg = form_default_inferencecfg(cfg)
         write_plainconfig(str(path_inference_config), dict(inferencecfg))
-        
     return inferencecfg

@@ -30,14 +30,6 @@ def AnalyzeMultiAnimalVideo(video,DLCscorer,trainFraction,cfg, dlc_cfg, sess, in
     auxiliaryfunctions.attempttomakefolder(destfolder)
     dataname = os.path.join(destfolder, vname + DLCscorer + '.h5')
 
-    #TODO: remove comparison code:
-    '''
-    if c_engine:
-        dataname = os.path.join(destfolder,vname + DLCscorer + 'c.h5')
-    else:
-        dataname = os.path.join(destfolder,vname + DLCscorer + 'python.h5')
-    '''
-
     if os.path.isfile(dataname.split('.h5')[0]+'_full.pickle'):
         print("Video already analyzed!", dataname)
     else:

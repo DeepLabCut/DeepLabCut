@@ -7,11 +7,14 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
-import os, pickle, yaml
+import os
+import pickle
+import yaml
+import numpy as np
 import pandas as pd
 from pathlib import Path
-import numpy as np
 from ruamel.yaml import YAML
+
 
 def create_config_template(multianimal=False):
     """
@@ -372,6 +375,12 @@ def GetEvaluationFolder(trainFraction,shuffle,cfg,modelprefix=''):
     date = cfg['date']
     iterate = 'iteration-'+str(cfg['iteration'])
     return Path(modelprefix,'evaluation-results/'+ iterate+'/'+Task + date + '-trainset' + str(int(trainFraction * 100)) + 'shuffle' + str(shuffle))
+
+
+def get_deeplabcut_path():
+    import importlib.util
+    return os.path.split(importlib.util.find_spec('deeplabcut').origin)[0]
+
 
 def IntersectionofBodyPartsandOnesGivenbyUser(cfg,comparisonbodyparts):
     ''' Returns all body parts when comparisonbodyparts=='all', otherwise all bpts that are in the intersection of comparisonbodyparts and the actual bodyparts '''
