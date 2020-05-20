@@ -23,33 +23,23 @@ else:
 from deeplabcut.utils import auxiliaryfunctions, auxfun_models, auxfun_multianimal
 from deeplabcut.generate_training_dataset import trainingsetmanipulation
 
-def renamebodyparts(config,pairs):
+
+def rename_bodyparts(config, pairs):
     """
     Rename bodyparts for list of pairs, e.g. [['snout','nose']] rename snout to nose!
-
-    TODO: FIX THIS!
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg['video_sets'].keys()
     video_names = [Path(i).stem for i in videos]
     folders = [Path(config).parent / 'labeled-data' /Path(i) for i in video_names]
+    dict_ = {k: v for k, v in pairs}
 
     for folder in folders:
-        fn=os.path.join(str(folder),'CollectedData_' + cfg['scorer'] + '.h5')
-        df = pd.read_hdf(fn, 'df_with_missing')
-        bpts=list(df.columns.get_level_values(1)) #[::2])
-        print(bpts,'pre')
-        # now swap:
-        for p in pairs:
-            print('Changing',p)
-            bpts=[p[1] if bpt==p[0] else bpt for bpt in bpts]
+        filename = os.path.join(str(folder), 'CollectedData_' + cfg['scorer'] + '.h5')
+        df = pd.read_hdf(filename, 'df_with_missing')
+        df.rename(dict_, level='bodyparts', axis=1, inplace=True)
+        df.to_hdf(filename)
 
-        d = dict(zip(df.columns.levels[1], bpts))
-        print(bpts,"swapped?")
-        #df.columns.set_levels(bpts,level=1,inplace=True)
-        df.rename(columns=d,level=1)
-        #DC.to_hdf(fn, key='df_with_missing', mode='w')
-        df.to_csv(os.path.join(str(folder),'CollectedData_'+ cfg['scorer']+"TEST.csv"))
 
 def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=False, net_type=None, numdigits=2):
     """
