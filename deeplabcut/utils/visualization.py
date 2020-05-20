@@ -315,14 +315,17 @@ def make_labeled_images_from_dataframe(df, cfg, destfolder='', scale=1., dpi=100
     scat.set_color(colors)
     xy = df.values.reshape((df.shape[0], -1, 2))
     segs = xy[:, ind_bones].swapaxes(1, 2)
-    coll = LineCollection([], colors=cfg['skeleton_color'])
+    coll = LineCollection([], colors=cfg['skeleton_color'], alpha=cfg['alphavalue'])
     ax.add_collection(coll)
+
     for i in trange(len(ic)):
         coords = xy[i]
         im.set_array(ic[i])
-        scat.set_offsets(coords)
         if ind_bones:
             coll.set_segments(segs[i])
+
+        scat.set_offsets(coords)
+
         imagename = os.path.basename(ic.files[i])
         fig.savefig(os.path.join(tmpfolder, imagename.replace('.png', f'_{color_by}.png')))
     plt.close(fig)

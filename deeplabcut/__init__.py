@@ -13,7 +13,13 @@ import platform
 
 # Suppress tensorflow warning messages
 import tensorflow as tf
-tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+vers = (tf.__version__).split('.')
+if int(vers[0])==1 and int(vers[1])>12:
+    TF=tf.compat.v1 #behaves differently before 1.13
+else:
+    TF=tf
+
+TF.logging.set_verbosity(TF.logging.ERROR)
 DEBUG = True and 'DEBUG' in os.environ and os.environ['DEBUG']
 from deeplabcut import DEBUG
 

@@ -366,7 +366,7 @@ def label_frames(config,multiple_individualsGUI=False, imtypes=['*.png']):
 
     os.chdir(startpath)
 
-def check_labels(config,Labels = ['+','.','x'],scale = 1,draw_skeleton=True,visualizeindividuals=True):
+def check_labels(config, Labels = ['+','.','x'], scale = 1, draw_skeleton=True, visualizeindividuals=True):
     """
     Double check if the labels were at correct locations and stored in a proper file format.\n
     This creates a new subdirectory for each video under the 'labeled-data' and all the frames are plotted with the labels.\n
