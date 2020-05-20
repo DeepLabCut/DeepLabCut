@@ -15,7 +15,7 @@ import yaml
 from pathlib import Path
 from deeplabcut.utils import auxiliaryfunctions, auxfun_models
 
-Modeloptions=['full_human','full_cat','full_dog','primate_face'] #just expand this list with new projects
+Modeloptions=['full_human','full_cat','full_dog','primate_face', 'mouse_pupil_vclose'] #just expand this list with new projects
 
 
 def MakeTrain_pose_yaml(itemstochange,saveasconfigfile,defaultconfigfile):
