@@ -372,6 +372,7 @@ def evaluate_multianimal_crossvalidate(config, Shuffles=[1], trainingsetindex=0,
                                              [f'individual{i}' for i in range(1, max_indivs + 1)],
                                              bpts, ['x', 'y', 'likelihood']],
                                             names=['scorer', 'individuals', 'bodyparts', 'coords'])
+
         df = pd.DataFrame(container, columns=header)
         df.to_hdf(os.path.join(evaluationfolder, f'{DLCscorer}.h5'), key='df_with_missing')
 

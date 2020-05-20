@@ -296,6 +296,7 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
                     "topktoplot": len(cfg['individuals'])+1*(len(cfg['uniquebodyparts'])>0)
                 }
                 #TODO:   "distnormalization":  could be calculated here based on data and set
+                # >> now we calculate this during evaluation (which is a good spot...)
                 trainingsetmanipulation.MakeInference_yaml(items2change, path_inference_config,defaultinference_configfile)
 
                 print("The training dataset is successfully created. Use the function 'train_network' to start training. Happy training!")
