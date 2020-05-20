@@ -97,7 +97,7 @@ class Create_new_project(wx.Panel):
         self.sizer.Add(self.vids, pos=(6, 0), flag=wx.TOP | wx.LEFT, border=10)
 
         self.sel_vids = wx.Button(self, label="Load Videos")
-        self.sizer.Add(self.sel_vids, pos=(6, 1), flag=wx.TOP | wx.EXPAND, border=10)
+        self.sizer.Add(self.sel_vids, pos=(6, 1), span=(1, 5), flag=wx.TOP | wx.EXPAND, border=10)
         self.sel_vids.Bind(wx.EVT_BUTTON, self.select_videos)
         #
         sb = wx.StaticBox(self, label="Optional Attributes")
