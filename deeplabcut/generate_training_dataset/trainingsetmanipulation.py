@@ -408,7 +408,11 @@ def check_labels(config, Labels = ['+','.','x'], scale = 1, dpi=100, draw_skelet
     for folder in folders:
         try:
             DataCombined = pd.read_hdf(os.path.join(str(folder),'CollectedData_' + cfg['scorer'] + '.h5'), 'df_with_missing')
-            color_by = 'individual' if visualizeindividuals else 'bodypart'
+            if cfg.get('multianimalproject', False):
+                color_by = 'individual' if visualizeindividuals else 'bodypart'
+            else: #for single animal projects
+                color_by = 'bodypart'
+
             visualization.make_labeled_images_from_dataframe(DataCombined, cfg, folder, scale, dpi=dpi, keypoint=Labels[0],
                                                              draw_skeleton=draw_skeleton, color_by=color_by)
         except FileNotFoundError:
