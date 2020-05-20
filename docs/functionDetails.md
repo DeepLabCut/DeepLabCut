@@ -492,7 +492,7 @@ deeplabcut.convert_detections2tracklets(path_config_file, ['videofile_path'], vi
 
 **Firstly,** you should run the different trackers (to start we offer `box` and `skeleton`) as we find they work well for different types of data. You can run this function for both tracker types on the same video to get started. 
 
-We recommend using the Project Manager GUI, as this allows for seamless testing of parameters. Namely, you can run the "Convert to Tracklets", load in the "Refine Tracklets" tab and look at the output, go back to "Analyze Videos", set overwrite tracking file to "yes", edit the `inference_config.yaml` and test the tracking parameters:
+We recommend using the **Project Manager GUI,** as this allows for seamless testing of parameters. Namely, you can run the "Convert to Tracklets", load in the "Refine Tracklets" tab and look at the output, go back to "Analyze Videos", set overwrite tracking file to "yes", edit the `inference_config.yaml` and test the tracking parameters:
 ```
 ##########################
 TRACKING: THESE ARE NOT X-VALIDATED: (i.e. you should test them out!):
@@ -506,6 +506,12 @@ Short Demo:
  <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589678687447-LXVEATSUIZ7II6DD8YRP/ke17ZwdGBToddI8pDm48kKSiEl9pzIZ0SUtfTTAywBBZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpySe6pW8v0A-r5HvKO3RBJfk1pBw94SeYKc1nWQkerhaz8CZBGxI5A7dH-Zmei7Jv0/xvalTRACKING.gif?format=750w" width="90%">
 </p>
+
+*(very optional) If you want to create a video of the "raw" tracklets before using the tracklets GUI you can run:*
+```python
+from deeplabcut.utils.make_labeled_video import create_video_from_pickled_tracks
+create_video_from_pickled_tracks(videopath, picklepath)
+```
 
 **Secondly,** you need to refine the tracklets. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc! 
 
