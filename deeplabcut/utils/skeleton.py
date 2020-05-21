@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
-from collections import OrderedDict
 from matplotlib.collections import LineCollection
 from matplotlib.path import Path
 from matplotlib.widgets import Button, LassoSelector
@@ -52,6 +51,8 @@ class SkeletonBuilder:
     def pick_labeled_frame(self):
         try:
             mask = self.df.groupby(level='individuals', axis=1).apply(self.all_visible)
+            if 'single' in mask:
+                mask.drop('single', axis=1, inplace=True)
         except KeyError:
             mask = self.all_visible(self.df).to_frame()
         valid = mask[mask].stack().index.to_list()
