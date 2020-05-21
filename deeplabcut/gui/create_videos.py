@@ -78,7 +78,7 @@ class Create_Labeled_Videos(wx.Panel):
         self.sizer.Add(self.vids, pos=(3, 0), flag=wx.TOP | wx.LEFT, border=10)
 
         self.sel_vids = wx.Button(self, label="Select videos")
-        self.sizer.Add(self.sel_vids, pos=(3, 1), flag=wx.TOP | wx.EXPAND, border=5)
+        self.sizer.Add(self.sel_vids, pos=(3, 1), flag=wx.TOP | wx.EXPAND, border=10)
         self.sel_vids.Bind(wx.EVT_BUTTON, self.select_videos)
 
         sb = wx.StaticBox(self, label="Additional Attributes")
@@ -87,6 +87,7 @@ class Create_Labeled_Videos(wx.Panel):
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
         hbox3 = wx.BoxSizer(wx.HORIZONTAL)
+        hbox4 = wx.BoxSizer(wx.HORIZONTAL)
 
         videotype_text = wx.StaticBox(self, label="Specify the videotype")
         videotype_text_boxsizer = wx.StaticBoxSizer(videotype_text, wx.VERTICAL)
@@ -95,32 +96,29 @@ class Create_Labeled_Videos(wx.Panel):
         self.videotype = wx.ComboBox(self, choices=videotypes, style=wx.CB_READONLY)
         self.videotype.SetValue(".avi")
         videotype_text_boxsizer.Add(
-            self.videotype, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
-        )
+            self.videotype, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
 
         shuffle_text = wx.StaticBox(self, label="Specify the shuffle")
         shuffle_boxsizer = wx.StaticBoxSizer(shuffle_text, wx.VERTICAL)
         self.shuffle = wx.SpinCtrl(self, value="1", min=0, max=100)
-        shuffle_boxsizer.Add(self.shuffle, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+        shuffle_boxsizer.Add(self.shuffle, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
 
         trainingset = wx.StaticBox(self, label="Specify the trainingset index")
         trainingset_boxsizer = wx.StaticBoxSizer(trainingset, wx.VERTICAL)
         self.trainingset = wx.SpinCtrl(self, value="0", min=0, max=100)
         trainingset_boxsizer.Add(
-            self.trainingset, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
-        )
+            self.trainingset, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
 
-        hbox1.Add(videotype_text_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-        hbox1.Add(shuffle_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-        hbox1.Add(trainingset_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-        boxsizer.Add(hbox1, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+        hbox1.Add(videotype_text_boxsizer, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        hbox1.Add(shuffle_boxsizer, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        hbox1.Add(trainingset_boxsizer, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        boxsizer.Add(hbox1, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         self.sizer.Add(
             boxsizer,
             pos=(4, 0),
             span=(1, 5),
             flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT,
-            border=10,
-        )
+            border=5)
 
         self.cfg = auxiliaryfunctions.read_config(self.config)
         if self.cfg.get("multianimalproject", False):
@@ -129,10 +127,9 @@ class Create_Labeled_Videos(wx.Panel):
                 label="Create video with animal ID colored?",
                 choices=["Yes", "No"],
                 majorDimension=1,
-                style=wx.RA_SPECIFY_COLS,
-            )
+                style=wx.RA_SPECIFY_COLS,)
             self.plot_idv.SetSelection(1)
-            hbox3.Add(self.plot_idv, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+            hbox3.Add(self.plot_idv, 3, wx.EXPAND | wx.TOP | wx.BOTTOM, 3)
 
         self.draw_skeleton = wx.RadioBox(
             self,
@@ -169,8 +166,7 @@ class Create_Labeled_Videos(wx.Panel):
         trail_pointsboxsizer = wx.StaticBoxSizer(self.trail_points_text, wx.VERTICAL)
         self.trail_points = wx.SpinCtrl(self, value="0")
         trail_pointsboxsizer.Add(
-            self.trail_points, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
-        )
+            self.trail_points, 3, wx.EXPAND | wx.TOP | wx.BOTTOM,3)
 
         self.bodypart_choice = wx.RadioBox(
             self,
@@ -192,19 +188,19 @@ class Create_Labeled_Videos(wx.Panel):
         self.bodyparts_to_compare.Bind(wx.EVT_CHECKLISTBOX, self.getbp)
         self.bodyparts_to_compare.Hide()
 
-        hbox2.Add(self.draw_skeleton, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-        hbox2.Add(trail_pointsboxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-        hbox2.Add(self.video_slow, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+        hbox2.Add(self.draw_skeleton, 3, wx.EXPAND | wx.TOP | wx.BOTTOM, 3)
+        hbox2.Add(trail_pointsboxsizer, 3, wx.EXPAND | wx.TOP | wx.BOTTOM, 3)
+        hbox2.Add(self.video_slow, 3, wx.EXPAND | wx.TOP | wx.BOTTOM, 3)
         boxsizer.Add(hbox2, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
-        hbox3.Add(self.filter, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-        hbox3.Add(self.bodypart_choice, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-        hbox3.Add(self.bodyparts_to_compare, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+        hbox3.Add(self.filter, 3, wx.EXPAND | wx.TOP | wx.BOTTOM, 3)
+        hbox4.Add(self.bodypart_choice, 3, wx.EXPAND | wx.TOP | wx.BOTTOM, 3)
+        hbox4.Add(self.bodyparts_to_compare, 3, wx.EXPAND | wx.TOP | wx.BOTTOM, 3)
 
         if self.cfg.get("multianimalproject", False):
             tracker_text = wx.StaticBox(self, label="Specify the Tracker Method!")
             tracker_text_boxsizer = wx.StaticBoxSizer(tracker_text, wx.VERTICAL)
-            trackertypes = ["skeleton", "box", "clowncats"]
+            trackertypes = ["skeleton", "box"]
             self.trackertypes = wx.ComboBox(
                 self, choices=trackertypes, style=wx.CB_READONLY
             )
@@ -212,9 +208,20 @@ class Create_Labeled_Videos(wx.Panel):
             tracker_text_boxsizer.Add(
                 self.trackertypes, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
             )
-            hbox3.Add(tracker_text_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+
+            self.trajectory = wx.RadioBox(
+                self,
+                label="Want to plot the trajectories?",
+                choices=["Yes", "No"],
+                majorDimension=1,
+                style=wx.RA_SPECIFY_COLS,
+            )
+
+            hbox4.Add(self.trajectory, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+            hbox4.Add(tracker_text_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         boxsizer.Add(hbox3, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+        boxsizer.Add(hbox4, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
         self.help_button = wx.Button(self, label="Help")
         self.sizer.Add(self.help_button, pos=(5, 0), flag=wx.LEFT, border=10)
@@ -284,6 +291,7 @@ class Create_Labeled_Videos(wx.Panel):
     def getbp(self, event):
         self.bodyparts = list(self.bodyparts_to_compare.GetCheckedStrings())
 
+
     def create_videos(self, event):
 
         shuffle = self.shuffle.GetValue()
@@ -329,6 +337,19 @@ class Create_Labeled_Videos(wx.Panel):
                 color_by=color_by,
                 track_method=self.trackertypes.GetValue(),
             )
+
+            if self.trajectory.GetStringSelection() == "Yes":
+                deeplabcut.plot_trajectories(
+                    self.config,
+                    self.filelist,
+                    displayedbodyparts=self.bodyparts,
+                    videotype=self.videotype.GetValue(),
+                    shuffle=shuffle,
+                    trainingsetindex=trainingsetindex,
+                    filtered=filtered,
+                    showfigures=False,
+                    track_method=self.trackertypes.GetValue(),
+                )
         else:
             deeplabcut.create_labeled_video(
                 self.config,
