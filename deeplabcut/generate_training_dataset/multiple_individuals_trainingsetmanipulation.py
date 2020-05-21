@@ -121,10 +121,10 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
     num_limbs=len(partaffinityfield_graph)
     partaffinityfield_predict=True
 
-    import deeplabcut
-    parent_path = Path(os.path.dirname(deeplabcut.__file__))
-    defaultconfigfile = str(parent_path / 'pose_cfg.yaml')
-    model_path,num_shuffles=auxfun_models.Check4weights(net_type,parent_path,num_shuffles)
+    # Loading the encoder (if necessary downloading from TF)
+    dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
+    defaultconfigfile = os.path.join(dlcparent_path, 'pose_cfg.yaml')
+    model_path,num_shuffles=auxfun_models.Check4weights(net_type, Path(dlcparent_path), num_shuffles)
 
     if Shuffles==None:
         Shuffles=range(1,num_shuffles+1,1)
@@ -266,7 +266,7 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
                     "display_iters": 500
                 }
 
-                defaultconfigfile = str(Path(deeplabcut.__file__).parents[0] / 'pose_cfg.yaml')
+                defaultconfigfile = os.path.join(dlcparent_path, 'pose_cfg.yaml')
                 trainingdata = trainingsetmanipulation.MakeTrain_pose_yaml(items2change,path_train_config,defaultconfigfile)
                 keys2save = [
                     "dataset", "num_joints", "all_joints", "all_joints_names",
@@ -280,7 +280,7 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
                                                             nmsradius=5., minconfidence=0.01) #setting important def. values for inference
 
                 #Setting inference cfg file:
-                defaultinference_configfile = str(Path(deeplabcut.__file__).parents[0] / 'inference_cfg.yaml')
+                defaultinference_configfile = os.path.join(dlcparent_path, 'inference_cfg.yaml')
                 items2change = {
                     "minimalnumberofconnections": int(len(cfg['multianimalbodyparts'])/2),
                     "topktoplot": len(cfg['individuals'])+1*(len(cfg['uniquebodyparts'])>0)

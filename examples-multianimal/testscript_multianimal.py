@@ -88,7 +88,7 @@ deeplabcut.evaluate_multianimal_crossvalidate(config_path)
 print('Network evaluated.')
 
 
-new_video_path = deeplabcut.ShortenVideo(video_path, start='00:00:00', stop='00:00:00.4',
+new_video_path = deeplabcut.ShortenVideo(video_path, start='00:00:00', stop='00:00:01',
                                          outsuffix='short', outpath=os.path.join(cfg['project_path'], 'videos'))
 
 print('Analyzing video...')
@@ -107,11 +107,7 @@ deeplabcut.convert_detections2tracklets(config_path, [new_video_path], 'mov', tr
 
 
 print('Extracting maps...')
-deeplabcut.extract_save_all_maps(config_path)
-
-
-new_video_path = deeplabcut.ShortenVideo(video_path, start='00:00:00', stop='00:00:00.4',
-                                         outsuffix='short', outpath=os.path.join(cfg['project_path'], 'videos'))
+deeplabcut.extract_save_all_maps(config_path, Indices=[0,1,2])
 
 print('Analyzing video...')
 deeplabcut.analyze_videos(config_path, [new_video_path], 'mov', save_as_csv=True, dynamic=(True, .1, 5))

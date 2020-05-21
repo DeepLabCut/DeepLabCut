@@ -756,10 +756,10 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,
             else:
                 raise ValueError('Invalid augmenter type:', augmenter_type)
 
-        import deeplabcut
-        parent_path = Path(os.path.dirname(deeplabcut.__file__))
-        defaultconfigfile = str(parent_path / 'pose_cfg.yaml')
-        model_path,num_shuffles=auxfun_models.Check4weights(net_type,parent_path,num_shuffles) #if the model does not exist >> throws error!
+        # Loading the encoder (if necessary downloading from TF)
+        dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
+        defaultconfigfile = os.path.join(dlcparent_path, 'pose_cfg.yaml')
+        model_path,num_shuffles=auxfun_models.Check4weights(net_type, Path(dlcparent_path), num_shuffles)
 
         if Shuffles is None:
             Shuffles = range(1, num_shuffles + 1)
