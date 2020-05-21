@@ -69,7 +69,7 @@ This is an actively developed package and we welcome community development and i
 
 - We are a community partner on the [![Image.sc forum](https://img.shields.io/badge/dynamic/json.svg?label=forum&amp;url=https%3A%2F%2Fforum.image.sc%2Ftags%2Fdeeplabcut.json&amp;query=%24.topic_list.tags.0.topic_count&amp;colorB=brightgreen&amp;&amp;suffix=%20topics&amp;logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC)](https://forum.image.sc/tags/deeplabcut). Please post help and support questions on the forum with the tag DeepLabCut. Check out their mission statement [Scientific Community Image Forum: A discussion forum for scientific image software](https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3000340). 
 
-- If you encounter a previously unreported bug/code issue, please post here (we encourage you to search issues first): https://github.com/AlexEMG/DeepLabCut/issues
+- If you encounter a previously unreported bug/code issue, please post here (we encourage you to search issues first): https://github.com/DeepLabCut/DeepLabCut/issues
 
 - For quick discussions here: [![Gitter](https://badges.gitter.im/DeepLabCut/community.svg)](https://gitter.im/DeepLabCut/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
@@ -88,23 +88,28 @@ Please check out the following references for more details:
         author = {Alexander Mathis and Pranav Mamidanna and Kevin M. Cury and Taiga Abe  and Venkatesh N. Murthy and Mackenzie W. Mathis and Matthias Bethge},
         journal={Nature Neuroscience},
         year={2018},
-        url={https://www.nature.com/articles/s41593-018-0209-y}
-    }
+        url={https://www.nature.com/articles/s41593-018-0209-y}}
 
      @article{NathMathisetal2019,
         title={Using DeepLabCut for 3D markerless pose estimation across species and behaviors},
         author = {Nath*, Tanmay and Mathis*, Alexander and Chen, An Chi and Patel, Amir and Bethge, Matthias and Mathis, Mackenzie W},
         journal={Nature Protocols},
         year={2019},
-        url={https://doi.org/10.1038/s41596-019-0176-0}
-    }
+        url={https://doi.org/10.1038/s41596-019-0176-0}}
 
     @article{insafutdinov2016eccv,
         title = {DeeperCut: A Deeper, Stronger, and Faster Multi-Person Pose Estimation Model},
         author = {Eldar Insafutdinov and Leonid Pishchulin and Bjoern Andres and Mykhaylo Andriluka and Bernt Schiele},
         booktitle = {ECCV'16},
-        url = {http://arxiv.org/abs/1605.03170}
-    }
+        url = {http://arxiv.org/abs/1605.03170}}
+    
+    @article{Mathis2020DeepLT,
+        title={Deep learning tools for the measurement of animal behavior in neuroscience},
+        author={Mackenzie W. Mathis and Alexander Mathis},
+        journal={Current Opinion in Neurobiology},
+        year={2020},
+        volume={60},
+        pages={1-11}}
 
 Our open-access pre-prints:
 
@@ -152,7 +157,9 @@ This project is licensed under the GNU Lesser General Public License v3.0. Note 
 
 ## Versions:
 
-VERSION 2.x+: This is the **Python package** of [DeepLabCut](https://www.nature.com/articles/s41593-018-0209-y) that was originally released with our [Nature Protocols](https://doi.org/10.1038/s41596-019-0176-0) paper (preprint [here](https://www.biorxiv.org/content/10.1101/476531v1)).
+VERSION 2.2: Multi-animal pose estimation and tracking with DeepLabCut.
+
+VERSION 2.0-2.1: This is the **Python package** of [DeepLabCut](https://www.nature.com/articles/s41593-018-0209-y) that was originally released with our [Nature Protocols](https://doi.org/10.1038/s41596-019-0176-0) paper (preprint [here](https://www.biorxiv.org/content/10.1101/476531v1)).
 This package includes graphical user interfaces to label your data, and take you from data set creation to automatic behavioral analysis. It also introduces an active learning framework to efficiently use DeepLabCut on large experimental projects, and data augmentation tools that improve network performance, especially in challenging cases (see [panel b](https://camo.githubusercontent.com/77c92f6b89d44ca758d815bdd7e801247437060b/68747470733a2f2f737461746963312e73717561726573706163652e636f6d2f7374617469632f3537663664353163396637343536366635356563663237312f742f3563336663316336373538643436393530636537656563372f313534373638323338333539352f636865657461682e706e673f666f726d61743d37353077)).
 
 VERSION 1.0: The initial, Nature Neuroscience version of [DeepLabCut](https://www.nature.com/articles/s41593-018-0209-y) can be found in the history of git, or here: https://github.com/AlexEMG/DeepLabCut/releases/tag/1.11
@@ -160,7 +167,7 @@ VERSION 1.0: The initial, Nature Neuroscience version of [DeepLabCut](https://ww
 ## News (and in the news):
 - May 2020: maDLC (DLC 2.2) beta is released!
 - Mar 2020: Inspired by suggestions we heard at this weeks CZI's Essential Open Source Software meeting in Berkeley, CA we updated our [docs](docs/UseOverviewGuide.md). Let us know what you think!
-- Feb 2020: DLC 2.2 with strong multi-animal support will soon be released. Check out the [sneak peek](https://twitter.com/DeepLabCut/status/1231272002528448515)
+- Feb 2020: Our [review on animal pose estimation is published!](https://www.sciencedirect.com/science/article/pii/S0959438819301151) 
 - Nov 2019: DeepLabCut was recognized by the Chan Zuckerberg Initiative (CZI) with funding to support this project. Read more in the [Harvard Gazette](https://news.harvard.edu/gazette/story/newsplus/harvard-researchers-awarded-czi-open-source-award/), on [CZI's Essential Open Source Software for Science site](https://chanzuckerberg.com/eoss/proposals/) and in their [Medium post](https://medium.com/@cziscience/how-open-source-software-contributors-are-accelerating-biomedicine-1a5f50f6846a)
 - Oct 2019: DLC 2.1 released with lots of updates. In particular, a Project Manager GUI, MobileNetsV2, and augmentation packages (Imgaug and Tensorpack). For detailed updates see [releases](https://github.com/AlexEMG/DeepLabCut/releases)
 - Sept 2019: We published two preprints. One showing that [ImageNet pretraining contributes to robustness](https://arxiv.org/abs/1909.11229) and a [review on animal pose estimation](https://arxiv.org/abs/1909.13868). Check them out!
