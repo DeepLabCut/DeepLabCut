@@ -210,9 +210,11 @@ def edit_config(configname, edits, output_name=''):
     Examples
     --------
     config_path = 'my_stellar_lab/dlc/config.yaml'
+
     edits = {'numframes2pick': 5,
              'trainingFraction': [0.5, 0.8],
              'skeleton': [['a', 'b'], ['b', 'c']]}
+
     deeplabcut.auxiliaryfunctions.edit_config(config_path, edits)
     """
     cfg = read_plainconfig(configname)
@@ -264,21 +266,20 @@ def attempttomakefolder(foldername,recursive=False):
         else:
             os.mkdir(foldername)
 
-# Read the pickle file
 def read_pickle(filename):
+    ''' Read the pickle file '''
     with open(filename, 'rb') as handle:
         return(pickle.load(handle))
 
-# Write the pickle file
 def write_pickle(filename,data):
+    ''' Write the pickle file '''
     with open(filename, 'wb') as handle:
         pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 def Getlistofvideos(videos,videotype):
     ''' Returns list of videos of videotype "videotype" in
     folder videos or for list of videos. '''
-    #checks if input is a directory
-    if [os.path.isdir(i) for i in videos] == [True]:
+    if [os.path.isdir(i) for i in videos] == [True]:     #checks if input is a directory
         """
         Returns all the videos in the directory.
         """
@@ -376,11 +377,10 @@ def GetEvaluationFolder(trainFraction,shuffle,cfg,modelprefix=''):
     iterate = 'iteration-'+str(cfg['iteration'])
     return Path(modelprefix,'evaluation-results/'+ iterate+'/'+Task + date + '-trainset' + str(int(trainFraction * 100)) + 'shuffle' + str(shuffle))
 
-
 def get_deeplabcut_path():
+    ''' Get path of where deeplabcut is currently running '''
     import importlib.util
     return os.path.split(importlib.util.find_spec('deeplabcut').origin)[0]
-
 
 def IntersectionofBodyPartsandOnesGivenbyUser(cfg,comparisonbodyparts):
     ''' Returns all body parts when comparisonbodyparts=='all', otherwise all bpts that are in the intersection of comparisonbodyparts and the actual bodyparts '''
@@ -480,8 +480,6 @@ def CheckifPostProcessing(folder,vname,DLCscorer,DLCscorerlegacy,suffix='filtere
                 return False, outdataname,sourcedataname, DLCscorer
 
 
-
-
 def CheckifNotAnalyzed(destfolder,vname,DLCscorer,DLCscorerlegacy,flag='video'):
     h5files = list(grab_files_in_folder(destfolder, 'h5', relative=False))
     if not len(h5files):
@@ -502,6 +500,7 @@ def CheckifNotAnalyzed(destfolder,vname,DLCscorer,DLCscorerlegacy,flag='video'):
             elif flag == 'framestack':
                 print("Frames already analyzed!", h5file)
             return False, h5file, DLCscorerlegacy
+
     #If there was no match...
     dataname = os.path.join(destfolder, vname + DLCscorer + '.h5')
     return True, dataname, DLCscorer
@@ -521,7 +520,7 @@ def CheckifNotEvaluated(folder,DLCscorer,DLCscorerlegacy,snapshot):
 
 
 def find_video_metadata(folder, videoname, scorer):
-    # For backward compatibility, let us search the substring 'meta'
+    ''' For backward compatibility, let us search the substring 'meta' '''
     scorer_legacy = scorer.replace('DLC', 'DeepCut')
     meta = [file for file in grab_files_in_folder(folder, 'pickle')
             if 'meta' in file and (file.startswith(videoname + scorer) or file.startswith(videoname + scorer_legacy))]

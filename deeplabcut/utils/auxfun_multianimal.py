@@ -12,6 +12,8 @@ import os, pickle
 import pandas as pd
 import numpy as np
 from easydict import EasyDict as edict
+from deeplabcut.utils import auxiliaryfunctions
+from pathlib import Path
 
 def extractindividualsandbodyparts(cfg):
     individuals=cfg['individuals'].copy()
@@ -29,18 +31,23 @@ def IntersectionofIndividualsandOnesGivenbyUser(cfg, individuals):
     else:  # take only items in list that are actually bodyparts...
         return [ind for ind in individuals if ind in all_indivs]
 
-def getpafgraph(cfg,printnames=True):
-    ''' auxiliary function that turns skeleton (list of connected bodypart pairs) INTO
-    list of corresponding indices '''
+def getpafgraph(cfg, printnames=True):
+    ''' Auxiliary function that turns skeleton (list of connected bodypart pairs)
+        into a list of corresponding indices (with regard to the stacked multianimal/uniquebodyparts)
+
+        Convention: multianimalbodyparts go first!
+    '''
     individuals,uniquebodyparts,multianimalbodyparts=extractindividualsandbodyparts(cfg)
     # Attention this order has to be consistent (for training set creation, training, inference etc.)
+
     bodypartnames=multianimalbodyparts+uniquebodyparts
     lookupdict={bodypartnames[j]:j for j in range(len(bodypartnames))}
-    print(lookupdict)
+    #print(lookupdict)
+
     partaffinityfield_graph=[]
     for link in cfg['skeleton']:
         if link[0] in bodypartnames and link[1] in bodypartnames:
-            print(link,lookupdict[link[0]])
+            #print(link,lookupdict[link[0]])
             partaffinityfield_graph.append([int(lookupdict[link[0]]),int(lookupdict[link[1]])])
         else:
             print("Attention, parts do not exist!", link)
@@ -74,22 +81,19 @@ def LoadFullMultiAnimalData(dataname):
         metadata=pickle.load(handle)
     return data, metadata
 
-
-from deeplabcut.utils.auxiliaryfunctions import read_config, read_config, read_plainconfig, write_plainconfig
-from pathlib import Path
 def returnlabelingdata(config):
     ''' Returns a specific labeleing data set -- the user will be asked which one. '''
-    cfg = read_config(config)
+    cfg = auxiliaryfunctions.read_config(config)
     videos = cfg['video_sets'].keys()
     video_names = [Path(i).stem for i in videos]
     folders = [Path(config).parent / 'labeled-data' /Path(i) for i in video_names]
     for folder in folders:
-            print("Do you want to get the data for folder:", folder, "?")
-            askuser = input("yes/no")
-            if askuser=='y' or askuser=='yes' or askuser=='Ja' or askuser=='ha': # multilanguage support :)
-                fn=os.path.join(str(folder),'CollectedData_' + cfg['scorer'] + '.h5')
-                Data=pd.read_hdf(fn)
-                return Data
+        print("Do you want to get the data for folder:", folder, "?")
+        askuser = input("yes/no")
+        if askuser=='y' or askuser=='yes' or askuser=='Ja' or askuser=='ha': # multilanguage support :)
+            fn=os.path.join(str(folder),'CollectedData_' + cfg['scorer'] + '.h5')
+            Data=pd.read_hdf(fn)
+            return Data
 
 def convert2_maDLC(config, userfeedback=True, forceindividual=None):
     """
@@ -118,7 +122,7 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
     >>> deeplabcut.convert2_maDLC('/socialrearing-task/config.yaml', forceindividual='mus17')
     """
 
-    cfg = read_config(config)
+    cfg = auxiliaryfunctions.read_config(config)
     videos = cfg['video_sets'].keys()
     video_names = [Path(i).stem for i in videos]
     folders = [Path(config).parent / 'labeled-data' /Path(i) for i in video_names]
@@ -165,7 +169,7 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
 
 def convert_single2multiplelegacyAM(config,userfeedback=True,target=None):
     ''' Convert multi animal to single animal code and vice versa. Note that by providing target='single'/'multi' this will be target! '''
-    cfg = read_config(config)
+    cfg = auxiliaryfunctions.read_config(config)
     videos = cfg['video_sets'].keys()
     video_names = [Path(i).stem for i in videos]
     folders = [Path(config).parent / 'labeled-data' /Path(i) for i in video_names]
@@ -253,30 +257,13 @@ def convert_single2multiplelegacyAM(config,userfeedback=True,target=None):
                 DataFrame.to_hdf(fn + '.h5','df_with_missing',format='table', mode='w')
                 DataFrame.to_csv(fn + ".csv")
 
-
 def form_default_inferencecfg(cfg):
-    # Most of these parameters would be cross validated based on evaluation!
-    inferencecfg = edict()
-    inferencecfg.variant = 0
-    inferencecfg.minimalnumberofconnections = len(cfg['multianimalbodyparts']) / 2  # reasonable default
-    inferencecfg.averagescore = 0.1
-    inferencecfg.distnormalizationLOWER = 0
-    inferencecfg.distnormalization = 400  # SET??
-
-    inferencecfg.detectionthresholdsquare = 0.1
-    inferencecfg.addlikelihoods = .15
-    inferencecfg.pafthreshold = 0.1
-    inferencecfg.method = 'm1'
-    inferencecfg.withid = False  # TODO: set automatically (if >0 id channels!)
-    inferencecfg.topktoplot = len(cfg['individuals']) + 1 * (len(cfg['uniquebodyparts']) > 0)  # reasonable default
-
-    ## bbox variable:
-    inferencecfg.boundingboxslack = 10
-    inferencecfg.max_age = 100
-    inferencecfg.min_hits = 3
-    inferencecfg.iou_threshold = .2
+    #load defaults
+    inferencecfg=auxiliaryfunctions.read_plainconfig(os.path.join(auxiliaryfunctions.get_deeplabcut_path(),'inference_cfg.yaml'))
+    #set project specific parameters:
+    inferencecfg['minimalnumberofconnections'] = len(cfg['multianimalbodyparts']) / 2  # reasonable default
+    inferencecfg['topktoplot'] = len(cfg['individuals']) + 1 * (len(cfg['uniquebodyparts']) > 0)  # reasonable default
     return inferencecfg
-
 
 def check_inferencecfg_sanity(cfg, inferencecfg):
     template = form_default_inferencecfg(cfg)
@@ -288,9 +275,9 @@ def check_inferencecfg_sanity(cfg, inferencecfg):
 def read_inferencecfg(path_inference_config,cfg):
     """Load inferencecfg or initialize it."""
     try:
-        inferencecfg= read_plainconfig(str(path_inference_config))
+        inferencecfg= auxiliaryfunctions.read_plainconfig(str(path_inference_config))
         inferencecfg = edict(inferencecfg)
     except FileNotFoundError:
         inferencecfg = form_default_inferencecfg(cfg)
-        write_plainconfig(str(path_inference_config), dict(inferencecfg))
+        auxiliaryfunctions.write_plainconfig(str(path_inference_config), dict(inferencecfg))
     return inferencecfg
