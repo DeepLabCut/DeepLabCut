@@ -94,21 +94,11 @@ class Refine_tracklets(wx.Panel):
         self.sel_datafile.Bind(wx.EVT_FILEPICKER_CHANGED, self.select_datafile)
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
-        slider_swap_text = wx.StaticBox(self, label="Specify the min swap fraction")
-        slider_swap_sizer = wx.StaticBoxSizer(slider_swap_text, wx.VERTICAL)
-        self.slider_swap = wx.SpinCtrl(self, value="0")
-        slider_swap_sizer.Add(self.slider_swap, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-        hbox.Add(slider_swap_sizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-
-        slider_track_text = wx.StaticBox(
-            self, label="Specify the min relative tracklet length"
-        )
-        slider_track_sizer = wx.StaticBoxSizer(slider_track_text, wx.VERTICAL)
-        self.slider_track = wx.SpinCtrl(self, value="0")
-        slider_track_sizer.Add(
-            self.slider_track, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
-        )
-        hbox.Add(slider_track_sizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        slider_gap_text = wx.StaticBox(self, label="Specify the max gap size to fill")
+        slider_gap_sizer = wx.StaticBoxSizer(slider_gap_text, wx.VERTICAL)
+        self.slider_gap = wx.SpinCtrl(self, value="0")
+        slider_gap_sizer.Add(self.slider_gap, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+        hbox.Add(slider_gap_sizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         traillength_text = wx.StaticBox(self, label="Trail Length (visualization)")
         traillength_sizer = wx.StaticBoxSizer(traillength_text, wx.VERTICAL)
@@ -236,17 +226,18 @@ class Refine_tracklets(wx.Panel):
 
     def select_datafile(self, event):
         self.datafile = self.sel_datafile.GetPath()
+        self.sel_datafile.SetPath(os.path.basename(self.datafile))
 
     def select_video(self, event):
         self.video = self.sel_video.GetPath()
+        self.sel_video.SetPath(os.path.basename(self.video))
 
     def refine_tracklets(self, event):
         self.manager, self.viz = deeplabcut.refine_tracklets(
             self.config,
             self.datafile,
             self.video,
-            self.slider_swap.GetValue() / 100,
-            self.slider_track.GetValue() / 100,
+            max_gap=self.slider_gap.GetValue(),
             trail_len=self.length_track.GetValue(),
         )
         self.export.Enable()
@@ -261,7 +252,6 @@ class Refine_tracklets(wx.Panel):
         self.sel_config.SetPath("")
         self.sel_datafile.SetPath("")
         self.sel_video.SetPath("")
-        self.slider_swap.SetValue(1)
-        self.slider_track.SetValue(1)
+        self.slider_gap.SetValue(0)
         self.length_track.SetValue(25)
         # self.save.Enable(False)
