@@ -141,7 +141,7 @@ class MainFrame(wx.Frame):
         screenHeight = screenSizes[index][1]
         self.gui_size = (screenWidth*0.7,screenHeight*0.85)
 
-        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = 'DeepLabCut - Refinement ToolBox',
+        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = 'DeepLabCut2.0 - Refinement ToolBox',
                             size = wx.Size(self.gui_size), pos = wx.DefaultPosition, style = wx.RESIZE_BORDER|wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
         self.statusbar = self.CreateStatusBar()
         self.statusbar.SetStatusText("")
@@ -271,21 +271,6 @@ class MainFrame(wx.Frame):
             self.nextImage(event=None)
         elif event.GetKeyCode() == wx.WXK_LEFT:
             self.prevImage(event=None)
-        elif event.GetKeyCode() == wx.WXK_BACK:
-            pos_abs = event.GetPosition()
-            inv = self.axes.transData.inverted()
-            pos_rel = list(inv.transform(pos_abs))
-            pos_rel[1] = self.axes.get_ylim()[0] - pos_rel[1]  # Recall y-axis is inverted
-            i = np.nanargmin([self.calc_distance(*dp.point.center, *pos_rel) for dp in self.drs])
-            closest_dp = self.drs[i]
-            msg = wx.MessageBox(f'Do you want to remove the label {closest_dp.individual_name}:{closest_dp.bodyParts}?',
-                                'Remove!', wx.YES_NO | wx.ICON_WARNING)
-            if msg == 2:
-                closest_dp.delete_data()
-
-    @staticmethod
-    def calc_distance(x1, y1, x2, y2):
-        return np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
     def closewindow(self, event):
         self.Destroy()

@@ -16,7 +16,5 @@ if os.environ.get('DLClight', default=False) == 'True':
 else:
     from deeplabcut.refine_training_dataset.refinement import *
     from deeplabcut.refine_training_dataset.auxfun_drag import *
-    from deeplabcut.refine_training_dataset.tracklets import *
-    
-from deeplabcut.refine_training_dataset.outlier_frames import *
 
+from deeplabcut.refine_training_dataset.outlier_frames import *

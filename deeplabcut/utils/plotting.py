@@ -14,94 +14,104 @@ Licensed under GNU Lesser General Public License v3.0
 import os.path
 from pathlib import Path
 import argparse
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualization
+from deeplabcut.utils import auxiliaryfunctions
 import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-def Histogram(vector,color,bins, ax=None):
+# https://stackoverflow.com/questions/14720331/how-to-generate-random-colors-in-matplotlib
+def get_cmap(n, name='hsv'):
+    '''Returns a function that maps each index in 0, 1, ..., n-1 to a distinct
+    RGB color; the keyword argument name must be a standard mpl colormap name.'''
+    return plt.cm.get_cmap(name, n)
+
+def Histogram(vector,color,bins):
     dvector=np.diff(vector)
     dvector=dvector[np.isfinite(dvector)]
-    if ax is None:
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-    ax.hist(dvector,color=color,histtype='step',bins=bins)
+    plt.hist(dvector,color=color,histtype='step',bins=bins)
+#    fig.colorbar(im, ax=ax)
 
-def PlottingResults(tmpfolder, Dataframe, cfg, bodyparts2plot, individuals2plot, showfigures=False, suffix='.png'):
+def PlottingResults(tmpfolder,Dataframe,scorer,cfg, bodyparts2plot, showfigures,suffix='.png'):
     ''' Plots poses vs time; pose x vs pose y; histogram of differences and likelihoods.'''
+    plt.figure(figsize=(8, 6))
     pcutoff = cfg['pcutoff']
-    colors = visualization.get_cmap(len(bodyparts2plot), name=cfg['colormap'])
+    colors = get_cmap(len(bodyparts2plot),name = cfg['colormap'])
     alphavalue = cfg['alphavalue']
-    if individuals2plot:
-        Dataframe = Dataframe.loc(axis=1)[:, individuals2plot]
-    animal_bpts = Dataframe.columns.get_level_values('bodyparts')
-    # Pose X vs pose Y
-    fig1 = plt.figure(figsize=(8, 6))
-    ax1 = fig1.add_subplot(111)
-    ax1.set_xlabel('X position in pixels')
-    ax1.set_ylabel('Y position in pixels')
-    ax1.invert_yaxis()
 
-    # Poses vs time
-    fig2 = plt.figure(figsize=(10, 3))
-    ax2 = fig2.add_subplot(111)
-    ax2.set_xlabel('Frame Index')
-    ax2.set_ylabel('X-(dashed) and Y- (solid) position in pixels')
+    for bpindex, bp in enumerate(bodyparts2plot):
+        Index=Dataframe[scorer][bp]['likelihood'].values > pcutoff
+        plt.plot(Dataframe[scorer][bp]['x'].values[Index],Dataframe[scorer][bp]['y'].values[Index],'.',color=colors(bpindex),alpha=alphavalue)
 
-    # Likelihoods
-    fig3 = plt.figure(figsize=(10, 3))
-    ax3 = fig3.add_subplot(111)
-    ax3.set_xlabel('Frame Index')
-    ax3.set_ylabel('Likelihood (use to set pcutoff)')
-
-    # Histograms
-    fig4 = plt.figure()
-    ax4 = fig4.add_subplot(111)
-    ax4.set_ylabel('Count')
-    ax4.set_xlabel('DeltaX and DeltaY')
-    bins = np.linspace(0, np.amax(Dataframe.max()), 100)
-
-    with np.errstate(invalid='ignore'):
-        for bpindex, bp in enumerate(bodyparts2plot):
-            if bp in animal_bpts:  # Avoid 'unique' bodyparts only present in the 'single' animal
-                prob = Dataframe.xs((bp, 'likelihood'), level=(-2, -1), axis=1).values.squeeze()
-                mask = prob < pcutoff
-                temp_x = np.ma.array(Dataframe.xs((bp, 'x'), level=(-2, -1), axis=1).values.squeeze(), mask=mask)
-                temp_y = np.ma.array(Dataframe.xs((bp, 'y'), level=(-2, -1), axis=1).values.squeeze(), mask=mask)
-                ax1.plot(temp_x, temp_y, '.', color=colors(bpindex), alpha=alphavalue)
-
-                ax2.plot(temp_x, '--', color=colors(bpindex), alpha=alphavalue)
-                ax2.plot(temp_y, '-', color=colors(bpindex), alpha=alphavalue)
-
-                ax3.plot(prob, '-', color=colors(bpindex), alpha=alphavalue)
-
-                Histogram(temp_x, colors(bpindex), bins, ax4)
-                Histogram(temp_y, colors(bpindex), bins, ax4)
+    plt.gca().invert_yaxis()
 
     sm = plt.cm.ScalarMappable(cmap=plt.get_cmap(cfg['colormap']), norm=plt.Normalize(vmin=0, vmax=len(bodyparts2plot)-1))
     sm._A = []
-    for ax in ax1, ax2, ax3, ax4:
-        cbar = plt.colorbar(sm, ax=ax, ticks=range(len(bodyparts2plot)))
-        cbar.set_ticklabels(bodyparts2plot)
+    cbar = plt.colorbar(sm,ticks=range(len(bodyparts2plot)))
+    cbar.set_ticklabels(bodyparts2plot)
+    plt.xlabel('X position in pixels')
+    plt.ylabel('Y position in pixels')
+    plt.savefig(os.path.join(tmpfolder,"trajectory"+suffix))
+    plt.figure(figsize=(30, 10))
+    Time=np.arange(np.size(Dataframe[scorer][bodyparts2plot[0]]['x'].values))
 
-    fig1.savefig(os.path.join(tmpfolder, 'trajectory' + suffix))
-    fig2.savefig(os.path.join(tmpfolder, 'plot' + suffix))
-    fig3.savefig(os.path.join(tmpfolder, 'plot-likelihood' + suffix))
-    fig4.savefig(os.path.join(tmpfolder, 'hist' + suffix))
+    for bpindex, bp in enumerate(bodyparts2plot):
+        Index=Dataframe[scorer][bp]['likelihood'].values > pcutoff
+        plt.plot(Time[Index],Dataframe[scorer][bp]['x'].values[Index],'--',color=colors(bpindex),alpha=alphavalue)
+        plt.plot(Time[Index],Dataframe[scorer][bp]['y'].values[Index],'-',color=colors(bpindex),alpha=alphavalue)
 
-    if not showfigures:
-        plt.close('all')
+    sm = plt.cm.ScalarMappable(cmap=plt.get_cmap(cfg['colormap']), norm=plt.Normalize(vmin=0, vmax=len(bodyparts2plot)-1))
+    sm._A = []
+    cbar = plt.colorbar(sm,ticks=range(len(bodyparts2plot)))
+    cbar.set_ticklabels(bodyparts2plot)
+    plt.xlabel('Frame Index')
+    plt.ylabel('X-(dashed) and Y- (solid) position in pixels')
+    plt.savefig(os.path.join(tmpfolder,"plot"+suffix))
+
+    plt.figure(figsize=(30, 10))
+    for bpindex, bp in enumerate(bodyparts2plot):
+        Index=Dataframe[scorer][bp]['likelihood'].values > pcutoff
+        plt.plot(Time,Dataframe[scorer][bp]['likelihood'].values,'-',color=colors(bpindex),alpha=alphavalue)
+
+    sm = plt.cm.ScalarMappable(cmap=plt.get_cmap(cfg['colormap']), norm=plt.Normalize(vmin=0, vmax=len(bodyparts2plot)-1))
+    sm._A = []
+    cbar = plt.colorbar(sm,ticks=range(len(bodyparts2plot)))
+    cbar.set_ticklabels(bodyparts2plot)
+    plt.xlabel('Frame Index')
+    plt.ylabel('Likelihood')
+
+    plt.savefig(os.path.join(tmpfolder,"plot-likelihood"+suffix))
+
+    plt.figure()
+    bins=np.linspace(0,np.amax(Dataframe.max()),100)
+
+    for bpindex, bp in enumerate(bodyparts2plot):
+        Index=Dataframe[scorer][bp]['likelihood'].values < pcutoff
+        X=Dataframe[scorer][bp]['x'].values
+        X[Index]=np.nan
+        Histogram(X,colors(bpindex),bins)
+        Y=Dataframe[scorer][bp]['x'].values
+        Y[Index]=np.nan
+        Histogram(Y,colors(bpindex),bins)
+
+    sm = plt.cm.ScalarMappable(cmap=plt.get_cmap(cfg['colormap']), norm=plt.Normalize(vmin=0, vmax=len(bodyparts2plot)-1))
+    sm._A = []
+    cbar = plt.colorbar(sm,ticks=range(len(bodyparts2plot)))
+    cbar.set_ticklabels(bodyparts2plot)
+    plt.ylabel('Count')
+    plt.xlabel('DeltaX and DeltaY')
+    plt.savefig(os.path.join(tmpfolder,"hist"+suffix))
+
+    if showfigures!=True:
+        plt.close("all")
     else:
         plt.show()
-
 
 ##################################################
 # Looping analysis over video
 ##################################################
 
 def plot_trajectories(config, videos, videotype='.avi', shuffle=1, trainingsetindex=0, filtered=False,
-                      displayedbodyparts='all', displayedindividuals='all', showfigures=False, destfolder=None,
-                      modelprefix='', track_method=''):
+                      displayedbodyparts='all', showfigures=False, destfolder=None):
     """
     Plots the trajectories of various bodyparts across the video.
 
@@ -146,52 +156,35 @@ def plot_trajectories(config, videos, videotype='.avi', shuffle=1, trainingsetin
     """
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg['TrainingFraction'][trainingsetindex]
-    DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction, modelprefix=modelprefix) #automatically loads corresponding model (even training iteration based on snapshot index)
+    DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction) #automatically loads corresponding model (even training iteration based on snapshot index)
     bodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg, displayedbodyparts)
-    individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(cfg, displayedindividuals)
-    Videos=auxiliaryfunctions.Getlistofvideos(videos, videotype)
-    if not len(Videos):
-        print('No videos found. Make sure you passed a list of videos and that *videotype* is right.')
-        return
-
-    failed = []
+    Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
     for video in Videos:
+        print(video)
         if destfolder is None:
             videofolder = str(Path(video).parents[0])
         else:
             videofolder=destfolder
 
         vname = str(Path(video).stem)
-        print("Loading ", video, "and data.")
-        try:
-            df, _, _, suffix = auxiliaryfunctions.load_analyzed_data(videofolder, vname, DLCscorer, filtered, track_method)
-            failed.append(False)
-            tmpfolder = os.path.join(videofolder, 'plot-poses', vname)
-            auxiliaryfunctions.attempttomakefolder(tmpfolder, recursive=True)
-            # Keep only the individuals and bodyparts that were labeled
-            labeled_bpts = [bp for bp in df.columns.get_level_values('bodyparts').unique() if bp in bodyparts]
-            for animal in individuals:
-                PlottingResults(tmpfolder, df, cfg, labeled_bpts, animal,
-                                showfigures, suffix + animal + '.png')
-        except FileNotFoundError as e:
-            failed.append(True)
-            print(e)
-            try:
-                _ = auxiliaryfunctions.load_detection_data(video, DLCscorer, track_method)
-                print('Call "deeplabcut.refine_training_dataset.convert_raw_tracks_to_h5()"'
-                      ' prior to plotting the trajectories.')
-            except FileNotFoundError as e:
-                print(e)
-                print(f'Make sure {video} was previously analyzed, and that '
-                      f'detections were successively converted to tracklets using "deeplabcut.convert_detections2tracklets()" '
-                      f'and "deeplabcut.convert_raw_tracks_to_h5()".')
+        print("Starting % ", videofolder, video)
+        notanalyzed, dataname, DLCscorer=auxiliaryfunctions.CheckifNotAnalyzed(videofolder,vname,DLCscorer,DLCscorerlegacy,flag='checking')
 
-    if not all(failed):
-        print('Plots created! Please check the directory "plot-poses" within the video directory')
-    else:
-        print(f'Plots could not be created! '
-              f'Videos were not evaluated with the current scorer {DLCscorer}.')
+        if notanalyzed:
+            print("The video was not analyzed with this scorer:", DLCscorer)
+        else:
+            #LoadData
+            print("Loading ", video, "and data.")
+            datafound,metadata,Dataframe,DLCscorer,suffix=auxiliaryfunctions.LoadAnalyzedData(str(videofolder),vname,DLCscorer,filtered) #returns boolean variable if data was found and metadata + pandas array
+            if datafound:
+                basefolder=videofolder
+                auxiliaryfunctions.attempttomakefolder(basefolder)
+                auxiliaryfunctions.attempttomakefolder(os.path.join(basefolder,'plot-poses'))
+                tmpfolder = os.path.join(basefolder,'plot-poses', vname)
+                auxiliaryfunctions.attempttomakefolder(tmpfolder)
+                PlottingResults(tmpfolder, Dataframe, DLCscorer, cfg, bodyparts, showfigures, suffix+'.png')
 
+    print('Plots created! Please check the directory "plot-poses" within the video directory')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

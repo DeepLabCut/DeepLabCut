@@ -25,16 +25,17 @@ def Cuttrainingschedule(path_config_file,shuffle,trainingsetindex=0,initweights=
     cfg=deeplabcut.auxiliaryfunctions.read_config(path_config_file)
     posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][trainingsetindex] * 100)) + 'shuffle' + str(shuffle),'train/pose_cfg.yaml')
 
-    edits = {'save_iters': lastvalue,
-             'display_iters': 1,
-             'multi_step': [[0.001, lastvalue]],
-             'intermediate_supervision': False}
+    DLC_config=deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
+    DLC_config['save_iters']=lastvalue
+    DLC_config['display_iters']=1
+    DLC_config['multi_step']=[[0.001,lastvalue]]
+    DLC_config['intermediate_supervision']=False #True
 
-    if initweights == 'previteration':
-        edits['init_weights'] = os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration']-1)+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][trainingsetindex] * 100)) + 'shuffle' + str(shuffle),'train/snapshot-'+str(lastvalue))
+    if initweights=='previteration':
+        DLC_config['init_weights']=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration']-1)+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][trainingsetindex] * 100)) + 'shuffle' + str(shuffle),'train/snapshot-'+str(lastvalue))
 
     print("CHANGING training parameters to end quickly!")
-    DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
+    deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
     return
 
 print("Imported DLC!")
@@ -105,17 +106,16 @@ for shuffle,net_type in enumerate(['mobilenet_v2_0.35','resnet_50']): #'mobilene
         # Make super short video (so the analysis is quick!)
         newvideo=deeplabcut.ShortenVideo(video[0],start='00:00:00',stop='00:00:00.4',outsuffix='short',outpath=os.path.join(cfg['project_path'],'videos'))
         vname=Path(newvideo).stem
-
-    deeplabcut.analyze_videos(path_config_file, [newvideo], shuffle=shuffle, save_as_csv=True, destfolder=dfolder, videotype='avi')
+    deeplabcut.analyze_videos(path_config_file, [newvideo], shuffle=shuffle, save_as_csv=True, destfolder=dfolder)
 
     print("CREATE VIDEO")
-    deeplabcut.create_labeled_video(path_config_file,[newvideo],shuffle=shuffle, destfolder=dfolder, videotype='avi')
+    deeplabcut.create_labeled_video(path_config_file,[newvideo],shuffle=shuffle, destfolder=dfolder)
 
     print("Making plots")
-    deeplabcut.plot_trajectories(path_config_file,[newvideo],shuffle=shuffle, destfolder=dfolder, videotype='avi')
+    deeplabcut.plot_trajectories(path_config_file,[newvideo],shuffle=shuffle, destfolder=dfolder)
 
     print("EXTRACT OUTLIERS")
-    deeplabcut.extract_outlier_frames(path_config_file,[newvideo],shuffle=shuffle,outlieralgorithm='jump',epsilon=0,automatic=True, destfolder=dfolder, videotype='avi')
+    deeplabcut.extract_outlier_frames(path_config_file,[newvideo],shuffle=shuffle,outlieralgorithm='jump',epsilon=0,automatic=True, destfolder=dfolder)
     file=os.path.join(cfg['project_path'],'labeled-data',vname,"machinelabels-iter"+ str(cfg['iteration']) + '.h5')
 
     print("RELABELING")

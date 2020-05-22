@@ -154,7 +154,7 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,
                         pd.read_hdf(output_filename + '.h5').to_csv(str(output_filename+'.csv'))
 
                     print("Already analyzed...Checking the meta data for any change in the camera matrices and/or scorer names",vname)
-                    pickle_file = str(output_filename+'_meta.pickle')
+                    pickle_file = str(output_filename+'_includingmetadata.pickle')
                     metadata_ = auxiliaryfunctions_3d.LoadMetadata3d(pickle_file)
                     img_path,path_corners,path_camera_matrix,path_undistort=auxiliaryfunctions_3d.Foldernames3Dproject(cfg_3d)
                     path_stereo_file = os.path.join(path_camera_matrix,'stereo_params.pickle')
@@ -271,7 +271,7 @@ def triangulate(config,video_path,videotype='avi',filterpredictions=True,
                 df_3d.iloc[:][scorer_3d,bp,'z'] = triangulate[0,bpindex,2,:]
 
             df_3d.to_hdf(str(output_filename+'.h5'),'df_with_missing',format='table', mode='w')
-            auxiliaryfunctions_3d.SaveMetadata3d(str(output_filename+'_meta.pickle'), metadata)
+            auxiliaryfunctions_3d.SaveMetadata3d(str(output_filename+'_includingmetadata.pickle'), metadata)
 
             if save_as_csv:
                 df_3d.to_csv(str(output_filename+'.csv'))

@@ -86,16 +86,3 @@ DLC_config = deeplabcut.auxiliaryfunctions.edit_config(path_train_config, edits)
 
 #deeplabcut.train_network(configfile,shuffle=1) #>> fails one body part too much!
 deeplabcut.train_network(configfile,shuffle=1,keepdeconvweights=False)
-
-
-#testing cats and dogs:
-config,cfg=deeplabcut.create_pretrained_project('cat','erin', ['/media/alex/dropboxdisk/Dropbox/MultiAnimalsDataSet/ModelZoo/Cat-TeamDLC-2020-05-11/videos/zaradownsampled.mp4'], model='full_cat',videotype='.mp4')
-config,cfg=deeplabcut.create_pretrained_project('dog','erin', ['/media/alex/dropboxdisk/Dropbox/MultiAnimalsDataSet/ModelZoo/Cat-TeamDLC-2020-05-11/videos/zaradownsampled.mp4'], model='full_dog',videotype='.mp4')
-
-config,cfg=deeplabcut.create_pretrained_project('monkeyface','clown', ['/media/alex/dropboxdisk/Dropbox/MultiAnimalsDataSet/ModelZoo/primatevideos/DA2014-03-13_12-46-28_38.avi'], model='primate_face',videotype='.avi')
-## monkey videos
-deeplabcut.analyze_videos(config,['/media/alex/dropboxdisk/Dropbox/MultiAnimalsDataSet/ModelZoo/primatevideos'],videotype='.mp4')
-deeplabcut.create_labeled_video(config,['/media/alex/dropboxdisk/Dropbox/MultiAnimalsDataSet/ModelZoo/primatevideos'],videotype='.mp4')
-
-#jasper tests mit hunde model
-config,cfg=deeplabcut.create_pretrained_project('dog','mackenzie', ['/media/alex/dropboxdisk/Dropbox/MultiAnimalsDataSet/ModelZoo/Dog-TeamDLC-2020-05-12/videos/VOC2012downsampled.MOV'], model='full_dog',videotype='.MOV')

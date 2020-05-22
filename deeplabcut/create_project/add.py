@@ -1,9 +1,9 @@
 """
-DeepLabCut2.2 Toolbox (deeplabcut.org)
+DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
-Please see AUTHORS for contributors.
 
+Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
@@ -62,7 +62,7 @@ def add_new_videos(config,videos,copy_videos=False,coords=None):
         p.mkdir(parents = True, exist_ok = True)
     
     destinations = [video_path.joinpath(vp.name) for vp in videos]
-    if copy_videos:
+    if copy_videos==True:
         for src, dst in zip(videos, destinations):
             if dst.exists():
                 pass
@@ -79,7 +79,7 @@ def add_new_videos(config,videos,copy_videos=False,coords=None):
                 dst = str(dst)
                 os.symlink(src, dst)
     
-    if copy_videos:
+    if copy_videos==True:
         videos=destinations # in this case the *new* location should be added to the config file
     # adds the video list to the config.yaml file
     for idx,video in enumerate(videos):
@@ -95,11 +95,11 @@ def add_new_videos(config,videos,copy_videos=False,coords=None):
             # get vcap property
            width = int(vcap.get(cv2.CAP_PROP_FRAME_WIDTH))
            height = int(vcap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-           if coords is not None:
+           if coords == None:
+                cfg['video_sets'].update({video_path : {'crop': ', '.join(map(str, [0, width, 0, height]))}})
+           else:
                 c = coords[idx]
                 cfg['video_sets'].update({video_path : {'crop': ', '.join(map(str, c))}})
-           else:
-                cfg['video_sets'].update({video_path : {'crop': ', '.join(map(str, [0, width, 0, height]))}})
         else:
            print("Cannot open the video file!")
 

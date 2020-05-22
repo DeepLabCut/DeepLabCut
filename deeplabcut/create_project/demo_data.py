@@ -1,9 +1,9 @@
 """
-DeepLabCut2.2 Toolbox (deeplabcut.org)
+DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
-Please see AUTHORS for contributors.
 
+Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
@@ -29,7 +29,7 @@ def load_demo_data(config,createtrainingset=True):
   """
   config = Path(config).resolve()
   config = str(config)
-
+  
   transform_data(config)
   if createtrainingset:
       print("Loaded, now creating training data...")
@@ -41,6 +41,7 @@ def transform_data(config):
     It also adds the correct path to the video file in the config file.
     """
     import pandas as pd
+
     cfg = auxiliaryfunctions.read_config(config)
     project_path = str(Path(config).parents[0])
 
@@ -51,8 +52,8 @@ def transform_data(config):
         video_file = os.path.join(project_path, 'videos','m4s1.mp4')
     else:
         print("This is not an offical demo dataset.")
-
+    
     if 'WILL BE AUTOMATICALLY UPDATED BY DEMO CODE' in cfg['video_sets'].keys():
         cfg['video_sets'][str(video_file)] = cfg['video_sets'].pop('WILL BE AUTOMATICALLY UPDATED BY DEMO CODE')
 
-    auxiliaryfunctions.write_config(config, cfg)
+    auxiliaryfunctions.write_config(config,cfg)

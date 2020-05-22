@@ -1,13 +1,13 @@
 """
-DeepLabCut2.2 Toolbox (deeplabcut.org)
+DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
-Please see AUTHORS for contributors.
 
+Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 
-Also see our paper:
+Added with:
 Pretraining boosts out-of-domain robustness for pose estimation
 by Alexander Mathis, Mert Yüksekgönül, Byron Rogers, Matthias Bethge, Mackenzie W. Mathis
 https://arxiv.org/abs/1909.11229

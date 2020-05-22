@@ -71,17 +71,15 @@ class DraggablePoint:
             """
             msg = wx.MessageBox('Do you want to remove the label %s ?'%self.bodyParts, 'Remove!', wx.YES_NO | wx.ICON_WARNING)
             if msg == 2:
-                self.delete_data()
+                self.press = None
+                DraggablePoint.lock = None
+                self.point.set_animated(False)
+                self.background = None
+                self.final_point = (np.nan,np.nan,self.individual_names,self.bodyParts)
+                self.point.center = (np.nan,np.nan)
+                self.coords.append(self.final_point)
+                self.point.figure.canvas.draw()
 
-    def delete_data(self):
-        self.press = None
-        DraggablePoint.lock = None
-        self.point.set_animated(False)
-        self.background = None
-        self.final_point = (np.nan, np.nan, self.individual_names, self.bodyParts)
-        self.point.center = (np.nan, np.nan)
-        self.coords.append(self.final_point)
-        self.point.figure.canvas.draw()
         
     def on_motion(self, event):
         """
@@ -143,3 +141,4 @@ class DraggablePoint:
         self.point.figure.canvas.mpl_disconnect(self.cidrelease)
         self.point.figure.canvas.mpl_disconnect(self.cidmotion)
         self.point.figure.canvas.mpl_disconnect(self.cidhover)
+        self.point.figure.canvas.mpl_disconnect(self.cidkey)

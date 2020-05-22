@@ -53,7 +53,7 @@ cfg=deeplabcut.auxiliaryfunctions.read_config(path_config_file)
 cfg['numframes2pick']=5
 cfg['pcutoff']=0.01
 cfg['TrainingFraction']=[.8]
-cfg['default_net_type']='resnet_152' #'mobilenet_v2_0.35' 
+cfg['default_net_type']='resnet_152'
 
 deeplabcut.auxiliaryfunctions.write_config(path_config_file,cfg)
 
@@ -81,22 +81,27 @@ deeplabcut.check_labels(path_config_file)
 print("CREATING TRAININGSET")
 deeplabcut.create_training_dataset(path_config_file)
 
-#posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(1),'train/pose_cfg.yaml')
+posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(1),'train/pose_cfg.yaml')
 
-shuffle=1
-posefile,_,_=deeplabcut.return_train_network_path(path_config_file,shuffle=shuffle)
+DLC_config=deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
+DLC_config['save_iters']=10
+DLC_config['display_iters']=1
+DLC_config['multi_step']=[[0.001,10]]
+
 print("CHANGING training parameters to end quickly!")
-edits = {'save_iters': 4,
-         'display_iters': 1,
-         'multi_step': [[0.001, 10]]}
-DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
+deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
 
 print("TRAIN")
 deeplabcut.train_network(path_config_file)
+
 print("TRAIN again... different loss?")
 deeplabcut.train_network(path_config_file)
 
-DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, {'dataset_type': 'deterministic', 'deterministic': True})
+
+DLC_config=deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
+DLC_config['dataset_type']='deterministic'
+DLC_config['deterministic']=True
+deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
 
 print("TRAIN")
 deeplabcut.train_network(path_config_file)
@@ -104,4 +109,4 @@ deeplabcut.train_network(path_config_file)
 print("TRAIN again... the same losses!")
 deeplabcut.train_network(path_config_file)
 
-print("ALL DONE!!! - deterministic at least runs... were the losses identical?")
+print("ALL DONE!!! - default cases are functional.")

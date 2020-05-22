@@ -16,7 +16,7 @@ https://imgaug.readthedocs.io/en/latest/
 """
 
 import os
-import logging, pickle
+import logging
 import random as rand
 import numpy as np
 from numpy import array as arr
@@ -27,6 +27,7 @@ from deeplabcut.utils.auxfun_videos import imread
 from scipy.stats import truncnorm
 from imgaug.augmentables import Keypoint, KeypointsOnImage
 import imgaug.augmenters as iaa
+import pickle
 
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import Batch, data_to_input, DataItem, data_to_input_batch
 
