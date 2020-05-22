@@ -39,7 +39,7 @@ def convertdetectiondict2listoflist(dataimage, BPTS, withid = False, evaluation 
     [(x, y, score, global index of detection)] (all detections per bodypart).
 
     Also includes id if available. [x,y,score,global id, id] '''
-    
+
     if evaluation:
         detectedcoordinates=dataimage['prediction']['coordinates'][0]
         detectedlikelihood=dataimage['prediction']['confidence']
@@ -104,7 +104,7 @@ def extractstrongconnections(cfg, dataimage, all_detections, iBPTS, partaffinity
                         d=dataimage['prediction']['costs'][PAF[edge]]['distance'][i,j]
                     else:
                         score_with_dist_prior=abs(dataimage['costs'][PAF[edge]][cfg.method][i,j])
-                        d=dataimage['prediction']['costs'][PAF[edge]]['distance'][i,j]
+                        d=dataimage['costs'][PAF[edge]]['distance'][i,j]
 
                     #d=distance(np.array(cand_a[i][:2]),np.array(cand_b[j][:2]))
                     sj=cand_b[j][2] #likelihoood for detection
