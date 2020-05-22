@@ -431,7 +431,6 @@ def bayesian_search(
         # stats = compute_crossval_metrics(config_path, inferencecfg, shuffle,trainingsetindex,
         #                                    dcorr=dcorr,leastbpts=leastbpts,modelprefix=modelprefix)
 
-        val = stats[target].values[0]
         if printingintermediatevalues:
             print(
                 "rpck",
@@ -449,11 +448,13 @@ def bayesian_search(
             )
 
         # val = stats['rmse_test'].values[0]*(1+stats['misses_test'].values[0]*1./stats['hits_test'].values[0])
+        val = stats[target].values[0]
         if np.isnan(val):
-            if maximize:
-                val = -1e9
-            else:  # if not maximize:
-                val = 1e9  # random large number!
+            val = 1e9  # random large number (larger than RMSE/pck)
+
+        if not maximize:
+            val = -val
+
         return val
 
     opt = BayesianOptimization(f=dlc_hyperparams, pbounds=pbounds, random_state=42)

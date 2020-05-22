@@ -484,7 +484,7 @@ def evaluate_multianimal_crossvalidate(
         maximize = True
 
     if "rmse" in target:
-        maximize = False
+        maximize = False  # i.e. minimize
 
     for shuffle in Shuffles:
         evaluationfolder = os.path.join(
@@ -571,6 +571,8 @@ def evaluate_multianimal_crossvalidate(
         inferencecfg.topktoretain = len(cfg["individuals"]) + 1 * (
             len(cfg["uniquebodyparts"]) > 0
         )
+
+        # calculating result at best best solution
         DataOptParams, poses_gt, poses = crossvalutils.compute_crossval_metrics(
             config, inferencecfg, shuffle, trainingsetindex, modelprefix
         )
