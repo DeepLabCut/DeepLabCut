@@ -393,9 +393,9 @@ you can drop "Indices" to run this on all training/testing images (this is slow!
 
 ### Cross Validation of Inference parameters (a maDeepLabCut CRITICAL POINT!):
 
-The neural network will detect bodyparts as well as limbs. These will then be assembled to create individuals, for this the graph of connections that you provide (skeleton) will be used. Note that several parameters will strongly influence the assembly of individuals. You need to cross validate parameters before inference. Here, you will run the new function (below) that will smartly try to optimize your `inference_config.yaml` file. You can also manually edit this file afterwards (more below). But, this first part will validate the parameters and optimize *either* hits/misses, RMSE, and percent correct keypoints (Tracking we deal with below). Which objective might depend on your case; check the docstrings to see
+The neural network will detect bodyparts as well as limbs (i.e., the skeleton connections). These will then be assembled to create individuals; for this step, the graph of connections that you provided (skeleton) will be used. Note that several parameters will strongly influence the assembly of individuals. You need to cross validate parameters before inference. Here, you will run the new function (below) that will smartly try to optimize your `inference_config.yaml` file. You can also manually edit this file afterwards (more below). But, this first part will validate the parameters and optimize *either* hits/misses, RMSE, and percent correct keypoints (tracking we deal with below). Which objective might depend on your case; check the docstrings to see
 what is the default. This step uses a [global optimization with gaussian processes](https://github.com/fmfn/BayesianOptimization); by default
-only the parameters defined in bpounds will be optimzed within the provided ranges. All other parameters will be taken from the `inference_cfg.yaml` file. 
+only the parameters defined in `bpounds` will be optimzed within the provided ranges. All other parameters will be taken from the `inference_cfg.yaml` file. 
 
 ```python
 deeplabcut.evaluate_multianimal_crossvalidate(config_path, Shuffles=[1], edgewisecondition=True, leastbpts=1, init_points=20, n_iter=50, target='rpck_train')
@@ -408,13 +408,12 @@ deeplabcut.evaluate_multianimal_crossvalidate(config_path, Shuffles=[1], edgewis
 We highly suggest that you read the docstring for this function to edit inputs appropriately if you don't run with our suggested defaults. Of course, you also can edit the `inference_config.yaml` file. [Here](/deeplabcut/inference_cfg.yaml) provides a description of the parameters. Here is a quick-start:
 
 ```
-THESE CAN ALL X-VALIDATED:
+THESE CAN ALL BE X-VALIDATED:
 (so please only change them if you know what you are doing :)
 variant: 0
 minimalnumberofconnections: 4 <--- if you have a lot of "missing data" in frames, consider lowering.
 averagescore: 0.1
 # before assembly exclude all bpts farther apart than:
-
 distnormalization: 1000
 # and closer than:
 distnormalizationLOWER: 0 <--- if different body parts can be in the same space, consider increasing this (if edges was set to False, this is used).
@@ -424,7 +423,7 @@ addlikelihoods: 0.15
 pafthreshold: 0.15139643821853171
 method: m1
 withid: false
-topktoretain: .inf <--- maximum number of animals one expects to see; we assume "infinity" during cross-valiation. Keep small later
+topktoretain: .inf <--- maximum number of animals one expects to see; we assume "infinity" during cross-valiation.
 upperbound_factor: 1.25
 lowerbound_factor: .75
 
@@ -444,7 +443,7 @@ Saving optimal inference parameters...
 0     50000.0        95.0      1.0   36.681365     9.89759     11.645783         0.63494        1.761446   0.306809    0.288352   33.81332      8.675       13.025           0.45          1.625  0.286614   0.264459
 ```
 
-**How do I pick optimal Tracking Parameters?** How to set the tracking parameters in the `inference_cfg.yaml` is discussed after you start to analyze a video (below).
+**How do I pick optimal Tracking Parameters?** How to set the tracking parameters in the `inference_cfg.yaml` is discussed after you start to analyze a video (below)!
 
 
 ### (I) Novel Video Analysis:
