@@ -96,7 +96,8 @@ class Create_Labeled_Videos(wx.Panel):
         self.videotype = wx.ComboBox(self, choices=videotypes, style=wx.CB_READONLY)
         self.videotype.SetValue(".avi")
         videotype_text_boxsizer.Add(
-            self.videotype, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
+            self.videotype, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1
+        )
 
         shuffle_text = wx.StaticBox(self, label="Specify the shuffle")
         shuffle_boxsizer = wx.StaticBoxSizer(shuffle_text, wx.VERTICAL)
@@ -106,8 +107,7 @@ class Create_Labeled_Videos(wx.Panel):
         trainingset = wx.StaticBox(self, label="Specify the trainingset index")
         trainingset_boxsizer = wx.StaticBoxSizer(trainingset, wx.VERTICAL)
         self.trainingset = wx.SpinCtrl(self, value="0", min=0, max=100)
-        trainingset_boxsizer.Add(
-            self.trainingset, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
+        trainingset_boxsizer.Add(self.trainingset, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
 
         hbox1.Add(videotype_text_boxsizer, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         hbox1.Add(shuffle_boxsizer, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
@@ -118,7 +118,8 @@ class Create_Labeled_Videos(wx.Panel):
             pos=(4, 0),
             span=(1, 5),
             flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT,
-            border=5)
+            border=5,
+        )
 
         self.cfg = auxiliaryfunctions.read_config(self.config)
         if self.cfg.get("multianimalproject", False):
@@ -127,7 +128,8 @@ class Create_Labeled_Videos(wx.Panel):
                 label="Create video with animal ID colored?",
                 choices=["Yes", "No"],
                 majorDimension=1,
-                style=wx.RA_SPECIFY_COLS,)
+                style=wx.RA_SPECIFY_COLS,
+            )
             self.plot_idv.SetSelection(1)
             hbox3.Add(self.plot_idv, 3, wx.EXPAND | wx.TOP | wx.BOTTOM, 3)
 
@@ -166,7 +168,8 @@ class Create_Labeled_Videos(wx.Panel):
         trail_pointsboxsizer = wx.StaticBoxSizer(self.trail_points_text, wx.VERTICAL)
         self.trail_points = wx.SpinCtrl(self, value="0")
         trail_pointsboxsizer.Add(
-            self.trail_points, 3, wx.EXPAND | wx.TOP | wx.BOTTOM,3)
+            self.trail_points, 3, wx.EXPAND | wx.TOP | wx.BOTTOM, 3
+        )
 
         self.bodypart_choice = wx.RadioBox(
             self,
@@ -291,7 +294,6 @@ class Create_Labeled_Videos(wx.Panel):
     def getbp(self, event):
         self.bodyparts = list(self.bodyparts_to_compare.GetCheckedStrings())
 
-
     def create_videos(self, event):
 
         shuffle = self.shuffle.GetValue()
@@ -363,7 +365,6 @@ class Create_Labeled_Videos(wx.Panel):
                 trailpoints=self.trail_points.GetValue(),
                 filtered=filtered,
             )
-
 
     def help_function(self, event):
 

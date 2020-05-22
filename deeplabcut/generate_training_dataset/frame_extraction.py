@@ -34,20 +34,41 @@ def select_cropping_area(config, videos=None):
 
     cfg = auxiliaryfunctions.read_config(config)
     if videos is None:
-        videos = cfg['video_sets']
+        videos = cfg["video_sets"]
 
     for video in videos:
         coords = auxfun_videos.draw_bbox(video)
         if coords:
-            cfg['video_sets'][video] = {
-                'crop': ', '.join(map(str, [int(coords[0]), int(coords[2]), int(coords[1]), int(coords[3])]))}
+            cfg["video_sets"][video] = {
+                "crop": ", ".join(
+                    map(
+                        str,
+                        [
+                            int(coords[0]),
+                            int(coords[2]),
+                            int(coords[1]),
+                            int(coords[3]),
+                        ],
+                    )
+                )
+            }
 
     auxiliaryfunctions.write_config(config, cfg)
     return cfg
 
 
-def extract_frames(config, mode='automatic', algo='kmeans', crop=False, userfeedback=True, cluster_step=1,
-                   cluster_resizewidth=30, cluster_color=False, opencv=True, slider_width=25):
+def extract_frames(
+    config,
+    mode="automatic",
+    algo="kmeans",
+    crop=False,
+    userfeedback=True,
+    cluster_step=1,
+    cluster_resizewidth=30,
+    cluster_color=False,
+    opencv=True,
+    slider_width=25,
+):
     """
     Extracts frames from the videos in the config.yaml file. Only the videos in the config.yaml will be used to select the frames.\n
     Use the function ``add_new_video`` at any stage of the project to add new videos to the config file and extract their frames.
@@ -139,6 +160,7 @@ def extract_frames(config, mode='automatic', algo='kmeans', crop=False, userfeed
         os.chdir(str(wd))
         from deeplabcut.generate_training_dataset import frame_extraction_toolbox
         from deeplabcut.utils import select_crop_parameters
+
         frame_extraction_toolbox.show(config, slider_width)
 
     elif mode == "automatic":
@@ -146,17 +168,21 @@ def extract_frames(config, mode='automatic', algo='kmeans', crop=False, userfeed
         cfg = auxiliaryfunctions.read_config(config_file)
         print("Config file read successfully.")
 
-        numframes2pick = cfg['numframes2pick']
-        start = cfg['start']
-        stop = cfg['stop']
+        numframes2pick = cfg["numframes2pick"]
+        start = cfg["start"]
+        stop = cfg["stop"]
 
         # Check for variable correctness
         if start > 1 or stop > 1 or start < 0 or stop < 0 or start >= stop:
-            raise Exception("Erroneous start or stop values. Please correct it in the config file.")
+            raise Exception(
+                "Erroneous start or stop values. Please correct it in the config file."
+            )
         if numframes2pick < 1 and not int(numframes2pick):
-            raise Exception("Perhaps consider extracting more, or a natural number of frames.")
+            raise Exception(
+                "Perhaps consider extracting more, or a natural number of frames."
+            )
 
-        videos = cfg['video_sets'].keys()
+        videos = cfg["video_sets"].keys()
         if opencv:
             import cv2
         else:
@@ -165,74 +191,116 @@ def extract_frames(config, mode='automatic', algo='kmeans', crop=False, userfeed
         has_failed = []
         for vindex, video in enumerate(videos):
             if userfeedback:
-                print("Do you want to extract (perhaps additional) frames for video:", video, "?")
+                print(
+                    "Do you want to extract (perhaps additional) frames for video:",
+                    video,
+                    "?",
+                )
                 askuser = input("yes/no")
             else:
                 askuser = "yes"
 
-            if askuser == 'y' or askuser == 'yes' or askuser == 'Ja' or askuser == 'ha'\
-                    or askuser == 'oui' or askuser == 'ouais':  # multilanguage support :)
+            if (
+                askuser == "y"
+                or askuser == "yes"
+                or askuser == "Ja"
+                or askuser == "ha"
+                or askuser == "oui"
+                or askuser == "ouais"
+            ):  # multilanguage support :)
                 if opencv:
                     cap = cv2.VideoCapture(video)
                     fps = cap.get(
-                        5)  # https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
+                        5
+                    )  # https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
                     nframes = int(cap.get(7))
                 else:
                     # Moviepy:
                     clip = VideoFileClip(video)
                     fps = clip.fps
-                    nframes = int(np.ceil(clip.duration * 1. / fps))
+                    nframes = int(np.ceil(clip.duration * 1.0 / fps))
                 if not nframes:
-                    print('Video could not be opened. Skipping...')
+                    print("Video could not be opened. Skipping...")
                     continue
 
                 indexlength = int(np.ceil(np.log10(nframes)))
 
                 fname = Path(video)
-                output_path = Path(config).parents[0] / 'labeled-data' / fname.stem
+                output_path = Path(config).parents[0] / "labeled-data" / fname.stem
 
                 if output_path.exists():
                     if len(os.listdir(output_path)):
                         if userfeedback:
-                            askuser = input("The directory already contains some frames. Do you want to add to it?(yes/no): ")
-                        if not (askuser == 'y' or askuser == 'yes' or askuser == 'Y' or askuser == 'Yes'):
+                            askuser = input(
+                                "The directory already contains some frames. Do you want to add to it?(yes/no): "
+                            )
+                        if not (
+                            askuser == "y"
+                            or askuser == "yes"
+                            or askuser == "Y"
+                            or askuser == "Yes"
+                        ):
                             sys.exit("Delete the frames and try again later!")
 
-                if crop == 'GUI':
+                if crop == "GUI":
                     cfg = select_cropping_area(config, [video])
-                coords = cfg['video_sets'][video]['crop'].split(',')
+                coords = cfg["video_sets"][video]["crop"].split(",")
                 if crop and not opencv:
-                    clip = clip.crop(y1=int(coords[2]), y2=int(coords[3]), x1=int(coords[0]), x2=int(coords[1]))
+                    clip = clip.crop(
+                        y1=int(coords[2]),
+                        y2=int(coords[3]),
+                        x1=int(coords[0]),
+                        x2=int(coords[1]),
+                    )
                 elif not crop:
                     coords = None
 
                 print("Extracting frames based on %s ..." % algo)
-                if algo == 'uniform':
+                if algo == "uniform":
                     if opencv:
-                        frames2pick = frameselectiontools.UniformFramescv2(cap, numframes2pick, start, stop)
+                        frames2pick = frameselectiontools.UniformFramescv2(
+                            cap, numframes2pick, start, stop
+                        )
                     else:
-                        frames2pick = frameselectiontools.UniformFrames(clip, numframes2pick, start, stop)
-                elif algo == 'kmeans':
+                        frames2pick = frameselectiontools.UniformFrames(
+                            clip, numframes2pick, start, stop
+                        )
+                elif algo == "kmeans":
                     if opencv:
-                        frames2pick = frameselectiontools.KmeansbasedFrameselectioncv2(cap, numframes2pick, start, stop,
-                                                                                       crop, coords, step=cluster_step,
-                                                                                       resizewidth=cluster_resizewidth,
-                                                                                       color=cluster_color)
+                        frames2pick = frameselectiontools.KmeansbasedFrameselectioncv2(
+                            cap,
+                            numframes2pick,
+                            start,
+                            stop,
+                            crop,
+                            coords,
+                            step=cluster_step,
+                            resizewidth=cluster_resizewidth,
+                            color=cluster_color,
+                        )
                     else:
-                        frames2pick = frameselectiontools.KmeansbasedFrameselection(clip, numframes2pick, start, stop,
-                                                                                    step=cluster_step,
-                                                                                    resizewidth=cluster_resizewidth,
-                                                                                    color=cluster_color)
+                        frames2pick = frameselectiontools.KmeansbasedFrameselection(
+                            clip,
+                            numframes2pick,
+                            start,
+                            stop,
+                            step=cluster_step,
+                            resizewidth=cluster_resizewidth,
+                            color=cluster_color,
+                        )
                 else:
                     print(
-                        "Please implement this method yourself and send us a pull request! Otherwise, choose 'uniform' or 'kmeans'.")
+                        "Please implement this method yourself and send us a pull request! Otherwise, choose 'uniform' or 'kmeans'."
+                    )
                     frames2pick = []
 
                 if not len(frames2pick):
-                    print('Frame selection failed...')
+                    print("Frame selection failed...")
                     return
 
-                output_path = Path(config).parents[0] / 'labeled-data' / Path(video).stem
+                output_path = (
+                    Path(config).parents[0] / "labeled-data" / Path(video).stem
+                )
                 is_valid = []
                 if opencv:
                     for index in frames2pick:
@@ -240,10 +308,21 @@ def extract_frames(config, mode='automatic', algo='kmeans', crop=False, userfeed
                         ret, frame = cap.read()
                         if ret:
                             image = img_as_ubyte(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-                            img_name = str(output_path) + '/img' + str(index).zfill(indexlength) + ".png"
+                            img_name = (
+                                str(output_path)
+                                + "/img"
+                                + str(index).zfill(indexlength)
+                                + ".png"
+                            )
                             if crop:
-                                io.imsave(img_name, image[int(coords[2]):int(coords[3]), int(coords[0]):int(coords[1]),
-                                                    :])  # y1 = int(coords[2]),y2 = int(coords[3]),x1 = int(coords[0]), x2 = int(coords[1]
+                                io.imsave(
+                                    img_name,
+                                    image[
+                                        int(coords[2]) : int(coords[3]),
+                                        int(coords[0]) : int(coords[1]),
+                                        :,
+                                    ],
+                                )  # y1 = int(coords[2]),y2 = int(coords[3]),x1 = int(coords[0]), x2 = int(coords[1]
                             else:
                                 io.imsave(img_name, image)
                             is_valid.append(True)
@@ -254,12 +333,18 @@ def extract_frames(config, mode='automatic', algo='kmeans', crop=False, userfeed
                 else:
                     for index in frames2pick:
                         try:
-                            image = img_as_ubyte(clip.get_frame(index * 1. / clip.fps))
-                            img_name = str(output_path) + '/img' + str(index).zfill(indexlength) + ".png"
+                            image = img_as_ubyte(clip.get_frame(index * 1.0 / clip.fps))
+                            img_name = (
+                                str(output_path)
+                                + "/img"
+                                + str(index).zfill(indexlength)
+                                + ".png"
+                            )
                             io.imsave(img_name, image)
                             if np.var(image) == 0:  # constant image
                                 print(
-                                    "Seems like black/constant images are extracted from your video. Perhaps consider using opencv under the hood, by setting: opencv=True")
+                                    "Seems like black/constant images are extracted from your video. Perhaps consider using opencv under the hood, by setting: opencv=True"
+                                )
                             is_valid.append(True)
                         except FileNotFoundError:
                             print("Frame # ", index, " does not exist.")
@@ -273,14 +358,18 @@ def extract_frames(config, mode='automatic', algo='kmeans', crop=False, userfeed
                     has_failed.append(False)
 
         if all(has_failed):
-            print('Frame extraction failed. Video files must be corrupted.')
+            print("Frame extraction failed. Video files must be corrupted.")
             return
         elif any(has_failed):
-            print('Although most frames were extracted, some were invalid.')
+            print("Although most frames were extracted, some were invalid.")
         else:
             print("Frames were successfully extracted.")
-        print("\nYou can now label the frames using the function 'label_frames' "
-              "(if you extracted enough frames for all videos).")
+        print(
+            "\nYou can now label the frames using the function 'label_frames' "
+            "(if you extracted enough frames for all videos)."
+        )
     else:
-        print("Invalid MODE. Choose either 'manual' or 'automatic'. Check ``help(deeplabcut.extract_frames)`` on python and ``deeplabcut.extract_frames?`` \
-              for ipython/jupyter notebook for more details.")
+        print(
+            "Invalid MODE. Choose either 'manual' or 'automatic'. Check ``help(deeplabcut.extract_frames)`` on python and ``deeplabcut.extract_frames?`` \
+              for ipython/jupyter notebook for more details."
+        )

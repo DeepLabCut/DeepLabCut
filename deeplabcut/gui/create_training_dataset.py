@@ -368,7 +368,7 @@ class Create_training_dataset(wx.Panel):
         """
         self.config = []
         self.sel_config.SetPath("")
-        #self.shuffles.SetValue("1")
+        # self.shuffles.SetValue("1")
         self.net_choice.SetValue("resnet_50")
         self.aug_choice.SetValue("default")
         self.model_comparison_choice.SetSelection(1)

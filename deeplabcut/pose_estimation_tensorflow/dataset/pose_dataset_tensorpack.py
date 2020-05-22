@@ -1,4 +1,4 @@
-'''
+"""
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
@@ -16,7 +16,7 @@ Written largely by Kate Rupp -- Thanks!
 
 A Neural Net Training Interface on TensorFlow, with focus on speed + flexibility
 https://github.com/tensorpack/tensorpack
-'''
+"""
 
 
 import os
@@ -35,20 +35,32 @@ import scipy.io as sio
 from tensorpack.dataflow.base import RNGDataFlow
 from tensorpack.dataflow.common import MapData
 from tensorpack.dataflow.imgaug.crop import RandomCropRandomShape
-from tensorpack.dataflow.imgaug import Affine, Brightness, Contrast, RandomResize, Saturation, GaussianNoise, GaussianBlur
+from tensorpack.dataflow.imgaug import (
+    Affine,
+    Brightness,
+    Contrast,
+    RandomResize,
+    Saturation,
+    GaussianNoise,
+    GaussianBlur,
+)
 from tensorpack.dataflow.parallel import MultiProcessRunnerZMQ, MultiProcessRunner
 from tensorpack.dataflow.imgaug.transform import CropTransform
 from tensorpack.dataflow.imgaug.meta import RandomApplyAug, RandomChooseAug
 from tensorpack.utils.utils import get_rng
 
-from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import Batch, data_to_input
+from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import (
+    Batch,
+    data_to_input,
+)
+
 
 def img_to_bgr(im_path):
     img = cv2.imread(im_path)
     return img
 
-class DataItem:
 
+class DataItem:
     def to_dict(self):
         return self.__dict__
 
@@ -58,9 +70,9 @@ class DataItem:
             setattr(item, k, v)
         return item
 
-class RandomCropping(RandomCropRandomShape):
 
-    def __init__(self, wmin, hmin, wmax = None, hmax = None):
+class RandomCropping(RandomCropRandomShape):
+    def __init__(self, wmin, hmin, wmax=None, hmax=None):
         self.rng = get_rng()
         super().__init__(wmin, hmin, wmax, hmax)
 
@@ -82,8 +94,8 @@ class RandomCropping(RandomCropRandomShape):
 
         return crop_aug
 
-class Pose(RNGDataFlow):
 
+class Pose(RNGDataFlow):
     def __init__(self, cfg, shuffle=True, dir=None):
         self.shuffle = shuffle
         self.cfg = cfg
@@ -92,14 +104,14 @@ class Pose(RNGDataFlow):
 
     def load_dataset(self):
         cfg = self.cfg
-        file_name = os.path.join(self.cfg.project_path,cfg.dataset)
+        file_name = os.path.join(self.cfg.project_path, cfg.dataset)
         # Load Matlab file dataset annotation
         mlab = sio.loadmat(file_name)
         self.raw_data = mlab
-        mlab = mlab['dataset']
+        mlab = mlab["dataset"]
 
         num_images = mlab.shape[1]
-#        print('Dataset has {} images'.format(num_images))
+        #        print('Dataset has {} images'.format(num_images))
         data = []
         has_gt = True
 
@@ -108,17 +120,17 @@ class Pose(RNGDataFlow):
 
             item = DataItem()
             item.image_id = i
-            base = str(self.cfg['project_path'])
+            base = str(self.cfg["project_path"])
             im_path = os.path.join(base, sample[0][0])
             item.im_path = im_path
             item.im_size = sample[1][0]
             if len(sample) >= 3:
                 joints = sample[2][0][0]
-#                print(sample)
+                #                print(sample)
                 joint_id = joints[:, 0]
                 # make sure joint ids are 0-indexed
                 if joint_id.size != 0:
-                    assert((joint_id < cfg.num_joints).any())
+                    assert (joint_id < cfg.num_joints).any()
                 joints[:, 0] = joint_id
                 coords = [joint[1:] for joint in joints]
                 coords = arr(coords)
@@ -128,7 +140,7 @@ class Pose(RNGDataFlow):
                 # print(item.joints)
             else:
                 has_gt = False
-            #if cfg.crop:
+            # if cfg.crop:
             #    crop = sample[3][0] - 1
             #    item.crop = extend_crop(crop, cfg.crop_pad, item.im_size)
             data.append(item)
@@ -145,83 +157,110 @@ class Pose(RNGDataFlow):
                 data_item = self.data[k]
                 yield data_item
 
+
 class PoseDataset:
     def __init__(self, cfg):
         # Initializing variables if they don't exist...
 
         # what is the fraction of training samples with scaling augmentation?
-        cfg['scaleratio']=cfg.get('scaleratio', 0.6)
+        cfg["scaleratio"] = cfg.get("scaleratio", 0.6)
 
         # Randomly rotates an image with respect to the image center within the
         # range [-rotate_max_deg_abs; rotate_max_deg_abs] to augment training data
-        cfg['rotate_max_deg_abs']= cfg.get('rotate_max_deg_abs', 45)
-        cfg['rotateratio']=cfg.get('rotateratio', 0.4)  # what is the fraction of training samples with rotation augmentation?
+        cfg["rotate_max_deg_abs"] = cfg.get("rotate_max_deg_abs", 45)
+        cfg["rotateratio"] = cfg.get(
+            "rotateratio", 0.4
+        )  # what is the fraction of training samples with rotation augmentation?
 
         # Randomly adds brightness within the range [-brightness_dif, brightness_dif]
         # to augment training data
-        cfg['brightness_dif']= cfg.get('brightness_dif', 0.3)
-        cfg['brightnessratio']=cfg.get('brightnessratio', 0.0)  # what is the fraction of training samples with brightness augmentation?
+        cfg["brightness_dif"] = cfg.get("brightness_dif", 0.3)
+        cfg["brightnessratio"] = cfg.get(
+            "brightnessratio", 0.0
+        )  # what is the fraction of training samples with brightness augmentation?
 
         # Randomly applies x = (x - mean) * contrast_factor + mean`` to each
         # color channel within the range [contrast_factor_lo, contrast_factor_up]
         # to augment training data
-        cfg['contrast_factor_lo']= cfg.get('contrast_factor_lo', 0.5)
-        cfg['contrast_factor_up']= cfg.get('contrast_factor_up', 2.0)
-        cfg['contrastratio']=cfg.get('contrastratio', 0.2) # what is the fraction of training samples with contrast augmentation?
+        cfg["contrast_factor_lo"] = cfg.get("contrast_factor_lo", 0.5)
+        cfg["contrast_factor_up"] = cfg.get("contrast_factor_up", 2.0)
+        cfg["contrastratio"] = cfg.get(
+            "contrastratio", 0.2
+        )  # what is the fraction of training samples with contrast augmentation?
 
         # Randomly adjusts saturation within range 1 + [-saturation_max_dif, saturation_max_dif]
         # to augment training data
-        cfg['saturation_max_dif']= cfg.get('saturation_max_dif', 0.5)
-        cfg['saturationratio']=cfg.get('saturationratio', 0.0) # what is the fraction of training samples with saturation augmentation?
+        cfg["saturation_max_dif"] = cfg.get("saturation_max_dif", 0.5)
+        cfg["saturationratio"] = cfg.get(
+            "saturationratio", 0.0
+        )  # what is the fraction of training samples with saturation augmentation?
 
         # Randomly applies gaussian noise N(0, noise_sigma^2) to an image
         # to augment training data
-        cfg['noise_sigma']= cfg.get('noise_sigma', 0.1)
-        cfg['noiseratio']=cfg.get('noiseratio', 0.0) # what is the fraction of training samples with noise augmentation?
+        cfg["noise_sigma"] = cfg.get("noise_sigma", 0.1)
+        cfg["noiseratio"] = cfg.get(
+            "noiseratio", 0.0
+        )  # what is the fraction of training samples with noise augmentation?
 
         # Randomly applies gaussian blur to an image with a random window size
         # within the range [0, 2 * blur_max_window_size + 1] to augment training data
-        cfg['blur_max_window_size']= cfg.get('blur_max_window_size', 10)
-        cfg['blurratio']=cfg.get('blurratio', 0.2) # what is the fraction of training samples with blur augmentation?
+        cfg["blur_max_window_size"] = cfg.get("blur_max_window_size", 10)
+        cfg["blurratio"] = cfg.get(
+            "blurratio", 0.2
+        )  # what is the fraction of training samples with blur augmentation?
 
         # Whether image is RGB  or RBG. If None, contrast augmentation uses the mean per-channel.
-        cfg['is_rgb']=cfg.get('is_rgb', True)
+        cfg["is_rgb"] = cfg.get("is_rgb", True)
 
         # Clips image to [0, 255] even when data type is not uint8
-        cfg['to_clip']=cfg.get('to_clip', True)
+        cfg["to_clip"] = cfg.get("to_clip", True)
 
         # Number of processes to use per core during training
-        cfg['processratio']=cfg.get('processratio', 1)
+        cfg["processratio"] = cfg.get("processratio", 1)
         # Number of datapoints to prefetch at a time during training
-        cfg['num_prefetch']=cfg.get('num_prefetch', 50)
-
+        cfg["num_prefetch"] = cfg.get("num_prefetch", 50)
 
         self.cfg = cfg
-        self.scaling = RandomResize(xrange = (self.cfg['scale_jitter_lo'] * self.cfg['global_scale'],
-                                    self.cfg['scale_jitter_up'] * self.cfg['global_scale']), aspect_ratio_thres = 0.0)
-        self.scaling_apply = RandomApplyAug(self.scaling, self.cfg['scaleratio'])
-        self.cropping = RandomCropping(wmin = self.cfg['minsize'], hmin = self.cfg['minsize'],
-                                       wmax = self.cfg['leftwidth'] + self.cfg['rightwidth'] + self.cfg['minsize'],
-                                       hmax = self.cfg['topheight'] + self.cfg['bottomheight'] + self.cfg['minsize'])
-        self.rotation = Affine(rotate_max_deg = self.cfg['rotate_max_deg_abs'])
-        self.brightness = Brightness(self.cfg['brightness_dif'])
-        self.contrast = Contrast((self.cfg['contrast_factor_lo'], self.cfg['contrast_factor_up']),
-                                  rgb = self.cfg['is_rgb'], clip = self.cfg['to_clip'])
-        self.saturation = Saturation(self.cfg['saturation_max_dif'], rgb = self.cfg['is_rgb'])
-        self.gaussian_noise = GaussianNoise(sigma = self.cfg['noise_sigma'])
-        self.gaussian_blur = GaussianBlur(max_size = self.cfg['blur_max_window_size'])
-        self.augmentors = [RandomApplyAug(self.cropping, self.cfg['cropratio']),
-                           RandomApplyAug(self.rotation, self.cfg['rotateratio']),
-                           RandomApplyAug(self.brightness, self.cfg['brightnessratio']),
-                           RandomApplyAug(self.contrast, self.cfg['contrastratio']),
-                           RandomApplyAug(self.saturation, self.cfg['saturationratio']),
-                           RandomApplyAug(self.gaussian_noise, self.cfg['noiseratio']),
-                           RandomApplyAug(self.gaussian_blur, self.cfg['blurratio']),
-                           self.scaling_apply]
+        self.scaling = RandomResize(
+            xrange=(
+                self.cfg["scale_jitter_lo"] * self.cfg["global_scale"],
+                self.cfg["scale_jitter_up"] * self.cfg["global_scale"],
+            ),
+            aspect_ratio_thres=0.0,
+        )
+        self.scaling_apply = RandomApplyAug(self.scaling, self.cfg["scaleratio"])
+        self.cropping = RandomCropping(
+            wmin=self.cfg["minsize"],
+            hmin=self.cfg["minsize"],
+            wmax=self.cfg["leftwidth"] + self.cfg["rightwidth"] + self.cfg["minsize"],
+            hmax=self.cfg["topheight"] + self.cfg["bottomheight"] + self.cfg["minsize"],
+        )
+        self.rotation = Affine(rotate_max_deg=self.cfg["rotate_max_deg_abs"])
+        self.brightness = Brightness(self.cfg["brightness_dif"])
+        self.contrast = Contrast(
+            (self.cfg["contrast_factor_lo"], self.cfg["contrast_factor_up"]),
+            rgb=self.cfg["is_rgb"],
+            clip=self.cfg["to_clip"],
+        )
+        self.saturation = Saturation(
+            self.cfg["saturation_max_dif"], rgb=self.cfg["is_rgb"]
+        )
+        self.gaussian_noise = GaussianNoise(sigma=self.cfg["noise_sigma"])
+        self.gaussian_blur = GaussianBlur(max_size=self.cfg["blur_max_window_size"])
+        self.augmentors = [
+            RandomApplyAug(self.cropping, self.cfg["cropratio"]),
+            RandomApplyAug(self.rotation, self.cfg["rotateratio"]),
+            RandomApplyAug(self.brightness, self.cfg["brightnessratio"]),
+            RandomApplyAug(self.contrast, self.cfg["contrastratio"]),
+            RandomApplyAug(self.saturation, self.cfg["saturationratio"]),
+            RandomApplyAug(self.gaussian_noise, self.cfg["noiseratio"]),
+            RandomApplyAug(self.gaussian_blur, self.cfg["blurratio"]),
+            self.scaling_apply,
+        ]
 
         self.has_gt = True
         self.set_shuffle(cfg.shuffle)
-        p = Pose(cfg = self.cfg, shuffle = self.set_shuffle)
+        p = Pose(cfg=self.cfg, shuffle=self.set_shuffle)
         self.data = p.load_dataset()
         self.num_images = len(self.data)
         df = self.get_dataflow(self.cfg)
@@ -230,7 +269,7 @@ class PoseDataset:
 
     def augment(self, data):
         img = img_to_bgr(data.im_path)
-        coords = data.coords.astype('float64')
+        coords = data.coords.astype("float64")
         scale = 1
         for aug in self.augmentors:
             tfm = aug.get_transform(img)
@@ -244,11 +283,12 @@ class PoseDataset:
         aug_img = img
         aug_coords = coords
         size = [aug_img.shape[0], aug_img.shape[1]]
-        aug_coords = [aug_coords.reshape(int(len(aug_coords[~np.isnan(aug_coords)]) / 2), 2)]
+        aug_coords = [
+            aug_coords.reshape(int(len(aug_coords[~np.isnan(aug_coords)]) / 2), 2)
+        ]
         joint_id = data.joint_id
 
         return [joint_id, aug_img, aug_coords, data, size, scale]
-
 
     def get_dataflow(self, cfg):
 
@@ -257,13 +297,17 @@ class PoseDataset:
         df = MapData(df, self.compute_target_part_scoremap)
 
         num_cores = multiprocessing.cpu_count()
-        num_processes = int(num_cores * self.cfg['processratio'])
+        num_processes = int(num_cores * self.cfg["processratio"])
         if num_processes <= 1:
-            num_processes = 2 # recommended to use more than one process for training
-        if os.name == 'nt':
-            df2 = MultiProcessRunner(df, num_proc = num_processes, num_prefetch = self.cfg['num_prefetch'])
+            num_processes = 2  # recommended to use more than one process for training
+        if os.name == "nt":
+            df2 = MultiProcessRunner(
+                df, num_proc=num_processes, num_prefetch=self.cfg["num_prefetch"]
+            )
         else:
-            df2 = MultiProcessRunnerZMQ(df, num_proc = num_processes, hwm = self.cfg['num_prefetch'])
+            df2 = MultiProcessRunnerZMQ(
+                df, num_proc=num_processes, hwm=self.cfg["num_prefetch"]
+            )
         return df2
 
     def compute_target_part_scoremap(self, components):
@@ -322,7 +366,7 @@ class PoseDataset:
         weights = self.compute_scmap_weights(scmap.shape, joint_id)
         mirror = False
         d = data_item.to_dict()
-        d['image'] = aug_img
+        d["image"] = aug_img
 
         return d, scale, mirror, scmap, weights, locref_map, locref_mask
 
@@ -348,7 +392,7 @@ class PoseDataset:
     def get_scale(self):
         cfg = self.cfg
         scale = cfg.global_scale
-        if hasattr(cfg, 'scale_jitter_lo') and hasattr(cfg, 'scale_jitter_up'):
+        if hasattr(cfg, "scale_jitter_lo") and hasattr(cfg, "scale_jitter_up"):
             scale_jitter = rand.uniform(cfg.scale_jitter_lo, cfg.scale_jitter_up)
             scale *= scale_jitter
         return scale
@@ -358,12 +402,15 @@ class PoseDataset:
         return self.make_batch(next_batch)
 
     def is_valid_size(self, image_size, scale):
-        if hasattr(self.cfg, 'min_input_size') and hasattr(self.cfg, 'max_input_size'):
+        if hasattr(self.cfg, "min_input_size") and hasattr(self.cfg, "max_input_size"):
             input_width = image_size[2] * scale
             input_height = image_size[1] * scale
-            if input_height < self.cfg.min_input_size or input_width < self.cfg.min_input_size:
+            if (
+                input_height < self.cfg.min_input_size
+                or input_width < self.cfg.min_input_size
+            ):
                 return False
-            if input_height * input_width > self.cfg.max_input_size**2:
+            if input_height * input_width > self.cfg.max_input_size ** 2:
                 return False
 
         return True
@@ -381,17 +428,19 @@ class PoseDataset:
         # print('image: {}'.format(im_file))
         # logging.debug('mirror %r', mirror)
 
-        img = data_item.image # augmented image
+        img = data_item.image  # augmented image
 
         batch = {Batch.inputs: img}
 
         if self.has_gt:
-            batch.update({
-                Batch.part_score_targets: part_score_targets,
-                Batch.part_score_weights: part_score_weights,
-                Batch.locref_targets: locref_targets,
-                Batch.locref_mask: locref_mask
-            })
+            batch.update(
+                {
+                    Batch.part_score_targets: part_score_targets,
+                    Batch.part_score_weights: part_score_weights,
+                    Batch.locref_targets: locref_targets,
+                    Batch.locref_mask: locref_mask,
+                }
+            )
 
         batch = {key: data_to_input(data) for (key, data) in batch.items()}
 

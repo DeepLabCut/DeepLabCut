@@ -94,7 +94,10 @@ class Refine_tracklets(wx.Panel):
         self.sel_datafile.Bind(wx.EVT_FILEPICKER_CHANGED, self.select_datafile)
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
-        slider_gap_text = wx.StaticBox(self, label="Specify the max gap size to fill, in frames (initial pickle file only!)")
+        slider_gap_text = wx.StaticBox(
+            self,
+            label="Specify the max gap size to fill, in frames (initial pickle file only!)",
+        )
         slider_gap_sizer = wx.StaticBoxSizer(slider_gap_text, wx.VERTICAL)
         self.slider_gap = wx.SpinCtrl(self, value="0")
         slider_gap_sizer.Add(self.slider_gap, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)

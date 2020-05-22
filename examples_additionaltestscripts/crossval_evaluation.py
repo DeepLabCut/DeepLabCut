@@ -1,7 +1,7 @@
 import numpy as np
 import os
 
-os.environ['DLClight'] = 'True'
+os.environ["DLClight"] = "True"
 
 import pickle
 import deeplabcut
@@ -14,51 +14,61 @@ from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 import numpy as np
 import pandas as pd
 
-#sys.path.append(os.path.join('/media/alex/dropboxdisk/Dropbox/Collaborations/Cancer/DLCdev/deeplabcut/pose_estimation_tensorflow/lib'))
+# sys.path.append(os.path.join('/media/alex/dropboxdisk/Dropbox/Collaborations/Cancer/DLCdev/deeplabcut/pose_estimation_tensorflow/lib'))
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingutils
 import crossval
 
-projectpath='/media/alex/dropboxdisk/Dropbox/InterestingCode/social_datasets/croppedNov18/MultiMouse-Daniel-2019-12-16'
+projectpath = "/media/alex/dropboxdisk/Dropbox/InterestingCode/social_datasets/croppedNov18/MultiMouse-Daniel-2019-12-16"
 
-projectpath = '/media/alex/dropboxdisk/Dropbox/InterestingCode/social_datasets/MultiMouse-Daniel-2019-12-16'
-modelprefix = 'simplebaseline'
+projectpath = "/media/alex/dropboxdisk/Dropbox/InterestingCode/social_datasets/MultiMouse-Daniel-2019-12-16"
+modelprefix = "simplebaseline"
 
-configfile=os.path.join(projectpath,'config.yaml')
+configfile = os.path.join(projectpath, "config.yaml")
 
-cfg=deeplabcut.auxiliaryfunctions.read_config(configfile)
+cfg = deeplabcut.auxiliaryfunctions.read_config(configfile)
 
-inferencecfg=edict()
-inferencecfg.minimalnumberofconnections=3
-inferencecfg.averagescore=.2
-inferencecfg.distnormalization=400
-inferencecfg.distnormalizationLOWER=0
-inferencecfg.detectionthresholdsquare=.1
-inferencecfg.addlikelihoods=0.
-inferencecfg.pafthreshold=.1
-inferencecfg.method='m1'
-inferencecfg.withid=False
-inferencecfg.slack=10
-inferencecfg.variant=0 #
-inferencecfg.topktoretain=3 #THIS SHOULD BE Larger than # animals!
+inferencecfg = edict()
+inferencecfg.minimalnumberofconnections = 3
+inferencecfg.averagescore = 0.2
+inferencecfg.distnormalization = 400
+inferencecfg.distnormalizationLOWER = 0
+inferencecfg.detectionthresholdsquare = 0.1
+inferencecfg.addlikelihoods = 0.0
+inferencecfg.pafthreshold = 0.1
+inferencecfg.method = "m1"
+inferencecfg.withid = False
+inferencecfg.slack = 10
+inferencecfg.variant = 0  #
+inferencecfg.topktoretain = 3  # THIS SHOULD BE Larger than # animals!
 
-#example use case for running
-#data=crossval.compute_crossval_metrics(configfile, inferencecfg, shuffle=2, trainingsetindex=0)
+# example use case for running
+# data=crossval.compute_crossval_metrics(configfile, inferencecfg, shuffle=2, trainingsetindex=0)
 
-#inferencecfg, opt = crossval.bayesian_search(configfile, shuffle=2, trainingsetindex=0, target='rmse_test', init_points=20, n_iter=50, acq='ei')
+# inferencecfg, opt = crossval.bayesian_search(configfile, shuffle=2, trainingsetindex=0, target='rmse_test', init_points=20, n_iter=50, acq='ei')
 
 
-inferencecfg, opt = crossval.bayesian_search(configfile, shuffle=0, trainingsetindex=0, target='pck_test', 
-                                                init_points=7, n_iter=50, acq='ei',maximize=True, 
-                                                dcorr=6,leastbpts=3,modelprefix=modelprefix)
+inferencecfg, opt = crossval.bayesian_search(
+    configfile,
+    shuffle=0,
+    trainingsetindex=0,
+    target="pck_test",
+    init_points=7,
+    n_iter=50,
+    acq="ei",
+    maximize=True,
+    dcorr=6,
+    leastbpts=3,
+    modelprefix=modelprefix,
+)
 
 print(inferencecfg)
-data=crossval.compute_crossval_metrics(configfile, inferencecfg, shuffle=0, trainingsetindex=0,modelprefix=modelprefix)
+data = crossval.compute_crossval_metrics(
+    configfile, inferencecfg, shuffle=0, trainingsetindex=0, modelprefix=modelprefix
+)
 print(data)
 
 
-
-
-'''
+"""
 dcorr=5 #pixel distance cutoff
 leastbpts=3 #at least 3 bpts
 
@@ -185,4 +195,4 @@ with warnings.catch_warnings():
                 np.nanmean(stats[metadata['data']['testIndices']], axis=0)]
 
 
-'''
+"""

@@ -1,13 +1,14 @@
-'''
+"""
 Source: DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
-'''
+"""
 import tensorflow as tf
-vers = (tf.__version__).split('.')
-if int(vers[0])==1 and int(vers[1])>12:
-    TF=tf.compat.v1
+
+vers = (tf.__version__).split(".")
+if int(vers[0]) == 1 and int(vers[1]) > 12:
+    TF = tf.compat.v1
 else:
-    TF=tf
+    TF = tf
 
 from tensorflow.python.ops import math_ops
 from tensorflow.python.framework import ops
@@ -30,8 +31,7 @@ def huber_loss(labels, predictions, weight=1.0, k=1.0, scope=None):
 
     http://concise-bio.readthedocs.io/en/latest/_modules/concise/tf_helper.html
     """
-    with ops.name_scope(scope, "absolute_difference",
-                        [predictions, labels]) as scope:
+    with ops.name_scope(scope, "absolute_difference", [predictions, labels]) as scope:
         predictions.get_shape().assert_is_compatible_with(labels.get_shape())
         if weight is None:
             raise ValueError("`weight` cannot be None")
@@ -39,7 +39,7 @@ def huber_loss(labels, predictions, weight=1.0, k=1.0, scope=None):
         labels = math_ops.to_float(labels)
         diff = math_ops.subtract(predictions, labels)
         abs_diff = tf.abs(diff)
-        losses = tf.where(abs_diff < k,
-                          0.5 * tf.square(diff),
-                          k * abs_diff - 0.5 * k ** 2)
+        losses = tf.where(
+            abs_diff < k, 0.5 * tf.square(diff), k * abs_diff - 0.5 * k ** 2
+        )
         return TF.losses.compute_weighted_loss(losses, weight)

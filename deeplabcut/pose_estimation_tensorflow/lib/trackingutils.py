@@ -36,7 +36,7 @@ from filterpy.common import kinematic_kf
 
 
 @jit
-def iou(bb_test,bb_gt):
+def iou(bb_test, bb_gt):
     """
     Computes intersection of union (IOU) metric for pair of bboxes in the form [x1,y1,x2,y2]
     """
@@ -44,12 +44,15 @@ def iou(bb_test,bb_gt):
     yy1 = np.maximum(bb_test[1], bb_gt[1])
     xx2 = np.minimum(bb_test[2], bb_gt[2])
     yy2 = np.minimum(bb_test[3], bb_gt[3])
-    w = np.maximum(0., xx2 - xx1)
-    h = np.maximum(0., yy2 - yy1)
+    w = np.maximum(0.0, xx2 - xx1)
+    h = np.maximum(0.0, yy2 - yy1)
     wh = w * h
-    o = wh / ((bb_test[2]-bb_test[0])*(bb_test[3]-bb_test[1])
-              + (bb_gt[2]-bb_gt[0])*(bb_gt[3]-bb_gt[1]) - wh)
-    return(o)
+    o = wh / (
+        (bb_test[2] - bb_test[0]) * (bb_test[3] - bb_test[1])
+        + (bb_gt[2] - bb_gt[0]) * (bb_gt[3] - bb_gt[1])
+        - wh
+    )
+    return o
 
 
 def convert_bbox_to_z(bbox):
@@ -58,47 +61,72 @@ def convert_bbox_to_z(bbox):
       [x,y,s,r] where x,y is the centre of the box and s is the scale/area and r is
       the aspect ratio
     """
-    w = bbox[2]-bbox[0]
-    h = bbox[3]-bbox[1]
-    x = bbox[0]+w/2.
-    y = bbox[1]+h/2.
-    s = w*h    #scale is just area
-    r = w/float(h)
-    return np.array([x,y,s,r]).reshape((4,1))
+    w = bbox[2] - bbox[0]
+    h = bbox[3] - bbox[1]
+    x = bbox[0] + w / 2.0
+    y = bbox[1] + h / 2.0
+    s = w * h  # scale is just area
+    r = w / float(h)
+    return np.array([x, y, s, r]).reshape((4, 1))
 
 
-def convert_x_to_bbox(x,score=None):
+def convert_x_to_bbox(x, score=None):
     """
     Takes a bounding box in the centre form [x,y,s,r] and returns it in the form
       [x1,y1,x2,y2] where x1,y1 is the top left and x2,y2 is the bottom right
     """
-    w = np.sqrt(x[2]*x[3])
-    h = x[2]/w
-    if(score==None):
-        return np.array([x[0]-w/2.,x[1]-h/2.,x[0]+w/2.,x[1]+h/2.]).reshape((1,4))
+    w = np.sqrt(x[2] * x[3])
+    h = x[2] / w
+    if score == None:
+        return np.array(
+            [x[0] - w / 2.0, x[1] - h / 2.0, x[0] + w / 2.0, x[1] + h / 2.0]
+        ).reshape((1, 4))
     else:
-        return np.array([x[0]-w/2.,x[1]-h/2.,x[0]+w/2.,x[1]+h/2.,score]).reshape((1,5))
+        return np.array(
+            [x[0] - w / 2.0, x[1] - h / 2.0, x[0] + w / 2.0, x[1] + h / 2.0, score]
+        ).reshape((1, 5))
 
 
 class KalmanBoxTracker(object):
     """
     This class represents the internal state of individual tracked objects observed as bbox.
     """
+
     count = 0
-    def __init__(self,bbox):
+
+    def __init__(self, bbox):
         """
         Initialises a tracker using initial bounding box.
         """
-        #define constant velocity model
+        # define constant velocity model
         self.kf = KalmanFilter(dim_x=7, dim_z=4)
-        self.kf.F = np.array([[1,0,0,0,1,0,0],[0,1,0,0,0,1,0],[0,0,1,0,0,0,1],[0,0,0,1,0,0,0],  [0,0,0,0,1,0,0],[0,0,0,0,0,1,0],[0,0,0,0,0,0,1]])
-        self.kf.H = np.array([[1,0,0,0,0,0,0],[0,1,0,0,0,0,0],[0,0,1,0,0,0,0],[0,0,0,1,0,0,0]])
+        self.kf.F = np.array(
+            [
+                [1, 0, 0, 0, 1, 0, 0],
+                [0, 1, 0, 0, 0, 1, 0],
+                [0, 0, 1, 0, 0, 0, 1],
+                [0, 0, 0, 1, 0, 0, 0],
+                [0, 0, 0, 0, 1, 0, 0],
+                [0, 0, 0, 0, 0, 1, 0],
+                [0, 0, 0, 0, 0, 0, 1],
+            ]
+        )
+        self.kf.H = np.array(
+            [
+                [1, 0, 0, 0, 0, 0, 0],
+                [0, 1, 0, 0, 0, 0, 0],
+                [0, 0, 1, 0, 0, 0, 0],
+                [0, 0, 0, 1, 0, 0, 0],
+            ]
+        )
 
-        self.kf.R[2:,2:] *= 10.
-        self.kf.P[4:,4:] *= 1000. #give high uncertainty to the unobservable initial velocities
-        self.kf.P *= 10.
-        self.kf.Q[-1,-1] *= 0.01
-        self.kf.Q[4:,4:] *= 0.01
+        self.kf.R[2:, 2:] *= 10.0
+        self.kf.P[
+            4:, 4:
+        ] *= 1000.0  # give high uncertainty to the unobservable initial velocities
+        self.kf.P *= 10.0
+        self.kf.Q[-1, -1] *= 0.01
+        self.kf.Q[4:, 4:] *= 0.01
 
         self.kf.x[:4] = convert_bbox_to_z(bbox)
         self.time_since_update = 0
@@ -109,7 +137,7 @@ class KalmanBoxTracker(object):
         self.hit_streak = 0
         self.age = 0
 
-    def update(self,bbox):
+    def update(self, bbox):
         """
         Updates the state vector with observed bbox.
         """
@@ -123,11 +151,11 @@ class KalmanBoxTracker(object):
         """
         Advances the state vector and returns the predicted bounding box estimate.
         """
-        if((self.kf.x[6]+self.kf.x[2])<=0):
+        if (self.kf.x[6] + self.kf.x[2]) <= 0:
             self.kf.x[6] *= 0.0
         self.kf.predict()
         self.age += 1
-        if(self.time_since_update>0):
+        if self.time_since_update > 0:
             self.hit_streak = 0
         self.time_since_update += 1
         self.history.append(convert_x_to_bbox(self.kf.x))
@@ -145,10 +173,12 @@ class SkeletonTracker:
 
     def __init__(self, n_bodyparts):
         # TODO Try particle filter (since we already have the keypoints)
-        self.kf = kinematic_kf(n_bodyparts * 2, order=1, dim_z=n_bodyparts, order_by_dim=False)
-        self.kf.Q[self.kf.dim_z:, self.kf.dim_z:] *= 10
-        self.kf.R[self.kf.dim_z:, self.kf.dim_z:] *= 0.01
-        self.kf.P[self.kf.dim_z:, self.kf.dim_z:] *= 1000
+        self.kf = kinematic_kf(
+            n_bodyparts * 2, order=1, dim_z=n_bodyparts, order_by_dim=False
+        )
+        self.kf.Q[self.kf.dim_z :, self.kf.dim_z :] *= 10
+        self.kf.R[self.kf.dim_z :, self.kf.dim_z :] *= 0.01
+        self.kf.P[self.kf.dim_z :, self.kf.dim_z :] *= 1000
         self.id = SkeletonTracker.n_trackers
         SkeletonTracker.n_trackers += 1
         self.time_since_update = 0
@@ -184,7 +214,7 @@ class SkeletonTracker:
 
     @property
     def state(self):
-        return self.kf.x.squeeze()[:self.kf.dim_z]
+        return self.kf.x.squeeze()[: self.kf.dim_z]
 
     @state.setter
     def state(self, pose):
@@ -193,7 +223,7 @@ class SkeletonTracker:
         if empty.any():
             fill = np.nanmean(pose, axis=0)
             curr_pose[empty] = fill
-        self.kf.x[:self.kf.dim_z] = curr_pose.reshape((-1, 1))
+        self.kf.x[: self.kf.dim_z] = curr_pose.reshape((-1, 1))
 
 
 class SORT:
@@ -232,7 +262,9 @@ class SORT:
         xx = x[mask]
         yy = y[mask]
         dist = np.linalg.norm(xx - yy, axis=1)
-        scale = np.sqrt(np.product(np.ptp(yy, axis=0)))  # square root of bounding box area
+        scale = np.sqrt(
+            np.product(np.ptp(yy, axis=0))
+        )  # square root of bounding box area
         oks = np.exp(-0.5 * (dist / (0.05 * scale)) ** 2)
         return np.mean(oks)
 
@@ -269,7 +301,9 @@ class SORT:
         row_indices, col_indices = linear_sum_assignment(mat, maximize=False)
 
         unmatched_poses = [p for p, _ in enumerate(poses) if p not in row_indices]
-        unmatched_trackers = [t for t, _ in enumerate(poses_ref) if t not in col_indices]
+        unmatched_trackers = [
+            t for t, _ in enumerate(poses_ref) if t not in col_indices
+        ]
         # Remove matched detections with low OKS
         # matches = []
         # for row, col in zip(row_indices, col_indices):
@@ -313,14 +347,18 @@ class SORT:
         return np.empty((0, self.n_bodyparts * 2 + 2))
 
 
-def associate_detections_to_trackers(detections,trackers,iou_threshold):
+def associate_detections_to_trackers(detections, trackers, iou_threshold):
     """
     Assigns detections to tracked object (both represented as bounding boxes)
 
     Returns 3 lists of matches, unmatched_detections and unmatched_trackers
     """
     if not len(trackers):
-        return np.empty((0, 2), dtype=int), np.arange(len(detections)), np.empty((0, 5), dtype=int)
+        return (
+            np.empty((0, 2), dtype=int),
+            np.arange(len(detections)),
+            np.empty((0, 5), dtype=int),
+        )
     iou_matrix = np.zeros((len(detections), len(trackers)), dtype=np.float32)
 
     for d, det in enumerate(detections):
@@ -337,7 +375,7 @@ def associate_detections_to_trackers(detections,trackers,iou_threshold):
         if t not in col_indices:
             unmatched_trackers.append(t)
 
-    #filter out matched with low IOU
+    # filter out matched with low IOU
     matches = []
     for row, col in zip(row_indices, col_indices):
         if iou_matrix[row, col] < iou_threshold:
@@ -357,11 +395,11 @@ class Sort:
         """
         Sets key parameters for SORT
         """
-        self.max_age = cfg.get('max_age', 1)
-        self.min_hits = cfg.get('min_hits', 3)
+        self.max_age = cfg.get("max_age", 1)
+        self.min_hits = cfg.get("min_hits", 3)
         self.trackers = []
         self.frame_count = 0
-        self.iou_threshold = cfg.get('iou_threshold',.3)
+        self.iou_threshold = cfg.get("iou_threshold", 0.3)
 
     def update(self, dets):
         """
@@ -373,53 +411,60 @@ class Sort:
         NOTE: The number of objects returned may differ from the number of detections provided.
         """
         self.frame_count += 1
-        #get predicted locations from existing trackers.
-        trks = np.zeros((len(self.trackers),5))
+        # get predicted locations from existing trackers.
+        trks = np.zeros((len(self.trackers), 5))
 
         to_del = []
         ret = []
-        for t,trk in enumerate(trks):
+        for t, trk in enumerate(trks):
             pos = self.trackers[t].predict()[0]
             trk[:] = [pos[0], pos[1], pos[2], pos[3], 0]
-            if(np.any(np.isnan(pos))):
+            if np.any(np.isnan(pos)):
                 to_del.append(t)
 
         trks = np.ma.compress_rows(np.ma.masked_invalid(trks))
         for t in reversed(to_del):
             self.trackers.pop(t)
-        matched, unmatched_dets, unmatched_trks = associate_detections_to_trackers(dets,trks,self.iou_threshold)
+        matched, unmatched_dets, unmatched_trks = associate_detections_to_trackers(
+            dets, trks, self.iou_threshold
+        )
 
-
-        #update matched trackers with assigned detections
-        animalindex=[]
-        for t,trk in enumerate(self.trackers):
-            if(t not in unmatched_trks):
-                d = matched[np.where(matched[:,1]==t)[0],0]
+        # update matched trackers with assigned detections
+        animalindex = []
+        for t, trk in enumerate(self.trackers):
+            if t not in unmatched_trks:
+                d = matched[np.where(matched[:, 1] == t)[0], 0]
                 animalindex.append(d[0])
-                trk.update(dets[d,:][0]) #update coordinates
+                trk.update(dets[d, :][0])  # update coordinates
             else:
-                animalindex.append('nix') #lost trk!
+                animalindex.append("nix")  # lost trk!
 
-        #create and initialise new trackers for unmatched detections
+        # create and initialise new trackers for unmatched detections
         for i in unmatched_dets:
-            trk = KalmanBoxTracker(dets[i,:])
+            trk = KalmanBoxTracker(dets[i, :])
             self.trackers.append(trk)
             animalindex.append(i)
 
         i = len(self.trackers)
         for trk in reversed(self.trackers):
             d = trk.get_state()[0]
-            if((trk.time_since_update < 1) and (trk.hit_streak >= self.min_hits or self.frame_count <= self.min_hits)):
-                ret.append(np.concatenate((d,[trk.id, int(animalindex[i-1])])).reshape(1,-1)) #for DLC we also return the original animalid
+            if (trk.time_since_update < 1) and (
+                trk.hit_streak >= self.min_hits or self.frame_count <= self.min_hits
+            ):
+                ret.append(
+                    np.concatenate((d, [trk.id, int(animalindex[i - 1])])).reshape(
+                        1, -1
+                    )
+                )  # for DLC we also return the original animalid
                 # +1 as MOT benchmark requires positive >> this is removed for DLC!
             i -= 1
-            #remove dead tracklet
-            if(trk.time_since_update > self.max_age):
+            # remove dead tracklet
+            if trk.time_since_update > self.max_age:
                 self.trackers.pop(i)
 
-        if(len(ret)>0):
+        if len(ret) > 0:
             return np.concatenate(ret)
-        return np.empty((0,5))
+        return np.empty((0, 5))
 
 
 def fill_tracklets(tracklets, trackers, animals, imname):

@@ -9,7 +9,7 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 
-def add_new_videos(config,videos,copy_videos=False,coords=None):
+def add_new_videos(config, videos, copy_videos=False, coords=None):
     """
     Add new videos to the config file at any stage of the project.
 
@@ -49,18 +49,18 @@ def add_new_videos(config,videos,copy_videos=False,coords=None):
     # Read the config file
     cfg = auxiliaryfunctions.read_config(config)
 
-    video_path = Path(config).parents[0] / 'videos'
-    data_path = Path(config).parents[0] / 'labeled-data'
+    video_path = Path(config).parents[0] / "videos"
+    data_path = Path(config).parents[0] / "labeled-data"
     videos = [Path(vp) for vp in videos]
 
-    dirs = [data_path/Path(i.stem) for i in videos]
+    dirs = [data_path / Path(i.stem) for i in videos]
 
     for p in dirs:
         """
         Creates directory under data & perhaps copies videos (to /video)
         """
-        p.mkdir(parents = True, exist_ok = True)
-    
+        p.mkdir(parents=True, exist_ok=True)
+
     destinations = [video_path.joinpath(vp.name) for vp in videos]
     if copy_videos:
         for src, dst in zip(videos, destinations):
@@ -68,7 +68,7 @@ def add_new_videos(config,videos,copy_videos=False,coords=None):
                 pass
             else:
                 print("Copying the videos")
-                shutil.copy(os.fspath(src),os.fspath(dst)) 
+                shutil.copy(os.fspath(src), os.fspath(dst))
     else:
         for src, dst in zip(videos, destinations):
             if dst.exists():
@@ -78,30 +78,34 @@ def add_new_videos(config,videos,copy_videos=False,coords=None):
                 src = str(src)
                 dst = str(dst)
                 os.symlink(src, dst)
-    
+
     if copy_videos:
-        videos=destinations # in this case the *new* location should be added to the config file
+        videos = destinations  # in this case the *new* location should be added to the config file
     # adds the video list to the config.yaml file
-    for idx,video in enumerate(videos):
+    for idx, video in enumerate(videos):
         try:
-# For windows os.path.realpath does not work and does not link to the real video. 
-           video_path = str(Path.resolve(Path(video)))
-#           video_path = os.path.realpath(video)
+            # For windows os.path.realpath does not work and does not link to the real video.
+            video_path = str(Path.resolve(Path(video)))
+        #           video_path = os.path.realpath(video)
         except:
-           video_path = os.readlink(video)
+            video_path = os.readlink(video)
 
         vcap = cv2.VideoCapture(video_path)
         if vcap.isOpened():
             # get vcap property
-           width = int(vcap.get(cv2.CAP_PROP_FRAME_WIDTH))
-           height = int(vcap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-           if coords is not None:
+            width = int(vcap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            height = int(vcap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            if coords is not None:
                 c = coords[idx]
-                cfg['video_sets'].update({video_path : {'crop': ', '.join(map(str, c))}})
-           else:
-                cfg['video_sets'].update({video_path : {'crop': ', '.join(map(str, [0, width, 0, height]))}})
+                cfg["video_sets"].update({video_path: {"crop": ", ".join(map(str, c))}})
+            else:
+                cfg["video_sets"].update(
+                    {video_path: {"crop": ", ".join(map(str, [0, width, 0, height]))}}
+                )
         else:
-           print("Cannot open the video file!")
+            print("Cannot open the video file!")
 
-    auxiliaryfunctions.write_config(config,cfg)
-    print("New video was added to the project! Use the function 'extract_frames' to select frames for labeling.")
+    auxiliaryfunctions.write_config(config, cfg)
+    print(
+        "New video was added to the project! Use the function 'extract_frames' to select frames for labeling."
+    )

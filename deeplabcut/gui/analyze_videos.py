@@ -115,21 +115,21 @@ class Analyze_videos(wx.Panel):
         self.trainingset = wx.SpinCtrl(self, value="0", min=0, max=100)
         trainingset_boxsizer.Add(self.trainingset, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
-        #if self.cfg.get("multianimalproject", False):
-            #pass
-        #else:
-            # removing this as several downstream maDLC steps don't support dest_folder at this time:
-            #destfolder_text = wx.StaticBox(self, label="Specify destination folder")
-            #destfolderboxsizer = wx.StaticBoxSizer(destfolder_text, wx.VERTICAL)
-            #self.change_workingdir = wx.CheckBox(
-            #    self, label="optional destination folder"
-            #)
-            #self.hbox2.Add(self.change_workingdir)
-            #self.change_workingdir.Bind(wx.EVT_CHECKBOX, self.activate_change_wd)
-            #self.sel_wd = wx.Button(self, label="Browse")
-            #self.sel_wd.Enable(False)
-            #self.sel_wd.Bind(wx.EVT_BUTTON, self.select_destfolder)
-            #self.hbox2.Add(self.sel_wd, 0, wx.ALL, -1)
+        # if self.cfg.get("multianimalproject", False):
+        # pass
+        # else:
+        # removing this as several downstream maDLC steps don't support dest_folder at this time:
+        # destfolder_text = wx.StaticBox(self, label="Specify destination folder")
+        # destfolderboxsizer = wx.StaticBoxSizer(destfolder_text, wx.VERTICAL)
+        # self.change_workingdir = wx.CheckBox(
+        #    self, label="optional destination folder"
+        # )
+        # self.hbox2.Add(self.change_workingdir)
+        # self.change_workingdir.Bind(wx.EVT_CHECKBOX, self.activate_change_wd)
+        # self.sel_wd = wx.Button(self, label="Browse")
+        # self.sel_wd.Enable(False)
+        # self.sel_wd.Bind(wx.EVT_BUTTON, self.select_destfolder)
+        # self.hbox2.Add(self.sel_wd, 0, wx.ALL, -1)
 
         self.hbox1.Add(videotype_text_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         self.hbox1.Add(shuffle_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
@@ -537,7 +537,7 @@ class Analyze_videos(wx.Panel):
             self.filter.SetSelection(1)
             self.trajectory.SetSelection(1)
             self.dynamic.SetSelection(1)
-            #self.select_destfolder.SetPath("None")
+            # self.select_destfolder.SetPath("None")
         self.config = []
         self.sel_config.SetPath("")
         self.videotype.SetStringSelection(".avi")

@@ -14,7 +14,10 @@ from pathlib import Path
 import numpy as np
 from deeplabcut.utils import auxiliaryfunctions
 
-def convertannotationdata_fromwindows2unixstyle(config,userfeedback=True,win2linux=True):
+
+def convertannotationdata_fromwindows2unixstyle(
+    config, userfeedback=True, win2linux=True
+):
     """
     Converts paths in annotation file (CollectedData_*user*.h5) in labeled-data/videofolder1, etc.
 
@@ -34,44 +37,50 @@ def convertannotationdata_fromwindows2unixstyle(config,userfeedback=True,win2lin
         By default converts from windows to linux. If false, converts from unix to windows.
     """
     cfg = auxiliaryfunctions.read_config(config)
-    folders = [Path(config).parent / 'labeled-data' / Path(vid).stem for vid in cfg['video_sets']]
+    folders = [
+        Path(config).parent / "labeled-data" / Path(vid).stem
+        for vid in cfg["video_sets"]
+    ]
 
     for folder in folders:
         if userfeedback:
             print("Do you want to convert the annotationdata in folder:", folder, "?")
             askuser = input("yes/no")
         else:
-            askuser="yes"
+            askuser = "yes"
 
-        if askuser=='y' or askuser=='yes' or askuser=='Ja' or askuser=='ha':
-            fn=os.path.join(str(folder),'CollectedData_' + cfg['scorer'])
-            Data = pd.read_hdf(fn+'.h5', 'df_with_missing')
+        if askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha":
+            fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"])
+            Data = pd.read_hdf(fn + ".h5", "df_with_missing")
             if win2linux:
-                convertpaths_to_unixstyle(Data,fn)
+                convertpaths_to_unixstyle(Data, fn)
             else:
-                convertpaths_to_windowsstyle(Data,fn)
+                convertpaths_to_windowsstyle(Data, fn)
 
-def convertpaths_to_unixstyle(Data,fn):
-    ''' auxiliary function that converts paths in annotation files:
-        labeled-data\\video\\imgXXX.png to labeled-data/video/imgXXX.png '''
+
+def convertpaths_to_unixstyle(Data, fn):
+    """ auxiliary function that converts paths in annotation files:
+        labeled-data\\video\\imgXXX.png to labeled-data/video/imgXXX.png """
     Data.to_csv(fn + "windows" + ".csv")
-    Data.to_hdf(fn + "windows" + '.h5', 'df_with_missing', format='table', mode='w')
-    Data.index = Data.index.str.replace('\\', '/')
+    Data.to_hdf(fn + "windows" + ".h5", "df_with_missing", format="table", mode="w")
+    Data.index = Data.index.str.replace("\\", "/")
     Data.to_csv(fn + ".csv")
-    Data.to_hdf(fn + '.h5', 'df_with_missing', format='table', mode='w')
+    Data.to_hdf(fn + ".h5", "df_with_missing", format="table", mode="w")
     return Data
 
-def convertpaths_to_windowsstyle(Data,fn):
-    ''' auxiliary function that converts paths in annotation files:
-        labeled-data/video/imgXXX.png to labeled-data\\video\\imgXXX.png '''
+
+def convertpaths_to_windowsstyle(Data, fn):
+    """ auxiliary function that converts paths in annotation files:
+        labeled-data/video/imgXXX.png to labeled-data\\video\\imgXXX.png """
     Data.to_csv(fn + "unix" + ".csv")
-    Data.to_hdf(fn + "unix" + '.h5', 'df_with_missing', format='table', mode='w')
-    Data.index = Data.index.str.replace('/', '\\')
+    Data.to_hdf(fn + "unix" + ".h5", "df_with_missing", format="table", mode="w")
+    Data.index = Data.index.str.replace("/", "\\")
     Data.to_csv(fn + ".csv")
-    Data.to_hdf(fn + '.h5', 'df_with_missing', format='table', mode='w')
+    Data.to_hdf(fn + ".h5", "df_with_missing", format="table", mode="w")
     return Data
 
-def convertcsv2h5(config,userfeedback=True,scorer=None):
+
+def convertcsv2h5(config, userfeedback=True, scorer=None):
     """
     Convert (image) annotation files in folder labeled-data from csv to h5.
     This function allows the user to manually edit the csv (e.g. to correct the scorer name and then convert it into hdf format).
@@ -97,11 +106,11 @@ def convertcsv2h5(config,userfeedback=True,scorer=None):
     --------
     """
     cfg = auxiliaryfunctions.read_config(config)
-    videos = cfg['video_sets'].keys()
+    videos = cfg["video_sets"].keys()
     video_names = [Path(i).stem for i in videos]
-    folders = [Path(config).parent / 'labeled-data' /Path(i) for i in video_names]
+    folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
     if not scorer:
-        scorer = cfg['scorer']
+        scorer = cfg["scorer"]
 
     for folder in folders:
         try:
@@ -111,24 +120,27 @@ def convertcsv2h5(config,userfeedback=True,scorer=None):
             else:
                 askuser = "yes"
 
-            if askuser in ('y', 'yes', 'Ja', 'ha', 'oui'):  # multilanguage support :)
-                fn = os.path.join(str(folder), 'CollectedData_' + cfg['scorer'] + '.csv')
+            if askuser in ("y", "yes", "Ja", "ha", "oui"):  # multilanguage support :)
+                fn = os.path.join(
+                    str(folder), "CollectedData_" + cfg["scorer"] + ".csv"
+                )
                 # Determine whether the data are single- or multi-animal without loading into memory
                 # simply by checking whether 'individuals' is in the second line of the CSV.
                 with open(fn) as datafile:
                     next(datafile)
-                    if 'individuals' in next(datafile):
+                    if "individuals" in next(datafile):
                         header = list(range(4))
                     else:
                         header = list(range(3))
                 data = pd.read_csv(fn, index_col=0, header=header)
-                data.columns = data.columns.set_levels([scorer], level='scorer')
-                data.to_hdf(fn.replace('.csv', '.h5'), key='df_with_missing', mode='w')
+                data.columns = data.columns.set_levels([scorer], level="scorer")
+                data.to_hdf(fn.replace(".csv", ".h5"), key="df_with_missing", mode="w")
                 data.to_csv(fn)
         except FileNotFoundError:
             print("Attention:", folder, "does not appear to have labeled data!")
 
-def analyze_videos_converth5_to_csv(videopath,videotype='.avi'):
+
+def analyze_videos_converth5_to_csv(videopath, videotype=".avi"):
     """
     By default the output poses (when running analyze_videos) are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position \n
     in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
@@ -153,46 +165,54 @@ def analyze_videos_converth5_to_csv(videopath,videotype='.avi'):
     deeplabcut.analyze_videos_converth5_to_csv('/media/alex/experimentaldata/cheetahvideos','.mp4')
 
     """
-    start_path=os.getcwd()
+    start_path = os.getcwd()
     os.chdir(videopath)
-    Videos=[fn for fn in os.listdir(os.curdir) if (videotype in fn) and ('_labeled.mp4' not in fn)] #exclude labeled-videos!
+    Videos = [
+        fn
+        for fn in os.listdir(os.curdir)
+        if (videotype in fn) and ("_labeled.mp4" not in fn)
+    ]  # exclude labeled-videos!
 
-    Allh5files=[fn for fn in os.listdir(os.curdir) if (".h5" in fn) and ("resnet" in fn)]
+    Allh5files = [
+        fn for fn in os.listdir(os.curdir) if (".h5" in fn) and ("resnet" in fn)
+    ]
 
     for video in Videos:
-         vname = Path(video).stem
-         #Is there a scorer for this?
-         PutativeOutputFiles=[fn for fn in Allh5files if vname in fn]
-         for pfn in PutativeOutputFiles:
-             scorer=pfn.split(vname)[1].split('.h5')[0]
-             if "DLC" in scorer or "DeepCut" in scorer:
-                 DC = pd.read_hdf(pfn, 'df_with_missing')
-                 print("Found output file for scorer:", scorer)
-                 print("Converting to csv...")
-                 DC.to_csv(pfn.split('.h5')[0]+'.csv')
+        vname = Path(video).stem
+        # Is there a scorer for this?
+        PutativeOutputFiles = [fn for fn in Allh5files if vname in fn]
+        for pfn in PutativeOutputFiles:
+            scorer = pfn.split(vname)[1].split(".h5")[0]
+            if "DLC" in scorer or "DeepCut" in scorer:
+                DC = pd.read_hdf(pfn, "df_with_missing")
+                print("Found output file for scorer:", scorer)
+                print("Converting to csv...")
+                DC.to_csv(pfn.split(".h5")[0] + ".csv")
 
     os.chdir(str(start_path))
     print("All pose files were converted.")
 
 
 def merge_windowsannotationdataONlinuxsystem(cfg):
-    ''' If a project was created on Windows (and labeled there,) but ran on unix then the data folders
+    """ If a project was created on Windows (and labeled there,) but ran on unix then the data folders
     corresponding in the keys in cfg['video_sets'] are not found. This function gets them directly by
-    looping over all folders in labeled-data '''
+    looping over all folders in labeled-data """
 
     AnnotationData = []
-    data_path = Path(cfg['project_path'],'labeled-data')
-    use_cropped = cfg.get('croppedtraining', False)
+    data_path = Path(cfg["project_path"], "labeled-data")
+    use_cropped = cfg.get("croppedtraining", False)
     annotationfolders = []
     for elem in auxiliaryfunctions.grab_files_in_folder(data_path, relative=False):
-        if os.path.isdir(elem) and ((use_cropped and elem.endswith('_cropped')) or
-                                    not (use_cropped or '_cropped' in elem)):
+        if os.path.isdir(elem) and (
+            (use_cropped and elem.endswith("_cropped"))
+            or not (use_cropped or "_cropped" in elem)
+        ):
             annotationfolders.append(elem)
     print("The following folders were found:", annotationfolders)
     for folder in annotationfolders:
-        filename = os.path.join(folder, 'CollectedData_'+cfg['scorer']+'.h5')
+        filename = os.path.join(folder, "CollectedData_" + cfg["scorer"] + ".h5")
         try:
-            data = pd.read_hdf(filename,'df_with_missing')
+            data = pd.read_hdf(filename, "df_with_missing")
             AnnotationData.append(data)
         except FileNotFoundError:
             print(filename, " not found (perhaps not annotated)")

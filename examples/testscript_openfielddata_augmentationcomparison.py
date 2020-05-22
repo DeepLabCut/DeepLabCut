@@ -68,19 +68,21 @@ the network performs much better on the testvideo.
 
 import os
 from pathlib import Path
-os.environ['DLClight']='True'
+
+os.environ["DLClight"] = "True"
 
 import deeplabcut
+
 # Loading example data set
-path_config_file = os.path.join(os.getcwd(),'openfield-Pranav-2018-10-30/config.yaml')
-cfg=deeplabcut.auxiliaryfunctions.read_config(path_config_file)
+path_config_file = os.path.join(os.getcwd(), "openfield-Pranav-2018-10-30/config.yaml")
+cfg = deeplabcut.auxiliaryfunctions.read_config(path_config_file)
 
 
 deeplabcut.load_demo_data(path_config_file)
-maxiters=20000
+maxiters = 20000
 
 ##create one split and make Shuffle 2 and 3 have the same split.
-'''
+"""
 trainIndexes, testIndexes=deeplabcut.mergeandsplit(path_config_file,trainindex=0,uniform=True)
 deeplabcut.create_training_dataset(path_config_file,Shuffles=[2],trainIndexes=trainIndexes,testIndexes=testIndexes)
 deeplabcut.create_training_dataset(path_config_file,Shuffles=[3],trainIndexes=trainIndexes,testIndexes=testIndexes)
@@ -91,34 +93,48 @@ for shuffle in [2,3]:
 		DLC_config=deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
 		DLC_config['dataset_type']='tensorpack'
 		deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
-'''
+"""
 
 ###Note that the new function in DLC 2.1 simplifies network/augmentation comparisons greatly:
-deeplabcut.create_training_model_comparison(path_config_file,num_shuffles=1,net_types=['resnet_50'],augmenter_types=['imgaug','default','tensorpack'])
-for shuffle in [1,2,3]:
-	if shuffle < 3:
-		posefile,_,_=deeplabcut.return_train_network_path(path_config_file,shuffle=shuffle)
-		if shuffle==2: #Tensorpack:
-			edits = {'rotate_max_deg_abs': 180,
-			         'noise_sigma': 0.01}
-		elif shuffle==1: #imgaug
-			edits = {'rotation': 180,
-			         'motion_blur': True}
+deeplabcut.create_training_model_comparison(
+    path_config_file,
+    num_shuffles=1,
+    net_types=["resnet_50"],
+    augmenter_types=["imgaug", "default", "tensorpack"],
+)
+for shuffle in [1, 2, 3]:
+    if shuffle < 3:
+        posefile, _, _ = deeplabcut.return_train_network_path(
+            path_config_file, shuffle=shuffle
+        )
+        if shuffle == 2:  # Tensorpack:
+            edits = {"rotate_max_deg_abs": 180, "noise_sigma": 0.01}
+        elif shuffle == 1:  # imgaug
+            edits = {"rotation": 180, "motion_blur": True}
 
-		DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
+        DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
 
-	print("TRAIN NETWORK", shuffle)
-	deeplabcut.train_network(path_config_file, shuffle=shuffle,saveiters=10000,displayiters=200,maxiters=maxiters,max_snapshots_to_keep=11)
+    print("TRAIN NETWORK", shuffle)
+    deeplabcut.train_network(
+        path_config_file,
+        shuffle=shuffle,
+        saveiters=10000,
+        displayiters=200,
+        maxiters=maxiters,
+        max_snapshots_to_keep=11,
+    )
 
-	print("EVALUATE")
-	deeplabcut.evaluate_network(path_config_file, Shuffles=[shuffle],plotting=True)
+    print("EVALUATE")
+    deeplabcut.evaluate_network(path_config_file, Shuffles=[shuffle], plotting=True)
 
-	print("Analyze Video")
+    print("Analyze Video")
 
-	videofile_path = os.path.join(os.getcwd(),'openfield-Pranav-2018-10-30','videos','m3v1mp4.mp4')
+    videofile_path = os.path.join(
+        os.getcwd(), "openfield-Pranav-2018-10-30", "videos", "m3v1mp4.mp4"
+    )
 
-	deeplabcut.analyze_videos(path_config_file, [videofile_path], shuffle=shuffle)
+    deeplabcut.analyze_videos(path_config_file, [videofile_path], shuffle=shuffle)
 
-	print("Create Labeled Video and plot")
-	deeplabcut.create_labeled_video(path_config_file,[videofile_path], shuffle=shuffle)
-	deeplabcut.plot_trajectories(path_config_file,[videofile_path], shuffle=shuffle)
+    print("Create Labeled Video and plot")
+    deeplabcut.create_labeled_video(path_config_file, [videofile_path], shuffle=shuffle)
+    deeplabcut.plot_trajectories(path_config_file, [videofile_path], shuffle=shuffle)

@@ -2,7 +2,8 @@ import motmetrics as mm
 import numpy as np
 import os
 from pathlib import Path
-os.environ['DLClight'] = 'True'
+
+os.environ["DLClight"] = "True"
 import pickle
 import deeplabcut
 import pandas as pd
@@ -23,23 +24,25 @@ from tqdm import tqdm
 
 def reconstruct_bbox_from_bodyparts(data, margin, to_xywh=False):
     bbox = np.full((data.shape[0], 5), np.nan)
-    x = data.xs('x', axis=1, level=-1)
-    y = data.xs('y', axis=1, level=-1)
+    x = data.xs("x", axis=1, level=-1)
+    y = data.xs("y", axis=1, level=-1)
     bbox[:, 0] = np.nanmin(x, axis=1) - margin
     bbox[:, 1] = np.nanmin(y, axis=1) - margin
     bbox[:, 2] = np.nanmax(x, axis=1) + margin
     bbox[:, 3] = np.nanmax(y, axis=1) + margin
-    bbox[:, -1] = np.nanmean(data.xs('likelihood', axis=1, level=-1), axis=1)
+    bbox[:, -1] = np.nanmean(data.xs("likelihood", axis=1, level=-1), axis=1)
     if to_xywh:
         convert_bbox_to_xywh(bbox, inplace=True)
     return bbox
 
 
 def reconstruct_all_bboxes(data, margin, to_xywh):
-    animals = data.columns.get_level_values('individuals').unique()
+    animals = data.columns.get_level_values("individuals").unique()
     bboxes = np.full((len(animals), data.shape[0], 5), np.nan)
     for n, animal in enumerate(animals):
-        bboxes[n] = reconstruct_bbox_from_bodyparts(data.xs(animal, axis=1, level=1), margin, to_xywh)
+        bboxes[n] = reconstruct_bbox_from_bodyparts(
+            data.xs(animal, axis=1, level=1), margin, to_xywh
+        )
     return bboxes
 
 
@@ -66,13 +69,15 @@ def kalman_to_bbox(arr, margin):
 
 def set_up_evaluation(data):
     params = dict()
-    params['joint_names'] = data['metadata']['all_joints_names']
-    params['num_joints'] = len(params['joint_names'])
-    partaffinityfield_graph = data['metadata']['PAFgraph']
-    params['paf'] = np.arange(len(partaffinityfield_graph))
-    params['paf_graph'] = params['paf_links'] = [partaffinityfield_graph[l] for l in params['paf']]
-    params['bpts'] = params['ibpts'] = range(params['num_joints'])
-    params['imnames'] = [fn for fn in list(data) if fn != 'metadata']
+    params["joint_names"] = data["metadata"]["all_joints_names"]
+    params["num_joints"] = len(params["joint_names"])
+    partaffinityfield_graph = data["metadata"]["PAFgraph"]
+    params["paf"] = np.arange(len(partaffinityfield_graph))
+    params["paf_graph"] = params["paf_links"] = [
+        partaffinityfield_graph[l] for l in params["paf"]
+    ]
+    params["bpts"] = params["ibpts"] = range(params["num_joints"])
+    params["imnames"] = [fn for fn in list(data) if fn != "metadata"]
     return params
 
 
@@ -80,14 +85,23 @@ def compute_mot_metrics(inference_cfg, data, bboxes_ground_truth):
     params = set_up_evaluation(data)
     ids = np.array(list(range(bboxes_ground_truth.shape[0])))
     tracklets = dict()
-    tracklets['header'] = pd.MultiIndex.from_product([[''], params['joint_names'], ['x', 'y', 'likelihood']],
-                                                     names=['scorer', 'bodyparts', 'coords'])
+    tracklets["header"] = pd.MultiIndex.from_product(
+        [[""], params["joint_names"], ["x", "y", "likelihood"]],
+        names=["scorer", "bodyparts", "coords"],
+    )
     acc = mm.MOTAccumulator(auto_id=True)
     mot_tracker = trackingutils.Sort(inference_cfg)
-    for i, imname in enumerate(tqdm(params['imnames'])):
-        animals = inferenceutils.assemble_individuals(inference_cfg, data[imname], params['num_joints'],
-                                                      params['bpts'], params['ibpts'], params['paf'],
-                                                      params['paf_graph'], params['paf_links'])
+    for i, imname in enumerate(tqdm(params["imnames"])):
+        animals = inferenceutils.assemble_individuals(
+            inference_cfg,
+            data[imname],
+            params["num_joints"],
+            params["bpts"],
+            params["ibpts"],
+            params["paf"],
+            params["paf_graph"],
+            params["paf_links"],
+        )
         bb = inferenceutils.individual2boundingbox(inference_cfg, animals)
         trackers = mot_tracker.update(bb)
         trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
@@ -98,7 +112,9 @@ def compute_mot_metrics(inference_cfg, data, bboxes_ground_truth):
         if empty.any():
             bboxes_gt = bboxes_gt[~empty]
             ids_gt = ids_gt[~empty]
-        dist = mm.distances.iou_matrix(bboxes_gt, bboxes_hyp, max_iou=inference_cfg['iou_threshold'])
+        dist = mm.distances.iou_matrix(
+            bboxes_gt, bboxes_hyp, max_iou=inference_cfg["iou_threshold"]
+        )
         acc.update(ids_gt, trackers[:, 4], dist)
     return acc, tracklets
 
@@ -107,14 +123,25 @@ def compute_mot_metrics_new_tracker(inference_cfg, data, bboxes_ground_truth):
     params = set_up_evaluation(data)
     ids = np.array(list(range(bboxes_ground_truth.shape[0])))
     tracklets = dict()
-    tracklets['header'] = pd.MultiIndex.from_product([[''], params['joint_names'], ['x', 'y', 'likelihood']],
-                                                     names=['scorer', 'bodyparts', 'coords'])
+    tracklets["header"] = pd.MultiIndex.from_product(
+        [[""], params["joint_names"], ["x", "y", "likelihood"]],
+        names=["scorer", "bodyparts", "coords"],
+    )
     acc = mm.MOTAccumulator(auto_id=True)
-    sort = trackingutils.SORT(params['num_joints'], inference_cfg['max_age'], inference_cfg['min_hits'])
-    for i, imname in enumerate(tqdm(params['imnames'])):
-        animals = inferenceutils.assemble_individuals(inference_cfg, data[imname], params['num_joints'],
-                                                      params['bpts'], params['ibpts'], params['paf'],
-                                                      params['paf_graph'], params['paf_links'])
+    sort = trackingutils.SORT(
+        params["num_joints"], inference_cfg["max_age"], inference_cfg["min_hits"]
+    )
+    for i, imname in enumerate(tqdm(params["imnames"])):
+        animals = inferenceutils.assemble_individuals(
+            inference_cfg,
+            data[imname],
+            params["num_joints"],
+            params["bpts"],
+            params["ibpts"],
+            params["paf"],
+            params["paf_graph"],
+            params["paf_links"],
+        )
         temp = [arr.reshape((-1, 3))[:, :2] for arr in animals]
         trackers = sort.track(temp)
         trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
@@ -124,7 +151,7 @@ def compute_mot_metrics_new_tracker(inference_cfg, data, bboxes_ground_truth):
             ids_hyp = []
         else:
             arr = trackers[nonempty]
-            bboxes_hyp = kalman_to_bbox(arr[:, :-2], inference_cfg['boundingboxslack'])
+            bboxes_hyp = kalman_to_bbox(arr[:, :-2], inference_cfg["boundingboxslack"])
             ids_hyp = arr[:, -2]
         bboxes_gt = bboxes_ground_truth[:, i, :4]
         ids_gt = ids.copy()
@@ -137,197 +164,301 @@ def compute_mot_metrics_new_tracker(inference_cfg, data, bboxes_ground_truth):
     return acc, tracklets
 
 
-def compute_crossval_metrics(config_path, inference_cfg, shuffle=1, trainingsetindex=0,
-                                modelprefix='',snapshotindex=-1,dcorr=5,leastbpts=3):
+def compute_crossval_metrics(
+    config_path,
+    inference_cfg,
+    shuffle=1,
+    trainingsetindex=0,
+    modelprefix="",
+    snapshotindex=-1,
+    dcorr=5,
+    leastbpts=3,
+):
 
-    fns = return_evaluate_network_data(config_path, shuffle=shuffle,
-                                       trainingsetindex=trainingsetindex, modelprefix=modelprefix)
+    fns = return_evaluate_network_data(
+        config_path,
+        shuffle=shuffle,
+        trainingsetindex=trainingsetindex,
+        modelprefix=modelprefix,
+    )
 
     predictionsfn = fns[snapshotindex]
     data, metadata = auxfun_multianimal.LoadFullMultiAnimalData(predictionsfn)
     params = set_up_evaluation(data)
 
-    n_images = len(params['imnames'])
-    stats = np.full((n_images, 7), np.nan)  # RMSE, hits, misses, false_pos, num_detections, pck
-    columns = ['train_iter', 'train_frac', 'shuffle']
-    columns += ['_'.join((b, a)) for a in ('train', 'test') for b in ('rmse',  'hits', 'misses', 'falsepos', 'ndetects', 'pck', 'rpck')]
-    for n, imname in enumerate(params['imnames']):
-        animals = inferenceutils.assemble_individuals(inference_cfg, data[imname], params['num_joints'],
-                                                        params['bpts'], params['ibpts'], params['paf'],
-                                                        params['paf_graph'], params['paf_links'], evaluation=True)
+    n_images = len(params["imnames"])
+    stats = np.full(
+        (n_images, 7), np.nan
+    )  # RMSE, hits, misses, false_pos, num_detections, pck
+    columns = ["train_iter", "train_frac", "shuffle"]
+    columns += [
+        "_".join((b, a))
+        for a in ("train", "test")
+        for b in ("rmse", "hits", "misses", "falsepos", "ndetects", "pck", "rpck")
+    ]
+    for n, imname in enumerate(params["imnames"]):
+        animals = inferenceutils.assemble_individuals(
+            inference_cfg,
+            data[imname],
+            params["num_joints"],
+            params["bpts"],
+            params["ibpts"],
+            params["paf"],
+            params["paf_graph"],
+            params["paf_links"],
+            evaluation=True,
+        )
         n_animals = len(animals)
         if n_animals:
-            _, _, GT = data[imname]['groundtruth']
-            GT = GT.droplevel('scorer').unstack(level=['bodyparts', 'coords'])
+            _, _, GT = data[imname]["groundtruth"]
+            GT = GT.droplevel("scorer").unstack(level=["bodyparts", "coords"])
             gt = GT.values.reshape((GT.shape[0], -1, 2))
-            
-            if leastbpts>0: #ONLY KEEP animals with at least as many bpts (to get rid of crops that cannot be assembled)
-                    gt = gt[np.nansum(gt,axis=(1,2))>leastbpts]
 
-            ani = np.stack(animals).reshape((n_animals, -1, 3))[:, :gt.shape[1], :2]
+            if (
+                leastbpts > 0
+            ):  # ONLY KEEP animals with at least as many bpts (to get rid of crops that cannot be assembled)
+                gt = gt[np.nansum(gt, axis=(1, 2)) > leastbpts]
+
+            ani = np.stack(animals).reshape((n_animals, -1, 3))[:, : gt.shape[1], :2]
             mat = np.full((gt.shape[0], n_animals), np.nan)
             with warnings.catch_warnings():
-                warnings.simplefilter('ignore', category=RuntimeWarning)
+                warnings.simplefilter("ignore", category=RuntimeWarning)
                 for i in range(len(gt)):
                     for j in range(len(animals)):
-                        mat[i, j] = np.sqrt(np.nanmean(np.sum((gt[i] - ani[j, :, :2]) ** 2, axis=1)))
+                        mat[i, j] = np.sqrt(
+                            np.nanmean(np.sum((gt[i] - ani[j, :, :2]) ** 2, axis=1))
+                        )
 
             mat[np.isnan(mat)] = np.nanmax(mat) + 1
             row_indices, col_indices = linear_sum_assignment(mat)
-            stats[n, 0] = mat[row_indices, col_indices].mean() #rmse
+            stats[n, 0] = mat[row_indices, col_indices].mean()  # rmse
 
             gt_annot = np.any(~np.isnan(gt), axis=2)
             gt_matched = gt_annot[row_indices].flatten()
 
-            dlc_annot = np.any(~np.isnan(ani), axis=2) #DLC assemblies
+            dlc_annot = np.any(~np.isnan(ani), axis=2)  # DLC assemblies
             dlc_matched = dlc_annot[col_indices].flatten()
 
-            stats[n, 1] = np.logical_and(gt_matched, dlc_matched).sum() #hits
-            stats[n, 2] = gt_annot.sum() - stats[n, 1] #misses
-            stats[n, 3] = np.logical_and(~gt_matched, dlc_matched).sum() #additional detections
+            stats[n, 1] = np.logical_and(gt_matched, dlc_matched).sum()  # hits
+            stats[n, 2] = gt_annot.sum() - stats[n, 1]  # misses
+            stats[n, 3] = np.logical_and(
+                ~gt_matched, dlc_matched
+            ).sum()  # additional detections
             stats[n, 4] = n_animals
 
-            numgtpts=gt_annot.sum()
-            #animal & bpt-wise distance!
-            if numgtpts>0:
-                #corrkps=np.sum((gt[row_indices]-ani[col_indices])**2,axis=2)<dcorr**2
-                dists=np.sum((gt[row_indices]-ani[col_indices])**2,axis=2)
-                corrkps=dists[np.isfinite(dists)]<dcorr**2
-                pck = corrkps.sum()*1./numgtpts  #weigh by actually annotated ones!
-                rpck=np.sum(np.exp(-dists[np.isfinite(dists)]*1./(2*dcorr**2)))*1./numgtpts
+            numgtpts = gt_annot.sum()
+            # animal & bpt-wise distance!
+            if numgtpts > 0:
+                # corrkps=np.sum((gt[row_indices]-ani[col_indices])**2,axis=2)<dcorr**2
+                dists = np.sum((gt[row_indices] - ani[col_indices]) ** 2, axis=2)
+                corrkps = dists[np.isfinite(dists)] < dcorr ** 2
+                pck = (
+                    corrkps.sum() * 1.0 / numgtpts
+                )  # weigh by actually annotated ones!
+                rpck = (
+                    np.sum(np.exp(-dists[np.isfinite(dists)] * 1.0 / (2 * dcorr ** 2)))
+                    * 1.0
+                    / numgtpts
+                )
 
             else:
-                pck = 1. #does that make sense? As a convention fully correct...
-                rpck= 1.
+                pck = 1.0  # does that make sense? As a convention fully correct...
+                rpck = 1.0
 
             stats[n, 5] = pck
             stats[n, 6] = rpck
 
-    train_iter = int(predictionsfn.split('-')[-1].split('.')[0])
-    train_frac = int(predictionsfn.split('trainset')[1].split('shuffle')[0])
+    train_iter = int(predictionsfn.split("-")[-1].split(".")[0])
+    train_frac = int(predictionsfn.split("trainset")[1].split("shuffle")[0])
 
     with warnings.catch_warnings():
-        warnings.simplefilter('ignore', category=RuntimeWarning)
-        res = np.r_[train_iter, train_frac, shuffle,
-                    np.nanmean(stats[metadata['data']['trainIndices']], axis=0),
-                    np.nanmean(stats[metadata['data']['testIndices']], axis=0)]
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+        res = np.r_[
+            train_iter,
+            train_frac,
+            shuffle,
+            np.nanmean(stats[metadata["data"]["trainIndices"]], axis=0),
+            np.nanmean(stats[metadata["data"]["testIndices"]], axis=0),
+        ]
 
     return pd.DataFrame(res.reshape((1, -1)), columns=columns)
 
 
-def compute_crossval_metrics_preloadeddata(params, columns, inference_cfg, data, trainIndices, 
-                                        testIndices,train_iter,train_frac,shuffle,lowerbound,upperbound,
-                                        dcorr,leastbpts):
-    n_images = len(params['imnames'])
-    stats = np.full((n_images, 7), np.nan)  # RMSE, hits, misses, false_pos, num_detections, pck, rpck
-    for n, imname in enumerate(params['imnames']):
-        #animals = inferenceutils.assemble_individuals(inference_cfg, data[imname], params['num_joints'],
+def compute_crossval_metrics_preloadeddata(
+    params,
+    columns,
+    inference_cfg,
+    data,
+    trainIndices,
+    testIndices,
+    train_iter,
+    train_frac,
+    shuffle,
+    lowerbound,
+    upperbound,
+    dcorr,
+    leastbpts,
+):
+    n_images = len(params["imnames"])
+    stats = np.full(
+        (n_images, 7), np.nan
+    )  # RMSE, hits, misses, false_pos, num_detections, pck, rpck
+    for n, imname in enumerate(params["imnames"]):
+        # animals = inferenceutils.assemble_individuals(inference_cfg, data[imname], params['num_joints'],
         #                                                params['bpts'], params['ibpts'], params['paf'],
         #                                                params['paf_graph'], params['paf_links'], evaluation=True)
 
-        animals = inferenceutils.assemble_individuals(inference_cfg, data[imname], params['num_joints'],
-                                                        params['bpts'], params['ibpts'], params['paf'],
-                                                        params['paf_graph'], params['paf_links'],
-                                                        lowerbound,upperbound,
-                                                        evaluation=True)
-                                                                
+        animals = inferenceutils.assemble_individuals(
+            inference_cfg,
+            data[imname],
+            params["num_joints"],
+            params["bpts"],
+            params["ibpts"],
+            params["paf"],
+            params["paf_graph"],
+            params["paf_links"],
+            lowerbound,
+            upperbound,
+            evaluation=True,
+        )
+
         n_animals = len(animals)
         if n_animals:
-            _, _, GT = data[imname]['groundtruth']
-            GT = GT.droplevel('scorer').unstack(level=['bodyparts', 'coords'])
+            _, _, GT = data[imname]["groundtruth"]
+            GT = GT.droplevel("scorer").unstack(level=["bodyparts", "coords"])
             gt = GT.values.reshape((GT.shape[0], -1, 2))
-            
-            if leastbpts>0: #ONLY KEEP animals with at least as many bpts (to get rid of crops that cannot be assembled)
-                    gt = gt[np.nansum(gt,axis=(1,2))>leastbpts]
 
-            ani = np.stack(animals).reshape((n_animals, -1, 3))[:, :gt.shape[1], :2]
+            if (
+                leastbpts > 0
+            ):  # ONLY KEEP animals with at least as many bpts (to get rid of crops that cannot be assembled)
+                gt = gt[np.nansum(gt, axis=(1, 2)) > leastbpts]
+
+            ani = np.stack(animals).reshape((n_animals, -1, 3))[:, : gt.shape[1], :2]
             mat = np.full((gt.shape[0], n_animals), np.nan)
             with warnings.catch_warnings():
-                warnings.simplefilter('ignore', category=RuntimeWarning)
+                warnings.simplefilter("ignore", category=RuntimeWarning)
                 for i in range(len(gt)):
                     for j in range(len(animals)):
-                        mat[i, j] = np.sqrt(np.nanmean(np.sum((gt[i] - ani[j, :, :2]) ** 2, axis=1)))
+                        mat[i, j] = np.sqrt(
+                            np.nanmean(np.sum((gt[i] - ani[j, :, :2]) ** 2, axis=1))
+                        )
 
             mat[np.isnan(mat)] = np.nanmax(mat) + 1
             row_indices, col_indices = linear_sum_assignment(mat)
-            stats[n, 0] = mat[row_indices, col_indices].mean() #rmse
+            stats[n, 0] = mat[row_indices, col_indices].mean()  # rmse
 
             gt_annot = np.any(~np.isnan(gt), axis=2)
             gt_matched = gt_annot[row_indices].flatten()
 
-            dlc_annot = np.any(~np.isnan(ani), axis=2) #DLC assemblies
+            dlc_annot = np.any(~np.isnan(ani), axis=2)  # DLC assemblies
             dlc_matched = dlc_annot[col_indices].flatten()
 
-            stats[n, 1] = np.logical_and(gt_matched, dlc_matched).sum() #hits
-            stats[n, 2] = gt_annot.sum() - stats[n, 1] #misses
-            stats[n, 3] = np.logical_and(~gt_matched, dlc_matched).sum() #additional detections
+            stats[n, 1] = np.logical_and(gt_matched, dlc_matched).sum()  # hits
+            stats[n, 2] = gt_annot.sum() - stats[n, 1]  # misses
+            stats[n, 3] = np.logical_and(
+                ~gt_matched, dlc_matched
+            ).sum()  # additional detections
             stats[n, 4] = n_animals
 
-            numgtpts=gt_annot.sum()
-            #animal & bpt-wise distance!
-            if numgtpts>0:
-                #corrkps=np.sum((gt[row_indices]-ani[col_indices])**2,axis=2)<dcorr**2
-                dists=np.sum((gt[row_indices]-ani[col_indices])**2,axis=2)
-                corrkps=dists[np.isfinite(dists)]<dcorr**2
-                pck = corrkps.sum()*1./numgtpts  #weigh by actually annotated ones!
-                rpck=np.sum(np.exp(-dists[np.isfinite(dists)]*1./(2*dcorr**2)))*1./numgtpts
+            numgtpts = gt_annot.sum()
+            # animal & bpt-wise distance!
+            if numgtpts > 0:
+                # corrkps=np.sum((gt[row_indices]-ani[col_indices])**2,axis=2)<dcorr**2
+                dists = np.sum((gt[row_indices] - ani[col_indices]) ** 2, axis=2)
+                corrkps = dists[np.isfinite(dists)] < dcorr ** 2
+                pck = (
+                    corrkps.sum() * 1.0 / numgtpts
+                )  # weigh by actually annotated ones!
+                rpck = (
+                    np.sum(np.exp(-dists[np.isfinite(dists)] * 1.0 / (2 * dcorr ** 2)))
+                    * 1.0
+                    / numgtpts
+                )
 
             else:
-                pck = 1. #does that make sense? As a convention fully correct...
-                rpck= 1.
+                pck = 1.0  # does that make sense? As a convention fully correct...
+                rpck = 1.0
 
             stats[n, 5] = pck
             stats[n, 6] = rpck
 
     with warnings.catch_warnings():
-        warnings.simplefilter('ignore', category=RuntimeWarning)
-        res = np.r_[train_iter, train_frac, shuffle,
-                    np.nanmean(stats[trainIndices], axis=0),
-                    np.nanmean(stats[testIndices], axis=0)]
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+        res = np.r_[
+            train_iter,
+            train_frac,
+            shuffle,
+            np.nanmean(stats[trainIndices], axis=0),
+            np.nanmean(stats[testIndices], axis=0),
+        ]
 
     return pd.DataFrame(res.reshape((1, -1)), columns=columns)
 
 
+# , inferencecfg, pbounds
+def bayesian_search(
+    config_path,
+    edgewisecondition=True,
+    shuffle=1,
+    trainingsetindex=0,
+    modelprefix="",
+    snapshotindex=-1,
+    target="rpck_test",
+    maximize=True,
+    init_points=20,
+    n_iter=50,
+    acq="ei",
+    log_file=None,  # bayes optimizer
+    dcorr=5,
+    leastbpts=3,
+):  #
+    if "rpck" in target:
+        assert maximize == True
 
-#, inferencecfg, pbounds
-def bayesian_search(config_path,edgewisecondition=True,
-                    shuffle=1, trainingsetindex=0, modelprefix='',snapshotindex=-1, 
-                    target='rpck_test', maximize=True, init_points=20, n_iter=50, acq='ei', log_file=None, # bayes optimizer
-                    dcorr=5, leastbpts=3): #
-    if 'rpck' in target:
-        assert(maximize==True)
-    
-    if 'rmse' in target:
-        assert(maximize==False)
+    if "rmse" in target:
+        assert maximize == False
 
     cfg = auxiliaryfunctions.read_config(config_path)
-    evaluationfolder = os.path.join(cfg["project_path"], str(
-        auxiliaryfunctions.GetEvaluationFolder(cfg["TrainingFraction"][int(trainingsetindex)], shuffle, cfg,modelprefix=modelprefix)))
+    evaluationfolder = os.path.join(
+        cfg["project_path"],
+        str(
+            auxiliaryfunctions.GetEvaluationFolder(
+                cfg["TrainingFraction"][int(trainingsetindex)],
+                shuffle,
+                cfg,
+                modelprefix=modelprefix,
+            )
+        ),
+    )
 
-    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg, shuffle, cfg["TrainingFraction"][int(trainingsetindex)],
-                                                                cfg['iteration'],modelprefix=modelprefix)
-
+    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+        cfg,
+        shuffle,
+        cfg["TrainingFraction"][int(trainingsetindex)],
+        cfg["iteration"],
+        modelprefix=modelprefix,
+    )
 
     inferencecfg = edict()
-    #irrelevant variables:
+    # irrelevant variables:
     inferencecfg.withid = False
-    inferencecfg.method = 'm1'
+    inferencecfg.method = "m1"
     inferencecfg.slack = 10
     inferencecfg.variant = 0
 
     inferencecfg.topktoretain = np.inf
-    inferencecfg.distnormalization=400
-    inferencecfg.distnormalizationLOWER=5
-    inferencecfg.addlikelihoods=.1
-    inferencecfg.averagescore=.1 #least score of detected animal
+    inferencecfg.distnormalization = 400
+    inferencecfg.distnormalizationLOWER = 5
+    inferencecfg.addlikelihoods = 0.1
+    inferencecfg.averagescore = 0.1  # least score of detected animal
 
     pbounds = {
-        'pafthreshold': (0.05, 0.7),
-        'detectionthresholdsquare': (0.01, 0.9), #set to minimum (from pose_cfg.yaml)
-        'minimalnumberofconnections': (4, 15),
+        "pafthreshold": (0.05, 0.7),
+        "detectionthresholdsquare": (0.01, 0.9),  # set to minimum (from pose_cfg.yaml)
+        "minimalnumberofconnections": (4, 15),
     }
 
-    '''
+    """
     pbounds = {
         'distnormalization': (100, 500),
         'distnormalizationLOWER': (0, 50),
@@ -354,97 +485,158 @@ def bayesian_search(config_path,edgewisecondition=True,
         inferencecfg.addlikelihoods = addlikelihoods
         inferencecfg.pafthreshold = pafthreshold
 
-    '''
+    """
 
-    #load params
-    fns = return_evaluate_network_data(config_path, shuffle=shuffle,
-                                       trainingsetindex=trainingsetindex, modelprefix=modelprefix)
+    # load params
+    fns = return_evaluate_network_data(
+        config_path,
+        shuffle=shuffle,
+        trainingsetindex=trainingsetindex,
+        modelprefix=modelprefix,
+    )
     predictionsfn = fns[snapshotindex]
     data, metadata = auxfun_multianimal.LoadFullMultiAnimalData(predictionsfn)
     params = set_up_evaluation(data)
-    columns = ['train_iter', 'train_frac', 'shuffle']
-    columns += ['_'.join((b, a)) for a in ('train', 'test') for b in ('rmse',  'hits', 'misses', 'falsepos', 'ndetects', 'pck', 'rpck')]
-    
-    train_iter = trainingsetindex #int(predictionsfn.split('-')[-1].split('.')[0])
-    train_frac = cfg['TrainingFraction'][train_iter] #int(predictionsfn.split('trainset')[1].split('shuffle')[0])
-    trainIndices=metadata['data']['trainIndices']
-    testIndices=metadata['data']['testIndices']
-    #train_iter, train_frac, shuffle
+    columns = ["train_iter", "train_frac", "shuffle"]
+    columns += [
+        "_".join((b, a))
+        for a in ("train", "test")
+        for b in ("rmse", "hits", "misses", "falsepos", "ndetects", "pck", "rpck")
+    ]
 
+    train_iter = trainingsetindex  # int(predictionsfn.split('-')[-1].split('.')[0])
+    train_frac = cfg["TrainingFraction"][
+        train_iter
+    ]  # int(predictionsfn.split('trainset')[1].split('shuffle')[0])
+    trainIndices = metadata["data"]["trainIndices"]
+    testIndices = metadata["data"]["testIndices"]
+    # train_iter, train_frac, shuffle
 
     if edgewisecondition:
-        mf=str(auxiliaryfunctions.GetModelFolder(cfg["TrainingFraction"][int(trainingsetindex)],shuffle,cfg,modelprefix=modelprefix))
-        modelfolder=os.path.join(cfg["project_path"],mf)
-        path_inferencebounds_config = Path(modelfolder) / 'test' / 'inferencebounds.yaml'
+        mf = str(
+            auxiliaryfunctions.GetModelFolder(
+                cfg["TrainingFraction"][int(trainingsetindex)],
+                shuffle,
+                cfg,
+                modelprefix=modelprefix,
+            )
+        )
+        modelfolder = os.path.join(cfg["project_path"], mf)
+        path_inferencebounds_config = (
+            Path(modelfolder) / "test" / "inferencebounds.yaml"
+        )
         try:
-            inferenceboundscfg=auxiliaryfunctions.read_plainconfig(path_inferencebounds_config)
+            inferenceboundscfg = auxiliaryfunctions.read_plainconfig(
+                path_inferencebounds_config
+            )
         except FileNotFoundError:
             print("Computing distances...")
             from deeplabcut.pose_estimation_tensorflow import calculatepafdistancebounds
-            inferenceboundscfg = calculatepafdistancebounds(config_path, shuffle, trainingsetindex)
-            auxiliaryfunctions.write_plainconfig(path_inferencebounds_config,inferenceboundscfg)
 
-        partaffinityfield_graph=params['paf_graph']
-        upperbound = np.array([float(inferenceboundscfg[str(edge[0])+'_'+str(edge[1])]['intra_max']) for edge in partaffinityfield_graph])
-        lowerbound = np.array([float(inferenceboundscfg[str(edge[0])+'_'+str(edge[1])]['intra_min']) for edge in partaffinityfield_graph])
-        upperbound*=1.25
-        lowerbound*=.5 #SLACK!
-        print(upperbound,lowerbound)
+            inferenceboundscfg = calculatepafdistancebounds(
+                config_path, shuffle, trainingsetindex
+            )
+            auxiliaryfunctions.write_plainconfig(
+                path_inferencebounds_config, inferenceboundscfg
+            )
+
+        partaffinityfield_graph = params["paf_graph"]
+        upperbound = np.array(
+            [
+                float(
+                    inferenceboundscfg[str(edge[0]) + "_" + str(edge[1])]["intra_max"]
+                )
+                for edge in partaffinityfield_graph
+            ]
+        )
+        lowerbound = np.array(
+            [
+                float(
+                    inferenceboundscfg[str(edge[0]) + "_" + str(edge[1])]["intra_min"]
+                )
+                for edge in partaffinityfield_graph
+            ]
+        )
+        upperbound *= 1.25
+        lowerbound *= 0.5  # SLACK!
+        print(upperbound, lowerbound)
     else:
-        lowerbound=None
-        upperbound=None
+        lowerbound = None
+        upperbound = None
 
-
-    def dlc_hyperparams(pafthreshold,
-                        detectionthresholdsquare,
-                        minimalnumberofconnections):
+    def dlc_hyperparams(
+        pafthreshold, detectionthresholdsquare, minimalnumberofconnections
+    ):
 
         inferencecfg.minimalnumberofconnections = int(minimalnumberofconnections)
         inferencecfg.detectionthresholdsquare = detectionthresholdsquare
         inferencecfg.pafthreshold = pafthreshold
 
-        stats = compute_crossval_metrics_preloadeddata(params, columns, inferencecfg, data, 
-                                                        trainIndices, testIndices,train_iter, 
-                                                        train_frac,shuffle,lowerbound,upperbound,
-                                                        dcorr=dcorr,leastbpts=leastbpts)
+        stats = compute_crossval_metrics_preloadeddata(
+            params,
+            columns,
+            inferencecfg,
+            data,
+            trainIndices,
+            testIndices,
+            train_iter,
+            train_frac,
+            shuffle,
+            lowerbound,
+            upperbound,
+            dcorr=dcorr,
+            leastbpts=leastbpts,
+        )
 
-        #stats = compute_crossval_metrics(config_path, inferencecfg, shuffle,trainingsetindex,
+        # stats = compute_crossval_metrics(config_path, inferencecfg, shuffle,trainingsetindex,
         #                                    dcorr=dcorr,leastbpts=leastbpts,modelprefix=modelprefix)
 
         val = stats[target].values[0]
-        #print("rmse", stats['rmse_test'].values[0], "miss", stats['misses_test'].values[0], "hit", stats['hits_test'].values[0])
-        #print("pck", stats['pck_test'].values[0], "pck", stats['pck_train'].values[0])
-        print("rpck", stats['rpck_test'].values[0], "rpck train:", stats['rpck_train'].values[0])
-        
-        
-        #val = stats['rmse_test'].values[0]*(1+stats['misses_test'].values[0]*1./stats['hits_test'].values[0])
+        # print("rmse", stats['rmse_test'].values[0], "miss", stats['misses_test'].values[0], "hit", stats['hits_test'].values[0])
+        # print("pck", stats['pck_test'].values[0], "pck", stats['pck_train'].values[0])
+        print(
+            "rpck",
+            stats["rpck_test"].values[0],
+            "rpck train:",
+            stats["rpck_train"].values[0],
+        )
+
+        # val = stats['rmse_test'].values[0]*(1+stats['misses_test'].values[0]*1./stats['hits_test'].values[0])
         if np.isnan(val):
             if maximize:
                 val = -1e9
-            else: #if not maximize:
-                val = 1e9 #random large number!
+            else:  # if not maximize:
+                val = 1e9  # random large number!
         return val
 
     opt = BayesianOptimization(f=dlc_hyperparams, pbounds=pbounds, random_state=42)
-    
-    #Saving log file
+
+    # Saving log file
     if log_file:
         load_logs(opt, log_file)
-        
-    logger = JSONLogger(path=os.path.join(evaluationfolder, 'opti_log'+DLCscorer+'.json'))
+
+    logger = JSONLogger(
+        path=os.path.join(evaluationfolder, "opti_log" + DLCscorer + ".json")
+    )
 
     opt.subscribe(Events.OPTIMIZATION_STEP, logger)
     opt.maximize(init_points=init_points, n_iter=n_iter, acq=acq)
 
-    inferencecfg.update(opt.max['params'])
-    inferencecfg.minimalnumberofconnections = int(inferencecfg.minimalnumberofconnections)
+    inferencecfg.update(opt.max["params"])
+    inferencecfg.minimalnumberofconnections = int(
+        inferencecfg.minimalnumberofconnections
+    )
 
     return inferencecfg, opt
 
 
 def evaluate_skeleton_tracker():
-    mouse = ground_truth.xs('mus1', level='individuals', axis=1).drop('likelihood', axis=1, level=-1).values
-    all_jointnames = data['metadata']['all_joints_names']
+    mouse = (
+        ground_truth.xs("mus1", level="individuals", axis=1)
+        .drop("likelihood", axis=1, level=-1)
+        .values
+    )
+    all_jointnames = data["metadata"]["all_joints_names"]
     numjoints = len(all_jointnames)
 
     tracker = trackingutils.SkeletonTracker(numjoints)
@@ -482,7 +674,7 @@ def evaluate_skeleton_tracker():
 
 def compute_mot_metrics_bboxes(inference_cfg, bboxes, bboxes_ground_truth):
     if bboxes.shape != bboxes_ground_truth.shape:
-        raise ValueError('Dimension mismatch. Check the inputs.')
+        raise ValueError("Dimension mismatch. Check the inputs.")
 
     ids = np.array(list(range(bboxes_ground_truth.shape[0])))
     acc = mm.MOTAccumulator(auto_id=True)
@@ -493,20 +685,26 @@ def compute_mot_metrics_bboxes(inference_cfg, bboxes, bboxes_ground_truth):
         empty_gt = np.isnan(bboxes_gt).any(axis=1)
         bboxes_hyp = bboxes_gt[~empty_hyp]
         bboxes_gt = bboxes_gt[~empty_gt]
-        dist = mm.distances.iou_matrix(bboxes_gt, bboxes_hyp, max_iou=inference_cfg['iou_threshold'])
+        dist = mm.distances.iou_matrix(
+            bboxes_gt, bboxes_hyp, max_iou=inference_cfg["iou_threshold"]
+        )
         acc.update(ids[~empty_hyp], ids[~empty_gt], dist)
     return acc
 
 
 def print_all_metrics(accumulators, all_params=None):
     if not all_params:
-        names = [f'iter{i + 1}' for i in range(len(accumulators))]
+        names = [f"iter{i + 1}" for i in range(len(accumulators))]
     else:
-        s = '_'.join('{}' for _ in range(len(all_params[0])))
+        s = "_".join("{}" for _ in range(len(all_params[0])))
         names = [s.format(*params) for params in all_params]
     mh = mm.metrics.create()
-    summary = mh.compute_many(accumulators, metrics=mm.metrics.motchallenge_metrics, names=names)
-    strsummary = mm.io.render_summary(summary, formatters=mh.formatters, namemap=mm.io.motchallenge_metric_names)
+    summary = mh.compute_many(
+        accumulators, metrics=mm.metrics.motchallenge_metrics, names=names
+    )
+    strsummary = mm.io.render_summary(
+        summary, formatters=mh.formatters, namemap=mm.io.motchallenge_metric_names
+    )
     print(strsummary)
 
 
@@ -515,36 +713,45 @@ def example_run():
     # ground_truth_file = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/silversideschooling-Valentina-2019-07-14/videos/deeplc.menidia.school4.59rpm.S11.D.shortDLC_resnet50_silversideschoolingJul14shuffle0_30000tracks.h5'
     # full_data_file = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/silversideschooling-Valentina-2019-07-14/videos/deeplc.menidia.school4.59rpm.S11.D.shortDLC_resnet50_silversideschoolingJul14shuffle1_30000_full.pickle'
 
-    config = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/config.yaml'
-    config_inference = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/inference_cfg.yaml'
-    ground_truth_file = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/videocompressed3DLC_resnet50_MultiMouseDec16shuffle2_20000tracks1.h5'
-    full_data_file = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/videocompressed3DLC_resnet50_MultiMouseDec16shuffle2_20000_full.pickle'
+    config = "/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/config.yaml"
+    config_inference = "/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/inference_cfg.yaml"
+    ground_truth_file = "/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/videocompressed3DLC_resnet50_MultiMouseDec16shuffle2_20000tracks1.h5"
+    full_data_file = "/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/videocompressed3DLC_resnet50_MultiMouseDec16shuffle2_20000_full.pickle"
 
     # config = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/Marmoset-Mackenzie-2019-05-29/config.yaml'
     # config_inference = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/Marmoset-Mackenzie-2019-05-29/inference_cfg.yaml'
     # ground_truth_file = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/Marmoset-Mackenzie-2019-05-29/ultrashort_croppedDLC_resnet50_MarmosetMay29shuffle0_20000tracks.h5'
     # full_data_file = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/Marmoset-Mackenzie-2019-05-29/ultrashort_croppedDLC_resnet50_MarmosetMay29shuffle0_20000_full.pickle'
 
-    projectpath='/media/alex/dropboxdisk/Dropbox/InterestingCode/social_datasets/croppedNov18/MultiMouse-Daniel-2019-12-16'
-    config =os.path.join(projectpath,'config.yaml')
+    projectpath = "/media/alex/dropboxdisk/Dropbox/InterestingCode/social_datasets/croppedNov18/MultiMouse-Daniel-2019-12-16"
+    config = os.path.join(projectpath, "config.yaml")
 
-    trainingsetfolder=auxiliaryfunctions.GetTrainingSetFolder(cfg)
-    Data = pd.read_hdf(os.path.join(cfg["project_path"],str(trainingsetfolder),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing')
+    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+    Data = pd.read_hdf(
+        os.path.join(
+            cfg["project_path"],
+            str(trainingsetfolder),
+            "CollectedData_" + cfg["scorer"] + ".h5",
+        ),
+        "df_with_missing",
+    )
 
+    config = "/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/config.yaml"
+    config_inference = "/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/inference_cfg.yaml"
 
-    config = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/config.yaml'
-    config_inference = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/inference_cfg.yaml'
+    ground_truth_file = "/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/videocompressed3DLC_resnet50_MultiMouseDec16shuffle2_20000tracks1.h5"
+    full_data_file = "/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/videocompressed3DLC_resnet50_MultiMouseDec16shuffle2_20000_full.pickle"
 
-    ground_truth_file = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/videocompressed3DLC_resnet50_MultiMouseDec16shuffle2_20000tracks1.h5'
-    full_data_file = '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/videocompressed3DLC_resnet50_MultiMouseDec16shuffle2_20000_full.pickle'
-
-
-    inference_cfg = edict(deeplabcut.auxiliaryfunctions.read_plainconfig(config_inference))
+    inference_cfg = edict(
+        deeplabcut.auxiliaryfunctions.read_plainconfig(config_inference)
+    )
     testing_cfg = edict(inference_cfg.copy())
     ground_truth = pd.read_hdf(ground_truth_file)
 
-    bboxes_ground_truth = reconstruct_all_bboxes(ground_truth, inference_cfg['boundingboxslack'], to_xywh=True)
-    with open(full_data_file, 'rb') as file:
+    bboxes_ground_truth = reconstruct_all_bboxes(
+        ground_truth, inference_cfg["boundingboxslack"], to_xywh=True
+    )
+    with open(full_data_file, "rb") as file:
         data = pickle.load(file)
 
     # manager = TrackletManager(config, 0, 0)
@@ -557,10 +764,12 @@ def example_run():
     ntot = len(combinations)
     # combinations = list(product(thresholds, max_ages, min_hits))
     for n, (max_age, min_hit) in enumerate(combinations, start=1):
-        print(f'Combination {n}/{ntot}')
-        testing_cfg['max_age'] = max_age
-        testing_cfg['min_hits'] = min_hit
-        acc, tracklets = compute_mot_metrics_new_tracker(testing_cfg, data, bboxes_ground_truth)
+        print(f"Combination {n}/{ntot}")
+        testing_cfg["max_age"] = max_age
+        testing_cfg["min_hits"] = min_hit
+        acc, tracklets = compute_mot_metrics_new_tracker(
+            testing_cfg, data, bboxes_ground_truth
+        )
         # acc, tracklets = compute_mot_metrics(testing_cfg, data, bboxes_ground_truth)
         accumulators.append(acc)
         # Evaluate the effect of the tracklet loader

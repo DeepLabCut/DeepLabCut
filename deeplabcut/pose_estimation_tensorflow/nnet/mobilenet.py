@@ -23,16 +23,17 @@ import copy
 import os
 
 import tensorflow as tf
+
 slim = tf.contrib.slim
 
 
 @slim.add_arg_scope
 def apply_activation(x, name=None, activation_fn=None):
-  return activation_fn(x, name=name) if activation_fn else x
+    return activation_fn(x, name=name) if activation_fn else x
 
 
 def _fixed_padding(inputs, kernel_size, rate=1):
-  """Pads the input along the spatial dimensions independently of input size.
+    """Pads the input along the spatial dimensions independently of input size.
 
   Pads the input such that if it was used in a convolution with 'VALID' padding,
   the output would have the same dimensions as if the unpadded input was used
@@ -47,29 +48,32 @@ def _fixed_padding(inputs, kernel_size, rate=1):
     output: A tensor of size [batch, height_out, width_out, channels] with the
       input, either intact (if kernel_size == 1) or padded (if kernel_size > 1).
   """
-  kernel_size_effective = [kernel_size[0] + (kernel_size[0] - 1) * (rate - 1),
-                           kernel_size[0] + (kernel_size[0] - 1) * (rate - 1)]
-  pad_total = [kernel_size_effective[0] - 1, kernel_size_effective[1] - 1]
-  pad_beg = [pad_total[0] // 2, pad_total[1] // 2]
-  pad_end = [pad_total[0] - pad_beg[0], pad_total[1] - pad_beg[1]]
-  padded_inputs = tf.pad(inputs, [[0, 0], [pad_beg[0], pad_end[0]],
-                                  [pad_beg[1], pad_end[1]], [0, 0]])
-  return padded_inputs
+    kernel_size_effective = [
+        kernel_size[0] + (kernel_size[0] - 1) * (rate - 1),
+        kernel_size[0] + (kernel_size[0] - 1) * (rate - 1),
+    ]
+    pad_total = [kernel_size_effective[0] - 1, kernel_size_effective[1] - 1]
+    pad_beg = [pad_total[0] // 2, pad_total[1] // 2]
+    pad_end = [pad_total[0] - pad_beg[0], pad_total[1] - pad_beg[1]]
+    padded_inputs = tf.pad(
+        inputs, [[0, 0], [pad_beg[0], pad_end[0]], [pad_beg[1], pad_end[1]], [0, 0]]
+    )
+    return padded_inputs
 
 
 def _make_divisible(v, divisor, min_value=None):
-  if min_value is None:
-    min_value = divisor
-  new_v = max(min_value, int(v + divisor / 2) // divisor * divisor)
-  # Make sure that round down does not go down by more than 10%.
-  if new_v < 0.9 * v:
-    new_v += divisor
-  return new_v
+    if min_value is None:
+        min_value = divisor
+    new_v = max(min_value, int(v + divisor / 2) // divisor * divisor)
+    # Make sure that round down does not go down by more than 10%.
+    if new_v < 0.9 * v:
+        new_v += divisor
+    return new_v
 
 
 @contextlib.contextmanager
 def _set_arg_scope_defaults(defaults):
-  """Sets arg scope defaults for all items present in defaults.
+    """Sets arg scope defaults for all items present in defaults.
 
   Args:
     defaults: dictionary/list of pairs, containing a mapping from
@@ -78,52 +82,51 @@ def _set_arg_scope_defaults(defaults):
   Yields:
     context manager where all defaults are set.
   """
-  if hasattr(defaults, 'items'):
-    items = list(defaults.items())
-  else:
-    items = defaults
-  if not items:
-    yield
-  else:
-    func, default_arg = items[0]
-    with slim.arg_scope(func, **default_arg):
-      with _set_arg_scope_defaults(items[1:]):
+    if hasattr(defaults, "items"):
+        items = list(defaults.items())
+    else:
+        items = defaults
+    if not items:
         yield
+    else:
+        func, default_arg = items[0]
+        with slim.arg_scope(func, **default_arg):
+            with _set_arg_scope_defaults(items[1:]):
+                yield
 
 
 @slim.add_arg_scope
-def depth_multiplier(output_params,
-                     multiplier,
-                     divisible_by=8,
-                     min_depth=8,
-                     **unused_kwargs):
-  if 'num_outputs' not in output_params:
-    return
-  d = output_params['num_outputs']
-  output_params['num_outputs'] = _make_divisible(d * multiplier, divisible_by,
-                                                 min_depth)
+def depth_multiplier(
+    output_params, multiplier, divisible_by=8, min_depth=8, **unused_kwargs
+):
+    if "num_outputs" not in output_params:
+        return
+    d = output_params["num_outputs"]
+    output_params["num_outputs"] = _make_divisible(
+        d * multiplier, divisible_by, min_depth
+    )
 
 
-_Op = collections.namedtuple('Op', ['op', 'params', 'multiplier_func'])
+_Op = collections.namedtuple("Op", ["op", "params", "multiplier_func"])
 
 
 def op(opfunc, multiplier_func=depth_multiplier, **params):
-  multiplier = params.pop('multiplier_transform', multiplier_func)
-  return _Op(opfunc, params=params, multiplier_func=multiplier)
+    multiplier = params.pop("multiplier_transform", multiplier_func)
+    return _Op(opfunc, params=params, multiplier_func=multiplier)
 
 
 class NoOpScope(object):
-  """No-op context manager."""
+    """No-op context manager."""
 
-  def __enter__(self):
-    return None
+    def __enter__(self):
+        return None
 
-  def __exit__(self, exc_type, exc_value, traceback):
-    return False
+    def __exit__(self, exc_type, exc_value, traceback):
+        return False
 
 
 def safe_arg_scope(funcs, **kwargs):
-  """Returns `slim.arg_scope` with all None arguments removed.
+    """Returns `slim.arg_scope` with all None arguments removed.
 
   Arguments:
     funcs: Functions to pass to `arg_scope`.
@@ -135,12 +138,11 @@ def safe_arg_scope(funcs, **kwargs):
   Note: can be useful if None value should be interpreted as "do not overwrite
     this parameter value".
   """
-  filtered_args = {name: value for name, value in kwargs.items()
-                   if value is not None}
-  if filtered_args:
-    return slim.arg_scope(funcs, **filtered_args)
-  else:
-    return NoOpScope()
+    filtered_args = {name: value for name, value in kwargs.items() if value is not None}
+    if filtered_args:
+        return slim.arg_scope(funcs, **filtered_args)
+    else:
+        return NoOpScope()
 
 
 @slim.add_arg_scope
@@ -152,8 +154,9 @@ def mobilenet_base(  # pylint: disable=invalid-name
     output_stride=None,
     use_explicit_padding=False,
     scope=None,
-    is_training=False):
-  """Mobilenet base network.
+    is_training=False,
+):
+    """Mobilenet base network.
 
   Constructs a network from inputs to the given final endpoint. By default
   the network is constructed in inference mode. To create network
@@ -204,118 +207,121 @@ def mobilenet_base(  # pylint: disable=invalid-name
     ValueError: depth_multiplier <= 0, or the target output_stride is not
                 allowed.
   """
-  if multiplier <= 0:
-    raise ValueError('multiplier is not greater than zero.')
+    if multiplier <= 0:
+        raise ValueError("multiplier is not greater than zero.")
 
-  # Set conv defs defaults and overrides.
-  conv_defs_defaults = conv_defs.get('defaults', {})
-  conv_defs_overrides = conv_defs.get('overrides', {})
-  if use_explicit_padding:
-    conv_defs_overrides = copy.deepcopy(conv_defs_overrides)
-    conv_defs_overrides[
-        (slim.conv2d, slim.separable_conv2d)] = {'padding': 'VALID'}
+    # Set conv defs defaults and overrides.
+    conv_defs_defaults = conv_defs.get("defaults", {})
+    conv_defs_overrides = conv_defs.get("overrides", {})
+    if use_explicit_padding:
+        conv_defs_overrides = copy.deepcopy(conv_defs_overrides)
+        conv_defs_overrides[(slim.conv2d, slim.separable_conv2d)] = {"padding": "VALID"}
 
-  if output_stride is not None:
-    if output_stride == 0 or (output_stride > 1 and output_stride % 2):
-      raise ValueError('Output stride must be None, 1 or a multiple of 2.')
+    if output_stride is not None:
+        if output_stride == 0 or (output_stride > 1 and output_stride % 2):
+            raise ValueError("Output stride must be None, 1 or a multiple of 2.")
 
-  # a) Set the tensorflow scope
-  # b) set padding to default: note we might consider removing this
-  # since it is also set by mobilenet_scope
-  # c) set all defaults
-  # d) set all extra overrides.
-  # pylint: disable=g-backslash-continuation
-  with _scope_all(scope, default_scope='Mobilenet'), \
-      safe_arg_scope([slim.batch_norm], is_training=is_training), \
-      _set_arg_scope_defaults(conv_defs_defaults), \
-      _set_arg_scope_defaults(conv_defs_overrides):
-    # The current_stride variable keeps track of the output stride of the
-    # activations, i.e., the running product of convolution strides up to the
-    # current network layer. This allows us to invoke atrous convolution
-    # whenever applying the next convolution would result in the activations
-    # having output stride larger than the target output_stride.
-    current_stride = 1
+    # a) Set the tensorflow scope
+    # b) set padding to default: note we might consider removing this
+    # since it is also set by mobilenet_scope
+    # c) set all defaults
+    # d) set all extra overrides.
+    # pylint: disable=g-backslash-continuation
+    with _scope_all(scope, default_scope="Mobilenet"), safe_arg_scope(
+        [slim.batch_norm], is_training=is_training
+    ), _set_arg_scope_defaults(conv_defs_defaults), _set_arg_scope_defaults(
+        conv_defs_overrides
+    ):
+        # The current_stride variable keeps track of the output stride of the
+        # activations, i.e., the running product of convolution strides up to the
+        # current network layer. This allows us to invoke atrous convolution
+        # whenever applying the next convolution would result in the activations
+        # having output stride larger than the target output_stride.
+        current_stride = 1
 
-    # The atrous convolution rate parameter.
-    rate = 1
+        # The atrous convolution rate parameter.
+        rate = 1
 
-    net = inputs
-    # Insert default parameters before the base scope which includes
-    # any custom overrides set in mobilenet.
-    end_points = {}
-    scopes = {}
-    for i, opdef in enumerate(conv_defs['spec']):
-      params = dict(opdef.params)
-      opdef.multiplier_func(params, multiplier)
-      stride = params.get('stride', 1)
-      if output_stride is not None and current_stride == output_stride:
-        # If we have reached the target output_stride, then we need to employ
-        # atrous convolution with stride=1 and multiply the atrous rate by the
-        # current unit's stride for use in subsequent layers.
-        layer_stride = 1
-        layer_rate = rate
-        rate *= stride
-      else:
-        layer_stride = stride
-        layer_rate = 1
-        current_stride *= stride
-      # Update params.
-      params['stride'] = layer_stride
-      # Only insert rate to params if rate > 1 and kernel size is not [1, 1].
-      if layer_rate > 1:
-        if tuple(params.get('kernel_size', [])) != (1, 1):
-          # We will apply atrous rate in the following cases:
-          # 1) When kernel_size is not in params, the operation then uses
-          #   default kernel size 3x3.
-          # 2) When kernel_size is in params, and if the kernel_size is not
-          #   equal to (1, 1) (there is no need to apply atrous convolution to
-          #   any 1x1 convolution).
-          params['rate'] = layer_rate
-      # Set padding
-      if use_explicit_padding:
-        if 'kernel_size' in params:
-          net = _fixed_padding(net, params['kernel_size'], layer_rate)
-        else:
-          params['use_explicit_padding'] = True
+        net = inputs
+        # Insert default parameters before the base scope which includes
+        # any custom overrides set in mobilenet.
+        end_points = {}
+        scopes = {}
+        for i, opdef in enumerate(conv_defs["spec"]):
+            params = dict(opdef.params)
+            opdef.multiplier_func(params, multiplier)
+            stride = params.get("stride", 1)
+            if output_stride is not None and current_stride == output_stride:
+                # If we have reached the target output_stride, then we need to employ
+                # atrous convolution with stride=1 and multiply the atrous rate by the
+                # current unit's stride for use in subsequent layers.
+                layer_stride = 1
+                layer_rate = rate
+                rate *= stride
+            else:
+                layer_stride = stride
+                layer_rate = 1
+                current_stride *= stride
+            # Update params.
+            params["stride"] = layer_stride
+            # Only insert rate to params if rate > 1 and kernel size is not [1, 1].
+            if layer_rate > 1:
+                if tuple(params.get("kernel_size", [])) != (1, 1):
+                    # We will apply atrous rate in the following cases:
+                    # 1) When kernel_size is not in params, the operation then uses
+                    #   default kernel size 3x3.
+                    # 2) When kernel_size is in params, and if the kernel_size is not
+                    #   equal to (1, 1) (there is no need to apply atrous convolution to
+                    #   any 1x1 convolution).
+                    params["rate"] = layer_rate
+            # Set padding
+            if use_explicit_padding:
+                if "kernel_size" in params:
+                    net = _fixed_padding(net, params["kernel_size"], layer_rate)
+                else:
+                    params["use_explicit_padding"] = True
 
-      end_point = 'layer_%d' % (i + 1)
-      try:
-        net = opdef.op(net, **params)
-      except Exception:
-        print('Failed to create op %i: %r params: %r' % (i, opdef, params))
-        raise
-      end_points[end_point] = net
-      scope = os.path.dirname(net.name)
-      scopes[scope] = end_point
-      if final_endpoint is not None and end_point == final_endpoint:
-        break
+            end_point = "layer_%d" % (i + 1)
+            try:
+                net = opdef.op(net, **params)
+            except Exception:
+                print("Failed to create op %i: %r params: %r" % (i, opdef, params))
+                raise
+            end_points[end_point] = net
+            scope = os.path.dirname(net.name)
+            scopes[scope] = end_point
+            if final_endpoint is not None and end_point == final_endpoint:
+                break
 
-    # Add all tensors that end with 'output' to
-    # endpoints
-    for t in net.graph.get_operations():
-      scope = os.path.dirname(t.name)
-      bn = os.path.basename(t.name)
-      if scope in scopes and t.name.endswith('output'):
-        end_points[scopes[scope] + '/' + bn] = t.outputs[0]
-    return net, end_points
+        # Add all tensors that end with 'output' to
+        # endpoints
+        for t in net.graph.get_operations():
+            scope = os.path.dirname(t.name)
+            bn = os.path.basename(t.name)
+            if scope in scopes and t.name.endswith("output"):
+                end_points[scopes[scope] + "/" + bn] = t.outputs[0]
+        return net, end_points
 
 
 @contextlib.contextmanager
 def _scope_all(scope, default_scope=None):
-  with tf.variable_scope(scope, default_name=default_scope) as s,\
-       tf.name_scope(s.original_name_scope):
-    yield s
+    with tf.variable_scope(scope, default_name=default_scope) as s, tf.name_scope(
+        s.original_name_scope
+    ):
+        yield s
 
 
 @slim.add_arg_scope
-def mobilenet(inputs,
-              num_classes=1001,
-              prediction_fn=slim.softmax,
-              reuse=None,
-              scope='Mobilenet',
-              base_only=False,
-              **mobilenet_args):
-  """Mobilenet model for classification, supports both V1 and V2.
+def mobilenet(
+    inputs,
+    num_classes=1001,
+    prediction_fn=slim.softmax,
+    reuse=None,
+    scope="Mobilenet",
+    base_only=False,
+    **mobilenet_args
+):
+    """Mobilenet model for classification, supports both V1 and V2.
 
   Note: default mode is inference, use mobilenet.training_scope to create
   training network.
@@ -354,46 +360,48 @@ def mobilenet(inputs,
   Raises:
     ValueError: Input rank is invalid.
   """
-  is_training = mobilenet_args.get('is_training', False)
-  input_shape = inputs.get_shape().as_list()
-  if len(input_shape) != 4:
-    raise ValueError('Expected rank 4 input, was: %d' % len(input_shape))
+    is_training = mobilenet_args.get("is_training", False)
+    input_shape = inputs.get_shape().as_list()
+    if len(input_shape) != 4:
+        raise ValueError("Expected rank 4 input, was: %d" % len(input_shape))
 
-  with tf.variable_scope(scope, 'Mobilenet', reuse=reuse) as scope:
-    inputs = tf.identity(inputs, 'input')
-    net, end_points = mobilenet_base(inputs, scope=scope, **mobilenet_args)
-    if base_only:
-      return net, end_points
+    with tf.variable_scope(scope, "Mobilenet", reuse=reuse) as scope:
+        inputs = tf.identity(inputs, "input")
+        net, end_points = mobilenet_base(inputs, scope=scope, **mobilenet_args)
+        if base_only:
+            return net, end_points
 
-    net = tf.identity(net, name='embedding')
+        net = tf.identity(net, name="embedding")
 
-    with tf.variable_scope('Logits'):
-      net = global_pool(net)
-      end_points['global_pool'] = net
-      if not num_classes:
-        return net, end_points
-      net = slim.dropout(net, scope='Dropout', is_training=is_training)
-      # 1 x 1 x num_classes
-      # Note: legacy scope name.
-      logits = slim.conv2d(
-          net,
-          num_classes, [1, 1],
-          activation_fn=None,
-          normalizer_fn=None,
-          biases_initializer=tf.zeros_initializer(),
-          scope='Conv2d_1c_1x1')
+        with tf.variable_scope("Logits"):
+            net = global_pool(net)
+            end_points["global_pool"] = net
+            if not num_classes:
+                return net, end_points
+            net = slim.dropout(net, scope="Dropout", is_training=is_training)
+            # 1 x 1 x num_classes
+            # Note: legacy scope name.
+            logits = slim.conv2d(
+                net,
+                num_classes,
+                [1, 1],
+                activation_fn=None,
+                normalizer_fn=None,
+                biases_initializer=tf.zeros_initializer(),
+                scope="Conv2d_1c_1x1",
+            )
 
-      logits = tf.squeeze(logits, [1, 2])
+            logits = tf.squeeze(logits, [1, 2])
 
-      logits = tf.identity(logits, name='output')
-    end_points['Logits'] = logits
-    if prediction_fn:
-      end_points['Predictions'] = prediction_fn(logits, 'Predictions')
-  return logits, end_points
+            logits = tf.identity(logits, name="output")
+        end_points["Logits"] = logits
+        if prediction_fn:
+            end_points["Predictions"] = prediction_fn(logits, "Predictions")
+    return logits, end_points
 
 
 def global_pool(input_tensor, pool_op=tf.nn.avg_pool):
-  """Applies avg pool to produce 1x1 output.
+    """Applies avg pool to produce 1x1 output.
 
   NOTE: This function is funcitonally equivalenet to reduce_mean, but it has
   baked in average pool which has better support across hardware.
@@ -404,26 +412,29 @@ def global_pool(input_tensor, pool_op=tf.nn.avg_pool):
   Returns:
     a tensor batch_size x 1 x 1 x depth.
   """
-  shape = input_tensor.get_shape().as_list()
-  if shape[1] is None or shape[2] is None:
-    kernel_size = tf.convert_to_tensor(
-        [1, tf.shape(input_tensor)[1],
-         tf.shape(input_tensor)[2], 1])
-  else:
-    kernel_size = [1, shape[1], shape[2], 1]
-  output = pool_op(
-      input_tensor, ksize=kernel_size, strides=[1, 1, 1, 1], padding='VALID')
-  # Recover output shape, for unknown shape.
-  output.set_shape([None, 1, 1, None])
-  return output
+    shape = input_tensor.get_shape().as_list()
+    if shape[1] is None or shape[2] is None:
+        kernel_size = tf.convert_to_tensor(
+            [1, tf.shape(input_tensor)[1], tf.shape(input_tensor)[2], 1]
+        )
+    else:
+        kernel_size = [1, shape[1], shape[2], 1]
+    output = pool_op(
+        input_tensor, ksize=kernel_size, strides=[1, 1, 1, 1], padding="VALID"
+    )
+    # Recover output shape, for unknown shape.
+    output.set_shape([None, 1, 1, None])
+    return output
 
 
-def training_scope(is_training=True,
-                   weight_decay=0.00004,
-                   stddev=0.09,
-                   dropout_keep_prob=0.8,
-                   bn_decay=0.997):
-  """Defines Mobilenet training scope.
+def training_scope(
+    is_training=True,
+    weight_decay=0.00004,
+    stddev=0.09,
+    dropout_keep_prob=0.8,
+    bn_decay=0.997,
+):
+    """Defines Mobilenet training scope.
 
   Usage:
      with tf.contrib.slim.arg_scope(mobilenet.training_scope()):
@@ -447,27 +458,28 @@ def training_scope(is_training=True,
   Returns:
     An argument scope to use via arg_scope.
   """
-  # Note: do not introduce parameters that would change the inference
-  # model here (for example whether to use bias), modify conv_def instead.
-  batch_norm_params = {
-      'decay': bn_decay,
-      'is_training': is_training
-  }
-  if stddev < 0:
-    weight_intitializer = slim.initializers.xavier_initializer()
-  else:
-    weight_intitializer = tf.truncated_normal_initializer(stddev=stddev)
+    # Note: do not introduce parameters that would change the inference
+    # model here (for example whether to use bias), modify conv_def instead.
+    batch_norm_params = {"decay": bn_decay, "is_training": is_training}
+    if stddev < 0:
+        weight_intitializer = slim.initializers.xavier_initializer()
+    else:
+        weight_intitializer = tf.truncated_normal_initializer(stddev=stddev)
 
-  # Set weight_decay for weights in Conv and FC layers.
-  with slim.arg_scope(
-      [slim.conv2d, slim.fully_connected, slim.separable_conv2d],
-      weights_initializer=weight_intitializer,
-      normalizer_fn=slim.batch_norm), \
-      slim.arg_scope([mobilenet_base, mobilenet], is_training=is_training),\
-      safe_arg_scope([slim.batch_norm], **batch_norm_params), \
-      safe_arg_scope([slim.dropout], is_training=is_training,
-                     keep_prob=dropout_keep_prob), \
-      slim.arg_scope([slim.conv2d], \
-                     weights_regularizer=slim.l2_regularizer(weight_decay)), \
-      slim.arg_scope([slim.separable_conv2d], weights_regularizer=None) as s:
-    return s
+    # Set weight_decay for weights in Conv and FC layers.
+    with slim.arg_scope(
+        [slim.conv2d, slim.fully_connected, slim.separable_conv2d],
+        weights_initializer=weight_intitializer,
+        normalizer_fn=slim.batch_norm,
+    ), slim.arg_scope(
+        [mobilenet_base, mobilenet], is_training=is_training
+    ), safe_arg_scope(
+        [slim.batch_norm], **batch_norm_params
+    ), safe_arg_scope(
+        [slim.dropout], is_training=is_training, keep_prob=dropout_keep_prob
+    ), slim.arg_scope(
+        [slim.conv2d], weights_regularizer=slim.l2_regularizer(weight_decay)
+    ), slim.arg_scope(
+        [slim.separable_conv2d], weights_regularizer=None
+    ) as s:
+        return s
