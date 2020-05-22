@@ -507,7 +507,6 @@ class TrackletVisualizer:
         self.fig.canvas.mpl_connect('key_press_event', self.on_press)
         self.fig.canvas.mpl_connect('button_press_event', self.on_click)
         self.fig.canvas.mpl_connect('close_event', self.player.terminate)
-        self.fig.canvas.mpl_connect('close_event', self.on_close)
 
         self.selector = PointSelector(self, self.ax1, self.scat, self.alpha)
         self.lasso_toggle = CheckButtons(self.ax_lasso, ['Lasso'])
@@ -892,9 +891,6 @@ class TrackletVisualizer:
             df.sort_index(inplace=True)
             df.to_hdf(output_path, key='df_with_missing', mode='w')
             df.to_csv(output_path.replace('h5', 'csv'))
-
-    def on_close(self, event):
-        self.save()
 
 
 def refine_tracklets(config, pickle_or_h5_file, video, min_swap_frac=0.01, min_tracklet_frac=0.01,
