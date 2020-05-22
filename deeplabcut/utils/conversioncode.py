@@ -14,11 +14,12 @@ from pathlib import Path
 import numpy as np
 from deeplabcut.utils import auxiliaryfunctions
 
-def convertannotationdata_fromwindows2unixstyle(config,userfeedback=True):
+def convertannotationdata_fromwindows2unixstyle(config,userfeedback=True,win2linux=True):
     """
-    Converts paths in annotation file (CollectedData_*user*.h5) in labeled-data/videofolder
+    Converts paths in annotation file (CollectedData_*user*.h5) in labeled-data/videofolder1, etc.
+
     from windows to linux format. This is important when one e.g. labeling on Windows, but
-    wants to re-label/check_labels/ on a Linux computer.
+    wants to re-label/check_labels/ on a Linux computer (and vice versa).
 
     Note for training data annotated on Windows in Linux this is not necessary, as the data
     gets converted during training set creation.
@@ -28,14 +29,15 @@ def convertannotationdata_fromwindows2unixstyle(config,userfeedback=True):
 
     userfeedback: bool, optional
         If true the user will be asked specifically for each folder in labeled-data if the containing csv shall be converted to hdf format.
+
+    win2linux: bool, optional.
+        By default converts from windows to linux. If false, converts from unix to windows.
     """
     cfg = auxiliaryfunctions.read_config(config)
-    videos = cfg['video_sets'].keys()
-    video_names = [Path(i).stem for i in videos]
-    folders = [Path(config).parent / 'labeled-data' /Path(i) for i in video_names]
+    folders = [Path(config).parent / 'labeled-data' / Path(vid).stem for vid in cfg['video_sets']]
 
     for folder in folders:
-        if userfeedback==True:
+        if userfeedback:
             print("Do you want to convert the annotationdata in folder:", folder, "?")
             askuser = input("yes/no")
         else:
@@ -44,7 +46,30 @@ def convertannotationdata_fromwindows2unixstyle(config,userfeedback=True):
         if askuser=='y' or askuser=='yes' or askuser=='Ja' or askuser=='ha':
             fn=os.path.join(str(folder),'CollectedData_' + cfg['scorer'])
             Data = pd.read_hdf(fn+'.h5', 'df_with_missing')
-            convertpaths_to_unixstyle(Data,fn,cfg)
+            if win2linux:
+                convertpaths_to_unixstyle(Data,fn)
+            else:
+                convertpaths_to_windowsstyle(Data,fn)
+
+def convertpaths_to_unixstyle(Data,fn):
+    ''' auxiliary function that converts paths in annotation files:
+        labeled-data\\video\\imgXXX.png to labeled-data/video/imgXXX.png '''
+    Data.to_csv(fn + "windows" + ".csv")
+    Data.to_hdf(fn + "windows" + '.h5', 'df_with_missing', format='table', mode='w')
+    Data.index = Data.index.str.replace('\\', '/')
+    Data.to_csv(fn + ".csv")
+    Data.to_hdf(fn + '.h5', 'df_with_missing', format='table', mode='w')
+    return Data
+
+def convertpaths_to_windowsstyle(Data,fn):
+    ''' auxiliary function that converts paths in annotation files:
+        labeled-data/video/imgXXX.png to labeled-data\\video\\imgXXX.png '''
+    Data.to_csv(fn + "unix" + ".csv")
+    Data.to_hdf(fn + "unix" + '.h5', 'df_with_missing', format='table', mode='w')
+    Data.index = Data.index.str.replace('/', '\\')
+    Data.to_csv(fn + ".csv")
+    Data.to_hdf(fn + '.h5', 'df_with_missing', format='table', mode='w')
+    return Data
 
 def convertcsv2h5(config,userfeedback=True,scorer=None):
     """
@@ -75,37 +100,31 @@ def convertcsv2h5(config,userfeedback=True,scorer=None):
     videos = cfg['video_sets'].keys()
     video_names = [Path(i).stem for i in videos]
     folders = [Path(config).parent / 'labeled-data' /Path(i) for i in video_names]
-    if scorer==None:
-        scorer=cfg['scorer']
+    if not scorer:
+        scorer = cfg['scorer']
 
     for folder in folders:
         try:
-            if userfeedback==True:
+            if userfeedback:
                 print("Do you want to convert the csv file in folder:", folder, "?")
                 askuser = input("yes/no")
             else:
-                askuser="yes"
+                askuser = "yes"
 
-            if askuser=='y' or askuser=='yes' or askuser=='Ja' or askuser=='ha': # multilanguage support :)
-                fn=os.path.join(str(folder),'CollectedData_' + cfg['scorer'] + '.csv')
-                data=pd.read_csv(fn)
-
-                #nlines,numcolumns=data.shape
-
-                orderofbpincsv=list(data.values[0,1:-1:2])
-                imageindex=list(data.values[2:,0])
-
-                #assert(len(orderofbpincsv)==len(cfg['bodyparts']))
-                print(orderofbpincsv)
-                print(cfg['bodyparts'])
-
-                #TODO: test len of images vs. len of imagenames for another sanity check
-
-                index = pd.MultiIndex.from_product([[scorer], orderofbpincsv, ['x', 'y']],names=['scorer', 'bodyparts', 'coords'])
-                frame = pd.DataFrame(np.array(data.values[2:,1:],dtype=float), columns = index, index = imageindex)
-
-                frame.to_hdf(os.path.join(str(folder),'CollectedData_'+ cfg['scorer']+".h5"), key='df_with_missing', mode='w')
-                frame.to_csv(fn)
+            if askuser in ('y', 'yes', 'Ja', 'ha', 'oui'):  # multilanguage support :)
+                fn = os.path.join(str(folder), 'CollectedData_' + cfg['scorer'] + '.csv')
+                # Determine whether the data are single- or multi-animal without loading into memory
+                # simply by checking whether 'individuals' is in the second line of the CSV.
+                with open(fn) as datafile:
+                    next(datafile)
+                    if 'individuals' in next(datafile):
+                        header = list(range(4))
+                    else:
+                        header = list(range(3))
+                data = pd.read_csv(fn, index_col=0, header=header)
+                data.columns = data.columns.set_levels([scorer], level='scorer')
+                data.to_hdf(fn.replace('.csv', '.h5'), key='df_with_missing', mode='w')
+                data.to_csv(fn)
         except FileNotFoundError:
             print("Attention:", folder, "does not appear to have labeled data!")
 
@@ -155,54 +174,27 @@ def analyze_videos_converth5_to_csv(videopath,videotype='.avi'):
     os.chdir(str(start_path))
     print("All pose files were converted.")
 
-def pathmagic(string):
-    parts=string.split('\\')
-    if len(parts)==1:
-        return string
-    elif len(parts)==3: #this is the expected windows case, it will split into labeled-data, video, imgNR.png
-        return os.path.join(*parts) #unpack arguments from list with splat operator
-    else:
-        return string
-
-def convertpaths_to_unixstyle(Data,fn,cfg):
-    ''' auxiliary function that converts paths in annotation files:
-        labeled-data\\video\\imgXXX.png to labeled-data/video/imgXXX.png '''
-    Data.to_csv(fn + "windows" + ".csv")
-    Data.to_hdf(fn + "windows" + '.h5','df_with_missing',format='table', mode='w')
-
-    imindex=[pathmagic(s) for s in Data.index]
-    for j,bpt in enumerate(cfg['bodyparts']):
-        index = pd.MultiIndex.from_product([[cfg['scorer']], [bpt], ['x', 'y']],names=['scorer', 'bodyparts', 'coords'])
-        frame = pd.DataFrame(Data[cfg['scorer']][bpt].values, columns = index, index = imindex)
-        if j==0:
-            dataFrame=frame
-        else:
-            dataFrame = pd.concat([dataFrame, frame],axis=1)
-
-    dataFrame.to_csv(fn + ".csv")
-    dataFrame.to_hdf(fn + '.h5','df_with_missing',format='table', mode='w')
-    return dataFrame
-
-
 
 def merge_windowsannotationdataONlinuxsystem(cfg):
     ''' If a project was created on Windows (and labeled there,) but ran on unix then the data folders
     corresponding in the keys in cfg['video_sets'] are not found. This function gets them directly by
     looping over all folders in labeled-data '''
 
-    AnnotationData=None
+    AnnotationData = []
     data_path = Path(cfg['project_path'],'labeled-data')
-    annotationfolders=[fn for fn in os.listdir(data_path) if "_labeled" not in fn]
+    use_cropped = cfg.get('croppedtraining', False)
+    annotationfolders = []
+    for elem in auxiliaryfunctions.grab_files_in_folder(data_path, relative=False):
+        if os.path.isdir(elem) and ((use_cropped and elem.endswith('_cropped')) or
+                                    not (use_cropped or '_cropped' in elem)):
+            annotationfolders.append(elem)
     print("The following folders were found:", annotationfolders)
     for folder in annotationfolders:
+        filename = os.path.join(folder, 'CollectedData_'+cfg['scorer']+'.h5')
         try:
-            data = pd.read_hdf(os.path.join(data_path , folder, 'CollectedData_'+cfg['scorer']+'.h5'),'df_with_missing')
-            if AnnotationData is None:
-                AnnotationData=data
-            else:
-                AnnotationData=pd.concat([AnnotationData, data])
-
+            data = pd.read_hdf(filename,'df_with_missing')
+            AnnotationData.append(data)
         except FileNotFoundError:
-            print(str(os.path.join(data_path , folder, 'CollectedData_'+cfg['scorer']+'.h5')), " not found (perhaps not annotated)")
+            print(filename, " not found (perhaps not annotated)")
 
     return AnnotationData

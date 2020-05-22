@@ -48,6 +48,9 @@ def ShortenVideo(vname,start='00:00:01',stop='00:01:00',outsuffix='short',outpat
     outpath: str
         Output path for saving video to (by default will be the same folder as the video)
 
+    Examples
+    ----------
+
     Linux/MacOs
     >>> deeplabcut.ShortenVideo('/data/videos/mouse1.avi')
 
@@ -103,6 +106,9 @@ def CropVideo(vname, width=256, height=256, origin_x=0, origin_y=0, outsuffix='c
     rotateccw: bool
         Default false, rotates counter-clockwise if true.
 
+    Examples
+    ----------
+
     Linux/MacOs
     >>> deeplabcut.CropVideo('/data/videos/mouse1.avi')
 
@@ -133,7 +139,6 @@ def CropVideo(vname, width=256, height=256, origin_x=0, origin_y=0, outsuffix='c
     subprocess.call(command, shell=True)
     return str(newfilename)
 
-
 def DownSampleVideo(vname,width=-1,height=200,outsuffix='downsampled',outpath=None,rotateccw=False):
     """
     Auxiliary function to downsample a video and output it to the same folder with "outsuffix" appended in its name.
@@ -161,6 +166,10 @@ def DownSampleVideo(vname,width=-1,height=200,outsuffix='downsampled',outpath=No
 
     rotateccw: bool
         Default false, rotates counter-clockwise if true.
+
+
+    Examples
+    ----------
 
     Linux/MacOs
     >>> deeplabcut.DownSampleVideo('/data/videos/mouse1.avi')

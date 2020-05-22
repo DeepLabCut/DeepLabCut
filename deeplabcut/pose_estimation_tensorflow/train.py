@@ -103,6 +103,26 @@ def get_optimizer(loss_op, cfg):
 
     return learning_rate, train_op
 
+
+def get_optimizer_with_freeze(loss_op, cfg):
+    learning_rate = TF.placeholder(tf.float32, shape=[])
+
+    if cfg.optimizer == "sgd":
+        optimizer = TF.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9)
+    elif cfg.optimizer == "adam":
+        optimizer = TF.train.AdamOptimizer(learning_rate)
+    else:
+        raise ValueError('unknown optimizer {}'.format(cfg.optimizer))
+
+    train_unfrozen_op = slim.learning.create_train_op(loss_op, optimizer)
+    variables_unfrozen = TF.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
+                                          "pose")
+
+    train_frozen_op = slim.learning.create_train_op(loss_op, optimizer,
+                                                    variables_to_train=variables_unfrozen)
+
+    return learning_rate, train_unfrozen_op, train_frozen_op
+
 def train(config_yaml,displayiters,saveiters,maxiters,max_to_keep=5,keepdeconvweights=True,allow_growth=False):
     start_path=os.getcwd()
     os.chdir(str(Path(config_yaml).parents[0])) #switch to folder of config_yaml (for logging)
@@ -116,6 +136,7 @@ def train(config_yaml,displayiters,saveiters,maxiters,max_to_keep=5,keepdeconvwe
     dataset = create_dataset(cfg)
     batch_spec = get_batch_spec(cfg)
     batch, enqueue_op, placeholders = setup_preloading(batch_spec)
+
     losses = pose_net(cfg).train(batch)
     total_loss = losses['total_loss']
 
@@ -148,7 +169,12 @@ def train(config_yaml,displayiters,saveiters,maxiters,max_to_keep=5,keepdeconvwe
 
     coord, thread = start_preloading(sess, enqueue_op, dataset, placeholders)
     train_writer = TF.summary.FileWriter(cfg.log_dir, sess.graph)
-    learning_rate, train_op = get_optimizer(total_loss, cfg)
+
+    if cfg.get('freezeencoder', False):
+        print("Freezing...")
+        learning_rate, _, train_op = get_optimizer_with_freeze(loss_op, cfg)
+    else:
+        learning_rate, train_op = get_optimizer(total_loss, cfg)
 
     sess.run(TF.global_variables_initializer())
     sess.run(TF.local_variables_initializer())

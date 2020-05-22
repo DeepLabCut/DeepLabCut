@@ -1,3 +1,15 @@
+"""
+DeepLabCut2.0 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
+https://github.com/AlexEMG/DeepLabCut
+Please see AUTHORS for contributors.
+
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
+
+Written by Federico Claudi - https://github.com/FedeClaudi
+"""
+
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
@@ -148,7 +160,7 @@ def analyzebone(bp1, bp2):
     return df
 
 # MAIN FUNC
-def analyzeskeleton(config, videos, videotype='avi', shuffle=1, trainingsetindex=0, save_as_csv=False, destfolder=None):
+def analyzeskeleton(config, videos, videotype='avi', shuffle=1, trainingsetindex=0, save_as_csv=False, destfolder=None,modelprefix=''):
     """
     Extracts length and orientation of each "bone" of the skeleton as defined in the config file.
 
@@ -176,7 +188,7 @@ def analyzeskeleton(config, videos, videotype='avi', shuffle=1, trainingsetindex
     """
     # Load config file, scorer and videos
     cfg = auxiliaryfunctions.read_config(config)
-    DLCscorer,DLCscorerlegacy=auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction = cfg['TrainingFraction'][trainingsetindex])
+    DLCscorer,DLCscorerlegacy=auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction = cfg['TrainingFraction'][trainingsetindex],modelprefix=modelprefix)
 
     Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
     for video in Videos:

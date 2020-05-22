@@ -19,6 +19,8 @@ With pcutoff of 0.1  train error: 2.89 pixels. Test error: 2.81 pixels
 
 The analysis of the video takes 41 seconds (batch size 32) and creating the frames 8 seconds (+ a few seconds for ffmpeg) to create the video.
 """
+import os
+os.environ['DLClight'] = 'True'
 
 # Importing the toolbox (takes several seconds)
 import deeplabcut
@@ -28,29 +30,26 @@ from pathlib import Path
 # Loading example data set
 path_config_file = os.path.join(os.getcwd(),'openfield-Pranav-2018-10-30/config.yaml')
 deeplabcut.load_demo_data(path_config_file)
-
-shuffle=12
+shuffle=13
 
 deeplabcut.create_training_dataset(path_config_file,Shuffles=[shuffle])
 cfg=deeplabcut.auxiliaryfunctions.read_config(path_config_file)
-posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(shuffle),'train/pose_cfg.yaml')
-
-DLC_config=deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
-DLC_config['save_iters']=10
-DLC_config['display_iters']=2
-DLC_config['multi_step']=[[0.005,15001]]
-deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
-
-
+#example how to set pose config variables:
+posefile,_,_=deeplabcut.return_train_network_path(path_config_file,shuffle=shuffle)
+#os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(shuffle),'train/pose_cfg.yaml')
+edits = {'save_iters': 15000,
+         'display_iters': 1000,
+         'multi_step': [[0.005, 15001]]}
+DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
 print("TRAIN NETWORK")
-deeplabcut.train_network(path_config_file, shuffle=shuffle,saveiters=15000,displayiters=1000,max_snapshots_to_keep=15)
+deeplabcut.train_network(path_config_file, shuffle=shuffle,max_snapshots_to_keep=3)
 
 print("EVALUATE")
 deeplabcut.evaluate_network(path_config_file, Shuffles=[shuffle],plotting=True)
 
-#print("Analyze Video")
-#videofile_path = os.path.join(os.getcwd(),'openfield-Pranav-2018-10-30','videos','m3v1mp4.mp4')
-#deeplabcut.analyze_videos(path_config_file,[videofile_path], shuffle=shuffle)
+print("Analyze Video")
+videofile_path = os.path.join(os.getcwd(),'openfield-Pranav-2018-10-30','videos','m3v1mp4.mp4')
+deeplabcut.analyze_videos(path_config_file,[videofile_path], shuffle=shuffle) #,videotype='.mp4')
 
-#print("Create Labeled Video")
-#deeplabcut.create_labeled_video(path_config_file,[videofile_path],save_frames=False, shuffle=shuffle)
+print("Create Labeled Video")
+deeplabcut.create_labeled_video(path_config_file,[videofile_path],save_frames=False, shuffle=shuffle) #,videotype='.mp4')
