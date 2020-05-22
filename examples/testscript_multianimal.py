@@ -171,6 +171,7 @@ picklefile = os.path.splitext(new_video_path)[0] + scorer + "_sk.pickle"
 try:
     convert_raw_tracks_to_h5(config_path, picklefile)
     convert_raw_tracks_to_h5(config_path, picklefile.replace("sk", "bx"))
+
 except IOError:
     print("Empty tracklets properly caught! Using fake data rather...")
     temp = pd.read_hdf(os.path.join(image_folder, f"CollectedData_{SCORER}.h5"))
