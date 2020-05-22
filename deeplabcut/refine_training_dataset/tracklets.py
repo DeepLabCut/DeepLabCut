@@ -474,7 +474,7 @@ class TrackletVisualizer:
         self.ax_flag = self.fig.add_axes([0.75, 0.1, 0.05, 0.03])
         self.ax_save = self.fig.add_axes([0.80, 0.1, 0.05, 0.03])
         self.ax_help = self.fig.add_axes([0.85, 0.1, 0.05, 0.03])
-        self.save_button = Button(self.ax_save, 'Save')
+        self.save_button = Button(self.ax_save, 'Save', color='darkorange')
         self.save_button.on_clicked(self.save)
         self.help_button = Button(self.ax_help, 'Help')
         self.help_button.on_clicked(self.display_help)
@@ -487,6 +487,7 @@ class TrackletVisualizer:
         self.fig.canvas.mpl_connect('key_press_event', self.on_press)
         self.fig.canvas.mpl_connect('button_press_event', self.on_click)
         self.fig.canvas.mpl_connect('close_event', self.player.terminate)
+        self.fig.canvas.mpl_connect('close_event', self.on_close)
 
         self.selector = PointSelector(self, self.ax1, self.scat, self.alpha)
         self.lasso_toggle = CheckButtons(self.ax_lasso, ['Lasso'])
@@ -588,7 +589,7 @@ class TrackletVisualizer:
                           xdata + (cur_xlim[1] - xdata) / scale_factor])
         self.ax1.set_ylim([ydata - (ydata - cur_ylim[0]) / scale_factor,
                           ydata + (cur_ylim[1] - ydata) / scale_factor])
-        self.fig.canvas.draw()  # TODO Blit ax1
+        self.fig.canvas.draw()
 
     def on_press(self, event):
         if event.key == 'right':
@@ -871,6 +872,9 @@ class TrackletVisualizer:
             df.sort_index(inplace=True)
             df.to_hdf(output_path, key='df_with_missing', mode='w')
             df.to_csv(output_path.replace('h5', 'csv'))
+
+    def on_close(self, event):
+        self.save()
 
 
 def refine_tracklets(config, pickle_or_h5_file, video,
