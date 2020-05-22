@@ -450,7 +450,10 @@ def bayesian_search(
         # val = stats['rmse_test'].values[0]*(1+stats['misses_test'].values[0]*1./stats['hits_test'].values[0])
         val = stats[target].values[0]
         if np.isnan(val):
-            val = 1e9  # random large number (larger than RMSE/pck)
+            if maximize:  # pck case
+                val = -1e9  # random small number
+            else:  # RMSE, return a large RMSE
+                val = 1e9
 
         if not maximize:
             val = -val
