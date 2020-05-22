@@ -130,7 +130,8 @@ class TrackletManager:
         min_tracklet_frac : float, optional (default=0.01)
             Relative fraction of the data below which tracklets are ignored.
             By default, tracklets shorter than 1% of the total number of frames are discarded.
-
+        max_gap : int, optional (default = 0).
+            Number of frames to consider when filling in missing data.
 
         Examples
         --------
