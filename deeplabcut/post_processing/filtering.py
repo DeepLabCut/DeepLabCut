@@ -42,18 +42,19 @@ def columnwise_spline_interp(data, max_gap=0):
     x = np.arange(nrows)
     for i in range(ncols):
         mask = valid[:, i]
-        spl = UnivariateSpline(x[mask], temp[mask, i])
-        y = spl(x)
-        if max_gap > 0:
-            inds = np.flatnonzero(np.r_[True, np.diff(mask), True])
-            count = np.diff(inds)
-            inds = inds[:-1]
-            to_fill = np.ones_like(mask)
-            for ind, n, is_nan in zip(inds, count, ~mask[inds]):
-                if is_nan and n > max_gap:
-                    to_fill[ind:ind + n] = False
-            y[~to_fill] = np.nan
-        temp[:, i] = y
+        if np.sum(mask) > 3:  # Make sure there are enough points to fit the cubic spline
+            spl = UnivariateSpline(x[mask], temp[mask, i])
+            y = spl(x)
+            if max_gap > 0:
+                inds = np.flatnonzero(np.r_[True, np.diff(mask), True])
+                count = np.diff(inds)
+                inds = inds[:-1]
+                to_fill = np.ones_like(mask)
+                for ind, n, is_nan in zip(inds, count, ~mask[inds]):
+                    if is_nan and n > max_gap:
+                        to_fill[ind:ind + n] = False
+                y[~to_fill] = np.nan
+            temp[:, i] = y
     return temp
 
 
