@@ -9,9 +9,10 @@ Licensed under GNU Lesser General Public License v3.0
 """
 from deeplabcut import cli
 
+
 def main():
     cli.main()
 
-if __name__ == '__main__':
-    main()
 
+if __name__ == "__main__":
+    main()
