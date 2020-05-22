@@ -913,9 +913,3 @@ def convert_raw_tracks_to_h5(config, tracks_pickle, output_name=''):
     manager = TrackletManager(config, 0, 0)
     manager.load_tracklets_from_pickle(tracks_pickle)
     manager.save(output_name)
-
-
-refine_tracklets('/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/config.yaml',
-                 '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/videos/videocompressed11shortDLC_resnet50_MultiMouseDec16shuffle1_50000_sk.pickle',
-                 '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/videos/videocompressed11short.mp4',
-                 0.05, 0.05)
