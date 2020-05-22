@@ -436,11 +436,14 @@ def evaluate_multianimal_crossvalidate(
 
     Examples
     --------
+
     first run evalute:
+
     deeplabcut.evaluate_network(path_config_file,Shuffles=[shuffle],plotting=True)
 
     Then e.g. for finding inference parameters to minimize rmse on test set:
-    deeplabcut.evaluate_multianimal_crossvalidate(path_config_file,Shuffles=[shuffle],target='rmse_test',)
+
+    deeplabcut.evaluate_multianimal_crossvalidate(path_config_file,Shuffles=[shuffle],target='rmse_test')
     """
     from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
     from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions

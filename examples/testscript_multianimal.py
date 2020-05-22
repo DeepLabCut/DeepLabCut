@@ -75,7 +75,6 @@ print("Artificial data created.")
 
 print("Cropping and exchanging")
 deeplabcut.cropimagesandlabels(config_path, userfeedback=False)
-# Crop & exchange!
 
 print("Checking labels...")
 deeplabcut.check_labels(config_path, draw_skeleton=False)
@@ -106,7 +105,9 @@ print("Network trained.")
 
 print("Evaluating network...")
 deeplabcut.evaluate_network(config_path, plotting=True)
-deeplabcut.evaluate_multianimal_crossvalidate(config_path)
+deeplabcut.evaluate_multianimal_crossvalidate(
+    config_path, n_iter=2, init_points=3
+)  # parameters so it is fast
 print("Network evaluated.")
 
 
@@ -141,7 +142,6 @@ deeplabcut.convert_detections2tracklets(
 deeplabcut.convert_detections2tracklets(
     config_path, [new_video_path], "mov", track_method="skeleton"
 )
-
 
 print("Extracting maps...")
 deeplabcut.extract_save_all_maps(config_path, Indices=[0, 1, 2])
