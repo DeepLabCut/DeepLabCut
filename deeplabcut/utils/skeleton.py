@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
+import warnings
 from matplotlib.collections import LineCollection
 from matplotlib.path import Path
 from matplotlib.widgets import Button, LassoSelector
@@ -97,6 +98,11 @@ class SkeletonBuilder:
         self.lines.set_segments(self.segs)
 
     def export(self, *args):
+        inds_flat = set(ind for pair in self.inds for ind in pair)
+        unconnected = [i for i in range(len(self.xy)) if i not in inds_flat]
+        if len(unconnected):
+            warnings.warn(f'Unconnected {", ".join(self.bpts[unconnected])}. '
+                          f'It is desirable that all bodyparts be connected for multi-animal projects.')
         self.cfg['skeleton'] = [tuple(self.bpts[list(pair)]) for pair in self.inds]
         write_config(self.config_path, self.cfg)
 
@@ -110,7 +116,10 @@ class SkeletonBuilder:
         self.path = Path(verts)
         self.verts = verts
         inds = self.tree.query_ball_point(verts, 5)
-        inds_unique = [lst[0] for lst in inds if len(lst)]
+        inds_unique = []
+        for lst in inds:
+            if len(lst) and lst[0] not in inds_unique:
+                inds_unique.append(lst[0])
         for pair in zip(inds_unique, inds_unique[1:]):
             pair_sorted = tuple(sorted(pair))
             self.inds.add(pair_sorted)
