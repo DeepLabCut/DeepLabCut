@@ -15,6 +15,9 @@ import yaml
 from pathlib import Path
 from deeplabcut.utils import auxiliaryfunctions, auxfun_models
 
+Modeloptions=['full_human','full_cat','full_dog','primate_face', 'mouse_pupil_vclose'] #just expand this list with new projects
+
+
 def MakeTrain_pose_yaml(itemstochange,saveasconfigfile,defaultconfigfile):
     raw = open(defaultconfigfile).read()
     docs = []
@@ -67,8 +70,8 @@ def create_pretrained_human_project(project,experimenter,videos,working_director
 
 
 def create_pretrained_project(project, experimenter, videos, model='full_human',
-                                working_directory=None,copy_videos=False,videotype=None,
-                                createlabeledvideo=True, analyzevideo=True, trainFraction=None):
+                                working_directory=None, copy_videos=False, videotype=None,
+                                analyzevideo=True, filtered=True, createlabeledvideo=True, trainFraction=None):
     """
     Creates a new project directory, sub-directories and a basic configuration file.
     Change its parameters to your projects need.
@@ -102,6 +105,10 @@ def create_pretrained_project(project, experimenter, videos, model='full_human',
     analyzevideo " bool, optional
         If true, then the video is analzyed and a labeled video is created. If false, then only the project will be created and the weights downloaded. You can then access them
 
+    filtered: bool, default false
+        Boolean variable indicating if filtered pose data output should be plotted rather than frame-by-frame predictions.
+        Filtered version can be calculated with deeplabcut.filterpredictions
+
     trainFraction: By default value from *new* projects. (0.95)
             Fraction that will be used in dlc-model/trainingset folder name.
 
@@ -118,10 +125,10 @@ def create_pretrained_project(project, experimenter, videos, model='full_human',
     Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \ \ )
 
     """
-    Modeloptions=['full_human','full_cat','full_dog','primate_face'] #just expand this list with new projects
-    if model in Modeloptions:
+    if model in globals()['Modeloptions']:
         cwd = os.getcwd()
-        cfg = deeplabcut.create_new_project(project,experimenter,videos,working_directory,copy_videos,videotype)
+
+        cfg = deeplabcut.create_new_project(project, experimenter, videos, working_directory, copy_videos, videotype)
         if trainFraction is not None:
             auxiliaryfunctions.edit_config(cfg, {'TrainingFraction': [tranFraction]})
 
@@ -169,10 +176,11 @@ def create_pretrained_project(project, experimenter, videos, model='full_human',
         trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(config)
         datafilename,metadatafilename=auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,trainFraction=config['TrainingFraction'][0],shuffle=1,cfg=config)
 
-        #downloading base encoder
-        model_path, num_shuffles=auxfun_models.Check4weights(pose_cfg['net_type'], parent_path, num_shuffles= 1)
+        #downloading base encoder / not required unless on re-trains (but when a training set is created this happens anyway)
+        #model_path, num_shuffles=auxfun_models.Check4weights(pose_cfg['net_type'], parent_path, num_shuffles= 1)
+
+        #Updating training and test pose_cfg:
         snapshotname=[fn for fn in os.listdir(train_dir) if '.meta' in fn][0].split('.meta')[0]
-        # Update pose_cfg (train and test)
         dict2change = {'init_weights': str(os.path.join(train_dir,snapshotname)),
                         'project_path': str(config['project_path']),
                        }
@@ -190,9 +198,12 @@ def create_pretrained_project(project, experimenter, videos, model='full_human',
             deeplabcut.analyze_videos(cfg, [video_dir], videotype, save_as_csv=True)
 
         if createlabeledvideo == True:
+            if filtered:
+                deeplabcut.filterpredictions(cfg,[video_dir],videotype)
+
             print("Plotting results...")
-            deeplabcut.create_labeled_video(cfg,[video_dir],videotype, draw_skeleton=True)
-            deeplabcut.plot_trajectories(cfg, [video_dir], videotype)
+            deeplabcut.create_labeled_video(cfg,[video_dir],videotype, draw_skeleton=True,filtered=filtered)
+            deeplabcut.plot_trajectories(cfg, [video_dir], videotype,filtered=filtered)
 
         os.chdir(cwd)
         return cfg, path_train_config
