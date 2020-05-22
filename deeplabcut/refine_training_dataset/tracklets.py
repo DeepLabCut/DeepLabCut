@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import pickle
 import re
+from deeplabcut.post_processing import columnwise_spline_interp
 from deeplabcut.utils.auxiliaryfunctions import read_config, attempttomakefolder
 from deeplabcut import generate_training_dataset
 from matplotlib.path import Path
@@ -116,7 +117,7 @@ class PointSelector:
 
 
 class TrackletManager:
-    def __init__(self, config, min_swap_frac=0.01, min_tracklet_frac=0.01):
+    def __init__(self, config, min_swap_frac=0.01, min_tracklet_frac=0.01, max_gap=0):
         """
 
         Parameters
@@ -146,6 +147,7 @@ class TrackletManager:
         self.cfg = read_config(config)
         self.min_swap_frac = min_swap_frac
         self.min_tracklet_frac = min_tracklet_frac
+        self.max_gap = max_gap
 
         self.filename = ''
         self.data = None
@@ -254,7 +256,24 @@ class TrackletManager:
                         tracklets_multi[np.argmin(overwrite_risk), has_data] = data[has_data]
 
             multi = tracklets_multi.swapaxes(0, 1).reshape((self.nframes, -1))
-            self.data = np.c_[multi, tracklets_single].reshape((self.nframes, -1, 3)).swapaxes(0, 1)
+            data = np.c_[multi, tracklets_single].reshape((self.nframes, -1, 3))
+            xy = data[:, :, :2].reshape((self.nframes, -1))
+            prob = data[:, :, 2].reshape((self.nframes, -1))
+
+            # Fill existing gaps and slightly smooth the tracklets
+            missing = np.isnan(xy)
+            xy_filled = columnwise_spline_interp(xy, self.max_gap)
+            filled = ~np.isnan(xy_filled)
+            xy[filled] = xy_filled[filled]
+            inds = np.argwhere(missing & filled)
+            if inds.size:
+                # Retrieve original individual label indices
+                inds[:, 1] //= 2
+                inds = np.unique(inds, axis=0)
+                prob[inds[:, 0], inds[:, 1]] = 0.01
+            data[:, :, :2] = xy.reshape((self.nframes, -1, 2))
+            data[:, :, 2] = prob
+            self.data = data.swapaxes(0, 1)
             self.xy = self.data[:, :, :2]
             self.prob = self.data[:, :, 2]
 
@@ -877,9 +896,9 @@ class TrackletVisualizer:
         self.save()
 
 
-def refine_tracklets(config, pickle_or_h5_file, video,
-                     min_swap_frac=0., min_tracklet_frac=0., trail_len=50):
-    manager = TrackletManager(config, min_swap_frac, min_tracklet_frac)
+def refine_tracklets(config, pickle_or_h5_file, video, min_swap_frac=0.01, min_tracklet_frac=0.01,
+                     max_gap=0, trail_len=50):
+    manager = TrackletManager(config, min_swap_frac, min_tracklet_frac, max_gap)
     if pickle_or_h5_file.endswith('pickle'):
         manager.load_tracklets_from_pickle(pickle_or_h5_file)
     else:
@@ -894,3 +913,9 @@ def convert_raw_tracks_to_h5(config, tracks_pickle, output_name=''):
     manager = TrackletManager(config, 0, 0)
     manager.load_tracklets_from_pickle(tracks_pickle)
     manager.save(output_name)
+
+
+refine_tracklets('/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/config.yaml',
+                 '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/videos/videocompressed11shortDLC_resnet50_MultiMouseDec16shuffle1_50000_sk.pickle',
+                 '/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/MultiMouse-Daniel-2019-12-16/videos/videocompressed11short.mp4',
+                 0.05, 0.05)
