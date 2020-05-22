@@ -38,7 +38,7 @@ from filterpy.common import kinematic_kf
 @jit
 def iou(bb_test,bb_gt):
     """
-    Computes IUO between two bboxes in the form [x1,y1,x2,y2]
+    Computes intersection of union (IOU) metric for pair of bboxes in the form [x1,y1,x2,y2]
     """
     xx1 = np.maximum(bb_test[0], bb_gt[0])
     yy1 = np.maximum(bb_test[1], bb_gt[1])
