@@ -515,7 +515,9 @@ from deeplabcut.utils.make_labeled_video import create_video_from_pickled_tracks
 create_video_from_pickled_tracks(videopath, picklepath)
 ```
 
-**Secondly,** you need to refine the tracklets. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc!
+**Secondly,** you need to refine the tracklets. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Note, if you see very little data once you launch the GUI, consider relaxing the `pafthreshold` value (dropping it lower), and re-running convert to tracklets (this is very fast; see the "short demo" above).
+
+Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc!
 
 ```python
 deeplabcut.refine_tracklets(path_config_file, pickle_or_h5_file, videofile_path, min_swap_frac=0.0, min_tracklet_frac=0.0, trail_len=50)
@@ -524,19 +526,25 @@ HOT KEYS IN THE GUI:
 ```
 Key D: activate "drag" so you can adjust bodyparts in that particular frame
 Key I: invert the position of a pair of bodyparts
-Key L: toggle the lasso selector
+Key L: toggle the "lasso" selector
 Key S: swap two tracklets
 Key X: cut swapping tracklets
 Left/Right arrow: navigate through the video
 Tab: play/pause the video
 Alt+Right/Left: fast forward/rewind
+Delete key: unflag!
 ```
-:movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/bEuBKB7eqmk)
+Be sure to hit the orange "SAVE" button when you want to save the data and before closing the GUI. 
+
+:movie_camera: [VIDEO TUTORIAL AVAILABLE! How to operate the GUI](https://youtu.be/bEuBKB7eqmk)
+
+:movie_camera: [VIDEO TUTORIAL AVAILABLE! How to fill in "missing" data](https://youtu.be/YSRQT8N2vFE)
 
 Short demo:  
  <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588690928000-90ZMRIM8SN6QE20ZOMNX/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/refineDEMO.gif?format=750w" width="70%">
 </p>
+
 
 ### (I) Novel Video Analysis: extra features
 
