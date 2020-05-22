@@ -368,11 +368,10 @@ def assemble_individuals(
     for n in sortedindividuals:  # number of individuals
         individual = np.zeros(3 * numjoints) * np.nan
         for i in range(numjoints):  # number of limbs
-            ind = int(subset[n][i])  # bpt index in global coordinates
-            if -1 == ind:  # reached the end
+            ind = int(subset[n][i])
+            if -1 == ind:  # bodypart not assigned
                 continue
             else:
                 individual[3 * i : 3 * i + 3] = candidate[ind, :3]
-                # >> turn into bounding box :)
         animals.append(individual)
     return animals

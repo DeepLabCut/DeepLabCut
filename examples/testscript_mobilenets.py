@@ -77,7 +77,9 @@ video = [
 ]
 
 # to test destination folder:
-dfolder = basepath
+dfolder = os.path.join(basepath, "OUT")
+deeplabcut.auxiliaryfunctions.attempttomakefolder(dfolder)
+
 # dfolder=None
 augmenter_type = "tensorpack"  # imgaug'
 

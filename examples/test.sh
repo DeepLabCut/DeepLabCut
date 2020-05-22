@@ -1,5 +1,8 @@
 rm -r TEST*
 rm -r multi_mouse*
+rm -r 3D*
+rm -r OUT
+
 cd ..
 pip uninstall deeplabcut
 python3 setup.py sdist bdist_wheel
