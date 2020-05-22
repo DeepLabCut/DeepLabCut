@@ -158,7 +158,7 @@ def read_config(configname):
     """
     Reads structured config file defining a project.
     """
-    ruamelFile = ruamel.yaml.YAML()
+    ruamelFile = YAML()
     path = Path(configname)
     if os.path.exists(path):
         try:
