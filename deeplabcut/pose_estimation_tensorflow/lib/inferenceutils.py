@@ -98,7 +98,7 @@ def extractstrongconnections(cfg, dataimage, all_detections, iBPTS, partaffinity
             for i in range(n_a):
                 for j in range(n_b):
                     d=distance(np.array(cand_a[i][:2]),np.array(cand_b[j][:2])) #TODO: put into PAF cost code, as we anyway calculate distances
-                    if evaluation: 
+                    if evaluation:
                         score_with_dist_prior=abs(dataimage['prediction']['costs'][PAF[edge]][cfg.method][i,j])
                     else:
                         score_with_dist_prior=abs(dataimage['costs'][PAF[edge]][cfg.method][i,j])
@@ -112,7 +112,7 @@ def extractstrongconnections(cfg, dataimage, all_detections, iBPTS, partaffinity
                         if score_with_dist_prior>cfg.pafthreshold and d<upperbound[edge] and d>=lowerbound[edge] and si*sj>cfg.detectionthresholdsquare:
                             connection_candidate.append([i, j, score_with_dist_prior,
                                                         score_with_dist_prior + np.sqrt(si * sj)*cfg.addlikelihoods])
-            
+
             #sort candidate connections by score!
             connection_candidate = sorted(connection_candidate, key=lambda x: x[2], reverse=True)
             connection = np.zeros((0, 5))
@@ -131,15 +131,16 @@ def extractstrongconnections(cfg, dataimage, all_detections, iBPTS, partaffinity
             all_connections.append([])
     return all_connections, missing_connections
 
-def linkjoints2individuals(cfg,all_detections,all_connections, missing_connections,partaffinityfield_graph,iBPTS,numjoints=18,log=False):
+def linkjoints2individuals(cfg,all_detections,all_connections, missing_connections,partaffinityfield_graph,iBPTS,numjoints,log=False):
     subset = np.empty((0, numjoints+2))
     candidate = np.array([item for sublist in all_detections for item in sublist])
     for edge in range(len(partaffinityfield_graph)):
         if edge not in missing_connections:
             if log:
                 print(edge,subset)
-            part_as = all_connections[edge][:, 0] #global? indices for source of limb!
-            part_bs = all_connections[edge][:, 1] #indices for target of limb (when all detections are enumerated)
+
+            part_as = all_connections[edge][:, 0] # global indices for source of limb!
+            part_bs = all_connections[edge][:, 1] # indices for target of limb (when all detections are enumerated)
             index_a, index_b =iBPTS[partaffinityfield_graph[edge][0]],iBPTS[partaffinityfield_graph[edge][1]] #convert in order of bpts!
             for i in range(len(all_connections[edge])):  # looping over all connections for that limb
                 found = 0
@@ -165,6 +166,7 @@ def linkjoints2individuals(cfg,all_detections,all_connections, missing_connectio
                         subset[j][-2] += candidate[part_as[i].astype(int), 2] + all_connections[edge][i][2]
                         if log:
                             print("adding a")
+
                 elif found == 2:  # if 2 found and subsets disjoint, merge them
                     j1, j2 = subset_idx
                     membership = ((subset[j1] >= 0).astype(int) + (subset[j2] >= 0).astype(int))[:-2]
@@ -175,6 +177,7 @@ def linkjoints2individuals(cfg,all_detections,all_connections, missing_connectio
                         subset = np.delete(subset, j2, 0)
                         if log:
                             print("merging")
+
                 # if both nodes don't exist, create a new subset
                 elif not found and edge < numjoints:
                     row = -1 * np.ones(numjoints+2)
@@ -185,10 +188,12 @@ def linkjoints2individuals(cfg,all_detections,all_connections, missing_connectio
                     subset = np.vstack([subset, row])
                     if log:
                         print("new")
+
     deleteIdx = [];
     for i in range(len(subset)):  # delete animal proposals with too few edges or too low average score
         if subset[i][-1] < cfg.minimalnumberofconnections or subset[i][-2]/subset[i][-1] < cfg.averagescore:
             deleteIdx.append(i)
+
     subset = np.delete(subset, deleteIdx, axis=0)
     return subset, candidate
 
@@ -196,11 +201,11 @@ def linkjoints2individuals(cfg,all_detections,all_connections, missing_connectio
 def assemble_individuals(inference_cfg, data, numjoints, BPTS, iBPTS,
                          PAF, paf_graph, paf_links, lowerbound=None, upperbound=None,
                          evaluation=False, print_intermediate=False):
-    
+
     # filter detections according to inferencecfg parameters
     all_detections = convertdetectiondict2listoflist(data, BPTS, withid=inference_cfg.withid,
                                                      evaluation=evaluation)
-    
+
     # filter connections according to inferencecfg parameters
     connection_all, missing_connections = extractstrongconnections(inference_cfg, data,
                                                                    all_detections, iBPTS,
@@ -208,26 +213,24 @@ def assemble_individuals(inference_cfg, data, numjoints, BPTS, iBPTS,
                                                                    evaluation=evaluation)
     # assemble putative subsets
     subset, candidate = linkjoints2individuals(inference_cfg, all_detections, connection_all, missing_connections,
-                                               paf_links, iBPTS, numjoints=numjoints)
+                                               paf_links, iBPTS, numjoints)
     if print_intermediate:
         print(all_detections)
         print(connection_all)
         print(subset)
 
     sortedindividuals = np.argsort(-subset[:, -2])  # sort by top score!
-    if len(sortedindividuals) > inference_cfg.topktoplot:
-        sortedindividuals = sortedindividuals[:inference_cfg.topktoplot]
+    if len(sortedindividuals) > inference_cfg.topktoretain:
+        sortedindividuals = sortedindividuals[:inference_cfg.topktoretain]
 
     animals = []
-    for n in sortedindividuals:  # range(len(subset)): #number of individuals
+    for n in sortedindividuals:  #number of individuals
         individual = np.zeros(3 * numjoints) * np.nan
         for i in range(numjoints):  # number of limbs
             ind = int(subset[n][i])  # bpt index in global coordinates
-            if -1 == ind:  # reached the end!
+            if -1 == ind:  # reached the end
                 continue
-            else:  # xyl=np.ones(3)*np.nan
-                # else:
-                # xyl = candidate[ind, :3]
+            else:
                 individual[3 * i:3 * i + 3] = candidate[ind, :3]
                 # >> turn into bounding box :)
         animals.append(individual)

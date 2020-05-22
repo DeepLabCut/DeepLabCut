@@ -39,7 +39,7 @@ inferencecfg.method='m1'
 inferencecfg.withid=False
 inferencecfg.slack=10
 inferencecfg.variant=0 #
-inferencecfg.topktoplot=3 #THIS SHOULD BE Larger than # animals!
+inferencecfg.topktoretain=3 #THIS SHOULD BE Larger than # animals!
 
 #example use case for running
 #data=crossval.compute_crossval_metrics(configfile, inferencecfg, shuffle=2, trainingsetindex=0)

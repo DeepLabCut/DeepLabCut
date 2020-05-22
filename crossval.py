@@ -315,7 +315,7 @@ def bayesian_search(config_path,edgewisecondition=True,
     inferencecfg.slack = 10
     inferencecfg.variant = 0
 
-    inferencecfg.topktoplot = np.inf
+    inferencecfg.topktoretain = np.inf
     inferencecfg.distnormalization=400
     inferencecfg.distnormalizationLOWER=5
     inferencecfg.addlikelihoods=.1

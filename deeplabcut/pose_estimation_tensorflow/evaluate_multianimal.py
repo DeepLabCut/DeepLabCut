@@ -344,13 +344,13 @@ def evaluate_multianimal_crossvalidate(config, Shuffles=[1], trainingsetindex=0,
             inferencecfg = edict(inferencecfg)
             auxfun_multianimal.check_inferencecfg_sanity(cfg, inferencecfg)
 
-        inferencecfg.topktoplot = np.inf
+        inferencecfg.topktoretain = np.inf
         inferencecfg, opt = crossvalutils.bayesian_search(config, inferencecfg, _pbounds,edgewisecondition=edgewisecondition,
                                                           shuffle=shuffle, trainingsetindex=trainingsetindex, target=target,maximize=maximize,
                                                           init_points=init_points, n_iter=n_iter, acq='ei',
                                                           dcorr=dcorr,leastbpts=leastbpts,modelprefix=modelprefix)
 
-        inferencecfg.topktoplot = len(cfg['individuals']) + 1 * (len(cfg['uniquebodyparts']) > 0)
+        inferencecfg.topktoretain = len(cfg['individuals']) + 1 * (len(cfg['uniquebodyparts']) > 0)
         DataOptParams, poses_gt, poses = crossvalutils.compute_crossval_metrics(config, inferencecfg, shuffle,
                                                                                 trainingsetindex, modelprefix)
 
@@ -369,6 +369,7 @@ def evaluate_multianimal_crossvalidate(config, Shuffles=[1], trainingsetindex=0,
         for n, pose in enumerate(poses):
             temp = pose.flatten()
             container[n, :len(temp)] = temp
+            
         header = pd.MultiIndex.from_product([[DLCscorer],
                                              [f'individual{i}' for i in range(1, max_indivs + 1)],
                                              bpts, ['x', 'y', 'likelihood']],

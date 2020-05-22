@@ -38,7 +38,7 @@ minimalnumberofconnections: willbeautomaticallyupdatedbycreate_training_datasetc
 # Least average score (average over paf costs of all edges)
 averagescore: 0.1
 # max. number of objects to keep:
-topktoplot: willbeautomaticallyupdatedbycreate_training_datasetcode
+topktoretain: willbeautomaticallyupdatedbycreate_training_datasetcode
 #reasonable default: len(cfg['individuals'])+1*(len(cfg['uniquebodyparts'])>0)
 
 # Also extract ID:

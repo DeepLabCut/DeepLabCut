@@ -283,7 +283,7 @@ def create_multianimaltraining_dataset(config,num_shuffles=1,Shuffles=None,windo
                 defaultinference_configfile = os.path.join(dlcparent_path, 'inference_cfg.yaml')
                 items2change = {
                     "minimalnumberofconnections": int(len(cfg['multianimalbodyparts'])/2),
-                    "topktoplot": len(cfg['individuals'])+1*(len(cfg['uniquebodyparts'])>0)
+                    "topktoretain": len(cfg['individuals'])+1*(len(cfg['uniquebodyparts'])>0)
                 }
                 #TODO:   "distnormalization":  could be calculated here based on data and set
                 # >> now we calculate this during evaluation (which is a good spot...)

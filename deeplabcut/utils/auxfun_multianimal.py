@@ -262,7 +262,7 @@ def form_default_inferencecfg(cfg):
     inferencecfg=auxiliaryfunctions.read_plainconfig(os.path.join(auxiliaryfunctions.get_deeplabcut_path(),'inference_cfg.yaml'))
     #set project specific parameters:
     inferencecfg['minimalnumberofconnections'] = len(cfg['multianimalbodyparts']) / 2  # reasonable default
-    inferencecfg['topktoplot'] = len(cfg['individuals']) + 1 * (len(cfg['uniquebodyparts']) > 0)  # reasonable default
+    inferencecfg['topktoretain'] = len(cfg['individuals']) + 1 * (len(cfg['uniquebodyparts']) > 0)  # reasonable default
     return inferencecfg
 
 def check_inferencecfg_sanity(cfg, inferencecfg):
@@ -270,7 +270,6 @@ def check_inferencecfg_sanity(cfg, inferencecfg):
     missing = [key for key in template if key not in inferencecfg]
     if missing:
         raise KeyError(f'Keys {", ".join(missing)} are missing in the inferencecfg.')
-
 
 def read_inferencecfg(path_inference_config,cfg):
     """Load inferencecfg or initialize it."""
