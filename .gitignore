@@ -1,5 +1,6 @@
-#Data
-/examples
+#Data and examples
+/examples/open*
+/examples/Reac*
 /examples-multianimal
 /benchmarking
 

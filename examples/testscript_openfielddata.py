@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Nov  5 18:06:13 2018
+Created on Mon Nov 5 18:06:13 2018
 
 @author: alex
 
@@ -40,6 +40,7 @@ posefile,_,_=deeplabcut.return_train_network_path(path_config_file,shuffle=shuff
 edits = {'save_iters': 15000,
          'display_iters': 1000,
          'multi_step': [[0.005, 15001]]}
+
 DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
 print("TRAIN NETWORK")
 deeplabcut.train_network(path_config_file, shuffle=shuffle,max_snapshots_to_keep=3)
