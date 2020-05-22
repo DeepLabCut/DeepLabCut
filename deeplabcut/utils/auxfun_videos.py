@@ -10,23 +10,21 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 from pathlib import Path
-import subprocess, os
+import subprocess, os, platform
 import cv2
 
 # Historically DLC used: from scipy.misc import imread, imresize >> deprecated functions
 def imread(path,mode=None):
-    ''' load image with openCV '''
     return cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
 
 #https://docs.opencv.org/3.4.0/da/d54/group__imgproc__transform.html#ga5bb5a1fea74ea38e1a5445ca803ff121
 def imresize(img,size=1.0,interpolationmethod=cv2.INTER_AREA):
-    ''' Resize image with openCV '''
     if size!=1.0:
         return cv2.resize(img,None,fx=size,fy=size,interpolation=interpolationmethod) #(int(height*size),int(width*size)))
     else:
         return img
 
-def ShortenVideo(vname, start='00:00:00', stop='00:01:00', outsuffix='short', outpath=None):
+def ShortenVideo(vname,start='00:00:01',stop='00:01:00',outsuffix='short',outpath=None):
     """
     Auxiliary function to shorten video and output with outsuffix appended.
     to the same folder from start (hours:minutes:seconds) to stop (hours:minutes:seconds).
@@ -50,6 +48,9 @@ def ShortenVideo(vname, start='00:00:00', stop='00:01:00', outsuffix='short', ou
     outpath: str
         Output path for saving video to (by default will be the same folder as the video)
 
+    Examples
+    ----------
+
     Linux/MacOs
     >>> deeplabcut.ShortenVideo('/data/videos/mouse1.avi')
 
@@ -60,20 +61,12 @@ def ShortenVideo(vname, start='00:00:00', stop='00:01:00', outsuffix='short', ou
 
     Extracts (sub)video from minute 17 to 22 and and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1brief.avi
     """
-    if not outpath:
-        vidpath = os.path.dirname(vname)
+    if outpath is None:
+        vidpath=os.path.dirname(vname)
     else:
-        vidpath = outpath
+        vidpath=outpath
 
-    def to_seconds(time):
-        h, m, s = time.split(':')
-        return int(h) * 3600 + int(m) * 60 + int(s)
-
-    clip = cv2.VideoCapture(vname)
-    dur = clip.get(cv2.CAP_PROP_FRAME_COUNT) // clip.get(cv2.CAP_PROP_FPS)
-    if not to_seconds(start) < to_seconds(stop) <= dur:
-        raise ValueError('Invalid start or stop timestamps.')
-
+    #TODO check if those times exist...
     newfilename=os.path.join(vidpath,str(Path(vname).stem)+str(outsuffix)+str(Path(vname).suffix))
     print("Slicing and saving to name", newfilename)
     command = f"ffmpeg -i {vname} -ss {start} -to {stop} -c:a copy {newfilename}"
@@ -81,7 +74,7 @@ def ShortenVideo(vname, start='00:00:00', stop='00:01:00', outsuffix='short', ou
     #subprocess.call(['ffmpeg','-i',vname,'-ss',str(start),'-to',str(stop),'-c:v','copy','-c:a', newfilename])
     return str(newfilename)
 
-def CropVideo(vname,width=256,height=256,origin1=0, origin2=0,outsuffix='cropped',outpath=None, useGUI=False):
+def CropVideo(vname, width=256, height=256, origin_x=0, origin_y=0, outsuffix='cropped', outpath=None, useGUI=False):
     """
     Auxiliary function to crop a video and output it to the same folder with "outsuffix" appended in its name.
     Width and height will control the new dimensions.
@@ -101,6 +94,9 @@ def CropVideo(vname,width=256,height=256,origin1=0, origin2=0,outsuffix='cropped
     height: int
         height of output video.
 
+    origin_x, origin_y: int
+        x- and y- axis origin of bounding box for cropping.
+
     outsuffix: str
         Suffix for output videoname (see example).
 
@@ -109,6 +105,9 @@ def CropVideo(vname,width=256,height=256,origin1=0, origin2=0,outsuffix='cropped
 
     rotateccw: bool
         Default false, rotates counter-clockwise if true.
+
+    Examples
+    ----------
 
     Linux/MacOs
     >>> deeplabcut.CropVideo('/data/videos/mouse1.avi')
@@ -130,16 +129,15 @@ def CropVideo(vname,width=256,height=256,origin1=0, origin2=0,outsuffix='cropped
         coords = draw_bbox(vname)
         if not coords:
             return
-        origin1, origin2 = coords[:2]
+        origin_x, origin_y = coords[:2]
         width = int(coords[2]) - int(coords[0])
         height = int(coords[3]) - int(coords[1])
 
     newfilename=os.path.join(vidpath,str(Path(vname).stem)+str(outsuffix)+str(Path(vname).suffix))
     print("Cropping and saving to name", newfilename)
-    command = f"ffmpeg -i {vname} -filter:v crop={width}:{height}:{origin1}:{origin2} -c:a copy {newfilename}"
+    command = f"ffmpeg -i {vname} -filter:v crop={width}:{height}:{origin_x}:{origin_y} -c:a copy {newfilename}"
     subprocess.call(command, shell=True)
     return str(newfilename)
-
 
 def DownSampleVideo(vname,width=-1,height=200,outsuffix='downsampled',outpath=None,rotateccw=False):
     """
@@ -168,6 +166,10 @@ def DownSampleVideo(vname,width=-1,height=200,outsuffix='downsampled',outpath=No
 
     rotateccw: bool
         Default false, rotates counter-clockwise if true.
+
+
+    Examples
+    ----------
 
     Linux/MacOs
     >>> deeplabcut.DownSampleVideo('/data/videos/mouse1.avi')
@@ -232,9 +234,13 @@ def draw_bbox(video):
 
     rs = RectangleSelector(ax, line_select_callback, drawtype='box',
                            minspanx=5, minspany=5, interactive=True, spancoords='pixels',
-                           rectprops=dict(facecolor='red', edgecolor='black', alpha=0.5, fill=True))
+                           rectprops=dict(facecolor='red', edgecolor='black', alpha=0.3, fill=True))
     plt.show()
-    fig.canvas.start_event_loop(timeout=-1)
+    if platform.system() == 'Darwin': #for OSX use WXAgg
+        fig.canvas.start_event_loop(timeout=-1)
+    else:
+        fig.canvas.stop_event_loop()
+
     plt.close(fig)
     return bbox
 
