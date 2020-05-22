@@ -306,11 +306,7 @@ class SORT:
             if tracker.time_since_update > self.max_age:
                 self.trackers.pop()
                 continue
-            if (tracker.time_since_update < 1 and
-                    (tracker.hit_streak >= self.min_hits or self.frame_count <= self.min_hits)):
-                state = tracker.predict()
-            else:
-                state = tracker.empty_state
+            state = tracker.predict()
             states.append(np.r_[state, [tracker.id, int(animalindex[i])]])
         if len(states) > 0:
             return np.stack(states)
