@@ -7,20 +7,54 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
-import numpy as np
-import os
-from pathlib import Path
-import pandas as pd
-
-from deeplabcut.utils import auxiliaryfunctions, visualization
-from deeplabcut.utils import frameselectiontools
-from deeplabcut.refine_training_dataset.outlier_frames import FitSARIMAXModel
-
 import argparse
-from tqdm import tqdm
-import matplotlib.pyplot as plt
-from skimage.util import img_as_ubyte
+import numpy as np
+import pandas as pd
+from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.refine_training_dataset.outlier_frames import FitSARIMAXModel
+from pathlib import Path
 from scipy import signal
+from scipy.interpolate import UnivariateSpline
+
+
+def columnwise_spline_interp(data, max_gap=0):
+    """
+    Perform cubic spline interpolation over the columns of *data*.
+    All gaps of size lower than or equal to *max_gap* are filled,
+    and data slightly smoothed.
+
+    Parameters
+    ----------
+    data : array_like
+        2D matrix of data.
+    max_gap : int, optional
+        Maximum gap size to fill. By default, all gaps are interpolated.
+
+    Returns
+    -------
+    interpolated data with same shape as *data*
+    """
+    if np.ndim(data) < 2:
+        data = np.expand_dims(data, axis=1)
+    nrows, ncols = data.shape
+    temp = data.copy()
+    valid = ~np.isnan(temp)
+    x = np.arange(nrows)
+    for i in range(ncols):
+        mask = valid[:, i]
+        spl = UnivariateSpline(x[mask], temp[mask, i])
+        y = spl(x)
+        if max_gap > 0:
+            inds = np.flatnonzero(np.r_[True, np.diff(mask), True])
+            count = np.diff(inds)
+            inds = inds[:-1]
+            to_fill = np.ones_like(mask)
+            for ind, n, is_nan in zip(inds, count, ~mask[inds]):
+                if is_nan and n > max_gap:
+                    to_fill[ind:ind + n] = False
+            y[~to_fill] = np.nan
+        temp[:, i] = y
+    return temp
 
 
 def filterpredictions(config,video,videotype='avi',shuffle=1,trainingsetindex=0,
@@ -46,11 +80,12 @@ def filterpredictions(config,video,videotype='avi',shuffle=1,trainingsetindex=0,
         Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
 
     filtertype: string
-        Select which filter, 'arima' or 'median' filter.
+        Select which filter, 'arima', 'median' or 'spline'.
 
     windowlength: int
         For filtertype='median' filters the input array using a local window-size given by windowlength. The array will automatically be zero-padded.
         https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.medfilt.html The windowlenght should be an odd number.
+        If filtertype='spline', windowlength is the maximal gap size to fill.
 
     p_bound: float between 0 and 1, optional
         For filtertype 'arima' this parameter defines the likelihood below,
@@ -126,10 +161,30 @@ def filterpredictions(config,video,videotype='avi',shuffle=1,trainingsetindex=0,
                     data = pd.DataFrame(placeholder.reshape((nrows, -1)),
                                         columns=df.columns,
                                         index=df.index)
-                else:
+                elif filtertype == 'median':
                     data = df.copy()
                     mask = data.columns.get_level_values('coords') != 'likelihood'
                     data.loc[:, mask] = df.loc[:, mask].apply(signal.medfilt, args=(windowlength,), axis=0)
+                elif filtertype == 'spline':
+                    data = df.copy()
+                    mask_data = data.columns.get_level_values('coords').isin(('x', 'y'))
+                    xy = data.loc[:, mask_data].values
+                    prob = data.loc[:, ~mask_data].values
+                    missing = np.isnan(xy)
+                    xy_filled = columnwise_spline_interp(xy, windowlength)
+                    filled = ~np.isnan(xy_filled)
+                    xy[filled] = xy_filled[filled]
+                    inds = np.argwhere(missing & filled)
+                    if inds.size:
+                        # Retrieve original individual label indices
+                        inds[:, 1] //= 2
+                        inds = np.unique(inds, axis=0)
+                        prob[inds[:, 0], inds[:, 1]] = 0.01
+                        data.loc[:, ~mask_data] = prob
+                    data.loc[:, mask_data] = xy
+                else:
+                    raise ValueError(f'Unknown filter type {filtertype}')
+
                 outdataname = filepath.replace('.h5', '_filtered.h5')
                 data.to_hdf(outdataname, 'df_with_missing', format='table', mode='w')
                 if save_as_csv:
