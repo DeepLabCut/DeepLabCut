@@ -99,7 +99,7 @@ class Refine_tracklets(wx.Panel):
             label="Specify the max gap size to fill, in frames (initial pickle file only!)",
         )
         slider_gap_sizer = wx.StaticBoxSizer(slider_gap_text, wx.VERTICAL)
-        self.slider_gap = wx.SpinCtrl(self, value="0")
+        self.slider_gap = wx.SpinCtrl(self, value="1")
         slider_gap_sizer.Add(self.slider_gap, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
         hbox.Add(slider_gap_sizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
@@ -255,6 +255,6 @@ class Refine_tracklets(wx.Panel):
         self.sel_config.SetPath("")
         self.sel_datafile.SetPath("")
         self.sel_video.SetPath("")
-        self.slider_gap.SetValue(0)
+        self.slider_gap.SetValue(1)
         self.length_track.SetValue(25)
         # self.save.Enable(False)
