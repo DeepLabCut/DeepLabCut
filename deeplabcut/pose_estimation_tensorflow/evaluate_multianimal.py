@@ -146,7 +146,7 @@ def evaluate_multianimal_full(config, Shuffles=[1], trainingsetindex=0,
 
                             GT=Data.iloc[imageindex]
 
-                            #Storing GT data as dictionary, so it can be used for integrals
+                            #Storing GT data as dictionary, so it can be used for calculating connection costs
                             groundtruthcoordinates=[]
                             groundtruthidentity=[]
                             for bptindex, bpt in enumerate(dlc_cfg["all_joints_names"]):
@@ -177,6 +177,7 @@ def evaluate_multianimal_full(config, Shuffles=[1], trainingsetindex=0,
                                 probs_pred = pred['confidence']
                                 fig = visualization.make_multianimal_labeled_image(frame, groundtruthcoordinates, coords_pred, probs_pred, colors,
                                                                                    cfg['dotsize'], cfg['alphavalue'], cfg['pcutoff'])
+
                                 visualization.save_labeled_frame(fig, image_path, foldername, imageindex in trainIndices)
 
                         sess.close() #closes the current tf session
@@ -350,6 +351,7 @@ def evaluate_multianimal_crossvalidate(config, Shuffles=[1], trainingsetindex=0,
                                                           init_points=init_points, n_iter=n_iter, acq='ei',
                                                           dcorr=dcorr,leastbpts=leastbpts,modelprefix=modelprefix)
 
+        #update number of individuals to retain.
         inferencecfg.topktoretain = len(cfg['individuals']) + 1 * (len(cfg['uniquebodyparts']) > 0)
         DataOptParams, poses_gt, poses = crossvalutils.compute_crossval_metrics(config, inferencecfg, shuffle,
                                                                                 trainingsetindex, modelprefix)
@@ -369,7 +371,7 @@ def evaluate_multianimal_crossvalidate(config, Shuffles=[1], trainingsetindex=0,
         for n, pose in enumerate(poses):
             temp = pose.flatten()
             container[n, :len(temp)] = temp
-            
+
         header = pd.MultiIndex.from_product([[DLCscorer],
                                              [f'individual{i}' for i in range(1, max_indivs + 1)],
                                              bpts, ['x', 'y', 'likelihood']],

@@ -79,9 +79,6 @@ def calculatepafdistancebounds(config,shuffle=0,trainingsetindex=0,modelprefix='
         partaffinityfield_graph= dlc_cfg.partaffinityfield_graph
         jointnames = [dlc_cfg.all_joints_names[i] for i in range(len(dlc_cfg.all_joints))]
 
-        #jointindices = [[i] for i in range(len(dlc_cfg.all_joints))]
-        #partaffinityfield_graph=auxfun_multianimal.getpafgraph(cfg)
-
         #plt.figure()
         Cutoff={}
 
@@ -114,11 +111,12 @@ def calculatepafdistancebounds(config,shuffle=0,trainingsetindex=0,modelprefix='
                 inferenceboundscfg[edgeencoding]['intra_max']=str(1e5) #large number (larger than any image diameter)
                 inferenceboundscfg[edgeencoding]['intra_min']=str(1e5)
 
-            if len(ds_across)>0: #NOTE: these distances are currently not used, but are interesting to compare to intra_*
+            #NOTE: the inter-animal distances are currently not used, but are interesting to compare to intra_*
+            if len(ds_across)>0:
                 inferenceboundscfg[edgeencoding]['inter_max']=str(round(np.nanmax(ds_across),numdigits))
                 inferenceboundscfg[edgeencoding]['inter_min']=str(round(np.nanmin(ds_across),numdigits))
             else:
-                inferenceboundscfg[edgeencoding]['inter_max']=str(1e5) #large number (larger than any image diameter)
+                inferenceboundscfg[edgeencoding]['inter_max']=str(1e5) #large number (larger than image diameters in typical experiments)
                 inferenceboundscfg[edgeencoding]['inter_min']=str(1e5)
 
             print(inferenceboundscfg)

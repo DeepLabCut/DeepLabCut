@@ -39,6 +39,7 @@ def convertdetectiondict2listoflist(dataimage, BPTS, withid = False, evaluation 
     [(x, y, score, global index of detection)] (all detections per bodypart).
 
     Also includes id if available. [x,y,score,global id, id] '''
+    
     if evaluation:
         detectedcoordinates=dataimage['prediction']['coordinates'][0]
         detectedlikelihood=dataimage['prediction']['confidence']
@@ -96,24 +97,30 @@ def extractstrongconnections(cfg, dataimage, all_detections, iBPTS, partaffinity
         if n_a != 0 and n_b != 0:
             connection_candidate = []
             for i in range(n_a):
+                si=cand_a[i][2] #likelihoood for detection
                 for j in range(n_b):
-                    d=distance(np.array(cand_a[i][:2]),np.array(cand_b[j][:2])) #TODO: put into PAF cost code, as we anyway calculate distances
                     if evaluation:
                         score_with_dist_prior=abs(dataimage['prediction']['costs'][PAF[edge]][cfg.method][i,j])
+                        d=dataimage['prediction']['costs'][PAF[edge]]['distance'][i,j]
                     else:
                         score_with_dist_prior=abs(dataimage['costs'][PAF[edge]][cfg.method][i,j])
-                    si=cand_a[i][2] #likelihoood for detection
-                    sj=cand_b[j][2]
+                        d=dataimage['prediction']['costs'][PAF[edge]]['distance'][i,j]
+
+                    #d=distance(np.array(cand_a[i][:2]),np.array(cand_b[j][:2]))
+                    sj=cand_b[j][2] #likelihoood for detection
+                    # filtering with global distance bounds
                     if lowerbound is None and upperbound is None:
                         if score_with_dist_prior>cfg.pafthreshold and d<cfg.distnormalization and d>=cfg.distnormalizationLOWER and si*sj>cfg.detectionthresholdsquare:
+
                             connection_candidate.append([i, j, score_with_dist_prior,
                                                         score_with_dist_prior + np.sqrt(si * sj)*cfg.addlikelihoods])
-                    else: # partaffinityconnectionwise distance bounds, tailored!
+
+                    else: # filtering with edgewise distance bounds
                         if score_with_dist_prior>cfg.pafthreshold and d<upperbound[edge] and d>=lowerbound[edge] and si*sj>cfg.detectionthresholdsquare:
                             connection_candidate.append([i, j, score_with_dist_prior,
                                                         score_with_dist_prior + np.sqrt(si * sj)*cfg.addlikelihoods])
 
-            #sort candidate connections by score!
+            #sort candidate connections by score
             connection_candidate = sorted(connection_candidate, key=lambda x: x[2], reverse=True)
             connection = np.zeros((0, 5))
             for c in range(len(connection_candidate)):
@@ -146,21 +153,21 @@ def linkjoints2individuals(cfg,all_detections,all_connections, missing_connectio
                 found = 0
                 subset_idx = [-1, -1]
                 for j in range(len(subset)):  # current number of individuals...
-                    if (subset[j][index_a] == part_as[i] or subset[j][index_b] == part_bs[i]) and found<2: #added found<2
+                    if (subset[j][index_a] == part_as[i] or subset[j][index_b] == part_bs[i]) and found<2:
                         subset_idx[found] = j
                         found += 1
                 if log:
                     print(found,subset_idx)
                 if found == 1:
                     j = subset_idx[0]
-                    if subset[j][index_b] != part_bs[i]: #b is not target >> connect
+                    if subset[j][index_b] != part_bs[i]: # b is not target >> connect
                         subset[j][index_b] = part_bs[i]
                         subset[j][-1] += 1
                         subset[j][-2] += candidate[part_bs[i].astype(int), 2] + all_connections[edge][i][2]
                         if log:
                             print("adding b")
 
-                    if subset[j][index_a] != part_as[i]: #a is not source >> connect
+                    if subset[j][index_a] != part_as[i]: # a is not source >> connect
                         subset[j][index_a] = part_as[i]
                         subset[j][-1] += 1
                         subset[j][-2] += candidate[part_as[i].astype(int), 2] + all_connections[edge][i][2]
@@ -178,7 +185,7 @@ def linkjoints2individuals(cfg,all_detections,all_connections, missing_connectio
                         if log:
                             print("merging")
 
-                # if both nodes don't exist, create a new subset
+                # if both bodyparts don't exist, create a new subset
                 elif not found and edge < numjoints:
                     row = -1 * np.ones(numjoints+2)
                     row[index_a] = part_as[i]

@@ -197,7 +197,7 @@ def compute_crossval_metrics_preloadeddata(params, columns, inference_cfg, data,
 
 def bayesian_search(config_path, inferencecfg, pbounds,edgewisecondition=True,
                     shuffle=1, trainingsetindex=0, modelprefix='',snapshotindex=-1,
-                    target='rpck_test', maximize=True, init_points=20, n_iter=50, acq='ei', log_file=None, # bayes optimizer
+                    target='rpck_test', maximize=True, init_points=20, n_iter=50, acq='ei', log_file=None,
                     dcorr=5, leastbpts=3,printingintermediatevalues=True): #
 
     if 'rpck' in target:
@@ -226,8 +226,6 @@ def bayesian_search(config_path, inferencecfg, pbounds,edgewisecondition=True,
     train_frac = cfg['TrainingFraction'][train_iter] #int(predictionsfn.split('trainset')[1].split('shuffle')[0])
     trainIndices=metadata['data']['trainIndices']
     testIndices=metadata['data']['testIndices']
-    #train_iter, train_frac, shuffle
-
 
     if edgewisecondition:
         mf=str(auxiliaryfunctions.GetModelFolder(cfg["TrainingFraction"][int(trainingsetindex)],shuffle,cfg,modelprefix=modelprefix))
@@ -247,6 +245,7 @@ def bayesian_search(config_path, inferencecfg, pbounds,edgewisecondition=True,
 
         upperbound*=inferencecfg['upperbound_factor']
         lowerbound*=inferencecfg['lowerbound_factor']
+
     else:
         lowerbound=None
         upperbound=None
@@ -295,5 +294,5 @@ def bayesian_search(config_path, inferencecfg, pbounds,edgewisecondition=True,
         if isinstance(tmp, np.floating):
             tmp = np.round(tmp, 2).item()
         inferencecfg[k] = tmp
-        
+
     return inferencecfg, opt
