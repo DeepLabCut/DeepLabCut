@@ -7,7 +7,7 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 
-Adapted from DeeperCut by Eldar Insafutdinov
+Extract_detections with C++ code & nms adapted from DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
 """
 
@@ -42,7 +42,7 @@ def extract_cnn_output(outputs_np, cfg):
         scmap=np.expand_dims(scmap,axis=2)
     return scmap, locref, paf
 
-def AssociationCosts(cfg,coordinates,partaffinitymaps,stride, half_stride,numsteps=50):
+def AssociationCosts(cfg,coordinates,partaffinitymaps,stride, half_stride, numsteps=50):
     ''' Association costs for detections based on PAFs '''
     Distances={}
     ny,nx,nlimbs=np.shape(partaffinitymaps)
@@ -53,9 +53,9 @@ def AssociationCosts(cfg,coordinates,partaffinitymaps,stride, half_stride,numste
         C2=coordinates[bp2]
 
         dist=np.zeros((len(C1),len(C2)))*np.nan
-        distopenpose=np.zeros((len(C1),len(C2)))*np.nan
         L2distance=np.zeros((len(C1),len(C2)))*np.nan
-
+        # 'm2'
+        # distscalarproduct=np.zeros((len(C1),len(C2)))*np.nan
         for c1i,c1 in enumerate(C1):
             for c2i,c2 in enumerate(C2):
                 if np.prod(np.isfinite(c1))*np.prod(np.isfinite(c2)):
@@ -72,7 +72,7 @@ def AssociationCosts(cfg,coordinates,partaffinitymaps,stride, half_stride,numste
 
                     length=np.sqrt(np.sum((c1s-c2s)**2))
 
-                    L2distance[c1i,c2i]=length #storing length
+                    L2distance[c1i,c2i]=length #storing length (used in inference)
                     if length>0:
                         v=(c1s-c2s)*1./length
 
@@ -86,13 +86,13 @@ def AssociationCosts(cfg,coordinates,partaffinitymaps,stride, half_stride,numste
                         else:
                             dy=0
 
-                        distopenpose[c1i,c2i]=dy*v[1]+dx*v[0] #scalar product! [v unit vector dx,dy in pixel coordinats from partaffinitymap]
+                        #distscalarproduct[c1i,c2i]=dy*v[1]+dx*v[0] #scalar product [v unit vector dx,dy in pixel coordinats from partaffinitymap]
                         dist[c1i,c2i]=np.sqrt(dy**2+dx**2)
 
             Distances[l]={}
-            Distances[l]['m1']=dist
-            Distances[l]['m2']=distopenpose
-            Distances[l]['distance']=L2distance
+            Distances[l]['m1'] = dist
+            #Distances[l]['m2'] = distscalarproduct
+            Distances[l]['distance'] = L2distance
 
     return Distances
 
@@ -175,7 +175,6 @@ def extract_detections_python(cfg, scmap, locref, pafs, radius, threshold):
 
     return Detections
 
-
 def get_detectionswithcosts(image, cfg, sess, inputs, outputs, outall=False,nms_radius=5.,
                             det_min_score=.1, c_engine=False):
     ''' Extract pose and association costs from PAFs '''
@@ -192,7 +191,7 @@ def get_detectionswithcosts(image, cfg, sess, inputs, outputs, outall=False,nms_
     else:
         return detections
 
-# These two functions are for evaluation specifically (one also calculates integral between gt poi)
+# These two functions are for evaluation specifically (one also calculates integral between gt points)
 def extract_detection_withgroundtruth(cfg, groundtruthcoordinates, scmap, locref, pafs, nms_radius, det_min_score):
     ''' Extract detections correcting by locref and estimating association costs based on PAFs '''
     from nms_grid import nms_grid  # this needs to be installed (C-code)
@@ -212,8 +211,6 @@ def extract_detection_withgroundtruth(cfg, groundtruthcoordinates, scmap, locref
         dets = nms_grid(prob_map, dist_grid, det_min_score)
         cur_prob = np.zeros([len(dets), 1], dtype=np.float64)
         cur_pos = np.zeros([len(dets), 2], dtype=np.float64)
-        #cur_pos_grid = np.zeros([len(dets), 2], dtype=np.float64)
-
         if num_idchannel>0:
                     cur_id=np.zeros([len(dets), num_idchannel], dtype=np.float64)
 
@@ -221,9 +218,6 @@ def extract_detection_withgroundtruth(cfg, groundtruthcoordinates, scmap, locref
             ix = didx % scmap.shape[1]
             iy = didx // scmap.shape[1]
             cur_prob[idx, 0] = scmap[iy, ix, p_idx] #prob
-            #cur_pos_grid[idx, :] = pos_from_grid_raw(cfg, np.array([ix, iy])) #scmap location
-            #cur_pos[idx, :] = cur_pos_grid[idx, :] + locref[iy, ix, p_idx, :] # scmap + locrefinment!
-            #cur_pairwise[idx, :, :] = pairwise_diff[iy, ix, :, :]
             cur_pos[idx, :] = pos_from_grid_raw(np.array([ix, iy]),stride,halfstride) + locref[iy, ix, p_idx, :] # scmap + locrefinment!
             for id in range(num_idchannel):
                 cur_id[idx,id]=np.amax(scmap[iy, ix, num_joints+id])
@@ -239,8 +233,8 @@ def extract_detection_withgroundtruth(cfg, groundtruthcoordinates, scmap, locref
         Detections['identity']=unID
 
     if pafs is not None:
-            Detections['costs']=AssociationCosts(cfg,unPos,pafs,stride,halfstride)
-            Detections['groundtruth_costs']=AssociationCosts(cfg,groundtruthcoordinates,pafs,stride,halfstride)
+            Detections['costs']=AssociationCosts(cfg, unPos,pafs,stride,halfstride)
+            Detections['groundtruth_costs']=AssociationCosts(cfg, groundtruthcoordinates,pafs,stride,halfstride)
     else:
             Detections['costs']={}
             Detections['groundtruth_costs']={}
@@ -287,8 +281,7 @@ def get_detectionswithcostsandGT(image,  groundtruthcoordinates, cfg, sess, inpu
     im=np.expand_dims(image, axis=0).astype(float)
     outputs_np = sess.run(outputs, feed_dict={inputs: im})
     scmap, locref, paf = extract_cnn_output(outputs_np, cfg)
-    #detections=extract_detections(cfg, scmap, locref, paf,nms_radius=nms_radius,det_min_score=det_min_score)
-    #extract_detection_withgroundtruth(cfg, groundtruthcoordinates, scmap, locref, pafs, nms_radius, det_min_score)
+
     if c_engine:
         detections=extract_detection_withgroundtruth(cfg, groundtruthcoordinates, scmap, locref, paf, nms_radius, det_min_score)
     else:
@@ -395,6 +388,7 @@ def extract_batchdetections_python(cfg, scmap, locref, pafs, radius, threshold):
 
 def get_batchdetectionswithcosts(image, dlc_cfg, dist_grid, batchsize,num_joints,num_idchannel, stride, halfstride,
                                  det_min_score, sess, inputs, outputs, outall=False, c_engine=False):
+
     outputs_np = sess.run(outputs, feed_dict={inputs: image})
     scmap, locref, pafs = extract_cnn_outputmulti(outputs_np, dlc_cfg) #processes image batch.
     #batchsize,ny,nx,num_joints = scmap.shape
@@ -410,6 +404,7 @@ def get_batchdetectionswithcosts(image, dlc_cfg, dist_grid, batchsize,num_joints
             radius = len(dist_grid - 1) // 2
             dets = extract_batchdetections_python(dlc_cfg, scmap[l], locref[l], paf, radius, det_min_score)
         detections.append(dets)
+
     if outall:
         return scmap, locref, pafs, detections
     else:
