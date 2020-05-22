@@ -15,7 +15,6 @@ TRAIN_SIZE = 0.8
 NET = 'resnet_50'
 N_ITER = 5
 
-
 basepath = os.path.dirname(os.path.abspath('testscript_multianimal.py'))
 video = 'm3v1mp4'
 video_path = os.path.join(basepath,'openfield-Pranav-2018-10-30','videos',video+'.mp4')
