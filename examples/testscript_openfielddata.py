@@ -35,12 +35,12 @@ shuffle = 13
 
 deeplabcut.create_training_dataset(path_config_file, Shuffles=[shuffle])
 cfg = deeplabcut.auxiliaryfunctions.read_config(path_config_file)
+
 # example how to set pose config variables:
 posefile, _, _ = deeplabcut.return_train_network_path(path_config_file, shuffle=shuffle)
-# os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(shuffle),'train/pose_cfg.yaml')
 edits = {"save_iters": 15000, "display_iters": 1000, "multi_step": [[0.005, 15001]]}
-
 DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
+
 print("TRAIN NETWORK")
 deeplabcut.train_network(path_config_file, shuffle=shuffle, max_snapshots_to_keep=3)
 

@@ -13,7 +13,7 @@ It should take about 4:15 minutes to run this in a CPU. (incl. downloading the R
 It produces nothing of interest scientifically.
 """
 
-task = "TEST-multi"  # Enter the name of your experiment Task
+task = "TEST-multipleNets"  # Enter the name of your experiment Task
 scorer = "Alex"  # Enter the name of the experimenter/labeler
 
 import os, subprocess, deeplabcut
@@ -166,7 +166,7 @@ for shuffle, net_type in enumerate(
     print("EVALUATE")
     deeplabcut.evaluate_network(path_config_file, Shuffles=[shuffle], plotting=True)
 
-    print("CUT SHORT VIDEO AND ANALYZE")
+    print("CREATE A SHORT VIDEO AND ANALYZE")
     if shuffle == 0:
         # Make super short video (so the analysis is quick!)
         newvideo = deeplabcut.ShortenVideo(
