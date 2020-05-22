@@ -59,6 +59,10 @@ Default augmentation:
 Results for 20000  training iterations: 95 2 train error: 2.5 pixels. Test error: 4.08  pixels.
 With pcutoff of 0.4  train error: 2.5 pixels. Test error: 4.08 pixels
 
+Tensorpack augmentation:
+
+Results for 20000  training iterations: 95 3 train error: 3.06 pixels. Test error: 4.78  pixels.
+With pcutoff of 0.4  train error: 3.06 pixels. Test error: 4.78 pixels
 
 Notice: despite the higher RMSE for imgaug due to the augmentation,
 the network performs much better on the testvideo.
