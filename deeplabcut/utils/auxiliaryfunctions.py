@@ -154,28 +154,32 @@ def create_config_template_3d():
     cfg_file_3d = ruamelFile_3d.load(yaml_str)
     return cfg_file_3d, ruamelFile_3d
 
-
 def read_config(configname):
     """
-    Reads structured config file
-
+    Reads structured config file defining a project.
     """
-    ruamelFile = YAML()
+    ruamelFile = ruamel.yaml.YAML()
     path = Path(configname)
     if os.path.exists(path):
         try:
             with open(path, 'r') as f:
                 cfg = ruamelFile.load(f)
+                # update path to current location of config.yaml (if different)
+                if cfg['project_path'] != configname.replace(f'{os.path.sep}config.yaml', ''):
+                    write_config(configname, cfg)
         except Exception as err:
-            if err.args[2] == "could not determine a constructor for the tag '!!python/tuple'":
-                with open(path, 'r') as ymlfile:
-                  cfg = yaml.load(ymlfile,Loader=yaml.SafeLoader)
-                  write_config(configname,cfg)
-            else:
-                raise
+            if len(err.args)>2:
+                if err.args[2] == "could not determine a constructor for the tag '!!python/tuple'":
+                    with open(path, 'r') as ymlfile:
+                        cfg = yaml.load(ymlfile, Loader=yaml.SafeLoader)
+                        write_config(configname, cfg)
+                else:
+                    raise
+
     else:
-        raise FileNotFoundError(f"Config file {configname} is not found. Please make sure that the file exists and/or that you passed the path of the config file correctly!")
-    return cfg
+        raise FileNotFoundError(
+            "Config file is not found. Please make sure that the file exists and/or that you passed the path of the config file correctly!")
+    return (cfg)
 
 def write_config(configname,cfg):
     """
