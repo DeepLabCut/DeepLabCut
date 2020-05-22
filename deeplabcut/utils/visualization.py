@@ -28,7 +28,6 @@ from matplotlib.collections import LineCollection
 from skimage import io
 from tqdm import trange
 
-
 def get_cmap(n, name='hsv'):
     '''Returns a function that maps each index in 0, 1, ..., n-1 to a distinct
     RGB color; the keyword argument name must be a standard mpl colormap name.'''
@@ -104,6 +103,7 @@ def save_labeled_frame(fig, image_path, dest_folder, belongs_to_train):
     else:
         dest = '-'.join(('Test', imfoldername, imagename))
     full_path = os.path.join(dest_folder, dest)
+    
     # Windows throws error if file path is > 260 characters, can fix with prefix.
     # See https://docs.microsoft.com/en-us/windows/desktop/fileio/naming-a-file#maximum-path-length-limitation
     if len(full_path) >= 260 and os.name == 'nt':

@@ -14,16 +14,10 @@ Licensed under GNU Lesser General Public License v3.0
 import os.path
 from pathlib import Path
 import argparse
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
+from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualization
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-
-# https://stackoverflow.com/questions/14720331/how-to-generate-random-colors-in-matplotlib
-def get_cmap(n, name='hsv'):
-    '''Returns a function that maps each index in 0, 1, ..., n-1 to a distinct
-    RGB color; the keyword argument name must be a standard mpl colormap name.'''
-    return plt.cm.get_cmap(name, n)
 
 def Histogram(vector,color,bins, ax=None):
     dvector=np.diff(vector)
@@ -36,7 +30,7 @@ def Histogram(vector,color,bins, ax=None):
 def PlottingResults(tmpfolder, Dataframe, cfg, bodyparts2plot, individuals2plot, showfigures=False, suffix='.png'):
     ''' Plots poses vs time; pose x vs pose y; histogram of differences and likelihoods.'''
     pcutoff = cfg['pcutoff']
-    colors = get_cmap(len(bodyparts2plot), name=cfg['colormap'])
+    colors = visualization.get_cmap(len(bodyparts2plot), name=cfg['colormap'])
     alphavalue = cfg['alphavalue']
     if individuals2plot:
         Dataframe = Dataframe.loc(axis=1)[:, individuals2plot]

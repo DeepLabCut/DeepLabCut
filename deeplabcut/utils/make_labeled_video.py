@@ -35,13 +35,6 @@ from matplotlib.animation import FFMpegWriter
 from skimage.util import img_as_ubyte
 from skimage.draw import circle, line_aa
 
-
-def get_cmap(n, name='hsv'):
-    '''Returns a function that maps each index in 0, 1, ..., n-1 to a distinct
-    RGB color; the keyword argument name must be a standard mpl colormap name.'''
-    return plt.cm.get_cmap(name, n)
-
-
 def get_segment_indices(bodyparts2connect, all_bpts):
     bpts2connect = []
     for bpt1, bpt2 in bodyparts2connect:
@@ -192,9 +185,9 @@ def CreateVideoSlow(videooutname,clip,Dataframe, tmpfolder, dotsize,colormap,alp
     keep = np.flatnonzero(np.isin(all_bpts, bodyparts2plot))
     bpts2color = [(ind, map2bp[ind], map2id[ind]) for ind in keep]
     if color_by == 'individual':
-        colors = get_cmap(nindividuals, name=colormap)
+        colors = visualization.get_cmap(nindividuals, name=colormap)
     else:
-        colors = get_cmap(nbodyparts, name=colormap)
+        colors = visualization.get_cmap(nbodyparts, name=colormap)
 
     nframes_digits=int(np.ceil(np.log10(nframes)))
     if nframes_digits>9:
