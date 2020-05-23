@@ -12,11 +12,13 @@ A clear and concise description of what the bug is.
 Please provide the minimal required code to reproduce the error.
 
 Please place code inside this:
-
 <details><summary>Code output</summary><p>
 
-[Please copy/paste the full terminal output of the error here!!!]
+```python
 
+PLACE YOUR CODE HERE!!! 
+
+```
 </p></details>
 
 **To Reproduce**
