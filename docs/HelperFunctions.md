@@ -61,6 +61,8 @@ deeplabcut.ShortenVideo
 
 deeplabcut.DownSampleVideo
 
+deeplabcut.CropVideo
+
 deeplabcut.adddatasetstovideolistandviceversa
 
 deeplabcut.comparevideolistsanddatafolders
@@ -86,4 +88,3 @@ This function allows you to export a well-trained model for real-time applicatio
 ```python
 deeplabcut.export_model(cfg_path, iteration=None, shuffle=1, trainingsetindex=0, snapshotindex=None, TFGPUinference=True, overwrite=False, make_tar=True)
 ```
-

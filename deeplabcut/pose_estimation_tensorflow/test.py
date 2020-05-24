@@ -1,7 +1,7 @@
-'''
+"""
 Adapted from DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
-'''
+"""
 
 import argparse
 import logging
@@ -12,9 +12,15 @@ import scipy.io
 import scipy.ndimage
 
 from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.pose_estimation_tensorflow.dataset.factory import create as create_dataset
+from deeplabcut.pose_estimation_tensorflow.dataset.factory import (
+    create as create_dataset,
+)
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import Batch
-from deeplabcut.pose_estimation_tensorflow.nnet.predict import setup_pose_prediction, extract_cnn_output, argmax_pose_predict
+from deeplabcut.pose_estimation_tensorflow.nnet.predict import (
+    setup_pose_prediction,
+    extract_cnn_output,
+    argmax_pose_predict,
+)
 from deeplabcut.pose_estimation_tensorflow.util import visualize
 
 
@@ -37,7 +43,7 @@ def test_net(visualise, cache_scoremaps):
     predictions = np.zeros((num_images,), dtype=np.object)
 
     for k in range(num_images):
-        print('processing image {}/{}'.format(k, num_images-1))
+        print("processing image {}/{}".format(k, num_images - 1))
 
         batch = dataset.next_batch()
 
@@ -52,29 +58,31 @@ def test_net(visualise, cache_scoremaps):
         predictions[k] = pose_refscale
 
         if visualise:
-            img = np.squeeze(batch[Batch.inputs]).astype('uint8')
+            img = np.squeeze(batch[Batch.inputs]).astype("uint8")
             visualize.show_heatmaps(cfg, img, scmap, pose)
             visualize.waitforbuttonpress()
 
         if cache_scoremaps:
             base = os.path.basename(batch[Batch.data_item].im_path)
             raw_name = os.path.splitext(base)[0]
-            out_fn = os.path.join(out_dir, raw_name + '.mat')
-            scipy.io.savemat(out_fn, mdict={'scoremaps': scmap.astype('float32')})
+            out_fn = os.path.join(out_dir, raw_name + ".mat")
+            scipy.io.savemat(out_fn, mdict={"scoremaps": scmap.astype("float32")})
 
-            out_fn = os.path.join(out_dir, raw_name + '_locreg' + '.mat')
+            out_fn = os.path.join(out_dir, raw_name + "_locreg" + ".mat")
             if cfg.location_refinement:
-                scipy.io.savemat(out_fn, mdict={'locreg_pred': locref.astype('float32')})
+                scipy.io.savemat(
+                    out_fn, mdict={"locreg_pred": locref.astype("float32")}
+                )
 
-    scipy.io.savemat('predictions.mat', mdict={'joints': predictions})
+    scipy.io.savemat("predictions.mat", mdict={"joints": predictions})
 
     sess.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--novis', default=False, action='store_true')
-    parser.add_argument('--cache', default=False, action='store_true')
+    parser.add_argument("--novis", default=False, action="store_true")
+    parser.add_argument("--cache", default=False, action="store_true")
     args, unparsed = parser.parse_known_args()
 
     test_net(not args.novis, args.cache)

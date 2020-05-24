@@ -22,3 +22,4 @@ from deeplabcut.gui.train_network import *
 from deeplabcut.gui.welcome import *
 from deeplabcut.gui.media import *
 from deeplabcut.gui.create_videos import *
+from deeplabcut.gui.video_editing import *

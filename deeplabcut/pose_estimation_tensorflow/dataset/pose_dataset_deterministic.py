@@ -1,6 +1,5 @@
-
 """
-DeepLabCut2.0 Toolbox (deeplabcut.org)
+DeepLabCut2.2 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
 Please see AUTHORS for contributors.
@@ -8,7 +7,7 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 
-Adopted from DeeperCut by Eldar Insafutdinov
+Adapted from DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
 """
 
@@ -23,9 +22,17 @@ from numpy import array as arr
 from numpy import concatenate as cat
 
 import scipy.io as sio
-#from scipy.misc import imread, imresize
+
+# from scipy.misc import imread, imresize
 from deeplabcut.utils.auxfun_videos import imread, imresize
-from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import Batch, data_to_input, mirror_joints_map, CropImage, DataItem
+from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import (
+    Batch,
+    data_to_input,
+    mirror_joints_map,
+    CropImage,
+    DataItem,
+)
+
 
 class PoseDataset:
     def __init__(self, cfg):
@@ -39,14 +46,14 @@ class PoseDataset:
 
     def load_dataset(self):
         cfg = self.cfg
-        file_name = os.path.join(self.cfg.project_path,cfg.dataset)
+        file_name = os.path.join(self.cfg.project_path, cfg.dataset)
         # Load Matlab file dataset annotation
         mlab = sio.loadmat(file_name)
         self.raw_data = mlab
-        mlab = mlab['dataset']
+        mlab = mlab["dataset"]
 
         num_images = mlab.shape[1]
-#        print('Dataset has {} images'.format(num_images))
+        #        print('Dataset has {} images'.format(num_images))
         data = []
         has_gt = True
 
@@ -59,16 +66,16 @@ class PoseDataset:
             item.im_size = sample[1][0]
             if len(sample) >= 3:
                 joints = sample[2][0][0]
-#                print(sample)
+                #                print(sample)
                 joint_id = joints[:, 0]
                 # make sure joint ids are 0-indexed
                 if joint_id.size != 0:
-                    assert((joint_id < cfg.num_joints).any())
+                    assert (joint_id < cfg.num_joints).any()
                 joints[:, 0] = joint_id
                 item.joints = [joints]
             else:
                 has_gt = False
-            #if cfg.crop:
+            # if cfg.crop:
             #    crop = sample[3][0] - 1
             #    item.crop = extend_crop(crop, cfg.crop_pad, item.im_size)
             data.append(item)
@@ -137,7 +144,7 @@ class PoseDataset:
         if cfg.deterministic:
             rand.seed(42)
         scale = cfg.global_scale
-        if hasattr(cfg, 'scale_jitter_lo') and hasattr(cfg, 'scale_jitter_up'):
+        if hasattr(cfg, "scale_jitter_lo") and hasattr(cfg, "scale_jitter_up"):
             scale_jitter = rand.uniform(cfg.scale_jitter_lo, cfg.scale_jitter_up)
             scale *= scale_jitter
         return scale
@@ -154,12 +161,15 @@ class PoseDataset:
             return self.make_batch(data_item, scale, mirror)
 
     def is_valid_size(self, image_size, scale):
-        if hasattr(self.cfg, 'min_input_size') and hasattr(self.cfg, 'max_input_size'):
+        if hasattr(self.cfg, "min_input_size") and hasattr(self.cfg, "max_input_size"):
             input_width = image_size[2] * scale
             input_height = image_size[1] * scale
-            if input_height < self.cfg.min_input_size or input_width < self.cfg.min_input_size:
+            if (
+                input_height < self.cfg.min_input_size
+                or input_width < self.cfg.min_input_size
+            ):
                 return False
-            if input_height * input_width > self.cfg.max_input_size**2:
+            if input_height * input_width > self.cfg.max_input_size ** 2:
                 return False
 
         return True
@@ -167,37 +177,39 @@ class PoseDataset:
     def make_batch(self, data_item, scale, mirror):
 
         im_file = data_item.im_path
-        logging.debug('image %s', im_file)
-        logging.debug('mirror %r', mirror)
+        logging.debug("image %s", im_file)
+        logging.debug("mirror %r", mirror)
 
-        #print(im_file, os.getcwd())
-        #print(self.cfg.project_path)
-        image = imread(os.path.join(self.cfg.project_path,im_file), mode='RGB')
+        # print(im_file, os.getcwd())
+        # print(self.cfg.project_path)
+        image = imread(os.path.join(self.cfg.project_path, im_file), mode="RGB")
 
         if self.has_gt:
             joints = np.copy(data_item.joints)
 
-        if self.cfg.crop: #adapted cropping for DLC
-            if np.random.rand()<self.cfg.cropratio:
-                #1. get center of joints
-                j=np.random.randint(np.shape(joints)[1]) #pick a random joint
+        if self.cfg.crop:  # adapted cropping for DLC
+            if np.random.rand() < self.cfg.cropratio:
+                # 1. get center of joints
+                j = np.random.randint(np.shape(joints)[1])  # pick a random joint
                 # draw random crop dimensions & subtract joint points
-                #print(joints,j,'ahah')
-                joints,image=CropImage(joints,image,joints[0,j,1],joints[0,j,2],self.cfg)
+                # print(joints,j,'ahah')
+                joints, image = CropImage(
+                    joints, image, joints[0, j, 1], joints[0, j, 2], self.cfg
+                )
 
-                #if self.has_gt:
+                # if self.has_gt:
                 #    joints[0,:, 1] -= x0
                 #    joints[0,:, 2] -= y0
-                '''
+                """
                 print(joints)
                 import matplotlib.pyplot as plt
                 plt.clf()
                 plt.imshow(image)
                 plt.plot(joints[0,:,1],joints[0,:,2],'.')
                 plt.savefig("abc"+str(np.random.randint(int(1e6)))+".png")
-                '''
+                """
             else:
-                pass #no cropping!
+                pass  # no cropping!
 
         img = imresize(image, scale) if scale != 1 else image
         scaled_img_size = arr(img.shape[0:2])
@@ -211,23 +223,35 @@ class PoseDataset:
             stride = self.cfg.stride
 
             if mirror:
-                joints = [self.mirror_joints(person_joints, self.symmetric_joints, image.shape[1]) for person_joints in
-                          joints]
+                joints = [
+                    self.mirror_joints(
+                        person_joints, self.symmetric_joints, image.shape[1]
+                    )
+                    for person_joints in joints
+                ]
 
             sm_size = np.ceil(scaled_img_size / (stride * 2)).astype(int) * 2
 
             scaled_joints = [person_joints[:, 1:3] * scale for person_joints in joints]
 
             joint_id = [person_joints[:, 0].astype(int) for person_joints in joints]
-            part_score_targets, part_score_weights, locref_targets, locref_mask = self.compute_target_part_scoremap(
-                joint_id, scaled_joints, data_item, sm_size, scale)
+            (
+                part_score_targets,
+                part_score_weights,
+                locref_targets,
+                locref_mask,
+            ) = self.compute_target_part_scoremap(
+                joint_id, scaled_joints, data_item, sm_size, scale
+            )
 
-            batch.update({
-                Batch.part_score_targets: part_score_targets,
-                Batch.part_score_weights: part_score_weights,
-                Batch.locref_targets: locref_targets,
-                Batch.locref_mask: locref_mask
-            })
+            batch.update(
+                {
+                    Batch.part_score_targets: part_score_targets,
+                    Batch.part_score_weights: part_score_weights,
+                    Batch.locref_targets: locref_targets,
+                    Batch.locref_mask: locref_mask,
+                }
+            )
 
         batch = {key: data_to_input(data) for (key, data) in batch.items()}
 

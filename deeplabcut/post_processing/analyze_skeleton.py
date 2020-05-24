@@ -1,3 +1,15 @@
+"""
+DeepLabCut2.0 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
+https://github.com/AlexEMG/DeepLabCut
+Please see AUTHORS for contributors.
+
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
+
+Written by Federico Claudi - https://github.com/FedeClaudi
+"""
+
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
@@ -11,7 +23,7 @@ from deeplabcut.utils import auxiliaryfunctions
 
 # utility functions
 def calc_distance_between_points_two_vectors_2d(v1, v2):
-    '''calc_distance_between_points_two_vectors_2d [pairwise distance between vectors points]
+    """calc_distance_between_points_two_vectors_2d [pairwise distance between vectors points]
 
     Arguments:
         v1 {[np.array]} -- [description]
@@ -30,15 +42,15 @@ def calc_distance_between_points_two_vectors_2d(v1, v2):
     >>> v2 = np.zeros((2, 5))
     >>> v2[1, :]  = [0, 10, 25, 50, 100]
     >>> d = calc_distance_between_points_two_vectors_2d(v1.T, v2.T)
-    '''
+    """
 
     # Check dataformats
     if not isinstance(v1, np.ndarray) or not isinstance(v2, np.ndarray):
-        raise ValueError('Invalid argument data format')
+        raise ValueError("Invalid argument data format")
     if not v1.shape[1] == 2 or not v2.shape[1] == 2:
-        raise ValueError('Invalid shape for input arrays')
+        raise ValueError("Invalid shape for input arrays")
     if not v1.shape[0] == v2.shape[0]:
-        raise ValueError('Error: input arrays should have the same length')
+        raise ValueError("Error: input arrays should have the same length")
 
     # Calculate distance
     dist = [distance.euclidean(p1, p2) for p1, p2 in zip(v1, v2)]
@@ -46,7 +58,7 @@ def calc_distance_between_points_two_vectors_2d(v1, v2):
 
 
 def angle_between_points_2d_anticlockwise(p1, p2):
-    '''angle_between_points_2d_clockwise [Determines the angle of a straight line drawn between point one and two.
+    """angle_between_points_2d_clockwise [Determines the angle of a straight line drawn between point one and two.
         The number returned, which is a double in degrees, tells us how much we have to rotate
         a horizontal line anti-clockwise for it to match the line between the two points.]
 
@@ -64,7 +76,7 @@ def angle_between_points_2d_anticlockwise(p1, p2):
         >>> twoseventy = angle_between_points_2d_clockwise([-1, 0], [0, 1])
         >>> ninety2 = angle_between_points_2d_clockwise([10, 0], [10, 1])
         >>> print(ninety2)
-    '''
+    """
 
     """
         Determines the angle of a straight line drawn between point one and two.
@@ -75,14 +87,14 @@ def angle_between_points_2d_anticlockwise(p1, p2):
     xDiff = p2[0] - p1[0]
     yDiff = p2[1] - p1[1]
     ang = degrees(atan2(yDiff, xDiff))
-    if ang < 0: ang += 360
+    if ang < 0:
+        ang += 360
     # if not 0 <= ang <+ 360: raise ValueError('Ang was not computed correctly')
     return ang
 
 
-
 def calc_angle_between_vectors_of_points_2d(v1, v2):
-    '''calc_angle_between_vectors_of_points_2d [calculates the clockwise angle between each set of point for two 2d arrays of points]
+    """calc_angle_between_vectors_of_points_2d [calculates the clockwise angle between each set of point for two 2d arrays of points]
 
     Arguments:
         v1 {[np.ndarray]} -- [2d array with X,Y position at each timepoint]
@@ -98,15 +110,22 @@ def calc_angle_between_vectors_of_points_2d(v1, v2):
     >>> v2[0, :] = [0, 1, 0, -1]
     >>> v2[1, :] = [1, 0, -1, 0]
     >>> a = calc_angle_between_vectors_of_points_2d(v2, v1)
-    '''
+    """
 
     # Check data format
-    if v1 is None or v2 is None or not isinstance(v1, np.ndarray) or not isinstance(v2, np.ndarray):
-        raise ValueError('Invalid format for input arguments')
+    if (
+        v1 is None
+        or v2 is None
+        or not isinstance(v1, np.ndarray)
+        or not isinstance(v2, np.ndarray)
+    ):
+        raise ValueError("Invalid format for input arguments")
     if len(v1) != len(v2):
-        raise ValueError('Input arrays should have the same length, instead: ', len(v1), len(v2))
+        raise ValueError(
+            "Input arrays should have the same length, instead: ", len(v1), len(v2)
+        )
     if not v1.shape[0] == 2 or not v2.shape[0] == 2:
-        raise ValueError('Invalid shape for input arrays: ', v1.shape, v2.shape)
+        raise ValueError("Invalid shape for input arrays: ", v1.shape, v2.shape)
 
     # Calculate
     n_points = v1.shape[1]
@@ -138,17 +157,25 @@ def analyzebone(bp1, bp2):
     likelihood = np.min(likelihoods, 1)
 
     # Create dataframe and return
-    df = pd.DataFrame.from_dict(dict(
-                                    length=bone_length,
-                                    orientation=bone_orientation,
-                                    likelihood=likelihood,
-                                    ))
+    df = pd.DataFrame.from_dict(
+        dict(length=bone_length, orientation=bone_orientation, likelihood=likelihood,)
+    )
     # df.index.name=name
 
     return df
 
+
 # MAIN FUNC
-def analyzeskeleton(config, videos, videotype='avi', shuffle=1, trainingsetindex=0, save_as_csv=False, destfolder=None):
+def analyzeskeleton(
+    config,
+    videos,
+    videotype="avi",
+    shuffle=1,
+    trainingsetindex=0,
+    save_as_csv=False,
+    destfolder=None,
+    modelprefix="",
+):
     """
     Extracts length and orientation of each "bone" of the skeleton as defined in the config file.
 
@@ -176,33 +203,47 @@ def analyzeskeleton(config, videos, videotype='avi', shuffle=1, trainingsetindex
     """
     # Load config file, scorer and videos
     cfg = auxiliaryfunctions.read_config(config)
-    DLCscorer,DLCscorerlegacy=auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction = cfg['TrainingFraction'][trainingsetindex])
+    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+        cfg,
+        shuffle,
+        trainFraction=cfg["TrainingFraction"][trainingsetindex],
+        modelprefix=modelprefix,
+    )
 
-    Videos=auxiliaryfunctions.Getlistofvideos(videos,videotype)
+    Videos = auxiliaryfunctions.Getlistofvideos(videos, videotype)
     for video in Videos:
-        print("Processing %s"%(video))
+        print("Processing %s" % (video))
         if destfolder is None:
-            destfolder= str(Path(video).parents[0])
+            destfolder = str(Path(video).parents[0])
 
-        vname=Path(video).stem
-        notanalyzed,outdataname,sourcedataname,scorer=auxiliaryfunctions.CheckifPostProcessing(destfolder,vname,DLCscorer,DLCscorerlegacy,suffix='_skeleton')
+        vname = Path(video).stem
+        (
+            notanalyzed,
+            outdataname,
+            sourcedataname,
+            scorer,
+        ) = auxiliaryfunctions.CheckifPostProcessing(
+            destfolder, vname, DLCscorer, DLCscorerlegacy, suffix="_skeleton"
+        )
         if notanalyzed:
-                Dataframe = pd.read_hdf(sourcedataname,'df_with_missing')
-                # Process skeleton
-                bones = {}
-                for bp1, bp2 in cfg['skeleton']:
-                    name = "{}_{}".format(bp1, bp2)
-                    bones[name] = analyzebone(Dataframe[scorer][bp1], Dataframe[scorer][bp2])
+            Dataframe = pd.read_hdf(sourcedataname, "df_with_missing")
+            # Process skeleton
+            bones = {}
+            for bp1, bp2 in cfg["skeleton"]:
+                name = "{}_{}".format(bp1, bp2)
+                bones[name] = analyzebone(
+                    Dataframe[scorer][bp1], Dataframe[scorer][bp2]
+                )
 
-                skeleton = pd.concat(bones, axis=1)
-                # save
-                skeleton.to_hdf(outdataname, 'df_with_missing', format='table', mode='w')
-                if save_as_csv:
-                    skeleton.to_csv(outdataname.split('.h5')[0]+'.csv')
+            skeleton = pd.concat(bones, axis=1)
+            # save
+            skeleton.to_hdf(outdataname, "df_with_missing", format="table", mode="w")
+            if save_as_csv:
+                skeleton.to_csv(outdataname.split(".h5")[0] + ".csv")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('config')
-    parser.add_argument('videos')
+    parser.add_argument("config")
+    parser.add_argument("videos")
     cli_args = parser.parse_args()
