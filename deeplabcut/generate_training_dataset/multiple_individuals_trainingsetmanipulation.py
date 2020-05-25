@@ -130,7 +130,7 @@ def create_multianimaltraining_dataset(
 
     # multianimal case:
     dataset_type = "multi-animal-imgaug"
-    partaffinityfield_graph = auxfun_multianimal.getpafgraph(cfg)
+    partaffinityfield_graph = auxfun_multianimal.getpafgraph(cfg,printnames=False)
     # ATTENTION: order has to be multibodyparts, then uniquebodyparts (for indexing)
     print("Utilizing the following graph:", partaffinityfield_graph)
     num_limbs = len(partaffinityfield_graph)
