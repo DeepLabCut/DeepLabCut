@@ -179,7 +179,7 @@ def calculatepafdistancebounds(
                 )  # large number (larger than image diameters in typical experiments)
                 inferenceboundscfg[edgeencoding]["inter_min"] = str(1e5)
 
-            print(inferenceboundscfg)
+            # print(inferenceboundscfg)
             # plt.subplot(len(partaffinityfield_graph),1,pi+1)
             # plt.hist(ds_within,bins=np.linspace(0,100,21),color='red')
             # plt.hist(ds_across,bins=np.linspace(0,100,21),color='blue')
