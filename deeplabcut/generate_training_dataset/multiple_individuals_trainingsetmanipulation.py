@@ -163,8 +163,8 @@ def create_multianimaltraining_dataset(
             # Map back to the original indices.
             temp = [name for i, name in enumerate(img_names) if i in test_inds_temp]
             mask = Data.index.str.contains("|".join(temp))
-            testIndexes = np.flatnonzero(mask)
-            trainIndexes = np.flatnonzero(~mask)
+            testIndices = np.flatnonzero(mask)
+            trainIndices = np.flatnonzero(~mask)
 
             ####################################################
             # Generating data structure with labeled information & frame metadata (for deep cut)
@@ -174,7 +174,7 @@ def create_multianimaltraining_dataset(
             data = []
             print("Creating training data for ", shuffle, trainFraction)
             print("This can take some time...")
-            for jj in tqdm(trainIndexes):
+            for jj in tqdm(trainIndices):
                 jointsannotated = False
                 H = {}
                 # load image to get dimensions:
@@ -253,7 +253,7 @@ def create_multianimaltraining_dataset(
                 if jointsannotated:  # exclude images without labels
                     data.append(H)
 
-            if len(trainIndexes) > 0:
+            if len(trainIndices) > 0:
                 (
                     datafilename,
                     metadatafilename,
@@ -266,8 +266,8 @@ def create_multianimaltraining_dataset(
                 auxiliaryfunctions.SaveMetadata(
                     os.path.join(project_path, metadatafilename),
                     data,
-                    trainIndexes,
-                    testIndexes,
+                    trainIndices,
+                    testIndices,
                     trainFraction,
                 )
 

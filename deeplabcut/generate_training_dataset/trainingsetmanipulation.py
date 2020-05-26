@@ -672,10 +672,10 @@ def SplitTrials(trialindex, trainFraction=0.8):
     else:
         trainsetsize = int(len(trialindex) * round(trainFraction, 2))
         shuffle = np.random.permutation(trialindex)
-        testIndexes = shuffle[trainsetsize:]
-        trainIndexes = shuffle[:trainsetsize]
+        testIndices = shuffle[trainsetsize:]
+        trainIndices = shuffle[:trainsetsize]
 
-        return (trainIndexes, testIndexes)
+        return (trainIndices, testIndices)
 
 
 def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
@@ -707,17 +707,16 @@ def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
     Examples
     --------
     To create a leave-one-folder-out model:
-    >>> trainIndexes, testIndexes=deeplabcut.mergeandsplit(config,trainindex=0,uniform=False)
-    returns the indices for the first video folder (as defined in config file) as testIndexes and all others as trainIndexes.
+    >>> trainIndices, testIndices=deeplabcut.mergeandsplit(config,trainindex=0,uniform=False)
+    returns the indices for the first video folder (as defined in config file) as testIndices and all others as trainIndices.
     You can then create the training set by calling (e.g. defining it as Shuffle 3):
-    >>> deeplabcut.create_training_dataset(config,Shuffles=[3],trainIndexes=trainIndexes,testIndexes=testIndexes)
+    >>> deeplabcut.create_training_dataset(config,Shuffles=[3],trainIndices=trainIndices,testIndices=testIndices)
 
     To freeze a (uniform) split:
-    >>> trainIndexes, testIndexes=deeplabcut.mergeandsplit(config,trainindex=0,uniform=True)
-    You can then create two model instances that have the identical trainingset. Thereby you can assess the role of various parameters on the performance of DLC.
+    >>> trainIndices, testIndices=deeplabcut.mergeandsplit(config,trainindex=0,uniform=True)
 
-    >>> deeplabcut.create_training_dataset(config,Shuffles=[0],trainIndexes=trainIndexes,testIndexes=testIndexes)
-    >>> deeplabcut.create_training_dataset(config,Shuffles=[1],trainIndexes=trainIndexes,testIndexes=testIndexes)
+    You can then create two model instances that have the identical trainingset. Thereby you can assess the role of various parameters on the performance of DLC.
+    >>> deeplabcut.create_training_dataset(config,Shuffles=[0,1],trainIndices=[trainIndices, trainIndices],testIndices=[testIndices, testIndices])
     --------
 
     """
@@ -750,21 +749,21 @@ def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
     if uniform == True:
         TrainingFraction = cfg["TrainingFraction"]
         trainFraction = TrainingFraction[trainindex]
-        trainIndexes, testIndexes = SplitTrials(range(len(Data.index)), trainFraction)
+        trainIndices, testIndices = SplitTrials(range(len(Data.index)), trainFraction)
     else:  # leave one folder out split
         videos = cfg["video_sets"].keys()
         test_video_name = [Path(i).stem for i in videos][trainindex]
         print("Excluding the following folder (from training):", test_video_name)
-        trainIndexes, testIndexes = [], []
+        trainIndices, testIndices = [], []
         for index, name in enumerate(Data.index):
             # print(index,name.split(os.sep)[1])
             if test_video_name == name.split(os.sep)[1]:  # this is the video name
                 # print(name,test_video_name)
-                testIndexes.append(index)
+                testIndices.append(index)
             else:
-                trainIndexes.append(index)
+                trainIndices.append(index)
 
-    return trainIndexes, testIndexes
+    return trainIndices, testIndices
 
 
 @lru_cache(maxsize=None)
@@ -822,8 +821,8 @@ def create_training_dataset(
     Shuffles=None,
     windows2linux=False,
     userfeedback=False,
-    trainIndexes=None,
-    testIndexes=None,
+    trainIndices=None,
+    testIndices=None,
     net_type=None,
     augmenter_type=None,
 ):
@@ -852,12 +851,12 @@ def create_training_dataset(
         If this is set to false, then all requested train/test splits are created (no matter if they already exist). If you
         want to assure that previous splits etc. are not overwritten, then set this to True and you will be asked for each split.
 
-    trainIndexes: list of lists, optional (default=None)
+    trainIndices: list of lists, optional (default=None)
         List of one or multiple lists containing train indexes.
         A list containing two lists of training indexes will produce two splits.
 
-    testIndexes: list of lists, optional (default=None)
-        List of test indexes.
+    testIndices: list of lists, optional (default=None)
+        List of one or multiple lists containing test indexes.
 
     net_type: string
         Type of networks. Currently resnet_50, resnet_101, resnet_152, mobilenet_v2_1.0,mobilenet_v2_0.75, mobilenet_v2_0.5, and mobilenet_v2_0.35 are supported.
@@ -935,8 +934,8 @@ def create_training_dataset(
         else:
             Shuffles = [i for i in Shuffles if isinstance(i, int)]
 
-        # print(trainIndexes,testIndexes, Shuffles, augmenter_type,net_type)
-        if trainIndexes is None and testIndexes is None:
+        # print(trainIndices,testIndices, Shuffles, augmenter_type,net_type)
+        if trainIndices is None and testIndices is None:
             splits = [
                 (
                     trainFraction,
@@ -947,13 +946,13 @@ def create_training_dataset(
                 for shuffle in Shuffles
             ]
         else:
-            if len(trainIndexes) != len(testIndexes) != len(Shuffles):
+            if len(trainIndices) != len(testIndices) != len(Shuffles):
                 raise ValueError(
                     "Number of Shuffles and train and test indexes should be equal."
                 )
             splits = []
             for shuffle, (train_inds, test_inds) in enumerate(
-                zip(trainIndexes, testIndexes)
+                zip(trainIndices, testIndices)
             ):
                 trainFraction = round(
                     len(train_inds) * 1.0 / (len(train_inds) + len(test_inds)), 2
@@ -967,8 +966,8 @@ def create_training_dataset(
 
         bodyparts = cfg["bodyparts"]
         nbodyparts = len(bodyparts)
-        for trainFraction, shuffle, (trainIndexes, testIndexes) in splits:
-            if len(trainIndexes) > 0:
+        for trainFraction, shuffle, (trainIndices, testIndices) in splits:
+            if len(trainIndices) > 0:
                 if userfeedback:
                     trainposeconfigfile, _, _ = training.return_train_network_path(
                         config,
@@ -1004,7 +1003,7 @@ def create_training_dataset(
                 # Saving data file (convert to training file for deeper cut (*.mat))
                 ################################################################################
                 data, MatlabData = format_training_data(
-                    Data, trainIndexes, nbodyparts, project_path
+                    Data, trainIndices, nbodyparts, project_path
                 )
                 sio.savemat(
                     os.path.join(project_path, datafilename), {"dataset": MatlabData}
@@ -1016,8 +1015,8 @@ def create_training_dataset(
                 auxiliaryfunctions.SaveMetadata(
                     os.path.join(project_path, metadatafilename),
                     data,
-                    trainIndexes,
-                    testIndexes,
+                    trainIndices,
+                    testIndices,
                     trainFraction,
                 )
 
@@ -1173,7 +1172,7 @@ def create_training_model_comparison(
     largestshuffleindex = get_largestshuffle_index(config)
 
     for shuffle in range(num_shuffles):
-        trainIndexes, testIndexes = mergeandsplit(
+        trainIndices, testIndices = mergeandsplit(
             config, trainindex=trainindex, uniform=True
         )
         for idx_net, net in enumerate(net_types):
@@ -1198,8 +1197,8 @@ def create_training_model_comparison(
                     config,
                     Shuffles=[get_max_shuffle_idx],
                     net_type=net,
-                    trainIndexes=[trainIndexes],
-                    testIndexes=[testIndexes],
+                    trainIndices=[trainIndices],
+                    testIndices=[testIndices],
                     augmenter_type=aug,
                     userfeedback=userfeedback,
                     windows2linux=windows2linux,

@@ -349,11 +349,11 @@ def SaveData(PredicteData, metadata, dataname, pdindex, imagenames, save_as_csv)
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
 
-def SaveMetadata(metadatafilename, data, trainIndexes, testIndexes, trainFraction):
+def SaveMetadata(metadatafilename, data, trainIndices, testIndices, trainFraction):
     with open(metadatafilename, "wb") as f:
         # Pickle the 'labeled-data' dictionary using the highest protocol available.
         pickle.dump(
-            [data, trainIndexes, testIndexes, trainFraction], f, pickle.HIGHEST_PROTOCOL
+            [data, trainIndices, testIndices, trainFraction], f, pickle.HIGHEST_PROTOCOL
         )
 
 
@@ -361,11 +361,11 @@ def LoadMetadata(metadatafile):
     with open(metadatafile, "rb") as f:
         [
             trainingdata_details,
-            trainIndexes,
-            testIndexes,
+            trainIndices,
+            testIndices,
             testFraction_data,
         ] = pickle.load(f)
-        return trainingdata_details, trainIndexes, testIndexes, testFraction_data
+        return trainingdata_details, trainIndices, testIndices, testFraction_data
 
 
 def get_immediate_subdirectories(a_dir):
