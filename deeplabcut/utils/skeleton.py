@@ -63,26 +63,25 @@ class SkeletonBuilder:
         self.show()
 
     def pick_labeled_frame(self):
+        # Find the most 'complete' animal
         try:
-            mask = self.df.groupby(level="individuals", axis=1).apply(self.all_visible)
-            if "single" in mask:
-                mask.drop("single", axis=1, inplace=True)
+            count = self.df.groupby(level="individuals", axis=1).count()
+            if "single" in count:
+                count.drop("single", axis=1, inplace=True)
         except KeyError:
-            mask = self.all_visible(self.df).to_frame()
-        valid = mask[mask].stack().index.to_list()
-        if not valid:
-            raise ValueError("No fully labeled animal was found.")
-
-        np.random.shuffle(valid)
-        row, col = valid.pop()
+            count = self.df.count(axis=1).to_frame()
+        mask = count.where(count == count.max())
+        kept = mask.stack().index.to_list()
+        np.random.shuffle(kept)
+        row, col = kept.pop()
         return row, col
 
     def show(self):
         self.fig = plt.figure()
         ax = self.fig.add_subplot(111)
         ax.axis("off")
-        lo = np.min(self.xy, axis=0)
-        hi = np.max(self.xy, axis=0)
+        lo = np.nanmin(self.xy, axis=0)
+        hi = np.nanmax(self.xy, axis=0)
         center = (hi + lo) / 2
         w, h = hi - lo
         ampl = 1.3
@@ -142,6 +141,5 @@ class SkeletonBuilder:
         self.lines.set_segments(self.segs)
         self.fig.canvas.draw_idle()
 
-    @staticmethod
-    def all_visible(df):
-        return ~df.isna().any(axis=1)
+
+builder = SkeletonBuilder('/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/mousetest-teamDLC-2020-04-12/config.yaml')
