@@ -408,6 +408,12 @@ def visualize_paf(image, paf, pafgraph, nplots_per_row=3, step=5, labels=None):
     return fig, axes
 
 
+def _save_individual_subplots(fig, axes, labels, output_path):
+    for ax, label in zip(axes, labels):
+        extent = ax.get_tightbbox(fig.canvas.renderer).transformed(fig.dpi_scale_trans.inverted())
+        fig.savefig(output_path.format(bp=label), bbox_inches=extent)
+
+
 def extract_save_all_maps(
     config,
     shuffle=1,
@@ -481,15 +487,14 @@ def extract_save_all_maps(
     print("Saving plots...")
     for frac, values in data.items():
         if not dest_folder:
-            # dest_folder = os.path.join(cfg['project_path'], 'maps')
             dest_folder = os.path.join(
                 cfg["project_path"],
                 str(GetEvaluationFolder(frac, shuffle, cfg, modelprefix=modelprefix)),
                 "maps",
             )
         attempttomakefolder(dest_folder)
-        dest_path = os.path.join(dest_folder, "{}_{}_{}_{}_{}_{}.png")
-
+        filepath = "{imname}_{map}_{{bp}}_{label}_{shuffle}_{frac}_{snap}.png"
+        dest_path = os.path.join(dest_folder, filepath)
         for snap, maps in values.items():
             for imagenr in tqdm(maps):
                 (
@@ -504,55 +509,49 @@ def extract_save_all_maps(
                 ) = maps[imagenr]
                 label = "train" if trainingframe else "test"
                 imname = os.path.split(os.path.splitext(impath)[0])[1]
-                if not os.path.isfile(
-                    dest_path.format(imagenr, "scmap", label, shuffle, frac, snap)
-                ):
-                    scmap, (locref_x, locref_y), paf = resize_all_maps(
-                        image, scmap, locref, paf
-                    )
-                    fig1, _ = visualize_scoremaps(
-                        image, scmap, labels=bptnames, nplots_per_row=nplots_per_row
-                    )
-                    fig2, _ = visualize_locrefs(
-                        image,
-                        scmap,
-                        locref_x,
-                        locref_y,
-                        labels=bptnames,
-                        nplots_per_row=nplots_per_row,
-                    )
-                    fig3, _ = visualize_locrefs(
-                        image,
-                        scmap,
-                        locref_x,
-                        locref_y,
-                        zoom_width=100,
-                        labels=bptnames,
-                        nplots_per_row=nplots_per_row,
-                    )
-                    if paf is not None:
-                        fig4, _ = visualize_paf(
-                            image,
-                            paf,
-                            pafgraph,
-                            labels=bptnames,
-                            nplots_per_row=nplots_per_row,
-                        )
+                scmap, (locref_x, locref_y), paf = resize_all_maps(
+                    image, scmap, locref, paf
+                )
 
-                    fig1.savefig(
-                        dest_path.format(imname, "scmap", label, shuffle, frac, snap)
-                    )
-                    fig2.savefig(
-                        dest_path.format(imname, "locref", label, shuffle, frac, snap)
-                    )
-                    fig3.savefig(
-                        dest_path.format(
-                            imname, "locrefzoom", label, shuffle, frac, snap
-                        )
-                    )
-                    if paf is not None:
-                        fig4.savefig(
-                            dest_path.format(imname, "paf", label, shuffle, frac, snap)
-                        )
+                fig1, axes1 = visualize_scoremaps(
+                    image, scmap, nplots_per_row
+                )
+                temp = dest_path.format(imname=imname, map='scmap', label=label,
+                                        shuffle=shuffle, frac=frac, snap=snap)
+                _save_individual_subplots(fig1, axes1.flat, bptnames, temp)
 
-                    plt.close("all")
+                fig2, axes2 = visualize_locrefs(
+                    image,
+                    scmap,
+                    locref_x,
+                    locref_y,
+                    nplots_per_row,
+                )
+                temp = dest_path.format(imname=imname, map='locref', label=label,
+                                        shuffle=shuffle, frac=frac, snap=snap)
+                _save_individual_subplots(fig2, axes2.flat, bptnames, temp)
+
+                fig3, axes3 = visualize_locrefs(
+                    image,
+                    scmap,
+                    locref_x,
+                    locref_y,
+                    zoom_width=100,
+                    nplots_per_row=nplots_per_row,
+                )
+                temp = dest_path.format(imname=imname, map='locrefzoom', label=label,
+                                        shuffle=shuffle, frac=frac, snap=snap)
+                _save_individual_subplots(fig3, axes3.flat, bptnames, temp)
+
+                if paf is not None:
+                    fig4, axes4 = visualize_paf(
+                        image,
+                        paf,
+                        pafgraph,
+                        nplots_per_row,
+                    )
+                    temp = dest_path.format(imname=imname, map='paf', label=label,
+                                            shuffle=shuffle, frac=frac, snap=snap)
+                    _save_individual_subplots(fig4, axes4.flat, bptnames, temp)
+
+                plt.close("all")
