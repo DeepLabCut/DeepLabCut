@@ -152,7 +152,7 @@ class Create_training_dataset(wx.Panel):
         self.hbox3.Add(self.userfeedback, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         if config_file.get("multianimalproject", False):
-            print("note to user: currently model comparision is not available in maDLC")
+            print("note to user: currently model comparison is not available in maDLC")
             self.model_comparison_choice = "No"
         else:
             self.model_comparison_choice = wx.RadioBox(
