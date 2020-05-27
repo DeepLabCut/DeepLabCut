@@ -1162,12 +1162,12 @@ class MainFrame(wx.Frame):
         # Windows compatible
         self.dataFrame.sort_index(inplace=True)
         # Discard data associated with bodyparts that are no longer in the config
-        valid = [bp in self.multibodyparts + self.uniquebodyparts
-                 for bp in self.dataFrame.columns.get_level_values('bodyparts')]
+        config_bpts = self.cfg["multianimalbodyparts"] + self.cfg["uniquebodyparts"]
+        valid = [bp in config_bpts for bp in self.dataFrame.columns.get_level_values('bodyparts')]
         self.dataFrame = self.dataFrame.loc[:, valid]
         # Re-organize the dataframe so the CSV looks consistent
         self.dataFrame.columns = self.dataFrame.columns.sortlevel(level='individuals')[0]
-        self.dataFrame = self.dataFrame.reindex(self.multibodyparts + self.uniquebodyparts, axis=1, level=self.dataFrame.columns.names.index("bodyparts"))
+        self.dataFrame = self.dataFrame.reindex(config_bpts, axis=1, level=self.dataFrame.columns.names.index("bodyparts"))
         self.dataFrame.to_csv(
             os.path.join(self.dir, "CollectedData_" + self.scorer + ".csv")
         )
