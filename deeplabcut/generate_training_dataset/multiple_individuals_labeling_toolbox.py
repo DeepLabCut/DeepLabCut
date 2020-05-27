@@ -723,9 +723,7 @@ class MainFrame(wx.Frame):
         # Checking for new frames and adding them to the existing dataframe
         old_imgs = np.sort(list(self.dataFrame.index))
         self.newimages = list(set(self.relativeimagenames) - set(old_imgs))
-        if self.newimages == []:
-            pass
-        else:
+        if self.newimages:
             print("Found new frames..")
             # Create an empty dataframe with all the new images and then merge this to the existing dataframe.
             self.df = MainFrame.create_dataframe(
@@ -778,14 +776,14 @@ class MainFrame(wx.Frame):
                 if self.new_unique:
                     self.uniquebodyparts = self.new_unique
 
-                self.dataFrame = MainFrame.create_dataframe(
-                    self,
-                    self.dataFrame,
-                    self.relativeimagenames,
-                    self.individual_names,
-                    self.new_unique,
-                    self.new_multi,
-                )
+            self.dataFrame = MainFrame.create_dataframe(
+                self,
+                self.dataFrame,
+                self.relativeimagenames,
+                self.individual_names,
+                self.new_unique,
+                self.new_multi,
+            )
             (
                 self.figure,
                 self.axes,
@@ -1163,6 +1161,13 @@ class MainFrame(wx.Frame):
         MainFrame.updateZoomPan(self)
         # Windows compatible
         self.dataFrame.sort_index(inplace=True)
+        # Discard data associated with bodyparts that are no longer in the config
+        valid = [bp in self.multibodyparts + self.uniquebodyparts
+                 for bp in self.dataFrame.columns.get_level_values('bodyparts')]
+        self.dataFrame = self.dataFrame.loc[:, valid]
+        # Re-organize the dataframe so the CSV looks consistent
+        self.dataFrame.columns = self.dataFrame.columns.sortlevel(level='individuals')[0]
+        self.dataFrame = self.dataFrame.reindex(self.multibodyparts + self.uniquebodyparts, axis=1, level=self.dataFrame.columns.names.index("bodyparts"))
         self.dataFrame.to_csv(
             os.path.join(self.dir, "CollectedData_" + self.scorer + ".csv")
         )
