@@ -315,6 +315,10 @@ class MainFrame(wx.Frame):
             self.nextImage(event=None)
         elif event.GetKeyCode() == wx.WXK_LEFT:
             self.prevImage(event=None)
+        elif event.GetKeyCode() == wx.WXK_DOWN:
+            self.nextLabel(event=None)
+        elif event.GetKeyCode() == wx.WXK_UP:
+            self.previousLabel(event=None)
         elif event.GetKeyCode() == wx.WXK_BACK:
             pos_abs = event.GetPosition()
             inv = self.axes.transData.inverted()
@@ -607,6 +611,20 @@ class MainFrame(wx.Frame):
                             )
                         MainFrame.select_individual(self, event)
         self.canvas.mpl_disconnect(self.onClick)
+
+    def nextLabel(self, event):
+        """
+        This function is to create a hotkey to skip down on the radio button panel.
+        """
+        if self.rdb.GetSelection() < len(self.multibodyparts) - 1:
+            self.rdb.SetSelection(self.rdb.GetSelection() + 1)
+
+    def previousLabel(self, event):
+        """
+        This function is to create a hotkey to skip up on the radio button panel.
+        """
+        if self.rdb.GetSelection() < len(self.multibodyparts) - 1:
+            self.rdb.SetSelection(self.rdb.GetSelection() - 1)
 
     def browseDir(self, event):
         """
