@@ -46,6 +46,10 @@ class SkeletonBuilder:
             self.df = self.df.xs(col, axis=1, level="individuals")
         self.bpts = self.df.columns.get_level_values("bodyparts").unique()
         self.xy = self.df.loc[row].values.reshape((-1, 2))
+        missing = np.flatnonzero(np.isnan(self.xy).all(axis=1))
+        if missing.any():
+            warnings.warn(f"A fully labeled animal could not be found. "
+                          f"{', '.join(self.bpts[missing])} will need to be manually connected in the config.yaml.")
         self.tree = KDTree(self.xy)
         self.image = io.imread(os.path.join(self.cfg["project_path"], row))
         self.inds = set()
@@ -140,6 +144,3 @@ class SkeletonBuilder:
             self.segs.add(tuple(map(tuple, self.xy[pair_sorted, :])))
         self.lines.set_segments(self.segs)
         self.fig.canvas.draw_idle()
-
-
-builder = SkeletonBuilder('/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/mousetest-teamDLC-2020-04-12/config.yaml')
