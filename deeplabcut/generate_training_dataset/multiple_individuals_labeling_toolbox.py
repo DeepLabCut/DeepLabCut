@@ -647,6 +647,13 @@ class MainFrame(wx.Frame):
         ) = auxfun_multianimal.extractindividualsandbodyparts(self.cfg)
 
         self.multibodyparts = multianimalbodyparts
+        # checks for unique bodyparts
+        if len(self.multibodyparts) != len(set(self.multibodyparts)):
+            print(
+                "Error - bodyparts must have unique labels! Please choose unique bodyparts in config.yaml file and try again. Quitting for now!"
+            )
+            self.Close(True)
+
         self.uniquebodyparts = uniquebodyparts
         self.individual_names = individuals
 
@@ -686,14 +693,8 @@ class MainFrame(wx.Frame):
             self.dataFrame.sort_index(inplace=True)
             self.prev.Enable(True)
             # Finds the first empty row in the dataframe and sets the iteration to that index
-            for idx, j in enumerate(self.dataFrame.index):
-                values = self.dataFrame.loc[j, :].values
-                if np.prod(np.isnan(values)) == 1:
-                    self.iter = idx
-                    break
-                else:
-                    self.iter = idx
-        except:
+            self.iter = np.argmax(np.isnan(self.dataFrame.values).all(axis=1))
+        except FileNotFoundError:
             # Create an empty data frame
             self.dataFrame = MainFrame.create_dataframe(
                 self,
