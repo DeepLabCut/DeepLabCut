@@ -706,6 +706,16 @@ class MainFrame(wx.Frame):
             )
             self.iter = 0
 
+        # Cache original bodyparts
+        self._old_multi = (
+            self.dataFrame.xs(self.individual_names[0], axis=1, level='individuals')
+                .columns.get_level_values('bodyparts').unique().to_list()
+        )
+        self._old_unique = (
+            self.dataFrame.loc[:, self.dataFrame.columns.get_level_values('individuals') == 'single']
+                .columns.get_level_values('bodyparts').unique().to_list()
+        )
+
         # Reading the image name
         self.img = self.index[self.iter]
         img_name = Path(self.index[self.iter]).name
@@ -727,45 +737,17 @@ class MainFrame(wx.Frame):
                 self.multibodyparts,
             )
             self.dataFrame = pd.concat([self.dataFrame, self.df], axis=0)
-            # Sort it by the index values
             self.dataFrame.sort_index(inplace=True)
+            # Rearrange bodypart columns in config order
+            bodyparts = self.multibodyparts + self.uniquebodyparts
+            self.dataFrame.reindex(bodyparts, axis=1, level=self.dataFrame.columns.names.index("bodyparts"))
 
-        # checks for unique bodyparts
-        if len(self.multibodyparts) != len(set(self.multibodyparts)):
-            print(
-                "Error - bodyparts must have unique labels! Please choose unique bodyparts in config.yaml file and try again. Quitting for now!"
-            )
-            self.Close(True)
-
-        # Extracting the list of old labels
-        oldMultiBodyParts = self.dataFrame.iloc[
-            :,
-            self.dataFrame.columns.get_level_values(1)
-            == [i for i in self.individual_names if i != "single"][0],
-        ].columns.get_level_values(2)
-        _, idx = np.unique(oldMultiBodyParts, return_index=True)
-        oldMultiBodyparts2plot = list(oldMultiBodyParts[np.sort(idx)])
-        # Extracting the list of old unique labels
-        if self.are_unique_bodyparts_present:
-            oldUniqueBodyParts = self.dataFrame.iloc[
-                :, self.dataFrame.columns.get_level_values(1) == "single"
-            ].columns.get_level_values(2)
-            _, idx_unique = np.unique(oldUniqueBodyParts, return_index=True)
-            oldUniqueBodyparts2plot = list(oldUniqueBodyParts[np.sort(idx_unique)])
-            self.new_UniqueBodyparts = [
-                x for x in self.uniquebodyparts if x not in oldUniqueBodyparts2plot
-            ]
-        else:
-            self.new_UniqueBodyparts = []
-        # Checking if new labels are added or not
-        self.new_Multibodyparts = [
-            x for x in self.multibodyparts if x not in oldMultiBodyparts2plot
-        ]
+        # Check whether new labels were added
+        self.new_multi = [x for x in self.multibodyparts if x not in self._old_multi]
+        self.new_unique = [x for x in self.uniquebodyparts if x not in self._old_unique]
 
         # Checking if user added a new label
-        if (
-            self.new_Multibodyparts == [] and self.new_UniqueBodyparts == []
-        ):  # i.e. no new labels
+        if not any([self.new_multi, self.new_unique]):  # i.e. no new labels
             (
                 self.figure,
                 self.axes,
@@ -791,19 +773,19 @@ class MainFrame(wx.Frame):
             )
             result = dlg.ShowModal()
             if result == wx.ID_NO:
-                if self.new_Multibodyparts != []:
-                    self.multibodyparts = self.new_Multibodyparts
-                if self.new_UniqueBodyparts != []:
-                    self.uniquebodyparts = self.new_UniqueBodyparts
+                if self.new_multi:
+                    self.multibodyparts = self.new_multi
+                if self.new_unique:
+                    self.uniquebodyparts = self.new_unique
 
-            self.dataFrame = MainFrame.create_dataframe(
-                self,
-                self.dataFrame,
-                self.relativeimagenames,
-                self.individual_names,
-                self.new_UniqueBodyparts,
-                self.new_Multibodyparts,
-            )
+                self.dataFrame = MainFrame.create_dataframe(
+                    self,
+                    self.dataFrame,
+                    self.relativeimagenames,
+                    self.individual_names,
+                    self.new_unique,
+                    self.new_multi,
+                )
             (
                 self.figure,
                 self.axes,
