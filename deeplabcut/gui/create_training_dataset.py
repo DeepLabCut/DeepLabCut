@@ -143,8 +143,24 @@ class Create_training_dataset(wx.Panel):
                 majorDimension=1,
                 style=wx.RA_SPECIFY_COLS,
             )
+            self.cropandlabel.Bind(wx.EVT_RADIOBOX, self.input_crop_size)
             self.cropandlabel.SetSelection(0)
+            self.crop_text = wx.StaticBox(self, label='Crop settings')
+            self.crop_sizer = wx.StaticBoxSizer(self.crop_text, wx.VERTICAL)
+            self.crop_widgets = []
+            for name, val in [('# of crops', '10'),
+                              ('height', '400'),
+                              ('width', '400')]:
+                temp_sizer = wx.BoxSizer(wx.HORIZONTAL)
+                label = wx.StaticText(self, label=name)
+                text = wx.TextCtrl(self, value=val)
+                self.crop_widgets.append([label, text])
+                temp_sizer.Add(label, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+                temp_sizer.Add(text, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+                self.crop_sizer.Add(temp_sizer)
+            self.crop_sizer.ShowItems(True)
             self.hbox3.Add(self.cropandlabel, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+            self.hbox3.Add(self.crop_sizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         self.hbox2.Add(shuffle_text_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         self.hbox2.Add(trainingindex_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
@@ -265,6 +281,13 @@ class Create_training_dataset(wx.Panel):
         self.sizer.Fit(self)
         self.Layout()
 
+    def input_crop_size(self, event):
+        if self.cropandlabel.GetStringSelection() == 'No':
+            self.crop_sizer.ShowItems(False)
+        else:
+            self.crop_sizer.ShowItems(True)
+        self.SetSizer(self.sizer)
+
     def on_focus(self, event):
         pass
 
@@ -336,7 +359,8 @@ class Create_training_dataset(wx.Panel):
 
         if config_file.get("multianimalproject", False):
             if self.cropandlabel.GetStringSelection() == "Yes":
-                deeplabcut.cropimagesandlabels(self.config, userfeedback=userfeedback)
+                n_crops, height, width = [int(text.GetValue()) for _, text in self.crop_widgets]
+                deeplabcut.cropimagesandlabels(self.config, n_crops, (height, width), userfeedback)
             else:
                 random = False
             deeplabcut.create_multianimaltraining_dataset(
