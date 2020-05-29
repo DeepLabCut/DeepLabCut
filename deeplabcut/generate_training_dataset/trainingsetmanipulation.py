@@ -339,12 +339,14 @@ def cropimagesandlabels(
                 while cropindex < numcrops:
                     dd = np.array(data[ind].copy(), dtype=float)
                     y0, x0 = (
-                        np.random.randint(h - size[0]),
-                        np.random.randint(w - size[1]),
+                        np.random.randint(max(1, h - size[0])),
+                        np.random.randint(max(1, w - size[1])),
                     )
+                    y1 = min(h, y0 + size[0])
+                    x1 = min(w, x0 + size[1])
                     with np.errstate(invalid="ignore"):
                         within = np.all(
-                            (dd >= [x0, y0]) & (dd < [x0 + size[1], y0 + size[0]]),
+                            (dd >= [x0, y0]) & (dd < [x1, y1]),
                             axis=1,
                         )
                     if cropdata:
@@ -360,7 +362,7 @@ def cropimagesandlabels(
                         )
                         cropppedimgname = os.path.join(output_path, newimname)
                         io.imsave(
-                            cropppedimgname, frame[y0 : y0 + size[0], x0 : x0 + size[1]]
+                            cropppedimgname, frame[y0 : y1, x0 : x1]
                         )
                         cropindex += 1
                         pd_index.append(
@@ -388,7 +390,7 @@ def cropimagesandlabels(
                 )
                 cfg["video_sets"][
                     os.path.join(vidpath, str(folder) + "_cropped" + str(videotype))
-                ] = {"crop": ", ".join(map(str, [0, size[1], 0, size[0]]))}
+                ] = {"crop": ", ".join(map(str, [0, x1 - x0, 0, y1 - y0]))}
 
     cfg["croppedtraining"] = True
     auxiliaryfunctions.write_config(config, cfg)
