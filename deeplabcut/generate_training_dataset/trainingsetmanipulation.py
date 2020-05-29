@@ -581,24 +581,24 @@ def _robust_path_split(path):
 def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
     """
     Merges all the h5 files for all labeled-datasets (from individual videos).
-    This is a bit of a mess because of cross platform compatablity.
+    This is a bit of a mess because of cross platform compatibility.
 
     Within platform comp. is straightforward. But if someone labels on windows and wants to train on a unix cluster or colab...
     """
     AnnotationData = []
     data_path = Path(os.path.join(cfg["project_path"], "labeled-data"))
     videos = cfg["video_sets"].keys()
-    video_names = [Path(i).stem for i in videos]
-    for i in video_names:
+    for video in videos:
+        _, filename, _ = _robust_path_split(video)
         if cfg.get("croppedtraining", False):
-            i += "_cropped"
-        filename = os.path.join(data_path / i, f'CollectedData_{cfg["scorer"]}.h5')
+            filename += "_cropped"
+        file_path = os.path.join(data_path / filename, f'CollectedData_{cfg["scorer"]}.h5')
         try:
-            data = pd.read_hdf(filename, "df_with_missing")
+            data = pd.read_hdf(file_path, "df_with_missing")
             AnnotationData.append(data)
         except FileNotFoundError:
             print(
-                filename,
+                file_path,
                 " not found (perhaps not annotated). If training on cropped data, "
                 "make sure to call `cropimagesandlabels` prior to creating the dataset.",
             )
