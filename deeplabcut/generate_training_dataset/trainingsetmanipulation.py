@@ -645,9 +645,7 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
     else:
         askuser = "no"
 
-    filename = str(
-        str(trainingsetfolder_full) + "/" + "/CollectedData_" + cfg["scorer"]
-    )
+    filename = os.path.join(trainingsetfolder_full, f'CollectedData_{cfg["scorer"]}')
     if (
         windows2linux or askuser == "yes" or askuser == "y" or askuser == "Ja"
     ):  # convert windows path in pandas array \\ to unix / !
