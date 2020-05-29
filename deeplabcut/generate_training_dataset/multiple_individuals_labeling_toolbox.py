@@ -729,12 +729,18 @@ class MainFrame(wx.Frame):
 
         # Cache original bodyparts
         self._old_multi = (
-            self.dataFrame.xs(self.individual_names[0], axis=1, level='individuals')
-                .columns.get_level_values('bodyparts').unique().to_list()
+            self.dataFrame.xs(self.individual_names[0], axis=1, level="individuals")
+            .columns.get_level_values("bodyparts")
+            .unique()
+            .to_list()
         )
         self._old_unique = (
-            self.dataFrame.loc[:, self.dataFrame.columns.get_level_values('individuals') == 'single']
-                .columns.get_level_values('bodyparts').unique().to_list()
+            self.dataFrame.loc[
+                :, self.dataFrame.columns.get_level_values("individuals") == "single"
+            ]
+            .columns.get_level_values("bodyparts")
+            .unique()
+            .to_list()
         )
 
         # Reading the image name
@@ -759,7 +765,9 @@ class MainFrame(wx.Frame):
             self.dataFrame.sort_index(inplace=True)
             # Rearrange bodypart columns in config order
             bodyparts = self.multibodyparts + self.uniquebodyparts
-            self.dataFrame.reindex(bodyparts, axis=1, level=self.dataFrame.columns.names.index("bodyparts"))
+            self.dataFrame.reindex(
+                bodyparts, axis=1, level=self.dataFrame.columns.names.index("bodyparts")
+            )
 
         # Check whether new labels were added
         self.new_multi = [x for x in self.multibodyparts if x not in self._old_multi]
@@ -1184,11 +1192,18 @@ class MainFrame(wx.Frame):
         self.dataFrame.sort_index(inplace=True)
         # Discard data associated with bodyparts that are no longer in the config
         config_bpts = self.cfg["multianimalbodyparts"] + self.cfg["uniquebodyparts"]
-        valid = [bp in config_bpts for bp in self.dataFrame.columns.get_level_values('bodyparts')]
+        valid = [
+            bp in config_bpts
+            for bp in self.dataFrame.columns.get_level_values("bodyparts")
+        ]
         self.dataFrame = self.dataFrame.loc[:, valid]
         # Re-organize the dataframe so the CSV looks consistent
-        self.dataFrame.columns = self.dataFrame.columns.sortlevel(level='individuals')[0]
-        self.dataFrame = self.dataFrame.reindex(config_bpts, axis=1, level=self.dataFrame.columns.names.index("bodyparts"))
+        self.dataFrame.columns = self.dataFrame.columns.sortlevel(level="individuals")[
+            0
+        ]
+        self.dataFrame = self.dataFrame.reindex(
+            config_bpts, axis=1, level=self.dataFrame.columns.names.index("bodyparts")
+        )
         self.dataFrame.to_csv(
             os.path.join(self.dir, "CollectedData_" + self.scorer + ".csv")
         )

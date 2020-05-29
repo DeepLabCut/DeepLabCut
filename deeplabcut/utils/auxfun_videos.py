@@ -281,7 +281,9 @@ def draw_bbox(video):
 
 def get_duration(videofile):
     """Get the duration of a video using ffprobe."""
-    cmd = f'ffprobe -i "{videofile}" -show_entries format=duration -v quiet -of csv="p=0"'
+    cmd = (
+        f'ffprobe -i "{videofile}" -show_entries format=duration -v quiet -of csv="p=0"'
+    )
     output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
     return float(output)
 

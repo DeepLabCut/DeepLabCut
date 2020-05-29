@@ -21,9 +21,7 @@ import functools
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
-from deeplabcut.pose_estimation_tensorflow.nnet import (
-    mobilenet_v2,
-)
+from deeplabcut.pose_estimation_tensorflow.nnet import mobilenet_v2
 from . import losses
 from ..dataset.pose_dataset import Batch
 

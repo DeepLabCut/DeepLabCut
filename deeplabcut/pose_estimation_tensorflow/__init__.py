@@ -20,6 +20,7 @@ from deeplabcut.pose_estimation_tensorflow.lib.nms_cython import *
 from deeplabcut.pose_estimation_tensorflow.models import *
 from deeplabcut.pose_estimation_tensorflow.nnet import *
 from deeplabcut.pose_estimation_tensorflow.predict_videos import *
+
 # from deeplabcut.pose_estimation_tensorflow.predict_multianimal import convert_detections2tracklet
 from deeplabcut.pose_estimation_tensorflow.test import *
 from deeplabcut.pose_estimation_tensorflow.train import *

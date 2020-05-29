@@ -13,6 +13,7 @@ You can find the directory for your ffmpeg bindings by: "find / | grep ffmpeg" a
 
 import argparse
 import os
+
 ####################################################
 # Dependencies
 ####################################################

@@ -28,6 +28,7 @@ from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import (
     CropImage,
     DataItem,
 )
+
 # from scipy.misc import imread, imresize
 from deeplabcut.utils.auxfun_videos import imread, imresize
 

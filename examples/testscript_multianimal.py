@@ -171,7 +171,7 @@ print("Create data file...")
 picklefile = os.path.splitext(new_video_path)[0] + scorer + "_sk.pickle"
 try:
     convert_raw_tracks_to_h5(config_path, picklefile)
-    convert_raw_tracks_to_h5(config_path, picklefile.replace("_sk.pi", "_bx.pi"))  
+    convert_raw_tracks_to_h5(config_path, picklefile.replace("_sk.pi", "_bx.pi"))
 
 except IOError:
     print("Empty tracklets properly caught! Using fake data rather...")
