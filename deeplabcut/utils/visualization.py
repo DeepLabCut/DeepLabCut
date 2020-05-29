@@ -9,13 +9,15 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import os
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
-from deeplabcut.utils.auxiliaryfunctions import attempttomakefolder
 from matplotlib.collections import LineCollection
-from pathlib import Path
 from skimage import io
 from tqdm import trange
+
+from deeplabcut.utils.auxiliaryfunctions import attempttomakefolder
 
 
 def get_cmap(n, name="hsv"):

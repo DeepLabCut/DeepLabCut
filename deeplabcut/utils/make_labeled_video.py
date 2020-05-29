@@ -11,24 +11,26 @@ Hao Wu, hwu01@g.harvard.edu contributed the original OpenCV class. Thanks!
 You can find the directory for your ffmpeg bindings by: "find / | grep ffmpeg" and then setting it.
 """
 
+import argparse
+import os
 ####################################################
 # Dependencies
 ####################################################
 import os.path
-import argparse, os
-import numpy as np
+from pathlib import Path
 
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.animation import FFMpegWriter
+from skimage.draw import circle, line_aa
+from skimage.util import img_as_ubyte
+from tqdm import trange
+
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualization
 from deeplabcut.utils.video_processor import (
     VideoProcessorCV as vp,
 )  # used to CreateVideo
-from matplotlib.animation import FFMpegWriter
-from pathlib import Path
-from skimage.util import img_as_ubyte
-from skimage.draw import circle, line_aa
-from tqdm import trange
 
 
 def get_segment_indices(bodyparts2connect, all_bpts):

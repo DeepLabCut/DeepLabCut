@@ -8,10 +8,11 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-import os, pickle, yaml
-import pandas as pd
+import os
 from pathlib import Path
-import numpy as np
+
+import pandas as pd
+
 from deeplabcut.utils import auxiliaryfunctions
 
 

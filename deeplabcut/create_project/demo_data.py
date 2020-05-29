@@ -10,6 +10,7 @@ Licensed under GNU Lesser General Public License v3.0
 
 import os
 from pathlib import Path
+
 import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
 
@@ -42,7 +43,6 @@ def transform_data(config):
     This function adds the full path to labeling dataset.
     It also adds the correct path to the video file in the config file.
     """
-    import pandas as pd
 
     cfg = auxiliaryfunctions.read_config(config)
     project_path = str(Path(config).parents[0])

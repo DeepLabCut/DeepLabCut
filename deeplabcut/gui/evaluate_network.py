@@ -9,9 +9,14 @@ Licensed under GNU Lesser General Public License v3.0
 
 """
 
+import os
+import pydoc
+import subprocess
+import sys
+import webbrowser
+
 import wx
-import os, sys, pydoc
-import webbrowser, subprocess
+
 import deeplabcut
 
 media_path = os.path.join(deeplabcut.__path__[0], "gui", "media")

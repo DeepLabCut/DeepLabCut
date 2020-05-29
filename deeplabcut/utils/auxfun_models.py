@@ -9,8 +9,9 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import os
-from deeplabcut.utils import auxiliaryfunctions
 from pathlib import Path
+
+from deeplabcut.utils import auxiliaryfunctions
 
 
 def Check4weights(modeltype, parent_path, num_shuffles):
@@ -80,10 +81,8 @@ def DownloadModel(modelname, target_dir):
     """
     Downloads a DeepLabCut Model Zoo Project
     """
-    import urllib
     import urllib.request
     import tarfile
-    from io import BytesIO
     from tqdm import tqdm
 
     def show_progress(count, block_size, total_size):

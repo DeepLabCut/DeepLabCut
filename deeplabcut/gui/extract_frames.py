@@ -9,9 +9,13 @@ Licensed under GNU Lesser General Public License v3.0
 
 """
 
+import os
+import pydoc
+import sys
+
 import wx
+
 import deeplabcut
-import os, sys, pydoc
 
 media_path = os.path.join(deeplabcut.__path__[0], "gui", "media")
 logo = os.path.join(media_path, "logo.png")

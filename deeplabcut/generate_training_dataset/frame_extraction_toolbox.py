@@ -9,24 +9,27 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 from __future__ import print_function
-import wx
-import cv2
-import os
-import matplotlib
-import numpy as np
-from pathlib import Path
-import argparse
-from deeplabcut.utils import auxiliaryfunctions
 
-from skimage import io
-from skimage.util import img_as_ubyte
-import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
-from mpl_toolkits.axes_grid1 import make_axes_locatable
+import argparse
+import os
+from pathlib import Path
+
+import cv2
+import matplotlib
 import matplotlib.colors as mcolors
 import matplotlib.patches as patches
+import matplotlib.pyplot as plt
+import numpy as np
+import wx
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
+from matplotlib.figure import Figure
 from matplotlib.widgets import RectangleSelector
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from skimage import io
+from skimage.util import img_as_ubyte
+
+from deeplabcut.utils import auxiliaryfunctions
+
 
 # ###########################################################################
 # Class for GUI MainFrame

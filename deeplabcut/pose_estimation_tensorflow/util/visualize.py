@@ -4,8 +4,10 @@ https://github.com/eldar/pose-tensorflow
 """
 
 import math
+
 import matplotlib.pyplot as plt
 import numpy as np
+
 from deeplabcut.utils.auxfun_videos import imresize
 
 

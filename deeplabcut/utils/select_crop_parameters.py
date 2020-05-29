@@ -9,14 +9,15 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 from __future__ import print_function
-import wx
-import cv2
-import matplotlib
+
 import argparse
-from deeplabcut.utils import auxiliaryfunctions
-from matplotlib.figure import Figure
+
+import matplotlib
+import wx
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
+from matplotlib.figure import Figure
 from matplotlib.widgets import RectangleSelector
+
 
 # ###########################################################################
 # Class for GUI MainFrame

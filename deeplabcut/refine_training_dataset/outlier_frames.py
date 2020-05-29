@@ -8,18 +8,19 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-import cv2
-import numpy as np
+import argparse
 import os
 from pathlib import Path
+
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import statsmodels.api as sm
+from skimage.util import img_as_ubyte
+
 from deeplabcut.utils import auxiliaryfunctions, visualization
 from deeplabcut.utils import frameselectiontools
-import argparse
-from tqdm import trange
-import matplotlib.pyplot as plt
-from skimage.util import img_as_ubyte
 
 
 def extract_outlier_frames(
@@ -781,7 +782,6 @@ def merge_datasets(config, forceiterate=None):
     >>> deeplabcut.merge_datasets('/analysis/project/reaching-task/config.yaml')
     --------
     """
-    import yaml
 
     cfg = auxiliaryfunctions.read_config(config)
     config_path = Path(config).parents[0]

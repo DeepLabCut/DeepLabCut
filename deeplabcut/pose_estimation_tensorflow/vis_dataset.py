@@ -4,13 +4,15 @@ https://github.com/eldar/pose-tensorflow
 """
 
 import logging
+
 import matplotlib.pyplot as plt
 import numpy as np
+
 from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import Batch
 from deeplabcut.pose_estimation_tensorflow.dataset.factory import (
     create as dataset_create,
 )
+from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import Batch
 from deeplabcut.utils.auxfun_videos import imresize
 
 

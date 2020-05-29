@@ -9,10 +9,15 @@ Licensed under GNU Lesser General Public License v3.0
 
 """
 
-import wx
-import os, sys, pydoc
+import os
+import pydoc
+import subprocess
+import sys
+import webbrowser
 from pathlib import Path
-import webbrowser, subprocess
+
+import wx
+
 import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
 

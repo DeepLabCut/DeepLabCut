@@ -1,9 +1,8 @@
-from setuptools import setup
-from Cython.Build import cythonize
 from distutils.extension import Extension
-from sys import platform as _platform
-import os
+
 import numpy as np
+from Cython.Build import cythonize
+from setuptools import setup
 
 # openmp_arg = '-fopenmp'
 # if _platform == "win32":

@@ -8,15 +8,15 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import cv2
+import glob
 import os
 import pickle
-import pandas as pd
 from pathlib import Path
-import glob
+
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 
 def Foldernames3Dproject(cfg_3d):

@@ -7,23 +7,25 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
-import cv2
-from pathlib import Path
+import logging
 import os
+import os.path
+from functools import lru_cache
+from pathlib import Path
+
+import cv2
 import numpy as np
 import pandas as pd
-import os.path
-import logging
-from functools import lru_cache
-from skimage import io
 import yaml
+from skimage import io
+
+from deeplabcut.pose_estimation_tensorflow import training
 from deeplabcut.utils import (
     auxiliaryfunctions,
     conversioncode,
     auxfun_models,
     auxfun_multianimal,
 )
-from deeplabcut.pose_estimation_tensorflow import training
 
 
 def comparevideolistsanddatafolders(config):
@@ -579,7 +581,7 @@ def MakeInference_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
 def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
     """
     Merges all the h5 files for all labeled-datasets (from individual videos).
-    This is a bit of a mess because of cross platform compatablity.
+    This is a bit of a mess because of cross-platform compatibility.
 
     Within platform comp. is straightforward. But if someone labels on windows and wants to train on a unix cluster or colab...
     """

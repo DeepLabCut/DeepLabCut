@@ -9,13 +9,15 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import os
+import os.path
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-import os.path
-from deeplabcut.utils import auxiliaryfunctions, auxfun_models, auxfun_multianimal
-from deeplabcut.generate_training_dataset import trainingsetmanipulation
-from pathlib import Path
 from tqdm import tqdm
+
+from deeplabcut.generate_training_dataset import trainingsetmanipulation
+from deeplabcut.utils import auxiliaryfunctions, auxfun_models, auxfun_multianimal
 
 
 def rename_bodyparts(config, pairs):

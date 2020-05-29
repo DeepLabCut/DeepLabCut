@@ -9,10 +9,12 @@ Licensed under GNU Lesser General Public License v3.0
 
 """
 
-import wx
 import os
-import sys
 import pydoc
+import sys
+
+import wx
+
 import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
 
