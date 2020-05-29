@@ -283,61 +283,56 @@ def cropimagesandlabels(
     from tqdm import trange
 
     indexlength = int(np.ceil(np.log10(numcrops)))
+    project_path = os.path.dirname(config)
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
+    video_names = []
+    for video in videos:
+        parent, filename, ext = _robust_path_split(video)
+        if excludealreadycropped and '_cropped' in filename:
+            continue
+        video_names.append([parent, filename, ext])
 
-    if excludealreadycropped:
-        video_names = [
-            (Path(i).parent, Path(i).stem, Path(i).suffix)
-            for i in videos
-            if "_cropped" not in str(Path(i).stem)
-        ]
-    else:
-        video_names = [(Path(i).parent, Path(i).stem, Path(i).suffix) for i in videos]
-
-    # folders = [Path(config).parent / 'labeled-data' /Path(i[1]) for i in video_names]
     if (
         "video_sets_original" not in cfg.keys() and updatevideoentries
     ):  # this dict is kept for storing links to original full-sized videos
         cfg["video_sets_original"] = {}
 
-    for (vidpath, vidname, videotype) in video_names:
-        folder = Path(config).parent / "labeled-data" / Path(vidname)
+    for vidpath, vidname, videotype in video_names:
+        folder = os.path.join(project_path, 'labeled-data', vidname)
         if userfeedback:
             print("Do you want to crop frames for folder: ", folder, "?")
             askuser = input("(yes/no):")
         else:
             askuser = "y"
         if askuser == "y" or askuser == "yes" or askuser == "Y" or askuser == "Yes":
-            newfolder = str(Path(folder).stem) + "_cropped"
-            output_path = Path(config).parent / "labeled-data" / Path(newfolder)
-            auxiliaryfunctions.attempttomakefolder(output_path)
+            new_vidname = vidname + "_cropped"
+            new_folder = folder.replace(vidname, new_vidname)
+            auxiliaryfunctions.attempttomakefolder(new_folder)
 
             AnnotationData = []
             pd_index = []
 
-            fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
+            fn = os.path.join(folder, f"CollectedData_{cfg['scorer']}.h5")
             df = pd.read_hdf(fn, "df_with_missing")
             data = df.values.reshape((df.shape[0], -1, 2))
             sep = "/" if "/" in df.index[0] else "\\"
-            images = cfg["project_path"] + sep + df.index
             if sep != os.path.sep:
-                images = images.str.replace(sep, os.path.sep)
+                df.index = df.index.str.replace(sep, os.path.sep)
+            images = project_path + os.path.sep + df.index
             # Avoid cropping already cropped images
-            cropped_images = auxiliaryfunctions.grab_files_in_folder(output_path, "png")
+            cropped_images = auxiliaryfunctions.grab_files_in_folder(new_folder, "png")
             cropped_names = set(map(lambda x: x.split("c")[0], cropped_images))
-            imnames = [
-                im for im in images.to_list() if Path(im).stem not in cropped_names
-            ]
+            imnames = [im for im in images.to_list() if Path(im).stem not in cropped_names]
             ic = io.imread_collection(imnames)
             for i in trange(len(ic)):
                 frame = ic[i]
                 h, w = np.shape(frame)[:2]
                 if size[0] >= h or size[1] >= w:
-                    shutil.rmtree(output_path, ignore_errors=True)
+                    shutil.rmtree(new_folder, ignore_errors=True)
                     raise ValueError("Crop dimensions are larger than image size")
 
-                imagename = os.path.relpath(ic.files[i], cfg["project_path"])
+                imagename = os.path.relpath(ic.files[i], project_path)
                 ind = np.flatnonzero(df.index == imagename)[0]
                 cropindex = 0
                 attempts = -1
@@ -365,36 +360,29 @@ def cropimagesandlabels(
                             + str(cropindex).zfill(indexlength)
                             + ".png"
                         )
-                        cropppedimgname = os.path.join(output_path, newimname)
+                        cropppedimgname = os.path.join(new_folder, newimname)
                         io.imsave(
                             cropppedimgname, frame[y0 : y1, x0 : x1]
                         )
                         cropindex += 1
                         pd_index.append(
-                            os.path.join("labeled-data", newfolder, newimname)
+                            os.path.join("labeled-data", new_vidname, newimname)
                         )
                         AnnotationData.append(dd.flatten())
 
             if cropdata:
                 df = pd.DataFrame(AnnotationData, index=pd_index, columns=df.columns)
-                fn_new = os.path.join(
-                    str(output_path), "CollectedData_" + cfg["scorer"] + ".h5"
-                )
+                fn_new = fn.replace(folder, new_folder)
                 df.to_hdf(fn_new, key="df_with_missing", mode="w")
                 df.to_csv(fn_new.replace(".h5", ".csv"))
 
             if updatevideoentries and cropdata:
                 # moving old entry to _original, dropping it from video_set and update crop parameters
-                cfg["video_sets_original"][
-                    str(os.path.join(vidpath, str(vidname) + str(videotype)))
-                ] = cfg["video_sets"][
-                    str(os.path.join(vidpath, str(vidname) + str(videotype)))
-                ]
-                cfg["video_sets"].pop(
-                    str(os.path.join(vidpath, str(vidname) + str(videotype)))
-                )
+                video_orig = sep.join((vidpath, vidname + '.' + videotype))
+                cfg["video_sets_original"][video_orig] = cfg["video_sets"][video_orig]
+                cfg["video_sets"].pop(video_orig)
                 cfg["video_sets"][
-                    os.path.join(vidpath, str(folder) + "_cropped" + str(videotype))
+                    video_orig.replace(vidname, new_vidname)
                 ] = {"crop": ", ".join(map(str, [0, size[1], 0, size[0]]))}
 
     cfg["croppedtraining"] = True
@@ -581,6 +569,13 @@ def MakeInference_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
     with open(saveasconfigfile, "w") as f:
         yaml.dump(docs[0], f)
     return docs[0]
+
+
+def _robust_path_split(path):
+    sep = "\\" if "\\" in path else '/'
+    parent, file = path.rsplit(sep, 1)
+    filename, ext = file.split('.')
+    return parent, filename, ext
 
 
 def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):

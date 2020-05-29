@@ -96,15 +96,12 @@ def create_multianimaltraining_dataset(
     scorer = cfg["scorer"]
     project_path = cfg["project_path"]
     # Create path for training sets & store data there
-    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(
-        cfg
-    )  # Path concatenatn OS platform independent
-    auxiliaryfunctions.attempttomakefolder(
-        Path(os.path.join(project_path, str(trainingsetfolder))), recursive=True
-    )
+    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+    full_training_path = Path(project_path, trainingsetfolder)
+    auxiliaryfunctions.attempttomakefolder(full_training_path, recursive=True)
 
     Data = trainingsetmanipulation.merge_annotateddatasets(
-        cfg, Path(os.path.join(project_path, trainingsetfolder)), windows2linux
+        cfg, full_training_path, windows2linux
     )
     if Data is None:
         return
