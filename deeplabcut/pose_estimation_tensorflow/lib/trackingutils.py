@@ -27,7 +27,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 class SkeletonTracker developed for DLC 2.2.
 """
-from __future__ import print_function
 
 import numpy as np
 from filterpy.common import kinematic_kf

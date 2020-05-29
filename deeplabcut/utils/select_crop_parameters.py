@@ -8,8 +8,6 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-from __future__ import print_function
-
 import argparse
 
 import matplotlib
