@@ -272,11 +272,7 @@ def draw_bbox(video):
         rectprops=dict(facecolor="red", edgecolor="black", alpha=0.3, fill=True),
     )
     plt.show()
-    if platform.system() == "Darwin":  # for OSX use WXAgg
-        fig.canvas.start_event_loop(timeout=-1)
-    else:
-        fig.canvas.stop_event_loop()
-
+    fig.canvas.start_event_loop(timeout=-1)
     plt.close(fig)
     return bbox
 
