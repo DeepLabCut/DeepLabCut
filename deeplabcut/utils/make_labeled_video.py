@@ -17,28 +17,18 @@ You can find the directory for your ffmpeg bindings by: "find / | grep ffmpeg" a
 import os.path
 import argparse, os
 import numpy as np
-from tqdm import trange
-from pathlib import Path
-import platform
 
-import matplotlib as mpl
-
-if os.environ.get("DLClight", default=False) == "True":
-    mpl.use(
-        "AGG"
-    )  # anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
-elif platform.system() == "Darwin":
-    mpl.use("WxAgg")  # TkAgg
-else:
-    mpl.use("TkAgg")
+import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualization
 from deeplabcut.utils.video_processor import (
     VideoProcessorCV as vp,
 )  # used to CreateVideo
 from matplotlib.animation import FFMpegWriter
+from pathlib import Path
 from skimage.util import img_as_ubyte
 from skimage.draw import circle, line_aa
+from tqdm import trange
 
 
 def get_segment_indices(bodyparts2connect, all_bpts):
@@ -80,7 +70,7 @@ def CreateVideo(
     all_bpts = bpts.values[::3]
     if draw_skeleton:
         color_for_skeleton = (
-            np.array(mpl.colors.to_rgba(skeleton_color))[:3] * 255
+            np.array(mcolors.to_rgba(skeleton_color))[:3] * 255
         ).astype(np.uint8)
         # recode the bodyparts2connect into indices for df_x and df_y for speed
         bpts2connect = get_segment_indices(bodyparts2connect, all_bpts)

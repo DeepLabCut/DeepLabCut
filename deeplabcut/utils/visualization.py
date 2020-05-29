@@ -9,24 +9,11 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import os
-import numpy as np
-import matplotlib as mpl
-import platform
-from pathlib import Path
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
-
-if os.environ.get("DLClight", default=False) == "True":
-    mpl.use(
-        "AGG"
-    )  # anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
-    pass
-elif platform.system() == "Darwin":
-    mpl.use("WXAgg")
-else:
-    mpl.use("TkAgg")  # TkAgg
 import matplotlib.pyplot as plt
+import numpy as np
 from deeplabcut.utils.auxiliaryfunctions import attempttomakefolder
 from matplotlib.collections import LineCollection
+from pathlib import Path
 from skimage import io
 from tqdm import trange
 

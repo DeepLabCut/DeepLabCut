@@ -8,10 +8,11 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
-
-from pathlib import Path
-import subprocess, os, platform
 import cv2
+import os
+import subprocess
+from pathlib import Path
+
 
 # Historically DLC used: from scipy.misc import imread, imresize >> deprecated functions
 def imread(path, mode=None):

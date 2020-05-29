@@ -8,23 +8,14 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-from pathlib import Path
 import os
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
 import os.path
-import matplotlib as mpl
-
-if os.environ.get("DLClight", default=False) == "True":
-    mpl.use(
-        "AGG"
-    )  # anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
-    pass
-else:
-    mpl.use("wxagg")
 from deeplabcut.utils import auxiliaryfunctions, auxfun_models, auxfun_multianimal
 from deeplabcut.generate_training_dataset import trainingsetmanipulation
+from pathlib import Path
+from tqdm import tqdm
 
 
 def rename_bodyparts(config, pairs):
