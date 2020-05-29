@@ -59,7 +59,7 @@ class TrackingData:
 
     @classmethod
     def empty_tracking_data(cls, frame_amt: int, part_count: int, width: int, height: int,
-                   stride: int = DEFAULT_SCALE) -> "TrackingData":
+                            stride: int = DEFAULT_SCALE) -> "TrackingData":
         """
         Create a new empty tracking data object with space allocated to fit the specified sizes of data.
 
@@ -626,8 +626,14 @@ class Predictor(ABC):
                                     "fps": Original Video's frames per second
                                     "h5-file-name": The name of the original h5 file and it's path, as a string.
                                     "orig-video-path": The file path and name of the video being analyzed, as a string.
+                                                       this value may be None, meaning the video could not be found, and
+                                                       user is processing frames via a .dlcf file.
                                     "duration": The duration of the video in seconds
                                     "size": The x and y dimensions of the original video.
+                                    "cropping-offset": The (y, x) offset of the cropped box in the video. If there is
+                                                       no cropping, this value is set to None. Width/Height of cropping
+                                                       box can be inferred using tracking data width and height and
+                                                       multiplying it by the stride.
         """
         pass
 
