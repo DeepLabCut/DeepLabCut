@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 import os.path
 import logging
+import shutil
 from functools import lru_cache
 from skimage import io
 import yaml
@@ -333,7 +334,7 @@ def cropimagesandlabels(
                 frame = ic[i]
                 h, w = np.shape(frame)[:2]
                 if size[0] >= h or size[1] >= w:
-                    os.remove(output_path)
+                    shutil.rmtree(output_path, ignore_errors=True)
                     raise ValueError("Crop dimensions are larger than image size")
 
                 imagename = os.path.relpath(ic.files[i], cfg["project_path"])
