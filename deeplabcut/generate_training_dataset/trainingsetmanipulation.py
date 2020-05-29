@@ -331,19 +331,23 @@ def cropimagesandlabels(
             ic = io.imread_collection(imnames)
             for i in trange(len(ic)):
                 frame = ic[i]
+                h, w = np.shape(frame)[:2]
+                if size[0] >= h or size[1] >= w:
+                    os.remove(output_path)
+                    raise ValueError("Crop dimensions are larger than image size")
+
                 imagename = os.path.relpath(ic.files[i], cfg["project_path"])
                 ind = np.flatnonzero(df.index == imagename)[0]
-                h, w = np.shape(frame)[:2]
                 cropindex = 0
                 attempts = -1
                 while cropindex < numcrops:
                     dd = np.array(data[ind].copy(), dtype=float)
                     y0, x0 = (
-                        np.random.randint(max(1, h - size[0])),
-                        np.random.randint(max(1, w - size[1])),
+                        np.random.randint(h - size[0]),
+                        np.random.randint(w - size[1]),
                     )
-                    y1 = min(h, y0 + size[0])
-                    x1 = min(w, x0 + size[1])
+                    y1 = y0 + size[0]
+                    x1 = x0 + size[1]
                     with np.errstate(invalid="ignore"):
                         within = np.all(
                             (dd >= [x0, y0]) & (dd < [x1, y1]),
@@ -390,7 +394,7 @@ def cropimagesandlabels(
                 )
                 cfg["video_sets"][
                     os.path.join(vidpath, str(folder) + "_cropped" + str(videotype))
-                ] = {"crop": ", ".join(map(str, [0, x1 - x0, 0, y1 - y0]))}
+                ] = {"crop": ", ".join(map(str, [0, size[1], 0, size[0]]))}
 
     cfg["croppedtraining"] = True
     auxiliaryfunctions.write_config(config, cfg)
