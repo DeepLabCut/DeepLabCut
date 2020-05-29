@@ -272,7 +272,8 @@ def draw_bbox(video):
         rectprops=dict(facecolor="red", edgecolor="black", alpha=0.3, fill=True),
     )
     plt.show()
-    fig.canvas.start_event_loop(timeout=-1)
+    if platform.system() != 'Linux':
+        fig.canvas.start_event_loop(timeout=-1)
     plt.close(fig)
     return bbox
 
