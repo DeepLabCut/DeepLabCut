@@ -49,15 +49,23 @@ def getpafgraph(cfg, printnames=True):
     lookupdict = {bodypartnames[j]: j for j in range(len(bodypartnames))}
     # print(lookupdict)
 
+    connected = set()
     partaffinityfield_graph = []
     for link in cfg["skeleton"]:
         if link[0] in bodypartnames and link[1] in bodypartnames:
-            # print(link,lookupdict[link[0]])
-            partaffinityfield_graph.append(
-                [int(lookupdict[link[0]]), int(lookupdict[link[1]])]
-            )
+            bp1 = int(lookupdict[link[0]])
+            bp2 = int(lookupdict[link[1]])
+            connected.add(bp1)
+            connected.add(bp2)
+            partaffinityfield_graph.append([bp1, bp2])
         else:
             print("Attention, parts do not exist!", link)
+
+    unconnected = set(range(len(multianimalbodyparts))).difference(connected)
+    if unconnected:
+        raise ValueError(f'Unconnected {", ".join(multianimalbodyparts[i] for i  in unconnected)}. '
+                         f'For multi-animal projects, all bodyparts should be connected. '
+                         f'Please verify the skeleton in the config.yaml.')
 
     if printnames:
         graph2names(cfg, partaffinityfield_graph)
