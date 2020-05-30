@@ -1385,7 +1385,6 @@ def convert_detections2tracklets(
                     )
                     upperbound *= 1.25
                     lowerbound *= 0.5  # SLACK!
-                    print(upperbound, lowerbound)
                 else:
                     lowerbound = None
                     upperbound = None
