@@ -42,7 +42,6 @@ def add_new_videos(config, videos, copy_videos=False, coords=None):
     import shutil
     from pathlib import Path
 
-    from deeplabcut import DEBUG
     from deeplabcut.utils import auxiliaryfunctions
     import cv2
 

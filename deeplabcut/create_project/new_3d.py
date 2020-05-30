@@ -9,15 +9,9 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import os
-
-# import yaml
 from pathlib import Path
 
-# import cv2
 from deeplabcut import DEBUG
-import matplotlib.pyplot as plt
-
-# import shutil
 
 
 def create_new_project_3d(project, experimenter, num_cameras=2, working_directory=None):

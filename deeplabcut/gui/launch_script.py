@@ -11,8 +11,9 @@ Licensed under GNU Lesser General Public License v3.0
 import deeplabcut
 import os
 import wx
-from deeplabcut.gui.welcome import Welcome
+
 from deeplabcut.gui.create_new_project import Create_new_project
+from deeplabcut.gui.welcome import Welcome
 
 
 class MainFrame(wx.Frame):

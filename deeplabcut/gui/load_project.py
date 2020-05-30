@@ -9,10 +9,11 @@ Licensed under GNU Lesser General Public License v3.0
 
 """
 
-import wx
-import deeplabcut
 import os
-from deeplabcut.gui.create_new_project import Create_new_project
+
+import wx
+
+import deeplabcut
 
 media_path = os.path.join(deeplabcut.__path__[0], "gui", "media")
 logo = os.path.join(media_path, "logo.png")

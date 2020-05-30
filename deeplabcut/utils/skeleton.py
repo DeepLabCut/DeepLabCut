@@ -1,9 +1,10 @@
+import os
+import warnings
+
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
-import os
 import pandas as pd
-import warnings
 from matplotlib.collections import LineCollection
 from matplotlib.path import Path
 from matplotlib.widgets import Button, LassoSelector

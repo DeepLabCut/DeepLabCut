@@ -27,12 +27,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 class SkeletonTracker developed for DLC 2.2.
 """
-from __future__ import print_function
-from numba import jit
+
 import numpy as np
-from scipy.optimize import linear_sum_assignment
-from filterpy.kalman import KalmanFilter
 from filterpy.common import kinematic_kf
+from filterpy.kalman import KalmanFilter
+from numba import jit
+from scipy.optimize import linear_sum_assignment
 
 
 @jit

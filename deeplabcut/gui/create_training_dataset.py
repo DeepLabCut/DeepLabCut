@@ -9,10 +9,12 @@ Licensed under GNU Lesser General Public License v3.0
 
 """
 
-import wx
 import os
-import sys
 import pydoc
+import sys
+
+import wx
+
 import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
 
@@ -127,7 +129,7 @@ class Create_training_dataset(wx.Panel):
 
         self.userfeedback = wx.RadioBox(
             self,
-            label="Need user feedback?",
+            label="User feedback (to confirm overwrite train/test split)?",
             choices=["Yes", "No"],
             majorDimension=1,
             style=wx.RA_SPECIFY_COLS,

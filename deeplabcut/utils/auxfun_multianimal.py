@@ -8,12 +8,15 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-import os, pickle
-import pandas as pd
-import numpy as np
-from easydict import EasyDict as edict
-from deeplabcut.utils import auxiliaryfunctions
+import os
+import pickle
 from pathlib import Path
+
+import numpy as np
+import pandas as pd
+from easydict import EasyDict as edict
+
+from deeplabcut.utils import auxiliaryfunctions
 
 
 def extractindividualsandbodyparts(cfg):

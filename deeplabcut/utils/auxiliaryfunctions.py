@@ -9,10 +9,11 @@ Licensed under GNU Lesser General Public License v3.0
 """
 import os
 import pickle
-import yaml
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
+import yaml
 from ruamel.yaml import YAML
 
 
