@@ -10,10 +10,6 @@ Licensed under GNU Lesser General Public License v3.0
 
 
 import os
-import argparse
-
-# Dependencies for anaysis
-import pickle
 import numpy as np
 import pandas as pd
 import skimage.color
@@ -23,6 +19,20 @@ from tqdm import tqdm
 from pathlib import Path
 from skimage import io
 from skimage.util import img_as_ubyte
+
+
+def _percentile(n):
+    def percentile_(x):
+        return x.quantile(n)
+    percentile_.__name__ = f'percentile_{100 * n:.0f}'
+    return percentile_
+
+
+def _compute_stats(df):
+    return df.agg(['min', 'max', 'mean', np.std,
+                   _percentile(0.25),
+                   _percentile(0.50),
+                   _percentile(0.75)]).stack(level=1)
 
 
 def evaluate_multianimal_full(
@@ -294,6 +304,29 @@ def evaluate_multianimal_full(
                                 )
 
                         sess.close()  # closes the current tf session
+
+                        # Compute all distance statistics
+                        df_dist = pd.DataFrame(dist, index=df.index)
+                        write_path = os.path.join(os.path.dirname(path_test_config), 'dist.csv')
+                        df_dist.to_csv(write_path)
+
+                        stats_per_ind = _compute_stats(df_dist.groupby('individuals'))
+                        stats_per_ind.to_csv(write_path.replace('dist.csv', 'dist_stats_ind.csv'))
+                        stats_per_bpt = _compute_stats(df_dist.groupby('bodyparts'))
+                        stats_per_bpt.to_csv(write_path.replace('dist.csv', 'dist_stats_bpt.csv'))
+
+                        # For OKS/PCK, compute the standard deviation error across all frames
+                        ock_sd = df_dist.groupby('bodyparts').mean().std(axis=1)
+                        ock_sd.to_csv(write_path.replace('dist.csv', 'oks_sd.csv'))
+
+                        if show_errors:
+                            print('##########################################&1')
+                            print('Euclidean distance statistics per individual')
+                            print(stats_per_ind.mean(axis=1).unstack().to_string())
+                            print('##########################################')
+                            print('Euclidean distance statistics per bodypart')
+                            print(stats_per_bpt.mean(axis=1).unstack().to_string())
+
                         PredicteData["metadata"] = {
                             "nms radius": dlc_cfg.nmsradius,
                             "minimal confidence": dlc_cfg.minconfidence,
