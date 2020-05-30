@@ -371,19 +371,18 @@ def evaluate_multianimal_crossvalidate(
     inferencecfg=None,
     init_points=20,
     n_iter=50,
-    dcorr=10.0,
     leastbpts=1,
     printingintermediatevalues=True,
     modelprefix="",
     plotting=False,
 ):
     """
-    Crossvalidate inference parameters on evaluation data; optimal parametrs will be stored in " inference_cfg.yaml".
+    Cross-validate inference parameters on evaluation data; optimal parameters will be stored in "inference_cfg.yaml".
 
     They will then be then used for inference (for analysis of videos). Performs Bayesian Optimization with https://github.com/fmfn/BayesianOptimization
 
-    This is a crucial step. The most important variable (in inferencecfg) to cross-validate is minimalnumberofconnections. Pass
-    a reasonable range to optimze (e.g. if you have 5 edges from 1 to 5. If you have 4 bpts and 11 connections from 3 to 9).
+    This is a crucial step. The most important variable (in inferencecfg) to cross-validate is minimalnumberofconnections.
+    Pass a reasonable range to optimize (e.g. if you have 5 edges from 1 to 5. If you have 4 bpts and 11 connections from 3 to 9).
 
     config: string
         Full path of the config.yaml file as a string.
@@ -426,9 +425,6 @@ def evaluate_multianimal_crossvalidate(
         Number of iterations of Bayesian optimization to perform.
         The larger it is, the higher the likelihood of finding a good extremum.
         Parameter from BayesianOptimization.
-
-    dcorr: float,
-        Distance thereshold for percent correct keypoints / relative percent correct keypoints (see paper).
 
     leastbpts: integer (should be a small number)
         If an animals has less or equal as many body parts in an image it will not be used
@@ -555,6 +551,13 @@ def evaluate_multianimal_crossvalidate(
             inferencecfg = edict(inferencecfg)
             auxfun_multianimal.check_inferencecfg_sanity(cfg, inferencecfg)
 
+        # Pick distance threshold for (r)PCK from the statistics computed during evaluation
+        stats_file = os.path.join(os.path.dirname(path_test_config), 'oks_sd.csv')
+        if os.path.isfile(stats_file):
+            stats = pd.read_csv(stats_file, header=None, index_col=0).values
+            dcorr = 2 * stats.mean()  # Taken as 2*SD error between predictions and ground truth
+        else:
+            dcorr = 10
         inferencecfg.topktoretain = np.inf
         inferencecfg, opt = crossvalutils.bayesian_search(
             config,
