@@ -228,6 +228,7 @@ def DownSampleVideo(
 def draw_bbox(video):
     import matplotlib.pyplot as plt
     from matplotlib.widgets import RectangleSelector, Button
+    import platform
 
     clip = cv2.VideoCapture(video)
     if not clip.isOpened():
@@ -274,8 +275,11 @@ def draw_bbox(video):
         rectprops=dict(facecolor="red", edgecolor="black", alpha=0.3, fill=True),
     )
     plt.show()
-    if platform.system() != 'Linux':
+    if platform.system() != 'Linux':  # for OSX use windows
         fig.canvas.start_event_loop(timeout=-1)
+    else:
+        fig.canvas.stop_event_loop()
+
     plt.close(fig)
     return bbox
 

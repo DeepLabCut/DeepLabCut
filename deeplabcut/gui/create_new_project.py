@@ -285,8 +285,9 @@ class Create_new_project(wx.Panel):
                 self.file_open_bool = True
             else:
                 self.file_open_bool = webbrowser.open(self.cfg)
+
             if self.file_open_bool:
-                self.pose_cfg = auxiliaryfunctions.read_config(self.cfg)
+                pass
             else:
                 raise FileNotFoundError("File not found!")
 
