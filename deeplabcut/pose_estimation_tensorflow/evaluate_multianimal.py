@@ -648,6 +648,3 @@ def evaluate_multianimal_crossvalidate(
                 visualization.save_labeled_frame(
                     fig, image_path, foldername, imageindex in trainIndices
                 )
-
-
-evaluate_multianimal_full('/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/mousetest-teamDLC-2020-04-12/config.yaml')
