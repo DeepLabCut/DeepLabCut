@@ -121,7 +121,7 @@ class Train_network(wx.Panel):
         default_pose_cfg_path = os.path.join(
             Path(deeplabcut.__file__).parent, "pose_cfg.yaml"
         )
-        pose_cfg = auxiliaryfunctions.read_config(default_pose_cfg_path)
+        pose_cfg = auxiliaryfunctions.read_plainconfig(default_pose_cfg_path)
         display_iters = str(pose_cfg["display_iters"])
         save_iters = str(pose_cfg["save_iters"])
         max_iters = str(pose_cfg["multi_step"][-1][-1])
