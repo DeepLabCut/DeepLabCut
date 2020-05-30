@@ -240,42 +240,15 @@ def evaluate_multianimal_full(
                             frame = img_as_ubyte(skimage.color.gray2rgb(image))
 
                             GT = Data.iloc[imageindex]
-
-                            # Storing GT data as dictionary, so it can be used for calculating connection costs
-                            groundtruthcoordinates = []
-                            groundtruthidentity = []
-                            for bptindex, bpt in enumerate(dlc_cfg["all_joints_names"]):
-                                coords = np.zeros([len(individuals), 2]) * np.nan
-                                identity = []
-                                for prfxindex, prefix in enumerate(individuals):
-                                    if bpt in uniquebodyparts and prefix == "single":
-                                        coords[prfxindex, :] = np.array(
-                                            [
-                                                GT[cfg["scorer"]][prefix][bpt]["x"],
-                                                GT[cfg["scorer"]][prefix][bpt]["y"],
-                                            ]
-                                        )
-                                        identity.append(prefix)
-                                    elif (
-                                        bpt in multianimalbodyparts
-                                        and prefix != "single"
-                                    ):
-                                        coords[prfxindex, :] = np.array(
-                                            [
-                                                GT[cfg["scorer"]][prefix][bpt]["x"],
-                                                GT[cfg["scorer"]][prefix][bpt]["y"],
-                                            ]
-                                        )
-                                        identity.append(prefix)
-                                    else:
-                                        identity.append("nix")
-
-                                groundtruthcoordinates.append(
-                                    coords[np.isfinite(coords[:, 0]), :]
-                                )
-                                groundtruthidentity.append(
-                                    np.array(identity)[np.isfinite(coords[:, 0])]
-                                )
+                            temp = GT.unstack('coords')
+                            # FIXME Is having an empty array vs nan really that necessary?!
+                            groundtruthcoordinates = list(temp.values)
+                            groundtruthidentity = list(temp.index.get_level_values('individuals').to_numpy().reshape((-1, 1)))
+                            groundtruthcoordinates = list(groundtruthcoordinates_[:, np.newaxis])
+                            for i, coords in enumerate(groundtruthcoordinates):
+                                if np.isnan(coords).any():
+                                    groundtruthcoordinates[i] = np.empty((0, 2), dtype=float)
+                                    groundtruthidentity[i] = np.array([], dtype=str)
 
                             PredicteData[imagename] = {}
                             PredicteData[imagename]["index"] = imageindex
@@ -300,8 +273,6 @@ def evaluate_multianimal_full(
                             ]
 
                             if plotting:
-                                coords_pred = pred["coordinates"][0]
-                                probs_pred = pred["confidence"]
                                 fig = visualization.make_multianimal_labeled_image(
                                     frame,
                                     groundtruthcoordinates,
@@ -639,3 +610,6 @@ def evaluate_multianimal_crossvalidate(
                 visualization.save_labeled_frame(
                     fig, image_path, foldername, imageindex in trainIndices
                 )
+
+
+evaluate_multianimal_full('/Users/Jessy/Documents/PycharmProjects/dlcdev/datasets/mousetest-teamDLC-2020-04-12/config.yaml')
