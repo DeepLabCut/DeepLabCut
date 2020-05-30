@@ -170,12 +170,6 @@ def evaluate_multianimal_full(
                         "Invalid choice, only -1 (last), any integer up to last, or all (as string)!"
                     )
 
-                (
-                    individuals,
-                    uniquebodyparts,
-                    multianimalbodyparts,
-                ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
-
                 final_result = []
                 ##################################################
                 # Compute predictions over images
@@ -233,6 +227,7 @@ def evaluate_multianimal_full(
                         sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
 
                         PredicteData = {}
+                        dist = np.full((len(dlc_cfg['all_joints']), len(Data)), np.nan)
                         print("Analyzing data...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
                             image_path = os.path.join(cfg["project_path"], imagename)
@@ -240,11 +235,10 @@ def evaluate_multianimal_full(
                             frame = img_as_ubyte(skimage.color.gray2rgb(image))
 
                             GT = Data.iloc[imageindex]
-                            temp = GT.unstack('coords')
+                            df = GT.unstack('coords')
                             # FIXME Is having an empty array vs nan really that necessary?!
-                            groundtruthcoordinates = list(temp.values)
-                            groundtruthidentity = list(temp.index.get_level_values('individuals').to_numpy().reshape((-1, 1)))
-                            groundtruthcoordinates = list(groundtruthcoordinates_[:, np.newaxis])
+                            groundtruthidentity = list(df.index.get_level_values('individuals').to_numpy().reshape((-1, 1)))
+                            groundtruthcoordinates = list(df.values[:, np.newaxis])
                             for i, coords in enumerate(groundtruthcoordinates):
                                 if np.isnan(coords).any():
                                     groundtruthcoordinates[i] = np.empty((0, 2), dtype=float)
@@ -271,6 +265,14 @@ def evaluate_multianimal_full(
                                 groundtruthcoordinates,
                                 GT,
                             ]
+
+                            coords_pred = pred["coordinates"][0]
+                            probs_pred = pred["confidence"]
+                            best_pred = np.full_like(df, np.nan)
+                            for n, (coords, probs) in enumerate(zip(coords_pred, probs_pred)):
+                                if probs.size:
+                                    best_pred[n] = coords[probs.argmax()]
+                            dist[:, imageindex] = np.sqrt(np.sum((best_pred - df.values) ** 2, axis=1))
 
                             if plotting:
                                 fig = visualization.make_multianimal_labeled_image(
