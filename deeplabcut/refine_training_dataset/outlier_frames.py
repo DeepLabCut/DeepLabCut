@@ -26,7 +26,7 @@ from deeplabcut.utils import frameselectiontools
 def extract_outlier_frames(
     config,
     videos,
-    videotype="avi",
+    videotype=".avi",
     shuffle=1,
     trainingsetindex=0,
     outlieralgorithm="jump",
@@ -153,7 +153,11 @@ def extract_outlier_frames(
         trainFraction=cfg["TrainingFraction"][trainingsetindex],
         modelprefix=modelprefix,
     )
+
     Videos = auxiliaryfunctions.Getlistofvideos(videos, videotype)
+    if len(Videos)==0:
+        print("No suitable videos found in", videos)
+
     for video in Videos:
         if destfolder is None:
             videofolder = str(Path(video).parents[0])

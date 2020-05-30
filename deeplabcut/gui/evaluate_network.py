@@ -319,21 +319,21 @@ class Evaluate_network(wx.Panel):
         # shuffle = self.shuffle.GetValue()
         trainingsetindex = self.trainingset.GetValue()
 
-        shuffle = [self.shuffles.GetValue()]
+        Shuffles = [self.shuffles.GetValue()]
         if self.plot_choice.GetStringSelection() == "Yes":
             plotting = True
         else:
             plotting = False
 
         if self.plot_scoremaps.GetStringSelection() == "Yes":
-            shuffle = self.shuffles.GetValue()
-            deeplabcut.extract_save_all_maps(self.config, shuffle=shuffle)
+            for shuffle in Shuffles:
+                deeplabcut.extract_save_all_maps(self.config, shuffle=shuffle)
 
         if len(self.bodyparts) == 0:
             self.bodyparts = "all"
         deeplabcut.evaluate_network(
             self.config,
-            Shuffles=shuffle,
+            Shuffles=Shuffles,
             trainingsetindex=trainingsetindex,
             plotting=plotting,
             show_errors=True,

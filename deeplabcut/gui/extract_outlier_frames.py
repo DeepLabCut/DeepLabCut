@@ -204,6 +204,7 @@ class Extract_outlier_frames(wx.Panel):
         tracker = ""
         if self.cfg.get("multianimalproject", False):
             tracker = self.trackertypes.GetValue()
+
         deeplabcut.extract_outlier_frames(
             config=self.config,
             videos=self.filelist,

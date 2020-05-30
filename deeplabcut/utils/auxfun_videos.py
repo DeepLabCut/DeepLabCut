@@ -123,9 +123,6 @@ def CropVideo(
     outpath: str
         Output path for saving video to (by default will be the same folder as the video)
 
-    rotateccw: bool
-        Default false, rotates counter-clockwise if true.
-
     Examples
     ----------
 
@@ -194,7 +191,6 @@ def DownSampleVideo(
     rotateccw: bool
         Default false, rotates counter-clockwise if true.
 
-
     Examples
     ----------
 
@@ -216,9 +212,13 @@ def DownSampleVideo(
     newfilename = os.path.join(
         vidpath, str(Path(vname).stem) + str(outsuffix) + str(Path(vname).suffix)
     )
+
+    # Rotate, see: https://stackoverflow.com/questions/3937387/rotating-videos-with-ffmpeg
+    # interesting option to just update metadata.
+
     print("Downsampling and saving to name", newfilename)
     if rotateccw:
-        command = f"ffmpeg -i {vname} -filter:v scale={width}:{height} transpose=clock -c:a copy {newfilename}"
+        command = f"ffmpeg -i {vname} -filter:v scale={width}:{height} -vf 'transpose=1' -c:a copy {newfilename}"
     else:
         command = f"ffmpeg -i {vname} -filter:v scale={width}:{height} -c:a copy {newfilename}"
     subprocess.call(command, shell=True)
