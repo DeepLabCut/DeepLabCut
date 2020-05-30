@@ -55,11 +55,12 @@ class SkeletonBuilder:
         self.inds = set()
         self.segs = set()
         # Draw the skeleton if already existent
-        for bone in self.cfg['skeleton']:
-            pair = np.flatnonzero(self.bpts.isin(bone))
-            pair_sorted = tuple(sorted(pair))
-            self.inds.add(pair_sorted)
-            self.segs.add(tuple(map(tuple, self.xy[pair_sorted, :])))
+        if self.cfg['skeleton']:
+            for bone in self.cfg['skeleton']:
+                pair = np.flatnonzero(self.bpts.isin(bone))
+                pair_sorted = tuple(sorted(pair))
+                self.inds.add(pair_sorted)
+                self.segs.add(tuple(map(tuple, self.xy[pair_sorted, :])))
         self.lines = LineCollection(
             self.segs, colors=mcolors.to_rgba(self.cfg["skeleton_color"])
         )
