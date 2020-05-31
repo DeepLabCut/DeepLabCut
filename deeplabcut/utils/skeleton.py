@@ -1,3 +1,14 @@
+
+"""
+DeepLabCut2.2 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
+https://github.com/AlexEMG/DeepLabCut
+Please see AUTHORS for contributors.
+
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
+"""
+
 import os
 import warnings
 
@@ -47,10 +58,21 @@ class SkeletonBuilder:
             self.df = self.df.xs(col, axis=1, level="individuals")
         self.bpts = self.df.columns.get_level_values("bodyparts").unique()
         self.xy = self.df.loc[row].values.reshape((-1, 2))
+        missing = np.flatnonzero(np.isnan(self.xy).all(axis=1))
+        if missing.any():
+            warnings.warn(f"A fully labeled animal could not be found. "
+                          f"{', '.join(self.bpts[missing])} will need to be manually connected in the config.yaml.")
         self.tree = KDTree(self.xy)
         self.image = io.imread(os.path.join(self.cfg["project_path"], row))
         self.inds = set()
         self.segs = set()
+        # Draw the skeleton if already existent
+        if self.cfg['skeleton']:
+            for bone in self.cfg['skeleton']:
+                pair = np.flatnonzero(self.bpts.isin(bone))
+                pair_sorted = tuple(sorted(pair))
+                self.inds.add(pair_sorted)
+                self.segs.add(tuple(map(tuple, self.xy[pair_sorted, :])))
         self.lines = LineCollection(
             self.segs, colors=mcolors.to_rgba(self.cfg["skeleton_color"])
         )
@@ -58,26 +80,25 @@ class SkeletonBuilder:
         self.show()
 
     def pick_labeled_frame(self):
+        # Find the most 'complete' animal
         try:
-            mask = self.df.groupby(level="individuals", axis=1).apply(self.all_visible)
-            if "single" in mask:
-                mask.drop("single", axis=1, inplace=True)
+            count = self.df.groupby(level="individuals", axis=1).count()
+            if "single" in count:
+                count.drop("single", axis=1, inplace=True)
         except KeyError:
-            mask = self.all_visible(self.df).to_frame()
-        valid = mask[mask].stack().index.to_list()
-        if not valid:
-            raise ValueError("No fully labeled animal was found.")
-
-        np.random.shuffle(valid)
-        row, col = valid.pop()
+            count = self.df.count(axis=1).to_frame()
+        mask = count.where(count == count.max())
+        kept = mask.stack().index.to_list()
+        np.random.shuffle(kept)
+        row, col = kept.pop()
         return row, col
 
     def show(self):
         self.fig = plt.figure()
         ax = self.fig.add_subplot(111)
         ax.axis("off")
-        lo = np.min(self.xy, axis=0)
-        hi = np.max(self.xy, axis=0)
+        lo = np.nanmin(self.xy, axis=0)
+        hi = np.nanmax(self.xy, axis=0)
         center = (hi + lo) / 2
         w, h = hi - lo
         ampl = 1.3
@@ -136,7 +157,3 @@ class SkeletonBuilder:
             self.segs.add(tuple(map(tuple, self.xy[pair_sorted, :])))
         self.lines.set_segments(self.segs)
         self.fig.canvas.draw_idle()
-
-    @staticmethod
-    def all_visible(df):
-        return ~df.isna().any(axis=1)
