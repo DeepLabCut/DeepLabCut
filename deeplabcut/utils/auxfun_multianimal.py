@@ -47,8 +47,12 @@ def getpafgraph(cfg, printnames=True):
 
     bodypartnames = multianimalbodyparts + uniquebodyparts
     lookupdict = {bodypartnames[j]: j for j in range(len(bodypartnames))}
-    # print(lookupdict)
 
+    if cfg['skelton'] is None:
+        cfg['skelton']=[]
+
+    # CHECKS if each bpt is connected to at least one other bpt
+    # TODO: check that there is a path leading from each (multi)bpt to each other (multi)bpt!
     connected = set()
     partaffinityfield_graph = []
     for link in cfg["skeleton"]:
@@ -64,7 +68,8 @@ def getpafgraph(cfg, printnames=True):
     unconnected = set(range(len(multianimalbodyparts))).difference(connected)
     if unconnected:
         raise ValueError(f'Unconnected {", ".join(multianimalbodyparts[i] for i  in unconnected)}. '
-                         f'For multi-animal projects, all bodyparts should be connected. '
+                         f'For multi-animal projects, all multianimalbodyparts should be connected. '
+                         f'Ideally there should be at least one (multinode) path from each multianimalbodyparts to each other multianimalbodyparts. '
                          f'Please verify the skeleton in the config.yaml.')
 
     if printnames:
