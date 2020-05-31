@@ -292,7 +292,7 @@ def cropimagesandlabels(
     video_names = []
     for video in videos:
         parent, filename, ext = _robust_path_split(video)
-        if excludealreadycropped and '_cropped' in filename:
+        if excludealreadycropped and "_cropped" in filename:
             continue
         video_names.append([parent, filename, ext])
 
@@ -302,7 +302,7 @@ def cropimagesandlabels(
         cfg["video_sets_original"] = {}
 
     for vidpath, vidname, videotype in video_names:
-        folder = os.path.join(project_path, 'labeled-data', vidname)
+        folder = os.path.join(project_path, "labeled-data", vidname)
         if userfeedback:
             print("Do you want to crop frames for folder: ", folder, "?")
             askuser = input("(yes/no):")
@@ -326,7 +326,9 @@ def cropimagesandlabels(
             # Avoid cropping already cropped images
             cropped_images = auxiliaryfunctions.grab_files_in_folder(new_folder, "png")
             cropped_names = set(map(lambda x: x.split("c")[0], cropped_images))
-            imnames = [im for im in images.to_list() if Path(im).stem not in cropped_names]
+            imnames = [
+                im for im in images.to_list() if Path(im).stem not in cropped_names
+            ]
             ic = io.imread_collection(imnames)
             for i in trange(len(ic)):
                 frame = ic[i]
@@ -348,10 +350,7 @@ def cropimagesandlabels(
                     y1 = y0 + size[0]
                     x1 = x0 + size[1]
                     with np.errstate(invalid="ignore"):
-                        within = np.all(
-                            (dd >= [x0, y0]) & (dd < [x1, y1]),
-                            axis=1,
-                        )
+                        within = np.all((dd >= [x0, y0]) & (dd < [x1, y1]), axis=1,)
                     if cropdata:
                         dd[within] -= [x0, y0]
                         dd[~within] = np.nan
@@ -364,9 +363,7 @@ def cropimagesandlabels(
                             + ".png"
                         )
                         cropppedimgname = os.path.join(new_folder, newimname)
-                        io.imsave(
-                            cropppedimgname, frame[y0 : y1, x0 : x1]
-                        )
+                        io.imsave(cropppedimgname, frame[y0:y1, x0:x1])
                         cropindex += 1
                         pd_index.append(
                             os.path.join("labeled-data", new_vidname, newimname)
@@ -381,12 +378,12 @@ def cropimagesandlabels(
 
             if updatevideoentries and cropdata:
                 # moving old entry to _original, dropping it from video_set and update crop parameters
-                video_orig = sep.join((vidpath, vidname + '.' + videotype))
+                video_orig = sep.join((vidpath, vidname + "." + videotype))
                 cfg["video_sets_original"][video_orig] = cfg["video_sets"][video_orig]
                 cfg["video_sets"].pop(video_orig)
-                cfg["video_sets"][
-                    video_orig.replace(vidname, new_vidname)
-                ] = {"crop": ", ".join(map(str, [0, size[1], 0, size[0]]))}
+                cfg["video_sets"][video_orig.replace(vidname, new_vidname)] = {
+                    "crop": ", ".join(map(str, [0, size[1], 0, size[0]]))
+                }
 
     cfg["croppedtraining"] = True
     auxiliaryfunctions.write_config(config, cfg)
@@ -575,9 +572,9 @@ def MakeInference_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
 
 
 def _robust_path_split(path):
-    sep = "\\" if "\\" in path else '/'
+    sep = "\\" if "\\" in path else "/"
     parent, file = path.rsplit(sep, 1)
-    filename, ext = file.split('.')
+    filename, ext = file.split(".")
     return parent, filename, ext
 
 
@@ -596,7 +593,9 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
         _, filename, _ = _robust_path_split(video)
         if cfg.get("croppedtraining", False):
             filename += "_cropped"
-        file_path = os.path.join(data_path / filename, f'CollectedData_{cfg["scorer"]}.h5')
+        file_path = os.path.join(
+            data_path / filename, f'CollectedData_{cfg["scorer"]}.h5'
+        )
         try:
             data = pd.read_hdf(file_path, "df_with_missing")
             AnnotationData.append(data)

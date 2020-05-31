@@ -169,7 +169,7 @@ def read_config(configname):
                 cfg = ruamelFile.load(f)
                 curr_dir = os.path.dirname(configname)
                 if cfg["project_path"] != curr_dir:
-                    cfg['project_path'] = curr_dir
+                    cfg["project_path"] = curr_dir
                     write_config(configname, cfg)
         except Exception as err:
             if len(err.args) > 2:
@@ -324,8 +324,10 @@ def Getlistofvideos(videos, videotype):
         videolist = [
             fn
             for fn in os.listdir(os.curdir)
-            if os.path.isfile(fn) and fn.endswith(videotype)
-            and "_labeled." not in fn and "_full." not in fn
+            if os.path.isfile(fn)
+            and fn.endswith(videotype)
+            and "_labeled." not in fn
+            and "_full." not in fn
         ]  # exclude labeled (also for multianimal projects) videos!
 
         Videos = sample(
@@ -335,13 +337,19 @@ def Getlistofvideos(videos, videotype):
     else:
         if isinstance(videos, str):
             if (
-                os.path.isfile(videos) and "_labeled." not in videos and "_full." not in videos
+                os.path.isfile(videos)
+                and "_labeled." not in videos
+                and "_full." not in videos
             ):  # #or just one direct path!
                 Videos = [videos]
             else:
                 Videos = []
         else:
-            Videos = [v for v in videos if os.path.isfile(v) and "_labeled." not in v and "_full." not in v]
+            Videos = [
+                v
+                for v in videos
+                if os.path.isfile(v) and "_labeled." not in v and "_full." not in v
+            ]
     return Videos
 
 

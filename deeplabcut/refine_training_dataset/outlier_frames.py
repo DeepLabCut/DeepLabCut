@@ -155,7 +155,7 @@ def extract_outlier_frames(
     )
 
     Videos = auxiliaryfunctions.Getlistofvideos(videos, videotype)
-    if len(Videos)==0:
+    if len(Videos) == 0:
         print("No suitable videos found in", videos)
 
     for video in Videos:

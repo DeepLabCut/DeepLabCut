@@ -14,6 +14,7 @@ import os
 import wx
 
 from deeplabcut.utils import auxiliaryfunctions
+
 dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
 media_path = os.path.join(dlcparent_path, "gui", "media")
 logo = os.path.join(media_path, "logo.png")
