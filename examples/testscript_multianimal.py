@@ -121,9 +121,7 @@ new_video_path = deeplabcut.ShortenVideo(
 )
 
 print("Analyzing video...")
-deeplabcut.analyze_videos(
-    config_path, [new_video_path], "mov", save_as_csv=True, dynamic=(True, 0.1, 5)
-)
+deeplabcut.analyze_videos(config_path, [new_video_path], "mov", robust_nframes=True)
 print("Video analyzed.")
 
 print("Create video with all detections...")
@@ -148,9 +146,7 @@ print("Extracting maps...")
 deeplabcut.extract_save_all_maps(config_path, Indices=[0, 1, 2])
 
 print("Analyzing video...")
-deeplabcut.analyze_videos(
-    config_path, [new_video_path], "mov", save_as_csv=True, dynamic=(True, 0.1, 5)
-)
+deeplabcut.analyze_videos(config_path, [new_video_path], "mov", save_as_csv=True)
 print("Video analyzed.")
 
 print("Create video with all detections...")
@@ -171,7 +167,7 @@ print("Create data file...")
 picklefile = os.path.splitext(new_video_path)[0] + scorer + "_sk.pickle"
 try:
     convert_raw_tracks_to_h5(config_path, picklefile)
-    convert_raw_tracks_to_h5(config_path, picklefile.replace("_sk.pi", "_bx.pi"))  
+    convert_raw_tracks_to_h5(config_path, picklefile.replace("_sk.pi", "_bx.pi"))
 
 except IOError:
     print("Empty tracklets properly caught! Using fake data rather...")

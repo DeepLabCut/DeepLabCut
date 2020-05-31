@@ -3,8 +3,8 @@ Adapted from DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
 """
 
-import pprint
 import logging
+import pprint
 
 import yaml
 from easydict import EasyDict as edict

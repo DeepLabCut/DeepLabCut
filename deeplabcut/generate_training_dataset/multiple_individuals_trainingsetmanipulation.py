@@ -8,23 +8,16 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-from pathlib import Path
 import os
+import os.path
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-import os.path
-import matplotlib as mpl
 
-if os.environ.get("DLClight", default=False) == "True":
-    mpl.use(
-        "AGG"
-    )  # anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
-    pass
-else:
-    mpl.use("wxagg")
-from deeplabcut.utils import auxiliaryfunctions, auxfun_models, auxfun_multianimal
 from deeplabcut.generate_training_dataset import trainingsetmanipulation
+from deeplabcut.utils import auxiliaryfunctions, auxfun_models, auxfun_multianimal
 
 
 def rename_bodyparts(config, pairs):
@@ -130,7 +123,7 @@ def create_multianimaltraining_dataset(
 
     # multianimal case:
     dataset_type = "multi-animal-imgaug"
-    partaffinityfield_graph = auxfun_multianimal.getpafgraph(cfg,printnames=False)
+    partaffinityfield_graph = auxfun_multianimal.getpafgraph(cfg, printnames=False)
     # ATTENTION: order has to be multibodyparts, then uniquebodyparts (for indexing)
     print("Utilizing the following graph:", partaffinityfield_graph)
     num_limbs = len(partaffinityfield_graph)
@@ -163,8 +156,8 @@ def create_multianimaltraining_dataset(
             # Map back to the original indices.
             temp = [name for i, name in enumerate(img_names) if i in test_inds_temp]
             mask = Data.index.str.contains("|".join(temp))
-            testIndexes = np.flatnonzero(mask)
-            trainIndexes = np.flatnonzero(~mask)
+            testIndices = np.flatnonzero(mask)
+            trainIndices = np.flatnonzero(~mask)
 
             ####################################################
             # Generating data structure with labeled information & frame metadata (for deep cut)
@@ -174,7 +167,7 @@ def create_multianimaltraining_dataset(
             data = []
             print("Creating training data for ", shuffle, trainFraction)
             print("This can take some time...")
-            for jj in tqdm(trainIndexes):
+            for jj in tqdm(trainIndices):
                 jointsannotated = False
                 H = {}
                 # load image to get dimensions:
@@ -253,7 +246,7 @@ def create_multianimaltraining_dataset(
                 if jointsannotated:  # exclude images without labels
                     data.append(H)
 
-            if len(trainIndexes) > 0:
+            if len(trainIndices) > 0:
                 (
                     datafilename,
                     metadatafilename,
@@ -266,8 +259,8 @@ def create_multianimaltraining_dataset(
                 auxiliaryfunctions.SaveMetadata(
                     os.path.join(project_path, metadatafilename),
                     data,
-                    trainIndexes,
-                    testIndexes,
+                    trainIndices,
+                    testIndices,
                     trainFraction,
                 )
 

@@ -8,11 +8,12 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-import deeplabcut
 import os
-import subprocess
-import yaml
 from pathlib import Path
+
+import yaml
+
+import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions, auxfun_models
 
 Modeloptions = [

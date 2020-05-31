@@ -10,19 +10,18 @@ Licensed under GNU Lesser General Public License v3.0
 
 
 import os
-import argparse
+from pathlib import Path
 
 # Dependencies for anaysis
-import pickle
 import numpy as np
 import pandas as pd
 import skimage.color
-from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.utils import visualization
-from tqdm import tqdm
-from pathlib import Path
 from skimage import io
 from skimage.util import img_as_ubyte
+from tqdm import tqdm
+
+from deeplabcut.pose_estimation_tensorflow.config import load_config
+from deeplabcut.utils import visualization
 
 
 def evaluate_multianimal_full(
@@ -47,7 +46,6 @@ def evaluate_multianimal_full(
         predict_multianimal as predictma,
     )
     from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
-    from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import data_to_input
 
     import tensorflow as tf
 

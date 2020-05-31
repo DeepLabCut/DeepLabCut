@@ -12,19 +12,15 @@ https://github.com/eldar/pose-tensorflow
 """
 
 
-import os
 import logging
+import os
 import random as rand
-from enum import Enum
 
 import numpy as np
+import scipy.io as sio
 from numpy import array as arr
 from numpy import concatenate as cat
 
-import scipy.io as sio
-
-# from scipy.misc import imread, imresize
-from deeplabcut.utils.auxfun_videos import imread, imresize
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import (
     Batch,
     data_to_input,
@@ -32,6 +28,9 @@ from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import (
     CropImage,
     DataItem,
 )
+
+# from scipy.misc import imread, imresize
+from deeplabcut.utils.auxfun_videos import imread, imresize
 
 
 class PoseDataset:

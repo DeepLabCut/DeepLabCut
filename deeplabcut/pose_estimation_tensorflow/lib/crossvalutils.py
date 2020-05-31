@@ -8,26 +8,21 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-import numpy as np
 import os
-import pickle
-from pathlib import Path
-import pandas as pd
 import warnings
+from pathlib import Path
 
+import numpy as np
+import pandas as pd
 from bayes_opt import BayesianOptimization
-from bayes_opt.logger import JSONLogger
 from bayes_opt.event import Events
+from bayes_opt.logger import JSONLogger
 from bayes_opt.util import load_logs
-
-from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingutils
-from deeplabcut.pose_estimation_tensorflow import return_evaluate_network_data
-
-from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
-from easydict import EasyDict as edict
-from itertools import product
 from scipy.optimize import linear_sum_assignment
-from tqdm import tqdm
+
+from deeplabcut.pose_estimation_tensorflow import return_evaluate_network_data
+from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
 
 def set_up_evaluation(data):

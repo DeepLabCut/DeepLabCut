@@ -8,10 +8,12 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
-
+import os
+import subprocess
 from pathlib import Path
-import subprocess, os, platform
+
 import cv2
+
 
 # Historically DLC used: from scipy.misc import imread, imresize >> deprecated functions
 def imread(path, mode=None):
@@ -121,9 +123,6 @@ def CropVideo(
     outpath: str
         Output path for saving video to (by default will be the same folder as the video)
 
-    rotateccw: bool
-        Default false, rotates counter-clockwise if true.
-
     Examples
     ----------
 
@@ -192,7 +191,6 @@ def DownSampleVideo(
     rotateccw: bool
         Default false, rotates counter-clockwise if true.
 
-
     Examples
     ----------
 
@@ -214,9 +212,13 @@ def DownSampleVideo(
     newfilename = os.path.join(
         vidpath, str(Path(vname).stem) + str(outsuffix) + str(Path(vname).suffix)
     )
+
+    # Rotate, see: https://stackoverflow.com/questions/3937387/rotating-videos-with-ffmpeg
+    # interesting option to just update metadata.
+
     print("Downsampling and saving to name", newfilename)
     if rotateccw:
-        command = f"ffmpeg -i {vname} -filter:v scale={width}:{height} transpose=clock -c:a copy {newfilename}"
+        command = f"ffmpeg -i {vname} -filter:v scale={width}:{height} -vf 'transpose=1' -c:a copy {newfilename}"
     else:
         command = f"ffmpeg -i {vname} -filter:v scale={width}:{height} -c:a copy {newfilename}"
     subprocess.call(command, shell=True)
@@ -226,6 +228,7 @@ def DownSampleVideo(
 def draw_bbox(video):
     import matplotlib.pyplot as plt
     from matplotlib.widgets import RectangleSelector, Button
+    import platform
 
     clip = cv2.VideoCapture(video)
     if not clip.isOpened():
@@ -272,7 +275,7 @@ def draw_bbox(video):
         rectprops=dict(facecolor="red", edgecolor="black", alpha=0.3, fill=True),
     )
     plt.show()
-    if platform.system() == "Darwin":  # for OSX use WXAgg
+    if platform.system() != 'Linux':  # for OSX use windows
         fig.canvas.start_event_loop(timeout=-1)
     else:
         fig.canvas.stop_event_loop()
@@ -283,12 +286,14 @@ def draw_bbox(video):
 
 def get_duration(videofile):
     """Get the duration of a video using ffprobe."""
-    cmd = f'ffprobe -i {videofile} -show_entries format=duration -v quiet -of csv="p=0"'
+    cmd = (
+        f'ffprobe -i "{videofile}" -show_entries format=duration -v quiet -of csv="p=0"'
+    )
     output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
     return float(output)
 
 
 def get_nframes_robust(videofile):
-    cmd = f"ffprobe -i {videofile} -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of default=nokey=1:noprint_wrappers=1"
+    cmd = f'ffprobe -i "{videofile}" -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of default=nokey=1:noprint_wrappers=1'
     output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
     return int(output)

@@ -9,10 +9,12 @@ Licensed under GNU Lesser General Public License v3.0
 
 """
 
-import wx
 import os
-import sys
 import pydoc
+import sys
+
+import wx
+
 import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
 
@@ -127,7 +129,7 @@ class Create_training_dataset(wx.Panel):
 
         self.userfeedback = wx.RadioBox(
             self,
-            label="Need user feedback?",
+            label="User feedback (to confirm overwrite train/test split)?",
             choices=["Yes", "No"],
             majorDimension=1,
             style=wx.RA_SPECIFY_COLS,
@@ -152,7 +154,7 @@ class Create_training_dataset(wx.Panel):
         self.hbox3.Add(self.userfeedback, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         if config_file.get("multianimalproject", False):
-            print("note to user: currently model comparision is not available in maDLC")
+            print("note to user: currently model comparison is not available in maDLC")
             self.model_comparison_choice = "No"
         else:
             self.model_comparison_choice = wx.RadioBox(

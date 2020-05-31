@@ -1,3 +1,4 @@
+
 """
 DeepLabCut2.2 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
@@ -8,12 +9,13 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
+import os
+import warnings
+
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
-import os
 import pandas as pd
-import warnings
 from matplotlib.collections import LineCollection
 from matplotlib.path import Path
 from matplotlib.widgets import Button, LassoSelector

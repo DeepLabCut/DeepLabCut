@@ -9,12 +9,12 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 
-import numpy as np
 import math
-from skimage import io
+
+import cv2
+import numpy as np
 from skimage.util import img_as_ubyte
 from sklearn.cluster import MiniBatchKMeans
-import cv2
 from tqdm import tqdm
 
 
