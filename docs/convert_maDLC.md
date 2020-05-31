@@ -11,7 +11,7 @@ If you have a pre-2.2 project (`labeled-data`) with a **single animal** that you
 <img src= https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1587946828128-VQQRJYYF4I5Q4TK4R7NF/ke17ZwdGBToddI8pDm48kDUwYPb5NcTX7SbsUW3p69pZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpz5alHTAeHWMjsyxt20uNzeb3sgcN8_6mzgExgMZEG-xs3TaY24DmEIA6oEFne2xjs/Screen+Shot+2020-04-23+at+10.32.53+PM.png?format=750w width="80%">
  </p>
 
-- After `task, scorer, date` please add the following (i.e. in the image above, you would start adding below line 4):
+- After `task, scorer, date, project_path` please add the following (i.e. in the image above, you would start adding below line 6) Note, the ordering isn't important but useful to keep consistent with the template:
 
 ```python
 multianimalproject: true
@@ -25,9 +25,9 @@ individuals:
 - mouse1
 ```
 
-- `"uniquebodyparts: []` can stay blank. This is used in "true" multi-animal scenarios where you might have other unique objects (i.e. 2 individual black mice plus the corners of the box)
+- `"uniquebodyparts: []` can stay blank, unless you have other things labeled you want to estimate (consdier these as similar to bodyparts in pre2.2); i.e. corners of a box, etc. All unique bodyparts cannot be connected to the multianimal bodyparts in the skeleton you will eventually make. 
 
-- Please move your "bodyparts:" to "multianimalbodyparts:" (bodypart names must stay the same!)
+- Please move your "bodyparts:" to "multianimalbodyparts:" (bodypart names must stay the same!) These are the parts that will always be interconnected fully!
 ```python
 multianimalbodyparts:
 - snout
