@@ -8,27 +8,30 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
+import argparse
+import glob
 import os
 import os.path
-import glob
+from pathlib import Path
+
 import cv2
+import matplotlib
+import matplotlib.colors as mcolors
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import wx
 import wx.lib.scrolledpanel as SP
-import pandas as pd
-import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import matplotlib.colors as mcolors
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-from pathlib import Path
-import argparse
-from deeplabcut.generate_training_dataset import auxfun_drag_label_multiple_individuals
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.backends.backend_wxagg import (
     NavigationToolbar2WxAgg as NavigationToolbar,
 )
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+from deeplabcut.generate_training_dataset import auxfun_drag_label_multiple_individuals
+from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
+
 
 # ###########################################################################
 # Class for GUI MainFrame
@@ -726,12 +729,18 @@ class MainFrame(wx.Frame):
 
         # Cache original bodyparts
         self._old_multi = (
-            self.dataFrame.xs(self.individual_names[0], axis=1, level='individuals')
-                .columns.get_level_values('bodyparts').unique().to_list()
+            self.dataFrame.xs(self.individual_names[0], axis=1, level="individuals")
+            .columns.get_level_values("bodyparts")
+            .unique()
+            .to_list()
         )
         self._old_unique = (
-            self.dataFrame.loc[:, self.dataFrame.columns.get_level_values('individuals') == 'single']
-                .columns.get_level_values('bodyparts').unique().to_list()
+            self.dataFrame.loc[
+                :, self.dataFrame.columns.get_level_values("individuals") == "single"
+            ]
+            .columns.get_level_values("bodyparts")
+            .unique()
+            .to_list()
         )
 
         # Reading the image name
@@ -756,7 +765,9 @@ class MainFrame(wx.Frame):
             self.dataFrame.sort_index(inplace=True)
             # Rearrange bodypart columns in config order
             bodyparts = self.multibodyparts + self.uniquebodyparts
-            self.dataFrame.reindex(bodyparts, axis=1, level=self.dataFrame.columns.names.index("bodyparts"))
+            self.dataFrame.reindex(
+                bodyparts, axis=1, level=self.dataFrame.columns.names.index("bodyparts")
+            )
 
         # Check whether new labels were added
         self.new_multi = [x for x in self.multibodyparts if x not in self._old_multi]
@@ -1181,11 +1192,18 @@ class MainFrame(wx.Frame):
         self.dataFrame.sort_index(inplace=True)
         # Discard data associated with bodyparts that are no longer in the config
         config_bpts = self.cfg["multianimalbodyparts"] + self.cfg["uniquebodyparts"]
-        valid = [bp in config_bpts for bp in self.dataFrame.columns.get_level_values('bodyparts')]
+        valid = [
+            bp in config_bpts
+            for bp in self.dataFrame.columns.get_level_values("bodyparts")
+        ]
         self.dataFrame = self.dataFrame.loc[:, valid]
         # Re-organize the dataframe so the CSV looks consistent
-        self.dataFrame.columns = self.dataFrame.columns.sortlevel(level='individuals')[0]
-        self.dataFrame = self.dataFrame.reindex(config_bpts, axis=1, level=self.dataFrame.columns.names.index("bodyparts"))
+        self.dataFrame.columns = self.dataFrame.columns.sortlevel(level="individuals")[
+            0
+        ]
+        self.dataFrame = self.dataFrame.reindex(
+            config_bpts, axis=1, level=self.dataFrame.columns.names.index("bodyparts")
+        )
         self.dataFrame.to_csv(
             os.path.join(self.dir, "CollectedData_" + self.scorer + ".csv")
         )

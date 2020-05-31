@@ -10,10 +10,12 @@ Licensed under GNU Lesser General Public License v3.0
 Adapted from DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
 """
-import logging, os
-import threading
 import argparse
+import logging
+import os
+import threading
 from pathlib import Path
+
 import tensorflow as tf
 
 vers = (tf.__version__).split(".")

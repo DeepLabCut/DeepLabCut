@@ -9,22 +9,28 @@ Licensed under GNU Lesser General Public License v3.0
 
 """
 
+import os
+import platform
+import pydoc
+import subprocess
+import sys
+import webbrowser
+
 import wx
-import os, sys, pydoc, platform
-import webbrowser, subprocess
+
 import deeplabcut
-from deeplabcut.utils import auxiliaryfunctions
-from deeplabcut.gui.extract_frames import Extract_frames
-from deeplabcut.gui.label_frames import Label_frames
+from deeplabcut.gui.analyze_videos import Analyze_videos
 from deeplabcut.gui.create_training_dataset import Create_training_dataset
+from deeplabcut.gui.create_videos import Create_Labeled_Videos
+from deeplabcut.gui.evaluate_network import Evaluate_network
+from deeplabcut.gui.extract_frames import Extract_frames
+from deeplabcut.gui.extract_outlier_frames import Extract_outlier_frames
+from deeplabcut.gui.label_frames import Label_frames
+from deeplabcut.gui.refine_labels import Refine_labels
+from deeplabcut.gui.refine_tracklets import Refine_tracklets
 from deeplabcut.gui.train_network import Train_network
 from deeplabcut.gui.video_editing import Video_Editing
-from deeplabcut.gui.analyze_videos import Analyze_videos
-from deeplabcut.gui.evaluate_network import Evaluate_network
-from deeplabcut.gui.extract_outlier_frames import Extract_outlier_frames
-from deeplabcut.gui.refine_labels import Refine_labels
-from deeplabcut.gui.create_videos import Create_Labeled_Videos
-from deeplabcut.gui.refine_tracklets import Refine_tracklets
+from deeplabcut.utils import auxiliaryfunctions
 
 media_path = os.path.join(deeplabcut.__path__[0], "gui", "media")
 logo = os.path.join(media_path, "logo.png")
@@ -279,8 +285,9 @@ class Create_new_project(wx.Panel):
                 self.file_open_bool = True
             else:
                 self.file_open_bool = webbrowser.open(self.cfg)
+
             if self.file_open_bool:
-                self.pose_cfg = auxiliaryfunctions.read_config(self.cfg)
+                pass
             else:
                 raise FileNotFoundError("File not found!")
 

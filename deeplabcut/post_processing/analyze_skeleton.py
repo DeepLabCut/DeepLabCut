@@ -10,16 +10,16 @@ Licensed under GNU Lesser General Public License v3.0
 Written by Federico Claudi - https://github.com/FedeClaudi
 """
 
-import pandas as pd
-import numpy as np
-from tqdm import tqdm
-import os
-from pathlib import Path
 import argparse
+from math import atan2, degrees
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
 from scipy.spatial import distance
-from math import factorial, atan2, degrees, acos, sqrt, pi
 
 from deeplabcut.utils import auxiliaryfunctions
+
 
 # utility functions
 def calc_distance_between_points_two_vectors_2d(v1, v2):

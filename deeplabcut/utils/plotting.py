@@ -8,16 +8,19 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
+import argparse
+import os
+
 ####################################################
 # Dependencies
 ####################################################
 import os.path
 from pathlib import Path
-import argparse
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualization
-import numpy as np
+
 import matplotlib.pyplot as plt
-import os
+import numpy as np
+
+from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualization
 
 
 def Histogram(vector, color, bins, ax=None):
