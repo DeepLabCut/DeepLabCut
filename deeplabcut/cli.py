@@ -7,9 +7,9 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
-import os
-import click
 from pathlib import Path
+
+import click
 
 import deeplabcut
 

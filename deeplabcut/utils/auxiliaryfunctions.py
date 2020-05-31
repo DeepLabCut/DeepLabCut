@@ -9,10 +9,11 @@ Licensed under GNU Lesser General Public License v3.0
 """
 import os
 import pickle
-import yaml
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
+import yaml
 from ruamel.yaml import YAML
 
 
@@ -166,10 +167,9 @@ def read_config(configname):
         try:
             with open(path, "r") as f:
                 cfg = ruamelFile.load(f)
-                # update path to current location of config.yaml (if different)
-                if cfg["project_path"] != configname.replace(
-                    f"{os.path.sep}config.yaml", ""
-                ):
+                curr_dir = os.path.dirname(configname)
+                if cfg["project_path"] != curr_dir:
+                    cfg['project_path'] = curr_dir
                     write_config(configname, cfg)
         except Exception as err:
             if len(err.args) > 2:
@@ -303,7 +303,14 @@ def write_pickle(filename, data):
 
 def Getlistofvideos(videos, videotype):
     """ Returns list of videos of videotype "videotype" in
-    folder videos or for list of videos. """
+    folder videos or for list of videos.
+
+    NOTE: excludes keyword videos of the form:
+
+    *_labeled.videotype
+    *_full.videotype
+
+    """
     if [os.path.isdir(i) for i in videos] == [True]:  # checks if input is a directory
         """
         Returns all the videos in the directory.
@@ -317,8 +324,9 @@ def Getlistofvideos(videos, videotype):
         videolist = [
             fn
             for fn in os.listdir(os.curdir)
-            if os.path.isfile(fn) and fn.endswith(videotype) and "labeled" not in fn
-        ]  # exclude labeled-videos!
+            if os.path.isfile(fn) and fn.endswith(videotype)
+            and "_labeled." not in fn and "_full." not in fn
+        ]  # exclude labeled (also for multianimal projects) videos!
 
         Videos = sample(
             videolist, len(videolist)
@@ -327,13 +335,13 @@ def Getlistofvideos(videos, videotype):
     else:
         if isinstance(videos, str):
             if (
-                os.path.isfile(videos) and "labeled" not in videos
+                os.path.isfile(videos) and "_labeled." not in videos and "_full." not in videos
             ):  # #or just one direct path!
                 Videos = [videos]
             else:
                 Videos = []
         else:
-            Videos = [v for v in videos if os.path.isfile(v) and "labeled" not in v]
+            Videos = [v for v in videos if os.path.isfile(v) and "_labeled." not in v and "_full." not in v]
     return Videos
 
 

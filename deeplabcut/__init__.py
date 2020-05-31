@@ -9,7 +9,6 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import os
-import platform
 
 # Suppress tensorflow warning messages
 import tensorflow as tf
@@ -34,12 +33,8 @@ if os.environ.get("DLClight", default=False) == "True":
     mpl.use(
         "AGG"
     )  # anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
-    pass
 else:  # standard use [wxpython supported]
-    if platform.system() == "Darwin":  # for OSX use WXAgg
-        mpl.use("WXAgg")
-    else:
-        mpl.use("Agg")
+    mpl.use("WxAgg")
     from deeplabcut import generate_training_dataset
     from deeplabcut import refine_training_dataset
     from deeplabcut.generate_training_dataset import (

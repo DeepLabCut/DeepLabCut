@@ -9,15 +9,14 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 
-import os
 import argparse
+import os
+from pathlib import Path
 
 # Dependencies for anaysis
-import pickle
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-from pathlib import Path
 
 
 def pairwisedistances(DataCombined, scorer1, scorer2, pcutoff=-1, bodyparts=None):
@@ -66,7 +65,6 @@ def calculatepafdistancebounds(
 
     """
     import os
-    import matplotlib.pyplot as plt
     from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
     from deeplabcut.pose_estimation_tensorflow.config import load_config
 
@@ -263,12 +261,9 @@ def return_evaluate_network_data(
     """
 
     import os
-    from skimage import io
-    import skimage.color
 
     from deeplabcut.pose_estimation_tensorflow.config import load_config
-    from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import data_to_input
-    from deeplabcut.utils import auxiliaryfunctions, visualization
+    from deeplabcut.utils import auxiliaryfunctions
 
     start_path = os.getcwd()
     # Read file path for pose_config file. >> pass it on

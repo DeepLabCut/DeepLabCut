@@ -8,25 +8,24 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
+import logging
 import os
-import logging, pickle
+import pickle
 import random as rand
+
+import imageio
+import imgaug.augmenters as iaa
 import numpy as np
+from imgaug.augmentables import Keypoint, KeypointsOnImage
 from numpy import array as arr
 from numpy import concatenate as cat
 
-from deeplabcut.utils.auxfun_videos import imread
-from scipy.stats import truncnorm
-import imageio
-from imgaug.augmentables import Keypoint, KeypointsOnImage
-import imgaug.augmenters as iaa
-
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import (
     Batch,
-    data_to_input,
     DataItem,
     data_to_input_batch,
 )
+from deeplabcut.utils.auxfun_videos import imread
 
 
 class MAPoseDataset:
