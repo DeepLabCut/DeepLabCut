@@ -25,7 +25,7 @@ individuals:
 - mouse1
 ```
 
-- `"uniquebodyparts: []` can stay blank, unless you have other things labeled you want to estimate (consdier these as similar to bodyparts in pre2.2); i.e. corners of a box, etc. All unique bodyparts cannot be connected to the multianimal bodyparts in the skeleton you will eventually make. 
+- `"uniquebodyparts: []` can stay blank, unless you have other things labeled you want to estimate (consider these as similar to bodyparts in pre-2.2); i.e. corners of a box, etc. All unique bodyparts cannot be connected to the multianimal bodyparts in the skeleton you will eventually make. 
 
 - Please move your "bodyparts:" to "multianimalbodyparts:" (bodypart names must stay the same!) These are the parts that will always be interconnected fully!
 ```python
