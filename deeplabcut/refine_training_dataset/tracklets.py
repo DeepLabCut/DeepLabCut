@@ -1053,7 +1053,7 @@ def refine_tracklets(
     pickle_or_h5_file,
     video,
     min_swap_frac=0.01,
-    min_tracklet_frac=0.01,
+    min_tracklet_frac=0,
     max_gap=0,
     trail_len=50,
 ):
