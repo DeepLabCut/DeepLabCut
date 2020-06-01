@@ -51,8 +51,8 @@ def getpafgraph(cfg, printnames=True):
     bodypartnames = multianimalbodyparts + uniquebodyparts
     lookupdict = {bodypartnames[j]: j for j in range(len(bodypartnames))}
 
-    if cfg['skelton'] is None:
-        cfg['skelton']=[]
+    if cfg['skeleton'] is None:
+        cfg['skeleton']=[]
 
     # CHECKS if each bpt is connected to at least one other bpt
     # TODO: check that there is a path leading from each (multi)bpt to each other (multi)bpt!
