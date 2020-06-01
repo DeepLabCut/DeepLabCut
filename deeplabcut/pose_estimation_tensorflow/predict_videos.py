@@ -8,6 +8,8 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
+# TODO: Add support for alternate multi output format, as create_labeled_video still fails on old format.
+
 ####################################################
 # Dependencies
 ####################################################
@@ -235,6 +237,7 @@ def analyze_videos(
     trainingsiterations = (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[-1]
     # Update number of output and batchsize
     dlc_cfg["num_outputs"] = cfg.get("num_outputs", dlc_cfg.get("num_outputs", 1))
+    old_num_outputs = dlc_cfg["num_outputs"]
     dlc_cfg["num_outputs"] = int(num_outputs) if((num_outputs is not None) and (num_outputs >= 1)) else dlc_cfg["num_outputs"]
 
     if batchsize == None:
@@ -365,8 +368,13 @@ def analyze_videos(
             print(
                 "If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames."
             )
+
+        dlc_cfg["num_outputs"] = old_num_outputs
+
         return DLCscorer  # note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
     else:
+        dlc_cfg["num_outputs"] = old_num_outputs
+
         print("No video(s) were found. Please check your paths and/or 'video_type'.")
         return DLCscorer
 
