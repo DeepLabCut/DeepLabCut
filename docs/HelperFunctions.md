@@ -17,7 +17,8 @@ Or perhaps you sort of know the name of the function, but not fully, then you ca
 
 
 Now, for any of these functions, you type ``deeplabcut.analyze_videos_converth5_to_csv?`` you get:
-```
+
+```python
 Signature: deeplabcut.analyze_videos_converth5_to_csv(videopath, videotype='.avi')
 Docstring:
 By default the output poses (when running analyze_videos) are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position  in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) in the same directory, where the video is stored. If the flag save_as_csv is set to True, the data is also exported as comma-separated value file. However, if the flag was *not* set, then this function allows the conversion of all h5 files to csv files (without having to analyze the videos again)!
@@ -35,7 +36,7 @@ This functions converts hdf (h5) files to the comma-separated values format (.cs
 Only videos with this extension are analyzed. The default is ``.avi``
 
  Examples
---------
+-----------
 
     Converts all pose-output files belonging to mp4 videos in the folder '/media/alex/experimentaldata/cheetahvideos' to csv files. 
     deeplabcut.analyze_videos_converth5_to_csv('/media/alex/experimentaldata/cheetahvideos','.mp4')  
@@ -47,7 +48,7 @@ of currently available helper functions. To see information about any of them, i
 to use them, use the ``?`` at the end of the call, as described above.
 
 
-```
+```python
 deeplabcut.analyze_videos_converth5_to_csv
 
 deeplabcut.mergeandsplit
@@ -60,6 +61,8 @@ deeplabcut.ShortenVideo
 
 deeplabcut.DownSampleVideo
 
+deeplabcut.CropVideo
+
 deeplabcut.adddatasetstovideolistandviceversa
 
 deeplabcut.comparevideolistsanddatafolders
@@ -71,7 +74,17 @@ deeplabcut.dropduplicatesinannotatinfiles
 deeplabcut.load_demo_data
 
 deeplabcut.merge_datasets
+
+deeplabcut.export_model
+
 ```
 
+### New! Model Export function:
 
+This function allows you to export a well-trained model for real-time applications, etc. 
 
+- One such example use case is with the [Bonsai-DeepLabCut](https://github.com/bonsai-rx/deeplabcut) plug in. Namely, you need to first export your trained model from DLC, then follow the instructions for Bonsai-specific use.
+
+```python
+deeplabcut.export_model(cfg_path, iteration=None, shuffle=1, trainingsetindex=0, snapshotindex=None, TFGPUinference=True, overwrite=False, make_tar=True)
+```

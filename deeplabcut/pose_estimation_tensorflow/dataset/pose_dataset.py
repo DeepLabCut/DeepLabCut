@@ -1,10 +1,16 @@
-'''
-Adapted from DeeperCut by Eldar Insafutdinov
-https://github.com/eldar/pose-tensorflow
+"""
+DeepLabCut2.2 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
+https://github.com/AlexEMG/DeepLabCut
 
-'''
+Please see AUTHORS for contributors.
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
+"""
+
 from enum import Enum
 import numpy as np
+
 
 class Batch(Enum):
     inputs = 0
@@ -16,15 +22,19 @@ class Batch(Enum):
     pairwise_mask = 6
     data_item = 7
 
+
 class DataItem:
     pass
+
 
 def data_to_input(data):
     return np.expand_dims(data, axis=0).astype(float)
 
+
 def data_to_input_batch(batch_data):
     return np.array(batch_data)
-    
+
+
 # Augmentation functions
 def mirror_joints_map(all_joints, num_joints):
     res = np.arange(num_joints)
@@ -34,19 +44,25 @@ def mirror_joints_map(all_joints, num_joints):
         res[pair[1]] = pair[0]
     return res
 
-def CropImage(joints,im,Xlabel,Ylabel,cfg):
-    ''' Randomly cropping image around xlabel,ylabel taking into account size of image.
-    Introduced in DLC 2 (Nature Protocols paper)'''
-    widthforward=int(cfg["minsize"]+np.random.randint(cfg["rightwidth"]))
-    widthback=int(cfg["minsize"]+np.random.randint(cfg["leftwidth"]))
-    hup=int(cfg["minsize"]+np.random.randint(cfg["topheight"]))
-    hdown=int(cfg["minsize"]+np.random.randint(cfg["bottomheight"]))
-    Xstart=max(0,int(Xlabel-widthback))
-    Xstop=min(np.shape(im)[1]-1,int(Xlabel+widthforward))
-    Ystart=max(0,int(Ylabel-hdown))
-    Ystop=min(np.shape(im)[0]-1,int(Ylabel+hup))
-    joints[0,:,1]-=Xstart
-    joints[0,:,2]-=Ystart
 
-    inbounds=np.where((joints[0,:,1]>0)*(joints[0,:,1]<np.shape(im)[1])*(joints[0,:,2]>0)*(joints[0,:,2]<np.shape(im)[0]))[0]
-    return joints[:,inbounds,:],im[Ystart:Ystop+1,Xstart:Xstop+1,:]
+def CropImage(joints, im, Xlabel, Ylabel, cfg):
+    """ Randomly cropping image around xlabel,ylabel taking into account size of image.
+    Introduced in DLC 2 (Nature Protocols paper)"""
+    widthforward = int(cfg["minsize"] + np.random.randint(cfg["rightwidth"]))
+    widthback = int(cfg["minsize"] + np.random.randint(cfg["leftwidth"]))
+    hup = int(cfg["minsize"] + np.random.randint(cfg["topheight"]))
+    hdown = int(cfg["minsize"] + np.random.randint(cfg["bottomheight"]))
+    Xstart = max(0, int(Xlabel - widthback))
+    Xstop = min(np.shape(im)[1] - 1, int(Xlabel + widthforward))
+    Ystart = max(0, int(Ylabel - hdown))
+    Ystop = min(np.shape(im)[0] - 1, int(Ylabel + hup))
+    joints[0, :, 1] -= Xstart
+    joints[0, :, 2] -= Ystart
+
+    inbounds = np.where(
+        (joints[0, :, 1] > 0)
+        * (joints[0, :, 1] < np.shape(im)[1])
+        * (joints[0, :, 2] > 0)
+        * (joints[0, :, 2] < np.shape(im)[0])
+    )[0]
+    return joints[:, inbounds, :], im[Ystart : Ystop + 1, Xstart : Xstop + 1, :]

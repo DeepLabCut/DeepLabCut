@@ -6,3 +6,4 @@ from deeplabcut.utils.plotting import *
 from deeplabcut.utils.conversioncode import *
 from deeplabcut.utils.frameselectiontools import *
 from deeplabcut.utils.auxfun_videos import *
+from deeplabcut.utils.auxfun_multianimal import *

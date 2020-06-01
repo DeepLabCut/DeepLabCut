@@ -1,18 +1,31 @@
-### How to use the 3D Functionality of DeepLabCut
+# *3*DeepLabCut <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589578632599-HQENUYUIBI9KYTZA2WXV/ke17ZwdGBToddI8pDm48kBgERiRoVg6XJpnbAnG076FZw-zPPgdn4jUwVcJE1ZvWhcwhEtWJXoshNdA9f1qD7Y5_KuY_fkOEvGrDVB8aRb13EC_7Ld97nVeJG4MMJk1tqSdWG3KOMGCA68a4XjyT5g/3D.png?format=300w" width="350" title="DLC-3D" alt="DLC 3D" align="right" vspace = "50">
 
-**New:** as of deeplabcut 2.0.7+ you can create a 3D project to combine multiple cameras for 3D pose estimation. Watch a [DEMO VIDEO](https://youtu.be/Eh6oIGE4dwI) on how to use this code!
+We support 2-camera based 3D pose estimation
+
+:movie_camera: Watch a [DEMO VIDEO](https://youtu.be/Eh6oIGE4dwI) on how to use this code! 
+
+**Our code base assumes you:**
+
+A. You have 2D videos and a DeepLabCut network to analyze them as described in the [main documentation](https://github.com/AlexEMG/DeepLabCut/blob/master/docs/UseOverviewGuide.md). This can be with multiple separate networks for each camera, or one network trained on all views (See [Nath*, Mathis* et al., 2019](https://www.biorxiv.org/content/10.1101/476531v1)).
+
+B. You are using 2 cameras for 3D*.
+
+C. You have calibration images taken (see details below!).
 
 <p align="center">
 <img src= https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1560968522350-COKR986AQESF5N1N7QNK/ke17ZwdGBToddI8pDm48kNaO57GzHjWqV-xM6jVvY6ZZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpyR5k0u27ivMv3az5DOhUvLuYQefjfUWYPEDVexVC_mSas4X78tjQKn3yE00zHvnK8/3D_maousLarger.gif?format=750w width="85%">
  </p>
 
-This assumes you:
 
-A. You have 2D videos and a DeepLabCut network to analyze them as described in the [main documentation](https://github.com/AlexEMG/DeepLabCut/blob/master/docs/UseOverviewGuide.md). This can be with multiple separate networks for each camera, or one network trained on all views (See [Nath*, Mathis* et al., 2019](https://www.biorxiv.org/content/10.1101/476531v1)).
 
-B. You are using 2 cameras for 3D (more camera support will be added in the future!).
-
-C. You have calibration images taken (see details below!).
+***If you need more than 2 camera support:**
+Due to the excellent work of others, we will not have >2 cameras (via calibration) support at this time. We also opt not to have them in DLC, as we want users to have the most flexibility in their systems. Here are other excellent options for you to use: 
+ 
+- **[anipose.org](https://anipose.readthedocs.io/en/latest/)**; a wrapper for 3D deeplabcut https://github.com/lambdaloop/anipose
+  - it provides >3 camera support and is built to work directly with DeepLabCut. You can `pip install anipose` into your DLC conda environment.
+  
+- using Argus, easywand or DLTdv w/deeplabcut https://github.com/haliaetus13/DLCconverterDLT
+   - this can be used with the the highly popular Argus or DLTdv tools for wand calibration. 
 
 
 ### (1) Create a New 3D Project:
@@ -24,12 +37,12 @@ The function **create\_new\_project\_3d** creates a new project directory specif
 Thus, this function requires the user to input the enter the name of the project, the name of the experimenter and number of cameras to be used. Currently, DeepLabCut supports triangulation using 2 cameras, but will expand to more than 2 cameras in a future version.
 
 To start a 3D project type the following in ipython:
-```
-deeplabcut.create_new_project_3d(`Name of the project',`Name of the experimenter',num_cameras=2)
+```python
+deeplabcut.create_new_project_3d('ProjectName','NameofLabeler',num_cameras = 2)
 ```
 TIP 1: you can also pass ``working_directory=`Full path of the working directory'`` if you want to place this folder somewhere beside the current directory you are working in. If the optional argument ``working_directory`` is unspecified, the project directory is created in the current working directory.
 
-TIP 2: you can also place ``config_path3d`` in front of ``deeplabcut.create_new_project_3d`` to create a variable that holds the path to the config.yaml file, i.e. ``config_path3d=deeplabcut.create_new_project_3d(...`` Or, set this variable for easy use. Please note that ``config_path3d = 'Full path of the 3D project configuration file'``.
+TIP 2: you can also place ``config_path3d`` in front of ``deeplabcut.create_new_project_3d`` to create a variable that holds the path to the config.yaml file, i.e. ``config_path3d=deeplabcut.create_new_project_3d(...`` Or, set this variable for easy use. Please note that ``config_path3d='Full path of the 3D project configuration file'``.
 
  This function will create a project directory with the name **Name of the project+name of the experimenter+date of creation of the project+3d** in the **Working directory**. The project directory will have subdirectories: **calibration_images**, **camera_matrix**, **corners**, and **undistortion**.  All the outputs generated during the course of a project will be stored in one of these subdirectories, thus allowing each project to be curated in separation from other projects.
 
@@ -61,9 +74,9 @@ Use a chessboard as big as possible, ideally a chessboard with of at least 8x6 s
 
 **TIP:** If you want to take a short video (vs. snapping pairs of frames) while you move the checkerboard around, you can use this command inside your conda environment (but outside of ipython!) to convert the video to **.jpg** frames (this will take the first 20 frames (set with ``-vframes``) and name them camera-1-001.jpg, etc; edit appropriately):
 
-``
+```python
 ffmpeg -i videoname.mp4 -vframes 20 camera-1-%03d.jpg
-``
+```
 - While taking the images:
      - Keep the orientation of the checkerboard the same and do not rotate it more than 30 degrees. Rotating the checkerboard circularly will change the origin across the frames and may result in incorrect order of detected corners.
 
@@ -87,8 +100,8 @@ To begin, please place your images into the **calibration_images** directory.
 
 Then, run:
 
-```
-deeplabcut.calibrate_cameras(config_path3d, cbrow = 8,cbcol = 6, calibrate=False, alpha=0.9)
+```python
+deeplabcut.calibrate_cameras(config_path3d, cbrow=8, cbcol=6, calibrate=False, alpha=0.9)
 ```
 NOTE: you need to specify how many rows (``cbrow``) and columns (``cbcol``) your checkerboard has. Also, first set the variable ``calibrate`` to **False**, so you can remove any faulty images. You need to visually inspect the output to check for the detected corners and select those pair of images where the corners are correctly detected. Please note, If the scaling parameter ``alpha=0``, it returns undistorted image with minimum unwanted pixels. So it may even remove some pixels at image corners. If ``alpha=1``, all pixels are retained with some extra black images.
 
@@ -101,8 +114,8 @@ Here is what they might look like:
 
 Once all the set of images are selected (namely, delete from the folder any bad pairs!) where the corners and their orders are detected correctly, then the two cameras can be calibrated using:
 
-```
-deeplabcut.calibrate_cameras(config_path3d, cbrow = 8, cbcol = 6, calibrate=True, alpha=0.9)
+```python
+deeplabcut.calibrate_cameras(config_path3d, cbrow=8, cbcol=6, calibrate=True, alpha=0.9)
 ```
 
 This computes the intrinsic and extrinsic parameters for each camera. A re-projection error is also computed using the intrinsic and extrinsic parameters which provide an estimate of how good the parameters are. The transformation between the two cameras are estimated and the cameras are stereo calibrated. Furthermore, the above function brings both the camera image plane to the same plane by computing the stereo rectification. These parameters are stored as a pickle file named as `stereo_params.pickle` under the directory `camera_matrix`.
@@ -113,8 +126,8 @@ Once you have run this for the project, you do not need to do so again (unless y
 
 In order to check how well the stereo calibration is, it is recommended to undistort the calibration images and the corner points using camera matrices and project these undistorted points on the undistorted images to check if they align correctly. This can be done in deeplabcut as:
 
-```
-deeplabcut.check_undistortion(config_path3d, cbrow = 8,cbcol = 6)
+```python
+deeplabcut.check_undistortion(config_path3d, cbrow=8, cbcol=6)
 ```
 
 Each calibration image is undistorted and saved under the directory ``undistortion``. A plot with a pair of undistorted camera images with its undistorted corner points overlaid is also stored. Please visually inspect this image. All the undistorted corner points from all the calibration images are triangulated and plotted for the user to visualize for any undistortion related errors. If they are not correct, go check and revise the calibration images (then repeat the calibration and this step)!
@@ -144,42 +157,41 @@ If there are no errors in the undistortion, then the pose from the 2 cameras can
 
 Next, pass the ``config_path3d`` and now the video folder path, which is the path to the **folder** where all the videos from two cameras are stored. The triangulation can be done in deeplabcut by typing:
 
-```
-deeplabcut.triangulate(config_path3d,'/yourcomputer/fullpath/videofolder', filterpredictions=True/False)
+```python
+deeplabcut.triangulate(config_path3d, '/yourcomputer/fullpath/videofolder', filterpredictions=True/False)
 ```
 NOTE: Windows users, you must input paths as: ``r`C:\Users\computername\videofolder' `` or ``C:\\Users\\computername\\videofolder'``.
 
 **TIP:** Here are all the parameters you can pass:
 
-```Parameters
-   ----------
-   config : string
-       Full path of the config.yaml file as a string.
+```python
+Parameters
+----------
+config : string
+    Full path of the config.yaml file as a string.
 
-   video_path : string
-       Full path of the directory where videos are saved.
+video_path : string
+    Full path of the directory where videos are saved.
 
-   videotype: string, optional
-       Checks for the extension of the video in case the input to the video is a directory.
+videotype: string, optional
+    Checks for the extension of the video in case the input to the video is a directory.
 Only videos with this extension are analyzed. The default is ``.avi``
 
-   filterpredictions: Bool, optional
-       Filter the predictions by fitting median (by default) or arima filter. If specified it should be either ``True`` or ``False``.
+filterpredictions: Bool, optional
+    Filter the predictions by fitting median (by default) or arima filter. If specified it should be either ``True`` or ``False``.
 
-   filtertype: string
-       Select which filter, 'arima' or 'median' filter.
+filtertype: string
+    Select which filter, 'arima' or 'median' filter.
 
-   gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU put None.
-       See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU put None.
+    See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
 
-   destfolder: string, optional
-       Specifies the destination folder for analysis data (default is the path of the video)
+destfolder: string, optional
+    Specifies the destination folder for analysis data (default is the path of the video)
 
-   save_as_csv: bool, optional
-       Saves the predictions in a .csv file. The default is ``False``; if provided it must be either ``True`` or ``False``
+save_as_csv: bool, optional
+    Saves the predictions in a .csv file. The default is ``False``; if provided it must be either ``True`` or ``False``
 ```
-
-
 The **triangulated file** is now saved under the same directory where the video files reside (or the destination folder you set)! This can be used for future analysis. This step can be run at anytime as you collect new videos, and easily added to your automated analysis pipeline, i.e. such as **replacing** ``deeplabcut.triangulate(config_path3d, video_path)`` with ``deeplabcut.analyze_videos`` (as if it's not analyzed in 2D already, this function will take care of it ;):
 
 <p align="center">
@@ -190,8 +202,8 @@ The **triangulated file** is now saved under the same directory where the video 
 
 In order to visualize both the 2D videos with tracked points plut the pose in 3D, the user can create a 3D video for certain frames (these are large files, so we advise just looking at a subset of frames). The user can specify the config file, the **path of the triangulated file folder**, and specify the start and end frame indices to create a 3D labeled video. Note that the ``triangulated_file_folder`` is where the newly created file that ends with ``yourDLC_3D_scorername.h5`` is located. This can be done using:
 
-```
-deeplabcut.create_labeled_video_3d(config_path,['triangulated_file_folder'],start=50,end=250)
+```python
+deeplabcut.create_labeled_video_3d(config_path, ['triangulated_file_folder'], start=50, end=250)
 ```
 
 **TIP:** (see more parameters below) You can set how the axis of the 3D plot on the far right looks by changing the variables ``xlim``, ``ylim``, ``zlim`` and ``view``. Your checkerboard_3d.png image which was created above will show you the axis ranges. Here is an example:
@@ -204,29 +216,28 @@ deeplabcut.create_labeled_video_3d(config_path,['triangulated_file_folder'],star
 
 **Other optional parameters include:**
 
-```
-    videofolder: string
-        Full path of the folder where the videos are stored. Use this if the vidoes are stored in a different location other than where the triangulation files are stored. By default is ``None`` and therefore looks for video files in the directory where the triangulation file is stored.
+```python
+videofolder: string
+    Full path of the folder where the videos are stored. Use this if the vidoes are stored in a different location other than where the triangulation files are stored. By default is ``None`` and therefore looks for video files in the directory where the triangulation file is stored.
 
-    trailpoints: int
-        Number of previous frames whose body parts are plotted in a frame (for displaying history). Default is set to 0.
+trailpoints: int
+    Number of previous frames whose body parts are plotted in a frame (for displaying history). Default is set to 0.
 
-    videotype: string
-        Checks for the extension of the video in case the input is a directory.
+videotype: string
+    Checks for the extension of the video in case the input is a directory.
 Only videos with this extension are analyzed. The default is ``.avi``
 
-    view: list
-        A list that sets the elevation angle in z plane and azimuthal angle in x,y plane of 3d view. Useful for rotating the axis for 3d view
-    
-    xlim: list
-        A list of integers specifying the limits for xaxis of 3d view. By default it is set to [None,None], where the x limit is set by taking the minimum and maximum value of the x coordinates for all the bodyparts.
-    
-    ylim: list
-        A list of integers specifying the limits for yaxis of 3d view. By default it is set to [None,None], where the y limit is set by taking the minimum and maximum value of the y coordinates for all the bodyparts.
-    
-    zlim: list
-        A list of integers specifying the limits for zaxis of 3d view. By default it is set to [None,None], where the z limit is set by taking the minimum and maximum value of the z coordinates for all the bodyparts.
+view: list
+    A list that sets the elevation angle in z plane and azimuthal angle in x,y plane of 3d view. Useful for rotating the axis for 3d view
 
+xlim: list
+    A list of integers specifying the limits for xaxis of 3d view. By default it is set to [None,None], where the x limit is set by taking the minimum and maximum value of the x coordinates for all the bodyparts.
+
+ylim: list
+    A list of integers specifying the limits for yaxis of 3d view. By default it is set to [None,None], where the y limit is set by taking the minimum and maximum value of the y coordinates for all the bodyparts.
+
+zlim: list
+    A list of integers specifying the limits for zaxis of 3d view. By default it is set to [None,None], where the z limit is set by taking the minimum and maximum value of the z coordinates for all the bodyparts.
 ```
 
 ### If you use this code:

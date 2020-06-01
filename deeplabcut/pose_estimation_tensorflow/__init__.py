@@ -12,17 +12,28 @@ from deeplabcut.pose_estimation_tensorflow.dataset import *
 from deeplabcut.pose_estimation_tensorflow.models import *
 from deeplabcut.pose_estimation_tensorflow.nnet import *
 from deeplabcut.pose_estimation_tensorflow.util import *
+from deeplabcut.pose_estimation_tensorflow.lib.nms_cython import *
 
 from deeplabcut.pose_estimation_tensorflow.config import *
 from deeplabcut.pose_estimation_tensorflow.default_config import *
 from deeplabcut.pose_estimation_tensorflow.evaluate import *
+from deeplabcut.pose_estimation_tensorflow.export import export_model
+
+from deeplabcut.pose_estimation_tensorflow.evaluate_multianimal import (
+    evaluate_multianimal_crossvalidate,
+)
+
 from deeplabcut.pose_estimation_tensorflow.predict_videos import *
+
+# from deeplabcut.pose_estimation_tensorflow.predict_multianimal import convert_detections2tracklet
 from deeplabcut.pose_estimation_tensorflow.test import *
 from deeplabcut.pose_estimation_tensorflow.train import *
 from deeplabcut.pose_estimation_tensorflow.training import *
+from deeplabcut.pose_estimation_tensorflow.visualizemaps import *
 
+"""
 import os
 if os.environ.get('DLClight', default=False) == 'True':
     pass
 else:
-    from deeplabcut.pose_estimation_tensorflow.vis_dataset import *
+"""

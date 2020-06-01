@@ -15,6 +15,7 @@ import tqdm
 # Used by get_predictor for loading plugins
 from deeplabcut.pose_estimation_tensorflow.util import pluginloader
 from deeplabcut.pose_estimation_tensorflow.nnet import predictors
+import inspect
 
 import numpy as np
 
@@ -596,7 +597,6 @@ class Pose:
         return (self._data.shape[1] // 3)
 
 
-
 class Predictor(ABC):
     """
     Base plugin class for all predictor plugins.
@@ -691,7 +691,7 @@ class Predictor(ABC):
         if(cls.__doc__ is None):
             return "None"
         else:
-            return " ".join(cls.__doc__.split())
+            return inspect.cleandoc(cls.__doc__)
 
 
     @classmethod

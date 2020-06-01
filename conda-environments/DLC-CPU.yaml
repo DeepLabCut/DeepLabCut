@@ -1,4 +1,4 @@
-# dlc-windowsCPU.yaml 
+# DLC-CPU.yaml
 
 #DeepLabCut2.0 Toolbox (deeplabcut.org)
 #© A. & M. Mathis Labs
@@ -11,20 +11,16 @@
 # DeepLabCut environment for use on FMI computers
 # Suggested by Jan Eglinger see https://github.com/AlexEMG/DeepLabCut/issues/112
 #
-# install: conda env create -f dlc-windowsCPU.yaml 
-# update:  conda env update -f dlc-windowsCPU.yaml 
+# install: conda env create -f DLC-CPU.yaml
+# update:  conda env update -f DLC-CPU.yaml
 
-name: dlc-windowsCPU
+name: DLC-CPU
 dependencies:
-  - python=3.6
+  - python=3.7
   - pip
   - jupyter
   - nb_conda
-  - tensorflow==1.12
-  - wxpython
-  - pytables==3.4.3
-  - Shapely
+  - tensorflow==1.13.1
+  - wxpython<4.1.0
   - pip:
-    - numpy==1.16.4
-    - imgaug
     - deeplabcut

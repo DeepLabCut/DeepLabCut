@@ -125,7 +125,7 @@ def _resolve_videos(frame_store_paths: List[Path], video_folders: Optional[List[
     for idx, path in enumerate(frame_store_paths):
         name = "~".join(path.stem.split("~")[:-1])
         if(name.strip() != ""):
-            suspect_video = (path.parent) / (name)
+            suspect_video = (path.resolve().parent) / (name)
             if(suspect_video.exists()):
                 video_paths[idx] = suspect_video
 
@@ -137,11 +137,11 @@ def _sanitize_path_arg(paths: Union[None, Iterable[Pathy], Pathy]) -> Optional[L
     Sanitizes a pathlike or list of pathlike argument and returns a list of Path, or None if rogue data was passed...
     """
     if(isinstance(paths, (PathLike, str))):
-        return [Path(str(paths))]
+        return [Path(str(paths)).resolve()]
     elif(isinstance(paths, Iterable) ):
         paths = list(paths)
         if(len(paths) > 0):
-            return [Path(str(path)) for path in paths]
+            return [Path(str(path)).resolve() for path in paths]
         else:
             return None
     else:
@@ -170,7 +170,6 @@ def _get_pandas_header(body_parts: List[str], num_outputs: int, out_format: str,
                                              names=['scorer', 'bodyparts', 'coords'])
     else:
         # The original multi output format, multiple predictions stored under each body part
-        out_format = "default"
         suffixes = [str(i + 1) for i in range(num_outputs)]
         suffixes[0] = ""
         sub_headers = [state + s for s in suffixes for state in ['x', 'y', 'likelihood']]
@@ -207,7 +206,7 @@ def _analyze_frame_store(cfg: dict, frame_store_path: Path, video_name: Optional
                 "duration": float(num_f) / f_rate,
                 "size": (vid_h, vid_w),
                 "h5-file-name": data_name,
-                "orig-video-path": video_name, # This may be None if we were unable to find the video...
+                "orig-video-path": str(video_name) if (video_name is not None) else None, # This may be None if we were unable to find the video...
                 "cropping-offset": None if(off_x is None or off_y is None) else (off_y, off_x)
             }
 
@@ -250,7 +249,7 @@ def _analyze_frame_store(cfg: dict, frame_store_path: Path, video_name: Optional
             # Check and make sure the predictor returned all frames, otherwise throw an error.
             if (frames_done != num_f):
                 raise ValueError(
-                    f"The predictor algorithm did not return the same amount of frames as are in the video.\n"
+                    f"The predictor algorithm did not return the same amount of frames as are in the frame store.\n"
                     f"Expected Amount: {num_f}, Actual Amount Returned: {frames_done}")
 
             stop = time.time()

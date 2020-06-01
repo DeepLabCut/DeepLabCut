@@ -6,7 +6,6 @@ all_joints_names: willbeautomaticallyupdatedbycreate_training_datasetcode
 init_weights: willbeautomaticallyupdatedbycreate_training_datasetcode
 project_path: willbeautomaticallyupdatedbycreate_training_datasetcode
 
-
 # Hyperparameters below worked well for our tasks in
 # Mathis et al. Nature Neuroscience
 # https://www.nature.com/articles/s41593-018-0209-y
@@ -69,6 +68,11 @@ locref_stdev: 7.2801
 # which helps accuracy (you should set to true for ResNet-101, or 152!).
 intermediate_supervision: false
 intermediate_supervision_layer: 12
+
+# For multi-animal version starting with DLC 2.2
+pairwise_huber_loss: false
+partaffinityfield_predict: false
+pairwise_predict: false
 
 # all images larger with size
 # width * height > max_input_size*max_input_size are not used in training.
