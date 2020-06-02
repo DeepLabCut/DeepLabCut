@@ -9,10 +9,12 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import os
-from pathlib import Path
-import cv2
-from deeplabcut import DEBUG
 import shutil
+from pathlib import Path
+
+import cv2
+
+from deeplabcut import DEBUG
 
 
 def create_new_project(

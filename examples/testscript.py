@@ -360,6 +360,16 @@ print("Export model...")
 deeplabcut.export_model(path_config_file, shuffle=2, make_tar=False)
 
 
+trainIndices, testIndices = deeplabcut.mergeandsplit(
+    path_config_file, trainindex=0, uniform=False
+)
+deeplabcut.create_training_dataset(
+    path_config_file,
+    Shuffles=[0, 1],
+    trainIndices=[trainIndices, trainIndices],
+    testIndices=[testIndices, testIndices],
+)
+
 print("ALL DONE!!! - default cases are functional.")
 print("Re-import DLC with env. variable set to test DLC light mode.")
 os.environ["DLClight"] = "True"

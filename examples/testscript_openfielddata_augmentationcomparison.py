@@ -87,9 +87,9 @@ maxiters = 20000
 
 ##create one split and make Shuffle 2 and 3 have the same split.
 """
-trainIndexes, testIndexes=deeplabcut.mergeandsplit(path_config_file,trainindex=0,uniform=True)
-deeplabcut.create_training_dataset(path_config_file,Shuffles=[2],trainIndexes=trainIndexes,testIndexes=testIndexes)
-deeplabcut.create_training_dataset(path_config_file,Shuffles=[3],trainIndexes=trainIndexes,testIndexes=testIndexes)
+trainIndices, testIndices=deeplabcut.mergeandsplit(path_config_file,trainindex=0,uniform=True)
+deeplabcut.create_training_dataset(path_config_file,Shuffles=[2],trainIndices=trainIndices,testIndices=testIndices)
+deeplabcut.create_training_dataset(path_config_file,Shuffles=[3],trainIndices=trainIndices,testIndices=testIndices)
 for shuffle in [2,3]:
 	if shuffle==3:
 		posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(shuffle),'train/pose_cfg.yaml')

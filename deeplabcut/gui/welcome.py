@@ -9,9 +9,11 @@ Licensed under GNU Lesser General Public License v3.0
 
 """
 
+import os
+
 import wx
 import wx.adv
-import os
+
 import deeplabcut
 
 media_path = os.path.join(deeplabcut.__path__[0], "gui", "media")

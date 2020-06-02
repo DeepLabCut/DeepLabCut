@@ -1,17 +1,19 @@
+import pickle
+import re
+from threading import Event, Thread
+
 import cv2
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
 import numpy as np
 import pandas as pd
-import pickle
-import re
-from deeplabcut.post_processing import columnwise_spline_interp
-from deeplabcut.utils.auxiliaryfunctions import read_config, attempttomakefolder
-from deeplabcut import generate_training_dataset
 from matplotlib.path import Path
 from matplotlib.widgets import Slider, LassoSelector, Button, CheckButtons
-from threading import Event, Thread
+
+from deeplabcut import generate_training_dataset
+from deeplabcut.post_processing import columnwise_spline_interp
+from deeplabcut.utils.auxiliaryfunctions import read_config, attempttomakefolder
 
 
 class BackgroundPlayer:
@@ -1051,7 +1053,7 @@ def refine_tracklets(
     pickle_or_h5_file,
     video,
     min_swap_frac=0.01,
-    min_tracklet_frac=0.01,
+    min_tracklet_frac=0,
     max_gap=0,
     trail_len=50,
 ):

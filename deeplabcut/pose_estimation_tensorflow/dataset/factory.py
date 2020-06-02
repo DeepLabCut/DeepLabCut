@@ -13,8 +13,6 @@ https://github.com/eldar/pose-tensorflow
 Updated to allow more data set loaders.
 """
 
-from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import Batch
-
 
 def create(cfg):
     dataset_type = cfg.dataset_type

@@ -15,25 +15,23 @@ Largely written by Mert Yüksekgönül during the summer in the Bethge lab -- Th
 https://imgaug.readthedocs.io/en/latest/
 """
 
+import logging
 import os
-import logging, pickle
+import pickle
 import random as rand
+
+import imgaug.augmenters as iaa
 import numpy as np
+import scipy.io as sio
 from numpy import array as arr
 from numpy import concatenate as cat
 
-import scipy.io as sio
-from deeplabcut.utils.auxfun_videos import imread
-from scipy.stats import truncnorm
-from imgaug.augmentables import Keypoint, KeypointsOnImage
-import imgaug.augmenters as iaa
-
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import (
     Batch,
-    data_to_input,
     DataItem,
     data_to_input_batch,
 )
+from deeplabcut.utils.auxfun_videos import imread
 
 
 class PoseDataset:

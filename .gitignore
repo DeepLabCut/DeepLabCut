@@ -1,3 +1,11 @@
+#Data and examples
+/examples/open*
+/examples/Reac*
+/examples/TES*
+/examples/multi*
+/examples/3D*
+/examples/OUT
+
 # Tensorflow checkpoints
 *.ckpt
 snapshot-*
@@ -19,7 +27,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+#lib/
 lib64/
 parts/
 sdist/
@@ -55,7 +63,12 @@ coverage.xml
 *.pot
 
 # Django stuff:
-*.log
+*.log*.ckpt
+snapshot-*
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
 local_settings.py
 
 # Flask stuff:
@@ -103,6 +116,3 @@ ENV/
 
 # mypy
 .mypy_cache/
-
-# examples
-/examples

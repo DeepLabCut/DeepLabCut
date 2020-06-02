@@ -8,13 +8,13 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-import os
-import numpy as np
-import ruamel.yaml
 import glob
+import os
 import shutil
 import tarfile
 
+import numpy as np
+import ruamel.yaml
 import tensorflow as tf
 
 vers = (tf.__version__).split(".")

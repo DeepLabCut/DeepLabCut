@@ -8,12 +8,15 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-import os, pickle
-import pandas as pd
-import numpy as np
-from easydict import EasyDict as edict
-from deeplabcut.utils import auxiliaryfunctions
+import os
+import pickle
 from pathlib import Path
+
+import numpy as np
+import pandas as pd
+from easydict import EasyDict as edict
+
+from deeplabcut.utils import auxiliaryfunctions
 
 
 def extractindividualsandbodyparts(cfg):
@@ -47,17 +50,32 @@ def getpafgraph(cfg, printnames=True):
 
     bodypartnames = multianimalbodyparts + uniquebodyparts
     lookupdict = {bodypartnames[j]: j for j in range(len(bodypartnames))}
-    # print(lookupdict)
 
+    if cfg["skeleton"] is None:
+        cfg["skeleton"] = []
+
+    # CHECKS if each bpt is connected to at least one other bpt
+    # TODO: check that there is a path leading from each (multi)bpt to each other (multi)bpt!
+    connected = set()
     partaffinityfield_graph = []
     for link in cfg["skeleton"]:
         if link[0] in bodypartnames and link[1] in bodypartnames:
-            # print(link,lookupdict[link[0]])
-            partaffinityfield_graph.append(
-                [int(lookupdict[link[0]]), int(lookupdict[link[1]])]
-            )
+            bp1 = int(lookupdict[link[0]])
+            bp2 = int(lookupdict[link[1]])
+            connected.add(bp1)
+            connected.add(bp2)
+            partaffinityfield_graph.append([bp1, bp2])
         else:
             print("Attention, parts do not exist!", link)
+
+    unconnected = set(range(len(multianimalbodyparts))).difference(connected)
+    if unconnected:
+        raise ValueError(
+            f'Unconnected {", ".join(multianimalbodyparts[i] for i  in unconnected)}. '
+            f"For multi-animal projects, all multianimalbodyparts should be connected. "
+            f"Ideally there should be at least one (multinode) path from each multianimalbodyparts to each other multianimalbodyparts. "
+            f"Please verify the skeleton in the config.yaml."
+        )
 
     if printnames:
         graph2names(cfg, partaffinityfield_graph)
@@ -131,10 +149,12 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
 
     Examples
     --------
-    Converts data to introduce the first individual in individuals list in config.yaml
+    Converts mulianimalbodyparts under the 'first individual' in individuals list in config.yaml
+    and uniquebodyparts under 'single'
     >>> deeplabcut.convert2_maDLC('/socialrearing-task/config.yaml')
+
     --------
-    Converts data to introduce individuals label mus 17
+    Converts mulianimalbodyparts under the individual label mus17 and uniquebodyparts under 'single'
     >>> deeplabcut.convert2_maDLC('/socialrearing-task/config.yaml', forceindividual='mus17')
     """
 
@@ -146,13 +166,20 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
     individuals, uniquebodyparts, multianimalbodyparts = extractindividualsandbodyparts(
         cfg
     )
+
     if forceindividual is None:
-        if "single" in individuals:
-            individuals.remove("single")
         if len(individuals) == 0:
             print("At least one individual should exist...")
+            folders=[]
+            forceindividual=''
         else:
-            forceindividual = individuals[0]
+            forceindividual = individuals[0] #note that single is added at then end!
+
+        if forceindividual=='single': #no specific individual ()
+            if len(multianimalbodyparts)>0: #there should be an individual name...
+                print("At least one individual should exist beyond 'single', as there are multianimalbodyparts...")
+                folders=[]
+
     for folder in folders:
         if userfeedback == True:
             print("Do you want to convert the annotation file in folder:", folder, "?")
@@ -163,10 +190,47 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
         if (
             askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha"
         ):  # multilanguage support :)
+
             fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"])
             Data = pd.read_hdf(fn + ".h5", "df_with_missing")
             imindex = Data.index
+
             print("This is a single animal data set, converting to multi...", folder)
+
+            # -> adding (single,bpt) for uniquebodyparts
+            for j, bpt in enumerate(uniquebodyparts):
+                index = pd.MultiIndex.from_arrays(
+                    np.array(
+                        [
+                            2 * [cfg["scorer"]],
+                            2 * ["single"],
+                            2 * [bpt],
+                            ["x", "y"],
+                        ]
+                    ),
+                    names=["scorer", "individuals", "bodyparts", "coords"],
+                )
+
+                if bpt in Data[cfg["scorer"]].keys():
+                    frame = pd.DataFrame(
+                        Data[cfg["scorer"]][bpt].values, columns=index, index=imindex
+                    )
+                else:
+                    frame = pd.DataFrame(
+                        np.ones((len(imindex), 2)) * np.nan,
+                        columns=index,
+                        index=imindex,
+                    )
+
+                if j == 0:
+                    dataFrame = frame
+                else:
+                    dataFrame = pd.concat([dataFrame, frame], axis=1)
+
+            if len(uniquebodyparts)==0:
+                dataFrame=None
+
+            # -> adding (indivdual,bpt) for multianimalbodyparts
             for j, bpt in enumerate(multianimalbodyparts):
                 index = pd.MultiIndex.from_arrays(
                     np.array(
@@ -191,20 +255,20 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
                         index=imindex,
                     )
 
-                if j == 0:
+                if j == 0 and dataFrame is None:
                     dataFrame = frame
                 else:
                     dataFrame = pd.concat([dataFrame, frame], axis=1)
 
-                Data.to_hdf(
-                    fn + "singleanimal.h5", "df_with_missing", format="table", mode="w"
-                )
-                Data.to_csv(fn + "singleanimal.csv")
+            Data.to_hdf(
+                fn + "singleanimal.h5", "df_with_missing", format="table", mode="w"
+            )
+            Data.to_csv(fn + "singleanimal.csv")
 
-                dataFrame.to_hdf(
-                    fn + ".h5", "df_with_missing", format="table", mode="w"
-                )
-                dataFrame.to_csv(fn + ".csv")
+            dataFrame.to_hdf(
+                fn + ".h5", "df_with_missing", format="table", mode="w"
+            )
+            dataFrame.to_csv(fn + ".csv")
 
 
 def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
