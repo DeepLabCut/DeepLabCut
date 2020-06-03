@@ -322,7 +322,7 @@ def Getlistofvideos(videos, videotype):
 
         os.chdir(videofolder)
         videolist = [
-            fn
+            os.path.join(videofolder, fn)
             for fn in os.listdir(os.curdir)
             if os.path.isfile(fn)
             and fn.endswith(videotype)
