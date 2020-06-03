@@ -52,6 +52,7 @@ def analyze_videos(
     c_engine=False,
     robust_nframes=False,
     num_outputs=None,
+    multi_output_format="default",
     predictor=None,
     predictor_settings=None
 ):
@@ -123,7 +124,7 @@ def analyze_videos(
     num_outputs: int, default: from config.yaml, or 1 if not set in config.yaml.
         Allows the user to set the number of predictions for bodypart, overriding the option in the config file.
 
-    out_format: Determines the multi output format used. "default" uses the default format, while
+    multi_output_format: Determines the multi output format used. "default" uses the default format, while
         "separate-bodyparts" separates the multi output predictions such that each is its own body part. Defaults to
         "default", and passing any rouge values sets it to "defualt". Does nothing if num_outputs = 1
 
@@ -288,12 +289,6 @@ def analyze_videos(
             )
             TFGPUinference = False
         print("Extracting ", dlc_cfg["num_outputs"], "instances per bodypart")
-        xyz_labs_orig = ["x", "y", "likelihood"]
-        suffix = [str(s + 1) for s in range(dlc_cfg["num_outputs"])]
-        suffix[0] = ""  # first one has empty suffix for backwards compatibility
-        xyz_labs = [x + s for s in suffix for x in xyz_labs_orig]
-    else:
-        xyz_labs = ["x", "y", "likelihood"]
 
     # sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
     if TFGPUinference:
@@ -301,10 +296,7 @@ def analyze_videos(
     else:
         sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
 
-    pdindex = pd.MultiIndex.from_product(
-        [[DLCscorer], dlc_cfg["all_joints_names"], xyz_labs],
-        names=["scorer", "bodyparts", "coords"],
-    )
+    pdindex = GetPandasHeader(dlc_cfg["all_joints_names"], dlc_cfg["num_outputs"], multi_output_format, DLCscorer)
 
     ##################################################
     # Looping over videos
@@ -400,6 +392,36 @@ def checkcropping(cfg, cap):
     else:
         raise Exception("Please check the boundary of cropping!")
     return int(ny), int(nx)
+
+
+def GetPandasHeader(body_parts, num_outputs, out_format, dlc_scorer):
+    """
+    Creates the pandas data header for the passed body parts and number of outputs.
+
+    body_parts: The list of body part names. List of strings.
+    num_outputs: The number of outputs per body part, and integer.
+    out_format: The output format, either 'separate-bodyparts' or 'default'.
+    dlc_scorer: A string, being the name of the DLC Scorer for this DLC instance.
+
+    Returns: A pandas MultiIndex, being the header entries for the DLC output data.
+    """
+    # Set this up differently depending on the format...
+    if(out_format == "separate-bodyparts" and num_outputs > 1):
+        # Format which allocates new bodyparts for each prediction by simply adding "__number" to the end of the part's
+        # name.
+        print("Outputting predictions as separate body parts...")
+        suffixes = [f"__{i + 1}" for i in range(num_outputs)]
+        suffixes[0] = ""
+        all_joints = [bp + s for bp in body_parts for s in suffixes]
+        return pd.MultiIndex.from_product([[dlc_scorer], all_joints, ['x', 'y', 'likelihood']],
+                                             names=['scorer', 'bodyparts', 'coords'])
+    else:
+        # The original multi output format, multiple predictions stored under each body part
+        suffixes = [str(i + 1) for i in range(num_outputs)]
+        suffixes[0] = ""
+        sub_headers = [state + s for s in suffixes for state in ['x', 'y', 'likelihood']]
+        return pd.MultiIndex.from_product([[dlc_scorer], body_parts, sub_headers],
+                                             names=['scorer', 'bodyparts', 'coords'])
 
 
 def GetPoseF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):

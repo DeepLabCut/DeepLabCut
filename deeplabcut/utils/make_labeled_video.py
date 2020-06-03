@@ -467,6 +467,7 @@ def create_labeled_video(
     individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(
         cfg, displayedindividuals
     )
+
     if draw_skeleton:
         bodyparts2connect = cfg["skeleton"]
         skeleton_color = cfg["skeleton_color"]
@@ -523,6 +524,16 @@ def create_labeled_video(
                 if os.path.isfile(videooutname):
                     print("Labeled video already created. Skipping...")
                     continue
+
+                if(not cfg.get("multianimalproject", False)):
+                    # Adds support for multi_output mode. Adds extra bodyparts found in the data but not in the config.yaml.
+                    # Only works if "multi_output_format" is set to "separate-bodyparts".
+                    if (displayedbodyparts == "all"):
+                        cmp_set = set(idx[1] for idx in df)
+                    else:
+                        cmp_set = (set(idx[1] for idx in df) & set(displayedbodyparts))
+
+                    bodyparts = [bp for bp in df.columns.get_level_values("bodyparts").unique() if(bp in cmp_set)]
 
                 if all(individuals):
                     df = df.loc(axis=1)[:, individuals]

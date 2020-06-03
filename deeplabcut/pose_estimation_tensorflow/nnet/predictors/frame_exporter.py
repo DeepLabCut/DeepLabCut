@@ -48,7 +48,6 @@ class FrameExporter(Predictor):
             header = DLCFSHeader(self._num_frames, scmap.get_frame_height(), scmap.get_frame_width(),
                                  self._video_metadata["fps"], scmap.get_down_scaling(),
                                  *self._video_metadata["size"], *self._crop_off, self._bodyparts)
-            print(header)
 
             self._frame_writer = DLCFSWriter(self._out_file, header, self.THRESHOLD if(self.SPARSIFY) else None,
                                              self.COMPRESSION_LEVEL)
