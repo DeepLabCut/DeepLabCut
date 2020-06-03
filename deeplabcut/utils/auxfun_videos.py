@@ -8,10 +8,12 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
-
+import os
+import subprocess
 from pathlib import Path
-import subprocess, os, platform
+
 import cv2
+
 
 # Historically DLC used: from scipy.misc import imread, imresize >> deprecated functions
 def imread(path, mode=None):
@@ -121,9 +123,6 @@ def CropVideo(
     outpath: str
         Output path for saving video to (by default will be the same folder as the video)
 
-    rotateccw: bool
-        Default false, rotates counter-clockwise if true.
-
     Examples
     ----------
 
@@ -147,6 +146,7 @@ def CropVideo(
             "Please, select your coordinates (draw from top left to bottom right ...)"
         )
         coords = draw_bbox(vname)
+
         if not coords:
             return
         origin_x, origin_y = coords[:2]
@@ -156,6 +156,7 @@ def CropVideo(
     newfilename = os.path.join(
         vidpath, str(Path(vname).stem) + str(outsuffix) + str(Path(vname).suffix)
     )
+
     print("Cropping and saving to name", newfilename)
     command = f"ffmpeg -i {vname} -filter:v crop={width}:{height}:{origin_x}:{origin_y} -c:a copy {newfilename}"
     subprocess.call(command, shell=True)
@@ -192,7 +193,6 @@ def DownSampleVideo(
     rotateccw: bool
         Default false, rotates counter-clockwise if true.
 
-
     Examples
     ----------
 
@@ -214,9 +214,13 @@ def DownSampleVideo(
     newfilename = os.path.join(
         vidpath, str(Path(vname).stem) + str(outsuffix) + str(Path(vname).suffix)
     )
+
+    # Rotate, see: https://stackoverflow.com/questions/3937387/rotating-videos-with-ffmpeg
+    # interesting option to just update metadata.
+
     print("Downsampling and saving to name", newfilename)
     if rotateccw:
-        command = f"ffmpeg -i {vname} -filter:v scale={width}:{height} transpose=clock -c:a copy {newfilename}"
+        command = f"ffmpeg -i {vname} -filter:v scale={width}:{height} -vf 'transpose=1' -c:a copy {newfilename}"
     else:
         command = f"ffmpeg -i {vname} -filter:v scale={width}:{height} -c:a copy {newfilename}"
     subprocess.call(command, shell=True)
@@ -237,7 +241,7 @@ def draw_bbox(video):
     while not success:
         success, frame = clip.read()
 
-    bbox = [0, frame.shape[1], 0, frame.shape[0]]
+    bbox = [0, 0, frame.shape[1], frame.shape[0]]
 
     def line_select_callback(eclick, erelease):
         bbox[:2] = int(eclick.xdata), int(eclick.ydata)  # x1, y1
@@ -272,15 +276,23 @@ def draw_bbox(video):
         rectprops=dict(facecolor="red", edgecolor="black", alpha=0.3, fill=True),
     )
     plt.show()
-    if platform.system() != 'Linux':
-        fig.canvas.start_event_loop(timeout=-1)
+
+    # import platform
+    # if platform.system() == "Darwin":  # for OSX use WXAgg
+    #    fig.canvas.start_event_loop(timeout=-1)
+    # else:
+    fig.canvas.start_event_loop(timeout=-1)  # just tested on Ubuntu I also need this.
+    #    #fig.canvas.stop_event_loop()
+
     plt.close(fig)
     return bbox
 
 
 def get_duration(videofile):
     """Get the duration of a video using ffprobe."""
-    cmd = f'ffprobe -i "{videofile}" -show_entries format=duration -v quiet -of csv="p=0"'
+    cmd = (
+        f'ffprobe -i "{videofile}" -show_entries format=duration -v quiet -of csv="p=0"'
+    )
     output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
     return float(output)
 

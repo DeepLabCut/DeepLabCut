@@ -2,7 +2,8 @@
 Adapted from DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
 """
-import logging, os
+import logging
+import os
 
 
 def setup_logging():

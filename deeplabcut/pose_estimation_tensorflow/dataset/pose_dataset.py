@@ -9,6 +9,7 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 from enum import Enum
+
 import numpy as np
 
 

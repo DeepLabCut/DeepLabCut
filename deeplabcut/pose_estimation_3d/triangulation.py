@@ -8,17 +8,17 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-import pandas as pd
-import numpy as np
-from pathlib import Path
-import cv2
 import os
-from tqdm import tqdm
-import glob
+from pathlib import Path
 
-from deeplabcut.utils import auxiliaryfunctions_3d
-from deeplabcut.utils import auxiliaryfunctions
+import cv2
+import numpy as np
+import pandas as pd
 from matplotlib.axes._axes import _log as matplotlib_axes_logger
+from tqdm import tqdm
+
+from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils import auxiliaryfunctions_3d
 
 matplotlib_axes_logger.setLevel("ERROR")
 

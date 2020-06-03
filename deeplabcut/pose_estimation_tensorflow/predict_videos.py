@@ -13,22 +13,24 @@ Licensed under GNU Lesser General Public License v3.0
 ####################################################
 # Dependencies
 ####################################################
-
-import os.path
-from deeplabcut.pose_estimation_tensorflow.nnet import predict, processing
-from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import data_to_input
-import time, sys
-import pandas as pd
-import numpy as np
-import os
 import argparse
+import os
+import os.path
+import time
 from pathlib import Path
-from tqdm import tqdm
-import tensorflow as tf
-from deeplabcut.utils import auxiliaryfunctions
+
+from deeplabcut.pose_estimation_tensorflow.nnet import predict, processing
+
 import cv2
+import numpy as np
+import pandas as pd
+import tensorflow as tf
 from skimage.util import img_as_ubyte
+from tqdm import tqdm
+
+from deeplabcut.pose_estimation_tensorflow.config import load_config
+from deeplabcut.utils import auxiliaryfunctions
+
 
 ####################################################
 # Loading data, and defining model folder
@@ -1583,7 +1585,6 @@ def convert_detections2tracklets(
                     )
                     upperbound *= 1.25
                     lowerbound *= 0.5  # SLACK!
-                    print(upperbound, lowerbound)
                 else:
                     lowerbound = None
                     upperbound = None

@@ -9,8 +9,12 @@ Licensed under GNU Lesser General Public License v3.0
 
 """
 
+import os
+import pydoc
+import sys
+
 import wx
-import os, sys, pydoc
+
 import deeplabcut
 from deeplabcut import utils
 
@@ -200,6 +204,7 @@ class Extract_outlier_frames(wx.Panel):
         tracker = ""
         if self.cfg.get("multianimalproject", False):
             tracker = self.trackertypes.GetValue()
+
         deeplabcut.extract_outlier_frames(
             config=self.config,
             videos=self.filelist,

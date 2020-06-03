@@ -8,11 +8,12 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 
 """
-import deeplabcut
 import os
 import wx
-from deeplabcut.gui.welcome import Welcome
+
 from deeplabcut.gui.create_new_project import Create_new_project
+from deeplabcut.gui.welcome import Welcome
+from deeplabcut.utils import auxiliaryfunctions
 
 
 class MainFrame(wx.Frame):
@@ -36,7 +37,9 @@ class MainFrame(wx.Frame):
             pos=wx.DefaultPosition,
             style=wx.RESIZE_BORDER | wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL,
         )
-        media_path = os.path.join(deeplabcut.__path__[0], "gui", "media")
+
+        dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
+        media_path = os.path.join(dlcparent_path, "gui", "media")
         logo = os.path.join(media_path, "logo.png")
         self.SetIcon(wx.Icon(logo))
         self.SetSizeHints(

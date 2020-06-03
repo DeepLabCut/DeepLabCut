@@ -8,19 +8,19 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-
-import pandas as pd
-import numpy as np
-from pathlib import Path
-import cv2
+import glob
 import os
 import pickle
-import glob
-import matplotlib.pyplot as plt
+from pathlib import Path
+
+import cv2
 import matplotlib.colors as mcolors
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.axes._axes import _log as matplotlib_axes_logger
+
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils import auxiliaryfunctions_3d
-from matplotlib.axes._axes import _log as matplotlib_axes_logger
 
 matplotlib_axes_logger.setLevel("ERROR")
 

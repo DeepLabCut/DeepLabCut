@@ -3,31 +3,17 @@ Adapted from DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
 """
 
-import logging, os
-import numpy as np
-
-# from scipy.misc import imresize
-from deeplabcut.utils.auxfun_videos import imresize
-import platform
-import matplotlib as mpl
-
-if os.environ.get("DLClight", default=False) == "True":
-    mpl.use(
-        "AGG"
-    )  # anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
-    pass
-elif platform.system() == "Darwin":
-    mpl.use("WXAgg")
-else:
-    mpl.use("TkAgg")  # TkAgg
+import logging
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import Batch
 from deeplabcut.pose_estimation_tensorflow.dataset.factory import (
     create as dataset_create,
 )
+from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import Batch
+from deeplabcut.utils.auxfun_videos import imresize
 
 
 def display_dataset():

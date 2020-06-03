@@ -8,35 +8,31 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-import sys
-import wx
+import argparse
 import os
-import pandas as pd
-import numpy as np
+import os.path
+import platform
+from pathlib import Path
 
 # from skimage import io
 import PIL
-import glob
-import platform
-import wx.lib.scrolledpanel as SP
-
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import matplotlib.colors as mcolors
-import os.path
-import argparse
 import matplotlib
-from deeplabcut.utils import auxiliaryfunctions
-from skimage import io
-
-from pathlib import Path
-from deeplabcut.refine_training_dataset import auxfun_drag
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-
+import matplotlib.colors as mcolors
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import wx
+import wx.lib.scrolledpanel as SP
+from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.backends.backend_wxagg import (
     NavigationToolbar2WxAgg as NavigationToolbar,
 )
-from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from skimage import io
+
+from deeplabcut.refine_training_dataset import auxfun_drag
+from deeplabcut.utils import auxiliaryfunctions
 
 
 # ###########################################################################

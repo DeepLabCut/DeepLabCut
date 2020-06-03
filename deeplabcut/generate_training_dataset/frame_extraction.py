@@ -159,7 +159,6 @@ def extract_frames(
         wd = Path(config).resolve().parents[0]
         os.chdir(str(wd))
         from deeplabcut.generate_training_dataset import frame_extraction_toolbox
-        from deeplabcut.utils import select_crop_parameters
 
         frame_extraction_toolbox.show(config, slider_width)
 

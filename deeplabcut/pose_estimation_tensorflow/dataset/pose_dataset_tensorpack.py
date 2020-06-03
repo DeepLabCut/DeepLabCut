@@ -19,22 +19,16 @@ https://github.com/tensorpack/tensorpack
 """
 
 
-import os
-import cv2
 import multiprocessing
-import logging
+import os
 import random as rand
+
+import cv2
 import numpy as np
-import pandas as pd
-
-from enum import Enum
-from numpy import array as arr
-from numpy import concatenate as cat
 import scipy.io as sio
-
+from numpy import array as arr
 from tensorpack.dataflow.base import RNGDataFlow
 from tensorpack.dataflow.common import MapData
-from tensorpack.dataflow.imgaug.crop import RandomCropRandomShape
 from tensorpack.dataflow.imgaug import (
     Affine,
     Brightness,
@@ -44,9 +38,10 @@ from tensorpack.dataflow.imgaug import (
     GaussianNoise,
     GaussianBlur,
 )
-from tensorpack.dataflow.parallel import MultiProcessRunnerZMQ, MultiProcessRunner
+from tensorpack.dataflow.imgaug.crop import RandomCropRandomShape
+from tensorpack.dataflow.imgaug.meta import RandomApplyAug
 from tensorpack.dataflow.imgaug.transform import CropTransform
-from tensorpack.dataflow.imgaug.meta import RandomApplyAug, RandomChooseAug
+from tensorpack.dataflow.parallel import MultiProcessRunnerZMQ, MultiProcessRunner
 from tensorpack.utils.utils import get_rng
 
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import (

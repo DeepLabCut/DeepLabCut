@@ -11,8 +11,8 @@ fourcc = cv2.VideoWriter_fourcc(*'MJPG')
 i.e. 'XVID'
 """
 
-import numpy as np
 import cv2
+import numpy as np
 
 
 class VideoProcessor(object):

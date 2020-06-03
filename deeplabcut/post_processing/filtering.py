@@ -8,13 +8,15 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 import argparse
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from deeplabcut.utils import auxiliaryfunctions
-from deeplabcut.refine_training_dataset.outlier_frames import FitSARIMAXModel
-from pathlib import Path
 from scipy import signal
 from scipy.interpolate import UnivariateSpline
+
+from deeplabcut.refine_training_dataset.outlier_frames import FitSARIMAXModel
+from deeplabcut.utils import auxiliaryfunctions
 
 
 def columnwise_spline_interp(data, max_gap=0):

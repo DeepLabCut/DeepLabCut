@@ -9,17 +9,14 @@ Licensed under GNU Lesser General Public License v3.0
 Adapted from DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
 """
-import os
 import logging
+import os
 import random as rand
+
 import numpy as np
+import scipy.io as sio
 from numpy import array as arr
 from numpy import concatenate as cat
-
-import scipy.io as sio
-from deeplabcut.utils.auxfun_videos import imread, imresize
-
-# from scipy.misc import imread, imresize
 
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import (
     Batch,
@@ -28,6 +25,10 @@ from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import (
     CropImage,
     DataItem,
 )
+from deeplabcut.utils.auxfun_videos import imread, imresize
+
+
+# from scipy.misc import imread, imresize
 
 # from dataset.pose_dataset import Batch, data_to_input, mirror_joints_map, CropImage, DataItem
 

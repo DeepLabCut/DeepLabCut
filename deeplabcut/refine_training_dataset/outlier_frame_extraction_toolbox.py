@@ -8,29 +8,28 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-
-from __future__ import print_function
-import wx
-import wx.lib.scrolledpanel as SP
-import cv2
-import os
-import matplotlib
-import numpy as np
-from pathlib import Path
-import pandas as pd
 import argparse
-from deeplabcut.utils import auxiliaryfunctions, visualization
+import os
+from pathlib import Path
 
-from deeplabcut.create_project import add
-from skimage import io
-from skimage.util import img_as_ubyte
-import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
-from mpl_toolkits.axes_grid1 import make_axes_locatable
+import cv2
+import matplotlib
 import matplotlib.colors as mcolors
 import matplotlib.patches as patches
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import wx
+import wx.lib.scrolledpanel as SP
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
-from matplotlib.widgets import RectangleSelector
+from matplotlib.figure import Figure
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from skimage import io
+from skimage.util import img_as_ubyte
+
+from deeplabcut.create_project import add
+from deeplabcut.utils import auxiliaryfunctions, visualization
+
 
 # ###########################################################################
 # Class for GUI MainFrame
