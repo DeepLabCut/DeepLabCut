@@ -573,6 +573,43 @@ def format_training_data(df, train_inds, nbodyparts, project_path):
     matlab_data = np.asarray(matlab_data, dtype=[('image', 'O'), ('size', 'O'), ('joints', 'O')])
     return train_data, matlab_data
 
+
+# Charlie addition
+def format_training_data_slices(df, train_inds, nbodyparts, project_path):
+    train_data = []
+    matlab_data = []
+
+    def to_matlab_cell(array):
+        outer = np.array([[None]], dtype=object)
+        outer[0, 0] = array.astype('int64')
+        return outer
+
+    for i in train_inds:
+        data = dict()
+        filename = df.index[i]
+        data['image'] = filename
+        img_shape = _read_image_shape_fast(os.path.join(project_path, filename))
+        try:
+            data['size'] = img_shape[2], img_shape[0], img_shape[1]
+        except IndexError:
+            data['size'] = 1, img_shape[0], img_shape[1]
+        temp = df.iloc[i].values.reshape(-1, 2)
+        joints = np.c_[range(nbodyparts), temp]
+        joints = joints[~np.isnan(joints).any(axis=1)].astype(int)
+        # Check that points lie within the image
+        inside = np.logical_and(np.logical_and(joints[:, 1] < img_shape[1], joints[:, 1] > 0),
+                                np.logical_and(joints[:, 2] < img_shape[0], joints[:, 2] > 0))
+        if not all(inside):
+            joints = joints[inside]
+        if joints.size:  # Exclude images without labels
+            data['joints'] = joints
+            train_data.append(data)
+            matlab_data.append((np.array([data['image']], dtype='U'),
+                                np.array([data['size']]),
+                                to_matlab_cell(data['joints'])))
+    matlab_data = np.asarray(matlab_data, dtype=[('image', 'O'), ('size', 'O'), ('joints', 'O')])
+    return train_data, matlab_data
+
 def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=False,userfeedback=False,
         trainIndexes=None,testIndexes=None,
         net_type=None,augmenter_type=None):
@@ -695,7 +732,15 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
             ################################################################################
             # Saving data file (convert to training file for deeper cut (*.mat))
             ################################################################################
-            data, MatlabData = format_training_data(Data, trainIndexes, nbodyparts, project_path)
+            # Charlie addition: check for 3d training data
+            is_zslices = cfg['using_z_slices']
+            #is_zslices = cfg.get('using_z_slices', False)
+            if not is_zslices:
+                # default
+                data, MatlabData = format_training_data(Data, trainIndexes, nbodyparts, project_path)
+            else:
+                print("Recognized zslice training data; using custom function")
+                data, MatlabData = format_training_data_slices(Data, trainIndexes, nbodyparts, project_path)
             sio.savemat(os.path.join(project_path,datafilename), {'dataset': MatlabData})
 
             ################################################################################
