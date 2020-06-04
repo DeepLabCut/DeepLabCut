@@ -47,6 +47,20 @@ class ImagePanel(wx.Panel):
         self.SetSizer(self.sizer)
         self.Fit()
 
+        # From Charlie:
+        self.preloaded_images = []
+
+    def preload_images(self, parent_obj):
+########
+        # From Charlie: pre-load the pictures
+        #   todo: make configurable
+        if True:
+            print("Pre-loading {} images into memory...".format(len(parent_obj.index)))
+            for im_fname in parent_obj.index:
+                self.preloaded_images.append(cv2.imread(im_fname)[...,::-1])
+            print("Finished loading {} images.".format(len(self.preloaded_images)))
+########
+
     def getfigure(self):
         return(self.figure)
 
@@ -56,7 +70,9 @@ class ImagePanel(wx.Panel):
         self.axes.clear()
 
         # convert the image to RGB as you are showing the image with matplotlib
-        im = cv2.imread(img)[...,::-1]
+        # TODO
+        #im = cv2.imread(img)[...,::-1]
+        im = self.preloaded_images[itr]
         ax = self.axes.imshow(im,cmap=cmap)
         self.orig_xlim = self.axes.get_xlim()
         self.orig_ylim = self.axes.get_ylim()
@@ -240,7 +256,6 @@ class MainFrame(wx.Frame):
         # xlim and ylim have actually changed before turning zoom off
         self.prezoom_xlim=[]
         self.prezoom_ylim=[]
-
 ###############################################################################################################################
 # BUTTONS FUNCTIONS FOR HOTKEYS
     def OnKeyPressed(self, event=None):
@@ -449,17 +464,20 @@ class MainFrame(wx.Frame):
         self.colormap = plt.get_cmap(self.cfg['colormap'])
         self.colormap = self.colormap.reversed()
         self.project_path=self.cfg['project_path']
-        
+
         imlist=[]
         for imtype in self.imtypes:
             imlist.extend([fn for fn in glob.glob(os.path.join(self.dir,imtype)) if ('labeled.png' not in fn)])
-        
+
         if len(imlist)==0:
             print("No images found!!")
-            
+
         self.index =np.sort(imlist)
         self.statusbar.SetStatusText('Working on folder: {}'.format(os.path.split(str(self.dir))[-1]))
         self.relativeimagenames=['labeled'+n.split('labeled')[1] for n in self.index]#[n.split(self.project_path+'/')[1] for n in self.index]
+
+        # From Charlie: pre-load the pictures
+        self.image_panel.preload_images(self)
 
 # Reading the existing dataset,if already present
         try:
