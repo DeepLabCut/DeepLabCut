@@ -318,6 +318,10 @@ def MakeLabeledPlots(folder,DataCombined,cfg,Labels,Colorscheme,cc,scale):
         image = io.imread(os.path.join(cfg['project_path'],imagename))
         plt.axis('off')
 
+        #print(image.shape)
+        # Charlie: do a max projection; format is ZXY
+        if cfg['using_z_slices']:
+            image = np.max(image, axis=0)
         if np.ndim(image)==2:
             h, w = np.shape(image)
         else:
@@ -552,6 +556,7 @@ def format_training_data(df, train_inds, nbodyparts, project_path):
         filename = df.index[i]
         data['image'] = filename
         img_shape = _read_image_shape_fast(os.path.join(project_path, filename))
+
         try:
             data['size'] = img_shape[2], img_shape[0], img_shape[1]
         except IndexError:
@@ -589,24 +594,30 @@ def format_training_data_slices(df, train_inds, nbodyparts, project_path):
         filename = df.index[i]
         data['image'] = filename
         img_shape = _read_image_shape_fast(os.path.join(project_path, filename))
-        try:
-            data['size'] = img_shape[2], img_shape[0], img_shape[1]
-        except IndexError:
-            data['size'] = 1, img_shape[0], img_shape[1]
-        temp = df.iloc[i].values.reshape(-1, 2)
-        joints = np.c_[range(nbodyparts), temp]
+        # Charlie: data['size'] format: CXYZ
+        # Input format: slice, row, col
+        data['size'] = 1, img_shape[1], img_shape[2], img_shape[0]
+        temp = df.iloc[i].values.reshape(-1, 3) # Charlie: Read xyz of annotations
+        joints = np.c_[range(nbodyparts), temp] # Add integer labels
         joints = joints[~np.isnan(joints).any(axis=1)].astype(int)
         # Check that points lie within the image
-        inside = np.logical_and(np.logical_and(joints[:, 1] < img_shape[1], joints[:, 1] > 0),
-                                np.logical_and(joints[:, 2] < img_shape[0], joints[:, 2] > 0))
+        # Charlie: Why did it check for img_shape[0]??
+        inside = np.logical_and(np.logical_and(joints[:, 1] < img_shape[2], joints[:, 1] > 0),
+                                np.logical_and(joints[:, 2] < img_shape[1], joints[:, 2] > 0))
+        #print(img_shape)
+        #print(joints)
+        #print(joints[~inside])
         if not all(inside):
             joints = joints[inside]
+            print("Removing {}/{} joints that are not inside the image".format(
+                len(np.argwhere(~inside)), len(inside)))
         if joints.size:  # Exclude images without labels
             data['joints'] = joints
             train_data.append(data)
             matlab_data.append((np.array([data['image']], dtype='U'),
                                 np.array([data['size']]),
                                 to_matlab_cell(data['joints'])))
+    #print("matlab_data {}".format(matlab_data))
     matlab_data = np.asarray(matlab_data, dtype=[('image', 'O'), ('size', 'O'), ('joints', 'O')])
     return train_data, matlab_data
 
@@ -733,9 +744,9 @@ def create_training_dataset(config,num_shuffles=1,Shuffles=None,windows2linux=Fa
             # Saving data file (convert to training file for deeper cut (*.mat))
             ################################################################################
             # Charlie addition: check for 3d training data
-            is_zslices = cfg['using_z_slices']
-            #is_zslices = cfg.get('using_z_slices', False)
-            if not is_zslices:
+            using_z_slices = cfg['using_z_slices']
+            #using_z_slices = cfg.get('using_z_slices', False)
+            if not using_z_slices:
                 # default
                 data, MatlabData = format_training_data(Data, trainIndexes, nbodyparts, project_path)
             else:
