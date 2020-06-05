@@ -134,13 +134,17 @@ def calculatepafdistancebounds(
             for ind in individuals:
                 for ind2 in individuals:
                     if ind != "single" and ind2 != "single":
-                        if (ind, j1, "x") in Data.keys() and (ind2, j2, "y") in Data.keys():
+                        if (ind, j1, "x") in Data.keys() and (
+                            ind2,
+                            j2,
+                            "y",
+                        ) in Data.keys():
                             distances = np.sqrt(
                                 (Data[ind, j1, "x"] - Data[ind2, j1, "x"]) ** 2
                                 + (Data[ind, j1, "y"] - Data[ind2, j2, "y"]) ** 2
                             )
                         else:
-                            distances=None
+                            distances = None
 
                         if distances is not None:
                             if onlytrain:  # extracts only distances on training data.

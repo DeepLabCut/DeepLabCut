@@ -1193,8 +1193,9 @@ class MainFrame(wx.Frame):
         ]
         self.dataFrame = self.dataFrame.loc[:, valid]
         # Re-organize the dataframe so the CSV looks consistent
-        self.dataFrame.columns = self.dataFrame.columns.sortlevel(level="individuals",
-                                                                  sort_remaining=False)[0]
+        self.dataFrame.columns = self.dataFrame.columns.sortlevel(
+            level="individuals", sort_remaining=False
+        )[0]
         self.dataFrame = self.dataFrame.reindex(
             config_bpts, axis=1, level=self.dataFrame.columns.names.index("bodyparts")
         )
