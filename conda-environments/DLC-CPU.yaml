@@ -13,6 +13,8 @@
 #
 # install: conda env create -f DLC-CPU.yaml
 # update:  conda env update -f DLC-CPU.yaml
+#
+# NOTE: if manually installing dependencies with pip any 1.x version of tensorflow will work.
 
 name: DLC-CPU
 dependencies:
