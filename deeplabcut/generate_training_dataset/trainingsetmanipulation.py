@@ -574,7 +574,7 @@ def MakeInference_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
 def _robust_path_split(path):
     sep = "\\" if "\\" in path else "/"
     parent, file = path.rsplit(sep, 1)
-    filename, ext = file.split(".")
+    filename, ext = os.path.splitext(file)
     return parent, filename, ext
 
 
