@@ -218,10 +218,12 @@ For each video directory in labeled-data this function creates a subdirectory wi
 - If you run this on the cloud, before importing `deeplabcut` you need to suppress GUIs. As you can see in our [demo notebooks](/examples/COLAB_DEMO_mouse_openfield.ipynb) for running DLC training, evaluation, and novel video analysis on the Cloud, you must first suppress GUIs - server computers don't have a screen you can interact with. So, before you launch ipython, run `export DLClight=True` (see more tips in the full PDF user-guide).
 
 **OVERVIEW:** This function combines the labeled datasets from all the videos and splits them to create train and test datasets. The training data will be used to train the network, while the test data set will be used for evaluating the network. The function **create_training_dataset** or **create_multianimaltraining_dataset** performs those steps.
+
 ```python
 deeplabcut.create_training_dataset(config_path, augmenter_type='imgaug')
 ```
-**maDeepLabCut CRITICAL POINT**- you must use the new function if you have a multi-animal project (and the skeleton in the `config.yaml` must be defined before you run this step, if not already done):
+**maDeepLabCut CRITICAL POINT**- you must use this new function if you have a multi-animal project (and the skeleton in the `config.yaml` **must be defined** before you run this step, if not already done). You **should also run** `deeplabcut.cropimagesandlabels(path_config_file)` before creating a training set, as we use batch processing and many users have smaller GPUs that cannot accommodate larger images + larger batchsizes. This is also a type of data augmentation. 
+
 ```python  
     deeplabcut.create_multianimaltraining_dataset(config_path)
 ```
