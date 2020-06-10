@@ -166,6 +166,17 @@ class KalmanBoxTracker(object):
         Returns the current bounding box estimate.
         """
         return convert_x_to_bbox(self.kf.x)
+    
+    def mahalanobis_dist(self, z):
+        """
+           Compute the mahalanobis distance
+        """
+        x_hat = np.dot(self.kf.H[:2,:2], self.kf.x[:2])
+        y = np.subtract(z, x_hat)
+        S = self.kf.R[:2,:2] + np.dot(self.kf.H[:2,:2], np.dot(self.kf.P[:2,:2], self.kf.H.T[:2,:2]))
+        Inv_S = np.linalg.inv(S)
+        d = np.dot(y.T, np.dot(Inv_S, y))
+        return np.sqrt(d)
 
 
 class SkeletonTracker:
