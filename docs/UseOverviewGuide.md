@@ -267,7 +267,7 @@ Then run:
 ```python
 deeplabcut.create_multianimaltraining_dataset(path_config_file, allow_growth=True)
 ```
-(more details [here](functionDetails.md#f-create-training-dataset))
+(more details [here](functionDetails.md#f-create-training-datasets))
 
 ### Train The Network:
 
