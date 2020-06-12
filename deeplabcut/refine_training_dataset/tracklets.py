@@ -672,10 +672,14 @@ class TrackletVisualizer:
 
     def save_coords(self):
         coords, nonempty, inds = self.manager.get_non_nan_elements(self._curr_frame)
+        prob = self.manager.prob[:, self._curr_frame]
         for dp in self.dps:
             label = dp.individual_names, dp.bodyParts
             ind = self.manager._label_pairs.index(label)
-            coords[np.flatnonzero(inds == ind)[0]] = dp.point.center
+            nrow = np.flatnonzero(inds == ind)[0]
+            if not np.array_equal(coords[nrow], dp.point.center):  # Keypoint has been displaced
+                coords[nrow] = dp.point.center
+                prob[ind] = 1
         self.manager.xy[nonempty, self._curr_frame] = coords
 
     def flag_frame(self, *args):
