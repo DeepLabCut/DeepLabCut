@@ -378,7 +378,7 @@ def cropimagesandlabels(
 
             if updatevideoentries and cropdata:
                 # moving old entry to _original, dropping it from video_set and update crop parameters
-                video_orig = sep.join((vidpath, vidname + "." + videotype))
+                video_orig = sep.join((vidpath, vidname + videotype))
                 cfg["video_sets_original"][video_orig] = cfg["video_sets"][video_orig]
                 cfg["video_sets"].pop(video_orig)
                 cfg["video_sets"][video_orig.replace(vidname, new_vidname)] = {
