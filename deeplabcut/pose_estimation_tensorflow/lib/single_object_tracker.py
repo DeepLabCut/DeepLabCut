@@ -1,3 +1,14 @@
+"""
+DeepLabCut 2.2 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
+https://github.com/AlexEMG/DeepLabCut
+Please see AUTHORS for contributors.
+https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
+
+This module was contributed by Tabet Ehsainieh - https://github.com/ehsainit
+"""
+
 from deeplabcut.pose_estimation_tensorflow.lib.trackingutils import *
 
 
