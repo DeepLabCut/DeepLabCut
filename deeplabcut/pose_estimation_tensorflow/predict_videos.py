@@ -36,9 +36,9 @@ from deeplabcut.utils import auxiliaryfunctions
 
 
 def analyze_videos(
-     config,
+    config,
     videos,
-     videotype="avi",
+    videotype="avi",
     shuffle=1,
     trainingsetindex=0,
     gputouse=None,
@@ -389,7 +389,7 @@ def GetPoseF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             if cfg["cropping"]:
                 frames[batch_ind] = img_as_ubyte(
-                frame[cfg["y1"]: cfg["y2"], cfg["x1"]: cfg["x2"]]
+                frame[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]]
                 )
             else:
                 frames[batch_ind] = img_as_ubyte(frame)
@@ -397,7 +397,7 @@ def GetPoseF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
             if batch_ind == batchsize - 1:
                 pose = predict.getposeNP(frames, dlc_cfg, sess, inputs, outputs)
                 PredictedData[
-                    batch_num * batchsize: (batch_num + 1) * batchsize, :
+                    batch_num * batchsize : (batch_num + 1) * batchsize, :
                 ] = pose
                 batch_ind = 0
                 batch_num += 1
@@ -411,7 +411,7 @@ def GetPoseF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
                     frames, dlc_cfg, sess, inputs, outputs
                 )  # process the whole batch (some frames might be from previous batch!)
                 PredictedData[
-                    batch_num * batchsize: batch_num * batchsize + batch_ind, :
+                    batch_num * batchsize : batch_num * batchsize + batch_ind, :
                 ] = pose[:batch_ind, :]
             break
         counter += 1
@@ -492,7 +492,7 @@ def GetPoseS_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
             pose[:, [0, 1, 2]] = pose[:, [1, 0, 2]]
             # pose = predict.getpose(frame, dlc_cfg, sess, inputs, outputs)
             PredictedData[
-            counter, :
+                counter, :
             ] = (
                 pose.flatten()
             )  # NOTE: thereby cfg['all_joints_names'] should be same order as bodyparts!
@@ -531,7 +531,7 @@ def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             if cfg["cropping"]:
                 frames[batch_ind] = img_as_ubyte(
-                    frame[cfg["y1"]: cfg["y2"], cfg["x1"]: cfg["x2"]]
+                    frame[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]]
                 )
             else:
                 frames[batch_ind] = img_as_ubyte(frame)
@@ -546,7 +546,7 @@ def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
                     pose, (batchsize, -1)
                 )  # bring into batchsize times x,y,conf etc.
                 PredictedData[
-                    batch_num * batchsize: (batch_num + 1) * batchsize, :
+                    batch_num * batchsize : (batch_num + 1) * batchsize, :
                 ] = pose
 
                 batch_ind = 0
@@ -606,7 +606,7 @@ def GetPoseDynamic(
             originalframe = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             if cfg["cropping"]:
                 frame = img_as_ubyte(
-                originalframe[cfg["y1"]: cfg["y2"], cfg["x1"]: cfg["x2"]]
+                    originalframe[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]]
                 )[y1:y2, x1:x2]
             else:
                 frame = img_as_ubyte(originalframe[y1:y2, x1:x2])
@@ -630,7 +630,7 @@ def GetPoseDynamic(
                     # print("looking again, lost!")
                     if cfg["cropping"]:
                         frame = img_as_ubyte(
-                        originalframe[cfg["y1"]: cfg["y2"], cfg["x1"]: cfg["x2"]]
+                            originalframe[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]]
                         )
                     else:
                         frame = img_as_ubyte(originalframe)
@@ -859,7 +859,7 @@ def GetPosesofFrames(
 
             if cfg["cropping"]:
                 frame = img_as_ubyte(
-                im[cfg["y1"]: cfg["y2"], cfg["x1"]: cfg["x2"], :]
+                    im[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"], :]
                 )
             else:
                 frame = img_as_ubyte(im)
@@ -881,7 +881,7 @@ def GetPosesofFrames(
 
             if cfg["cropping"]:
                 frames[batch_ind] = img_as_ubyte(
-                im[cfg["y1"]: cfg["y2"], cfg["x1"]: cfg["x2"], :]
+                    im[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"], :]
                 )
             else:
                 frames[batch_ind] = img_as_ubyte(im)
@@ -889,7 +889,7 @@ def GetPosesofFrames(
             if batch_ind == batchsize - 1:
                 pose = predict.getposeNP(frames, dlc_cfg, sess, inputs, outputs)
                 PredictedData[
-                    batch_num * batchsize: (batch_num + 1) * batchsize, :
+                    batch_num * batchsize : (batch_num + 1) * batchsize, :
                 ] = pose
                 batch_ind = 0
                 batch_num += 1
@@ -903,7 +903,7 @@ def GetPosesofFrames(
                 frames, dlc_cfg, sess, inputs, outputs
             )  # process the whole batch (some frames might be from previous batch!)
             PredictedData[
-                batch_num * batchsize: batch_num * batchsize + batch_ind, :
+                batch_num * batchsize : batch_num * batchsize + batch_ind, :
             ] = pose[:batch_ind, :]
 
     pbar.close()
@@ -1430,10 +1430,12 @@ def convert_detections2tracklets(
                 elif track_method == "single_object":
                     mot_tracker = TrackByDetectionTracker(10, numjoints)
                 else:
-                    mot_tracker = trackingutils.SORT(numjoints,
-                                                     inferencecfg['max_age'],
-                                                     inferencecfg['min_hits'],
-                                                     inferencecfg.get('oks_threshold', 0.5))
+                    mot_tracker = trackingutils.SORT(
+                        numjoints,
+                        inferencecfg['max_age'],
+                        inferencecfg['min_hits'],
+                        inferencecfg.get('oks_threshold', 0.5)
+                        )
 
                 Tracks = {}
                 for index, imname in tqdm(enumerate(imnames)):
@@ -1471,7 +1473,7 @@ def convert_detections2tracklets(
                         all_jointnames.index(bp) for bp in cfg["uniquebodyparts"]
                     ]
                     if not any(
-                         np.isfinite(a.reshape((-1, 3))[inds_unique]).all()
+                        np.isfinite(a.reshape((-1, 3))[inds_unique]).all()
                         for a in animals
                     ):
                         single = np.full((numjoints, 3), np.nan)
@@ -1511,4 +1513,4 @@ if __name__ == "__main__":
     parser.add_argument("video")
     parser.add_argument("config")
     cli_args = parser.parse_args()
-    
+
