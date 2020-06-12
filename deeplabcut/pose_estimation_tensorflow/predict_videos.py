@@ -1435,7 +1435,7 @@ def convert_detections2tracklets(
                         inferencecfg["max_age"],
                         inferencecfg["min_hits"],
                         inferencecfg.get("oks_threshold", 0.5),
-                        )
+                    )
 
                 Tracks = {}
                 for index, imname in tqdm(enumerate(imnames)):
