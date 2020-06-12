@@ -969,7 +969,7 @@ class TrackletVisualizer:
         self.save_coords()
         self.manager.save()
 
-    def export_to_training_data(self):
+    def export_to_training_data(self, pcutoff=0.1):
         import os
         from skimage import io
 
@@ -1013,6 +1013,14 @@ class TrackletVisualizer:
         # Store the newly-refined data
         data = self.manager.format_data()
         df = data.iloc[inds]
+
+        # Uncertain keypoints are ignored
+        def filter_low_prob(cols, prob):
+            mask = cols.iloc[:, 2] < prob
+            cols.loc[mask] = np.nan
+            return cols
+
+        df = df.groupby(level='bodyparts', axis=1).apply(filter_low_prob, prob=pcutoff)
         df.index = index
         machinefile = os.path.join(
             tmpfolder, "machinelabels-iter" + str(self.manager.cfg["iteration"]) + ".h5"
