@@ -280,10 +280,15 @@ def evaluate_multianimal_full(
                             coords_pred = pred["coordinates"][0]
                             probs_pred = pred["confidence"]
                             best_pred = np.full_like(df, np.nan)
+                            gt = df.values
                             for n, (coords, probs) in enumerate(zip(coords_pred, probs_pred)):
                                 if probs.size:
-                                    best_pred[n] = coords[probs.argmax()]
-                            dist[:, imageindex] = np.sqrt(np.sum((best_pred - df.values) ** 2, axis=1))
+                                    # Pick the prediction closest to ground truth,
+                                    # rather than the one the model has most confident in
+                                    norm = np.sqrt(np.sum((coords - gt[n]) ** 2, axis=1))
+                                    ind = norm.argmin()
+                                    best_pred[n] = coords[ind]
+                                    dist[n, imageindex] = norm[ind]
 
                             if plotting:
                                 fig = visualization.make_multianimal_labeled_image(
