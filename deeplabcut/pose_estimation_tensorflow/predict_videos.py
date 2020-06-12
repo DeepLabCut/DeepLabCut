@@ -389,7 +389,7 @@ def GetPoseF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             if cfg["cropping"]:
                 frames[batch_ind] = img_as_ubyte(
-                frame[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]]
+                    frame[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]]
                 )
             else:
                 frames[batch_ind] = img_as_ubyte(frame)
@@ -562,7 +562,7 @@ def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
                 pose[:, [0, 1, 2]] = pose[:, [1, 0, 2]]
                 pose = np.reshape(pose, (batchsize, -1))
                 PredictedData[
-                    batch_num * batchsize: batch_num * batchsize + batch_ind, :
+                    batch_num * batchsize : batch_num * batchsize + batch_ind, :
                 ] = pose[:batch_ind, :]
 
             break
@@ -1432,9 +1432,9 @@ def convert_detections2tracklets(
                 else:
                     mot_tracker = trackingutils.SORT(
                         numjoints,
-                        inferencecfg['max_age'],
-                        inferencecfg['min_hits'],
-                        inferencecfg.get('oks_threshold', 0.5)
+                        inferencecfg["max_age"],
+                        inferencecfg["min_hits"],
+                        inferencecfg.get("oks_threshold", 0.5),
                         )
 
                 Tracks = {}
@@ -1513,4 +1513,3 @@ if __name__ == "__main__":
     parser.add_argument("video")
     parser.add_argument("config")
     cli_args = parser.parse_args()
-
