@@ -52,11 +52,14 @@ Writing: MWM, AM and TN with inputs from all authors.
 
 ############################################################################################################
 
-DeepLabCut 2.1 additions
+DeepLabCut 2.1 major additions:
 A Mathis, alexander.mathis@bethgelab.org | https://github.com/AlexEMG/DeepLabCut
 T Nath, nath@rowland.harvard.edu | https://github.com/meet10may
 M Yüksekgönül, mertyuksekgonul@gmail.com | https://github.com/mertyg
 M Mathis, mackenzie@post.harvard.edu | https://github.com/MMathisLab
+
+Specific external contributors:
+Tensorpack augmentation: https://github.com/DeepLabCut/DeepLabCut/pull/409 by Katie Rupp
 
 Preprint:
 Pretraining boosts out-of-domain robustness for pose estimation
@@ -64,7 +67,7 @@ A. Mathis, M. Yüksekgönül, B. Rogers, M. Bethge, M. Mathis
 
 ############################################################################################################
 
-DeepLabCut 2.1 - 2.2 additions (currently unpublished)
+DeepLabCut 2.1 - 2.2 additions (currently unpublished):
 A Mathis, alexander.mathis@epfl.ch | https://github.com/AlexEMG/DeepLabCut
 J Lauer, jessy@deeplabcut.org | https://github.com/jeylau
 T Biasi, tbiasi@college.harvard.edu | https://github.com/tbiasi
