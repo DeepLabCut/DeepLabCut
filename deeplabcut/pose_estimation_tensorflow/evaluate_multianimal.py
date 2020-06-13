@@ -293,7 +293,7 @@ def evaluate_multianimal_full(
                                     rows, cols = linear_sum_assignment(d)
                                     min_dists = d[rows, cols]
                                     inds = np.flatnonzero(all_bpts == bpt)
-                                    dist[inds[inds_gt], imageindex] = min_dists
+                                    dist[inds[inds_gt[rows]], imageindex] = min_dists
 
                             if plotting:
                                 fig = visualization.make_multianimal_labeled_image(
