@@ -15,6 +15,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import skimage.color
+from scipy.optimize import linear_sum_assignment
+from scipy.spatial.distance import cdist
 from skimage import io
 from skimage.util import img_as_ubyte
 from tqdm import tqdm
@@ -95,6 +97,8 @@ def evaluate_multianimal_full(
     comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
         cfg, comparisonbodyparts
     )
+    all_bpts = np.asarray(len(cfg['individuals']) * cfg['multianimalbodyparts']
+                          + cfg['uniquebodyparts'])
     colors = visualization.get_cmap(len(comparisonbodyparts), name=cfg["colormap"])
     # Make folder for evaluation
     auxiliaryfunctions.attempttomakefolder(
@@ -238,7 +242,7 @@ def evaluate_multianimal_full(
                         sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
 
                         PredicteData = {}
-                        dist = np.full((len(dlc_cfg['all_joints']), len(Data)), np.nan)
+                        dist = np.full((len(all_bpts), len(Data)), np.nan)
                         print("Analyzing data...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
                             image_path = os.path.join(cfg["project_path"], imagename)
@@ -279,16 +283,17 @@ def evaluate_multianimal_full(
 
                             coords_pred = pred["coordinates"][0]
                             probs_pred = pred["confidence"]
-                            best_pred = np.full_like(df, np.nan)
-                            gt = df.values
-                            for n, (coords, probs) in enumerate(zip(coords_pred, probs_pred)):
-                                if probs.size:
-                                    # Pick the prediction closest to ground truth,
-                                    # rather than the one the model has most confident in
-                                    norm = np.sqrt(np.sum((coords - gt[n]) ** 2, axis=1))
-                                    ind = norm.argmin()
-                                    best_pred[n] = coords[ind]
-                                    dist[n, imageindex] = norm[ind]
+                            for bpt, xy_gt in df.groupby(level='bodyparts'):
+                                inds_gt = np.flatnonzero(np.all(~np.isnan(xy_gt), axis=1))
+                                xy = coords_pred[dlc_cfg['all_joints_names'].index(bpt)]
+                                if inds_gt.size and xy.size:
+                                    # Pick the predictions closest to ground truth,
+                                    # rather than the ones the model has most confident in
+                                    d = cdist(xy_gt.iloc[inds_gt], xy)
+                                    rows, cols = linear_sum_assignment(d)
+                                    min_dists = d[rows, cols]
+                                    inds = np.flatnonzero(all_bpts == bpt)
+                                    dist[inds[inds_gt], imageindex] = min_dists
 
                             if plotting:
                                 fig = visualization.make_multianimal_labeled_image(
