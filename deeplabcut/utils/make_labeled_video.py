@@ -19,6 +19,8 @@ import os
 ####################################################
 import os.path
 from pathlib import Path
+from functools import partial
+from multiprocessing import Pool
 
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
@@ -68,7 +70,7 @@ def CreateVideo(
     displaycropped,
     color_by,
 ):
-    """ Creating individual frames with labeled body parts and making a video"""
+    """Creating individual frames with labeled body parts and making a video"""
     bpts = Dataframe.columns.get_level_values("bodyparts")
     all_bpts = bpts.values[::3]
     if draw_skeleton:
@@ -88,15 +90,17 @@ def CreateVideo(
     duration = nframes / fps
 
     print(
-        "Duration of video [s]: ",
-        round(duration, 2),
-        ", recorded with ",
-        round(fps, 2),
-        "fps!",
+        "Duration of video [s]: {}, recorded with {} fps!".format(
+            round(duration, 2), round(fps, 2)
+        )
     )
-    print("Overall # of frames: ", nframes, "with cropped frame dimensions: ", nx, ny)
-
+    print(
+        "Overall # of frames: {} with cropped frame dimensions: {} {}".format(
+            nframes, nx, ny
+        )
+    )
     print("Generating frames and creating video.")
+
     df_x, df_y, df_likelihood = Dataframe.values.reshape((nframes, -1, 3)).T
     if cropping and not displaycropped:
         df_x += x1
@@ -133,7 +137,8 @@ def CreateVideo(
             if displaycropped:
                 image = image[y1:y2, x1:x2]
 
-            # Draw the skeleton for specific bodyparts to be connected as specified in the config file
+            # Draw the skeleton for specific bodyparts to be connected as
+            # specified in the config file
             if draw_skeleton:
                 for bpt1, bpt2 in bpts2connect:
                     if np.all(df_likelihood[[bpt1, bpt2], index] > pcutoff) and not (
@@ -197,7 +202,7 @@ def CreateVideoSlow(
     displaycropped,
     color_by,
 ):
-    """ Creating individual frames with labeled body parts and making a video"""
+    """Creating individual frames with labeled body parts and making a video"""
     # scorer=np.unique(Dataframe.columns.get_level_values(0))[0]
     # bodyparts2plot = list(np.unique(Dataframe.columns.get_level_values(1)))
 
@@ -214,14 +219,14 @@ def CreateVideoSlow(
     duration = nframes / fps
 
     print(
-        "Duration of video [s]: ",
-        round(duration, 2),
-        ", recorded with ",
-        round(fps, 2),
-        "fps!",
+        "Duration of video [s]: {}, recorded with {} fps!".format(
+            round(duration, 2), round(fps, 2)
+        )
     )
     print(
-        "Overall # of frames: ", int(nframes), "with cropped frame dimensions: ", nx, ny
+        "Overall # of frames: {} with cropped frame dimensions: {} {}".format(
+            nframes, nx, ny
+        )
     )
     print("Generating frames and creating video.")
     df_x, df_y, df_likelihood = Dataframe.values.reshape((nframes, -1, 3)).T
@@ -262,13 +267,10 @@ def CreateVideoSlow(
             "Your video has more than 10**9 frames, we recommend chopping it up."
         )
 
-    if Frames2plot == None:
-        Index = range(nframes)
+    if Frames2plot is None:
+        Index = set(range(nframes))
     else:
-        Index = []
-        for k in Frames2plot:
-            if k >= 0 and k < nframes:
-                Index.append(int(k))
+        Index = {int(k) for k in Frames2plot if 0 <= k < nframes}
 
     # Prepare figure
     prev_backend = plt.get_backend()
@@ -329,7 +331,8 @@ def CreateVideoSlow(
                     fig.savefig(imagename)
                 writer.grab_frame()
                 ax.clear()
-    print("Labeled video successfully created.")
+
+    print("Labeled video {} successfully created.".format(videooutname))
     plt.switch_backend(prev_backend)
 
 
@@ -377,9 +380,6 @@ def create_labeled_video(
 
     filtered: bool, default false
         Boolean variable indicating if filtered output should be plotted rather than frame-by-frame predictions. Filtered version can be calculated with deeplabcut.filterpredictions
-
-    videotype: string, optional
-        Checks for the extension of the video in case the input is a directory.\nOnly videos with this extension are analyzed. The default is ``.avi``
 
     fastmode: bool
         If true uses openCV (much faster but less customization of video) vs matplotlib (if false). You can also
@@ -470,130 +470,179 @@ def create_labeled_video(
     start_path = os.getcwd()
     Videos = auxiliaryfunctions.Getlistofvideos(videos, videotype)
 
-    if not len(Videos):
+    if not Videos:
         print("No video(s) were found. Please check your paths and/or 'video_type'.")
         return
 
-    for video in Videos:
-        videofolder = Path(video).parents[0]
-        if destfolder is None:
-            destfolder = videofolder  # where your folder with videos is.
-        auxiliaryfunctions.attempttomakefolder(destfolder)
+    func = partial(
+        proc_video,
+        videos,
+        destfolder,
+        filtered,
+        DLCscorer,
+        DLCscorerlegacy,
+        track_method,
+        cfg,
+        individuals,
+        color_by,
+        bodyparts,
+        codec,
+        bodyparts2connect,
+        trailpoints,
+        save_frames,
+        outputframerate,
+        Frames2plot,
+        draw_skeleton,
+        skeleton_color,
+        displaycropped,
+        fastmode,
+    )
 
-        os.chdir(destfolder)  # THE VIDEO IS STILL IN THE VIDEO FOLDER
-        videotype = Path(video).suffix
-        print("Starting % ", destfolder, videos)
-        vname = str(Path(video).stem)
-
-        # if notanalyzed:
-        # notanalyzed,outdataname,sourcedataname,DLCscorer=auxiliaryfunctions.CheckifPostProcessing(folder,vname,DLCscorer,DLCscorerlegacy,suffix='checking')
-
-        if filtered == True:
-            videooutname1 = os.path.join(vname + DLCscorer + "filtered_labeled.mp4")
-            videooutname2 = os.path.join(
-                vname + DLCscorerlegacy + "filtered_labeled.mp4"
-            )
-        else:
-            videooutname1 = os.path.join(vname + DLCscorer + "_labeled.mp4")
-            videooutname2 = os.path.join(vname + DLCscorerlegacy + "_labeled.mp4")
-
-        if os.path.isfile(videooutname1) or os.path.isfile(videooutname2):
-            print("Labeled video already created.")
-        else:
-            print("Loading ", video, "and data.")
-            try:
-                df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(
-                    destfolder, vname, DLCscorer, filtered, track_method
-                )
-                metadata = auxiliaryfunctions.load_video_metadata(
-                    destfolder, vname, DLCscorer
-                )
-                if cfg.get("multianimalproject", False):
-                    s = "_id" if color_by == "individual" else "_bp"
-                else:
-                    s = ""
-                videooutname = filepath.replace(".h5", f"{s}_labeled.mp4")
-                if os.path.isfile(videooutname):
-                    print("Labeled video already created. Skipping...")
-                    continue
-
-                if all(individuals):
-                    df = df.loc(axis=1)[:, individuals]
-                cropping = metadata["data"]["cropping"]
-                [x1, x2, y1, y2] = metadata["data"]["cropping_parameters"]
-                labeled_bpts = [
-                    bp
-                    for bp in df.columns.get_level_values("bodyparts").unique()
-                    if bp in bodyparts
-                ]
-                if not fastmode:
-                    tmpfolder = os.path.join(str(videofolder), "temp-" + vname)
-                    if save_frames:
-                        auxiliaryfunctions.attempttomakefolder(tmpfolder)
-                    clip = vp(video)
-                    CreateVideoSlow(
-                        videooutname,
-                        clip,
-                        df,
-                        tmpfolder,
-                        cfg["dotsize"],
-                        cfg["colormap"],
-                        cfg["alphavalue"],
-                        cfg["pcutoff"],
-                        trailpoints,
-                        cropping,
-                        x1,
-                        x2,
-                        y1,
-                        y2,
-                        save_frames,
-                        labeled_bpts,
-                        outputframerate,
-                        Frames2plot,
-                        bodyparts2connect,
-                        skeleton_color,
-                        draw_skeleton,
-                        displaycropped,
-                        color_by,
-                    )
-                else:
-                    if (
-                        displaycropped
-                    ):  # then the cropped video + the labels is depicted
-                        clip = vp(
-                            fname=video,
-                            sname=videooutname,
-                            codec=codec,
-                            sw=x2 - x1,
-                            sh=y2 - y1,
-                        )
-                    else:  # then the full video + the (perhaps in cropped mode analyzed labels) are depicted
-                        clip = vp(fname=video, sname=videooutname, codec=codec)
-                    CreateVideo(
-                        clip,
-                        df,
-                        cfg["pcutoff"],
-                        cfg["dotsize"],
-                        cfg["colormap"],
-                        labeled_bpts,
-                        trailpoints,
-                        cropping,
-                        x1,
-                        x2,
-                        y1,
-                        y2,
-                        bodyparts2connect,
-                        skeleton_color,
-                        draw_skeleton,
-                        displaycropped,
-                        color_by,
-                    )
-
-            except FileNotFoundError as e:
-                print(e)
-                continue
+    with Pool(min(os.cpu_count(), len(Videos))) as pool:
+        pool.map(func, Videos)
 
     os.chdir(start_path)
+
+
+def proc_video(
+    videos,
+    destfolder,
+    filtered,
+    DLCscorer,
+    DLCscorerlegacy,
+    track_method,
+    cfg,
+    individuals,
+    color_by,
+    bodyparts,
+    codec,
+    bodyparts2connect,
+    trailpoints,
+    save_frames,
+    outputframerate,
+    Frames2plot,
+    draw_skeleton,
+    skeleton_color,
+    displaycropped,
+    fastmode,
+    video,
+):
+    """Helper function for create_videos
+
+    Parameters
+    ----------
+
+
+    """
+    videofolder = Path(video).parents[0]
+    if destfolder is None:
+        destfolder = videofolder  # where your folder with videos is.
+
+    auxiliaryfunctions.attempttomakefolder(destfolder)
+
+    os.chdir(destfolder)  # THE VIDEO IS STILL IN THE VIDEO FOLDER
+    print("Starting to process video: {}".format(video))
+    vname = str(Path(video).stem)
+
+    if filtered:
+        videooutname1 = os.path.join(vname + DLCscorer + "filtered_labeled.mp4")
+        videooutname2 = os.path.join(vname + DLCscorerlegacy + "filtered_labeled.mp4")
+    else:
+        videooutname1 = os.path.join(vname + DLCscorer + "_labeled.mp4")
+        videooutname2 = os.path.join(vname + DLCscorerlegacy + "_labeled.mp4")
+
+    if os.path.isfile(videooutname1) or os.path.isfile(videooutname2):
+        print("Labeled video {} already created.".format(vname))
+    else:
+        print("Loading {} and data.".format(video))
+        try:
+            df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(
+                destfolder, vname, DLCscorer, filtered, track_method
+            )
+            metadata = auxiliaryfunctions.load_video_metadata(
+                destfolder, vname, DLCscorer
+            )
+            if cfg.get("multianimalproject", False):
+                s = "_id" if color_by == "individual" else "_bp"
+            else:
+                s = ""
+            videooutname = filepath.replace(".h5", f"{s}_labeled.mp4")
+            if os.path.isfile(videooutname):
+                print("Labeled video already created. Skipping...")
+                return
+
+            if all(individuals):
+                df = df.loc(axis=1)[:, individuals]
+            cropping = metadata["data"]["cropping"]
+            [x1, x2, y1, y2] = metadata["data"]["cropping_parameters"]
+            labeled_bpts = [
+                bp
+                for bp in df.columns.get_level_values("bodyparts").unique()
+                if bp in bodyparts
+            ]
+            if not fastmode:
+                tmpfolder = os.path.join(str(videofolder), "temp-" + vname)
+                if save_frames:
+                    auxiliaryfunctions.attempttomakefolder(tmpfolder)
+                clip = vp(video)
+                CreateVideoSlow(
+                    videooutname,
+                    clip,
+                    df,
+                    tmpfolder,
+                    cfg["dotsize"],
+                    cfg["colormap"],
+                    cfg["alphavalue"],
+                    cfg["pcutoff"],
+                    trailpoints,
+                    cropping,
+                    x1,
+                    x2,
+                    y1,
+                    y2,
+                    save_frames,
+                    labeled_bpts,
+                    outputframerate,
+                    Frames2plot,
+                    bodyparts2connect,
+                    skeleton_color,
+                    draw_skeleton,
+                    displaycropped,
+                    color_by,
+                )
+            else:
+                if displaycropped:  # then the cropped video + the labels is depicted
+                    clip = vp(
+                        fname=video,
+                        sname=videooutname,
+                        codec=codec,
+                        sw=x2 - x1,
+                        sh=y2 - y1,
+                    )
+                else:  # then the full video + the (perhaps in cropped mode analyzed labels) are depicted
+                    clip = vp(fname=video, sname=videooutname, codec=codec)
+                CreateVideo(
+                    clip,
+                    df,
+                    cfg["pcutoff"],
+                    cfg["dotsize"],
+                    cfg["colormap"],
+                    labeled_bpts,
+                    trailpoints,
+                    cropping,
+                    x1,
+                    x2,
+                    y1,
+                    y2,
+                    bodyparts2connect,
+                    skeleton_color,
+                    draw_skeleton,
+                    displaycropped,
+                    color_by,
+                )
+
+        except FileNotFoundError as e:
+            print(e)
 
 
 def create_video_with_all_detections(config, videos, DLCscorername, destfolder=None):
