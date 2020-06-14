@@ -239,11 +239,19 @@ def analyzeskeleton(
                 continue
 
             bones = {}
-            for bp1, bp2 in cfg["skeleton"]:
-                name = "{}_{}".format(bp1, bp2)
-                bones[name] = analyzebone(
-                    df[scorer][bp1], df[scorer][bp2]
-                )
+            if 'individuals' in df.columns.names:
+                for animal_name, df_ in df.groupby(level='individuals', axis=1):
+                    temp = df_.droplevel(['scorer', 'individuals'], axis=1)
+                    if animal_name != 'single':
+                        for bp1, bp2 in cfg["skeleton"]:
+                            name = "{}_{}_{}".format(animal_name, bp1, bp2)
+                            bones[name] = analyzebone(temp[bp1], temp[bp2])
+            else:
+                for bp1, bp2 in cfg["skeleton"]:
+                    name = "{}_{}".format(bp1, bp2)
+                    bones[name] = analyzebone(
+                        df[scorer][bp1], df[scorer][bp2]
+                    )
 
             skeleton = pd.concat(bones, axis=1)
             skeleton.to_hdf(output_name, "df_with_missing", format="table", mode="w")
