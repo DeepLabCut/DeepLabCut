@@ -711,6 +711,10 @@ class MainFrame(wx.Frame):
                 os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5"),
                 "df_with_missing",
             )
+            # Handle data previously labeled on a different platform
+            sep = "/" if "/" in self.dataFrame.index[0] else "\\"
+            if sep != os.path.sep:
+                self.dataFrame.index = self.dataFrame.index.str.replace(sep, os.path.sep)
             self.dataFrame.sort_index(inplace=True)
             self.prev.Enable(True)
             # Finds the first empty row in the dataframe and sets the iteration to that index
