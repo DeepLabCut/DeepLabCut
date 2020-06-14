@@ -203,6 +203,9 @@ def analyzeskeleton(
     """
     # Load config file, scorer and videos
     cfg = auxiliaryfunctions.read_config(config)
+    if not cfg['skeleton']:
+        raise ValueError('No skeleton defined in the config.yaml.')
+
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
         cfg,
         shuffle,
