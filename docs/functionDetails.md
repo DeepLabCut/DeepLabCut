@@ -57,6 +57,8 @@ The ``create_new_project`` step writes the following parameters to the configura
 
 Next, open the **config.yaml** file, which was created during  **create\_new\_project**. You can edit this file in any text editor.  Familiarize yourself with the meaning of the parameters (Box 1). You can edit various parameters, in particular you **must add the list of *bodyparts* (or points of interest)** that you want to track. You can also set the *colormap* here that is used for all downstream steps (can also be edited at anytime), like labeling GUIs, videos, etc. Here any [matplotlib colormaps](https://matplotlib.org/tutorials/colors/colormaps.html) will do!
 
+Please DO NOT have spaces in the names of bodyparts, uniquebodyparts, individuals, etc.
+
 **maDeepLabCut:** You need to edit the config.yaml file to **modify the following items** which specify the animal ID, body parts, and any unique labels. You should also define an over-connected 'skeleton' at this time in the config.yaml file. For example, for a "simple" 4 body part animal see the example skeleton. Note, we also highly recommend that you use **more bodypoints** that you might otherwise have, i.e., labeling along the spine/tail for 8 bodypoints would be better than four.
 
 Modifying the `config.yaml` is crucial, especially connecting the skeleton:
@@ -93,6 +95,11 @@ skeleton:
 - - topleftcorner
   - toprightcorner
 ```
+**individuals** are names of individuals in the training dataset. If in the training dataset has maximally 14 individuals (not all need to be visible!) then list `- indv1` to `- indv14`; they will also share the same bodyparts in `multianimalbodyparts`. After training if you have a video with more or less animals, that is fine - you can change this number before running video analysis!
+
+**Uniquebodyparts** are points you which to track that are "unique" i.e., not part of multi-animals. Typically these are things like unique objects or corners of a box, etc. They are treated similar to pre-2.2 projects; namely, they do not require a skeleton.
+
+**multianimalbodyparts:** are points shared across individuals. They are required to be fully connected in the skeleton!
 
 **Note**, if you don't have uniquebodyparts please format as: `uniquebodyparts: []`. Also, it is crucial you connect the skeleton, and "over-connect" it, as shown above.
 
@@ -488,6 +495,14 @@ In DLC2.2+ you get out a `.pickle` file from `analyze_videos`, not the final `.h
 
 Firstly, you need to convert detections to tracklets. This step has several tracker types (`track_method`), and we recommend testing which one works best on your data.
 
+**Summary of current tracker types:**
+
+   - `box` detects the assembled animal, with a defined slack/margin specified at: `boundingboxslack` and a box overlap of `iou_threshold`
+
+   - `skeleton` uses the skeleton defined in the config.yaml file to associate already detected individuals across different frames.
+   
+   - `single_object` does not assemble the animals, but treats each point as a unique animal. Thus, this is ideally suited for rapid single object tracking (i.e. one bodypart per animal). Thus, if planning to use this mode, please use only "unique bodyparts" (although multi-animal bodyparts could also be tracked, but given there is no skeleton to connect this is likely not useful). 
+
 ```python
 deeplabcut.convert_detections2tracklets(path_config_file, ['videofile_path'], videotype='mp4', shuffle=1, trainingsetindex=0, track_method='box')
 ```
@@ -548,6 +563,12 @@ Short demo:
 </p>
 
 
+Lastly, let's say you've optimized the `inference_cfg.yaml` (i.e., tracking) parameters, and you want to just apply this to a set of videos and by-pass the tracklet GUI, you can pass the pickle file directly from `analyze_videos` (and your `config.yaml` full path) and run:
+
+```python
+deeplabcut.convert_raw_tracks_to_h5(path_config_file, picklefile)
+```
+
 ### (I) Novel Video Analysis: extra features
 
 #### Dynamic-cropping of videos (single animal pose estimation):
@@ -562,7 +583,7 @@ dynamic: triple containing (state, detectiontreshold, margin)
 #### Filter data:
 [DOCSTRING](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#filterpredictions)
 
-You can also filter the predictions with a median filter (default; **NEW** as of 2.0.7+) or with a [SARIMAX model](https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html), if you wish. This creates a new .h5 file with the ending *_filtered* that you can use in create_labeled_data and/or plot trajectories.
+You can also filter the predictions with a median filter (default) or with a [SARIMAX model](https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html), if you wish. This creates a new .h5 file with the ending *_filtered* that you can use in create_labeled_data and/or plot trajectories.
 ```python
 deeplabcut.filterpredictions(config_path, ['fullpath/analysis/project/videos/reachingvideo1.avi'])
 ```
