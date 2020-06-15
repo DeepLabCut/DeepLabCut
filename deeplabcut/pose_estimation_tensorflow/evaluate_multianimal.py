@@ -78,6 +78,10 @@ def evaluate_multianimal_full(
         ),
         "df_with_missing",
     )
+    # Handle data previously annotated on a different platform
+    sep = "/" if "/" in Data.index[0] else "\\"
+    if sep != os.path.sep:
+        Data.index = Data.index.str.replace(sep, os.path.sep)
     # Get list of body parts to evaluate network for
     comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
         cfg, comparisonbodyparts
