@@ -711,6 +711,7 @@ def find_analyzed_data(folder, videoname, scorer, filtered=False, track_method="
                     file.startswith(videoname + scorer)
                     or file.startswith(videoname + scorer_legacy)
                 ),
+                'skeleton' not in file,
                 (tracker in file if tracker else not ("_sk" in file or "_bx" in file)),
                 (filtered and "filtered" in file)
                 or (not filtered and "filtered" not in file),

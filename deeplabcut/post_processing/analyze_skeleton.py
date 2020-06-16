@@ -13,7 +13,7 @@ Written by Federico Claudi - https://github.com/FedeClaudi
 import argparse
 from math import atan2, degrees
 from pathlib import Path
-
+import os
 import numpy as np
 import pandas as pd
 from scipy.spatial import distance
@@ -172,9 +172,11 @@ def analyzeskeleton(
     videotype="avi",
     shuffle=1,
     trainingsetindex=0,
+    filtered=False,
     save_as_csv=False,
     destfolder=None,
     modelprefix="",
+    track_method="",
 ):
     """
     Extracts length and orientation of each "bone" of the skeleton as defined in the config file.
@@ -194,15 +196,25 @@ def analyzeskeleton(
     trainingsetindex: int, optional
         Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
 
+    filtered: bool, default false
+        Boolean variable indicating if filtered output should be plotted rather than frame-by-frame predictions. Filtered version can be calculated with deeplabcut.filterpredictions
+
     save_as_csv: bool, optional
         Saves the predictions in a .csv file. The default is ``False``; if provided it must be either ``True`` or ``False``
 
     destfolder: string, optional
         Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this
         folder also needs to be passed.
+
+    track_method: string, optional
+        Specifies the tracker used to generate the data. Empty by default (corresponding to
+        a single animal project). For multiple animals, must be either 'box' or 'skeleton'.
     """
     # Load config file, scorer and videos
     cfg = auxiliaryfunctions.read_config(config)
+    if not cfg['skeleton']:
+        raise ValueError('No skeleton defined in the config.yaml.')
+
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
         cfg,
         shuffle,
@@ -217,29 +229,38 @@ def analyzeskeleton(
             destfolder = str(Path(video).parents[0])
 
         vname = Path(video).stem
-        (
-            notanalyzed,
-            outdataname,
-            sourcedataname,
-            scorer,
-        ) = auxiliaryfunctions.CheckifPostProcessing(
-            destfolder, vname, DLCscorer, DLCscorerlegacy, suffix="_skeleton"
-        )
-        if notanalyzed:
-            Dataframe = pd.read_hdf(sourcedataname, "df_with_missing")
-            # Process skeleton
+        try:
+            df, filepath, scorer, _ = auxiliaryfunctions.load_analyzed_data(
+                destfolder, vname, DLCscorer, filtered, track_method
+            )
+            output_name = filepath.replace(".h5", f"_skeleton.h5")
+            if os.path.isfile(output_name):
+                print(f"Skeleton in video {vname} already processed. Skipping...")
+                continue
+
             bones = {}
-            for bp1, bp2 in cfg["skeleton"]:
-                name = "{}_{}".format(bp1, bp2)
-                bones[name] = analyzebone(
-                    Dataframe[scorer][bp1], Dataframe[scorer][bp2]
-                )
+            if 'individuals' in df.columns.names:
+                for animal_name, df_ in df.groupby(level='individuals', axis=1):
+                    temp = df_.droplevel(['scorer', 'individuals'], axis=1)
+                    if animal_name != 'single':
+                        for bp1, bp2 in cfg["skeleton"]:
+                            name = "{}_{}_{}".format(animal_name, bp1, bp2)
+                            bones[name] = analyzebone(temp[bp1], temp[bp2])
+            else:
+                for bp1, bp2 in cfg["skeleton"]:
+                    name = "{}_{}".format(bp1, bp2)
+                    bones[name] = analyzebone(
+                        df[scorer][bp1], df[scorer][bp2]
+                    )
 
             skeleton = pd.concat(bones, axis=1)
-            # save
-            skeleton.to_hdf(outdataname, "df_with_missing", format="table", mode="w")
+            skeleton.to_hdf(output_name, "df_with_missing", format="table", mode="w")
             if save_as_csv:
-                skeleton.to_csv(outdataname.split(".h5")[0] + ".csv")
+                skeleton.to_csv(output_name.replace(".h5", ".csv"))
+
+        except FileNotFoundError as e:
+            print(e)
+            continue
 
 
 if __name__ == "__main__":
