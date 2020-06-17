@@ -505,7 +505,7 @@ Firstly, you need to convert detections to tracklets. This step has several trac
 
    - `skeleton` uses the skeleton, as defined in the config.yaml file to associate detected individuals across different frames.
 
-   - `single_object`: is a single-object tracker. I.e. links instances of the same bodyparts across frames (with no regard to individual animals, i.e. assembled individuals). Thus, this is ideally suited for rapid single object tracking (i.e. full animal tracking, cell tracking, etc.). 
+   - `single_object`: is a single-object tracker. I.e. links instances of the same bodyparts across frames (with no regard to individual animals, i.e. assembled individuals). Thus, this is ideally suited for rapid single object tracking (i.e. single-point animal tracking, cell tracking, etc.). 
 
 ```python
 deeplabcut.convert_detections2tracklets(path_config_file, ['videofile_path'], videotype='mp4', shuffle=1, trainingsetindex=0, track_method='box')
