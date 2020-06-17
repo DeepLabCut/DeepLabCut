@@ -945,7 +945,11 @@ def AnalyzeVideo(
                     "size": size,
                     "h5-file-name": str(Path(dataname).resolve()),
                     "orig-video-path": str(Path(video).resolve()),
-                    "cropping-offset": (int(cfg["y1"]), int(cfg["x1"])) if (cfg["cropping"]) else None
+                    "cropping-offset": (int(cfg["y1"]), int(cfg["x1"])) if (cfg["cropping"]) else None,
+                    "dotsize": cfg["dotsize"],
+                    "colormap": cfg["colormap"],
+                    "alphavalue": cfg["alphavalue"],
+                    "pcutoff": cfg["pcutoff"]
                 }
 
                 # Create a predictor plugin instance...

@@ -622,7 +622,8 @@ class Predictor(ABC):
                          to values. The actual data within the dictionary depends on return provided by get_settings
                          and what settings the user has set in deeplabcut's config.yaml.
                          If get_settings for this predictor returns None, this method will pass None...
-        :param video_metadata: The metadata information for this dlc instance. Includes the keys:
+        :param video_metadata: The metadata information for this dlc instance. Most of these settings are primarily
+                               useful to interactive plugins. Includes the keys:
                                     "fps": Original Video's frames per second
                                     "h5-file-name": The name of the original h5 file and it's path, as a string.
                                     "orig-video-path": The file path and name of the video being analyzed, as a string.
@@ -634,6 +635,15 @@ class Predictor(ABC):
                                                        no cropping, this value is set to None. Width/Height of cropping
                                                        box can be inferred using tracking data width and height and
                                                        multiplying it by the stride.
+                                    "dotsize": The radius of dots used when outputting predictions to a video, an
+                                               integer.
+                                    "colormap": The colormap used when plotting points to a video, a string representing
+                                                a matplotlib colormap.
+                                    "alphavalue": The alpha value of the points when outputting predictions, a float
+                                                  between 0 and 1.
+                                    "pcutoff": The probability at which to display no point in the final plotted video
+                                               if the point in the data falls below this threshold. A float between 0
+                                               and 1.
         """
         pass
 

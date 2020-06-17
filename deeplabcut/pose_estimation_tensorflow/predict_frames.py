@@ -177,7 +177,11 @@ def _analyze_frame_store(cfg: dict, frame_store_path: Path, video_name: Optional
                 "size": (vid_h, vid_w),
                 "h5-file-name": data_name,
                 "orig-video-path": str(video_name) if (video_name is not None) else None, # This may be None if we were unable to find the video...
-                "cropping-offset": None if(off_x is None or off_y is None) else (off_y, off_x)
+                "cropping-offset": None if(off_x is None or off_y is None) else (off_y, off_x),
+                "dotsize": cfg["dotsize"],
+                "colormap": cfg["colormap"],
+                "alphavalue": cfg["alphavalue"],
+                "pcutoff": cfg["pcutoff"]
             }
 
             # Create the plugin instance...
