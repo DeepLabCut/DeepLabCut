@@ -57,6 +57,7 @@ class TrackByDetectionTracker:
         states = []
         for t, track in enumerate(self.tracks):
             if t < len(matches) and matches[t] is not None:
+                # new assigned tracks in the n frames will be fist tracked in the n+1 frame - probably need fixing
                 states.append(np.concatenate((track.prediction, [track.track_id, matches[t]])).reshape(1, -1)[0])
         if len(states) > 0:
             return np.stack(states)
