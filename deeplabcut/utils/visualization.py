@@ -231,6 +231,7 @@ def make_labeled_images_from_dataframe(
     bodypart_names = bodyparts.unique()
     nbodyparts = len(bodypart_names)
     bodyparts = bodyparts[::2]
+    draw_skeleton = draw_skeleton and cfg['skeleton']  # Only draw if a skeleton is defined
 
     if color_by == "bodypart":
         map_ = bodyparts.map(dict(zip(bodypart_names, range(nbodyparts))))
