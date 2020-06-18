@@ -45,17 +45,18 @@ class TrackByDetectionTracker:
         cost_matrix = self.cost_metric(detection_bbs, N, M)
         rows, cols = linear_sum_assignment(cost_matrix)
         matches = self._matching(rows, cols, bbs, N)
-
         # either predict or use detection bbs to track
         for i in range(len(matches)):
-            if matches[i] is not None:
-                self.tracks[i].skipped_frames = 0
-                self.tracks[i].predict(self.iter, detection_bbs[matches[i]])
-            else:
-                self.tracks[i].predict(it=self.iter)
+            # would be better if delete from the matches upon deleting tracks
+            if i < len(self.tracks):
+                if matches[i] is not None:
+                    self.tracks[i].skipped_frames = 0
+                    self.tracks[i].predict(self.iter, detection_bbs[matches[i]])
+                else:
+                    self.tracks[i].predict(it=self.iter)
         states = []
         for t, track in enumerate(self.tracks):
-            if matches[t] is not None:
+            if t < len(matches) and matches[t] is not None:
                 states.append(np.concatenate((track.prediction, [track.track_id, matches[t]])).reshape(1, -1)[0])
         if len(states) > 0:
             return np.stack(states)

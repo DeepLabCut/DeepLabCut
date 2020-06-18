@@ -753,6 +753,8 @@ def load_detection_data(video, scorer, track_method):
         tracker = "sk"
     elif track_method == "box":
         tracker = "bx"
+    elif track_method == "single_object":
+        tracker = "so"
     else:
         raise ValueError(f"Unrecognized track_method={track_method}")
 
