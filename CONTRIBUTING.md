@@ -25,11 +25,9 @@ If you want to contribute to the code, please make a [pull request](https://gith
 - Please run black on the code to conform to our Black code style (see more at https://pypi.org/project/black/). 
 - Please asign a reviewer, typically @AlexEMG, @mmathislab, or @jeylau (i/e. the [core-developers](https://github.com/orgs/DeepLabCut/teams/core-developers/members))
 
-**Please fill out the CLAI:**
 
-- Read and [electronically sign here](https://forms.gle/Dj4dJBud9dwqHhxB9)
+**DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals:**
 
-DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals: 
 - the [authors](/AUTHORS)
 - [code contributors](https://github.com/DeepLabCut/DeepLabCut/graphs/contributors) 
 
