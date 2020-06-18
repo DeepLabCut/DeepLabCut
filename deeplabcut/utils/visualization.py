@@ -295,6 +295,7 @@ def make_labeled_images_from_dataframe(
             coll.set_segments(segs[i])
         scat.set_offsets(coords)
         imagename = os.path.basename(ic.files[i])
+        fig.tight_layout()
         fig.savefig(
             os.path.join(tmpfolder, imagename.replace(".png", f"_{color_by}.png"))
         )
