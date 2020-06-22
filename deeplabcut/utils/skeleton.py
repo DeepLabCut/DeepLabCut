@@ -88,7 +88,7 @@ class SkeletonBuilder:
                 count.drop("single", axis=1, inplace=True)
         except KeyError:
             count = self.df.count(axis=1).to_frame()
-        mask = count.where(count == count.max())
+        mask = count.where(count == count.values.max())
         kept = mask.stack().index.to_list()
         np.random.shuffle(kept)
         row, col = kept.pop()
