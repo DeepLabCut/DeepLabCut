@@ -1069,6 +1069,55 @@ def refine_tracklets(
     max_gap=0,
     trail_len=50,
 ):
+    """
+    Refine tracklets stored either in pickle or h5 format.
+    The procedure is done in two stages:
+    (i) freshly-converted detections are read by the TrackletManager,
+    which automatically attempts to optimize tracklet continuity by
+    assigning higher priority to long tracks while maximizing
+    keypoint likelihood;
+    (ii) loaded tracklets are displayed into the TrackletVisualizer
+    for manual editing. Individual labels can be dragged around
+    like in the labeling toolbox; several of them can also be simultaneously
+    selected using the Lasso tool in order to re-assign multiple tracks
+    to another identity at once.
+
+    Parameters
+    ----------
+    config: str
+        Full path of the config.yaml file.
+
+    pickle_or_h5_file: str
+        Full path of either the pickle file obtained after calling
+        deeplabcut.convert_detections2tracklets, or the h5 file written after
+        refining the tracklets a first time. Note that refined tracklets are
+        always stored in the h5 format.
+
+    video: str
+        Full path of the corresponding video.
+        If the video duration and the total length of the tracklets disagree
+        by more than 5%, a message is printed indicating that the selected
+        video may not be the right one.
+
+    min_swap_frac : float, optional (default=0.01)
+        Relative fraction of the data below which bodypart swaps are ignored.
+        Set to 1% by default. Retained swaps appear in the right panel in
+        shaded regions.
+
+    min_tracklet_frac : float, optional (default=0)
+        Relative fraction of the data below which tracklets are ignored.
+        By default, all tracklets are kept. If set to 0.02, for example,
+        tracklets shorter than 2% of the total number of frames are discarded
+        leaving missing data instead.
+
+    max_gap : int, optional (default=0).
+        Maximal gap size (in number of frames) of missing data to be filled.
+        The procedure fits a cubic spline over all individual trajectories,
+        and fills all gaps by default.
+
+    trail_len : int, optional (default=50)
+        Number of trailing points.
+    """
     manager = TrackletManager(config, min_swap_frac, min_tracklet_frac, max_gap)
     if pickle_or_h5_file.endswith("pickle"):
         manager.load_tracklets_from_pickle(pickle_or_h5_file)
