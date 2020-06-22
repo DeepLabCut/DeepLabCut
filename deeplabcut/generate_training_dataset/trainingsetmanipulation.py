@@ -479,7 +479,7 @@ def check_labels(
 
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
-    video_names = [Path(i).stem for i in videos]
+    video_names = [_robust_path_split(video)[1] for video in videos]
 
     folders = [
         os.path.join(cfg["project_path"], "labeled-data", str(Path(i)))
