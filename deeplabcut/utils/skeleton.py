@@ -75,6 +75,8 @@ class SkeletonBuilder:
         if self.cfg["skeleton"]:
             for bone in self.cfg["skeleton"]:
                 pair = np.flatnonzero(self.bpts.isin(bone))
+                if len(pair) != 2:
+                    continue
                 pair_sorted = tuple(sorted(pair))
                 self.inds.add(pair_sorted)
                 self.segs.add(tuple(map(tuple, self.xy[pair_sorted, :])))
