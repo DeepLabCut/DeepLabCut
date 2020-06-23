@@ -591,8 +591,6 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
     videos = cfg["video_sets"].keys()
     for video in videos:
         _, filename, _ = _robust_path_split(video)
-        if cfg.get("croppedtraining", False):
-            filename += "_cropped"
         file_path = os.path.join(
             data_path / filename, f'CollectedData_{cfg["scorer"]}.h5'
         )
