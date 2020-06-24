@@ -251,7 +251,7 @@ deeplabcut.create_training_dataset(config_path)
 ```
 or to [compare different neural networks](/wiki/What-neural-network-should-I-use%3F) use:
 ```python
-deeplabcut.create_training_model_comparision(config_path, num_shuffles=1, net_types=['resnet_50'], augmenter_types=['default', 'imgaug'] )
+deeplabcut.create_training_model_comparison(config_path, num_shuffles=1, net_types=['resnet_50'], augmenter_types=['default', 'imgaug'] )
 ```
 :movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=WXCVr6xAcCA)
 
