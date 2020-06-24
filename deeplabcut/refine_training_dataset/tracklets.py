@@ -281,7 +281,7 @@ class TrackletManager:
             xy = data[:, :, :2].reshape((self.nframes, -1))
             prob = data[:, :, 2].reshape((self.nframes, -1))
 
-            # Fill existing gaps and slightly smooth the tracklets
+            # Fill existing gaps
             missing = np.isnan(xy)
             xy_filled = columnwise_spline_interp(xy, self.max_gap)
             filled = ~np.isnan(xy_filled)
@@ -524,10 +524,10 @@ class TrackletVisualizer:
             [self.ax1.plot([], [], "-", lw=2, c=c) for c in self.colors], []
         )
         self.lines_x = sum(
-            [self.ax2.plot([], [], "-", lw=1, c=c, picker=5) for c in self.colors], []
+            [self.ax2.plot([], [], "-", lw=1, c=c, pickradius=5) for c in self.colors], []
         )
         self.lines_y = sum(
-            [self.ax3.plot([], [], "-", lw=1, c=c, picker=5) for c in self.colors], []
+            [self.ax3.plot([], [], "-", lw=1, c=c, pickradius=5) for c in self.colors], []
         )
         self.vline_x = self.ax2.axvline(0, 0, 1, c="k", ls=":")
         self.vline_y = self.ax3.axvline(0, 0, 1, c="k", ls=":")
@@ -546,7 +546,7 @@ class TrackletVisualizer:
             loc="center",
         )
         for line in self.leg.get_lines():
-            line.set_picker(5)
+            line.set_pickradius(5)
 
         self.ax_slider = self.fig.add_axes([0.1, 0.1, 0.5, 0.03], facecolor="lightgray")
         self.ax_slider2 = self.fig.add_axes(
