@@ -216,6 +216,10 @@ class Refine_tracklets(wx.Panel):
         tracker = (
             "skeleton" if os.path.splitext(self.datafile)[0].endswith("sk") else "box"
         )
+        window_length = self.filterlength_track.GetValue()
+        if window_length % 2 != 1:
+            raise ValueError('Window length should be odd.')
+
         deeplabcut.filterpredictions(
             self.config,
             [self.video],
