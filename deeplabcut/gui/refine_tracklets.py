@@ -99,7 +99,7 @@ class Refine_tracklets(wx.Panel):
 
         slider_swap_text = wx.StaticBox(self, label="Specify the min swap fraction")
         slider_swap_sizer = wx.StaticBoxSizer(slider_swap_text, wx.VERTICAL)
-        self.slider_swap = wx.SpinCtrl(self, value="1")
+        self.slider_swap = wx.SpinCtrl(self, value="2")
         slider_swap_sizer.Add(self.slider_swap, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
         hbox.Add(slider_swap_sizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
@@ -107,7 +107,7 @@ class Refine_tracklets(wx.Panel):
             self, label="Specify the min relative tracklet length"
         )
         slider_track_sizer = wx.StaticBoxSizer(slider_track_text, wx.VERTICAL)
-        self.slider_track = wx.SpinCtrl(self, value="1")
+        self.slider_track = wx.SpinCtrl(self, value="2")
         slider_track_sizer.Add(
             self.slider_track, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
         )
@@ -123,7 +123,7 @@ class Refine_tracklets(wx.Panel):
             label="Specify the max gap size to fill, in frames (initial pickle file only!)",
         )
         slider_gap_sizer = wx.StaticBoxSizer(slider_gap_text, wx.VERTICAL)
-        self.slider_gap = wx.SpinCtrl(self, value="1")
+        self.slider_gap = wx.SpinCtrl(self, value="5")
         slider_gap_sizer.Add(self.slider_gap, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
         hbox_.Add(slider_gap_sizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
@@ -264,8 +264,8 @@ class Refine_tracklets(wx.Panel):
             self.config,
             self.datafile,
             self.video,
-            min_swap_frac=self.slider_swap.GetValue() / 100,
-            min_tracklet_frac=self.slider_track.GetValue() / 100,
+            min_swap_len=self.slider_swap.GetValue(),
+            min_tracklet_len=self.slider_track.GetValue(),
             max_gap=self.slider_gap.GetValue(),
             trail_len=self.length_track.GetValue(),
         )
@@ -281,8 +281,8 @@ class Refine_tracklets(wx.Panel):
         self.sel_config.SetPath("")
         self.sel_datafile.SetPath("")
         self.sel_video.SetPath("")
-        self.slider_swap.SetValue(1)
-        self.slider_track.SetValue(1)
-        self.slider_gap.SetValue(1)
+        self.slider_swap.SetValue(2)
+        self.slider_track.SetValue(2)
+        self.slider_gap.SetValue(5)
         self.length_track.SetValue(25)
         # self.save.Enable(False)

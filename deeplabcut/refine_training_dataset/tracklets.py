@@ -119,19 +119,19 @@ class PointSelector:
 
 
 class TrackletManager:
-    def __init__(self, config, min_swap_frac=0.01, min_tracklet_frac=0.01, max_gap=0):
+    def __init__(self, config, min_swap_len=2, min_tracklet_len=2, max_gap=0):
         """
 
         Parameters
         ----------
         config : str
             Path to a configuration file.
-        min_swap_frac : float, optional (default=0.01)
-            Relative fraction of the data below which bodypart swaps are ignored.
-            By default, swaps representing less than 1% of the total number of frames are discarded.
-        min_tracklet_frac : float, optional (default=0.01)
-            Relative fraction of the data below which tracklets are ignored.
-            By default, tracklets shorter than 1% of the total number of frames are discarded.
+        min_swap_len : float, optional (default=2)
+            Minimum swap length.
+            Swaps shorter than 2 frames are discarded by default.
+        min_tracklet_len : float, optional (default=2)
+            Minimum tracklet length.
+            Tracklets shorter than 2 frames are discarded by default.
         max_gap : int, optional (default = 0).
             Number of frames to consider when filling in missing data.
 
@@ -148,8 +148,8 @@ class TrackletManager:
         """
         self.config = config
         self.cfg = read_config(config)
-        self.min_swap_frac = min_swap_frac
-        self.min_tracklet_frac = min_tracklet_frac
+        self.min_swap_len = min_swap_len
+        self.min_tracklet_len = min_tracklet_len
         self.max_gap = max_gap
 
         self.filename = ""
@@ -200,8 +200,8 @@ class TrackletManager:
                 ind_frame = int(re.findall(r"\d+", frame_name)[0])
                 to_fill[ind_frame] = data
             nonempty = np.any(~np.isnan(to_fill), axis=1)
-            completeness = nonempty.sum() / self.nframes
-            if completeness >= self.min_tracklet_frac:
+            completeness = nonempty.sum()
+            if completeness >= self.min_tracklet_len:
                 is_single = np.isnan(to_fill[:, mask_multi]).all()
                 if is_single:
                     to_fill = to_fill[:, mask_single]
@@ -400,7 +400,7 @@ class TrackletManager:
                 zero_crossings = down | up
             # ID swaps occur when X and Y simultaneously intersect each other.
             self.tracklet_swaps = zero_crossings.all(axis=3)
-            cross = self.tracklet_swaps.sum(axis=2) > self.min_swap_frac * self.nframes
+            cross = self.tracklet_swaps.sum(axis=2) > self.min_swap_len
             mat = np.tril(cross)
             temp_pairs = np.where(mat)
             # Get only those bodypart pairs that belong to different individuals
@@ -1064,8 +1064,8 @@ def refine_tracklets(
     config,
     pickle_or_h5_file,
     video,
-    min_swap_frac=0.01,
-    min_tracklet_frac=0,
+    min_swap_len=0,
+    min_tracklet_len=0,
     max_gap=0,
     trail_len=50,
 ):
@@ -1099,16 +1099,15 @@ def refine_tracklets(
         by more than 5%, a message is printed indicating that the selected
         video may not be the right one.
 
-    min_swap_frac : float, optional (default=0.01)
-        Relative fraction of the data below which bodypart swaps are ignored.
-        Set to 1% by default. Retained swaps appear in the right panel in
+    min_swap_len : float, optional (default=0)
+        Minimum swap length.
+        Set to 0 by default. Retained swaps appear in the right panel in
         shaded regions.
 
-    min_tracklet_frac : float, optional (default=0)
-        Relative fraction of the data below which tracklets are ignored.
-        By default, all tracklets are kept. If set to 0.02, for example,
-        tracklets shorter than 2% of the total number of frames are discarded
-        leaving missing data instead.
+    min_tracklet_len : float, optional (default=0)
+        Minimum tracklet length.
+        By default, all tracklets are kept. If set to 5, for example,
+        tracklets shorter than 5 frames are discarded, leaving missing data instead.
 
     max_gap : int, optional (default=0).
         Maximal gap size (in number of frames) of missing data to be filled.
@@ -1118,7 +1117,7 @@ def refine_tracklets(
     trail_len : int, optional (default=50)
         Number of trailing points.
     """
-    manager = TrackletManager(config, min_swap_frac, min_tracklet_frac, max_gap)
+    manager = TrackletManager(config, min_swap_len, min_tracklet_len, max_gap)
     if pickle_or_h5_file.endswith("pickle"):
         manager.load_tracklets_from_pickle(pickle_or_h5_file)
     else:
