@@ -170,15 +170,17 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
     if forceindividual is None:
         if len(individuals) == 0:
             print("At least one individual should exist...")
-            folders=[]
-            forceindividual=''
+            folders = []
+            forceindividual = ""
         else:
-            forceindividual = individuals[0] #note that single is added at then end!
+            forceindividual = individuals[0]  # note that single is added at then end!
 
-        if forceindividual=='single': #no specific individual ()
-            if len(multianimalbodyparts)>0: #there should be an individual name...
-                print("At least one individual should exist beyond 'single', as there are multianimalbodyparts...")
-                folders=[]
+        if forceindividual == "single":  # no specific individual ()
+            if len(multianimalbodyparts) > 0:  # there should be an individual name...
+                print(
+                    "At least one individual should exist beyond 'single', as there are multianimalbodyparts..."
+                )
+                folders = []
 
     for folder in folders:
         if userfeedback == True:
@@ -201,12 +203,7 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
             for j, bpt in enumerate(uniquebodyparts):
                 index = pd.MultiIndex.from_arrays(
                     np.array(
-                        [
-                            2 * [cfg["scorer"]],
-                            2 * ["single"],
-                            2 * [bpt],
-                            ["x", "y"],
-                        ]
+                        [2 * [cfg["scorer"]], 2 * ["single"], 2 * [bpt], ["x", "y"],]
                     ),
                     names=["scorer", "individuals", "bodyparts", "coords"],
                 )
@@ -227,8 +224,8 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
                 else:
                     dataFrame = pd.concat([dataFrame, frame], axis=1)
 
-            if len(uniquebodyparts)==0:
-                dataFrame=None
+            if len(uniquebodyparts) == 0:
+                dataFrame = None
 
             # -> adding (indivdual,bpt) for multianimalbodyparts
             for j, bpt in enumerate(multianimalbodyparts):
@@ -265,9 +262,7 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
             )
             Data.to_csv(fn + "singleanimal.csv")
 
-            dataFrame.to_hdf(
-                fn + ".h5", "df_with_missing", format="table", mode="w"
-            )
+            dataFrame.to_hdf(fn + ".h5", "df_with_missing", format="table", mode="w")
             dataFrame.to_csv(fn + ".csv")
 
 
