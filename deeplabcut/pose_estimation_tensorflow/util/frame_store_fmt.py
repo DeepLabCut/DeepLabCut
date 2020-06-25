@@ -107,6 +107,7 @@ class DLCFSConstants:
     """
     Class stores some constants for the DLC Frame Store format.
     """
+
     # The frame must become 1/3 or less its original size when sparsified to save space over the entire frame format,
     # so we check for this by dividing the original frame size by the sparse frame size and checking to see if it is
     # greater than this factor below...
@@ -133,7 +134,7 @@ def string_list(lister: list):
     lister = list(lister)
 
     for item in lister:
-        if(not isinstance(item, str)):
+        if not isinstance(item, str):
             raise ValueError("Must be a list of strings!")
 
     return lister
@@ -146,17 +147,18 @@ def non_max_int32(val: luint32) -> Optional[int]:
     :param val: The value to cast...
     :return: An integer, or None if the value equals the max possible integer.
     """
-    if(val is None):
+    if val is None:
         return None
 
     val = int(val)
 
-    if(val == np.iinfo(luint32).max):
+    if val == np.iinfo(luint32).max:
         return None
     else:
         return val
 
-class DLCFSHeader():
+
+class DLCFSHeader:
     """
     Stores some basic info about a frame store...
 
@@ -172,6 +174,7 @@ class DLCFSHeader():
         ("crop_offset_x", int or None if no cropping, None),
         ("bodypart_names", list of strings, []),
     """
+
     SUPPORTED_FIELDS = [
         ("number_of_frames", int, 0),
         ("frame_height", int, 0),
@@ -182,7 +185,7 @@ class DLCFSHeader():
         ("orig_video_width", int, 0),
         ("crop_offset_y", non_max_int32, None),
         ("crop_offset_x", non_max_int32, None),
-        ("bodypart_names", string_list, [])
+        ("bodypart_names", string_list, []),
     ]
 
     GET_VAR_CAST = {name: var_cast for name, var_cast, __ in SUPPORTED_FIELDS}
@@ -201,16 +204,16 @@ class DLCFSHeader():
             self._values[key] = var_caster(new_val)
 
         for key, new_val in kwargs.items():
-            if(key in self._values):
+            if key in self._values:
                 self._values[key] = new_val
 
     def __getattr__(self, item):
-        if(item == "_values"):
+        if item == "_values":
             return self.__dict__[item]
         return self._values[item]
 
     def __setattr__(self, key, value):
-        if(key == "_values"):
+        if key == "_values":
             self.__dict__["_values"] = value
             return
         self.__dict__["_values"][key] = self.GET_VAR_CAST[key](value)
@@ -222,19 +225,32 @@ class DLCFSHeader():
         return [self._values[key] for key, __, __ in self.SUPPORTED_FIELDS]
 
 
-class DLCFSReader():
+class DLCFSReader:
     """
     A DeepLabCut Frame Store Reader. Allows for reading ".dlcf" files.
     """
 
-    HEADER_DATA_TYPES = [luint64, luint32, luint32, luint32, ldouble, luint32, luint32, luint32, luint32, luint32]
-    HEADER_OFFSETS = np.cumsum([4] + [dtype.itemsize for dtype in HEADER_DATA_TYPES])[:-1]
+    HEADER_DATA_TYPES = [
+        luint64,
+        luint32,
+        luint32,
+        luint32,
+        ldouble,
+        luint32,
+        luint32,
+        luint32,
+        luint32,
+        luint32,
+    ]
+    HEADER_OFFSETS = np.cumsum([4] + [dtype.itemsize for dtype in HEADER_DATA_TYPES])[
+        :-1
+    ]
 
     def _assert_true(self, assertion: bool, error_msg: str):
         """
         Private method, if the assertion is false, throws a ValueError.
         """
-        if(not assertion):
+        if not assertion:
             raise ValueError(error_msg)
 
     def __init__(self, file: BinaryIO):
@@ -243,28 +259,48 @@ class DLCFSReader():
 
         :param file: The binary file object to read a frame store from, file opened with 'rb'.
         """
-        self._assert_true(file.read(4) == DLCFSConstants.FILE_MAGIC, "File is not of the DLC Frame Store Format!")
+        self._assert_true(
+            file.read(4) == DLCFSConstants.FILE_MAGIC,
+            "File is not of the DLC Frame Store Format!",
+        )
         # Check for valid header...
         header_bytes = file.read(DLCFSConstants.HEADER_LENGTH)
-        self._assert_true(header_bytes[0:4] == DLCFSConstants.HEADER_CHUNK_MAGIC,
-                          "First Chunk must be the Header ('DLCH')!")
+        self._assert_true(
+            header_bytes[0:4] == DLCFSConstants.HEADER_CHUNK_MAGIC,
+            "First Chunk must be the Header ('DLCH')!",
+        )
 
         # Read the header into a DLC header...
-        parsed_data = [from_bytes(header_bytes[off:(off + dtype.itemsize)], dtype) for off, dtype in
-                       zip(self.HEADER_OFFSETS, self.HEADER_DATA_TYPES)]
+        parsed_data = [
+            from_bytes(header_bytes[off : (off + dtype.itemsize)], dtype)
+            for off, dtype in zip(self.HEADER_OFFSETS, self.HEADER_DATA_TYPES)
+        ]
         self._header = DLCFSHeader(parsed_data[0], *parsed_data[2:])
         body_parts = [None] * parsed_data[1]
 
         # Make sure cropping offsets land within the video if they are not None
-        if(self._header.crop_offset_y is not None):
-            crop_end = self._header.crop_offset_y + (self._header.frame_height * self._header.stride)
-            self._assert_true(crop_end < self._header.orig_video_height, "Cropping box in DLCF file is invalid!")
-        if(self._header.crop_offset_x is not None):
-            crop_end = self._header.crop_offset_x + (self._header.frame_width * self._header.stride)
-            self._assert_true(crop_end < self._header.orig_video_width, "Cropping box in DLCF file is invalid!")
+        if self._header.crop_offset_y is not None:
+            crop_end = self._header.crop_offset_y + (
+                self._header.frame_height * self._header.stride
+            )
+            self._assert_true(
+                crop_end < self._header.orig_video_height,
+                "Cropping box in DLCF file is invalid!",
+            )
+        if self._header.crop_offset_x is not None:
+            crop_end = self._header.crop_offset_x + (
+                self._header.frame_width * self._header.stride
+            )
+            self._assert_true(
+                crop_end < self._header.orig_video_width,
+                "Cropping box in DLCF file is invalid!",
+            )
 
         # Read the body part chunk...
-        self._assert_true(file.read(4) == DLCFSConstants.BP_NAME_CHUNK_MAGIC, "Body part chunk must come second!")
+        self._assert_true(
+            file.read(4) == DLCFSConstants.BP_NAME_CHUNK_MAGIC,
+            "Body part chunk must come second!",
+        )
         for i in range(len(body_parts)):
             length = from_bytes(file.read(2), luint16)
             body_parts[i] = file.read(int(length)).decode("utf-8")
@@ -272,7 +308,10 @@ class DLCFSReader():
         self._header.bodypart_names = body_parts
 
         # Now we assert that we have reached the frame data chunk
-        self._assert_true(file.read(4) == DLCFSConstants.FRAME_DATA_CHUNK_MAGIC, f"Frame data chunk not found!")
+        self._assert_true(
+            file.read(4) == DLCFSConstants.FRAME_DATA_CHUNK_MAGIC,
+            f"Frame data chunk not found!",
+        )
 
         self._file = file
         self._frames_processed = 0
@@ -300,18 +339,28 @@ class DLCFSReader():
         return ((byte & 1) == 1, ((byte >> 1) & 1) == 1)
 
     @classmethod
-    def _take_array(cls, data: bytes, dtype: np.dtype, count: int) -> Tuple[bytes, np.ndarray]:
+    def _take_array(
+        cls, data: bytes, dtype: np.dtype, count: int
+    ) -> Tuple[bytes, np.ndarray]:
         """ Reads a numpy array from the byte array, returning the leftover data and the array. """
-        if(count <= 0):
+        if count <= 0:
             raise ValueError("Can't have a negative amount of entries....")
-        return (data[dtype.itemsize * count:], np.frombuffer(data, dtype=dtype, count=count))
+        return (
+            data[dtype.itemsize * count :],
+            np.frombuffer(data, dtype=dtype, count=count),
+        )
 
     @classmethod
     def _init_offset_data(cls, track_data: TrackingData):
-        if (track_data.get_offset_map() is None):
+        if track_data.get_offset_map() is None:
             # If tracking data is currently None, we need to create an empty array to store all data.
-            shape = (track_data.get_frame_count(), track_data.get_frame_height(), track_data.get_frame_width(),
-                     track_data.get_bodypart_count(), 2)
+            shape = (
+                track_data.get_frame_count(),
+                track_data.get_frame_height(),
+                track_data.get_frame_width(),
+                track_data.get_bodypart_count(),
+                2,
+            )
             track_data.set_offset_map(np.zeros(shape, dtype=lfloat))
 
     def read_frames(self, num_frames: int = 1) -> TrackingData:
@@ -323,48 +372,78 @@ class DLCFSReader():
 
         :raises: An EOFError if more frames were requested then were available.
         """
-        if(not self.has_next(num_frames)):
+        if not self.has_next(num_frames):
             frames_left = self._header.number_of_frames - self._frames_processed
-            raise EOFError(f"Only '{frames_left}' were available, and '{num_frames}' were requested.")
+            raise EOFError(
+                f"Only '{frames_left}' were available, and '{num_frames}' were requested."
+            )
 
         self._frames_processed += num_frames
         __, frame_h, frame_w, __, stride = self._header.to_list()[:5]
         bp_lst = self._header.bodypart_names
 
-        track_data = TrackingData.empty_tracking_data(num_frames, len(bp_lst), frame_w, frame_h, stride)
+        track_data = TrackingData.empty_tracking_data(
+            num_frames, len(bp_lst), frame_w, frame_h, stride
+        )
 
         for frame_idx in range(track_data.get_frame_count()):
             for bp_idx in range(track_data.get_bodypart_count()):
-                sparse_fmt_flag, has_offsets_flag = self._parse_flag_byte(from_bytes(self._file.read(1), luint8))
-                data = zlib.decompress(self._file.read(int(from_bytes(self._file.read(8), luint64))))
+                sparse_fmt_flag, has_offsets_flag = self._parse_flag_byte(
+                    from_bytes(self._file.read(1), luint8)
+                )
+                data = zlib.decompress(
+                    self._file.read(int(from_bytes(self._file.read(8), luint64)))
+                )
 
-                if(sparse_fmt_flag):
+                if sparse_fmt_flag:
                     entry_len = int(from_bytes(data[:8], luint64))
                     data = data[8:]
-                    data, sparse_y = self._take_array(data, dtype=luint32, count=entry_len)
-                    data, sparse_x = self._take_array(data, dtype=luint32, count=entry_len)
+                    data, sparse_y = self._take_array(
+                        data, dtype=luint32, count=entry_len
+                    )
+                    data, sparse_x = self._take_array(
+                        data, dtype=luint32, count=entry_len
+                    )
                     data, probs = self._take_array(data, dtype=lfloat, count=entry_len)
 
-                    if(has_offsets_flag): # If offset flag is set to true, load in offset data....
+                    if (
+                        has_offsets_flag
+                    ):  # If offset flag is set to true, load in offset data....
                         self._init_offset_data(track_data)
 
-                        data, off_y = self._take_array(data, dtype=lfloat, count=entry_len)
-                        data, off_x = self._take_array(data, dtype=lfloat, count=entry_len)
-                        track_data.get_offset_map()[frame_idx, sparse_y, sparse_x, bp_idx, 1] = off_y
-                        track_data.get_offset_map()[frame_idx, sparse_y, sparse_x, bp_idx, 0] = off_x
+                        data, off_y = self._take_array(
+                            data, dtype=lfloat, count=entry_len
+                        )
+                        data, off_x = self._take_array(
+                            data, dtype=lfloat, count=entry_len
+                        )
+                        track_data.get_offset_map()[
+                            frame_idx, sparse_y, sparse_x, bp_idx, 1
+                        ] = off_y
+                        track_data.get_offset_map()[
+                            frame_idx, sparse_y, sparse_x, bp_idx, 0
+                        ] = off_x
                     else:
                         track_data.set_offset_map(None)
 
-                    track_data.get_prob_table(frame_idx, bp_idx)[sparse_y, sparse_x] = probs # Set probability data...
+                    track_data.get_prob_table(frame_idx, bp_idx)[
+                        sparse_y, sparse_x
+                    ] = probs  # Set probability data...
                 else:
-                    data, probs = self._take_array(data, dtype=lfloat, count=frame_w * frame_h)
+                    data, probs = self._take_array(
+                        data, dtype=lfloat, count=frame_w * frame_h
+                    )
                     probs = np.reshape(probs, (frame_h, frame_w))
 
-                    if(has_offsets_flag):
+                    if has_offsets_flag:
                         self._init_offset_data(track_data)
 
-                        data, off_y = self._take_array(data, dtype=lfloat, count=frame_h * frame_w)
-                        data, off_x = self._take_array(data, dtype=lfloat, count=frame_h * frame_w)
+                        data, off_y = self._take_array(
+                            data, dtype=lfloat, count=frame_h * frame_w
+                        )
+                        data, off_x = self._take_array(
+                            data, dtype=lfloat, count=frame_h * frame_w
+                        )
                         off_y = np.reshape(off_y, (frame_h, frame_w))
                         off_x = np.reshape(off_x, (frame_h, frame_w))
 
@@ -376,12 +455,18 @@ class DLCFSReader():
         return track_data
 
 
-class DLCFSWriter():
+class DLCFSWriter:
     """
     A DeepLabCut Frame Store Writer. Allows for writing ".dlcf" files.
     """
-    def __init__(self, file: BinaryIO, header: DLCFSHeader, threshold: Optional[float] = 1e6,
-                 compression_level: int = 6):
+
+    def __init__(
+        self,
+        file: BinaryIO,
+        header: DLCFSHeader,
+        threshold: Optional[float] = 1e6,
+        compression_level: int = 6,
+    ):
         """
         Create a new DeepLabCut Frame Store Writer.
 
@@ -395,27 +480,53 @@ class DLCFSWriter():
         """
         self._out_file = file
         self._header = header
-        self._threshold = threshold if (threshold is None or 0 <= threshold <= 1) else 1e6
-        self._compression_level = compression_level if(0 <= compression_level <= 9) else 6
+        self._threshold = (
+            threshold if (threshold is None or 0 <= threshold <= 1) else 1e6
+        )
+        self._compression_level = (
+            compression_level if (0 <= compression_level <= 9) else 6
+        )
         self._current_frame = 0
 
         # Write the file magic...
         self._out_file.write(DLCFSConstants.FILE_MAGIC)
         # Now we write the header:
         self._out_file.write(DLCFSConstants.HEADER_CHUNK_MAGIC)
-        self._out_file.write(to_bytes(header.number_of_frames, luint64))  # The frame count
-        self._out_file.write(to_bytes(len(header.bodypart_names), luint32))  # The body part count
-        self._out_file.write(to_bytes(header.frame_height, luint32))  # The height of each frame
-        self._out_file.write(to_bytes(header.frame_width, luint32))  # The width of each frame
-        self._out_file.write(to_bytes(header.frame_rate, ldouble))  # The frames per second
-        self._out_file.write(to_bytes(header.stride, luint32))  # The video upscaling factor
+        self._out_file.write(
+            to_bytes(header.number_of_frames, luint64)
+        )  # The frame count
+        self._out_file.write(
+            to_bytes(len(header.bodypart_names), luint32)
+        )  # The body part count
+        self._out_file.write(
+            to_bytes(header.frame_height, luint32)
+        )  # The height of each frame
+        self._out_file.write(
+            to_bytes(header.frame_width, luint32)
+        )  # The width of each frame
+        self._out_file.write(
+            to_bytes(header.frame_rate, ldouble)
+        )  # The frames per second
+        self._out_file.write(
+            to_bytes(header.stride, luint32)
+        )  # The video upscaling factor
         # Original video height and width.
         self._out_file.write(to_bytes(header.orig_video_height, luint32))
         self._out_file.write(to_bytes(header.orig_video_width, luint32))
         # The cropping (y, x) offset, or the max integer values if there is no cropping box...
         max_val = np.iinfo(luint32).max
-        self._out_file.write(to_bytes(max_val if(header.crop_offset_y is None) else header.crop_offset_y, luint32))
-        self._out_file.write(to_bytes(max_val if(header.crop_offset_x is None) else header.crop_offset_x, luint32))
+        self._out_file.write(
+            to_bytes(
+                max_val if (header.crop_offset_y is None) else header.crop_offset_y,
+                luint32,
+            )
+        )
+        self._out_file.write(
+            to_bytes(
+                max_val if (header.crop_offset_x is None) else header.crop_offset_x,
+                luint32,
+            )
+        )
 
         # Now we write the body part name chunk:
         self._out_file.write(DLCFSConstants.BP_NAME_CHUNK_MAGIC)
@@ -426,7 +537,6 @@ class DLCFSWriter():
 
         # Finish by writing the begining of the frame data chunk:
         self._out_file.write(DLCFSConstants.FRAME_DATA_CHUNK_MAGIC)
-
 
     def make_flag_byte(self, is_sparse: bool, has_offsets: bool) -> int:
         return (is_sparse) | (has_offsets << 1)
@@ -439,62 +549,87 @@ class DLCFSWriter():
         """
         # Some checks to make sure tracking data parameters match those set in the header:
         self._current_frame += data.get_frame_count()
-        if(self._current_frame > self._header.number_of_frames):
-            raise ValueError(f"Data Overflow! '{self._header.number_of_frames}' frames expected, tried to write "
-                             f"'{self._current_frame + 1}' frames.")
+        if self._current_frame > self._header.number_of_frames:
+            raise ValueError(
+                f"Data Overflow! '{self._header.number_of_frames}' frames expected, tried to write "
+                f"'{self._current_frame + 1}' frames."
+            )
 
-        if(data.get_bodypart_count() != len(self._header.bodypart_names)):
-            raise ValueError(f"'{data.get_bodypart_count()}' body parts does not match the "
-                             f"'{len(self._header.bodypart_names)}' body parts specified in the header.")
+        if data.get_bodypart_count() != len(self._header.bodypart_names):
+            raise ValueError(
+                f"'{data.get_bodypart_count()}' body parts does not match the "
+                f"'{len(self._header.bodypart_names)}' body parts specified in the header."
+            )
 
         for frm_idx in range(data.get_frame_count()):
             for bp in range(data.get_bodypart_count()):
                 frame = data.get_prob_table(frm_idx, bp)
                 offset_table = data.get_offset_map()
 
-                if (offset_table is not None):
+                if offset_table is not None:
                     off_y = offset_table[frm_idx, :, :, bp, 1]
                     off_x = offset_table[frm_idx, :, :, bp, 0]
                 else:
                     off_y = None
                     off_x = None
 
-                if(self._threshold is not None):
+                if self._threshold is not None:
                     # Sparsify the data by removing everything below the threshold...
                     sparse_y, sparse_x = np.nonzero(frame > self._threshold)
                     probs = frame[(sparse_y, sparse_x)]
 
                     # Check if we managed to strip out at least 2/3rds of the data, and if so write the frame using the
                     # sparse format. Otherwise it is actually more memory efficient to just store the entire frame...
-                    if(len(frame.flat) >= (len(sparse_y) * DLCFSConstants.MIN_SPARSE_SAVING_FACTOR)):
+                    if len(frame.flat) >= (
+                        len(sparse_y) * DLCFSConstants.MIN_SPARSE_SAVING_FACTOR
+                    ):
                         # Sparse indicator flag and the offsets included flag...
-                        self._out_file.write(to_bytes(True | ((offset_table is not None) << 1), luint8))
+                        self._out_file.write(
+                            to_bytes(True | ((offset_table is not None) << 1), luint8)
+                        )
                         # COMPRESSED DATA:
                         buffer = BytesIO()
-                        buffer.write(to_bytes(len(sparse_y), luint64))  # The length of the sparse data entries.
-                        buffer.write(sparse_y.astype(luint32).tobytes('C'))  # Y coord data
-                        buffer.write(sparse_x.astype(luint32).tobytes('C'))  # X coord data
-                        buffer.write(probs.astype(lfloat).tobytes('C'))  # Probabilities
-                        if(offset_table is not None): # If offset table exists, write y offsets and then x offsets.
-                            buffer.write(off_y[(sparse_y, sparse_x)].astype(lfloat).tobytes('C'))
-                            buffer.write(off_x[(sparse_y, sparse_x)].astype(lfloat).tobytes('C'))
+                        buffer.write(
+                            to_bytes(len(sparse_y), luint64)
+                        )  # The length of the sparse data entries.
+                        buffer.write(
+                            sparse_y.astype(luint32).tobytes("C")
+                        )  # Y coord data
+                        buffer.write(
+                            sparse_x.astype(luint32).tobytes("C")
+                        )  # X coord data
+                        buffer.write(probs.astype(lfloat).tobytes("C"))  # Probabilities
+                        if (
+                            offset_table is not None
+                        ):  # If offset table exists, write y offsets and then x offsets.
+                            buffer.write(
+                                off_y[(sparse_y, sparse_x)].astype(lfloat).tobytes("C")
+                            )
+                            buffer.write(
+                                off_x[(sparse_y, sparse_x)].astype(lfloat).tobytes("C")
+                            )
                         # Compress the sparse data and write it's length, followed by itself....
-                        comp_data = zlib.compress(buffer.getvalue(), self._compression_level)
+                        comp_data = zlib.compress(
+                            buffer.getvalue(), self._compression_level
+                        )
                         self._out_file.write(to_bytes(len(comp_data), luint64))
                         self._out_file.write(comp_data)
 
                         continue
                 # If sparse optimization mode is off or the sparse format wasted more space, just write the entire
                 # frame...
-                self._out_file.write(to_bytes(False | ((offset_table is not None) << 1), luint8))
+                self._out_file.write(
+                    to_bytes(False | ((offset_table is not None) << 1), luint8)
+                )
 
                 buffer = BytesIO()
-                buffer.write(frame.astype(lfloat).tobytes('C')) # The probability frame...
-                if(offset_table is not None): # Y, then X offset data if it exists...
-                    buffer.write(off_y.astype(lfloat).tobytes('C'))
-                    buffer.write(off_x.astype(lfloat).tobytes('C'))
+                buffer.write(
+                    frame.astype(lfloat).tobytes("C")
+                )  # The probability frame...
+                if offset_table is not None:  # Y, then X offset data if it exists...
+                    buffer.write(off_y.astype(lfloat).tobytes("C"))
+                    buffer.write(off_x.astype(lfloat).tobytes("C"))
 
                 comp_data = zlib.compress(buffer.getvalue())
                 self._out_file.write(to_bytes(len(comp_data), luint64))
                 self._out_file.write(comp_data)
-

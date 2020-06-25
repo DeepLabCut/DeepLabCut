@@ -56,7 +56,7 @@ def analyze_videos(
     num_outputs=None,
     multi_output_format="default",
     predictor=None,
-    predictor_settings=None
+    predictor_settings=None,
 ):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
@@ -241,7 +241,11 @@ def analyze_videos(
     # Update number of output and batchsize
     dlc_cfg["num_outputs"] = cfg.get("num_outputs", dlc_cfg.get("num_outputs", 1))
     old_num_outputs = dlc_cfg["num_outputs"]
-    dlc_cfg["num_outputs"] = int(num_outputs) if((num_outputs is not None) and (num_outputs >= 1)) else dlc_cfg["num_outputs"]
+    dlc_cfg["num_outputs"] = (
+        int(num_outputs)
+        if ((num_outputs is not None) and (num_outputs >= 1))
+        else dlc_cfg["num_outputs"]
+    )
 
     if batchsize == None:
         # update batchsize (based on parameters in config.yaml)
@@ -255,12 +259,19 @@ def analyze_videos(
         TFGPUinference = False
         predictor = None
 
-    if(predictor is not None):
+    if predictor is not None:
         # If predictor plugin was selected, disable dynamic mode and GPU predictions.
         predictor_cls = processing.get_predictor(predictor)
         TFGPUinference = False
         dynamic = (False, 0.5, 10)
-        print(f"Predictor '{predictor}' selected, disabling GPU predictions and dynamic cropping as both of these are not supported.")
+        print(
+            f"Predictor '{predictor}' selected, disabling GPU predictions and dynamic cropping as both of these are not supported."
+        )
+
+        if dlc_cfg["num_outputs"] > 1 and (not predictor_cls.supports_multi_output()):
+            raise NotImplementedError(
+                "Predictor plugin does not support num_outputs greater than 1."
+            )
     else:
         predictor_cls = processing.get_predictor("argmax")
 
@@ -283,7 +294,6 @@ def analyze_videos(
         modelprefix=modelprefix,
     )
 
-
     if dlc_cfg["num_outputs"] > 1:
         if TFGPUinference:
             print(
@@ -298,7 +308,12 @@ def analyze_videos(
     else:
         sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
 
-    pdindex = GetPandasHeader(dlc_cfg["all_joints_names"], dlc_cfg["num_outputs"], multi_output_format, DLCscorer)
+    pdindex = GetPandasHeader(
+        dlc_cfg["all_joints_names"],
+        dlc_cfg["num_outputs"],
+        multi_output_format,
+        DLCscorer,
+    )
 
     ##################################################
     # Looping over videos
@@ -344,7 +359,7 @@ def analyze_videos(
                     TFGPUinference,
                     dynamic,
                     predictor_cls,
-                    predictor_settings
+                    predictor_settings,
                 )
 
         os.chdir(str(start_path))
@@ -408,22 +423,28 @@ def GetPandasHeader(body_parts, num_outputs, out_format, dlc_scorer):
     Returns: A pandas MultiIndex, being the header entries for the DLC output data.
     """
     # Set this up differently depending on the format...
-    if(out_format == "separate-bodyparts" and num_outputs > 1):
+    if out_format == "separate-bodyparts" and num_outputs > 1:
         # Format which allocates new bodyparts for each prediction by simply adding "__number" to the end of the part's
         # name.
         print("Outputting predictions as separate body parts...")
         suffixes = [f"__{i + 1}" for i in range(num_outputs)]
         suffixes[0] = ""
         all_joints = [bp + s for bp in body_parts for s in suffixes]
-        return pd.MultiIndex.from_product([[dlc_scorer], all_joints, ['x', 'y', 'likelihood']],
-                                             names=['scorer', 'bodyparts', 'coords'])
+        return pd.MultiIndex.from_product(
+            [[dlc_scorer], all_joints, ["x", "y", "likelihood"]],
+            names=["scorer", "bodyparts", "coords"],
+        )
     else:
         # The original multi output format, multiple predictions stored under each body part
         suffixes = [str(i + 1) for i in range(num_outputs)]
         suffixes[0] = ""
-        sub_headers = [state + s for s in suffixes for state in ['x', 'y', 'likelihood']]
-        return pd.MultiIndex.from_product([[dlc_scorer], body_parts, sub_headers],
-                                             names=['scorer', 'bodyparts', 'coords'])
+        sub_headers = [
+            state + s for s in suffixes for state in ["x", "y", "likelihood"]
+        ]
+        return pd.MultiIndex.from_product(
+            [[dlc_scorer], body_parts, sub_headers],
+            names=["scorer", "bodyparts", "coords"],
+        )
 
 
 def GetPoseF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
@@ -715,30 +736,39 @@ def GetPoseDynamic(
 
 
 # Utility method used by AnalyzeVideo, gets the settings for the given predictor plugin
-def GetPredictorSettings(cfg, predictor_cls, usr_passed_settings = None):
+def GetPredictorSettings(cfg, predictor_cls, usr_passed_settings=None):
     """ Get the predictor settings from deeplabcut config and return a dictionary for plugin to use... """
     # Grab setting blueprints for predictor plugins(list of tuples of name, desc, default val)....
     setting_info = predictor_cls.get_settings()
     name = predictor_cls.get_name()
 
-    if(setting_info is None):
+    if setting_info is None:
         return None
 
     # Pull out the name and default values into a dictionary...
     setting_info = {name: def_val for (name, desc, def_val) in setting_info}
 
-
-    if(usr_passed_settings is None):
+    if usr_passed_settings is None:
         # If the dlc config contains a category predictors, and predictors contains a category named after the plugin, load
         # the user cfg for this plugin and merge it with default values
-        if(("predictors" in cfg) and (cfg["predictors"]) and (name in cfg["predictors"])):
+        if (
+            ("predictors" in cfg)
+            and (cfg["predictors"])
+            and (name in cfg["predictors"])
+        ):
             setting_info.update(
-                {key: cfg["predictors"][name][key] for key in (setting_info.keys() & cfg["predictors"][name].keys())}
+                {
+                    key: cfg["predictors"][name][key]
+                    for key in (setting_info.keys() & cfg["predictors"][name].keys())
+                }
             )
     else:
         # If the user directly passed settings to this method, we ignore the config and use these settings.
         setting_info.update(
-            {key: usr_passed_settings[key] for key in (setting_info.keys() & usr_passed_settings.keys())}
+            {
+                key: usr_passed_settings[key]
+                for key in (setting_info.keys() & usr_passed_settings.keys())
+            }
         )
 
     return setting_info
@@ -750,15 +780,17 @@ def GetVideoBatch(cap, batch_size, cfg, frame_store) -> int:
     current_frame = 0
 
     # While the cap is still going and the current frame is less then the batch size...
-    while(cap.isOpened() and current_frame < batch_size):
+    while cap.isOpened() and current_frame < batch_size:
         # Read a frame
         ret_val, frame = cap.read()
 
         # If we got an actual frame, store it in the frame store.
-        if(ret_val):
+        if ret_val:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            if cfg['cropping']:
-                frame_store[current_frame] = img_as_ubyte(frame[cfg['y1']:cfg['y2'], cfg['x1']:cfg['x2']])
+            if cfg["cropping"]:
+                frame_store[current_frame] = img_as_ubyte(
+                    frame[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]]
+                )
             else:
                 frame_store[current_frame] = img_as_ubyte(frame)
         else:
@@ -774,17 +806,19 @@ def GetVideoBatch(cap, batch_size, cfg, frame_store) -> int:
 def GetPoseAll(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, predictor):
     """ Gets the poses for any batch size, including batch size of only 1 """
     # Create a numpy array to hold all pose prediction data...
-    pose_prediction_data = np.zeros((nframes, 3 * len(dlc_cfg["all_joints_names"]) * dlc_cfg["num_outputs"]))
+    pose_prediction_data = np.zeros(
+        (nframes, 3 * len(dlc_cfg["all_joints_names"]) * dlc_cfg["num_outputs"])
+    )
 
     pbar = tqdm(total=nframes)
 
     ny, nx = int(cap.get(4)), int(cap.get(3))
 
-    if(cfg["cropping"]):
+    if cfg["cropping"]:
         ny, nx = checkcropping(cfg, cap)
 
     # Create the temporary batch frame store for storing video frames...
-    frame_store = np.empty((batchsize, ny, nx, 3), dtype='ubyte')
+    frame_store = np.empty((batchsize, ny, nx, 3), dtype="ubyte")
 
     # Create a counter to keep track of the progress bar
     counter = 0
@@ -793,31 +827,39 @@ def GetPoseAll(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, pre
 
     frames_done = 0
 
-    while(True):
+    while True:
         size = GetVideoBatch(cap, batchsize, cfg, frame_store)
         counter += size
 
         # If we pass the current step or phase, update the progress bar
-        if(counter // prog_step > current_step):
+        if counter // prog_step > current_step:
             pbar.update(prog_step)
             current_step += 1
 
-        if(size > 0):
+        if size > 0:
             # If we received any frames, process them...
-            scmap, locref = predict.extract_cnn_outputmulti(sess.run(outputs, feed_dict={inputs: frame_store}), dlc_cfg)
+            scmap, locref = predict.extract_cnn_outputmulti(
+                sess.run(outputs, feed_dict={inputs: frame_store}), dlc_cfg
+            )
             down_scale = dlc_cfg.stride
 
-            if len(scmap.shape) == 2:  # If there is a single body part, add a dimension at the end
+            if (
+                len(scmap.shape) == 2
+            ):  # If there is a single body part, add a dimension at the end
                 scmap = np.expand_dims(scmap, axis=2)
 
-            pose = predictor.on_frames(processing.TrackingData(scmap[:size], locref, down_scale))
+            pose = predictor.on_frames(
+                processing.TrackingData(scmap[:size], locref, down_scale)
+            )
 
-            if(pose is not None):
+            if pose is not None:
                 # If the predictor returned a pose, add it to the final data.
-                pose_prediction_data[frames_done:frames_done + pose.get_frame_count()] = pose.get_all()
+                pose_prediction_data[
+                    frames_done : frames_done + pose.get_frame_count()
+                ] = pose.get_all()
                 frames_done += pose.get_frame_count()
 
-        if(size < batchsize):
+        if size < batchsize:
             # If the output frames by the video capture were less then a full batch, we have reached the end of the
             # video...
             break
@@ -828,19 +870,23 @@ def GetPoseAll(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, pre
     # Phase 2: Post processing...
 
     # Get all of the final poses that are still held by the predictor
-    post_pbar = tqdm(total = nframes - frames_done)
+    post_pbar = tqdm(total=nframes - frames_done)
     final_poses = predictor.on_end(post_pbar)
     post_pbar.close()
 
     # Add any post-processed frames
-    if(final_poses is not None):
-        pose_prediction_data[frames_done:frames_done + final_poses.get_frame_count()] = final_poses.get_all()
+    if final_poses is not None:
+        pose_prediction_data[
+            frames_done : frames_done + final_poses.get_frame_count()
+        ] = final_poses.get_all()
         frames_done += final_poses.get_frame_count()
 
     # Check and make sure the predictor returned all frames, otherwise throw an error.
-    if(frames_done != nframes):
-        raise ValueError(f"The predictor algorithm did not return the same amount of frames as are in the video.\n"
-                         f"Expected Amount: {nframes}, Actual Amount Returned: {frames_done}")
+    if frames_done != nframes:
+        raise ValueError(
+            f"The predictor algorithm did not return the same amount of frames as are in the video.\n"
+            f"Expected Amount: {nframes}, Actual Amount Returned: {frames_done}"
+        )
 
     return pose_prediction_data, nframes
 
@@ -861,7 +907,7 @@ def AnalyzeVideo(
     TFGPUinference=True,
     dynamic=(False, 0.5, 10),
     predictor_cls=None,
-    predictor_settings=None
+    predictor_settings=None,
 ):
     """ Helper function for analyzing a video. """
     print("Starting to analyze % ", video)
@@ -873,7 +919,9 @@ def AnalyzeVideo(
     try:
         _ = auxiliaryfunctions.load_analyzed_data(destfolder, vname, DLCscorer)
     except FileNotFoundError:
-        dataname = os.path.join(destfolder, vname + DLCscorer + ".h5") # Path of the final .h5 file.
+        dataname = os.path.join(
+            destfolder, vname + DLCscorer + ".h5"
+        )  # Path of the final .h5 file.
 
         print("Loading ", video)
         cap = cv2.VideoCapture(video)
@@ -922,7 +970,7 @@ def AnalyzeVideo(
             # GetPoseF_GTF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,int(dlc_cfg["batch_size"]))
         else:
             if TFGPUinference:
-                if(dlc_cfg["batch_size"] > 1):
+                if dlc_cfg["batch_size"] > 1:
                     PredictedData, nframes = GetPoseF_GTF(
                         cfg,
                         dlc_cfg,
@@ -945,22 +993,41 @@ def AnalyzeVideo(
                     "size": size,
                     "h5-file-name": str(Path(dataname).resolve()),
                     "orig-video-path": str(Path(video).resolve()),
-                    "cropping-offset": (int(cfg["y1"]), int(cfg["x1"])) if (cfg["cropping"]) else None,
+                    "cropping-offset": (int(cfg["y1"]), int(cfg["x1"]))
+                    if (cfg["cropping"])
+                    else None,
                     "dotsize": cfg["dotsize"],
                     "colormap": cfg["colormap"],
                     "alphavalue": cfg["alphavalue"],
-                    "pcutoff": cfg["pcutoff"]
+                    "pcutoff": cfg["pcutoff"],
                 }
 
                 # Create a predictor plugin instance...
-                predictor_settings = GetPredictorSettings(cfg, predictor_cls,
-                                                          predictor_settings)  # Grab the plugin settings for this plugin...
-                print(f"Plugin {predictor_cls.get_name()} Settings: {predictor_settings}")
-                predictor_inst = predictor_cls(dlc_cfg['all_joints_names'], dlc_cfg["num_outputs"], nframes,
-                                               predictor_settings, video_metadata)
+                predictor_settings = GetPredictorSettings(
+                    cfg, predictor_cls, predictor_settings
+                )  # Grab the plugin settings for this plugin...
+                print(
+                    f"Plugin {predictor_cls.get_name()} Settings: {predictor_settings}"
+                )
+                predictor_inst = predictor_cls(
+                    dlc_cfg["all_joints_names"],
+                    dlc_cfg["num_outputs"],
+                    nframes,
+                    predictor_settings,
+                    video_metadata,
+                )
 
-                PredictedData, nframes = GetPoseAll(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes,
-                                                    int(dlc_cfg["batch_size"]), predictor_inst)
+                PredictedData, nframes = GetPoseAll(
+                    cfg,
+                    dlc_cfg,
+                    sess,
+                    inputs,
+                    outputs,
+                    cap,
+                    nframes,
+                    int(dlc_cfg["batch_size"]),
+                    predictor_inst,
+                )
 
         stop = time.time()
         if cfg["cropping"] == True:
@@ -1715,7 +1782,7 @@ def list_predictor_plugins():
         print()
 
 
-def get_predictor_settings(predictor_name = None):
+def get_predictor_settings(predictor_name=None):
     """
     Gets the available/modifiable settings for a specified predictor plugin...
     :param predictor_name: The string or list of strings being the names of the predictor plugins to view customizable
@@ -1727,20 +1794,22 @@ def get_predictor_settings(predictor_name = None):
     from typing import Iterable
 
     # Convert whatever the predictor_name argument is to a list of predictor plugins
-    if(predictor_name is None):
+    if predictor_name is None:
         predictors = processing.get_predictor_plugins()
-    elif(isinstance(predictor_name, str)):
+    elif isinstance(predictor_name, str):
         predictors = [processing.get_predictor(predictor_name)]
-    elif(isinstance(predictor_name, Iterable)):
+    elif isinstance(predictor_name, Iterable):
         predictors = [processing.get_predictor(name) for name in predictor_name]
     else:
-        raise ValueError("Argument 'predictor_name' not of type Iterable[str], string, or None!!!")
+        raise ValueError(
+            "Argument 'predictor_name' not of type Iterable[str], string, or None!!!"
+        )
 
     # Print name, and settings for each plugin.
     for predictor in predictors:
         print(f"Plugin Name: {predictor.get_name()}")
         print("Arguments: ")
-        if(predictor.get_settings() is None):
+        if predictor.get_settings() is None:
             print("None")
         else:
             for name, desc, def_val in predictor.get_settings():
@@ -1750,7 +1819,7 @@ def get_predictor_settings(predictor_name = None):
         print()
 
 
-def test_predictor_plugin(predictor_name = None, interactive = False):
+def test_predictor_plugin(predictor_name=None, interactive=False):
     """
     Run the tests for a predictor plugin.
 
@@ -1767,23 +1836,24 @@ def test_predictor_plugin(predictor_name = None, interactive = False):
     import traceback
 
     # Convert whatever the predictor_name argument is to a list of predictor plugins
-    if(predictor_name is None):
+    if predictor_name is None:
         predictors = processing.get_predictor_plugins()
-    elif(isinstance(predictor_name, str)):
+    elif isinstance(predictor_name, str):
         predictors = [processing.get_predictor(predictor_name)]
-    elif(isinstance(predictor_name, Iterable)):
+    elif isinstance(predictor_name, Iterable):
         predictors = [processing.get_predictor(name) for name in predictor_name]
     else:
-        raise ValueError("Argument 'predictor_name' not of type Iterable[str], string, or None!!!")
+        raise ValueError(
+            "Argument 'predictor_name' not of type Iterable[str], string, or None!!!"
+        )
 
     # Test plugins by calling there tests...
     for predictor in predictors:
-        print(f"Testing Plugin: {predictor.get_name()}")\
-        # Get the tests...
+        print(f"Testing Plugin: {predictor.get_name()}")  # Get the tests...
         tests = predictor.get_tests()
 
         # If this test contains no test, let the user know and move to the next plugin.
-        if(tests is None):
+        if tests is None:
             print(f"Plugin {predictor.get_name()} has no tests...")
             print()
             continue
@@ -1795,7 +1865,7 @@ def test_predictor_plugin(predictor_name = None, interactive = False):
                 passed, expected, actual = test_meth()
 
                 print(f"Results: {'Passed' if passed else 'Failed'}")
-                if(not passed):
+                if not passed:
                     print(f"Expected Results: {expected}")
                     print(f"Actual Results: {actual}")
 
@@ -1804,10 +1874,11 @@ def test_predictor_plugin(predictor_name = None, interactive = False):
                 traceback.print_exception(excep, excep, excep.__traceback__)
             finally:
                 print()
-                if(interactive):
+                if interactive:
                     input("Press Enter To Continue: ")
                     print()
         print()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

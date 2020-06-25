@@ -13,7 +13,10 @@ import sys
 # Generic type for method below
 T = TypeVar("T")
 
-def load_plugin_classes(plugin_dir: ModuleType, plugin_metaclass: Type[T], do_reload: bool = True) -> Set[Type[T]]:
+
+def load_plugin_classes(
+    plugin_dir: ModuleType, plugin_metaclass: Type[T], do_reload: bool = True
+) -> Set[Type[T]]:
     """
     Loads all plugins, or classes, within the specified module folder and submodules that extend the provided metaclass
     type.
@@ -39,9 +42,11 @@ def load_plugin_classes(plugin_dir: ModuleType, plugin_metaclass: Type[T], do_re
 
         # If the module name is not in system modules or the reload flag is set to true, perform a full load of the
         # modules...
-        if((mod_name not in sys.modules) or do_reload):
+        if (mod_name not in sys.modules) or do_reload:
             try:
-                sub_module = importer.find_module(package_name).load_module(package_name)
+                sub_module = importer.find_module(package_name).load_module(
+                    package_name
+                )
                 sys.modules[mod_name] = sub_module
             except Exception as e:
                 print(f"Can't load '{mod_name}'. Due to issue below:")
@@ -51,18 +56,22 @@ def load_plugin_classes(plugin_dir: ModuleType, plugin_metaclass: Type[T], do_re
             sub_module = sys.modules[mod_name]
 
         # Now we check if the module is a package, and if so, recursively call this method
-        if(ispkg):
-            plugins = plugins | load_plugin_classes(sub_module, plugin_metaclass, do_reload)
+        if ispkg:
+            plugins = plugins | load_plugin_classes(
+                sub_module, plugin_metaclass, do_reload
+            )
         else:
             # Otherwise we begin looking for plugin classes
             for item in dir(sub_module):
                 field = getattr(sub_module, item)
 
                 # Checking if the field is a class, and if the field is a direct child of the plugin class
-                if(isinstance(field, type) and issubclass(field, plugin_metaclass) and (field != plugin_metaclass)):
+                if (
+                    isinstance(field, type)
+                    and issubclass(field, plugin_metaclass)
+                    and (field != plugin_metaclass)
+                ):
                     # It is a plugin, add it to the list...
                     plugins.add(field)
 
     return plugins
-
-

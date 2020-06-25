@@ -30,8 +30,12 @@ class TrackingData:
     """ The default image down scaling used by DeepLabCut """
     DEFAULT_SCALE: int = 8
 
-
-    def __init__(self, scmap: ndarray, locref: Union[None, ndarray] = None, stride: int = DEFAULT_SCALE):
+    def __init__(
+        self,
+        scmap: ndarray,
+        locref: Union[None, ndarray] = None,
+        stride: int = DEFAULT_SCALE,
+    ):
         """
         Create an new tracking data object to store DLC neural network data for one frame or a batch of frames.
 
@@ -45,22 +49,27 @@ class TrackingData:
                        probability map.
         """
         # If scmap received is only 3-dimension, it is of only 1 frame, so add the batch dimension so it works better.
-        if(len(scmap.shape) == 3):
+        if len(scmap.shape) == 3:
             self._scmap = np.expand_dims(scmap, axis=0)
         else:
             self._scmap = scmap
 
-        if((locref is not None) and (len(locref.shape) == 3)):
+        if (locref is not None) and (len(locref.shape) == 3):
             self._locref = np.expand_dims(locref, axis=0)
         else:
             self._locref = locref
 
         self._scaling = stride
 
-
     @classmethod
-    def empty_tracking_data(cls, frame_amt: int, part_count: int, width: int, height: int,
-                            stride: int = DEFAULT_SCALE) -> "TrackingData":
+    def empty_tracking_data(
+        cls,
+        frame_amt: int,
+        part_count: int,
+        width: int,
+        height: int,
+        stride: int = DEFAULT_SCALE,
+    ) -> "TrackingData":
         """
         Create a new empty tracking data object with space allocated to fit the specified sizes of data.
 
@@ -72,8 +81,11 @@ class TrackingData:
                        meaning the original video is 8 times the size of the probability map.
         :return: A tracking data object full of zeroes.
         """
-        return cls(np.zeros((frame_amt, height, width, part_count), dtype="float32"), None, stride)
-
+        return cls(
+            np.zeros((frame_amt, height, width, part_count), dtype="float32"),
+            None,
+            stride,
+        )
 
     def get_source_map(self) -> ndarray:
         """
@@ -147,7 +159,7 @@ class TrackingData:
         batchsize, ny, nx, num_joints = self._scmap.shape
         scmap_flat = self._scmap.reshape((batchsize, nx * ny, num_joints))
 
-        if(num_max <= 1):
+        if num_max <= 1:
             scmap_top = np.argmax(scmap_flat, axis=1)
         else:
             # Grab top values
@@ -160,13 +172,16 @@ class TrackingData:
             # Flatten out the map so arrangement is:
             # [frame] -> [joint 1 prediction 1, joint 1 prediction 2, ... , joint 2 prediction 1, ... ]
             # Note this mimics single prediction format...
-            scmap_top = scmap_top.swapaxes(1, 2).reshape(batchsize, num_max * num_joints)
+            scmap_top = scmap_top.swapaxes(1, 2).reshape(
+                batchsize, num_max * num_joints
+            )
 
         # Convert to x, y locations....
         return np.unravel_index(scmap_top, (ny, nx))
 
-
-    def get_max_of_frame(self, frame: int, num_outputs: int = 1) -> Tuple[ndarray, ndarray]:
+    def get_max_of_frame(
+        self, frame: int, num_outputs: int = 1
+    ) -> Tuple[ndarray, ndarray]:
         """
         Get the locations of the highest probabilities for a single frame in the array.
 
@@ -179,7 +194,7 @@ class TrackingData:
         y_dim, x_dim, num_joints = self._scmap.shape[1:4]
         scmap_flat = self._scmap[frame].reshape((y_dim * x_dim, num_joints))
 
-        if(num_outputs <= 1):
+        if num_outputs <= 1:
             # When num_outputs is 1, we just grab the single maximum...
             flat_max = np.argmax(scmap_flat, axis=0)
         else:
@@ -187,10 +202,13 @@ class TrackingData:
             scmap_top = np.argpartition(scmap_flat, -num_outputs, axis=0)[-num_outputs:]
             vals = scmap_flat[scmap_top, np.arange(num_joints)]
             arg = np.argsort(-vals, axis=0)
-            flat_max = scmap_top[arg, np.arange(num_joints)].swapaxes(1, 2).reshape(num_outputs * num_joints)
+            flat_max = (
+                scmap_top[arg, np.arange(num_joints)]
+                .swapaxes(1, 2)
+                .reshape(num_outputs * num_joints)
+            )
 
         return np.unravel_index(flat_max, dims=(y_dim, x_dim))
-
 
     def get_poses_for(self, points: Tuple[ndarray, ndarray]):
         """
@@ -218,12 +236,15 @@ class TrackingData:
         # Iterate the frame and body part indexes in x and y, we just use x since both are the same size
         for frame in range(x.shape[0]):
             for bp in range(x.shape[1]):
-                probs[frame, bp] = self._scmap[frame, y[frame, bp], x[frame, bp], int(bp // num_outputs)]
+                probs[frame, bp] = self._scmap[
+                    frame, y[frame, bp], x[frame, bp], int(bp // num_outputs)
+                ]
                 # Locref is frame -> y -> x -> bodypart -> relative coordinate pair offset. if it is None, just keep
                 # all offsets as 0.
-                if (self._locref is not None):
-                    x_offsets[frame, bp], y_offsets[frame, bp] = self._locref[frame, y[frame, bp], x[frame, bp],
-                                                                              int(bp // num_outputs)]
+                if self._locref is not None:
+                    x_offsets[frame, bp], y_offsets[frame, bp] = self._locref[
+                        frame, y[frame, bp], x[frame, bp], int(bp // num_outputs)
+                    ]
 
         # Now apply offsets to x and y to get actual x and y coordinates...
         # Done by multiplying by scale, centering in the middle of the "scale square" and then adding extra offset
@@ -232,22 +253,24 @@ class TrackingData:
 
         return Pose(x, y, probs)
 
-
     @staticmethod
     def _get_count_of(val: Union[int, slice, Sequence[int]], length: int) -> int:
         """ Internal private method to get length of an index selection(as in how many indexes it selects...) """
-        if (isinstance(val, Sequence)):
+        if isinstance(val, Sequence):
             return len(val)
-        elif (isinstance(val, slice)):
+        elif isinstance(val, slice):
             start, stop, step = val.indices(length)
             return len(range(start, stop - 1, step))
-        elif (isinstance(val, int)):
+        elif isinstance(val, int):
             return 1
         else:
             raise ValueError("Value is not a slice, integer, or list...")
 
-
-    def get_prob_table(self, frame: Union[int, slice, Sequence[int]], bodypart: Union[int, slice, Sequence[int]]) -> ndarray:
+    def get_prob_table(
+        self,
+        frame: Union[int, slice, Sequence[int]],
+        bodypart: Union[int, slice, Sequence[int]],
+    ) -> ndarray:
         """
         Get the probability map for a selection of frames and body parts or a single frame and body part.
 
@@ -262,19 +285,22 @@ class TrackingData:
 
         # Return the frames, reshaped to be more "frame like"...
         slicer = self._scmap[frame, :, :, bodypart]
-        
+
         # If the part_count is greater then one, move bodypart dimension back 2 in the dimensions
-        if(part_count > 1 and frame_count > 1):
+        if part_count > 1 and frame_count > 1:
             return np.transpose(slicer, (0, 3, 1, 2))
-        elif(part_count > 1):
+        elif part_count > 1:
             return np.transpose(slicer, (2, 0, 1))
         # Otherwise just return the slice...
         else:
             return slicer
 
-
-    def set_prob_table(self, frame: Union[int, slice, Sequence[int]], bodypart: Union[int, slice, Sequence[int]],
-                           values: ndarray):
+    def set_prob_table(
+        self,
+        frame: Union[int, slice, Sequence[int]],
+        bodypart: Union[int, slice, Sequence[int]],
+        values: ndarray,
+    ):
         """
         Set the probability table for a selection of frames and body parts or a single frame and body part.
 
@@ -287,16 +313,15 @@ class TrackingData:
         # Compute amount of frames and body parts selected....
         frame_count = self._get_count_of(frame, self.get_frame_count())
         part_count = self._get_count_of(bodypart, self.get_bodypart_count())
-        
+
         # If multiple body parts were selected, rearrange dimensions to match those used by the scmap...
-        if(part_count > 1 and frame_count > 1):
+        if part_count > 1 and frame_count > 1:
             values = np.transpose(self._scmap[frame, :, :, bodypart], (0, 2, 3, 1))
-        elif(part_count > 1):
+        elif part_count > 1:
             values = np.transpose(self._scmap[frame, :, :, bodypart], (1, 2, 0))
-        
+
         # Set the frames, resizing the array to fit
         self._scmap[frame, :, :, bodypart] = values
-
 
     def get_frame_count(self) -> int:
         """
@@ -331,7 +356,15 @@ class TrackingData:
         return self._scmap.shape[1]
 
     # Used for setting single poses....
-    def set_pose_at(self, frame: int, bodypart: int, scmap_x: int, scmap_y: int, pose_object: "Pose", output_num: int=0):
+    def set_pose_at(
+        self,
+        frame: int,
+        bodypart: int,
+        scmap_x: int,
+        scmap_y: int,
+        pose_object: "Pose",
+        output_num: int = 0,
+    ):
         """
         Set a pose in the specified Pose object to the specified x and y coordinate for a provided body part and frame.
         This method will use data from this TrackingData object to correctly set the information in the Pose object.
@@ -351,7 +384,7 @@ class TrackingData:
         off_x, off_y = 0, 0
 
         # If we are actually using locref, set offsets to it
-        if(self._locref is not None):
+        if self._locref is not None:
             off_y, off_x = self._locref[frame, scmap_y, scmap_x, bodypart]
 
         # Compute actual x and y values in the video...
@@ -371,6 +404,7 @@ class Pose:
     multiple body parts... Also it should be noted that data is stored in terms of original video coordinates, not
     probability source map indexes.
     """
+
     def __init__(self, x: ndarray, y: ndarray, prob: ndarray):
         """
         Create a new Pose object, or batch of poses for frames.
@@ -397,12 +431,17 @@ class Pose:
         :param part_count: The amount of body parts to allocate space for in the underlying array, an Integer.
         :return: A new Pose object.
         """
-        return cls(np.zeros((frame_count, part_count)), np.zeros((frame_count, part_count)),
-                   np.zeros((frame_count, part_count)))
+        return cls(
+            np.zeros((frame_count, part_count)),
+            np.zeros((frame_count, part_count)),
+            np.zeros((frame_count, part_count)),
+        )
 
     # Helper Methods
 
-    def _fix_index(self, index: Union[int, slice], value_offset: int) -> Union[int, slice]:
+    def _fix_index(
+        self, index: Union[int, slice], value_offset: int
+    ) -> Union[int, slice]:
         """
         Fixes slice or integer indexing received by user for body part to fit the actual way it is stored.
         PRIVATE METHOD! Should not be used outside this class, for internal index correction!
@@ -411,15 +450,17 @@ class Pose:
         :param value_offset: An integer representing the offset of the desired values in stored data
         :return: Slice or integer, being the fixed indexing to actually get the body parts
         """
-        if(isinstance(index, (int, np.integer))):
+        if isinstance(index, (int, np.integer)):
             # Since all data is all stored together, multiply by 3 and add the offset...
             return (index * 3) + value_offset
-        elif(isinstance(index, slice)):
+        elif isinstance(index, slice):
             # Normalize the slice and adjust the indexes.
             start, end, step = index.indices(self._data.shape[1] // 3)
             return slice((start * 3) + value_offset, (end * 3) + value_offset, step * 3)
         else:
-            raise ValueError(f"Index is not of type slice or integer! It is type '{type(index)}'!")
+            raise ValueError(
+                f"Index is not of type slice or integer! It is type '{type(index)}'!"
+            )
 
     # Represents point data, is a tuple of x, y data where x and y are numpy arrays or integers...
     PointData = Tuple[Union[int, ndarray], Union[int, ndarray]]
@@ -428,8 +469,15 @@ class Pose:
     # Represents and Index, either an integer or a slice
     Index = Union[int, slice]
 
-    def set_at(self, frame: Index, bodypart: Index, scmap_coord: PointData, offset: Union[FloatPointData, None],
-               prob: Union[float, ndarray], down_scale: int):
+    def set_at(
+        self,
+        frame: Index,
+        bodypart: Index,
+        scmap_coord: PointData,
+        offset: Union[FloatPointData, None],
+        prob: Union[float, ndarray],
+        down_scale: int,
+    ):
         """
         Set the probability data at a given location or locations to the specified data.
 
@@ -458,7 +506,6 @@ class Pose:
         self.set_y_at(frame, bodypart, scmap_y)
         self.set_prob_at(frame, bodypart, prob)
 
-
     # Setter Methods
     def set_all_x(self, x: ndarray):
         """
@@ -485,7 +532,9 @@ class Pose:
         """
         self._data[:, 2::3] = probs
 
-    def set_x_at(self, frame: Union[int, slice], bodypart: Union[int, slice], values: ndarray):
+    def set_x_at(
+        self, frame: Union[int, slice], bodypart: Union[int, slice], values: ndarray
+    ):
         """
         Set the x video coordinates for specific body parts or frames.
 
@@ -495,7 +544,9 @@ class Pose:
         """
         self._data[frame, self._fix_index(bodypart, 0)] = values
 
-    def set_y_at(self, frame: Union[int, slice], bodypart: Union[int, slice], values: ndarray):
+    def set_y_at(
+        self, frame: Union[int, slice], bodypart: Union[int, slice], values: ndarray
+    ):
         """
         Set the y video coordinates for specific body parts or frames.
 
@@ -505,7 +556,9 @@ class Pose:
         """
         self._data[frame, self._fix_index(bodypart, 1)] = values
 
-    def set_prob_at(self, frame: Union[int, slice], bodypart: Union[int, slice], values: ndarray):
+    def set_prob_at(
+        self, frame: Union[int, slice], bodypart: Union[int, slice], values: ndarray
+    ):
         """
         Set the probability values for specific body parts or frames.
 
@@ -550,7 +603,9 @@ class Pose:
         """
         return self._data[:, 2::3]
 
-    def get_x_at(self, frame: Union[int, slice], bodypart: Union[int, slice]) -> ndarray:
+    def get_x_at(
+        self, frame: Union[int, slice], bodypart: Union[int, slice]
+    ) -> ndarray:
         """
         Get the x video coordinates for specific body parts or frames.
 
@@ -560,7 +615,9 @@ class Pose:
         """
         return self._data[frame, self._fix_index(bodypart, 0)]
 
-    def get_y_at(self, frame: Union[int, slice], bodypart: Union[int, slice]) -> ndarray:
+    def get_y_at(
+        self, frame: Union[int, slice], bodypart: Union[int, slice]
+    ) -> ndarray:
         """
         Get the y video coordinates for specific body parts or frames.
 
@@ -570,7 +627,9 @@ class Pose:
         """
         return self._data[frame, self._fix_index(bodypart, 1)]
 
-    def get_prob_at(self, frame: Union[int, slice], bodypart: Union[int, slice]) -> ndarray:
+    def get_prob_at(
+        self, frame: Union[int, slice], bodypart: Union[int, slice]
+    ) -> ndarray:
         """
         Get the probability values for specific body parts or frames.
 
@@ -594,7 +653,7 @@ class Pose:
 
         :return: The amount of body parts per frame, as an integer.
         """
-        return (self._data.shape[1] // 3)
+        return self._data.shape[1] // 3
 
 
 class Predictor(ABC):
@@ -604,9 +663,16 @@ class Predictor(ABC):
     Predictors accept TrackingData objects as they are generated by the network and are expected to return a single or
     several Pose objects providing the predicted locations of body parts in the original video...
     """
+
     @abstractmethod
-    def __init__(self, bodyparts: Union[List[str]], num_outputs: int, num_frames: int,
-                 settings: Union[Dict[str, Any], None], video_metadata: Dict[str, Any]):
+    def __init__(
+        self,
+        bodyparts: Union[List[str]],
+        num_outputs: int,
+        num_frames: int,
+        settings: Union[Dict[str, Any], None],
+        video_metadata: Dict[str, Any],
+    ):
         """
         Constructor for the predictor. Should be used by plugins to initialize key data structures and settings.
 
@@ -676,7 +742,6 @@ class Predictor(ABC):
         """
         pass
 
-
     @classmethod
     @abstractmethod
     def get_name(cls) -> str:
@@ -688,7 +753,6 @@ class Predictor(ABC):
         """
         pass
 
-
     @classmethod
     def get_description(cls) -> str:
         """
@@ -698,11 +762,10 @@ class Predictor(ABC):
 
         :return: The description/summary of this plugin as a string.
         """
-        if(cls.__doc__ is None):
+        if cls.__doc__ is None:
             return "None"
         else:
             return inspect.cleandoc(cls.__doc__)
-
 
     @classmethod
     @abstractmethod
@@ -770,10 +833,12 @@ def get_predictor(name: str) -> Type[Predictor]:
     plugins = get_predictor_plugins()
     # Iterate the plugins until we find one with a matching name, otherwise throw a ValueError if we don't find one.
     for plugin in plugins:
-        if(plugin.get_name() == name):
+        if plugin.get_name() == name:
             return plugin
     else:
-        raise ValueError(f"Predictor plugin {name} does not exist, try another plugin name...")
+        raise ValueError(
+            f"Predictor plugin {name} does not exist, try another plugin name..."
+        )
 
 
 def get_predictor_plugins() -> Set[Type[Predictor]]:
@@ -784,4 +849,3 @@ def get_predictor_plugins() -> Set[Type[Predictor]]:
     the python interpreter.
     """
     return pluginloader.load_plugin_classes(predictors, Predictor)
-

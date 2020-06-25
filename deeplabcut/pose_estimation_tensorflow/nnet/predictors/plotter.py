@@ -1,4 +1,3 @@
-
 # For types in methods
 from typing import Union, List, Tuple, Any, Dict, Callable
 
@@ -21,8 +20,15 @@ class PlotterArgMax(Predictor):
     """
     Identical to singleargmax, but plots probability frames in form of video to the user using matplotlib...
     """
-    def __init__(self, bodyparts: Union[List[str]], num_outputs: int, num_frames: int,
-                 settings: Union[Dict[str, Any], None], video_metadata: Dict[str, Any]):
+
+    def __init__(
+        self,
+        bodyparts: Union[List[str]],
+        num_outputs: int,
+        num_frames: int,
+        settings: Union[Dict[str, Any], None],
+        video_metadata: Dict[str, Any],
+    ):
         super().__init__(bodyparts, num_outputs, num_frames, settings, video_metadata)
         self._parts = bodyparts
         self._num_frames = num_frames
@@ -37,8 +43,12 @@ class PlotterArgMax(Predictor):
         self._vid_writer = None
 
         # Name of the video file to save to
-        final_video_name = settings["video_name"].replace("$VIDEO", Path(video_metadata["orig-video-path"]).stem)
-        self.VIDEO_NAME = str((Path(video_metadata["h5-file-name"]).parent) / final_video_name)
+        final_video_name = settings["video_name"].replace(
+            "$VIDEO", Path(video_metadata["orig-video-path"]).stem
+        )
+        self.VIDEO_NAME = str(
+            (Path(video_metadata["h5-file-name"]).parent) / final_video_name
+        )
         # Output codec to save using
         self.OUTPUT_CODEC = cv2.VideoWriter_fourcc(*settings["codec"])
         # Frames per second to use for video
@@ -53,40 +63,55 @@ class PlotterArgMax(Predictor):
         self.DPI = settings["dpi"]
         self.AXIS_ON = settings["axis_on"]
         # Miscellaneous arguments to pass to the figure and axis...
-        self.AXES_ARGS = settings["axes_args"] if (isinstance(settings["axes_args"], dict)) else {}
-        self.FIGURE_ARGS = settings["figure_args"] if (isinstance(settings["figure_args"], dict)) else {}
+        self.AXES_ARGS = (
+            settings["axes_args"] if (isinstance(settings["axes_args"], dict)) else {}
+        )
+        self.FIGURE_ARGS = (
+            settings["figure_args"]
+            if (isinstance(settings["figure_args"], dict))
+            else {}
+        )
         self.FIGURE_ARGS.update({"dpi": self.DPI})
 
         # Build the subplots...
-        if(self.PROJECT_3D):
-            self.AXES_ARGS.update({'projection': '3d'})
+        if self.PROJECT_3D:
+            self.AXES_ARGS.update({"projection": "3d"})
             from mpl_toolkits.mplot3d import Axes3D
-            self._figure, self._axes = pyplot.subplots(self._grid_height, self._grid_width,
-                                                       subplot_kw=self.AXES_ARGS, **self.FIGURE_ARGS)
+
+            self._figure, self._axes = pyplot.subplots(
+                self._grid_height,
+                self._grid_width,
+                subplot_kw=self.AXES_ARGS,
+                **self.FIGURE_ARGS,
+            )
         else:
-            self._figure, self._axes = pyplot.subplots(self._grid_height, self._grid_width, subplot_kw=self.AXES_ARGS,
-                                                       **self.FIGURE_ARGS)
+            self._figure, self._axes = pyplot.subplots(
+                self._grid_height,
+                self._grid_width,
+                subplot_kw=self.AXES_ARGS,
+                **self.FIGURE_ARGS,
+            )
         # Hide all axis.....
-        if(not self.AXIS_ON):
+        if not self.AXIS_ON:
             for ax in self._axes.flat:
                 ax.axis("off")
-
 
     def _logify(self, arr: np.ndarray) -> np.ndarray:
         """
         Place the array in log scale, and then place the values between 0 and 1 using simple linear interpolation...
         """
-        with np.errstate(divide='ignore'):
+        with np.errstate(divide="ignore"):
             arr_logged = np.log(arr)
             was_zero = np.isneginf(arr_logged)
             not_zero = ~was_zero
             low_val = np.min(arr_logged[not_zero])
 
-            arr_logged[not_zero] = (np.abs(low_val) - np.abs(arr_logged[not_zero])) / np.abs(low_val)
+            arr_logged[not_zero] = (
+                np.abs(low_val) - np.abs(arr_logged[not_zero])
+            ) / np.abs(low_val)
             arr_logged[was_zero] = 0
 
             return arr_logged
-
 
     def on_frames(self, scmap: TrackingData) -> Union[None, Pose]:
         for frame in range(scmap.get_frame_count()):
@@ -94,22 +119,36 @@ class PlotterArgMax(Predictor):
             for bp, ax in zip(range(scmap.get_bodypart_count()), self._axes.flat):
                 ax.clear()
                 ax.set_aspect("equal")
-                if(not self.AXIS_ON):
+                if not self.AXIS_ON:
                     ax.axis("off")
 
-                ax.set_title(f"Bodypart: {self._parts[bp]}, Frame: {self._current_frame}")
+                ax.set_title(
+                    f"Bodypart: {self._parts[bp]}, Frame: {self._current_frame}"
+                )
 
-                if(self.PROJECT_3D):
-                    x, y = np.arange(scmap.get_frame_width()), np.arange(scmap.get_frame_height())
+                if self.PROJECT_3D:
+                    x, y = (
+                        np.arange(scmap.get_frame_width()),
+                        np.arange(scmap.get_frame_height()),
+                    )
                     x, y = np.meshgrid(x, y)
-                    z = self._logify(scmap.get_prob_table(frame, bp)) if (self.LOG_SCALE) else \
-                        scmap.get_prob_table(frame, bp)
+                    z = (
+                        self._logify(scmap.get_prob_table(frame, bp))
+                        if (self.LOG_SCALE)
+                        else scmap.get_prob_table(frame, bp)
+                    )
                     ax.plot_surface(x, y, z, cmap=self.COLOR_MAP)
                     z_range = ax.get_zlim()[1] - ax.get_zlim()[0]
-                    ax.set_zlim(ax.get_zlim()[0], ax.get_zlim()[0] + (z_range * self.Z_SHRINK_F))
+                    ax.set_zlim(
+                        ax.get_zlim()[0], ax.get_zlim()[0] + (z_range * self.Z_SHRINK_F)
+                    )
                 else:
-                    ax.pcolormesh(self._logify(scmap.get_prob_table(frame, bp)) if (self.LOG_SCALE) else
-                                      scmap.get_prob_table(frame, bp), cmap=self.COLOR_MAP)
+                    ax.pcolormesh(
+                        self._logify(scmap.get_prob_table(frame, bp))
+                        if (self.LOG_SCALE)
+                        else scmap.get_prob_table(frame, bp),
+                        cmap=self.COLOR_MAP,
+                    )
                 # This reverses the y-axis data, so as probability maps match the video...
                 ax.set_ylim(ax.get_ylim()[::-1])
 
@@ -117,20 +156,24 @@ class PlotterArgMax(Predictor):
             self._figure.tight_layout()
             self._figure.canvas.draw()
 
-            img = np.reshape(np.frombuffer(self._figure.canvas.tostring_rgb(), dtype="uint8"),
-                               self._figure.canvas.get_width_height()[::-1] + (3,))[:, :, ::-1]
+            img = np.reshape(
+                np.frombuffer(self._figure.canvas.tostring_rgb(), dtype="uint8"),
+                self._figure.canvas.get_width_height()[::-1] + (3,),
+            )[:, :, ::-1]
 
-            if (self._vid_writer is None):
+            if self._vid_writer is None:
                 height, width, colors = img.shape
-                self._vid_writer = cv2.VideoWriter(self.VIDEO_NAME, self.OUTPUT_CODEC, self.OUTPUT_FPS,
-                                                   (width, height))
+                self._vid_writer = cv2.VideoWriter(
+                    self.VIDEO_NAME, self.OUTPUT_CODEC, self.OUTPUT_FPS, (width, height)
+                )
 
             self._vid_writer.write(img)
             self._current_frame += 1
 
         # Return argmax values for each frame...
-        return scmap.get_poses_for(scmap.get_max_scmap_points(num_max=self._num_outputs))
-
+        return scmap.get_poses_for(
+            scmap.get_max_scmap_points(num_max=self._num_outputs)
+        )
 
     def on_end(self, progress_bar: tqdm.tqdm) -> Union[None, Pose]:
         self._vid_writer.release()
@@ -139,21 +182,58 @@ class PlotterArgMax(Predictor):
     @classmethod
     def get_settings(cls) -> Union[List[Tuple[str, str, Any]], None]:
         return [
-            ("video_name", "Name of the video file that plotting data will be saved to. Can use $VIDEO to place the "
-                           "name of original video somewhere in the text.", "$VIDEO-prob-dlc.mp4"),
-            ("codec", "The codec to be used by the opencv library to save info to, typically a 4-byte string.", "mp4v"),
-            ("use_log_scale", "Boolean, determines whether to apply log scaling to the frames in the video.", False),
-            ("3d_projection", "Boolean, determines if probability frames should be plotted in 3d.", False),
-            ("colormap", "String, determines the underlying colormap to be passed to matplotlib while plotting the "
-                         "mesh.", "Blues"),
-            ("z_shrink_factor", "Float, determines how much to shrink the z-axis if in 3D mode...", 5),
-            ("dpi", "The dpi of the final video, the higher the dpi the more crisp...",
-             matplotlib.rcParams['figure.dpi']),
-            ("axis_on", "Boolean, determines if axis, or tick marks and grids of subplots are shown.", False),
-            ("axes_args", "A dictionary, miscellaneous arguments to pass to matplotlib axes when constructing them.",
-             None),
-            ("figure_args", "A dictionary, miscellaneous arguments to pass to matplotlib figure when constructing it.",
-             None)
+            (
+                "video_name",
+                "Name of the video file that plotting data will be saved to. Can use $VIDEO to place the "
+                "name of original video somewhere in the text.",
+                "$VIDEO-prob-dlc.mp4",
+            ),
+            (
+                "codec",
+                "The codec to be used by the opencv library to save info to, typically a 4-byte string.",
+                "mp4v",
+            ),
+            (
+                "use_log_scale",
+                "Boolean, determines whether to apply log scaling to the frames in the video.",
+                False,
+            ),
+            (
+                "3d_projection",
+                "Boolean, determines if probability frames should be plotted in 3d.",
+                False,
+            ),
+            (
+                "colormap",
+                "String, determines the underlying colormap to be passed to matplotlib while plotting the "
+                "mesh.",
+                "Blues",
+            ),
+            (
+                "z_shrink_factor",
+                "Float, determines how much to shrink the z-axis if in 3D mode...",
+                5,
+            ),
+            (
+                "dpi",
+                "The dpi of the final video, the higher the dpi the more crisp...",
+                matplotlib.rcParams["figure.dpi"],
+            ),
+            (
+                "axis_on",
+                "Boolean, determines if axis, or tick marks and grids of subplots are shown.",
+                False,
+            ),
+            (
+                "axes_args",
+                "A dictionary, miscellaneous arguments to pass to matplotlib axes when constructing them.",
+                None,
+            ),
+            (
+                "figure_args",
+                "A dictionary, miscellaneous arguments to pass to matplotlib figure when constructing it.",
+                None,
+            ),
         ]
 
     @classmethod

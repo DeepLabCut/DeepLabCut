@@ -510,16 +510,17 @@ def is_positive_int(string):
     """
     try:
         result = int(string)
-        return (result > 0)
+        return result > 0
     except ValueError:
         return False
+
 
 def is_extension_part(string, bodyparts):
     """
     Tests if the passed bodypart is an extension part, returning true if so...
     """
     split_str = string.split("__")
-    if(len(split_str) != 2):
+    if len(split_str) != 2:
         return False
 
     bp_name, number = split_str
@@ -590,8 +591,16 @@ def proc_video(
                 s = ""
                 # Adds support for multi_output mode. Adds extra bodyparts found in the data but not in the config.yaml.
                 # Only works if "multi_output_format" is set to "separate-bodyparts".
-                cmp_set = set(idx[1] for idx in df if(idx[1] in bodyparts or is_extension_part(idx[1], bodyparts)))
-                bodyparts = [bp for bp in df.columns.get_level_values("bodyparts").unique() if (bp in cmp_set)]
+                cmp_set = set(
+                    idx[1]
+                    for idx in df
+                    if (idx[1] in bodyparts or is_extension_part(idx[1], bodyparts))
+                )
+                bodyparts = [
+                    bp
+                    for bp in df.columns.get_level_values("bodyparts").unique()
+                    if (bp in cmp_set)
+                ]
                 # print(bodyparts)
 
             videooutname = filepath.replace(".h5", f"{s}_labeled.mp4")
