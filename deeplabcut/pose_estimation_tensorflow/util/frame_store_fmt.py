@@ -23,7 +23,7 @@ Bodypart Names:
     ['DBPN'] -> Deeplabcut Body Part Names
     (num_bp entries):
         [bp_len] - The length of the name of the bodypart. 2 Bytes (unsigned short)
-        [DATA of length bp_len] - UTF8 Encoded name of the bodypart.
+        [DATA of length bp_len] -       UTF8 Encoded name of the bodypart.
 
 Frame data block:
 	['FDAT'] -> Frame DATa
@@ -32,7 +32,7 @@ Frame data block:
 
             Single Byte: 000000[offsets_included][sparse_fmt]:
                 [sparse_fmt]- Single bit, whether we are using the sparse format. See difference in storage below:
-                [offsets_included] - Single bis, whether we have offset data included. See difference in storage below:
+                [offsets_included] - Single bit, whether we have offset data included. See difference in storage below:
             [data_length] - The length of the compressed/uncompressed frame data, 8 Bytes (long unsigned integer)
 
             DATA (The below is compressed in the zlib format and must be uncompressed first). Based on 'sparse_fmt' flag:
@@ -66,8 +66,9 @@ Frame data block:
                         [off y] - list of 4 byte floats, stores y offset within the block of pixels.
                         [off x] - list of 4 byte floats, stores x offset within the block of pixels.
 """
+from abc import ABC
 from io import BytesIO
-from typing import List, Any, BinaryIO, Optional, Tuple
+from typing import List, Any, BinaryIO, Optional, Tuple, MutableMapping, Iterator, _T_co, _KT, _VT_co, _VT
 from deeplabcut.pose_estimation_tensorflow.nnet.processing import TrackingData
 import numpy as np
 import zlib
@@ -152,13 +153,13 @@ def non_max_int32(val: luint32) -> Optional[int]:
 
     val = int(val)
 
-    if val == np.iinfo(luint32).max:
+    if (val == np.iinfo(luint32).max) or (val < 0):
         return None
     else:
         return val
 
 
-class DLCFSHeader:
+class DLCFSHeader(MutableMapping):
     """
     Stores some basic info about a frame store...
 
@@ -174,7 +175,6 @@ class DLCFSHeader:
         ("crop_offset_x", int or None if no cropping, None),
         ("bodypart_names", list of strings, []),
     """
-
     SUPPORTED_FIELDS = [
         ("number_of_frames", int, 0),
         ("frame_height", int, 0),
@@ -189,6 +189,7 @@ class DLCFSHeader:
     ]
 
     GET_VAR_CAST = {name: var_cast for name, var_cast, __ in SUPPORTED_FIELDS}
+    GET_IDX = {name: idx for idx, (name, __, __) in enumerate(SUPPORTED_FIELDS)}
 
     def __init__(self, *args, **kwargs):
         """
@@ -201,11 +202,11 @@ class DLCFSHeader:
             self._values[name] = def_value
 
         for new_val, (key, var_caster, __) in zip(args, self.SUPPORTED_FIELDS):
-            self._values[key] = var_caster(new_val)
+            self[key] = new_val
 
         for key, new_val in kwargs.items():
             if key in self._values:
-                self._values[key] = new_val
+                self[key] = new_val
 
     def __getattr__(self, item):
         if item == "_values":
@@ -217,6 +218,44 @@ class DLCFSHeader:
             self.__dict__["_values"] = value
             return
         self.__dict__["_values"][key] = self.GET_VAR_CAST[key](value)
+
+    def _key_check(self, key):
+        if(key not in self.GET_VAR_CAST):
+            raise ValueError("Not a supported key!")
+
+    def __setitem__(self, key, value):
+        """
+        Set the value of the specified header property.
+        """
+        self._key_check(key)
+        self._values[key] = self.GET_VAR_CAST[key](value)
+
+    def __delitem__(self, key) -> Any:
+        """
+        Clear the specified header property to its default value.
+        """
+        self._key_check(key)
+        self._values[key] = self.GET_VAR_CAST[key](self.SUPPORTED_FIELDS[self.GET_IDX[key]][2])
+
+    def __getitem__(self, key) -> Any:
+        """
+        Get the specified header property, returning its current value.
+        """
+        self._key_check(key)
+        return self._values[key]
+
+    def __len__(self) -> int:
+        """
+        Get the length of this header (Should always be 10).
+        """
+        return len(self._values)
+
+    def __iter__(self) -> Iterator[_T_co]:
+        """
+        Iterate the keys of the header in order.
+        """
+        # Using () returns a generator, not using extra memory...
+        return (name for name, __, __ in self.SUPPORTED_FIELDS)
 
     def __str__(self):
         return str(self._values)
@@ -423,8 +462,6 @@ class DLCFSReader:
                         track_data.get_offset_map()[
                             frame_idx, sparse_y, sparse_x, bp_idx, 0
                         ] = off_x
-                    else:
-                        track_data.set_offset_map(None)
 
                     track_data.get_prob_table(frame_idx, bp_idx)[
                         sparse_y, sparse_x
@@ -560,6 +597,9 @@ class DLCFSWriter:
                 f"'{data.get_bodypart_count()}' body parts does not match the "
                 f"'{len(self._header.bodypart_names)}' body parts specified in the header."
             )
+
+        if(data.get_frame_width() != self._header.frame_width or data.get_frame_height() != self._header.frame_height):
+            raise ValueError("Frame dimensions don't match ones specified in header!")
 
         for frm_idx in range(data.get_frame_count()):
             for bp in range(data.get_bodypart_count()):
