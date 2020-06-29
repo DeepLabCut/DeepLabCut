@@ -7,7 +7,6 @@ from deeplabcut.pose_estimation_tensorflow.nnet.processing import TrackingData
 
 # Will eventually replace this by moving the class over....
 from deeplabcut.pose_estimation_tensorflow.util.frame_store_fmt import DLCFSHeader
-
 import numpy as np
 import h5py
 
@@ -34,7 +33,7 @@ class SubFrameKeys:
     OFFSET_Y = "offset_y"
 
 
-class H5DLCFSReader:
+class DLCFSReader:
     """
     A DeepLabCut Frame Store Reader. Allows for reading ".dlcf" files.
     """
@@ -133,6 +132,7 @@ class H5DLCFSReader:
 
         __, frame_h, frame_w, __, stride = self._header.to_list()[:5]
         bp_lst = self._header.bodypart_names
+        print(bp_lst)
 
         track_data = TrackingData.empty_tracking_data(
             num_frames, len(bp_lst), frame_w, frame_h, stride
@@ -143,7 +143,8 @@ class H5DLCFSReader:
             frame_group = self._file[f"{DLCFSConstants.FRAME_PREFIX}{temp_frame_idx}"]
 
             for bp_idx in range(track_data.get_bodypart_count()):
-                bp_group = frame_group[self._header.bodypart_names[bp_idx]]
+                print(bp_lst[bp_idx])
+                bp_group = frame_group[bp_lst[bp_idx]]
                 is_sparse = bp_group.attrs[SubFrameKeys.IS_STORED_SPARSE]
                 has_offsets = bp_group.attrs[SubFrameKeys.INCLUDES_OFFSETS]
 
@@ -162,7 +163,7 @@ class H5DLCFSReader:
                         track_data.get_offset_map()[frame_idx, sparse_y, sparse_x, bp_idx, 1] = off_y
                         track_data.get_offset_map()[frame_idx, sparse_y, sparse_x, bp_idx, 0] = off_x
 
-                    track_data.get_prob_table(frame_idx, bp_idx)[sparse_y, sparse_x] = probs  # Set probability data...
+                    track_data.get_source_map()[frame_idx, sparse_y, sparse_x, bp_idx] = probs  # Set probability data...
                 else:
                     probs = bp_group[SubFrameKeys.PROBS]
 
@@ -174,9 +175,16 @@ class H5DLCFSReader:
                         track_data.get_offset_map()[frame_idx, :, :, bp_idx, 1] = off_y
                         track_data.get_offset_map()[frame_idx, :, :, bp_idx, 0] = off_x
 
-                    track_data.get_prob_table(frame_idx, bp_idx)[:] = probs
+                    track_data.get_source_map()[frame_idx, :, :, bp_idx] = probs
 
-                return track_data
+        return track_data
+
+    def close(self):
+        """
+        Close this frame reader, cleaning up any resources used during reading from the file. Does not close the passed
+        file handle!
+        """
+        self._file.close()
 
 
 class DLCFSWriter:
@@ -299,3 +307,11 @@ class DLCFSWriter:
                     out_y[:] = off_y
 
             current_frame_tmp += 1
+
+    def close(self):
+        """
+        Close this frame writer, cleaning up any resources used during writing to the file. Does not close the passed
+        file handle!
+        """
+        self._file.flush()
+        self._file.close()

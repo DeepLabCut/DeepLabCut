@@ -19,7 +19,7 @@ from deeplabcut.pose_estimation_tensorflow.predict_videos import (
 )
 from pathlib import Path
 import numpy as np
-import deeplabcut.pose_estimation_tensorflow.util.frame_store_fmt as frame_store_fmt
+import deeplabcut.pose_estimation_tensorflow.util.h5_frame_store_fmt as frame_store_fmt
 import tqdm
 import time
 
@@ -220,6 +220,7 @@ def _analyze_frame_store(
 
             # Read in the header, setup the settings.
             frame_reader = frame_store_fmt.DLCFSReader(fb)
+
             (
                 num_f,
                 f_h,
@@ -232,6 +233,7 @@ def _analyze_frame_store(
                 off_x,
                 bp_lst,
             ) = frame_reader.get_header().to_list()
+
             pd_index = GetPandasHeader(
                 bp_lst, num_outputs, multi_output_format, dlc_scorer
             )
@@ -307,6 +309,7 @@ def _analyze_frame_store(
                 )
 
             stop = time.time()
+            frame_reader.close()
 
             if cfg["cropping"]:
                 coords = [cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]]

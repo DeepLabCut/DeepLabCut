@@ -12,7 +12,7 @@ from deeplabcut.pose_estimation_tensorflow.nnet.processing import (
     Pose,
     TrackingData,
 )
-from deeplabcut.pose_estimation_tensorflow.util.frame_store_fmt import (
+from deeplabcut.pose_estimation_tensorflow.util.h5_frame_store_fmt import (
     DLCFSWriter,
     DLCFSHeader,
 )
@@ -77,8 +77,8 @@ class FrameExporter(Predictor):
             self._frame_writer = DLCFSWriter(
                 self._out_file,
                 header,
-                self.THRESHOLD if (self.SPARSIFY) else None,
-                self.COMPRESSION_LEVEL,
+                self.THRESHOLD if (self.SPARSIFY) else None
+                # self.COMPRESSION_LEVEL,
             )
 
         # Writing all of the frames in this batch...
@@ -90,6 +90,7 @@ class FrameExporter(Predictor):
         )
 
     def on_end(self, progress_bar: tqdm.tqdm) -> Union[None, Pose]:
+        self._frame_writer.close()
         self._out_file.flush()
         self._out_file.close()
         return None

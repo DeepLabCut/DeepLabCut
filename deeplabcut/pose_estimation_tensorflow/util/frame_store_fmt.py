@@ -68,7 +68,7 @@ Frame data block:
 """
 from abc import ABC
 from io import BytesIO
-from typing import List, Any, BinaryIO, Optional, Tuple, MutableMapping, Iterator, _T_co, _KT, _VT_co, _VT
+from typing import List, Any, BinaryIO, Optional, Tuple, MutableMapping, Iterator
 from deeplabcut.pose_estimation_tensorflow.nnet.processing import TrackingData
 import numpy as np
 import zlib
@@ -250,7 +250,7 @@ class DLCFSHeader(MutableMapping):
         """
         return len(self._values)
 
-    def __iter__(self) -> Iterator[_T_co]:
+    def __iter__(self) -> Iterator:
         """
         Iterate the keys of the header in order.
         """
@@ -491,6 +491,13 @@ class DLCFSReader:
 
         return track_data
 
+    def close(self):
+        """
+        Close this frame reader, cleaning up any resources used during reading from the file. Does not close the passed
+        file handle!
+        """
+        pass
+
 
 class DLCFSWriter:
     """
@@ -673,3 +680,10 @@ class DLCFSWriter:
                 comp_data = zlib.compress(buffer.getvalue())
                 self._out_file.write(to_bytes(len(comp_data), luint64))
                 self._out_file.write(comp_data)
+
+    def close(self):
+        """
+        Close this frame writer, cleaning up any resources used during writing to the file. Does not close the passed
+        file handle!
+        """
+        pass
