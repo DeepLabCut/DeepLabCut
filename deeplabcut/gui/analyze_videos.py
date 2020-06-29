@@ -150,12 +150,12 @@ class Analyze_videos(wx.Panel):
 
             self.robust = wx.RadioBox(
                 self,
-                label="Use OpenCV to read the video (recommended)",
+                label="Use ffprobe to read video metadata (slow but robust)",
                 choices=["Yes", "No"],
                 majorDimension=1,
                 style=wx.RA_SPECIFY_COLS,
             )
-            self.robust.SetSelection(0)
+            self.robust.SetSelection(1)
             self.hbox1.Add(self.robust, 5, 5)
             # boxsizer.Add(self.hbox1,0, 5)
 
