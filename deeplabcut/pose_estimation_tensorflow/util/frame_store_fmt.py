@@ -66,7 +66,6 @@ Frame data block:
                         [off y] - list of 4 byte floats, stores y offset within the block of pixels.
                         [off x] - list of 4 byte floats, stores x offset within the block of pixels.
 """
-from abc import ABC
 from io import BytesIO
 from typing import List, Any, BinaryIO, Optional, Tuple, MutableMapping, Iterator
 from deeplabcut.pose_estimation_tensorflow.nnet.processing import TrackingData

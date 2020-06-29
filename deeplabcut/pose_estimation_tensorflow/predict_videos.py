@@ -1062,8 +1062,8 @@ def AnalyzeVideo(
             range(nframes),
             save_as_csv,
         )
-    finally:
-        return DLCscorer
+
+    return DLCscorer
 
 
 def GetPosesofFrames(

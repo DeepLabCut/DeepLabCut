@@ -1,5 +1,56 @@
 """
-DeepLabCut Frame Store Format. Is a subset of hdf5 format.
+Contains 2 Utility Classes for reading and writing the DeepLabCut Frame Store format. The format allows for processing
+videos using DeepLabCut and then running predictions on the probability map data later. The DLCF format is a glorified
+hdf5 file, with the specified fields below:
+
+Group "/" {
+    Attribute "number_of_frames": A 64 bit integer
+    Attribute "frame_height": A 64 bit integer
+    Attribute "frame_width": A 64 bit integer
+    Attribute "frame_rate": A 64 bit float
+    Attribute "stride": The video scaling factor relative to the original probability map, A 64 bit integer
+    Attribute "orig_video_height": A 64 bit integer
+    Attribute "orig_video_width", A 64 bit integer
+    Attribute "crop_offset_y": A 64 bit integer, if negative there is no cropping.
+    Attribute "crop_offset_x": A 64 bit integer, if negative there is no cropping.
+    Attribute "bodypart_names", A list of strings, being all of the body part names in order.
+
+    Group "frame_0" {
+        Group "(bodypart_names[0])" {
+            Attribute "is_sparse": 8 bit integer, True or False, determines if data is stored in sparse format below.
+            Attribute "offsets_included": 8 bit integer, True or False, determines if data includes offsets.
+
+            If "is_sparse" is True: ()
+                Data "x": 1-Dimensional array of 32-bit integers being the x-offsets of probabilities within the
+                          probability map.
+                Data "y": 1-Dimensional array of 32-bit integers being the y-offsets of probabilities within the
+                          probability map.
+                Data "probs": 1-Dimensional array of 32-bit floats being the probabilities within the probability map.
+
+                if "offsets_included" is True:
+                    Data "offset_x": 1-Dimensional array of 32 bit floats being x-offsets of most probable locations
+                                     within the video.
+                    Data "offset_y": 1-Dimensional array of 32 bit floats being y-offsets of most probable locations
+                                     within the video.
+
+            If "is_sparse" is False: (All array dimensions below are frame_height x frame_width)
+                Data "probs": 2-Dimensional array of 32-bit floats being the probability map.
+
+                if "offsets_included" is True:
+                    Data "offset_x": 2-Dimensional array of 32 bit floats being x-offsets of most probable locations
+                                     within the video.
+                    Data "offset_y": 2-Dimensional array of 32 bit floats being y-offsets of most probable locations
+                                     within the video.
+        }
+        Group "(bodypart_names[1])" { [...] }
+        [...]
+        Group "(bodypart_names[length(bodypart_names) - 1])" { [...] }
+    }
+    Group "frame_1" { [...] }
+    [...]
+    Group "frame_(number_of_frames-1)" { [...] }
+}
+
 """
 from typing import BinaryIO, Optional
 
@@ -132,7 +183,6 @@ class DLCFSReader:
 
         __, frame_h, frame_w, __, stride = self._header.to_list()[:5]
         bp_lst = self._header.bodypart_names
-        print(bp_lst)
 
         track_data = TrackingData.empty_tracking_data(
             num_frames, len(bp_lst), frame_w, frame_h, stride
@@ -143,7 +193,6 @@ class DLCFSReader:
             frame_group = self._file[f"{DLCFSConstants.FRAME_PREFIX}{temp_frame_idx}"]
 
             for bp_idx in range(track_data.get_bodypart_count()):
-                print(bp_lst[bp_idx])
                 bp_group = frame_group[bp_lst[bp_idx]]
                 is_sparse = bp_group.attrs[SubFrameKeys.IS_STORED_SPARSE]
                 has_offsets = bp_group.attrs[SubFrameKeys.INCLUDES_OFFSETS]

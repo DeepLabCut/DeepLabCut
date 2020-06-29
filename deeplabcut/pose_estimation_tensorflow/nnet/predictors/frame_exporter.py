@@ -48,7 +48,7 @@ class FrameExporter(Predictor):
         vid_path = Path(video_metadata["orig-video-path"])
         self._out_file: BinaryIO = (
             orig_h5_path.parent / (vid_path.name + "~DATA.dlcf")
-        ).open("wb")
+        ).open("w+b")
         # Load in the settings....
         self.SPARSIFY = settings["sparsify"]
         self.THRESHOLD = settings["threshold"]
