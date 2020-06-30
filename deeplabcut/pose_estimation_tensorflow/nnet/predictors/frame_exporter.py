@@ -12,10 +12,11 @@ from deeplabcut.pose_estimation_tensorflow.nnet.processing import (
     Pose,
     TrackingData,
 )
-from deeplabcut.pose_estimation_tensorflow.util.h5_frame_store_fmt import (
+from deeplabcut.pose_estimation_tensorflow.util.frame_store_fmt import (
     DLCFSWriter,
     DLCFSHeader,
 )
+from deeplabcut.pose_estimation_tensorflow.util.h5_frame_store_fmt import DLCH5FSWriter
 
 
 class FrameExporter(Predictor):
@@ -44,10 +45,12 @@ class FrameExporter(Predictor):
         self._num_outputs = num_outputs
         self._frame_writer = None
         # Making the output file...
+        self.IS_HDF5 = bool(settings["export_as_h5"])
+        self.SUFFIX_STR = str(settings["filename_suffix"])
         orig_h5_path = Path(video_metadata["h5-file-name"])
         vid_path = Path(video_metadata["orig-video-path"])
         self._out_file: BinaryIO = (
-            orig_h5_path.parent / (vid_path.name + "~DATA.dlcf")
+            orig_h5_path.parent / (vid_path.name + "~" + self.SUFFIX_STR + (".h5" if(self.IS_HDF5) else ".dlcf"))
         ).open("w+b")
         # Load in the settings....
         self.SPARSIFY = settings["sparsify"]
@@ -74,12 +77,19 @@ class FrameExporter(Predictor):
                 self._bodyparts
             )
 
-            self._frame_writer = DLCFSWriter(
-                self._out_file,
-                header,
-                self.THRESHOLD if (self.SPARSIFY) else None
-                # self.COMPRESSION_LEVEL,
-            )
+            if(self.IS_HDF5):
+                self._frame_writer = DLCH5FSWriter(
+                    self._out_file,
+                    header,
+                    self.THRESHOLD if (self.SPARSIFY) else None,
+                )
+            else:
+                self._frame_writer = DLCFSWriter(
+                    self._out_file,
+                    header,
+                    self.THRESHOLD if (self.SPARSIFY) else None,
+                    self.COMPRESSION_LEVEL
+                )
 
         # Writing all of the frames in this batch...
         self._frame_writer.write_data(scmap)
@@ -117,9 +127,20 @@ class FrameExporter(Predictor):
             (
                 "compression_level",
                 "Integer, 0 through 9, determines the compression level. Higher compression level"
-                "means it takes longer to compress the data, while 0 is no compression",
+                "means it takes longer to compress the data, while 0 is no compression. Note this "
+                "only applies if the DLCF format is being used, the hdf5 format ignores this value.",
                 6,
             ),
+            (
+                "export_as_h5",
+                " A boolean, Determines if the alternate hdf5 format is used instead of the default DLCF binary format.",
+                False
+            ),
+            (
+                "filename_suffix",
+                "A string, The suffix to place onto the end of the file name.",
+                "DATA"
+            )
         ]
 
     @classmethod

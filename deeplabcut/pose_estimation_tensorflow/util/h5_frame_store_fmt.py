@@ -62,7 +62,7 @@ import numpy as np
 import h5py
 
 
-class DLCFSConstants:
+class DLCH5FSConstants:
     # The usual stuff...
     MIN_SPARSE_SAVING_FACTOR = 3
     # The file type:
@@ -74,7 +74,7 @@ class DLCFSConstants:
     # Frames are prefixed using this....
     FRAME_PREFIX = "frame_"
 
-class SubFrameKeys:
+class H5SubFrameKeys:
     IS_STORED_SPARSE = "is_sparse"
     INCLUDES_OFFSETS = "offsets_included"
     X = "x"
@@ -84,7 +84,7 @@ class SubFrameKeys:
     OFFSET_Y = "offset_y"
 
 
-class DLCFSReader:
+class DLCH5FSReader:
     """
     A DeepLabCut Frame Store Reader. Allows for reading ".dlcf" files.
     """
@@ -105,10 +105,10 @@ class DLCFSReader:
         self._frames_processed = 0
 
         # Check the version and file type match...
-        file_type = self._file.attrs.get(DLCFSConstants.FILE_TYPE_KEY, None)
-        file_version = self._file.attrs.get(DLCFSConstants.FILE_VERSION_KEY, None)
+        file_type = self._file.attrs.get(DLCH5FSConstants.FILE_TYPE_KEY, None)
+        file_version = self._file.attrs.get(DLCH5FSConstants.FILE_VERSION_KEY, None)
 
-        if((file_type != DLCFSConstants.FILE_TYPE) or (file_version != DLCFSConstants.FILE_VERSION)):
+        if((file_type != DLCH5FSConstants.FILE_TYPE) or (file_version != DLCH5FSConstants.FILE_VERSION)):
             raise ValueError("H5 File Header does not match the header of a DeepLabCut FrameStore.")
 
         # Dump the header, which is pretty much directly dumped into the hdf5 file...
@@ -190,36 +190,36 @@ class DLCFSReader:
 
         for frame_idx in range(track_data.get_frame_count()):
 
-            frame_group = self._file[f"{DLCFSConstants.FRAME_PREFIX}{temp_frame_idx}"]
+            frame_group = self._file[f"{DLCH5FSConstants.FRAME_PREFIX}{temp_frame_idx}"]
 
             for bp_idx in range(track_data.get_bodypart_count()):
                 bp_group = frame_group[bp_lst[bp_idx]]
-                is_sparse = bp_group.attrs[SubFrameKeys.IS_STORED_SPARSE]
-                has_offsets = bp_group.attrs[SubFrameKeys.INCLUDES_OFFSETS]
+                is_sparse = bp_group.attrs[H5SubFrameKeys.IS_STORED_SPARSE]
+                has_offsets = bp_group.attrs[H5SubFrameKeys.INCLUDES_OFFSETS]
 
                 if(is_sparse):
-                    sparse_x = bp_group[SubFrameKeys.X]
-                    sparse_y = bp_group[SubFrameKeys.Y]
-                    probs = bp_group[SubFrameKeys.PROBS]
+                    sparse_x = bp_group[H5SubFrameKeys.X]
+                    sparse_y = bp_group[H5SubFrameKeys.Y]
+                    probs = bp_group[H5SubFrameKeys.PROBS]
 
                     if(has_offsets):
                         # If data has offsets, store them...
                         self._init_offset_data(track_data)
 
-                        off_x = bp_group[SubFrameKeys.OFFSET_X]
-                        off_y = bp_group[SubFrameKeys.OFFSET_Y]
+                        off_x = bp_group[H5SubFrameKeys.OFFSET_X]
+                        off_y = bp_group[H5SubFrameKeys.OFFSET_Y]
 
                         track_data.get_offset_map()[frame_idx, sparse_y, sparse_x, bp_idx, 1] = off_y
                         track_data.get_offset_map()[frame_idx, sparse_y, sparse_x, bp_idx, 0] = off_x
 
                     track_data.get_source_map()[frame_idx, sparse_y, sparse_x, bp_idx] = probs  # Set probability data...
                 else:
-                    probs = bp_group[SubFrameKeys.PROBS]
+                    probs = bp_group[H5SubFrameKeys.PROBS]
 
                     if(has_offsets):
                         self._init_offset_data(track_data)
-                        off_x = bp_group[SubFrameKeys.OFFSET_X]
-                        off_y = bp_group[SubFrameKeys.OFFSET_Y]
+                        off_x = bp_group[H5SubFrameKeys.OFFSET_X]
+                        off_y = bp_group[H5SubFrameKeys.OFFSET_Y]
 
                         track_data.get_offset_map()[frame_idx, :, :, bp_idx, 1] = off_y
                         track_data.get_offset_map()[frame_idx, :, :, bp_idx, 0] = off_x
@@ -236,7 +236,7 @@ class DLCFSReader:
         self._file.close()
 
 
-class DLCFSWriter:
+class DLCH5FSWriter:
     """
     A DeepLabCut Frame Store Writer. Allows for writing ".dlcf" files.
     """
@@ -263,8 +263,8 @@ class DLCFSWriter:
         )
         self._current_frame = 0
 
-        self._file.attrs[DLCFSConstants.FILE_TYPE_KEY] = DLCFSConstants.FILE_TYPE
-        self._file.attrs[DLCFSConstants.FILE_VERSION_KEY] = DLCFSConstants.FILE_VERSION
+        self._file.attrs[DLCH5FSConstants.FILE_TYPE_KEY] = DLCH5FSConstants.FILE_TYPE
+        self._file.attrs[DLCH5FSConstants.FILE_VERSION_KEY] = DLCH5FSConstants.FILE_VERSION
 
         # Dump the entire header.... Also store it for internal checking...
         tmp_data = {}
@@ -304,7 +304,7 @@ class DLCFSWriter:
 
         for frm_idx in range(data.get_frame_count()):
 
-            frame_grp = self._file.create_group(f"{DLCFSConstants.FRAME_PREFIX}{current_frame_tmp}")
+            frame_grp = self._file.create_group(f"{DLCH5FSConstants.FRAME_PREFIX}{current_frame_tmp}")
 
             for bp_idx in range(data.get_bodypart_count()):
                 bp_grp = frame_grp.create_group(self._header.bodypart_names[bp_idx])
@@ -318,7 +318,7 @@ class DLCFSWriter:
                 else:
                     off_x, off_y = None, None
 
-                bp_grp.attrs[SubFrameKeys.INCLUDES_OFFSETS] = offsets is not None
+                bp_grp.attrs[H5SubFrameKeys.INCLUDES_OFFSETS] = offsets is not None
 
                 if(self._threshold is not None):
                     sparse_y, sparse_x = np.nonzero(frame > self._threshold)
@@ -326,32 +326,32 @@ class DLCFSWriter:
 
                     # Check if we managed to strip out at least 2/3rds of the data, and if so write the frame using the
                     # sparse format. Otherwise it is actually more memory efficient to just store the entire frame...
-                    if(len(frame.flat) >= (len(sparse_y) * DLCFSConstants.MIN_SPARSE_SAVING_FACTOR)):
-                        bp_grp.attrs[SubFrameKeys.IS_STORED_SPARSE] = True
-                        out_x = bp_grp.create_dataset(SubFrameKeys.X, sparse_x.shape, np.uint32)
-                        out_y = bp_grp.create_dataset(SubFrameKeys.Y, sparse_y.shape, np.uint32)
-                        out_prob = bp_grp.create_dataset(SubFrameKeys.PROBS, probs.shape, np.float32)
+                    if(len(frame.flat) >= (len(sparse_y) * DLCH5FSConstants.MIN_SPARSE_SAVING_FACTOR)):
+                        bp_grp.attrs[H5SubFrameKeys.IS_STORED_SPARSE] = True
+                        out_x = bp_grp.create_dataset(H5SubFrameKeys.X, sparse_x.shape, np.uint32)
+                        out_y = bp_grp.create_dataset(H5SubFrameKeys.Y, sparse_y.shape, np.uint32)
+                        out_prob = bp_grp.create_dataset(H5SubFrameKeys.PROBS, probs.shape, np.float32)
                         out_x[:] = sparse_x
                         out_y[:] = sparse_y
                         out_prob[:] = probs
 
                         if(offsets is not None):
                             off_x, off_y = off_x[(sparse_y, sparse_x)], off_y[(sparse_y, sparse_x)]
-                            out_off_x = bp_grp.create_dataset(SubFrameKeys.OFFSET_X, off_x.shape, np.float32)
-                            out_off_y = bp_grp.create_dataset(SubFrameKeys.OFFSET_Y, off_y.shape, np.float32)
+                            out_off_x = bp_grp.create_dataset(H5SubFrameKeys.OFFSET_X, off_x.shape, np.float32)
+                            out_off_y = bp_grp.create_dataset(H5SubFrameKeys.OFFSET_Y, off_y.shape, np.float32)
                             out_off_x[:] = off_x
                             out_off_y[:] = off_y
 
                         continue
 
                 # User has disabled sparse optimizations or they wasted more space, stash entire frame...
-                bp_grp.attrs[SubFrameKeys.IS_STORED_SPARSE] = False
-                prob_data = bp_grp.create_dataset(SubFrameKeys.PROBS, frame.shape, np.float32)
+                bp_grp.attrs[H5SubFrameKeys.IS_STORED_SPARSE] = False
+                prob_data = bp_grp.create_dataset(H5SubFrameKeys.PROBS, frame.shape, np.float32)
                 prob_data[:] = frame
 
                 if(offsets is not None):
-                    out_x = bp_grp.create_dataset(SubFrameKeys.OFFSET_X, off_x.shape, np.float32)
-                    out_y = bp_grp.create_dataset(SubFrameKeys.OFFSET_Y, off_y.shape, np.float32)
+                    out_x = bp_grp.create_dataset(H5SubFrameKeys.OFFSET_X, off_x.shape, np.float32)
+                    out_y = bp_grp.create_dataset(H5SubFrameKeys.OFFSET_Y, off_y.shape, np.float32)
                     out_x[:] = off_x
                     out_y[:] = off_y
 

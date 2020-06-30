@@ -3,6 +3,8 @@ Contains 2 Utility Classes for reading and writing the DeepLabCut Frame Store fo
 videos using DeepLabCut and then running predictions on the probability map data later. Below is a specification for
 the DeepLabCut Frame Store format...
 
+TODO: Add a lookup table chunk (FLUP for Frame Look UP). Useful for random access.
+
 DEEPLABCUT FRAMESTORE BINARY FORMAT: (All multi-byte fields are in little-endian format)
 ['DLCF'] -> DeepLabCut Frame store - 4 Bytes (file magic)
 
@@ -676,7 +678,7 @@ class DLCFSWriter:
                     buffer.write(off_y.astype(lfloat).tobytes("C"))
                     buffer.write(off_x.astype(lfloat).tobytes("C"))
 
-                comp_data = zlib.compress(buffer.getvalue())
+                comp_data = zlib.compress(buffer.getvalue(), self._compression_level)
                 self._out_file.write(to_bytes(len(comp_data), luint64))
                 self._out_file.write(comp_data)
 

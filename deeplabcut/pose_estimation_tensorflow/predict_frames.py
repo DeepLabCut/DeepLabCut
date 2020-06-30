@@ -19,7 +19,8 @@ from deeplabcut.pose_estimation_tensorflow.predict_videos import (
 )
 from pathlib import Path
 import numpy as np
-import deeplabcut.pose_estimation_tensorflow.util.h5_frame_store_fmt as frame_store_fmt
+import deeplabcut.pose_estimation_tensorflow.util.frame_store_fmt as frame_store_fmt
+import deeplabcut.pose_estimation_tensorflow.util.h5_frame_store_fmt as h5_frame_store_fmt
 import tqdm
 import time
 
@@ -219,7 +220,10 @@ def _analyze_frame_store(
             start = time.time()
 
             # Read in the header, setup the settings.
-            frame_reader = frame_store_fmt.DLCFSReader(fb)
+            try:
+                frame_reader = frame_store_fmt.DLCFSReader(fb)
+            except ValueError:
+                frame_reader = h5_frame_store_fmt.DLCH5FSReader(fb)
 
             (
                 num_f,
