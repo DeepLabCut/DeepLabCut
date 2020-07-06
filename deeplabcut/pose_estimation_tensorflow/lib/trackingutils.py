@@ -29,15 +29,15 @@ class SkeletonTracker developed for DLC 2.2.
 """
 
 import numpy as np
+import warnings
 from filterpy.common import kinematic_kf
 from filterpy.kalman import KalmanFilter
+from matplotlib.patches import Ellipse
 from numba import jit
 from numba.core.errors import NumbaPerformanceWarning
 from scipy.optimize import linear_sum_assignment
 from scipy.stats import norm, chi2
-from shapely import affinity
-from shapely.geometry.point import Point
-import warnings
+from shapely.geometry import Polygon
 
 
 warnings.simplefilter('ignore', category=NumbaPerformanceWarning)
@@ -116,13 +116,10 @@ class EllipseFitter:
         """
         cov = np.cov(x, y)
         r2 = chi2.ppf(2 * norm.cdf(sd) - 1, 2)
-        E, V = np.linalg.eigh(cov)
-        order = E.argsort()[::-1]
-        E = E[order]
-        V = V[order]
-        width, height = np.sqrt(E * r2)
-        rotation = np.degrees(np.arctan2(*V[::-1, 0]))
-        return np.mean(x), np.mean(y), width, height, rotation % 180
+        E, V = np.linalg.eigh(cov)  # Returns the eigenvalues in ascending order
+        height, width = np.sqrt(E * r2)
+        rotation = np.degrees(np.arctan2(*V[:, 0])) % 180
+        return np.mean(x), np.mean(y), width, height, rotation
 
     @staticmethod
     @jit(nopython=True)
@@ -168,14 +165,18 @@ class EllipseFitter:
 
         return x0, y0, 2 * major, 2 * minor, np.rad2deg(phi)
 
+    # def create_geometry_slower(self, x, y, a, b, angle):
+    #     """
+    #     Create a shapely ellipse.
+    #     Adapted from https://gis.stackexchange.com/a/243462
+    #     """
+    #     circ = Point((x, y)).buffer(1)
+    #     ell = affinity.scale(circ, int(0.5 * a), int(0.5 * b))
+    #     return affinity.rotate(ell, angle).simplify(2, preserve_topology=False)
+
     def create_geometry(self, x, y, a, b, angle):
-        """
-        Create a shapely ellipse.
-        Adapted from https://gis.stackexchange.com/a/243462
-        """
-        circ = Point((x, y)).buffer(1)
-        ell = affinity.scale(circ, int(a), int(b))
-        return affinity.rotate(ell, angle)
+        ell = Ellipse(xy=(x, y), width=a, height=b, angle=angle)
+        return Polygon(ell.get_verts())
 
     def draw(self, show_points=True, show_axes=True, ax=None, **kwargs):
         """Display a cloud of data points and the associated error ellipse."""
@@ -183,15 +184,14 @@ class EllipseFitter:
             raise AttributeError('No ellipse has been fitted yet. Call `fit first.')
 
         import matplotlib.pyplot as plt
-        import matplotlib.patches as mpatches
         from matplotlib.lines import Line2D
         from matplotlib.transforms import Affine2D
 
         *center, width, height, angle = self.params
         if ax is None:
             ax = plt.subplot(111, aspect='equal')
-        el = mpatches.Ellipse(xy=center, width=width, height=height, angle=angle,
-                              facecolor='none', **kwargs)
+        el = Ellipse(xy=center, width=width, height=height, angle=angle,
+                     facecolor='none', **kwargs)
         ax.add_patch(el)
         if show_points:
             ax.scatter(self.x, self.y)
@@ -380,7 +380,7 @@ class EllipseTracker:
 
 
 class SORTEllipse:
-    def __init__(self, max_age, min_hits, iou_threshold, sd=1):
+    def __init__(self, max_age, min_hits, iou_threshold, sd=0):
         self.max_age = max_age
         self.min_hits = min_hits
         self.iou_threshold = iou_threshold
@@ -392,14 +392,11 @@ class SORTEllipse:
         self.n_frames += 1
         ellipses = [self.fitter.fit(pose) for pose in poses]
         trackers = np.zeros((len(self.trackers), 6))
-        to_del = []
         for i in range(len(trackers)):
-            params = self.trackers[i].predict().squeeze()
-            trackers[i, :5] = params
-            if np.isnan(params).any():
-                to_del.append(i)
-        trackers = np.ma.compress_rows(np.ma.masked_invalid(trackers))
-        for ind in reversed(to_del):
+            trackers[i, :5] = self.trackers[i].predict()
+        empty = np.isnan(trackers).any(axis=1)
+        trackers = trackers[~empty]
+        for ind in np.flatnonzero(empty)[::-1]:
             self.trackers.pop(ind)
 
         if not len(trackers):
@@ -407,21 +404,15 @@ class SORTEllipse:
             unmatched_detections = np.arange(len(ellipses))
             unmatched_trackers = np.empty((0, 6), dtype=int)
         else:
-            iou_matrix = np.zeros((len(ellipses), len(trackers)))
             ellipses_shape = [self.fitter.create_geometry(*e) for e in ellipses]
             trackers_shape = [self.fitter.create_geometry(*t[:5]) for t in trackers]
+            iou_matrix = np.zeros((len(ellipses), len(trackers)))
             for i, el in enumerate(ellipses_shape):
                 for j, tracker in enumerate(trackers_shape):
                     iou_matrix[i, j] = self.calc_iou_ellipses(el, tracker)
             row_indices, col_indices = linear_sum_assignment(iou_matrix, maximize=True)
-            unmatched_detections = []
-            for i, _ in enumerate(ellipses):
-                if i not in row_indices:
-                    unmatched_detections.append(i)
-            unmatched_trackers = []
-            for j, tracker in enumerate(trackers):
-                if j not in col_indices:
-                    unmatched_trackers.append(j)
+            unmatched_detections = [i for i, _ in enumerate(ellipses) if i not in row_indices]
+            unmatched_trackers = [j for j, _ in enumerate(trackers) if j not in col_indices]
             matches = []
             for row, col in zip(row_indices, col_indices):
                 if iou_matrix[row, col] < self.iou_threshold:
@@ -435,14 +426,16 @@ class SORTEllipse:
                 matches = np.stack(matches)
             unmatched_trackers = np.asarray(unmatched_trackers)
             unmatched_detections = np.asarray(unmatched_detections)
+
         animalindex = []
-        for t, trk in enumerate(self.trackers):
+        for t, tracker in enumerate(self.trackers):
             if t not in unmatched_trackers:
-                d = matches[np.where(matches[:, 1] == t)[0], 0]
-                animalindex.append(d[0])
-                trk.update(ellipses[d[0]])  # update coordinates
+                ind = matches[matches[:, 1] == t, 0][0]
+                animalindex.append(ind)
+                tracker.update(ellipses[ind])
             else:
-                animalindex.append("nix")  # lost trk!
+                animalindex.append(-1)
+
         for i in unmatched_detections:
             trk = EllipseTracker(ellipses[i])
             self.trackers.append(trk)
@@ -472,14 +465,13 @@ class SORTEllipse:
 
     @staticmethod
     def calc_iou_ellipses(ellipse1, ellipse2):
-        """Compute the intersection-over-union of two rasterized ellipses."""
+        """Compute the intersection-over-union of two ellipses."""
+        if not ellipse1.intersects(ellipse2):
+            return 0
         if not ellipse1.is_valid:
             ellipse1 = ellipse1.buffer(0)
         if not ellipse2.is_valid:
             ellipse2 = ellipse2.buffer(0)
-        # If the rare cases buffering did not solve the topological error, return 0
-        if not (ellipse1.is_valid and ellipse2.is_valid):
-            return 0
         inter = ellipse1.intersection(ellipse2).area
         union = ellipse1.union(ellipse2).area
         return inter / union
