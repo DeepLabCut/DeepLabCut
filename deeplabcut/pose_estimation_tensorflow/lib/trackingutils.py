@@ -43,30 +43,6 @@ import warnings
 warnings.simplefilter('ignore', category=NumbaPerformanceWarning)
 
 
-def _create_ellipse(x, y, a, b, angle):
-    """
-    Create a shapely ellipse.
-    Adapted from https://gis.stackexchange.com/a/243462
-    """
-    circ = Point((x, y)).buffer(1)
-    ell = affinity.scale(circ, int(a), int(b))
-    return affinity.rotate(ell, angle)
-
-
-def _iou_ellipses(ellipse1, ellipse2):
-    """Compute the intersection-over-union of two rasterized ellipses."""
-    if not ellipse1.is_valid:
-        ellipse1 = ellipse1.buffer(0)
-    if not ellipse2.is_valid:
-        ellipse2 = ellipse2.buffer(0)
-    # If the rare cases buffering did not solve the topological error, return 0
-    if not (ellipse1.is_valid and ellipse2.is_valid):
-        return 0
-    inter = ellipse1.intersection(ellipse2).area
-    union = ellipse1.union(ellipse2).area
-    return inter / union
-
-
 class EllipseFitter:
     def __init__(self, sd=0):
         self.sd = sd
@@ -132,31 +108,21 @@ class EllipseFitter:
     def _fit_error(x, y, sd):
         """
         Fit a sd-sigma covariance error ellipse to the data.
-        For implementation details, refer to:
-        http://www.visiondummy.com/2014/04/draw-error-ellipse-representing-covariance-matrix/
-        https://stackoverflow.com/questions/12301071/multidimensional-confidence-intervals
 
         :param x: ndarray, 1D input of X coordinates
         :param y: ndarray, 1D input of Y coordinates
         :param sd: int, size of the error ellipse in 'standard deviation'
-        :return: ellipse center: 1D ndarray, semi-axes length: 1D ndarray, angle to the X-axis: float
+        :return: ellipse center, semi-axes length, angle to the X-axis
         """
-        data = np.vstack((x, y)).T
-        center = np.mean(data, axis=0)
-        cov = np.cov(data, rowvar=False)
+        cov = np.cov(x, y)
         r2 = chi2.ppf(2 * norm.cdf(sd) - 1, 2)
-
-        def sort_eig(cov):
-            """Sort eigenvalues and eigenvectors in descending order."""
-            E, V = np.linalg.eigh(cov)
-            order = E.argsort()[::-1]
-            return E[order], V[:, order]
-
-        E, V = sort_eig(cov)
-        width, height = np.sqrt(E[:, np.newaxis] * r2)
+        E, V = np.linalg.eigh(cov)
+        order = E.argsort()[::-1]
+        E = E[order]
+        V = V[order]
+        width, height = np.sqrt(E * r2)
         rotation = np.degrees(np.arctan2(*V[::-1, 0]))
-        rotation %= 180
-        return center[0], center[1], width[0], height[0], rotation
+        return np.mean(x), np.mean(y), width, height, rotation % 180
 
     @staticmethod
     @jit(nopython=True)
@@ -202,6 +168,15 @@ class EllipseFitter:
 
         return x0, y0, 2 * major, 2 * minor, np.rad2deg(phi)
 
+    def create_geometry(self, x, y, a, b, angle):
+        """
+        Create a shapely ellipse.
+        Adapted from https://gis.stackexchange.com/a/243462
+        """
+        circ = Point((x, y)).buffer(1)
+        ell = affinity.scale(circ, int(a), int(b))
+        return affinity.rotate(ell, angle)
+
     def draw(self, show_points=True, show_axes=True, ax=None, **kwargs):
         """Display a cloud of data points and the associated error ellipse."""
         if not self.params:
@@ -229,7 +204,6 @@ class EllipseFitter:
             minor.set_transform(trans)
             ax.add_artist(major)
             ax.add_artist(minor)
-        ax.autoscale_view()
 
 
 @jit
@@ -368,24 +342,22 @@ class KalmanBoxTracker(object):
 class EllipseTracker:
     n_trackers = 0
 
-    def __init__(self, ellipse):
+    def __init__(self, params):
         self.kf = kinematic_kf(5, order=1, dim_z=5, order_by_dim=False)
         self.kf.R[2:, 2:] *= 10.0
         self.kf.P[5:, 5:] *= 1000.0  # High uncertainty to the unobservable initial velocities
         self.kf.P *= 10.0
         self.kf.Q[5:, 5:] *= 0.01
-        self.kf.x[:5] = ellipse.reshape((-1, 1))
+        self.state = params
         self.time_since_update = 0
         self.id = EllipseTracker.n_trackers
         EllipseTracker.n_trackers += 1
-        self.history = []
         self.hits = 0
         self.hit_streak = 0
         self.age = 0
 
     def update(self, ellipse):
         self.time_since_update = 0
-        self.history = []
         self.hits += 1
         self.hit_streak += 1
         self.kf.update(ellipse)
@@ -396,15 +368,19 @@ class EllipseTracker:
         if self.time_since_update > 0:
             self.hit_streak = 0
         self.time_since_update += 1
-        self.history.append(self.kf.x[:5])
-        return self.history[-1].squeeze()
+        return self.state
 
-    def get_state(self):
-        return self.kf.x[:5].squeeze()
+    @property
+    def state(self):
+        return self.kf.x.squeeze()[:5]
+
+    @state.setter
+    def state(self, params):
+        self.kf.x[:5] = params.reshape((-1, 1))
 
 
-class SortEllipse:
-    def __init__(self, max_age, min_hits, iou_threshold, sd=0):
+class SORTEllipse:
+    def __init__(self, max_age, min_hits, iou_threshold, sd=1):
         self.max_age = max_age
         self.min_hits = min_hits
         self.iou_threshold = iou_threshold
@@ -432,11 +408,11 @@ class SortEllipse:
             unmatched_trackers = np.empty((0, 6), dtype=int)
         else:
             iou_matrix = np.zeros((len(ellipses), len(trackers)))
-            ellipses_shape = [_create_ellipse(*e) for e in ellipses]
-            trackers_shape = [_create_ellipse(*t[:5]) for t in trackers]
+            ellipses_shape = [self.fitter.create_geometry(*e) for e in ellipses]
+            trackers_shape = [self.fitter.create_geometry(*t[:5]) for t in trackers]
             for i, el in enumerate(ellipses_shape):
                 for j, tracker in enumerate(trackers_shape):
-                    iou_matrix[i, j] = _iou_ellipses(el, tracker)
+                    iou_matrix[i, j] = self.calc_iou_ellipses(el, tracker)
             row_indices, col_indices = linear_sum_assignment(iou_matrix, maximize=True)
             unmatched_detections = []
             for i, _ in enumerate(ellipses):
@@ -475,7 +451,7 @@ class SortEllipse:
         i = len(self.trackers)
         ret = []
         for trk in reversed(self.trackers):
-            d = trk.get_state()
+            d = trk.state
             if (trk.time_since_update < 1) and (
                     trk.hit_streak >= self.min_hits or self.n_frames <= self.min_hits
             ):
@@ -493,6 +469,20 @@ class SortEllipse:
         if len(ret) > 0:
             return np.concatenate(ret)
         return np.empty((0, 7))
+
+    @staticmethod
+    def calc_iou_ellipses(ellipse1, ellipse2):
+        """Compute the intersection-over-union of two rasterized ellipses."""
+        if not ellipse1.is_valid:
+            ellipse1 = ellipse1.buffer(0)
+        if not ellipse2.is_valid:
+            ellipse2 = ellipse2.buffer(0)
+        # If the rare cases buffering did not solve the topological error, return 0
+        if not (ellipse1.is_valid and ellipse2.is_valid):
+            return 0
+        inter = ellipse1.intersection(ellipse2).area
+        union = ellipse1.union(ellipse2).area
+        return inter / union
 
 
 class SkeletonTracker:
