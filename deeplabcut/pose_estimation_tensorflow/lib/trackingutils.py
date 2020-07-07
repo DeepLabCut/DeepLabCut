@@ -49,13 +49,15 @@ class EllipseFitter:
         self.x = None
         self.y = None
         self.params = None
+        self._coeffs = None
 
     def fit(self, xy):
         self.x, self.y = xy[~np.isnan(xy).any(axis=1)].T
         if self.sd:
             self.params = self._fit_error(self.x, self.y, self.sd)
         else:
-            self.params = self.calc_parameters(self._fit(self.x, self.y))
+            self._coeffs = self._fit(self.x, self.y)
+            self.params = self.calc_parameters(self._coeffs)
         return np.asarray(self.params)
 
     @staticmethod
@@ -165,18 +167,17 @@ class EllipseFitter:
 
         return x0, y0, 2 * major, 2 * minor, np.rad2deg(phi)
 
-    # def create_geometry_slower(self, x, y, a, b, angle):
-    #     """
-    #     Create a shapely ellipse.
-    #     Adapted from https://gis.stackexchange.com/a/243462
-    #     """
-    #     circ = Point((x, y)).buffer(1)
-    #     ell = affinity.scale(circ, int(0.5 * a), int(0.5 * b))
-    #     return affinity.rotate(ell, angle).simplify(2, preserve_topology=False)
-
-    def create_geometry(self, x, y, a, b, angle):
-        ell = Ellipse(xy=(x, y), width=a, height=b, angle=angle)
-        return Polygon(ell.get_verts())
+    @staticmethod
+    def create_geometry(x, y, a, b, angle):
+        angle = np.deg2rad(angle)
+        t = np.linspace(0, 2 * np.pi, 40)
+        ca = np.cos(angle)
+        sa = np.sin(angle)
+        at = 0.5 * a * np.cos(t)
+        bt = 0.5 * b * np.sin(t)
+        xx = at * ca - bt * sa + x
+        yy = at * sa + bt * ca + y
+        return Polygon(list(zip(xx, yy)))
 
     def draw(self, show_points=True, show_axes=True, ax=None, **kwargs):
         """Display a cloud of data points and the associated error ellipse."""
