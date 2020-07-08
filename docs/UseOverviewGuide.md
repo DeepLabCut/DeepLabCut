@@ -78,7 +78,7 @@ We highly recommend using 2.2 first in the Project Manager GUI ([Option 3](docs/
 
 ##### *What scenario do you have?*
 
-- **I have single animal videos, but I want to use DLC2.2:**
+- **I have single animal videos, but I want to use the advanced tracking features & updated network capabilities introduced (for multi-animal projects) in DLC2.2:**
    - quick start: when you `create_new_project` just set the flag `multianimal=False`.
 
 :movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/JDsa8R5J0nQ)
