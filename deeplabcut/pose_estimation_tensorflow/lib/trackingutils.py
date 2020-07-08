@@ -44,7 +44,7 @@ warnings.simplefilter('ignore', category=NumbaPerformanceWarning)
 
 
 class EllipseFitter:
-    def __init__(self, sd=0):
+    def __init__(self, sd=2):
         self.sd = sd
         self.x = None
         self.y = None
@@ -91,6 +91,7 @@ class EllipseFitter:
         return np.hstack((a1, a2))
 
     @staticmethod
+    @jit(nopython=True)
     def _fit_error(x, y, sd):
         """
         Fit a sd-sigma covariance error ellipse to the data.
@@ -101,10 +102,12 @@ class EllipseFitter:
         :return: ellipse center, semi-axes length, angle to the X-axis
         """
         cov = np.cov(x, y)
-        r2 = chi2.ppf(2 * norm.cdf(sd) - 1, 2)
         E, V = np.linalg.eigh(cov)  # Returns the eigenvalues in ascending order
-        height, width = np.sqrt(E * r2)
-        rotation = np.degrees(np.arctan2(*V[:, 0])) % 180
+        # r2 = chi2.ppf(2 * norm.cdf(sd) - 1, 2)
+        # height, width = np.sqrt(E * r2)
+        height, width = 2 * sd * np.sqrt(E)
+        a, b = V[:, 1][::-1]
+        rotation = np.arctan2(a, b) % np.pi
         return np.mean(x), np.mean(y), width, height, rotation
 
     @staticmethod
@@ -149,11 +152,10 @@ class EllipseFitter:
             else:
                 phi = np.pi/2 + np.arctan(2*b / (a-c)) / 2
 
-        return x0, y0, 2 * major, 2 * minor, np.rad2deg(phi)
+        return x0, y0, 2 * major, 2 * minor, phi
 
     @staticmethod
     def create_geometry(x, y, a, b, angle):
-        angle = np.deg2rad(angle)
         t = np.linspace(0, 2 * np.pi, 40)
         ca = np.cos(angle)
         sa = np.sin(angle)
@@ -175,7 +177,7 @@ class EllipseFitter:
         *center, width, height, angle = self.params
         if ax is None:
             ax = plt.subplot(111, aspect='equal')
-        el = Ellipse(xy=center, width=width, height=height, angle=angle,
+        el = Ellipse(xy=center, width=width, height=height, angle=np.rad2deg(angle),
                      facecolor='none', **kwargs)
         ax.add_patch(el)
         if show_points:
@@ -183,7 +185,7 @@ class EllipseFitter:
         if show_axes:
             major = Line2D([-width / 2, width / 2], [0, 0], lw=3, zorder=3)
             minor = Line2D([0, 0], [-height / 2, height / 2], lw=3, zorder=3)
-            trans = (Affine2D().rotate(np.deg2rad(angle)).translate(center[0], center[1])
+            trans = (Affine2D().rotate(angle).translate(center[0], center[1])
                      + ax.transData)
             major.set_transform(trans)
             minor.set_transform(trans)
@@ -365,7 +367,7 @@ class EllipseTracker:
 
 
 class SORTEllipse:
-    def __init__(self, max_age, min_hits, iou_threshold, sd=0):
+    def __init__(self, max_age, min_hits, iou_threshold, sd=2):
         self.max_age = max_age
         self.min_hits = min_hits
         self.iou_threshold = iou_threshold
