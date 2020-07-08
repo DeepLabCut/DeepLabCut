@@ -73,37 +73,21 @@ class EllipseFitter:
         :return: 1D ndarray of 6 coefficients of the general quadratic curve:
             ax^2 + 2bxy + cy^2 + 2dx + 2fy + g = 0
         """
-        # Quadratic part of design matrix [Eqn 15]
         D1 = np.vstack((x * x, x * y, y * y))
-
-        # Linear part of design matrix [Eqn 16]
         D2 = np.vstack((x, y, np.ones_like(x)))
-
-        # Build the scatter matrix [Eqn 17]
         S1 = D1 @ D1.T
         S2 = D1 @ D2.T
         S3 = D2 @ D2.T
-
-        # Build the constraint matrix [Eqn 18]
-        C = np.zeros((3, 3))
-        C[0, 2] = C[2, 0] = 2
-        C[1, 1] = -1
-
-        # Build the reduced scatter matrix [Eqn 29]
-        S3_inv = np.linalg.inv(S3)
-        M = np.linalg.inv(C) @ (S1 - S2 @ S3_inv @ S2.T)
-
-        # Solve the eigensystem [Eqn 28]
+        T = -np.linalg.inv(S3) @ S2.T
+        temp = S1 + S2 @ T
+        M = np.zeros_like(temp)
+        M[0] = temp[2] * 0.5
+        M[1] = -temp[1]
+        M[2] = temp[0] * 0.5
         E, V = np.linalg.eig(M)
-
-        # The condition 4ac - b^2 is evaluated for all eigenvectors of M
-        # There exists only one which gives a positive value—
-        # the one which corresponds to the optimal solution of our fitting problem
         cond = 4 * V[0] * V[2] - V[1] ** 2
-        a1 = V[:, np.flatnonzero(cond > 0)][:, 0]
-
-        # Compute the rest of the coefficients [Eqn 24]
-        a2 = -S3_inv @ S2.T @ a1
+        a1 = V[:, cond > 0][:, 0]
+        a2 = T @ a1
         return np.hstack((a1, a2))
 
     @staticmethod
