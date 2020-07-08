@@ -1128,7 +1128,8 @@ def refine_tracklets(
     return manager, viz
 
 
-def convert_raw_tracks_to_h5(config, tracks_pickle, output_name=""):
-    manager = TrackletManager(config, 0, 0)
+def convert_raw_tracks_to_h5(config, tracks_pickle, output_name="",
+                             min_tracklet_len=5, max_gap=5):
+    manager = TrackletManager(config, 0, min_tracklet_len, max_gap)
     manager.load_tracklets_from_pickle(tracks_pickle)
     manager.save(output_name)
