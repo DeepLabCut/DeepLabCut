@@ -47,7 +47,7 @@ a welcoming place for all.
 
 - We are **domain agnostic** within the sciences. Functionality that is highly specific to particular scientific domains belongs in plugins, whereas functionality that cuts across many domains and is likely to be widely used belongs inside DeepLabCut.
 
-- We value **education and documentation**. All functions should have docstrings, preferably with examples, and major functionality should be explained in our [tutorials](https://github.com/napari/napari-tutorials). Core developers can take an active role in finishing documentation examples.
+- We value **education and documentation**. All functions should have docstrings, preferably with examples, and major functionality should be explained in our [tutorials](http://deeplabcut.org). Core developers can take an active role in finishing documentation examples.
 
 
 ## Acknowledgements
