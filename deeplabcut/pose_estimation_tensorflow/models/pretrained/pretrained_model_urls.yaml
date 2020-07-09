@@ -15,3 +15,4 @@ full_dog: http://deeplabcut.rowland.harvard.edu/models/DLC_Dog_resnet_50_iterati
 full_cat: http://deeplabcut.rowland.harvard.edu/models/DLC_Cat_resnet_50_iteration-0_shuffle-0.tar.gz
 primate_face: http://deeplabcut.rowland.harvard.edu/models/DLC_primate_face_resnet_50_iteration-1_shuffle-1.tar.gz
 mouse_pupil_vclose: http://deeplabcut.rowland.harvard.edu/models/DLC_mouse_pupil_vclose_resnet_50_iteration-0_shuffle-1.tar.gz
+horse_sideview: http://deeplabcut.rowland.harvard.edu/models/DLC_Horses_resnet_50_iteration-1_shuffle-1.tar.gz
