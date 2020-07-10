@@ -1190,7 +1190,7 @@ def convert_detections2tracklets(
         folder also needs to be passed.
 
     track_method: str, optional
-        Method uses to track animals, either 'box' or 'skeleton'.
+        Method uses to track animals, either 'box', 'skeleton', or 'ellipse'.
         By default, a constant velocity Kalman filter is used to track individual bounding boxes.
 
     BPTS: Default is None: all bodyparts are used.
@@ -1228,9 +1228,9 @@ def convert_detections2tracklets(
     from easydict import EasyDict as edict
     import pickle
 
-    if track_method not in ("box", "skeleton"):
+    if track_method not in ("box", "skeleton", "ellipse"):
         raise ValueError(
-            "Invalid tracking method. Only `box` and `skeleton` are currently supported."
+            "Invalid tracking method. Only `box`, `skeleton`, and `ellipse` are currently supported."
         )
 
     cfg = auxiliaryfunctions.read_config(config)
@@ -1344,7 +1344,9 @@ def convert_detections2tracklets(
             vname = Path(video).stem
             dataname = os.path.join(videofolder, vname + DLCscorer + ".h5")
             data, metadata = auxfun_multianimal.LoadFullMultiAnimalData(dataname)
-            method = "sk" if track_method == "skeleton" else "bx"
+            method = ("sk" if track_method == "skeleton"
+                      else "bx" if track_method == 'box'
+                      else 'el')
             trackname = dataname.split(".h5")[0] + f"_{method}.pickle"
             trackname = trackname.replace(videofolder, destfolder)
             if (
@@ -1419,12 +1421,18 @@ def convert_detections2tracklets(
 
                 if track_method == "box":
                     mot_tracker = trackingutils.Sort(inferencecfg)
-                else:
+                elif track_method == 'skeleton':
                     mot_tracker = trackingutils.SORT(
                         numjoints,
                         inferencecfg["max_age"],
                         inferencecfg["min_hits"],
                         inferencecfg.get("oks_threshold", 0.5),
+                    )
+                else:
+                    mot_tracker = trackingutils.SORTEllipse(
+                        inferencecfg["max_age"],
+                        inferencecfg["min_hits"],
+                        inferencecfg.get("iou_threshold", 0.1)
                     )
 
                 Tracks = {}
