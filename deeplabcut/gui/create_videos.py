@@ -207,7 +207,7 @@ class Create_Labeled_Videos(wx.Panel):
         if self.cfg.get("multianimalproject", False):
             tracker_text = wx.StaticBox(self, label="Specify the Tracker Method!")
             tracker_text_boxsizer = wx.StaticBoxSizer(tracker_text, wx.VERTICAL)
-            trackertypes = ["skeleton", "box"]
+            trackertypes = ["skeleton", "box", "ellipse"]
             self.trackertypes = wx.ComboBox(
                 self, choices=trackertypes, style=wx.CB_READONLY
             )

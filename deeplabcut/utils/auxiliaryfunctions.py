@@ -703,6 +703,8 @@ def find_analyzed_data(folder, videoname, scorer, filtered=False, track_method="
         tracker = "_sk"
     elif track_method == "box":
         tracker = "_bx"
+    elif track_method == 'ellipse':
+        tracker == '_el'
     candidates = []
     for file in grab_files_in_folder(folder, "h5"):
         if all(
@@ -754,6 +756,8 @@ def load_detection_data(video, scorer, track_method):
         tracker = "sk"
     elif track_method == "box":
         tracker = "bx"
+    elif track_method == 'ellipse':
+        tracker = 'el'
     else:
         raise ValueError(f"Unrecognized track_method={track_method}")
 
