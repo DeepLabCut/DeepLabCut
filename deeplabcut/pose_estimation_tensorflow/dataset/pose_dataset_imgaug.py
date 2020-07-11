@@ -119,24 +119,25 @@ class PoseDataset:
                 pipeline.add(sometimes(iaa.Fliplr(opt)))
             else:
                 pipeline.add(sometimes(iaa.Fliplr(0.5)))
-        if cfg.get("rotation", False):
+        if cfg.get("rotation", True): #i.e. pm 10 degrees
             opt = cfg.get("rotation", False)
             if type(opt) == int:
                 pipeline.add(sometimes(iaa.Affine(rotate=(-opt, opt))))
             else:
                 pipeline.add(sometimes(iaa.Affine(rotate=(-10, 10))))
-        if cfg.get("motion_blur", False):
+        if cfg.get("motion_blur", True):
             opts = cfg.get("motion_blur", False)
             if type(opts) == list:
                 opts = dict(opts)
                 pipeline.add(sometimes(iaa.MotionBlur(**opts)))
             else:
                 pipeline.add(sometimes(iaa.MotionBlur(k=7, angle=(-90, 90))))
-        if cfg.get("covering", False):
+
+        if cfg.get("covering", True):
             pipeline.add(
                 sometimes(iaa.CoarseDropout(0.02, size_percent=0.3, per_channel=0.5))
             )
-        if cfg.get("elastic_transform", False):
+        if cfg.get("elastic_transform", True):
             pipeline.add(sometimes(iaa.ElasticTransformation(sigma=5)))
         if cfg.get("gaussian_noise", False):
             opt = cfg.get("gaussian_noise", False)
@@ -161,6 +162,7 @@ class PoseDataset:
 
         if cfg.get("hist_eq", False):
             pipeline.add(sometimes(iaa.AllChannelsHistogramEqualization()))
+
         if height is not None and width is not None:
             if not cfg.get("crop_by", False):
                 crop_by = 0.15
