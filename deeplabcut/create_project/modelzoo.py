@@ -109,6 +109,7 @@ def create_pretrained_project(
     filtered=True,
     createlabeledvideo=True,
     trainFraction=None,
+    exportmodel: dict = {}
 ):
     """
     Creates a new project directory, sub-directories and a basic configuration file.
@@ -149,6 +150,9 @@ def create_pretrained_project(
 
     trainFraction: By default value from *new* projects. (0.95)
             Fraction that will be used in dlc-model/trainingset folder name.
+
+    exportmodel : dict
+        if None or empty, don't export model (default). If dict, kwargs passed to :func:`deeplabcut.export_model`
 
     Example
     --------
@@ -327,6 +331,12 @@ def create_pretrained_project(
                 cfg, [video_dir], videotype, draw_skeleton=True, filtered=filtered
             )
             deeplabcut.plot_trajectories(cfg, [video_dir], videotype, filtered=filtered)
+
+        if exportmodel:
+            deeplabcut.export_model(cfg, **exportmodel)
+
+
+
 
         os.chdir(cwd)
         return cfg, path_train_config

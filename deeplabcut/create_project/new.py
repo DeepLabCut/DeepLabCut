@@ -173,7 +173,8 @@ def create_new_project(
             os.remove(video)  # Removing the video or link from the project
 
     if not len(video_sets):
-        warnings.warn("No valid videos were found! If this is an error, verify the video files and re-create the project!")
+        warnings.warn("No valid videos were found! If this is an error, verify the video files and re-create the project!",
+                      stacklevel=2)
 
     # Set values to config file:
     if multianimal:  # parameters specific to multianimal project
