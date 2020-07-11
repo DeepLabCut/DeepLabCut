@@ -22,6 +22,7 @@ global_scale: 0.8
 ##############################################################################
 #### Augmentation variables
 ##############################################################################
+
 # During training an image will be randomly scaled within the
 # range [scale_jitter_lo; scale_jitter_up] to augment training data,
 scale_jitter_lo: 0.5
@@ -30,27 +31,44 @@ scale_jitter_up: 1.25
 # Randomly flips an image horizontally to augment training data
 mirror: False
 
-#Data loaders, i.e. with additional data augmentation options (as of 2.0.9+):
-dataset_type: default
+dataset_type: imgaug
 batch_size: 1
+
+#Data loaders, i.e. with additional data augmentation options (as of 2.0.9+):
 #default with be with no extra dataloaders. Other options: 'tensorpack, deterministic'
 #types of datasets, see factory: deeplabcut/pose_estimation_tensorflow/dataset/factory.py
 #For deterministic, see https://github.com/AlexEMG/DeepLabCut/pull/324
 #For tensorpack, see https://github.com/AlexEMG/DeepLabCut/pull/409
 
+##############################################################################
+#### Augmentation type: scalecrop variables
+##############################################################################
+
 # Auto cropping is new (was not in Nature Neuroscience 2018 paper, but introduced in Nath et al. Nat. Protocols 2019)
 #and boosts performance by 2X, particularly on challenging datasets, like the cheetah in Nath et al.
-# Parameters for augmentation with regard to cropping
-crop: True
+# Parameters for augmentation with regard to cropping.
+
+# As of 2.2.: (scalecrop is no longer the default!)
+# These parameters are all set in: deeplabcut/pose_estimation_tensorflow/dataset/pose_dataset_scalecrop.py
+
+#crop: True
 cropratio: 0.4 #what is the fraction of training samples with cropping?
 
-minsize: 100 #what is the minimal frames size for cropping plus/minus ie.. [-100,100]^2 for an arb. joint
-leftwidth: 400
-rightwidth: 400
-topheight: 400
-bottomheight: 400
-
+#minsize: 100 #what is the minimal frames size for cropping plus/minus ie.. [-100,100]^2 for an arb. joint
+#leftwidth: 400
+#rightwidth: 400
+#topheight: 400
+#bottomheight: 400
 #limit width  [-leftwidth*u-100,100+u*rightwidth] x [-bottomwith*u-100,100+u*topwidth] where u is always a (different) random number in unit interval
+
+##############################################################################
+#### Augmentation type: imgaug & tensorpack
+##############################################################################
+
+
+##############################################################################
+#### Networks
+##############################################################################
 
 # NOTE: as of DLC 2.1 these are defined when creating the training set!
 # Type of the CNN to use, currently resnets + mobilenets are supported (see docs)

@@ -157,7 +157,7 @@ def train(
 
     cfg = load_config(config_yaml)
     if (
-        cfg.dataset_type == "default"
+        cfg.dataset_type == "scalecrop"
         or cfg.dataset_type == "tensorpack"
         or cfg.dataset_type == "deterministic"
     ):

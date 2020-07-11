@@ -67,6 +67,27 @@ With pcutoff of 0.4  train error: 3.06 pixels. Test error: 4.78 pixels
 Notice: despite the higher RMSE for imgaug due to the augmentation,
 the network performs much better on the testvideo.
 
+My results were (Run with DLC *2.2b7* in July 2020) for 20k iterations
+
+Attention: default changed!
+
+***Default = Imagaug**** augmentation:
+
+Results for 20000  training iterations: 95 1 train error: 3.35 pixels. Test error: 3.64  pixels.
+With pcutoff of 0.4  train error: 3.35 pixels. Test error: 3.64 pixels
+
+Scalecrop (was = default) augmentation:
+
+Results for 20000  training iterations: 95 2 train error: 2.69 pixels. Test error: 3.28  pixels.
+With pcutoff of 0.4  train error: 2.69 pixels. Test error: 3.28 pixels
+
+
+Tensorpack augmentation:
+
+Results for 20000  training iterations: 95 3 train error: 3.39 pixels. Test error: 4.26  pixels.
+With pcutoff of 0.4  train error: 3.39 pixels. Test error: 4.26 pixels
+
+
 """
 
 
@@ -104,18 +125,19 @@ deeplabcut.create_training_model_comparison(
     path_config_file,
     num_shuffles=1,
     net_types=["resnet_50"],
-    augmenter_types=["imgaug", "default", "tensorpack"],
+    augmenter_types=["imgaug", "scalecrop", "tensorpack"],
 )
 for shuffle in [1, 2, 3]:
-    if shuffle < 3:
-        posefile, _, _ = deeplabcut.return_train_network_path(
-            path_config_file, shuffle=shuffle
-        )
-        if shuffle == 2:  # Tensorpack:
-            edits = {"rotate_max_deg_abs": 180, "noise_sigma": 0.01}
-        elif shuffle == 1:  # imgaug
-            edits = {"rotation": 180, "motion_blur": True}
 
+    posefile, _, _ = deeplabcut.return_train_network_path(
+        path_config_file, shuffle=shuffle
+    )
+
+    if shuffle == 1:  # imgaug
+        edits = {"rotation": 180, "motion_blur": True}
+        DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
+    elif shuffle == 3:  # Tensorpack:
+        edits = {"rotate_max_deg_abs": 180, "noise_sigma": 0.01}
         DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
 
     print("TRAIN NETWORK", shuffle)

@@ -677,7 +677,9 @@ class TrackletVisualizer:
             label = dp.individual_names, dp.bodyParts
             ind = self.manager._label_pairs.index(label)
             nrow = np.flatnonzero(inds == ind)[0]
-            if not np.array_equal(coords[nrow], dp.point.center):  # Keypoint has been displaced
+            if not np.array_equal(
+                coords[nrow], dp.point.center
+            ):  # Keypoint has been displaced
                 coords[nrow] = dp.point.center
                 prob[ind] = 1
         self.manager.xy[nonempty, self._curr_frame] = coords
@@ -1020,7 +1022,7 @@ class TrackletVisualizer:
             cols.loc[mask] = np.nan
             return cols
 
-        df = df.groupby(level='bodyparts', axis=1).apply(filter_low_prob, prob=pcutoff)
+        df = df.groupby(level="bodyparts", axis=1).apply(filter_low_prob, prob=pcutoff)
         df.index = index
         machinefile = os.path.join(
             tmpfolder, "machinelabels-iter" + str(self.manager.cfg["iteration"]) + ".h5"

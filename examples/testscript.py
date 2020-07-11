@@ -39,8 +39,8 @@ video = [
 
 dfolder = None
 net_type = "resnet_50"  #'mobilenet_v2_0.35' #'resnet_50'
-augmenter_type = "default"
-augmenter_type2 = "imgaug"
+augmenter_type = "scalecrop"
+augmenter_type2 = "default"  # = imgaug!!
 
 if platform.system() == "Darwin" or platform.system() == "Windows":
     print("On Windows/OSX tensorpack is not tested by default.")

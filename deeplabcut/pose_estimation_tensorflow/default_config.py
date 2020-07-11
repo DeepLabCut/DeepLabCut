@@ -40,7 +40,7 @@ cfg.scoremap_dir = "test"
 cfg.batch_size = 1
 
 # types of datasets, see factory: deeplabcut/pose_estimation_tensorflow/dataset/factory.py
-cfg.dataset_type = "default"
+cfg.dataset_type = "default"  # >> imagaug as of 2.2
 # you can also set this to deterministic, see https://github.com/AlexEMG/DeepLabCut/pull/324
 cfg.deterministic = False
 
@@ -49,16 +49,3 @@ cfg.weigh_only_present_joints = False
 cfg.pairwise_huber_loss = True
 cfg.partaffinityfield_predict = False
 cfg.pairwise_predict = False
-
-# Parameters for augmentation with regard to cropping
-# Added and described in "Using DeepLabCut for 3D markerless pose estimation across species and behaviors"
-# Source: https://www.nature.com/articles/s41596-019-0176-0
-cfg.crop = False
-
-cfg.cropratio = 0.25  # what is the fraction of training samples with cropping?
-cfg.minsize = 100  # what is the minimal frames size for cropping plus/minus ie.. [-100,100]^2 for an arb. joint
-cfg.leftwidth = 400
-# limit width  [-leftwidth*u-100,100+u*rightwidth] x [-bottomwith*u-100,100+u*topwidth] where u is always a (different) random number in unit interval
-cfg.rightwidth = 400
-cfg.topheight = 400
-cfg.bottomheight = 400

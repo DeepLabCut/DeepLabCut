@@ -714,7 +714,9 @@ class MainFrame(wx.Frame):
             # Handle data previously labeled on a different platform
             sep = "/" if "/" in self.dataFrame.index[0] else "\\"
             if sep != os.path.sep:
-                self.dataFrame.index = self.dataFrame.index.str.replace(sep, os.path.sep)
+                self.dataFrame.index = self.dataFrame.index.str.replace(
+                    sep, os.path.sep
+                )
             self.dataFrame.sort_index(inplace=True)
             self.prev.Enable(True)
             # Finds the first empty row in the dataframe and sets the iteration to that index
@@ -1197,9 +1199,9 @@ class MainFrame(wx.Frame):
         ]
         self.dataFrame = self.dataFrame.loc[:, valid]
         # Re-organize the dataframe so the CSV looks consistent with the config
-        self.dataFrame = (self.dataFrame
-                          .reindex(columns=self.individual_names, level='individuals')
-                          .reindex(columns=config_bpts, level='bodyparts'))
+        self.dataFrame = self.dataFrame.reindex(
+            columns=self.individual_names, level="individuals"
+        ).reindex(columns=config_bpts, level="bodyparts")
         self.dataFrame.to_csv(
             os.path.join(self.dir, "CollectedData_" + self.scorer + ".csv")
         )

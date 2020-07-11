@@ -168,7 +168,7 @@ class PoseDataset:
                 crop_by = cfg.get("crop_by", False)
             pipeline.add(
                 iaa.Sometimes(
-                    cfg.cropratio,
+                    cfg.get("cropratio", 0.4),
                     iaa.CropAndPad(percent=(-crop_by, crop_by), keep_size=False),
                 )
             )
@@ -181,7 +181,7 @@ class PoseDataset:
         batch_joints = []
         joint_ids = []
         data_items = []
-        # Scale is sampled only once to transform all of the images into same size.
+        # Scale is sampled only once to transform all of the images of a batch into same size.
         scale = self.get_scale()
         while True:
             idx = np.random.choice(self.num_images)

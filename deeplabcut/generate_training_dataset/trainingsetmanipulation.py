@@ -912,13 +912,19 @@ def create_training_dataset(
                 raise ValueError("Invalid network type:", net_type)
 
         if augmenter_type is None:
-            augmenter_type = cfg.get("default_augmenter", "default")
+            augmenter_type = cfg.get("default_augmenter", "imgaug")
             if augmenter_type is None:  # this could be in config.yaml for old projects!
                 # updating variable if null/None! #backwardscompatability
-                auxiliaryfunctions.edit_config(config, {"default_augmenter": "default"})
-                augmenter_type = "default"
+                auxiliaryfunctions.edit_config(config, {"default_augmenter": "imgaug"})
+                augmenter_type = "imgaug"
         else:
-            if augmenter_type in ["default", "imgaug", "tensorpack", "deterministic"]:
+            if augmenter_type in [
+                "default",
+                "scalecrop",
+                "imgaug",
+                "tensorpack",
+                "deterministic",
+            ]:
                 pass
             else:
                 raise ValueError("Invalid augmenter type:", augmenter_type)

@@ -645,7 +645,9 @@ def proc_video(
             print(e)
 
 
-def create_video_with_all_detections(config, videos, DLCscorername,displayedbodyparts='all', destfolder=None):
+def create_video_with_all_detections(
+    config, videos, DLCscorername, displayedbodyparts="all", destfolder=None
+):
     """
     Create a video labeled with all the detections stored in a '*_full.pickle' file.
 
@@ -700,15 +702,15 @@ def create_video_with_all_detections(config, videos, DLCscorername,displayedbody
             header = data.pop("metadata")
             all_jointnames = header["all_joints_names"]
 
-            if displayedbodyparts=='all':
+            if displayedbodyparts == "all":
                 numjoints = len(all_jointnames)
                 bpts = range(numjoints)
-            else: #select only "displayedbodyparts"
+            else:  # select only "displayedbodyparts"
                 bpts = []
-                for bptindex,bp in enumerate(all_jointnames):
+                for bptindex, bp in enumerate(all_jointnames):
                     if bp in displayedbodyparts:
                         bpts.append(bptindex)
-                numjoints=len(bpts)
+                numjoints = len(bpts)
 
             frame_names = list(data)
             frames = [int(re.findall(r"\d+", name)[0]) for name in frame_names]

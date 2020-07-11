@@ -215,6 +215,19 @@ class PoseDataset:
         # Number of datapoints to prefetch at a time during training
         cfg["num_prefetch"] = cfg.get("num_prefetch", 50)
 
+        # Auto cropping is new (was not in Nature Neuroscience 2018 paper, but introduced in Nath et al. Nat. Protocols 2019)
+        #and boosts performance by 2X, particularly on challenging datasets, like the cheetah in Nath et al.
+        # Parameters for augmentation with regard to cropping:
+
+        # what is the minimal frames size for cropping plus/minus ie.. [-100,100]^2 for an arb. joint
+        cfg["minsize"] = cfg.get("minsize", 100)
+        cfg["leftwidth"] = cfg.get("leftwidth", 400)
+        cfg["rightwidth"] = cfg.get("rightwidth", 400)
+        cfg["topheight"] = cfg.get("topheight", 400)
+        cfg["bottomheight"] = cfg.get("bottomheight", 400)
+
+        cfg["cropratio"] = cfg.get("cropratio", .4)
+
         self.cfg = cfg
         self.scaling = RandomResize(
             xrange=(
