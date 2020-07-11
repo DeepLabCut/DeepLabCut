@@ -11,6 +11,7 @@ Licensed under GNU Lesser General Public License v3.0
 import os
 import shutil
 from pathlib import Path
+import warnings
 
 import cv2
 
@@ -172,11 +173,7 @@ def create_new_project(
             os.remove(video)  # Removing the video or link from the project
 
     if not len(video_sets):
-        # Silently sweep the files that were already written.
-        shutil.rmtree(project_path, ignore_errors=True)
-        print("WARNING: No valid videos were found. The project was not created ...")
-        print("Verify the video files and re-create the project.")
-        return "nothingcreated"
+        warnings.warn("No valid videos were found! If this is an error, verify the video files and re-create the project!")
 
     # Set values to config file:
     if multianimal:  # parameters specific to multianimal project
