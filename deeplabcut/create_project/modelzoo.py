@@ -109,7 +109,8 @@ def create_pretrained_project(
     filtered=True,
     createlabeledvideo=True,
     trainFraction=None,
-    exportmodel: dict = {}
+    exportmodel: [bool, dict] = False,
+    force: bool = False
 ):
     """
     Creates a new project directory, sub-directories and a basic configuration file.
@@ -153,6 +154,9 @@ def create_pretrained_project(
 
     exportmodel : dict
         if None or empty, don't export model (default). If dict, kwargs passed to :func:`deeplabcut.export_model`
+
+    force : bool
+        if False, (default) don't redownload files if ``post_cfg.yaml`` is found in the prospective train directory. if ``True``, always download.
 
     Example
     --------
@@ -263,8 +267,13 @@ def create_pretrained_project(
         )
 
         # Download the weights and put then in appropriate directory
-        print("Dowloading weights...")
-        auxfun_models.DownloadModel(model, train_dir)
+
+        pose_cfg_yaml = os.path.join(train_dir, 'pose_cfg.yaml')
+        if force or not os.path.exists(pose_cfg_yaml):
+            print("Dowloading weights...")
+            auxfun_models.DownloadModel(model, train_dir)
+        else:
+            print('Weights already downloaded (use force=True to force a redownload)')
 
         pose_cfg = deeplabcut.auxiliaryfunctions.read_plainconfig(path_train_config)
         print(path_train_config)
@@ -332,8 +341,13 @@ def create_pretrained_project(
             )
             deeplabcut.plot_trajectories(cfg, [video_dir], videotype, filtered=filtered)
 
-        if exportmodel:
-            deeplabcut.export_model(cfg, **exportmodel)
+        try:
+            if isinstance(exportmodel, type(dict)):
+                deeplabcut.export_model(cfg, **exportmodel)
+            elif exportmodel:
+                deeplabcut.export_model(cfg)
+        except FileExistsError:
+            print('Model already exported, not exporting again')
 
 
 
