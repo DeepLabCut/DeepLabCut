@@ -711,6 +711,10 @@ class MainFrame(wx.Frame):
                 os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5"),
                 "df_with_missing",
             )
+            # Handle data previously labeled on a different platform
+            sep = "/" if "/" in self.dataFrame.index[0] else "\\"
+            if sep != os.path.sep:
+                self.dataFrame.index = self.dataFrame.index.str.replace(sep, os.path.sep)
             self.dataFrame.sort_index(inplace=True)
             self.prev.Enable(True)
             # Finds the first empty row in the dataframe and sets the iteration to that index
@@ -864,7 +868,7 @@ class MainFrame(wx.Frame):
             )
         self.individualrdb.Bind(wx.EVT_RADIOBOX, self.select_individual)
         # check if single is slected when radio buttons are changed
-        if self.rdb.GetStringSelection == "single":
+        if self.individualrdb.GetStringSelection() == "single":
             self.norm, self.colorIndex = self.image_panel.getColorIndices(
                 self.img, self.uniquebodyparts
             )
@@ -873,7 +877,6 @@ class MainFrame(wx.Frame):
                 self.img, self.multibodyparts
             )
         self.buttonCounter = MainFrame.plot(self, self.img)
-        self.cidClick = self.canvas.mpl_connect("button_press_event", self.onClick)
         self.cidClick = self.canvas.mpl_connect("button_press_event", self.onClick)
 
         self.checkBox.Bind(wx.EVT_CHECKBOX, self.activateSlider)
@@ -1020,7 +1023,7 @@ class MainFrame(wx.Frame):
             )
             self.axes.callbacks.connect("xlim_changed", self.onZoom)
             self.axes.callbacks.connect("ylim_changed", self.onZoom)
-            if self.rdb.GetStringSelection == "single":
+            if self.individualrdb.GetStringSelection() == "single":
                 self.norm, self.colorIndex = self.image_panel.getColorIndices(
                     self.img, self.uniquebodyparts
                 )
@@ -1039,10 +1042,10 @@ class MainFrame(wx.Frame):
         """
         self.individualrdb.SetSelection(0)
         MainFrame.select_individual(self, event)
+        MainFrame.saveEachImage(self)
         # Checks for the first image and disables the Previous button
         if self.iter == 0:
             self.prev.Enable(False)
-            MainFrame.saveEachImage(self)
             return
         else:
             self.next.Enable(True)
@@ -1051,8 +1054,6 @@ class MainFrame(wx.Frame):
         self.statusbar.SetStatusText(
             "Working on folder: {}".format(os.path.split(str(self.dir))[-1])
         )
-
-        MainFrame.saveEachImage(self)
         self.buttonCounter = {i: [] for i in self.individual_names}
         self.iter = self.iter - 1
 
@@ -1088,9 +1089,7 @@ class MainFrame(wx.Frame):
         """
         self.drs = []
         self.updatedCoords = []
-        #        print(self.dataFrame)
         for j, ind in enumerate(self.individual_names):
-            image_points = []
             idcolor = self.idmap(j)
             if ind == "single":
                 for c, bp in enumerate(self.uniquebodyparts):
@@ -1164,7 +1163,7 @@ class MainFrame(wx.Frame):
                     self.updatedCoords.append(self.dr.coords)
                     if np.isnan(self.points)[0] == False:
                         self.buttonCounter[ind].append(self.multibodyparts[c])
-            MainFrame.saveEachImage(self)
+        MainFrame.saveEachImage(self)
         self.figure.canvas.draw()
         return self.buttonCounter
 
@@ -1197,13 +1196,10 @@ class MainFrame(wx.Frame):
             for bp in self.dataFrame.columns.get_level_values("bodyparts")
         ]
         self.dataFrame = self.dataFrame.loc[:, valid]
-        # Re-organize the dataframe so the CSV looks consistent
-        self.dataFrame.columns = self.dataFrame.columns.sortlevel(level="individuals")[
-            0
-        ]
-        self.dataFrame = self.dataFrame.reindex(
-            config_bpts, axis=1, level=self.dataFrame.columns.names.index("bodyparts")
-        )
+        # Re-organize the dataframe so the CSV looks consistent with the config
+        self.dataFrame = (self.dataFrame
+                          .reindex(columns=self.individual_names, level='individuals')
+                          .reindex(columns=config_bpts, level='bodyparts'))
         self.dataFrame.to_csv(
             os.path.join(self.dir, "CollectedData_" + self.scorer + ".csv")
         )

@@ -44,7 +44,11 @@ deeplabcut.convert2_maDLC(path_config_file, userfeedback=True)
 
 Now you will see that your data within `labeled-data` are converted to a new format, and the single animal format was saved for you under a new file named `CollectedData_ ...singleanimal.h5` and `.csv` as a back-up!
 
-(4) We strongly recommend to first run check_labels and verify that the conversion was as expected before creating a multianimal training dataset( i.e, you can load this project `config.yaml` in the Project Manager GUI and check labels then create a multi-animal training set to begin training!).
+(4) We strongly recommend to first run check_labels and verify that the conversion was as expected before creating a multianimal training dataset. For instance, you can load this project `config.yaml` in the Project Manager GUI and check labels then create a multi-animal training set with
+```python
+deeplabcut.create_multianimaltraining_dataset(path_config_file)
+```
+to begin training. See function details [here](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/functionDetails.md#f-create-training-datasets)).
 
 **Advanced option:** You can also assign former `bodyparts` to either `uniquebodyparts` or `multianimalbodyparts` (you can even leave some unassigned, which means they will be dropped in the conversion).
 

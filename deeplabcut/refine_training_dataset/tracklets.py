@@ -672,10 +672,14 @@ class TrackletVisualizer:
 
     def save_coords(self):
         coords, nonempty, inds = self.manager.get_non_nan_elements(self._curr_frame)
+        prob = self.manager.prob[:, self._curr_frame]
         for dp in self.dps:
             label = dp.individual_names, dp.bodyParts
             ind = self.manager._label_pairs.index(label)
-            coords[np.flatnonzero(inds == ind)[0]] = dp.point.center
+            nrow = np.flatnonzero(inds == ind)[0]
+            if not np.array_equal(coords[nrow], dp.point.center):  # Keypoint has been displaced
+                coords[nrow] = dp.point.center
+                prob[ind] = 1
         self.manager.xy[nonempty, self._curr_frame] = coords
 
     def flag_frame(self, *args):
@@ -965,7 +969,7 @@ class TrackletVisualizer:
         self.save_coords()
         self.manager.save()
 
-    def export_to_training_data(self):
+    def export_to_training_data(self, pcutoff=0.1):
         import os
         from skimage import io
 
@@ -1009,6 +1013,14 @@ class TrackletVisualizer:
         # Store the newly-refined data
         data = self.manager.format_data()
         df = data.iloc[inds]
+
+        # Uncertain keypoints are ignored
+        def filter_low_prob(cols, prob):
+            mask = cols.iloc[:, 2] < prob
+            cols.loc[mask] = np.nan
+            return cols
+
+        df = df.groupby(level='bodyparts', axis=1).apply(filter_low_prob, prob=pcutoff)
         df.index = index
         machinefile = os.path.join(
             tmpfolder, "machinelabels-iter" + str(self.manager.cfg["iteration"]) + ".h5"
