@@ -732,9 +732,9 @@ class TrackletVisualizer:
         self.fig.canvas.draw()
 
     def on_press(self, event):
-        if event.key == "right":
+        if event.key == "n":
             self.move_forward()
-        elif event.key == "left":
+        elif event.key == "b":
             self.move_backward()
         elif event.key == "s":
             self.swap()
@@ -751,7 +751,7 @@ class TrackletVisualizer:
                     self.fill_shaded_areas()
                     self.cuts = []
                     self.ax_slider.lines = []
-        elif event.key == "backspace":
+        elif event.key == "z":
             if not self.dps:  # Last flag deletion
                 try:
                     self.cuts.pop()
@@ -784,7 +784,7 @@ class TrackletVisualizer:
             self.player.forward()
         elif event.key == "alt+left":
             self.player.rewind()
-        elif event.key == "tab":
+        elif event.key == "p":
             self.player.toggle()
 
     def move_forward(self):
