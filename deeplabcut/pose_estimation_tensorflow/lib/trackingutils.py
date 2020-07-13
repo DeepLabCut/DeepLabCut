@@ -377,7 +377,10 @@ class SORTEllipse:
 
     def track(self, poses):
         self.n_frames += 1
-        ellipses = [self.fitter.fit(pose) for pose in poses]
+        ellipses = []
+        for pose in poses:
+            if np.any(~np.isnan(pose), axis=1).sum() >= 2:
+                ellipses.append(self.fitter.fit(pose))
         trackers = np.zeros((len(self.trackers), 6))
         for i in range(len(trackers)):
             trackers[i, :5] = self.trackers[i].predict()
