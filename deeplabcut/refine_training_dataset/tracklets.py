@@ -732,9 +732,9 @@ class TrackletVisualizer:
         self.fig.canvas.draw()
 
     def on_press(self, event):
-        if event.key == "n":
+        if event.key == "n" or event.key == "right":
             self.move_forward()
-        elif event.key == "b":
+        elif event.key == "b" or event.key == "left":
             self.move_backward()
         elif event.key == "s":
             self.swap()
@@ -784,7 +784,7 @@ class TrackletVisualizer:
             self.player.forward()
         elif event.key == "alt+left":
             self.player.rewind()
-        elif event.key == "p":
+        elif event.key == "p" or event.key == "tab":
             self.player.toggle()
 
     def move_forward(self):
@@ -922,8 +922,8 @@ class TrackletVisualizer:
             Key L: toggle the lasso selector
             Key S: swap two tracklets
             Key X: cut swapping tracklets
-            Left/Right arrow: navigate through the video
-            Tab: play/pause the video
+            Left/Right arrow OR Key B/Key N: navigate through the video (back/next)
+            Tab or Key P: play/pause the video
             Alt+Right/Left: fast forward/rewind
             """
             self.text = self.fig.text(
