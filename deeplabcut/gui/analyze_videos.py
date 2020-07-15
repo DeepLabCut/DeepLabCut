@@ -141,11 +141,6 @@ class Analyze_videos(wx.Panel):
         self.hbox1.Add(shuffle_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         self.hbox1.Add(trainingset_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
-        boxsizer.Add(self.hbox1, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-        boxsizer.Add(self.hbox2, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-
-        # self.sizer.Add(boxsizer, pos=(4, 0), span=(1, 5),flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT , border=10)
-
         if self.cfg.get("multianimalproject", False):
 
             self.robust = wx.RadioBox(
@@ -157,7 +152,6 @@ class Analyze_videos(wx.Panel):
             )
             self.robust.SetSelection(1)
             self.hbox1.Add(self.robust, 5, 5)
-            # boxsizer.Add(self.hbox1,0, 5)
 
             self.create_video_with_all_detections = wx.RadioBox(
                 self,
@@ -197,7 +191,6 @@ class Analyze_videos(wx.Panel):
             )
             self.overwrite.SetSelection(1)
             self.hbox2.Add(self.overwrite, 5, 5)
-            boxsizer.Add(self.hbox2, 0, 5)
 
         else:
             self.csv = wx.RadioBox(
@@ -252,6 +245,9 @@ class Analyze_videos(wx.Panel):
 
             self.hbox3.Add(self.dynamic, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
             self.hbox3.Add(self.trajectory, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+
+        boxsizer.Add(self.hbox1, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+        boxsizer.Add(self.hbox2, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
         config_file = auxiliaryfunctions.read_config(self.config)
         if config_file.get("multianimalproject", False):
