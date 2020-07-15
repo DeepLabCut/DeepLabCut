@@ -751,7 +751,7 @@ class TrackletVisualizer:
                     self.fill_shaded_areas()
                     self.cuts = []
                     self.ax_slider.lines = []
-        elif event.key == "z":
+        elif event.key == "backspace":
             if not self.dps:  # Last flag deletion
                 try:
                     self.cuts.pop()
