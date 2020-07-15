@@ -13,7 +13,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from scipy import signal
-from scipy.interpolate import UnivariateSpline
+from scipy.interpolate import CubicSpline
 
 from deeplabcut.refine_training_dataset.outlier_frames import FitSARIMAXModel
 from deeplabcut.utils import auxiliaryfunctions
@@ -47,7 +47,7 @@ def columnwise_spline_interp(data, max_gap=0):
         if (
             np.sum(mask) > 3
         ):  # Make sure there are enough points to fit the cubic spline
-            spl = UnivariateSpline(x[mask], temp[mask, i], ext=1)
+            spl = CubicSpline(x[mask], temp[mask, i])
             y = spl(x)
             if max_gap > 0:
                 inds = np.flatnonzero(np.r_[True, np.diff(mask), True])
