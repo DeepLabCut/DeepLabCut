@@ -1196,13 +1196,10 @@ class MainFrame(wx.Frame):
             for bp in self.dataFrame.columns.get_level_values("bodyparts")
         ]
         self.dataFrame = self.dataFrame.loc[:, valid]
-        # Re-organize the dataframe so the CSV looks consistent
-        self.dataFrame.columns = self.dataFrame.columns.sortlevel(
-            level="individuals", sort_remaining=False
-        )[0]
-        self.dataFrame = self.dataFrame.reindex(
-            config_bpts, axis=1, level=self.dataFrame.columns.names.index("bodyparts")
-        )
+        # Re-organize the dataframe so the CSV looks consistent with the config
+        self.dataFrame = (self.dataFrame
+                          .reindex(columns=self.individual_names, level='individuals')
+                          .reindex(columns=config_bpts, level='bodyparts'))
         self.dataFrame.to_csv(
             os.path.join(self.dir, "CollectedData_" + self.scorer + ".csv")
         )

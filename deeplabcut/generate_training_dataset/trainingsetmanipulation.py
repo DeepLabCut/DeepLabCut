@@ -479,7 +479,7 @@ def check_labels(
 
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
-    video_names = [Path(i).stem for i in videos]
+    video_names = [_robust_path_split(video)[1] for video in videos]
 
     folders = [
         os.path.join(cfg["project_path"], "labeled-data", str(Path(i)))
@@ -591,8 +591,6 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
     videos = cfg["video_sets"].keys()
     for video in videos:
         _, filename, _ = _robust_path_split(video)
-        if cfg.get("croppedtraining", False):
-            filename += "_cropped"
         file_path = os.path.join(
             data_path / filename, f'CollectedData_{cfg["scorer"]}.h5'
         )

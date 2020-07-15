@@ -309,6 +309,9 @@ class MainFrame(wx.Frame):
             )
             if msg == 2:
                 closest_dp.delete_data()
+                self.buttonCounter.remove(
+                    self.bodyparts.index(closest_dp.bodyParts)
+                )
 
     @staticmethod
     def calc_distance(x1, y1, x2, y2):

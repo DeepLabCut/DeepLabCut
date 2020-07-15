@@ -645,7 +645,7 @@ def proc_video(
             print(e)
 
 
-def create_video_with_all_detections(config, videos, DLCscorername, destfolder=None):
+def create_video_with_all_detections(config, videos, DLCscorername,displayedbodyparts='all', destfolder=None):
     """
     Create a video labeled with all the detections stored in a '*_full.pickle' file.
 
@@ -660,6 +660,11 @@ def create_video_with_all_detections(config, videos, DLCscorername, destfolder=N
 
     DLCscorername: str
         Name of network. E.g. 'DLC_resnet50_project_userMar23shuffle1_50000
+
+    displayedbodyparts: list of strings, optional
+        This selects the body parts that are plotted in the video. Either ``all``, then all body parts
+        from config.yaml are used orr a list of strings that are a subset of the full list.
+        E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these two body parts.
 
     destfolder: string, optional
         Specifies the destination folder that was used for storing analysis data (default is the path of the video).
@@ -695,8 +700,16 @@ def create_video_with_all_detections(config, videos, DLCscorername, destfolder=N
             header = data.pop("metadata")
             all_jointnames = header["all_joints_names"]
 
-            numjoints = len(all_jointnames)
-            bpts = range(numjoints)
+            if displayedbodyparts=='all':
+                numjoints = len(all_jointnames)
+                bpts = range(numjoints)
+            else: #select only "displayedbodyparts"
+                bpts = []
+                for bptindex,bp in enumerate(all_jointnames):
+                    if bp in displayedbodyparts:
+                        bpts.append(bptindex)
+                numjoints=len(bpts)
+
             frame_names = list(data)
             frames = [int(re.findall(r"\d+", name)[0]) for name in frame_names]
             colorclass = plt.cm.ScalarMappable(cmap=cfg["colormap"])

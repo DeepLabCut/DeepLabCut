@@ -73,6 +73,7 @@ df.to_csv(output_path)
 df.to_hdf(output_path.replace("csv", "h5"), "df_with_missing", format="table", mode="w")
 print("Artificial data created.")
 
+
 print("Cropping and exchanging")
 deeplabcut.cropimagesandlabels(config_path, userfeedback=False)
 
@@ -151,7 +152,9 @@ print("Video analyzed.")
 
 print("Create video with all detections...")
 scorer, _ = auxiliaryfunctions.GetScorerName(cfg, 1, TRAIN_SIZE)
-deeplabcut.create_video_with_all_detections(config_path, [new_video_path], scorer)
+deeplabcut.create_video_with_all_detections(
+    config_path, [new_video_path], scorer, displayedbodyparts=["bodypart1"]
+)
 print("Video created.")
 
 print("Convert detections to tracklets...")

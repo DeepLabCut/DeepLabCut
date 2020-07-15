@@ -280,10 +280,10 @@ def create_multianimaltraining_dataset(
                     Path(config).parents[0] / modelfoldername, recursive=True
                 )
                 auxiliaryfunctions.attempttomakefolder(
-                    str(Path(config).parents[0] / modelfoldername) + "/" + "/train"
+                    str(Path(config).parents[0] / modelfoldername / "train")
                 )
                 auxiliaryfunctions.attempttomakefolder(
-                    str(Path(config).parents[0] / modelfoldername) + "/" + "/test"
+                    str(Path(config).parents[0] / modelfoldername / "test")
                 )
 
                 path_train_config = str(
