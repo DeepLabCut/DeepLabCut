@@ -233,7 +233,7 @@ For each video directory in labeled-data this function creates a subdirectory wi
 ```python
 deeplabcut.create_training_dataset(config_path, augmenter_type='imgaug')
 ```
-**maDeepLabCut CRITICAL POINT**- you must use this new function if you have a multi-animal project (and the skeleton in the `config.yaml` **must be defined** before you run this step, if not already done). You **should also run** `deeplabcut.cropimagesandlabels(path_config_file)` before creating a training set, as we use batch processing and many users have smaller GPUs that cannot accommodate larger images + larger batchsizes. This is also a type of data augmentation.
+**maDeepLabCut CRITICAL POINT**- you must use this new function if you have a multi-animal project (and the skeleton in the `config.yaml` **must be defined** before you run this step, if not already done). You **should also run** `deeplabcut.cropimagesandlabels(config_path)` before creating a training set, as we use batch processing and many users have smaller GPUs that cannot accommodate larger images + larger batchsizes. This is also a type of data augmentation.
 
 ```python  
     deeplabcut.create_multianimaltraining_dataset(config_path)
@@ -400,7 +400,7 @@ labeled accurately
 You can also plot the scoremaps, locref layers, and PAFs:
 
 ```python
-deeplabcut.extract_save_all_maps(path_config_file, shuffle=shuffle, Indices=[0, 5])
+deeplabcut.extract_save_all_maps(config_path, shuffle=shuffle, Indices=[0, 5])
 ```
 you can drop "Indices" to run this on all training/testing images (this is slow!)
 
@@ -508,7 +508,7 @@ Firstly, you need to convert detections to tracklets. This step has several trac
    - `single_object`: is a single-object tracker. I.e. links instances of the same bodyparts across frames (with no regard to individual animals, i.e. assembled individuals). Thus, this is ideally suited for rapid single object tracking (i.e. single-point animal tracking, cell tracking, etc.). For details, see https://github.com/DeepLabCut/DeepLabCut/pull/736
 
 ```python
-deeplabcut.convert_detections2tracklets(path_config_file, ['videofile_path'], videotype='mp4', shuffle=1, trainingsetindex=0, track_method='box')
+deeplabcut.convert_detections2tracklets(config_path, ['videofile_path'], videotype='mp4', shuffle=1, trainingsetindex=0, track_method='box')
 ```
 
 **How do I pick optimal Tracking Parameters?**
@@ -541,7 +541,7 @@ create_video_from_pickled_tracks(videopath, picklepath)
 Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc!
 
 ```python
-deeplabcut.refine_tracklets(path_config_file, pickle_or_h5_file, videofile_path, min_swap_frac=0.0, min_tracklet_frac=0.0, trail_len=50)
+deeplabcut.refine_tracklets(path_config_file, pickle_or_h5_file, videofile_path, min_swap_len=2, min_tracklet_len=2, trail_len=50)
 ```
 HOT KEYS IN THE GUI:
 ```
@@ -570,7 +570,7 @@ Short demo:
 Lastly, let's say you've optimized the `inference_cfg.yaml` (i.e., tracking) parameters, and you want to just apply this to a set of videos and by-pass the tracklet GUI, you can pass the pickle file directly from `analyze_videos` (and your `config.yaml` full path) and run:
 
 ```python
-deeplabcut.convert_raw_tracks_to_h5(path_config_file, picklefile)
+deeplabcut.convert_raw_tracks_to_h5(config_path, picklefile)
 ```
 
 ### (I) Novel Video Analysis: extra features

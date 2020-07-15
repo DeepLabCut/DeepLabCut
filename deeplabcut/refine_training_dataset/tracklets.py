@@ -119,19 +119,19 @@ class PointSelector:
 
 
 class TrackletManager:
-    def __init__(self, config, min_swap_frac=0.01, min_tracklet_frac=0.01, max_gap=0):
+    def __init__(self, config, min_swap_len=2, min_tracklet_len=2, max_gap=0):
         """
 
         Parameters
         ----------
         config : str
             Path to a configuration file.
-        min_swap_frac : float, optional (default=0.01)
-            Relative fraction of the data below which bodypart swaps are ignored.
-            By default, swaps representing less than 1% of the total number of frames are discarded.
-        min_tracklet_frac : float, optional (default=0.01)
-            Relative fraction of the data below which tracklets are ignored.
-            By default, tracklets shorter than 1% of the total number of frames are discarded.
+        min_swap_len : float, optional (default=2)
+            Minimum swap length.
+            Swaps shorter than 2 frames are discarded by default.
+        min_tracklet_len : float, optional (default=2)
+            Minimum tracklet length.
+            Tracklets shorter than 2 frames are discarded by default.
         max_gap : int, optional (default = 0).
             Number of frames to consider when filling in missing data.
 
@@ -148,8 +148,8 @@ class TrackletManager:
         """
         self.config = config
         self.cfg = read_config(config)
-        self.min_swap_frac = min_swap_frac
-        self.min_tracklet_frac = min_tracklet_frac
+        self.min_swap_len = min_swap_len
+        self.min_tracklet_len = min_tracklet_len
         self.max_gap = max_gap
 
         self.filename = ""
@@ -200,8 +200,8 @@ class TrackletManager:
                 ind_frame = int(re.findall(r"\d+", frame_name)[0])
                 to_fill[ind_frame] = data
             nonempty = np.any(~np.isnan(to_fill), axis=1)
-            completeness = nonempty.sum() / self.nframes
-            if completeness >= self.min_tracklet_frac:
+            completeness = nonempty.sum()
+            if completeness >= self.min_tracklet_len:
                 is_single = np.isnan(to_fill[:, mask_multi]).all()
                 if is_single:
                     to_fill = to_fill[:, mask_single]
@@ -281,7 +281,7 @@ class TrackletManager:
             xy = data[:, :, :2].reshape((self.nframes, -1))
             prob = data[:, :, 2].reshape((self.nframes, -1))
 
-            # Fill existing gaps and slightly smooth the tracklets
+            # Fill existing gaps
             missing = np.isnan(xy)
             xy_filled = columnwise_spline_interp(xy, self.max_gap)
             filled = ~np.isnan(xy_filled)
@@ -400,7 +400,7 @@ class TrackletManager:
                 zero_crossings = down | up
             # ID swaps occur when X and Y simultaneously intersect each other.
             self.tracklet_swaps = zero_crossings.all(axis=3)
-            cross = self.tracklet_swaps.sum(axis=2) > self.min_swap_frac * self.nframes
+            cross = self.tracklet_swaps.sum(axis=2) > self.min_swap_len
             mat = np.tril(cross)
             temp_pairs = np.where(mat)
             # Get only those bodypart pairs that belong to different individuals
@@ -524,10 +524,10 @@ class TrackletVisualizer:
             [self.ax1.plot([], [], "-", lw=2, c=c) for c in self.colors], []
         )
         self.lines_x = sum(
-            [self.ax2.plot([], [], "-", lw=1, c=c, picker=5) for c in self.colors], []
+            [self.ax2.plot([], [], "-", lw=1, c=c, pickradius=5) for c in self.colors], []
         )
         self.lines_y = sum(
-            [self.ax3.plot([], [], "-", lw=1, c=c, picker=5) for c in self.colors], []
+            [self.ax3.plot([], [], "-", lw=1, c=c, pickradius=5) for c in self.colors], []
         )
         self.vline_x = self.ax2.axvline(0, 0, 1, c="k", ls=":")
         self.vline_y = self.ax3.axvline(0, 0, 1, c="k", ls=":")
@@ -546,7 +546,7 @@ class TrackletVisualizer:
             loc="center",
         )
         for line in self.leg.get_lines():
-            line.set_picker(5)
+            line.set_pickradius(5)
 
         self.ax_slider = self.fig.add_axes([0.1, 0.1, 0.5, 0.03], facecolor="lightgray")
         self.ax_slider2 = self.fig.add_axes(
@@ -1064,12 +1064,60 @@ def refine_tracklets(
     config,
     pickle_or_h5_file,
     video,
-    min_swap_frac=0.01,
-    min_tracklet_frac=0,
+    min_swap_len=0,
+    min_tracklet_len=0,
     max_gap=0,
     trail_len=50,
 ):
-    manager = TrackletManager(config, min_swap_frac, min_tracklet_frac, max_gap)
+    """
+    Refine tracklets stored either in pickle or h5 format.
+    The procedure is done in two stages:
+    (i) freshly-converted detections are read by the TrackletManager,
+    which automatically attempts to optimize tracklet continuity by
+    assigning higher priority to long tracks while maximizing
+    keypoint likelihood;
+    (ii) loaded tracklets are displayed into the TrackletVisualizer
+    for manual editing. Individual labels can be dragged around
+    like in the labeling toolbox; several of them can also be simultaneously
+    selected using the Lasso tool in order to re-assign multiple tracks
+    to another identity at once.
+
+    Parameters
+    ----------
+    config: str
+        Full path of the config.yaml file.
+
+    pickle_or_h5_file: str
+        Full path of either the pickle file obtained after calling
+        deeplabcut.convert_detections2tracklets, or the h5 file written after
+        refining the tracklets a first time. Note that refined tracklets are
+        always stored in the h5 format.
+
+    video: str
+        Full path of the corresponding video.
+        If the video duration and the total length of the tracklets disagree
+        by more than 5%, a message is printed indicating that the selected
+        video may not be the right one.
+
+    min_swap_len : float, optional (default=0)
+        Minimum swap length.
+        Set to 0 by default. Retained swaps appear in the right panel in
+        shaded regions.
+
+    min_tracklet_len : float, optional (default=0)
+        Minimum tracklet length.
+        By default, all tracklets are kept. If set to 5, for example,
+        tracklets shorter than 5 frames are discarded, leaving missing data instead.
+
+    max_gap : int, optional (default=0).
+        Maximal gap size (in number of frames) of missing data to be filled.
+        The procedure fits a cubic spline over all individual trajectories,
+        and fills all gaps by default.
+
+    trail_len : int, optional (default=50)
+        Number of trailing points.
+    """
+    manager = TrackletManager(config, min_swap_len, min_tracklet_len, max_gap)
     if pickle_or_h5_file.endswith("pickle"):
         manager.load_tracklets_from_pickle(pickle_or_h5_file)
     else:
@@ -1080,7 +1128,8 @@ def refine_tracklets(
     return manager, viz
 
 
-def convert_raw_tracks_to_h5(config, tracks_pickle, output_name=""):
-    manager = TrackletManager(config, 0, 0)
+def convert_raw_tracks_to_h5(config, tracks_pickle, output_name="",
+                             min_tracklet_len=5, max_gap=5):
+    manager = TrackletManager(config, 0, min_tracklet_len, max_gap)
     manager.load_tracklets_from_pickle(tracks_pickle)
     manager.save(output_name)
