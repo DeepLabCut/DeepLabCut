@@ -10,7 +10,8 @@ import numpy as np
 import pandas as pd
 from matplotlib.path import Path
 from matplotlib.widgets import Slider, LassoSelector, Button, CheckButtons
-
+import cupy as cp
+from tqdm import tqdm
 from deeplabcut import generate_training_dataset
 from deeplabcut.post_processing import columnwise_spline_interp
 from deeplabcut.utils.auxiliaryfunctions import read_config, attempttomakefolder
@@ -194,43 +195,49 @@ class TrackletManager:
         # Store tracklets, such that we later manipulate long chains
         # rather than data of individual frames, yielding greater continuity.
         tracklets_unsorted = dict()
-        for num_tracklet in sorted(tracklets):
-            to_fill = np.full((self.nframes, len(bodyparts)), np.nan)
+        for num_tracklet in tqdm(sorted(tracklets)):
+            to_fill = cp.full((self.nframes, len(bodyparts)), cp.nan)
             for frame_name, data in tracklets[num_tracklet].items():
-                ind_frame = int(re.findall(r"\d+", frame_name)[0])
+                ind_frame = cp.array(int(re.findall(r"\d+", frame_name)[0]))
                 to_fill[ind_frame] = data
-            nonempty = np.any(~np.isnan(to_fill), axis=1)
+            nonempty = cp.any(~cp.isnan(to_fill), axis=1)
             completeness = nonempty.sum()
             if completeness >= self.min_tracklet_len:
-                is_single = np.isnan(to_fill[:, mask_multi]).all()
+                is_single = cp.isnan(to_fill[:, mask_multi]).all()
                 if is_single:
                     to_fill = to_fill[:, mask_single]
                 else:
                     to_fill = to_fill[:, mask_multi]
                 if to_fill.size:
-                    tracklets_unsorted[num_tracklet] = to_fill, completeness, is_single
+                    non_empty_indexes = cp.invert(cp.isnan(to_fill[:, mask_multi]))
+                    ##here we save only the data which is not a nan value
+                    to_fill_blank = to_fill[non_empty_indexes]
+                    ##we also get the indexes of these values so that we can rebuild them later
+                    tracklets_unsorted[num_tracklet] = to_fill_blank, completeness, is_single, cp.where(non_empty_indexes)
         tracklets_sorted = sorted(tracklets_unsorted.items(), key=lambda kv: kv[1][1])
 
         if auto_fill:
             # Recursively fill the data containers
-            tracklets_multi = np.full(
-                (self.nindividuals, self.nframes, len(bodyparts_multi) * 3), np.nan
+            tracklets_multi = cp.full(
+                (self.nindividuals, self.nframes, len(bodyparts_multi) * 3), cp.nan
             )
-            tracklets_single = np.full(
-                (self.nframes, len(bodyparts_single) * 3), np.nan
+            tracklets_single = cp.full(
+                (self.nframes, len(bodyparts_single) * 3), cp.nan
             )
             while tracklets_sorted:
-                _, (data, _, is_single) = tracklets_sorted.pop()
-                has_data = ~np.isnan(data)
+                _, (compress_data, _, is_single, indexes) = tracklets_sorted.pop()
+                data = cp.full((self.nframes, len(bodyparts)), cp.nan)
+                data[indexes] = compress_data
+                has_data = ~cp.isnan(data)
                 if is_single:
                     # Where slots are available, copy the data over
-                    is_free = np.isnan(tracklets_single)
+                    is_free = cp.isnan(tracklets_single)
                     mask = has_data & is_free
                     tracklets_single[mask] = data[mask]
                     # If about to overwrite data, keep tracklets with highest confidence
                     overwrite = has_data & ~is_free
                     if overwrite.any():
-                        rows, cols = np.nonzero(overwrite)
+                        rows, cols = cp.nonzero(overwrite)
                         more_confident = (
                             data[overwrite] > tracklets_single[overwrite]
                         )[2::3]
@@ -240,20 +247,20 @@ class TrackletManager:
                             inds = rows[sl], cols[sl]
                             tracklets_single[inds] = data[inds]
                 else:
-                    is_free = np.isnan(tracklets_multi)
+                    is_free = cp.isnan(tracklets_multi)
                     overwrite = has_data & ~is_free
-                    overwrite_risk = np.any(overwrite, axis=(1, 2))
+                    overwrite_risk = cp.any(overwrite, axis=(1, 2))
                     if overwrite_risk.all():
                         # Squeeze some data into empty slots
                         mask = has_data & is_free
                         space_left = mask.any(axis=(1, 2))
-                        for ind in np.flatnonzero(space_left):
+                        for ind in cp.flatnonzero(space_left):
                             current_mask = mask[ind]
                             tracklets_multi[ind, current_mask] = data[current_mask]
                             has_data[current_mask] = False
                         # For the remaining data, overwrite where we are least confident
                         remaining = data[has_data].reshape((-1, 3))
-                        mask3d = np.broadcast_to(
+                        mask3d = cp.broadcast_to(
                             has_data, (self.nindividuals,) + has_data.shape
                         )
                         temp = tracklets_multi[mask3d].reshape(
@@ -261,27 +268,37 @@ class TrackletManager:
                         )
                         diff = remaining - temp
                         # Find keypoints closest to the remaining data
-                        dist = np.sqrt(diff[:, :, 0] ** 2 + diff[:, :, 1] ** 2)
-                        closest = np.argmin(dist, axis=0)
+                        dist = cp.sqrt(diff[:, :, 0] ** 2 + diff[:, :, 1] ** 2)
+                        closest = cp.argmin(dist, axis=0)
                         # Only overwrite if improving confidence
                         prob = diff[closest, range(len(closest)), 2]
-                        better = np.flatnonzero(prob > 0)
+                        better = cp.flatnonzero(prob > 0)
                         inds = closest[better]
-                        rows, cols = np.nonzero(has_data)
+                        rows, cols = cp.nonzero(has_data)
                         for i, j in zip(inds, better):
                             sl = slice(j * 3, j * 3 + 3)
                             tracklets_multi[i, rows[sl], cols[sl]] = remaining.flat[sl]
                     else:
+                        ##ccupy doesnt support slices of more than one boolean
+                        tracklets_multi = cp.asnumpy(tracklets_multi)
+                        data = cp.asnumpy(data)
+                        overwrite_risk = cp.asnumpy(overwrite_risk)
+                        has_data = cp.asnumpy(has_data)
+
                         tracklets_multi[np.argmin(overwrite_risk), has_data] = data[
                             has_data
                         ]
-
+                        tracklets_multi = cp.array(tracklets_multi)
+                        
+            tracklets_multi = cp.asnumpy(tracklets_multi)
+            tracklets_single = cp.asnumpy(tracklets_single)
             multi = tracklets_multi.swapaxes(0, 1).reshape((self.nframes, -1))
             data = np.c_[multi, tracklets_single].reshape((self.nframes, -1, 3))
-            xy = data[:, :, :2].reshape((self.nframes, -1))
+            xy = cp.asnumpy(data[:, :, :2].reshape((self.nframes, -1)))
             prob = data[:, :, 2].reshape((self.nframes, -1))
 
             # Fill existing gaps
+            xy = cp.asnumpy(xy)
             missing = np.isnan(xy)
             xy_filled = columnwise_spline_interp(xy, self.max_gap)
             filled = ~np.isnan(xy_filled)
@@ -294,6 +311,7 @@ class TrackletManager:
                 prob[inds[:, 0], inds[:, 1]] = 0.01
             data[:, :, :2] = xy.reshape((self.nframes, -1, 2))
             data[:, :, 2] = prob
+
             self.data = data.swapaxes(0, 1)
             self.xy = self.data[:, :, :2]
             self.prob = self.data[:, :, 2]
@@ -1130,6 +1148,11 @@ def refine_tracklets(
 
 def convert_raw_tracks_to_h5(config, tracks_pickle, output_name="",
                              min_tracklet_len=5, max_gap=5):
-    manager = TrackletManager(config, 0, min_tracklet_len, max_gap)
+    print("tracking....")
+    manager = TrackletManager(config, 0, 0.01, max_gap=1)
+
+    print("loading_tracklets from pickle.....")
     manager.load_tracklets_from_pickle(tracks_pickle)
+
+    print("saving....")
     manager.save(output_name)
