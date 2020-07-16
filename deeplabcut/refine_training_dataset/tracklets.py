@@ -524,10 +524,12 @@ class TrackletVisualizer:
             [self.ax1.plot([], [], "-", lw=2, c=c) for c in self.colors], []
         )
         self.lines_x = sum(
-            [self.ax2.plot([], [], "-", lw=1, c=c, pickradius=5) for c in self.colors], []
+            [self.ax2.plot([], [], "-", lw=1, c=c, pickradius=5) for c in self.colors],
+            [],
         )
         self.lines_y = sum(
-            [self.ax3.plot([], [], "-", lw=1, c=c, pickradius=5) for c in self.colors], []
+            [self.ax3.plot([], [], "-", lw=1, c=c, pickradius=5) for c in self.colors],
+            [],
         )
         self.vline_x = self.ax2.axvline(0, 0, 1, c="k", ls=":")
         self.vline_y = self.ax3.axvline(0, 0, 1, c="k", ls=":")
@@ -677,7 +679,9 @@ class TrackletVisualizer:
             label = dp.individual_names, dp.bodyParts
             ind = self.manager._label_pairs.index(label)
             nrow = np.flatnonzero(inds == ind)[0]
-            if not np.array_equal(coords[nrow], dp.point.center):  # Keypoint has been displaced
+            if not np.array_equal(
+                coords[nrow], dp.point.center
+            ):  # Keypoint has been displaced
                 coords[nrow] = dp.point.center
                 prob[ind] = 1
         self.manager.xy[nonempty, self._curr_frame] = coords
@@ -732,9 +736,9 @@ class TrackletVisualizer:
         self.fig.canvas.draw()
 
     def on_press(self, event):
-        if event.key == "right":
+        if event.key == "n" or event.key == "right":
             self.move_forward()
-        elif event.key == "left":
+        elif event.key == "b" or event.key == "left":
             self.move_backward()
         elif event.key == "s":
             self.swap()
@@ -784,7 +788,7 @@ class TrackletVisualizer:
             self.player.forward()
         elif event.key == "alt+left":
             self.player.rewind()
-        elif event.key == "tab":
+        elif event.key == "p" or event.key == "tab":
             self.player.toggle()
 
     def move_forward(self):
@@ -922,8 +926,8 @@ class TrackletVisualizer:
             Key L: toggle the lasso selector
             Key S: swap two tracklets
             Key X: cut swapping tracklets
-            Left/Right arrow: navigate through the video
-            Tab: play/pause the video
+            Left/Right arrow OR Key B/Key N: navigate through the video (back/next)
+            Tab or Key P: play/pause the video
             Alt+Right/Left: fast forward/rewind
             """
             self.text = self.fig.text(
@@ -1020,7 +1024,7 @@ class TrackletVisualizer:
             cols.loc[mask] = np.nan
             return cols
 
-        df = df.groupby(level='bodyparts', axis=1).apply(filter_low_prob, prob=pcutoff)
+        df = df.groupby(level="bodyparts", axis=1).apply(filter_low_prob, prob=pcutoff)
         df.index = index
         machinefile = os.path.join(
             tmpfolder, "machinelabels-iter" + str(self.manager.cfg["iteration"]) + ".h5"
@@ -1128,8 +1132,9 @@ def refine_tracklets(
     return manager, viz
 
 
-def convert_raw_tracks_to_h5(config, tracks_pickle, output_name="",
-                             min_tracklet_len=5, max_gap=5):
+def convert_raw_tracks_to_h5(
+    config, tracks_pickle, output_name="", min_tracklet_len=5, max_gap=5
+):
     manager = TrackletManager(config, 0, min_tracklet_len, max_gap)
     manager.load_tracklets_from_pickle(tracks_pickle)
     manager.save(output_name)
