@@ -13,7 +13,7 @@ from matplotlib.widgets import Slider, LassoSelector, Button, CheckButtons
 import cupy as cp
 from tqdm import tqdm
 from deeplabcut import generate_training_dataset
-from deeplabcut.post_processing import columnwise_spline_interp
+from deeplabcut_code.post_processing import CUDNN_columnwise_spline_interp
 from deeplabcut.utils.auxiliaryfunctions import read_config, attempttomakefolder
 
 
@@ -218,18 +218,21 @@ class TrackletManager:
 
         if auto_fill:
             # Recursively fill the data containers
-            tracklets_multi = cp.full(
-                (self.nindividuals, self.nframes, len(bodyparts_multi) * 3), cp.nan
-            )
             tracklets_single = cp.full(
-                (self.nframes, len(bodyparts_single) * 3), cp.nan
+            (self.nframes, len(bodyparts_single) * 3), cp.nan
             )
+            tracklets_multi = cp.full(
+            (self.nindividuals, self.nframes, len(bodyparts_multi) * 3), cp.nan
+            )
+
             while tracklets_sorted:
                 _, (compress_data, _, is_single, indexes) = tracklets_sorted.pop()
                 data = cp.full((self.nframes, len(bodyparts)), cp.nan)
                 data[indexes] = compress_data
                 has_data = ~cp.isnan(data)
+               
                 if is_single:
+
                     # Where slots are available, copy the data over
                     is_free = cp.isnan(tracklets_single)
                     mask = has_data & is_free
@@ -241,12 +244,13 @@ class TrackletManager:
                         more_confident = (
                             data[overwrite] > tracklets_single[overwrite]
                         )[2::3]
-                        inds = np.flatnonzero(more_confident)
+                        inds = cp.flatnonzero(more_confident)
                         for ind in inds:
                             sl = slice(ind * 3, ind * 3 + 3)
                             inds = rows[sl], cols[sl]
                             tracklets_single[inds] = data[inds]
                 else:
+
                     is_free = cp.isnan(tracklets_multi)
                     overwrite = has_data & ~is_free
                     overwrite_risk = cp.any(overwrite, axis=(1, 2))
@@ -280,6 +284,7 @@ class TrackletManager:
                             tracklets_multi[i, rows[sl], cols[sl]] = remaining.flat[sl]
                     else:
                         ##ccupy doesnt support slices of more than one boolean
+
                         tracklets_multi = cp.asnumpy(tracklets_multi)
                         data = cp.asnumpy(data)
                         overwrite_risk = cp.asnumpy(overwrite_risk)
@@ -289,25 +294,33 @@ class TrackletManager:
                             has_data
                         ]
                         tracklets_multi = cp.array(tracklets_multi)
+
+                        data = cp.array(data)
+                        overwrite_risk = cp.array(overwrite_risk)
+                        has_data = cp.array(has_data)
+                        tracklets_nan = cp.isnan(tracklets_multi).all()
+                     
                         
-            tracklets_multi = cp.asnumpy(tracklets_multi)
-            tracklets_single = cp.asnumpy(tracklets_single)
             multi = tracklets_multi.swapaxes(0, 1).reshape((self.nframes, -1))
-            data = np.c_[multi, tracklets_single].reshape((self.nframes, -1, 3))
-            xy = cp.asnumpy(data[:, :, :2].reshape((self.nframes, -1)))
+            data = cp.c_[multi, tracklets_single].reshape((self.nframes, -1, 3))
+            xy = (data[:, :, :2].reshape((self.nframes, -1)))
             prob = data[:, :, 2].reshape((self.nframes, -1))
 
             # Fill existing gaps
-            xy = cp.asnumpy(xy)
-            missing = np.isnan(xy)
-            xy_filled = columnwise_spline_interp(xy, self.max_gap)
-            filled = ~np.isnan(xy_filled)
+            
+            missing = cp.isnan(xy)
+            
+            xy_filled = CUDNN_columnwise_spline_interp(xy, self.max_gap)
+            filled = ~cp.isnan(xy_filled)
             xy[filled] = xy_filled[filled]
-            inds = np.argwhere(missing & filled)
+            inds = np.argwhere(cp.asnumpy(missing) & cp.asnumpy(filled))
+            inds = cp.array(inds)
             if inds.size:
                 # Retrieve original individual label indices
                 inds[:, 1] //= 2
+                inds = cp.asnumpy(inds)
                 inds = np.unique(inds, axis=0)
+                inds = cp.array(inds)
                 prob[inds[:, 0], inds[:, 1]] = 0.01
             data[:, :, :2] = xy.reshape((self.nframes, -1, 2))
             data[:, :, 2] = prob
@@ -328,8 +341,8 @@ class TrackletManager:
             self.tracklet2bp = [map_[bp] for bp in self.bodyparts[::3]]
             self._label_pairs = self.get_label_pairs()
         else:
-            tracklets_raw = np.full(
-                (len(tracklets_sorted), self.nframes, len(bodyparts)), np.nan
+            tracklets_raw = cp.full(
+                (len(tracklets_sorted), self.nframes, len(bodyparts)), cp.nan
             )
             for n, data in enumerate(tracklets_sorted[::-1]):
                 xy = data[1][0]
@@ -441,8 +454,8 @@ class TrackletManager:
         return mask
 
     def flatten_data(self):
-        data = np.concatenate((self.xy, np.expand_dims(self.prob, axis=2)), axis=2)
-        return data.swapaxes(0, 1).reshape((self.nframes, -1))
+        data = cp.concatenate((self.xy, cp.expand_dims(self.prob, axis=2)), axis=2)
+        return cp.asnumpy(data.swapaxes(0, 1).reshape((self.nframes, -1)))
 
     def format_multiindex(self):
         scorer = self.scorer * len(self.bodyparts)
