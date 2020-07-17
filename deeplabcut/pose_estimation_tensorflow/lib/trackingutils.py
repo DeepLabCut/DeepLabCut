@@ -55,6 +55,11 @@ class EllipseFitter:
         self.x, self.y = xy[~np.isnan(xy).any(axis=1)].T
         if self.sd:
             self.params = self._fit_error(self.x, self.y, self.sd)
+            # Orient the ellipse such that it encompasses most points
+            # n_inside = self.points_inside().sum()
+            # self.params[-1] += 0.5 * np.pi
+            # if self.points_inside().sum() < n_inside:
+            #     self.params[-1] -= 0.5 * np.pi
         else:
             self._coeffs = self._fit(self.x, self.y)
             self.params = self.calc_parameters(self._coeffs)
@@ -108,7 +113,7 @@ class EllipseFitter:
         height, width = 2 * sd * np.sqrt(E)
         a, b = V[:, 1][::-1]
         rotation = np.arctan2(a, b) % np.pi
-        return np.mean(x), np.mean(y), width, height, rotation
+        return [np.mean(x), np.mean(y), width, height, rotation]
 
     @staticmethod
     @jit(nopython=True)
@@ -152,7 +157,19 @@ class EllipseFitter:
             else:
                 phi = np.pi/2 + np.arctan(2*b / (a-c)) / 2
 
-        return x0, y0, 2 * major, 2 * minor, phi
+        return [x0, y0, 2 * major, 2 * minor, phi]
+
+    def points_inside(self, tol=0.1):
+        if not self.params:
+            raise AttributeError('No ellipse has been fitted yet. Call `fit first.')
+
+        x, y, a, b, theta = self.params
+        ca = np.cos(theta)
+        sa = np.sin(theta)
+        x_demean = self.x - x
+        y_demean = self.y - y
+        return (((ca * x_demean + sa * y_demean) ** 2 / (0.5 * a) ** 2)
+                + ((sa * x_demean - ca * y_demean) ** 2 / (0.5 * b) ** 2)) <= 1 + tol
 
     @staticmethod
     def create_geometry(x, y, a, b, angle):
