@@ -1155,7 +1155,7 @@ def refine_tracklets(
 def convert_raw_tracks_to_h5(config, tracks_pickle, output_name="",
                              min_tracklet_len=5, max_gap=5):
     print("tracking....")
-    manager = TrackletManager(config, 0, 0.01, max_gap=1)
+    manager = TrackletManager(config, 0, min_tracklet_len, max_gap)
 
     print("loading_tracklets from pickle.....")
     manager.load_tracklets_from_pickle(tracks_pickle)
