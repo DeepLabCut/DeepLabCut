@@ -14,11 +14,11 @@ import numpy as np
 import pandas as pd
 from scipy import signal
 from scipy.interpolate import CubicSpline
-
+import cupy as cp
 from deeplabcut.refine_training_dataset.outlier_frames import FitSARIMAXModel
 from deeplabcut.utils import auxiliaryfunctions
 
-
+from tqdm import tqdm 
 def columnwise_spline_interp(data, max_gap=0):
     """
     Perform cubic spline interpolation over the columns of *data*.
@@ -42,7 +42,7 @@ def columnwise_spline_interp(data, max_gap=0):
     temp = data.copy()
     valid = ~np.isnan(temp)
     x = np.arange(nrows)
-    for i in range(ncols):
+    for i in tqdm(range(ncols)):
         mask = valid[:, i]
         if (
             np.sum(mask) > 3
@@ -60,6 +60,56 @@ def columnwise_spline_interp(data, max_gap=0):
                 y[~to_fill] = np.nan
             # Get rid of the interpolation beyond the spline knots
             y[y == 0] = np.nan
+            temp[:, i] = y
+    return temp
+
+def CUDNN_columnwise_spline_interp(data, max_gap=0):
+    """
+    Perform cubic spline interpolation over the columns of *data*.
+    All gaps of size lower than or equal to *max_gap* are filled,
+    and data slightly smoothed.
+
+    Parameters
+    ----------
+    data : array_like
+        2D matrix of data.
+    max_gap : int, optional
+        Maximum gap size to fill. By default, all gaps are interpolated.
+
+    Returns
+    -------
+    interpolated data with same shape as *data*
+    """
+    if (data.ndim) < 2:
+        data = cp.expand_dims(data, axis=1)
+    nrows, ncols = data.shape
+    temp = data.copy()
+    valid = cp.invert(cp.isnan(temp))
+    x = cp.arange(nrows)
+    for i in range(ncols):
+        mask = valid[:, i]
+        if (
+            cp.sum(mask) > 3
+        ):  # Make sure there are enough points to fit the cubic spline
+            
+            temp = cp.asnumpy(temp)
+            mask = cp.asnumpy(mask)
+            spl = CubicSpline(cp.asnumpy(x[mask]), (temp[mask, i]))
+            x = cp.asnumpy(x)
+            y = cp.array(spl(x))
+            temp = cp.array(temp)
+            mask = cp.array(mask)
+            if max_gap > 0:
+                inds = cp.flatnonzero(cp.r_[True, cp.diff(mask), True])
+                count = cp.diff(inds)
+                inds = inds[:-1]
+                to_fill = cp.ones_like(mask)
+                for ind, n, is_nan in zip(inds, count, ~mask[inds]):
+                    if is_nan and n > max_gap:
+                        to_fill[ind : ind + n] = False
+                y[~to_fill] = cp.nan
+            # Get rid of the interpolation beyond the spline knots
+            y[y == 0] = cp.nan
             temp[:, i] = y
     return temp
 
