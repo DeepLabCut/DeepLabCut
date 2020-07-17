@@ -13,7 +13,7 @@ from matplotlib.widgets import Slider, LassoSelector, Button, CheckButtons
 import cupy as cp
 from tqdm import tqdm
 from deeplabcut import generate_training_dataset
-from deeplabcut.post_processing import CUDNN_columnwise_spline_interp
+from deeplabcut_code.post_processing import CUDNN_columnwise_spline_interp
 from deeplabcut.utils.auxiliaryfunctions import read_config, attempttomakefolder
 
 
@@ -224,13 +224,12 @@ class TrackletManager:
             tracklets_multi = cp.full(
             (self.nindividuals, self.nframes, len(bodyparts_multi) * 3), cp.nan
             )
-
-            while tracklets_sorted:
+            print("tracklets_sorted: {}".format(len(tracklets_sorted)))
+            for i in tqdm(range(len(tracklets_sorted))):
                 _, (compress_data, _, is_single, indexes) = tracklets_sorted.pop()
                 data = cp.full((self.nframes, len(bodyparts)), cp.nan)
                 data[indexes] = compress_data
                 has_data = ~cp.isnan(data)
-               
                 if is_single:
 
                     # Where slots are available, copy the data over
@@ -283,21 +282,15 @@ class TrackletManager:
                             sl = slice(j * 3, j * 3 + 3)
                             tracklets_multi[i, rows[sl], cols[sl]] = remaining.flat[sl]
                     else:
-                        ##ccupy doesnt support slices of more than one boolean
+                        ##cupy doesnt support slices of more than one boolean
 
-                        tracklets_multi = cp.asnumpy(tracklets_multi)
-                        data = cp.asnumpy(data)
-                        overwrite_risk = cp.asnumpy(overwrite_risk)
-                        has_data = cp.asnumpy(has_data)
 
-                        tracklets_multi[np.argmin(overwrite_risk), has_data] = data[
-                            has_data
-                        ]
+
+                        temp_track = tracklets_multi[cp.argmin(overwrite_risk)]
+                        temp_track[has_data] = data[has_data]
+                        tracklets_multi[cp.argmin(overwrite_risk)] = temp_track
                         tracklets_multi = cp.array(tracklets_multi)
-
-                        data = cp.array(data)
-                        overwrite_risk = cp.array(overwrite_risk)
-                        has_data = cp.array(has_data)
+                   
                         tracklets_nan = cp.isnan(tracklets_multi).all()
                      
                         
