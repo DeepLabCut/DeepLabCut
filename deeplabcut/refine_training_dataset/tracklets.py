@@ -13,7 +13,7 @@ from matplotlib.widgets import Slider, LassoSelector, Button, CheckButtons
 import cupy as cp
 from tqdm import tqdm
 from deeplabcut import generate_training_dataset
-from deeplabcut_code.post_processing import CUDNN_columnwise_spline_interp
+from deeplabcut.post_processing import CUDNN_columnwise_spline_interp
 from deeplabcut.utils.auxiliaryfunctions import read_config, attempttomakefolder
 
 
