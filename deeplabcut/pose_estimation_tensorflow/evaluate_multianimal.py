@@ -367,6 +367,7 @@ def evaluate_multianimal_crossvalidate(
     inferencecfg=None,
     init_points=20,
     n_iter=50,
+    log_file=None,
     dcorr=10.0,
     leastbpts=1,
     printingintermediatevalues=True,
@@ -416,6 +417,10 @@ def evaluate_multianimal_crossvalidate(
         Number of iterations of Bayesian optimization to perform.
         The larger it is, the higher the likelihood of finding a good extremum.
         Parameter from BayesianOptimization.
+
+    log_file: str, optional (default=None)
+        Path to a JSON file containing the progress of a previous Bayesian optimization run.
+        Note that previously probed points will not be evaluated again.
 
     dcorr: float,
         Distance thereshold for percent correct keypoints / relative percent correct keypoints (see paper).
@@ -558,9 +563,11 @@ def evaluate_multianimal_crossvalidate(
             init_points=init_points,
             n_iter=n_iter,
             acq="ei",
+            log_file=log_file,
             dcorr=dcorr,
             leastbpts=leastbpts,
             modelprefix=modelprefix,
+            printingintermediatevalues=printingintermediatevalues
         )
 
         # update number of individuals to retain.
