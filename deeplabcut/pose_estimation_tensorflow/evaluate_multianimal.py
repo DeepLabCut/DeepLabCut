@@ -143,6 +143,8 @@ def evaluate_multianimal_full(
             # TODO: IMPLEMENT for different batch sizes?
             dlc_cfg["batch_size"] = 1  # due to differently sized images!!!
 
+            joints = dlc_cfg['all_joints_names']
+
             # Create folder structure to store results.
             evaluationfolder = os.path.join(
                 cfg["project_path"],
@@ -243,6 +245,7 @@ def evaluate_multianimal_full(
 
                         PredicteData = {}
                         dist = np.full((len(all_bpts), len(Data)), np.nan)
+                        distnorm = np.full(len(Data), np.nan)
                         print("Analyzing data...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
                             image_path = os.path.join(cfg["project_path"], imagename)
@@ -251,6 +254,14 @@ def evaluate_multianimal_full(
 
                             GT = Data.iloc[imageindex]
                             df = GT.unstack('coords')
+
+                            # Evaluate PAF edge lengths to calibrate `distnorm`
+                            temp = GT.unstack('bodyparts')[joints]
+                            xy = temp.values.reshape((-1, 2, temp.shape[1])).swapaxes(1, 2)
+                            edges = xy[:, dlc_cfg['partaffinityfield_graph']]
+                            lengths = np.sum((edges[:, :, 0] - edges[:, :, 1]) ** 2, axis=2)
+                            distnorm[imageindex] = np.nanmax(lengths)
+
                             # FIXME Is having an empty array vs nan really that necessary?!
                             groundtruthidentity = list(df.index.get_level_values('individuals').to_numpy().reshape((-1, 1)))
                             groundtruthcoordinates = list(df.values[:, np.newaxis])
@@ -285,7 +296,7 @@ def evaluate_multianimal_full(
                             probs_pred = pred["confidence"]
                             for bpt, xy_gt in df.groupby(level='bodyparts'):
                                 inds_gt = np.flatnonzero(np.all(~np.isnan(xy_gt), axis=1))
-                                xy = coords_pred[dlc_cfg['all_joints_names'].index(bpt)]
+                                xy = coords_pred[joints.index(bpt)]
                                 if inds_gt.size and xy.size:
                                     # Pick the predictions closest to ground truth,
                                     # rather than the ones the model has most confident in
@@ -327,8 +338,9 @@ def evaluate_multianimal_full(
                         stats_per_bpt.to_csv(write_path.replace('dist.csv', 'dist_stats_bpt.csv'))
 
                         # For OKS/PCK, compute the standard deviation error across all frames
-                        ock_sd = df_dist.groupby('bodyparts').mean().std(axis=1)
-                        ock_sd.to_csv(write_path.replace('dist.csv', 'oks_sd.csv'))
+                        sd = df_dist.groupby('bodyparts').mean().std(axis=1)
+                        sd['distnorm'] = np.sqrt(np.nanmax(distnorm))
+                        sd.to_csv(write_path.replace('dist.csv', 'sd.csv'))
 
                         if show_errors:
                             print('##########################################&1')
@@ -563,9 +575,10 @@ def evaluate_multianimal_crossvalidate(
             auxfun_multianimal.check_inferencecfg_sanity(cfg, inferencecfg)
 
         # Pick distance threshold for (r)PCK from the statistics computed during evaluation
-        stats_file = os.path.join(os.path.dirname(path_test_config), 'oks_sd.csv')
+        stats_file = os.path.join(os.path.dirname(path_test_config), 'sd.csv')
         if os.path.isfile(stats_file):
-            stats = pd.read_csv(stats_file, header=None, index_col=0).values
+            stats = pd.read_csv(stats_file, header=None, index_col=0)
+            inferencecfg.distnormalization = stats.pop('distnorm')
             dcorr = 2 * stats.mean()  # Taken as 2*SD error between predictions and ground truth
         else:
             dcorr = 10
