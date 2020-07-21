@@ -79,9 +79,8 @@ def ShortenVideo(
         vidpath, str(Path(vname).stem) + str(outsuffix) + str(Path(vname).suffix)
     )
     print("Slicing and saving to name", newfilename)
-    command = f"ffmpeg -i {vname} -ss {start} -to {stop} -c:a copy {newfilename}"
+    command = f"ffmpeg -i {vname} -ss {start} -to {stop} -c:v copy {newfilename}"
     subprocess.call(command, shell=True)
-    # subprocess.call(['ffmpeg','-i',vname,'-ss',str(start),'-to',str(stop),'-c:v','copy','-c:a', newfilename])
     return str(newfilename)
 
 
