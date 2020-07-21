@@ -23,16 +23,22 @@ class BackgroundPlayer:
         self.can_run.clear()
         self.running = True
         self.paused = True
-        self.speed = ""
+        self.speed = "F"
 
     def run(self):
         while self.running:
             self.can_run.wait()
-            i = self.viz.curr_frame + 1
+            i = self.viz.curr_frame
             if "F" in self.speed:
-                i += 2 * len(self.speed)
+                if len(self.speed) == 1:
+                    i += 1
+                else:
+                    i += 2 * (len(self.speed)-1)
             elif "R" in self.speed:
-                i -= 2 * len(self.speed)
+                if len(self.speed) == 1:
+                    i -= 1
+                else:
+                    i -= 2 * (len(self.speed)-1)
             if i > self.viz.manager.nframes:
                 i = 0
             elif i < 0:
@@ -56,18 +62,24 @@ class BackgroundPlayer:
     def forward(self):
         speed = self.speed
         if "R" in speed:
-            speed = ""
-        if len(speed) < 4:
+            speed = "F"
+        elif len(speed) < 5:
             speed += "F"
+        elif len(speed) == 5:
+            speed = "F"
+        print(speed)
         self.speed = speed
         self.resume()
 
     def rewind(self):
         speed = self.speed
         if "F" in speed:
-            speed = ""
-        if len(speed) < 4:
+            speed = "R"
+        elif len(speed) < 5:
             speed += "R"
+        elif len(speed) == 5:
+            speed = "R"
+        print(speed)
         self.speed = speed
         self.resume()
 
@@ -788,7 +800,7 @@ class TrackletVisualizer:
             self.player.forward()
         elif event.key == "alt+left":
             self.player.rewind()
-        elif event.key == "p" or event.key == "tab":
+        elif event.key == " " or event.key == "tab":
             self.player.toggle()
 
     def move_forward(self):
@@ -927,8 +939,10 @@ class TrackletVisualizer:
             Key S: swap two tracklets
             Key X: cut swapping tracklets
             Left/Right arrow OR Key B/Key N: navigate through the video (back/next)
-            Tab or Key P: play/pause the video
-            Alt+Right/Left: fast forward/rewind
+            Tab or SPACE: play/pause the video
+            Alt+Right/Left: fast forward/rewind - toggles through 5 speed levels
+            Backspace: deletes last flag (if set) or deletes point
+            Key P: toggles on pan/zoom tool - left button and drag to pan, right button and drag to zoom
             """
             self.text = self.fig.text(
                 0.5,
