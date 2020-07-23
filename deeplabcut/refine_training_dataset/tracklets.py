@@ -560,7 +560,7 @@ class TrackletVisualizer:
             loc="center",
         )
         for line in self.leg.get_lines():
-            line.set_pickradius(5)
+            line.set_picker(5)
 
         self.ax_slider = self.fig.add_axes([0.1, 0.1, 0.5, 0.03], facecolor="lightgray")
         self.ax_slider2 = self.fig.add_axes(
