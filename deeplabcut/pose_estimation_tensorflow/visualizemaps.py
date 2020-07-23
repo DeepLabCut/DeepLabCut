@@ -461,7 +461,10 @@ def extract_save_all_maps(
                     image, scmap, locref, paf
                 )
                 to_plot = [i for i, bpt in enumerate(bptnames) if bpt in comparisonbodyparts]
-                list_of_inds = [graph for graph in pafgraph for ind in to_plot if ind in graph]
+                list_of_inds = []
+                for n, link in enumerate(pafgraph):
+                    if any(ind in to_plot for ind in link):
+                        list_of_inds.append((2 * n, 2 * n + 1))
                 map_ = scmap[:, :, to_plot].sum(axis=2)
                 locref_x_ = locref_x[:, :, to_plot].sum(axis=2)
                 locref_y_ = locref_y[:, :, to_plot].sum(axis=2)
