@@ -335,29 +335,33 @@ def visualize_locrefs(
     return fig, ax
 
 
-def visualize_paf(image, paf, step=5):
+def visualize_paf(image, paf, step=5, colors=None):
     ny, nx = np.shape(image)[:2]
     fig, ax = form_figure(nx, ny)
     ax.imshow(image)
-    U = paf[:, :, 0]
-    V = paf[:, :, 1]
-    X, Y = np.meshgrid(np.arange(U.shape[1]), np.arange(U.shape[0]))
-    M = np.zeros(U.shape, dtype=bool)
-    M[U ** 2 + V ** 2 < 0.5 * 0.5 ** 2] = True
-    U = np.ma.masked_array(U, mask=M)
-    V = np.ma.masked_array(V, mask=M)
-    ax.quiver(
-        X[::step, ::step],
-        Y[::step, ::step],
-        U[::step, ::step],
-        V[::step, ::step],
-        scale=50,
-        headaxislength=4,
-        alpha=1,
-        width=0.002,
-        color="r",
-        angles="xy",
-    )
+    n_fields = paf.shape[2]
+    if colors is None:
+        colors = ['r'] * n_fields
+    for n in range(n_fields):
+        U = paf[:, :, n, 0]
+        V = paf[:, :, n, 1]
+        X, Y = np.meshgrid(np.arange(U.shape[1]), np.arange(U.shape[0]))
+        M = np.zeros(U.shape, dtype=bool)
+        M[U ** 2 + V ** 2 < 0.5 * 0.5 ** 2] = True
+        U = np.ma.masked_array(U, mask=M)
+        V = np.ma.masked_array(V, mask=M)
+        ax.quiver(
+            X[::step, ::step],
+            Y[::step, ::step],
+            U[::step, ::step],
+            V[::step, ::step],
+            scale=50,
+            headaxislength=4,
+            alpha=1,
+            width=0.002,
+            color=colors[n],
+            angles="xy",
+        )
     return fig, ax
 
 
@@ -372,6 +376,7 @@ def extract_save_all_maps(
     shuffle=1,
     trainingsetindex=0,
     comparisonbodyparts="all",
+    all_paf_in_one=True,
     gputouse=None,
     rescale=False,
     Indices=None,
@@ -395,6 +400,10 @@ def extract_save_all_maps(
 
     comparisonbodyparts: list of bodyparts, Default is "all".
         The average error will be computed for those body parts only (Has to be a subset of the body parts).
+
+    all_paf_in_one : bool
+        By default, all part affinity fields are displayed on a single frame.
+        If false, individual fields are shown on separate frames.
 
     Indices: default None
         For which images shall the scmap/locref and paf be computed? Give a list of images
@@ -462,9 +471,10 @@ def extract_save_all_maps(
                 )
                 to_plot = [i for i, bpt in enumerate(bptnames) if bpt in comparisonbodyparts]
                 list_of_inds = []
-                for n, link in enumerate(pafgraph):
-                    if any(ind in to_plot for ind in link):
-                        list_of_inds.append((2 * n, 2 * n + 1))
+                for n, edge in enumerate(pafgraph):
+                    if any(ind in to_plot for ind in edge):
+                        list_of_inds.append([(2 * n, 2 * n + 1),
+                                             (bptnames[edge[0]], bptnames[edge[1]])])
                 map_ = scmap[:, :, to_plot].sum(axis=2)
                 locref_x_ = locref_x[:, :, to_plot].sum(axis=2)
                 locref_y_ = locref_y[:, :, to_plot].sum(axis=2)
@@ -487,13 +497,26 @@ def extract_save_all_maps(
                 fig2.savefig(temp)
 
                 if paf is not None:
-                    for n, inds in enumerate(list_of_inds):
+                    if not all_paf_in_one:
+                        for inds, names in list_of_inds:
+                            fig3, _ = visualize_paf(
+                                image,
+                                paf[:, :, [inds]]
+                            )
+                            temp = dest_path.format(imname=imname, map=f'paf_{"_".join(names)}', label=label,
+                                                    shuffle=shuffle, frac=frac, snap=snap)
+                            fig3.savefig(temp)
+                    else:
+                        inds = [elem[0] for elem in list_of_inds]
+                        n_inds = len(inds)
+                        cmap = plt.cm.get_cmap(cfg['colormap'], n_inds)
+                        colors = cmap(range(n_inds))
                         fig3, _ = visualize_paf(
                             image,
-                            paf[:, :, inds]
+                            paf[:, :, inds],
+                            colors=colors
                         )
-                        temp = dest_path.format(imname=imname, map=f'paf{n}', label=label,
+                        temp = dest_path.format(imname=imname, map=f'paf', label=label,
                                                 shuffle=shuffle, frac=frac, snap=snap)
                         fig3.savefig(temp)
-
                 plt.close("all")
