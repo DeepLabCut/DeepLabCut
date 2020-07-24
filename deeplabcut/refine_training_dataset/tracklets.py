@@ -326,11 +326,14 @@ class TrackletManager:
             self._label_pairs = self.get_label_pairs()
         else:
             tracklets_raw = np.full(
-                (len(tracklets_sorted), self.nframes, len(bodyparts)), np.nan
+                (len(tracklets_sorted), self.nframes, len(bodyparts)),
+                np.nan,
+                np.float16
             )
-            for n, data in enumerate(tracklets_sorted[::-1]):
-                xy = data[1][0]
-                tracklets_raw[n, :, : xy.shape[1]] = xy
+            for n, tracklet in enumerate(tracklets_sorted[::-1]):
+                for frame, data in tracklet.items():
+                    i = get_frame_ind(frame)
+                    tracklets_raw[n, i] = data
             self.data = (
                 tracklets_raw.swapaxes(0, 1)
                 .reshape((self.nframes, -1, 3))
