@@ -1092,10 +1092,10 @@ def refine_tracklets(
     config,
     pickle_or_h5_file,
     video,
-    min_swap_len=0,
-    min_tracklet_len=0,
-    max_gap=0,
-    trail_len=50,
+    min_swap_len=2,
+    min_tracklet_len=2,
+    max_gap=2,
+    trail_len=0,
 ):
     """
     Refine tracklets stored either in pickle or h5 format.
@@ -1127,23 +1127,23 @@ def refine_tracklets(
         by more than 5%, a message is printed indicating that the selected
         video may not be the right one.
 
-    min_swap_len : float, optional (default=0)
+    min_swap_len : float, optional (default=2)
         Minimum swap length.
-        Set to 0 by default. Retained swaps appear in the right panel in
+        Set to 2 by default. Retained swaps appear in the right panel in
         shaded regions.
 
-    min_tracklet_len : float, optional (default=0)
+    min_tracklet_len : float, optional (default=2)
         Minimum tracklet length.
-        By default, all tracklets are kept. If set to 5, for example,
-        tracklets shorter than 5 frames are discarded, leaving missing data instead.
+        By default, tracklets shorter than 2 frames are discarded,
+        leaving missing data instead. If set to 0, all tracklets are kept.
 
-    max_gap : int, optional (default=0).
+    max_gap : int, optional (default=2).
         Maximal gap size (in number of frames) of missing data to be filled.
         The procedure fits a cubic spline over all individual trajectories,
-        and fills all gaps by default.
+        and fills all gaps smaller than or equal to 2 frames by default.
 
-    trail_len : int, optional (default=50)
-        Number of trailing points.
+    trail_len : int, optional (default=0)
+        Number of trailing points. None by default, to accelerate visualization.
     """
     manager = TrackletManager(config, min_swap_len, min_tracklet_len, max_gap)
     if pickle_or_h5_file.endswith("pickle"):
