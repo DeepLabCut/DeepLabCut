@@ -279,7 +279,8 @@ class TrackletManager:
                             )
                             diff = remaining - temp
                             # Find keypoints closest to the remaining data
-                            dist = np.sqrt(diff[:, :, 0] ** 2 + diff[:, :, 1] ** 2)
+                            # Use Manhattan distance to avoid overflow
+                            dist = np.abs(diff[:, :, 0]) + np.abs(diff[:, :, 1])
                             closest = np.argmin(dist, axis=0)
                             # Only overwrite if improving confidence
                             prob = diff[closest, range(len(closest)), 2]
