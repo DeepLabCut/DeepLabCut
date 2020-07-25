@@ -258,34 +258,37 @@ class TrackletManager:
                     overwrite_risk = np.any(overwrite, axis=(1, 2))
                     if overwrite_risk.all():
                         # Squeeze some data into empty slots
-                        mask = has_data & is_free
-                        space_left = mask.any(axis=(1, 2))
-                        for ind in np.flatnonzero(space_left):
+                        n_empty = is_free.all(axis=2).sum(axis=1)
+                        for ind in np.argsort(n_empty)[::-1]:
+                            mask = has_data & is_free
                             current_mask = mask[ind]
                             rows, cols = np.nonzero(current_mask)
-                            tracklets_multi[ind, inds[rows], cols] = data_multi[current_mask]
-                            has_data[current_mask] = False
-                        # For the remaining data, overwrite where we are least confident
-                        remaining = data_multi[has_data].reshape((-1, 3))
-                        mask3d = np.broadcast_to(
-                            has_data, (self.nindividuals,) + has_data.shape
-                        )
-                        dims, rows, cols = np.nonzero(mask3d)
-                        temp = tracklets_multi[dims, inds[rows], cols].reshape(
-                            (self.nindividuals, -1, 3)
-                        )
-                        diff = remaining - temp
-                        # Find keypoints closest to the remaining data
-                        dist = np.sqrt(diff[:, :, 0] ** 2 + diff[:, :, 1] ** 2)
-                        closest = np.argmin(dist, axis=0)
-                        # Only overwrite if improving confidence
-                        prob = diff[closest, range(len(closest)), 2]
-                        better = np.flatnonzero(prob > 0)
-                        idx = closest[better]
-                        rows, cols = np.nonzero(has_data)
-                        for i, j in zip(idx, better):
-                            sl = slice(j * 3, j * 3 + 3)
-                            tracklets_multi[i, inds[rows[sl]], cols[sl]] = remaining.flat[sl]
+                            if rows.size:
+                                tracklets_multi[ind, inds[rows], cols] = data_multi[current_mask]
+                                is_free[ind, current_mask] = False
+                                has_data[current_mask] = False
+                        if has_data.any():
+                            # For the remaining data, overwrite where we are least confident
+                            remaining = data_multi[has_data].reshape((-1, 3))
+                            mask3d = np.broadcast_to(
+                                has_data, (self.nindividuals,) + has_data.shape
+                            )
+                            dims, rows, cols = np.nonzero(mask3d)
+                            temp = tracklets_multi[dims, inds[rows], cols].reshape(
+                                (self.nindividuals, -1, 3)
+                            )
+                            diff = remaining - temp
+                            # Find keypoints closest to the remaining data
+                            dist = np.sqrt(diff[:, :, 0] ** 2 + diff[:, :, 1] ** 2)
+                            closest = np.argmin(dist, axis=0)
+                            # Only overwrite if improving confidence
+                            prob = diff[closest, range(len(closest)), 2]
+                            better = np.flatnonzero(prob > 0)
+                            idx = closest[better]
+                            rows, cols = np.nonzero(has_data)
+                            for i, j in zip(idx, better):
+                                sl = slice(j * 3, j * 3 + 3)
+                                tracklets_multi[i, inds[rows[sl]], cols[sl]] = remaining.flat[sl]
                     else:
                         rows, cols = np.nonzero(has_data)
                         n = np.argmin(overwrite_risk)
