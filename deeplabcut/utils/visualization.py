@@ -181,7 +181,9 @@ def save_labeled_frame(fig, image_path, dest_folder, belongs_to_train):
 
 
 def prepare_figure_axes(width, height, scale=1.0, dpi=100):
-    fig = plt.figure(frameon=False, figsize=(width * scale / dpi, height * scale / dpi))
+    fig = plt.figure(frameon=False,
+                     figsize=(width * scale / dpi, height * scale / dpi),
+                     dpi=dpi)
     ax = fig.add_subplot(111)
     ax.axis("off")
     ax.set_xlim(0, width)
@@ -297,6 +299,7 @@ def make_labeled_images_from_dataframe(
         imagename = os.path.basename(ic.files[i])
         fig.tight_layout()
         fig.savefig(
-            os.path.join(tmpfolder, imagename.replace(".png", f"_{color_by}.png"))
+            os.path.join(tmpfolder, imagename.replace(".png", f"_{color_by}.png")),
+            dpi=dpi
         )
     plt.close(fig)
