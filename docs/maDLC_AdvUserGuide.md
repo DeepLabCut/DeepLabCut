@@ -8,6 +8,10 @@ Note, we STRONGLY encourage you to use the [Project Manager GUI](https://github.
 This document should serve as an **advanced user guide for maDLC,**
 and it is here to support the scientific advances presented in the preprint (Mathis et al, 2020).
 
+# How to think about using maDLC:
+
+Firstly you should think of maDLC being two parts. The first is pose estimation as is standard in DLC. You should label, train, and evaluate the pose estimation performance first. If and when that performance is high quality, then you should go forward to tracking. There is a natural break point for this, as you will see below. 
+
 # Install and test: 
 
 Install DLC as noted elsewhere, then run the test script found here (you will need to git clone first):
@@ -107,11 +111,11 @@ skeleton:
 - - topleftcorner
   - toprightcorner
 ```
-**individuals** are names of "individuals" in the annotation dataset. These can be generic (e.g. mouse1, mouse2, etc.). These individuals are comprised of the same bodyparts defined by `multianimalbodyparts`. For annotation in the GUI and training, it is important that all individuals in each frame are labeled. Thus, keep in mind that you might need to have many individuals, .i.e. if there is (even just one frame) with 17 pinguins then the list should be `- indv1` to `- indv17`. For inference, once trained if you have a video with more or less animals, that is fine - you can change this number before running video analysis.
+**Individuals:** are names of "individuals" in the annotation dataset. These should be generic (e.g. mouse1, mouse2, etc.). These individuals are comprised of the same bodyparts defined by `multianimalbodyparts`. For annotation in the GUI and training, it is important that all individuals in each frame are labeled. Thus, keep in mind that you might need to have many individuals, .i.e. if there is (even just one frame) with 17 animals then the list should be `- indv1` to `- indv17`. For inference, once trained if you have a video with more or less animals, that is fine - you can change this number before running video analysis.
 
-**multianimalbodyparts:** are the bodyparts of each individual (in the above list). Each bodypart should be connected to all the others by at least one path (E.g. like in a [tree](https://en.wikipedia.org/wiki/Tree_(graph_theory)).). However, we recommend to have multiple paths, in a redundant way. These connections are defined in the skeleton. See below how to define the skeleton.
+**Multianimalbodyparts:** are the bodyparts of each individual (in the above list). Each bodypart should be connected to all the others by at least one path (E.g. like in a [tree](https://en.wikipedia.org/wiki/Tree_(graph_theory)).). However, we recommend to have multiple paths, in a redundant way. These connections are defined in the skeleton. See below how to define the skeleton.
 
-**Uniquebodyparts** are points that you want to track, but that appear only once within each frame, i.e. they are "unique". Typically these are things like unique objects, landmarks, tools, etc. They are treated similar to pre-2.2 projects; namely, they do not require a skeleton. They can also be animals, e.g. in the case where one German shepherd is attending to many sheep the sheep bodyparts would be multianimalbodyparts, the shepherd parts would be uniquebodyparts and the individuals would be the list of sheep (e.g. Polly, Molly, Dolly, ...).
+**Uniquebodyparts:** are points that you want to track, but that appear only once within each frame, i.e. they are "unique". Typically these are things like unique objects, landmarks, tools, etc. They are treated similar to pre-2.2 projects; namely, they do not require a skeleton. They can also be animals, e.g. in the case where one German shepherd is attending to many sheep the sheep bodyparts would be multianimalbodyparts, the shepherd parts would be uniquebodyparts and the individuals would be the list of sheep (e.g. Polly, Molly, Dolly, ...).
 
 **Note**, if your does not have any uniquebodyparts please format as: `uniquebodyparts: []`.
 
@@ -211,18 +215,7 @@ Note, we also highly recommend that you use more bodypoints that you might other
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588028248844-43RXXUNLE1VKJDKGGVFO/ke17ZwdGBToddI8pDm48kAxoZwLd0g_s-irkR9O2vUhZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxFjgZOWy5voI9x7QCcY8v6pdjAnJRY2VhSKj43SxhWXRPK8F08AQobuqKWFB6l9T0/labelingdemo.gif?format=750w" width="70%">
 </p>
 
-**mini-demo:** using the GUI to label
-
-<p align="center">
-<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c535f16fa0d60294ac39e4e/1548967721381/GUIdemo1.gif?format=750w" width="60%">
-</p>
-
 ### Check Annotated Frames:
-
-```python
-deeplabcut.check_labels(config_path)
-```
-**maDeepLabCut**: you can also look at both bodypart labeling (standard) and individual IDs by also passing `visualizeindividuals=True`
 
 Checking if the labels were created and stored correctly is beneficial for training, since labeling
 is one of the most critical parts for creating the training dataset. The DeepLabCut toolbox provides a function
@@ -238,7 +231,7 @@ deeplabcut.check_labels(config_path, visualizeindividuals=True/False)
 
 For each video directory in labeled-data this function creates a subdirectory with **labeled** as a suffix. Those directories contain the frames plotted with the annotated body parts. The user can double check if the body parts are labeled correctly. If they are not correct, the user can reload the frames (i.e. `deeplabcut.label_frames`), move them around, and click save again.
 
-**CROP+LABEL:** When you are done checking the label quality and adjusting if needed, please then use this new function to crop frames /labels for more efficient training. PLEASE call this before you create a training dataset by:
+**CROP+LABEL:** When you are done checking the label quality and adjusting if needed, please then use this new function to crop frames /labels for more efficient training. PLEASE call this before you create a training dataset by running:
 ```python
 deeplabcut.cropimagesandlabels(path_config_file, userfeedback=False)
 ```
@@ -256,28 +249,19 @@ deeplabcut.SkeletonBuilder(config_path)
 
 ### Create Training Dataset:
 
-```python
-deeplabcut.create_training_dataset(config_path)
-```
-or to [compare different neural networks](/wiki/What-neural-network-should-I-use%3F) use:
-```python
-deeplabcut.create_training_model_comparison(config_path, num_shuffles=1, net_types=['resnet_50'], augmenter_types=['default', 'imgaug'] )
-```
-:movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=WXCVr6xAcCA)
+For mutli-animal training we use batch processing. This means that we'd like the data to be similarly sized. You can of course have differing size of images you label (but we suggest cropping out useless pixels!). So, we have a new function that can pre-process your data to be compatible with batch training. As noted above, please run this function before you `create_multianmialtraining_dataset`. 
 
+**maDeepLabCut CRITICAL POINT**- you must use this new function if you have a multi-animal project (and the skeleton in the `config.yaml` **must be defined** before you run this step, if not already done). You **should also run** `deeplabcut.cropimagesandlabels(config_path)` before creating a training set, as we use batch processing and many users have smaller GPUs that cannot accommodate larger images + larger batchsizes. This is also a type of data augmentation.
 
-**maDeepLabCut**:
-
-For mutli-animal training we use batch processing. This means that we'd like the data to be similarly sized. You can of course have differing size of images you label (and we suggest cropping out useless pixels!). So, we have a new function that can pre-process your data to be compatible with batch training. As noted above, please run this function before you `create_multianmialtraining_dataset`:
+NOTE: you can edit the crop size. If your images are very large (2k, 4k pixels), consider increasing this size, but be aware unless you have a lagre GPU (24 GB or more), you will hit memory errors. You can lower the batchsize, but this may affect performance.
 
 ```python
-deeplabcut.cropimagesandlabels(path_config_file)
+deeplabcut.cropimagesandlabels(path_config_file, size=(400, 400), userfeedback=False
 ```
 Then run:
 ```python
 deeplabcut.create_multianimaltraining_dataset(path_config_file)
 ```
-**maDeepLabCut CRITICAL POINT**- you must use this new function if you have a multi-animal project (and the skeleton in the `config.yaml` **must be defined** before you run this step, if not already done). You **should also run** `deeplabcut.cropimagesandlabels(config_path)` before creating a training set, as we use batch processing and many users have smaller GPUs that cannot accommodate larger images + larger batchsizes. This is also a type of data augmentation.
 
 - The set of arguments in the function will shuffle the combined labeled dataset and split it to create train and test
 sets. The subdirectory with suffix ``iteration#`` under the directory **training-datasets** stores the dataset and meta
@@ -364,7 +348,6 @@ the pose_config.yaml file for the corresponding project. If None, the value from
 maxiters: This sets how many iterations to train. This variable is set in pose_config.yaml. However, you can overwrite it with this. If None, the value from there is used, otherwise it is overwritten! Default: None
 ```    
 
-
 ### Evaluate the Trained Network:
 
 Here, for traditional projects you will get a pixel distance metric and you should inspect the individual frames:
@@ -373,14 +356,6 @@ deeplabcut.evaluate_network(config_path, plotting=True)
 ```
 :movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=bgfnz1wtlpo)
 
-**maDeepLabCut [CRITICAL POINT]:**
-
-You need to **cross validate parameters** before inference. Here, you will run the new function:
-```python
-deeplabcut.evaluate_multianimal_crossvalidate(config_path, Shuffles=[1], edgewisecondition=True, leastbpts=1, init_points=20, n_iter=50)
-```
-We highly suggest that you read the docstring for this function to edit inputs appropriately.
-
 It is important to evaluate the performance of the trained network. This performance is measured by computing
 the mean average Euclidean error (MAE; which is proportional to the average root mean square error) between the
 manual labels and the ones predicted by DeepLabCut. The MAE is saved as a comma separated file and displayed
@@ -388,9 +363,7 @@ for all pairs and only likely pairs (>p-cutoff). This helps to exclude, for exam
 strengths of DeepLabCut is that due to the probabilistic output of the scoremap, it can, if sufficiently trained, also
 reliably report if a body part is visible in a given frame. (see discussions of finger tips in reaching and the Drosophila
 legs during 3D behavior in [Mathis et al, 2018]). The evaluation results are computed by typing:
-```python
-deeplabcut.evaluate_network(config_path,Shuffles=[1], plotting=True)
-```
+
 Setting ``plotting`` to true plots all the testing and training frames with the manual and predicted labels. The user
 should visually check the labeled test (and training) images that are created in the ‘evaluation-results’ directory.
 Ideally, DeepLabCut labeled unseen (test images) according to the user’s required accuracy, and the average train
@@ -432,14 +405,29 @@ labeled accurately
 
 **maDeepLabCut: (or on normal projects!)**
 
-You can also plot the scoremaps, locref layers, and PAFs:
+You should also plot the scoremaps, locref layers, and PAFs:
 
 ```python
 deeplabcut.extract_save_all_maps(config_path, shuffle=shuffle, Indices=[0, 5])
 ```
 you can drop "Indices" to run this on all training/testing images (this is slow!)
 
+------------------- BREAK POINT ------------------- 
+
+
+## ATTENTION! Pose estimation and tracking should be thought of as separate steps. If you do not have good pose estimation at this point, stop, check original labels, add more data, etc --> don't go froward. 
+
+IF you have good clean `....full.mp4` videos and the evaluation metrics look good, scoremaps look good, plotted evaluation images, then go forward!!! 
+
 ### Cross Validation of Inference parameters (a maDeepLabCut CRITICAL POINT!):
+
+**maDeepLabCut [CRITICAL POINT]:**
+
+You need to **cross validate parameters** before inference. Here, you will run the new function:
+```python
+deeplabcut.evaluate_multianimal_crossvalidate(config_path, Shuffles=[1], edgewisecondition=True, leastbpts=1, init_points=20, n_iter=50)
+```
+We highly suggest that you read the docstring for this function to edit inputs appropriately.
 
 The neural network will detect bodyparts as well as limbs (i.e., the skeleton connections). These will then be assembled to create individuals; for this step, the graph of connections that you provided (skeleton) will be used. Note that several parameters will strongly influence the assembly of individuals. You need to cross validate parameters before inference. Here, you will run the new function (below) that will smartly try to optimize your `inference_config.yaml` file. You can also manually edit this file afterwards (more below). But, this first part will validate the parameters and optimize *either* hits/misses, RMSE, and percent correct keypoints (tracking we deal with below). Which objective might depend on your case; check the docstrings to see
 what is the default. This step uses a [global optimization with gaussian processes](https://github.com/fmfn/BayesianOptimization); by default
