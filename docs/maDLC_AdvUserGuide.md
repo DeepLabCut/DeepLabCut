@@ -412,24 +412,26 @@ deeplabcut.extract_save_all_maps(config_path, shuffle=shuffle, Indices=[0, 5])
 ```
 you can drop "Indices" to run this on all training/testing images (this is slow!)
 
-------------------- BREAK POINT ------------------- 
+### -------------------- DECISION / BREAK POINT -------------------
 
+##### ATTENTION! 
+**Pose estimation and tracking should be thought of as separate steps.** If you do not have good pose estimation evaluation metrics at this point, stop, check original labels, add more data, etc --> don't move forward with this model. If you think you have a good model, plese test the "raw" pose estimation performance on a video to validate performance: 
 
-## ATTENTION! Pose estimation and tracking should be thought of as separate steps. If you do not have good pose estimation at this point, stop, check original labels, add more data, etc --> don't go froward. 
+Please run:
 
-IF you have good clean `....full.mp4` videos and the evaluation metrics look good, scoremaps look good, plotted evaluation images, then go forward!!! 
-
-### Cross Validation of Inference parameters (a maDeepLabCut CRITICAL POINT!):
-
-**maDeepLabCut [CRITICAL POINT]:**
-
-You need to **cross validate parameters** before inference. Here, you will run the new function:
 ```python
-deeplabcut.evaluate_multianimal_crossvalidate(config_path, Shuffles=[1], edgewisecondition=True, leastbpts=1, init_points=20, n_iter=50)
+scorername = deeplabcut.analyze_videos(config_path,['/fullpath/project/videos/testVideo.mp4'], videotype='.mp4')
+deeplabcut.create_video_with_all_detections(, ['/fullpath/project/videos/testVideo.mp4'], scorername)
 ```
-We highly suggest that you read the docstring for this function to edit inputs appropriately.
+Please note that you do **not** get the .h5/csv file you might be used to getting (this comes after tracking). You will get a `pickle` file that is used in `create_video_with_all_detections`. IF you have good clean out video, ending in `....full.mp4` (and the evaluation metrics look good, scoremaps look good, plotted evaluation images), then go forward!!! 
 
-The neural network will detect bodyparts as well as limbs (i.e., the skeleton connections). These will then be assembled to create individuals; for this step, the graph of connections that you provided (skeleton) will be used. Note that several parameters will strongly influence the assembly of individuals. You need to cross validate parameters before inference. Here, you will run the new function (below) that will smartly try to optimize your `inference_config.yaml` file. You can also manually edit this file afterwards (more below). But, this first part will validate the parameters and optimize *either* hits/misses, RMSE, and percent correct keypoints (tracking we deal with below). Which objective might depend on your case; check the docstrings to see
+### ------------------- TRACKING ACROSS FRAMES ------------------- 
+
+After pose estimation, now you perform tracking. There are several parameters we can automatically set based on your data, but some you will need to tune yourself, as it is dataset dependent. First, let's set the automatic ones.
+
+### Cross Validation of Inference parameters:
+
+The neural network will detect bodyparts as well as "limbs" (i.e., the skeleton connections). These will then be assembled to create individuals; for this step, the graph of connections that you provided (skeleton) will be used. Note that several parameters will strongly influence the assembly of individuals. You need to cross validate parameters before inference. Here, you will run the new function (below) that will smartly try to optimize your `inference_config.yaml` file. You can also manually edit this file afterwards (more below). But, this first part will validate the parameters and optimize *either* hits/misses, RMSE, and percent correct keypoints (tracking we deal with below). Which objective might depend on your case; check the docstrings to see
 what is the default. This step uses a [global optimization with gaussian processes](https://github.com/fmfn/BayesianOptimization); by default
 only the parameters defined in `bpounds` will be optimzed within the provided ranges. All other parameters will be taken from the `inference_cfg.yaml` file.
 
@@ -479,24 +481,15 @@ Saving optimal inference parameters...
 0     50000.0        95.0      1.0   36.681365     9.89759     11.645783         0.63494        1.761446   0.306809    0.288352   33.81332      8.675       13.025           0.45          1.625  0.286614   0.264459
 ```
 
-You can also plot the scoremaps, locref layers, and PAFs: DO THIS TO EVALUATE POSE ESTIMATION PERFORMANCE!
-```python
-deeplabcut.extract_save_all_maps(path_config_file, shuffle=shuffle, Indices=[0, 5])
-```
-- you can drop "Indices" to run this on all training/testing images (this is slow!)
-
+Here, please check the PCK fractions are high (lose to 1), the RMSE values are low. *The hits/misses false positive/#detections will be described in greater detail in the near future (they are related to another output head of the network that is not described at this time).*
 
 ### Video Analysis:
 - Please note that **novel videos DO NOT need to be added to the config.yaml file**. You can simply have a folder elsewhere on your computer and pass the video folder (then it will analyze all videos of the specified type (i.e. ``videotype='.mp4'``), or pass the path to the **folder** or exact video(s) you wish to analyze:
 
 ```python
-deeplabcut.analyze_videos(config_path,['/fullpath/project/videos/'], videotype='.mp4', save_as_csv = True)
+deeplabcut.analyze_videos(config_path,['/fullpath/project/videos/'], videotype='.mp4')
 ```
-**maDeepLabCut**: there is a new step that allows you to plot *all* detections first. This allows you to check the pose-estimation quality before tracking of individuals! We recommend doing this step when you are running quality checks on new videos, etc. Once you have optimized pose-estimation and tracking, this is not required. `scorername` can be gotten from `scorername = deeplabcut.analyze_videos (...)` or just looking at the name of the DLC scorer in the folder name, h5 file, etc.
-
-```python
-deeplabcut.create_video_with_all_detections(path_config_file, ['videofile_path'], scorername)
-```
+Reminder: you do **not** get the .h5/csv file you might be used to getting (this comes after tracking!).
 
 ### Assemble & Refine Tracklets in maDeepLabCut:
 
@@ -507,7 +500,7 @@ First, you need to convert detections to tracklets. This step has several tracke
 
 ```python
 deeplabcut.convert_detections2tracklets(path_config_file, ['videofile_path'], videotype='mp4',
-                                                    shuffle=1, trainingsetindex=0, track_method='')
+                                                    shuffle=1, trainingsetindex=0, track_method='box/skeleton')
 ```
 You should **cross-validate** the tracking parameters. ([Here is more information](functionDetails.md#cross-validation-of-inference-parameters-a-madeeplabcut-critical-point)). Namely, you can iteratively change the parameters, run `convert_detections2tracklets` then load them in the GUI (`refine_tracklets`). Note, that in the main Project Manager GUI there is a button for you to launch the inference file to seemlessly edit and rapidly test.
 
@@ -529,7 +522,7 @@ Firstly, Here are some tips for scaling up your video analysis, including loopin
 
 You can also filter the predicted bodyparts by:
 ```python
-deeplabcut.filterpredictions(config_path,['/fullpath/project/videos/reachingvideo1.avi'])
+deeplabcut.filterpredictions(config_path,['/fullpath/project/videos/reachingvideo1.avi'], track_method='box/skeleton')
 ```
 Note, this creates a file with the ending filtered.h5 that you can use for further analysis. This filtering step has many parameters, so please see the full docstring by typing: ``deeplabcut.filterpredictions?``
 
@@ -542,51 +535,15 @@ Note, this creates a file with the ending filtered.h5 that you can use for furth
 
 Plot the outputs:
 ```python
-deeplabcut.plot_trajectories(config_path,['/fullpath/project/videos/reachingvideo1.avi'],filtered = True)
+deeplabcut.plot_trajectories(config_path,['/fullpath/project/videos/reachingvideo1.avi'],filtered = True, track_method='box/skeleton')
 ```
 
 Create videos:
 ```python
-deeplabcut.create_labeled_video(config_path, [`/analysis/project/videos/reachingvideo1.avi','/fullpath/project/videos/reachingvideo2.avi'],filtered = True)
+deeplabcut.create_labeled_video(config_path, [`/analysis/project/videos/reachingvideo1.avi','/fullpath/project/videos/reachingvideo2.avi'],filtered = True, track_method='box/skeleton')
 ```
 
 (more details [here](functionDetails.md#i-video-analysis-and-plotting-results))
-
-### [optional] Active Learning --> Network Refinement - extract outlier frames from a video:
-
-```python
-deeplabcut.extract_outlier_frames(config_path,['full/videofile_path'])
-```
-
-(more details [here](functionDetails.md#j-refinement-extract-outlier-frames))
-
-### [optional] Refinement of the labels with our GUI:
-(refinement and augmentation of the training dataset)
-
-```python
-deeplabcut.refine_labels(config_path)
-```
-
-**mini-demo:** using the refinement GUI, a user can load the file then zoom, pan, and edit and/or remove points:
-
-<p align="center">
-<img src="http://www.people.fas.harvard.edu/~amathis/dlc/refinelabels.gif" width="90%">
-</p>
-
-When done editing the labels, merge:
-**PRO TIP:** if you added new data, even without refining, i.e. you added and labeled frames from new videos,  also use merge before creating a new training data set!
-
-```python
-deeplabcut.merge_datasets(config_path)
-```
-Now, create a new training set and re-train (same steps as above)! i.e.
-```python
-deeplabcut.create_training_dataset(config_path)
-deeplabcut.train_network(config_path)
-```
-
-(more details [here](functionDetails.md#k-refine-labels-augmentation-of-the-training-dataset))
-
 
 ### HELP:
 
