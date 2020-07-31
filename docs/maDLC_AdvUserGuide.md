@@ -1,10 +1,9 @@
 # DeepLabCut for multi-animal projects <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1596197885984-YGB3SLDN795G1MHRL3QO/ke17ZwdGBToddI8pDm48kDeESvmL2CKgnnReSL1AEHUUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcEylu32zKYtOLotM52LGWiEW_ujpOfeZDdgBF7lQwn1cawo3Xn5c5CO-uPn_aeMmA/workflow22.png?format=2500w" width="550" title="DLC-live GUI" alt="DLC LIVE! GUI" align="right" vspace = "50">
 
 
-The standard documents include all changes to the package to run DLC, but here is an extended version compiled for using DeepLabCut 2.2+ with multiple-animals. 
+The standard documents include all changes to the package to run standard and maDLC, but here is an extended version compiled for using DeepLabCut 2.2+ with multiple-animals. 
 
-Note, we STRONGLY encourage you to use the [Project Manager GUI](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/PROJECT_GUI.md) when you first start using multi-animal mode. Each tab is customized for multi-animal when you create or 
-load a multi-animal project. As long as you follow the recommendations within the GUI, you should be good to do! 
+Note, we STRONGLY encourage you to use the [Project Manager GUI](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/PROJECT_GUI.md) when you first start using multi-animal mode. Each tab is customized for multi-animal when you create or load a multi-animal project. As long as you follow the recommendations within the GUI, you should be good to go! 
 
 This document should serve as an **advanced user guide for maDLC,**
 and it is here to support the scientific advances presented in the preprint (Mathis et al, 2020).
