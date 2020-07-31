@@ -225,9 +225,21 @@ deeplabcut.check_labels(config_path)
 ```
 **maDeepLabCut**: you can also look at both bodypart labeling (standard) and individual IDs by also passing `visualizeindividuals=True`
 
-(more details [here](functionDetails.md#e-check-annotated-frames))
+Checking if the labels were created and stored correctly is beneficial for training, since labeling
+is one of the most critical parts for creating the training dataset. The DeepLabCut toolbox provides a function
+‘check_labels’ to do so. It is used as follows:
+```python
+deeplabcut.check_labels(config_path, visualizeindividuals=True/False)
+ ```   
+**maDeepLabCut:** you can check and plot colors per individual or per body part, just set the flag `visualizeindividuals=True/False`. Note, you can run this twice in both states to see both images.
 
-- Note, we also have a new, optional, functional to crop frames /labels for more efficient training. You can call this before you create a training dataset by:
+<p align="center">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1586203062876-D9ZL5Q7NZ464FUQN95NA/ke17ZwdGBToddI8pDm48kKmw982fUOZVIQXHUCR1F55Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpx7krGdD6VO1HGZR3BdeCbrijc_yIxzfnirMo-szZRSL5-VIQGAVcQr6HuuQP1evvE/img1068_individuals.png?format=750w" width="50%">
+</p>
+
+For each video directory in labeled-data this function creates a subdirectory with **labeled** as a suffix. Those directories contain the frames plotted with the annotated body parts. The user can double check if the body parts are labeled correctly. If they are not correct, the user can reload the frames (i.e. `deeplabcut.label_frames`), move them around, and click save again.
+
+**CROP+LABEL:** When you are done checking the label quality and adjusting if needed, please then use this new function to crop frames /labels for more efficient training. PLEASE call this before you create a training dataset by:
 ```python
 deeplabcut.cropimagesandlabels(path_config_file, userfeedback=False)
 ```
@@ -257,24 +269,102 @@ deeplabcut.create_training_model_comparison(config_path, num_shuffles=1, net_typ
 
 **maDeepLabCut**:
 
-For mutli-animal training we use batch processing. This means that we'd like the data to be similarly sized. You can of course have differing size of images you label (and we suggest cropping out useless pixels!). So, we have a new function that can pre-process your data to be compatible with batch training. Please run this function before you `create_multianmialtraining_dataset`:
+For mutli-animal training we use batch processing. This means that we'd like the data to be similarly sized. You can of course have differing size of images you label (and we suggest cropping out useless pixels!). So, we have a new function that can pre-process your data to be compatible with batch training. As noted above, please run this function before you `create_multianmialtraining_dataset`:
 
 ```python
 deeplabcut.cropimagesandlabels(path_config_file)
 ```
 Then run:
 ```python
-deeplabcut.create_multianimaltraining_dataset(path_config_file, allow_growth=True)
+deeplabcut.create_multianimaltraining_dataset(path_config_file)
 ```
-(more details [here](functionDetails.md#f-create-training-datasets))
+**maDeepLabCut CRITICAL POINT**- you must use this new function if you have a multi-animal project (and the skeleton in the `config.yaml` **must be defined** before you run this step, if not already done). You **should also run** `deeplabcut.cropimagesandlabels(config_path)` before creating a training set, as we use batch processing and many users have smaller GPUs that cannot accommodate larger images + larger batchsizes. This is also a type of data augmentation.
+
+- The set of arguments in the function will shuffle the combined labeled dataset and split it to create train and test
+sets. The subdirectory with suffix ``iteration#`` under the directory **training-datasets** stores the dataset and meta
+information, where the ``#`` is the value of ``iteration`` variable stored in the project’s configuration file (this number
+keeps track of how often the dataset was refined).
+
+- OPTIONAL: If the user wishes to benchmark the performance of the DeepLabCut, they can create multiple
+training datasets by specifying an integer value to the `num_shuffles`; see the docstring for more details.
+
+- Each iteration of the creation of a training dataset will create several files, which is used by the feature detectors,
+and a ``.pickle`` file that contains the meta information about the training dataset. This also creates two subdirectories
+within **dlc-models** called ``test`` and ``train``, and these each have a configuration file called pose_cfg.yaml.
+Specifically, the user can edit the **pose_cfg.yaml** within the **train** subdirectory before starting the training. These
+configuration files contain meta information with regard to the parameters of the feature detectors. Key parameters
+are listed in Box 2.
+
+- At this step, the ImageNet pre-trained networks (i.e. ResNet-50) weights will be downloaded. If they do not download (you will see this downloading in the terminal, then you may not have permission to do so (something we have seen with some Windows users - see the **[WIKI troubleshooting for more help!](https://github.com/AlexEMG/DeepLabCut/wiki/Troubleshooting-Tips)**).
+
+**CRITICAL POINT:** For **create_multianimaltraining_dataset** we already change this such that you will use imgaug, ADAM optimization, and batch training. We suggest these defaults at this time.
+
+**DATA AUGMENTATION:** At this stage you can also decide what type of augmentation to use. The default loaders work well for most all tasks (as shown on www.deeplabcut.org), but there are many options, more data augmentation, intermediate supervision, etc. Please look at the [**pose_cfg.yaml**](https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml) file for a full list of parameters **you might want to change before running this step.** There are several data loaders that can be used. For example, you can use the default loader (introduced and described in the Nature Protocols paper), [TensorPack](https://github.com/tensorpack/tensorpack) for data augmentation (currently this is easiest on Linux only), or [imgaug](https://imgaug.readthedocs.io/en/latest/). We recommend `imgaug`. You can set this by passing:``` deeplabcut.create_training_dataset(config_path, augmenter_type='imgaug')  ```
+
+The differences of the loaders are as follows:
+- `default`: our standard DLC 2.0 introduced in Nature Protocols variant (scaling, auto-crop augmentation) *will be renamed to `crop_scale` in a future release!*
+- `imgaug`: a lot of augmentation possibilities, efficient code for target map creation & batch sizes >1 supported. You can set the parameters such as the `batch_size` in the `pose_cfg.yaml` file for the model you are training.
+- `tensorpack`: a lot of augmentation possibilities, multi CPU support for fast processing, target maps are created less efficiently than in imgaug, does not allow batch size>1
+- `deterministic`: only useful for testing, freezes numpy seed; otherwise like default.
+
+Alternatively, you can set the loader (as well as other training parameters) in the **pose_cfg.yaml** file of the model that you want to train. Note, to get details on the options, look at the default file: [**pose_cfg.yaml**](https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml).
+
 
 ### Train The Network:
 
 ```python
-deeplabcut.train_network(config_path)
+deeplabcut.train_network(config_path, allow_growth=True)
 ```
 
-(more details [here](functionDetails.md#g-train-the-network))
+The set of arguments in the function starts training the network for the dataset created for one specific shuffle. Note that you can change the loader (imgaug/default/etc) as well as other training parameters in the **pose_cfg.yaml** file of the model that you want to train (before you start training).
+
+Example parameters that one can call:
+```python
+deeplabcut.train_network(config_path, shuffle=1, trainingsetindex=0, gputouse=None, max_snapshots_to_keep=5, autotune=False, displayiters=100, saveiters=15000, maxiters=30000, allow_growth=True)
+```
+
+By default, the pretrained networks are not in the DeepLabCut toolbox (as they are around 100MB each), but they get downloaded before you train. However, if not previously downloaded from the TensorFlow model weights, it will be downloaded and stored in a subdirectory *pre-trained* under the subdirectory *models* in *Pose_Estimation_Tensorflow*.
+At user specified iterations during training checkpoints are stored in the subdirectory *train* under the respective iteration directory.
+
+If the user wishes to restart the training at a specific checkpoint they can specify the full path of the checkpoint to
+the variable ``init_weights`` in the **pose_cfg.yaml** file under the *train* subdirectory (see Box 2).
+
+**CRITICAL POINT:** It is recommended to train the ResNets or MobileNets for thousands of iterations until the loss plateaus (typically around **200,000**) if you use batch size 1. If you want to batch train, we recommend using Adam, see more here: https://github.com/AlexEMG/DeepLabCut/wiki/Data-Augmentation.
+
+If you use **maDeepLabCut** the recommended training iterations is **50K-100K** (it automatically stops at 200K!), as we use Adam and batch-training.
+
+The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file allows the user to alter how often the loss is displayed and how often the weights are stored.
+
+**maDeepLabCut CRITICAL POINT:** For multi-animal projects we are using not only different and new output layers, but also new data augmentation, optimization, learning rates, and batch training defaults. Thus, please use a lower ``save_iters`` and ``maxiters``. I.e. we suggest saving every 10K-15K iterations, and only training until 50K-100K iterations. We recommend you look closely at the loss to not overfit on your data. The bonus, training time is much less!!!
+
+**Parameters:**
+```python
+config : string
+    Full path of the config.yaml file as a string.
+
+shuffle: int, optional
+    Integer value specifying the shuffle index to select for training. Default is set to 1
+
+trainingsetindex: int, optional
+    Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+
+gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU, put None.
+See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+
+max_snapshots_to_keep: int, or None. Sets how many snapshots are kept, i.e. states of the trained network. For every saving interation a snapshot is stored, however, only the last max_snapshots_to_keep many are kept! If you change this to None, then all are kept.
+See: https://github.com/AlexEMG/DeepLabCut/issues/8#issuecomment-387404835
+
+autotune: property of TensorFlow, somehow faster if 'false' (as Eldar found out, see https://github.com/tensorflow/tensorflow/issues/13317). Default: False
+
+displayiters: this variable is actually set in pose_config.yaml. However, you can overwrite it with this hack. Don't use this regularly, just if you are too lazy to dig out
+the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
+
+saveiters: this variable is actually set in pose_config.yaml. However, you can overwrite it with this hack. Don't use this regularly, just if you are too lazy to dig out
+the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
+
+maxiters: This sets how many iterations to train. This variable is set in pose_config.yaml. However, you can overwrite it with this. If None, the value from there is used, otherwise it is overwritten! Default: None
+```    
+
 
 ### Evaluate the Trained Network:
 
