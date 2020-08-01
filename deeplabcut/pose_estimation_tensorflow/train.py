@@ -162,7 +162,7 @@ def train(
         or cfg.dataset_type == "deterministic"
     ):
         print(
-            "Switching batchsize to 1, as default/tensorpack/deterministic loaders do not support batches >1. Use imgaug loader."
+            "Switching batchsize to 1, as tensorpack/scalecrop/deterministic loaders do not support batches >1. Use imgaug/default loader."
         )
         cfg["batch_size"] = 1  # in case this was edited for analysis.-
 

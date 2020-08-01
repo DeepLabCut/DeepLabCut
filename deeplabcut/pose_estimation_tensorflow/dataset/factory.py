@@ -17,7 +17,7 @@ Updated to allow more data set loaders.
 def create(cfg):
     dataset_type = cfg.dataset_type
     if dataset_type == "scalecrop":
-        print("Starting with standard pose-dataset loader.")
+        print("Starting with scalecrop pose-dataset loader.")
         from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset_scalecrop import (
             PoseDataset,
         )
@@ -40,7 +40,7 @@ def create(cfg):
         data = PoseDataset(cfg)
 
     elif dataset_type == "imgaug" or dataset_type == "default":
-        print("Starting with imgaug pose-dataset loader.")
+        print("Starting with imgaug pose-dataset loader (=default).")
         from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset_imgaug import (
             PoseDataset,
         )

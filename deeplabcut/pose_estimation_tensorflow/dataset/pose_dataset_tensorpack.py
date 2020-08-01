@@ -155,17 +155,25 @@ class Pose(RNGDataFlow):
 
 class PoseDataset:
     def __init__(self, cfg):
-        # Initializing variables if they don't exist...
-
+        # First, initializing variables (if they don't exist)
         # what is the fraction of training samples with scaling augmentation?
         cfg["scaleratio"] = cfg.get("scaleratio", 0.6)
 
         # Randomly rotates an image with respect to the image center within the
         # range [-rotate_max_deg_abs; rotate_max_deg_abs] to augment training data
-        cfg["rotate_max_deg_abs"] = cfg.get("rotate_max_deg_abs", 45)
-        cfg["rotateratio"] = cfg.get(
-            "rotateratio", 0.4
-        )  # what is the fraction of training samples with rotation augmentation?
+
+        if cfg.get("rotation", True):  # i.e. pm 25 degrees
+            if cfg.get("rotation", False) == int:
+                cfg["rotate_max_deg_abs"] = cfg.get("rotation", 25)
+            else:
+                cfg["rotate_max_deg_abs"] = 25
+
+            cfg["rotateratio"] = cfg.get(
+                "rotateratio", 0.4
+            )  # what is the fraction of training samples with rotation augmentation?
+        else:
+            cfg["rotateratio"] = 0.0
+            cfg["rotate_max_deg_abs"] = 0
 
         # Randomly adds brightness within the range [-brightness_dif, brightness_dif]
         # to augment training data
@@ -216,7 +224,7 @@ class PoseDataset:
         cfg["num_prefetch"] = cfg.get("num_prefetch", 50)
 
         # Auto cropping is new (was not in Nature Neuroscience 2018 paper, but introduced in Nath et al. Nat. Protocols 2019)
-        #and boosts performance by 2X, particularly on challenging datasets, like the cheetah in Nath et al.
+        # and boosts performance by 2X, particularly on challenging datasets, like the cheetah in Nath et al.
         # Parameters for augmentation with regard to cropping:
 
         # what is the minimal frames size for cropping plus/minus ie.. [-100,100]^2 for an arb. joint
@@ -226,7 +234,7 @@ class PoseDataset:
         cfg["topheight"] = cfg.get("topheight", 400)
         cfg["bottomheight"] = cfg.get("bottomheight", 400)
 
-        cfg["cropratio"] = cfg.get("cropratio", .4)
+        cfg["cropratio"] = cfg.get("cropratio", 0.4)
 
         self.cfg = cfg
         self.scaling = RandomResize(

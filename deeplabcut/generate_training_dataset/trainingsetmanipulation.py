@@ -533,13 +533,21 @@ def ParseYaml(configfile):
     return docs
 
 
-def MakeTrain_pose_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
+def MakeTrain_pose_yaml(
+    itemstochange, saveasconfigfile, defaultconfigfile, items2drop={}
+):
     docs = ParseYaml(defaultconfigfile)
+    for key in items2drop.keys():
+        print(key, "dropping?")
+        if key in docs[0].keys():
+            docs[0].pop(key)
+
     for key in itemstochange.keys():
         docs[0][key] = itemstochange[key]
 
     with open(saveasconfigfile, "w") as f:
         yaml.dump(docs[0], f)
+
     return docs[0]
 
 
@@ -1072,9 +1080,20 @@ def create_training_dataset(
                     "net_type": net_type,
                     "dataset_type": augmenter_type,
                 }
+
+                items2drop = {}
+                if augmenter_type == "scalecrop":
+                    # these values are dropped as scalecrop
+                    # doesn't have rotation implemented
+                    items2drop = {
+                        "rotation": 0,
+                        "rotratio": 0.0,
+                    }
+
                 trainingdata = MakeTrain_pose_yaml(
-                    items2change, path_train_config, defaultconfigfile
+                    items2change, path_train_config, defaultconfigfile, items2drop
                 )
+
                 keys2save = [
                     "dataset",
                     "num_joints",

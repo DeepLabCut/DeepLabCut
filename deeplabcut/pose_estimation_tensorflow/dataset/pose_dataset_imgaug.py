@@ -42,12 +42,40 @@ class PoseDataset:
         self.num_images = len(self.data)
         self.max_input_sizesquare = cfg.get("max_input_size", 1500) ** 2
         self.min_input_sizesquare = cfg.get("min_input_size", 64) ** 2
+
         self.locref_scale = 1.0 / cfg.locref_stdev
         self.stride = cfg.stride
         self.half_stride = cfg.stride / 2
         self.scale = cfg.global_scale
+
+        # parameter initialization for augmentation pipeline:
         self.scale_jitter_lo = cfg.get("scale_jitter_lo", 0.75)
         self.scale_jitter_up = cfg.get("scale_jitter_up", 1.25)
+
+        cfg.mirror = cfg.get("mirror", False)
+        cfg.rotation = cfg.get("rotation", True)
+        if cfg.get("rotation", True):  # i.e. pm 10 degrees
+            opt = cfg.get("rotation", False)
+            if type(opt) == int:
+                cfg.rotation = cfg.get("rotation", 25)
+            else:
+                cfg.rotation = 25
+            cfg.rotratio = cfg.get(
+                "rotateratio", 0.4
+            )  # what is the fraction of training samples with rotation augmentation?
+        else:
+            cfg.rotratio = 0.0
+            cfg.rotation = 0
+
+        cfg.covering = cfg.get("covering", True)
+        cfg.elastic_transform = cfg.get("elastic_transform", True)
+
+        cfg.motion_blur = cfg.get("motion_blur", True)
+        if cfg.motion_blur:
+            cfg.motion_blur_params = dict(
+                cfg.get("motion_blur_params", {"k": 7, "angle": (-90, 90)})
+            )
+
         print("Batch Size is %d" % self.batch_size)
 
     def load_dataset(self):
@@ -112,33 +140,34 @@ class PoseDataset:
     def build_augmentation_pipeline(self, height=None, width=None, apply_prob=0.5):
         sometimes = lambda aug: iaa.Sometimes(apply_prob, aug)
         pipeline = iaa.Sequential(random_order=False)
+
         cfg = self.cfg
-        if cfg.get("fliplr", False):
-            opt = cfg.get("fliplr", False)
+        if cfg.mirror:
+            opt = cfg.mirror  # fliplr
             if type(opt) == int:
                 pipeline.add(sometimes(iaa.Fliplr(opt)))
             else:
                 pipeline.add(sometimes(iaa.Fliplr(0.5)))
-        if cfg.get("rotation", True): #i.e. pm 10 degrees
-            opt = cfg.get("rotation", False)
-            if type(opt) == int:
-                pipeline.add(sometimes(iaa.Affine(rotate=(-opt, opt))))
-            else:
-                pipeline.add(sometimes(iaa.Affine(rotate=(-10, 10))))
-        if cfg.get("motion_blur", True):
-            opts = cfg.get("motion_blur", False)
-            if type(opts) == list:
-                opts = dict(opts)
-                pipeline.add(sometimes(iaa.MotionBlur(**opts)))
-            else:
-                pipeline.add(sometimes(iaa.MotionBlur(k=7, angle=(-90, 90))))
 
-        if cfg.get("covering", True):
+        if cfg.rotation > 0:
+            pipeline.add(
+                iaa.Sometimes(
+                    cfg.rotratio, iaa.Affine(rotate=(-cfg.rotation, cfg.rotation))
+                )
+            )
+
+        if cfg.motion_blur:
+            opts = cfg.motion_blur_params
+            pipeline.add(sometimes(iaa.MotionBlur(**opts)))
+
+        if cfg.covering:
             pipeline.add(
                 sometimes(iaa.CoarseDropout(0.02, size_percent=0.3, per_channel=0.5))
             )
-        if cfg.get("elastic_transform", True):
+
+        if cfg.elastic_transform:
             pipeline.add(sometimes(iaa.ElasticTransformation(sigma=5)))
+
         if cfg.get("gaussian_noise", False):
             opt = cfg.get("gaussian_noise", False)
             if type(opt) == int or type(opt) == float:

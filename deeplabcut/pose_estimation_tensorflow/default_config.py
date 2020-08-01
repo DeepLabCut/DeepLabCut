@@ -19,6 +19,7 @@ cfg.stride = 8.0
 cfg.weigh_part_predictions = False
 cfg.weigh_negatives = False
 cfg.fg_fraction = 0.25
+# imagenet mean for resnet pretraining:
 cfg.mean_pixel = [123.68, 116.779, 103.939]
 cfg.shuffle = True
 cfg.snapshot_prefix = "./snapshot"
@@ -33,19 +34,19 @@ cfg.intermediate_supervision = False
 cfg.intermediate_supervision_layer = 12
 cfg.regularize = False
 cfg.weight_decay = 0.0001
-cfg.mirror = False
 cfg.crop_pad = 0
 cfg.scoremap_dir = "test"
 
 cfg.batch_size = 1
 
 # types of datasets, see factory: deeplabcut/pose_estimation_tensorflow/dataset/factory.py
-cfg.dataset_type = "default"  # >> imagaug as of 2.2
+cfg.dataset_type = "imgaug"  # >> imagaug default as of 2.2
 # you can also set this to deterministic, see https://github.com/AlexEMG/DeepLabCut/pull/324
 cfg.deterministic = False
+cfg.mirror = False
 
-# for DLC 2.2.
-cfg.weigh_only_present_joints = False
+# for DLC 2.2. (here all set False to not use PAFs/pairwise fields)
 cfg.pairwise_huber_loss = True
+cfg.weigh_only_present_joints = False
 cfg.partaffinityfield_predict = False
 cfg.pairwise_predict = False
