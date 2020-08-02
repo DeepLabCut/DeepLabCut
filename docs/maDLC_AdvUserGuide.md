@@ -1,4 +1,4 @@
-# DeepLabCut for multi-animal projects <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1596197885984-YGB3SLDN795G1MHRL3QO/ke17ZwdGBToddI8pDm48kDeESvmL2CKgnnReSL1AEHUUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcEylu32zKYtOLotM52LGWiEW_ujpOfeZDdgBF7lQwn1cawo3Xn5c5CO-uPn_aeMmA/workflow22.png?format=2500w" width="550" title="DLC-live GUI" alt="DLC LIVE! GUI" align="right" vspace = "50">
+# DeepLabCut for multi-animal projects <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1596368390361-BT2ON376OPWM7Y3BQ35M/ke17ZwdGBToddI8pDm48kB4fL2ovSQh5dRlH2jCMtpoUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcSV94BuD0XUinmig_1P1RJNYVU597j3jgswapL4c_w92BJE9r6UgUperYhWQ2ubQ_/workflow.png?format=2500w" width="550" title="maDLC" alt="maDLC" align="right" vspace = "50">
 
 
 The standard documents include all changes to the package to run standard and maDLC, but here is an extended version compiled for using DeepLabCut 2.2+ with multiple-animals. 
@@ -10,7 +10,13 @@ and it is here to support the scientific advances presented in the preprint (Mat
 
 # How to think about using maDLC:
 
-Firstly you should think of maDLC being two parts. The first is pose estimation as is standard in DLC. You should label, train, and evaluate the pose estimation performance first. If and when that performance is high quality, then you should go forward to tracking. There is a natural break point for this, as you will see below. 
+Firstly you should think of maDLC being **four** parts. 
+- (1) curate data that allows you to track the objects/animals of interest. 
+- (2) Create a high quality pose estimation model.
+- (3) IF you need to track in time (i.e., propogate identity, you need to perform tracking. 
+- (4) Any and all post-processing you wish to so with the output data, either within DLC or outside of it. 
+
+Thus, you should always label, train, and evaluate the pose estimation performance first. If and when that performance is high quality, then you should go forward to tracking. There is a natural break point for this, as you will see below. 
 
 # Install and test: 
 
