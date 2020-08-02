@@ -39,8 +39,8 @@ video = [
 
 dfolder = None
 net_type = "resnet_50"  #'mobilenet_v2_0.35' #'resnet_50'
-augmenter_type = "default"
-augmenter_type2 = "imgaug"
+augmenter_type = "default"  # = imgaug!!
+augmenter_type2 = "scalecrop"
 
 if platform.system() == "Darwin" or platform.system() == "Windows":
     print("On Windows/OSX tensorpack is not tested by default.")
@@ -232,7 +232,7 @@ DF.to_hdf(
 )
 
 print("MERGING")
-deeplabcut.merge_datasets(path_config_file)
+deeplabcut.merge_datasets(path_config_file)  # iteration + 1
 
 print("CREATING TRAININGSET")
 deeplabcut.create_training_dataset(
