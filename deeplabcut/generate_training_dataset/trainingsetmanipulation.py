@@ -538,7 +538,7 @@ def MakeTrain_pose_yaml(
 ):
     docs = ParseYaml(defaultconfigfile)
     for key in items2drop.keys():
-        print(key, "dropping?")
+        #print(key, "dropping?")
         if key in docs[0].keys():
             docs[0].pop(key)
 
