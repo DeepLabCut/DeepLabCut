@@ -16,11 +16,11 @@ Firstly, you should think of maDLC being **four** parts.
 - (3) IF you need to track in time (i.e., propagate identity), you need to perform tracking. 
 - (4) Any and all post-processing you wish to do with the output data, either within DLC or outside of it. 
 
-Thus, you should always label, train, and evaluate the pose estimation performance first. If and when that performance is high quality, then you should go forward to tracking. There is a natural break point for this, as you will see below. 
+Thus, you should always label, train, and evaluate the pose estimation performance first. If and when that performance is high, then you should go advance to the tracking step (and video analysis). There is a natural break point for this, as you will see below. 
 
 # Getting help with maDLC:
 
-- If you have a detailed question about how to use the code, or you hit errors that are not "bugs" but you want code assistance, please post here: [![Image.sc forum](https://img.shields.io/badge/dynamic/json.svg?label=forum&amp;url=https%3A%2F%2Fforum.image.sc%2Ftags%2Fdeeplabcut.json&amp;query=%24.topic_list.tags.0.topic_count&amp;colorB=brightgreen&amp;&amp;suffix=%20topics&amp;logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC)](https://forum.image.sc/tags/deeplabcut)
+- If you have a detailed question about how to use the code, or you hit errors that are not "bugs" but you want code assistance, please post on the [![Image.sc forum](https://img.shields.io/badge/dynamic/json.svg?label=forum&amp;url=https%3A%2F%2Fforum.image.sc%2Ftags%2Fdeeplabcut.json&amp;query=%24.topic_list.tags.0.topic_count&amp;colorB=brightgreen&amp;&amp;suffix=%20topics&amp;logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC)](https://forum.image.sc/tags/deeplabcut)
 
 - If you have a quick, short question that fits a "chat" format:
 [![Gitter](https://badges.gitter.im/DeepLabCut/community.svg)](https://gitter.im/DeepLabCut/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
@@ -30,9 +30,9 @@ Thus, you should always label, train, and evaluate the pose estimation performan
 
 - If you have a code bug report, please create an issue and show the minimal code to reproduce the error: https://github.com/DeepLabCut/DeepLabCut/issues
 
-**Please note:** what we cannot do is provided support or help designing your experiments and data analysis. The number of requests on our time for this is too great to sustain. We hope and believe we have given enough tools and resources to get started and to accelerate your research program, and this is backed by the >400 citations using DLC, 2 clinical trials by others, and countless applications. Thus, we believe this code works, is accessible, and with limited programming knowledge can be used. Please read our [Missions & Values statement](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/MISSION_AND_VALUES.md) to learn move about what we DO hope to provide you. Moreover, if you are looking for resources to increase your performance, we have an open source, free course: http://DLCcourse.deeplabcut.org.
+- if you are looking for resources to increase your understanding of the software and general guidelines, we have an open source, free course: http://DLCcourse.deeplabcut.org. 
 
-
+**Please note:** what we cannot do is provided support or help designing your experiments and data analysis. The number of requests for this is too great to sustain. We are happy to anser such questions in the forum as a community, in a scalable way. We hope and believe we have given enough tools and resources to get started and to accelerate your research program, and this is backed by the >400 citations using DLC, 2 clinical trials by others, and countless applications. Thus, we believe this code works, is accessible, and with limited programming knowledge can be used. Please read our [Missions & Values statement](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/MISSION_AND_VALUES.md) to learn more about what we DO hope to provide you. 
 
 # Install and test: 
 
@@ -41,7 +41,6 @@ https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/testscript_multian
 ```python
 python testscript_multianimal.py
 ```
-
 
 # Get started in the terminal:
 
@@ -62,15 +61,16 @@ import deeplabcut
 deeplabcut.create_new_project('ProjectName','YourName', ['/usr/FullPath/OfVideo1.avi', '/usr/FullPath/OfVideo2.avi', '/usr/FullPath/OfVideo1.avi'],
               copy_videos=True, multianimal=True)
 ```
-Tip: if you want to place the project folder somewhere please pass : ``working_directory = 'FullPathOftheworkingDirectory'``
 
-- Note, if you are a Ubuntu user the path should look like: ``['/home/username/yourFolder/video1.mp4']``; if you are a Windows user, it should look like: ``[r'C:\username\yourFolder\video1.mp4']``
+Tip: if you want to place the project folder somewhere pass : ``working_directory = 'FullPathOftheworkingDirectory'``
+
+- Note, if you are a linux/macos user the path should look like: ``['/home/username/yourFolder/video1.mp4']``; if you are a Windows user, it should look like: ``[r'C:\username\yourFolder\video1.mp4']``
 - Note, you can also put ``config_path = `` in front of the above line to create the path to the config.yaml that is used in the next step, i.e. ``config_path=deeplabcut.create_project(...)``)
     - If you do not, we recommend setting a variable so this can be easily used! Once you run this step, the config_path is printed for you once you run this line, so set a variable for ease of use, i.e. something like:
 ```python
 config_path = '/thefulloutputpath/config.yaml'
 ```
- - just be mindful of the formatting for Windows vs. Linux, see below.
+ - just be mindful of the formatting for Windows vs. Unix, see below.
 
 This set of arguments will create a project directory with the name **Name of the project+name of the experimenter+date of creation of the project** in the **Working directory** and creates the symbolic links to videos in the **videos** directory. The project directory will have subdirectories: **dlc-models**, **labeled-data**, **training-datasets**, and **videos**.  All the outputs generated during the course of a project will be stored in one of these subdirectories, thus allowing each project to be curated in separation from other projects. The purpose of the subdirectories is as follows:
 
@@ -80,7 +80,7 @@ This set of arguments will create a project directory with the name **Name of th
 
 **training-datasets:**  This directory will contain the training dataset used to train the network and metadata, which contains information about how the training dataset was created.  
 
-**videos:** Directory of video links or videos. When **copy\_videos** is set to ``False``, this directory contains symbolic links to the videos. If it is set to ``True`` then the videos will be copied to this directory. The default is ``False``. Additionally, if the user wants to add new videos to the project at any stage, the function **add\_new\_videos** can be used. This will update the list of videos in the project's configuration file.
+**videos:** Directory of video links or videos. When **copy\_videos** is set to ``False``, this directory contains symbolic links to the videos. If it is set to ``True`` then the videos will be copied to this directory. The default is ``False``. Additionally, if the user wants to add new videos to the project at any stage, the function **add\_new\_videos** can be used. This will update the list of videos in the project's configuration file. Note: you neither need to use this folder for videos, nor is it required for analyzing videos (they can be anywhere).
 
 ```python
 deeplabcut.add_new_videos('Full path of the project configuration file*', ['full path of video 4', 'full path of video 5'], copy_videos=True/False)
@@ -107,7 +107,7 @@ deeplabcut.auxiliaryfunctions.edit_config(config_path, edits)
 
 Please DO NOT have spaces in the names of bodyparts, uniquebodyparts, individuals, etc.
 
-**maDeepLabCut:** You need to edit the config.yaml file to **modify the following items** which specify the animal ID, body parts, and any unique labels. You should also define an over-connected 'skeleton' at this time in the config.yaml file. For example, for a "simple" 4 body part animal see the example skeleton. Note, we also highly recommend that you use **more bodypoints** that you might otherwise have, i.e., labeling along the spine/tail for 8 bodypoints would be better than four.
+**maDeepLabCut:** You need to edit the config.yaml file to **modify the following items** which specify the animal ID, body parts, and any unique labels. You should also define an over-connected 'skeleton' at this time in the config.yaml file. For example, for a "simple" 4 body part animal see the example skeleton. Note, we also highly recommend that you use **more bodypoints** that you might be interested in for your experiment, i.e., labeling along the spine/tail for 8 bodypoints would be better than four. This will help the performance.
 
 Modifying the `config.yaml` is crucial, especially connecting the skeleton:
 
@@ -281,7 +281,7 @@ deeplabcut.SkeletonBuilder(config_path)
 
 ### Create Training Dataset:
 
-For mutli-animal training we use batch processing. This means that we'd like the data to be similarly sized. You can of course have differing size of images you label (but we suggest cropping out useless pixels!). So, we have a new function that can pre-process your data to be compatible with batch training. As noted above, please run this function before you `create_multianmialtraining_dataset`. 
+Ideally for training DNNs, one uses large batch sizes. Thus, for mutli-animal training batch processing is preferred. This means that we'd like the images to be similarly sized. You can of course have differing size of images you label (but we suggest cropping out useless pixels!). So, we have a new function that can pre-process your data to be compatible with batch training. As noted above, please run this function before you `create_multianmialtraining_dataset`. This function assures that each crop is "small", by default 400 x 400, which allows larger batchsizes and that there are multiple crops so that different parts of larger images are covered. 
 
 **maDeepLabCut CRITICAL POINT**- you must use this new function if you have a multi-animal project (and the skeleton in the `config.yaml` **must be defined** before you run this step, if not already done). You **should also run** `deeplabcut.cropimagesandlabels(config_path)` before creating a training set, as we use batch processing and many users have smaller GPUs that cannot accommodate larger images + larger batchsizes. This is also a type of data augmentation.
 
@@ -346,7 +346,7 @@ the variable ``init_weights`` in the **pose_cfg.yaml** file under the *train* su
 
 **CRITICAL POINT:** It is recommended to train the ResNets or MobileNets for thousands of iterations until the loss plateaus (typically around **200,000**) if you use batch size 1. If you want to batch train, we recommend using Adam, see more here: https://github.com/AlexEMG/DeepLabCut/wiki/Data-Augmentation.
 
-If you use **maDeepLabCut** the recommended training iterations is **50K-100K** (it automatically stops at 200K!), as we use Adam and batch-training.
+If you use **maDeepLabCut** the recommended training iterations is **20K-50K** (it automatically stops at 200K!), as we use Adam and batchsize 8; if you have to reduce the batchsize for memory reasons then the number of iterations need to increase. 
 
 The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file allows the user to alter how often the loss is displayed and how often the weights are stored.
 
