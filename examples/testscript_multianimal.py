@@ -122,7 +122,7 @@ new_video_path = deeplabcut.ShortenVideo(
 )
 
 print("Analyzing video...")
-deeplabcut.analyze_videos(config_path, [new_video_path], "mov", robust_nframes=True)
+deeplabcut.analyze_videos(config_path, [new_video_path], "mp4", robust_nframes=True)
 print("Video analyzed.")
 
 print("Create video with all detections...")
@@ -135,19 +135,19 @@ print("Convert detections...")
 deeplabcut.convert_detections2tracklets(
     config_path,
     [new_video_path],
-    "mov",
+    "mp4",
     track_method="box",
     edgewisecondition=edgewisecondition,
 )
 deeplabcut.convert_detections2tracklets(
-    config_path, [new_video_path], "mov", track_method="skeleton"
+    config_path, [new_video_path], "mp4", track_method="skeleton"
 )
 
 print("Extracting maps...")
 deeplabcut.extract_save_all_maps(config_path, Indices=[0, 1, 2])
 
 print("Analyzing video...")
-deeplabcut.analyze_videos(config_path, [new_video_path], "mov", save_as_csv=True)
+deeplabcut.analyze_videos(config_path, [new_video_path], "mp4", save_as_csv=True)
 print("Video analyzed.")
 
 print("Create video with all detections...")
@@ -159,10 +159,10 @@ print("Video created.")
 
 print("Convert detections to tracklets...")
 deeplabcut.convert_detections2tracklets(
-    config_path, [new_video_path], "mov", track_method="box"
+    config_path, [new_video_path], "mp4", track_method="box"
 )
 deeplabcut.convert_detections2tracklets(
-    config_path, [new_video_path], "mov", track_method="skeleton"
+    config_path, [new_video_path], "mp4", track_method="skeleton"
 )
 print("Tracklets created...")
 
@@ -200,9 +200,9 @@ except IOError:
     )
 
 print("Plotting trajectories...")
-deeplabcut.plot_trajectories(config_path, [new_video_path], "mov", track_method="box")
+deeplabcut.plot_trajectories(config_path, [new_video_path], "mp4", track_method="box")
 deeplabcut.plot_trajectories(
-    config_path, [new_video_path], "mov", track_method="skeleton"
+    config_path, [new_video_path], "mp4", track_method="skeleton"
 )
 print("Trajectory plotted.")
 
@@ -210,7 +210,7 @@ print("Creating labeled video...")
 deeplabcut.create_labeled_video(
     config_path,
     [new_video_path],
-    "mov",
+    "mp4",
     save_frames=False,
     color_by="individual",
     track_method="box",
@@ -218,7 +218,7 @@ deeplabcut.create_labeled_video(
 deeplabcut.create_labeled_video(
     config_path,
     [new_video_path],
-    "mov",
+    "mp4",
     save_frames=False,
     color_by="bodypart",
     track_method="skeleton",
@@ -226,12 +226,12 @@ deeplabcut.create_labeled_video(
 print("Labeled video created.")
 
 print("Filtering predictions...")
-deeplabcut.filterpredictions(config_path, [new_video_path], "mov", track_method="box")
+deeplabcut.filterpredictions(config_path, [new_video_path], "mp4", track_method="box")
 print("Predictions filtered.")
 
 print("Extracting outlier frames...")
 deeplabcut.extract_outlier_frames(
-    config_path, [new_video_path], "mov", automatic=True, track_method="box"
+    config_path, [new_video_path], "mp4", automatic=True, track_method="box"
 )
 print("Outlier frames extracted.")
 
