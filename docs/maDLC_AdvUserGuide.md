@@ -13,8 +13,8 @@ and it is here to support the scientific advances presented in the preprint (Mat
 Firstly, you should think of maDLC being **four** parts. 
 - (1) curate data that allows you to track the objects/animals of interest. 
 - (2) Create a high-quality pose estimation model.
-- (3) IF you need to track in time (i.e., propagate identity, you need to perform tracking. 
-- (4) Any and all post-processing you wish to so with the output data, either within DLC or outside of it. 
+- (3) IF you need to track in time (i.e., propagate identity), you need to perform tracking. 
+- (4) Any and all post-processing you wish to do with the output data, either within DLC or outside of it. 
 
 Thus, you should always label, train, and evaluate the pose estimation performance first. If and when that performance is high quality, then you should go forward to tracking. There is a natural break point for this, as you will see below. 
 
@@ -30,7 +30,7 @@ Thus, you should always label, train, and evaluate the pose estimation performan
 
 - If you have a code bug report, please create an issue and show the minimal code to reproduce the error: https://github.com/DeepLabCut/DeepLabCut/issues
 
-**Please note:** what we cannot do is provided support or help designing your experiments and data analysis. The number of requests on our time for this too great to sustain. We hope and believe we have given enough tools and resources to get started and to accelerate your research program, and this is backed by the >400 citations using DLC, 2 clinical trials by others, and countless applications. Thus, we believe this code works, is accessible, and with limited programming knowledge can be used. Please read our [Missions & Values statement](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/MISSION_AND_VALUES.md) to learn move about what we DO hope to provide you. Moreover, ff you are looking for resources to increase your performance, we have an open source, free course: http://DLCcourse.deeplabcut.org.
+**Please note:** what we cannot do is provided support or help designing your experiments and data analysis. The number of requests on our time for this is too great to sustain. We hope and believe we have given enough tools and resources to get started and to accelerate your research program, and this is backed by the >400 citations using DLC, 2 clinical trials by others, and countless applications. Thus, we believe this code works, is accessible, and with limited programming knowledge can be used. Please read our [Missions & Values statement](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/MISSION_AND_VALUES.md) to learn move about what we DO hope to provide you. Moreover, if you are looking for resources to increase your performance, we have an open source, free course: http://DLCcourse.deeplabcut.org.
 
 
 
@@ -66,7 +66,7 @@ Tip: if you want to place the project folder somewhere please pass : ``working_d
 
 - Note, if you are a Ubuntu user the path should look like: ``['/home/username/yourFolder/video1.mp4']``; if you are a Windows user, it should look like: ``[r'C:\username\yourFolder\video1.mp4']``
 - Note, you can also put ``config_path = `` in front of the above line to create the path to the config.yaml that is used in the next step, i.e. ``config_path=deeplabcut.create_project(...)``)
-    - If you do not, we recommend setting a variable so this can be easily used! Once you run this step, the conig_path is printed for you once you run this line, so set a variable for ease of use, i.e. something like:
+    - If you do not, we recommend setting a variable so this can be easily used! Once you run this step, the config_path is printed for you once you run this line, so set a variable for ease of use, i.e. something like:
 ```python
 config_path = '/thefulloutputpath/config.yaml'
 ```
@@ -95,6 +95,15 @@ deeplabcut.add_new_videos('Full path of the project configuration file*', ['full
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588892210304-EW7WD46PYAU43WWZS4QZ/ke17ZwdGBToddI8pDm48kAXtGtTuS2U1SVcl-tYMBOAUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8PaoYXhp6HxIwZIk7-Mi3Tsic-L2IOPH3Dwrhl-Ne3Z2YjE9w60pqfeJxDohDRZk1jXSVCSSfcEA7WmgMAGpjTehHAH51QaxKq4KdVMVBxpG/1nktc1kdgq2.jpg?format=1000w" width="175" title="colormaps" alt="DLC Utils" align="right" vspace = "50">
 
 Next, open the **config.yaml** file, which was created during  **create\_new\_project**. You can edit this file in any text editor.  Familiarize yourself with the meaning of the parameters (Box 1). You can edit various parameters, in particular you **must add the list of *bodyparts* (or points of interest)** that you want to track. You can also set the *colormap* here that is used for all downstream steps (can also be edited at anytime), like labeling GUIs, videos, etc. Here any [matplotlib colormaps](https://matplotlib.org/tutorials/colors/colormaps.html) will do!
+
+An easy way to programmatically edit the config file at any time is to use the function **edit\_config**, which takes the full path of the config file to edit and a dictionary of key–value pairs to overwrite.
+
+````python
+edits = {'colormap': 'summer',
+         'individuals': ['mickey', 'minnie'],
+         'skeleton': [['snout', 'tailbase'], ['snout', 'rightear']]}
+deeplabcut.auxiliaryfunctions.edit_config(config_path, edits)
+````
 
 Please DO NOT have spaces in the names of bodyparts, uniquebodyparts, individuals, etc.
 
@@ -526,6 +535,8 @@ deeplabcut.convert_detections2tracklets(path_config_file, ['videofile_path'], vi
                                                     shuffle=1, trainingsetindex=0, track_method='box/skeleton')
 ```
 You should **cross-validate** the tracking parameters. ([Here is more information](functionDetails.md#cross-validation-of-inference-parameters-a-madeeplabcut-critical-point)). Namely, you can iteratively change the parameters, run `convert_detections2tracklets` then load them in the GUI (`refine_tracklets`). Note, that in the main Project Manager GUI there is a button for you to launch the inference file to seemlessly edit and rapidly test.
+
+Animal assembly and tracking quality can be assessed via `deeplabcut.utils.make_labeled_video.create_video_from_pickled_tracks`. This function provides an additional diagnostic tool before moving on to refining tracklets.
 
 Secondly, you need to **refine the tracklets**. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc!
 
