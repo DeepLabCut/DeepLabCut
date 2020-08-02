@@ -1,4 +1,4 @@
-# How To Install DeepLabCut:
+# How To Install DeepLabCut: <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1596384349316-DO2TSCP8SNJPNH0Q7M17/ke17ZwdGBToddI8pDm48kAUs_xhejcPdACkit3Uqn_MUqsxRUqqbr1mOJYKfIPR7XwrA8kppQOKviAkmJK9CHboFd9iwF0xUPsKoMZ8qyy7TTjtF1zbdWMJZqACxENLyMcoqmXUBolG7AqSytomVKo_4jSo_Wf4R8oUF5rEzd3E/installOverview.png?format=1000w" width="250" title="DLC" alt="DLC" align="right" vspace = "50">
 
 DeepLabCut can be run on Windows, Linux, or MacOS (see more details at [technical considerations](/docs/installation.md#technical-considerations)). 
 
@@ -18,7 +18,7 @@ Please click [here](https://github.com/AlexEMG/DeepLabCut/blob/master/conda-envi
 ### The most common "new user" hurdle is installing and using your GPU:
 - Here we provide notes on how to install and check your GPU use with TensorFlow (which is used by DeepLabCut and already installed with the Anaconda files above). Thus, you do not need to independently install tensorflow.
 
-In the Nature Neuroscience paper, we used **TensorFlow 1.0 with CUDA (Cuda 8.0)**; in the Nature Protocols paper, we tested up through **TensorFlow 1.14 with CUDA 10**. Some other versions of TensorFlow have been tested (i.e. these versions have been tested 1.2, 1.4, 1.8 and 1.10-1.14, but might require different CUDA versions - CUDA 10.1+ is NOT supported)! Currently, TensorFlow 2.0 is not supported. Please check your driver/cuDNN/CUDA/TensorFlow versions [on this StackOverflow post](https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-304-125/30820690#30820690).
+In the Nature Neuroscience paper, we used **TensorFlow 1.0 with CUDA (Cuda 8.0)**; in the Nature Protocols paper, we tested up through **TensorFlow 1.14 with CUDA 10**. Some other versions of TensorFlow have been tested (i.e. these versions have been tested 1.2, 1.4, 1.8 and 1.10-1.14, but might require different CUDA versions - CUDA 10.+ is NOT supported)! Currently, TensorFlow 2.0 is not supported. Please check your driver/cuDNN/CUDA/TensorFlow versions [on this StackOverflow post](https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-304-125/30820690#30820690).
 
 **Currently, TensorFlow 2.X is NOT supported!**
 
