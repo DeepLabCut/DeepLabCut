@@ -28,7 +28,7 @@ Thus, you should always label, train, and evaluate the pose estimation performan
 - If you want to share some results, or see others:
 [![Twitter Follow](https://img.shields.io/twitter/follow/DeepLabCut.svg?label=DeepLabCut&style=social)](https://twitter.com/DeepLabCut)
 
-- If you have a code bug report, please create and issue and show the minimal code to reproduce the error: https://github.com/DeepLabCut/DeepLabCut/issues
+- If you have a code bug report, please create an issue and show the minimal code to reproduce the error: https://github.com/DeepLabCut/DeepLabCut/issues
 
 **Please note:** what we cannot do is provided support or help designing your experiments and data analysis. The number of requests on our time for this too great to sustain. We hope and believe we have given enough tools and resources to get started and to accelerate your research program, and this is backed by the >400 citations using DLC, 2 clinical trials by others, and countless applications. Thus, we believe this code works, is accessible, and with limited programming knowledge can be used. Please read our [Missions & Values statement](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/MISSION_AND_VALUES.md) to learn move about what we DO hope to provide you. Moreover, ff you are looking for resources to increase your performance, we have an open source, free course: http://DLCcourse.deeplabcut.org.
 
