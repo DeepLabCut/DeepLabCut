@@ -1,7 +1,7 @@
-# DeepLabCut for multi-animal projects <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1596368390361-BT2ON376OPWM7Y3BQ35M/ke17ZwdGBToddI8pDm48kB4fL2ovSQh5dRlH2jCMtpoUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcSV94BuD0XUinmig_1P1RJNYVU597j3jgswapL4c_w92BJE9r6UgUperYhWQ2ubQ_/workflow.png?format=2500w" width="550" title="maDLC" alt="maDLC" align="right" vspace = "50">
+# DeepLabCut for Multi-Animal Projects <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1596368390361-BT2ON376OPWM7Y3BQ35M/ke17ZwdGBToddI8pDm48kB4fL2ovSQh5dRlH2jCMtpoUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcSV94BuD0XUinmig_1P1RJNYVU597j3jgswapL4c_w92BJE9r6UgUperYhWQ2ubQ_/workflow.png?format=2500w" width="550" title="maDLC" alt="maDLC" align="right" vspace = "50">
 
 
-The standard documents include all changes to the package to run standard and maDLC, but here is an extended version compiled for using DeepLabCut 2.2+ with multiple-animals. 
+The standard documents include all changes to the package to run standard and maDLC, but here is an extended version compiled for using DeepLabCut 2.2+ with multiple animals. 
 
 Note, we STRONGLY encourage you to use the [Project Manager GUI](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/PROJECT_GUI.md) when you first start using multi-animal mode. Each tab is customized for multi-animal when you create or load a multi-animal project. As long as you follow the recommendations within the GUI, you should be good to go! 
 
@@ -10,13 +10,29 @@ and it is here to support the scientific advances presented in the preprint (Mat
 
 # How to think about using maDLC:
 
-Firstly you should think of maDLC being **four** parts. 
+Firstly, you should think of maDLC being **four** parts. 
 - (1) curate data that allows you to track the objects/animals of interest. 
-- (2) Create a high quality pose estimation model.
-- (3) IF you need to track in time (i.e., propogate identity, you need to perform tracking. 
+- (2) Create a high-quality pose estimation model.
+- (3) IF you need to track in time (i.e., propagate identity, you need to perform tracking. 
 - (4) Any and all post-processing you wish to so with the output data, either within DLC or outside of it. 
 
 Thus, you should always label, train, and evaluate the pose estimation performance first. If and when that performance is high quality, then you should go forward to tracking. There is a natural break point for this, as you will see below. 
+
+# Getting help with maDLC:
+
+- If you have a detailed question about how to use the code, or you hit errors that are not "bugs" but you want code assistance, please post here: [![Image.sc forum](https://img.shields.io/badge/dynamic/json.svg?label=forum&amp;url=https%3A%2F%2Fforum.image.sc%2Ftags%2Fdeeplabcut.json&amp;query=%24.topic_list.tags.0.topic_count&amp;colorB=brightgreen&amp;&amp;suffix=%20topics&amp;logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC)](https://forum.image.sc/tags/deeplabcut)
+
+- If you have a quick, short question that fits a "chat" format:
+[![Gitter](https://badges.gitter.im/DeepLabCut/community.svg)](https://gitter.im/DeepLabCut/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
+- If you want to share some results, or see others:
+[![Twitter Follow](https://img.shields.io/twitter/follow/DeepLabCut.svg?label=DeepLabCut&style=social)](https://twitter.com/DeepLabCut)
+
+- If you have a code bug report, please create and issue and show the minimal code to reproduce the error: https://github.com/DeepLabCut/DeepLabCut/issues
+
+**Please note:** what we cannot do is provided support or help designing your experiments and data analysis. The number of requests on our time for this too great to sustain. We hope and believe we have given enough tools and resources to get started and to accelerate your research program, and this is backed by the >350 citations using DLC, 2 clinical trials by others, and countless applications. Thus, we believe this code works, is accessible, and with limited programming knowledge can be used. Please read our [Missions & Values statement](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/MISSION_AND_VALUES.md) to learn move about what we DO hope to provide you. Moreover, ff you are looking for resources to increase your performance, we have an open source, free course: http://DLCcourse.deeplabcut.org.
+
+
 
 # Install and test: 
 
@@ -25,6 +41,7 @@ https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/testscript_multian
 ```python
 python testscript_multianimal.py
 ```
+
 
 # Get started in the terminal:
 
