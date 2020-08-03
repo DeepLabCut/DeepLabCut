@@ -81,7 +81,6 @@ def ShortenVideo(
     print("Slicing and saving to name", newfilename)
     command = f"ffmpeg -i {vname} -ss {start} -to {stop} -c:a copy {newfilename}"
     subprocess.call(command, shell=True)
-    # subprocess.call(['ffmpeg','-i',vname,'-ss',str(start),'-to',str(stop),'-c:v','copy','-c:a', newfilename])
     return str(newfilename)
 
 
@@ -146,6 +145,7 @@ def CropVideo(
             "Please, select your coordinates (draw from top left to bottom right ...)"
         )
         coords = draw_bbox(vname)
+
         if not coords:
             return
         origin_x, origin_y = coords[:2]
@@ -155,6 +155,7 @@ def CropVideo(
     newfilename = os.path.join(
         vidpath, str(Path(vname).stem) + str(outsuffix) + str(Path(vname).suffix)
     )
+
     print("Cropping and saving to name", newfilename)
     command = f"ffmpeg -i {vname} -filter:v crop={width}:{height}:{origin_x}:{origin_y} -c:a copy {newfilename}"
     subprocess.call(command, shell=True)
@@ -228,7 +229,6 @@ def DownSampleVideo(
 def draw_bbox(video):
     import matplotlib.pyplot as plt
     from matplotlib.widgets import RectangleSelector, Button
-    import platform
 
     clip = cv2.VideoCapture(video)
     if not clip.isOpened():
@@ -240,7 +240,7 @@ def draw_bbox(video):
     while not success:
         success, frame = clip.read()
 
-    bbox = [0, frame.shape[1], 0, frame.shape[0]]
+    bbox = [0, 0, frame.shape[1], frame.shape[0]]
 
     def line_select_callback(eclick, erelease):
         bbox[:2] = int(eclick.xdata), int(eclick.ydata)  # x1, y1
@@ -275,10 +275,13 @@ def draw_bbox(video):
         rectprops=dict(facecolor="red", edgecolor="black", alpha=0.3, fill=True),
     )
     plt.show()
-    if platform.system() != 'Linux':  # for OSX use windows
-        fig.canvas.start_event_loop(timeout=-1)
-    else:
-        fig.canvas.stop_event_loop()
+
+    # import platform
+    # if platform.system() == "Darwin":  # for OSX use WXAgg
+    #    fig.canvas.start_event_loop(timeout=-1)
+    # else:
+    fig.canvas.start_event_loop(timeout=-1)  # just tested on Ubuntu I also need this.
+    #    #fig.canvas.stop_event_loop()
 
     plt.close(fig)
     return bbox

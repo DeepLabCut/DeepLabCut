@@ -22,6 +22,8 @@ Modeloptions = [
     "full_dog",
     "primate_face",
     "mouse_pupil_vclose",
+    "horse_sideview",
+    "full_macaque",
 ]  # just expand this list with new projects
 
 

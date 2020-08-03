@@ -58,10 +58,12 @@ def AnalyzeMultiAnimalVideo(
 
         if robust_nframes:
             nframes = auxfun_videos.get_nframes_robust(video)
+            duration = auxfun_videos.get_duration(video)
+            fps = nframes / duration
         else:
             nframes = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        duration = auxfun_videos.get_duration(video)
-        fps = nframes / duration
+            fps = int(cap.get(cv2.CAP_PROP_FPS))
+            duration = nframes / fps
         size = (int(cap.get(4)), int(cap.get(3)))
 
         ny, nx = size

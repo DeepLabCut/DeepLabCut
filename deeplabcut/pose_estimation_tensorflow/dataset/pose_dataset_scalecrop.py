@@ -28,11 +28,6 @@ from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import (
 from deeplabcut.utils.auxfun_videos import imread, imresize
 
 
-# from scipy.misc import imread, imresize
-
-# from dataset.pose_dataset import Batch, data_to_input, mirror_joints_map, CropImage, DataItem
-
-
 class PoseDataset:
     def __init__(self, cfg):
         self.cfg = cfg
@@ -47,6 +42,16 @@ class PoseDataset:
         self.scale = cfg.global_scale
         self.scale_jitter_lo = cfg.get("scale_jitter_lo", 0.75)
         self.scale_jitter_up = cfg.get("scale_jitter_up", 1.25)
+
+        self.cfg.crop = cfg.get("crop", True)
+        self.cfg.cropratio = cfg.get("cropratio", 0.4)
+
+        # what is the minimal frames size for cropping plus/minus ie.. [-100,100]^2 for an arb. joint
+        self.cfg.minsize = cfg.get("minsize", 100)
+        self.cfg.leftwidth = cfg.get("leftwidth", 400)
+        self.cfg.rightwidth = cfg.get("rightwidth", 400)
+        self.cfg.topheight = cfg.get("topheight", 400)
+        self.cfg.bottomheight = cfg.get("bottomheight", 400)
 
         if self.cfg.mirror:
             self.symmetric_joints = mirror_joints_map(cfg.all_joints, cfg.num_joints)
