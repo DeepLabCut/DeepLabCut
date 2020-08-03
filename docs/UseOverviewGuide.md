@@ -207,10 +207,28 @@ deeplabcut.extract_frames(config_path, mode='automatic', algo='kmeans', crop=Tru
 
 (more details [here](functionDetails.md#c-data-selection)) *update: as of 2.0.5 (spring 2019) ``checkcropping=True`` is dropped; you now just have the option to directly draw a rectangle over the image to crop before extraction (i.e. there no need to manually change in config.yaml then check).
 
+### Prepare to Label Frames from Multiple Cameras with Epipolar Lines (optional)
+
+If you have multiple cameras, you may want to use epipolar lines projected on the images you are labeling to help you label the same position on the body in each camera angle. An epipolar line is a projection from one camera to all the possible points in the second camera's image that could match the labeled point in the first camera's image. A correctly labeled point will fall somewhere along this projected line.
+
+In order to label with epipolar lines, you must complete two additional sets of steps prior to labeling. First, you must create a 3d project and calibrate the cameras - to do so, complete steps 1-3 here (https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/Overviewof3D.md). Second, you must extract images with frame numbers that match across cameras.
+
+Once you have created a 3d project and calibrated the cameras, you can match frames:
+```python
+deeplabcut.extract_frames(config_path, mode = 'match', config3d=config_path3d, extracted_cam=0)
+```
+
+You can set `extracted_cam=0` to match all other camera images to the frame numbers in the camera 1 folder, or change this to match to other cameras. If you `deeplabcut.extract_frames` with `mode='automatic'` before, it shouldn't matter which camera you pick.
+
 ### Label Frames:
 
 ```python
 deeplabcut.label_frames(config_path)
+```
+
+If you are labeling with epipolar lines:
+```python
+deeplabcut.label_frames(config_path, config3d=config_path3d)
 ```
 
 **maDeepLabCut**: As of 2.2 there is a new multi-animal labeling GUI (as long as in your `config.yaml` says `multianimalproject: true` at the top, this will automatically launch).
