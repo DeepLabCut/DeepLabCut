@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 from matplotlib.path import Path
 from matplotlib.widgets import Slider, LassoSelector, Button, CheckButtons
+from tqdm import trange
 
 from deeplabcut import generate_training_dataset
 from deeplabcut.post_processing import columnwise_spline_interp
@@ -184,14 +185,6 @@ class TrackletManager:
     def _load_tracklets(self, tracklets, auto_fill):
         header = tracklets.pop("header")
         self.scorer = header.get_level_values("scorer").unique().to_list()
-        frames = sorted(
-            set([frame for tracklet in tracklets.values() for frame in tracklet])
-        )
-        if not len(frames):
-            raise IOError("Tracklets are empty.")
-
-        self.nframes = int(re.findall(r"\d+", frames[-1])[0]) + 1
-        self.times = np.arange(self.nframes)
         bodyparts = header.get_level_values("bodyparts")
         bodyparts_multi = [
             bp for bp in self.cfg["multianimalbodyparts"] if bp in bodyparts
@@ -203,90 +196,104 @@ class TrackletManager:
             bodyparts[mask_single]
         )
 
-        # Store tracklets, such that we later manipulate long chains
-        # rather than data of individual frames, yielding greater continuity.
-        tracklets_unsorted = dict()
-        for num_tracklet in sorted(tracklets):
-            to_fill = np.full((self.nframes, len(bodyparts)), np.nan)
-            for frame_name, data in tracklets[num_tracklet].items():
-                ind_frame = int(re.findall(r"\d+", frame_name)[0])
-                to_fill[ind_frame] = data
-            nonempty = np.any(~np.isnan(to_fill), axis=1)
-            completeness = nonempty.sum()
-            if completeness >= self.min_tracklet_len:
-                is_single = np.isnan(to_fill[:, mask_multi]).all()
-                if is_single:
-                    to_fill = to_fill[:, mask_single]
-                else:
-                    to_fill = to_fill[:, mask_multi]
-                if to_fill.size:
-                    tracklets_unsorted[num_tracklet] = to_fill, completeness, is_single
-        tracklets_sorted = sorted(tracklets_unsorted.items(), key=lambda kv: kv[1][1])
+        # Sort tracklets by length to prioritize greater continuity
+        temp = sorted(tracklets.values(), key=len)
+        if not len(temp):
+            raise IOError("Tracklets are empty.")
 
-        if auto_fill:
-            # Recursively fill the data containers
+        get_frame_ind = lambda s: int(re.findall(r"\d+", s)[0])
+
+        # Drop tracklets that are too short
+        tracklets_sorted = []
+        last_frames = []
+        for tracklet in temp:
+            last_frames.append(get_frame_ind(list(tracklet)[-1]))
+            if len(tracklet) > self.min_tracklet_len:
+                tracklets_sorted.append(tracklet)
+        self.nframes = max(last_frames) + 1
+        self.times = np.arange(self.nframes)
+
+        if auto_fill:  # Recursively fill the data containers
             tracklets_multi = np.full(
-                (self.nindividuals, self.nframes, len(bodyparts_multi) * 3), np.nan
+                (self.nindividuals, self.nframes, len(bodyparts_multi) * 3),
+                np.nan,
+                np.float16
             )
             tracklets_single = np.full(
-                (self.nframes, len(bodyparts_single) * 3), np.nan
+                (self.nframes, len(bodyparts_single) * 3),
+                np.nan,
+                np.float16
             )
-            while tracklets_sorted:
-                _, (data, _, is_single) = tracklets_sorted.pop()
-                has_data = ~np.isnan(data)
-                if is_single:
+            for _ in trange(len(tracklets_sorted)):
+                tracklet = tracklets_sorted.pop()
+                inds, temp = zip(*[(get_frame_ind(k), v) for k, v in tracklet.items()])
+                inds = np.asarray(inds)
+                data = np.asarray(temp, dtype=np.float16)
+                data_single = data[:, mask_single]
+                is_multi = np.isnan(data_single).all()
+                if not is_multi:
                     # Where slots are available, copy the data over
-                    is_free = np.isnan(tracklets_single)
+                    is_free = np.isnan(tracklets_single[inds])
+                    has_data = ~np.isnan(data_single)
                     mask = has_data & is_free
-                    tracklets_single[mask] = data[mask]
+                    rows, cols = np.nonzero(mask)
+                    tracklets_single[inds[rows], cols] = data_single[mask]
                     # If about to overwrite data, keep tracklets with highest confidence
                     overwrite = has_data & ~is_free
                     if overwrite.any():
                         rows, cols = np.nonzero(overwrite)
                         more_confident = (
-                            data[overwrite] > tracklets_single[overwrite]
+                            data_single[overwrite] > tracklets_single[inds[rows], cols]
                         )[2::3]
-                        inds = np.flatnonzero(more_confident)
-                        for ind in inds:
-                            sl = slice(ind * 3, ind * 3 + 3)
-                            inds = rows[sl], cols[sl]
-                            tracklets_single[inds] = data[inds]
+                        idx = np.flatnonzero(more_confident)
+                        for i in idx:
+                            sl = slice(i * 3, i * 3 + 3)
+                            tracklets_single[inds[rows[sl]], cols[sl]] = data_single[
+                                rows[sl], cols[sl]]
                 else:
-                    is_free = np.isnan(tracklets_multi)
+                    is_free = np.isnan(tracklets_multi[:, inds])
+                    data_multi = data[:, mask_multi]
+                    has_data = ~np.isnan(data_multi)
                     overwrite = has_data & ~is_free
                     overwrite_risk = np.any(overwrite, axis=(1, 2))
                     if overwrite_risk.all():
                         # Squeeze some data into empty slots
-                        mask = has_data & is_free
-                        space_left = mask.any(axis=(1, 2))
-                        for ind in np.flatnonzero(space_left):
+                        n_empty = is_free.all(axis=2).sum(axis=1)
+                        for ind in np.argsort(n_empty)[::-1]:
+                            mask = has_data & is_free
                             current_mask = mask[ind]
-                            tracklets_multi[ind, current_mask] = data[current_mask]
-                            has_data[current_mask] = False
-                        # For the remaining data, overwrite where we are least confident
-                        remaining = data[has_data].reshape((-1, 3))
-                        mask3d = np.broadcast_to(
-                            has_data, (self.nindividuals,) + has_data.shape
-                        )
-                        temp = tracklets_multi[mask3d].reshape(
-                            (self.nindividuals, -1, 3)
-                        )
-                        diff = remaining - temp
-                        # Find keypoints closest to the remaining data
-                        dist = np.sqrt(diff[:, :, 0] ** 2 + diff[:, :, 1] ** 2)
-                        closest = np.argmin(dist, axis=0)
-                        # Only overwrite if improving confidence
-                        prob = diff[closest, range(len(closest)), 2]
-                        better = np.flatnonzero(prob > 0)
-                        inds = closest[better]
-                        rows, cols = np.nonzero(has_data)
-                        for i, j in zip(inds, better):
-                            sl = slice(j * 3, j * 3 + 3)
-                            tracklets_multi[i, rows[sl], cols[sl]] = remaining.flat[sl]
+                            rows, cols = np.nonzero(current_mask)
+                            if rows.size:
+                                tracklets_multi[ind, inds[rows], cols] = data_multi[current_mask]
+                                is_free[ind, current_mask] = False
+                                has_data[current_mask] = False
+                        if has_data.any():
+                            # For the remaining data, overwrite where we are least confident
+                            remaining = data_multi[has_data].reshape((-1, 3))
+                            mask3d = np.broadcast_to(
+                                has_data, (self.nindividuals,) + has_data.shape
+                            )
+                            dims, rows, cols = np.nonzero(mask3d)
+                            temp = tracklets_multi[dims, inds[rows], cols].reshape(
+                                (self.nindividuals, -1, 3)
+                            )
+                            diff = remaining - temp
+                            # Find keypoints closest to the remaining data
+                            # Use Manhattan distance to avoid overflow
+                            dist = np.abs(diff[:, :, 0]) + np.abs(diff[:, :, 1])
+                            closest = np.argmin(dist, axis=0)
+                            # Only overwrite if improving confidence
+                            prob = diff[closest, range(len(closest)), 2]
+                            better = np.flatnonzero(prob > 0)
+                            idx = closest[better]
+                            rows, cols = np.nonzero(has_data)
+                            for i, j in zip(idx, better):
+                                sl = slice(j * 3, j * 3 + 3)
+                                tracklets_multi[i, inds[rows[sl]], cols[sl]] = remaining.flat[sl]
                     else:
-                        tracklets_multi[np.argmin(overwrite_risk), has_data] = data[
-                            has_data
-                        ]
+                        rows, cols = np.nonzero(has_data)
+                        n = np.argmin(overwrite_risk)
+                        tracklets_multi[n, inds[rows], cols] = data_multi[has_data]
 
             multi = tracklets_multi.swapaxes(0, 1).reshape((self.nframes, -1))
             data = np.c_[multi, tracklets_single].reshape((self.nframes, -1, 3))
@@ -323,11 +330,14 @@ class TrackletManager:
             self._label_pairs = self.get_label_pairs()
         else:
             tracklets_raw = np.full(
-                (len(tracklets_sorted), self.nframes, len(bodyparts)), np.nan
+                (len(tracklets_sorted), self.nframes, len(bodyparts)),
+                np.nan,
+                np.float16
             )
-            for n, data in enumerate(tracklets_sorted[::-1]):
-                xy = data[1][0]
-                tracklets_raw[n, :, : xy.shape[1]] = xy
+            for n, tracklet in enumerate(tracklets_sorted[::-1]):
+                for frame, data in tracklet.items():
+                    i = get_frame_ind(frame)
+                    tracklets_raw[n, i] = data
             self.data = (
                 tracklets_raw.swapaxes(0, 1)
                 .reshape((self.nframes, -1, 3))
@@ -1082,10 +1092,10 @@ def refine_tracklets(
     config,
     pickle_or_h5_file,
     video,
-    min_swap_len=0,
-    min_tracklet_len=0,
-    max_gap=0,
-    trail_len=50,
+    min_swap_len=2,
+    min_tracklet_len=2,
+    max_gap=2,
+    trail_len=0,
 ):
     """
     Refine tracklets stored either in pickle or h5 format.
@@ -1117,23 +1127,23 @@ def refine_tracklets(
         by more than 5%, a message is printed indicating that the selected
         video may not be the right one.
 
-    min_swap_len : float, optional (default=0)
+    min_swap_len : float, optional (default=2)
         Minimum swap length.
-        Set to 0 by default. Retained swaps appear in the right panel in
+        Set to 2 by default. Retained swaps appear in the right panel in
         shaded regions.
 
-    min_tracklet_len : float, optional (default=0)
+    min_tracklet_len : float, optional (default=2)
         Minimum tracklet length.
-        By default, all tracklets are kept. If set to 5, for example,
-        tracklets shorter than 5 frames are discarded, leaving missing data instead.
+        By default, tracklets shorter than 2 frames are discarded,
+        leaving missing data instead. If set to 0, all tracklets are kept.
 
-    max_gap : int, optional (default=0).
+    max_gap : int, optional (default=2).
         Maximal gap size (in number of frames) of missing data to be filled.
         The procedure fits a cubic spline over all individual trajectories,
-        and fills all gaps by default.
+        and fills all gaps smaller than or equal to 2 frames by default.
 
-    trail_len : int, optional (default=50)
-        Number of trailing points.
+    trail_len : int, optional (default=0)
+        Number of trailing points. None by default, to accelerate visualization.
     """
     manager = TrackletManager(config, min_swap_len, min_tracklet_len, max_gap)
     if pickle_or_h5_file.endswith("pickle"):
