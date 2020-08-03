@@ -19,7 +19,6 @@ def extract_maps(
     config,
     shuffle=0,
     trainingsetindex=0,
-    comparisonbodyparts="all",
     gputouse=None,
     rescale=False,
     Indices=None,
@@ -40,9 +39,6 @@ def extract_maps(
     trainingsetindex: int, optional
         Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml). This
         variable can also be set to "all".
-
-    comparisonbodyparts: list of bodyparts, Default is "all".
-        The average error will be computed for those body parts only (Has to be a subset of the body parts).
 
     rescale: bool, default False
         Evaluate the model at the 'global_scale' variable (as set in the test/pose_config.yaml file for a particular project). I.e. every
@@ -113,10 +109,6 @@ def extract_maps(
         "df_with_missing",
     )
 
-    # Get list of body parts to evaluate network for
-    comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
-        cfg, comparisonbodyparts
-    )
     # Make folder for evaluation
     auxiliaryfunctions.attempttomakefolder(
         str(cfg["project_path"] + "/evaluation-results/")
@@ -204,21 +196,8 @@ def extract_maps(
             )
 
         ########################### RESCALING (to global scale)
-        if rescale == True:
-            scale = dlc_cfg["global_scale"]
-            Data = (
-                pd.read_hdf(
-                    os.path.join(
-                        cfg["project_path"],
-                        str(trainingsetfolder),
-                        "CollectedData_" + cfg["scorer"] + ".h5",
-                    ),
-                    "df_with_missing",
-                )
-                * scale
-            )
-        else:
-            scale = 1
+        scale = dlc_cfg["global_scale"] if rescale else 1
+        Data *= scale
 
         bptnames = [
             dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))
@@ -286,7 +265,6 @@ def extract_maps(
                     imagename,
                     trainingfram,
                 ]
-            # return DATA
             Maps[trainFraction][Snapshots[snapindex]] = DATA
     os.chdir(str(start_path))
     return Maps
@@ -300,7 +278,6 @@ def resize_to_same_shape(array, array_dest):
 
 
 def resize_all_maps(image, scmap, locref, paf):
-    # print(np.shape(image),np.shape(scmap),np.shape(locref),np.shape(paf))
     scmap = resize_to_same_shape(scmap, image)
     locref_x = resize_to_same_shape(locref[:, :, :, 0], image)
     locref_y = resize_to_same_shape(locref[:, :, :, 1], image)
@@ -309,32 +286,22 @@ def resize_all_maps(image, scmap, locref, paf):
     return scmap, (locref_x, locref_y), paf
 
 
-def form_grid_layout(nplots, nplots_per_row, nx, ny, labels):
-    nrows = int(np.ceil(nplots / nplots_per_row))
-    fig, axes = plt.subplots(nrows, nplots_per_row, frameon=False)
-    for i, ax in enumerate(axes.flat):
-        if i < nplots:
-            if labels is not None:
-                ax.set_title(labels[i], fontsize=8)
-            ax.set_xlim(0, nx)
-            ax.set_ylim(0, ny)
-            ax.axis("off")
-            ax.invert_yaxis()
-        else:
-            ax.axis("off")
+def form_figure(nx, ny):
+    fig, ax = plt.subplots(frameon=False)
+    ax.set_xlim(0, nx)
+    ax.set_ylim(0, ny)
+    ax.axis("off")
+    ax.invert_yaxis()
     fig.tight_layout()
-    return fig, axes
+    return fig, ax
 
 
-def visualize_scoremaps(image, scmap, nplots_per_row=3, labels=None):
+def visualize_scoremaps(image, scmap):
     ny, nx = np.shape(image)[:2]
-    nplots = scmap.shape[2]
-    fig, axes = form_grid_layout(nplots, nplots_per_row, nx, ny, labels=labels)
-    for i, ax in enumerate(axes.flat):
-        if i < nplots:
-            ax.imshow(image)
-            ax.imshow(scmap[:, :, i], alpha=0.5)
-    return fig, axes
+    fig, ax = form_figure(nx, ny)
+    ax.imshow(image)
+    ax.imshow(scmap, alpha=0.5)
+    return fig, ax
 
 
 def visualize_locrefs(
@@ -343,70 +310,66 @@ def visualize_locrefs(
     locref_x,
     locref_y,
     step=5,
-    zoom_width=0,
-    nplots_per_row=3,
-    labels=None,
+    zoom_width=0
 ):
-    fig, axes = visualize_scoremaps(image, scmap, nplots_per_row, labels)
-    nplots = scmap.shape[2]
-    for i, ax in enumerate(axes.flat):
-        if i < nplots:
-            U = locref_x[:, :, i]
-            V = locref_y[:, :, i]
-            X, Y = np.meshgrid(np.arange(U.shape[1]), np.arange(U.shape[0]))
-            M = np.zeros(U.shape, dtype="bool")
-            map_ = scmap[:, :, i]
-            M[map_ < 0.5] = True
-            U = np.ma.masked_array(U, mask=M)
-            V = np.ma.masked_array(V, mask=M)
-            ax.quiver(
-                X[::step, ::step],
-                Y[::step, ::step],
-                U[::step, ::step],
-                V[::step, ::step],
-                color="r",
-                units="x",
-                scale_units="xy",
-                scale=1,
-                angles="xy",
-            )
-            if zoom_width > 0:
-                maxloc = np.unravel_index(np.argmax(map_), map_.shape)
-                ax.set_xlim(maxloc[1] - zoom_width, maxloc[1] + zoom_width)
-                ax.set_ylim(maxloc[0] + zoom_width, maxloc[0] - zoom_width)
-    return fig, axes
-
-
-def visualize_paf(image, paf, pafgraph, nplots_per_row=3, step=5, labels=None):
-    ny, nx = np.shape(image)[:2]
-    nplots = len(pafgraph)
-    titles = (
-        [(labels[i], labels[j]) for i, j in pafgraph] if labels is not None else labels
+    fig, ax = visualize_scoremaps(image, scmap)
+    X, Y = np.meshgrid(np.arange(locref_x.shape[1]), np.arange(locref_x.shape[0]))
+    M = np.zeros(locref_x.shape, dtype=bool)
+    M[scmap < 0.5] = True
+    U = np.ma.masked_array(locref_x, mask=M)
+    V = np.ma.masked_array(locref_y, mask=M)
+    ax.quiver(
+        X[::step, ::step],
+        Y[::step, ::step],
+        U[::step, ::step],
+        V[::step, ::step],
+        color="r",
+        units="x",
+        scale_units="xy",
+        scale=1,
+        angles="xy",
     )
-    fig, axes = form_grid_layout(nplots, nplots_per_row, nx, ny, labels=titles)
-    for i, ax in enumerate(axes.flat):
-        if i < nplots:
-            ax.imshow(image)
-            U = paf[:, :, 2 * i]
-            V = paf[:, :, 2 * i + 1]
-            X, Y = np.meshgrid(np.arange(U.shape[1]), np.arange(U.shape[0]))
-            M = np.zeros(U.shape, dtype="bool")
-            M[U ** 2 + V ** 2 < 0.5 * 0.5 ** 2] = True
-            U = np.ma.masked_array(U, mask=M)
-            V = np.ma.masked_array(V, mask=M)
-            ax.quiver(
-                X[::step, ::step],
-                Y[::step, ::step],
-                U[::step, ::step],
-                V[::step, ::step],
-                scale=50,
-                headaxislength=4,
-                alpha=1,
-                width=0.002,
-                color="r",
-                angles="xy",
-            )
-    return fig, axes
+    if zoom_width > 0:
+        maxloc = np.unravel_index(np.argmax(scmap), scmap.shape)
+        ax.set_xlim(maxloc[1] - zoom_width, maxloc[1] + zoom_width)
+        ax.set_ylim(maxloc[0] + zoom_width, maxloc[0] - zoom_width)
+    return fig, ax
+
+
+def visualize_paf(image, paf, step=5, colors=None):
+    ny, nx = np.shape(image)[:2]
+    fig, ax = form_figure(nx, ny)
+    ax.imshow(image)
+    n_fields = paf.shape[2]
+    if colors is None:
+        colors = ['r'] * n_fields
+    for n in range(n_fields):
+        U = paf[:, :, n, 0]
+        V = paf[:, :, n, 1]
+        X, Y = np.meshgrid(np.arange(U.shape[1]), np.arange(U.shape[0]))
+        M = np.zeros(U.shape, dtype=bool)
+        M[U ** 2 + V ** 2 < 0.5 * 0.5 ** 2] = True
+        U = np.ma.masked_array(U, mask=M)
+        V = np.ma.masked_array(V, mask=M)
+        ax.quiver(
+            X[::step, ::step],
+            Y[::step, ::step],
+            U[::step, ::step],
+            V[::step, ::step],
+            scale=50,
+            headaxislength=4,
+            alpha=1,
+            width=0.002,
+            color=colors[n],
+            angles="xy",
+        )
+    return fig, ax
+
+
+def _save_individual_subplots(fig, axes, labels, output_path):
+    for ax, label in zip(axes, labels):
+        extent = ax.get_tightbbox(fig.canvas.renderer).transformed(fig.dpi_scale_trans.inverted())
+        fig.savefig(output_path.format(bp=label), bbox_inches=extent)
 
 
 def extract_save_all_maps(
@@ -414,12 +377,12 @@ def extract_save_all_maps(
     shuffle=1,
     trainingsetindex=0,
     comparisonbodyparts="all",
+    all_paf_in_one=True,
     gputouse=None,
     rescale=False,
     Indices=None,
     modelprefix="",
-    dest_folder=None,
-    nplots_per_row=None,
+    dest_folder=None
 ):
     """
     Extracts the scoremap, location refinement field and part affinity field prediction of the model. The maps
@@ -439,6 +402,10 @@ def extract_save_all_maps(
     comparisonbodyparts: list of bodyparts, Default is "all".
         The average error will be computed for those body parts only (Has to be a subset of the body parts).
 
+    all_paf_in_one : bool
+        By default, all part affinity fields are displayed on a single frame.
+        If false, individual fields are shown on separate frames.
+
     Indices: default None
         For which images shall the scmap/locref and paf be computed? Give a list of images
 
@@ -456,6 +423,7 @@ def extract_save_all_maps(
         read_config,
         attempttomakefolder,
         GetEvaluationFolder,
+        IntersectionofBodyPartsandOnesGivenbyUser
     )
     from tqdm import tqdm
 
@@ -464,33 +432,27 @@ def extract_save_all_maps(
         config,
         shuffle,
         trainingsetindex,
-        comparisonbodyparts,
         gputouse,
         rescale,
         Indices,
         modelprefix,
     )
 
-    if not nplots_per_row:
-        from deeplabcut.utils import auxiliaryfunctions
-
-        bpts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
-            cfg, comparisonbodyparts
-        )
-        nplots_per_row = int(np.floor(np.sqrt(len(bpts))))
+    comparisonbodyparts = IntersectionofBodyPartsandOnesGivenbyUser(
+        cfg, comparisonbodyparts
+    )
 
     print("Saving plots...")
     for frac, values in data.items():
         if not dest_folder:
-            # dest_folder = os.path.join(cfg['project_path'], 'maps')
             dest_folder = os.path.join(
                 cfg["project_path"],
                 str(GetEvaluationFolder(frac, shuffle, cfg, modelprefix=modelprefix)),
                 "maps",
             )
         attempttomakefolder(dest_folder)
-        dest_path = os.path.join(dest_folder, "{}_{}_{}_{}_{}_{}.png")
-
+        filepath = "{imname}_{map}_{label}_{shuffle}_{frac}_{snap}.png"
+        dest_path = os.path.join(dest_folder, filepath)
         for snap, maps in values.items():
             for imagenr in tqdm(maps):
                 (
@@ -505,55 +467,57 @@ def extract_save_all_maps(
                 ) = maps[imagenr]
                 label = "train" if trainingframe else "test"
                 imname = os.path.split(os.path.splitext(impath)[0])[1]
-                if not os.path.isfile(
-                    dest_path.format(imagenr, "scmap", label, shuffle, frac, snap)
-                ):
-                    scmap, (locref_x, locref_y), paf = resize_all_maps(
-                        image, scmap, locref, paf
-                    )
-                    fig1, _ = visualize_scoremaps(
-                        image, scmap, labels=bptnames, nplots_per_row=nplots_per_row
-                    )
-                    fig2, _ = visualize_locrefs(
-                        image,
-                        scmap,
-                        locref_x,
-                        locref_y,
-                        labels=bptnames,
-                        nplots_per_row=nplots_per_row,
-                    )
-                    fig3, _ = visualize_locrefs(
-                        image,
-                        scmap,
-                        locref_x,
-                        locref_y,
-                        zoom_width=100,
-                        labels=bptnames,
-                        nplots_per_row=nplots_per_row,
-                    )
-                    if paf is not None:
-                        fig4, _ = visualize_paf(
+                scmap, (locref_x, locref_y), paf = resize_all_maps(
+                    image, scmap, locref, paf
+                )
+                to_plot = [i for i, bpt in enumerate(bptnames) if bpt in comparisonbodyparts]
+                list_of_inds = []
+                for n, edge in enumerate(pafgraph):
+                    if any(ind in to_plot for ind in edge):
+                        list_of_inds.append([(2 * n, 2 * n + 1),
+                                             (bptnames[edge[0]], bptnames[edge[1]])])
+                map_ = scmap[:, :, to_plot].sum(axis=2)
+                locref_x_ = locref_x[:, :, to_plot].sum(axis=2)
+                locref_y_ = locref_y[:, :, to_plot].sum(axis=2)
+
+                fig1, _ = visualize_scoremaps(
+                    image, map_
+                )
+                temp = dest_path.format(imname=imname, map='scmap', label=label,
+                                        shuffle=shuffle, frac=frac, snap=snap)
+                fig1.savefig(temp)
+
+                fig2, _ = visualize_locrefs(
+                    image,
+                    map_,
+                    locref_x_,
+                    locref_y_
+                )
+                temp = dest_path.format(imname=imname, map='locref', label=label,
+                                        shuffle=shuffle, frac=frac, snap=snap)
+                fig2.savefig(temp)
+
+                if paf is not None:
+                    if not all_paf_in_one:
+                        for inds, names in list_of_inds:
+                            fig3, _ = visualize_paf(
+                                image,
+                                paf[:, :, [inds]]
+                            )
+                            temp = dest_path.format(imname=imname, map=f'paf_{"_".join(names)}', label=label,
+                                                    shuffle=shuffle, frac=frac, snap=snap)
+                            fig3.savefig(temp)
+                    else:
+                        inds = [elem[0] for elem in list_of_inds]
+                        n_inds = len(inds)
+                        cmap = plt.cm.get_cmap(cfg['colormap'], n_inds)
+                        colors = cmap(range(n_inds))
+                        fig3, _ = visualize_paf(
                             image,
-                            paf,
-                            pafgraph,
-                            labels=bptnames,
-                            nplots_per_row=nplots_per_row,
+                            paf[:, :, inds],
+                            colors=colors
                         )
-
-                    fig1.savefig(
-                        dest_path.format(imname, "scmap", label, shuffle, frac, snap)
-                    )
-                    fig2.savefig(
-                        dest_path.format(imname, "locref", label, shuffle, frac, snap)
-                    )
-                    fig3.savefig(
-                        dest_path.format(
-                            imname, "locrefzoom", label, shuffle, frac, snap
-                        )
-                    )
-                    if paf is not None:
-                        fig4.savefig(
-                            dest_path.format(imname, "paf", label, shuffle, frac, snap)
-                        )
-
-                    plt.close("all")
+                        temp = dest_path.format(imname=imname, map=f'paf', label=label,
+                                                shuffle=shuffle, frac=frac, snap=snap)
+                        fig3.savefig(temp)
+                plt.close("all")
