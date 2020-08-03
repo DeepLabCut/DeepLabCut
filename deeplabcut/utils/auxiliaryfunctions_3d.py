@@ -26,8 +26,17 @@ def Foldernames3Dproject(cfg_3d):
     path_corners = os.path.join(cfg_3d["project_path"], "corners")
     path_camera_matrix = os.path.join(cfg_3d["project_path"], "camera_matrix")
     path_undistort = os.path.join(cfg_3d["project_path"], "undistortion")
+    path_removed_images = os.path.join(
+        cfg_3d["project_path"], "removed_calibration_images"
+    )
 
-    return img_path, path_corners, path_camera_matrix, path_undistort
+    return (
+        img_path,
+        path_corners,
+        path_camera_matrix,
+        path_undistort,
+        path_removed_images,
+    )
 
 
 def create_empty_df(dataframe, scorer, flag):

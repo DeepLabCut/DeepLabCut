@@ -64,24 +64,58 @@ class Label_frames(wx.Panel):
                 message="Choose the config.yaml file",
                 wildcard="config.yaml",
             )
-        # self.sel_config = wx.FilePickerCtrl(self, path="",style=wx.FLP_USE_TEXTCTRL,message="Choose the config.yaml file", wildcard="config.yaml")
         sizer.Add(
             self.sel_config, pos=(2, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND, border=5
         )
         self.sel_config.SetPath(self.config)
         self.sel_config.Bind(wx.EVT_BUTTON, self.select_config)
 
+        self.cfg3d_text = wx.StaticText(self, label="Select the config3d file")
+        sizer.Add(
+            self.cfg3d_text,
+            pos=(3, 0),
+            flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT,
+            border=5,
+        )
+
+        if sys.platform == "darwin":
+            self.sel_config3d = wx.FilePickerCtrl(
+                self,
+                path="",
+                style=wx.FLP_USE_TEXTCTRL,
+                message="Choose the config.yaml file for the 3d project",
+                wildcard="*.yaml",
+            )
+        else:
+            self.sel_config3d = wx.FilePickerCtrl(
+                self,
+                path="",
+                style=wx.FLP_USE_TEXTCTRL,
+                message="Choose the config.yaml file for the 3d project",
+                wildcard="config.yaml",
+            )
+        sizer.Add(
+            self.sel_config3d,
+            pos=(3, 1),
+            span=(1, 3),
+            flag=wx.ALIGN_CENTER_VERTICAL | wx.EXPAND,
+            border=5,
+        )
+        self.sel_config3d.SetPath("")
+        self.config3d = None
+        self.sel_config3d.Bind(wx.EVT_FILEPICKER_CHANGED, self.select_config3d)
+
         self.help_button = wx.Button(self, label="Help")
-        sizer.Add(self.help_button, pos=(4, 0), flag=wx.LEFT, border=10)
+        sizer.Add(self.help_button, pos=(5, 0), flag=wx.LEFT, border=10)
         self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
 
         self.check = wx.Button(self, label="Check Labels!")
-        sizer.Add(self.check, pos=(5, 4), flag=wx.BOTTOM | wx.RIGHT, border=10)
+        sizer.Add(self.check, pos=(6, 4), flag=wx.BOTTOM | wx.RIGHT, border=10)
         self.check.Bind(wx.EVT_BUTTON, self.check_labelF)
         self.check.Enable(True)
 
         self.build = wx.Button(self, label="Build skeleton")
-        sizer.Add(self.build, pos=(4, 3), flag=wx.BOTTOM | wx.RIGHT, border=10)
+        sizer.Add(self.build, pos=(5, 3), flag=wx.BOTTOM | wx.RIGHT, border=10)
         self.build.Bind(wx.EVT_BUTTON, self.build_skeleton)
         self.build.Enable(True)
 
@@ -89,17 +123,17 @@ class Label_frames(wx.Panel):
         if self.cfg.get("multianimalproject", False):
 
             self.check = wx.Button(self, label="Check Labels Individuals")
-            sizer.Add(self.check, pos=(5, 3), flag=wx.BOTTOM | wx.RIGHT, border=10)
+            sizer.Add(self.check, pos=(6, 3), flag=wx.BOTTOM | wx.RIGHT, border=10)
             self.check.Bind(wx.EVT_BUTTON, self.check_labelInd)
             self.check.Enable(True)
 
         self.ok = wx.Button(self, label="Label Frames")
-        sizer.Add(self.ok, pos=(4, 4))
+        sizer.Add(self.ok, pos=(5, 4))
         self.ok.Bind(wx.EVT_BUTTON, self.label_frames)
 
         self.reset = wx.Button(self, label="Reset")
         sizer.Add(
-            self.reset, pos=(4, 1), span=(1, 1), flag=wx.BOTTOM | wx.RIGHT, border=10
+            self.reset, pos=(5, 1), span=(1, 1), flag=wx.BOTTOM | wx.RIGHT, border=10
         )
         self.reset.Bind(wx.EVT_BUTTON, self.reset_label_frames)
 
@@ -147,8 +181,15 @@ class Label_frames(wx.Panel):
         """
         self.config = self.sel_config.GetPath()
 
+    def select_config3d(self, event):
+        """
+        """
+        self.config3d = self.sel_config3d.GetPath()
+
     def label_frames(self, event):
-        deeplabcut.label_frames(self.config)
+        if self.config3d == "":
+            self.config3d = None
+        deeplabcut.label_frames(self.config, config3d=self.config3d, sourceCam=None)
 
     def reset_label_frames(self, event):
         """
@@ -156,3 +197,4 @@ class Label_frames(wx.Panel):
         """
         self.config = []
         self.sel_config.SetPath("")
+        self.sel_config3d.SetPath("")

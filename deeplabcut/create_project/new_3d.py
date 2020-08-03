@@ -69,12 +69,14 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
     calibration_images_path = project_path / "calibration_images"
     undistortion_path = project_path / "undistortion"
     path_corners = project_path / "corners"
+    path_removed_images = project_path / "removed_calibration_images"
 
     for p in [
         camera_matrix_path,
         calibration_images_path,
         undistortion_path,
         path_corners,
+        path_removed_images,
     ]:
         p.mkdir(parents=True, exist_ok=DEBUG)
         print('Created "{}"'.format(p))
