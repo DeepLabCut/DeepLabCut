@@ -1055,6 +1055,17 @@ class MainFrame(wx.Frame):
                             ],
                         ]
                         self.likelihood = self.points[2]
+
+                        # fix move to corner
+                        if self.move2corner == True:
+                            ny, nx = np.shape(img)[0], np.shape(img)[1]
+                            if self.points[0] > nx or self.points[0] < 0:
+                                print("fixing x for ", bp)
+                                self.points[0] = self.center[0]
+                            if self.points[1] > ny or self.points[1] < 0:
+                                print("fixing y for ", bp)
+                                self.points[1] = self.center[1]
+
                         if self.likelihood < self.threshold:
                             self.circle = [
                                 patches.Circle(
@@ -1094,6 +1105,17 @@ class MainFrame(wx.Frame):
                             ],
                         ]
                         self.likelihood = self.points[2]
+
+                        # fix move to corner
+                        if self.move2corner == True:
+                            ny, nx = np.shape(img)[0], np.shape(img)[1]
+                            if self.points[0] > nx or self.points[0] < 0:
+                                print("fixing x for ", bp)
+                                self.points[0] = self.center[0]
+                            if self.points[1] > ny or self.points[1] < 0:
+                                print("fixing y for ", bp)
+                                self.points[1] = self.center[1]
+
                         if self.likelihood < self.threshold:
                             self.circle = [
                                 patches.Circle(
@@ -1135,6 +1157,17 @@ class MainFrame(wx.Frame):
                             ],
                         ]
                         self.likelihood = self.points[2]
+
+                        # fix move to corner
+                        if self.move2corner == True:
+                            ny, nx = np.shape(img)[0], np.shape(img)[1]
+                            if self.points[0] > nx or self.points[0] < 0:
+                                print("fixing x for ", bp)
+                                self.points[0] = self.center[0]
+                            if self.points[1] > ny or self.points[1] < 0:
+                                print("fixing y for ", bp)
+                                self.points[1] = self.center[1]
+
                         if self.likelihood < self.threshold:
                             self.circle = [
                                 patches.Circle(
@@ -1174,6 +1207,17 @@ class MainFrame(wx.Frame):
                             ],
                         ]
                         self.likelihood = self.points[2]
+
+                        # fix move to corner
+                        if self.move2corner == True:
+                            ny, nx = np.shape(img)[0], np.shape(img)[1]
+                            if self.points[0] > nx or self.points[0] < 0:
+                                print("fixing x for ", bp)
+                                self.points[0] = self.center[0]
+                            if self.points[1] > ny or self.points[1] < 0:
+                                print("fixing y for ", bp)
+                                self.points[1] = self.center[1]
+
                         if self.likelihood < self.threshold:
                             self.circle = [
                                 patches.Circle(

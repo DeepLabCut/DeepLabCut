@@ -4,6 +4,7 @@
 /examples/TES*
 /examples/multi*
 /examples/3D*
+/examples/OUT
 
 # Tensorflow checkpoints
 *.ckpt

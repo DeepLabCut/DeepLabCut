@@ -292,7 +292,7 @@ def cropimagesandlabels(
     video_names = []
     for video in videos:
         parent, filename, ext = _robust_path_split(video)
-        if excludealreadycropped and '_cropped' in filename:
+        if excludealreadycropped and "_cropped" in filename:
             continue
         video_names.append([parent, filename, ext])
 
@@ -302,7 +302,7 @@ def cropimagesandlabels(
         cfg["video_sets_original"] = {}
 
     for vidpath, vidname, videotype in video_names:
-        folder = os.path.join(project_path, 'labeled-data', vidname)
+        folder = os.path.join(project_path, "labeled-data", vidname)
         if userfeedback:
             print("Do you want to crop frames for folder: ", folder, "?")
             askuser = input("(yes/no):")
@@ -326,7 +326,9 @@ def cropimagesandlabels(
             # Avoid cropping already cropped images
             cropped_images = auxiliaryfunctions.grab_files_in_folder(new_folder, "png")
             cropped_names = set(map(lambda x: x.split("c")[0], cropped_images))
-            imnames = [im for im in images.to_list() if Path(im).stem not in cropped_names]
+            imnames = [
+                im for im in images.to_list() if Path(im).stem not in cropped_names
+            ]
             ic = io.imread_collection(imnames)
             for i in trange(len(ic)):
                 frame = ic[i]
@@ -348,10 +350,7 @@ def cropimagesandlabels(
                     y1 = y0 + size[0]
                     x1 = x0 + size[1]
                     with np.errstate(invalid="ignore"):
-                        within = np.all(
-                            (dd >= [x0, y0]) & (dd < [x1, y1]),
-                            axis=1,
-                        )
+                        within = np.all((dd >= [x0, y0]) & (dd < [x1, y1]), axis=1,)
                     if cropdata:
                         dd[within] -= [x0, y0]
                         dd[~within] = np.nan
@@ -364,9 +363,7 @@ def cropimagesandlabels(
                             + ".png"
                         )
                         cropppedimgname = os.path.join(new_folder, newimname)
-                        io.imsave(
-                            cropppedimgname, frame[y0 : y1, x0 : x1]
-                        )
+                        io.imsave(cropppedimgname, frame[y0:y1, x0:x1])
                         cropindex += 1
                         pd_index.append(
                             os.path.join("labeled-data", new_vidname, newimname)
@@ -381,12 +378,12 @@ def cropimagesandlabels(
 
             if updatevideoentries and cropdata:
                 # moving old entry to _original, dropping it from video_set and update crop parameters
-                video_orig = sep.join((vidpath, vidname + '.' + videotype))
+                video_orig = sep.join((vidpath, vidname + videotype))
                 cfg["video_sets_original"][video_orig] = cfg["video_sets"][video_orig]
                 cfg["video_sets"].pop(video_orig)
-                cfg["video_sets"][
-                    video_orig.replace(vidname, new_vidname)
-                ] = {"crop": ", ".join(map(str, [0, size[1], 0, size[0]]))}
+                cfg["video_sets"][video_orig.replace(vidname, new_vidname)] = {
+                    "crop": ", ".join(map(str, [0, size[1], 0, size[0]]))
+                }
 
     cfg["croppedtraining"] = True
     auxiliaryfunctions.write_config(config, cfg)
@@ -482,7 +479,7 @@ def check_labels(
 
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
-    video_names = [Path(i).stem for i in videos]
+    video_names = [_robust_path_split(video)[1] for video in videos]
 
     folders = [
         os.path.join(cfg["project_path"], "labeled-data", str(Path(i)))
@@ -536,13 +533,21 @@ def ParseYaml(configfile):
     return docs
 
 
-def MakeTrain_pose_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
+def MakeTrain_pose_yaml(
+    itemstochange, saveasconfigfile, defaultconfigfile, items2drop={}
+):
     docs = ParseYaml(defaultconfigfile)
+    for key in items2drop.keys():
+        #print(key, "dropping?")
+        if key in docs[0].keys():
+            docs[0].pop(key)
+
     for key in itemstochange.keys():
         docs[0][key] = itemstochange[key]
 
     with open(saveasconfigfile, "w") as f:
         yaml.dump(docs[0], f)
+
     return docs[0]
 
 
@@ -575,9 +580,9 @@ def MakeInference_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
 
 
 def _robust_path_split(path):
-    sep = "\\" if "\\" in path else '/'
+    sep = "\\" if "\\" in path else "/"
     parent, file = path.rsplit(sep, 1)
-    filename, ext = file.split('.')
+    filename, ext = os.path.splitext(file)
     return parent, filename, ext
 
 
@@ -594,9 +599,9 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
     videos = cfg["video_sets"].keys()
     for video in videos:
         _, filename, _ = _robust_path_split(video)
-        if cfg.get("croppedtraining", False):
-            filename += "_cropped"
-        file_path = os.path.join(data_path / filename, f'CollectedData_{cfg["scorer"]}.h5')
+        file_path = os.path.join(
+            data_path / filename, f'CollectedData_{cfg["scorer"]}.h5'
+        )
         try:
             data = pd.read_hdf(file_path, "df_with_missing")
             AnnotationData.append(data)
@@ -716,9 +721,8 @@ def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
     You can then create the training set by calling (e.g. defining it as Shuffle 3):
     >>> deeplabcut.create_training_dataset(config,Shuffles=[3],trainIndices=trainIndices,testIndices=testIndices)
 
-    To freeze a (uniform) split:
+    To freeze a (uniform) split (i.e. iid sampled from all the data):
     >>> trainIndices, testIndices=deeplabcut.mergeandsplit(config,trainindex=0,uniform=True)
-
     You can then create two model instances that have the identical trainingset. Thereby you can assess the role of various parameters on the performance of DLC.
     >>> deeplabcut.create_training_dataset(config,Shuffles=[0,1],trainIndices=[trainIndices, trainIndices],testIndices=[testIndices, testIndices])
     --------
@@ -915,13 +919,19 @@ def create_training_dataset(
                 raise ValueError("Invalid network type:", net_type)
 
         if augmenter_type is None:
-            augmenter_type = cfg.get("default_augmenter", "default")
+            augmenter_type = cfg.get("default_augmenter", "imgaug")
             if augmenter_type is None:  # this could be in config.yaml for old projects!
                 # updating variable if null/None! #backwardscompatability
-                auxiliaryfunctions.edit_config(config, {"default_augmenter": "default"})
-                augmenter_type = "default"
+                auxiliaryfunctions.edit_config(config, {"default_augmenter": "imgaug"})
+                augmenter_type = "imgaug"
         else:
-            if augmenter_type in ["default", "imgaug", "tensorpack", "deterministic"]:
+            if augmenter_type in [
+                "default",
+                "scalecrop",
+                "imgaug",
+                "tensorpack",
+                "deterministic",
+            ]:
                 pass
             else:
                 raise ValueError("Invalid augmenter type:", augmenter_type)
@@ -1069,9 +1079,20 @@ def create_training_dataset(
                     "net_type": net_type,
                     "dataset_type": augmenter_type,
                 }
+
+                items2drop = {}
+                if augmenter_type == "scalecrop":
+                    # these values are dropped as scalecrop
+                    # doesn't have rotation implemented
+                    items2drop = {
+                        "rotation": 0,
+                        "rotratio": 0.0,
+                    }
+
                 trainingdata = MakeTrain_pose_yaml(
-                    items2change, path_train_config, defaultconfigfile
+                    items2change, path_train_config, defaultconfigfile, items2drop
                 )
+
                 keys2save = [
                     "dataset",
                     "num_joints",

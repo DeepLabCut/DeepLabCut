@@ -1,4 +1,3 @@
-
 """
 DeepLabCut2.2 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
@@ -53,6 +52,10 @@ class SkeletonBuilder:
         self.df = pd.read_hdf(
             os.path.join(folder, f'CollectedData_{self.cfg["scorer"]}.h5')
         )
+        # Handle data previously annotated on a different platform
+        sep = "/" if "/" in self.df.index[0] else "\\"
+        if sep != os.path.sep:
+            self.df.index = self.df.index.str.replace(sep, os.path.sep)
         row, col = self.pick_labeled_frame()
         if "individuals" in self.df.columns.names:
             self.df = self.df.xs(col, axis=1, level="individuals")
@@ -60,16 +63,20 @@ class SkeletonBuilder:
         self.xy = self.df.loc[row].values.reshape((-1, 2))
         missing = np.flatnonzero(np.isnan(self.xy).all(axis=1))
         if missing.any():
-            warnings.warn(f"A fully labeled animal could not be found. "
-                          f"{', '.join(self.bpts[missing])} will need to be manually connected in the config.yaml.")
+            warnings.warn(
+                f"A fully labeled animal could not be found. "
+                f"{', '.join(self.bpts[missing])} will need to be manually connected in the config.yaml."
+            )
         self.tree = KDTree(self.xy)
         self.image = io.imread(os.path.join(self.cfg["project_path"], row))
         self.inds = set()
         self.segs = set()
         # Draw the skeleton if already existent
-        if self.cfg['skeleton']:
-            for bone in self.cfg['skeleton']:
+        if self.cfg["skeleton"]:
+            for bone in self.cfg["skeleton"]:
                 pair = np.flatnonzero(self.bpts.isin(bone))
+                if len(pair) != 2:
+                    continue
                 pair_sorted = tuple(sorted(pair))
                 self.inds.add(pair_sorted)
                 self.segs.add(tuple(map(tuple, self.xy[pair_sorted, :])))
@@ -87,7 +94,7 @@ class SkeletonBuilder:
                 count.drop("single", axis=1, inplace=True)
         except KeyError:
             count = self.df.count(axis=1).to_frame()
-        mask = count.where(count == count.max())
+        mask = count.where(count == count.values.max())
         kept = mask.stack().index.to_list()
         np.random.shuffle(kept)
         row, col = kept.pop()

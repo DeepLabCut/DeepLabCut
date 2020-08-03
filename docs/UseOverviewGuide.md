@@ -37,7 +37,7 @@
 ### Overview:
 **DeepLabCut** is a software package for markerless pose estimation of animals performing various tasks. The software can manage multiple projects for various tasks. Each project is identified by the name of the project (e.g. TheBehavior), name of the experimenter (e.g. YourName), as well as the date at creation. This project folder holds a ``config.yaml`` (a text document) file containing various (project) parameters as well as links the data of the project.
 
-**NEW: We also have structured a getting started with DeepLabCut course [here!](https://github.com/DeepLabCut/DeepLabCut-Workshop-Materials/blob/master/summer_course2020.md)**
+**NEW: We also have structured a getting started with DeepLabCut online course [here!](https://github.com/DeepLabCut/DeepLabCut-Workshop-Materials/blob/master/summer_course2020.md)**
 
 <p align="center">
 <img src=   https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572293604382-W6BWA63LZ9J8R7N0QEA5/ke17ZwdGBToddI8pDm48kIw6YkRUEyoge4858uAJfaMUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYwL8IeDg6_3B-BRuF4nNrNcQkVuAT7tdErd0wQFEGFSnH9wUPiI8bGoX-EQadkbLIJwhzjIpw393-uEwSKO7VZIL9gN_Sb5I_dLwvWryjeCJg/dlc_overview-01.png?format=1000w width="80%">
@@ -58,7 +58,7 @@ This page contains a list of the essential functions of DeepLabCut as well as de
 **:purple_heart: DLC 2.2:** as of 2.2 we support "multi-animal projects," but these new features can also be used on single animals too (details below). The workflow is highly similar, but with a few key additional steps. Please carefully review the functions below for more details. You can search/look for **maDeepLabCut** for specific steps that are changed.
 
  <p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1587769981819-MQTWHOFRSEVRQCJJJ3WV/ke17ZwdGBToddI8pDm48kC35rDtt7orAfBnUphidUjFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PImr0R2dpGVvtLOUccqmg3rERuQynZZO7wgiB_e1DQPsY/workflow.png?format=1000w" height="570">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1596197885984-YGB3SLDN795G1MHRL3QO/ke17ZwdGBToddI8pDm48kDeESvmL2CKgnnReSL1AEHUUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcEylu32zKYtOLotM52LGWiEW_ujpOfeZDdgBF7lQwn1cawo3Xn5c5CO-uPn_aeMmA/workflow22.png?format=2500w" height="570">
  </p>
 
 
@@ -78,19 +78,23 @@ We highly recommend using 2.2 first in the Project Manager GUI ([Option 3](docs/
 
 ##### *What scenario do you have?*
 
-- **I have single animal videos, but I want to use DLC2.2:**
-   - quick start: when you `create_new project` just set the flag `multianimal=True`.
+- **I have single animal videos, but I want to use the advanced tracking features & updated network capabilities introduced (for multi-animal projects) in DLC2.2:**
+   - quick start: when you `create_new_project` just set the flag `multianimal=True`.
 
 :movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/JDsa8R5J0nQ)
 
+Some tips: i.e. this is good for say, a hand or a mouse if you feel the "skeleton" during training would increase performance. DON'T do this for things that could be identified an individual objects. i.e., don't do whisker 1, whisker 2, whisker 3 as 3 individuals. Each whisker always has a specific spatial location, and by calling them individuals you will do WORSE than in single animal mode. 
+
+- **I have single animal videos, but I want to use new features within in DLC2.2:**
+   - quick start: when you `create_new_project` just set the flag `multianimal=Flase`, but you still get lots of upgrades! This is the typical work path for many of you. 
 
 - **I have multiple *identical-looking animals* in my videos and I need to use DLC2.2:**
-   - quick start: when you `create_new project` set the flag `multianimal=True`. If you can't tell them apart, you can assign the "individual" ID to any animal in each frame. See this [labeling w/2.2 demo video](https://www.youtube.com/watch?v=_qbEqNKApsI)
+   - quick start: when you `create_new_project` set the flag `multianimal=True`. If you can't tell them apart, you can assign the "individual" ID to any animal in each frame. See this [labeling w/2.2 demo video](https://www.youtube.com/watch?v=_qbEqNKApsI)
 
 :movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/Kp-stcTm77g)
 
 - **I have multiple animals, *but I can tell them apart,* in my videos and want to use DLC2.2:**
-   - quick start: when you `create_new project` set the flag `multianimal=True`. And always label the "individual" ID name the same; i.e. if you have mouse1 and mouse2 but mouse2 always has a miniscope, in every frame label mouse2 consistently. See this [labeling w/2.2 demo video](https://www.youtube.com/watch?v=_qbEqNKApsI)
+   - quick start: when you `create_new_project` set the flag `multianimal=True`. And always label the "individual" ID name the same; i.e. if you have mouse1 and mouse2 but mouse2 always has a miniscope, in every frame label mouse2 consistently. See this [labeling w/2.2 demo video](https://www.youtube.com/watch?v=_qbEqNKApsI)
 
 :movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/Kp-stcTm77g) - ALSO, if you can tell them apart, label animals them consistently!
 
@@ -251,7 +255,7 @@ deeplabcut.create_training_dataset(config_path)
 ```
 or to [compare different neural networks](/wiki/What-neural-network-should-I-use%3F) use:
 ```python
-deeplabcut.create_training_model_comparision(config_path, num_shuffles=1, net_types=['resnet_50'], augmenter_types=['default', 'imgaug'] )
+deeplabcut.create_training_model_comparison(config_path, num_shuffles=1, net_types=['resnet_50'], augmenter_types=['default', 'imgaug'] )
 ```
 :movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=WXCVr6xAcCA)
 
@@ -267,7 +271,7 @@ Then run:
 ```python
 deeplabcut.create_multianimaltraining_dataset(path_config_file, allow_growth=True)
 ```
-(more details [here](functionDetails.md#f-create-training-dataset))
+(more details [here](functionDetails.md#f-create-training-datasets))
 
 ### Train The Network:
 
@@ -334,7 +338,7 @@ You should **cross-validate** the tracking parameters. ([Here is more informatio
 Secondly, you need to **refine the tracklets**. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc!
 
 ```python
-deeplabcut.refine_tracklets(path_config_file, pickle_or_h5_file, videofile_path, min_swap_frac=0.0, min_tracklet_frac=0.0, trail_len=50)
+deeplabcut.refine_tracklets(path_config_file, pickle_or_h5_file, videofile_path, min_swap_len=2, min_tracklet_len=2, trail_len=50)
 ```
 [Read more here!](functionDetails.md#madeeplabcut-critical-point---assemble--refine-tracklets)
 

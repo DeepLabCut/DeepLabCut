@@ -15,6 +15,7 @@ from deeplabcut.gui.create_new_project import Create_new_project
 from deeplabcut.gui.welcome import Welcome
 from deeplabcut.utils import auxiliaryfunctions
 
+
 class MainFrame(wx.Frame):
     def __init__(self):
         displays = (

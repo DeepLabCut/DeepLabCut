@@ -456,15 +456,11 @@ def bayesian_search(
         return val
 
     opt = BayesianOptimization(f=dlc_hyperparams, pbounds=pbounds, random_state=42)
-
-    # Saving log file
     if log_file:
         load_logs(opt, log_file)
-
     logger = JSONLogger(
         path=os.path.join(evaluationfolder, "opti_log" + DLCscorer + ".json")
     )
-
     opt.subscribe(Events.OPTIMIZATION_STEP, logger)
     opt.maximize(init_points=init_points, n_iter=n_iter, acq=acq)
 

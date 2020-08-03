@@ -96,23 +96,45 @@ class Refine_tracklets(wx.Panel):
         self.sel_datafile.Bind(wx.EVT_FILEPICKER_CHANGED, self.select_datafile)
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
+
+        slider_swap_text = wx.StaticBox(self, label="Specify the min swap fraction")
+        slider_swap_sizer = wx.StaticBoxSizer(slider_swap_text, wx.VERTICAL)
+        self.slider_swap = wx.SpinCtrl(self, value="2")
+        slider_swap_sizer.Add(self.slider_swap, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+        hbox.Add(slider_swap_sizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+
+        slider_track_text = wx.StaticBox(
+            self, label="Specify the min relative tracklet length"
+        )
+        slider_track_sizer = wx.StaticBoxSizer(slider_track_text, wx.VERTICAL)
+        self.slider_track = wx.SpinCtrl(self, value="2")
+        slider_track_sizer.Add(
+            self.slider_track, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
+        )
+        hbox.Add(slider_track_sizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+
+        sizer.Add(
+            hbox, pos=(5, 0), flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, border=10
+        )
+
+        hbox_ = wx.BoxSizer(wx.HORIZONTAL)
         slider_gap_text = wx.StaticBox(
             self,
             label="Specify the max gap size to fill, in frames (initial pickle file only!)",
         )
         slider_gap_sizer = wx.StaticBoxSizer(slider_gap_text, wx.VERTICAL)
-        self.slider_gap = wx.SpinCtrl(self, value="1")
+        self.slider_gap = wx.SpinCtrl(self, value="5")
         slider_gap_sizer.Add(self.slider_gap, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-        hbox.Add(slider_gap_sizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        hbox_.Add(slider_gap_sizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         traillength_text = wx.StaticBox(self, label="Trail Length (visualization)")
         traillength_sizer = wx.StaticBoxSizer(traillength_text, wx.VERTICAL)
         self.length_track = wx.SpinCtrl(self, value="25")
         traillength_sizer.Add(self.length_track, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-        hbox.Add(traillength_sizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        hbox_.Add(traillength_sizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         sizer.Add(
-            hbox, pos=(5, 0), flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, border=10
+            hbox_, pos=(6, 0), flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, border=10
         )
 
         # NEW ROW:
@@ -194,6 +216,10 @@ class Refine_tracklets(wx.Panel):
         tracker = (
             "skeleton" if os.path.splitext(self.datafile)[0].endswith("sk") else "box"
         )
+        window_length = self.filterlength_track.GetValue()
+        if window_length % 2 != 1:
+            raise ValueError('Window length should be odd.')
+
         deeplabcut.filterpredictions(
             self.config,
             [self.video],
@@ -242,6 +268,8 @@ class Refine_tracklets(wx.Panel):
             self.config,
             self.datafile,
             self.video,
+            min_swap_len=self.slider_swap.GetValue(),
+            min_tracklet_len=self.slider_track.GetValue(),
             max_gap=self.slider_gap.GetValue(),
             trail_len=self.length_track.GetValue(),
         )
@@ -257,6 +285,8 @@ class Refine_tracklets(wx.Panel):
         self.sel_config.SetPath("")
         self.sel_datafile.SetPath("")
         self.sel_video.SetPath("")
-        self.slider_gap.SetValue(1)
+        self.slider_swap.SetValue(2)
+        self.slider_track.SetValue(2)
+        self.slider_gap.SetValue(5)
         self.length_track.SetValue(25)
         # self.save.Enable(False)
