@@ -580,7 +580,7 @@ def evaluate_multianimal_crossvalidate(
             stats = pd.read_csv(stats_file, header=None, index_col=0)
             inferencecfg.distnormalization = stats.loc['distnorm', 1]
             stats = stats.drop('distnorm')
-            dcorr = 2 * stats.mean()  # Taken as 2*SD error between predictions and ground truth
+            dcorr = 2 * stats.mean().squeeze()  # Taken as 2*SD error between predictions and ground truth
         else:
             dcorr = 10
         inferencecfg.topktoretain = np.inf
