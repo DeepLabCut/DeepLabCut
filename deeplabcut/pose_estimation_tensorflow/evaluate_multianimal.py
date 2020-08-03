@@ -585,7 +585,7 @@ def evaluate_multianimal_crossvalidate(
         stats_file = os.path.join(os.path.dirname(path_test_config), 'sd.csv')
         if os.path.isfile(stats_file):
             stats = pd.read_csv(stats_file, header=None, index_col=0)
-            inferencecfg.distnormalization = stats.loc['distnorm', 1]
+            inferencecfg.distnormalization = np.round(stats.loc['distnorm', 1], 2).item()
             stats = stats.drop('distnorm')
             dcorr = 2 * stats.mean().squeeze()  # Taken as 2*SD error between predictions and ground truth
         else:
