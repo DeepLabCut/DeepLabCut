@@ -381,8 +381,6 @@ def create_multianimaltraining_dataset(
                     "topktoretain": len(cfg["individuals"])
                     + 1 * (len(cfg["uniquebodyparts"]) > 0),
                 }
-                # TODO:   "distnormalization":  could be calculated here based on data and set
-                # >> now we calculate this during evaluation (which is a good spot...)
                 trainingsetmanipulation.MakeInference_yaml(
                     items2change, path_inference_config, defaultinference_configfile
                 )

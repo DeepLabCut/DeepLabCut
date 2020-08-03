@@ -158,8 +158,7 @@ def extractstrongconnections(
                     if lowerbound is None and upperbound is None:
                         if (
                             score_with_dist_prior > cfg.pafthreshold
-                            and d < cfg.distnormalization
-                            and d >= cfg.distnormalizationLOWER
+                            and cfg.distnormalizationLOWER <= d < cfg.distnormalization
                             and si * sj > cfg.detectionthresholdsquare
                         ):
 
@@ -176,8 +175,7 @@ def extractstrongconnections(
                     else:  # filtering with edgewise distance bounds
                         if (
                             score_with_dist_prior > cfg.pafthreshold
-                            and d < upperbound[edge]
-                            and d >= lowerbound[edge]
+                            and lowerbound[edge] <= d < upperbound[edge]
                             and si * sj > cfg.detectionthresholdsquare
                         ):
                             connection_candidate.append(

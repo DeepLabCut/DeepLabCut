@@ -12,16 +12,31 @@ Licensed under GNU Lesser General Public License v3.0
 import os
 from pathlib import Path
 
-# Dependencies for anaysis
 import numpy as np
 import pandas as pd
 import skimage.color
+from scipy.optimize import linear_sum_assignment
+from scipy.spatial.distance import cdist
 from skimage import io
 from skimage.util import img_as_ubyte
 from tqdm import tqdm
 
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.utils import visualization
+
+
+def _percentile(n):
+    def percentile_(x):
+        return x.quantile(n)
+    percentile_.__name__ = f'percentile_{100 * n:.0f}'
+    return percentile_
+
+
+def _compute_stats(df):
+    return df.agg(['min', 'max', 'mean', np.std,
+                   _percentile(0.25),
+                   _percentile(0.50),
+                   _percentile(0.75)]).stack(level=1)
 
 
 def evaluate_multianimal_full(
@@ -86,6 +101,8 @@ def evaluate_multianimal_full(
     comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
         cfg, comparisonbodyparts
     )
+    all_bpts = np.asarray(len(cfg['individuals']) * cfg['multianimalbodyparts']
+                          + cfg['uniquebodyparts'])
     colors = visualization.get_cmap(len(comparisonbodyparts), name=cfg["colormap"])
     # Make folder for evaluation
     auxiliaryfunctions.attempttomakefolder(
@@ -130,6 +147,8 @@ def evaluate_multianimal_full(
             # TODO: IMPLEMENT for different batch sizes?
             dlc_cfg["batch_size"] = 1  # due to differently sized images!!!
 
+            joints = dlc_cfg['all_joints_names']
+
             # Create folder structure to store results.
             evaluationfolder = os.path.join(
                 cfg["project_path"],
@@ -171,12 +190,6 @@ def evaluate_multianimal_full(
                     print(
                         "Invalid choice, only -1 (last), any integer up to last, or all (as string)!"
                     )
-
-                (
-                    individuals,
-                    uniquebodyparts,
-                    multianimalbodyparts,
-                ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
 
                 final_result = []
                 ##################################################
@@ -235,6 +248,8 @@ def evaluate_multianimal_full(
                         sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
 
                         PredicteData = {}
+                        dist = np.full((len(all_bpts), len(Data)), np.nan)
+                        distnorm = np.full(len(Data), np.nan)
                         print("Analyzing data...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
                             image_path = os.path.join(cfg["project_path"], imagename)
@@ -242,42 +257,22 @@ def evaluate_multianimal_full(
                             frame = img_as_ubyte(skimage.color.gray2rgb(image))
 
                             GT = Data.iloc[imageindex]
+                            df = GT.unstack('coords')
 
-                            # Storing GT data as dictionary, so it can be used for calculating connection costs
-                            groundtruthcoordinates = []
-                            groundtruthidentity = []
-                            for bptindex, bpt in enumerate(dlc_cfg["all_joints_names"]):
-                                coords = np.zeros([len(individuals), 2]) * np.nan
-                                identity = []
-                                for prfxindex, prefix in enumerate(individuals):
-                                    if bpt in uniquebodyparts and prefix == "single":
-                                        coords[prfxindex, :] = np.array(
-                                            [
-                                                GT[cfg["scorer"]][prefix][bpt]["x"],
-                                                GT[cfg["scorer"]][prefix][bpt]["y"],
-                                            ]
-                                        )
-                                        identity.append(prefix)
-                                    elif (
-                                        bpt in multianimalbodyparts
-                                        and prefix != "single"
-                                    ):
-                                        coords[prfxindex, :] = np.array(
-                                            [
-                                                GT[cfg["scorer"]][prefix][bpt]["x"],
-                                                GT[cfg["scorer"]][prefix][bpt]["y"],
-                                            ]
-                                        )
-                                        identity.append(prefix)
-                                    else:
-                                        identity.append("nix")
+                            # Evaluate PAF edge lengths to calibrate `distnorm`
+                            temp = GT.unstack('bodyparts')[joints]
+                            xy = temp.values.reshape((-1, 2, temp.shape[1])).swapaxes(1, 2)
+                            edges = xy[:, dlc_cfg['partaffinityfield_graph']]
+                            lengths = np.sum((edges[:, :, 0] - edges[:, :, 1]) ** 2, axis=2)
+                            distnorm[imageindex] = np.nanmax(lengths)
 
-                                groundtruthcoordinates.append(
-                                    coords[np.isfinite(coords[:, 0]), :]
-                                )
-                                groundtruthidentity.append(
-                                    np.array(identity)[np.isfinite(coords[:, 0])]
-                                )
+                            # FIXME Is having an empty array vs nan really that necessary?!
+                            groundtruthidentity = list(df.index.get_level_values('individuals').to_numpy().reshape((-1, 1)))
+                            groundtruthcoordinates = list(df.values[:, np.newaxis])
+                            for i, coords in enumerate(groundtruthcoordinates):
+                                if np.isnan(coords).any():
+                                    groundtruthcoordinates[i] = np.empty((0, 2), dtype=float)
+                                    groundtruthidentity[i] = np.array([], dtype=str)
 
                             PredicteData[imagename] = {}
                             PredicteData[imagename]["index"] = imageindex
@@ -301,9 +296,21 @@ def evaluate_multianimal_full(
                                 GT,
                             ]
 
+                            coords_pred = pred["coordinates"][0]
+                            probs_pred = pred["confidence"]
+                            for bpt, xy_gt in df.groupby(level='bodyparts'):
+                                inds_gt = np.flatnonzero(np.all(~np.isnan(xy_gt), axis=1))
+                                xy = coords_pred[joints.index(bpt)]
+                                if inds_gt.size and xy.size:
+                                    # Pick the predictions closest to ground truth,
+                                    # rather than the ones the model has most confident in
+                                    d = cdist(xy_gt.iloc[inds_gt], xy)
+                                    rows, cols = linear_sum_assignment(d)
+                                    min_dists = d[rows, cols]
+                                    inds = np.flatnonzero(all_bpts == bpt)
+                                    dist[inds[inds_gt[rows]], imageindex] = min_dists
+
                             if plotting:
-                                coords_pred = pred["coordinates"][0]
-                                probs_pred = pred["confidence"]
                                 fig = visualization.make_multianimal_labeled_image(
                                     frame,
                                     groundtruthcoordinates,
@@ -323,6 +330,30 @@ def evaluate_multianimal_full(
                                 )
 
                         sess.close()  # closes the current tf session
+
+                        # Compute all distance statistics
+                        df_dist = pd.DataFrame(dist, index=df.index)
+                        write_path = os.path.join(os.path.dirname(path_test_config), 'dist.csv')
+                        df_dist.to_csv(write_path)
+
+                        stats_per_ind = _compute_stats(df_dist.groupby('individuals'))
+                        stats_per_ind.to_csv(write_path.replace('dist.csv', 'dist_stats_ind.csv'))
+                        stats_per_bpt = _compute_stats(df_dist.groupby('bodyparts'))
+                        stats_per_bpt.to_csv(write_path.replace('dist.csv', 'dist_stats_bpt.csv'))
+
+                        # For OKS/PCK, compute the standard deviation error across all frames
+                        sd = df_dist.groupby('bodyparts').mean().std(axis=1)
+                        sd['distnorm'] = np.sqrt(np.nanmax(distnorm))
+                        sd.to_csv(write_path.replace('dist.csv', 'sd.csv'))
+
+                        if show_errors:
+                            print('##########################################&1')
+                            print('Euclidean distance statistics per individual')
+                            print(stats_per_ind.mean(axis=1).unstack().to_string())
+                            print('##########################################')
+                            print('Euclidean distance statistics per bodypart')
+                            print(stats_per_bpt.mean(axis=1).unstack().to_string())
+
                         PredicteData["metadata"] = {
                             "nms radius": dlc_cfg.nmsradius,
                             "minimal confidence": dlc_cfg.minconfidence,
@@ -375,12 +406,12 @@ def evaluate_multianimal_crossvalidate(
     plotting=False,
 ):
     """
-    Crossvalidate inference parameters on evaluation data; optimal parametrs will be stored in " inference_cfg.yaml".
+    Cross-validate inference parameters on evaluation data; optimal parameters will be stored in "inference_cfg.yaml".
 
     They will then be then used for inference (for analysis of videos). Performs Bayesian Optimization with https://github.com/fmfn/BayesianOptimization
 
-    This is a crucial step. The most important variable (in inferencecfg) to cross-validate is minimalnumberofconnections. Pass
-    a reasonable range to optimze (e.g. if you have 5 edges from 1 to 5. If you have 4 bpts and 11 connections from 3 to 9).
+    This is a crucial step. The most important variable (in inferencecfg) to cross-validate is minimalnumberofconnections.
+    Pass a reasonable range to optimize (e.g. if you have 5 edges from 1 to 5. If you have 4 bpts and 11 connections from 3 to 9).
 
     config: string
         Full path of the config.yaml file as a string.
@@ -550,6 +581,15 @@ def evaluate_multianimal_crossvalidate(
             inferencecfg = edict(inferencecfg)
             auxfun_multianimal.check_inferencecfg_sanity(cfg, inferencecfg)
 
+        # Pick distance threshold for (r)PCK from the statistics computed during evaluation
+        stats_file = os.path.join(os.path.dirname(path_test_config), 'sd.csv')
+        if os.path.isfile(stats_file):
+            stats = pd.read_csv(stats_file, header=None, index_col=0)
+            inferencecfg.distnormalization = np.round(stats.loc['distnorm', 1], 2).item()
+            stats = stats.drop('distnorm')
+            dcorr = 2 * stats.mean().squeeze()  # Taken as 2*SD error between predictions and ground truth
+        else:
+            dcorr = 10
         inferencecfg.topktoretain = np.inf
         inferencecfg, opt = crossvalutils.bayesian_search(
             config,
