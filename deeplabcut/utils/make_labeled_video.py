@@ -346,6 +346,7 @@ def create_labeled_video(
     filtered=False,
     fastmode=True,
     save_frames=False,
+    keypoints_only=False,
     Frames2plot=None,
     displayedbodyparts="all",
     displayedindividuals="all",
@@ -390,6 +391,10 @@ def create_labeled_video(
     save_frames: bool
         If true creates each frame individual and then combines into a video. This variant is relatively slow as
         it stores all individual frames.
+
+    keypoints_only: bool, optional
+        By default, both video frames and keypoints are visible.
+        If true, only the keypoints are shown.
 
     Frames2plot: List of indices
         If not None & save_frames=True then the frames corresponding to the index will be plotted. For example, Frames2plot=[0,11] will plot the first and the 12th frame.
@@ -454,6 +459,7 @@ def create_labeled_video(
 
     if save_frames:
         fastmode = False  # otherwise one cannot save frames
+        keypoints_only = False
 
     bodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
         cfg, displayedbodyparts
@@ -497,6 +503,7 @@ def create_labeled_video(
         skeleton_color,
         displaycropped,
         fastmode,
+        keypoints_only
     )
 
     with Pool(min(os.cpu_count(), len(Videos))) as pool:
@@ -526,7 +533,8 @@ def proc_video(
     skeleton_color,
     displaycropped,
     fastmode,
-    video,
+    keypoints_only,
+    video
 ):
     """Helper function for create_videos
 
@@ -581,7 +589,27 @@ def proc_video(
                 for bp in df.columns.get_level_values("bodyparts").unique()
                 if bp in bodyparts
             ]
-            if not fastmode:
+
+            if keypoints_only:
+                # Mask rather than drop unwanted bodyparts to ensure consistent coloring
+                mask = df.columns.get_level_values("bodyparts").isin(bodyparts)
+                df.loc[:, ~mask] = np.nan
+                inds = None
+                if bodyparts2connect:
+                    all_bpts = df.columns.get_level_values("bodyparts")[::3]
+                    inds = get_segment_indices(bodyparts2connect, all_bpts)
+                create_video_with_keypoints_only(
+                    df,
+                    videooutname,
+                    inds,
+                    cfg["pcutoff"],
+                    cfg["dotsize"],
+                    cfg["alphavalue"],
+                    skeleton_color,
+                    color_by,
+                    cfg["colormap"]
+                )
+            elif not fastmode:
                 tmpfolder = os.path.join(str(videofolder), "temp-" + vname)
                 if save_frames:
                     auxiliaryfunctions.attempttomakefolder(tmpfolder)
@@ -646,7 +674,7 @@ def proc_video(
             print(e)
 
 
-def create_video_johansson(
+def create_video_with_keypoints_only(
         df,
         output_name,
         ind_links=None,
@@ -696,7 +724,7 @@ def create_video_johansson(
     scat.set_offsets(coords)
     colors = cmap(map_)
     scat.set_color(colors)
-    segs = coords[tuple([ind_links])].swapaxes(0, 1) if ind_links else []
+    segs = coords[tuple(zip(*tuple([ind_links])))].swapaxes(0, 1) if ind_links else []
     coll = LineCollection(segs, colors=skeleton_color, alpha=alpha)
     ax.add_collection(coll)
     ax.set_xlim(0, nx)
@@ -713,7 +741,7 @@ def create_video_johansson(
             coords[xyp[index, :, 2] < pcutoff] = np.nan
             scat.set_offsets(coords)
             if ind_links:
-                segs = coords[tuple([ind_links])].swapaxes(0, 1)
+                segs = coords[tuple(zip(*tuple([ind_links])))].swapaxes(0, 1)
             coll.set_segments(segs)
             writer.grab_frame()
     plt.close(fig)
