@@ -393,8 +393,9 @@ def create_labeled_video(
         it stores all individual frames.
 
     keypoints_only: bool, optional
-        By default, both video frames and keypoints are visible.
-        If true, only the keypoints are shown.
+        By default, both video frames and keypoints are visible. If true, only the keypoints are shown. These clips are an hommage to Johansson movies,
+        see https://www.youtube.com/watch?v=1F5ICP9SYLU and of course his seminal paper: "Visual perception of biological motion and a model for its analysis" 
+        by Gunnar Johansson in Perception & Psychophysics 1973.
 
     Frames2plot: List of indices
         If not None & save_frames=True then the frames corresponding to the index will be plotted. For example, Frames2plot=[0,11] will plot the first and the 12th frame.
