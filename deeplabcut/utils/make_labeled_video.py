@@ -605,9 +605,9 @@ def proc_video(
                     cfg["pcutoff"],
                     cfg["dotsize"],
                     cfg["alphavalue"],
-                    skeleton_color,
-                    color_by,
-                    cfg["colormap"]
+                    skeleton_color=skeleton_color,
+                    color_by=color_by,
+                    colormap=cfg["colormap"]
                 )
             elif not fastmode:
                 tmpfolder = os.path.join(str(videofolder), "temp-" + vname)
@@ -681,6 +681,7 @@ def create_video_with_keypoints_only(
         pcutoff=0.6,
         dotsize=8,
         alpha=0.7,
+        background_color='k',
         skeleton_color='navy',
         color_by='bodypart',
         colormap='viridis',
@@ -730,6 +731,8 @@ def create_video_with_keypoints_only(
     ax.set_xlim(0, nx)
     ax.set_ylim(0, ny)
     ax.axis('off')
+    ax.add_patch(plt.Rectangle((0, 0), 1, 1, facecolor=background_color,
+                               transform=ax.transAxes, zorder=-1))
     ax.invert_yaxis()
     plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
 
