@@ -26,6 +26,7 @@ import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FFMpegWriter
+from matplotlib.collections import LineCollection
 from skimage.draw import circle, line_aa
 from skimage.util import img_as_ubyte
 from tqdm import trange
@@ -345,6 +346,7 @@ def create_labeled_video(
     filtered=False,
     fastmode=True,
     save_frames=False,
+    keypoints_only=False,
     Frames2plot=None,
     displayedbodyparts="all",
     displayedindividuals="all",
@@ -389,6 +391,11 @@ def create_labeled_video(
     save_frames: bool
         If true creates each frame individual and then combines into a video. This variant is relatively slow as
         it stores all individual frames.
+
+    keypoints_only: bool, optional
+        By default, both video frames and keypoints are visible. If true, only the keypoints are shown. These clips are an hommage to Johansson movies,
+        see https://www.youtube.com/watch?v=1F5ICP9SYLU and of course his seminal paper: "Visual perception of biological motion and a model for its analysis" 
+        by Gunnar Johansson in Perception & Psychophysics 1973.
 
     Frames2plot: List of indices
         If not None & save_frames=True then the frames corresponding to the index will be plotted. For example, Frames2plot=[0,11] will plot the first and the 12th frame.
@@ -453,6 +460,7 @@ def create_labeled_video(
 
     if save_frames:
         fastmode = False  # otherwise one cannot save frames
+        keypoints_only = False
 
     bodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
         cfg, displayedbodyparts
@@ -496,6 +504,7 @@ def create_labeled_video(
         skeleton_color,
         displaycropped,
         fastmode,
+        keypoints_only
     )
 
     with Pool(min(os.cpu_count(), len(Videos))) as pool:
@@ -525,7 +534,8 @@ def proc_video(
     skeleton_color,
     displaycropped,
     fastmode,
-    video,
+    keypoints_only,
+    video
 ):
     """Helper function for create_videos
 
@@ -580,7 +590,27 @@ def proc_video(
                 for bp in df.columns.get_level_values("bodyparts").unique()
                 if bp in bodyparts
             ]
-            if not fastmode:
+
+            if keypoints_only:
+                # Mask rather than drop unwanted bodyparts to ensure consistent coloring
+                mask = df.columns.get_level_values("bodyparts").isin(bodyparts)
+                df.loc[:, ~mask] = np.nan
+                inds = None
+                if bodyparts2connect:
+                    all_bpts = df.columns.get_level_values("bodyparts")[::3]
+                    inds = get_segment_indices(bodyparts2connect, all_bpts)
+                create_video_with_keypoints_only(
+                    df,
+                    videooutname,
+                    inds,
+                    cfg["pcutoff"],
+                    cfg["dotsize"],
+                    cfg["alphavalue"],
+                    skeleton_color=skeleton_color,
+                    color_by=color_by,
+                    colormap=cfg["colormap"]
+                )
+            elif not fastmode:
                 tmpfolder = os.path.join(str(videofolder), "temp-" + vname)
                 if save_frames:
                     auxiliaryfunctions.attempttomakefolder(tmpfolder)
@@ -643,6 +673,83 @@ def proc_video(
 
         except FileNotFoundError as e:
             print(e)
+
+
+def create_video_with_keypoints_only(
+        df,
+        output_name,
+        ind_links=None,
+        pcutoff=0.6,
+        dotsize=8,
+        alpha=0.7,
+        background_color='k',
+        skeleton_color='navy',
+        color_by='bodypart',
+        colormap='viridis',
+        fps=25,
+        dpi=200,
+        codec='h264'
+):
+    bodyparts = df.columns.get_level_values("bodyparts")[::3]
+    bodypart_names = bodyparts.unique()
+    n_bodyparts = len(bodypart_names)
+    nx = int(np.nanmax(df.xs('x', axis=1, level='coords')))
+    ny = int(np.nanmax(df.xs('y', axis=1, level='coords')))
+
+    n_frames = df.shape[0]
+    xyp = df.values.reshape((n_frames, -1, 3))
+
+    if color_by == 'bodypart':
+        map_ = bodyparts.map(dict(zip(bodypart_names, range(n_bodyparts))))
+        cmap = plt.get_cmap(colormap, n_bodyparts)
+    elif color_by == 'individual':
+        try:
+            individuals = df.columns.get_level_values("individuals")[::3]
+            individual_names = individuals.unique().to_list()
+            n_individuals = len(individual_names)
+            map_ = individuals.map(dict(zip(individual_names, range(n_individuals))))
+            cmap = plt.get_cmap(colormap, n_individuals)
+        except KeyError as e:
+            raise Exception(
+                "Coloring by individuals is only valid for multi-animal data"
+            ) from e
+    else:
+        raise ValueError(f'Invalid color_by={color_by}')
+
+    prev_backend = plt.get_backend()
+    plt.switch_backend("agg")
+    fig = plt.figure(frameon=False, figsize=(nx / dpi, ny / dpi))
+    ax = fig.add_subplot(111)
+    scat = ax.scatter([], [], s=dotsize ** 2, alpha=alpha)
+    coords = xyp[0, :, :2]
+    coords[xyp[0, :, 2] < pcutoff] = np.nan
+    scat.set_offsets(coords)
+    colors = cmap(map_)
+    scat.set_color(colors)
+    segs = coords[tuple(zip(*tuple([ind_links])))].swapaxes(0, 1) if ind_links else []
+    coll = LineCollection(segs, colors=skeleton_color, alpha=alpha)
+    ax.add_collection(coll)
+    ax.set_xlim(0, nx)
+    ax.set_ylim(0, ny)
+    ax.axis('off')
+    ax.add_patch(plt.Rectangle((0, 0), 1, 1, facecolor=background_color,
+                               transform=ax.transAxes, zorder=-1))
+    ax.invert_yaxis()
+    plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+
+    writer = FFMpegWriter(fps=fps, codec=codec)
+    with writer.saving(fig, output_name, dpi=dpi):
+        writer.grab_frame()
+        for index, _ in enumerate(trange(n_frames - 1), start=1):
+            coords = xyp[index, :, :2]
+            coords[xyp[index, :, 2] < pcutoff] = np.nan
+            scat.set_offsets(coords)
+            if ind_links:
+                segs = coords[tuple(zip(*tuple([ind_links])))].swapaxes(0, 1)
+            coll.set_segments(segs)
+            writer.grab_frame()
+    plt.close(fig)
+    plt.switch_backend(prev_backend)
 
 
 def create_video_with_all_detections(
