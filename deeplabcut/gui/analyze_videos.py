@@ -509,7 +509,7 @@ class Analyze_videos(wx.Panel):
                     trainingsetindex=trainingsetindex,
                     filtertype="median",
                     windowlength=5,
-                    save_as_csv=True,
+                    save_as_csv=save_as_csv,
                 )
 
             if self.trajectory.GetStringSelection() == "Yes":
