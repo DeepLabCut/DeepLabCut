@@ -253,7 +253,7 @@ class Tracklet:
 
 
 class TrackletStitcher:
-    def __init__(self, pickle_file, n_tracks, min_length=10, split_discontinuous=True):
+    def __init__(self, pickle_file, n_tracks, min_length=10, split_tracklets=True):
         if min_length <= 3:
             raise ValueError('A tracklet must have a minimal length of 3.')
 
@@ -282,8 +282,10 @@ class TrackletStitcher:
             if all_nans.any():
                 temp = temp[~all_nans]
                 inds = inds[~all_nans]
+            if not inds.size:
+                continue
             tracklet = Tracklet(temp, inds)
-            if not tracklet.is_continuous and split_discontinuous:
+            if not tracklet.is_continuous and split_tracklets:
                 tracklet = self.split_tracklet(tracklet)
             if not isinstance(tracklet, list):
                 tracklet = [tracklet]
@@ -294,8 +296,10 @@ class TrackletStitcher:
                     self.residuals.append(t)
         self.n_frames = max(last_frames) + 1
 
-        self._tracklets_start = sorted(self, key=lambda t: t.start)[:self.n_tracks]
-        self._tracklets_end = sorted(self, key=lambda t: t.end)[-self.n_tracks:]
+        # FIXME That is not robust if tracklets are short
+        # For example, some of the last tracklets may actually be part of the same track...
+        self._first_tracklets = sorted(self, key=lambda t: t.start)[:self.n_tracks]
+        self._last_tracklets = sorted(self, key=lambda t: t.end)[-self.n_tracks:]
 
     def __getitem__(self, item):
         return self.tracklets[item]
@@ -312,30 +316,30 @@ class TrackletStitcher:
         idx = np.flatnonzero(np.diff(tracklet.inds) != 1) + 1
         inds_new = np.split(tracklet.inds, idx)
         data_new = np.split(tracklet.data, idx)
-        return (Tracklet(data, inds) for data, inds in zip(data_new, inds_new))
+        return [Tracklet(data, inds) for data, inds in zip(data_new, inds_new)]
+
+    # def build_graph(self, max_gap=100):
+    #     self.G = nx.DiGraph()
+    #     self.G.add_nodes_from(self)
+    #     self.G.add_node('source', demand=-self.n_tracks)
+    #     self.G.add_node('sink', demand=self.n_tracks)
+    #     for tracklet_start in self._first_tracklets:
+    #         self.G.add_edge('source', tracklet_start, capacity=1)
+    #     for tracklet_end in self._last_tracklets:
+    #         self.G.add_edge(tracklet_end, 'sink', capacity=1)
+    #     n_combinations = int(factorial(len(self)) / (2 * factorial(len(self) - 2)))
+    #     for tracklet1, tracklet2 in tqdm(combinations(self, 2), total=n_combinations):
+    #         time_gap = tracklet1.time_gap_to(tracklet2)
+    #         if 0 < time_gap <= max_gap:
+    #             w = int(100 * self.calculate_weight(tracklet1, tracklet2))
+    #             if tracklet2 > tracklet1:
+    #                 self.G.add_edge(tracklet1, tracklet2,
+    #                                 weight=w, capacity=1)
+    #             else:
+    #                 self.G.add_edge(tracklet2, tracklet1,
+    #                                 weight=w, capacity=1)
 
     def build_graph(self, max_gap=100):
-        self.G = nx.DiGraph()
-        self.G.add_nodes_from(self)
-        self.G.add_node('source', demand=-self.n_tracks)
-        self.G.add_node('sink', demand=self.n_tracks)
-        for tracklet_start in self._tracklets_start:
-            self.G.add_edge('source', tracklet_start, capacity=1)
-        for tracklet_end in self._tracklets_end:
-            self.G.add_edge(tracklet_end, 'sink', capacity=1)
-        n_combinations = int(factorial(len(self)) / (2 * factorial(len(self) - 2)))
-        for tracklet1, tracklet2 in tqdm(combinations(self, 2), total=n_combinations):
-            time_gap = tracklet1.time_gap_to(tracklet2)
-            if 0 < time_gap <= max_gap:
-                w = int(100 * self.calculate_weight(tracklet1, tracklet2))
-                if tracklet2 > tracklet1:
-                    self.G.add_edge(tracklet1, tracklet2,
-                                    weight=w, capacity=1)
-                else:
-                    self.G.add_edge(tracklet2, tracklet1,
-                                    weight=w, capacity=1)
-
-    def build_graph2(self, max_gap=100):
         # Equivalent of a set cover problem... Need for more documentation here.
         self._mapping = {tracklet: {'in': f'{i}in', 'out': f'{i}out'}
                          for i, tracklet in enumerate(self)}
@@ -348,16 +352,16 @@ class TrackletStitcher:
         nodes_in, nodes_out = zip(*[v.values() for v in self._mapping.values()])
         self.G.add_nodes_from(nodes_in, demand=1)
         self.G.add_nodes_from(nodes_out, demand=-1)
-        for node_in, node_out in zip(nodes_in, nodes_out):
-            self.G.add_edge(node_in, node_out, capacity=1)
-        for tracklet_start in self._tracklets_start:
-            self.G.add_edge('source', self._mapping[tracklet_start]['in'], capacity=1)
-        for tracklet_end in self._tracklets_end:
-            self.G.add_edge(self._mapping[tracklet_end]['out'], 'sink', capacity=1)
+        self.G.add_edges_from(zip(nodes_in, nodes_out), capacity=1)
+        for first_tracklet in self._first_tracklets:
+            self.G.add_edge('source', self._mapping[first_tracklet]['in'], capacity=1)
+        for last_tracklet in self._last_tracklets:
+            self.G.add_edge(self._mapping[last_tracklet]['out'], 'sink', capacity=1)
         n_combinations = int(factorial(len(self)) / (2 * factorial(len(self) - 2)))
         for tracklet1, tracklet2 in tqdm(combinations(self, 2), total=n_combinations):
             time_gap = tracklet1.time_gap_to(tracklet2)
             if 0 < time_gap <= max_gap:
+                # The algorithm works better with integer weights
                 w = int(100 * self.calculate_weight(tracklet1, tracklet2))
                 if tracklet2 > tracklet1:
                     self.G.add_edge(self._mapping[tracklet1]['out'],
@@ -373,14 +377,16 @@ class TrackletStitcher:
             raise ValueError('Inexistent graph. Call `build_graph` first')
 
         try:
+            _, self.flow = nx.capacity_scaling(self.G)
+            self.paths = self.reconstruct_paths()
+        except nx.exception.NetworkXUnfeasible:
+            print('No feasible solution found. Employing black magic...')
             # Preflow push seems to work slightly better than shortest
             # augmentation path..., and is more computationally efficient.
             self.paths = [path[1:-1] for path in nx.node_disjoint_paths(self.G, 'source', 'sink',
                                                                         preflow_push)]
             if len(self.paths) != self.n_tracks:
                 ...
-        except nx.exception.NetworkXNoPath:
-            print('No disjoint paths were found.')
 
     @staticmethod
     def calculate_weight(tracklet1, tracklet2):
@@ -398,7 +404,7 @@ class TrackletStitcher:
 
         return nx.get_edge_attributes(self.G, 'weight')
 
-    def visualize_graph(self, with_weights=False):
+    def draw_graph(self, with_weights=False):
         if self.G is None:
             raise ValueError('Inexistent graph. Call `build_graph` first')
 
@@ -415,15 +421,15 @@ class TrackletStitcher:
         if edges is None:
             edges = []
             for k, v in self.flow.items():
-                if k not in ('source', 'sink'):
+                if all(s not in k for s in ['source', 'sink', 'in']):
                     for i, j in v.items():
                         if i != 'sink' and j == 1:
-                            edges.append((k, i))
+                            edges.append((self._mapping_inv[k],
+                                          self._mapping_inv[i]))
                             break
         G = nx.Graph(edges)
-        return list(map(tuple, nx.connected_components(G)))
-        # return [sorted(tracklets, key=lambda t: t.start)
-        #         for tracklets in nx.connected_components(G)]
+        return [sorted(tracklets, key=lambda t: t.start)
+                for tracklets in nx.connected_components(G)]
 
     @classmethod
     def reconstruct_path(cls, flow, source):
