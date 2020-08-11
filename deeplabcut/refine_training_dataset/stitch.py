@@ -253,7 +253,7 @@ class Tracklet:
 
 
 class TrackletStitcher:
-    def __init__(self, pickle_file, n_tracks, min_length=10):
+    def __init__(self, pickle_file, n_tracks, min_length=10, split_discontinuous=True):
         if min_length <= 3:
             raise ValueError('A tracklet must have a minimal length of 3.')
 
@@ -282,12 +282,16 @@ class TrackletStitcher:
             if all_nans.any():
                 temp = temp[~all_nans]
                 inds = inds[~all_nans]
-            # TODO Split into separate tracklets if inds are not continuous
             tracklet = Tracklet(temp, inds)
-            if len(tracklet) >= min_length:
-                self.tracklets.append(tracklet)
-            else:
-                self.residuals.append(tracklet)
+            if not tracklet.is_continuous and split_discontinuous:
+                tracklet = self.split_tracklet(tracklet)
+            if not isinstance(tracklet, list):
+                tracklet = [tracklet]
+            for t in tracklet:
+                if len(t) >= min_length:
+                    self.tracklets.append(t)
+                else:
+                    self.residuals.append(t)
         self.n_frames = max(last_frames) + 1
 
         self._tracklets_start = sorted(self, key=lambda t: t.start)[:self.n_tracks]
@@ -303,33 +307,12 @@ class TrackletStitcher:
     def get_frame_ind(s):
         return int(re.findall(r"\d+", s)[0])
 
-    # def simplify_tracklets(self, max_gap=10):
-    #     edges = []
-    #     for tracklet1, tracklet2 in combinations(self, 2):
-    #         time_gap = tracklet1.time_gap_to(tracklet2)
-    #         if 0 < time_gap <= max_gap:
-    #             if tracklet1.box_overlap_with(tracklet2) > 0:
-    #                 edges.append((tracklet1, tracklet2))
-    #             else:
-    #                 dist = tracklet1.distance_to(tracklet2)
-    #                 if tracklet1 > tracklet2:
-    #                     vel = max(tracklet1.calc_velocity('tail'),
-    #                               tracklet2.calc_velocity('head'))
-    #                 else:
-    #                     vel = max(tracklet1.calc_velocity('head'),
-    #                               tracklet2.calc_velocity('tail'))
-    #                 if dist <= vel * time_gap:
-    #                     edges.append((tracklet1, tracklet2))
-    #     # Disambiguate nodes (tracklets) with more than 2 connections
-    #     G = nx.Graph(edges)
-    #     new_tracklets = []
-    #     for nodes in nx.connected_components(G):
-    #         if len(nodes) == 2:
-    #             t1, t2 = nodes
-    #             new_tracklets.append(t1 + t2)
-    #             stitcher.tracklets.remove(t1)
-    #             stitcher.tracklets.remove(t2)
-    #     self.tracklets.extend(new_tracklets)
+    @staticmethod
+    def split_tracklet(tracklet):
+        idx = np.flatnonzero(np.diff(tracklet.inds) != 1) + 1
+        inds_new = np.split(tracklet.inds, idx)
+        data_new = np.split(tracklet.data, idx)
+        return (Tracklet(data, inds) for data, inds in zip(data_new, inds_new))
 
     def build_graph(self, max_gap=100):
         self.G = nx.DiGraph()
