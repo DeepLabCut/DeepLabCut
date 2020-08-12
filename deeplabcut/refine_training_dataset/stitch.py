@@ -22,7 +22,7 @@ pickle_file = ('/Users/Jessy/Downloads/MultiMouse-Daniel-2019-12-16/videos/'
 
 
 # TODO Heading over last couple of frames (circular average statistics)
-# TODO Smoothness
+
 
 class Tracklet:
     def __init__(self, data, inds):
@@ -43,6 +43,11 @@ class Tracklet:
         data = np.concatenate((self.data, other.data))
         inds = np.concatenate((self.inds, other.inds))
         return Tracklet(data, inds)
+
+    def __radd__(self, other):
+        if other == 0:
+            return self
+        return self.__add__(other)
 
     def __lt__(self, other):
         """Test whether this tracklet precedes the other one."""
@@ -296,8 +301,8 @@ class TrackletStitcher:
                     self.residuals.append(t)
         self.n_frames = max(last_frames) + 1
 
-        # FIXME That is not robust if tracklets are short
-        # For example, some of the last tracklets may actually be part of the same track...
+        # Note that if tracklets are very short, some may actually be part of the same track
+        # and thus incorrectly reflect separate track endpoints...
         self._first_tracklets = sorted(self, key=lambda t: t.start)[:self.n_tracks]
         self._last_tracklets = sorted(self, key=lambda t: t.end)[-self.n_tracks:]
 
@@ -353,10 +358,12 @@ class TrackletStitcher:
         self.G.add_nodes_from(nodes_in, demand=1)
         self.G.add_nodes_from(nodes_out, demand=-1)
         self.G.add_edges_from(zip(nodes_in, nodes_out), capacity=1)
-        for first_tracklet in self._first_tracklets:
-            self.G.add_edge('source', self._mapping[first_tracklet]['in'], capacity=1)
-        for last_tracklet in self._last_tracklets:
-            self.G.add_edge(self._mapping[last_tracklet]['out'], 'sink', capacity=1)
+        self.G.add_edges_from(zip(['source'] * len(self), nodes_in), capacity=1)
+        self.G.add_edges_from(zip(nodes_out, ['sink'] * len(self)), capacity=1)
+        # for first_tracklet in self._first_tracklets:
+        #     self.G.add_edge('source', self._mapping[first_tracklet]['in'], capacity=1)
+        # for last_tracklet in self._last_tracklets:
+        #     self.G.add_edge(self._mapping[last_tracklet]['out'], 'sink', capacity=1)
         n_combinations = int(factorial(len(self)) / (2 * factorial(len(self) - 2)))
         for tracklet1, tracklet2 in tqdm(combinations(self, 2), total=n_combinations):
             time_gap = tracklet1.time_gap_to(tracklet2)
@@ -380,13 +387,41 @@ class TrackletStitcher:
             _, self.flow = nx.capacity_scaling(self.G)
             self.paths = self.reconstruct_paths()
         except nx.exception.NetworkXUnfeasible:
-            print('No feasible solution found. Employing black magic...')
+            print('No optimal solution found. Employing black magic...')
+            # Let us prune the graph by removing all source and sink edges
+            # but those connecting the `n_tracks` first and last tracklets.
+            in_to_keep = [self._mapping[first_tracklet]['in']
+                          for first_tracklet in self._first_tracklets]
+            out_to_keep = [self._mapping[last_tracklet]['out']
+                           for last_tracklet in self._last_tracklets]
+            in_to_remove = (set(node for _, node in self.G.out_edges('source'))
+                            .difference(in_to_keep))
+            out_to_remove = (set(node for node, _ in self.G.in_edges('sink'))
+                             .difference(out_to_keep))
+            self.G.remove_edges_from(zip(['source'] * len(in_to_remove), in_to_remove))
+            self.G.remove_edges_from(zip(out_to_remove, ['sink'] * len(out_to_remove)))
             # Preflow push seems to work slightly better than shortest
             # augmentation path..., and is more computationally efficient.
-            self.paths = [path[1:-1] for path in nx.node_disjoint_paths(self.G, 'source', 'sink',
-                                                                        preflow_push)]
-            if len(self.paths) != self.n_tracks:
-                ...
+            paths = []
+            for path in nx.node_disjoint_paths(self.G, 'source', 'sink',
+                                               preflow_push, self.n_tracks):
+                temp = set()
+                for node in path[1:-1]:
+                    self.G.remove_node(node)
+                    temp.add(self._mapping_inv[node])
+                paths.append(temp)
+            incomplete_tracks = self.n_tracks - len(paths)
+            if incomplete_tracks == 1:  # All remaining nodes ought to belong to the same track
+                nodes = set(self._mapping_inv[node] for node in self.G
+                            if node not in ('source', 'sink'))
+                paths.append(nodes)
+            elif incomplete_tracks > 1:
+                # TODO A simple option may be to relax `max_gap` when building the graph
+                raise NotImplementedError
+            self.paths = paths
+
+    def finalize(self):
+        # TODO Incorporate residual tracklets
 
     @staticmethod
     def calculate_weight(tracklet1, tracklet2):
@@ -413,9 +448,12 @@ class TrackletStitcher:
         if with_weights:
             nx.draw_networkx_edge_labels(self.G, pos, edge_labels=self.weights)
 
-    def plot_path(self, path):
-        for i in path:
-            self._mapping_inv[i].plot()
+    def plot_paths(self, colormap='viridis'):
+        n_paths = len(self.paths)
+        colors = plt.get_cmap(colormap, n_paths)(range(n_paths))
+        for path, color in zip(self.paths, colors):
+            for tracklet in path:
+                tracklet.plot(color=color)
 
     def reconstruct_paths(self, edges=None):
         if edges is None:
