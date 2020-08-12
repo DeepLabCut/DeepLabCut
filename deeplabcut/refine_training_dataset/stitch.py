@@ -10,7 +10,7 @@ from networkx.algorithms.flow import preflow_push
 from scipy.linalg import hankel
 from scipy.spatial.distance import directed_hausdorff
 from statsmodels.tsa.api import SimpleExpSmoothing
-from tqdm import tqdm
+from tqdm import tqdm, trange
 
 
 pickle_file = ('/Users/Jessy/Downloads/MultiMouse-Daniel-2019-12-16/videos/'
@@ -30,7 +30,7 @@ class Tracklet:
         self.inds = np.array(inds)
         monotonically_increasing = all(a < b for a, b in zip(inds, inds[1:]))
         if not monotonically_increasing:
-            idx = np.argsort(inds)
+            idx = np.argsort(inds, kind='mergesort')  # For stable sort with duplicates
             self.inds = self.inds[idx]
             self.data = self.data[idx]
         self._centroid = None
@@ -93,6 +93,12 @@ class Tracklet:
     @property
     def end(self):
         return self.inds[-1]
+
+    def contains_duplicates(self, return_indices=False):
+        has_duplicates = len(set(self.inds)) != len(self.inds)
+        if not return_indices:
+            return has_duplicates
+        return has_duplicates, np.flatnonzero(np.diff(self.inds) == 0)
 
     def calc_velocity(self, where='head', norm=True):
         if where == 'tail':
@@ -265,6 +271,7 @@ class TrackletStitcher:
         self.n_tracks = n_tracks
         self.G = None
         self.paths = None
+        self.tracks = None
 
         with open(pickle_file, 'rb') as file:
             tracklets = pickle.load(file)
@@ -297,7 +304,7 @@ class TrackletStitcher:
             for t in tracklet:
                 if len(t) >= min_length:
                     self.tracklets.append(t)
-                else:
+                elif 1 < len(t) < min_length:  # Ignore false alarms
                     self.residuals.append(t)
         self.n_frames = max(last_frames) + 1
 
@@ -409,19 +416,55 @@ class TrackletStitcher:
                 for node in path[1:-1]:
                     self.G.remove_node(node)
                     temp.add(self._mapping_inv[node])
-                paths.append(temp)
+                paths.append(list(temp))
             incomplete_tracks = self.n_tracks - len(paths)
             if incomplete_tracks == 1:  # All remaining nodes ought to belong to the same track
                 nodes = set(self._mapping_inv[node] for node in self.G
                             if node not in ('source', 'sink'))
-                paths.append(nodes)
+                # Verify whether there are overlapping tracklets
+                for t1, t2 in combinations(nodes, 2):
+                    if t1 in t2:
+                        # Pick the segment that minimizes "smoothness", computed here
+                        # with the coefficient of variation of the differences.
+                        nodes.remove(t1)
+                        nodes.remove(t2)
+                        track = sum(nodes)
+                        hyp1 = track + t1
+                        hyp2 = track + t2
+                        dx1 = np.diff(hyp1.centroid, axis=0)
+                        cv1 = dx1.std() / np.abs(dx1).mean()
+                        dx2 = np.diff(hyp2.centroid, axis=0)
+                        cv2 = dx2.std() / np.abs(dx2).mean()
+                        if cv1 < cv2:
+                            nodes.add(t1)
+                            self.residuals.append(t2)
+                        else:
+                            nodes.add(t2)
+                            self.residuals.append(t1)
+                paths.append(list(nodes))
             elif incomplete_tracks > 1:
                 # TODO A simple option may be to relax `max_gap` when building the graph
                 raise NotImplementedError
             self.paths = paths
+        finally:
+            self._finalize_tracks()
 
-    def finalize(self):
-        # TODO Incorporate residual tracklets
+    def _finalize_tracks(self):
+        tracks = np.asarray([sum(path) for path in self.paths])
+        # Greedily incorporate the residual tracklets
+        residuals = sorted(self.residuals, key=len)
+        for _ in trange(len(residuals)):
+            residual = residuals.pop()
+            easy_fit = [residual not in track for track in tracks]
+            inds = np.flatnonzero(easy_fit)
+            if inds.size == 1:
+                tracks[inds[0]] += residual
+            elif inds.size >= 2:
+                # Disambiguate a residual from its distance to the candidate tracklets
+                dist = [residual.distance_to(track) for track in tracks[inds]]
+                ind = inds[np.argmin(dist)]
+                tracks[ind] += residual
+        self.tracks = tracks
 
     @staticmethod
     def calculate_weight(tracklet1, tracklet2):
@@ -448,12 +491,17 @@ class TrackletStitcher:
         if with_weights:
             nx.draw_networkx_edge_labels(self.G, pos, edge_labels=self.weights)
 
-    def plot_paths(self, colormap='viridis'):
-        n_paths = len(self.paths)
-        colors = plt.get_cmap(colormap, n_paths)(range(n_paths))
-        for path, color in zip(self.paths, colors):
-            for tracklet in path:
+    def plot_paths(self, colormap='Set2'):
+        for path in self.paths:
+            length = len(path)
+            colors = plt.get_cmap(colormap, length)(range(length))
+            for tracklet, color in zip(path, colors):
                 tracklet.plot(color=color)
+
+    def plot_tracks(self, colormap='viridis'):
+        colors = plt.get_cmap(colormap, self.n_tracks)(range(self.n_tracks))
+        for track, color in zip(self.tracks, colors):
+            track.plot(color=color)
 
     def reconstruct_paths(self, edges=None):
         if edges is None:
@@ -469,15 +517,6 @@ class TrackletStitcher:
         return [sorted(tracklets, key=lambda t: t.start)
                 for tracklets in nx.connected_components(G)]
 
-    @classmethod
-    def reconstruct_path(cls, flow, source):
-        path = [source]
-        for k, v in flow[source].items():
-            if k == 'sink':
-                break
-            if v == 1:
-                path.extend(cls.reconstruct_path(flow, k))
-        return path
 
 
 stitcher = TrackletStitcher(pickle_file, 3, 10)
