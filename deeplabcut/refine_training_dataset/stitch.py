@@ -4,6 +4,7 @@ import numpy as np
 import pickle
 import re
 import scipy.linalg.interpolative as sli
+from collections import defaultdict
 from itertools import combinations
 from math import factorial
 from networkx.algorithms.flow import preflow_push
@@ -330,28 +331,23 @@ class TrackletStitcher:
         data_new = np.split(tracklet.data, idx)
         return [Tracklet(data, inds) for data, inds in zip(data_new, inds_new)]
 
-    # def build_graph(self, max_gap=100):
-    #     self.G = nx.DiGraph()
-    #     self.G.add_nodes_from(self)
-    #     self.G.add_node('source', demand=-self.n_tracks)
-    #     self.G.add_node('sink', demand=self.n_tracks)
-    #     for tracklet_start in self._first_tracklets:
-    #         self.G.add_edge('source', tracklet_start, capacity=1)
-    #     for tracklet_end in self._last_tracklets:
-    #         self.G.add_edge(tracklet_end, 'sink', capacity=1)
-    #     n_combinations = int(factorial(len(self)) / (2 * factorial(len(self) - 2)))
-    #     for tracklet1, tracklet2 in tqdm(combinations(self, 2), total=n_combinations):
-    #         time_gap = tracklet1.time_gap_to(tracklet2)
-    #         if 0 < time_gap <= max_gap:
-    #             w = int(100 * self.calculate_weight(tracklet1, tracklet2))
-    #             if tracklet2 > tracklet1:
-    #                 self.G.add_edge(tracklet1, tracklet2,
-    #                                 weight=w, capacity=1)
-    #             else:
-    #                 self.G.add_edge(tracklet2, tracklet1,
-    #                                 weight=w, capacity=1)
+    def compute_max_gap(self):
+        gap = defaultdict(list)
+        for tracklet1, tracklet2 in combinations(self, 2):
+            gap[tracklet1].append(tracklet1.time_gap_to(tracklet2))
+        max_gap = 0
+        for vals in gap.values():
+            for val in sorted(vals):
+                if val > 0:
+                    if val > max_gap:
+                        max_gap = val
+                    break
+        return max_gap
 
-    def build_graph(self, max_gap=100):
+    def build_graph(self, max_gap=None):
+        if not max_gap:
+            max_gap = int(1.2 * self.compute_max_gap())
+
         # Equivalent of a set cover problem... Need for more documentation here.
         self._mapping = {tracklet: {'in': f'{i}in', 'out': f'{i}out'}
                          for i, tracklet in enumerate(self)}
@@ -367,10 +363,6 @@ class TrackletStitcher:
         self.G.add_edges_from(zip(nodes_in, nodes_out), capacity=1)
         self.G.add_edges_from(zip(['source'] * len(self), nodes_in), capacity=1)
         self.G.add_edges_from(zip(nodes_out, ['sink'] * len(self)), capacity=1)
-        # for first_tracklet in self._first_tracklets:
-        #     self.G.add_edge('source', self._mapping[first_tracklet]['in'], capacity=1)
-        # for last_tracklet in self._last_tracklets:
-        #     self.G.add_edge(self._mapping[last_tracklet]['out'], 'sink', capacity=1)
         n_combinations = int(factorial(len(self)) / (2 * factorial(len(self) - 2)))
         for tracklet1, tracklet2 in tqdm(combinations(self, 2), total=n_combinations):
             time_gap = tracklet1.time_gap_to(tracklet2)
@@ -410,6 +402,7 @@ class TrackletStitcher:
             # Preflow push seems to work slightly better than shortest
             # augmentation path..., and is more computationally efficient.
             paths = []
+            # FIXME If no existing paths, find dense structures rather?
             for path in nx.node_disjoint_paths(self.G, 'source', 'sink',
                                                preflow_push, self.n_tracks):
                 temp = set()
@@ -443,7 +436,6 @@ class TrackletStitcher:
                             self.residuals.append(t1)
                 paths.append(list(nodes))
             elif incomplete_tracks > 1:
-                # TODO A simple option may be to relax `max_gap` when building the graph
                 raise NotImplementedError
             self.paths = paths
         finally:
