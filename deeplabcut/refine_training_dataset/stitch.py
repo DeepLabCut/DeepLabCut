@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
+import pandas as pd
 import pickle
 import re
 import scipy.linalg.interpolative as sli
@@ -12,17 +13,6 @@ from scipy.linalg import hankel
 from scipy.spatial.distance import directed_hausdorff
 from statsmodels.tsa.api import SimpleExpSmoothing
 from tqdm import tqdm, trange
-
-
-pickle_file = ('/Users/Jessy/Downloads/MultiMouse-Daniel-2019-12-16/videos/'
-               'videocompressed11DLC_resnet50_MultiMouseDec16shuffle1_50000_bx.pickle')
-# pickle_file = ('/Users/Jessy/Downloads/Marmoset-Mackenzie-2019-05-29/videos/'
-#                'short_videoDLC_resnet50_MarmosetMay29shuffle0_20000_bx.pickle')
-# pickle_file = ('/Users/Jessy/Downloads/two_white_mice_052820-SN-2020-05-28/videos/'
-#                'White_mice_togetherDLC_resnet50_two_white_mice_052820May28shuffle1_200000_el.pickle')
-
-
-# TODO Heading over last couple of frames (circular average statistics)
 
 
 class Tracklet:
@@ -37,7 +27,7 @@ class Tracklet:
         self._centroid = None
 
     def __len__(self):
-        return len(self.inds)
+        return self.inds.size
 
     def __add__(self, other):
         """Join this tracklet to another one."""
@@ -269,6 +259,7 @@ class TrackletStitcher:
         if min_length <= 3:
             raise ValueError('A tracklet must have a minimal length of 3.')
 
+        self.filename = pickle_file
         self.n_tracks = n_tracks
         self.G = None
         self.paths = None
@@ -458,6 +449,26 @@ class TrackletStitcher:
                 tracks[ind] += residual
         self.tracks = tracks
 
+    def write_tracks(self, output_name=''):
+        if self.tracks is None:
+            raise ValueError('No tracks were found. Call `stitch` first')
+
+        scorer = self.header.get_level_values('scorer').unique().to_list()
+        individuals = [f'ind{i}' for i in range(self.n_tracks)]
+        bpts = self.header.get_level_values('bodyparts').unique().to_list()
+        coords = ['x', 'y', 'likelihood']
+        ncols = len(bpts) * len(coords)
+        index = range(self.n_frames)
+        columns = pd.MultiIndex.from_product([scorer, individuals, bpts, coords],
+                                             names=['scorer', 'individuals', 'bodyparts', 'coords'])
+        data = np.full((self.n_frames, len(columns)), np.nan)
+        for n, track in enumerate(self.tracks):
+            data[track.inds, n * ncols:(n + 1) * ncols] = track.data.reshape((len(track), ncols))
+        df = pd.DataFrame(data, index=index, columns=columns)
+        if not output_name:
+            output_name = self.filename.replace('pickle', 'h5')
+        df.to_hdf(output_name, 'df_with_missing', format='table', mode='w')
+
     @staticmethod
     def calculate_weight(tracklet1, tracklet2):
         return (
@@ -484,6 +495,9 @@ class TrackletStitcher:
             nx.draw_networkx_edge_labels(self.G, pos, edge_labels=self.weights)
 
     def plot_paths(self, colormap='Set2'):
+        if self.paths is None:
+            raise ValueError('No paths were found. Call `stitch` first')
+
         for path in self.paths:
             length = len(path)
             colors = plt.get_cmap(colormap, length)(range(length))
@@ -491,6 +505,9 @@ class TrackletStitcher:
                 tracklet.plot(color=color)
 
     def plot_tracks(self, colormap='viridis'):
+        if self.tracks is None:
+            raise ValueError('No tracks were found. Call `stitch` first')
+
         colors = plt.get_cmap(colormap, self.n_tracks)(range(self.n_tracks))
         for track, color in zip(self.tracks, colors):
             track.plot(color=color)
