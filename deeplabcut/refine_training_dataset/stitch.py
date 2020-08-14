@@ -211,13 +211,23 @@ class Tracklet:
         return mat
 
     def to_hankelet(self):
+        # See Li et al., 2012. Cross-view Activity Recognition using Hankelets.
+        # As proposed in the paper, the Hankel matrix can either be formed from
+        # the tracklet's centroid or its normalized velocity.
         # vel = np.diff(self.centroid, axis=0)
         # vel /= np.linalg.norm(vel, axis=1, keepdims=True)
         # return self.hankelize(vel)
         return self.hankelize(self.centroid)
 
     def dynamic_dissimilarity_with(self, other_tracklet):
-        """See Cross-view Activity Recognition using Hankelets."""
+        """
+        Compute a dissimilarity score between Hankelets.
+        This metric efficiently captures the degree of alignment of
+        the subspaces spanned by the columns of both matrices.
+
+        See Li et al., 2012.
+            Cross-view Activity Recognition using Hankelets.
+        """
         hk1 = self.to_hankelet()
         hk1 /= np.linalg.norm(hk1)
         hk2 = other_tracklet.to_hankelet()
@@ -228,7 +238,18 @@ class Tracklet:
         return 2 - np.linalg.norm(temp1 + temp2)
 
     def dynamic_similarity_with(self, other_tracklet, tol=0.01):
-        """See Fast Track Matching and Event Detection; The Way They Move: Tracking Multiple Targets with Similar Appearance"""
+        """
+        Evaluate the complexity of the tracklets' underlying dynamics
+        from the rank of their Hankel matrices, and assess whether
+        they originate from the same track. The idea is that if two
+        tracklets are part of the same track, they can be approximated
+        by a low order regressor. Conversely, tracklets belonging to
+        different tracks will require a higher order regressor.
+
+        See Dicle et al., 2013.
+            The Way They Move: Tracking Multiple Targets with Similar Appearance.
+        """
+        # TODO Add missing data imputation
         joint_tracklet = self + other_tracklet
         joint_rank = joint_tracklet.estimate_rank(tol)
         rank1 = self.estimate_rank(tol)
@@ -236,7 +257,13 @@ class Tracklet:
         return (rank1 + rank2) / joint_rank - 1
 
     def estimate_rank(self, tol):
-        """The optimal hard threshold for singular values is 4/np.sqrt(3)"""
+        """
+        Estimate the (low) rank of a noisy matrix via
+        hard thresholding of singular values.
+
+        See Gavish & Donoho, 2013.
+            The optimal hard threshold for singular values is 4/sqrt(3)
+        """
         mat = self.to_hankelet()
         # nrows, ncols = mat.shape
         # beta = nrows / ncols
@@ -255,8 +282,8 @@ class Tracklet:
 
 
 class TrackletStitcher:
-    def __init__(self, pickle_file, n_tracks, min_length=10, split_tracklets=True):
-        if min_length <= 3:
+    def __init__(self, pickle_file, n_tracks, min_length=5, split_tracklets=True):
+        if min_length < 3:
             raise ValueError('A tracklet must have a minimal length of 3.')
 
         self.filename = pickle_file
@@ -339,7 +366,6 @@ class TrackletStitcher:
         if not max_gap:
             max_gap = int(1.2 * self.compute_max_gap())
 
-        # Equivalent of a set cover problem... Need for more documentation here.
         self._mapping = {tracklet: {'in': f'{i}in', 'out': f'{i}out'}
                          for i, tracklet in enumerate(self)}
         self._mapping_inv = {label: k for k, v in self._mapping.items()
@@ -527,53 +553,12 @@ class TrackletStitcher:
                 for tracklets in nx.connected_components(G)]
 
 
-
-stitcher = TrackletStitcher(pickle_file, 3, 10)
-stitcher.build_graph(100)
-# stitcher.build_graph_set_cover(300)
-
-# _, stitcher.flow = nx.capacity_scaling(stitcher.G)
-# paths = stitcher.reconstruct_paths()
-
-# for nodes, color in zip(meh2, ['darkgray', 'orange']):
-#     for node in nodes[1:-1]:
-#         node.plot(color=color)
-#
-# nodes = meh[0][1:-1]
-# stitcher.G.remove_nodes_from(nodes)
-
-
-def test_graphs():
-    G = nx.DiGraph()
-    G.add_node('source', demand=-2)
-    G.add_node('sink', demand=2)
-    G.add_nodes_from(range(5))
-    G.add_edge('source', 0, capacity=1)
-    G.add_edge('source', 1, capacity=1)
-    G.add_edge(4, 'sink', capacity=1)
-    G.add_edge(3, 'sink', capacity=1)
-    G.add_edge(0, 2, capacity=1, weight=2)
-    G.add_edge(0, 3, capacity=1, weight=5)
-    G.add_edge(2, 4, capacity=1, weight=1)
-    G.add_edge(1, 3, capacity=1, weight=1)
-    G.add_edge(1, 2, capacity=1, weight=1)
-
-    G = nx.DiGraph()
-    G.add_node('source', demand=-2)
-    G.add_node('sink', demand=2)
-    G.add_nodes_from(range(5), demand=1)
-    G.add_nodes_from(range(5, 10), demand=-1)
-    G.add_edge('source', 0, capacity=1)
-    G.add_edge('source', 1, capacity=1)
-    G.add_edge(9, 'sink', capacity=1)
-    G.add_edge(8, 'sink', capacity=1)
-    G.add_edge(5, 2, capacity=1, weight=2)
-    G.add_edge(5, 3, capacity=1, weight=5)
-    G.add_edge(7, 4, capacity=1, weight=1)
-    G.add_edge(6, 3, capacity=1, weight=1)
-    G.add_edge(6, 2, capacity=1, weight=1)
-    G.add_edge(0, 5)
-    G.add_edge(1, 6)
-    G.add_edge(2, 7)
-    G.add_edge(3, 8)
-    G.add_edge(4, 9)
+# pickle_file = ('/Users/Jessy/Downloads/MultiMouse-Daniel-2019-12-16/videos/'
+#                'videocompressed11DLC_resnet50_MultiMouseDec16shuffle1_50000_bx.pickle')
+pickle_file = ('/Users/Jessy/Downloads/MultiMouse-Daniel-2019-12-16/videos/'
+               'videocompressed1DLC_resnet50_MultiMouseDec16shuffle1_50000_el.pickle')
+# pickle_file = ('/Users/Jessy/Downloads/two_white_mice_052820-SN-2020-05-28/videos/'
+#                'White_mice_togetherDLC_resnet50_two_white_mice_052820May28shuffle1_200000_bx.pickle')
+stitcher = TrackletStitcher(pickle_file, 3, split_tracklets=True)
+stitcher.build_graph()
+stitcher.stitch()
