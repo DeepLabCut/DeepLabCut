@@ -275,7 +275,8 @@ def make_labeled_images_from_dataframe(
         destfolder = os.path.dirname(images[0])
     tmpfolder = destfolder + "_labeled"
     attempttomakefolder(tmpfolder)
-    ic = io.imread_collection(images.to_list())
+    images_list = images.to_list()
+    ic = io.imread_collection(images_list)
 
     h, w = ic[0].shape[:2]
     fig, ax = prepare_figure_axes(w, h, scale, dpi)
@@ -291,12 +292,14 @@ def make_labeled_images_from_dataframe(
     ax.add_collection(coll)
 
     for i in trange(len(ic)):
-        coords = xy[i]
+        filename = ic.files[i]
+        ind = images_list.index(filename)
+        coords = xy[ind]
         im.set_array(ic[i])
         if ind_bones:
-            coll.set_segments(segs[i])
+            coll.set_segments(segs[ind])
         scat.set_offsets(coords)
-        imagename = os.path.basename(ic.files[i])
+        imagename = os.path.basename(filename)
         fig.tight_layout()
         fig.savefig(
             os.path.join(tmpfolder, imagename.replace(".png", f"_{color_by}.png")),
