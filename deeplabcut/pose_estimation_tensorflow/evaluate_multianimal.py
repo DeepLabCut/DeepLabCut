@@ -348,10 +348,10 @@ def evaluate_multianimal_full(
 
                         if show_errors:
                             print('##########################################&1')
-                            print('Euclidean distance statistics per individual')
+                            print('Euclidean distance statistics per individual (in pixels)')
                             print(stats_per_ind.mean(axis=1).unstack().to_string())
                             print('##########################################')
-                            print('Euclidean distance statistics per bodypart')
+                            print('Euclidean distance statistics per bodypart (in pixels)')
                             print(stats_per_bpt.mean(axis=1).unstack().to_string())
 
                         PredicteData["metadata"] = {
