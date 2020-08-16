@@ -333,7 +333,7 @@ def evaluate_multianimal_full(
 
                         # Compute all distance statistics
                         df_dist = pd.DataFrame(dist, index=df.index)
-                        write_path = os.path.join(os.path.dirname(path_test_config), 'dist.csv')
+                        write_path = os.path.join(evaluationfolder, 'dist.csv')
                         df_dist.to_csv(write_path)
 
                         stats_per_ind = _compute_stats(df_dist.groupby('individuals'))
@@ -582,7 +582,7 @@ def evaluate_multianimal_crossvalidate(
             auxfun_multianimal.check_inferencecfg_sanity(cfg, inferencecfg)
 
         # Pick distance threshold for (r)PCK from the statistics computed during evaluation
-        stats_file = os.path.join(os.path.dirname(path_test_config), 'sd.csv')
+        stats_file = os.path.join(evaluationfolder, 'sd.csv')
         if os.path.isfile(stats_file):
             stats = pd.read_csv(stats_file, header=None, index_col=0)
             inferencecfg.distnormalization = np.round(stats.loc['distnorm', 1], 2).item()
@@ -628,7 +628,7 @@ def evaluate_multianimal_crossvalidate(
             format="table",
             mode="w",
         )
-        DataOptParams.to_csv(path_inference_config.split(".yaml")[0] + ".csv")
+        DataOptParams.to_csv(os.path.join(evaluationfolder, 'results.csv'))
         print("Saving optimal inference parameters...")
         print(DataOptParams.to_string())
         auxiliaryfunctions.write_plainconfig(path_inference_config, dict(inferencecfg))
