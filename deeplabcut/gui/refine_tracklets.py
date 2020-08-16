@@ -229,7 +229,7 @@ class Refine_tracklets(wx.Panel):
             filtertype=self.filter_track.GetValue(),
             track_method=tracker,
             windowlength=self.filterlength_track.GetValue(),
-            save_as_csv=False,
+            save_as_csv=True,
         )
 
     def export_data(self, event):
