@@ -385,8 +385,10 @@ plotted as plus (‘+’), DeepLabCut’s predictions either as ‘.’ (for con
 The evaluation results for each shuffle of the training dataset are stored in a unique subdirectory in a newly created
 directory ‘evaluation-results’ in the project directory. The user can visually inspect if the distance between the labeled
 and the predicted body parts are acceptable. In the event of benchmarking with different shuffles of same training
-dataset, the user can provide multiple shuffle indices to evaluate the corresponding network. If the generalization is
-not sufficient, the user might want to:
+dataset, the user can provide multiple shuffle indices to evaluate the corresponding network.
+Note that with multi-animal projects additional distance statistics aggregated over animals or bodyparts are also stored 
+in that directory. This aims at providing a finer quantitative evaluation of multi-animal prediction performance
+before animal tracking. If the generalization is not sufficient, the user might want to:
 
 • check if the labels were imported correctly; i.e., invisible points are not labeled and the points of interest are
 labeled accurately
