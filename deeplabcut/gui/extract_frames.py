@@ -214,8 +214,7 @@ class Extract_frames(wx.Panel):
         algo = self.algo_choice.GetValue()
         if self.crop_choice.GetStringSelection() == "True (read from config file)":
             crop = True
-
-        if self.crop_choice.GetStringSelection() == "GUI":
+        elif self.crop_choice.GetStringSelection() == "GUI":
             crop = "GUI"
         else:
             crop = False

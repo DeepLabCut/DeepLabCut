@@ -181,7 +181,9 @@ def save_labeled_frame(fig, image_path, dest_folder, belongs_to_train):
 
 
 def prepare_figure_axes(width, height, scale=1.0, dpi=100):
-    fig = plt.figure(frameon=False, figsize=(width * scale / dpi, height * scale / dpi))
+    fig = plt.figure(frameon=False,
+                     figsize=(width * scale / dpi, height * scale / dpi),
+                     dpi=dpi)
     ax = fig.add_subplot(111)
     ax.axis("off")
     ax.set_xlim(0, width)
@@ -275,30 +277,66 @@ def make_labeled_images_from_dataframe(
         destfolder = os.path.dirname(images[0])
     tmpfolder = destfolder + "_labeled"
     attempttomakefolder(tmpfolder)
-    ic = io.imread_collection(images.to_list())
+    images_list = images.to_list()
+    ic = io.imread_collection(images_list)
 
     h, w = ic[0].shape[:2]
-    fig, ax = prepare_figure_axes(w, h, scale, dpi)
-    fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-    im = ax.imshow(np.zeros((h, w)), "gray")
-    scat = ax.scatter(
-        [], [], s=cfg["dotsize"], alpha=cfg["alphavalue"], marker=keypoint
-    )
-    scat.set_color(colors)
+    all_same_shape = True
+    for array in ic[1:]:
+        if array.shape[:2] != (h, w):
+            all_same_shape = False
+            break
+
     xy = df.values.reshape((df.shape[0], -1, 2))
     segs = xy[:, ind_bones].swapaxes(1, 2)
-    coll = LineCollection([], colors=cfg["skeleton_color"], alpha=cfg["alphavalue"])
-    ax.add_collection(coll)
 
-    for i in trange(len(ic)):
-        coords = xy[i]
-        im.set_array(ic[i])
-        if ind_bones:
-            coll.set_segments(segs[i])
-        scat.set_offsets(coords)
-        imagename = os.path.basename(ic.files[i])
-        fig.tight_layout()
-        fig.savefig(
-            os.path.join(tmpfolder, imagename.replace(".png", f"_{color_by}.png"))
+    if all_same_shape:  # Very efficient, avoid re-drawing the whole plot
+        fig, ax = prepare_figure_axes(w, h, scale, dpi)
+        fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+        im = ax.imshow(np.zeros((h, w)), "gray")
+        scat = ax.scatter(
+            [], [], s=cfg["dotsize"], alpha=cfg["alphavalue"], marker=keypoint
         )
-    plt.close(fig)
+        scat.set_color(colors)
+        coll = LineCollection([], colors=cfg["skeleton_color"], alpha=cfg["alphavalue"])
+        ax.add_collection(coll)
+        for i in trange(len(ic)):
+            filename = ic.files[i]
+            ind = images_list.index(filename)
+            coords = xy[ind]
+            im.set_array(ic[i])
+            if ind_bones:
+                coll.set_segments(segs[ind])
+            scat.set_offsets(coords)
+            imagename = os.path.basename(filename)
+            fig.tight_layout()
+            fig.savefig(
+                os.path.join(tmpfolder, imagename.replace(".png", f"_{color_by}.png")),
+                dpi=dpi
+            )
+        plt.close(fig)
+
+    else:  # Good old inelegant way
+        for i in trange(len(ic)):
+            filename = ic.files[i]
+            ind = images_list.index(filename)
+            coords = xy[ind]
+            image = ic[i]
+            h, w = image.shape[:2]
+            fig, ax = prepare_figure_axes(w, h, scale, dpi)
+            ax.imshow(image)
+            if ind_bones:
+                coll = LineCollection(segs[ind],
+                                      colors=cfg["skeleton_color"],
+                                      alpha=cfg["alphavalue"])
+                ax.add_collection(coll)
+            ax.scatter(
+                *coords.T, s=cfg["dotsize"], alpha=cfg["alphavalue"], marker=keypoint
+            )
+            imagename = os.path.basename(filename)
+            fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+            fig.savefig(
+                os.path.join(tmpfolder, imagename.replace(".png", f"_{color_by}.png")),
+                dpi=dpi
+            )
+            plt.close(fig)
