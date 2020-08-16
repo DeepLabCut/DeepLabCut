@@ -622,12 +622,12 @@ def evaluate_multianimal_crossvalidate(
 
         path_inference_config = str(path_inference_config)
         # print("Quantification:", DataOptParams.head())
-        DataOptParams.to_hdf(
-            path_inference_config.split(".yaml")[0] + ".h5",
-            "df_with_missing",
-            format="table",
-            mode="w",
-        )
+        # DataOptParams.to_hdf(
+        #     path_inference_config.split(".yaml")[0] + ".h5",
+        #     "df_with_missing",
+        #     format="table",
+        #     mode="w",
+        # )
         DataOptParams.to_csv(os.path.join(evaluationfolder, 'results.csv'))
         print("Saving optimal inference parameters...")
         print(DataOptParams.to_string())
