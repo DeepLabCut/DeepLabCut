@@ -213,7 +213,7 @@ def extract_outlier_frames(
                     config,
                     video,
                     shuffle,
-                    df_temp,
+                    df,
                     savelabeled,
                     cfg.get("multianimalproject", False),
                 )
@@ -260,7 +260,7 @@ def extract_outlier_frames(
                     ExtractFramesbasedonPreselection(
                         Indices,
                         extractionalgorithm,
-                        df_temp,
+                        df,
                         dataname,
                         video,
                         cfg,
