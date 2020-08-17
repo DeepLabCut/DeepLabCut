@@ -8,11 +8,9 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
-import os
-import subprocess
-from pathlib import Path
-
 import cv2
+import subprocess
+from deeplabcut.utils.video import VideoWriter
 
 
 # Historically DLC used: from scipy.misc import imread, imresize >> deprecated functions
@@ -69,19 +67,8 @@ def ShortenVideo(
 
     Extracts (sub)video from minute 17 to 22 and and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1brief.avi
     """
-    if outpath is None:
-        vidpath = os.path.dirname(vname)
-    else:
-        vidpath = outpath
-
-    # TODO check if those times exist...
-    newfilename = os.path.join(
-        vidpath, str(Path(vname).stem) + str(outsuffix) + str(Path(vname).suffix)
-    )
-    print("Slicing and saving to name", newfilename)
-    command = f"ffmpeg -i {vname} -ss {start} -to {stop} -c:a copy {newfilename}"
-    subprocess.call(command, shell=True)
-    return str(newfilename)
+    writer = VideoWriter(vname)
+    return writer.shorten(start, stop, outsuffix, outpath)
 
 
 def CropVideo(
@@ -135,10 +122,7 @@ def CropVideo(
 
     Crops the video to a width of 220 and height of 320 starting at the origin (top left) and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1cropped.avi
     """
-    if outpath is None:
-        vidpath = os.path.dirname(vname)
-    else:
-        vidpath = outpath
+    writer = VideoWriter(vname)
 
     if useGUI:
         print(
@@ -152,14 +136,11 @@ def CropVideo(
         width = int(coords[2]) - int(coords[0])
         height = int(coords[3]) - int(coords[1])
 
-    newfilename = os.path.join(
-        vidpath, str(Path(vname).stem) + str(outsuffix) + str(Path(vname).suffix)
-    )
-
-    print("Cropping and saving to name", newfilename)
-    command = f"ffmpeg -i {vname} -filter:v crop={width}:{height}:{origin_x}:{origin_y} -c:a copy {newfilename}"
-    subprocess.call(command, shell=True)
-    return str(newfilename)
+    writer.set_bbox(origin_x,
+                    origin_x + width,
+                    origin_y,
+                    origin_y + height)
+    return writer.crop(outsuffix, outpath)
 
 
 def DownSampleVideo(
@@ -205,25 +186,8 @@ def DownSampleVideo(
 
     Downsamples the video to a width of 220 and height of 320 and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1cropped.avi
     """
-    if outpath is None:
-        vidpath = os.path.dirname(vname)
-    else:
-        vidpath = outpath
-
-    newfilename = os.path.join(
-        vidpath, str(Path(vname).stem) + str(outsuffix) + str(Path(vname).suffix)
-    )
-
-    # Rotate, see: https://stackoverflow.com/questions/3937387/rotating-videos-with-ffmpeg
-    # interesting option to just update metadata.
-
-    print("Downsampling and saving to name", newfilename)
-    if rotateccw:
-        command = f"ffmpeg -i {vname} -filter:v scale={width}:{height} -vf 'transpose=1' -c:a copy {newfilename}"
-    else:
-        command = f"ffmpeg -i {vname} -filter:v scale={width}:{height} -c:a copy {newfilename}"
-    subprocess.call(command, shell=True)
-    return str(newfilename)
+    writer = VideoWriter(vname)
+    return writer.rescale(width, height, rotateccw, outsuffix, outpath)
 
 
 def draw_bbox(video):

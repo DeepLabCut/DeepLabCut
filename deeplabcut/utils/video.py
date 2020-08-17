@@ -14,6 +14,7 @@ class VideoReader:
             raise IOError('Video could not be opened. Verify `video_path`')
         self.parse_metadata()
         self._bbox = 0, 1, 0, 1
+        self._n_frames_robust = None
 
     def __repr__(self):
         string = 'Video (duration={:0.2f}, fps={}, dimensions={}x{})'
@@ -43,8 +44,23 @@ class VideoReader:
             height=self.height
         )
 
-    @property
-    def duration(self):
+    def get_n_frames(self, robust=False):
+        if not robust:
+            return self._n_frames
+        elif not self._n_frames_robust:
+            command = f'ffprobe -i "{self.video_path}" -v error -count_frames ' \
+                      f'-select_streams v:0 -show_entries stream=nb_read_frames ' \
+                      f'-of default=nokey=1:noprint_wrappers=1'
+            output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
+            self._n_frames_robust = int(output)
+        return self._n_frames_robust
+
+    def calc_duration(self, robust=False):
+        if robust:
+            command = f'ffprobe -i "{self.video_path}" -show_entries ' \
+                      f'format=duration -v quiet -of csv="p=0"'
+            output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
+            return float(output)
         return len(self) / self.fps
 
     def set_to_frame(self, ind):
@@ -173,23 +189,20 @@ class VideoWriter(VideoReader):
             for stamp in start, end:
                 validate_timestamp(stamp)
 
-        if not dest_folder:
-            dest_folder = self.directory
-        output_path = os.path.join(dest_folder, f'{self.name}_{suffix}{self.format}')
-
-        command = f'ffmpeg -i {self.video_path} -ss {start} -to {end} ' \
+        output_path = self.make_output_path(suffix, dest_folder)
+        command = f'ffmpeg -n -i {self.video_path} -ss {start} -to {end} ' \
                   f'-vcodec {self.codec} -c:a copy {output_path}'
         subprocess.call(command, shell=True)
         return output_path
 
-    def split(self, n_splits, suffix='short', dest_folder=None):
+    def split(self, n_splits, suffix='split', dest_folder=None):
         """
-         Split a video into several shorter ones of equal duration.
+        Split a video into several shorter ones of equal duration.
 
-         Parameters
-         ----------
-         n_splits : int
-             Number of shorter videos to produce
+        Parameters
+        ----------
+        n_splits : int
+            Number of shorter videos to produce
 
         suffix: str, optional
             String added to the name of the splits ('short' by default).
@@ -197,11 +210,11 @@ class VideoWriter(VideoReader):
         dest_folder: str, optional
             Folder the video splits are saved into (by default, same as the original video)
 
-         Returns
-         -------
-         list
-             Paths of the video splits
-         """
+        Returns
+        -------
+        list
+            Paths of the video splits
+        """
         chunk_dur = self.duration / n_splits
         splits = np.arange(n_splits + 1) * chunk_dur
         time_formatter = lambda val: str(datetime.timedelta(seconds=val))
@@ -214,16 +227,34 @@ class VideoWriter(VideoReader):
                                       validate_inputs=False))
         return clips
 
-    def crop(self, output_path=None):
-        ...
+    def crop(self, suffix='crop', dest_folder=None):
+        x1, _, y1, _ = self.get_bbox()
+        output_path = self.make_output_path(suffix, dest_folder)
+        command = f'ffmpeg -n -i {self.video_path} ' \
+                  f'-filter:v crop={self.width}:{self.height}:{x1}:{y1} ' \
+                  f'-vcodec {self.codec} -c:a copy {output_path}'
+        subprocess.call(command, shell=True)
+        return output_path
 
-    def resample(self, output_path=None):
-        ...
+    def rescale(self, width, height=-1, rotateccw=False,
+                suffix='rescale', dest_folder=None):
+        output_path = self.make_output_path(suffix, dest_folder)
+        command = f'ffmpeg -n -i {self.video_path} -filter:v ' \
+                  f'scale={width}:{height} {{}}-vcodec {self.codec} -c:a copy {output_path}'
+        # Rotate, see: https://stackoverflow.com/questions/3937387/rotating-videos-with-ffmpeg
+        # interesting option to just update metadata.
+        command = command.format("-vf 'transpose=1' ") if rotateccw else command.format('')
+        subprocess.call(command, shell=True)
+        return output_path
 
     @staticmethod
     def write_frame(frame, where):
         cv2.imwrite(where, frame[..., ::-1])
 
+    def make_output_path(self, suffix, dest_folder):
+        if not dest_folder:
+            dest_folder = self.directory
+        return os.path.join(dest_folder, f'{self.name}{suffix}{self.format}')
 
-video = VideoReader('/Users/Jessy/Downloads/MultiMouse-Daniel-2019-12-16/videos/videocompressed11.mp4')
+
 writer = VideoWriter('/Users/Jessy/Downloads/MultiMouse-Daniel-2019-12-16/videos/videocompressed11.mp4')
