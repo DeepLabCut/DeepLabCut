@@ -1,34 +1,51 @@
 import os
 os.environ['DLClight'] = 'True'
 import pytest
-from deeplabcut.utils import video
+from deeplabcut.utils.video import VideoWriter
 
 
 TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
-videos = [os.path.join(TEST_DATA_DIR, 'vid1.mov'),
-          os.path.join(TEST_DATA_DIR, 'vid2.mov')]
+video = os.path.join(TEST_DATA_DIR, 'vid.avi')
 POS_FRAMES = 1  # Equivalent to cv2.CAP_PROP_POS_FRAMES
 
 
 @pytest.fixture()
 def video_clip():
-    return video.VideoPlayer(videos[0])
+    return VideoWriter(video)
 
 
-def test_player_invalid_file(tmpdir):
-    fake_vid = tmpdir.join('fake.avi')
+def test_reader_invalid_file(tmp_path):
+    fake_vid = tmp_path / 'fake.avi'
     with pytest.raises(IOError):
-        video.VideoPlayer(str(fake_vid))
+        VideoWriter(str(fake_vid))
 
 
-def test_player_set_frame(video_clip):
+def test_reader_get_n_frames(video_clip):
+    assert video_clip.get_n_frames(True) == len(video_clip) == 256
+
+
+def test_reader_set_frame(video_clip):
     video_clip.set_to_frame(2)
     assert int(video_clip.video.get(POS_FRAMES)) == 2
-    video_clip.set_to_frame(video_clip.nframes + 10)
-    assert int(video_clip.video.get(POS_FRAMES)) == video_clip.last_frame
+    video_clip.set_to_frame(len(video_clip) + 10)
+    assert int(video_clip.video.get(POS_FRAMES)) == len(video_clip) - 1
 
 
-def test_player_bbox(video_clip):
+@pytest.mark.parametrize('shrink, crop',
+                         [(1, False),
+                          (1, True),
+                          (2, False),
+                          (2, True)])
+def test_reader_read_frame(video_clip, shrink, crop):
+    if crop:
+        video_clip.set_bbox(0, 0.5, 0, 0.5, relative=True)
+    frame = video_clip.read_frame(shrink, crop)
+    height, width, _ = frame.shape
+    assert height == video_clip.height // shrink
+    assert width == video_clip.width // shrink
+
+
+def test_writer_bbox(video_clip):
     bbox = 0, 100, 0, 100
     video_clip.set_bbox(*bbox, relative=False)
     assert video_clip.get_bbox(relative=False) == bbox
@@ -38,19 +55,44 @@ def test_player_bbox(video_clip):
     assert video_clip.get_bbox() == (0, 1, 0, 1)
 
 
-@pytest.mark.parametrize('shrink, crop',
-                         [(1, False),
-                          (1, True),
-                          (2, False),
-                          (2, True)])
-def test_player_read_frame(video_clip, shrink, crop):
-    video_clip.set_bbox(0, 0.5, 0, 0.5)
-    frame = video_clip.read_frame(shrink, crop)
-    height, width, _ = frame.shape
-    if crop:
-        x1, x2, y1, y2 = video_clip.get_bbox(False)
-        assert height == (y2 - y1) // shrink
-        assert width == (x2 - x1) // shrink
-    else:
-        assert height == video_clip.height // shrink
-        assert width == video_clip.width // shrink
+@pytest.mark.parametrize('start, end',
+                         [(0, 10),
+                          ('0:0', '0:10'),
+                          ('00:00:00', '00:00:10')])
+def test_writer_shorten_invalid_timestamps(video_clip, start, end):
+    with pytest.raises(ValueError):
+        video_clip.shorten(start, end)
+
+
+def test_writer_shorten(tmp_path, video_clip):
+    file = video_clip.shorten('00:00:00', '00:00:02', dest_folder=str(tmp_path))
+    vid = VideoWriter(file)
+    assert pytest.approx(vid.calc_duration(), abs=0.1) == 2
+
+
+def test_writer_split(tmp_path, video_clip):
+    with pytest.raises(ValueError):
+        video_clip.split(1)
+    n_splits = 3
+    clips = video_clip.split(n_splits, dest_folder=str(tmp_path))
+    assert len(clips) == n_splits
+    vid = VideoWriter(clips[0])
+    assert pytest.approx(len(vid), abs=1) == len(video_clip) // n_splits
+
+
+def test_writer_crop(tmp_path, video_clip):
+    x1, x2, y1, y2 = 0, 50, 0, 100
+    video_clip.set_bbox(x1, x2, y1, y2)
+    file = video_clip.crop(dest_folder=str(tmp_path))
+    vid = VideoWriter(file)
+    assert vid.dimensions == (x2 - x1, y2 - y1)
+
+
+def test_writer_rescale(tmp_path, video_clip):
+    new_height = 200
+    file = video_clip.rescale(width=-1, height=new_height, dest_folder=str(tmp_path))
+    vid = VideoWriter(file)
+    assert vid.height == new_height
+    # Verify the aspect ratio is preserved
+    ar = video_clip.height / new_height
+    assert vid.width == video_clip.width // ar

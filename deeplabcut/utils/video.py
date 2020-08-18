@@ -18,7 +18,7 @@ class VideoReader:
 
     def __repr__(self):
         string = 'Video (duration={:0.2f}, fps={}, dimensions={}x{})'
-        return string.format(self.duration, self.fps, *self.dimensions)
+        return string.format(self.calc_duration(), self.fps, *self.dimensions)
 
     def __len__(self):
         return self._n_frames
@@ -55,7 +55,7 @@ class VideoReader:
             self._n_frames_robust = int(output)
         return self._n_frames_robust
 
-    def calc_duration(self, robust=False):
+    def calc_duration(self, robust=True):
         if robust:
             command = f'ffprobe -i "{self.video_path}" -show_entries ' \
                       f'format=duration -v quiet -of csv="p=0"'
@@ -64,6 +64,13 @@ class VideoReader:
         return len(self) / self.fps
 
     def set_to_frame(self, ind):
+        if ind < 0:
+            raise ValueError('Index must be a positive integer.')
+        last_frame = len(self) - 1
+        if ind > last_frame:
+            warnings.warn('Index exceeds the total number of frames. '
+                          'Setting to last frame instead.')
+            ind = last_frame
         self.video.set(cv2.CAP_PROP_POS_FRAMES, ind)
 
     def reset(self):
@@ -137,19 +144,20 @@ class VideoWriter(VideoReader):
             self.fps = fps
 
     def set_bbox(self, x1, x2, y1, y2, relative=False):
-        if relative:
-            if not all(0 <= val <= 1 for val in (x1, x2, y1, y2)):
-                raise ValueError('Coordinates should be between 0 and 1.')
-            self._bbox = x1, x2, y1, y2
-        else:
-            bbox = (x1 / self._width,
-                    x2 / self._width,
-                    y1 / self._height,
-                    y2 / self._height)
-            if any(val > 1 for val in bbox):
-                raise ValueError('Coordinates cannot be larger than '
-                                 f'video dimensions {self._width}x{self._height}.')
-            self._bbox = bbox
+        if x2 <= x1 or y2 <= y1:
+            raise ValueError(f'Coordinates look wrong... '
+                             f'Ensure {x1} < {x2} and {y1} < {y2}.')
+        if not relative:
+            x1 /= self._width
+            x2 /= self._width
+            y1 /= self._height
+            y2 /= self._height
+        bbox = x1, x2, y1, y2
+        if any(coord > 1 for coord in bbox):
+            warnings.warn('Bounding box larger than the video... '
+                          'Clipping to video dimensions.')
+            bbox = tuple(map(lambda x: min(x, 1), bbox))
+        self._bbox = bbox
 
     def shorten(self, start, end, suffix='short', dest_folder=None,
                 validate_inputs=True):
@@ -182,7 +190,7 @@ class VideoWriter(VideoReader):
             time = datetime.datetime.strptime(stamp, '%H:%M:%S').time()
             # The above already raises a ValueError if formatting is wrong
             seconds = (time.hour * 60 + time.minute) * 60 + time.second
-            if seconds > self.duration:
+            if seconds > self.calc_duration():
                 raise ValueError('Timestamps must not exceed the video duration.')
 
         if validate_inputs:
@@ -215,7 +223,9 @@ class VideoWriter(VideoReader):
         list
             Paths of the video splits
         """
-        chunk_dur = self.duration / n_splits
+        if not n_splits > 1:
+            raise ValueError('The video should at least be split in half.')
+        chunk_dur = self.calc_duration() / n_splits
         splits = np.arange(n_splits + 1) * chunk_dur
         time_formatter = lambda val: str(datetime.timedelta(seconds=val))
         clips = []
