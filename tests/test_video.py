@@ -20,11 +20,19 @@ def test_reader_invalid_file(tmp_path):
         VideoWriter(str(fake_vid))
 
 
+def test_reader_video_path(video_clip):
+    assert video_clip.name == 'vid'
+    assert video_clip.format == '.avi'
+    assert video_clip.directory == TEST_DATA_DIR
+
+
 def test_reader_get_n_frames(video_clip):
     assert video_clip.get_n_frames(True) == len(video_clip) == 256
 
 
 def test_reader_set_frame(video_clip):
+    with pytest.raises(ValueError):
+        video_clip.set_to_frame(-1)
     video_clip.set_to_frame(2)
     assert int(video_clip.video.get(POS_FRAMES)) == 2
     video_clip.set_to_frame(len(video_clip) + 10)
@@ -47,12 +55,12 @@ def test_reader_read_frame(video_clip, shrink, crop):
 
 def test_writer_bbox(video_clip):
     bbox = 0, 100, 0, 100
-    video_clip.set_bbox(*bbox, relative=False)
-    assert video_clip.get_bbox(relative=False) == bbox
+    video_clip.set_bbox(*bbox)
+    assert video_clip.get_bbox() == bbox
     with pytest.raises(ValueError):
         video_clip.set_bbox(200, 100, 0, 100, relative=False)
-    video_clip.set_bbox(0, 1, 0, 1.01)
-    assert video_clip.get_bbox() == (0, 1, 0, 1)
+    video_clip.set_bbox(0, 1, 0, 1.01, relative=True)
+    assert video_clip.get_bbox(relative=True) == (0, 1, 0, 1)
 
 
 @pytest.mark.parametrize('start, end',

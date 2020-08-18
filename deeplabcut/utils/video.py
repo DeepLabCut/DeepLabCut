@@ -265,6 +265,3 @@ class VideoWriter(VideoReader):
         if not dest_folder:
             dest_folder = self.directory
         return os.path.join(dest_folder, f'{self.name}{suffix}{self.format}')
-
-
-writer = VideoWriter('/Users/Jessy/Downloads/MultiMouse-Daniel-2019-12-16/videos/videocompressed11.mp4')
