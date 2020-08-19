@@ -35,7 +35,7 @@ from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualizati
 from deeplabcut.utils.video_processor import (
     VideoProcessorCV as vp,
 )  # used to CreateVideo
-from deeplabcut.utils.video import VideoWriter
+from deeplabcut.utils.auxfun_videos import VideoWriter
 
 
 def get_segment_indices(bodyparts2connect, all_bpts):

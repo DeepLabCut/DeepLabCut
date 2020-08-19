@@ -13,7 +13,7 @@ import shutil
 import warnings
 from pathlib import Path
 from deeplabcut import DEBUG
-from deeplabcut.utils.video import VideoReader
+from deeplabcut.utils.auxfun_videos import VideoReader
 
 
 def create_new_project(

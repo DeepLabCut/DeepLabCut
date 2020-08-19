@@ -14,7 +14,7 @@ from tqdm import trange
 from deeplabcut import generate_training_dataset
 from deeplabcut.post_processing import columnwise_spline_interp
 from deeplabcut.utils.auxiliaryfunctions import read_config, attempttomakefolder
-from deeplabcut.utils.video import VideoReader
+from deeplabcut.utils.auxfun_videos import VideoReader
 
 
 class BackgroundPlayer:

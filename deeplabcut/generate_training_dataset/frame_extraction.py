@@ -183,7 +183,7 @@ def extract_frames(
 
         videos = cfg["video_sets"].keys()
         if opencv:
-            from deeplabcut.utils.video import VideoReader
+            from deeplabcut.utils.auxfun_videos import VideoReader
         else:
             from moviepy.editor import VideoFileClip
 

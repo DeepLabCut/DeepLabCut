@@ -18,7 +18,7 @@ from tqdm import tqdm
 
 from deeplabcut.pose_estimation_tensorflow.nnet import predict_multianimal as predict
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
-from deeplabcut.utils.video import VideoWriter
+from deeplabcut.utils.auxfun_videos import VideoWriter
 
 
 def AnalyzeMultiAnimalVideo(

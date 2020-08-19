@@ -27,7 +27,7 @@ from deeplabcut.utils import (
     auxfun_models,
     auxfun_multianimal,
 )
-from deeplabcut.utils.video import VideoReader
+from deeplabcut.utils.auxfun_videos import VideoReader
 
 
 def comparevideolistsanddatafolders(config):

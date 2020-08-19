@@ -43,7 +43,7 @@ def add_new_videos(config, videos, copy_videos=False, coords=None):
     from pathlib import Path
 
     from deeplabcut.utils import auxiliaryfunctions
-    from deeplabcut.utils.video import VideoReader
+    from deeplabcut.utils.auxfun_videos import VideoReader
 
     # Read the config file
     cfg = auxiliaryfunctions.read_config(config)

@@ -12,7 +12,6 @@ import argparse
 import os
 from pathlib import Path
 
-import cv2
 import matplotlib
 import matplotlib.colors as mcolors
 import matplotlib.patches as patches
@@ -29,7 +28,7 @@ from skimage.util import img_as_ubyte
 
 from deeplabcut.create_project import add
 from deeplabcut.utils import auxiliaryfunctions, visualization
-from deeplabcut.utils.video import VideoWriter
+from deeplabcut.utils.auxfun_videos import VideoWriter
 
 
 # ###########################################################################

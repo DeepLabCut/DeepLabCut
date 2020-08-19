@@ -19,7 +19,7 @@ import pandas as pd
 from matplotlib.axes._axes import _log as matplotlib_axes_logger
 
 from deeplabcut.utils import auxiliaryfunctions, auxiliaryfunctions_3d
-from deeplabcut.utils.video import VideoReader
+from deeplabcut.utils.auxfun_videos import VideoReader
 
 matplotlib_axes_logger.setLevel("ERROR")
 from matplotlib import gridspec

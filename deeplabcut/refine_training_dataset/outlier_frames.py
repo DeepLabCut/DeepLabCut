@@ -12,7 +12,6 @@ import argparse
 import os
 from pathlib import Path
 
-import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -20,7 +19,7 @@ import statsmodels.api as sm
 from skimage.util import img_as_ubyte
 
 from deeplabcut.utils import auxiliaryfunctions, visualization, frameselectiontools
-from deeplabcut.utils.video import VideoWriter
+from deeplabcut.utils.auxfun_videos import VideoWriter
 
 
 def extract_outlier_frames(

@@ -1,7 +1,7 @@
 import os
 os.environ['DLClight'] = 'True'
 import pytest
-from deeplabcut.utils.video import VideoWriter
+from deeplabcut.utils.auxfun_videos import VideoWriter
 
 
 TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
