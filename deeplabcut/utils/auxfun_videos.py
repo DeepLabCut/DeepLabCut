@@ -194,15 +194,11 @@ def draw_bbox(video):
     import matplotlib.pyplot as plt
     from matplotlib.widgets import RectangleSelector, Button
 
-    clip = cv2.VideoCapture(video)
-    if not clip.isOpened():
-        print("Video could not be opened. Skipping...")
-        return
-
-    success = False
+    clip = VideoWriter(video)
+    frame = None
     # Read the video until a frame is successfully read
-    while not success:
-        success, frame = clip.read()
+    while frame is None:
+        frame = clip.read_frame()
 
     bbox = [0, 0, frame.shape[1], frame.shape[0]]
 

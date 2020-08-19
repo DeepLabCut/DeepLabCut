@@ -10,11 +10,10 @@ Licensed under GNU Lesser General Public License v3.0
 
 import os
 import shutil
+import warnings
 from pathlib import Path
-
-import cv2
-
 from deeplabcut import DEBUG
+from deeplabcut.utils.video import VideoReader
 
 
 def create_new_project(
@@ -160,22 +159,20 @@ def create_new_project(
         except:
             rel_video_path = os.readlink(str(video))
 
-        vcap = cv2.VideoCapture(rel_video_path)
-        if vcap.isOpened():
-            width = int(vcap.get(cv2.CAP_PROP_FRAME_WIDTH))
-            height = int(vcap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        try:
+            vid = VideoReader(rel_video_path)
             video_sets[rel_video_path] = {
-                "crop": ", ".join(map(str, [0, width, 0, height]))
+                "crop": ", ".join(map(str, vid.get_bbox()))
             }
-        else:
-            print("Cannot open the video file! Skipping to the next one...")
+        except IOError:
+            warnings.warn("Cannot open the video file! Skipping to the next one...")
             os.remove(video)  # Removing the video or link from the project
 
     if not len(video_sets):
         # Silently sweep the files that were already written.
         shutil.rmtree(project_path, ignore_errors=True)
-        print("WARNING: No valid videos were found. The project was not created ...")
-        print("Verify the video files and re-create the project.")
+        warnings.warn("No valid videos were found. The project was not created... "
+                      "Verify the video files and re-create the project.")
         return "nothingcreated"
 
     # Set values to config file:

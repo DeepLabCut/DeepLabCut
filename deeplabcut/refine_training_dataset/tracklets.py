@@ -2,7 +2,6 @@ import pickle
 import re
 from threading import Event, Thread
 
-import cv2
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
@@ -15,6 +14,7 @@ from tqdm import trange
 from deeplabcut import generate_training_dataset
 from deeplabcut.post_processing import columnwise_spline_interp
 from deeplabcut.utils.auxiliaryfunctions import read_config, attempttomakefolder
+from deeplabcut.utils.video import VideoReader
 
 
 class BackgroundPlayer:
@@ -483,10 +483,8 @@ class TrackletVisualizer:
             manager.cfg["colormap"], len(set(manager.tracklet2id))
         )
         self.videoname = videoname
-        self.video = cv2.VideoCapture(videoname)
-        if not self.video.isOpened():
-            raise IOError("Video could not be opened.")
-        self.nframes = int(self.video.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.video = VideoReader(videoname)
+        self.nframes = len(self.video)
         # Take into consideration imprecise OpenCV estimation of total number of frames
         if abs(self.nframes - manager.nframes) >= 0.05 * manager.nframes:
             print(
@@ -537,7 +535,7 @@ class TrackletVisualizer:
         self.colors = self.cmap(manager.tracklet2id)
         self.colors[:, -1] = self.alpha
 
-        img = self._read_frame()
+        img = self.video.read_frame()
         self.im = self.ax1.imshow(img)
         self.scat = self.ax1.scatter([], [], s=self.dotsize ** 2, picker=True)
         self.scat.set_offsets(manager.xy[:, 0])
@@ -624,12 +622,6 @@ class TrackletVisualizer:
 
     def show(self, fig=None):
         self._prepare_canvas(self.manager, fig)
-
-    def _read_frame(self):
-        frame = self.video.read()[1]
-        if frame is None:
-            return
-        return frame[:, :, ::-1]
 
     def fill_shaded_areas(self):
         self.clean_collections()
@@ -973,8 +965,8 @@ class TrackletVisualizer:
 
     def on_change(self, val):
         self.curr_frame = int(val)
-        self.video.set(cv2.CAP_PROP_POS_FRAMES, self.curr_frame)
-        img = self._read_frame()
+        self.video.set_to_frame(self.curr_frame)
+        img = self.video.read_frame()
         if img is not None:
             # Automatically disable the draggable points
             if self.draggable:
@@ -1008,13 +1000,12 @@ class TrackletVisualizer:
 
         # Save additional frames to the labeled-data directory
         strwidth = int(np.ceil(np.log10(self.nframes)))
-        vname = os.path.splitext(os.path.basename(self.videoname))[0]
         tmpfolder = os.path.join(
-            self.manager.cfg["project_path"], "labeled-data", vname
+            self.manager.cfg["project_path"], "labeled-data", self.video.name
         )
         if os.path.isdir(tmpfolder):
             print(
-                "Frames from video", vname, " already extracted (more will be added)!"
+                "Frames from video", self.video.name, " already extracted (more will be added)!"
             )
         else:
             attempttomakefolder(tmpfolder)
@@ -1025,8 +1016,8 @@ class TrackletVisualizer:
             )
             index.append(os.path.join(*imagename.rsplit(os.path.sep, 3)[-3:]))
             if not os.path.isfile(imagename):
-                self.video.set(cv2.CAP_PROP_POS_FRAMES, ind)
-                frame = self._read_frame()
+                self.video.set_to_frame(ind)
+                frame = self.video.read_frame()
                 if frame is None:
                     print("Frame could not be read. Skipping...")
                     continue
