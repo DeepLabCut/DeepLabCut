@@ -23,6 +23,12 @@ def test_reader_wrong_inputs(tmp_path):
         VideoWriter(str(fake_vid))
 
 
+def test_reader_check_integrity(tmp_path, video_clip):
+    video_clip.check_integrity()
+    log_file = os.path.join(video_clip.directory, f'{video_clip.name}.log')
+    assert os.path.getsize(log_file) == 0
+
+
 def test_reader_video_path(video_clip):
     assert video_clip.name == 'vid'
     assert video_clip.format == '.avi'

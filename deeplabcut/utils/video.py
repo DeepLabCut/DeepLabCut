@@ -27,7 +27,7 @@ class VideoReader:
 
     def check_integrity(self):
         dest = os.path.join(self.directory, f'{self.name}.log')
-        command = f'ffmpeg -v debug -i {self.video_path} -f null - 2>{dest}'
+        command = f'ffmpeg -v error -i {self.video_path} -f null - 2>{dest}'
         subprocess.call(command, shell=True)
         if os.path.getsize(dest) != 0:
             warnings.warn(f'Video contains errors. See "{dest}" for a detailed report.')
