@@ -35,8 +35,22 @@ def test_reader_video_path(video_clip):
     assert video_clip.directory == TEST_DATA_DIR
 
 
-def test_reader_get_n_frames(video_clip):
-    assert video_clip.get_n_frames(True) == len(video_clip) == 256
+def test_reader_metadata(video_clip):
+    metadata = video_clip.metadata
+    assert metadata['n_frames'] == video_clip.get_n_frames(True) == 256
+    assert metadata['fps'] == 30
+    assert metadata['width'] == 416
+    assert metadata['height'] == 374
+
+
+def test_reader_wrong_fps(video_clip):
+    with pytest.raises(ValueError):
+        video_clip.fps = 0
+
+
+def test_reader_duration(video_clip):
+    assert (video_clip.calc_duration()
+            == pytest.approx(video_clip.calc_duration(robust=False), abs=0.01))
 
 
 def test_reader_set_frame(video_clip):
