@@ -200,7 +200,7 @@ deeplabcut.extract_outlier_frames(
 deeplabcut.extract_outlier_frames(
     path_config_file,
     [newvideo],
-    outlieralgorithm="Fitting",
+    outlieralgorithm="fitting",
     automatic=True,
     destfolder=dfolder,
 )
