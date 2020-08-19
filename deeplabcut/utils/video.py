@@ -8,10 +8,12 @@ import warnings
 
 class VideoReader:
     def __init__(self, video_path):
+        if not os.path.isfile(video_path):
+            raise ValueError(f'Video path "{video_path}" does not point to a file.')
         self.video_path = video_path
         self.video = cv2.VideoCapture(video_path)
         if not self.video.isOpened():
-            raise IOError('Video could not be opened. Verify `video_path`')
+            raise IOError('Video could not be opened; it may be corrupted.')
         self.parse_metadata()
         self._bbox = 0, 1, 0, 1
         self._n_frames_robust = None
@@ -22,6 +24,13 @@ class VideoReader:
 
     def __len__(self):
         return self._n_frames
+
+    def check_integrity(self):
+        dest = os.path.join(self.directory, f'{self.name}.log')
+        command = f'ffmpeg -v debug -i {self.video_path} -f null - 2>{dest}'
+        subprocess.call(command, shell=True)
+        if os.path.getsize(dest) != 0:
+            warnings.warn(f'Video contains errors. See "{dest}" for a detailed report.')
 
     @property
     def name(self):

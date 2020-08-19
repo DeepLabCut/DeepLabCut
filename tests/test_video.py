@@ -14,8 +14,11 @@ def video_clip():
     return VideoWriter(video)
 
 
-def test_reader_invalid_file(tmp_path):
+def test_reader_wrong_inputs(tmp_path):
+    with pytest.raises(ValueError):
+        VideoWriter(str(tmp_path))
     fake_vid = tmp_path / 'fake.avi'
+    fake_vid.write_bytes(b'42')
     with pytest.raises(IOError):
         VideoWriter(str(fake_vid))
 
