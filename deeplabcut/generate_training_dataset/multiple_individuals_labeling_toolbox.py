@@ -343,10 +343,47 @@ class MainFrame(wx.Frame):
                 self.buttonCounter[closest_dp.individual_names].remove(
                     closest_dp.bodyParts
                 )
+        elif event.ControlDown() and event.GetKeyCode() == 67:
+            self.duplicate_labels()
 
     @staticmethod
     def calc_distance(x1, y1, x2, y2):
         return np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+
+    def duplicate_labels(self):
+        if self.iter >= 1:
+            curr_individual = self.individualrdb.GetStringSelection()
+            curr_image = self.relativeimagenames[self.iter]
+            prev_image = self.relativeimagenames[self.iter - 1]
+            idx = pd.IndexSlice
+            self.dataFrame.loc[curr_image, idx[:, curr_individual]] = \
+                self.dataFrame.loc[prev_image, idx[:, curr_individual]].values
+            img_name = Path(self.index[self.iter]).name
+            (
+                self.figure,
+                self.axes,
+                self.canvas,
+                self.toolbar,
+                self.image_axis,
+            ) = self.image_panel.drawplot(
+                self.img,
+                img_name,
+                self.iter,
+                self.index,
+                self.multibodyparts,
+                self.colormap,
+                keep_view=self.view_locked,
+            )
+            if curr_individual == "single":
+                self.norm, self.colorIndex = self.image_panel.getColorIndices(
+                    self.img, self.uniquebodyparts
+                )
+                self.buttonCounter = MainFrame.plot(self, self.img)
+            else:
+                self.norm, self.colorIndex = self.image_panel.getColorIndices(
+                    self.img, self.multibodyparts
+                )
+                self.buttonCounter = MainFrame.plot(self, self.img)
 
     def activateSlider(self, event):
         """
