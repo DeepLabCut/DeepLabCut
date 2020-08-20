@@ -310,10 +310,34 @@ class MainFrame(wx.Frame):
             if msg == 2:
                 closest_dp.delete_data()
                 self.buttonCounter.remove(self.bodyparts.index(closest_dp.bodyParts))
+        elif event.ControlDown() and event.GetKeyCode() == 67:
+            self.duplicate_labels()
 
     @staticmethod
     def calc_distance(x1, y1, x2, y2):
         return np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+
+    def duplicate_labels(self):
+        if self.iter >= 1:
+            curr_image = self.relativeimagenames[self.iter]
+            prev_image = self.relativeimagenames[self.iter - 1]
+            self.dataFrame.loc[curr_image] = self.dataFrame.loc[prev_image].values
+            img_name = Path(self.index[self.iter]).name
+            (
+                self.figure,
+                self.axes,
+                self.canvas,
+                self.toolbar,
+            ) = self.image_panel.drawplot(
+                self.img,
+                img_name,
+                self.iter,
+                self.index,
+                self.bodyparts,
+                self.colormap,
+                keep_view=self.view_locked,
+            )
+            self.buttonCounter = MainFrame.plot(self, self.img)
 
     def activateSlider(self, event):
         """
