@@ -913,9 +913,11 @@ class MainFrame(wx.Frame):
         	os.remove( hdf_path)
 
         self.statusbar.SetStatusText("File saved")
-        self.dataFrame = self.dataFrame.dropna(how='all') 
-        # MainFrame.saveEachImage(self)
+        MainFrame.saveEachImage(self)
         MainFrame.updateZoomPan(self)
+        
+        self.dataFrame = self.dataFrame.dropna(how='all') 
+        
         # Windows compatible
         self.dataFrame.sort_index(inplace=True)
         self.dataFrame = self.dataFrame.reindex(
