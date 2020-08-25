@@ -250,11 +250,6 @@ class MainFrame(wx.Frame):
         self.save.Bind(wx.EVT_BUTTON, self.saveDataSet)
         self.save.Enable(False)
 
-        self.delete = wx.Button(self.widget_panel, id=wx.ID_ANY, label="Delete")
-        widgetsizer.Add(self.delete, 1, wx.ALL, 15)
-        self.delete.Bind(wx.EVT_BUTTON, self.deleteImage)
-        self.delete.Enable(False)
-
         widgetsizer.AddStretchSpacer(15)
         self.quit = wx.Button(self.widget_panel, id=wx.ID_ANY, label="Quit")
         widgetsizer.Add(self.quit, 1, wx.ALL | wx.ALIGN_RIGHT, 15)
@@ -538,8 +533,7 @@ class MainFrame(wx.Frame):
         self.home.Enable(True)
         self.pan.Enable(True)
         self.lock.Enable(True)
-        self.delete.Enable(True)
-        
+
         # Reading config file and its variables
         self.cfg = auxiliaryfunctions.read_config(self.config_file)
         self.scorer = self.cfg["scorer"]
@@ -736,8 +730,8 @@ class MainFrame(wx.Frame):
         self.file = 1
         # Refreshing the button counter
         self.buttonCounter = []
-        
         MainFrame.saveEachImage(self)
+
         self.iter = self.iter + 1
 
         if len(self.index) >= self.iter:
@@ -873,40 +867,13 @@ class MainFrame(wx.Frame):
             self.dataFrame.loc[self.relativeimagenames[self.iter]][
                 self.scorer, bp[0][-2], "y"
             ] = bp[-1][1]
-	
-    def ResetEachImage(self):
-	    """
-	    Reset data for each image
-	    """
-	    for idx, bp in enumerate(self.updatedCoords):
-	        self.dataFrame.loc[self.relativeimagenames[self.iter]][
-	            self.scorer, bp[0][-2], "x"
-	        ] = None
-	        self.dataFrame.loc[self.relativeimagenames[self.iter]][
-	            self.scorer, bp[0][-2], "y"
-	        ] = None
-    
-
-    def deleteImage(self, event):
-    	image_path = os.path.join( self.currentDirectory, self.dataFrame.index[self.iter])
-    	print("Delete Image Path : ", image_path)
-    	os.remove(image_path)
-    	MainFrame.ResetEachImage(self)
-    	#  Checks for the last image and disables the Next button
-    	if len(self.index) - self.iter == 1:
-    		return
-    	self.nextImage(event=None)
-    	return
 
     def saveDataSet(self, event):
         """
         Saves the final dataframe
         """
         self.statusbar.SetStatusText("File saved")
-        import pdb
-        pdb.set_trace()
-        self.dataFrame = self.dataFrame.dropna(how='all') 
-        # MainFrame.saveEachImage(self)
+        MainFrame.saveEachImage(self)
         MainFrame.updateZoomPan(self)
         # Windows compatible
         self.dataFrame.sort_index(inplace=True)
