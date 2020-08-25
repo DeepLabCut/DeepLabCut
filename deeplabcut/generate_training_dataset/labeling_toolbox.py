@@ -902,9 +902,17 @@ class MainFrame(wx.Frame):
         """
         Saves the final dataframe
         """
+
+        # Remove previous save
+        csv_path = os.path.join(self.dir, "CollectedData_" + self.scorer + ".csv") 
+        if os.path.exists( csv_path):
+        	os.remove( csv_path)
+
+        hdf_path = os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5")
+        if os.path.exists( hdf_path):
+        	os.remove( hdf_path)
+
         self.statusbar.SetStatusText("File saved")
-        import pdb
-        pdb.set_trace()
         self.dataFrame = self.dataFrame.dropna(how='all') 
         # MainFrame.saveEachImage(self)
         MainFrame.updateZoomPan(self)
@@ -916,10 +924,10 @@ class MainFrame(wx.Frame):
             level=self.dataFrame.columns.names.index("bodyparts"),
         )
         self.dataFrame.to_csv(
-            os.path.join(self.dir, "CollectedData_" + self.scorer + ".csv")
+            csv_path
         )
         self.dataFrame.to_hdf(
-            os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5"),
+            hdf_path,
             "df_with_missing",
             format="table",
             mode="w",
