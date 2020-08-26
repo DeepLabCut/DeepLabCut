@@ -17,6 +17,17 @@ from tqdm import tqdm, trange
 
 class Tracklet:
     def __init__(self, data, inds):
+        """
+        Create a Tracklet object.
+
+        Parameters
+        ----------
+        data : ndarray
+            3D array of shape (nframes, nbodyparts, 3),
+            where the last dimension is for x, y, and likelihood.
+        inds : array-like
+            Corresponding time frame indices.
+        """
         self.data = data
         self.inds = np.array(inds)
         monotonically_increasing = all(a < b for a, b in zip(inds, inds[1:]))
@@ -58,10 +69,17 @@ class Tracklet:
 
     @property
     def xy(self):
+        """Return the x and y coordinates."""
         return self.data[..., :2]
 
     @property
     def centroid(self):
+        """
+        Return the instantaneous 2D position of the Tracklet centroid.
+        For Tracklets longer than 10 frames, the centroid is automatically
+        smoothed using an exponential moving average.
+        The result is cached for efficiency.
+        """
         if self._centroid is None:
             centroid = np.nanmean(self.xy, axis=1)
             if len(centroid) <= 10:
@@ -78,23 +96,36 @@ class Tracklet:
 
     @property
     def likelihood(self):
+        """Return the likelihood of all Tracklet detections."""
         return self.data[..., 2]
 
     @property
     def start(self):
+        """Return the time at which the tracklet starts."""
         return self.inds[0]
 
     @property
     def end(self):
+        """Return the time at which the tracklet ends."""
         return self.inds[-1]
 
     def contains_duplicates(self, return_indices=False):
+        """
+        Evaluate whether the Tracklet contains duplicate time indices.
+        If `return_indices`, also return the indices of the duplicates.
+        """
         has_duplicates = len(set(self.inds)) != len(self.inds)
         if not return_indices:
             return has_duplicates
         return has_duplicates, np.flatnonzero(np.diff(self.inds) == 0)
 
     def calc_velocity(self, where='head', norm=True):
+        """
+        Calculate the linear velocity of either the `head`
+        or `tail` of the Tracklet, computed over the last or first
+        three frames, respectively. If `norm`, return the absolute
+        speed rather than a 2D vector.
+        """
         if where == 'tail':
             vel = (np.diff(self.centroid[:3], axis=0)
                    / np.diff(self.inds[:3])[:, np.newaxis])
@@ -108,6 +139,11 @@ class Tracklet:
         return vel.mean(axis=0)
 
     def calc_rate_of_turn(self, where='head'):
+        """
+        Calculate the rate of turn (or angular velocity) of
+        either the `head` or `tail` of the Tracklet, computed over
+        the last or first three frames, respectively.
+        """
         if where == 'tail':
             v = np.diff(self.centroid[:3], axis=0)
         else:
@@ -117,12 +153,23 @@ class Tracklet:
 
     @property
     def is_continuous(self):
+        """Test whether there are gaps in the time indices."""
         return self.end - self.start + 1 == len(self)
 
     def immediately_follows(self, other_tracklet, max_gap=1):
+        """
+        Test whether this Tracklet follows another within
+        a tolerance of`max_gap` frames.
+        """
         return 0 < self.start - other_tracklet.end <= max_gap
 
     def distance_to(self, other_tracklet):
+        """
+        Calculate the Euclidean distance between this Tracklet and another.
+        If the Tracklets overlap in time, this is the mean distance over
+        those frames. Otherwise, it is the distance between the head/tail
+        of one to the tail/head of the other.
+        """
         if self in other_tracklet:
             dist = (self.centroid[np.isin(self.inds, other_tracklet.inds)]
                     - other_tracklet.centroid[np.isin(other_tracklet.inds, self.inds)])
@@ -133,6 +180,12 @@ class Tracklet:
             return np.sqrt(np.sum((self.centroid[0] - other_tracklet.centroid[-1]) ** 2))
 
     def motion_affinity_with(self, other_tracklet):
+        """
+        Evaluate the motion affinity of this Tracklet' with another one.
+        This evaluates whether the Tracklets could realistically be reached
+        by one another, knowing the time separating them and their velocities.
+        Return 0 if the Tracklets overlap.
+        """
         time_gap = self.time_gap_to(other_tracklet)
         if time_gap > 0:
             if self < other_tracklet:
@@ -149,6 +202,7 @@ class Tracklet:
         return 0
 
     def time_gap_to(self, other_tracklet):
+        """Return the time gap separating this Tracklet to another."""
         if self in other_tracklet:
             t = 0
         elif self < other_tracklet:
@@ -158,6 +212,7 @@ class Tracklet:
         return t
 
     def shape_dissimilarity_with(self, other_tracklet):
+        """Calculate the dissimilarity in shape between this Tracklet and another."""
         if self in other_tracklet:
             dist = np.inf
         elif self < other_tracklet:
@@ -167,6 +222,7 @@ class Tracklet:
         return dist
 
     def box_overlap_with(self, other_tracklet):
+        """Calculate the overlap between each Tracklet's bounding box."""
         if self in other_tracklet:
             overlap = 0
         else:
