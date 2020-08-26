@@ -286,6 +286,9 @@ class Tracklet:
 
 class TrackletStitcher:
     def __init__(self, pickle_file, n_tracks, min_length=5, split_tracklets=True):
+        if n_tracks < 2:
+            raise ValueError('There must at least be two tracks to reconstruct.')
+
         if min_length < 3:
             raise ValueError('A tracklet must have a minimal length of 3.')
 
@@ -367,7 +370,7 @@ class TrackletStitcher:
 
     def build_graph(self, max_gap=None):
         if not max_gap:
-            max_gap = int(1.2 * self.compute_max_gap())
+            max_gap = int(1.5 * self.compute_max_gap())
 
         self._mapping = {tracklet: {'in': f'{i}in', 'out': f'{i}out'}
                          for i, tracklet in enumerate(self)}
@@ -563,3 +566,61 @@ class TrackletStitcher:
         paths.extend([sorted(tracklets, key=lambda t: t.start)
                       for tracklets in nx.connected_components(G)])
         return paths
+
+
+def stitch_tracklets(
+    pickle_file,
+    n_tracks,
+    min_length=5,
+    split_tracklets=True,
+    output_name='',
+):
+    """
+    Stitch sparse tracklets into full tracks via a graph-based,
+    minimum-cost flow optimization problem.
+
+    Parameters
+    ----------
+    pickle_file : str
+        Path to the pickle file containing the tracklets.
+        It is obtained after deeplabcut.convert_detections2tracklets()
+        and typically ends with _bx or _sk.pickle.
+
+    n_tracks : int
+        Number of tracks to reconstruct.
+        This is equivalent to the number of animals in the scene.
+
+    min_length : int, optional
+        Tracklets less than `min_length` frames of length
+        are considered to be residuals; i.e., they do not participate
+        in building the graph and finding the solution to the
+        optimization problem, but are rather added last after
+        "almost-complete" tracks are formed. The higher the value,
+        the lesser the computational cost, but the higher the chance of
+        discarding relatively long and reliable tracklets that are
+        essential to solving the stitching task.
+        Default is 5, and must be 3 at least.
+
+    split_tracklets : bool, optional
+        By default, tracklets whose time indices are not consecutive integers
+        are split in shorter tracklets whose time continuity is guaranteed.
+        This is for example very powerful to get rid of tracking errors
+        (e.g., identity switches) which are often signaled by a missing
+        time frame at the moment they occur. Note though that for long
+        occlusions where tracker re-identification capability can be trusted,
+        setting `split_tracklets` to False is preferable.
+
+    output_name : str, optional
+        Name of the output h5 file.
+        By default, tracks are automatically stored into the same directory
+        as the pickle file and with its name.
+
+    Returns
+    -------
+    A TrackletStitcher object
+    """
+    stitcher = TrackletStitcher(pickle_file, n_tracks, min_length, split_tracklets)
+    stitcher.build_graph()
+    stitcher.stitch()
+    stitcher.write_tracks(output_name)
+    return stitcher
