@@ -422,7 +422,6 @@ class TrackletStitcher:
             # Preflow push seems to work slightly better than shortest
             # augmentation path..., and is more computationally efficient.
             paths = []
-            # FIXME If no existing paths, find dense structures rather?
             for path in nx.node_disjoint_paths(self.G, 'source', 'sink',
                                                preflow_push, self.n_tracks):
                 temp = set()
@@ -542,26 +541,25 @@ class TrackletStitcher:
             track.plot(color=color)
 
     def reconstruct_paths(self, edges=None):
+        paths = []
         if edges is None:
             edges = []
+            init = [self._mapping_inv[a] for a, b in self.flow['source'].items() if b == 1]
             for k, v in self.flow.items():
                 if all(s not in k for s in ['source', 'sink', 'in']):
                     for i, j in v.items():
-                        if i != 'sink' and j == 1:
-                            edges.append((self._mapping_inv[k],
-                                          self._mapping_inv[i]))
-                            break
+                        if j == 1:
+                            node = self._mapping_inv[k]
+                            if i != 'sink':
+                                edges.append((node, self._mapping_inv[i]))
+                                break
+                            elif node in init:
+                                # That node (i.e., tracklet) demands and supplies flow
+                                # directly from the source to the sink; it thus constitutes
+                                # an entire track on its own.
+                                paths.append([node])
+                                break
         G = nx.Graph(edges)
-        return [sorted(tracklets, key=lambda t: t.start)
-                for tracklets in nx.connected_components(G)]
-
-
-# pickle_file = ('/Users/Jessy/Downloads/MultiMouse-Daniel-2019-12-16/videos/'
-#                'videocompressed11DLC_resnet50_MultiMouseDec16shuffle1_50000_bx.pickle')
-pickle_file = ('/Users/Jessy/Downloads/silversideschooling-Valentina-2019-07-14/videos/'
-               'deeplc.menidia.school4.59rpm.S11.D.shortDLC_resnet50_silversideschoolingJul14shuffle0_30000_bx.pickle')
-# pickle_file = ('/Users/Jessy/Downloads/two_white_mice_052820-SN-2020-05-28/videos/'
-#                'White_mice_togetherDLC_resnet50_two_white_mice_052820May28shuffle1_200000_bx.pickle')
-stitcher = TrackletStitcher(pickle_file, 14, split_tracklets=True)
-stitcher.build_graph()
-stitcher.stitch()
+        paths.extend([sorted(tracklets, key=lambda t: t.start)
+                      for tracklets in nx.connected_components(G)])
+        return paths
