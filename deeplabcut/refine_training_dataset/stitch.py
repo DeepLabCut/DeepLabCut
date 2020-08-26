@@ -64,13 +64,16 @@ class Tracklet:
     def centroid(self):
         if self._centroid is None:
             centroid = np.nanmean(self.xy, axis=1)
-            fit_x = (SimpleExpSmoothing(centroid[:, 0])
-                     .fit(smoothing_level=0.5, optimized=False)
-                     .fittedvalues)
-            fit_y = (SimpleExpSmoothing(centroid[:, 1])
-                     .fit(smoothing_level=0.5, optimized=False)
-                     .fittedvalues)
-            self._centroid = np.c_[fit_x, fit_y]
+            if len(centroid) <= 10:
+                self._centroid = centroid
+            else:
+                fit_x = (SimpleExpSmoothing(centroid[:, 0])
+                         .fit(smoothing_level=0.5, optimized=False)
+                         .fittedvalues)
+                fit_y = (SimpleExpSmoothing(centroid[:, 1])
+                         .fit(smoothing_level=0.5, optimized=False)
+                         .fittedvalues)
+                self._centroid = np.c_[fit_x, fit_y]
         return self._centroid
 
     @property
@@ -323,7 +326,7 @@ class TrackletStitcher:
             for t in tracklet:
                 if len(t) >= min_length:
                     self.tracklets.append(t)
-                elif 1 < len(t) < min_length:  # Ignore false alarms
+                elif len(t) < min_length:
                     self.residuals.append(t)
         self.n_frames = max(last_frames) + 1
 
@@ -555,10 +558,10 @@ class TrackletStitcher:
 
 # pickle_file = ('/Users/Jessy/Downloads/MultiMouse-Daniel-2019-12-16/videos/'
 #                'videocompressed11DLC_resnet50_MultiMouseDec16shuffle1_50000_bx.pickle')
-pickle_file = ('/Users/Jessy/Downloads/MultiMouse-Daniel-2019-12-16/videos/'
-               'videocompressed1DLC_resnet50_MultiMouseDec16shuffle1_50000_el.pickle')
+pickle_file = ('/Users/Jessy/Downloads/silversideschooling-Valentina-2019-07-14/videos/'
+               'deeplc.menidia.school4.59rpm.S11.D.shortDLC_resnet50_silversideschoolingJul14shuffle0_30000_bx.pickle')
 # pickle_file = ('/Users/Jessy/Downloads/two_white_mice_052820-SN-2020-05-28/videos/'
 #                'White_mice_togetherDLC_resnet50_two_white_mice_052820May28shuffle1_200000_bx.pickle')
-stitcher = TrackletStitcher(pickle_file, 3, split_tracklets=True)
+stitcher = TrackletStitcher(pickle_file, 14, split_tracklets=True)
 stitcher.build_graph()
 stitcher.stitch()
