@@ -52,7 +52,9 @@ class EllipseFitter:
         self._coeffs = None
 
     def fit(self, xy):
-        self.x, self.y = xy[~np.isnan(xy).any(axis=1)].T
+        self.x, self.y = xy[np.isfinite(xy).all(axis=1)].T
+        if len(self.x) < 3:
+            return np.full(5, np.nan)
         if self.sd:
             self.params = self._fit_error(self.x, self.y, self.sd)
             # Orient the ellipse such that it encompasses most points
@@ -396,7 +398,8 @@ class SORTEllipse:
         self.n_frames += 1
         ellipses = []
         for pose in poses:
-            if np.any(~np.isnan(pose), axis=1).sum() >= 2:
+            params = self.fitter.fit(pose)
+            if not np.isnan(params).any():
                 ellipses.append(self.fitter.fit(pose))
         trackers = np.zeros((len(self.trackers), 6))
         for i in range(len(trackers)):
