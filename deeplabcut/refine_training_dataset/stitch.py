@@ -497,8 +497,10 @@ class TrackletStitcher:
                     if t1 in t2:
                         # Pick the segment that minimizes "smoothness", computed here
                         # with the coefficient of variation of the differences.
-                        nodes.remove(t1)
-                        nodes.remove(t2)
+                        if t1 in nodes:
+                            nodes.remove(t1)
+                        if t2 in nodes:
+                            nodes.remove(t2)
                         track = sum(nodes)
                         hyp1 = track + t1
                         hyp2 = track + t2
