@@ -601,29 +601,21 @@ class TrackletStitcher:
         for track, color in zip(self.tracks, colors):
             track.plot(color=color)
 
-    def reconstruct_paths(self, edges=None):
+    def reconstruct_paths(self):
         paths = []
-        if edges is None:
-            edges = []
-            init = [self._mapping_inv[a] for a, b in self.flow['source'].items() if b == 1]
-            for k, v in self.flow.items():
-                if all(s not in k for s in ['source', 'sink', 'in']):
-                    for i, j in v.items():
-                        if j == 1:
-                            node = self._mapping_inv[k]
-                            if i != 'sink':
-                                edges.append((node, self._mapping_inv[i]))
-                                break
-                            elif node in init:
-                                # That node (i.e., tracklet) demands and supplies flow
-                                # directly from the source to the sink; it thus constitutes
-                                # an entire track on its own.
-                                paths.append([node])
-                                break
-        G = nx.Graph(edges)
-        paths.extend([sorted(tracklets, key=lambda t: t.start)
-                      for tracklets in nx.connected_components(G)])
+        for node, flow in self.flow['source'].items():
+            if flow == 1:
+                path = self.reconstruct_path(node.replace('in', 'out'))
+                paths.append([self._mapping_inv[tracklet] for tracklet in path])
         return paths
+
+    def reconstruct_path(self, source):
+        path = [source]
+        for node, flow in self.flow[source].items():
+            if flow == 1:
+                if node != 'sink':
+                    path.extend(self.reconstruct_path(node.replace('in', 'out')))
+                return path
 
 
 def stitch_tracklets(
