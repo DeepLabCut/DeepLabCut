@@ -334,10 +334,14 @@ class Tracklet:
         return np.argmin(diff > tol)
 
     def plot(self, centroid_only=True, color='r'):
-        plt.plot(self.inds, self.centroid, c=color, lw=2)
+        centroid = np.full((self.end + 1, 2), np.nan)
+        centroid[self.inds] = self.centroid
+        plt.plot(centroid, c=color, lw=2)
         if not centroid_only:
-            plt.plot(self.inds, self.xy[..., 0], c=color, lw=1)
-            plt.plot(self.inds, self.xy[..., 1], c=color, lw=1)
+            xy = np.full((self.end + 1, self.xy.shape[1], 2), np.nan)
+            xy[self.inds] = self.xy
+            plt.plot(xy[..., 0], c=color, lw=1)
+            plt.plot(xy[..., 1], c=color, lw=1)
 
 
 class TrackletStitcher:
