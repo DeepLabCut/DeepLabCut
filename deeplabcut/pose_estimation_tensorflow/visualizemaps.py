@@ -304,14 +304,7 @@ def visualize_scoremaps(image, scmap):
     return fig, ax
 
 
-def visualize_locrefs(
-    image,
-    scmap,
-    locref_x,
-    locref_y,
-    step=5,
-    zoom_width=0
-):
+def visualize_locrefs(image, scmap, locref_x, locref_y, step=5, zoom_width=0):
     fig, ax = visualize_scoremaps(image, scmap)
     X, Y = np.meshgrid(np.arange(locref_x.shape[1]), np.arange(locref_x.shape[0]))
     M = np.zeros(locref_x.shape, dtype=bool)
@@ -342,7 +335,7 @@ def visualize_paf(image, paf, step=5, colors=None):
     ax.imshow(image)
     n_fields = paf.shape[2]
     if colors is None:
-        colors = ['r'] * n_fields
+        colors = ["r"] * n_fields
     for n in range(n_fields):
         U = paf[:, :, n, 0]
         V = paf[:, :, n, 1]
@@ -368,7 +361,9 @@ def visualize_paf(image, paf, step=5, colors=None):
 
 def _save_individual_subplots(fig, axes, labels, output_path):
     for ax, label in zip(axes, labels):
-        extent = ax.get_tightbbox(fig.canvas.renderer).transformed(fig.dpi_scale_trans.inverted())
+        extent = ax.get_tightbbox(fig.canvas.renderer).transformed(
+            fig.dpi_scale_trans.inverted()
+        )
         fig.savefig(output_path.format(bp=label), bbox_inches=extent)
 
 
@@ -382,7 +377,7 @@ def extract_save_all_maps(
     rescale=False,
     Indices=None,
     modelprefix="",
-    dest_folder=None
+    dest_folder=None,
 ):
     """
     Extracts the scoremap, location refinement field and part affinity field prediction of the model. The maps
@@ -423,19 +418,13 @@ def extract_save_all_maps(
         read_config,
         attempttomakefolder,
         GetEvaluationFolder,
-        IntersectionofBodyPartsandOnesGivenbyUser
+        IntersectionofBodyPartsandOnesGivenbyUser,
     )
     from tqdm import tqdm
 
     cfg = read_config(config)
     data = extract_maps(
-        config,
-        shuffle,
-        trainingsetindex,
-        gputouse,
-        rescale,
-        Indices,
-        modelprefix,
+        config, shuffle, trainingsetindex, gputouse, rescale, Indices, modelprefix
     )
 
     comparisonbodyparts = IntersectionofBodyPartsandOnesGivenbyUser(
@@ -470,54 +459,67 @@ def extract_save_all_maps(
                 scmap, (locref_x, locref_y), paf = resize_all_maps(
                     image, scmap, locref, paf
                 )
-                to_plot = [i for i, bpt in enumerate(bptnames) if bpt in comparisonbodyparts]
+                to_plot = [
+                    i for i, bpt in enumerate(bptnames) if bpt in comparisonbodyparts
+                ]
                 list_of_inds = []
                 for n, edge in enumerate(pafgraph):
                     if any(ind in to_plot for ind in edge):
-                        list_of_inds.append([(2 * n, 2 * n + 1),
-                                             (bptnames[edge[0]], bptnames[edge[1]])])
+                        list_of_inds.append(
+                            [(2 * n, 2 * n + 1), (bptnames[edge[0]], bptnames[edge[1]])]
+                        )
                 map_ = scmap[:, :, to_plot].sum(axis=2)
                 locref_x_ = locref_x[:, :, to_plot].sum(axis=2)
                 locref_y_ = locref_y[:, :, to_plot].sum(axis=2)
 
-                fig1, _ = visualize_scoremaps(
-                    image, map_
+                fig1, _ = visualize_scoremaps(image, map_)
+                temp = dest_path.format(
+                    imname=imname,
+                    map="scmap",
+                    label=label,
+                    shuffle=shuffle,
+                    frac=frac,
+                    snap=snap,
                 )
-                temp = dest_path.format(imname=imname, map='scmap', label=label,
-                                        shuffle=shuffle, frac=frac, snap=snap)
                 fig1.savefig(temp)
 
-                fig2, _ = visualize_locrefs(
-                    image,
-                    map_,
-                    locref_x_,
-                    locref_y_
+                fig2, _ = visualize_locrefs(image, map_, locref_x_, locref_y_)
+                temp = dest_path.format(
+                    imname=imname,
+                    map="locref",
+                    label=label,
+                    shuffle=shuffle,
+                    frac=frac,
+                    snap=snap,
                 )
-                temp = dest_path.format(imname=imname, map='locref', label=label,
-                                        shuffle=shuffle, frac=frac, snap=snap)
                 fig2.savefig(temp)
 
                 if paf is not None:
                     if not all_paf_in_one:
                         for inds, names in list_of_inds:
-                            fig3, _ = visualize_paf(
-                                image,
-                                paf[:, :, [inds]]
+                            fig3, _ = visualize_paf(image, paf[:, :, [inds]])
+                            temp = dest_path.format(
+                                imname=imname,
+                                map=f'paf_{"_".join(names)}',
+                                label=label,
+                                shuffle=shuffle,
+                                frac=frac,
+                                snap=snap,
                             )
-                            temp = dest_path.format(imname=imname, map=f'paf_{"_".join(names)}', label=label,
-                                                    shuffle=shuffle, frac=frac, snap=snap)
                             fig3.savefig(temp)
                     else:
                         inds = [elem[0] for elem in list_of_inds]
                         n_inds = len(inds)
-                        cmap = plt.cm.get_cmap(cfg['colormap'], n_inds)
+                        cmap = plt.cm.get_cmap(cfg["colormap"], n_inds)
                         colors = cmap(range(n_inds))
-                        fig3, _ = visualize_paf(
-                            image,
-                            paf[:, :, inds],
-                            colors=colors
+                        fig3, _ = visualize_paf(image, paf[:, :, inds], colors=colors)
+                        temp = dest_path.format(
+                            imname=imname,
+                            map=f"paf",
+                            label=label,
+                            shuffle=shuffle,
+                            frac=frac,
+                            snap=snap,
                         )
-                        temp = dest_path.format(imname=imname, map=f'paf', label=label,
-                                                shuffle=shuffle, frac=frac, snap=snap)
                         fig3.savefig(temp)
                 plt.close("all")

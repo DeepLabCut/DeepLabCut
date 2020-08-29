@@ -441,9 +441,7 @@ def ExtractFramesbasedonPreselection(
         coords = None
 
     print("Duration of video [s]: ", duration, ", recorded @ ", fps, "fps!")
-    print(
-        "Overall # of frames: ", nframes, "with (cropped) frame dimensions: ",
-    )
+    print("Overall # of frames: ", nframes, "with (cropped) frame dimensions: ")
     if extractionalgorithm == "uniform":
         if opencv:
             frames2pick = frameselectiontools.UniformFramescv2(

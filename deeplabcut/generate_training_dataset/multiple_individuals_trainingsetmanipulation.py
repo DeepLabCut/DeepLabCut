@@ -104,7 +104,7 @@ def create_multianimaltraining_dataset(
     def strip_cropped_image_name(path):
         # utility function to split different crops from same image into either train or test!
         filename = os.path.split(path)[1]
-        return filename.split("c")[0] if cfg['croppedtraining'] else filename
+        return filename.split("c")[0] if cfg["croppedtraining"] else filename
 
     img_names = Data.index.map(strip_cropped_image_name).unique()
 

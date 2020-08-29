@@ -34,12 +34,12 @@ class BackgroundPlayer:
                 if len(self.speed) == 1:
                     i += 1
                 else:
-                    i += 2 * (len(self.speed)-1)
+                    i += 2 * (len(self.speed) - 1)
             elif "R" in self.speed:
                 if len(self.speed) == 1:
                     i -= 1
                 else:
-                    i -= 2 * (len(self.speed)-1)
+                    i -= 2 * (len(self.speed) - 1)
             if i > self.viz.manager.nframes:
                 i = 0
             elif i < 0:
@@ -217,12 +217,10 @@ class TrackletManager:
             tracklets_multi = np.full(
                 (self.nindividuals, self.nframes, len(bodyparts_multi) * 3),
                 np.nan,
-                np.float16
+                np.float16,
             )
             tracklets_single = np.full(
-                (self.nframes, len(bodyparts_single) * 3),
-                np.nan,
-                np.float16
+                (self.nframes, len(bodyparts_single) * 3), np.nan, np.float16
             )
             for _ in trange(len(tracklets_sorted)):
                 tracklet = tracklets_sorted.pop()
@@ -249,7 +247,8 @@ class TrackletManager:
                         for i in idx:
                             sl = slice(i * 3, i * 3 + 3)
                             tracklets_single[inds[rows[sl]], cols[sl]] = data_single[
-                                rows[sl], cols[sl]]
+                                rows[sl], cols[sl]
+                            ]
                 else:
                     is_free = np.isnan(tracklets_multi[:, inds])
                     data_multi = data[:, mask_multi]
@@ -264,7 +263,9 @@ class TrackletManager:
                             current_mask = mask[ind]
                             rows, cols = np.nonzero(current_mask)
                             if rows.size:
-                                tracklets_multi[ind, inds[rows], cols] = data_multi[current_mask]
+                                tracklets_multi[ind, inds[rows], cols] = data_multi[
+                                    current_mask
+                                ]
                                 is_free[ind, current_mask] = False
                                 has_data[current_mask] = False
                         if has_data.any():
@@ -289,7 +290,9 @@ class TrackletManager:
                             rows, cols = np.nonzero(has_data)
                             for i, j in zip(idx, better):
                                 sl = slice(j * 3, j * 3 + 3)
-                                tracklets_multi[i, inds[rows[sl]], cols[sl]] = remaining.flat[sl]
+                                tracklets_multi[
+                                    i, inds[rows[sl]], cols[sl]
+                                ] = remaining.flat[sl]
                     else:
                         rows, cols = np.nonzero(has_data)
                         n = np.argmin(overwrite_risk)
@@ -332,7 +335,7 @@ class TrackletManager:
             tracklets_raw = np.full(
                 (len(tracklets_sorted), self.nframes, len(bodyparts)),
                 np.nan,
-                np.float16
+                np.float16,
             )
             for n, tracklet in enumerate(tracklets_sorted[::-1]):
                 for frame, data in tracklet.items():

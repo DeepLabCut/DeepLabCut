@@ -504,7 +504,7 @@ def create_labeled_video(
         skeleton_color,
         displaycropped,
         fastmode,
-        keypoints_only
+        keypoints_only,
     )
 
     with Pool(min(os.cpu_count(), len(Videos))) as pool:
@@ -535,7 +535,7 @@ def proc_video(
     displaycropped,
     fastmode,
     keypoints_only,
-    video
+    video,
 ):
     """Helper function for create_videos
 
@@ -608,7 +608,7 @@ def proc_video(
                     cfg["alphavalue"],
                     skeleton_color=skeleton_color,
                     color_by=color_by,
-                    colormap=cfg["colormap"]
+                    colormap=cfg["colormap"],
                 )
             elif not fastmode:
                 tmpfolder = os.path.join(str(videofolder), "temp-" + vname)
@@ -676,33 +676,33 @@ def proc_video(
 
 
 def create_video_with_keypoints_only(
-        df,
-        output_name,
-        ind_links=None,
-        pcutoff=0.6,
-        dotsize=8,
-        alpha=0.7,
-        background_color='k',
-        skeleton_color='navy',
-        color_by='bodypart',
-        colormap='viridis',
-        fps=25,
-        dpi=200,
-        codec='h264'
+    df,
+    output_name,
+    ind_links=None,
+    pcutoff=0.6,
+    dotsize=8,
+    alpha=0.7,
+    background_color="k",
+    skeleton_color="navy",
+    color_by="bodypart",
+    colormap="viridis",
+    fps=25,
+    dpi=200,
+    codec="h264",
 ):
     bodyparts = df.columns.get_level_values("bodyparts")[::3]
     bodypart_names = bodyparts.unique()
     n_bodyparts = len(bodypart_names)
-    nx = int(np.nanmax(df.xs('x', axis=1, level='coords')))
-    ny = int(np.nanmax(df.xs('y', axis=1, level='coords')))
+    nx = int(np.nanmax(df.xs("x", axis=1, level="coords")))
+    ny = int(np.nanmax(df.xs("y", axis=1, level="coords")))
 
     n_frames = df.shape[0]
     xyp = df.values.reshape((n_frames, -1, 3))
 
-    if color_by == 'bodypart':
+    if color_by == "bodypart":
         map_ = bodyparts.map(dict(zip(bodypart_names, range(n_bodyparts))))
         cmap = plt.get_cmap(colormap, n_bodyparts)
-    elif color_by == 'individual':
+    elif color_by == "individual":
         try:
             individuals = df.columns.get_level_values("individuals")[::3]
             individual_names = individuals.unique().to_list()
@@ -714,7 +714,7 @@ def create_video_with_keypoints_only(
                 "Coloring by individuals is only valid for multi-animal data"
             ) from e
     else:
-        raise ValueError(f'Invalid color_by={color_by}')
+        raise ValueError(f"Invalid color_by={color_by}")
 
     prev_backend = plt.get_backend()
     plt.switch_backend("agg")
@@ -731,9 +731,12 @@ def create_video_with_keypoints_only(
     ax.add_collection(coll)
     ax.set_xlim(0, nx)
     ax.set_ylim(0, ny)
-    ax.axis('off')
-    ax.add_patch(plt.Rectangle((0, 0), 1, 1, facecolor=background_color,
-                               transform=ax.transAxes, zorder=-1))
+    ax.axis("off")
+    ax.add_patch(
+        plt.Rectangle(
+            (0, 0), 1, 1, facecolor=background_color, transform=ax.transAxes, zorder=-1
+        )
+    )
     ax.invert_yaxis()
     plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
 

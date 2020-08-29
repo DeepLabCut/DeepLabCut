@@ -203,7 +203,7 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
             for j, bpt in enumerate(uniquebodyparts):
                 index = pd.MultiIndex.from_arrays(
                     np.array(
-                        [2 * [cfg["scorer"]], 2 * ["single"], 2 * [bpt], ["x", "y"],]
+                        [2 * [cfg["scorer"]], 2 * ["single"], 2 * [bpt], ["x", "y"]]
                     ),
                     names=["scorer", "individuals", "bodyparts", "coords"],
                 )

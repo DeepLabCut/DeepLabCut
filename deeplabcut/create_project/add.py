@@ -79,7 +79,9 @@ def add_new_videos(config, videos, copy_videos=False, coords=None):
                 os.symlink(src, dst)
 
     if copy_videos:
-        videos = destinations  # in this case the *new* location should be added to the config file
+        videos = (
+            destinations
+        )  # in this case the *new* location should be added to the config file
     # adds the video list to the config.yaml file
     for idx, video in enumerate(videos):
         try:

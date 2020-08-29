@@ -148,7 +148,9 @@ def create_new_project(
             videos = destinations
 
     if copy_videos == True:
-        videos = destinations  # in this case the *new* location should be added to the config file
+        videos = (
+            destinations
+        )  # in this case the *new* location should be added to the config file
 
     # adds the video list to the config.yaml file
     video_sets = {}
@@ -220,7 +222,9 @@ def create_new_project(
     cfg_file["y2"] = 624
     cfg_file[
         "batch_size"
-    ] = 8  # batch size during inference (video - analysis); see https://www.biorxiv.org/content/early/2018/10/30/457242
+    ] = (
+        8
+    )  # batch size during inference (video - analysis); see https://www.biorxiv.org/content/early/2018/10/30/457242
     cfg_file["corner2move2"] = (50, 50)
     cfg_file["move2corner"] = True
     cfg_file["skeleton_color"] = "black"

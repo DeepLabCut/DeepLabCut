@@ -343,10 +343,48 @@ class MainFrame(wx.Frame):
                 self.buttonCounter[closest_dp.individual_names].remove(
                     closest_dp.bodyParts
                 )
+        elif event.ControlDown() and event.GetKeyCode() == 67:
+            self.duplicate_labels()
 
     @staticmethod
     def calc_distance(x1, y1, x2, y2):
         return np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+
+    def duplicate_labels(self):
+        if self.iter >= 1:
+            curr_individual = self.individualrdb.GetStringSelection()
+            curr_image = self.relativeimagenames[self.iter]
+            prev_image = self.relativeimagenames[self.iter - 1]
+            idx = pd.IndexSlice
+            self.dataFrame.loc[
+                curr_image, idx[:, curr_individual]
+            ] = self.dataFrame.loc[prev_image, idx[:, curr_individual]].values
+            img_name = Path(self.index[self.iter]).name
+            (
+                self.figure,
+                self.axes,
+                self.canvas,
+                self.toolbar,
+                self.image_axis,
+            ) = self.image_panel.drawplot(
+                self.img,
+                img_name,
+                self.iter,
+                self.index,
+                self.multibodyparts,
+                self.colormap,
+                keep_view=self.view_locked,
+            )
+            if curr_individual == "single":
+                self.norm, self.colorIndex = self.image_panel.getColorIndices(
+                    self.img, self.uniquebodyparts
+                )
+                self.buttonCounter = MainFrame.plot(self, self.img)
+            else:
+                self.norm, self.colorIndex = self.image_panel.getColorIndices(
+                    self.img, self.multibodyparts
+                )
+                self.buttonCounter = MainFrame.plot(self, self.img)
 
     def activateSlider(self, event):
         """
@@ -425,8 +463,9 @@ class MainFrame(wx.Frame):
         """
         MainFrame.updateZoomPan(self)
         wx.MessageBox(
-            "1. Select an individual and one of the body parts from the radio buttons to add a label (if necessary change config.yaml first to edit the label names). \n\n2. Right clicking on the image will add the selected label and the next available label will be selected from the radio button. \n The label will be marked as circle filled with a unique color.\n\n3. To change the marker size, mark the checkbox and move the slider. \n\n4. Hover your mouse over this newly added label to see its name. \n\n5. Use left click and drag to move the label position.  \n\n6. Once you are happy with the position, right click to add the next available label. You can always reposition the old labels, if required. You can delete a label with the middle button mouse click. \n\n7. Click Next/Previous to move to the next/previous image.\n User can also add a missing label by going to a previous/next image and using the left click to add the selected label.\n NOTE: the user cannot add a label if the label is already present. \n\n8. When finished labeling all the images, click 'Save' to save all the labels as a .h5 file. \n\n9. Click OK to continue using the labeling GUI.",
+            "1. Select an individual and one of the body parts from the radio buttons to add a label (if necessary change config.yaml first to edit the label names). \n\n2. Right clicking on the image will add the selected label and the next available label will be selected from the radio button. \n The label will be marked as circle filled with a unique color (and individual ID a unique color on the rim).\n\n3. To change the marker size, mark the checkbox and move the slider, then uncheck the box. \n\n4. Hover your mouse over this newly added label to see its name. \n\n5. Use left click and drag to move the label position.  \n\n6. Once you are happy with the position, right click to add the next available label. You can always reposition the old labels, if required. You can delete a label with the middle button mouse click (or click 'delete' key). \n\n7. Click Next/Previous to move to the next/previous image (or hot-key arrows left and right).\n User can also re-label a deletd point by going to a previous/next image then returning to the current iamge. \n NOTE: the user cannot add a label if the label is already present. \n \n8. You can click Cntrl+C to copy+paste labels from a previous image into the current image. For maDLC, you do this for each individual. \n\n9. When finished labeling all the images, click 'Save' to save all the labels as a .h5 file. \n\n10. Click OK to continue using the labeling GUI. For more tips and hotkeys: see docs!!",
             "User instructions",
+
             wx.OK | wx.ICON_INFORMATION,
         )
         self.statusbar.SetStatusText("Help")
@@ -892,7 +931,7 @@ class MainFrame(wx.Frame):
         uniquebodyparts,
         multibodyparts,
     ):
-        a = np.empty((len(relativeimagenames), 2,))
+        a = np.empty((len(relativeimagenames), 2))
         a[:] = np.nan
         for prfxindex, prefix in enumerate(individual_names):
             if uniquebodyparts != None:

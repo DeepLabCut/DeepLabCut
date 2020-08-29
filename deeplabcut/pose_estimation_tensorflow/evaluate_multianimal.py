@@ -28,15 +28,23 @@ from deeplabcut.utils import visualization
 def _percentile(n):
     def percentile_(x):
         return x.quantile(n)
-    percentile_.__name__ = f'percentile_{100 * n:.0f}'
+
+    percentile_.__name__ = f"percentile_{100 * n:.0f}"
     return percentile_
 
 
 def _compute_stats(df):
-    return df.agg(['min', 'max', 'mean', np.std,
-                   _percentile(0.25),
-                   _percentile(0.50),
-                   _percentile(0.75)]).stack(level=1)
+    return df.agg(
+        [
+            "min",
+            "max",
+            "mean",
+            np.std,
+            _percentile(0.25),
+            _percentile(0.50),
+            _percentile(0.75),
+        ]
+    ).stack(level=1)
 
 
 def evaluate_multianimal_full(
@@ -101,8 +109,9 @@ def evaluate_multianimal_full(
     comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
         cfg, comparisonbodyparts
     )
-    all_bpts = np.asarray(len(cfg['individuals']) * cfg['multianimalbodyparts']
-                          + cfg['uniquebodyparts'])
+    all_bpts = np.asarray(
+        len(cfg["individuals"]) * cfg["multianimalbodyparts"] + cfg["uniquebodyparts"]
+    )
     colors = visualization.get_cmap(len(comparisonbodyparts), name=cfg["colormap"])
     # Make folder for evaluation
     auxiliaryfunctions.attempttomakefolder(
@@ -147,7 +156,7 @@ def evaluate_multianimal_full(
             # TODO: IMPLEMENT for different batch sizes?
             dlc_cfg["batch_size"] = 1  # due to differently sized images!!!
 
-            joints = dlc_cfg['all_joints_names']
+            joints = dlc_cfg["all_joints_names"]
 
             # Create folder structure to store results.
             evaluationfolder = os.path.join(
@@ -257,21 +266,31 @@ def evaluate_multianimal_full(
                             frame = img_as_ubyte(skimage.color.gray2rgb(image))
 
                             GT = Data.iloc[imageindex]
-                            df = GT.unstack('coords')
+                            df = GT.unstack("coords")
 
                             # Evaluate PAF edge lengths to calibrate `distnorm`
-                            temp = GT.unstack('bodyparts')[joints]
-                            xy = temp.values.reshape((-1, 2, temp.shape[1])).swapaxes(1, 2)
-                            edges = xy[:, dlc_cfg['partaffinityfield_graph']]
-                            lengths = np.sum((edges[:, :, 0] - edges[:, :, 1]) ** 2, axis=2)
+                            temp = GT.unstack("bodyparts")[joints]
+                            xy = temp.values.reshape((-1, 2, temp.shape[1])).swapaxes(
+                                1, 2
+                            )
+                            edges = xy[:, dlc_cfg["partaffinityfield_graph"]]
+                            lengths = np.sum(
+                                (edges[:, :, 0] - edges[:, :, 1]) ** 2, axis=2
+                            )
                             distnorm[imageindex] = np.nanmax(lengths)
 
                             # FIXME Is having an empty array vs nan really that necessary?!
-                            groundtruthidentity = list(df.index.get_level_values('individuals').to_numpy().reshape((-1, 1)))
+                            groundtruthidentity = list(
+                                df.index.get_level_values("individuals")
+                                .to_numpy()
+                                .reshape((-1, 1))
+                            )
                             groundtruthcoordinates = list(df.values[:, np.newaxis])
                             for i, coords in enumerate(groundtruthcoordinates):
                                 if np.isnan(coords).any():
-                                    groundtruthcoordinates[i] = np.empty((0, 2), dtype=float)
+                                    groundtruthcoordinates[i] = np.empty(
+                                        (0, 2), dtype=float
+                                    )
                                     groundtruthidentity[i] = np.array([], dtype=str)
 
                             PredicteData[imagename] = {}
@@ -298,8 +317,10 @@ def evaluate_multianimal_full(
 
                             coords_pred = pred["coordinates"][0]
                             probs_pred = pred["confidence"]
-                            for bpt, xy_gt in df.groupby(level='bodyparts'):
-                                inds_gt = np.flatnonzero(np.all(~np.isnan(xy_gt), axis=1))
+                            for bpt, xy_gt in df.groupby(level="bodyparts"):
+                                inds_gt = np.flatnonzero(
+                                    np.all(~np.isnan(xy_gt), axis=1)
+                                )
                                 xy = coords_pred[joints.index(bpt)]
                                 if inds_gt.size and xy.size:
                                     # Pick the predictions closest to ground truth,
@@ -333,25 +354,33 @@ def evaluate_multianimal_full(
 
                         # Compute all distance statistics
                         df_dist = pd.DataFrame(dist, index=df.index)
-                        write_path = os.path.join(evaluationfolder, 'dist.csv')
+                        write_path = os.path.join(evaluationfolder, "dist.csv")
                         df_dist.to_csv(write_path)
 
-                        stats_per_ind = _compute_stats(df_dist.groupby('individuals'))
-                        stats_per_ind.to_csv(write_path.replace('dist.csv', 'dist_stats_ind.csv'))
-                        stats_per_bpt = _compute_stats(df_dist.groupby('bodyparts'))
-                        stats_per_bpt.to_csv(write_path.replace('dist.csv', 'dist_stats_bpt.csv'))
+                        stats_per_ind = _compute_stats(df_dist.groupby("individuals"))
+                        stats_per_ind.to_csv(
+                            write_path.replace("dist.csv", "dist_stats_ind.csv")
+                        )
+                        stats_per_bpt = _compute_stats(df_dist.groupby("bodyparts"))
+                        stats_per_bpt.to_csv(
+                            write_path.replace("dist.csv", "dist_stats_bpt.csv")
+                        )
 
                         # For OKS/PCK, compute the standard deviation error across all frames
-                        sd = df_dist.groupby('bodyparts').mean().std(axis=1)
-                        sd['distnorm'] = np.sqrt(np.nanmax(distnorm))
-                        sd.to_csv(write_path.replace('dist.csv', 'sd.csv'))
+                        sd = df_dist.groupby("bodyparts").mean().std(axis=1)
+                        sd["distnorm"] = np.sqrt(np.nanmax(distnorm))
+                        sd.to_csv(write_path.replace("dist.csv", "sd.csv"))
 
                         if show_errors:
-                            print('##########################################&1')
-                            print('Euclidean distance statistics per individual (in pixels)')
+                            print("##########################################&1")
+                            print(
+                                "Euclidean distance statistics per individual (in pixels)"
+                            )
                             print(stats_per_ind.mean(axis=1).unstack().to_string())
-                            print('##########################################')
-                            print('Euclidean distance statistics per bodypart (in pixels)')
+                            print("##########################################")
+                            print(
+                                "Euclidean distance statistics per bodypart (in pixels)"
+                            )
                             print(stats_per_bpt.mean(axis=1).unstack().to_string())
 
                         PredicteData["metadata"] = {
@@ -582,12 +611,16 @@ def evaluate_multianimal_crossvalidate(
             auxfun_multianimal.check_inferencecfg_sanity(cfg, inferencecfg)
 
         # Pick distance threshold for (r)PCK from the statistics computed during evaluation
-        stats_file = os.path.join(evaluationfolder, 'sd.csv')
+        stats_file = os.path.join(evaluationfolder, "sd.csv")
         if os.path.isfile(stats_file):
             stats = pd.read_csv(stats_file, header=None, index_col=0)
-            inferencecfg.distnormalization = np.round(stats.loc['distnorm', 1], 2).item()
-            stats = stats.drop('distnorm')
-            dcorr = 2 * stats.mean().squeeze()  # Taken as 2*SD error between predictions and ground truth
+            inferencecfg.distnormalization = np.round(
+                stats.loc["distnorm", 1], 2
+            ).item()
+            stats = stats.drop("distnorm")
+            dcorr = (
+                2 * stats.mean().squeeze()
+            )  # Taken as 2*SD error between predictions and ground truth
         else:
             dcorr = 10
         inferencecfg.topktoretain = np.inf
@@ -607,7 +640,7 @@ def evaluate_multianimal_crossvalidate(
             dcorr=dcorr,
             leastbpts=leastbpts,
             modelprefix=modelprefix,
-            printingintermediatevalues=printingintermediatevalues
+            printingintermediatevalues=printingintermediatevalues,
         )
 
         # update number of individuals to retain.
@@ -628,7 +661,7 @@ def evaluate_multianimal_crossvalidate(
         #     format="table",
         #     mode="w",
         # )
-        DataOptParams.to_csv(os.path.join(evaluationfolder, 'results.csv'))
+        DataOptParams.to_csv(os.path.join(evaluationfolder, "results.csv"))
         print("Saving optimal inference parameters...")
         print(DataOptParams.to_string())
         auxiliaryfunctions.write_plainconfig(path_inference_config, dict(inferencecfg))
