@@ -33,7 +33,7 @@ def wrapper(func, *args, **kwargs):
 
 
 networks = {
-    "mobilenet_v2_1.0": (mobilenet_v2.mobilenet_base, mobilenet_v2.training_scope,),
+    "mobilenet_v2_1.0": (mobilenet_v2.mobilenet_base, mobilenet_v2.training_scope),
     "mobilenet_v2_0.75": (
         wrapper(
             mobilenet_v2.mobilenet_base,

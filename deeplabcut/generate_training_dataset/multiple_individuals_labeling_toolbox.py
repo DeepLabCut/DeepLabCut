@@ -356,8 +356,9 @@ class MainFrame(wx.Frame):
             curr_image = self.relativeimagenames[self.iter]
             prev_image = self.relativeimagenames[self.iter - 1]
             idx = pd.IndexSlice
-            self.dataFrame.loc[curr_image, idx[:, curr_individual]] = \
-                self.dataFrame.loc[prev_image, idx[:, curr_individual]].values
+            self.dataFrame.loc[
+                curr_image, idx[:, curr_individual]
+            ] = self.dataFrame.loc[prev_image, idx[:, curr_individual]].values
             img_name = Path(self.index[self.iter]).name
             (
                 self.figure,
@@ -462,8 +463,9 @@ class MainFrame(wx.Frame):
         """
         MainFrame.updateZoomPan(self)
         wx.MessageBox(
-            "1. Select an individual and one of the body parts from the radio buttons to add a label (if necessary change config.yaml first to edit the label names). \n\n2. Right clicking on the image will add the selected label and the next available label will be selected from the radio button. \n The label will be marked as circle filled with a unique color.\n\n3. To change the marker size, mark the checkbox and move the slider. \n\n4. Hover your mouse over this newly added label to see its name. \n\n5. Use left click and drag to move the label position.  \n\n6. Once you are happy with the position, right click to add the next available label. You can always reposition the old labels, if required. You can delete a label with the middle button mouse click. \n\n7. Click Next/Previous to move to the next/previous image.\n User can also add a missing label by going to a previous/next image and using the left click to add the selected label.\n NOTE: the user cannot add a label if the label is already present. \n\n8. When finished labeling all the images, click 'Save' to save all the labels as a .h5 file. \n\n9. Click OK to continue using the labeling GUI.",
+            "1. Select an individual and one of the body parts from the radio buttons to add a label (if necessary change config.yaml first to edit the label names). \n\n2. Right clicking on the image will add the selected label and the next available label will be selected from the radio button. \n The label will be marked as circle filled with a unique color.\n\n3. To change the marker size, mark the checkbox and move the slider. \n\n4. Hover your mouse over this newly added label to see its name. \n\n5. Use left click and drag to move the label position.  \n\n6. Once you are happy with the position, right click to add the next available label. You can always reposition the old labels, if required. You can delete a label with the middle button mouse click. \n\n7. Click Next/Previous to move to the next/previous image.\n User can also add a missing label by going to a previous/next image and using the left click to add the selected label.\n NOTE: the user cannot add a label if the label is already present. \n\n8. When finished labeling all the images, click 'Save' to save all the labels as a .h5 file. \n\n9. Click OK to continue using the labeling GUI. Also see, docs for hot keys and other tips with the GUI!",
             "User instructions",
+
             wx.OK | wx.ICON_INFORMATION,
         )
         self.statusbar.SetStatusText("Help")
@@ -929,7 +931,7 @@ class MainFrame(wx.Frame):
         uniquebodyparts,
         multibodyparts,
     ):
-        a = np.empty((len(relativeimagenames), 2,))
+        a = np.empty((len(relativeimagenames), 2))
         a[:] = np.nan
         for prfxindex, prefix in enumerate(individual_names):
             if uniquebodyparts != None:

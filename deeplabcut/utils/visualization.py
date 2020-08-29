@@ -181,9 +181,9 @@ def save_labeled_frame(fig, image_path, dest_folder, belongs_to_train):
 
 
 def prepare_figure_axes(width, height, scale=1.0, dpi=100):
-    fig = plt.figure(frameon=False,
-                     figsize=(width * scale / dpi, height * scale / dpi),
-                     dpi=dpi)
+    fig = plt.figure(
+        frameon=False, figsize=(width * scale / dpi, height * scale / dpi), dpi=dpi
+    )
     ax = fig.add_subplot(111)
     ax.axis("off")
     ax.set_xlim(0, width)
@@ -312,7 +312,7 @@ def make_labeled_images_from_dataframe(
             fig.tight_layout()
             fig.savefig(
                 os.path.join(tmpfolder, imagename.replace(".png", f"_{color_by}.png")),
-                dpi=dpi
+                dpi=dpi,
             )
         plt.close(fig)
 
@@ -326,9 +326,9 @@ def make_labeled_images_from_dataframe(
             fig, ax = prepare_figure_axes(w, h, scale, dpi)
             ax.imshow(image)
             if ind_bones:
-                coll = LineCollection(segs[ind],
-                                      colors=cfg["skeleton_color"],
-                                      alpha=cfg["alphavalue"])
+                coll = LineCollection(
+                    segs[ind], colors=cfg["skeleton_color"], alpha=cfg["alphavalue"]
+                )
                 ax.add_collection(coll)
             ax.scatter(
                 *coords.T, s=cfg["dotsize"], alpha=cfg["alphavalue"], marker=keypoint
@@ -337,6 +337,6 @@ def make_labeled_images_from_dataframe(
             fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
             fig.savefig(
                 os.path.join(tmpfolder, imagename.replace(".png", f"_{color_by}.png")),
-                dpi=dpi
+                dpi=dpi,
             )
             plt.close(fig)

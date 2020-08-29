@@ -130,7 +130,7 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True, modelpre
 
     try:
         dlc_cfg = load_config(str(path_train_config))
-        #dlc_cfg_train = load_config(str(path_train_config))
+        # dlc_cfg_train = load_config(str(path_train_config))
     except FileNotFoundError:
         raise FileNotFoundError(
             "It seems the model for shuffle %s and trainFraction %s does not exist."

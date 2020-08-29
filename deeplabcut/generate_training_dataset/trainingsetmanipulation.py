@@ -350,7 +350,7 @@ def cropimagesandlabels(
                     y1 = y0 + size[0]
                     x1 = x0 + size[1]
                     with np.errstate(invalid="ignore"):
-                        within = np.all((dd >= [x0, y0]) & (dd < [x1, y1]), axis=1,)
+                        within = np.all((dd >= [x0, y0]) & (dd < [x1, y1]), axis=1)
                     if cropdata:
                         dd[within] -= [x0, y0]
                         dd[~within] = np.nan
@@ -538,7 +538,7 @@ def MakeTrain_pose_yaml(
 ):
     docs = ParseYaml(defaultconfigfile)
     for key in items2drop.keys():
-        #print(key, "dropping?")
+        # print(key, "dropping?")
         if key in docs[0].keys():
             docs[0].pop(key)
 
@@ -1084,10 +1084,7 @@ def create_training_dataset(
                 if augmenter_type == "scalecrop":
                     # these values are dropped as scalecrop
                     # doesn't have rotation implemented
-                    items2drop = {
-                        "rotation": 0,
-                        "rotratio": 0.0,
-                    }
+                    items2drop = {"rotation": 0, "rotratio": 0.0}
 
                 trainingdata = MakeTrain_pose_yaml(
                     items2change, path_train_config, defaultconfigfile, items2drop

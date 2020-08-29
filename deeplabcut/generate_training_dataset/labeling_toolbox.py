@@ -609,7 +609,7 @@ class MainFrame(wx.Frame):
                     self.iter = 0
 
         except:
-            a = np.empty((len(self.index), 2,))
+            a = np.empty((len(self.index), 2))
             a[:] = np.nan
             for bodypart in self.bodyparts:
                 index = pd.MultiIndex.from_product(
@@ -636,7 +636,7 @@ class MainFrame(wx.Frame):
             print("Found new frames..")
             # Create an empty dataframe with all the new images and then merge this to the existing dataframe.
             self.df = None
-            a = np.empty((len(self.newimages), 2,))
+            a = np.empty((len(self.newimages), 2))
             a[:] = np.nan
             for bodypart in self.bodyparts:
                 index = pd.MultiIndex.from_product(
@@ -698,7 +698,7 @@ class MainFrame(wx.Frame):
                 self.norm, self.colorIndex = self.image_panel.getColorIndices(
                     self.img, self.bodyparts
                 )
-            a = np.empty((len(self.index), 2,))
+            a = np.empty((len(self.index), 2))
             a[:] = np.nan
             for bodypart in self.new_bodyparts:
                 index = pd.MultiIndex.from_product(

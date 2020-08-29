@@ -128,7 +128,7 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4):
 
                 # Find the chess board corners
                 ret, corners = cv2.findChessboardCorners(
-                    gray, (cbcol, cbrow), None,
+                    gray, (cbcol, cbrow), None
                 )  #  (8,6) pattern (dimensions = common points of black squares)
                 # If found, add object points, image points (after refining them)
                 if ret == True:
@@ -221,7 +221,9 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4):
             )
 
             # Stereo Rectification
-            rectify_scale = alpha  # Free scaling parameter check this https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html#fisheye-stereorectify
+            rectify_scale = (
+                alpha
+            )  # Free scaling parameter check this https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html#fisheye-stereorectify
             R1, R2, P1, P2, Q, roi1, roi2 = cv2.stereoRectify(
                 cameraMatrix1,
                 distCoeffs1,
@@ -357,7 +359,7 @@ def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
                 img1 = cv2.imread(fname)
                 gray1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
                 h, w = img1.shape[:2]
-                _, corners1 = cv2.findChessboardCorners(gray1, (cbcol, cbrow), None,)
+                _, corners1 = cv2.findChessboardCorners(gray1, (cbcol, cbrow), None)
                 corners_origin1 = cv2.cornerSubPix(
                     gray1, corners1, (11, 11), (-1, -1), criteria
                 )
@@ -385,7 +387,7 @@ def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
                 img2 = cv2.imread(fname)
                 gray2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
                 h, w = img2.shape[:2]
-                _, corners2 = cv2.findChessboardCorners(gray2, (cbcol, cbrow), None,)
+                _, corners2 = cv2.findChessboardCorners(gray2, (cbcol, cbrow), None)
                 corners_origin2 = cv2.cornerSubPix(
                     gray2, corners2, (11, 11), (-1, -1), criteria
                 )

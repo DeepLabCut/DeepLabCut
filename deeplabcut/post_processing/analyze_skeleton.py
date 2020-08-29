@@ -158,7 +158,7 @@ def analyzebone(bp1, bp2):
 
     # Create dataframe and return
     df = pd.DataFrame.from_dict(
-        dict(length=bone_length, orientation=bone_orientation, likelihood=likelihood,)
+        dict(length=bone_length, orientation=bone_orientation, likelihood=likelihood)
     )
     # df.index.name=name
 

@@ -202,6 +202,12 @@ Note, we also highly recommend that you use more bodypoints that you might other
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588028248844-43RXXUNLE1VKJDKGGVFO/ke17ZwdGBToddI8pDm48kAxoZwLd0g_s-irkR9O2vUhZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxFjgZOWy5voI9x7QCcY8v6pdjAnJRY2VhSKj43SxhWXRPK8F08AQobuqKWFB6l9T0/labelingdemo.gif?format=750w" width="70%">
 </p>
 
+```
+HOT KEYS IN THE Labeling GUI:
+```
+Ctrl + C: Copy labels from previous frame.
+```
+
 ###  (E) Check Annotated Frames
 [DOCSTRING](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#check_labels)
 
@@ -386,7 +392,7 @@ The evaluation results for each shuffle of the training dataset are stored in a 
 directory ‘evaluation-results’ in the project directory. The user can visually inspect if the distance between the labeled
 and the predicted body parts are acceptable. In the event of benchmarking with different shuffles of same training
 dataset, the user can provide multiple shuffle indices to evaluate the corresponding network.
-Note that with multi-animal projects additional distance statistics aggregated over animals or bodyparts are also stored 
+Note that with multi-animal projects additional distance statistics aggregated over animals or bodyparts are also stored
 in that directory. This aims at providing a finer quantitative evaluation of multi-animal prediction performance
 before animal tracking. If the generalization is not sufficient, the user might want to:
 
@@ -545,7 +551,7 @@ Upon saving the refined tracks you get an `.h5` file (akin to what you might be 
 ```python
 deeplabcut.refine_tracklets(path_config_file, pickle_or_h5_file, videofile_path, min_swap_len=2, min_tracklet_len=2, trail_len=50)
 ```
-HOT KEYS IN THE GUI:
+HOT KEYS IN THE Tracklet GUI:
 ```
 Key D: activate "drag" so you can adjust bodyparts in that particular frame
 Key I: invert the position of a pair of bodyparts
