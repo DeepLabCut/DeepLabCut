@@ -879,12 +879,8 @@ class MainFrame(wx.Frame):
 	    Reset data for each image
 	    """
 	    for idx, bp in enumerate(self.updatedCoords):
-	        self.dataFrame.loc[self.relativeimagenames[self.iter]][
-	            self.scorer, bp[0][-2], "x"
-	        ] = None
-	        self.dataFrame.loc[self.relativeimagenames[self.iter]][
-	            self.scorer, bp[0][-2], "y"
-	        ] = None
+	        self.dataFrame.loc[self.relativeimagenames[self.iter]][self.scorer, bp[0][-2], "x"] = None
+	        self.dataFrame.loc[self.relativeimagenames[self.iter]][self.scorer, bp[0][-2], "y"] = None
     
 
     def deleteImage(self, event):
