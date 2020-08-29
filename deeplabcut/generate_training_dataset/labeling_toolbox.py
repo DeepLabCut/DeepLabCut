@@ -884,8 +884,6 @@ class MainFrame(wx.Frame):
 
     def deleteImage(self, event):
         image_path = os.path.join( self.currentDirectory, self.relativeimagenames[self.iter])
-        print("Delete Image Path : ", image_path)
-        os.remove(image_path)
         MainFrame.ResetEachImage(self)
         # Reset updated coords
         for i in self.updatedCoords:
@@ -893,10 +891,9 @@ class MainFrame(wx.Frame):
             i[0][1] = None #Resets Y-coordinate
     	#  Checks for the last image and disables the Next button
         MainFrame.saveEachImage(self)
-
-        if len(self.index) - self.iter == 1:
-            return
         self.nextImage(event=None)
+        print("Delete Image Path : ", image_path)
+        os.remove(image_path)
         return
 
     def saveDataSet(self, event):
@@ -917,6 +914,7 @@ class MainFrame(wx.Frame):
         MainFrame.saveEachImage(self)
         MainFrame.updateZoomPan(self)
         
+        # Drop Nan data frames
         self.dataFrame = self.dataFrame.dropna(how='all') 
         
         # Windows compatible
