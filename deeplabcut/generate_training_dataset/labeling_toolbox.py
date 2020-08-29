@@ -888,7 +888,7 @@ class MainFrame(wx.Frame):
     
 
     def deleteImage(self, event):
-    	image_path = os.path.join( self.currentDirectory, self.dataFrame.index[self.iter])
+    	image_path = os.path.join( self.currentDirectory, self.relativeimagenames[self.iter])
     	print("Delete Image Path : ", image_path)
     	os.remove(image_path)
     	MainFrame.ResetEachImage(self)
