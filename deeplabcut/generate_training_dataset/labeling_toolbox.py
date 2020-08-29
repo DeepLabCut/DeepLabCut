@@ -899,14 +899,14 @@ class MainFrame(wx.Frame):
         Saves the final dataframe
         """
 
-        # Remove previous save
+        # Backup previous save
         csv_path = os.path.join(self.dir, "CollectedData_" + self.scorer + ".csv") 
         if os.path.exists( csv_path):
-        	os.remove( csv_path)
+        	os.rename( csv_path, csv_path.replace('.csv','.csv.backup'))
 
         hdf_path = os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5")
         if os.path.exists( hdf_path):
-        	os.remove( hdf_path)
+        	os.rename( hdf_path, hdf_path.replace('.h5','.h5.backup'))
 
         self.statusbar.SetStatusText("File saved")
         MainFrame.saveEachImage(self)
