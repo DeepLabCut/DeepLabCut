@@ -32,7 +32,6 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from deeplabcut.generate_training_dataset import auxfun_drag_label
 from deeplabcut.utils import auxiliaryfunctions
 
-
 # ###########################################################################
 # Class for GUI MainFrame
 # ###########################################################################
@@ -884,15 +883,21 @@ class MainFrame(wx.Frame):
     
 
     def deleteImage(self, event):
-    	image_path = os.path.join( self.currentDirectory, self.relativeimagenames[self.iter])
-    	print("Delete Image Path : ", image_path)
-    	os.remove(image_path)
-    	MainFrame.ResetEachImage(self)
+        image_path = os.path.join( self.currentDirectory, self.relativeimagenames[self.iter])
+        print("Delete Image Path : ", image_path)
+        os.remove(image_path)
+        MainFrame.ResetEachImage(self)
+        # Reset updated coords
+        for i in self.updatedCoords:
+            i[0][0] = None #Resets X-coordinate
+            i[0][1] = None #Resets Y-coordinate
     	#  Checks for the last image and disables the Next button
-    	if len(self.index) - self.iter == 1:
-    		return
-    	self.nextImage(event=None)
-    	return
+        MainFrame.saveEachImage(self)
+
+        if len(self.index) - self.iter == 1:
+            return
+        self.nextImage(event=None)
+        return
 
     def saveDataSet(self, event):
         """
