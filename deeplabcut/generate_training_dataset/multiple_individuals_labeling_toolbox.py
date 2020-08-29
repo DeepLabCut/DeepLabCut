@@ -279,7 +279,7 @@ class MainFrame(wx.Frame):
         self.save.Bind(wx.EVT_BUTTON, self.saveDataSet)
         self.save.Enable(False)
 
-        self.delete = wx.Button(self.widget_panel, id=wx.ID_ANY, label="Delete")
+        self.delete = wx.Button(self.widget_panel, id=wx.ID_ANY, label="Delete Frame")
         widgetsizer.Add(self.delete, 1, wx.ALL, 15)
         self.delete.Bind(wx.EVT_BUTTON, self.deleteImage)
         self.delete.Enable(False)
