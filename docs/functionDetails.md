@@ -203,9 +203,11 @@ Note, we also highly recommend that you use more bodypoints that you might other
 </p>
 
 ```
-HOT KEYS IN THE Labeling GUI:
+HOT KEYS IN THE Labeling GUI (also see "help" in GUI)
 ```
 Ctrl + C: Copy labels from previous frame.
+Keyboard arrows: advance frames
+delete key: delete label
 ```
 
 ###  (E) Check Annotated Frames
