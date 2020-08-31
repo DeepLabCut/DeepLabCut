@@ -14,7 +14,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.collections import LineCollection
-from skimage import io
+from skimage import io, color
 from tqdm import trange
 
 from deeplabcut.utils.auxiliaryfunctions import attempttomakefolder
@@ -304,7 +304,7 @@ def make_labeled_images_from_dataframe(
             filename = ic.files[i]
             ind = images_list.index(filename)
             coords = xy[ind]
-            im.set_array(ic[i])
+            im.set_data(color.gray2rgb(ic[i]))
             if ind_bones:
                 coll.set_segments(segs[ind])
             scat.set_offsets(coords)
