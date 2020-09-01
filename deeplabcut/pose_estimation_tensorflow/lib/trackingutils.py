@@ -32,7 +32,7 @@ import numpy as np
 import warnings
 from filterpy.common import kinematic_kf
 from filterpy.kalman import KalmanFilter
-from matplotlib.patches import Ellipse
+from matplotlib import patches
 from numba import jit
 from numba.core.errors import NumbaPerformanceWarning
 from scipy.optimize import linear_sum_assignment
@@ -41,6 +41,207 @@ from shapely.geometry import Polygon
 
 
 warnings.simplefilter('ignore', category=NumbaPerformanceWarning)
+
+
+@jit
+def iou(bb_test, bb_gt):
+    """
+    Computes intersection of union (IOU) metric for pair of bboxes in the form [x1,y1,x2,y2]
+    """
+    xx1 = np.maximum(bb_test[0], bb_gt[0])
+    yy1 = np.maximum(bb_test[1], bb_gt[1])
+    xx2 = np.minimum(bb_test[2], bb_gt[2])
+    yy2 = np.minimum(bb_test[3], bb_gt[3])
+    w = np.maximum(0.0, xx2 - xx1)
+    h = np.maximum(0.0, yy2 - yy1)
+    wh = w * h
+    o = wh / (
+        (bb_test[2] - bb_test[0]) * (bb_test[3] - bb_test[1])
+        + (bb_gt[2] - bb_gt[0]) * (bb_gt[3] - bb_gt[1])
+        - wh
+    )
+    return o
+
+
+def convert_bbox_to_z(bbox):
+    """
+    Takes a bounding box in the form [x1,y1,x2,y2] and returns z in the form
+      [x,y,s,r] where x,y is the centre of the box and s is the scale/area and r is
+      the aspect ratio
+    """
+    w = bbox[2] - bbox[0]
+    h = bbox[3] - bbox[1]
+    x = bbox[0] + w / 2.0
+    y = bbox[1] + h / 2.0
+    s = w * h  # scale is just area
+    r = w / float(h)
+    return np.array([x, y, s, r]).reshape((4, 1))
+
+
+def convert_x_to_bbox(x, score=None):
+    """
+    Takes a bounding box in the centre form [x,y,s,r] and returns it in the form
+      [x1,y1,x2,y2] where x1,y1 is the top left and x2,y2 is the bottom right
+    """
+    w = np.sqrt(x[2] * x[3])
+    h = x[2] / w
+    if score == None:
+        return np.array(
+            [x[0] - w / 2.0, x[1] - h / 2.0, x[0] + w / 2.0, x[1] + h / 2.0]
+        ).reshape((1, 4))
+    else:
+        return np.array(
+            [x[0] - w / 2.0, x[1] - h / 2.0, x[0] + w / 2.0, x[1] + h / 2.0, score]
+        ).reshape((1, 5))
+
+
+class KalmanBoxTracker:
+    """
+    This class represents the internal state of individual tracked objects observed as bbox.
+    """
+
+    count = 0
+
+    def __init__(self, bbox):
+        """
+        Initialises a tracker using initial bounding box.
+        """
+        # define constant velocity model
+        self.kf = KalmanFilter(dim_x=7, dim_z=4)
+        self.kf.F = np.array(
+            [
+                [1, 0, 0, 0, 1, 0, 0],
+                [0, 1, 0, 0, 0, 1, 0],
+                [0, 0, 1, 0, 0, 0, 1],
+                [0, 0, 0, 1, 0, 0, 0],
+                [0, 0, 0, 0, 1, 0, 0],
+                [0, 0, 0, 0, 0, 1, 0],
+                [0, 0, 0, 0, 0, 0, 1],
+            ]
+        )
+        self.kf.H = np.array(
+            [
+                [1, 0, 0, 0, 0, 0, 0],
+                [0, 1, 0, 0, 0, 0, 0],
+                [0, 0, 1, 0, 0, 0, 0],
+                [0, 0, 0, 1, 0, 0, 0],
+            ]
+        )
+
+        self.kf.R[2:, 2:] *= 10.0
+        self.kf.P[
+            4:, 4:
+        ] *= 1000.0  # give high uncertainty to the unobservable initial velocities
+        self.kf.P *= 10.0
+        self.kf.Q[-1, -1] *= 0.01
+        self.kf.Q[4:, 4:] *= 0.01
+
+        self.kf.x[:4] = convert_bbox_to_z(bbox)
+        self.time_since_update = 0
+        self.id = KalmanBoxTracker.count
+        KalmanBoxTracker.count += 1
+        self.history = []
+        self.hits = 0
+        self.hit_streak = 0
+        self.age = 0
+
+    def update(self, bbox):
+        """
+        Updates the state vector with observed bbox.
+        """
+        self.time_since_update = 0
+        self.history = []
+        self.hits += 1
+        self.hit_streak += 1
+        self.kf.update(convert_bbox_to_z(bbox))
+
+    def predict(self):
+        """
+        Advances the state vector and returns the predicted bounding box estimate.
+        """
+        if (self.kf.x[6] + self.kf.x[2]) <= 0:
+            self.kf.x[6] *= 0.0
+        self.kf.predict()
+        self.age += 1
+        if self.time_since_update > 0:
+            self.hit_streak = 0
+        self.time_since_update += 1
+        self.history.append(convert_x_to_bbox(self.kf.x))
+        return self.history[-1]
+
+    def get_state(self):
+        """
+        Returns the current bounding box estimate.
+        """
+        return convert_x_to_bbox(self.kf.x)
+
+
+class Ellipse:
+    def __init__(self, x, y, width, height, theta):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.theta = theta
+        self._geometry = None
+
+    @property
+    def parameters(self):
+        return self.x, self.y, self.width, self.height, self.theta
+
+    @property
+    def geometry(self):
+        if self._geometry is None:
+            t = np.linspace(0, 2 * np.pi, 40)
+            ca = np.cos(self.theta)
+            sa = np.sin(self.theta)
+            at = 0.5 * self.width * np.cos(t)
+            bt = 0.5 * self.height * np.sin(t)
+            xx = at * ca - bt * sa + self.x
+            yy = at * sa + bt * ca + self.y
+            self._geometry = Polygon(list(zip(xx, yy)))
+        return self._geometry
+
+    def calc_iou_with(self, other_ellipse):
+        geom1 = self.geometry
+        geom2 = other_ellipse.geometry
+        if not geom1.is_valid:
+            geom1 = geom1.buffer(0)
+        if not geom2.is_valid:
+            geom2 = geom2.buffer(0)
+        if not geom1.intersects(geom2):
+            return 0
+        inter = geom1.intersection(geom2).area
+        union = geom1.union(geom2).area
+        return inter / union
+
+    def contains_points(self, xy, tol=0.1):
+        ca = np.cos(self.theta)
+        sa = np.sin(self.theta)
+        x_demean = xy[:, 0] - self.x
+        y_demean = xy[:, 1] - self.y
+        return (((ca * x_demean + sa * y_demean) ** 2 / (0.5 * self.width) ** 2)
+                + ((sa * x_demean - ca * y_demean) ** 2 / (0.5 * self.height) ** 2)) <= 1 + tol
+
+    def draw(self, show_axes=True, ax=None, **kwargs):
+        import matplotlib.pyplot as plt
+        from matplotlib.lines import Line2D
+        from matplotlib.transforms import Affine2D
+
+        if ax is None:
+            ax = plt.subplot(111, aspect='equal')
+        el = patches.Ellipse(xy=(self.x, self.y), width=self.width, height=self.height,
+                             angle=np.rad2deg(self.theta), facecolor='none', **kwargs)
+        ax.add_patch(el)
+        if show_axes:
+            major = Line2D([-self.width / 2, self.width / 2], [0, 0], lw=3, zorder=3)
+            minor = Line2D([0, 0], [-self.height / 2, self.height / 2], lw=3, zorder=3)
+            trans = (Affine2D().rotate(self.theta).translate(self.x, self.y)
+                     + ax.transData)
+            major.set_transform(trans)
+            minor.set_transform(trans)
+            ax.add_artist(major)
+            ax.add_artist(minor)
 
 
 class EllipseFitter:
@@ -54,7 +255,7 @@ class EllipseFitter:
     def fit(self, xy):
         self.x, self.y = xy[np.isfinite(xy).all(axis=1)].T
         if len(self.x) < 3:
-            return np.full(5, np.nan)
+            return None
         if self.sd:
             self.params = self._fit_error(self.x, self.y, self.sd)
             # Orient the ellipse such that it encompasses most points
@@ -65,7 +266,9 @@ class EllipseFitter:
         else:
             self._coeffs = self._fit(self.x, self.y)
             self.params = self.calc_parameters(self._coeffs)
-        return np.asarray(self.params)
+        if not np.isnan(self.params).any():
+            return Ellipse(*self.params)
+        return None
 
     @staticmethod
     @jit(nopython=True)
@@ -161,189 +364,6 @@ class EllipseFitter:
 
         return [x0, y0, 2 * major, 2 * minor, phi]
 
-    def points_inside(self, tol=0.1):
-        if not self.params:
-            raise AttributeError('No ellipse has been fitted yet. Call `fit first.')
-
-        x, y, a, b, theta = self.params
-        ca = np.cos(theta)
-        sa = np.sin(theta)
-        x_demean = self.x - x
-        y_demean = self.y - y
-        return (((ca * x_demean + sa * y_demean) ** 2 / (0.5 * a) ** 2)
-                + ((sa * x_demean - ca * y_demean) ** 2 / (0.5 * b) ** 2)) <= 1 + tol
-
-    @staticmethod
-    def create_geometry(x, y, a, b, angle):
-        t = np.linspace(0, 2 * np.pi, 40)
-        ca = np.cos(angle)
-        sa = np.sin(angle)
-        at = 0.5 * a * np.cos(t)
-        bt = 0.5 * b * np.sin(t)
-        xx = at * ca - bt * sa + x
-        yy = at * sa + bt * ca + y
-        return Polygon(list(zip(xx, yy)))
-
-    def draw(self, show_points=True, show_axes=True, ax=None, **kwargs):
-        """Display a cloud of data points and the associated error ellipse."""
-        if not self.params:
-            raise AttributeError('No ellipse has been fitted yet. Call `fit first.')
-
-        import matplotlib.pyplot as plt
-        from matplotlib.lines import Line2D
-        from matplotlib.transforms import Affine2D
-
-        *center, width, height, angle = self.params
-        if ax is None:
-            ax = plt.subplot(111, aspect='equal')
-        el = Ellipse(xy=center, width=width, height=height, angle=np.rad2deg(angle),
-                     facecolor='none', **kwargs)
-        ax.add_patch(el)
-        if show_points:
-            ax.scatter(self.x, self.y)
-        if show_axes:
-            major = Line2D([-width / 2, width / 2], [0, 0], lw=3, zorder=3)
-            minor = Line2D([0, 0], [-height / 2, height / 2], lw=3, zorder=3)
-            trans = (Affine2D().rotate(angle).translate(center[0], center[1])
-                     + ax.transData)
-            major.set_transform(trans)
-            minor.set_transform(trans)
-            ax.add_artist(major)
-            ax.add_artist(minor)
-
-
-@jit
-def iou(bb_test, bb_gt):
-    """
-    Computes intersection of union (IOU) metric for pair of bboxes in the form [x1,y1,x2,y2]
-    """
-    xx1 = np.maximum(bb_test[0], bb_gt[0])
-    yy1 = np.maximum(bb_test[1], bb_gt[1])
-    xx2 = np.minimum(bb_test[2], bb_gt[2])
-    yy2 = np.minimum(bb_test[3], bb_gt[3])
-    w = np.maximum(0.0, xx2 - xx1)
-    h = np.maximum(0.0, yy2 - yy1)
-    wh = w * h
-    o = wh / (
-        (bb_test[2] - bb_test[0]) * (bb_test[3] - bb_test[1])
-        + (bb_gt[2] - bb_gt[0]) * (bb_gt[3] - bb_gt[1])
-        - wh
-    )
-    return o
-
-
-def convert_bbox_to_z(bbox):
-    """
-    Takes a bounding box in the form [x1,y1,x2,y2] and returns z in the form
-      [x,y,s,r] where x,y is the centre of the box and s is the scale/area and r is
-      the aspect ratio
-    """
-    w = bbox[2] - bbox[0]
-    h = bbox[3] - bbox[1]
-    x = bbox[0] + w / 2.0
-    y = bbox[1] + h / 2.0
-    s = w * h  # scale is just area
-    r = w / float(h)
-    return np.array([x, y, s, r]).reshape((4, 1))
-
-
-def convert_x_to_bbox(x, score=None):
-    """
-    Takes a bounding box in the centre form [x,y,s,r] and returns it in the form
-      [x1,y1,x2,y2] where x1,y1 is the top left and x2,y2 is the bottom right
-    """
-    w = np.sqrt(x[2] * x[3])
-    h = x[2] / w
-    if score == None:
-        return np.array(
-            [x[0] - w / 2.0, x[1] - h / 2.0, x[0] + w / 2.0, x[1] + h / 2.0]
-        ).reshape((1, 4))
-    else:
-        return np.array(
-            [x[0] - w / 2.0, x[1] - h / 2.0, x[0] + w / 2.0, x[1] + h / 2.0, score]
-        ).reshape((1, 5))
-
-
-class KalmanBoxTracker(object):
-    """
-    This class represents the internal state of individual tracked objects observed as bbox.
-    """
-
-    count = 0
-
-    def __init__(self, bbox):
-        """
-        Initialises a tracker using initial bounding box.
-        """
-        # define constant velocity model
-        self.kf = KalmanFilter(dim_x=7, dim_z=4)
-        self.kf.F = np.array(
-            [
-                [1, 0, 0, 0, 1, 0, 0],
-                [0, 1, 0, 0, 0, 1, 0],
-                [0, 0, 1, 0, 0, 0, 1],
-                [0, 0, 0, 1, 0, 0, 0],
-                [0, 0, 0, 0, 1, 0, 0],
-                [0, 0, 0, 0, 0, 1, 0],
-                [0, 0, 0, 0, 0, 0, 1],
-            ]
-        )
-        self.kf.H = np.array(
-            [
-                [1, 0, 0, 0, 0, 0, 0],
-                [0, 1, 0, 0, 0, 0, 0],
-                [0, 0, 1, 0, 0, 0, 0],
-                [0, 0, 0, 1, 0, 0, 0],
-            ]
-        )
-
-        self.kf.R[2:, 2:] *= 10.0
-        self.kf.P[
-            4:, 4:
-        ] *= 1000.0  # give high uncertainty to the unobservable initial velocities
-        self.kf.P *= 10.0
-        self.kf.Q[-1, -1] *= 0.01
-        self.kf.Q[4:, 4:] *= 0.01
-
-        self.kf.x[:4] = convert_bbox_to_z(bbox)
-        self.time_since_update = 0
-        self.id = KalmanBoxTracker.count
-        KalmanBoxTracker.count += 1
-        self.history = []
-        self.hits = 0
-        self.hit_streak = 0
-        self.age = 0
-
-    def update(self, bbox):
-        """
-        Updates the state vector with observed bbox.
-        """
-        self.time_since_update = 0
-        self.history = []
-        self.hits += 1
-        self.hit_streak += 1
-        self.kf.update(convert_bbox_to_z(bbox))
-
-    def predict(self):
-        """
-        Advances the state vector and returns the predicted bounding box estimate.
-        """
-        if (self.kf.x[6] + self.kf.x[2]) <= 0:
-            self.kf.x[6] *= 0.0
-        self.kf.predict()
-        self.age += 1
-        if self.time_since_update > 0:
-            self.hit_streak = 0
-        self.time_since_update += 1
-        self.history.append(convert_x_to_bbox(self.kf.x))
-        return self.history[-1]
-
-    def get_state(self):
-        """
-        Returns the current bounding box estimate.
-        """
-        return convert_x_to_bbox(self.kf.x)
-
 
 class EllipseTracker:
     n_trackers = 0
@@ -382,7 +402,7 @@ class EllipseTracker:
 
     @state.setter
     def state(self, params):
-        self.kf.x[:5] = params.reshape((-1, 1))
+        self.kf.x[:5] = np.asarray(params).reshape((-1, 1))
 
 
 class SORTEllipse:
@@ -396,11 +416,7 @@ class SORTEllipse:
 
     def track(self, poses):
         self.n_frames += 1
-        ellipses = []
-        for pose in poses:
-            params = self.fitter.fit(pose)
-            if not np.isnan(params).any():
-                ellipses.append(params)
+
         trackers = np.zeros((len(self.trackers), 6))
         for i in range(len(trackers)):
             trackers[i, :5] = self.trackers[i].predict()
@@ -409,17 +425,21 @@ class SORTEllipse:
         for ind in np.flatnonzero(empty)[::-1]:
             self.trackers.pop(ind)
 
+        ellipses = []
+        for pose in poses:
+            el = self.fitter.fit(pose)
+            if el is not None:
+                ellipses.append(el)
         if not len(trackers):
             matches = np.empty((0, 2), dtype=int)
             unmatched_detections = np.arange(len(ellipses))
             unmatched_trackers = np.empty((0, 6), dtype=int)
         else:
-            ellipses_shape = [self.fitter.create_geometry(*e) for e in ellipses]
-            trackers_shape = [self.fitter.create_geometry(*t[:5]) for t in trackers]
-            iou_matrix = np.zeros((len(ellipses), len(trackers)))
-            for i, el in enumerate(ellipses_shape):
-                for j, tracker in enumerate(trackers_shape):
-                    iou_matrix[i, j] = self.calc_iou_ellipses(el, tracker)
+            ellipses_trackers = [Ellipse(*t[:5]) for t in trackers]
+            iou_matrix = np.zeros((len(ellipses), len(ellipses_trackers)))
+            for i, el in enumerate(ellipses):
+                for j, el_track in enumerate(ellipses_trackers):
+                    iou_matrix[i, j] = el.calc_iou_with(el_track)
             row_indices, col_indices = linear_sum_assignment(iou_matrix, maximize=True)
             unmatched_detections = [i for i, _ in enumerate(ellipses) if i not in row_indices]
             unmatched_trackers = [j for j, _ in enumerate(trackers) if j not in col_indices]
@@ -442,12 +462,12 @@ class SORTEllipse:
             if t not in unmatched_trackers:
                 ind = matches[matches[:, 1] == t, 0][0]
                 animalindex.append(ind)
-                tracker.update(ellipses[ind])
+                tracker.update(ellipses[ind].parameters)
             else:
                 animalindex.append(-1)
 
         for i in unmatched_detections:
-            trk = EllipseTracker(ellipses[i])
+            trk = EllipseTracker(ellipses[i].parameters)
             self.trackers.append(trk)
             animalindex.append(i)
 
