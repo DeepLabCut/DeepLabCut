@@ -182,7 +182,7 @@ class Ellipse:
         self.y = y
         self.width = width
         self.height = height
-        self.theta = theta
+        self.theta = theta  # in radians
         self._geometry = None
 
     @property
@@ -214,6 +214,13 @@ class Ellipse:
         inter = geom1.intersection(geom2).area
         union = geom1.union(geom2).area
         return inter / union
+
+    def calc_similarity_with(self, other_ellipse):
+        cost1 = abs(np.cos(self.theta - other_ellipse.theta))
+        max_dist = max(self.height, self.width)
+        dist = np.sqrt((self.x - other_ellipse.x) ** 2 + (self.y - other_ellipse.y) ** 2)
+        cost2 = 1 - min(dist / max_dist, 1)
+        return 0.5 * cost1 + 0.5 * cost2
 
     def contains_points(self, xy, tol=0.1):
         ca = np.cos(self.theta)
@@ -436,16 +443,16 @@ class SORTEllipse:
             unmatched_trackers = np.empty((0, 6), dtype=int)
         else:
             ellipses_trackers = [Ellipse(*t[:5]) for t in trackers]
-            iou_matrix = np.zeros((len(ellipses), len(ellipses_trackers)))
+            cost_matrix = np.zeros((len(ellipses), len(ellipses_trackers)))
             for i, el in enumerate(ellipses):
                 for j, el_track in enumerate(ellipses_trackers):
-                    iou_matrix[i, j] = el.calc_iou_with(el_track)
-            row_indices, col_indices = linear_sum_assignment(iou_matrix, maximize=True)
+                    cost_matrix[i, j] = el.calc_similarity_with(el_track)
+            row_indices, col_indices = linear_sum_assignment(cost_matrix, maximize=True)
             unmatched_detections = [i for i, _ in enumerate(ellipses) if i not in row_indices]
             unmatched_trackers = [j for j, _ in enumerate(trackers) if j not in col_indices]
             matches = []
             for row, col in zip(row_indices, col_indices):
-                if iou_matrix[row, col] < self.iou_threshold:
+                if cost_matrix[row, col] < self.iou_threshold:
                     unmatched_detections.append(row)
                     unmatched_trackers.append(col)
                 else:
@@ -492,19 +499,6 @@ class SORTEllipse:
         if len(ret) > 0:
             return np.concatenate(ret)
         return np.empty((0, 7))
-
-    @staticmethod
-    def calc_iou_ellipses(ellipse1, ellipse2):
-        """Compute the intersection-over-union of two ellipses."""
-        if not ellipse1.intersects(ellipse2):
-            return 0
-        if not ellipse1.is_valid:
-            ellipse1 = ellipse1.buffer(0)
-        if not ellipse2.is_valid:
-            ellipse2 = ellipse2.buffer(0)
-        inter = ellipse1.intersection(ellipse2).area
-        union = ellipse1.union(ellipse2).area
-        return inter / union
 
 
 class SkeletonTracker:
