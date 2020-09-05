@@ -64,8 +64,8 @@ class Tracklet:
         return np.isin(self.inds, other_tracklet.inds, assume_unique=True).any()
 
     def __repr__(self):
-        return f'Tracklet of length {len(self)}, ' \
-               f'from {self.start} to {self.end}'
+        return f'Tracklet of length {len(self)} from {self.start} to {self.end} ' \
+               f'with reliability {self.likelihood:.3f}'
 
     @property
     def xy(self):
@@ -96,8 +96,8 @@ class Tracklet:
 
     @property
     def likelihood(self):
-        """Return the likelihood of all Tracklet detections."""
-        return self.data[..., 2]
+        """Return the average likelihood of all Tracklet detections."""
+        return np.nanmean(self.data[..., 2])
 
     @property
     def start(self):
@@ -137,6 +137,11 @@ class Tracklet:
         if norm:
             return np.sqrt(np.sum(vel ** 2, axis=1)).mean()
         return vel.mean(axis=0)
+
+    @property
+    def maximal_velocity(self):
+        vel = np.diff(self.centroid, axis=0) / np.diff(self.inds)[:, np.newaxis]
+        return np.sqrt(np.max(np.sum(vel ** 2, axis=1)))
 
     def calc_rate_of_turn(self, where='head'):
         """
@@ -366,9 +371,11 @@ class TrackletStitcher:
 
         self.tracklets = []
         self.residuals = []
+        first_frames = []
         last_frames = []
         for dict_ in tracklets.values():
             inds, data = zip(*[(self.get_frame_ind(k), v) for k, v in dict_.items()])
+            first_frames.append(inds[0])
             last_frames.append(inds[-1])
             inds = np.asarray(inds)
             data = np.asarray(data)
@@ -391,7 +398,9 @@ class TrackletStitcher:
                     self.tracklets.append(t)
                 elif len(t) < min_length:
                     self.residuals.append(t)
-        self.n_frames = max(last_frames) + 1
+        self._first_frame = min(first_frames)
+        self._last_frame = max(last_frames)
+        self.n_frames = self._last_frame - self._first_frame + 1
 
         # Note that if tracklets are very short, some may actually be part of the same track
         # and thus incorrectly reflect separate track endpoints...
@@ -428,7 +437,7 @@ class TrackletStitcher:
                     break
         return max_gap
 
-    def build_graph(self, max_gap=None):
+    def build_graph(self, max_gap=None, weight_func=None):
         if not max_gap:
             max_gap = int(1.5 * self.compute_max_gap())
 
@@ -446,12 +455,14 @@ class TrackletStitcher:
         self.G.add_edges_from(zip(nodes_in, nodes_out), capacity=1)
         self.G.add_edges_from(zip(['source'] * len(self), nodes_in), capacity=1)
         self.G.add_edges_from(zip(nodes_out, ['sink'] * len(self)), capacity=1)
+        if weight_func is None:
+            weight_func = self.calculate_edge_weight
         n_combinations = int(factorial(len(self)) / (2 * factorial(len(self) - 2)))
         for tracklet1, tracklet2 in tqdm(combinations(self, 2), total=n_combinations):
             time_gap = tracklet1.time_gap_to(tracklet2)
             if 0 < time_gap <= max_gap:
                 # The algorithm works better with integer weights
-                w = int(100 * self.calculate_weight(tracklet1, tracklet2))
+                w = int(100 * weight_func(tracklet1, tracklet2))
                 if tracklet2 > tracklet1:
                     self.G.add_edge(self._mapping[tracklet1]['out'],
                                     self._mapping[tracklet2]['in'],
@@ -542,28 +553,35 @@ class TrackletStitcher:
                 tracks[ind] += residual
         self.tracks = tracks
 
-    def write_tracks(self, output_name=''):
-        if self.tracks is None:
-            raise ValueError('No tracks were found. Call `stitch` first')
-
+    def format_multiindex(self):
         scorer = self.header.get_level_values('scorer').unique().to_list()
         individuals = [f'ind{i}' for i in range(self.n_tracks)]
         bpts = self.header.get_level_values('bodyparts').unique().to_list()
         coords = ['x', 'y', 'likelihood']
-        ncols = len(bpts) * len(coords)
-        index = range(self.n_frames)
-        columns = pd.MultiIndex.from_product([scorer, individuals, bpts, coords],
-                                             names=['scorer', 'individuals', 'bodyparts', 'coords'])
+        return pd.MultiIndex.from_product([scorer, individuals, bpts, coords],
+                                          names=['scorer', 'individuals', 'bodyparts', 'coords'])
+
+    def format_df(self):
+        columns = self.format_multiindex()
+        ncols = len(self.header)
         data = np.full((self.n_frames, len(columns)), np.nan)
         for n, track in enumerate(self.tracks):
-            data[track.inds, n * ncols:(n + 1) * ncols] = track.data.reshape((len(track), ncols))
-        df = pd.DataFrame(data, index=index, columns=columns)
+            temp = track.data.reshape((len(track), ncols))
+            data[track.inds - self._first_frame, n * ncols:(n + 1) * ncols] = temp
+        inds = range(self._first_frame, self._last_frame + 1)
+        return pd.DataFrame(data, columns=columns, index=inds)
+
+    def write_tracks(self, output_name=''):
+        if self.tracks is None:
+            raise ValueError('No tracks were found. Call `stitch` first')
+
+        df = self.format_df()
         if not output_name:
             output_name = self.filename.replace('pickle', 'h5')
         df.to_hdf(output_name, 'df_with_missing', format='table', mode='w')
 
     @staticmethod
-    def calculate_weight(tracklet1, tracklet2):
+    def calculate_edge_weight(tracklet1, tracklet2):
         return (
                 -np.log(tracklet1.box_overlap_with(tracklet2) + np.finfo(float).eps)
                 + tracklet1.distance_to(tracklet2)
