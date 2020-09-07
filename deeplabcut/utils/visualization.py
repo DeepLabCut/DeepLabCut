@@ -290,8 +290,8 @@ def make_labeled_images_from_dataframe(
     xy = df.values.reshape((df.shape[0], -1, 2))
     segs = xy[:, ind_bones].swapaxes(1, 2)
 
-    s = cfg['dotsize']
-    alpha = cfg['alphavalue']
+    s = cfg["dotsize"]
+    alpha = cfg["alphavalue"]
     if all_same_shape:  # Very efficient, avoid re-drawing the whole plot
         fig, ax = prepare_figure_axes(w, h, scale, dpi)
         im = ax.imshow(np.zeros((h, w)), "gray")

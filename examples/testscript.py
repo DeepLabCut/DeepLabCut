@@ -154,7 +154,7 @@ try:  # you need ffmpeg command line interface
     vname = Path(newvideo).stem
 except:  # if ffmpeg is broken/missing
     print("using alternative method")
-    newvideo = os.path.join(cfg["project_path"], "videos", videoname+"short.mp4")
+    newvideo = os.path.join(cfg["project_path"], "videos", videoname + "short.mp4")
     from moviepy.editor import VideoFileClip, VideoClip
 
     clip = VideoFileClip(video[0])
@@ -276,7 +276,7 @@ try:  # you need ffmpeg command line interface
 
     vname = Path(newvideo2).stem
 except:  # if ffmpeg is broken
-    newvideo = os.path.join(cfg["project_path"], "videos", videoname+"short2.mp4")
+    newvideo = os.path.join(cfg["project_path"], "videos", videoname + "short2.mp4")
     from moviepy.editor import VideoFileClip, VideoClip
 
     clip = VideoFileClip(video[0])
