@@ -103,6 +103,17 @@ Results for 10000  training iterations: 95 3 train error: 3.76 pixels. Test erro
 With pcutoff of 0.4  train error: 3.76 pixels. Test error: 3.98 pixels
 
 
+My results were (Run with DLC *2.2b8* on Sept 7 2020) for 15k iterations
+
+Imgaug:
+
+
+Scalecrop:
+
+Tensorpack:
+
+
+
 Notice: despite the higher RMSE for imgaug due to the augmentation,
 the network performs much better on the testvideo.
 
@@ -122,7 +133,7 @@ cfg = deeplabcut.auxiliaryfunctions.read_config(path_config_file)
 
 
 deeplabcut.load_demo_data(path_config_file)
-maxiters = 10000
+maxiters = 15000
 
 ## Create one split and make Shuffle 2 and 3 have the same split.
 ###Note that the new function in DLC 2.1 simplifies network/augmentation comparisons greatly:

@@ -17,7 +17,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="deeplabcut",
-    version="2.2b7",
+    version="2.2b8",
     author="A. & M. Mathis Labs",
     author_email="alexander.mathis@bethgelab.org",
     description="Markerless pose-estimation of user-defined features with deep learning",
@@ -37,8 +37,8 @@ setuptools.setup(
         "imgaug",
         "ipython",
         "ipython-genutils",
-        "numba",
-        "matplotlib",
+        "numba==0.51.1",
+        "matplotlib==3.1.3",
         "moviepy<=1.0.1",
         "numpy==1.16.4",
         "opencv-python",
@@ -55,7 +55,7 @@ setuptools.setup(
         "six",
         "statsmodels>=0.11",
         "tables",
-        "tensorpack",
+        "tensorpack==0.9.8",
         "tqdm",
         "wheel",
     ],
