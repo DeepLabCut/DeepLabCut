@@ -373,7 +373,10 @@ class TrackletStitcher:
 
         self.tracklets = []
         self.residuals = []
-        for tracklet in tracklets:
+        for unpure_tracklet in tracklets:
+            tracklet = self.purify_tracklet(unpure_tracklet)
+            if tracklet is None:
+                continue
             if not tracklet.is_continuous and split_tracklets:
                 idx = np.flatnonzero(np.diff(tracklet.inds) != 1) + 1
                 tracklet = self.split_tracklet(tracklet, idx)
@@ -424,12 +427,6 @@ class TrackletStitcher:
             data = np.asarray(data)
             nrows, ncols = data.shape
             temp = data.reshape((nrows, ncols // 3, 3))
-            all_nans = np.isnan(temp).all(axis=(1, 2))
-            if all_nans.any():
-                temp = temp[~all_nans]
-                inds = inds[~all_nans]
-            if not inds.size:
-                continue
             tracklets.append(Tracklet(temp, inds))
         class_ = cls(tracklets, n_tracks, min_length, split_tracklets)
         class_.header = header
@@ -438,6 +435,13 @@ class TrackletStitcher:
     @staticmethod
     def get_frame_ind(s):
         return int(re.findall(r"\d+", s)[0])
+
+    @staticmethod
+    def purify_tracklet(tracklet):
+        valid = ~np.isnan(tracklet.xy).all(axis=(1, 2))
+        if not np.any(valid):
+            return None
+        return Tracklet(tracklet.data[valid], tracklet.inds[valid])
 
     @staticmethod
     def split_tracklet(tracklet, inds):
