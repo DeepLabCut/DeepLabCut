@@ -109,6 +109,10 @@ class Tracklet:
         """Return the time at which the tracklet ends."""
         return self.inds[-1]
 
+    @property
+    def flat_data(self):
+        return self.data.reshape((len(self)), -1)
+
     def contains_duplicates(self, return_indices=False):
         """
         Evaluate whether the Tracklet contains duplicate time indices.
@@ -563,28 +567,37 @@ class TrackletStitcher:
                 tracks[ind] += residual
         self.tracks = tracks
 
-    def format_multiindex(self):
-        scorer = self.header.get_level_values('scorer').unique().to_list()
-        individuals = [f'ind{i}' for i in range(self.n_tracks)]
-        bpts = self.header.get_level_values('bodyparts').unique().to_list()
-        coords = ['x', 'y', 'likelihood']
-        return pd.MultiIndex.from_product([scorer, individuals, bpts, coords],
-                                          names=['scorer', 'individuals', 'bodyparts', 'coords'])
+    def concatenate_data(self):
+        if self.tracks is None:
+            raise ValueError('No tracks were found. Call `stitch` first')
+
+        data = []
+        for track in self.tracks:
+            flat_data = track.flat_data
+            temp = np.full((self.n_frames, flat_data.shape[1]), np.nan)
+            temp[track.inds - self._first_frame] = flat_data
+            data.append(temp)
+        return np.hstack(data)
 
     def format_df(self):
-        columns = self.format_multiindex()
-        ncols = len(self.header)
-        data = np.full((self.n_frames, len(columns)), np.nan)
-        for n, track in enumerate(self.tracks):
-            temp = track.data.reshape((len(track), ncols))
-            data[track.inds - self._first_frame, n * ncols:(n + 1) * ncols] = temp
+        data = self.concatenate_data()
+        individuals = [f'ind{i}' for i in range(1, self.n_tracks + 1)]
+        coords = ['x', 'y', 'likelihood']
+        if self.header:
+            scorer = self.header.get_level_values('scorer').unique().to_list()
+            bpts = self.header.get_level_values('bodyparts').unique().to_list()
+        else:
+            scorer = ['scorer']
+            n_bpts = data.shape[1] // (len(individuals) * len(coords))
+            bpts = [f'bpt{i}' for i in range(1, n_bpts + 1)]
+        columns = pd.MultiIndex.from_product(
+            [scorer, individuals, bpts, coords],
+            names=['scorer', 'individuals', 'bodyparts', 'coords']
+        )
         inds = range(self._first_frame, self._last_frame + 1)
         return pd.DataFrame(data, columns=columns, index=inds)
 
     def write_tracks(self, output_name=''):
-        if self.tracks is None:
-            raise ValueError('No tracks were found. Call `stitch` first')
-
         df = self.format_df()
         if not output_name:
             output_name = self.filename.replace('pickle', 'h5')
