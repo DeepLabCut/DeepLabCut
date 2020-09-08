@@ -35,6 +35,7 @@ from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualizati
 from deeplabcut.utils.video_processor import (
     VideoProcessorCV as vp,
 )  # used to CreateVideo
+from deeplabcut.utils.auxfun_videos import VideoWriter
 
 
 def get_segment_indices(bodyparts2connect, all_bpts):
@@ -858,18 +859,16 @@ def create_video_with_all_detections(
 
 
 def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff, scale=1):
-    import cv2
     import subprocess
     from tqdm import tqdm
 
     if not os.path.isdir(destfolder):
         os.mkdir(destfolder)
 
-    cap = cv2.VideoCapture(video)
-    nframes = int(cap.get(7))
+    vid = VideoWriter(video)
+    nframes = len(vid)
     strwidth = int(np.ceil(np.log10(nframes)))  # width for strings
-    ny = int(cap.get(4))
-    nx = int(cap.get(3))
+    nx, ny = vid.dimensions
     # cropping!
     X2 = nx  # 1600
     X1 = 0
@@ -881,12 +880,11 @@ def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff, s
     im = ax.imshow(np.zeros((ny, nx)))
     markers = sum([ax.plot([], [], ".", c=c) for c in cc], [])
     for index in tqdm(range(nframes)):
-        cap.set(1, index)
-        ret, frame = cap.read()
+        vid.set_to_frame(index)
         imname = "frame" + str(index).zfill(strwidth)
         image_output = os.path.join(destfolder, imname + ".png")
-        if ret and not os.path.isfile(image_output):
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = vid.read_frame()
+        if frame is not None and not os.path.isfile(image_output):
             im.set_data(frame[:, X1:X2])
             for n, trackid in enumerate(trackids):
                 if imname in tracks[trackid]:
@@ -904,7 +902,7 @@ def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff, s
         [
             "ffmpeg",
             "-framerate",
-            str(int(cap.get(5))),
+            str(vid.fps),
             "-i",
             f"frame%0{strwidth}d.png",
             "-r",

@@ -43,7 +43,7 @@ def add_new_videos(config, videos, copy_videos=False, coords=None):
     from pathlib import Path
 
     from deeplabcut.utils import auxiliaryfunctions
-    import cv2
+    from deeplabcut.utils.auxfun_videos import VideoReader
 
     # Read the config file
     cfg = auxiliaryfunctions.read_config(config)
@@ -91,20 +91,14 @@ def add_new_videos(config, videos, copy_videos=False, coords=None):
         except:
             video_path = os.readlink(video)
 
-        vcap = cv2.VideoCapture(video_path)
-        if vcap.isOpened():
-            # get vcap property
-            width = int(vcap.get(cv2.CAP_PROP_FRAME_WIDTH))
-            height = int(vcap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            if coords is not None:
-                c = coords[idx]
-                cfg["video_sets"].update({video_path: {"crop": ", ".join(map(str, c))}})
-            else:
-                cfg["video_sets"].update(
-                    {video_path: {"crop": ", ".join(map(str, [0, width, 0, height]))}}
-                )
+        vid = VideoReader(video_path)
+        if coords is not None:
+            c = coords[idx]
+            cfg["video_sets"].update({video_path: {"crop": ", ".join(map(str, c))}})
         else:
-            print("Cannot open the video file!")
+            cfg["video_sets"].update(
+                {video_path: {"crop": ", ".join(map(str, vid.get_bbox()))}}
+            )
 
     auxiliaryfunctions.write_config(config, cfg)
     print(
