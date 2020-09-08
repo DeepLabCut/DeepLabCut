@@ -393,6 +393,13 @@ class TrackletStitcher:
         self._first_tracklets = sorted(self, key=lambda t: t.start)[:self.n_tracks]
         self._last_tracklets = sorted(self, key=lambda t: t.end)[-self.n_tracks:]
 
+        # Map each Tracklet to an entry and output nodes and vice versa,
+        # which is convenient once the tracklets are stitched.
+        self._mapping = {tracklet: {'in': f'{i}in', 'out': f'{i}out'}
+                         for i, tracklet in enumerate(self)}
+        self._mapping_inv = {label: k for k, v in self._mapping.items()
+                             for label in v.values()}
+
     def __getitem__(self, item):
         return self.tracklets[item]
 
@@ -454,11 +461,6 @@ class TrackletStitcher:
     def build_graph(self, max_gap=None, weight_func=None):
         if not max_gap:
             max_gap = int(1.5 * self.compute_max_gap())
-
-        self._mapping = {tracklet: {'in': f'{i}in', 'out': f'{i}out'}
-                         for i, tracklet in enumerate(self)}
-        self._mapping_inv = {label: k for k, v in self._mapping.items()
-                             for label in v.values()}
 
         self.G = nx.DiGraph()
         self.G.add_node('source', demand=-self.n_tracks)
