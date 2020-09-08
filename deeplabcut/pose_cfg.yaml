@@ -38,8 +38,8 @@ cropratio: 0.4
 # for imagaug strengh is modulated by crop_by
 
 #to not apply rotation put False
-rotation: 25 #pm 10 degree rotation; only for imgaug + tensorpack!
-rotratio: 0.4 #fraction of applying rotations
+rotation: 25  # plus/minus 25 degree rotation; only for imgaug + tensorpack!
+rotratio: 0.4 # fraction of applying rotations
 
 # During training an image will be randomly scaled within the
 # range [scale_jitter_lo; scale_jitter_up] to augment training data,

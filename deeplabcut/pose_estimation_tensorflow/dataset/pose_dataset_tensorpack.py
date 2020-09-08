@@ -159,21 +159,22 @@ class PoseDataset:
         # what is the fraction of training samples with scaling augmentation?
         cfg["scaleratio"] = cfg.get("scaleratio", 0.6)
 
+        # loading defaults for rotation range!
         # Randomly rotates an image with respect to the image center within the
         # range [-rotate_max_deg_abs; rotate_max_deg_abs] to augment training data
 
         if cfg.get("rotation", True):  # i.e. pm 25 degrees
-            if cfg.get("rotation", False) == int:
-                cfg["rotate_max_deg_abs"] = cfg.get("rotation", 25)
+            if type(cfg.get("rotation", False))==int:
+                cfg["rotation"] = cfg.get("rotation", 25)
             else:
-                cfg["rotate_max_deg_abs"] = 25
+                cfg["rotation"] = 25
 
-            cfg["rotateratio"] = cfg.get(
-                "rotateratio", 0.4
-            )  # what is the fraction of training samples with rotation augmentation?
+            #cfg["rotateratio"] = cfg.get(
+            #    "rotratio", 0.4
+            #)  # what is the fraction of training samples with rotation augmentation?
         else:
-            cfg["rotateratio"] = 0.0
-            cfg["rotate_max_deg_abs"] = 0
+            cfg["rotratio"] = 0.0
+            cfg["rotation"] = 0
 
         # Randomly adds brightness within the range [-brightness_dif, brightness_dif]
         # to augment training data
@@ -251,7 +252,7 @@ class PoseDataset:
             wmax=self.cfg["leftwidth"] + self.cfg["rightwidth"] + self.cfg["minsize"],
             hmax=self.cfg["topheight"] + self.cfg["bottomheight"] + self.cfg["minsize"],
         )
-        self.rotation = Affine(rotate_max_deg=self.cfg["rotate_max_deg_abs"])
+        self.rotation = Affine(rotate_max_deg=self.cfg["rotation"])
         self.brightness = Brightness(self.cfg["brightness_dif"])
         self.contrast = Contrast(
             (self.cfg["contrast_factor_lo"], self.cfg["contrast_factor_up"]),
@@ -265,7 +266,7 @@ class PoseDataset:
         self.gaussian_blur = GaussianBlur(max_size=self.cfg["blur_max_window_size"])
         self.augmentors = [
             RandomApplyAug(self.cropping, self.cfg["cropratio"]),
-            RandomApplyAug(self.rotation, self.cfg["rotateratio"]),
+            RandomApplyAug(self.rotation, self.cfg["rotratio"]),
             RandomApplyAug(self.brightness, self.cfg["brightnessratio"]),
             RandomApplyAug(self.contrast, self.cfg["contrastratio"]),
             RandomApplyAug(self.saturation, self.cfg["saturationratio"]),
