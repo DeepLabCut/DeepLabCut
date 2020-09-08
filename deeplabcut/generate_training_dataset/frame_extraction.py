@@ -207,6 +207,7 @@ def extract_frames(
                 or askuser == "oui"
                 or askuser == "ouais"
             ):  # multilanguage support :)
+
                 if opencv:
                     cap = VideoReader(video)
                     nframes = len(cap)
@@ -353,13 +354,17 @@ def extract_frames(
                 else:
                     has_failed.append(False)
 
+            else: #NO!
+                has_failed.append(False)
+
+
         if all(has_failed):
             print("Frame extraction failed. Video files must be corrupted.")
             return
         elif any(has_failed):
             print("Although most frames were extracted, some were invalid.")
         else:
-            print("Frames were successfully extracted.")
+            print("Frames were successfully extracted, for the videos of interest.")
         print(
             "\nYou can now label the frames using the function 'label_frames' "
             "(if you extracted enough frames for all videos)."
