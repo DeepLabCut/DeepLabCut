@@ -350,45 +350,26 @@ class Tracklet:
 
 
 class TrackletStitcher:
-    def __init__(self, pickle_file, n_tracks, min_length=5, split_tracklets=True):
+    def __init__(self, tracklets, n_tracks, min_length=5, split_tracklets=True):
+        if not len(tracklets):
+            raise IOError("Tracklets are empty.")
+
         if n_tracks < 2:
             raise ValueError('There must at least be two tracks to reconstruct.')
 
         if min_length < 3:
             raise ValueError('A tracklet must have a minimal length of 3.')
 
-        self.filename = pickle_file
+        self.filename = ''
+        self.header = None
         self.n_tracks = n_tracks
         self.G = None
         self.paths = None
         self.tracks = None
 
-        with open(pickle_file, 'rb') as file:
-            tracklets = pickle.load(file)
-        self.header = tracklets.pop("header")
-        if not len(tracklets):
-            raise IOError("Tracklets are empty.")
-
         self.tracklets = []
         self.residuals = []
-        first_frames = []
-        last_frames = []
-        for dict_ in tracklets.values():
-            inds, data = zip(*[(self.get_frame_ind(k), v) for k, v in dict_.items()])
-            first_frames.append(inds[0])
-            last_frames.append(inds[-1])
-            inds = np.asarray(inds)
-            data = np.asarray(data)
-            # Input data as (nframes, nbodyparts, 3)
-            nrows, ncols = data.shape
-            temp = data.reshape((nrows, ncols // 3, 3))
-            all_nans = np.isnan(temp).all(axis=(1, 2))
-            if all_nans.any():
-                temp = temp[~all_nans]
-                inds = inds[~all_nans]
-            if not inds.size:
-                continue
-            tracklet = Tracklet(temp, inds)
+        for tracklet in tracklets:
             if not tracklet.is_continuous and split_tracklets:
                 idx = np.flatnonzero(np.diff(tracklet.inds) != 1) + 1
                 tracklet = self.split_tracklet(tracklet, idx)
@@ -399,8 +380,8 @@ class TrackletStitcher:
                     self.tracklets.append(t)
                 elif len(t) < min_length:
                     self.residuals.append(t)
-        self._first_frame = min(first_frames)
-        self._last_frame = max(last_frames)
+        self._first_frame = min(self.tracklets, key=lambda t: t.start).start
+        self._last_frame = max(self.tracklets, key=lambda t: t.end).end
         self.n_frames = self._last_frame - self._first_frame + 1
 
         # Note that if tracklets are very short, some may actually be part of the same track
@@ -413,6 +394,35 @@ class TrackletStitcher:
 
     def __len__(self):
         return len(self.tracklets)
+
+    @classmethod
+    def from_pickle(cls, pickle_file, n_tracks, min_length=5, split_tracklets=True):
+        with open(pickle_file, 'rb') as file:
+            tracklets = pickle.load(file)
+        class_ = cls.from_dict_of_dict(tracklets, n_tracks, min_length, split_tracklets)
+        class_.filename = pickle_file
+        return class_
+
+    @classmethod
+    def from_dict_of_dict(cls, dict_of_dict, n_tracks, min_length=5, split_tracklets=True):
+        tracklets = []
+        header = dict_of_dict.pop('header', None)
+        for dict_ in dict_of_dict.values():
+            inds, data = zip(*[(cls.get_frame_ind(k), v) for k, v in dict_.items()])
+            inds = np.asarray(inds)
+            data = np.asarray(data)
+            nrows, ncols = data.shape
+            temp = data.reshape((nrows, ncols // 3, 3))
+            all_nans = np.isnan(temp).all(axis=(1, 2))
+            if all_nans.any():
+                temp = temp[~all_nans]
+                inds = inds[~all_nans]
+            if not inds.size:
+                continue
+            tracklets.append(Tracklet(temp, inds))
+        class_ = cls(tracklets, n_tracks, min_length, split_tracklets)
+        class_.header = header
+        return class_
 
     @staticmethod
     def get_frame_ind(s):
@@ -691,7 +701,7 @@ def stitch_tracklets(
     -------
     A TrackletStitcher object
     """
-    stitcher = TrackletStitcher(pickle_file, n_tracks, min_length, split_tracklets)
+    stitcher = TrackletStitcher.from_pickle(pickle_file, n_tracks, min_length, split_tracklets)
     stitcher.build_graph()
     stitcher.stitch()
     stitcher.write_tracks(output_name)
