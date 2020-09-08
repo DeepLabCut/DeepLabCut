@@ -217,7 +217,9 @@ class Ellipse:
 
     def calc_similarity_with(self, other_ellipse):
         cost1 = abs(np.cos(self.theta - other_ellipse.theta))
-        max_dist = max(self.height, self.width)
+        max_dist = max(
+            self.height, self.width, other_ellipse.height, other_ellipse.width
+        )
         dist = np.sqrt((self.x - other_ellipse.x) ** 2 + (self.y - other_ellipse.y) ** 2)
         cost2 = 1 - min(dist / max_dist, 1)
         return 0.5 * cost1 + 0.5 * cost2
