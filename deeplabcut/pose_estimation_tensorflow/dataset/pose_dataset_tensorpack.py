@@ -164,14 +164,14 @@ class PoseDataset:
         # range [-rotate_max_deg_abs; rotate_max_deg_abs] to augment training data
 
         if cfg.get("rotation", True):  # i.e. pm 25 degrees
-            if type(cfg.get("rotation", False))==int:
+            if type(cfg.get("rotation", False)) == int:
                 cfg["rotation"] = cfg.get("rotation", 25)
             else:
                 cfg["rotation"] = 25
 
-            #cfg["rotateratio"] = cfg.get(
+            # cfg["rotateratio"] = cfg.get(
             #    "rotratio", 0.4
-            #)  # what is the fraction of training samples with rotation augmentation?
+            # )  # what is the fraction of training samples with rotation augmentation?
         else:
             cfg["rotratio"] = 0.0
             cfg["rotation"] = 0

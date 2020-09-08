@@ -293,10 +293,9 @@ class MainFrame(wx.Frame):
         # Read the video file
         self.vid = VideoWriter(str(self.video_source))
         if self.cropping:
-            self.vid.set_bbox(self.cfg["x1"],
-                              self.cfg["x2"],
-                              self.cfg["y1"],
-                              self.cfg["y2"])
+            self.vid.set_bbox(
+                self.cfg["x1"], self.cfg["x2"], self.cfg["y1"], self.cfg["y2"]
+            )
         self.filename = Path(self.video_source).name
         self.numberFrames = len(self.vid)
         self.strwidth = int(np.ceil(np.log10(self.numberFrames)))
@@ -306,9 +305,7 @@ class MainFrame(wx.Frame):
         self.endFrame.SetMax(self.numberFrames - 1)
         self.startFrame.Bind(wx.EVT_SPINCTRL, self.updateSlider)  # wx.EVT_SPIN
         # Set the status bar
-        self.statusbar.SetStatusText(
-            "Working on video: {}".format(self.filename)
-        )
+        self.statusbar.SetStatusText("Working on video: {}".format(self.filename))
         # Adding the video file to the config file.
         if self.vid.name not in self.video_names:
             add.add_new_videos(self.config_path, [self.video_source])

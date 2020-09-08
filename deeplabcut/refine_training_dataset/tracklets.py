@@ -1008,7 +1008,9 @@ class TrackletVisualizer:
         )
         if os.path.isdir(tmpfolder):
             print(
-                "Frames from video", self.video.name, " already extracted (more will be added)!"
+                "Frames from video",
+                self.video.name,
+                " already extracted (more will be added)!",
             )
         else:
             attempttomakefolder(tmpfolder)

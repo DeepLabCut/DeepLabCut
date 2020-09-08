@@ -1,11 +1,12 @@
 import os
-os.environ['DLClight'] = 'True'
+
+os.environ["DLClight"] = "True"
 import pytest
 from deeplabcut.utils.auxfun_videos import VideoWriter
 
 
-TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
-video = os.path.join(TEST_DATA_DIR, 'vid.avi')
+TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
+video = os.path.join(TEST_DATA_DIR, "vid.avi")
 POS_FRAMES = 1  # Equivalent to cv2.CAP_PROP_POS_FRAMES
 
 
@@ -17,30 +18,30 @@ def video_clip():
 def test_reader_wrong_inputs(tmp_path):
     with pytest.raises(ValueError):
         VideoWriter(str(tmp_path))
-    fake_vid = tmp_path / 'fake.avi'
-    fake_vid.write_bytes(b'42')
+    fake_vid = tmp_path / "fake.avi"
+    fake_vid.write_bytes(b"42")
     with pytest.raises(IOError):
         VideoWriter(str(fake_vid))
 
 
 def test_reader_check_integrity(tmp_path, video_clip):
     video_clip.check_integrity()
-    log_file = os.path.join(video_clip.directory, f'{video_clip.name}.log')
+    log_file = os.path.join(video_clip.directory, f"{video_clip.name}.log")
     assert os.path.getsize(log_file) == 0
 
 
 def test_reader_video_path(video_clip):
-    assert video_clip.name == 'vid'
-    assert video_clip.format == '.avi'
+    assert video_clip.name == "vid"
+    assert video_clip.format == ".avi"
     assert video_clip.directory == TEST_DATA_DIR
 
 
 def test_reader_metadata(video_clip):
     metadata = video_clip.metadata
-    assert metadata['n_frames'] == video_clip.get_n_frames(True) == 256
-    assert metadata['fps'] == 30
-    assert metadata['width'] == 416
-    assert metadata['height'] == 374
+    assert metadata["n_frames"] == video_clip.get_n_frames(True) == 256
+    assert metadata["fps"] == 30
+    assert metadata["width"] == 416
+    assert metadata["height"] == 374
 
 
 def test_reader_wrong_fps(video_clip):
@@ -49,8 +50,9 @@ def test_reader_wrong_fps(video_clip):
 
 
 def test_reader_duration(video_clip):
-    assert (video_clip.calc_duration()
-            == pytest.approx(video_clip.calc_duration(robust=False), abs=0.01))
+    assert video_clip.calc_duration() == pytest.approx(
+        video_clip.calc_duration(robust=False), abs=0.01
+    )
 
 
 def test_reader_set_frame(video_clip):
@@ -62,11 +64,7 @@ def test_reader_set_frame(video_clip):
     assert int(video_clip.video.get(POS_FRAMES)) == len(video_clip) - 1
 
 
-@pytest.mark.parametrize('shrink, crop',
-                         [(1, False),
-                          (1, True),
-                          (2, False),
-                          (2, True)])
+@pytest.mark.parametrize("shrink, crop", [(1, False), (1, True), (2, False), (2, True)])
 def test_reader_read_frame(video_clip, shrink, crop):
     if crop:
         video_clip.set_bbox(0, 0.5, 0, 0.5, relative=True)
@@ -86,17 +84,16 @@ def test_writer_bbox(video_clip):
     assert video_clip.get_bbox(relative=True) == (0, 1, 0, 1)
 
 
-@pytest.mark.parametrize('start, end',
-                         [(0, 10),
-                          ('0:0', '0:10'),
-                          ('00:00:00', '00:00:10')])
+@pytest.mark.parametrize(
+    "start, end", [(0, 10), ("0:0", "0:10"), ("00:00:00", "00:00:10")]
+)
 def test_writer_shorten_invalid_timestamps(video_clip, start, end):
     with pytest.raises(ValueError):
         video_clip.shorten(start, end)
 
 
 def test_writer_shorten(tmp_path, video_clip):
-    file = video_clip.shorten('00:00:00', '00:00:02', dest_folder=str(tmp_path))
+    file = video_clip.shorten("00:00:00", "00:00:02", dest_folder=str(tmp_path))
     vid = VideoWriter(file)
     assert pytest.approx(vid.calc_duration(), abs=0.1) == 2
 

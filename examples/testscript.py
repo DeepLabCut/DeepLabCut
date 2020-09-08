@@ -151,7 +151,6 @@ try:  # you need ffmpeg command line interface
         outsuffix="short",
         outpath=os.path.join(cfg["project_path"], "videos"),
     )
-    vname = Path(newvideo).stem
 except:  # if ffmpeg is broken/missing
     print("using alternative method")
     newvideo = os.path.join(cfg["project_path"], "videos", videoname + "short.mp4")
@@ -165,6 +164,8 @@ except:  # if ffmpeg is broken/missing
 
     newclip = VideoClip(make_frame, duration=1)
     newclip.write_videofile(newvideo, fps=30)
+
+vname = Path(newvideo).stem
 
 deeplabcut.analyze_videos(
     path_config_file,

@@ -163,9 +163,7 @@ def create_new_project(
 
         try:
             vid = VideoReader(rel_video_path)
-            video_sets[rel_video_path] = {
-                "crop": ", ".join(map(str, vid.get_bbox()))
-            }
+            video_sets[rel_video_path] = {"crop": ", ".join(map(str, vid.get_bbox()))}
         except IOError:
             warnings.warn("Cannot open the video file! Skipping to the next one...")
             os.remove(video)  # Removing the video or link from the project
@@ -173,8 +171,10 @@ def create_new_project(
     if not len(video_sets):
         # Silently sweep the files that were already written.
         shutil.rmtree(project_path, ignore_errors=True)
-        warnings.warn("No valid videos were found. The project was not created... "
-                      "Verify the video files and re-create the project.")
+        warnings.warn(
+            "No valid videos were found. The project was not created... "
+            "Verify the video files and re-create the project."
+        )
         return "nothingcreated"
 
     # Set values to config file:
