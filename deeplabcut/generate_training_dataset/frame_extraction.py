@@ -183,7 +183,7 @@ def extract_frames(
 
         videos = cfg["video_sets"].keys()
         if opencv:
-            import cv2
+            from deeplabcut.utils.auxfun_videos import VideoReader
         else:
             from moviepy.editor import VideoFileClip
 
@@ -208,11 +208,8 @@ def extract_frames(
                 or askuser == "ouais"
             ):  # multilanguage support :)
                 if opencv:
-                    cap = cv2.VideoCapture(video)
-                    fps = cap.get(
-                        5
-                    )  # https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
-                    nframes = int(cap.get(7))
+                    cap = VideoReader(video)
+                    nframes = len(cap)
                 else:
                     # Moviepy:
                     clip = VideoFileClip(video)
@@ -303,10 +300,10 @@ def extract_frames(
                 is_valid = []
                 if opencv:
                     for index in frames2pick:
-                        cap.set(1, index)  # extract a particular frame
-                        ret, frame = cap.read()
-                        if ret:
-                            image = img_as_ubyte(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+                        cap.set_to_frame(index)  # extract a particular frame
+                        frame = cap.read_frame()
+                        if frame is not None:
+                            image = img_as_ubyte(frame)
                             img_name = (
                                 str(output_path)
                                 + "/img"
@@ -328,7 +325,7 @@ def extract_frames(
                         else:
                             print("Frame", index, " not found!")
                             is_valid.append(False)
-                    cap.release()
+                    cap.close()
                 else:
                     for index in frames2pick:
                         try:

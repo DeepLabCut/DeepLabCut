@@ -15,7 +15,6 @@ import shutil
 from functools import lru_cache
 from pathlib import Path
 
-import cv2
 import numpy as np
 import pandas as pd
 import yaml
@@ -28,6 +27,7 @@ from deeplabcut.utils import (
     auxfun_models,
     auxfun_multianimal,
 )
+from deeplabcut.utils.auxfun_videos import VideoReader
 
 
 def comparevideolistsanddatafolders(config):
@@ -116,11 +116,9 @@ def adddatasetstovideolistandviceversa(config):
                     break
             if found:
                 video_path = os.path.join(cfg["project_path"], "videos", file)
-                clip = cv2.VideoCapture(video_path)
-                width = int(clip.get(cv2.CAP_PROP_FRAME_WIDTH))
-                height = int(clip.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                clip = VideoReader(video_path)
                 videos.update(
-                    {video_path: {"crop": ", ".join(map(str, [0, width, 0, height]))}}
+                    {video_path: {"crop": ", ".join(map(str, clip.get_bbox()))}}
                 )
 
     auxiliaryfunctions.write_config(config, cfg)

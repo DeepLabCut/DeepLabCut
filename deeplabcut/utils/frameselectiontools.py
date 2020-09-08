@@ -68,12 +68,12 @@ def UniformFramescv2(cap, numframes2pick, start, stop, Index=None):
 
     The variable Index allows to pass on a subindex for the frames.
     """
-    nframes = int(cap.get(7))
+    nframes = len(cap)
     print(
         "Uniformly extracting of frames from",
-        round(start * nframes * 1.0 / cap.get(5), 2),
+        round(start * nframes * 1.0 / cap.fps, 2),
         " seconds to",
-        round(stop * nframes * 1.0 / cap.get(5), 2),
+        round(stop * nframes * 1.0 / cap.fps, 2),
         " seconds.",
     )
 
@@ -227,18 +227,17 @@ def KmeansbasedFrameselectioncv2(
     Note: this method can return fewer images than numframes2pick.
 
     Attention: the flow of commands was not optimized for readability, but rather speed. This is why it might appear tedious and repetetive."""
-    nframes = cap.get(7)
-    ny = int(cap.get(4))
-    nx = int(cap.get(3))
+    nframes = len(cap)
+    nx, ny = cap.dimensions
     ratio = resizewidth * 1.0 / nx
     if ratio > 1:
-        raise Exception("Choise of resizewidth actually upsamples!")
+        raise Exception("Choice of resizewidth actually upsamples!")
 
     print(
         "Kmeans-quantization based extracting of frames from",
-        round(start * nframes * 1.0 / cap.get(5), 2),
+        round(start * nframes * 1.0 / cap.fps, 2),
         " seconds to",
-        round(stop * nframes * 1.0 / cap.get(5), 2),
+        round(stop * nframes * 1.0 / cap.fps, 2),
         " seconds.",
     )
     startindex = int(np.floor(nframes * start))
@@ -252,7 +251,7 @@ def KmeansbasedFrameselectioncv2(
 
     nframes = len(Index)
     if batchsize > nframes:
-        batchsize = int(nframes / 2)
+        batchsize = nframes // 2
 
     allocated = False
     if len(Index) >= numframes2pick:
@@ -262,9 +261,9 @@ def KmeansbasedFrameselectioncv2(
             print("Extracting and downsampling...", nframes, " frames from the video.")
             if color:
                 for counter, index in tqdm(enumerate(Index)):
-                    cap.set(1, index)  # extract a particular frame
-                    ret, frame = cap.read()
-                    if ret:
+                    cap.set_to_frame(index)  # extract a particular frame
+                    frame = cap.read_frame()
+                    if frame is not None:
                         if crop:
                             frame = frame[
                                 int(coords[2]) : int(coords[3]),
@@ -294,9 +293,9 @@ def KmeansbasedFrameselectioncv2(
                         )
             else:
                 for counter, index in tqdm(enumerate(Index)):
-                    cap.set(1, index)  # extract a particular frame
-                    ret, frame = cap.read()
-                    if ret:
+                    cap.set_to_frame(index)  # extract a particular frame
+                    frame = cap.read_frame()
+                    if frame is not None:
                         if crop:
                             frame = frame[
                                 int(coords[2]) : int(coords[3]),
@@ -325,8 +324,8 @@ def KmeansbasedFrameselectioncv2(
             print("Extracting and downsampling...", nframes, " frames from the video.")
             if color:
                 for counter, index in tqdm(enumerate(Index)):
-                    ret, frame = cap.read()
-                    if ret:
+                    frame = cap.read_frame()
+                    if frame is not None:
                         if crop:
                             frame = frame[
                                 int(coords[2]) : int(coords[3]),
@@ -356,8 +355,8 @@ def KmeansbasedFrameselectioncv2(
                         )
             else:
                 for counter, index in tqdm(enumerate(Index)):
-                    ret, frame = cap.read()
-                    if ret:
+                    frame = cap.read_frame()
+                    if frame is not None:
                         if crop:
                             frame = frame[
                                 int(coords[2]) : int(coords[3]),

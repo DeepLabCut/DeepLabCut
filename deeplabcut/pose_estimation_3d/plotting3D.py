@@ -13,14 +13,13 @@ import os
 import subprocess
 from pathlib import Path
 
-import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.axes._axes import _log as matplotlib_axes_logger
 
-from deeplabcut.utils import auxiliaryfunctions
-from deeplabcut.utils import auxiliaryfunctions_3d
+from deeplabcut.utils import auxiliaryfunctions, auxiliaryfunctions_3d
+from deeplabcut.utils.auxfun_videos import VideoReader
 
 matplotlib_axes_logger.setLevel("ERROR")
 from matplotlib import gridspec
@@ -154,8 +153,8 @@ def create_labeled_video_3d(
             )
 
             # Read the video files and corresponfing h5 files
-            vid_cam1 = cv2.VideoCapture(cam1_view_video)
-            vid_cam2 = cv2.VideoCapture(cam2_view_video)
+            vid_cam1 = VideoReader(cam1_view_video)
+            vid_cam2 = VideoReader(cam2_view_video)
 
             # Look for the filtered predictions file
             try:
@@ -343,12 +342,7 @@ def plot2D(
 
     # Set the x,y, and z limits for the 3d view
 
-    numberFrames = min(
-        [
-            int(vid_cam1.get(cv2.CAP_PROP_FRAME_COUNT)),
-            int(vid_cam2.get(cv2.CAP_PROP_FRAME_COUNT)),
-        ]
-    )  # minimum of two cameras / TODO: clean up!
+    numberFrames = min(len(vid_cam1), len(vid_cam2))
     df_x = np.empty((len(bodyparts2plot), numberFrames))
     df_y = np.empty((len(bodyparts2plot), numberFrames))
     df_z = np.empty((len(bodyparts2plot), numberFrames))
@@ -379,15 +373,17 @@ def plot2D(
     axes3.set_zlabel("Z", fontsize=10)
 
     # Set the frame number to read#max(0,index-trailpoints):index
-    vid_cam1.set(1, k)
-    vid_cam2.set(1, k)
-    ret_cam1, frame_cam1 = vid_cam1.read()  # TODO: use ret_camj
-    ret_cam2, frame_cam2 = vid_cam2.read()
+    vid_cam1.set_to_frame(k)
+    vid_cam2.set_to_frame(k)
+    frame_cam1 = vid_cam1.read_frame()
+    frame_cam2 = vid_cam2.read_frame()
+    if not (frame_cam1 and frame_cam2):
+        raise IOError('A video frame is empty.')
 
     # Plot the labels for each body part
     for bpindex, bp in enumerate(bodyparts2plot):
-        axes1.imshow(cv2.cvtColor(frame_cam1, cv2.COLOR_BGR2RGB))
-        axes2.imshow(cv2.cvtColor(frame_cam2, cv2.COLOR_BGR2RGB))
+        axes1.imshow(frame_cam1)
+        axes2.imshow(frame_cam2)
         if (df_cam1_view[scorer_cam1][bp]["likelihood"].values[k]) > pcutoff and (
             df_cam2_view[scorer_cam2][bp]["likelihood"].values[k]
         ) > pcutoff:

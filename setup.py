@@ -41,7 +41,7 @@ setuptools.setup(
         "matplotlib==3.1.3",
         "moviepy<=1.0.1",
         "numpy==1.16.4",
-        "opencv-python",
+        "opencv-python-headless",
         "pandas>=1.0.1",
         "patsy",
         "python-dateutil",

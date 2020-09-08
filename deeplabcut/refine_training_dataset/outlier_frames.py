@@ -12,15 +12,14 @@ import argparse
 import os
 from pathlib import Path
 
-import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 from skimage.util import img_as_ubyte
 
-from deeplabcut.utils import auxiliaryfunctions, visualization
-from deeplabcut.utils import frameselectiontools
+from deeplabcut.utils import auxiliaryfunctions, visualization, frameselectiontools
+from deeplabcut.utils.auxfun_videos import VideoWriter
 
 
 def extract_outlier_frames(
@@ -423,17 +422,15 @@ def ExtractFramesbasedonPreselection(
     nframes = len(Dataframe)
     print("Loading video...")
     if opencv:
-        cap = cv2.VideoCapture(video)
-        fps = cap.get(5)
-        duration = nframes * 1.0 / fps
-        size = (int(cap.get(4)), int(cap.get(3)))
+        vid = VideoWriter(video)
+        fps = vid.fps
+        duration = vid.calc_duration()
     else:
         from moviepy.editor import VideoFileClip
 
         clip = VideoFileClip(video)
         fps = clip.fps
         duration = clip.duration
-        size = clip.size
 
     if cfg["cropping"]:  # one might want to adjust
         coords = (cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"])
@@ -445,7 +442,7 @@ def ExtractFramesbasedonPreselection(
     if extractionalgorithm == "uniform":
         if opencv:
             frames2pick = frameselectiontools.UniformFramescv2(
-                cap, numframes2extract, start, stop, Index
+                vid, numframes2extract, start, stop, Index
             )
         else:
             frames2pick = frameselectiontools.UniformFrames(
@@ -454,7 +451,7 @@ def ExtractFramesbasedonPreselection(
     elif extractionalgorithm == "kmeans":
         if opencv:
             frames2pick = frameselectiontools.KmeansbasedFrameselectioncv2(
-                cap,
+                vid,
                 numframes2extract,
                 start,
                 stop,
@@ -490,7 +487,7 @@ def ExtractFramesbasedonPreselection(
     for index in frames2pick:  ##tqdm(range(0,nframes,10)):
         if opencv:
             PlottingSingleFramecv2(
-                cap,
+                vid,
                 cfg["cropping"],
                 coords,
                 Dataframe,
@@ -522,7 +519,7 @@ def ExtractFramesbasedonPreselection(
 
     # close videos
     if opencv:
-        cap.release()
+        vid.close()
     else:
         clip.close()
         del clip
@@ -672,12 +669,12 @@ def PlottingSingleFramecv2(
         os.path.join(tmpfolder, "img" + str(index).zfill(strwidth) + ".png")
     ):
         plt.axis("off")
-        cap.set(1, index)
-        ret, frame = cap.read()
-        if not ret:
+        cap.set_to_frame(index)
+        frame = cap.read_frame()
+        if frame is None:
             print("Frame could not be read.")
             return
-        image = img_as_ubyte(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        image = img_as_ubyte(frame)
         if crop:
             image = image[
                 int(coords[2]) : int(coords[3]), int(coords[0]) : int(coords[1]), :
