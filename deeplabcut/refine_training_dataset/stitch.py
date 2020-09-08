@@ -28,7 +28,7 @@ class Tracklet:
         inds : array-like
             Corresponding time frame indices.
         """
-        self.data = data
+        self.data = data.astype(np.float64)
         self.inds = np.array(inds)
         monotonically_increasing = all(a < b for a, b in zip(inds, inds[1:]))
         if not monotonically_increasing:
