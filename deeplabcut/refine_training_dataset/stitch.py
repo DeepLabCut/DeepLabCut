@@ -390,7 +390,8 @@ class TrackletStitcher:
                 continue
             tracklet = Tracklet(temp, inds)
             if not tracklet.is_continuous and split_tracklets:
-                tracklet = self.split_tracklet(tracklet)
+                idx = np.flatnonzero(np.diff(tracklet.inds) != 1) + 1
+                tracklet = self.split_tracklet(tracklet, idx)
             if not isinstance(tracklet, list):
                 tracklet = [tracklet]
             for t in tracklet:
@@ -418,10 +419,9 @@ class TrackletStitcher:
         return int(re.findall(r"\d+", s)[0])
 
     @staticmethod
-    def split_tracklet(tracklet):
-        idx = np.flatnonzero(np.diff(tracklet.inds) != 1) + 1
-        inds_new = np.split(tracklet.inds, idx)
-        data_new = np.split(tracklet.data, idx)
+    def split_tracklet(tracklet, inds):
+        inds_new = np.split(tracklet.inds, inds)
+        data_new = np.split(tracklet.data, inds)
         return [Tracklet(data, inds) for data, inds in zip(data_new, inds_new)]
 
     def compute_max_gap(self):
