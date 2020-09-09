@@ -377,7 +377,7 @@ def plot2D(
     vid_cam2.set_to_frame(k)
     frame_cam1 = vid_cam1.read_frame()
     frame_cam2 = vid_cam2.read_frame()
-    if not (frame_cam1 and frame_cam2):
+    if frame_cam1 is None or frame_cam2 is None:
         raise IOError("A video frame is empty.")
 
     # Plot the labels for each body part
