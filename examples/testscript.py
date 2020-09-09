@@ -316,12 +316,7 @@ deeplabcut.create_labeled_video(
 
 print("Creating a Johansson video!")
 deeplabcut.create_labeled_video(
-    path_config_file,
-    [newvideo2],
-    destfolder=dfolder,
-    displaycropped=True,
-    filtered=True,
-    keypoints_only=True,
+    path_config_file, [newvideo], destfolder=dfolder, keypoints_only=True
 )
 
 deeplabcut.plot_trajectories(

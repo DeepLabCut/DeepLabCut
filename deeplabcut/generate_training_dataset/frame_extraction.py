@@ -354,9 +354,8 @@ def extract_frames(
                 else:
                     has_failed.append(False)
 
-            else: #NO!
+            else:  # NO!
                 has_failed.append(False)
-
 
         if all(has_failed):
             print("Frame extraction failed. Video files must be corrupted.")
