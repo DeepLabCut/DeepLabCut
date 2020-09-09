@@ -116,11 +116,15 @@ def test_writer_crop(tmp_path, video_clip):
     assert vid.dimensions == (x2 - x1, y2 - y1)
 
 
-def test_writer_rescale(tmp_path, video_clip):
-    new_height = 200
-    file = video_clip.rescale(width=-1, height=new_height, dest_folder=str(tmp_path))
+@pytest.mark.parametrize(
+    "target_height", [200, 177]
+)
+def test_writer_rescale(tmp_path, video_clip, target_height):
+    file = video_clip.rescale(width=-1, height=target_height, dest_folder=str(tmp_path))
     vid = VideoWriter(file)
-    assert vid.height == new_height
+    assert vid.height == target_height
     # Verify the aspect ratio is preserved
-    ar = video_clip.height / new_height
-    assert vid.width == video_clip.width // ar
+    ar = video_clip.height / target_height
+    assert vid.width == pytest.approx(
+        video_clip.width // ar, abs=1
+    )
