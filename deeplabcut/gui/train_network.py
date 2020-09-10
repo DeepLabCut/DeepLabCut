@@ -263,14 +263,14 @@ class Train_network(wx.Panel):
         else:
             self.file_open_bool = webbrowser.open(self.pose_cfg_path)
         if self.file_open_bool:
-            self.pose_cfg = auxiliaryfunctions.read_config(self.pose_cfg_path)
+            self.pose_cfg = auxiliaryfunctions.read_plainconfig(self.pose_cfg_path)
         else:
             raise FileNotFoundError("File not found!")
 
     def update_params(self, event):
         # update the variables with the edited values in the pose config file
         if self.file_open_bool:
-            self.pose_cfg = auxiliaryfunctions.read_config(self.pose_cfg_path)
+            self.pose_cfg = auxiliaryfunctions.read_plainconfig(self.pose_cfg_path)
             display_iters = str(self.pose_cfg["display_iters"])
             save_iters = str(self.pose_cfg["save_iters"])
             max_iters = str(self.pose_cfg["multi_step"][-1][-1])
