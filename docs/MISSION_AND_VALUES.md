@@ -4,7 +4,7 @@ This document is meant to help guide decisions about the future of `DeepLabCut`,
 whether to accept new functionality, changes to the styling of the code or graphical user interfaces (GUI),
 or whether to take on new dependencies, when to break into other repos, among other things. It serves as a point of reference for core developers actively working on the project, and an introduction for
 newcomers who want to learn a little more about where the project is going and what the team's
-values are. You can also learn more about how the project is managed by looking at our [governance model](docs/Governance.md).
+values are. You can also learn more about how the project is managed by looking at our [governance model](/Governance.md).
 
 ## Our founding principles
 
