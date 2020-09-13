@@ -265,11 +265,11 @@ deeplabcut.create_training_model_comparison(config_path, num_shuffles=1, net_typ
 For mutli-animal training we use batch processing. This means that we'd like the data to be similarly sized. You can of course have differing size of images you label (and we suggest cropping out useless pixels!). So, we have a new function that can pre-process your data to be compatible with batch training. Please run this function before you `create_multianmialtraining_dataset`:
 
 ```python
-deeplabcut.cropimagesandlabels(path_config_file)
+deeplabcut.cropimagesandlabels(config_path)
 ```
 Then run:
 ```python
-deeplabcut.create_multianimaltraining_dataset(path_config_file, allow_growth=True)
+deeplabcut.create_multianimaltraining_dataset(config_path, allow_growth=True)
 ```
 (more details [here](functionDetails.md#f-create-training-datasets))
 
@@ -304,7 +304,7 @@ We highly suggest that you read the docstring for this function to edit inputs a
 
 You can also plot the scoremaps, locref layers, and PAFs:
 ```python
-deeplabcut.extract_save_all_maps(path_config_file, shuffle=shuffle, Indices=[0, 5])
+deeplabcut.extract_save_all_maps(config_path, shuffle=shuffle, Indices=[0, 5])
 ```
 - you can drop "Indices" to run this on all training/testing images (this is slow!)
 
@@ -319,7 +319,7 @@ deeplabcut.analyze_videos(config_path,['/fullpath/project/videos/'], videotype='
 **maDeepLabCut**: there is a new step that allows you to plot *all* detections first. This allows you to check the pose-estimation quality before tracking of individuals! We recommend doing this step when you are running quality checks on new videos, etc. Once you have optimized pose-estimation and tracking, this is not required. `scorername` can be gotten from `scorername = deeplabcut.analyze_videos (...)` or just looking at the name of the DLC scorer in the folder name, h5 file, etc.
 
 ```python
-deeplabcut.create_video_with_all_detections(path_config_file, ['videofile_path'], scorername)
+deeplabcut.create_video_with_all_detections(config_path, ['videofile_path'], scorername)
 ```
 
 ### Assemble & Refine Tracklets in maDeepLabCut:
@@ -330,7 +330,7 @@ deeplabcut.create_video_with_all_detections(path_config_file, ['videofile_path']
 First, you need to convert detections to tracklets. This step has several tracker types (`track_method`), and we recommend testing which one works best on your data.
 
 ```python
-deeplabcut.convert_detections2tracklets(path_config_file, ['videofile_path'], videotype='mp4',
+deeplabcut.convert_detections2tracklets(config_path, ['videofile_path'], videotype='mp4',
                                                     shuffle=1, trainingsetindex=0, track_method='')
 ```
 You should **cross-validate** the tracking parameters. ([Here is more information](functionDetails.md#cross-validation-of-inference-parameters-a-madeeplabcut-critical-point)). Namely, you can iteratively change the parameters, run `convert_detections2tracklets` then load them in the GUI (`refine_tracklets`). Note, that in the main Project Manager GUI there is a button for you to launch the inference file to seemlessly edit and rapidly test.
@@ -338,7 +338,7 @@ You should **cross-validate** the tracking parameters. ([Here is more informatio
 Secondly, you need to **refine the tracklets**. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc!
 
 ```python
-deeplabcut.refine_tracklets(path_config_file, pickle_or_h5_file, videofile_path, min_swap_len=2, min_tracklet_len=2, trail_len=50)
+deeplabcut.refine_tracklets(config_path, pickle_or_h5_file, videofile_path, min_swap_len=2, min_tracklet_len=2, trail_len=50)
 ```
 [Read more here!](functionDetails.md#madeeplabcut-critical-point---assemble--refine-tracklets)
 
