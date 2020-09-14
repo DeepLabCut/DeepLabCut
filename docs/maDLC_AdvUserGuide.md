@@ -453,13 +453,15 @@ Please run:
 
 ```python
 scorername = deeplabcut.analyze_videos(config_path,['/fullpath/project/videos/testVideo.mp4'], videotype='.mp4')
-deeplabcut.create_video_with_all_detections(, ['/fullpath/project/videos/testVideo.mp4'], scorername)
+deeplabcut.create_video_with_all_detections(config_path, ['/fullpath/project/videos/testVideo.mp4'], scorername)
 ```
 Please note that you do **not** get the .h5/csv file you might be used to getting (this comes after tracking). You will get a `pickle` file that is used in `create_video_with_all_detections`. IF you have good clean out video, ending in `....full.mp4` (and the evaluation metrics look good, scoremaps look good, plotted evaluation images), then go forward!!! 
 
+If this does not look good, we recommend extracting and labeling more frames (even from more videos). Try to label close interactions of animals for best performance. Once you label more, you can create a new training set and train. 
+
 ### ------------------- TRACKING ACROSS FRAMES ------------------- 
 
-After pose estimation, now you perform tracking. There are several parameters we can automatically set based on your data, but some you will need to tune yourself, as it is dataset dependent. First, let's set the automatic ones.
+After pose estimation, now you perform tracking. There are several parameters we can automatically set based on your data, but some you will need to tune yourself, as it is dataset-dependent. First, let's set the automatic ones.
 
 ### Cross Validation of Inference parameters:
 
@@ -513,7 +515,7 @@ Saving optimal inference parameters...
 0     50000.0        95.0      1.0   36.681365     9.89759     11.645783         0.63494        1.761446   0.306809    0.288352   33.81332      8.675       13.025           0.45          1.625  0.286614   0.264459
 ```
 
-Here, please check the PCK fractions are high (lose to 1), the RMSE values are low. *The hits/misses false positive/#detections will be described in greater detail in the near future (they are related to another output head of the network that is not described at this time).*
+Here, please check the PCK fractions are high (close to 1), the RMSE values are low. *The hits/misses false positive/#detections will be described in greater detail in the near future (they are related to another output head of the network that is not described at this time).*
 
 ### Video Analysis:
 - Please note that **novel videos DO NOT need to be added to the config.yaml file**. You can simply have a folder elsewhere on your computer and pass the video folder (then it will analyze all videos of the specified type (i.e. ``videotype='.mp4'``), or pass the path to the **folder** or exact video(s) you wish to analyze:
@@ -536,19 +538,30 @@ deeplabcut.convert_detections2tracklets(path_config_file, ['videofile_path'], vi
 ```
 You should **cross-validate** the tracking parameters. ([Here is more information](functionDetails.md#cross-validation-of-inference-parameters-a-madeeplabcut-critical-point)). Namely, you can iteratively change the parameters, run `convert_detections2tracklets` then load them in the GUI (`refine_tracklets`). Note, that in the main Project Manager GUI there is a button for you to launch the inference file to seemlessly edit and rapidly test.
 
-Animal assembly and tracking quality can be assessed via `deeplabcut.utils.make_labeled_video.create_video_from_pickled_tracks`. This function provides an additional diagnostic tool before moving on to refining tracklets.
+**Animal assembly and tracking quality** can be assessed via `deeplabcut.utils.make_labeled_video.create_video_from_pickled_tracks`. This function provides an additional diagnostic tool before moving on to refining tracklets.
 
 Secondly, you need to **refine the tracklets**. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc!
 
 ```python
-deeplabcut.refine_tracklets(path_config_file, pickle_or_h5_file, videofile_path, min_swap_len=2, min_tracklet_len=2, trail_len=50)
+deeplabcut.refine_tracklets(path_config_file, pickle_or_h5_file, videofile_path, max_gap=0, min_swap_len=2, min_tracklet_len=2, trail_len=50)
 ```
+*note, setting `max_gap=0` can be used to fill in all frames across the video; otherwise, 1-n is the # of frames you want to fill in, i.e. maybe you want to fill in short gaps of 5 frames, but 15 frames indicates another issue, etc. You can test this inthe GUI. 
+
+If you fill in gaps, they will be associated to an ultra low probability, 0.01, so you are aware this is not the networks best estimate, this is the human-override! Thus, if you create a video, you need to set your pcutoff to 0 if you want to see these filled in frames.
+
 [Read more here!](functionDetails.md#madeeplabcut-critical-point---assemble--refine-tracklets)
 
 Short demo:  
  <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588690928000-90ZMRIM8SN6QE20ZOMNX/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/refineDEMO.gif?format=750w" width="70%">
 </p>
+
+If you do not want to refine tracklets, but use the data "as is" after the `convert_detections2tracklets` step, you can skip refinement and just create the final h5/csv file by running: 
+
+```python
+deeplabcut.convert_raw_tracks_to_h5(config_path, picklefile)
+```
+^ this is NOT required if you run `refine_tracklets` above!
 
 ### Once you have analyzed video data (and refined your maDeepLabCut tracklets):
 
@@ -562,7 +575,7 @@ Note, this creates a file with the ending filtered.h5 that you can use for furth
 
 ### Plotting Results:
 
-- **NOTE :bulb::mega::** Before you create a video, you should set what threshold to use for plotting. This is set in the `config.yaml` file as `pcutoff` - if you have a well trained network, this should be high, i.e. set it to `0.8` or higher!
+- **NOTE :bulb::mega::** Before you create a video, you should set what threshold to use for plotting. This is set in the `config.yaml` file as `pcutoff` - if you have a well trained network, this should be high, i.e. set it to `0.8` or higher! IF YOU FILLED IN GAPS, you need to set this to 0 to "see" the filled in parts. 
 
 
 - You can also determine a good `pcutoff` value by looking at the likelihood plot created during `plot_trajectories`:
