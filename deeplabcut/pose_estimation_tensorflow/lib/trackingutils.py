@@ -190,6 +190,10 @@ class Ellipse:
         return self.x, self.y, self.width, self.height, self.theta
 
     @property
+    def aspect_ratio(self):
+        return max(self.width, self.height) / min(self.width, self.height)
+
+    @property
     def geometry(self):
         if self._geometry is None:
             t = np.linspace(0, 2 * np.pi, 40)
@@ -240,7 +244,7 @@ class Ellipse:
         if ax is None:
             ax = plt.subplot(111, aspect='equal')
         el = patches.Ellipse(xy=(self.x, self.y), width=self.width, height=self.height,
-                             angle=np.rad2deg(self.theta), facecolor='none', **kwargs)
+                             angle=np.rad2deg(self.theta), **kwargs)
         ax.add_patch(el)
         if show_axes:
             major = Line2D([-self.width / 2, self.width / 2], [0, 0], lw=3, zorder=3)
@@ -422,6 +426,8 @@ class SORTEllipse:
         self.fitter = EllipseFitter(sd)
         self.n_frames = 0
         self.trackers = []
+        # Reset tracker IDs
+        EllipseTracker.n_trackers = 0
 
     def track(self, poses):
         self.n_frames += 1
@@ -735,6 +741,7 @@ class Sort:
         self.trackers = []
         self.frame_count = 0
         self.iou_threshold = cfg.get("iou_threshold", 0.3)
+        KalmanBoxTracker.count = 0
 
     def update(self, dets):
         """
