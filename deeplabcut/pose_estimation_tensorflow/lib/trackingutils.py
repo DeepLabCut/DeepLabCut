@@ -271,16 +271,24 @@ class EllipseFitter:
             return None
         if self.sd:
             self.params = self._fit_error(self.x, self.y, self.sd)
-            # Orient the ellipse such that it encompasses most points
-            # n_inside = self.points_inside().sum()
-            # self.params[-1] += 0.5 * np.pi
-            # if self.points_inside().sum() < n_inside:
-            #     self.params[-1] -= 0.5 * np.pi
         else:
             self._coeffs = self._fit(self.x, self.y)
             self.params = self.calc_parameters(self._coeffs)
         if not np.isnan(self.params).any():
-            return Ellipse(*self.params)
+            el = Ellipse(*self.params)
+            # Regularize by forcing AR <= 5
+            # max_ar = 5
+            # if el.aspect_ratio >= max_ar:
+            #     if el.height > el.width:
+            #         el.width = el.height / max_ar
+            #     else:
+            #         el.height = el.width / max_ar
+            # Orient the ellipse such that it encompasses most points
+            # n_inside = el.contains_points(np.c_[self.x, self.y]).sum()
+            # el.theta += 0.5 * np.pi
+            # if el.contains_points(np.c_[self.x, self.y]).sum() < n_inside:
+            #     el.theta -= 0.5 * np.pi
+            return el
         return None
 
     @staticmethod
