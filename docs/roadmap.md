@@ -7,9 +7,9 @@
 - [X] alpha testing complete (early May 2020)
 - [X] beta release: 2.2.b5 on 5 / 22 / 20 :smile:
 - [X] beta release: 2.2b8 released 9/2020 :smile:
-- [ ] beta relesae 2.2b9 --> candidate release, slotted for Oct 2020 
+- [ ] beta release 2.2b9 --> candidate release, slotted for Oct 2020 
 - [ ] full 2.2 stable release
-- [ ] Manuscript forthcoming!
+- [ ] Manuscripts forthcoming!
 
 **real-time module with DEMO for how to set up on your camera system, integration with our [Camera Control Software]**(https://github.com/AdaptiveMotorControlLab/Camera_Control)
 - [X] Integration with Bonsai completed! See: https://github.com/bonsai-rx/deeplabcut
