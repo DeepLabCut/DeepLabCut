@@ -589,7 +589,7 @@ class TrackletStitcher:
         data = self.concatenate_data()
         individuals = [f'ind{i}' for i in range(1, self.n_tracks + 1)]
         coords = ['x', 'y', 'likelihood']
-        if self.header:
+        if self.header is not None:
             scorer = self.header.get_level_values('scorer').unique().to_list()
             bpts = self.header.get_level_values('bodyparts').unique().to_list()
         else:
