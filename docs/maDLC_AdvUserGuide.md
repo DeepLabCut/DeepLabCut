@@ -459,6 +459,10 @@ Please note that you do **not** get the .h5/csv file you might be used to gettin
 
 If this does not look good, we recommend extracting and labeling more frames (even from more videos). Try to label close interactions of animals for best performance. Once you label more, you can create a new training set and train. 
 
+You can either:
+1. extract more frames from existing or new videos and label as when initially building the training data set, or
+2. extract outlier frames based on the videos you just analyzed. To do this, you first need to analyze a video and convert to tracklets (Step 1 and 2 in the Analyze Video tab of the GUI), then you load the tracklet file into the refine tracklet GUI, and "Save" without making any modifications (or run `deeplabcut.convert_raw_tracks_to_h5(config_path, picklefile)`). That will create the files needed in the Extract Outlier Frames tab of the GUI. 
+
 ### ------------------- TRACKING ACROSS FRAMES ------------------- 
 
 After pose estimation, now you perform tracking. There are several parameters we can automatically set based on your data, but some you will need to tune yourself, as it is dataset-dependent. First, let's set the automatic ones.
