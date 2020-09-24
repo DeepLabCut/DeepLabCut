@@ -42,32 +42,39 @@ class SkeletonBuilder:
         self.config_path = config_path
         self.cfg = read_config(config_path)
         # Find uncropped labeled data
+        self.df = None
+        found = False
         root = os.path.join(self.cfg["project_path"], "labeled-data")
         for dir_ in os.listdir(root):
             folder = os.path.join(root, dir_)
             if os.path.isdir(folder) and not any(
                 folder.endswith(s) for s in ("cropped", "labeled")
             ):
-                break
-        self.df = pd.read_hdf(
-            os.path.join(folder, f'CollectedData_{self.cfg["scorer"]}.h5')
-        )
-        # Handle data previously annotated on a different platform
-        sep = "/" if "/" in self.df.index[0] else "\\"
-        if sep != os.path.sep:
-            self.df.index = self.df.index.str.replace(sep, os.path.sep)
-        row, col = self.pick_labeled_frame()
-        if "individuals" in self.df.columns.names:
-            self.df = self.df.xs(col, axis=1, level="individuals")
+                self.df = pd.read_hdf(
+                    os.path.join(folder, f'CollectedData_{self.cfg["scorer"]}.h5')
+                )
+                row, col = self.pick_labeled_frame()
+                if "individuals" in self.df.columns.names:
+                    self.df = self.df.xs(col, axis=1, level="individuals")
+                self.xy = self.df.loc[row].values.reshape((-1, 2))
+                missing = np.flatnonzero(np.isnan(self.xy).all(axis=1))
+                if not missing.size:
+                    found = True
+                    break
+        if self.df is None:
+            raise IOError('No labeled data were found.')
+
         self.bpts = self.df.columns.get_level_values("bodyparts").unique()
-        self.xy = self.df.loc[row].values.reshape((-1, 2))
-        missing = np.flatnonzero(np.isnan(self.xy).all(axis=1))
-        if missing.any():
+        if not found:
             warnings.warn(
                 f"A fully labeled animal could not be found. "
                 f"{', '.join(self.bpts[missing])} will need to be manually connected in the config.yaml."
             )
         self.tree = KDTree(self.xy)
+        # Handle image previously annotated on a different platform
+        sep = "/" if "/" in row else "\\"
+        if sep != os.path.sep:
+            row = row.replace(sep, os.path.sep)
         self.image = io.imread(os.path.join(self.cfg["project_path"], row))
         self.inds = set()
         self.segs = set()
