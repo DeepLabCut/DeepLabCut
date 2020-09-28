@@ -13,8 +13,9 @@ A clear and concise description of what the bug is.
 Please provide the minimal required code to reproduce the error and the full output (please edit ONLY the section below that says `PLACE YOUR CODE HERE!!! `.
 
 **Desktop (please complete the following information about your system):**
- - OS: [e.g. Windows10, MacOS version, Linux, etc.]
+ - OS: [e.g. Windows10, MacOS version, Linux version, etc.]
  - DeepLabCut Version [e.g. 22] (please check with ``import deeplabcut``, ``deeplabcut.__version__``)
+ - DeepLabCut mode, i.e. single animal tracking, multi-animal tracking, 3D tracking.
  - Browser, if applicable [e.g. chrome, safari]
 
 **To Reproduce**
@@ -29,9 +30,9 @@ Steps to reproduce the behavior, i.e.:
 
 ```python
 
-Please place code inside this!!!
+^do not delete the above "<details><summary>TRACEBACK</summary><p>" or the ```python part!
 PLACE YOUR CODE HERE!!!  
-
+do not delete below this line, leave the blank line and the ```
 
 ```
 </p></details>
@@ -41,7 +42,7 @@ PLACE YOUR CODE HERE!!!
 A clear and concise description of what you expected to happen.
 
 **Screenshots**
-If applicable, add screenshots to help explain your problem. (but please post the code output above!)
+If applicable, add screenshots to help explain your problem. (but please post the code output above, not images of code!)
 
 **Additional context**
 Add any other context about the problem here.
