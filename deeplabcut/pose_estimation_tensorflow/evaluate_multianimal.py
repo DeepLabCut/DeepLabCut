@@ -251,6 +251,7 @@ def evaluate_multianimal_full(
                                 + Snapshots[snapindex],
                             )
                             auxiliaryfunctions.attempttomakefolder(foldername)
+                            fig, ax = visualization.create_minimal_figure()
 
                         # print(dlc_cfg)
                         # Specifying state of model (snapshot / training state)
@@ -332,7 +333,11 @@ def evaluate_multianimal_full(
                                     dist[inds[inds_gt[rows]], imageindex] = min_dists
 
                             if plotting:
-                                fig = visualization.make_multianimal_labeled_image(
+                                h, w, _ = np.shape(frame)
+                                fig.set_size_inches(w / 100, h / 100)
+                                ax.set_xlim(0, w)
+                                ax.set_ylim(0, h)
+                                ax = visualization.make_multianimal_labeled_image(
                                     frame,
                                     groundtruthcoordinates,
                                     coords_pred,
@@ -341,14 +346,15 @@ def evaluate_multianimal_full(
                                     cfg["dotsize"],
                                     cfg["alphavalue"],
                                     cfg["pcutoff"],
+                                    ax=ax
                                 )
-
                                 visualization.save_labeled_frame(
                                     fig,
                                     image_path,
                                     foldername,
                                     imageindex in trainIndices,
                                 )
+                                visualization.erase_artists(ax)
 
                         sess.close()  # closes the current tf session
 
@@ -695,6 +701,7 @@ def evaluate_multianimal_crossvalidate(
                 "LabeledImages_" + DLCscorer + "_" + Snapshots[snapindex],
             )
             auxiliaryfunctions.attempttomakefolder(foldername)
+            fig, ax = visualization.create_minimal_figure()
             for imageindex, imagename in tqdm(enumerate(Data.index)):
                 image_path = os.path.join(cfg["project_path"], imagename)
                 image = io.imread(image_path)
@@ -702,7 +709,11 @@ def evaluate_multianimal_crossvalidate(
                 groundtruthcoordinates = poses_gt[imageindex]
                 coords_pred = poses[imageindex][:, :, :2]
                 probs_pred = poses[imageindex][:, :, -1:]
-                fig = visualization.make_multianimal_labeled_image(
+                h, w, _ = np.shape(frame)
+                fig.set_size_inches(w / 100, h / 100)
+                ax.set_xlim(0, w)
+                ax.set_ylim(0, h)
+                ax = visualization.make_multianimal_labeled_image(
                     frame,
                     groundtruthcoordinates,
                     coords_pred,
@@ -711,7 +722,9 @@ def evaluate_multianimal_crossvalidate(
                     cfg["dotsize"],
                     cfg["alphavalue"],
                     cfg["pcutoff"],
+                    ax=ax
                 )
                 visualization.save_labeled_frame(
                     fig, image_path, foldername, imageindex in trainIndices
                 )
+                visualization.erase_artists(ax)

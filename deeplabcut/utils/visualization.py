@@ -90,7 +90,6 @@ def make_labeled_image(
                         alpha=alphavalue,
                         color=colors(int(bpindex)),
                     )
-    fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
     return fig
 
 
@@ -104,9 +103,11 @@ def make_multianimal_labeled_image(
     alphavalue=0.7,
     pcutoff=0.6,
     labels=["+", ".", "x"],
+    ax=None
 ):
-    h, w, numcolors = np.shape(frame)
-    fig, ax = prepare_figure_axes(w, h)
+    if ax is None:
+        h, w, _ = np.shape(frame)
+        _, ax = prepare_figure_axes(w, h)
     ax.imshow(frame, "gray")
     for n, data in enumerate(zip(coords_truth, coords_pred, probs_pred)):
         color = colors(n)
@@ -132,8 +133,7 @@ def make_multianimal_labeled_image(
                 alpha=alphavalue,
                 color=color,
             )
-    fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-    return fig
+    return ax
 
 
 def plot_and_save_labeled_frame(
@@ -176,8 +176,21 @@ def save_labeled_frame(fig, image_path, dest_folder, belongs_to_train):
     # See https://docs.microsoft.com/en-us/windows/desktop/fileio/naming-a-file#maximum-path-length-limitation
     if len(full_path) >= 260 and os.name == "nt":
         full_path = "\\\\?\\" + full_path
+    fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
     fig.savefig(full_path)
-    plt.close(fig)
+
+
+def create_minimal_figure(dpi=100):
+    fig, ax = plt.subplots(frameon=False, dpi=dpi)
+    ax.invert_yaxis()
+    ax.axis("off")
+    return fig, ax
+
+
+def erase_artists(ax):
+    for artist in ax.lines + ax.collections:
+        artist.remove()
+    ax.figure.canvas.draw_idle()
 
 
 def prepare_figure_axes(width, height, scale=1.0, dpi=100):
