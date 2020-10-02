@@ -533,7 +533,7 @@ def evaluate_multianimal_crossvalidate(
     _pbounds = {
         "pafthreshold": (0.05, 0.7),
         "detectionthresholdsquare": (
-            0,
+            0.0,
             0.9,
         ),  # TODO: set to minimum (from pose_cfg.yaml)
         "minimalnumberofconnections": (minconnections, maxconnections),
