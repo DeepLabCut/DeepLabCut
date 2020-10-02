@@ -182,13 +182,13 @@ def save_labeled_frame(fig, image_path, dest_folder, belongs_to_train):
 
 def create_minimal_figure(dpi=100):
     fig, ax = plt.subplots(frameon=False, dpi=dpi)
-    ax.invert_yaxis()
     ax.axis("off")
+    ax.invert_yaxis()
     return fig, ax
 
 
 def erase_artists(ax):
-    for artist in ax.lines + ax.collections:
+    for artist in ax.lines + ax.collections + ax.artists + ax.patches + ax.images:
         artist.remove()
     ax.figure.canvas.draw_idle()
 

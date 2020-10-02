@@ -337,6 +337,7 @@ def evaluate_multianimal_full(
                                 fig.set_size_inches(w / 100, h / 100)
                                 ax.set_xlim(0, w)
                                 ax.set_ylim(0, h)
+                                ax.invert_yaxis()
                                 ax = visualization.make_multianimal_labeled_image(
                                     frame,
                                     groundtruthcoordinates,
@@ -713,6 +714,7 @@ def evaluate_multianimal_crossvalidate(
                 fig.set_size_inches(w / 100, h / 100)
                 ax.set_xlim(0, w)
                 ax.set_ylim(0, h)
+                ax.invert_yaxis()
                 ax = visualization.make_multianimal_labeled_image(
                     frame,
                     groundtruthcoordinates,
