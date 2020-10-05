@@ -215,24 +215,21 @@ def linkjoints2individuals(
         if edge not in missing_connections:
             if log:
                 print(edge, subset)
-
-            part_as = all_connections[edge][:, 0]  # global indices for source of limb!
-            part_bs = all_connections[edge][
-                :, 1
-            ]  # indices for target of limb (when all detections are enumerated)
-            index_a, index_b = (
-                iBPTS[partaffinityfield_graph[edge][0]],
-                iBPTS[partaffinityfield_graph[edge][1]],
-            )  # convert in order of bpts!
-            for i in range(
-                len(all_connections[edge])
-            ):  # looping over all connections for that limb
+            connections = all_connections[edge]
+            if not connections:
+                continue
+            # Get indices for source and target of limb (when all detections are enumerated)
+            part_as, part_bs = zip(*[connection[:2] for connection in connections])
+            a, b = partaffinityfield_graph[edge]
+            index_a = iBPTS[a]
+            index_b = iBPTS[b]
+            for i in range(len(connections)):  # looping over all connections for that limb
                 found = 0
                 subset_idx = [-1, -1]
                 for j in range(len(subset)):  # current number of individuals...
                     if (
-                        subset[j][index_a] == part_as[i]
-                        or subset[j][index_b] == part_bs[i]
+                        subset[j, index_a] == part_as[i]
+                        or subset[j, index_b] == part_bs[i]
                     ) and found < 2:
                         subset_idx[found] = j
                         found += 1
@@ -240,22 +237,22 @@ def linkjoints2individuals(
                     print(found, subset_idx)
                 if found == 1:
                     j = subset_idx[0]
-                    if subset[j][index_b] != part_bs[i]:  # b is not target >> connect
-                        subset[j][index_b] = part_bs[i]
-                        subset[j][-1] += 1
-                        subset[j][-2] += (
-                            candidate[part_bs[i].astype(int), 2]
-                            + all_connections[edge][i][2]
+                    if subset[j, index_b] != part_bs[i]:  # b is not target >> connect
+                        subset[j, index_b] = part_bs[i]
+                        subset[j, -1] += 1
+                        subset[j, -2] += (
+                            candidate[part_bs[i], 2]
+                            + connections[i][2]
                         )
                         if log:
                             print("adding b")
 
-                    if subset[j][index_a] != part_as[i]:  # a is not source >> connect
-                        subset[j][index_a] = part_as[i]
-                        subset[j][-1] += 1
-                        subset[j][-2] += (
-                            candidate[part_as[i].astype(int), 2]
-                            + all_connections[edge][i][2]
+                    if subset[j, index_a] != part_as[i]:  # a is not source >> connect
+                        subset[j, index_a] = part_as[i]
+                        subset[j, -1] += 1
+                        subset[j, -2] += (
+                            candidate[part_as[i], 2]
+                            + connections[i][2]
                         )
                         if log:
                             print("adding a")
@@ -265,10 +262,10 @@ def linkjoints2individuals(
                     membership = (
                         (subset[j1] >= 0).astype(int) + (subset[j2] >= 0).astype(int)
                     )[:-2]
-                    if len(np.nonzero(membership == 2)[0]) == 0:  # merge
-                        subset[j1][:-2] += subset[j2][:-2] + 1
-                        subset[j1][-2:] += subset[j2][-2:]
-                        subset[j1][-2] += all_connections[edge][i][2]
+                    if np.sum(membership == 2) == 0:  # merge
+                        subset[j1, :-2] += subset[j2, :-2] + 1
+                        subset[j1, -2:] += subset[j2, -2:]
+                        subset[j1, -2] += connections[i][2]
                         subset = np.delete(subset, j2, 0)
                         if log:
                             print("merging")
@@ -280,24 +277,16 @@ def linkjoints2individuals(
                     row[index_b] = part_bs[i]
                     row[-1] = 2
                     row[-2] = (
-                        sum(candidate[all_connections[edge][i, :2].astype(int), 2])
-                        + all_connections[edge][i][2]
+                        candidate[connections[i][:2], 2].sum()
+                        + connections[i][2]
                     )
                     subset = np.vstack([subset, row])
                     if log:
                         print("new")
 
-    deleteIdx = []
-    for i in range(
-        len(subset)
-    ):  # delete animal proposals with too few edges or too low average score
-        if (
-            subset[i][-1] < cfg.minimalnumberofconnections
-            or subset[i][-2] / subset[i][-1] < cfg.averagescore
-        ):
-            deleteIdx.append(i)
-
-    subset = np.delete(subset, deleteIdx, axis=0)
+    to_keep = np.logical_or(subset[:, -1] >= cfg.minimalnumberofconnections,
+                            subset[:, -2] / subset[:, -1] >= cfg.averagescore)
+    subset = subset[to_keep]
     return subset, candidate
 
 
