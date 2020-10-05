@@ -9,6 +9,7 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import numpy as np
+from math import sqrt
 
 ###################################
 #### auxiliaryfunctions
@@ -125,58 +126,43 @@ def extractstrongconnections(
     """
     all_connections = []
     missing_connections = []
+    costs = dataimage["prediction"]["costs"] if evaluation else dataimage["costs"]
     for edge in range(len(partaffinityfield_graph)):
-        cand_a = all_detections[
-            iBPTS[partaffinityfield_graph[edge][0]]
-        ]  # convert bpt index to the one in all_detections!
-        cand_b = all_detections[iBPTS[partaffinityfield_graph[edge][1]]]  #
+        a, b = partaffinityfield_graph[edge]
+        cand_a = all_detections[iBPTS[a]]  # convert bpt index to the one in all_detections!
+        cand_b = all_detections[iBPTS[b]]
         n_a = len(cand_a)
         n_b = len(cand_b)
         if n_a != 0 and n_b != 0:
+            scores = costs[PAF[edge]][cfg.method]
+            dist = costs[PAF[edge]]["distance"]
             connection_candidate = []
             for i in range(n_a):
                 si = cand_a[i][2]  # likelihoood for detection
                 for j in range(n_b):
-                    if evaluation:
-                        score_with_dist_prior = abs(
-                            dataimage["prediction"]["costs"][PAF[edge]][cfg.method][
-                                i, j
-                            ]
-                        )
-                        d = dataimage["prediction"]["costs"][PAF[edge]]["distance"][
-                            i, j
-                        ]
-                    else:
-                        score_with_dist_prior = abs(
-                            dataimage["costs"][PAF[edge]][cfg.method][i, j]
-                        )
-                        d = dataimage["costs"][PAF[edge]]["distance"][i, j]
-
-                    # d=distance(np.array(cand_a[i][:2]),np.array(cand_b[j][:2]))
                     sj = cand_b[j][2]  # likelihoood for detection
-                    # filtering with global distance bounds
+                    score_with_dist_prior = abs(scores[i, j])
+                    d = dist[i, j]
                     if lowerbound is None and upperbound is None:
                         if (
-                            score_with_dist_prior > cfg.pafthreshold
-                            and cfg.distnormalizationLOWER <= d < cfg.distnormalization
-                            and si * sj > cfg.detectionthresholdsquare
+                                score_with_dist_prior > cfg.pafthreshold
+                                and cfg.distnormalizationLOWER <= d < cfg.distnormalization
+                                and si * sj > cfg.detectionthresholdsquare
                         ):
-
                             connection_candidate.append(
                                 [
                                     i,
                                     j,
                                     score_with_dist_prior,
                                     score_with_dist_prior
-                                    + np.sqrt(si * sj) * cfg.addlikelihoods,
+                                    + sqrt(si * sj) * cfg.addlikelihoods,
                                 ]
                             )
-
-                    else:  # filtering with edgewise distance bounds
+                    else:
                         if (
-                            score_with_dist_prior > cfg.pafthreshold
-                            and lowerbound[edge] <= d < upperbound[edge]
-                            and si * sj > cfg.detectionthresholdsquare
+                                score_with_dist_prior > cfg.pafthreshold
+                                and lowerbound[edge] <= d < upperbound[edge]
+                                and si * sj > cfg.detectionthresholdsquare
                         ):
                             connection_candidate.append(
                                 [
@@ -184,7 +170,7 @@ def extractstrongconnections(
                                     j,
                                     score_with_dist_prior,
                                     score_with_dist_prior
-                                    + np.sqrt(si * sj) * cfg.addlikelihoods,
+                                    + sqrt(si * sj) * cfg.addlikelihoods,
                                 ]
                             )
 
@@ -192,16 +178,20 @@ def extractstrongconnections(
             connection_candidate = sorted(
                 connection_candidate, key=lambda x: x[2], reverse=True
             )
-            connection = np.zeros((0, 5))
-            for c in range(len(connection_candidate)):
-                i, j, s = connection_candidate[c][0:3]
-                if i not in connection[:, 3] and j not in connection[:, 4]:
+            connection = []
+            i_seen = set()
+            j_seen = set()
+            nrows = min(n_a, n_b)
+            for candidate in connection_candidate:
+                i, j, s = candidate[:3]
+                if i not in i_seen and j not in j_seen:
+                    i_seen.add(i)
+                    j_seen.add(j)
                     ii = int(cand_a[i][-1])  # global index!
                     jj = int(cand_b[j][-1])
-                    connection = np.vstack([connection, [ii, jj, s, i, j]])
-                    if len(connection) >= min(n_a, n_b):
+                    connection.append([ii, jj, s, i, j])
+                    if len(connection) == nrows:
                         break
-
             all_connections.append(connection)
         else:
             missing_connections.append(edge)
