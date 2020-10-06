@@ -454,9 +454,9 @@ class Analyze_videos(wx.Panel):
             else:
                 dynamic = (True, 0.5, 10)
             if self.filter.GetStringSelection() == "No":
-                filter = None
+                _filter = False
             else:
-                filter = True
+                _filter = True
 
         if self.cfg["cropping"] == "True":
             crop = self.cfg["x1"], self.cfg["x2"], self.cfg["y1"], self.cfg["y2"]
@@ -500,7 +500,7 @@ class Analyze_videos(wx.Panel):
                 cropping=crop,
                 dynamic=dynamic,
             )
-            if self.filter.GetStringSelection() == "Yes":
+            if _filter:
                 deeplabcut.filterpredictions(
                     self.config,
                     self.filelist,
@@ -524,7 +524,7 @@ class Analyze_videos(wx.Panel):
                     videotype=self.videotype.GetValue(),
                     shuffle=shuffle,
                     trainingsetindex=trainingsetindex,
-                    filtered=True,
+                    filtered=_filter,
                     showfigures=showfig,
                 )
 
