@@ -153,8 +153,7 @@ def extractstrongconnections(
                                 [
                                     i,
                                     j,
-                                    score_with_dist_prior,
-                                    score_with_dist_prior
+                                    score_with_dist_prior * (1 - cfg.addlikelihoods)
                                     + sqrt(si * sj) * cfg.addlikelihoods,
                                 ]
                             )
@@ -168,8 +167,7 @@ def extractstrongconnections(
                                 [
                                     i,
                                     j,
-                                    score_with_dist_prior,
-                                    score_with_dist_prior
+                                    score_with_dist_prior * (1 - cfg.addlikelihoods)
                                     + sqrt(si * sj) * cfg.addlikelihoods,
                                 ]
                             )
@@ -182,14 +180,13 @@ def extractstrongconnections(
             i_seen = set()
             j_seen = set()
             nrows = min(n_a, n_b)
-            for candidate in connection_candidate:
-                i, j, s = candidate[:3]
+            for i, j, score in connection_candidate:
                 if i not in i_seen and j not in j_seen:
                     i_seen.add(i)
                     j_seen.add(j)
                     ii = int(cand_a[i][-1])  # global index!
                     jj = int(cand_b[j][-1])
-                    connection.append([ii, jj, s, i, j])
+                    connection.append([ii, jj, score, i, j])
                     if len(connection) == nrows:
                         break
             all_connections.append(connection)
