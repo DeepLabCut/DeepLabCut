@@ -202,9 +202,7 @@ def triangulate(
                     )
                     stereo_file = auxiliaryfunctions.read_pickle(path_stereo_file)
                     cam_pair = str(cam_names[0] + "-" + cam_names[1])
-                    if_video_analyzed = (
-                        False
-                    )  # variable to keep track if the video was already analyzed
+                    if_video_analyzed = False  # variable to keep track if the video was already analyzed
                     # Check for the camera matrix
                     for k in metadata_["stereo_matrix"].keys():
                         if np.all(
@@ -301,7 +299,7 @@ def triangulate(
                 stereomatrix,
                 path_stereo_file,
             ) = undistort_points(
-                config, dataname, str(cam_names[0] + "-" + cam_names[1]), destfolder
+                config, dataname, str(cam_names[0] + "-" + cam_names[1])
             )
             if len(dataFrame_camera1_undistort) != len(dataFrame_camera2_undistort):
                 import warnings
@@ -427,7 +425,7 @@ auxiliaryfunctions.SaveData(PredicteData[:nframes,:], metadata, dataname, pdinde
 """
 
 
-def undistort_points(config, dataframe, camera_pair, destfolder):
+def undistort_points(config, dataframe, camera_pair):
     cfg_3d = auxiliaryfunctions.read_config(config)
     (
         img_path,
@@ -454,9 +452,6 @@ def undistort_points(config, dataframe, camera_pair, destfolder):
         dataframe_cam2 = pd.read_hdf(dataframe[1])
         scorer_cam1 = dataframe_cam1.columns.get_level_values(0)[0]
         scorer_cam2 = dataframe_cam2.columns.get_level_values(0)[0]
-        stereo_file = auxiliaryfunctions.read_pickle(
-            os.path.join(path_camera_matrix, "stereo_params.pickle")
-        )
         path_stereo_file = os.path.join(path_camera_matrix, "stereo_params.pickle")
         stereo_file = auxiliaryfunctions.read_pickle(path_stereo_file)
         mtx_l = stereo_file[camera_pair]["cameraMatrix1"]
@@ -488,51 +483,40 @@ def undistort_points(config, dataframe, camera_pair, destfolder):
         )
 
         for bpindex, bp in tqdm(enumerate(bodyparts)):
-            # Undistorting the points from cam1 camera
-            points_cam1 = np.array(
-                [
-                    dataframe_cam1[scorer_cam1][bp]["x"].values[:],
-                    dataframe_cam1[scorer_cam1][bp]["y"].values[:],
-                ]
-            )
-            points_cam1 = points_cam1.T
-            points_cam1 = np.expand_dims(points_cam1, axis=1)
+            points_cam1 = dataframe_cam1.xs(bp, level="bodyparts", axis=1).values[:, :2]
             points_cam1_remapped = cv2.undistortPoints(
-                src=points_cam1, cameraMatrix=mtx_l, distCoeffs=dist_l, P=P1, R=R1
+                src=points_cam1.astype(np.float32),
+                cameraMatrix=mtx_l,
+                distCoeffs=dist_l,
+                P=P1,
+                R=R1,
             )
-
-            dataFrame_cam1_undistort.iloc[:][
-                scorer_cam1, bp, "x"
-            ] = points_cam1_remapped[:, 0, 0]
-            dataFrame_cam1_undistort.iloc[:][
-                scorer_cam1, bp, "y"
-            ] = points_cam1_remapped[:, 0, 1]
-            dataFrame_cam1_undistort.iloc[:][
+            dataFrame_cam1_undistort.loc(axis=1)[
+                scorer_cam1, bp, ["x", "y"]
+            ] = points_cam1_remapped.squeeze()
+            dataFrame_cam1_undistort.loc(axis=1)[
                 scorer_cam1, bp, "likelihood"
-            ] = dataframe_cam1[scorer_cam1][bp]["likelihood"].values[:]
+            ] = dataframe_cam1.xs(
+                [bp, "likelihood"], level=["bodyparts", "coords"], axis=1
+            ).values
 
             # Undistorting the points from cam2 camera
-            points_cam2 = np.array(
-                [
-                    dataframe_cam2[scorer_cam2][bp]["x"].values[:],
-                    dataframe_cam2[scorer_cam2][bp]["y"].values[:],
-                ]
-            )
-            points_cam2 = points_cam2.T
-            points_cam2 = np.expand_dims(points_cam2, axis=1)
+            points_cam2 = dataframe_cam2.xs(bp, level="bodyparts", axis=1).values[:, :2]
             points_cam2_remapped = cv2.undistortPoints(
-                src=points_cam2, cameraMatrix=mtx_r, distCoeffs=dist_r, P=P2, R=R2
+                src=points_cam2.astype(np.float32),
+                cameraMatrix=mtx_r,
+                distCoeffs=dist_r,
+                P=P2,
+                R=R2,
             )
-
-            dataFrame_cam2_undistort.iloc[:][
-                scorer_cam2, bp, "x"
-            ] = points_cam2_remapped[:, 0, 0]
-            dataFrame_cam2_undistort.iloc[:][
-                scorer_cam2, bp, "y"
-            ] = points_cam2_remapped[:, 0, 1]
-            dataFrame_cam2_undistort.iloc[:][
+            dataFrame_cam2_undistort.loc(axis=1)[
+                scorer_cam2, bp, ["x", "y"]
+            ] = points_cam2_remapped.squeeze()
+            dataFrame_cam2_undistort.loc(axis=1)[
                 scorer_cam2, bp, "likelihood"
-            ] = dataframe_cam2[scorer_cam2][bp]["likelihood"].values[:]
+            ] = dataframe_cam2.xs(
+                [bp, "likelihood"], level=["bodyparts", "coords"], axis=1
+            ).values
 
         # Save the undistorted files
         dataFrame_cam1_undistort.sort_index(inplace=True)
