@@ -335,9 +335,7 @@ def analyze_videos(
             print(
                 "If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames."
             )
-        return (
-            DLCscorer
-        )  # note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
+        return DLCscorer  # note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
     else:
         print("No video(s) were found. Please check your paths and/or 'video_type'.")
         return DLCscorer
@@ -1430,6 +1428,10 @@ def convert_detections2tracklets(
                     )
 
                 Tracks = {}
+                if cfg[
+                    "uniquebodyparts"
+                ]:  # Initialize storage of the 'single' individual track
+                    Tracks["s"] = {}
                 for index, imname in tqdm(enumerate(imnames)):
                     animals = inferenceutils.assemble_individuals(
                         inferencecfg,
@@ -1456,32 +1458,29 @@ def convert_detections2tracklets(
                     trackingutils.fill_tracklets(Tracks, trackers, animals, imname)
 
                     # Test whether the unique bodyparts have been assembled
-                    # TODO Perhaps easier to check whether links were defined in the PAF graph?
-                    inds_unique = [
-                        all_jointnames.index(bp) for bp in cfg["uniquebodyparts"]
-                    ]
-                    if not any(
-                        np.isfinite(a.reshape((-1, 3))[inds_unique]).all()
-                        for a in animals
-                    ):
-                        single = np.full((numjoints, 3), np.nan)
-                        single_dets = inferenceutils.convertdetectiondict2listoflist(
-                            data[imname], inds_unique
-                        )
-                        for ind, dets in zip(inds_unique, single_dets):
-                            if len(dets) == 1:
-                                single[ind] = dets[0][:3]
-                            elif len(dets) > 1:
-                                best = sorted(dets, key=lambda x: x[2], reverse=True)[0]
-                                single[ind] = best[:3]
-                        # Find an unused tracklet ID for the 'unique' bodyparts
-                        tracklet_id = 0
-                        while True:
-                            if tracklet_id not in Tracks:
-                                break
-                            tracklet_id += 1
-                        Tracks[tracklet_id] = {}
-                        Tracks[tracklet_id][imname] = single.flatten()
+                    if cfg["uniquebodyparts"]:
+                        inds_unique = [
+                            all_jointnames.index(bp) for bp in cfg["uniquebodyparts"]
+                        ]
+                        if not any(
+                            np.isfinite(a.reshape((-1, 3))[inds_unique]).all()
+                            for a in animals
+                        ):
+                            single = np.full((numjoints, 3), np.nan)
+                            single_dets = (
+                                inferenceutils.convertdetectiondict2listoflist(
+                                    data[imname], inds_unique
+                                )
+                            )
+                            for ind, dets in zip(inds_unique, single_dets):
+                                if len(dets) == 1:
+                                    single[ind] = dets[0][:3]
+                                elif len(dets) > 1:
+                                    best = sorted(
+                                        dets, key=lambda x: x[2], reverse=True
+                                    )[0]
+                                    single[ind] = best[:3]
+                            Tracks["s"][imname] = single.flatten()
 
                 Tracks["header"] = pdindex
                 with open(trackname, "wb") as f:
