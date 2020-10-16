@@ -23,6 +23,7 @@ or
 
 ``conda env create -f DLC-GPU.yaml``
 
+Note in a fresh ubuntu install, you will often have to run: ``sudo apt-get install gcc python3-dev`` to install the GNU Compiler Collection and the python developing environment.
 (3) You can now use this environment from anywhere on your comptuer (i.e. no need to go back into the conda- folder). Just enter your environment by running:
 
 - Ubuntu/MacOS: ``source/conda activate nameoftheenv`` (i.e. on your Mac: ``conda activate DLC-CPU``)
@@ -46,7 +47,7 @@ Some users might want to create their own customize env. -  Here is an example.
 
 In the terminal type:
 
-`conda create -n DLC python=3.7 tensorflow=1.13.1` 
+`conda create -n DLC python=3.7 tensorflow=1.13.1`
 
 (this would be for CPU-based tensorflow; for GPU support use `tensorflow-gpu=1.13.1`).
 
