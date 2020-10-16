@@ -153,8 +153,7 @@ def extractstrongconnections(
                                 [
                                     i,
                                     j,
-                                    score_with_dist_prior * (1 - cfg.addlikelihoods)
-                                    + sqrt(si * sj) * cfg.addlikelihoods,
+                                    score_with_dist_prior,
                                 ]
                             )
                     else:
@@ -167,8 +166,7 @@ def extractstrongconnections(
                                 [
                                     i,
                                     j,
-                                    score_with_dist_prior * (1 - cfg.addlikelihoods)
-                                    + sqrt(si * sj) * cfg.addlikelihoods,
+                                    score_with_dist_prior,
                                 ]
                             )
 
@@ -207,7 +205,7 @@ def linkjoints2individuals(
     log=False,
 ):
     subset = np.empty((0, numjoints + 2))
-    candidate = np.array([item for sublist in all_detections for item in sublist])
+    candidates = np.array([item for sublist in all_detections for item in sublist])
     for edge in range(len(partaffinityfield_graph)):
         if edge not in missing_connections:
             if log:
@@ -221,6 +219,7 @@ def linkjoints2individuals(
             index_a = iBPTS[a]
             index_b = iBPTS[b]
             for i in range(len(connections)):  # looping over all connections for that limb
+                connection = connections[i]
                 found = 0
                 subset_idx = [-1, -1]
                 for j in range(len(subset)):  # current number of individuals...
@@ -237,20 +236,14 @@ def linkjoints2individuals(
                     if subset[j, index_b] != part_bs[i]:  # b is not target >> connect
                         subset[j, index_b] = part_bs[i]
                         subset[j, -1] += 1
-                        subset[j, -2] += (
-                            candidate[part_bs[i], 2]
-                            + connections[i][2]
-                        )
+                        subset[j, -2] += connection[2]
                         if log:
                             print("adding b")
 
                     if subset[j, index_a] != part_as[i]:  # a is not source >> connect
                         subset[j, index_a] = part_as[i]
                         subset[j, -1] += 1
-                        subset[j, -2] += (
-                            candidate[part_as[i], 2]
-                            + connections[i][2]
-                        )
+                        subset[j, -2] += connection[2]
                         if log:
                             print("adding a")
 
@@ -261,8 +254,8 @@ def linkjoints2individuals(
                     )[:-2]
                     if np.sum(membership == 2) == 0:  # merge
                         subset[j1, :-2] += subset[j2, :-2] + 1
-                        subset[j1, -2:] += subset[j2, -2:]
-                        subset[j1, -2] += connections[i][2]
+                        subset[j1, -1] += subset[j2, -1]
+                        subset[j1, -2] += connection[2] * 2
                         subset = np.delete(subset, j2, 0)
                         if log:
                             print("merging")
@@ -274,17 +267,17 @@ def linkjoints2individuals(
                     row[index_b] = part_bs[i]
                     row[-1] = 2
                     row[-2] = (
-                        candidate[connections[i][:2], 2].sum()
-                        + connections[i][2]
+                            candidates[connection[:2], 2].sum()
+                            + connections[i][2]
                     )
                     subset = np.vstack([subset, row])
                     if log:
                         print("new")
 
-    to_keep = np.logical_or(subset[:, -1] >= cfg.minimalnumberofconnections,
-                            subset[:, -2] / subset[:, -1] >= cfg.averagescore)
+    to_keep = np.logical_and(subset[:, -1] >= cfg.minimalnumberofconnections,
+                             subset[:, -2] / subset[:, -1] >= cfg.averagescore)
     subset = subset[to_keep]
-    return subset, candidate
+    return subset, candidates
 
 
 def assemble_individuals(
