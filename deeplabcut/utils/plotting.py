@@ -40,6 +40,7 @@ def PlottingResults(
     individuals2plot,
     showfigures=False,
     suffix=".png",
+    resolution=100
 ):
     """ Plots poses vs time; pose x vs pose y; histogram of differences and likelihoods."""
     pcutoff = cfg["pcutoff"]
@@ -110,10 +111,10 @@ def PlottingResults(
         cbar = plt.colorbar(sm, ax=ax, ticks=range(len(bodyparts2plot)))
         cbar.set_ticklabels(bodyparts2plot)
 
-    fig1.savefig(os.path.join(tmpfolder, "trajectory" + suffix))
-    fig2.savefig(os.path.join(tmpfolder, "plot" + suffix))
-    fig3.savefig(os.path.join(tmpfolder, "plot-likelihood" + suffix))
-    fig4.savefig(os.path.join(tmpfolder, "hist" + suffix))
+    fig1.savefig(os.path.join(tmpfolder, "trajectory" + suffix), dpi=resolution)
+    fig2.savefig(os.path.join(tmpfolder, "plot" + suffix), dpi=resolution)
+    fig3.savefig(os.path.join(tmpfolder, "plot-likelihood" + suffix), dpi=resolution)
+    fig4.savefig(os.path.join(tmpfolder, "hist" + suffix), dpi=resolution)
 
     if not showfigures:
         plt.close("all")
@@ -139,6 +140,7 @@ def plot_trajectories(
     destfolder=None,
     modelprefix="",
     track_method="",
+    resolution = 100
 ):
     """
     Plots the trajectories of various bodyparts across the video.
@@ -231,6 +233,7 @@ def plot_trajectories(
                     animal,
                     showfigures,
                     suffix + animal + ".png",
+                    resolution=resolution
                 )
         except FileNotFoundError as e:
             failed.append(True)
