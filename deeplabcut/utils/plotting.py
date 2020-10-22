@@ -211,7 +211,7 @@ def plot_trajectories(
         Specifies the destination folder that was used for storing analysis data (default is the path of the video).
 
     imagetype: string, default ".png"
-        Specifies the output image format, tested '.tif', '.jpg', '.svg'
+        Specifies the output image format, tested '.tif', '.jpg', '.svg' and ".png". 
 
     resolution: int, default 100
         Specifies the resolution (in dpi) of saved figures. Note higher resolution figures take longer to generate.
