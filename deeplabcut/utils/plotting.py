@@ -23,13 +23,13 @@ import numpy as np
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualization
 
 
-def Histogram(vector, color, bins, ax=None):
+def Histogram(vector, color, bins, ax=None, linewidth=1.0):
     dvector = np.diff(vector)
     dvector = dvector[np.isfinite(dvector)]
     if ax is None:
         fig = plt.figure()
         ax = fig.add_subplot(111)
-    ax.hist(dvector, color=color, histtype="step", bins=bins)
+    ax.hist(dvector, color=color, histtype="step", bins=bins, linewidth=linewidth)
 
 
 def PlottingResults(
@@ -40,6 +40,8 @@ def PlottingResults(
     individuals2plot,
     showfigures=False,
     suffix=".png",
+    resolution=100,
+    linewidth=1.0,
 ):
     """ Plots poses vs time; pose x vs pose y; histogram of differences and likelihoods."""
     pcutoff = cfg["pcutoff"]
@@ -93,13 +95,31 @@ def PlottingResults(
                 )
                 ax1.plot(temp_x, temp_y, ".", color=colors(bpindex), alpha=alphavalue)
 
-                ax2.plot(temp_x, "--", color=colors(bpindex), alpha=alphavalue)
-                ax2.plot(temp_y, "-", color=colors(bpindex), alpha=alphavalue)
+                ax2.plot(
+                    temp_x,
+                    "--",
+                    color=colors(bpindex),
+                    linewidth=linewidth,
+                    alpha=alphavalue,
+                )
+                ax2.plot(
+                    temp_y,
+                    "-",
+                    color=colors(bpindex),
+                    linewidth=linewidth,
+                    alpha=alphavalue,
+                )
 
-                ax3.plot(prob, "-", color=colors(bpindex), alpha=alphavalue)
+                ax3.plot(
+                    prob,
+                    "-",
+                    color=colors(bpindex),
+                    linewidth=linewidth,
+                    alpha=alphavalue,
+                )
 
-                Histogram(temp_x, colors(bpindex), bins, ax4)
-                Histogram(temp_y, colors(bpindex), bins, ax4)
+                Histogram(temp_x, colors(bpindex), bins, ax4, linewidth=linewidth)
+                Histogram(temp_y, colors(bpindex), bins, ax4, linewidth=linewidth)
 
     sm = plt.cm.ScalarMappable(
         cmap=plt.get_cmap(cfg["colormap"]),
@@ -110,10 +130,22 @@ def PlottingResults(
         cbar = plt.colorbar(sm, ax=ax, ticks=range(len(bodyparts2plot)))
         cbar.set_ticklabels(bodyparts2plot)
 
-    fig1.savefig(os.path.join(tmpfolder, "trajectory" + suffix))
-    fig2.savefig(os.path.join(tmpfolder, "plot" + suffix))
-    fig3.savefig(os.path.join(tmpfolder, "plot-likelihood" + suffix))
-    fig4.savefig(os.path.join(tmpfolder, "hist" + suffix))
+    fig1.savefig(
+        os.path.join(tmpfolder, "trajectory" + suffix),
+        bbox_inches="tight",
+        dpi=resolution,
+    )
+    fig2.savefig(
+        os.path.join(tmpfolder, "plot" + suffix), bbox_inches="tight", dpi=resolution
+    )
+    fig3.savefig(
+        os.path.join(tmpfolder, "plot-likelihood" + suffix),
+        bbox_inches="tight",
+        dpi=resolution,
+    )
+    fig4.savefig(
+        os.path.join(tmpfolder, "hist" + suffix), bbox_inches="tight", dpi=resolution
+    )
 
     if not showfigures:
         plt.close("all")
@@ -139,6 +171,9 @@ def plot_trajectories(
     destfolder=None,
     modelprefix="",
     track_method="",
+    imagetype=".png",
+    resolution=100,
+    linewidth=1.0,
 ):
     """
     Plots the trajectories of various bodyparts across the video.
@@ -174,6 +209,15 @@ def plot_trajectories(
 
     destfolder: string, optional
         Specifies the destination folder that was used for storing analysis data (default is the path of the video).
+
+    imagetype: string, default ".png"
+        Specifies the output image format, tested '.tif', '.jpg', '.svg' and ".png". 
+
+    resolution: int, default 100
+        Specifies the resolution (in dpi) of saved figures. Note higher resolution figures take longer to generate.
+
+    linewidth: float, default 1.0
+        Specifies width of line for line and histogram plots.
 
     Example
     --------
@@ -230,7 +274,9 @@ def plot_trajectories(
                     labeled_bpts,
                     animal,
                     showfigures,
-                    suffix + animal + ".png",
+                    suffix + animal + imagetype,
+                    resolution=resolution,
+                    linewidth=linewidth,
                 )
         except FileNotFoundError as e:
             failed.append(True)
