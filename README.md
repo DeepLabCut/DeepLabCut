@@ -19,20 +19,34 @@
 </p>
 
 <p align="center">
-<img src="http://www.people.fas.harvard.edu/~amathis/dlc/MATHIS_2018_odortrail.gif" height="160">
-<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3fbd0c898583417a040dfc/1547681053201/rat-grasp.gif?format=300w" height="160">
-<img src="http://www.people.fas.harvard.edu/~amathis/dlc/MATHIS_2018_fly.gif" height="160">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588014385061-6HA5RSD4ETBFVSD8R547/ke17ZwdGBToddI8pDm48kLyW1liujvcx7mp5osyaH61Zw-zPPgdn4jUwVcJE1ZvWhcwhEtWJXoshNdA9f1qD7Sn5EHp5ffw70kWDv5IdoCwQFuuJNKK_dG37osgdmxm5k0Yq7uiJIG_-lMb52Fc-iw/ezgif.com-resize.gif?format=300w" height="160">
+<img src="https://images.squarespace-cdn.com/content/v1/5d90cb67886fb8184560c3ef/1569773279570-XQAKFA299I0YGMZI129U/ke17ZwdGBToddI8pDm48kAsfLZj9Z3cwME2xx-GVPktZw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVFduml12xzze87D3uxh5wWTU2EfgWtpp0j_eVfs7Ce7Qib8BodarTVrzIWCp72ioWw/MATHIS_2018_odortrail.gif?format=300w" height="150">
+    
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1603792922722-ZBHDW3V3M966VV390REK/ke17ZwdGBToddI8pDm48kBK2gOJgRrE1qfX6baRGzEdZw-zPPgdn4jUwVcJE1ZvWhcwhEtWJXoshNdA9f1qD7TAWtXaZ0LE0wmVD36pjqFiJbhrK69_i1CGcNRidYBzSIkvK-oQl2ejuj9B-hkcAjQ/smallfish.gif?format=300w" height="150">
+
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1534797521117-EIEUED03C68241QZ4KCK/ke17ZwdGBToddI8pDm48kAx9qLOWpcHWRGxWsJQSczRZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpwdr4GYy30vFzf31Oe7KAPZKkqgaiEgc5jBNdhZmDPlzxdkDSclo6ofuXZm6YCEhUo/MATHIS_2018_fly.gif?format=300w" height="150">
+
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588014385061-6HA5RSD4ETBFVSD8R547/ke17ZwdGBToddI8pDm48kLyW1liujvcx7mp5osyaH61Zw-zPPgdn4jUwVcJE1ZvWhcwhEtWJXoshNdA9f1qD7Sn5EHp5ffw70kWDv5IdoCwQFuuJNKK_dG37osgdmxm5k0Yq7uiJIG_-lMb52Fc-iw/ezgif.com-resize.gif?format=300w" height="150">
+
+<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3fbd0c898583417a040dfc/1547681053201/rat-grasp.gif?format=300w" height="150">
 </p>
 
-DeepLabCut is a toolbox for markerless pose estimation of animals performing various tasks. [Read a short development and application summary below](https://github.com/AlexEMG/DeepLabCut#why-use-deeplabcut).
-:purple_heart: DeepLabCut now supports multi-animal pose estimation (beta release).
+DeepLabCut is a toolbox for markerless pose estimation of animals performing various tasks. [Read a short development and application summary below](https://github.com/AlexEMG/DeepLabCut#why-use-deeplabcut). As long as you can see (label) what you want to track, you can use this toolbox, as it is animal and object agnostic.
+
+**Latest updates:** 
+
+:purple_heart: DeepLabCut supports multi-animal pose estimation (BETA release, plese give us your feedback!).
+
+:purple_heart: We have a real-time package available! http://DLClive.deeplabcut.org
 
 # [Installation: how to install DeepLabCut](docs/installation.md)
+
+Very quick start: `pip install deeplabcut`
 
 # [Documentation: The DeepLabCut Process](docs/UseOverviewGuide.md)
 
 An overview of the pipeline and workflow for project management. For a step-by-step user guide, please also read the [Nature Protocols paper](https://doi.org/10.1038/s41596-019-0176-0)!
+
+For a deeper understanding and more resources for you to get started with Python and DeepLabCut, please check out our free online course! http://DLCcourse.deeplabcut.org
 
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572293604382-W6BWA63LZ9J8R7N0QEA5/ke17ZwdGBToddI8pDm48kIw6YkRUEyoge4858uAJfaMUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYwL8IeDg6_3B-BRuF4nNrNcQkVuAT7tdErd0wQFEGFSnH9wUPiI8bGoX-EQadkbLIJwhzjIpw393-uEwSKO7VZIL9gN_Sb5I_dLwvWryjeCJg/dlc_overview-01.png?format=1000w" width="95%">
@@ -112,6 +126,14 @@ Please check out the following references for more details:
         year={2020},
         volume={60},
         pages={1-11}}
+        
+    @article{Mathis2020Primer,
+        title={A Primer on Motion Capture with Deep Learning: Principles, Pitfalls, and Perspectives},
+        author={Alexander Mathis and Steffen Schneider and Jessy Lauer and Mackenzie W. Mathis},
+        journal={Neuron},
+        year={2020},
+        volume={108},
+        pages={44-65}}
 
 Our open-access pre-prints:
 
