@@ -31,9 +31,11 @@ or
 Now you should see (nameofenv) on the left of your teminal screen, i.e. ``(dlc-macOS-CPU) YourName-MacBook...``
 NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)
 
-However, if you ever want to update your DLC, just run `pip install --upgrade deeplabcut` once you are inside your env. You can check the version by running `import deeplabcut` `deeplabcut.__version__`. Don't be afraid to update, DLC is backwards compatible with your 2.0+ projects and performance continues to get better and new features are added nearly monthly.
+However, if you ever want to update your DLC, just run `pip install --upgrade deeplabcut` once you are inside your env. If you want to use a beta release, then you need to specify the specific version you want, such as `pip install deeplabcut==2.2b8`. Once installed, you can check the version by running `import deeplabcut` `deeplabcut.__version__`. Don't be afraid to update, DLC is backwards compatible with your 2.0+ projects and performance continues to get better and new features are added nearly monthly.
 
 Here are some conda environment management tips: https://kapeli.com/cheat_sheets/Conda.docset/Contents/Resources/Documents/index
+
+**Pro Tip:** A great way to test your installation is to use our provided testscripts. This would mean you need to be up-to-date with the lastest code though! Please see [here](https://github.com/DeepLabCut/DeepLabCut/wiki/How-to-use-the-latest-GitHub-code) on how to get the latest GitHub code, and how to test your installation by following this video: https://www.youtube.com/watch?v=IOWtKn3l33s
 
 **Great, that's it!**
 
