@@ -141,6 +141,27 @@ class DLCH5FSReader:
         """
         return DLCFSHeader(*self._header.to_list())
 
+    def tell_frame(self) -> int:
+        """
+        Get the current frame the frame reader is on.
+
+        :return: An integer, being the current frame the DLCFSReader will read next.
+        """
+        return self._frames_processed
+
+    def seek_frame(self, frame_idx: int):
+        """
+        Make this frame reader seek to the given frame index.
+
+        :param frame_idx: An integer, the frame index to have this frame reader seek to. Must land within the valid
+                          frame range for this file, being 0 to frame_count - 1.
+        """
+        if(not (0 <= frame_idx < self._header.number_of_frames)):
+            raise IndexError(f"The provided frame index does not land within "
+                             f"the valid range. (0 to {self._header.number_of_frames})")
+
+        self._frames_processed = frame_idx
+
     def has_next(self, num_frames: int = 1) -> bool:
         """
         Checks if this frame store object at least num_frames more frames to be read.
@@ -275,6 +296,14 @@ class DLCH5FSWriter:
 
         self._file.attrs.update(tmp_data)
         self._header = DLCFSHeader(*header.to_list())
+
+    def tell_frame(self) -> int:
+        """
+        Get the current frame the frame writer is on.
+
+        :return: An integer, being the current frame the DLCH5FSWriter will write out next.
+        """
+        return self._current_frame
 
 
     def write_data(self, data: TrackingData):

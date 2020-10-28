@@ -3,8 +3,6 @@ Contains 2 Utility Classes for reading and writing the DeepLabCut Frame Store fo
 videos using DeepLabCut and then running predictions on the probability map data later. Below is a specification for
 the DeepLabCut Frame Store format...
 
-TODO: Add a lookup table chunk (FLUP for Frame Look UP). Useful for random access.
-
 DEEPLABCUT FRAMESTORE BINARY FORMAT: (All multi-byte fields are in little-endian format)
 ['DLCF'] -> DeepLabCut Frame store - 4 Bytes (file magic)
 
@@ -26,6 +24,11 @@ Bodypart Names:
     (num_bp entries):
         [bp_len] - The length of the name of the bodypart. 2 Bytes (unsigned short)
         [DATA of length bp_len] -       UTF8 Encoded name of the bodypart.
+
+Frame Lookup Chunk:
+    ['FLUP'] -> Frame LookUP
+    (num_frames entries):
+        [frame_offset_ptr] -> The offset of frame i into the FDAT chunk, excluding the chunk signature. 8 Bytes (unsigned long)
 
 Frame data block:
 	['FDAT'] -> Frame DATa
@@ -121,6 +124,7 @@ class DLCFSConstants:
     # The header length, including the 'DLCH' magic
     HEADER_LENGTH = 52
     BP_NAME_CHUNK_MAGIC = b"DBPN"
+    FRAME_LOOKUP_MAGIC = b"FLUP"
     FRAME_DATA_CHUNK_MAGIC = b"FDAT"
 
 
@@ -347,11 +351,20 @@ class DLCFSReader:
         # Add the list of body parts to the header...
         self._header.bodypart_names = body_parts
 
+        # Verify frame lookup chunk is there, and store it's file offset.
+        self._assert_true(
+            file.read(4) == DLCFSConstants.FRAME_LOOKUP_MAGIC,
+            "Frame lookup chunk must come 3rd!"
+        )
+        self._flup_offset = file.tell()
+        file.read(8 * self._header.number_of_frames)
+
         # Now we assert that we have reached the frame data chunk
         self._assert_true(
             file.read(4) == DLCFSConstants.FRAME_DATA_CHUNK_MAGIC,
             f"Frame data chunk not found!",
         )
+        self._fdat_offset = file.tell()
 
         self._file = file
         self._frames_processed = 0
@@ -403,6 +416,30 @@ class DLCFSReader:
             )
             track_data.set_offset_map(np.zeros(shape, dtype=lfloat))
 
+    def tell_frame(self) -> int:
+        """
+        Get the current frame the frame reader is on.
+
+        :return: An integer, being the current frame the DLCFSReader will read next.
+        """
+        return self._frames_processed
+
+    def seek_frame(self, frame_idx: int):
+        """
+        Make this frame reader seek to the given frame index.
+
+        :param frame_idx: An integer, the frame index to have this frame reader seek to. Must land within the valid
+                          frame range for this file, being 0 to frame_count - 1.
+        """
+        if(not (0 <= frame_idx < self._header.number_of_frames)):
+            raise IndexError(f"The provided frame index does not land within "
+                             f"the valid range. (0 to {self._header.number_of_frames})")
+
+        self._file.seek(self._flup_offset + (frame_idx * 8))
+        data_offset = int(from_bytes(self._file.read(8), luint64))
+        self._file.seek(self._fdat_offset + data_offset)
+        self._frames_processed = frame_idx
+
     def read_frames(self, num_frames: int = 1) -> TrackingData:
         """
         Read the next num_frames frames from this frame store object and returns a TrackingData object.
@@ -437,6 +474,11 @@ class DLCFSReader:
 
                 if sparse_fmt_flag:
                     entry_len = int(from_bytes(data[:8], luint64))
+
+                    if(entry_len == 0):
+                        # If the length is 0 there is no data, continue with following frames.
+                        continue
+
                     data = data[8:]
                     data, sparse_y = self._take_array(
                         data, dtype=luint32, count=entry_len
@@ -580,11 +622,31 @@ class DLCFSWriter:
             self._out_file.write(to_bytes(len(body_bytes), luint16))
             self._out_file.write(body_bytes)
 
+        # The frame lookup chunk...
+        self._out_file.write(DLCFSConstants.FRAME_LOOKUP_MAGIC)
+        self._flup_offset = self._out_file.tell()
+        self._out_file.write(bytes(header.number_of_frames * 8))
+        self._frame_offsets = np.zeros(header.number_of_frames, dtype=luint64)
+
         # Finish by writing the begining of the frame data chunk:
         self._out_file.write(DLCFSConstants.FRAME_DATA_CHUNK_MAGIC)
+        # Useful for figuring out how far frames are into the frame data chunk...
+        self._fdat_offset = self._out_file.tell()
 
-    def make_flag_byte(self, is_sparse: bool, has_offsets: bool) -> int:
-        return (is_sparse) | (has_offsets << 1)
+    def _write_flup_data(self):
+        """ Writes out current frame offset data into frame lookup chunk area of the file. """
+        loc = self._out_file.tell()
+        self._out_file.seek(self._flup_offset)
+        self._out_file.write(self._frame_offsets.tobytes("C"))
+        self._out_file.seek(loc)
+
+    def tell_frame(self) -> int:
+        """
+        Get the current frame the frame writer is on.
+
+        :return: An integer, being the current frame the DLCFSWriter will write out next.
+        """
+        return self._current_frame
 
     def write_data(self, data: TrackingData):
         """
@@ -610,6 +672,10 @@ class DLCFSWriter:
             raise ValueError("Frame dimensions don't match ones specified in header!")
 
         for frm_idx in range(data.get_frame_count()):
+            # Add this frame's offset to the offset list...
+            idx = self._current_frame - data.get_frame_count() + frm_idx
+            self._frame_offsets[idx] = self._out_file.tell() - self._fdat_offset
+
             for bp in range(data.get_bodypart_count()):
                 frame = data.get_prob_table(frm_idx, bp)
                 offset_table = data.get_offset_map()
@@ -682,9 +748,16 @@ class DLCFSWriter:
                 self._out_file.write(to_bytes(len(comp_data), luint64))
                 self._out_file.write(comp_data)
 
+        if(self._current_frame >= self._header.number_of_frames):
+            # We have reached the end, dump the flup chunk
+            self._write_flup_data()
+
     def close(self):
         """
         Close this frame writer, cleaning up any resources used during writing to the file. Does not close the passed
         file handle!
         """
-        pass
+        # If the file was only partially written, write the frame offset chunk for the frames that were written.
+        if(self._current_frame < self._header.number_of_frames):
+            # We have reached the end, dump the flup chunk
+            self._write_flup_data()
