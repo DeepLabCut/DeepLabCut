@@ -57,25 +57,28 @@ def getpafgraph(cfg, printnames=True):
     # CHECKS if each bpt is connected to at least one other bpt
     # TODO: check that there is a path leading from each (multi)bpt to each other (multi)bpt!
     connected = set()
-    partaffinityfield_graph = []
-    for link in cfg["skeleton"]:
-        if link[0] in bodypartnames and link[1] in bodypartnames:
-            bp1 = int(lookupdict[link[0]])
-            bp2 = int(lookupdict[link[1]])
-            connected.add(bp1)
-            connected.add(bp2)
-            partaffinityfield_graph.append([bp1, bp2])
-        else:
-            print("Attention, parts do not exist!", link)
+    if len(cfg["multianimalbodyparts"]) == 1:
+        partaffinityfield_graph = []
+    else:
+        partaffinityfield_graph = []
+        for link in cfg["skeleton"]:
+            if link[0] in bodypartnames and link[1] in bodypartnames:
+                bp1 = int(lookupdict[link[0]])
+                bp2 = int(lookupdict[link[1]])
+                connected.add(bp1)
+                connected.add(bp2)
+                partaffinityfield_graph.append([bp1, bp2])
+            else:
+                print("Attention, parts do not exist!", link)
 
-    unconnected = set(range(len(multianimalbodyparts))).difference(connected)
-    if unconnected:
-        raise ValueError(
-            f'Unconnected {", ".join(multianimalbodyparts[i] for i  in unconnected)}. '
-            f"For multi-animal projects, all multianimalbodyparts should be connected. "
-            f"Ideally there should be at least one (multinode) path from each multianimalbodyparts to each other multianimalbodyparts. "
-            f"Please verify the skeleton in the config.yaml."
-        )
+        unconnected = set(range(len(multianimalbodyparts))).difference(connected)
+        if unconnected:
+            raise ValueError(
+                f'Unconnected {", ".join(multianimalbodyparts[i] for i  in unconnected)}. '
+                f"For multi-animal projects, all multianimalbodyparts should be connected. "
+                f"Ideally there should be at least one (multinode) path from each multianimalbodyparts to each other multianimalbodyparts. "
+                f"Please verify the skeleton in the config.yaml."
+            )
 
     if printnames:
         graph2names(cfg, partaffinityfield_graph)

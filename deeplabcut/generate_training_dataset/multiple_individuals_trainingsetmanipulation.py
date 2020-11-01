@@ -124,8 +124,11 @@ def create_multianimaltraining_dataset(
     # ATTENTION: order has to be multibodyparts, then uniquebodyparts (for indexing)
     print("Utilizing the following graph:", partaffinityfield_graph)
     num_limbs = len(partaffinityfield_graph)
-    partaffinityfield_predict = True
-
+    # SO tracker one bp per ind => npo pafs
+    if len(partaffinityfield_graph) == 0:
+        partaffinityfield_predict = False
+    else:
+        partaffinityfield_predict = True
     # Loading the encoder (if necessary downloading from TF)
     dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
     defaultconfigfile = os.path.join(dlcparent_path, "pose_cfg.yaml")
