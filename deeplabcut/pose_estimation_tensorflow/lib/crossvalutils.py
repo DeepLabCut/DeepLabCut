@@ -9,8 +9,11 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import os
+import pickle
 import warnings
+from itertools import groupby
 from pathlib import Path
+from tqdm import tqdm
 
 import numpy as np
 import pandas as pd
@@ -18,6 +21,7 @@ from bayes_opt import BayesianOptimization
 from bayes_opt.event import Events
 from bayes_opt.logger import JSONLogger
 from bayes_opt.util import load_logs
+from scipy.spatial.distance import cdist
 from scipy.optimize import linear_sum_assignment
 
 from deeplabcut.pose_estimation_tensorflow import return_evaluate_network_data
@@ -25,7 +29,7 @@ from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
 
-def set_up_evaluation(data):
+def _set_up_evaluation(data):
     params = dict()
     params["joint_names"] = data["metadata"]["all_joints_names"]
     params["num_joints"] = len(params["joint_names"])
@@ -59,7 +63,7 @@ def compute_crossval_metrics(
 
     predictionsfn = fns[snapshotindex]
     data, metadata = auxfun_multianimal.LoadFullMultiAnimalData(predictionsfn)
-    params = set_up_evaluation(data)
+    params = _set_up_evaluation(data)
 
     n_images = len(params["imnames"])
     poses = []
@@ -333,7 +337,7 @@ def bayesian_search(
     )
     predictionsfn = fns[snapshotindex]
     data, metadata = auxfun_multianimal.LoadFullMultiAnimalData(predictionsfn)
-    params = set_up_evaluation(data)
+    params = _set_up_evaluation(data)
     columns = ["train_iter", "train_frac", "shuffle"]
     columns += [
         "_".join((b, a))
@@ -472,3 +476,170 @@ def bayesian_search(
         inferencecfg[k] = tmp
 
     return inferencecfg, opt
+
+
+def _rebuild_uncropped_data(
+    data,
+    params,
+    output_name="",
+):
+    """
+    Reconstruct predicted data as if they had been obtained on full size images.
+    This is required to evaluate part affinity fields and cross-validate
+    and animal assembly.
+
+    Parameters
+    ----------
+    data : dict
+        Dictionary of predicted data as loaded from
+        _full.pickle files under evaluation-results.
+
+    params : dict
+        Evaluation settings. Formed from the metadata using _set_up_evaluation().
+
+    output_name : str
+        If passed, dump the uncropped data into a pickle file of the same name.
+
+    Returns
+    -------
+    (uncropped data, list of image paths)
+
+    """
+    image_paths = params["imnames"]
+    bodyparts = params["joint_names"]
+    n_bodyparts = len(bodyparts)
+    idx = (
+        data[image_paths[0]]["groundtruth"][2]
+        .unstack("coords")
+        .reindex(bodyparts, level="bodyparts")
+        .index
+    )
+    n_individuals = len(idx.get_level_values("individuals").unique())
+
+    def rebuild_original_path(path):
+        root, filename = os.path.split(path)
+        return os.path.join(root, filename.split("c")[0])
+
+    data_new = dict()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+        for basename, group in tqdm(groupby(image_paths, rebuild_original_path)):
+            imnames_ = list(group)
+            n_crops = len(imnames_)
+
+            # Sort crop patches to maximize the probability they overlap with others
+            all_coords_gt = [
+                data[imname]["groundtruth"][2].to_numpy().reshape((-1, 2))
+                for imname in imnames_
+            ]
+            overlap = np.zeros((n_crops, n_crops))
+            inds = list(zip(*np.triu_indices(n_crops, k=1)))
+            masks = dict()  # Cache boolean masks
+            for i1, i2 in inds:
+                if i1 not in masks:
+                    masks[i1] = np.isfinite(all_coords_gt[i1]).any(axis=1)
+                if i2 not in masks:
+                    masks[i2] = np.isfinite(all_coords_gt[i2]).any(axis=1)
+                overlap[i1, i2] = overlap[i2, i1] = np.sum(masks[i1] & masks[i2])
+            count = np.count_nonzero(overlap, axis=1)
+            imnames = [imnames_[i] for i in np.argsort(count)[::-1]]
+
+            # Form the ground truth back
+            ref_gt = None
+            all_trans = np.zeros(
+                (len(imnames), 2)
+            )  # Store translations w.r.t. first ref crop
+            for i, imname in enumerate(imnames):
+                coords_gt = data[imname]["groundtruth"][2].to_numpy().reshape((-1, 2))
+                if ref_gt is None:
+                    ref_gt = coords_gt
+                    continue
+                trans = np.nanmean(coords_gt - ref_gt, axis=0)
+                if np.all(~np.isnan(trans)):
+                    all_trans[i] = trans
+                empty = np.isnan(ref_gt)
+                has_value = ~np.isnan(coords_gt)
+                mask = np.any(empty & has_value, axis=1)
+                if mask.any():
+                    coords_gt_trans = coords_gt - all_trans[i]
+                    ref_gt[mask] = coords_gt_trans[mask]
+
+            # Match detections across crops
+            temp = pd.DataFrame(ref_gt, index=idx, columns=["x", "y"])
+            temp.columns.names = ["coords"]
+            ref_gt_ = dict()
+            for bpt, df_ in temp.groupby("bodyparts"):
+                values = df_.to_numpy()
+                inds = np.flatnonzero(np.all(~np.isnan(values), axis=1))
+                ref_gt_[bpt] = values, inds
+            ref_pred = np.full(
+                (n_individuals, n_bodyparts, 4), np.nan
+            )  # Hold x, y, prob, dist
+            costs = dict()
+            shape = n_individuals, n_individuals
+            for ind in params["paf"]:
+                costs[ind] = {
+                    "m1": np.zeros(shape),
+                    "distance": np.full(shape, np.inf),
+                }
+            for i, imname in enumerate(imnames):
+                coords_pred = data[imname]["prediction"]["coordinates"][0]
+                probs_pred = data[imname]["prediction"]["confidence"]
+                costs_pred = data[imname]["prediction"]["costs"]
+                map_ = dict()
+                for n, (bpt, xy, prob) in enumerate(
+                    zip(bodyparts, coords_pred, probs_pred)
+                ):
+                    xy_gt, inds_gt = ref_gt_[bpt]
+                    if inds_gt.size and xy.size:
+                        xy_trans = xy - all_trans[i]
+                        d = cdist(xy_gt[inds_gt], xy_trans)
+                        rows, cols = linear_sum_assignment(d)
+                        probs_ = prob[cols]
+                        dists_ = d[rows, cols]
+                        inds_rows = inds_gt[rows]
+                        map_[n] = inds_rows, cols
+                        is_free = np.isnan(ref_pred[inds_rows, n]).all(axis=1)
+                        closer = dists_ < ref_pred[inds_rows, n, -1]
+                        mask = np.logical_or(is_free, closer)
+                        if mask.any():
+                            coords_ = xy_trans[cols]
+                            sl = inds_rows[mask]
+                            ref_pred[sl, n, :2] = coords_[mask]
+                            ref_pred[sl, n, 2] = probs_[mask].squeeze()
+                            ref_pred[sl, n, 3] = dists_[mask]
+                # Store the costs associated with the retained candidates
+                for n, (ind1, ind2) in enumerate(params["paf_graph"]):
+                    if ind1 in map_ and ind2 in map_:
+                        sl1 = np.ix_(map_[ind1][0], map_[ind2][0])
+                        sl2 = np.ix_(map_[ind1][1], map_[ind2][1])
+                        mask = costs_pred[n]["m1"][sl2] > costs[n]["m1"][sl1]
+                        if mask.any():
+                            inds_lin = (sl1[0] * n_individuals + sl1[1])[mask]
+                            costs[n]["m1"].ravel()[inds_lin] = costs_pred[n]["m1"][sl2][
+                                mask
+                            ]
+                            costs[n]["distance"].ravel()[inds_lin] = costs_pred[n][
+                                "distance"
+                            ][sl2][mask]
+
+            ref_pred_ = ref_pred.swapaxes(0, 1)
+            coordinates = ref_pred_[..., :2]
+            confidence = ref_pred_[..., 2]
+            pred_dict = {
+                "prediction": {
+                    "coordinates": (coordinates,),
+                    "confidence": confidence,
+                    "costs": costs,
+                },
+                "groundtruth": (None, None, temp.stack(dropna=False)),
+            }
+            data_new[basename + ".png"] = pred_dict
+
+    image_paths = list(data_new)
+    data_new["metadata"] = data["metadata"]
+    if output_name:
+        with open(output_name, "wb") as file:
+            pickle.dump(data_new, file)
+
+    return data_new, image_paths
