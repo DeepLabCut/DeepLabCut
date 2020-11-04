@@ -129,7 +129,7 @@ def create_multianimaltraining_dataset(
         multianimalbodyparts,
     ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
     # Automatically form a complete PAF graph
-    partaffinityfield_graph = auxfun_multianimal.getpafgraph(cfg, printnames=False)
+    partaffinityfield_graph = list(combinations(range(len(multianimalbodyparts)), 2))
     print("Utilizing the following graph:", partaffinityfield_graph)
     num_limbs = len(partaffinityfield_graph)
     partaffinityfield_predict = True
@@ -165,7 +165,7 @@ def create_multianimaltraining_dataset(
             # Make training file!
             data = []
             print("Creating training data for: Shuffle:", shuffle, "TrainFraction: ", trainFraction)
-            print("This can take some time ...")
+            print("This can take some time...")
             for jj in tqdm(trainIndices):
                 jointsannotated = False
                 H = {}
