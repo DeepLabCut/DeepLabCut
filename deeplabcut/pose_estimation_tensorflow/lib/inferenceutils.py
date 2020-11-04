@@ -9,7 +9,7 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import numpy as np
-from math import sqrt
+from collections import defaultdict
 
 ###################################
 #### auxiliaryfunctions
@@ -205,14 +205,20 @@ def link_joints_to_individuals(
 ):
     candidates = np.array([item for sublist in all_detections for item in sublist])
 
-    # Sort connections in descending order of affinity
+    # Sort connections in descending order of weighted node degrees
+    nodes = defaultdict(int)
+    for connections in all_connections:
+        for ind1, ind2, score, *_ in connections:
+            nodes[ind1] += score
+            nodes[ind2] += score
+    degrees = [nodes[i] + nodes[j] for i, j in partaffinityfield_graph]
     connections = []
-    for n, (node1, node2) in enumerate(partaffinityfield_graph):
-        if n not in missing_connections:
-            for connection in all_connections[n]:
+    for j in np.argsort(degrees)[::-1]:
+        if j not in missing_connections:
+            node1, node2 = partaffinityfield_graph[j]
+            for connection in all_connections[j]:
                 connection.extend([iBPTS[node1], iBPTS[node2]])
                 connections.append(connection)
-    connections = sorted(connections, key=lambda x: x[2], reverse=True)
 
     subset = np.empty((0, num_joints + 2))
     for connection in connections:
