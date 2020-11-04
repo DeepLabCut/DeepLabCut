@@ -10,6 +10,7 @@ Licensed under GNU Lesser General Public License v3.0
 
 import os
 import os.path
+from itertools import combinations
 from pathlib import Path
 
 import numpy as np
@@ -120,8 +121,13 @@ def create_multianimaltraining_dataset(
 
     # multianimal case:
     dataset_type = "multi-animal-imgaug"
-    partaffinityfield_graph = auxfun_multianimal.getpafgraph(cfg, printnames=False)
-    # ATTENTION: order has to be multibodyparts, then uniquebodyparts (for indexing)
+    (
+        individuals,
+        uniquebodyparts,
+        multianimalbodyparts,
+    ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
+    # Automatically form a complete PAF graph
+    partaffinityfield_graph = list(combinations(range(len(multianimalbodyparts)), 2))
     print("Utilizing the following graph:", partaffinityfield_graph)
     num_limbs = len(partaffinityfield_graph)
     partaffinityfield_predict = True
@@ -137,12 +143,6 @@ def create_multianimaltraining_dataset(
         Shuffles = range(1, num_shuffles + 1, 1)
     else:
         Shuffles = [i for i in Shuffles if isinstance(i, int)]
-
-    (
-        individuals,
-        uniquebodyparts,
-        multianimalbodyparts,
-    ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
 
     TrainingFraction = cfg["TrainingFraction"]
     for shuffle in Shuffles:  # Creating shuffles starting from 1
