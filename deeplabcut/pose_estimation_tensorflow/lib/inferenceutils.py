@@ -88,7 +88,7 @@ def convertdetectiondict2listoflist(dataimage, BPTS, withid=False, evaluation=Fa
     return all_detections
 
 
-def extractstrongconnections(
+def extract_strong_connections(
     cfg,
     dataimage,
     all_detections,
@@ -194,85 +194,56 @@ def extractstrongconnections(
     return all_connections, missing_connections
 
 
-def linkjoints2individuals(
+def link_joints_to_individuals(
     cfg,
     all_detections,
     all_connections,
     missing_connections,
     partaffinityfield_graph,
     iBPTS,
-    numjoints,
-    log=False,
+    num_joints,
 ):
-    subset = np.empty((0, numjoints + 2))
     candidates = np.array([item for sublist in all_detections for item in sublist])
-    for edge in range(len(partaffinityfield_graph)):
-        if edge not in missing_connections:
-            if log:
-                print(edge, subset)
-            connections = all_connections[edge]
-            if not connections:
-                continue
-            # Get indices for source and target of limb (when all detections are enumerated)
-            part_as, part_bs = zip(*[connection[:2] for connection in connections])
-            a, b = partaffinityfield_graph[edge]
-            index_a = iBPTS[a]
-            index_b = iBPTS[b]
-            for i in range(len(connections)):  # looping over all connections for that limb
-                connection = connections[i]
-                found = 0
-                subset_idx = [-1, -1]
-                for j in range(len(subset)):  # current number of individuals...
-                    if (
-                        subset[j, index_a] == part_as[i]
-                        or subset[j, index_b] == part_bs[i]
-                    ) and found < 2:
-                        subset_idx[found] = j
-                        found += 1
-                if log:
-                    print(found, subset_idx)
-                if found == 1:
-                    j = subset_idx[0]
-                    if subset[j, index_b] != part_bs[i]:  # b is not target >> connect
-                        subset[j, index_b] = part_bs[i]
-                        subset[j, -1] += 1
-                        subset[j, -2] += connection[2]
-                        if log:
-                            print("adding b")
 
-                    if subset[j, index_a] != part_as[i]:  # a is not source >> connect
-                        subset[j, index_a] = part_as[i]
-                        subset[j, -1] += 1
-                        subset[j, -2] += connection[2]
-                        if log:
-                            print("adding a")
+    # Sort connections in descending order of affinity
+    connections = []
+    for n, (node1, node2) in enumerate(partaffinityfield_graph):
+        if n not in missing_connections:
+            for connection in all_connections[n]:
+                connection.extend([iBPTS[node1], iBPTS[node2]])
+                connections.append(connection)
+    connections = sorted(connections, key=lambda x: x[2], reverse=True)
 
-                elif found == 2:  # if 2 found and subsets disjoint, merge them
-                    j1, j2 = subset_idx
-                    membership = (
-                        (subset[j1] >= 0).astype(int) + (subset[j2] >= 0).astype(int)
-                    )[:-2]
-                    if np.sum(membership == 2) == 0:  # merge
-                        subset[j1, :-2] += subset[j2, :-2] + 1
-                        subset[j1, -1] += subset[j2, -1]
-                        subset[j1, -2] += connection[2] * 2
-                        subset = np.delete(subset, j2, 0)
-                        if log:
-                            print("merging")
-
-                # if both bodyparts don't exist, create a new subset
-                elif not found and edge < numjoints:
-                    row = -1 * np.ones(numjoints + 2)
-                    row[index_a] = part_as[i]
-                    row[index_b] = part_bs[i]
-                    row[-1] = 2
-                    row[-2] = (
-                            candidates[connection[:2], 2].sum()
-                            + connections[i][2]
-                    )
-                    subset = np.vstack([subset, row])
-                    if log:
-                        print("new")
+    subset = np.empty((0, num_joints + 2))
+    for connection in connections:
+        ind1, ind2 = connection[:2]
+        node1, node2 = connection[-2:]
+        mask = np.logical_or(
+            subset[:, node1] == ind1, subset[:, node2] == ind2
+        )
+        subset_inds = np.flatnonzero(mask)[:2]
+        found = subset_inds.size
+        if found == 1:
+            sub_ = subset[subset_inds[0]]
+            if sub_[node1] != ind1:
+                sub_[node1] = ind1
+            elif sub_[node2] != ind2:
+                sub_[node2] = ind2
+            sub_[-1] += 1
+            sub_[-2] += connection[2]
+        elif found == 2:
+            membership = np.sum(subset[subset_inds, :-2] >= 0, axis=0)
+            if not np.any(membership == 2):  # Merge disjoint subsets
+                s1, s2 = subset_inds
+                subset[s1, :-2] += subset[s2, :-2] + 1
+                subset[s1, -2:] += subset[s2, -2:]
+                subset = np.delete(subset, s2, axis=0)
+        elif not found:
+            row = -1 * np.ones(num_joints + 2)
+            row[[node1, node2]] = ind1, ind2
+            row[-1] = 1
+            row[-2] = connection[2]
+            subset = np.vstack((subset, row))
 
     to_keep = np.logical_and(subset[:, -1] >= cfg.minimalnumberofconnections,
                              subset[:, -2] / subset[:, -1] >= cfg.averagescore)
@@ -301,27 +272,12 @@ def assemble_individuals(
     )
 
     # filter connections according to inferencecfg parameters
-    connection_all, missing_connections = extractstrongconnections(
-        inference_cfg,
-        data,
-        all_detections,
-        iBPTS,
-        paf_graph,
-        PAF,
-        lowerbound,
-        upperbound,
-        evaluation=evaluation,
-    )
+    connection_all, missing_connections = extract_strong_connections(inference_cfg, data, all_detections, iBPTS,
+                                                                     paf_graph, PAF, lowerbound, upperbound,
+                                                                     evaluation=evaluation)
     # assemble putative subsets
-    subset, candidate = linkjoints2individuals(
-        inference_cfg,
-        all_detections,
-        connection_all,
-        missing_connections,
-        paf_links,
-        iBPTS,
-        numjoints,
-    )
+    subset, candidate = link_joints_to_individuals(inference_cfg, all_detections, connection_all, missing_connections,
+                                                   paf_links, iBPTS, numjoints)
     if print_intermediate:
         print(all_detections)
         print(connection_all)
