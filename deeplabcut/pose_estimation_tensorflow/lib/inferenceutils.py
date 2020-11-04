@@ -10,6 +10,7 @@ Licensed under GNU Lesser General Public License v3.0
 
 import numpy as np
 from collections import defaultdict
+from scipy.spatial.distance import cdist
 
 ###################################
 #### auxiliaryfunctions
@@ -45,10 +46,10 @@ def individual2boundingbox(cfg, animals, X1=0):
 
 
 def convertdetectiondict2listoflist(dataimage, BPTS, withid=False, evaluation=False):
-    """ Arranges data into list of list with the following entries:
+    """Arranges data into list of list with the following entries:
     [(x, y, score, global index of detection)] (all detections per bodypart).
 
-    Also includes id if available. [x,y,score,global id, id] """
+    Also includes id if available. [x,y,score,global id, id]"""
 
     if evaluation:
         detectedcoordinates = dataimage["prediction"]["coordinates"][0]
@@ -99,7 +100,7 @@ def extract_strong_connections(
     upperbound=None,
     evaluation=False,
 ):
-    """ Auxiliary function;  Returns list of connections (limbs) of a particular type.
+    """Auxiliary function;  Returns list of connections (limbs) of a particular type.
 
     Specifically, per edge a list containing is returned: [index start (global), index stop (global) score, score with detection likelihoods, index start (local), index stop (local)]
     Thereby, index start and stop refer to the index of the bpt from the beginning to the end of the edge. Local index refers to the index within the list of bodyparts, and
@@ -129,7 +130,9 @@ def extract_strong_connections(
     costs = dataimage["prediction"]["costs"] if evaluation else dataimage["costs"]
     for edge in range(len(partaffinityfield_graph)):
         a, b = partaffinityfield_graph[edge]
-        cand_a = all_detections[iBPTS[a]]  # convert bpt index to the one in all_detections!
+        cand_a = all_detections[
+            iBPTS[a]
+        ]  # convert bpt index to the one in all_detections!
         cand_b = all_detections[iBPTS[b]]
         n_a = len(cand_a)
         n_b = len(cand_b)
@@ -145,9 +148,9 @@ def extract_strong_connections(
                     d = dist[i, j]
                     if lowerbound is None and upperbound is None:
                         if (
-                                score_with_dist_prior > cfg.pafthreshold
-                                and cfg.distnormalizationLOWER <= d < cfg.distnormalization
-                                and si * sj > cfg.detectionthresholdsquare
+                            score_with_dist_prior > cfg.pafthreshold
+                            and cfg.distnormalizationLOWER <= d < cfg.distnormalization
+                            and si * sj > cfg.detectionthresholdsquare
                         ):
                             connection_candidate.append(
                                 [
@@ -158,9 +161,9 @@ def extract_strong_connections(
                             )
                     else:
                         if (
-                                score_with_dist_prior > cfg.pafthreshold
-                                and lowerbound[edge] <= d < upperbound[edge]
-                                and si * sj > cfg.detectionthresholdsquare
+                            score_with_dist_prior > cfg.pafthreshold
+                            and lowerbound[edge] <= d < upperbound[edge]
+                            and si * sj > cfg.detectionthresholdsquare
                         ):
                             connection_candidate.append(
                                 [
@@ -203,7 +206,15 @@ def link_joints_to_individuals(
     iBPTS,
     num_joints,
 ):
-    candidates = np.array([item for sublist in all_detections for item in sublist])
+    candidates = []
+    missing_detections = []
+    for i, sublist in enumerate(all_detections):
+        if not sublist:
+            missing_detections.append(i)
+        else:
+            for item in sublist:
+                candidates.append(item + (i,))
+    candidates = np.asarray(candidates)
 
     # Sort connections in descending order of weighted node degrees
     nodes = defaultdict(int)
@@ -211,6 +222,7 @@ def link_joints_to_individuals(
         for ind1, ind2, score, *_ in connections:
             nodes[ind1] += score
             nodes[ind2] += score
+    mask_unconnected = ~np.isin(candidates[:, -2], list(nodes))
     degrees = [nodes[i] + nodes[j] for i, j in partaffinityfield_graph]
     connections = []
     for j in np.argsort(degrees)[::-1]:
@@ -224,9 +236,7 @@ def link_joints_to_individuals(
     for connection in connections:
         ind1, ind2 = connection[:2]
         node1, node2 = connection[-2:]
-        mask = np.logical_or(
-            subset[:, node1] == ind1, subset[:, node2] == ind2
-        )
+        mask = np.logical_or(subset[:, node1] == ind1, subset[:, node2] == ind2)
         subset_inds = np.flatnonzero(mask)[:2]
         found = subset_inds.size
         if found == 1:
@@ -251,8 +261,56 @@ def link_joints_to_individuals(
             row[-2] = connection[2]
             subset = np.vstack((subset, row))
 
-    to_keep = np.logical_and(subset[:, -1] >= cfg.minimalnumberofconnections,
-                             subset[:, -2] / subset[:, -1] >= cfg.averagescore)
+    # Link unconnected bodyparts
+    mask_valid = ~np.isnan(candidates[:, :2]).all(axis=1)
+    unconnected = candidates[np.logical_and(mask_unconnected, mask_valid)]
+    n_unconnected = unconnected.shape[0]
+    if n_unconnected:
+        # if n_unconnected > 1:
+        #     # Sort in descending order of confidence
+        #     inds = np.argsort(unconnected[:, 2])[::-1]
+        #     unconnected = unconnected[inds]
+        # temp = []
+        # for n, sub_ in enumerate(np.delete(subset, missing_detections, axis=1)):
+        #     if np.any(sub_ == -1):
+        #         xy = candidates[(sub_[sub_ != -1][:-2]).astype(int), :2].mean(axis=0)
+        #         temp.append((xy, n))
+        # if temp:
+        #     for bp in unconnected:
+        #         ind_min = np.argmin([np.linalg.norm(bp[:2] - t[0]) for t in temp])
+        #         row = temp[ind_min][1]
+        #         col = np.argmax(subset[row] == -1)
+        #         subset[row, col] = bp[-2]
+
+        inds = np.argsort(np.sum(subset[:, :-2] == -1, axis=0))
+        for i in inds:
+            bpts = unconnected[unconnected[:, -1] == i]
+            for bpt in bpts:
+                xy = bpt[:2]
+                ind, n_bpt = bpt[-2:].astype(int)
+                free = np.flatnonzero(subset[:, n_bpt] == -1)
+                n_free = free.size
+                if not n_free:
+                    row = -1 * np.ones(num_joints + 2)
+                    row[n_bpt] = ind
+                    subset = np.vstack((subset, row))
+                elif n_free == 1:
+                    subset[free[0], n_bpt] = ind
+                else:
+                    dists = []
+                    for j in free:
+                        sub_ = subset[j]
+                        d = cdist(
+                            np.asarray(xy).reshape((1, -1)),
+                            candidates[sub_[:-2][sub_[:-2] != -1].astype(int), :2],
+                        )
+                        dists.append(d.min())
+                    subset[free[np.argmin(dists)], n_bpt] = ind
+
+    to_keep = np.logical_and(
+        subset[:, -1] >= cfg.minimalnumberofconnections,
+        subset[:, -2] / subset[:, -1] >= cfg.averagescore,
+    )
     subset = subset[to_keep]
     return subset, candidates
 
@@ -278,12 +336,27 @@ def assemble_individuals(
     )
 
     # filter connections according to inferencecfg parameters
-    connection_all, missing_connections = extract_strong_connections(inference_cfg, data, all_detections, iBPTS,
-                                                                     paf_graph, PAF, lowerbound, upperbound,
-                                                                     evaluation=evaluation)
+    connection_all, missing_connections = extract_strong_connections(
+        inference_cfg,
+        data,
+        all_detections,
+        iBPTS,
+        paf_graph,
+        PAF,
+        lowerbound,
+        upperbound,
+        evaluation=evaluation,
+    )
     # assemble putative subsets
-    subset, candidate = link_joints_to_individuals(inference_cfg, all_detections, connection_all, missing_connections,
-                                                   paf_links, iBPTS, numjoints)
+    subset, candidate = link_joints_to_individuals(
+        inference_cfg,
+        all_detections,
+        connection_all,
+        missing_connections,
+        paf_links,
+        iBPTS,
+        numjoints,
+    )
     if print_intermediate:
         print(all_detections)
         print(connection_all)
