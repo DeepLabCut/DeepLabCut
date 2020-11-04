@@ -478,6 +478,36 @@ def bayesian_search(
     return inferencecfg, opt
 
 
+def _rebuild_original_path(path):
+    root, filename = os.path.split(path)
+    return os.path.join(root, filename.split("c")[0])
+
+
+def _rebuild_uncropped_metadata(
+    data,
+    metadata,
+    output_name="",
+):
+    image_paths = [fn for fn in list(data) if fn != "metadata"]
+    train_inds_orig = set(metadata["data"]["trainIndices"])
+    train_inds, test_inds = [], []
+    for k, (basename, group) in tqdm(enumerate(groupby(image_paths, _rebuild_original_path))):
+        imnames_ = list(group)
+        if image_paths.index(imnames_[0]) in train_inds_orig:
+            train_inds.append(k)
+        else:
+            test_inds.append(k)
+    meta_new = metadata.copy()
+    meta_new["data"]["trainIndices"] = train_inds
+    meta_new["data"]["testIndices"] = test_inds
+
+    if output_name:
+        with open(output_name, "wb") as file:
+            pickle.dump(meta_new, file)
+
+    return meta_new
+
+
 def _rebuild_uncropped_data(
     data,
     params,
@@ -516,14 +546,10 @@ def _rebuild_uncropped_data(
     )
     n_individuals = len(idx.get_level_values("individuals").unique())
 
-    def rebuild_original_path(path):
-        root, filename = os.path.split(path)
-        return os.path.join(root, filename.split("c")[0])
-
     data_new = dict()
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=RuntimeWarning)
-        for basename, group in tqdm(groupby(image_paths, rebuild_original_path)):
+        for basename, group in tqdm(groupby(image_paths, _rebuild_original_path)):
             imnames_ = list(group)
             n_crops = len(imnames_)
 
@@ -638,6 +664,7 @@ def _rebuild_uncropped_data(
 
     image_paths = list(data_new)
     data_new["metadata"] = data["metadata"]
+
     if output_name:
         with open(output_name, "wb") as file:
             pickle.dump(data_new, file)
