@@ -55,10 +55,10 @@ This page contains a list of the essential functions of DeepLabCut as well as de
 
 :mega: **NOTE:** There is a highly similar workflow for 2.2+ (and your 2.X projects are still fully compatible with this format!).
 
-**:purple_heart: DLC 2.2:** as of 2.2 we support "multi-animal projects," but these new features can also be used on single animals too (details below). The workflow is highly similar, but with a few key additional steps. Please carefully review the functions below for more details. You can search/look for **maDeepLabCut** for specific steps that are changed.
+**:purple_heart: DLC 2.2:** as of 2.2 we support "multi-animal projects," but these new features can also be used on single animals too (details below). The workflow is highly similar, but with a few key additional steps. Please carefully review the functions below for more details. You can search/look for **maDeepLabCut** for specific steps that are changed, or see this more comprehensive guide [here](/docs/maDLC_AdvUserGuide.md)
 
  <p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1596197885984-YGB3SLDN795G1MHRL3QO/ke17ZwdGBToddI8pDm48kDeESvmL2CKgnnReSL1AEHUUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcEylu32zKYtOLotM52LGWiEW_ujpOfeZDdgBF7lQwn1cawo3Xn5c5CO-uPn_aeMmA/workflow22.png?format=2500w" height="570">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1596370260800-SP2GWKDPJCOIR7LJ31VM/ke17ZwdGBToddI8pDm48kB4fL2ovSQh5dRlH2jCMtpoUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcSV94BuD0XUinmig_1P1RJNYVU597j3jgswapL4c_w92BJE9r6UgUperYhWQ2ubQ_/workflow.png?format=2500w" height="570">
  </p>
 
 
