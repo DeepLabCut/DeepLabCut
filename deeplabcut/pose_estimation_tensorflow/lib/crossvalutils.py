@@ -25,7 +25,8 @@ from bayes_opt.util import load_logs
 from scipy.spatial import cKDTree
 from scipy.spatial.distance import cdist
 from scipy.optimize import linear_sum_assignment
-from sklearn.metrics import v_measure_score
+from sklearn.metrics import v_measure_score, adjusted_rand_score
+from sklearn.metrics.cluster import contingency_matrix
 
 from deeplabcut.pose_estimation_tensorflow import return_evaluate_network_data
 from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import (
@@ -785,7 +786,7 @@ def _benchmark_paf_graphs(
         print(f"Graph {j}|{n_graphs}")
         graph = [paf_graph[i] for i in paf]
         thresholds = [paf_thresholds[i] for i in paf]
-        scores = np.full((len(image_paths), 3), np.nan)
+        scores = np.full((len(image_paths), 4), np.nan)
         for i, imname in enumerate(tqdm(image_paths)):
             gt = ground_truth[i]
             gt = gt[~np.isnan(gt).any(axis=1)]
@@ -843,15 +844,15 @@ def _benchmark_paf_graphs(
                 # id_hyp = hyp[cols, -1]
 
                 scores[i, 1] = v_measure_score(id_gt, id_hyp)
-                # Count fraction of wrongly assigned labels
-                map_ = dict(zip(_unsorted_unique(id_hyp), _unsorted_unique(id_gt)))
-                id_hyp2 = np.vectorize(map_.get)(id_hyp)
-                scores[i, 2] = np.sum(id_gt != id_hyp2) / gt.shape[0]
+                scores[i, 2] = adjusted_rand_score(id_gt, id_hyp)
+                mat = contingency_matrix(id_gt, id_hyp, sparse=True)
+                purity = mat.max(axis=0).sum() / mat.sum()
+                scores[i, 3] = purity
         all_scores.append((scores, paf))
 
     dfs = []
     for score, inds in all_scores:
-        df = pd.DataFrame(score, columns=["miss", "v", "wrong"])
+        df = pd.DataFrame(score, columns=["miss", "v", "rand", "purity"])
         df["ngraph"] = len(inds)
         dfs.append(df)
     big_df = pd.concat(dfs)
@@ -895,5 +896,5 @@ def cross_validate_paf_graphs(
 
     # Select optimal graph size
     df = results[1]
-    size = ((1 - df.loc["miss", "mean"]) * (1 - df.loc["wrong", "mean"])).idxmax()
+    size = ((1 - df.loc["miss", "mean"]) * df.loc["purity", "mean"]).idxmax()
     return size
