@@ -96,6 +96,7 @@ def extract_strong_connections(
     iBPTS,
     partaffinityfield_graph,
     PAF,
+    paf_thresholds,
     lowerbound=None,
     upperbound=None,
     evaluation=False,
@@ -124,12 +125,15 @@ def extract_strong_connections(
 
     PAF: PAF is a subset of the indices that should be used in the partaffinityfield_graph
 
+    paf_thresholds : list of floats
+        List holding the PAF thresholds of individual graph edges
     """
     all_connections = []
     missing_connections = []
     costs = dataimage["prediction"]["costs"] if evaluation else dataimage["costs"]
     for edge in range(len(partaffinityfield_graph)):
         a, b = partaffinityfield_graph[edge]
+        paf_threshold = paf_thresholds[edge]
         cand_a = all_detections[
             iBPTS[a]
         ]  # convert bpt index to the one in all_detections!
@@ -137,7 +141,7 @@ def extract_strong_connections(
         n_a = len(cand_a)
         n_b = len(cand_b)
         if n_a != 0 and n_b != 0:
-            scores = costs[PAF[edge]][cfg.method]
+            scores = costs[PAF[edge]][cfg["method"]]
             dist = costs[PAF[edge]]["distance"]
             connection_candidate = []
             for i in range(n_a):
@@ -148,9 +152,9 @@ def extract_strong_connections(
                     d = dist[i, j]
                     if lowerbound is None and upperbound is None:
                         if (
-                            score_with_dist_prior > cfg.pafthreshold
-                            and cfg.distnormalizationLOWER <= d < cfg.distnormalization
-                            and si * sj > cfg.detectionthresholdsquare
+                            score_with_dist_prior > paf_threshold
+                            and cfg["distnormalizationLOWER"] <= d < cfg["distnormalization"]
+                            and si * sj > cfg["detectionthresholdsquare"]
                         ):
                             connection_candidate.append(
                                 [
@@ -161,9 +165,9 @@ def extract_strong_connections(
                             )
                     else:
                         if (
-                            score_with_dist_prior > cfg.pafthreshold
+                            score_with_dist_prior > paf_threshold
                             and lowerbound[edge] <= d < upperbound[edge]
-                            and si * sj > cfg.detectionthresholdsquare
+                            and si * sj > cfg["detectionthresholdsquare"]
                         ):
                             connection_candidate.append(
                                 [
@@ -308,8 +312,8 @@ def link_joints_to_individuals(
                     subset[free[np.argmin(dists)], n_bpt] = ind
 
     to_keep = np.logical_and(
-        subset[:, -1] >= cfg.minimalnumberofconnections,
-        subset[:, -2] / subset[:, -1] >= cfg.averagescore,
+        subset[:, -1] >= cfg["minimalnumberofconnections"],
+        subset[:, -2] / subset[:, -1] >= cfg["averagescore"],
     )
     subset = subset[to_keep]
     return subset, candidates
@@ -336,6 +340,7 @@ def assemble_individuals(
     )
 
     # filter connections according to inferencecfg parameters
+    thresholds = [inference_cfg["pafthreshold"]] * len(PAF)
     connection_all, missing_connections = extract_strong_connections(
         inference_cfg,
         data,
@@ -343,6 +348,7 @@ def assemble_individuals(
         iBPTS,
         paf_graph,
         PAF,
+        thresholds,
         lowerbound,
         upperbound,
         evaluation=evaluation,
