@@ -872,13 +872,20 @@ def cross_validate_paf_graphs(
 
     params = _set_up_evaluation(data)
     _ = data.pop("metadata")
-    paf_graph = [sorted(edge) for edge in params["paf_graph"]]
-    inds = range(params["num_joints"])
     (_, within_test), (_, between_test) = _calc_within_between_pafs(data, metadata)
+
+    # Handle unlabeled bodyparts...
+    existing_edges = set(k for k, v in within_test.items() if v)
+    paf_graph = [sorted(edge) for n, edge in enumerate(params["paf_graph"])
+                 if n in existing_edges]
+    inds = list(set(n for edge in paf_graph for n in edge))
     min_skeleton = [paf_graph.index(list(edge)) for edge in zip(inds, inds[1:])]
-    lengths = np.linspace(0, len(paf_graph) - len(min_skeleton), 10, dtype=int)[1:]
+    n_edges = len(paf_graph) - len(min_skeleton)
+    lengths = np.linspace(0, n_edges, min(10, n_edges + 1), dtype=int)[1:]
+
     scores, thresholds = zip(*[_calc_separability_metrics(b_test, w_test)
-                               for w_test, b_test in zip(within_test.values(), between_test.values())])
+                               for n, (w_test, b_test) in enumerate(zip(within_test.values(), between_test.values()))
+                               if n in existing_edges])
     paf_inds = [min_skeleton]
     order = np.argsort(scores)[::-1]
     order = order[np.isin(order, min_skeleton, invert=True)]
