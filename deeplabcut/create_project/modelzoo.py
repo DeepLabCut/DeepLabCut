@@ -171,7 +171,7 @@ def create_pretrained_project(
             project, experimenter, videos, working_directory, copy_videos, videotype
         )
         if trainFraction is not None:
-            auxiliaryfunctions.edit_config(cfg, {"TrainingFraction": [tranFraction]})
+            auxiliaryfunctions.edit_config(cfg, {"TrainingFraction": [trainFraction]})
 
         config = auxiliaryfunctions.read_config(cfg)
         if model == "full_human":
