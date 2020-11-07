@@ -340,7 +340,10 @@ def assemble_individuals(
     )
 
     # filter connections according to inferencecfg parameters
-    thresholds = [inference_cfg["pafthreshold"]] * len(PAF)
+    if isinstance(inference_cfg["pafthreshold"], list):
+        thresholds = inference_cfg["pafthreshold"]
+    else:
+        thresholds = [inference_cfg["pafthreshold"]] * len(PAF)
     connection_all, missing_connections = extract_strong_connections(
         inference_cfg,
         data,
