@@ -25,7 +25,6 @@ from bayes_opt.util import load_logs
 from scipy.spatial import cKDTree
 from scipy.spatial.distance import cdist
 from scipy.optimize import linear_sum_assignment
-from sklearn.metrics import v_measure_score, adjusted_rand_score
 from sklearn.metrics.cluster import contingency_matrix
 
 from deeplabcut.pose_estimation_tensorflow import return_evaluate_network_data
@@ -685,6 +684,27 @@ def _rebuild_uncropped_data(
     return data_new, image_paths
 
 
+def _rebuild_uncropped_in(
+    base_folder,
+):
+    for dirpath, dirnames, filenames in os.walk(base_folder):
+        for file in filenames:
+            if file.endswith("_full.pickle"):
+                full_data_file = os.path.join(dirpath, file)
+                metadata_file = full_data_file.replace('_full', '_meta')
+                with open(full_data_file, 'rb') as file:
+                    data = pickle.load(file)
+                with open(metadata_file, 'rb') as file:
+                    metadata = pickle.load(file)
+                params = _set_up_evaluation(data)
+                _rebuild_uncropped_data(
+                    data, params, full_data_file.replace('.pickle', '_uncropped.pickle')
+                )
+                _rebuild_uncropped_metadata(
+                    metadata, params['imnames'], metadata_file.replace('.pickle', '_uncropped.pickle')
+                )
+
+
 def _find_closest_neighbors(query, ref, k=3):
     n_preds = ref.shape[0]
     tree = cKDTree(ref)
@@ -713,7 +733,7 @@ def _calc_separability_metrics(
     hist_right = hist_right / hist_right.sum()
     tpr = np.cumsum(hist_right)
     jm = np.sqrt(2 * (1 - np.sum(np.sqrt(hist_left * hist_right))))  # Jeffries-Matusita
-    threshold = bins[np.argmax(tpr > 0) - 1]
+    threshold = bins[max(1, np.argmax(tpr > 0))]
     return jm, threshold
 
 
@@ -721,6 +741,7 @@ def _calc_within_between_pafs(
     data,
     metadata,
     per_bodypart=True,
+    test_set_only=True,
 ):
     test_inds = set(metadata['data']['testIndices'])
     within_train = defaultdict(list)
@@ -730,6 +751,8 @@ def _calc_within_between_pafs(
     mask_diag = None
     for i, dict_ in enumerate(data.values()):
         is_test = i in test_inds
+        if test_set_only and not is_test:
+            continue
         costs = dict_['prediction']['costs']
         for k, v in costs.items():
             paf = v['m1']
@@ -753,9 +776,8 @@ def _calc_within_between_pafs(
 
 
 def _benchmark_paf_graphs(
-    inference_config, data, params, paf_inds, paf_thresholds,
+    inference_cfg, data, params, paf_graph, paf_inds, paf_thresholds,
 ):
-    paf_graph = [sorted(edge) for edge in params["paf_graph"]]
     num_joints = params['num_joints']
     image_paths = params['imnames']
     bodyparts = params['joint_names']
@@ -778,25 +800,22 @@ def _benchmark_paf_graphs(
     # Assemble animals on the full set of detections
     paf_inds = sorted(paf_inds, key=len)
     n_graphs = len(paf_inds)
-    cfg = auxiliaryfunctions.read_plainconfig(inference_config)
-    cfg['detectionthresholdsquare'] = 0.25
-    cfg['minimalnumberofconnections'] = 1
     all_scores = []
     for j, paf in enumerate(paf_inds, start=1):
         print(f"Graph {j}|{n_graphs}")
         graph = [paf_graph[i] for i in paf]
         thresholds = [paf_thresholds[i] for i in paf]
-        scores = np.full((len(image_paths), 4), np.nan)
+        scores = np.full((len(image_paths), 2), np.nan)
         for i, imname in enumerate(tqdm(image_paths)):
             gt = ground_truth[i]
             gt = gt[~np.isnan(gt).any(axis=1)]
 
             # Break assembly down in stages
             all_detections = convertdetectiondict2listoflist(
-                data[imname], params["bpts"], withid=cfg["withid"], evaluation=True
+                data[imname], params["bpts"], withid=inference_cfg["withid"], evaluation=True
             )
             all_connections, missing_connections = extract_strong_connections(
-                cfg,
+                inference_cfg,
                 data[imname],
                 all_detections,
                 params["ibpts"],
@@ -806,7 +825,7 @@ def _benchmark_paf_graphs(
                 evaluation=True,
             )
             subset, candidate = link_joints_to_individuals(
-                cfg,
+                inference_cfg,
                 all_detections,
                 all_connections,
                 missing_connections,
@@ -814,7 +833,7 @@ def _benchmark_paf_graphs(
                 params["ibpts"],
                 num_joints,
             )
-            sortedindividuals = np.argsort(-subset[:, -2])[:cfg["topktoretain"]]
+            sortedindividuals = np.argsort(-subset[:, -2])[:inference_cfg["topktoretain"]]
             animals = []
             for m in sortedindividuals:
                 animal = np.full((num_joints, 3), np.nan)
@@ -838,21 +857,14 @@ def _benchmark_paf_graphs(
                 id_gt = gt[valid, 2]
                 id_hyp = hyp[neighbors[valid], -1]
 
-                # dist = cdist(gt[:, :2], hyp[:, :2])
-                # rows, cols = linear_sum_assignment(dist)
-                # id_gt = gt[rows, 2]
-                # id_hyp = hyp[cols, -1]
-
-                scores[i, 1] = v_measure_score(id_gt, id_hyp)
-                scores[i, 2] = adjusted_rand_score(id_gt, id_hyp)
                 mat = contingency_matrix(id_gt, id_hyp, sparse=True)
                 purity = mat.max(axis=0).sum() / mat.sum()
-                scores[i, 3] = purity
+                scores[i, 1] = purity
         all_scores.append((scores, paf))
 
     dfs = []
     for score, inds in all_scores:
-        df = pd.DataFrame(score, columns=["miss", "v", "rand", "purity"])
+        df = pd.DataFrame(score, columns=["miss", "purity"])
         df["ngraph"] = len(inds)
         dfs.append(df)
     big_df = pd.concat(dfs)
@@ -866,6 +878,11 @@ def _benchmark_paf_graphs(
 def cross_validate_paf_graphs(
     inference_config, full_data_file, metadata_file,
 ):
+    cfg = auxiliaryfunctions.read_plainconfig(inference_config)
+    cfg_temp = cfg.copy()
+    cfg_temp['detectionthresholdsquare'] = 0.25
+    cfg_temp['minimalnumberofconnections'] = 1
+
     with open(full_data_file, "rb") as file:
         data = pickle.load(file)
     with open(metadata_file, "rb") as file:
@@ -892,9 +909,10 @@ def cross_validate_paf_graphs(
     order = order[np.isin(order, min_skeleton, invert=True)]
     for length in lengths:
         paf_inds.append(min_skeleton + list(order[:length]))
-    results = _benchmark_paf_graphs(inference_config, data, params, paf_inds, thresholds)
-
-    # Select optimal graph size
+    results = _benchmark_paf_graphs(
+        cfg_temp, data, params, paf_graph, paf_inds, thresholds
+    )
+    # Select optimal PAF graph
     df = results[1]
     size = ((1 - df.loc["miss", "mean"]) * df.loc["purity", "mean"]).idxmax()
     return size
