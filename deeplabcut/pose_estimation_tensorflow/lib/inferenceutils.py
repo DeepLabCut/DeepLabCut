@@ -40,6 +40,20 @@ def individual2boundingbox(cfg, animals, X1=0):
     return boundingboxes
 
 
+def calc_bboxes_from_keypoints(data, slack=0, offset=0):
+    if data.shape[-1] < 3:
+        raise ValueError("Data should be of shape (n_animals, n_bodyparts, 3)")
+
+    if data.ndim != 3:
+        data = np.expand_dims(data, axis=0)
+    bboxes = np.full((data.shape[0], 5), np.nan)
+    bboxes[:, :2] = np.nanmin(data[..., :2], axis=1) - slack  # X1, Y1
+    bboxes[:, 2:4] = np.nanmax(data[..., :2], axis=1) + slack  # X2, Y2
+    bboxes[:, -1] = np.nanmean(data[..., 2])  # Average confidence
+    bboxes[:, [0, 2]] += offset
+    return bboxes
+
+
 ##########################################################
 #### conversion & greedy bodypart matching code
 ##########################################################
@@ -49,7 +63,7 @@ def convertdetectiondict2listoflist(dataimage, BPTS, withid=False, evaluation=Fa
     """Arranges data into list of list with the following entries:
     [(x, y, score, global index of detection)] (all detections per bodypart).
 
-    Also includes id if available. [x,y,score,global id, id]"""
+    Also includes id if available. [x,y,score,id,global id]"""
 
     if evaluation:
         detectedcoordinates = dataimage["prediction"]["coordinates"][0]
@@ -344,7 +358,7 @@ def assemble_individuals(
         thresholds = inference_cfg["pafthreshold"]
     else:
         thresholds = [inference_cfg["pafthreshold"]] * len(PAF)
-    connection_all, missing_connections = extract_strong_connections(
+    all_connections, missing_connections = extract_strong_connections(
         inference_cfg,
         data,
         all_detections,
@@ -357,10 +371,10 @@ def assemble_individuals(
         evaluation=evaluation,
     )
     # assemble putative subsets
-    subset, candidate = link_joints_to_individuals(
+    subset, candidates = link_joints_to_individuals(
         inference_cfg,
         all_detections,
-        connection_all,
+        all_connections,
         missing_connections,
         paf_links,
         iBPTS,
@@ -368,21 +382,17 @@ def assemble_individuals(
     )
     if print_intermediate:
         print(all_detections)
-        print(connection_all)
+        print(all_connections)
         print(subset)
 
     sortedindividuals = np.argsort(-subset[:, -2])  # sort by top score!
     if len(sortedindividuals) > inference_cfg.topktoretain:
         sortedindividuals = sortedindividuals[: inference_cfg.topktoretain]
 
-    animals = []
-    for n in sortedindividuals:  # number of individuals
-        individual = np.zeros(3 * numjoints) * np.nan
-        for i in range(numjoints):  # number of limbs
-            ind = int(subset[n][i])
-            if -1 == ind:  # bodypart not assigned
-                continue
-            else:
-                individual[3 * i : 3 * i + 3] = candidate[ind, :3]
-        animals.append(individual)
+    ncols = 4 if inference_cfg["withid"] else 3
+    animals = np.full((len(sortedindividuals), numjoints, ncols), np.nan)
+    for row, m in enumerate(sortedindividuals):
+        inds = subset[m, :-2].astype(int)
+        mask = inds != -1
+        animals[row, mask] = candidates[inds[mask], :-2]
     return animals
