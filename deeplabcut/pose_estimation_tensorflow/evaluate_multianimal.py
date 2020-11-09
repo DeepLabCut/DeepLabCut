@@ -58,12 +58,6 @@ def evaluate_multianimal_full(
     modelprefix="",
     c_engine=False,
 ):
-    """
-    WIP multi animal project.
-    """
-
-    import os
-
     from deeplabcut.pose_estimation_tensorflow.nnet import predict
     from deeplabcut.pose_estimation_tensorflow.nnet import (
         predict_multianimal as predictma,
@@ -266,7 +260,7 @@ def evaluate_multianimal_full(
                             frame = img_as_ubyte(skimage.color.gray2rgb(image))
 
                             GT = Data.iloc[imageindex]
-                            df = GT.unstack("coords")
+                            df = GT.unstack("coords").reindex(joints, level='bodyparts')
 
                             # Evaluate PAF edge lengths to calibrate `distnorm`
                             temp = GT.unstack("bodyparts")[joints]
