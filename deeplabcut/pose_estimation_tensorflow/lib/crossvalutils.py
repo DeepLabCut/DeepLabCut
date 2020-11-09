@@ -109,9 +109,8 @@ def compute_crossval_metrics(
             ):  # ONLY KEEP animals with at least as many bpts (to get rid of crops that cannot be assembled)
                 gt = gt[np.nansum(gt, axis=(1, 2)) > leastbpts]
 
-            temp = np.stack(animals).reshape((n_animals, -1, 3))
-            poses.append(temp)
-            ani = temp[:, : gt.shape[1], :2]
+            poses.append(animals)
+            ani = animals[:, :gt.shape[1], :2]
             mat = np.full((gt.shape[0], n_animals), np.nan)
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=RuntimeWarning)
@@ -224,7 +223,7 @@ def compute_crossval_metrics_preloadeddata(
             ):  # ONLY KEEP animals with at least as many bpts (to get rid of crops that cannot be assembled)
                 gt = gt[np.nansum(gt, axis=(1, 2)) > leastbpts]
 
-            ani = np.stack(animals).reshape((n_animals, -1, 3))[:, : gt.shape[1], :2]
+                ani = animals[:, :gt.shape[1], :2]
             mat = np.full((gt.shape[0], n_animals), np.nan)
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=RuntimeWarning)

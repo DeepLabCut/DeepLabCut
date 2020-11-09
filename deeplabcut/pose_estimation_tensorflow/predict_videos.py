@@ -1414,11 +1414,11 @@ def convert_detections2tracklets(
                         inferencecfg.get("oks_threshold", 0.5),
                     )
 
-                Tracks = {}
+                tracklets = {}
                 if cfg[
                     "uniquebodyparts"
                 ]:  # Initialize storage of the 'single' individual track
-                    Tracks["s"] = {}
+                    tracklets["s"] = {}
                 for index, imname in tqdm(enumerate(imnames)):
                     animals = inferenceutils.assemble_individuals(
                         inferencecfg,
@@ -1434,15 +1434,14 @@ def convert_detections2tracklets(
                         print_intermediate=printintermediate,
                     )
                     if track_method == "box":
-                        # get corresponding bounding boxes!
-                        bb = inferenceutils.individual2boundingbox(
-                            inferencecfg, animals, 0
+                        bboxes = inferenceutils.calc_bboxes_from_keypoints(
+                            animals, inferencecfg["boundingboxslack"], offset=0
                         )  # TODO: get cropping parameters and utilize!
-                        trackers = mot_tracker.update(bb)
+                        trackers = mot_tracker.update(bboxes)
                     else:
-                        temp = [arr.reshape((-1, 3))[:, :2] for arr in animals]
-                        trackers = mot_tracker.track(temp)
-                    trackingutils.fill_tracklets(Tracks, trackers, animals, imname)
+                        xy = animals[..., :2]
+                        trackers = mot_tracker.track(xy)
+                    trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
 
                     # Test whether the unique bodyparts have been assembled
                     if cfg["uniquebodyparts"]:
@@ -1467,12 +1466,11 @@ def convert_detections2tracklets(
                                         dets, key=lambda x: x[2], reverse=True
                                     )[0]
                                     single[ind] = best[:3]
-                            Tracks["s"][imname] = single.flatten()
+                            tracklets["s"][imname] = single
 
-                Tracks["header"] = pdindex
+                tracklets["header"] = pdindex
                 with open(trackname, "wb") as f:
-                    # Pickle the 'labeled-data' dictionary using the highest protocol available.
-                    pickle.dump(Tracks, f, pickle.HIGHEST_PROTOCOL)
+                    pickle.dump(tracklets, f, pickle.HIGHEST_PROTOCOL)
 
         os.chdir(str(start_path))
 
