@@ -97,6 +97,9 @@ def compute_crossval_metrics(
             params["paf_links"],
             evaluation=True,
         )
+        if animals is None:
+            continue
+
         n_animals = len(animals)
         if n_animals:
             _, _, GT = data[imname]["groundtruth"]
@@ -211,6 +214,8 @@ def compute_crossval_metrics_preloadeddata(
             upperbound=upperbound,
             evaluation=True,
         )
+        if animals is None:
+            continue
 
         n_animals = len(animals)
         if n_animals:

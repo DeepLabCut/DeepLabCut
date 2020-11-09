@@ -1433,6 +1433,9 @@ def convert_detections2tracklets(
                         upperbound=upperbound,
                         print_intermediate=printintermediate,
                     )
+                    if animals is None:
+                        continue
+
                     if track_method == "box":
                         bboxes = inferenceutils.calc_bboxes_from_keypoints(
                             animals, inferencecfg["boundingboxslack"], offset=0
