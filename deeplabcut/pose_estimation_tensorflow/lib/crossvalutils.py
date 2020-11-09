@@ -503,7 +503,9 @@ def _rebuild_uncropped_metadata(
 ):
     train_inds_orig = set(metadata["data"]["trainIndices"])
     train_inds, test_inds = [], []
-    for k, (basename, group) in tqdm(enumerate(groupby(image_paths, _form_original_path))):
+    for k, (basename, group) in tqdm(
+        enumerate(groupby(image_paths, _form_original_path))
+    ):
         imnames_ = list(group)
         if image_paths.index(imnames_[0]) in train_inds_orig:
             train_inds.append(k)
@@ -691,17 +693,19 @@ def _rebuild_uncropped_in(
         for file in filenames:
             if file.endswith("_full.pickle"):
                 full_data_file = os.path.join(dirpath, file)
-                metadata_file = full_data_file.replace('_full', '_meta')
-                with open(full_data_file, 'rb') as file:
+                metadata_file = full_data_file.replace("_full", "_meta")
+                with open(full_data_file, "rb") as file:
                     data = pickle.load(file)
-                with open(metadata_file, 'rb') as file:
+                with open(metadata_file, "rb") as file:
                     metadata = pickle.load(file)
                 params = _set_up_evaluation(data)
                 _rebuild_uncropped_data(
-                    data, params, full_data_file.replace('.pickle', '_uncropped.pickle')
+                    data, params, full_data_file.replace(".pickle", "_uncropped.pickle")
                 )
                 _rebuild_uncropped_metadata(
-                    metadata, params['imnames'], metadata_file.replace('.pickle', '_uncropped.pickle')
+                    metadata,
+                    params["imnames"],
+                    metadata_file.replace(".pickle", "_uncropped.pickle"),
                 )
 
 
@@ -724,7 +728,9 @@ def _find_closest_neighbors(query, ref, k=3):
 
 
 def _calc_separability_metrics(
-    vals_left, vals_right, n_bins=101,
+    vals_left,
+    vals_right,
+    n_bins=101,
 ):
     bins = np.linspace(0, 1, n_bins)
     hist_left = np.histogram(vals_left, bins=bins)[0]
@@ -743,7 +749,7 @@ def _calc_within_between_pafs(
     per_bodypart=True,
     test_set_only=True,
 ):
-    test_inds = set(metadata['data']['testIndices'])
+    test_inds = set(metadata["data"]["testIndices"])
     within_train = defaultdict(list)
     within_test = defaultdict(list)
     between_train = defaultdict(list)
@@ -753,9 +759,9 @@ def _calc_within_between_pafs(
         is_test = i in test_inds
         if test_set_only and not is_test:
             continue
-        costs = dict_['prediction']['costs']
+        costs = dict_["prediction"]["costs"]
         for k, v in costs.items():
-            paf = v['m1']
+            paf = v["m1"]
             nonzero = paf != 0
             if mask_diag is None:
                 mask_diag = np.eye(paf.shape[0], dtype=bool)
@@ -776,22 +782,29 @@ def _calc_within_between_pafs(
 
 
 def _benchmark_paf_graphs(
-    inference_cfg, data, params, paf_graph, paf_inds, paf_thresholds,
+    inference_cfg,
+    data,
+    params,
+    paf_graph,
+    paf_inds,
+    paf_thresholds,
 ):
-    num_joints = params['num_joints']
-    image_paths = params['imnames']
-    bodyparts = params['joint_names']
+    num_joints = params["num_joints"]
+    image_paths = params["imnames"]
+    bodyparts = params["joint_names"]
     n_bodyparts = len(bodyparts)
-    idx = (data[image_paths[0]]['groundtruth'][2]
-           .unstack('coords')
-           .reindex(bodyparts, level='bodyparts')
-           .index)
-    n_individuals = len(idx.get_level_values('individuals').unique())
+    idx = (
+        data[image_paths[0]]["groundtruth"][2]
+        .unstack("coords")
+        .reindex(bodyparts, level="bodyparts")
+        .index
+    )
+    n_individuals = len(idx.get_level_values("individuals").unique())
 
     # Form ground truth beforehand
     ground_truth = []
     for i, imname in enumerate(image_paths):
-        temp = data[imname]['groundtruth'][2]
+        temp = data[imname]["groundtruth"][2]
         ground_truth.append(temp.to_numpy().reshape((-1, 2)))
     ground_truth = np.stack(ground_truth)
     ids = [i for i in range(n_individuals) for _ in range(n_bodyparts)]
@@ -812,7 +825,10 @@ def _benchmark_paf_graphs(
 
             # Break assembly down in stages
             all_detections = convertdetectiondict2listoflist(
-                data[imname], params["bpts"], withid=inference_cfg["withid"], evaluation=True
+                data[imname],
+                params["bpts"],
+                withid=inference_cfg["withid"],
+                evaluation=True,
             )
             all_connections, missing_connections = extract_strong_connections(
                 inference_cfg,
@@ -833,7 +849,9 @@ def _benchmark_paf_graphs(
                 params["ibpts"],
                 num_joints,
             )
-            sortedindividuals = np.argsort(-subset[:, -2])[:inference_cfg["topktoretain"]]
+            sortedindividuals = np.argsort(-subset[:, -2])[
+                : inference_cfg["topktoretain"]
+            ]
             animals = []
             for m in sortedindividuals:
                 animal = np.full((num_joints, 3), np.nan)
@@ -847,8 +865,10 @@ def _benchmark_paf_graphs(
             if not n_animals:
                 scores[i, 0] = 1
             else:
-                animals = [np.c_[animal, np.ones(animal.shape[0]) * n]
-                           for n, animal in enumerate(animals)]
+                animals = [
+                    np.c_[animal, np.ones(animal.shape[0]) * n]
+                    for n, animal in enumerate(animals)
+                ]
                 hyp = np.concatenate(animals)
                 hyp = hyp[~np.isnan(hyp).any(axis=1)]
                 scores[i, 0] = (gt.shape[0] - hyp.shape[0]) / gt.shape[0]
@@ -876,12 +896,15 @@ def _benchmark_paf_graphs(
 
 
 def cross_validate_paf_graphs(
-    inference_config, full_data_file, metadata_file,
+    inference_config,
+    pose_config,
+    full_data_file,
+    metadata_file,
 ):
     cfg = auxiliaryfunctions.read_plainconfig(inference_config)
     cfg_temp = cfg.copy()
-    cfg_temp['detectionthresholdsquare'] = 0.25
-    cfg_temp['minimalnumberofconnections'] = 1
+    cfg_temp["detectionthresholdsquare"] = 0.25
+    cfg_temp["minimalnumberofconnections"] = 1
 
     with open(full_data_file, "rb") as file:
         data = pickle.load(file)
@@ -894,16 +917,25 @@ def cross_validate_paf_graphs(
 
     # Handle unlabeled bodyparts...
     existing_edges = set(k for k, v in within_test.items() if v)
-    paf_graph = [sorted(edge) for n, edge in enumerate(params["paf_graph"])
-                 if n in existing_edges]
+    paf_graph = [
+        sorted(edge)
+        for n, edge in enumerate(params["paf_graph"])
+        if n in existing_edges
+    ]
     inds = list(set(n for edge in paf_graph for n in edge))
     min_skeleton = [paf_graph.index(list(edge)) for edge in zip(inds, inds[1:])]
     n_edges = len(paf_graph) - len(min_skeleton)
     lengths = np.linspace(0, n_edges, min(10, n_edges + 1), dtype=int)[1:]
 
-    scores, thresholds = zip(*[_calc_separability_metrics(b_test, w_test)
-                               for n, (w_test, b_test) in enumerate(zip(within_test.values(), between_test.values()))
-                               if n in existing_edges])
+    scores, thresholds = zip(
+        *[
+            _calc_separability_metrics(b_test, w_test)
+            for n, (w_test, b_test) in enumerate(
+                zip(within_test.values(), between_test.values())
+            )
+            if n in existing_edges
+        ]
+    )
     paf_inds = [min_skeleton]
     order = np.argsort(scores)[::-1]
     order = order[np.isin(order, min_skeleton, invert=True)]
@@ -914,5 +946,9 @@ def cross_validate_paf_graphs(
     )
     # Select optimal PAF graph
     df = results[1]
-    size = ((1 - df.loc["miss", "mean"]) * df.loc["purity", "mean"]).idxmax()
-    return size
+    size_opt = np.argmax((1 - df.loc["miss", "mean"]) * df.loc["purity", "mean"])
+    best_graph = [paf_graph[ind] for ind in paf_inds[size_opt]]
+    auxiliaryfunctions.edit_config(pose_config, {"partaffinityfield_graph": best_graph})
+
+    cfg["pafthreshold"] = thresholds
+    auxiliaryfunctions.write_plainconfig(inference_config, cfg)
