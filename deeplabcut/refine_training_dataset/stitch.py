@@ -11,6 +11,7 @@ from math import factorial
 from networkx.algorithms.flow import preflow_push
 from scipy.linalg import hankel
 from scipy.spatial.distance import directed_hausdorff
+from scipy.stats import mode
 from statsmodels.tsa.api import SimpleExpSmoothing
 from tqdm import tqdm, trange
 
@@ -23,8 +24,8 @@ class Tracklet:
         Parameters
         ----------
         data : ndarray
-            3D array of shape (nframes, nbodyparts, 3),
-            where the last dimension is for x, y, and likelihood.
+            3D array of shape (nframes, nbodyparts, 3 or 4), where the last
+            dimension is for x, y, likelihood and, optionally, identity.
         inds : array-like
             Corresponding time frame indices.
         """
@@ -100,6 +101,14 @@ class Tracklet:
         return np.nanmean(self.data[..., 2])
 
     @property
+    def identity(self):
+        """Return the average predicted identity of all Tracklet detections."""
+        try:
+            return mode(self.data[..., 3], axis=None, nan_policy='omit')[0][0]
+        except IndexError:
+            return -1
+
+    @property
     def start(self):
         """Return the time at which the tracklet starts."""
         return self.inds[0]
@@ -111,7 +120,7 @@ class Tracklet:
 
     @property
     def flat_data(self):
-        return self.data.reshape((len(self)), -1)
+        return self.data[..., :3].reshape((len(self)), -1)
 
     def contains_duplicates(self, return_indices=False):
         """
@@ -425,9 +434,12 @@ class TrackletStitcher:
             inds, data = zip(*[(cls.get_frame_ind(k), v) for k, v in dict_.items()])
             inds = np.asarray(inds)
             data = np.asarray(data)
-            nrows, ncols = data.shape
-            temp = data.reshape((nrows, ncols // 3, 3))
-            tracklets.append(Tracklet(temp, inds))
+            try:
+                nrows, ncols = data.shape
+                data = data.reshape((nrows, ncols // 3, 3))
+            except ValueError:
+                pass
+            tracklets.append(Tracklet(data, inds))
         class_ = cls(tracklets, n_tracks, min_length, split_tracklets)
         class_.header = header
         return class_
@@ -449,6 +461,7 @@ class TrackletStitcher:
         data_new = np.split(tracklet.data, inds)
         return [Tracklet(data, inds) for data, inds in zip(data_new, inds_new)]
 
+    # TODO Avoid looping over all pairs of tracklets
     def compute_max_gap(self):
         gap = defaultdict(list)
         for tracklet1, tracklet2 in combinations(self, 2):
@@ -674,6 +687,7 @@ def stitch_tracklets(
     n_tracks,
     min_length=5,
     split_tracklets=True,
+    weight_func=None,
     output_name='',
 ):
     """
@@ -711,6 +725,12 @@ def stitch_tracklets(
         occlusions where tracker re-identification capability can be trusted,
         setting `split_tracklets` to False is preferable.
 
+    weight_func : callable, optional
+        Function accepting two tracklets as arguments and returning a scalar
+        that must be inversely proportional to the likelihood that the tracklets
+        belong to the same track; i.e., the higher the confidence that the
+        tracklets should be stitched together, the lower the returned value.
+
     output_name : str, optional
         Name of the output h5 file.
         By default, tracks are automatically stored into the same directory
@@ -721,7 +741,7 @@ def stitch_tracklets(
     A TrackletStitcher object
     """
     stitcher = TrackletStitcher.from_pickle(pickle_file, n_tracks, min_length, split_tracklets)
-    stitcher.build_graph()
+    stitcher.build_graph(weight_func=weight_func)
     stitcher.stitch()
     stitcher.write_tracks(output_name)
     return stitcher
