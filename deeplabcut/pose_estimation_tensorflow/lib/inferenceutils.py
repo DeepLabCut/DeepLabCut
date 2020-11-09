@@ -352,6 +352,8 @@ def assemble_individuals(
     all_detections = convertdetectiondict2listoflist(
         data, BPTS, withid=inference_cfg.withid, evaluation=evaluation
     )
+    if all(not dets for dets in all_detections):
+        return None
 
     # filter connections according to inferencecfg parameters
     if isinstance(inference_cfg["pafthreshold"], list):
