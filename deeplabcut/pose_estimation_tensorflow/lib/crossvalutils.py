@@ -951,8 +951,12 @@ def cross_validate_paf_graphs(
     # Select optimal PAF graph
     df = results[1]
     size_opt = np.argmax((1 - df.loc["miss", "mean"]) * df.loc["purity", "mean"])
-    best_graph = [paf_graph[ind] for ind in paf_inds[size_opt]]
+    best_edges = paf_inds[size_opt]
+    best_graph, best_thresholds = zip(
+        *[(paf_graph[ind], thresholds[ind]) for ind in best_edges]
+    )
     auxiliaryfunctions.edit_config(pose_config, {"partaffinityfield_graph": best_graph})
-
-    cfg["pafthreshold"] = thresholds
+    cfg["pafthreshold"] = [
+        float(np.round(th, 2)) for th in best_thresholds
+    ]  # Cast to float to avoid YAML RepresenterError
     auxiliaryfunctions.write_plainconfig(inference_config, cfg)
