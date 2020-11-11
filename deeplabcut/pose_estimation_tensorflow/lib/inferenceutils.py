@@ -7,9 +7,10 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
-
+import networkx as nx
 import numpy as np
 from collections import defaultdict
+from scipy.spatial import cKDTree
 from scipy.spatial.distance import cdist
 
 ###################################
@@ -175,6 +176,7 @@ def extract_strong_connections(
                                     i,
                                     j,
                                     score_with_dist_prior,
+                                    d,
                                 ]
                             )
                     else:
@@ -188,6 +190,7 @@ def extract_strong_connections(
                                     i,
                                     j,
                                     score_with_dist_prior,
+                                    d,
                                 ]
                             )
 
@@ -199,13 +202,13 @@ def extract_strong_connections(
             i_seen = set()
             j_seen = set()
             nrows = min(n_a, n_b)
-            for i, j, score in connection_candidate:
+            for i, j, score, d in connection_candidate:
                 if i not in i_seen and j not in j_seen:
                     i_seen.add(i)
                     j_seen.add(j)
                     ii = int(cand_a[i][-1])  # global index!
                     jj = int(cand_b[j][-1])
-                    connection.append([ii, jj, score, i, j])
+                    connection.append([ii, jj, score, d, i, j])
                     if len(connection) == nrows:
                         break
             all_connections.append(connection)
@@ -213,6 +216,12 @@ def extract_strong_connections(
             missing_connections.append(edge)
             all_connections.append([])
     return all_connections, missing_connections
+
+
+def _merge_disjoint_subsets(subset, row1, row2):
+    subset[row1, :-2] += subset[row2, :-2] + 1
+    subset[row1, -2:] += subset[row2, -2:]
+    return np.delete(subset, row2, axis=0)
 
 
 def link_joints_to_individuals(
@@ -223,6 +232,8 @@ def link_joints_to_individuals(
     partaffinityfield_graph,
     iBPTS,
     num_joints,
+    use_springs=False,
+    link_unconnected=True,
 ):
     candidates = []
     missing_detections = []
@@ -241,16 +252,24 @@ def link_joints_to_individuals(
             nodes[ind1] += score
             nodes[ind2] += score
     mask_unconnected = ~np.isin(candidates[:, -2], list(nodes))
-    degrees = [nodes[i] + nodes[j] for i, j in partaffinityfield_graph]
+    # degrees = [nodes[i] + nodes[j] for i, j in partaffinityfield_graph]
+    # connections = []
+    # for j in np.argsort(degrees)[::-1]:
+    #     if j not in missing_connections:
+    #         node1, node2 = partaffinityfield_graph[j]
+    #         for connection in all_connections[j]:
+    #             connection.extend([iBPTS[node1], iBPTS[node2]])
+    #             connections.append(connection)
     connections = []
-    for j in np.argsort(degrees)[::-1]:
-        if j not in missing_connections:
-            node1, node2 = partaffinityfield_graph[j]
-            for connection in all_connections[j]:
-                connection.extend([iBPTS[node1], iBPTS[node2]])
+    for n, nodes in enumerate(partaffinityfield_graph):
+        if n not in missing_connections:
+            for connection in all_connections[n].copy():
+                connection.extend(nodes)
                 connections.append(connection)
+    connections = sorted(connections, key=lambda x: x[2], reverse=True)
 
     subset = np.empty((0, num_joints + 2))
+    ambiguous = []
     for connection in connections:
         ind1, ind2 = connection[:2]
         node1, node2 = connection[-2:]
@@ -259,19 +278,20 @@ def link_joints_to_individuals(
         found = subset_inds.size
         if found == 1:
             sub_ = subset[subset_inds[0]]
-            if sub_[node1] != ind1:
+            # if sub_[node1] != ind1:
+            if sub_[node1] == -1:
                 sub_[node1] = ind1
-            elif sub_[node2] != ind2:
+            # elif sub_[node2] != ind2:
+            elif sub_[node2] == -1:
                 sub_[node2] = ind2
             sub_[-1] += 1
             sub_[-2] += connection[2]
         elif found == 2:
             membership = np.sum(subset[subset_inds, :-2] >= 0, axis=0)
             if not np.any(membership == 2):  # Merge disjoint subsets
-                s1, s2 = subset_inds
-                subset[s1, :-2] += subset[s2, :-2] + 1
-                subset[s1, -2:] += subset[s2, -2:]
-                subset = np.delete(subset, s2, axis=0)
+                subset = _merge_disjoint_subsets(subset, *subset_inds)
+            else:
+                ambiguous.append(connection)
         elif not found:
             row = -1 * np.ones(num_joints + 2)
             row[[node1, node2]] = ind1, ind2
@@ -279,11 +299,191 @@ def link_joints_to_individuals(
             row[-2] = connection[2]
             subset = np.vstack((subset, row))
 
+    # Merge extra subsets
+    nrows = len(subset)
+    max_rows = cfg["topktoretain"]
+    if nrows > max_rows:
+        subset = subset[np.argsort(-subset[:, -2])]
+        ii = np.argsort(subset[max_rows:, -2])
+        subset[max_rows:] = subset[ii + max_rows]
+        # Way 1
+        # for row in range(nrows - 1, max_rows - 1, -1):
+        #     for ind in range(max_rows):
+        #         membership = np.sum(subset[[ind, row], :-2] >= 0, axis=0)
+        #         if not np.any(membership == 2):  # Merge disjoint subsets
+        #             subset = _merge_disjoint_subsets(subset, ind, row)
+        #             break
+        # Way 2
+        for nrow in range(nrows - 1, max_rows - 1, -1):
+            mask = (subset[:max_rows, :-2] >= 0).astype(int)
+            row = subset[nrow, :-2]
+            mask2 = (row >= 0).astype(int)
+            temp = mask + mask2
+            free_rows = np.flatnonzero(~np.any(temp == 2, axis=1))
+            if not free_rows.size:
+                # Special treatment
+                empty = subset[:max_rows, :-2] == -1
+                row = subset[nrow, :-2]
+                has_value = row != -1
+                mask = empty & has_value
+                n_chains = mask.sum(axis=1)
+                while np.any(n_chains > 0):
+                    ind = n_chains.argmax()
+                    subset[ind, np.flatnonzero(mask[ind])] = row[mask[ind]]
+                    # Update masks
+                    empty = subset[:max_rows, :-2] == -1
+                    has_value[mask[ind]] = False
+                    mask = empty & has_value
+                    n_chains = mask.sum(axis=1)
+                continue
+            elif free_rows.size == 1:
+                ind = free_rows[0]
+            else:
+                xy = candidates[row[row != -1].astype(int), :2].mean(axis=0)
+                dists = []
+                for free_row in free_rows:
+                    sub_ = subset[free_row]
+                    d = cdist(
+                        np.asarray(xy).reshape((1, -1)),
+                        candidates[sub_[:-2][sub_[:-2] != -1].astype(int), :2],
+                    )
+                    dists.append(d.min())
+                ind = free_rows[np.argmin(dists)]
+            subset = _merge_disjoint_subsets(subset, ind, nrow)
+        subset = subset[:max_rows]
+        # Way 3
+        # inds_to_fix = subset[max_rows:, :-2]
+        # inds_to_fix = inds_to_fix[inds_to_fix != -1]
+        # unconnected = candidates[inds_to_fix.astype(int)]
+        # inds = np.argsort(np.sum(subset[:, :-2] == -1, axis=0))
+        # for i in inds:
+        #     bpts = unconnected[unconnected[:, -1] == i]
+        #     for bpt in bpts:
+        #         xy = bpt[:2]
+        #         ind, n_bpt = bpt[-2:].astype(int)
+        #         free = np.flatnonzero(subset[:, n_bpt] == -1)
+        #         n_free = free.size
+        #         if not n_free:
+        #             row = -1 * np.ones(num_joints + 2)
+        #             row[n_bpt] = ind
+        #             subset = np.vstack((subset, row))
+        #         elif n_free == 1:
+        #             subset[free[0], n_bpt] = ind
+        #         else:
+        #             dists = []
+        #             for j in free:
+        #                 sub_ = subset[j]
+        #                 d = cdist(
+        #                     np.asarray(xy).reshape((1, -1)),
+        #                     candidates[sub_[:-2][sub_[:-2] != -1].astype(int), :2],
+        #                 )
+        #                 dists.append(d.min())
+        #             subset[free[np.argmin(dists)], n_bpt] = ind
+        # subset = subset[:max_rows]
+
+    # Resolve ambiguous edges by inspecting nodes' neighbors
+    if use_springs and len(ambiguous):
+        to_discard = []
+        for i, am in enumerate(ambiguous):
+            edge = am[:2]
+            rows, _ = np.where(np.isin(subset[:, :-2], edge))
+            if len(rows) < 2 or rows[0] == rows[1]:
+                to_discard.append(i)
+        for i in to_discard[::-1]:
+            ambiguous.pop(i)
+        # ambiguous = sorted(ambiguous, key=lambda x: x[2], reverse=True)
+        ambiguous = sorted(ambiguous, key=lambda x: x[3])
+
+        G = nx.Graph()
+        G.add_weighted_edges_from(
+            [(a, b, 1 / d) for array in all_connections for a, b, _, d, *_ in array],
+            weight='score'
+        )
+        GG = nx.Graph()
+        order = []
+        for am in ambiguous:
+            i1, i2, score = am[:3]
+            GG.add_edge(i1, i2, score=score)
+            if i1 not in order:
+                order.append(i1)
+            if i2 not in order:
+                order.append(i2)
+        # deg = {k: v for k, v in GG.degree if v > 1}
+        # order = sorted(deg.items(), key=lambda item: item[1], reverse=True)
+        # order = sorted(GG.degree(weight='score'), key=lambda item: item[1], reverse=True)
+        order = sorted(GG.degree, key=lambda item: item[1], reverse=True)
+        resolved = set()
+        # Use spring embedding to correct erroneous associations
+        pos = nx.spring_layout(G, weight='score', seed=42)
+        coords = np.stack(list(pos.values()))
+        tree = cKDTree(coords)
+        nodes = list(map(int, pos))
+        inds = subset[:, :-2]
+        all_ids = np.arange(inds.shape[0])[:, np.newaxis] * np.ones(inds.shape[1])
+        for ind, _ in order:
+        # for ind in order:
+            if ind not in resolved:
+                temp = np.c_[inds.ravel(), all_ids.ravel()].astype(int)
+                temp = temp[np.all(temp != -1, axis=1)]
+                inds_ = list(temp[:, 0])
+                neigh = tree.query(coords[nodes.index(ind)], k=6)[1]
+                mask = []
+                for i in neigh:
+                    ii = nodes[i]
+                    try:
+                        mask.append(inds_.index(ii))
+                    except ValueError:
+                        pass
+                ids = temp[mask]
+                curr_id = ids[0, 1]
+                id_, count = np.unique(ids[1:, 1], return_counts=True)
+                neigh_id = id_[np.argsort(count)[::-1]][0]
+                if curr_id == neigh_id:  # No ID mismatch
+                    resolved.update(ids[:, 0])
+                    continue
+                row, col = np.argwhere((subset == ind)[:, :-2]).squeeze()
+                new_ind = subset[neigh_id, col]
+                if new_ind == -1:
+                    subset[[neigh_id, row], col] = ind, new_ind
+                    resolved.add(ind)
+                    for n in GG.neighbors(ind):
+                        resolved.add(n)
+                else:  # Ensure swapping does not make things worse
+                    if np.all(ids[2:, 1] == ids[1, 1]):
+                        subset[[neigh_id, row], col] = ind, new_ind
+                        resolved.add(new_ind)
+                        resolved.add(ind)
+                    else:
+                        neigh = tree.query(coords[nodes.index(new_ind)], k=6)[1]
+                        mask = []
+                        for i in neigh:
+                            ii = nodes[i]
+                            try:
+                                mask.append(inds_.index(ii))
+                            except ValueError:
+                                pass
+                        ids = temp[mask]
+                        curr_id = ids[0, 1]
+                        id_, count = np.unique(ids[1:, 1], return_counts=True)
+                        if curr_id != id_[np.argsort(count)[::-1]][0]:
+                            subset[[neigh_id, row], col] = ind, new_ind
+                            resolved.add(new_ind)
+                            resolved.add(ind)
+                            for n in GG.neighbors(ind):
+                                resolved.add(n)
+                            try:
+                                for n in GG.neighbors(new_ind):
+                                    resolved.add(n)
+                            except nx.NetworkXError:
+                                pass
+                # TODO Test below
+                # resolved.update(ids[ids[:, 1] == neigh_id, 0])
+
     # Link unconnected bodyparts
     mask_valid = ~np.isnan(candidates[:, :2]).all(axis=1)
     unconnected = candidates[np.logical_and(mask_unconnected, mask_valid)]
     n_unconnected = unconnected.shape[0]
-    if n_unconnected:
+    if n_unconnected and link_unconnected:
         # if n_unconnected > 1:
         #     # Sort in descending order of confidence
         #     inds = np.argsort(unconnected[:, 2])[::-1]
@@ -304,7 +504,9 @@ def link_joints_to_individuals(
         for i in inds:
             bpts = unconnected[unconnected[:, -1] == i]
             for bpt in bpts:
-                xy = bpt[:2]
+                *xy, p = bpt[:3]
+                if p * p <= cfg["detectionthresholdsquare"]:
+                    continue
                 ind, n_bpt = bpt[-2:].astype(int)
                 free = np.flatnonzero(subset[:, n_bpt] == -1)
                 n_free = free.size
@@ -346,11 +548,13 @@ def assemble_individuals(
     upperbound=None,
     evaluation=False,
     print_intermediate=False,
+    use_springs=False,
+    link_unconnected=True,
 ):
 
     # filter detections according to inferencecfg parameters
     all_detections = convertdetectiondict2listoflist(
-        data, BPTS, withid=inference_cfg.withid, evaluation=evaluation
+        data, BPTS, withid=inference_cfg["withid"], evaluation=evaluation
     )
     if all(not dets for dets in all_detections):
         return None
@@ -381,6 +585,8 @@ def assemble_individuals(
         paf_links,
         iBPTS,
         numjoints,
+        use_springs,
+        link_unconnected,
     )
     if print_intermediate:
         print(all_detections)
@@ -388,8 +594,8 @@ def assemble_individuals(
         print(subset)
 
     sortedindividuals = np.argsort(-subset[:, -2])  # sort by top score!
-    if len(sortedindividuals) > inference_cfg.topktoretain:
-        sortedindividuals = sortedindividuals[: inference_cfg.topktoretain]
+    if len(sortedindividuals) > inference_cfg["topktoretain"]:
+        sortedindividuals = sortedindividuals[: inference_cfg["topktoretain"]]
 
     ncols = 4 if inference_cfg["withid"] else 3
     animals = np.full((len(sortedindividuals), numjoints, ncols), np.nan)

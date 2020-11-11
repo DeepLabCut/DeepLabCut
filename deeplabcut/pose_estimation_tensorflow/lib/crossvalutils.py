@@ -789,10 +789,12 @@ def _benchmark_paf_graphs(
     inference_cfg,
     data,
     params,
-    paf_graph,
     paf_inds,
     paf_thresholds,
+    use_springs=False,
+    link_unconnected=True,
 ):
+    paf_graph = params["paf_graph"]
     num_joints = params["num_joints"]
     image_paths = params["imnames"]
     bodyparts = params["joint_names"]
@@ -852,6 +854,8 @@ def _benchmark_paf_graphs(
                 graph,
                 params["ibpts"],
                 num_joints,
+                use_springs=use_springs,
+                link_unconnected=link_unconnected,
             )
             sortedindividuals = np.argsort(-subset[:, -2])[
                 : inference_cfg["topktoretain"]
@@ -899,11 +903,51 @@ def _benchmark_paf_graphs(
     )
 
 
+def _get_n_best_paf_graphs(
+    data,
+    metadata,
+    params,
+    n_graphs=10,
+):
+    (_, within_test), (_, between_test) = _calc_within_between_pafs(data, metadata)
+
+    # Handle unlabeled bodyparts...
+    existing_edges = list(set(k for k, v in within_test.items() if v))
+    paf_graph = [
+        sorted(edge)
+        for n, edge in enumerate(params["paf_graph"])
+        if n in existing_edges
+    ]
+    inds = list(set(n for edge in paf_graph for n in edge))
+    min_skeleton = [params["paf_graph"].index(list(edge))
+                    for edge in zip(inds, inds[1:])]
+    n_edges = len(paf_graph) - len(min_skeleton)
+    lengths = np.linspace(0, n_edges, min(n_graphs, n_edges + 1), dtype=int)[1:]
+    scores, thresholds = zip(
+        *[
+            _calc_separability_metrics(b_test, w_test)
+            for n, (w_test, b_test) in enumerate(
+                zip(within_test.values(), between_test.values())
+            )
+            if n in existing_edges
+        ]
+    )
+    order = np.asarray(existing_edges)[np.argsort(scores)[::-1]]
+    order = order[np.isin(order, min_skeleton, invert=True)]
+    paf_inds = [min_skeleton]
+    for length in lengths:
+        paf_inds.append(min_skeleton + list(order[:length]))
+    return paf_inds, dict(zip(existing_edges, thresholds))
+
+
 def cross_validate_paf_graphs(
     inference_config,
     pose_config,
     full_data_file,
     metadata_file,
+    output_name,
+    use_springs=False,
+    link_unconnected=True,
 ):
     cfg = auxiliaryfunctions.read_plainconfig(inference_config)
     cfg_temp = cfg.copy()
@@ -917,46 +961,24 @@ def cross_validate_paf_graphs(
 
     params = _set_up_evaluation(data)
     _ = data.pop("metadata")
-    (_, within_test), (_, between_test) = _calc_within_between_pafs(data, metadata)
-
-    # Handle unlabeled bodyparts...
-    existing_edges = set(k for k, v in within_test.items() if v)
-    paf_graph = [
-        sorted(edge)
-        for n, edge in enumerate(params["paf_graph"])
-        if n in existing_edges
-    ]
-    inds = list(set(n for edge in paf_graph for n in edge))
-    min_skeleton = [paf_graph.index(list(edge)) for edge in zip(inds, inds[1:])]
-    n_edges = len(paf_graph) - len(min_skeleton)
-    lengths = np.linspace(0, n_edges, min(10, n_edges + 1), dtype=int)[1:]
-
-    scores, thresholds = zip(
-        *[
-            _calc_separability_metrics(b_test, w_test)
-            for n, (w_test, b_test) in enumerate(
-                zip(within_test.values(), between_test.values())
-            )
-            if n in existing_edges
-        ]
+    paf_inds, thresholds = _get_n_best_paf_graphs(
+        data, metadata, params,
     )
-    paf_inds = [min_skeleton]
-    order = np.argsort(scores)[::-1]
-    order = order[np.isin(order, min_skeleton, invert=True)]
-    for length in lengths:
-        paf_inds.append(min_skeleton + list(order[:length]))
     results = _benchmark_paf_graphs(
-        cfg_temp, data, params, paf_graph, paf_inds, thresholds
+        cfg_temp, data, params, paf_inds, thresholds, use_springs, link_unconnected,
     )
     # Select optimal PAF graph
     df = results[1]
     size_opt = np.argmax((1 - df.loc["miss", "mean"]) * df.loc["purity", "mean"])
     best_edges = paf_inds[size_opt]
     best_graph, best_thresholds = zip(
-        *[(paf_graph[ind], thresholds[ind]) for ind in best_edges]
+        *[(params["paf_graph"][ind], thresholds[ind]) for ind in best_edges]
     )
-    auxiliaryfunctions.edit_config(pose_config, {"partaffinityfield_graph": best_graph})
+    # auxiliaryfunctions.edit_config(pose_config, {"partaffinityfield_graph": best_graph})
     cfg["pafthreshold"] = [
         float(np.round(th, 2)) for th in best_thresholds
     ]  # Cast to float to avoid YAML RepresenterError
-    auxiliaryfunctions.write_plainconfig(inference_config, cfg)
+    # auxiliaryfunctions.write_plainconfig(inference_config, cfg)
+
+    with open(output_name, 'wb') as file:
+        pickle.dump([results], file)
