@@ -27,30 +27,30 @@ def get_cmap(n, name="hsv"):
 
 
 def make_labeled_image(
+    frame,
     DataCombined,
     imagenr,
     pcutoff,
-    imagebasefolder,
     Scorers,
     bodyparts,
     colors,
     cfg,
     labels=["+", ".", "x"],
     scaling=1,
+    ax=None,
 ):
     """Creating a labeled image with the original human labels, as well as the DeepLabCut's! """
-    from skimage import io
 
     alphavalue = cfg["alphavalue"]  # .5
     dotsize = cfg["dotsize"]  # =15
 
-    im = io.imread(os.path.join(imagebasefolder, DataCombined.index[imagenr]))
-    if np.ndim(im) > 2:  # color image!
-        h, w, numcolors = np.shape(im)
-    else:
-        h, w = np.shape(im)
-    fig, ax = prepare_figure_axes(w, h, scaling)
-    ax.imshow(im, "gray")
+    if ax is None:
+        if np.ndim(frame) > 2:  # color image!
+            h, w, numcolors = np.shape(frame)
+        else:
+            h, w = np.shape(frame)
+        _, ax = prepare_figure_axes(w, h, scaling)
+    ax.imshow(frame, "gray")
     for scorerindex, loopscorer in enumerate(Scorers):
         for bpindex, bp in enumerate(bodyparts):
             if np.isfinite(
@@ -90,7 +90,7 @@ def make_labeled_image(
                         alpha=alphavalue,
                         color=colors(int(bpindex)),
                     )
-    return fig
+    return ax
 
 
 def make_multianimal_labeled_image(
@@ -145,21 +145,34 @@ def plot_and_save_labeled_frame(
     comparisonbodyparts,
     DLCscorer,
     foldername,
+    fig,
+    ax,
     scaling=1,
 ):
-    fn = Path(cfg["project_path"] + "/" + DataCombined.index[ind])
-    fig = make_labeled_image(
+    image_path = os.path.join(cfg["project_path"], DataCombined.index[ind])
+    frame = io.imread(image_path)
+    if np.ndim(frame) > 2:  # color image!
+        h, w, numcolors = np.shape(frame)
+    else:
+        h, w = np.shape(frame)
+    fig.set_size_inches(w / 100, h / 100)
+    ax.set_xlim(0, w)
+    ax.set_ylim(0, h)
+    ax.invert_yaxis()
+    ax = make_labeled_image(
+        frame,
         DataCombined,
         ind,
         cfg["pcutoff"],
-        cfg["project_path"],
         [cfg["scorer"], DLCscorer],
         comparisonbodyparts,
         colors,
         cfg,
         scaling=scaling,
+        ax=ax,
     )
-    save_labeled_frame(fig, fn, foldername, ind in trainIndices)
+    save_labeled_frame(fig, image_path, foldername, ind in trainIndices)
+    return ax
 
 
 def save_labeled_frame(fig, image_path, dest_folder, belongs_to_train):
