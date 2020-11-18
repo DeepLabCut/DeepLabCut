@@ -308,7 +308,7 @@ def cropimagesandlabels(
             askuser = "y"
         if askuser == "y" or askuser == "yes" or askuser == "Y" or askuser == "Yes":
             new_vidname = vidname + "_cropped"
-            new_folder = folder.replace(vidname, new_vidname)
+            new_folder = os.path.join(project_path, "labeled-data", new_vidname)
             auxiliaryfunctions.attempttomakefolder(new_folder)
 
             AnnotationData = []
@@ -379,7 +379,7 @@ def cropimagesandlabels(
                 video_orig = sep.join((vidpath, vidname + videotype))
                 cfg["video_sets_original"][video_orig] = cfg["video_sets"][video_orig]
                 cfg["video_sets"].pop(video_orig)
-                cfg["video_sets"][video_orig.replace(vidname, new_vidname)] = {
+                cfg["video_sets"][sep.join((vidpath, new_vidname + videotype))] = {
                     "crop": ", ".join(map(str, [0, size[1], 0, size[0]]))
                 }
 
