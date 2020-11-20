@@ -16,6 +16,7 @@ from itertools import groupby
 from pathlib import Path
 from tqdm import tqdm
 
+import networkx as nx
 import numpy as np
 import pandas as pd
 from bayes_opt import BayesianOptimization
@@ -731,20 +732,27 @@ def _find_closest_neighbors(query, ref, k=3):
     return neighbors
 
 
-def _calc_separability_metrics(
+def _calc_separability(
     vals_left,
     vals_right,
     n_bins=101,
+    metric="jeffries",
 ):
+    if metric not in ("jeffries", "auc"):
+        raise ValueError("`metric` should be either 'jeffries' or 'auc'.")
+
     bins = np.linspace(0, 1, n_bins)
     hist_left = np.histogram(vals_left, bins=bins)[0]
     hist_left = hist_left / hist_left.sum()
     hist_right = np.histogram(vals_right, bins=bins)[0]
     hist_right = hist_right / hist_right.sum()
     tpr = np.cumsum(hist_right)
-    jm = np.sqrt(2 * (1 - np.sum(np.sqrt(hist_left * hist_right))))  # Jeffries-Matusita
-    threshold = bins[max(1, np.argmax(tpr > 0))]
-    return jm, threshold
+    if metric == 'jeffries':
+        sep = np.sqrt(2 * (1 - np.sum(np.sqrt(hist_left * hist_right))))  # Jeffries-Matusita distance
+    else:
+        sep = np.trapz(np.cumsum(hist_left), tpr)
+    threshold = bins[max(1, np.argmax(tpr > 0))]  # Guarantee max sensitivity
+    return sep, threshold
 
 
 def _calc_within_between_pafs(
@@ -906,37 +914,51 @@ def _benchmark_paf_graphs(
 def _get_n_best_paf_graphs(
     data,
     metadata,
-    params,
+    full_graph,
     n_graphs=10,
+    root=None,
+    which="best",
 ):
+    if which not in ('best', 'worst'):
+        raise ValueError('`which` must be either "best" or "worst"')
+
     (_, within_test), (_, between_test) = _calc_within_between_pafs(data, metadata)
 
     # Handle unlabeled bodyparts...
     existing_edges = list(set(k for k, v in within_test.items() if v))
-    paf_graph = [
-        sorted(edge)
-        for n, edge in enumerate(params["paf_graph"])
-        if n in existing_edges
-    ]
-    inds = list(set(n for edge in paf_graph for n in edge))
-    min_skeleton = [params["paf_graph"].index(list(edge))
-                    for edge in zip(inds, inds[1:])]
-    n_edges = len(paf_graph) - len(min_skeleton)
-    lengths = np.linspace(0, n_edges, min(n_graphs, n_edges + 1), dtype=int)[1:]
     scores, thresholds = zip(
         *[
-            _calc_separability_metrics(b_test, w_test)
+            _calc_separability(b_test, w_test)
             for n, (w_test, b_test) in enumerate(
                 zip(within_test.values(), between_test.values())
             )
             if n in existing_edges
         ]
     )
-    order = np.asarray(existing_edges)[np.argsort(scores)[::-1]]
-    order = order[np.isin(order, min_skeleton, invert=True)]
-    paf_inds = [min_skeleton]
+
+    # Find minimal skeleton
+    G = nx.Graph()
+    for edge, score in zip(existing_edges, scores):
+        G.add_edge(*full_graph[edge], weight=score)
+    if which == 'best':
+        order = np.asarray(existing_edges)[np.argsort(scores)[::-1]]
+        if root is None:
+            root = []
+            for edge in nx.maximum_spanning_edges(G, data=False):
+                root.append(full_graph.index(list(edge)))
+    else:
+        order = np.asarray(existing_edges)[np.argsort(scores)]
+        if root is None:
+            root = []
+            for edge in nx.minimum_spanning_edges(G, data=False):
+                root.append(full_graph.index(list(edge)))
+
+    n_edges = len(existing_edges) - len(root)
+    lengths = np.linspace(0, n_edges, min(n_graphs, n_edges + 1), dtype=int)[1:]
+    order = order[np.isin(order, root, invert=True)]
+    paf_inds = [root]
     for length in lengths:
-        paf_inds.append(min_skeleton + list(order[:length]))
+        paf_inds.append(root + list(order[:length]))
     return paf_inds, dict(zip(existing_edges, thresholds))
 
 
@@ -962,7 +984,7 @@ def cross_validate_paf_graphs(
     params = _set_up_evaluation(data)
     _ = data.pop("metadata")
     paf_inds, thresholds = _get_n_best_paf_graphs(
-        data, metadata, params,
+        data, metadata, params["paf_graph"],
     )
     results = _benchmark_paf_graphs(
         cfg_temp, data, params, paf_inds, thresholds, use_springs, link_unconnected,
