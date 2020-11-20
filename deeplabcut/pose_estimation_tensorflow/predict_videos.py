@@ -1441,7 +1441,6 @@ def convert_detections2tracklets(
                         iBPTS,
                         PAF,
                         partaffinityfield_graph,
-                        linkingpartaffinityfield_graph,
                         lowerbound,
                         upperbound,
                         printintermediate,

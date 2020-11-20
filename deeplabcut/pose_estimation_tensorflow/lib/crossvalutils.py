@@ -95,7 +95,6 @@ def compute_crossval_metrics(
             params["ibpts"],
             params["paf"],
             params["paf_graph"],
-            params["paf_links"],
             evaluation=True,
         )
         if animals is None:
@@ -210,7 +209,6 @@ def compute_crossval_metrics_preloadeddata(
             params["ibpts"],
             params["paf"],
             params["paf_graph"],
-            params["paf_links"],
             lowerbound,
             upperbound,
             evaluation=True,
@@ -858,20 +856,15 @@ def _benchmark_paf_graphs(
                 inference_cfg,
                 all_detections,
                 all_connections,
-                missing_connections,
-                graph,
-                params["ibpts"],
                 num_joints,
                 use_springs=use_springs,
                 link_unconnected=link_unconnected,
             )
-            sortedindividuals = np.argsort(-subset[:, -2])[
-                : inference_cfg["topktoretain"]
-            ]
+            sortedindividuals = range(len(subset))
             animals = []
             for m in sortedindividuals:
                 animal = np.full((num_joints, 3), np.nan)
-                inds = subset[m, :-2].astype(int)
+                inds = subset[m].astype(int)
                 mask = inds != -1
                 animal[mask] = candidate[inds[mask], :3]
                 animals.append(animal)
