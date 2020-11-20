@@ -21,8 +21,11 @@ Optional arguments specify the working directory, where the project directory wi
 
 ```python
 deeplabcut.create_new_project('Name of the project', 'Name of the experimenter', ['Full path of video 1', 'Full path of video2', 'Full path of video3'], working_directory='Full path of the working directory', copy_videos=True/False, multianimal=True/False)
-```           
-   NOTE: Windows users, you must input paths as: ``r'C:\Users\computername\Videos\reachingvideo1.avi' `` or
+``` 
+
+#### Important path formating note: 
+
+Windows users, you must input paths as: ``r'C:\Users\computername\Videos\reachingvideo1.avi' `` or
 
 `` 'C:\\Users\\computername\\Videos\\reachingvideo1.avi'``
 
@@ -139,8 +142,7 @@ When running the function extract_frames, if the parameter crop=True, then you w
 
 `userfeedback` allows the user to check which videos they wish to extract frames from. In this way, if you added more videos to the config.yaml file it does not, by default, extract frames (again) from every video. If you wish to disable this question, set `userfeedback = True`.
 
-The provided function either selects frames from the videos in a randomly and temporally uniformly distributed
-way (uniform), by clustering based on visual appearance (k-means), or by manual selection. Random
+The provided function either selects frames from the videos that are randomly sampled from a uniform distribution (uniform), by clustering based on visual appearance (k-means), or by manual selection. Random
 selection of frames works best for behaviors where the postures vary across the whole video. However, some behaviors
 might be sparse, as in the case of reaching where the reach and pull are very fast and the mouse is not moving much
 between trials (thus, we have the default set to True, as this is best for most use-cases we encounter). In such a case, the function that allows selecting frames based on k-means derived quantization would
