@@ -249,10 +249,9 @@ class SpringEmbedder:
 
 
 def link_joints_to_individuals(
-    cfg,
     all_detections,
     all_connections,
-    n_bodyparts,
+    max_individuals,
     use_springs=False,
     link_unconnected=True,
     sort_by="affinity",
@@ -277,6 +276,7 @@ def link_joints_to_individuals(
     )
     mask_unconnected = ~np.isin(candidates[:, -2], list(G))
 
+    n_bodyparts = len(all_detections)
     subsets = np.empty((0, n_bodyparts))
     # Fill the subsets with unambiguous (partial) skeletons
     for chain in sorted(nx.connected_components(G), key=len, reverse=True):
@@ -342,6 +342,7 @@ def link_joints_to_individuals(
             rows, _ = np.where(np.isin(subsets, ambi[:2]))
             if len(rows) < 2 or rows[0] == rows[1]:
                 ambiguous.remove(ambi)
+        # Fix ambiguous connections starting from those nodes of highest degree.
         G2 = G.edge_subgraph(ambi[:2] for ambi in ambiguous)
         all_ids = np.arange(subsets.shape[0])[:, np.newaxis] * np.ones(subsets.shape[1])
         counts = dict(G2.degree)
@@ -352,6 +353,7 @@ def link_joints_to_individuals(
                 temp = np.c_[subsets.ravel(), all_ids.ravel()].astype(int)
                 temp = temp[np.all(temp != -1, axis=1)]
                 inds_ = list(temp[:, 0])
+                # Infer an ambiguous node's ID from its neighbors in transformed space.
                 neighbors = spring.find_neighbors(ind)
                 mask = [inds_.index(n) for n in neighbors.flatten() if n in inds_]
                 ids = temp[mask]
@@ -377,6 +379,8 @@ def link_joints_to_individuals(
                         for neigh in G2.neighbors(ind):
                             counts[neigh] -= 1
                     else:
+                        # Swap bodyparts only if doing so reduces the tension of
+                        # the springs comprising the ambiguous subsets.
                         curr_inds = subsets[curr_id]
                         new_inds = curr_inds.copy()
                         new_inds[col] = new_ind
@@ -391,36 +395,35 @@ def link_joints_to_individuals(
                         counts[ind] = 0
                         for neigh in G2.neighbors(ind):
                             counts[neigh] -= 1
+        subsets = subsets[np.any(subsets != -1, axis=1)]
 
     # Merge extra subsets
     nrows = len(subsets)
-    max_rows = cfg["topktoretain"]
-    if nrows > max_rows:
+    if nrows > max_individuals:
         subsets = subsets[np.argsort(np.sum(subsets == -1, axis=1))]
-        ii = np.argsort(np.sum(subsets[max_rows:] != -1, axis=1))
-        subsets[max_rows:] = subsets[ii + max_rows]
-        for nrow in range(nrows - 1, max_rows - 1, -1):
-            mask = (subsets[:max_rows] >= 0).astype(int)
+        ii = np.argsort(np.sum(subsets[max_individuals:] != -1, axis=1))
+        subsets[max_individuals:] = subsets[ii + max_individuals]
+        for nrow in range(nrows - 1, max_individuals - 1, -1):
+            mask = (subsets[:max_individuals] >= 0).astype(int)
             row = subsets[nrow]
             mask2 = (row >= 0).astype(int)
             temp = mask + mask2
             free_rows = np.flatnonzero(~np.any(temp == 2, axis=1))
             if not free_rows.size:
                 # Special treatment
-                empty = subsets[:max_rows] == -1
-                row = subsets[nrow]
+                empty = subsets[:max_individuals] == -1
                 has_value = row != -1
                 mask = empty & has_value
                 n_chains = mask.sum(axis=1)
                 while np.any(n_chains > 0):
                     ind = n_chains.argmax()
-                    subsets[ind, np.flatnonzero(mask[ind])] = row[mask[ind]]
+                    mask_ = np.flatnonzero(mask[ind])
+                    subsets[np.ix_([ind, nrow], mask_)] = subsets[np.ix_([nrow, ind], mask_)]
                     # Update masks
-                    empty = subsets[:max_rows] == -1
-                    has_value[mask[ind]] = False
+                    empty = subsets[:max_individuals] == -1
+                    has_value[mask_] = False
                     mask = empty & has_value
                     n_chains = mask.sum(axis=1)
-                continue
             elif free_rows.size == 1:
                 ind = free_rows[0]
             else:
@@ -435,31 +438,28 @@ def link_joints_to_individuals(
                     dists.append(d.min())
                 ind = free_rows[np.argmin(dists)]
             subsets = _merge_disjoint_subsets(subsets, ind, nrow)
-        subsets = subsets[:max_rows]
+        subsets = subsets[np.any(subsets != -1, axis=1)]
 
     # Link unconnected bodyparts
     mask_valid = ~np.isnan(candidates[:, :2]).all(axis=1)
     unconnected = candidates[np.logical_and(mask_unconnected, mask_valid)]
     n_unconnected = unconnected.shape[0]
     if n_unconnected and link_unconnected:
-        free = np.sum(subsets == -1, axis=0)
-        temp = np.flatnonzero(free)
-        inds = temp[np.argsort(free[temp])]
-        for i in inds:
-            bpts = unconnected[unconnected[:, -1] == i]
+        unconnected = unconnected[np.argsort(unconnected[:, 2])[::-1]]
+        inds = list(set(unconnected[:, -1].astype(int)))
+        for ind in inds:
+            bpts = unconnected[unconnected[:, -1] == ind]
             for bpt in bpts:
-                *xy, p = bpt[:3]
-                if p * p <= cfg["detectionthresholdsquare"]:
-                    continue
-                ind, n_bpt = bpt[-2:].astype(int)
-                free = np.flatnonzero(subsets[:, n_bpt] == -1)
+                xy = bpt[:2]
+                n_bpt = int(bpt[-2])
+                free = np.flatnonzero(subsets[:, ind] == -1)
                 n_free = free.size
                 if not n_free:
                     row = -1 * np.ones(n_bodyparts)
-                    row[n_bpt] = ind
+                    row[ind] = n_bpt
                     subsets = np.vstack((subsets, row))
                 elif n_free == 1:
-                    subsets[free[0], n_bpt] = ind
+                    subsets[free[0], ind] = n_bpt
                 else:
                     dists = []
                     for j in free:
@@ -469,9 +469,9 @@ def link_joints_to_individuals(
                             candidates[sub_[sub_ != -1].astype(int), :2],
                         )
                         dists.append(d.min())
-                    subsets[free[np.argmin(dists)], n_bpt] = ind
+                    subsets[free[np.argmin(dists)], ind] = n_bpt
 
-    return subsets, candidates
+    return subsets[:max_individuals], candidates
 
 
 def assemble_individuals(
@@ -513,20 +513,17 @@ def assemble_individuals(
         upperbound,
         evaluation=evaluation,
     )
-    # assemble putative subsets
-    subset, candidates = link_joints_to_individuals(
-        inference_cfg,
+    subsets, candidates = link_joints_to_individuals(
         all_detections,
         all_connections,
-        numjoints,
+        inference_cfg["topktoretain"],
         use_springs,
-        link_unconnected,
+        link_unconnected
     )
-    sortedindividuals = range(len(subset))
     ncols = 4 if inference_cfg["withid"] else 3
-    animals = np.full((len(sortedindividuals), numjoints, ncols), np.nan)
-    for row, m in enumerate(sortedindividuals):
-        inds = subset[m].astype(int)
+    animals = np.full((len(subsets), numjoints, ncols), np.nan)
+    for animal, subset in zip(animals, subsets):
+        inds = subset.astype(int)
         mask = inds != -1
-        animals[row, mask] = candidates[inds[mask], :-2]
+        animal[mask] = candidates[inds[mask], :-2]
     return animals
