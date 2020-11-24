@@ -799,6 +799,7 @@ def _benchmark_paf_graphs(
     paf_thresholds,
     use_springs=False,
     link_unconnected=True,
+    sort_by="affinity",
 ):
     paf_graph = params["paf_graph"]
     num_joints = params["num_joints"]
@@ -852,22 +853,20 @@ def _benchmark_paf_graphs(
                 thresholds,
                 evaluation=True,
             )
-            subset, candidate = link_joints_to_individuals(
-                inference_cfg,
+            subsets, candidates = link_joints_to_individuals(
                 all_detections,
                 all_connections,
-                num_joints,
+                inference_cfg["topktoretain"],
                 use_springs=use_springs,
                 link_unconnected=link_unconnected,
+                sort_by=sort_by,
             )
-            sortedindividuals = range(len(subset))
-            animals = []
-            for m in sortedindividuals:
-                animal = np.full((num_joints, 3), np.nan)
-                inds = subset[m].astype(int)
+            ncols = 4 if inference_cfg["withid"] else 3
+            animals = np.full((len(subsets), num_joints, ncols), np.nan)
+            for animal, subset in zip(animals, subsets):
+                inds = subset.astype(int)
                 mask = inds != -1
-                animal[mask] = candidate[inds[mask], :3]
-                animals.append(animal)
+                animal[mask] = candidates[inds[mask], :-2]
 
             # Count the number of missed bodyparts
             n_animals = len(animals)
@@ -963,6 +962,7 @@ def cross_validate_paf_graphs(
     output_name,
     use_springs=False,
     link_unconnected=True,
+    sort_by="affinity",
 ):
     cfg = auxiliaryfunctions.read_plainconfig(inference_config)
     cfg_temp = cfg.copy()
@@ -980,7 +980,7 @@ def cross_validate_paf_graphs(
         data, metadata, params["paf_graph"],
     )
     results = _benchmark_paf_graphs(
-        cfg_temp, data, params, paf_inds, thresholds, use_springs, link_unconnected,
+        cfg_temp, data, params, paf_inds, thresholds, use_springs, link_unconnected, sort_by,
     )
     # Select optimal PAF graph
     df = results[1]
