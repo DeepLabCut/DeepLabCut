@@ -15,7 +15,7 @@ If you want to contribute to the code, please make a [pull request](https://gith
 - A working example of how it works for users. 
 - If it's a function that also can be used in downstream steps (i.e. could be plotted) we ask you (1) highlight this, and (2) idealy you provide that functionality as well. If you have any questions, please reach out: admin@deeplabcut.org 
 
-**TestSript outputs:**
+**TestScript outputs:**
 
 - The **OS it has been tested on**
 - the **output of the [testscript.py](/examples/testscript.py)** and if you are editing the **3D code the [testscript_3d.py](/examples/testscript_3d.py)**, and if you edit multi-animal code please run the [maDLC test script](https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/testscript_multianimal.py).
