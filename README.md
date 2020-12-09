@@ -96,7 +96,12 @@ This is an actively developed package and we welcome community development and i
 
 ## References:
 
-If you use this code or data please [cite Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y) and, if you use, the Python package (DeepLabCut2.x) please also cite [Nath, Mathis et al, 2019](https://doi.org/10.1038/s41596-019-0176-0). If you utilize the MobileNets please cite [Mathis et al. 2019](https://arxiv.org/abs/1909.11229).
+If you use this code or data we kindly as that you please [cite Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y) and, if you use the Python package (DeepLabCut2.x) please also cite [Nath, Mathis et al, 2019](https://doi.org/10.1038/s41596-019-0176-0). If you utilize the MobileNetV2s or EfficientNets please cite [Mathis, Biasi et al. 2020](https://arxiv.org/abs/1909.11229).
+
+DOIs (#ProTip, for helping you find citations for software, check out [CiteAs.org](http://citeas.org/)!):
+
+- Mathis et al 2018: [10.1038/s41593-018-0209-y](https://doi.org/10.1038/s41593-018-0209-y)
+- Nath, Mathis et al 2019: [10.1038/s41596-019-0176-0](https://doi.org/10.1038/s41596-019-0176-0)
 
 Please check out the following references for more details:
 
