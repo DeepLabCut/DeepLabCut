@@ -1156,7 +1156,6 @@ def convert_detections2tracklets(
     BPTS=None,
     iBPTS=None,
     PAF=None,
-    printintermediate=False,
     inferencecfg=None,
     modelprefix="",
     track_method="box",
@@ -1443,7 +1442,6 @@ def convert_detections2tracklets(
                         partaffinityfield_graph,
                         lowerbound,
                         upperbound,
-                        printintermediate,
                     )
                     if animals is None:
                         continue

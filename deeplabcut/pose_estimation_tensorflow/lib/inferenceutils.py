@@ -424,7 +424,8 @@ def link_joints_to_individuals(
                     has_value[mask_] = False
                     mask = empty & has_value
                     n_chains = mask.sum(axis=1)
-            elif free_rows.size == 1:
+                continue
+            if free_rows.size == 1:
                 ind = free_rows[0]
             else:
                 xy = candidates[row[row != -1].astype(int), :2].mean(axis=0)
