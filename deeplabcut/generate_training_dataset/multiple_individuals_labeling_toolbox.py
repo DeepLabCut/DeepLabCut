@@ -818,6 +818,10 @@ class MainFrame(wx.Frame):
             self.dataFrame.reindex(
                 bodyparts, axis=1, level=self.dataFrame.columns.names.index("bodyparts")
             )
+        # Test whether there are missing frames and superfluous data
+        if len(old_imgs) > len(self.relativeimagenames):
+            missing_frames = set(old_imgs).difference(self.relativeimagenames)
+            self.dataFrame.drop(missing_frames, inplace=True)
 
         # Check whether new labels were added
         self.new_multi = [x for x in self.multibodyparts if x not in self._old_multi]
