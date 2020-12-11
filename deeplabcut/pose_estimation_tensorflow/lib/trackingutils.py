@@ -27,7 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 class SkeletonTracker developed for DLC 2.2.
 """
-
+import math
 import numpy as np
 import warnings
 from filterpy.common import kinematic_kf
@@ -36,7 +36,7 @@ from matplotlib import patches
 from numba import jit
 from numba.core.errors import NumbaPerformanceWarning
 from scipy.optimize import linear_sum_assignment
-from scipy.stats import norm, chi2
+from scipy.stats import mode
 from shapely.geometry import Polygon
 
 
@@ -197,8 +197,8 @@ class Ellipse:
     def geometry(self):
         if self._geometry is None:
             t = np.linspace(0, 2 * np.pi, 40)
-            ca = np.cos(self.theta)
-            sa = np.sin(self.theta)
+            ca = math.cos(self.theta)
+            sa = math.sin(self.theta)
             at = 0.5 * self.width * np.cos(t)
             bt = 0.5 * self.height * np.sin(t)
             xx = at * ca - bt * sa + self.x
@@ -220,17 +220,17 @@ class Ellipse:
         return inter / union
 
     def calc_similarity_with(self, other_ellipse):
-        cost1 = abs(np.cos(self.theta - other_ellipse.theta))
         max_dist = max(
             self.height, self.width, other_ellipse.height, other_ellipse.width
         )
-        dist = np.sqrt((self.x - other_ellipse.x) ** 2 + (self.y - other_ellipse.y) ** 2)
-        cost2 = 1 - min(dist / max_dist, 1)
-        return 0.5 * cost1 + 0.5 * cost2
+        dist = math.sqrt((self.x - other_ellipse.x) ** 2 + (self.y - other_ellipse.y) ** 2)
+        cost1 = 1 - min(dist / max_dist, 1)
+        cost2 = abs(math.cos(self.theta - other_ellipse.theta))
+        return 0.8 * cost1 + 0.2 * cost2 * cost1
 
     def contains_points(self, xy, tol=0.1):
-        ca = np.cos(self.theta)
-        sa = np.sin(self.theta)
+        ca = math.cos(self.theta)
+        sa = math.sin(self.theta)
         x_demean = xy[:, 0] - self.x
         y_demean = xy[:, 1] - self.y
         return (((ca * x_demean + sa * y_demean) ** 2 / (0.5 * self.width) ** 2)
@@ -337,8 +337,8 @@ class EllipseFitter:
         # r2 = chi2.ppf(2 * norm.cdf(sd) - 1, 2)
         # height, width = np.sqrt(E * r2)
         height, width = 2 * sd * np.sqrt(E)
-        a, b = V[:, 1][::-1]
-        rotation = np.arctan2(a, b) % np.pi
+        a, b = V[:, 1]
+        rotation = math.atan2(b, a) % np.pi
         return [np.mean(x), np.mean(y), width, height, rotation]
 
     @staticmethod
@@ -437,7 +437,7 @@ class SORTEllipse:
         # Reset tracker IDs
         EllipseTracker.n_trackers = 0
 
-    def track(self, poses):
+    def track(self, poses, identities=None):
         self.n_frames += 1
 
         trackers = np.zeros((len(self.trackers), 6))
@@ -449,10 +449,13 @@ class SORTEllipse:
             self.trackers.pop(ind)
 
         ellipses = []
-        for pose in poses:
+        pred_ids = []
+        for i, pose in enumerate(poses):
             el = self.fitter.fit(pose)
             if el is not None:
                 ellipses.append(el)
+                if identities is not None:
+                    pred_ids.append(mode(identities[i])[0][0])
         if not len(trackers):
             matches = np.empty((0, 2), dtype=int)
             unmatched_detections = np.arange(len(ellipses))
@@ -462,13 +465,25 @@ class SORTEllipse:
             cost_matrix = np.zeros((len(ellipses), len(ellipses_trackers)))
             for i, el in enumerate(ellipses):
                 for j, el_track in enumerate(ellipses_trackers):
-                    cost_matrix[i, j] = el.calc_similarity_with(el_track)
+                    cost = el.calc_similarity_with(el_track)
+                    if identities is not None:
+                        match = 2 if pred_ids[i] == self.trackers[j].id_ else 1
+                        cost *= match
+                    cost_matrix[i, j] = cost
             row_indices, col_indices = linear_sum_assignment(cost_matrix, maximize=True)
             unmatched_detections = [i for i, _ in enumerate(ellipses) if i not in row_indices]
             unmatched_trackers = [j for j, _ in enumerate(trackers) if j not in col_indices]
             matches = []
             for row, col in zip(row_indices, col_indices):
-                if cost_matrix[row, col] < self.iou_threshold:
+                val = cost_matrix[row, col]
+                # diff = val - cost_matrix
+                # diff[row, col] += val
+                # if (
+                #         val < self.iou_threshold
+                #         or np.any(diff[row] <= 0.2)
+                #         or np.any(diff[:, col] <= 0.2)
+                # ):
+                if val < self.iou_threshold:
                     unmatched_detections.append(row)
                     unmatched_trackers.append(col)
                 else:
@@ -491,6 +506,8 @@ class SORTEllipse:
 
         for i in unmatched_detections:
             trk = EllipseTracker(ellipses[i].parameters)
+            if identities is not None:
+                trk.id_ = mode(identities[i])[0][0]
             self.trackers.append(trk)
             animalindex.append(i)
 
