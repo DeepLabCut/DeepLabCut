@@ -1302,9 +1302,6 @@ class MainFrame(wx.Frame):
         MainFrame.saveEachImage(self)
         MainFrame.updateZoomPan(self)
 
-        # Drop Nan data frames
-        self.dataFrame = self.dataFrame.dropna(how="all")
-
         # Windows compatible
         self.dataFrame.sort_index(inplace=True)
         # Discard data associated with bodyparts that are no longer in the config
