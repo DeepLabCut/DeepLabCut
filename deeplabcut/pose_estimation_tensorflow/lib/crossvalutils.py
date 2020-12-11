@@ -35,6 +35,9 @@ from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import (
     extract_strong_connections,
     link_joints_to_individuals,
     assemble_individuals,
+    _nest_detections_in_arrays,
+    _extract_strong_connections,
+    _link_detections,
 )
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
@@ -114,7 +117,7 @@ def compute_crossval_metrics(
                 gt = gt[np.nansum(gt, axis=(1, 2)) > leastbpts]
 
             poses.append(animals)
-            ani = animals[:, :gt.shape[1], :2]
+            ani = animals[:, : gt.shape[1], :2]
             mat = np.full((gt.shape[0], n_animals), np.nan)
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=RuntimeWarning)
@@ -228,7 +231,7 @@ def compute_crossval_metrics_preloadeddata(
             ):  # ONLY KEEP animals with at least as many bpts (to get rid of crops that cannot be assembled)
                 gt = gt[np.nansum(gt, axis=(1, 2)) > leastbpts]
 
-                ani = animals[:, :gt.shape[1], :2]
+                ani = animals[:, : gt.shape[1], :2]
             mat = np.full((gt.shape[0], n_animals), np.nan)
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=RuntimeWarning)
@@ -562,7 +565,7 @@ def _rebuild_uncropped_data(
         .index
     )
     individuals = idx.get_level_values("individuals").unique()
-    has_single = 'single' in individuals
+    has_single = "single" in individuals
     n_individuals = len(individuals) - has_single
 
     data_new = dict()
@@ -613,7 +616,7 @@ def _rebuild_uncropped_data(
             temp = pd.DataFrame(ref_gt, index=idx, columns=["x", "y"])
             temp.columns.names = ["coords"]
             if has_single:
-                temp.drop('single', level='individuals', inplace=True)
+                temp.drop("single", level="individuals", inplace=True)
             ref_pred = np.full(
                 (n_individuals, len(temp) // n_individuals, 4), np.nan
             )  # Hold x, y, prob, dist
@@ -665,9 +668,9 @@ def _rebuild_uncropped_data(
                             mask = costs_pred[n]["m1"][sl2] > costs[n]["m1"][sl1]
                             if mask.any():
                                 inds_lin = (sl1[0] * n_individuals + sl1[1])[mask]
-                                costs[n]["m1"].ravel()[inds_lin] = costs_pred[n]["m1"][sl2][
-                                    mask
-                                ]
+                                costs[n]["m1"].ravel()[inds_lin] = costs_pred[n]["m1"][
+                                    sl2
+                                ][mask]
                                 costs[n]["distance"].ravel()[inds_lin] = costs_pred[n][
                                     "distance"
                                 ][sl2][mask]
@@ -741,6 +744,7 @@ def _calc_separability(
     vals_right,
     n_bins=101,
     metric="jeffries",
+    max_sensitivity=False,
 ):
     if metric not in ("jeffries", "auc"):
         raise ValueError("`metric` should be either 'jeffries' or 'auc'.")
@@ -751,12 +755,16 @@ def _calc_separability(
     hist_right = np.histogram(vals_right, bins=bins)[0]
     hist_right = hist_right / hist_right.sum()
     tpr = np.cumsum(hist_right)
-    if metric == 'jeffries':
-        sep = np.sqrt(2 * (1 - np.sum(np.sqrt(hist_left * hist_right))))  # Jeffries-Matusita distance
+    if metric == "jeffries":
+        sep = np.sqrt(
+            2 * (1 - np.sum(np.sqrt(hist_left * hist_right)))
+        )  # Jeffries-Matusita distance
     else:
         sep = np.trapz(np.cumsum(hist_left), tpr)
-    threshold = bins[max(1, np.argmax(tpr > 0))]  # Guarantee max sensitivity
-    # threshold = bins[np.argmin(1 - np.cumsum(hist_left) + tpr)]
+    if max_sensitivity:
+        threshold = bins[max(1, np.argmax(tpr > 0))]
+    else:
+        threshold = bins[np.argmin(1 - np.cumsum(hist_left) + tpr)]
     return sep, threshold
 
 
@@ -798,6 +806,24 @@ def _calc_within_between_pafs(
     return (within_train, within_test), (between_train, between_test)
 
 
+def _calibrate_distances(data, metadata):
+    d = data.copy()
+    d.pop('metadata', None)
+    train_inds = set(metadata["data"]["trainIndices"])
+    dists = defaultdict(list)
+    for i, dict_ in enumerate(tqdm(d.values())):
+        if i in train_inds:
+            for e, v in dict_['prediction']['costs'].items():
+                dists[e].extend(np.diag(v['distance']))
+    arr = np.ma.masked_invalid(np.vstack(list(dists.values())))
+    av = arr.mean(axis=1)
+    sd = arr.std(axis=1)
+    funcs = dict()
+    for ind in av.nonzero()[0]:
+        funcs[ind] = lambda x, ind=ind: np.exp(-(x - av[ind]) ** 2 / sd[ind] ** 2)
+    return funcs
+
+
 def _benchmark_paf_graphs(
     inference_cfg,
     data,
@@ -807,9 +833,9 @@ def _benchmark_paf_graphs(
     use_springs=False,
     link_unconnected=True,
     sort_by="affinity",
+    dist_funcs=None,
 ):
     paf_graph = params["paf_graph"]
-    num_joints = params["num_joints"]
     image_paths = params["imnames"]
     bodyparts = params["joint_names"]
     idx = (
@@ -839,36 +865,34 @@ def _benchmark_paf_graphs(
     for j, paf in enumerate(paf_inds, start=1):
         print(f"Graph {j}|{n_graphs}")
         graph = [paf_graph[i] for i in paf]
-        thresholds = [paf_thresholds[i] for i in paf]
+        funcs = [dist_funcs[i] for i in paf] if dist_funcs is not None else None
         scores = np.full((len(image_paths), 2), np.nan)
         for i, imname in enumerate(tqdm(image_paths)):
             gt = ground_truth[i]
             gt = gt[~np.isnan(gt).any(axis=1)]
+            if len(np.unique(gt[:, 2])) < 2:
+                continue
 
             # Break assembly down in stages
-            all_detections = convertdetectiondict2listoflist(
-                data[imname],
-                range(n_bodyparts),
-                withid=inference_cfg["withid"],
-                evaluation=True,
+            all_detections = _nest_detections_in_arrays(
+                data[imname]["prediction"]
             )
-            all_connections, missing_connections = extract_strong_connections(
-                inference_cfg,
-                data[imname],
+            if not np.any(all_detections):
+                continue
+            all_connections = _extract_strong_connections(
                 all_detections,
-                params["ibpts"],
                 graph,
                 paf,
-                thresholds,
-                evaluation=True,
+                data[imname]["prediction"]["costs"],
+                inference_cfg["topktoretain"],
+                inference_cfg["pcutoff"],
+                funcs,
             )
-            subsets, candidates = link_joints_to_individuals(
+            subsets, candidates = _link_detections(
                 all_detections,
                 all_connections,
                 inference_cfg["topktoretain"],
                 use_springs=use_springs,
-                link_unconnected=link_unconnected,
-                sort_by=sort_by,
             )
             ncols = 4 if inference_cfg["withid"] else 3
             animals = np.full((len(subsets), n_bodyparts, ncols), np.nan)
@@ -895,7 +919,7 @@ def _benchmark_paf_graphs(
                 id_gt = gt[valid, 2]
                 id_hyp = hyp[neighbors[valid], -1]
 
-                mat = contingency_matrix(id_gt, id_hyp, sparse=True)
+                mat = contingency_matrix(id_gt, id_hyp)
                 purity = mat.max(axis=0).sum() / mat.sum()
                 scores[i, 1] = purity
         all_scores.append((scores, paf))
@@ -914,47 +938,96 @@ def _benchmark_paf_graphs(
 
 
 def compare_best_and_worst_graphs(
+    config,
+    inference_config,
     full_data_file,
     metadata_file,
-    inference_config,
+    use_springs=False,
     link_unconnected=False,
+    sort_by="degree",
+    pcutoff=0.3,
+    metric="auc",
+    use_dists=True,
+    naive_edges=None,
 ):
     cfg = auxiliaryfunctions.read_plainconfig(inference_config)
     cfg_temp = cfg.copy()
-    cfg_temp["detectionthresholdsquare"] = 0.25
-    cfg_temp["minimalnumberofconnections"] = 1
+    cfg_temp["pcutoff"] = pcutoff
 
     with open(full_data_file, "rb") as file:
         data = pickle.load(file)
     with open(metadata_file, "rb") as file:
         metadata = pickle.load(file)
 
+    dist_funcs = _calibrate_distances(data, metadata) if use_dists else None
+
     params = _set_up_evaluation(data)
     _ = data.pop("metadata")
+    to_ignore = _filter_unwanted_paf_connections(config, params["paf_graph"])
     paf_inds_best, thresholds = _get_n_best_paf_graphs(
-        data, metadata, params["paf_graph"],
+        data,
+        metadata,
+        params["paf_graph"],
+        ignore_inds=to_ignore,
+        metric=metric,
     )
     results_best = _benchmark_paf_graphs(
-        cfg_temp, data, params, paf_inds_best, thresholds, False, link_unconnected,
+        cfg_temp,
+        data,
+        params,
+        paf_inds_best,
+        thresholds,
+        use_springs,
+        link_unconnected,
+        sort_by,
+        dist_funcs,
     )
     paf_inds_worst, thresholds = _get_n_best_paf_graphs(
-        data, metadata, params["paf_graph"], which="worst",
+        data,
+        metadata,
+        params["paf_graph"],
+        which="worst",
+        ignore_inds=to_ignore,
+        metric=metric,
     )
     results_worst = _benchmark_paf_graphs(
-        cfg_temp, data, params, paf_inds_worst, thresholds, False, link_unconnected,
+        cfg_temp,
+        data,
+        params,
+        paf_inds_worst,
+        thresholds,
+        use_springs,
+        link_unconnected,
+        sort_by,
+        dist_funcs,
     )
-    inds = sorted(set(ind for i in thresholds for ind in params["paf_graph"][i]))
-    naive_edges = list(zip(inds, inds[1:]))
+    if naive_edges is None:
+        inds = sorted(set(ind for i in thresholds for ind in params["paf_graph"][i]))
+        naive_edges = list(zip(inds, inds[1:]))
     naive_graph = [params["paf_graph"].index(list(edge)) for edge in naive_edges]
     paf_inds_naive, thresholds = _get_n_best_paf_graphs(
-        data, metadata, params["paf_graph"], root=naive_graph, which="worst",
+        data,
+        metadata,
+        params["paf_graph"],
+        root=naive_graph,
+        which="worst",
+        ignore_inds=to_ignore,
+        metric=metric,
     )
     results_naive = _benchmark_paf_graphs(
-        cfg_temp, data, params, paf_inds_naive, thresholds, False, link_unconnected,
+        cfg_temp,
+        data,
+        params,
+        paf_inds_naive,
+        thresholds,
+        use_springs,
+        link_unconnected,
+        sort_by,
+        dist_funcs,
     )
     return pd.concat(
         (results_naive[1], results_best[1], results_worst[1]),
-        keys=["naive", "best", "worst"]
+        keys=["naive", "best", "worst"],
     )
 
 
@@ -966,8 +1039,9 @@ def _get_n_best_paf_graphs(
     root=None,
     which="best",
     ignore_inds=None,
+    metric="auc",
 ):
-    if which not in ('best', 'worst'):
+    if which not in ("best", "worst"):
         raise ValueError('`which` must be either "best" or "worst"')
 
     (_, within_test), (_, between_test) = _calc_within_between_pafs(data, metadata)
@@ -979,7 +1053,7 @@ def _get_n_best_paf_graphs(
     existing_edges = list(existing_edges)
     scores, thresholds = zip(
         *[
-            _calc_separability(b_test, w_test)
+            _calc_separability(b_test, w_test, metric=metric)
             for n, (w_test, b_test) in enumerate(
                 zip(within_test.values(), between_test.values())
             )
@@ -991,7 +1065,7 @@ def _get_n_best_paf_graphs(
     G = nx.Graph()
     for edge, score in zip(existing_edges, scores):
         G.add_edge(*full_graph[edge], weight=score)
-    if which == 'best':
+    if which == "best":
         order = np.asarray(existing_edges)[np.argsort(scores)[::-1]]
         if root is None:
             root = []
@@ -1014,11 +1088,12 @@ def _get_n_best_paf_graphs(
 
 
 def _filter_unwanted_paf_connections(
-    config, paf_graph,
+    config,
+    paf_graph,
 ):
     """Get rid of skeleton connections between multi and unique body parts."""
     from itertools import combinations
-    
+
     cfg = auxiliaryfunctions.read_config(config)
     multi = auxfun_multianimal.extractindividualsandbodyparts(cfg)[2]
     desired = list(combinations(range(len(multi)), 2))
@@ -1032,14 +1107,14 @@ def cross_validate_paf_graphs(
     metadata_file,
     output_name="",
     use_springs=False,
-    link_unconnected=True,
+    link_unconnected=False,
     sort_by="affinity",
+    pcutoff=0.3,
     overwrite_config=False,
 ):
     cfg = auxiliaryfunctions.read_plainconfig(inference_config)
     cfg_temp = cfg.copy()
-    cfg_temp["detectionthresholdsquare"] = 0.25
-    cfg_temp["minimalnumberofconnections"] = 1
+    cfg_temp["pcutoff"] = pcutoff
 
     with open(full_data_file, "rb") as file:
         data = pickle.load(file)
@@ -1050,28 +1125,40 @@ def cross_validate_paf_graphs(
     _ = data.pop("metadata")
     to_ignore = _filter_unwanted_paf_connections(config, params["paf_graph"])
     paf_inds, thresholds = _get_n_best_paf_graphs(
-        data, metadata, params["paf_graph"], ignore_inds=to_ignore,
+        data,
+        metadata,
+        params["paf_graph"],
+        ignore_inds=to_ignore,
     )
+    dist_funcs = _calibrate_distances(data, metadata)
     results = _benchmark_paf_graphs(
-        cfg_temp, data, params, paf_inds, thresholds, use_springs, link_unconnected, sort_by,
+        cfg_temp,
+        data,
+        params,
+        paf_inds,
+        thresholds,
+        use_springs,
+        link_unconnected,
+        sort_by,
+        dist_funcs
     )
     # Select optimal PAF graph
-    df = results[1]
-    size_opt = np.argmax((1 - df.loc["miss", "mean"]) * df.loc["purity", "mean"])
-    best_edges = paf_inds[size_opt]
-    best_graph, best_thresholds = zip(
-        *[(params["paf_graph"][ind], thresholds[ind]) for ind in best_edges]
-    )
-    pose_config = inference_config.replace("inference_cfg", "pose_cfg")
-    cfg["pafthreshold"] = [
-        float(np.round(th, 2)) for th in best_thresholds
-    ]  # Cast to float to avoid YAML RepresenterError
-    if not overwrite_config:
-        shutil.copy(pose_config, pose_config.replace(".yaml", "_old.yaml"))
-        shutil.copy(inference_config, inference_config.replace(".yaml", "_old.yaml"))
-    auxiliaryfunctions.edit_config(pose_config, {"partaffinityfield_graph": best_graph})
-    auxiliaryfunctions.write_plainconfig(inference_config, cfg)
+    # df = results[1]
+    # size_opt = np.argmax((1 - df.loc["miss", "mean"]) * df.loc["purity", "mean"])
+    # best_edges = paf_inds[size_opt]
+    # best_graph, best_thresholds = zip(
+    #     *[(params["paf_graph"][ind], thresholds[ind]) for ind in best_edges]
+    # )
+    # pose_config = inference_config.replace("inference_cfg", "pose_cfg")
+    # cfg["pafthreshold"] = [
+    #     float(np.round(th, 2)) for th in best_thresholds
+    # ]  # Cast to float to avoid YAML RepresenterError
+    # if not overwrite_config:
+    #     shutil.copy(pose_config, pose_config.replace(".yaml", "_old.yaml"))
+    #     shutil.copy(inference_config, inference_config.replace(".yaml", "_old.yaml"))
+    # auxiliaryfunctions.edit_config(pose_config, {"partaffinityfield_graph": best_graph})
+    # auxiliaryfunctions.write_plainconfig(inference_config, cfg)
 
     if output_name:
-        with open(output_name, 'wb') as file:
+        with open(output_name, "wb") as file:
             pickle.dump([results], file)
