@@ -141,10 +141,11 @@ dlc.train_network(path_config_file, shuffle=2,allow_growth=True)
 
 print("EVALUATE")
 dlc.evaluate_network(path_config_file,Shuffles=[2],plotting=False)
-'''
+
 
 print("ANALYZING some individual frames")
 dlc.analyze_time_lapse_frames(path_config_file,os.path.join(cfg['project_path'],'labeled-data/reachingvideo1/'))
+'''
 
 print("Export model...")
 dlc.export_model(path_config_file,shuffle=1,make_tar=False)
