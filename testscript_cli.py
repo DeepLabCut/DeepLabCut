@@ -55,7 +55,7 @@ if platform.system() == 'Darwin' or platform.system()=='Windows':
 else:
     augmenter_type3='tensorpack' #Does not work on WINDOWS
 
-numiter=7
+numiter=3 
 
 print("CREATING PROJECT")
 path_config_file=dlc.create_new_project(task,scorer,video, copy_videos=True)
@@ -112,7 +112,7 @@ videotest = os.path.join(cfg['project_path'],'videos',videoname + ".avi")
 
 print(videotest)
 
-#memory on CLI issues: #persists Nov 22 2020 -- one recieves a kill signal
+# quicker variant
 '''
 print("VIDEO ANALYSIS")
 dlc.analyze_videos(path_config_file, [videotest], save_as_csv=True)
