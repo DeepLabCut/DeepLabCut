@@ -7,7 +7,7 @@
 - [X] alpha testing complete (early May 2020)
 - [X] beta release: 2.2.b5 on 5 / 22 / 20 :smile:
 - [X] beta release: 2.2b8 released 9/2020 :smile:
-- [ ] beta release 2.2b9 --> candidate release, slotted for Oct 2020 
+- [X] beta release 2.2b9 --> candidate release, slotted for Oct 2020 
 - [ ] full 2.2 stable release
 - [ ] Manuscripts forthcoming!
 
