@@ -302,7 +302,6 @@ class MainFrame(wx.Frame):
             self.delete.Enable(False)
             self.load.Enable(False)
 
-
             self.save.Enable(True)
             self.next.Enable(True)
 
@@ -322,8 +321,10 @@ class MainFrame(wx.Frame):
             #folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
             self.verify_frames=frames
             self.verify_counter=0
+
             folder,imname=self.verify_frames[self.verify_counter].split(os.sep)
             if folder in self.verify_video_names:
+                print("Processing....", folder,imname)
                 MainFrame.load_labeled_frame4verification(self,folder,imname)
 
     ###############################################################################################################################
@@ -794,7 +795,10 @@ class MainFrame(wx.Frame):
         )
 
         if self.verify:
+
             MainFrame.saveEachImage(self)
+            MainFrame.saveDataSet(self, True)
+
             self.prev.Enable(False)
 
             self.verify_counter+=1
@@ -807,6 +811,7 @@ class MainFrame(wx.Frame):
 
                 folder,imname=self.verify_frames[self.verify_counter].split(os.sep)
                 if folder in self.verify_video_names:
+                    print("Processing....", folder,imname)
                     MainFrame.load_labeled_frame4verification(self,folder,imname)
 
         else:
@@ -1068,6 +1073,7 @@ class MainFrame(wx.Frame):
 
     def load_labeled_frame4verification(self,folder,imname):
         self.dir = os.path.join(self.project_path,'labeled-data',folder)
+
         imlist = []
         for imtype in self.imtypes:
             imlist.extend(

@@ -468,9 +468,10 @@ def verify_labeled_frames(config, frames=[], multiple_individualsGUI=False, imty
         multiple_individuals_labeling_toolbox.show(config)
     else:
         from deeplabcut.generate_training_dataset import labeling_toolbox
-
-        labeling_toolbox.verify(config,frames=frames, imtypes=imtypes)
-
+        if len(frames)>0:
+            labeling_toolbox.verify(config,frames=frames, imtypes=imtypes)
+        else:
+            print("Emty list passed, so those were verified!")
     os.chdir(startpath)
 
 
