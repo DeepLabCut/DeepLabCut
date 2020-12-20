@@ -143,7 +143,9 @@ class ScrollPanel(SP.ScrolledPanel):
 class MainFrame(wx.Frame):
     """Contains the main GUI and button boxes"""
 
-    def __init__(self, parent, config, imtypes):
+    def __init__(self, parent, config, imtypes,verify=False,frames=None):
+        ''' frames list of frames to verify for verify=True mode!'''
+
         # Settting the GUI size and panels design
         displays = (
             wx.Display(i) for i in range(wx.Display.GetCount())
@@ -156,6 +158,11 @@ class MainFrame(wx.Frame):
         screenHeight = screenSizes[index][1]
         self.gui_size = (screenWidth * 0.7, screenHeight * 0.85)
         self.imtypes = imtypes  # imagetypes to look for in folder e.g. *.png
+
+        if verify:
+            self.verify=True
+        else:
+            self.verify=False
 
         wx.Frame.__init__(
             self,
@@ -283,6 +290,41 @@ class MainFrame(wx.Frame):
         # xlim and ylim have actually changed before turning zoom off
         self.prezoom_xlim = []
         self.prezoom_ylim = []
+
+        if verify:
+            print("Setting up verification mode...")
+
+            # Enabling the zoom, pan and home buttons
+            self.zoom.Enable(True)
+            self.home.Enable(True)
+            self.pan.Enable(True)
+            self.lock.Enable(True)
+            self.delete.Enable(False)
+            self.load.Enable(False)
+
+
+            self.save.Enable(True)
+            self.next.Enable(True)
+
+            # Reading config file and its variables
+            self.cfg = auxiliaryfunctions.read_config(self.config_file)
+            self.scorer = self.cfg["scorer"]
+            self.bodyparts = self.cfg["bodyparts"]
+            self.videos = self.cfg["video_sets"].keys()
+            self.markerSize = self.cfg["dotsize"]
+            self.alpha = self.cfg["alphavalue"]
+            self.colormap = plt.get_cmap(self.cfg["colormap"])
+            self.colormap = self.colormap.reversed()
+            self.project_path = self.cfg["project_path"]
+
+            # vid names
+            self.verify_video_names = [Path(i).stem for i in self.videos]
+            #folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
+            self.verify_frames=frames
+            self.verify_counter=0
+            folder,imname=self.verify_frames[self.verify_counter].split(os.sep)
+            if folder in self.verify_video_names:
+                MainFrame.load_labeled_frame4verification(self,folder,imname)
 
     ###############################################################################################################################
     # BUTTONS FUNCTIONS FOR HOTKEYS
@@ -743,11 +785,6 @@ class MainFrame(wx.Frame):
         """
         Moves to next image
         """
-        #  Checks for the last image and disables the Next button
-        if len(self.index) - self.iter == 1:
-            self.next.Enable(False)
-            return
-        self.prev.Enable(True)
 
         # Checks if zoom/pan button is ON
         MainFrame.updateZoomPan(self)
@@ -755,41 +792,64 @@ class MainFrame(wx.Frame):
         self.statusbar.SetStatusText(
             "Working on folder: {}".format(os.path.split(str(self.dir))[-1])
         )
-        self.rdb.SetSelection(0)
-        self.file = 1
-        # Refreshing the button counter
-        self.buttonCounter = []
 
-        MainFrame.saveEachImage(self)
-        self.iter = self.iter + 1
+        if self.verify:
+            MainFrame.saveEachImage(self)
+            self.prev.Enable(False)
 
-        if len(self.index) >= self.iter:
-            self.updatedCoords = MainFrame.getLabels(self, self.iter)
-            self.img = self.index[self.iter]
-            img_name = Path(self.index[self.iter]).name
-            self.figure.delaxes(
-                self.figure.axes[1]
-            )  # Removes the axes corresponding to the colorbar
-            (
-                self.figure,
-                self.axes,
-                self.canvas,
-                self.toolbar,
-            ) = self.image_panel.drawplot(
-                self.img,
-                img_name,
-                self.iter,
-                self.index,
-                self.bodyparts,
-                self.colormap,
-                keep_view=self.view_locked,
-            )
-            self.axes.callbacks.connect("xlim_changed", self.onZoom)
-            self.axes.callbacks.connect("ylim_changed", self.onZoom)
+            self.verify_counter+=1
+            if self.verify_counter>=len(self.verify_frames):
+                print("DONE.... exit GUI or so")
+            else:
+                self.figure.delaxes(
+                    self.figure.axes[1]
+                )  # Removes the axes corresponding to the colorbar
 
-            self.buttonCounter = MainFrame.plot(self, self.img)
-            self.cidClick = self.canvas.mpl_connect("button_press_event", self.onClick)
-            self.canvas.mpl_connect("button_release_event", self.onButtonRelease)
+                folder,imname=self.verify_frames[self.verify_counter].split(os.sep)
+                if folder in self.verify_video_names:
+                    MainFrame.load_labeled_frame4verification(self,folder,imname)
+
+        else:
+            #  Checks for the last image and disables the Next button
+            if len(self.index) - self.iter == 1:
+                self.next.Enable(False)
+                return
+            self.prev.Enable(True)
+            self.rdb.SetSelection(0)
+            self.file = 1
+            # Refreshing the button counter
+            self.buttonCounter = []
+
+            MainFrame.saveEachImage(self)
+            self.iter = self.iter + 1
+
+            if len(self.index) >= self.iter:
+                self.updatedCoords = MainFrame.getLabels(self, self.iter)
+                self.img = self.index[self.iter]
+                img_name = Path(self.index[self.iter]).name
+                self.figure.delaxes(
+                    self.figure.axes[1]
+                )  # Removes the axes corresponding to the colorbar
+                (
+                    self.figure,
+                    self.axes,
+                    self.canvas,
+                    self.toolbar,
+                ) = self.image_panel.drawplot(
+                    self.img,
+                    img_name,
+                    self.iter,
+                    self.index,
+                    self.bodyparts,
+                    self.colormap,
+                    keep_view=self.view_locked,
+                )
+                self.axes.callbacks.connect("xlim_changed", self.onZoom)
+                self.axes.callbacks.connect("ylim_changed", self.onZoom)
+
+                self.buttonCounter = MainFrame.plot(self, self.img)
+                self.cidClick = self.canvas.mpl_connect("button_press_event", self.onClick)
+                self.canvas.mpl_connect("button_release_event", self.onButtonRelease)
 
     def prevImage(self, event):
         """
@@ -987,6 +1047,7 @@ class MainFrame(wx.Frame):
         self.dataFrame.to_csv(csv_path)
         self.dataFrame.to_hdf(hdf_path, "df_with_missing", format="table", mode="w")
 
+
     def onChecked(self, event):
         self.cb = event.GetEventObject()
         if self.cb.GetValue() == True:
@@ -1005,10 +1066,81 @@ class MainFrame(wx.Frame):
             self.toolbar.zoom()
             self.zoom.SetValue(False)
 
+    def load_labeled_frame4verification(self,folder,imname):
+        self.dir = os.path.join(self.project_path,'labeled-data',folder)
+        imlist = []
+        for imtype in self.imtypes:
+            imlist.extend(
+                [
+                    fn
+                    for fn in glob.glob(os.path.join(self.dir, imtype))
+                    if ("labeled.png" not in fn)
+                ]
+            )
+
+        if len(imlist) == 0:
+            print("No images found!!")
+
+        if imname not in [fn.split(os.sep)[-1] for fn in imlist]:
+            print("Image not found!!!")
+        else:
+            self.index = np.sort(imlist)
+            self.statusbar.SetStatusText(
+                "Working on folder: {}".format(os.path.split(str(self.dir))[-1])
+            )
+            self.relativeimagenames = [
+                "labeled" + n.split("labeled")[1] for n in self.index
+            ]
+            #######################################################################
+            # Reading the existing dataset [data should be already present!]
+            #######################################################################
+            self.dataFrame = pd.read_hdf(
+                os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5"),
+                "df_with_missing",
+            )
+            self.dataFrame.sort_index(inplace=True)
+
+            # Find the corresponding frame!
+            self.iter=self.dataFrame.index.get_loc(os.path.join('labeled-data',folder,imname))
+            self.img = self.index[self.iter]
+            img_name = Path(self.index[self.iter]).name
+
+            self.norm, self.colorIndex = self.image_panel.getColorIndices(
+                self.img, self.bodyparts
+            )
+            (
+                self.figure,
+                self.axes,
+                self.canvas,
+                self.toolbar,
+            ) = self.image_panel.drawplot(
+                self.img, img_name, self.iter, self.index, self.bodyparts, self.colormap
+            )
+            self.axes.callbacks.connect("xlim_changed", self.onZoom)
+            self.axes.callbacks.connect("ylim_changed", self.onZoom)
+
+            (
+                self.choiceBox,
+                self.rdb,
+                self.slider,
+                self.checkBox,
+            ) = self.choice_panel.addRadioButtons(
+                self.bodyparts, self.file, self.markerSize
+            )
+            self.buttonCounter = MainFrame.plot(self, self.img)
+            self.cidClick = self.canvas.mpl_connect("button_press_event", self.onClick)
+            self.canvas.mpl_connect("button_release_event", self.onButtonRelease)
+
 
 def show(config, imtypes=["*.png"]):
     app = wx.App()
     frame = MainFrame(None, config, imtypes).Show()
+    app.MainLoop()
+
+def verify(config, frames=[], imtypes=["*.png"]): #for verification mode
+    app = wx.App()
+    frame = MainFrame(None, config, imtypes,verify=True,frames=frames).Show()
+
     app.MainLoop()
 
 
