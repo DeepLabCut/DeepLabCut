@@ -39,6 +39,7 @@ else:  # standard use [wxpython supported]
     from deeplabcut import refine_training_dataset
     from deeplabcut.generate_training_dataset import (
         label_frames,
+        verify_labeled_frames,
         dropannotationfileentriesduetodeletedimages,
         comparevideolistsanddatafolders,
         dropimagesduetolackofannotation,
