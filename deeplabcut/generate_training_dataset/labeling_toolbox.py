@@ -920,6 +920,7 @@ class MainFrame(wx.Frame):
         """
         Plots and call auxfun_drag class for moving and removing points.
         """
+        self.buttonCounter = []
         self.drs = []
         self.updatedCoords = []
         for bpindex, bp in enumerate(self.bodyparts):
