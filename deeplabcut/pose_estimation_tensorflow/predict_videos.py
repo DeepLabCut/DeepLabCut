@@ -1453,7 +1453,7 @@ def convert_detections2tracklets(
                         continue
 
                     if track_method == "box":
-                        bboxes = inferenceutils.calc_bboxes_from_keypoints(
+                        bboxes = trackingutils.calc_bboxes_from_keypoints(
                             animals, inferencecfg["boundingboxslack"], offset=0
                         )  # TODO: get cropping parameters and utilize!
                         trackers = mot_tracker.update(bboxes)

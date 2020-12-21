@@ -30,6 +30,7 @@ class SkeletonTracker developed for DLC 2.2.
 import math
 import numpy as np
 import warnings
+from collections import defaultdict
 from filterpy.common import kinematic_kf
 from filterpy.kalman import KalmanFilter
 from matplotlib import patches
@@ -895,72 +896,21 @@ def _track_individuals(
             similarity_threshold,
         )
 
-    tracklets = {}
-    for data in individuals:
-        if data is None:
+    tracklets = defaultdict(dict)
+    for i, (multi, *single) in enumerate(tqdm(individuals)):
+        if single is not None:
+            tracklets["single"][i] = single
+        if multi is None:
             continue
-
         if track_method == "box":
             # TODO: get cropping parameters and utilize!
-            bboxes = calc_bboxes_from_keypoints(data)
-            trackers = tracker.update(bboxes)
+            bboxes = calc_bboxes_from_keypoints(multi)
+            hyps = tracker.update(bboxes)
         else:
-            xy = data[..., :2]
-            trackers = tracker.track(xy)
-        fill_tracklets(tracklets, trackers, data, imname)
-
-    if cfg[
-        "uniquebodyparts"
-    ]:  # Initialize storage of the 'single' individual track
-        tracklets["s"] = {}
-    for index, imname in tqdm(enumerate(imnames)):
-        animals = inferenceutils.assemble_individuals(
-            inferencecfg,
-            data[imname],
-            numjoints,
-            BPTS,
-            iBPTS,
-            PAF,
-            partaffinityfield_graph,
-            lowerbound,
-            upperbound,
-        )
-        if animals is None:
-            continue
-
-        if track_method == "box":
-            bboxes = inferenceutils.calc_bboxes_from_keypoints(
-                animals, inferencecfg["boundingboxslack"], offset=0
-            )  # TODO: get cropping parameters and utilize!
-            trackers = mot_tracker.update(bboxes)
-        else:
-            xy = animals[..., :2]
-            trackers = mot_tracker.track(xy)
-        trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
-
-        # Test whether the unique bodyparts have been assembled
-        if cfg["uniquebodyparts"]:
-            inds_unique = [
-                all_jointnames.index(bp) for bp in cfg["uniquebodyparts"]
-            ]
-            if not any(
-                    np.isfinite(a.reshape((-1, 3))[inds_unique]).all()
-                    for a in animals
-            ):
-                single = np.full((numjoints, 3), np.nan)
-                single_dets = (
-                    inferenceutils.convertdetectiondict2listoflist(
-                        data[imname], inds_unique
-                    )
-                )
-                for ind, dets in zip(inds_unique, single_dets):
-                    if len(dets) == 1:
-                        single[ind] = dets[0][:3]
-                    elif len(dets) > 1:
-                        best = sorted(
-                            dets, key=lambda x: x[2], reverse=True
-                        )[0]
-                        single[ind] = best[:3]
-                tracklets["s"][imname] = single
-
-    tracklets["header"] = pdindex
+            xy = multi[..., :2]
+            hyps = tracker.track(xy)
+        for hyp in hyps:
+            tracklet_id, pred_id = hyp[-2:].astype(int)
+            if pred_id != -1:
+                tracklets[tracklet_id][i] = multi[pred_id]
+    return tracklets
