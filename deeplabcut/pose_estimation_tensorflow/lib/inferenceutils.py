@@ -735,75 +735,29 @@ def link_joints_to_individuals(
 
 def assemble_individuals(
     inference_cfg,
-    data,
-    numjoints,
-    BPTS,
-    iBPTS,
-    PAF,
-    paf_graph,
-    lowerbound=None,
-    upperbound=None,
-    evaluation=False,
-    use_springs=False,
-    link_unconnected=True,
-):
-
-    # filter detections according to inferencecfg parameters
-    all_detections = convertdetectiondict2listoflist(
-        data, BPTS, withid=inference_cfg["withid"], evaluation=evaluation
-    )
-    if all(not dets for dets in all_detections):
-        return None
-
-    # filter connections according to inferencecfg parameters
-    if isinstance(inference_cfg["pafthreshold"], list):
-        thresholds = inference_cfg["pafthreshold"]
-    else:
-        thresholds = [inference_cfg["pafthreshold"]] * len(PAF)
-    all_connections, missing_connections = extract_strong_connections(
-        inference_cfg,
-        data,
-        all_detections,
-        iBPTS,
-        paf_graph,
-        PAF,
-        thresholds,
-        lowerbound,
-        upperbound,
-        evaluation=evaluation,
-    )
-    subsets, candidates = link_joints_to_individuals(
-        all_detections,
-        all_connections,
-        inference_cfg["topktoretain"],
-        use_springs,
-        link_unconnected
-    )
-    ncols = 4 if inference_cfg["withid"] else 3
-    animals = np.full((len(subsets), numjoints, ncols), np.nan)
-    for animal, subset in zip(animals, subsets):
-        inds = subset.astype(int)
-        mask = inds != -1
-        animal[mask] = candidates[inds[mask], :-2]
-    return animals
-
-
-def assemble_individuals2(
-    inference_cfg,
     data_dict,
-    numjoints,
+    n_bodyparts,
     paf_inds,
     paf_graph,
     use_springs=False,
-    link_unconnected=False,
     dist_funcs=None
 ):
     all_detections = _nest_detections_in_arrays(data_dict)
-    if np.all([~np.any(dets) for dets in all_detections]):
-        return None
+    single_detections = all_detections[n_bodyparts:]
+    if len(single_detections):
+        single = np.full((len(single_detections), 3), np.nan)
+        for n, dets in enumerate(single_detections):
+            if len(dets):
+                single[n] = dets[np.argmax(dets[:, 2]), :3]
+    else:
+        single = None
+
+    multi_detections = all_detections[:n_bodyparts]
+    if np.all([~np.any(dets) for dets in multi_detections]):
+        return None, single
 
     all_connections = _extract_strong_connections(
-        all_detections,
+        multi_detections,
         paf_graph,
         paf_inds,
         data_dict["costs"],
@@ -812,14 +766,16 @@ def assemble_individuals2(
         dist_funcs,
     )
     subsets, candidates = _link_detections(
-        all_detections,
+        multi_detections,
         all_connections,
         inference_cfg["topktoretain"],
+        use_springs=use_springs,
     )
     ncols = 4 if inference_cfg["withid"] else 3
-    animals = np.full((len(subsets), numjoints, ncols), np.nan)
+    animals = np.full((len(subsets), n_bodyparts, ncols), np.nan)
     for animal, subset in zip(animals, subsets):
         inds = subset.astype(int)
         mask = inds != -1
         animal[mask] = candidates[inds[mask], :-2]
-    return animals
+
+    return animals, single
