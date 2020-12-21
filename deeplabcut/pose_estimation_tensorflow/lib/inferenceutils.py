@@ -736,23 +736,25 @@ def link_joints_to_individuals(
 def assemble_individuals(
     inference_cfg,
     data_dict,
-    n_bodyparts,
+    n_multibodyparts,
     paf_inds,
     paf_graph,
     use_springs=False,
     dist_funcs=None
 ):
     all_detections = _nest_detections_in_arrays(data_dict)
-    single_detections = all_detections[n_bodyparts:]
+    single_detections = all_detections[n_multibodyparts:]
     if len(single_detections):
         single = np.full((len(single_detections), 3), np.nan)
         for n, dets in enumerate(single_detections):
-            if len(dets):
+            if len(dets) > 1:
                 single[n] = dets[np.argmax(dets[:, 2]), :3]
+            elif len(dets) == 1:
+                single[n] = dets[0, :3]
     else:
         single = None
 
-    multi_detections = all_detections[:n_bodyparts]
+    multi_detections = all_detections[:n_multibodyparts]
     if np.all([~np.any(dets) for dets in multi_detections]):
         return None, single
 
@@ -772,7 +774,7 @@ def assemble_individuals(
         use_springs=use_springs,
     )
     ncols = 4 if inference_cfg["withid"] else 3
-    animals = np.full((len(subsets), n_bodyparts, ncols), np.nan)
+    animals = np.full((len(subsets), n_multibodyparts, ncols), np.nan)
     for animal, subset in zip(animals, subsets):
         inds = subset.astype(int)
         mask = inds != -1
