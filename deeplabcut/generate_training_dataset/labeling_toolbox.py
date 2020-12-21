@@ -626,8 +626,8 @@ class MainFrame(wx.Frame):
             self.iter = 0
 
         # Reading the image name
-        self.img = self.index[self.iter]
-        img_name = Path(self.index[self.iter]).name
+        self.img = self.dataFrame.index[self.iter]
+        img_name = Path(self.img).name
         self.norm, self.colorIndex = self.image_panel.getColorIndices(
             self.img, self.bodyparts
         )
