@@ -37,6 +37,7 @@ from numba import jit
 from numba.core.errors import NumbaPerformanceWarning
 from scipy.optimize import linear_sum_assignment
 from scipy.stats import mode
+from tqdm import tqdm
 from shapely.geometry import Polygon
 
 
@@ -845,3 +846,121 @@ def fill_tracklets(tracklets, trackers, animals, imname):
             xy = np.asarray(content[:-2])
             pred = np.insert(xy, range(2, len(xy) + 1, 2), 1)
             tracklets[tracklet_id][imname] = pred
+
+
+def calc_bboxes_from_keypoints(data, slack=0, offset=0):
+    if data.shape[-1] < 3:
+        raise ValueError("Data should be of shape (n_animals, n_bodyparts, 3)")
+
+    if data.ndim != 3:
+        data = np.expand_dims(data, axis=0)
+    bboxes = np.full((data.shape[0], 5), np.nan)
+    bboxes[:, :2] = np.nanmin(data[..., :2], axis=1) - slack  # X1, Y1
+    bboxes[:, 2:4] = np.nanmax(data[..., :2], axis=1) + slack  # X2, Y2
+    bboxes[:, -1] = np.nanmean(data[..., 2])  # Average confidence
+    bboxes[:, [0, 2]] += offset
+    return bboxes
+
+
+def _track_individuals(
+    individuals,
+    min_hits=1,
+    max_age=5,
+    similarity_threshold=0.6,
+    track_method='ellipse',
+):
+    if track_method not in ('box', 'skeleton', 'ellipse'):
+        raise ValueError(f'Unknown {track_method} tracker.')
+
+    if track_method == 'ellipse':
+        tracker = SORTEllipse(
+            max_age,
+            min_hits,
+            similarity_threshold
+        )
+    elif track_method == 'box':
+        tracker = Sort(
+            {
+                'max_age': max_age,
+                'min_hits': min_hits,
+                'iou_threshold': similarity_threshold
+            }
+        )
+    else:
+        n_bodyparts = individuals[0][0].shape[0]
+        tracker = SORT(
+            n_bodyparts,
+            max_age,
+            min_hits,
+            similarity_threshold,
+        )
+
+    tracklets = {}
+    for data in individuals:
+        if data is None:
+            continue
+
+        if track_method == "box":
+            # TODO: get cropping parameters and utilize!
+            bboxes = calc_bboxes_from_keypoints(data)
+            trackers = tracker.update(bboxes)
+        else:
+            xy = data[..., :2]
+            trackers = tracker.track(xy)
+        fill_tracklets(tracklets, trackers, data, imname)
+
+    if cfg[
+        "uniquebodyparts"
+    ]:  # Initialize storage of the 'single' individual track
+        tracklets["s"] = {}
+    for index, imname in tqdm(enumerate(imnames)):
+        animals = inferenceutils.assemble_individuals(
+            inferencecfg,
+            data[imname],
+            numjoints,
+            BPTS,
+            iBPTS,
+            PAF,
+            partaffinityfield_graph,
+            lowerbound,
+            upperbound,
+        )
+        if animals is None:
+            continue
+
+        if track_method == "box":
+            bboxes = inferenceutils.calc_bboxes_from_keypoints(
+                animals, inferencecfg["boundingboxslack"], offset=0
+            )  # TODO: get cropping parameters and utilize!
+            trackers = mot_tracker.update(bboxes)
+        else:
+            xy = animals[..., :2]
+            trackers = mot_tracker.track(xy)
+        trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
+
+        # Test whether the unique bodyparts have been assembled
+        if cfg["uniquebodyparts"]:
+            inds_unique = [
+                all_jointnames.index(bp) for bp in cfg["uniquebodyparts"]
+            ]
+            if not any(
+                    np.isfinite(a.reshape((-1, 3))[inds_unique]).all()
+                    for a in animals
+            ):
+                single = np.full((numjoints, 3), np.nan)
+                single_dets = (
+                    inferenceutils.convertdetectiondict2listoflist(
+                        data[imname], inds_unique
+                    )
+                )
+                for ind, dets in zip(inds_unique, single_dets):
+                    if len(dets) == 1:
+                        single[ind] = dets[0][:3]
+                    elif len(dets) > 1:
+                        best = sorted(
+                            dets, key=lambda x: x[2], reverse=True
+                        )[0]
+                        single[ind] = best[:3]
+                tracklets["s"][imname] = single
+
+    tracklets["header"] = pdindex
