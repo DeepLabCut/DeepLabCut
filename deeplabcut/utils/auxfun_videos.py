@@ -75,7 +75,7 @@ class VideoReader:
             self._n_frames_robust = int(output)
         return self._n_frames_robust
 
-    def calc_duration(self, robust=True):
+    def calc_duration(self, robust=False):
         if robust:
             command = (
                 f'ffprobe -i "{self.video_path}" -show_entries '
