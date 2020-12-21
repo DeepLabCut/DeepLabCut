@@ -31,9 +31,6 @@ from sklearn.metrics.cluster import contingency_matrix
 
 from deeplabcut.pose_estimation_tensorflow import return_evaluate_network_data
 from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import (
-    convertdetectiondict2listoflist,
-    extract_strong_connections,
-    link_joints_to_individuals,
     assemble_individuals,
     _nest_detections_in_arrays,
     _extract_strong_connections,
@@ -829,10 +826,7 @@ def _benchmark_paf_graphs(
     data,
     params,
     paf_inds,
-    paf_thresholds,
     use_springs=False,
-    link_unconnected=True,
-    sort_by="affinity",
     dist_funcs=None,
 ):
     paf_graph = params["paf_graph"]
@@ -918,7 +912,6 @@ def _benchmark_paf_graphs(
                 valid = neighbors != -1
                 id_gt = gt[valid, 2]
                 id_hyp = hyp[neighbors[valid], -1]
-
                 mat = contingency_matrix(id_gt, id_hyp)
                 purity = mat.max(axis=0).sum() / mat.sum()
                 scores[i, 1] = purity
@@ -943,8 +936,6 @@ def compare_best_and_worst_graphs(
     full_data_file,
     metadata_file,
     use_springs=False,
-    link_unconnected=False,
-    sort_by="degree",
     pcutoff=0.3,
     metric="auc",
     use_dists=True,
@@ -976,10 +967,7 @@ def compare_best_and_worst_graphs(
         data,
         params,
         paf_inds_best,
-        thresholds,
         use_springs,
-        link_unconnected,
-        sort_by,
         dist_funcs,
     )
     paf_inds_worst, thresholds = _get_n_best_paf_graphs(
@@ -995,10 +983,7 @@ def compare_best_and_worst_graphs(
         data,
         params,
         paf_inds_worst,
-        thresholds,
         use_springs,
-        link_unconnected,
-        sort_by,
         dist_funcs,
     )
     if naive_edges is None:
@@ -1019,10 +1004,7 @@ def compare_best_and_worst_graphs(
         data,
         params,
         paf_inds_naive,
-        thresholds,
         use_springs,
-        link_unconnected,
-        sort_by,
         dist_funcs,
     )
     return pd.concat(
@@ -1107,8 +1089,6 @@ def cross_validate_paf_graphs(
     metadata_file,
     output_name="",
     use_springs=False,
-    link_unconnected=False,
-    sort_by="affinity",
     pcutoff=0.3,
     overwrite_config=False,
 ):
@@ -1136,29 +1116,17 @@ def cross_validate_paf_graphs(
         data,
         params,
         paf_inds,
-        thresholds,
         use_springs,
-        link_unconnected,
-        sort_by,
         dist_funcs
     )
     # Select optimal PAF graph
-    # df = results[1]
-    # size_opt = np.argmax((1 - df.loc["miss", "mean"]) * df.loc["purity", "mean"])
-    # best_edges = paf_inds[size_opt]
-    # best_graph, best_thresholds = zip(
-    #     *[(params["paf_graph"][ind], thresholds[ind]) for ind in best_edges]
-    # )
-    # pose_config = inference_config.replace("inference_cfg", "pose_cfg")
-    # cfg["pafthreshold"] = [
-    #     float(np.round(th, 2)) for th in best_thresholds
-    # ]  # Cast to float to avoid YAML RepresenterError
-    # if not overwrite_config:
-    #     shutil.copy(pose_config, pose_config.replace(".yaml", "_old.yaml"))
-    #     shutil.copy(inference_config, inference_config.replace(".yaml", "_old.yaml"))
-    # auxiliaryfunctions.edit_config(pose_config, {"partaffinityfield_graph": best_graph})
-    # auxiliaryfunctions.write_plainconfig(inference_config, cfg)
-
+    df = results[1]
+    size_opt = np.argmax((1 - df.loc["miss", "mean"]) * df.loc["purity", "mean"])
+    best_graph = [params["paf_graph"][ind] for ind in paf_inds[size_opt]]
+    pose_config = inference_config.replace("inference_cfg", "pose_cfg")
+    if not overwrite_config:
+        shutil.copy(pose_config, pose_config.replace(".yaml", "_old.yaml"))
+    auxiliaryfunctions.edit_config(pose_config, {"partaffinityfield_graph": best_graph})
     if output_name:
         with open(output_name, "wb") as file:
             pickle.dump([results], file)

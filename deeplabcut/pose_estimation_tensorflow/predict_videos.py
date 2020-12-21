@@ -1432,17 +1432,15 @@ def convert_detections2tracklets(
                 ]:  # Initialize storage of the 'single' individual track
                     tracklets["s"] = {}
                 for index, imname in tqdm(enumerate(imnames)):
-                    animals = inferenceutils.assemble_individuals(
+                    animals, single = inferenceutils.assemble_individuals(
                         inferencecfg,
                         data[imname],
-                        numjoints,
-                        BPTS,
-                        iBPTS,
+                        len(cfg["multianimalbodyparts"]),
                         PAF,
                         partaffinityfield_graph,
-                        lowerbound,
-                        upperbound,
                     )
+                    if single is not None:
+                        tracklets["s"][imname] = single
                     if animals is None:
                         continue
 
@@ -1455,31 +1453,6 @@ def convert_detections2tracklets(
                         xy = animals[..., :2]
                         trackers = mot_tracker.track(xy)
                     trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
-
-                    # Test whether the unique bodyparts have been assembled
-                    if cfg["uniquebodyparts"]:
-                        inds_unique = [
-                            all_jointnames.index(bp) for bp in cfg["uniquebodyparts"]
-                        ]
-                        if not any(
-                            np.isfinite(a.reshape((-1, 3))[inds_unique]).all()
-                            for a in animals
-                        ):
-                            single = np.full((numjoints, 3), np.nan)
-                            single_dets = (
-                                inferenceutils.convertdetectiondict2listoflist(
-                                    data[imname], inds_unique
-                                )
-                            )
-                            for ind, dets in zip(inds_unique, single_dets):
-                                if len(dets) == 1:
-                                    single[ind] = dets[0][:3]
-                                elif len(dets) > 1:
-                                    best = sorted(
-                                        dets, key=lambda x: x[2], reverse=True
-                                    )[0]
-                                    single[ind] = best[:3]
-                            tracklets["s"][imname] = single
 
                 tracklets["header"] = pdindex
                 with open(trackname, "wb") as f:
