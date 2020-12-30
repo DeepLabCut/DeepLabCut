@@ -113,12 +113,13 @@ videotest = os.path.join(cfg['project_path'],'videos',videoname + ".avi")
 print(videotest)
 
 # quicker variant
-'''
+
 print("VIDEO ANALYSIS")
-dlc.analyze_videos(path_config_file, [videotest], save_as_csv=True)
+dlc.analyze_videos(path_config_file, [videotest], save_as_csv=False)
 
 print("CREATE VIDEO")
 dlc.create_labeled_video(path_config_file,[videotest], save_frames=False)
+'''
 
 print("Making plots")
 dlc.plot_trajectories(path_config_file,[videotest])
