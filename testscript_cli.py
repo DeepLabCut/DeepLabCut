@@ -31,7 +31,7 @@ import platform
 print("Imported DLC!")
 
 basepath = os.path.dirname(os.path.abspath("testscript_cli.py"))
-videoname = "reachingvideo1"
+videoname = "reachingvideoS"
 video = [
     os.path.join(
         basepath, "examples", "Reaching-Mackenzie-2018-08-30", "videos", videoname + ".avi"
