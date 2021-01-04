@@ -403,9 +403,7 @@ def GetPoseF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
                 batch_num += 1
             else:
                 batch_ind += 1
-        else:
-            nframes = counter
-            print("Detected frames: ", nframes)
+        elif counter >= nframes:
             if batch_ind > 0:
                 pose = predict.getposeNP(
                     frames, dlc_cfg, sess, inputs, outputs
@@ -450,8 +448,7 @@ def GetPoseS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
             ] = (
                 pose.flatten()
             )  # NOTE: thereby cfg['all_joints_names'] should be same order as bodyparts!
-        else:
-            nframes = counter
+        elif counter >= nframes:
             break
         counter += 1
 
@@ -496,8 +493,7 @@ def GetPoseS_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
             ] = (
                 pose.flatten()
             )  # NOTE: thereby cfg['all_joints_names'] should be same order as bodyparts!
-        else:
-            nframes = counter
+        elif counter >= nframes:
             break
         counter += 1
 
@@ -553,9 +549,7 @@ def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
                 batch_num += 1
             else:
                 batch_ind += 1
-        else:
-            nframes = counter
-            print("Detected frames: ", nframes)
+        elif counter >= nframes:
             if batch_ind > 0:
                 # pose = predict.getposeNP(frames, dlc_cfg, sess, inputs, outputs) #process the whole batch (some frames might be from previous batch!)
                 pose = sess.run(pose_tensor, feed_dict={inputs: frames})
@@ -643,8 +637,7 @@ def GetPoseDynamic(
                 detected = False
 
             PredictedData[counter, :] = pose
-        else:
-            nframes = counter
+        elif counter >= nframes:
             break
         counter += 1
 
