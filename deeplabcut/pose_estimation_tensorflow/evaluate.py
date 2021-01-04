@@ -138,7 +138,7 @@ def calculatepafdistancebounds(
                             distances = np.sqrt(
                                 (Data[ind, j1, "x"] - Data[ind2, j2, "x"]) ** 2
                                 + (Data[ind, j1, "y"] - Data[ind2, j2, "y"]) ** 2
-                            )
+                            ) / dlc_cfg["stride"]
                         else:
                             distances = None
 
