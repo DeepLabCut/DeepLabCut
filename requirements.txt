@@ -14,7 +14,7 @@ numpy==1.16.4
 opencv-python-headless
 numba~=0.52.0
 matplotlib
-moviepy<=1.0.1
+moviepy==1.0.1
 pandas>=1.0.1
 patsy
 python-dateutil
