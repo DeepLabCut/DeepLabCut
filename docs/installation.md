@@ -44,7 +44,7 @@ Here is an example on how to install **the GPU driver + CUDA 10 + TensorFlow 1.1
 
 - You can test that your GPU is being properly engaged with these additional [tips](https://www.tensorflow.org/programmers_guide/using_gpu).
 
-- Ubuntu users might find this [installation guide](https://github.com/DeepLabCut/Docker4DeepLabCut2.0/wiki/Installation-of-NVIDIA-driver-and-CUDA-10 for a fresh ubuntu install useful as well. 
+- Ubuntu users might find this [installation guide](https://github.com/DeepLabCut/Docker4DeepLabCut2.0/wiki/Installation-of-NVIDIA-driver-and-CUDA-10) for a fresh ubuntu install useful as well. 
 
 ## Troubleshooting:
 
