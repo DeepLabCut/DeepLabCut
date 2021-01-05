@@ -10,11 +10,11 @@ intel-openmp
 imgaug
 ipython
 ipython-genutils
+numpy==1.16.4
+opencv-python-headless
 numba
 matplotlib
 moviepy<=1.0.1
-numpy==1.16.4
-opencv-python-headless
 pandas>=1.0.1
 patsy
 python-dateutil
