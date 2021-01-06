@@ -251,7 +251,8 @@ def evaluate_multianimal_full(
                         sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
 
                         PredicteData = {}
-                        dist = np.full((len(all_bpts), len(Data)), np.nan)
+                        dist = np.full((len(Data), len(all_bpts)), np.nan)
+                        conf = np.full_like(dist, np.nan)
                         distnorm = np.full(len(Data), np.nan)
                         print("Analyzing data...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
@@ -315,7 +316,8 @@ def evaluate_multianimal_full(
                                 inds_gt = np.flatnonzero(
                                     np.all(~np.isnan(xy_gt), axis=1)
                                 )
-                                xy = coords_pred[joints.index(bpt)]
+                                n_joint = joints.index(bpt)
+                                xy = coords_pred[n_joint]
                                 if inds_gt.size and xy.size:
                                     # Pick the predictions closest to ground truth,
                                     # rather than the ones the model has most confident in
@@ -323,7 +325,9 @@ def evaluate_multianimal_full(
                                     rows, cols = linear_sum_assignment(d)
                                     min_dists = d[rows, cols]
                                     inds = np.flatnonzero(all_bpts == bpt)
-                                    dist[inds[inds_gt[rows]], imageindex] = min_dists
+                                    sl = imageindex, inds[inds_gt[rows]]
+                                    dist[sl] = min_dists
+                                    conf[sl] = probs_pred[n_joint][cols].squeeze()
 
                             if plotting:
                                 fig = visualization.make_multianimal_labeled_image(
@@ -347,9 +351,25 @@ def evaluate_multianimal_full(
                         sess.close()  # closes the current tf session
 
                         # Compute all distance statistics
-                        df_dist = pd.DataFrame(dist, index=df.index)
+                        df_dist = pd.DataFrame(dist, columns=df.index)
+                        df_conf = pd.DataFrame(conf, columns=df.index)
+                        df_joint = pd.concat(
+                            [df_dist, df_conf],
+                            keys=["rmse", "conf"],
+                            names=["metrics"],
+                            axis=1
+                        )
+                        df_joint = df_joint.reorder_levels(
+                            list(np.roll(df_joint.columns.names, -1)), axis=1
+                        )
+                        df_joint.sort_index(
+                            axis=1,
+                            level=["individuals", "bodyparts"],
+                            ascending=[True, True],
+                            inplace=True
+                        )
                         write_path = os.path.join(evaluationfolder, "dist.csv")
-                        df_dist.to_csv(write_path)
+                        df_joint.to_csv(write_path)
 
                         stats_per_ind = _compute_stats(df_dist.groupby("individuals"))
                         stats_per_ind.to_csv(
@@ -361,7 +381,7 @@ def evaluate_multianimal_full(
                         )
 
                         # For OKS/PCK, compute the standard deviation error across all frames
-                        sd = df_dist.groupby("bodyparts").mean().std(axis=1)
+                        sd = df_dist.groupby("bodyparts", axis=1).mean().std(axis=0)
                         sd["distnorm"] = np.sqrt(np.nanmax(distnorm))
                         sd.to_csv(write_path.replace("dist.csv", "sd.csv"))
 
