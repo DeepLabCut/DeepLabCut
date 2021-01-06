@@ -284,8 +284,8 @@ def KmeansbasedFrameselectioncv2(
                         if (
                             not allocated
                         ):  #'DATA' not in locals(): #allocate memory in first pass
-                            DATA = np.empty(
-                                (nframes, np.shape(image)[0], np.shape(image)[1] * 3)
+                            DATA = np.full(
+                                (nframes, np.shape(image)[0], np.shape(image)[1] * 3), np.nan
                             )
                             allocated = True
                         DATA[counter, :, :] = np.hstack(
@@ -315,8 +315,8 @@ def KmeansbasedFrameselectioncv2(
                         if (
                             not allocated
                         ):  #'DATA' not in locals(): #allocate memory in first pass
-                            DATA = np.empty(
-                                (nframes, np.shape(image)[0], np.shape(image)[1])
+                            DATA = np.full(
+                                (nframes, np.shape(image)[0], np.shape(image)[1]), np.nan
                             )
                             allocated = True
                         DATA[counter, :, :] = np.mean(image, 2)
@@ -346,8 +346,8 @@ def KmeansbasedFrameselectioncv2(
                         if (
                             not allocated
                         ):  #'DATA' not in locals(): #allocate memory in first pass
-                            DATA = np.empty(
-                                (nframes, np.shape(image)[0], np.shape(image)[1] * 3)
+                            DATA = np.full(
+                                (nframes, np.shape(image)[0], np.shape(image)[1] * 3), np.nan
                             )
                             allocated = True
                         DATA[counter, :, :] = np.hstack(
@@ -376,13 +376,14 @@ def KmeansbasedFrameselectioncv2(
                         if (
                             not allocated
                         ):  #'DATA' not in locals(): #allocate memory in first pass
-                            DATA = np.empty(
-                                (nframes, np.shape(image)[0], np.shape(image)[1])
+                            DATA = np.full(
+                                (nframes, np.shape(image)[0], np.shape(image)[1]), np.nan
                             )
                             allocated = True
                         DATA[counter, :, :] = np.mean(image, 2)
 
         print("Kmeans clustering ... (this might take a while)")
+        DATA = DATA[~np.isnan(DATA).any(axis=(1, 2))]
         data = DATA - DATA.mean(axis=0)
         data = data.reshape(nframes, -1)  # stacking
 
