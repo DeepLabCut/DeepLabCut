@@ -35,11 +35,8 @@ def create_empty_df(dataframe, scorer, flag):
     # flag = 2d or 3d
 
     df = dataframe
-    bodyparts = df.columns.get_level_values(1)
-    _, idx = np.unique(bodyparts, return_index=True)
-    bodyparts = list(bodyparts[np.sort(idx)])
-    a = np.empty((df.shape[0], 3))
-    a[:] = np.nan
+    bodyparts = df.columns.get_level_values("bodyparts").unique()
+    a = np.full((df.shape[0], 3), np.nan)
     dataFrame = None
     for bodypart in bodyparts:
         if flag == "2d":
