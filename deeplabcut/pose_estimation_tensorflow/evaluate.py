@@ -572,14 +572,13 @@ def evaluate_network(
 
         # TODO: Make this code not so redundant!
         evaluate_multianimal_full(
-            config,
-            Shuffles,
-            trainingsetindex,
-            plotting,
-            show_errors,
-            comparisonbodyparts,
-            gputouse,
-            modelprefix,
+            config=config,
+            Shuffles=Shuffles,
+            trainingsetindex=trainingsetindex,
+            plotting=plotting,
+            comparisonbodyparts=comparisonbodyparts,
+            gputouse=gputouse,
+            modelprefix=modelprefix,
             c_engine=c_engine,
         )
     else:

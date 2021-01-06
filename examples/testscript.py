@@ -43,6 +43,10 @@ if __name__ == '__main__':
 
     dfolder = None
     net_type = "resnet_50"  #'mobilenet_v2_0.35' #'resnet_50'
+    
+    # net_type='mobilenet_v2_0.35'
+    # net_type='efficientnet-b0' #to -b7
+    
     augmenter_type = "default"  # = imgaug!!
     augmenter_type2 = "scalecrop"
 
@@ -93,6 +97,7 @@ if __name__ == '__main__':
             "CollectedData_" + scorer + ".csv",
         )
     )
+
     dataFrame.to_hdf(
         os.path.join(
             cfg["project_path"],
@@ -369,17 +374,19 @@ if __name__ == '__main__':
     print("Export model...")
     deeplabcut.export_model(path_config_file, shuffle=2, make_tar=False)
 
-
+    print("Merging datasets...")
     trainIndices, testIndices = deeplabcut.mergeandsplit(
         path_config_file, trainindex=0, uniform=True
     )
-
+    
+    print("Creating two identical splits...")
     deeplabcut.create_training_dataset(
         path_config_file,
         Shuffles=[4, 5],
         trainIndices=[trainIndices, trainIndices],
         testIndices=[testIndices, testIndices],
     )
+
 
     print("ALL DONE!!! - default cases are functional.")
     print("Re-import DLC with env. variable set to test DLC light mode.")

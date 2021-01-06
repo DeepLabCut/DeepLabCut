@@ -103,7 +103,16 @@ def start_preloading(sess, enqueue_op, dataset, placeholders):
 
 
 def get_optimizer(loss_op, cfg):
-    learning_rate = TF.placeholder(tf.float32, shape=[])
+    tstep = tf.placeholder(tf.int32,shape=[],name='tstep')
+    if 'efficientnet' in cfg.net_type:
+        print("Switching to cosine decay schedule with adam!")
+        cfg.optimizer == "adam"
+        learning_rate = tf.train.cosine_decay(cfg.lr_init,
+                                              tstep,
+                                              cfg.decay_steps,
+                                              alpha=cfg.alpha_r)
+    else:
+        learning_rate = tf.placeholder(tf.float32, shape=[])
 
     if cfg.optimizer == "sgd":
         optimizer = TF.train.MomentumOptimizer(
@@ -115,7 +124,7 @@ def get_optimizer(loss_op, cfg):
         raise ValueError("unknown optimizer {}".format(cfg.optimizer))
     train_op = slim.learning.create_train_op(loss_op, optimizer)
 
-    return learning_rate, train_op
+    return learning_rate, train_op, tstep
 
 
 def get_optimizer_with_freeze(loss_op, cfg):
@@ -160,14 +169,13 @@ def train(
         cfg.dataset_type == "scalecrop"
         or cfg.dataset_type == "tensorpack"
         or cfg.dataset_type == "deterministic"
-    ) and cfg["batch_size"] != 1:
+    ):
         print(
-            "Switching batchsize to 1, as the tensorpack/ scalecrop/ deterministic loader does not support batches >1. Use imgaug/default loader for larger batch sizes."
+            "Switching batchsize to 1, as tensorpack/scalecrop/deterministic loaders do not support batches >1. Use imgaug/default loader."
         )
         cfg["batch_size"] = 1  # in case this was edited for analysis.-
 
     dataset = create_dataset(cfg)
-
     batch_spec = get_batch_spec(cfg)
     batch, enqueue_op, placeholders = setup_preloading(batch_spec)
 
@@ -190,6 +198,11 @@ def train(
             variables_to_restore = slim.get_variables_to_restore(
                 include=["MobilenetV2"]
             )
+        elif 'efficientnet' in cfg.net_type:
+            variables_to_restore = slim.get_variables_to_restore(include=["efficientnet"])
+            variables_to_restore = {
+                    var.op.name.replace("efficientnet/", "")
+                    + '/ExponentialMovingAverage':var for var in variables_to_restore}
         else:
             print("Wait for DLC 2.3.")
 
@@ -212,7 +225,7 @@ def train(
         print("Freezing...")
         learning_rate, _, train_op = get_optimizer_with_freeze(loss_op, cfg)
     else:
-        learning_rate, train_op = get_optimizer(total_loss, cfg)
+        learning_rate, train_op, tstep = get_optimizer(total_loss, cfg)
 
     sess.run(TF.global_variables_initializer())
     sess.run(TF.local_variables_initializer())
@@ -249,10 +262,16 @@ def train(
     print(cfg)
     print("Starting training....")
     for it in range(max_iter + 1):
-        current_lr = lr_gen.get_lr(it)
+        if 'efficientnet' in cfg.net_type:
+            dict={tstep: it}
+            current_lr = sess.run(learning_rate,feed_dict=dict)
+        else:
+            current_lr = lr_gen.get_lr(it)
+            dict={learning_rate: current_lr}
+
         [_, loss_val, summary] = sess.run(
             [train_op, total_loss, merged_summaries],
-            feed_dict={learning_rate: current_lr},
+            feed_dict=dict,
         )
         cum_loss += loss_val
         train_writer.add_summary(summary, it)

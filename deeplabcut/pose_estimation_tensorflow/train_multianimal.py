@@ -89,7 +89,23 @@ def start_preloading(sess, enqueue_op, dataset, placeholders):
 
 
 def get_optimizer(loss_op, cfg):
-    learning_rate = TF.placeholder(tf.float32, shape=[])
+    tstep = tf.placeholder(tf.int32,shape=[],name='tstep')
+    if 'decay_steps' not in cfg.keys():
+        learning_rate = tf.placeholder(tf.float32, shape=[])
+        print("here")
+    else:
+        if 't_mul' not in cfg.keys():
+            t_mul = 1.0
+        else:
+            t_mul = cfg['t_mul']
+        if 'm_mul' not in cfg.keys():
+            m_mul = 0.9
+        else:
+            m_mul = cfg['m_mul']
+        learning_rate = tf.train.cosine_decay_restarts(cfg['lr_init'],tstep,
+                                                       cfg['decay_steps'],
+                                                       t_mul=t_mul,m_mul=m_mul,
+                                                       alpha=cfg['alpha_r'])
 
     if cfg.optimizer == "sgd":
         optimizer = TF.train.MomentumOptimizer(
@@ -101,7 +117,7 @@ def get_optimizer(loss_op, cfg):
         raise ValueError("unknown optimizer {}".format(cfg.optimizer))
     train_op = slim.learning.create_train_op(loss_op, optimizer)
 
-    return learning_rate, train_op
+    return learning_rate, train_op, tstep
 
 
 def train(
@@ -157,6 +173,11 @@ def train(
             variables_to_restore = slim.get_variables_to_restore(
                 include=["MobilenetV2"]
             )
+        elif 'efficientnet' in cfg.net_type:
+            variables_to_restore = slim.get_variables_to_restore(include=["efficientnet"])
+            variables_to_restore = {
+                    var.op.name.replace("efficientnet/", "")
+                    + '/ExponentialMovingAverage':var for var in variables_to_restore}
         else:
             print("Wait for DLC 2.3.")
 
@@ -174,13 +195,18 @@ def train(
 
     coord, thread = start_preloading(sess, enqueue_op, dataset, placeholders)
     train_writer = TF.summary.FileWriter(cfg.log_dir, sess.graph)
-    learning_rate, train_op = get_optimizer(total_loss, cfg)
+    learning_rate, train_op, tstep = get_optimizer(total_loss, cfg)
 
     sess.run(TF.global_variables_initializer())
     sess.run(TF.local_variables_initializer())
 
     # Restore variables from disk.
-    restorer.restore(sess, cfg.init_weights)
+    if 'efficientnet' in cfg.net_type:
+        init_weights = os.path.join(cfg.init_weights,"model.ckpt")
+    else:
+        init_weights = cfg.init_weights
+
+    restorer.restore(sess, init_weights)
     if maxiters == None:
         max_iter = int(cfg.multi_step[-1][1])
     else:
@@ -210,11 +236,17 @@ def train(
     print(cfg)
     print("Starting multi-animal training....")
     for it in range(max_iter + 1):
-        current_lr = lr_gen.get_lr(it)
+        if 'decay_steps' not in cfg.keys():
+            current_lr = lr_gen.get_lr(it)
+            dict={learning_rate: current_lr}
+        else:
+            dict={tstep: it}
+            current_lr = sess.run(learning_rate,feed_dict=dict)
+
         # [_, loss_val, summary] = sess.run([train_op, total_loss, merged_summaries],feed_dict={learning_rate: current_lr})
         [_, alllosses, loss_val, summary] = sess.run(
             [train_op, losses, total_loss, merged_summaries],
-            feed_dict={learning_rate: current_lr},
+            feed_dict=dict,
         )
 
         partloss += alllosses["part_loss"]  # scoremap loss

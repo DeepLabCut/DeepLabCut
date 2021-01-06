@@ -470,9 +470,13 @@ def GetEvaluationFolder(trainFraction, shuffle, cfg, modelprefix=""):
     Task = cfg["Task"]
     date = cfg["date"]
     iterate = "iteration-" + str(cfg["iteration"])
+    if 'eval_prefix' in cfg:
+        eval_prefix = cfg['eval_prefix']+'/'
+    else:
+        eval_prefix = 'evaluation-results'+'/'
     return Path(
         modelprefix,
-        "evaluation-results/"
+        eval_prefix
         + iterate
         + "/"
         + Task
@@ -565,9 +569,11 @@ def GetScorerName(
     if (
         "resnet" in dlc_cfg["net_type"]
     ):  # ABBREVIATE NETWORK NAMES -- esp. for mobilenet!
-        netname = dlc_cfg["net_type"].replace("_", "")
-    else:  # mobilenet >> mobnet_100; mobnet_35 etc.
+        netname = dlc_cfg["net_type"].replace(" _", "")
+    elif "mobilenet" in dlc_cfg["net_type"]:  # mobilenet >> mobnet_100; mobnet_35 etc.
         netname = "mobnet_" + str(int(float(dlc_cfg["net_type"].split("_")[-1]) * 100))
+    elif "efficientnet" in dlc_cfg["net_type"]:
+        netname = "effnet_" + dlc_cfg["net_type"].split("-")[1]
 
     scorer = (
         "DLC_"
