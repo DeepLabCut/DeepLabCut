@@ -16,11 +16,13 @@ import numpy as np
 import pandas as pd
 import skimage.color
 from scipy.optimize import linear_sum_assignment
+from scipy.spatial import cKDTree
 from scipy.spatial.distance import cdist
 from skimage import io
 from skimage.util import img_as_ubyte
 from tqdm import tqdm
 
+from deeplabcut.pose_estimation_tensorflow.evaluate import make_results_file
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.utils import visualization
 
@@ -45,6 +47,57 @@ def _compute_stats(df):
             _percentile(0.75),
         ]
     ).stack(level=1)
+
+
+def _find_closest_neighbors(xy_true, xy_pred, k=5):
+    n_preds = xy_pred.shape[0]
+    tree = cKDTree(xy_pred)
+    dist, inds = tree.query(xy_true, k=k)
+    idx = np.argsort(dist[:, 0])
+    neighbors = np.full(len(xy_true), -1, dtype=int)
+    picked = set()
+    for i, ind in enumerate(inds[idx]):
+        for j in ind:
+            if j not in picked:
+                picked.add(j)
+                neighbors[idx[i]] = j
+                break
+        if len(picked) == n_preds:
+            break
+    return neighbors
+
+
+def _calc_prediction_error(data):
+    _ = data.pop('metadata', None)
+    dists = []
+    for n, dict_ in enumerate(tqdm(data.values())):
+        gt = np.concatenate(dict_['groundtruth'][1])
+        xy = np.concatenate(dict_['prediction']['coordinates'][0])
+        p = np.concatenate(dict_['prediction']['confidence'])
+        neighbors = _find_closest_neighbors(gt, xy)
+        found = neighbors != -1
+        gt2 = gt[found]
+        xy2 = xy[neighbors[found]]
+        dists.append(np.c_[np.linalg.norm(gt2 - xy2, axis=1), p[neighbors[found]]])
+    return dists
+
+
+def _calc_train_test_error(data, metadata, pcutoff=0.3):
+    train_inds = set(metadata['data']['trainIndices'])
+    dists = _calc_prediction_error(data)
+    dists_train, dists_test = [], []
+    for n, dist in enumerate(dists):
+        if n in train_inds:
+            dists_train.append(dist)
+        else:
+            dists_test.append(dist)
+    dists_train = np.concatenate(dists_train)
+    dists_test = np.concatenate(dists_test)
+    error_train = np.nanmean(dists_train[:, 0])
+    error_train_cut = np.nanmean(dists_train[dists_train[:, 1] >= pcutoff, 0])
+    error_test = np.nanmean(dists_test[:, 0])
+    error_test_cut = np.nanmean(dists_test[dists_test[:, 1] >= pcutoff, 0])
+    return error_train, error_test, error_train_cut, error_test_cut
 
 
 def evaluate_multianimal_full(
@@ -251,7 +304,8 @@ def evaluate_multianimal_full(
                         sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
 
                         PredicteData = {}
-                        dist = np.full((len(all_bpts), len(Data)), np.nan)
+                        dist = np.full((len(Data), len(all_bpts)), np.nan)
+                        conf = np.full_like(dist, np.nan)
                         distnorm = np.full(len(Data), np.nan)
                         print("Analyzing data...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
@@ -315,7 +369,8 @@ def evaluate_multianimal_full(
                                 inds_gt = np.flatnonzero(
                                     np.all(~np.isnan(xy_gt), axis=1)
                                 )
-                                xy = coords_pred[joints.index(bpt)]
+                                n_joint = joints.index(bpt)
+                                xy = coords_pred[n_joint]
                                 if inds_gt.size and xy.size:
                                     # Pick the predictions closest to ground truth,
                                     # rather than the ones the model has most confident in
@@ -323,7 +378,9 @@ def evaluate_multianimal_full(
                                     rows, cols = linear_sum_assignment(d)
                                     min_dists = d[rows, cols]
                                     inds = np.flatnonzero(all_bpts == bpt)
-                                    dist[inds[inds_gt[rows]], imageindex] = min_dists
+                                    sl = imageindex, inds[inds_gt[rows]]
+                                    dist[sl] = min_dists
+                                    conf[sl] = probs_pred[n_joint][cols].squeeze()
 
                             if plotting:
                                 fig = visualization.make_multianimal_labeled_image(
@@ -347,35 +404,63 @@ def evaluate_multianimal_full(
                         sess.close()  # closes the current tf session
 
                         # Compute all distance statistics
-                        df_dist = pd.DataFrame(dist, index=df.index)
-                        write_path = os.path.join(evaluationfolder, "dist.csv")
-                        df_dist.to_csv(write_path)
+                        df_dist = pd.DataFrame(dist, columns=df.index)
+                        df_conf = pd.DataFrame(conf, columns=df.index)
+                        df_joint = pd.concat(
+                            [df_dist, df_conf],
+                            keys=["rmse", "conf"],
+                            names=["metrics"],
+                            axis=1
+                        )
+                        df_joint = df_joint.reorder_levels(
+                            list(np.roll(df_joint.columns.names, -1)), axis=1
+                        )
+                        df_joint.sort_index(
+                            axis=1,
+                            level=["individuals", "bodyparts"],
+                            ascending=[True, True],
+                            inplace=True
+                        )
+                        write_path = os.path.join(evaluationfolder, f"dist_{trainingsiterations}.csv")
+                        df_joint.to_csv(write_path)
 
-                        stats_per_ind = _compute_stats(df_dist.groupby("individuals"))
-                        stats_per_ind.to_csv(
-                            write_path.replace("dist.csv", "dist_stats_ind.csv")
-                        )
-                        stats_per_bpt = _compute_stats(df_dist.groupby("bodyparts"))
-                        stats_per_bpt.to_csv(
-                            write_path.replace("dist.csv", "dist_stats_bpt.csv")
-                        )
+                        # Calculate overall prediction error
+                        error = df_joint.xs("rmse", level="metrics", axis=1)
+                        mask = df_joint.xs("conf", level="metrics", axis=1) >= cfg["pcutoff"]
+                        error_masked = error[mask]
+                        error_train = np.nanmean(error.iloc[trainIndices])
+                        error_train_cut = np.nanmean(error_masked.iloc[trainIndices])
+                        error_test = np.nanmean(error.iloc[testIndices])
+                        error_test_cut = np.nanmean(error_masked.iloc[testIndices])
+                        results = [
+                            trainingsiterations,
+                            int(100 * trainFraction),
+                            shuffle,
+                            np.round(error_train, 2),
+                            np.round(error_test, 2),
+                            cfg["pcutoff"],
+                            np.round(error_train_cut, 2),
+                            np.round(error_test_cut, 2),
+                        ]
+                        final_result.append(results)
 
                         # For OKS/PCK, compute the standard deviation error across all frames
-                        sd = df_dist.groupby("bodyparts").mean().std(axis=1)
+                        sd = df_dist.groupby("bodyparts", axis=1).mean().std(axis=0)
                         sd["distnorm"] = np.sqrt(np.nanmax(distnorm))
                         sd.to_csv(write_path.replace("dist.csv", "sd.csv"))
 
                         if show_errors:
-                            print("##########################################&1")
-                            print(
-                                "Euclidean distance statistics per individual (in pixels)"
-                            )
-                            print(stats_per_ind.mean(axis=1).unstack().to_string())
+                            string = "Results for {} training iterations: {}, shuffle {}:\n" \
+                                     "Train error: {} pixels. Test error: {} pixels.\n" \
+                                     "With pcutoff of {}:\n" \
+                                     "Train error: {} pixels. Test error: {} pixels."
+                            print(string.format(*results))
+
                             print("##########################################")
-                            print(
-                                "Euclidean distance statistics per bodypart (in pixels)"
-                            )
-                            print(stats_per_bpt.mean(axis=1).unstack().to_string())
+                            print("Average Euclidean distance to GT per individual (in pixels)")
+                            print(error_masked.groupby('individuals', axis=1).mean().mean().to_string())
+                            print("Average Euclidean distance to GT per bodypart (in pixels)")
+                            print(error_masked.groupby('bodyparts', axis=1).mean().mean().to_string())
 
                         PredicteData["metadata"] = {
                             "nms radius": dlc_cfg.nmsradius,
@@ -406,6 +491,9 @@ def evaluate_multianimal_full(
                         )
 
                         tf.reset_default_graph()
+
+                if len(final_result) > 0:  # Only append if results were calculated
+                    make_results_file(final_result, evaluationfolder, DLCscorer)
 
     # returning to intial folder
     os.chdir(str(start_path))
