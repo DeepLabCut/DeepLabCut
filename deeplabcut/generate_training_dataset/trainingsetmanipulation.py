@@ -864,8 +864,10 @@ def create_training_dataset(
     testIndices: list of lists, optional (default=None)
         List of one or multiple lists containing test indexes.
 
-    net_type: string
-        Type of networks. Currently resnet_50, resnet_101, resnet_152, mobilenet_v2_1.0,mobilenet_v2_0.75, mobilenet_v2_0.5, and mobilenet_v2_0.35 are supported.
+    net_type: list
+        Type of networks. Currently resnet_50, resnet_101, resnet_152, mobilenet_v2_1.0, mobilenet_v2_0.75,
+        mobilenet_v2_0.5, mobilenet_v2_0.35, efficientnet_b0, efficientnet_b1, efficientnet_b2, efficientnet_b3,
+        efficientnet_b4, efficientnet_b5, and efficientnet_b6 are supported.
 
     augmenter_type: string
         Type of augmenter. Currently default, imgaug, tensorpack, and deterministic are supported.
@@ -911,7 +913,7 @@ def create_training_dataset(
         if net_type is None:  # loading & linking pretrained models
             net_type = cfg.get("default_net_type", "resnet_50")
         else:
-            if "resnet" in net_type or "mobilenet" in net_type:
+            if "resnet" in net_type or "mobilenet" in net_type or "efficientnet" in net_type:
                 pass
             else:
                 raise ValueError("Invalid network type:", net_type)
@@ -1151,7 +1153,9 @@ def create_training_model_comparison(
         Number of shuffles of training dataset to create, i.e. [1,2,3] for num_shuffles=3. Default is set to 1.
 
     net_types: list
-        Type of networks. Currently resnet_50, resnet_101, resnet_152, mobilenet_v2_1.0,mobilenet_v2_0.75, mobilenet_v2_0.5, and mobilenet_v2_0.35 are supported.
+        Type of networks. Currently resnet_50, resnet_101, resnet_152, mobilenet_v2_1.0,mobilenet_v2_0.75, mobilenet_v2_0.5, mobilenet_v2_0.35,
+        efficientnet_b0, efficientnet_b1, efficientnet_b2, efficientnet_b3, efficientnet_b4,
+        efficientnet_b5, and efficientnet_b6 are supported.
 
     augmenter_types: list
         Type of augmenters. Currently "default", "imgaug", "tensorpack", and "deterministic" are supported.

@@ -19,6 +19,7 @@ cfg.stride = 8.0
 cfg.weigh_part_predictions = False
 cfg.weigh_negatives = False
 cfg.fg_fraction = 0.25
+
 # imagenet mean for resnet pretraining:
 cfg.mean_pixel = [123.68, 116.779, 103.939]
 cfg.shuffle = True

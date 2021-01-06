@@ -9,6 +9,9 @@ mobilenet_v2_0.75: https://storage.googleapis.com/mobilenet_v2/checkpoints/mobil
 mobilenet_v2_0.5: https://storage.googleapis.com/mobilenet_v2/checkpoints/mobilenet_v2_0.5_224.tgz
 mobilenet_v2_0.35: https://storage.googleapis.com/mobilenet_v2/checkpoints/mobilenet_v2_0.35_224.tgz
 
+#Source: https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet
+efficientnet: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/ckptsaug/
+
 #Model Zoo from where the Charles flow(s)
 full_human: http://deeplabcut.rowland.harvard.edu/models/DLC_human_fullbody_resnet_101.tar.gz
 full_dog: http://deeplabcut.rowland.harvard.edu/models/DLC_Dog_resnet_50_iteration-0_shuffle-0.tar.gz

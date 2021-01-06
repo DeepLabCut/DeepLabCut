@@ -38,7 +38,10 @@ video = [
 # dfolder=basepath
 
 dfolder = None
-net_type = "resnet_50"  #'mobilenet_v2_0.35' #'resnet_50'
+net_type = "resnet_50"
+# net_type='mobilenet_v2_0.35'
+# net_type='efficientnet-b0' #to -b7
+
 augmenter_type = "default"  # = imgaug!!
 augmenter_type2 = "scalecrop"
 
@@ -365,11 +368,12 @@ deeplabcut.analyze_time_lapse_frames(
 print("Export model...")
 deeplabcut.export_model(path_config_file, shuffle=2, make_tar=False)
 
-
+print("Merging datasets...")
 trainIndices, testIndices = deeplabcut.mergeandsplit(
     path_config_file, trainindex=0, uniform=True
 )
 
+print("Creating two identical splits...")
 deeplabcut.create_training_dataset(
     path_config_file,
     Shuffles=[4, 5],

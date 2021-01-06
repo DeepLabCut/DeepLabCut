@@ -223,6 +223,7 @@ def get_detectionswithcosts(
 ):
     """ Extract pose and association costs from PAFs """
     im = np.expand_dims(image, axis=0).astype(float)
+
     outputs_np = sess.run(outputs, feed_dict={inputs: im})
     scmap, locref, paf = extract_cnn_output(outputs_np, cfg)
 
@@ -352,6 +353,11 @@ def get_detectionswithcostsandGT(
 ):
     """ Extract pose and association costs from PAFs """
     im = np.expand_dims(image, axis=0).astype(float)
+
+    # if 'eval_scale' in cfg.keys():
+    #     import imgaug.augmenters as iaa
+    #     im = iaa.Resize(float(cfg['eval_scale']))(images=im)
+
     outputs_np = sess.run(outputs, feed_dict={inputs: im})
     scmap, locref, paf = extract_cnn_output(outputs_np, cfg)
 

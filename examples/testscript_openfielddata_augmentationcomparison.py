@@ -117,9 +117,25 @@ Tensorpack:
 Results for 10000  training iterations: 95 3 train error: 2.9 pixels. Test error: 3.31  pixels.
 With pcutoff of 0.4  train error: 2.9 pixels. Test error: 3.31 pixels
 
+My results were (Run with DLC *2.1.9* on Jan 2021) for 10 k iterations
+
+**ResNet50
+Imgaug:
+
+Scalecrop:
+
+Tensorpack:
+
+
+**EffNet-b3
+Imgaug:
+
+Scalecrop:
+
+Tensorpack:
 
 Notice: despite the higher RMSE for imgaug due to the augmentation,
-the network performs much better on the testvideo.
+the network performs much better on the testvideo (see Neuron Primer: https://www.cell.com/neuron/pdf/S0896-6273(20)30717-0.pdf)
 
 """
 
@@ -130,6 +146,7 @@ from pathlib import Path
 os.environ["DLClight"] = "True"
 
 import deeplabcut
+import numpy as np
 
 # Loading example data set
 path_config_file = os.path.join(os.getcwd(), "openfield-Pranav-2018-10-30/config.yaml")
@@ -143,7 +160,7 @@ deeplabcut.load_demo_data(path_config_file)
 deeplabcut.create_training_model_comparison(
     path_config_file,
     num_shuffles=1,
-    net_types=["resnet_50"],
+    net_types=["resnet_50", "efficientnet-b3"],
     augmenter_types=["imgaug", "scalecrop", "tensorpack"],
 )
 
@@ -162,16 +179,17 @@ for shuffle in [2,3]:
 		deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
 """
 
-for shuffle in [1, 2, 3]:
+for shuffle in 1 + np.arange(6):
 
     posefile, _, _ = deeplabcut.return_train_network_path(
         path_config_file, shuffle=shuffle
     )
 
-    if shuffle == 1:  # imgaug
+    if shuffle % 3 == 1:  # imgaug
         edits = {"rotation": 180, "motion_blur": True}
         DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
-    elif shuffle == 3:  # Tensorpack:
+
+    elif shuffle % 3 == 0:  # Tensorpack:
         edits = {"rotation": 180, "noise_sigma": 0.01}
         DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
 
