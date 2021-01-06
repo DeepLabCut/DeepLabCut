@@ -871,7 +871,7 @@ def evaluate_network(
                         ]
                         final_result.append(results)
 
-                        if show_errors == True:
+                        if show_errors:
                             print(
                                 "Results for",
                                 trainingsiterations,
@@ -967,7 +967,7 @@ def evaluate_network(
 
 def make_results_file(final_result, evaluationfolder, DLCscorer):
     """
-    Makes result file in .h5 and csv format and saves under evaluation_results directory.
+    Makes result file in csv format and saves under evaluation_results directory.
     If the file exists (typically, when the network has already been evaluated),
     newer results are appended to it.
     """
@@ -988,7 +988,6 @@ def make_results_file(final_result, evaluationfolder, DLCscorer):
         df = pd.concat((df, temp)).reset_index(drop=True)
 
     df.to_csv(output_path)
-    # df.to_hdf(output_path.replace('csv', 'h5'), 'df_with_missing', format='table', mode='w')
 
 
 if __name__ == "__main__":

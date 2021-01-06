@@ -22,6 +22,7 @@ from skimage import io
 from skimage.util import img_as_ubyte
 from tqdm import tqdm
 
+from deeplabcut.pose_estimation_tensorflow.evaluate import make_results_file
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.utils import visualization
 
@@ -420,17 +421,27 @@ def evaluate_multianimal_full(
                             ascending=[True, True],
                             inplace=True
                         )
-                        write_path = os.path.join(evaluationfolder, "dist.csv")
+                        write_path = os.path.join(evaluationfolder, f"dist_{trainingsiterations}.csv")
                         df_joint.to_csv(write_path)
 
-                        stats_per_ind = _compute_stats(df_dist.groupby("individuals"))
-                        stats_per_ind.to_csv(
-                            write_path.replace("dist.csv", "dist_stats_ind.csv")
-                        )
-                        stats_per_bpt = _compute_stats(df_dist.groupby("bodyparts"))
-                        stats_per_bpt.to_csv(
-                            write_path.replace("dist.csv", "dist_stats_bpt.csv")
-                        )
+                        # Calculate overall prediction error
+                        error = df_joint.xs("rmse", level="metrics", axis=1)
+                        mask = df_joint.xs("conf", level="metrics", axis=1) >= cfg["pcutoff"]
+                        error_train = np.nanmean(error.iloc[trainIndices])
+                        error_train_cut = np.nanmean(error[mask].iloc[trainIndices])
+                        error_test = np.nanmean(error.iloc[testIndices])
+                        error_test_cut = np.nanmean(error[mask].iloc[testIndices])
+                        results = [
+                            trainingsiterations,
+                            int(100 * trainFraction),
+                            shuffle,
+                            np.round(error_train, 2),
+                            np.round(error_test, 2),
+                            cfg["pcutoff"],
+                            np.round(error_train_cut, 2),
+                            np.round(error_test_cut, 2),
+                        ]
+                        final_result.append(results)
 
                         # For OKS/PCK, compute the standard deviation error across all frames
                         sd = df_dist.groupby("bodyparts", axis=1).mean().std(axis=0)
@@ -438,16 +449,11 @@ def evaluate_multianimal_full(
                         sd.to_csv(write_path.replace("dist.csv", "sd.csv"))
 
                         if show_errors:
-                            print("##########################################&1")
-                            print(
-                                "Euclidean distance statistics per individual (in pixels)"
-                            )
-                            print(stats_per_ind.mean(axis=1).unstack().to_string())
-                            print("##########################################")
-                            print(
-                                "Euclidean distance statistics per bodypart (in pixels)"
-                            )
-                            print(stats_per_bpt.mean(axis=1).unstack().to_string())
+                            string = "Results for {} training iterations: {}, shuffle {}:\n" \
+                                     "Train error: {} pixels. Test error: {} pixels.\n" \
+                                     "With pcutoff of {}:\n" \
+                                     "Train error: {} pixels. Test error: {} pixels."
+                            print(string.format(*results))
 
                         PredicteData["metadata"] = {
                             "nms radius": dlc_cfg.nmsradius,
@@ -478,6 +484,9 @@ def evaluate_multianimal_full(
                         )
 
                         tf.reset_default_graph()
+
+                if len(final_result) > 0:  # Only append if results were calculated
+                    make_results_file(final_result, evaluationfolder, DLCscorer)
 
     # returning to intial folder
     os.chdir(str(start_path))
