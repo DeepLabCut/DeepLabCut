@@ -107,12 +107,20 @@ max_input_size: 1500
 # all images smaller than 64*64 will be excluded.
 min_input_size: 64
 
-# Learning rate schedule for the SGD optimizer.
+# Learning rate schedule for the SGD/adam optimizer.
 multi_step:
 - [0.005, 10000]
 - [0.02, 430000]
 - [0.002, 730000]
 - [0.001, 1030000]
+
+# Learning rate parameters for cosine decay scheduler [used for EfficientNet backbones in DLC]
+# See: https://openaccess.thecvf.com/content/WACV2021/papers/Mathis_Pretraining_Boosts_Out-of-Domain_Robustness_for_Pose_Estimation_WACV_2021_paper.pdf
+
+lr_init: 0.0005
+decay_steps: 30000
+alpha_r: 0.02
+
 
 # How often display loss
 display_iters: 1000
