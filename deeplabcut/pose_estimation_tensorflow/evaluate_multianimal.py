@@ -19,7 +19,6 @@ from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cdist
 from skimage import io
 from skimage.util import img_as_ubyte
-from sklearn.metrics import accuracy_score
 from tqdm import tqdm
 
 from deeplabcut.pose_estimation_tensorflow.config import load_config
@@ -53,6 +52,7 @@ def evaluate_multianimal_full(
     Shuffles=[1],
     trainingsetindex=0,
     plotting=None,
+    show_errors=True,
     comparisonbodyparts="all",
     gputouse=None,
     modelprefix="",
@@ -103,7 +103,6 @@ def evaluate_multianimal_full(
     comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
         cfg, comparisonbodyparts
     )
-    all_ids = cfg["individuals"]
     all_bpts = np.asarray(
         len(cfg["individuals"]) * cfg["multianimalbodyparts"] + cfg["uniquebodyparts"]
     )
@@ -252,14 +251,8 @@ def evaluate_multianimal_full(
                         sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
 
                         PredicteData = {}
-                        dist = np.full((len(Data), len(all_bpts)), np.nan)
-                        conf = np.full_like(dist, np.nan)
+                        dist = np.full((len(all_bpts), len(Data)), np.nan)
                         distnorm = np.full(len(Data), np.nan)
-
-                        dlc_cfg.num_idchannel = dlc_cfg.get("num_idchannel", 0)
-                        withid = dlc_cfg.num_idchannel
-                        
-                        ids = np.full((len(Data), len(all_bpts), 2), np.nan)
                         print("Analyzing data...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
                             image_path = os.path.join(cfg["project_path"], imagename)
@@ -267,7 +260,7 @@ def evaluate_multianimal_full(
                             frame = img_as_ubyte(skimage.color.gray2rgb(image))
 
                             GT = Data.iloc[imageindex]
-                            df = GT.unstack("coords").reindex(joints, level="bodyparts")
+                            df = GT.unstack("coords").reindex(joints, level='bodyparts')
 
                             # Evaluate PAF edge lengths to calibrate `distnorm`
                             temp = GT.unstack("bodyparts")[joints]
@@ -318,13 +311,11 @@ def evaluate_multianimal_full(
 
                             coords_pred = pred["coordinates"][0]
                             probs_pred = pred["confidence"]
-                            id_pred = np.full(len(all_bpts), np.nan)
                             for bpt, xy_gt in df.groupby(level="bodyparts"):
                                 inds_gt = np.flatnonzero(
                                     np.all(~np.isnan(xy_gt), axis=1)
                                 )
-                                n_joint = joints.index(bpt)
-                                xy = coords_pred[n_joint]
+                                xy = coords_pred[joints.index(bpt)]
                                 if inds_gt.size and xy.size:
                                     # Pick the predictions closest to ground truth,
                                     # rather than the ones the model has most confident in
@@ -332,18 +323,7 @@ def evaluate_multianimal_full(
                                     rows, cols = linear_sum_assignment(d)
                                     min_dists = d[rows, cols]
                                     inds = np.flatnonzero(all_bpts == bpt)
-                                    sl = imageindex, inds[inds_gt[rows]]
-                                    dist[sl] = min_dists
-                                    conf[sl] = probs_pred[n_joint][cols].squeeze()
-                                    if withid:
-                                        id_ = pred["identity"][n_joint]
-                                        id_pred[sl[1]] = np.argmax(id_[cols], axis=1)
-                            id_gt = np.full_like(id_pred, np.nan)
-                            for n, id_ in enumerate(groundtruthidentity):
-                                if id_.size:
-                                    id_gt[n] = all_ids.index(id_)
-                            ids[imageindex, :, 0] = id_gt
-                            ids[imageindex, :, 1] = id_pred
+                                    dist[inds[inds_gt[rows]], imageindex] = min_dists
 
                             if plotting:
                                 fig = visualization.make_multianimal_labeled_image(
@@ -367,47 +347,35 @@ def evaluate_multianimal_full(
                         sess.close()  # closes the current tf session
 
                         # Compute all distance statistics
-                        df_dist = pd.DataFrame(dist, columns=df.index)
-                        df_conf = pd.DataFrame(conf, columns=df.index)
-                        df_joint = pd.concat(
-                            [df_dist, df_conf],
-                            keys=["rmse", "conf"],
-                            names=["metrics"],
-                            axis=1,
-                        )
-                        df_joint = df_joint.reorder_levels(
-                            list(np.roll(df_joint.columns.names, -1)), axis=1
-                        )
-                        df_joint.sort_index(
-                            axis=1,
-                            level=["individuals", "bodyparts"],
-                            ascending=[True, True],
-                            inplace=True,
-                        )
-
-                        # Extra metrics for ID evaluation
-                        if withid:
-                            nrows = ids.shape[0]
-                            accu = np.full(nrows, np.nan)
-                            for n in range(nrows):
-                                array = ids[n]
-                                y_true, y_pred = array.T
-                                valid = ~np.isnan(y_pred)
-                                y_true = y_true[valid]
-                                y_pred = y_pred[valid]
-                                accu[n] = accuracy_score(y_true, y_pred)
-                            df_id = pd.DataFrame(accu, columns=["Accuracy"])
-                            df_id["train"] = True
-                            df_id.loc[testIndices, "train"] = False
-                            df_id.to_csv(os.path.join(evaluationfolder, "id.csv"))
-
+                        df_dist = pd.DataFrame(dist, index=df.index)
                         write_path = os.path.join(evaluationfolder, "dist.csv")
-                        df_joint.to_csv(write_path)
+                        df_dist.to_csv(write_path)
+
+                        stats_per_ind = _compute_stats(df_dist.groupby("individuals"))
+                        stats_per_ind.to_csv(
+                            write_path.replace("dist.csv", "dist_stats_ind.csv")
+                        )
+                        stats_per_bpt = _compute_stats(df_dist.groupby("bodyparts"))
+                        stats_per_bpt.to_csv(
+                            write_path.replace("dist.csv", "dist_stats_bpt.csv")
+                        )
 
                         # For OKS/PCK, compute the standard deviation error across all frames
-                        sd = df_dist.groupby("bodyparts", axis=1).mean().std(axis=0)
+                        sd = df_dist.groupby("bodyparts").mean().std(axis=1)
                         sd["distnorm"] = np.sqrt(np.nanmax(distnorm))
                         sd.to_csv(write_path.replace("dist.csv", "sd.csv"))
+
+                        if show_errors:
+                            print("##########################################&1")
+                            print(
+                                "Euclidean distance statistics per individual (in pixels)"
+                            )
+                            print(stats_per_ind.mean(axis=1).unstack().to_string())
+                            print("##########################################")
+                            print(
+                                "Euclidean distance statistics per bodypart (in pixels)"
+                            )
+                            print(stats_per_bpt.mean(axis=1).unstack().to_string())
 
                         PredicteData["metadata"] = {
                             "nms radius": dlc_cfg.nmsradius,
