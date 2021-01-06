@@ -45,7 +45,7 @@ if __name__ == "__main__":
     net_type = "resnet_50"  #'mobilenet_v2_0.35' #'resnet_50'
 
     # net_type='mobilenet_v2_0.35'
-    # net_type='efficientnet-b0' #to -b6
+    net_type='efficientnet-b0' #to -b6
 
     augmenter_type = "default"  # = imgaug!!
     augmenter_type2 = "scalecrop"
@@ -324,7 +324,6 @@ if __name__ == "__main__":
     )
     deeplabcut.filterpredictions(path_config_file, [newvideo2])
 
-    # deeplabcut.create_labeled_video(path_config_file,[newvideo], destfolder=dfolder,filtered=True)
     deeplabcut.create_labeled_video(
         path_config_file,
         [newvideo2],
@@ -335,7 +334,7 @@ if __name__ == "__main__":
 
     print("Creating a Johansson video!")
     deeplabcut.create_labeled_video(
-        path_config_file, [newvideo], destfolder=dfolder, keypoints_only=True
+        path_config_file, [newvideo2], destfolder=dfolder, keypoints_only=True
     )
 
     deeplabcut.plot_trajectories(
