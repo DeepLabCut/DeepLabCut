@@ -457,9 +457,9 @@ def evaluate_multianimal_full(
                             print(string.format(*results))
 
                             print("##########################################")
-                            print("Average Euclidean distance per individual (in pixels)")
+                            print("Average Euclidean distance to GT per individual (in pixels)")
                             print(error_masked.groupby('individuals', axis=1).mean().mean().to_string())
-                            print("Average Euclidean distance per bodypart (in pixels)")
+                            print("Average Euclidean distance to GT per bodypart (in pixels)")
                             print(error_masked.groupby('bodyparts', axis=1).mean().mean().to_string())
 
                         PredicteData["metadata"] = {
