@@ -43,10 +43,10 @@ if __name__ == '__main__':
 
     dfolder = None
     net_type = "resnet_50"  #'mobilenet_v2_0.35' #'resnet_50'
-    
+
     # net_type='mobilenet_v2_0.35'
-    # net_type='efficientnet-b0' #to -b7
-    
+    # net_type='efficientnet-b0' #to -b6
+
     augmenter_type = "default"  # = imgaug!!
     augmenter_type2 = "scalecrop"
 
@@ -378,7 +378,7 @@ if __name__ == '__main__':
     trainIndices, testIndices = deeplabcut.mergeandsplit(
         path_config_file, trainindex=0, uniform=True
     )
-    
+
     print("Creating two identical splits...")
     deeplabcut.create_training_dataset(
         path_config_file,
