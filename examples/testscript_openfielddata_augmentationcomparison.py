@@ -153,7 +153,8 @@ the network performs much better on the testvideo (see Neuron Primer: https://ww
 
 import os
 from pathlib import Path
-os.environ['CUDA_VISIBLE_DEVICES'] = str(0)
+
+os.environ["CUDA_VISIBLE_DEVICES"] = str(0)
 os.environ["DLClight"] = "True"
 
 import deeplabcut
@@ -181,7 +182,7 @@ for shuffle in 1 + np.arange(6):
         path_config_file, shuffle=shuffle
     )
 
-    edits = {"decay_steps": 100000, "lr_init": 0.0005*8} #for EfficientNet
+    edits = {"decay_steps": 100000, "lr_init": 0.0005 * 8}  # for EfficientNet
     DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
 
     if shuffle % 3 == 1:  # imgaug

@@ -22,7 +22,7 @@ import numpy as np
 import pandas as pd
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     task = "TEST"  # Enter the name of your experiment Task
     scorer = "Alex"  # Enter the name of the experimenter/labeler
 
@@ -45,7 +45,7 @@ if __name__ == '__main__':
     net_type = "resnet_50"  #'mobilenet_v2_0.35' #'resnet_50'
 
     # net_type='mobilenet_v2_0.35'
-    net_type='efficientnet-b0' #to -b6
+    # net_type='efficientnet-b0' #to -b6
 
     augmenter_type = "default"  # = imgaug!!
     augmenter_type2 = "scalecrop"
@@ -59,7 +59,9 @@ if __name__ == '__main__':
     numiter = 5
 
     print("CREATING PROJECT")
-    path_config_file = deeplabcut.create_new_project(task, scorer, video, copy_videos=True)
+    path_config_file = deeplabcut.create_new_project(
+        task, scorer, video, copy_videos=True
+    )
 
     cfg = deeplabcut.auxiliaryfunctions.read_config(path_config_file)
     cfg["numframes2pick"] = 5
@@ -229,12 +231,18 @@ if __name__ == '__main__':
     DF = DF.drop("likelihood", axis=1, level=2)
     DF.to_csv(
         os.path.join(
-            cfg["project_path"], "labeled-data", vname, "CollectedData_" + scorer + ".csv"
+            cfg["project_path"],
+            "labeled-data",
+            vname,
+            "CollectedData_" + scorer + ".csv",
         )
     )
     DF.to_hdf(
         os.path.join(
-            cfg["project_path"], "labeled-data", vname, "CollectedData_" + scorer + ".h5"
+            cfg["project_path"],
+            "labeled-data",
+            vname,
+            "CollectedData_" + scorer + ".h5",
         ),
         "df_with_missing",
         format="table",
@@ -285,7 +293,9 @@ if __name__ == '__main__':
         )
 
     except:  # if ffmpeg is broken
-        newvideo2 = os.path.join(cfg["project_path"], "videos", videoname + "short2.mp4")
+        newvideo2 = os.path.join(
+            cfg["project_path"], "videos", videoname + "short2.mp4"
+        )
         from moviepy.editor import VideoFileClip, VideoClip
 
         clip = VideoFileClip(video[0])
@@ -338,7 +348,10 @@ if __name__ == '__main__':
     print("will be used for 3D testscript...")
     # TENSORPACK could fail in WINDOWS...
     deeplabcut.create_training_dataset(
-        path_config_file, Shuffles=[2], net_type=net_type, augmenter_type=augmenter_type3
+        path_config_file,
+        Shuffles=[2],
+        net_type=net_type,
+        augmenter_type=augmenter_type3,
     )
 
     posefile = os.path.join(
@@ -368,7 +381,8 @@ if __name__ == '__main__':
 
     print("ANALYZING some individual frames")
     deeplabcut.analyze_time_lapse_frames(
-        path_config_file, os.path.join(cfg["project_path"], "labeled-data/reachingvideo1/")
+        path_config_file,
+        os.path.join(cfg["project_path"], "labeled-data/reachingvideo1/"),
     )
 
     print("Export model...")
@@ -386,7 +400,6 @@ if __name__ == '__main__':
         trainIndices=[trainIndices, trainIndices],
         testIndices=[testIndices, testIndices],
     )
-
 
     print("ALL DONE!!! - default cases are functional.")
     print("Re-import DLC with env. variable set to test DLC light mode.")

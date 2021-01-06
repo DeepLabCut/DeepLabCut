@@ -20,7 +20,7 @@ import numpy as np
 
 
 def Cuttrainingschedule(
-        path_config_file, shuffle, trainingsetindex=0, initweights="imagenet", lastvalue=10
+    path_config_file, shuffle, trainingsetindex=0, initweights="imagenet", lastvalue=10
 ):
     cfg = deeplabcut.auxiliaryfunctions.read_config(path_config_file)
     posefile = os.path.join(
@@ -64,7 +64,7 @@ def Cuttrainingschedule(
     return
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     task = "TEST-multipleNets"  # Enter the name of your experiment Task
     scorer = "Alex"  # Enter the name of the experimenter/labeler
     print("Imported DLC!")
@@ -84,7 +84,9 @@ if __name__ == '__main__':
     augmenter_type = "tensorpack"  # imgaug'
 
     print("CREATING PROJECT")
-    path_config_file = deeplabcut.create_new_project(task, scorer, video, copy_videos=True)
+    path_config_file = deeplabcut.create_new_project(
+        task, scorer, video, copy_videos=True
+    )
 
     cfg = deeplabcut.auxiliaryfunctions.read_config(path_config_file)
     cfg["numframes2pick"] = 5
@@ -228,7 +230,9 @@ if __name__ == '__main__':
         print("RELABELING")
         DF = pd.read_hdf(file, "df_with_missing")
         DLCscorer = np.unique(DF.columns.get_level_values(0))[0]
-        DF.columns.set_levels([scorer.replace(DLCscorer, scorer)], level=0, inplace=True)
+        DF.columns.set_levels(
+            [scorer.replace(DLCscorer, scorer)], level=0, inplace=True
+        )
         DF = DF.drop("likelihood", axis=1, level=2)
         DF.to_csv(
             os.path.join(

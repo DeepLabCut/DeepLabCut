@@ -27,9 +27,11 @@ import deeplabcut
 import os
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Loading example data set
-    path_config_file = os.path.join(os.getcwd(), "openfield-Pranav-2018-10-30/config.yaml")
+    path_config_file = os.path.join(
+        os.getcwd(), "openfield-Pranav-2018-10-30/config.yaml"
+    )
     deeplabcut.load_demo_data(path_config_file)
     shuffle = 13
 
@@ -37,7 +39,9 @@ if __name__ == '__main__':
     cfg = deeplabcut.auxiliaryfunctions.read_config(path_config_file)
 
     # example how to set pose config variables:
-    posefile, _, _ = deeplabcut.return_train_network_path(path_config_file, shuffle=shuffle)
+    posefile, _, _ = deeplabcut.return_train_network_path(
+        path_config_file, shuffle=shuffle
+    )
     edits = {"save_iters": 15000, "display_iters": 1000, "multi_step": [[0.005, 15001]]}
     DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
 

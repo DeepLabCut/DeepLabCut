@@ -9,7 +9,7 @@ from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.refine_training_dataset.tracklets import convert_raw_tracks_to_h5
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     TASK = "multi_mouse"
     SCORER = "dlc_team"
     NUM_FRAMES = 5
@@ -48,14 +48,16 @@ if __name__ == '__main__':
         bodyparts_single,
         bodyparts_multi,
     ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
-    animals_id = [i for i in range(n_animals) for _ in bodyparts_multi] + [n_animals] * len(
-        bodyparts_single
-    )
+    animals_id = [i for i in range(n_animals) for _ in bodyparts_multi] + [
+        n_animals
+    ] * len(bodyparts_single)
     map_ = dict(zip(range(len(animals)), animals))
     individuals = [map_[ind] for ind in animals_id for _ in range(2)]
     scorer = [SCORER] * len(individuals)
     coords = ["x", "y"] * len(animals_id)
-    bodyparts = [bp for _ in range(n_animals) for bp in bodyparts_multi for _ in range(2)]
+    bodyparts = [
+        bp for _ in range(n_animals) for bp in bodyparts_multi for _ in range(2)
+    ]
     bodyparts += [bp for bp in bodyparts_single for _ in range(2)]
     columns = pd.MultiIndex.from_arrays(
         [scorer, individuals, bodyparts, coords],
@@ -71,9 +73,10 @@ if __name__ == '__main__':
     df = pd.DataFrame(fake_data, index=index, columns=columns)
     output_path = os.path.join(image_folder, f"CollectedData_{SCORER}.csv")
     df.to_csv(output_path)
-    df.to_hdf(output_path.replace("csv", "h5"), "df_with_missing", format="table", mode="w")
+    df.to_hdf(
+        output_path.replace("csv", "h5"), "df_with_missing", format="table", mode="w"
+    )
     print("Artificial data created.")
-
 
     print("Cropping and exchanging")
     deeplabcut.cropimagesandlabels(config_path, userfeedback=False)
@@ -112,7 +115,6 @@ if __name__ == '__main__':
     )  # parameters so it is fast
 
     print("Network evaluated....")
-
 
     new_video_path = deeplabcut.ShortenVideo(
         video_path,
@@ -191,7 +193,10 @@ if __name__ == '__main__':
         )
         df = pd.DataFrame(data, columns=columns)
         df.to_hdf(
-            picklefile.replace("pickle", "h5"), "df_with_missing", format="table", mode="w"
+            picklefile.replace("pickle", "h5"),
+            "df_with_missing",
+            format="table",
+            mode="w",
         )
         df.to_hdf(
             picklefile.replace("sk", "bx").replace("pickle", "h5"),
@@ -201,7 +206,9 @@ if __name__ == '__main__':
         )
 
     print("Plotting trajectories...")
-    deeplabcut.plot_trajectories(config_path, [new_video_path], "mp4", track_method="box")
+    deeplabcut.plot_trajectories(
+        config_path, [new_video_path], "mp4", track_method="box"
+    )
     deeplabcut.plot_trajectories(
         config_path, [new_video_path], "mp4", track_method="skeleton"
     )
@@ -227,7 +234,9 @@ if __name__ == '__main__':
     print("Labeled video created.")
 
     print("Filtering predictions...")
-    deeplabcut.filterpredictions(config_path, [new_video_path], "mp4", track_method="box")
+    deeplabcut.filterpredictions(
+        config_path, [new_video_path], "mp4", track_method="box"
+    )
     print("Predictions filtered.")
 
     print("Extracting outlier frames...")
