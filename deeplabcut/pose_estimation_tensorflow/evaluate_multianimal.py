@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 import skimage.color
 from scipy.optimize import linear_sum_assignment
+from scipy.spatial import cKDTree
 from scipy.spatial.distance import cdist
 from skimage import io
 from skimage.util import img_as_ubyte
@@ -45,6 +46,57 @@ def _compute_stats(df):
             _percentile(0.75),
         ]
     ).stack(level=1)
+
+
+def _find_closest_neighbors(xy_true, xy_pred, k=5):
+    n_preds = xy_pred.shape[0]
+    tree = cKDTree(xy_pred)
+    dist, inds = tree.query(xy_true, k=k)
+    idx = np.argsort(dist[:, 0])
+    neighbors = np.full(len(xy_true), -1, dtype=int)
+    picked = set()
+    for i, ind in enumerate(inds[idx]):
+        for j in ind:
+            if j not in picked:
+                picked.add(j)
+                neighbors[idx[i]] = j
+                break
+        if len(picked) == n_preds:
+            break
+    return neighbors
+
+
+def _calc_prediction_error(data):
+    _ = data.pop('metadata', None)
+    dists = []
+    for n, dict_ in enumerate(tqdm(data.values())):
+        gt = np.concatenate(dict_['groundtruth'][1])
+        xy = np.concatenate(dict_['prediction']['coordinates'][0])
+        p = np.concatenate(dict_['prediction']['confidence'])
+        neighbors = _find_closest_neighbors(gt, xy)
+        found = neighbors != -1
+        gt2 = gt[found]
+        xy2 = xy[neighbors[found]]
+        dists.append(np.c_[np.linalg.norm(gt2 - xy2, axis=1), p[neighbors[found]]])
+    return dists
+
+
+def _calc_train_test_error(data, metadata, pcutoff=0.3):
+    train_inds = set(metadata['data']['trainIndices'])
+    dists = _calc_prediction_error(data)
+    dists_train, dists_test = [], []
+    for n, dist in enumerate(dists):
+        if n in train_inds:
+            dists_train.append(dist)
+        else:
+            dists_test.append(dist)
+    dists_train = np.concatenate(dists_train)
+    dists_test = np.concatenate(dists_test)
+    error_train = np.nanmean(dists_train[:, 0])
+    error_train_cut = np.nanmean(dists_train[dists_train[:, 1] >= pcutoff, 0])
+    error_test = np.nanmean(dists_test[:, 0])
+    error_test_cut = np.nanmean(dists_test[dists_test[:, 1] >= pcutoff, 0])
+    return error_train, error_test, error_train_cut, error_test_cut
 
 
 def evaluate_multianimal_full(
