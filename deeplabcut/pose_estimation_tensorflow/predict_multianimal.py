@@ -149,15 +149,14 @@ def GetPoseandCostsF(
     det_min_score = dlc_cfg.minconfidence
 
     num_idchannel = dlc_cfg.get("num_idchannel", 0)
-    # TODO Fix the code below...
-    #  We can't just break the whole thing if there is one corrupted frame
-    #  in the middle of the video. Rather iterate over all frames and simply skip corruptions
     while cap.video.isOpened():
         if counter % step == 0:
             pbar.update(step)
         frame = cap.read_frame(crop=cfg["cropping"])
+        inds = []
         if frame is not None:
             frames[batch_ind] = img_as_ubyte(frame)
+            inds.append(counter)
             if batch_ind == batchsize - 1:
                 # PredicteData['frame'+str(counter)]=predict.get_detectionswithcosts(frame, dlc_cfg, sess, inputs, outputs, outall=False,nms_radius=dlc_cfg.nmsradius,det_min_score=dlc_cfg.minconfidence)
                 D = predict.get_batchdetectionswithcosts(
@@ -174,20 +173,14 @@ def GetPoseandCostsF(
                     inputs,
                     outputs,
                 )
-                for l in range(batchsize):
-                    # pose = predict.getposeNP(frames,dlc_cfg, sess, inputs, outputs)
-                    # PredicteData[batch_num*batchsize:(batch_num+1)*batchsize, :] = pose
-                    PredicteData[
-                        "frame" + str(batch_num * batchsize + l).zfill(strwidth)
-                    ] = D[l]
-
+                for ind, data in zip(inds, D):
+                    PredicteData["frame" + str(ind).zfill(strwidth)] = data
                 batch_ind = 0
+                inds.clear()
                 batch_num += 1
             else:
                 batch_ind += 1
-        else:
-            nframes = counter
-            print("Detected frames: ", nframes)
+        elif counter >= nframes:
             if batch_ind > 0:
                 # pose = predict.getposeNP(frames, dlc_cfg, sess, inputs, outputs) #process the whole batch (some frames might be from previous batch!)
                 # PredicteData[batch_num*batchsize:batch_num*batchsize+batch_ind, :] = pose[:batch_ind,:]
@@ -206,14 +199,11 @@ def GetPoseandCostsF(
                     outputs,
                     c_engine=c_engine,
                 )
-                for l in range(batch_ind):
-                    # pose = predict.getposeNP(frames,dlc_cfg, sess, inputs, outputs)
-                    # PredicteData[batch_num*batchsize:(batch_num+1)*batchsize, :] = pose
-                    PredicteData[
-                        "frame" + str(batch_num * batchsize + l).zfill(strwidth)
-                    ] = D[l]
+                for ind, data in zip(inds, D):
+                    PredicteData["frame" + str(ind).zfill(strwidth)] = data
             break
         counter += 1
+
     cap.close()
     pbar.close()
     PredicteData["metadata"] = {
@@ -259,8 +249,7 @@ def GetPoseandCostsS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, c_engine
                 det_min_score=dlc_cfg.minconfidence,
                 c_engine=c_engine,
             )
-        else:
-            nframes = counter
+        elif counter >= nframes:
             break
         counter += 1
 
@@ -275,6 +264,4 @@ def GetPoseandCostsS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, c_engine
         ],
         "nframes": nframes,
     }
-
-    # print(PredicteData)
     return PredicteData, nframes
