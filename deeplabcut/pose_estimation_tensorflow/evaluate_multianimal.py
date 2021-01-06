@@ -427,10 +427,11 @@ def evaluate_multianimal_full(
                         # Calculate overall prediction error
                         error = df_joint.xs("rmse", level="metrics", axis=1)
                         mask = df_joint.xs("conf", level="metrics", axis=1) >= cfg["pcutoff"]
+                        error_masked = error[mask]
                         error_train = np.nanmean(error.iloc[trainIndices])
-                        error_train_cut = np.nanmean(error[mask].iloc[trainIndices])
+                        error_train_cut = np.nanmean(error_masked.iloc[trainIndices])
                         error_test = np.nanmean(error.iloc[testIndices])
-                        error_test_cut = np.nanmean(error[mask].iloc[testIndices])
+                        error_test_cut = np.nanmean(error_masked.iloc[testIndices])
                         results = [
                             trainingsiterations,
                             int(100 * trainFraction),
@@ -454,6 +455,12 @@ def evaluate_multianimal_full(
                                      "With pcutoff of {}:\n" \
                                      "Train error: {} pixels. Test error: {} pixels."
                             print(string.format(*results))
+
+                            print("##########################################")
+                            print("Average Euclidean distance per individual (in pixels)")
+                            print(error_masked.groupby('individuals', axis=1).mean().mean().to_string())
+                            print("Average Euclidean distance per bodypart (in pixels)")
+                            print(error_masked.groupby('bodyparts', axis=1).mean().mean().to_string())
 
                         PredicteData["metadata"] = {
                             "nms radius": dlc_cfg.nmsradius,
