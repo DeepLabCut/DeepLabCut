@@ -140,6 +140,7 @@ def GetPoseandCostsF(
     pbar = tqdm(total=nframes)
     counter = 0
     step = max(10, int(nframes / 100))
+    inds = []
 
     PredicteData = {}
     # initializing constants
@@ -153,7 +154,6 @@ def GetPoseandCostsF(
         if counter % step == 0:
             pbar.update(step)
         frame = cap.read_frame(crop=cfg["cropping"])
-        inds = []
         if frame is not None:
             frames[batch_ind] = img_as_ubyte(frame)
             inds.append(counter)
