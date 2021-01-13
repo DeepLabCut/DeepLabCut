@@ -381,11 +381,11 @@ def GetPoseF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
     pbar = tqdm(total=nframes)
     counter = 0
     step = max(10, int(nframes / 100))
+    inds = []
     while cap.isOpened():
         if counter % step == 0:
             pbar.update(step)
         ret, frame = cap.read()
-        inds = []
         if ret:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             if cfg["cropping"]:
@@ -517,11 +517,11 @@ def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
     pbar = tqdm(total=nframes)
     counter = 0
     step = max(10, int(nframes / 100))
+    inds = []
     while cap.isOpened():
         if counter % step == 0:
             pbar.update(step)
         ret, frame = cap.read()
-        inds = []
         if ret:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             if cfg["cropping"]:
