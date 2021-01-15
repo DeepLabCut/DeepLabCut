@@ -11,7 +11,6 @@ from networkx.algorithms.flow import preflow_push
 from scipy.linalg import hankel
 from scipy.spatial.distance import directed_hausdorff
 from scipy.stats import mode
-from statsmodels.tsa.api import SimpleExpSmoothing
 from tqdm import tqdm, trange
 
 
@@ -51,6 +50,12 @@ class Tracklet:
             return self
         return self.__add__(other)
 
+    def __sub__(self, other):
+        mask = np.isin(self.inds, other.inds, assume_unique=True)
+        if mask.all():
+            return None
+        return Tracklet(self.data[~mask], self.inds[~mask])
+
     def __lt__(self, other):
         """Test whether this tracklet precedes the other one."""
         return self.end < other.start
@@ -81,18 +86,12 @@ class Tracklet:
         The result is cached for efficiency.
         """
         if self._centroid is None:
-            centroid = np.nanmean(self.xy, axis=1)
-            if len(centroid) <= 10:
-                self._centroid = centroid
-            else:
-                fit_x = (SimpleExpSmoothing(centroid[:, 0])
-                         .fit(smoothing_level=0.5, optimized=False)
-                         .fittedvalues)
-                fit_y = (SimpleExpSmoothing(centroid[:, 1])
-                         .fit(smoothing_level=0.5, optimized=False)
-                         .fittedvalues)
-                self._centroid = np.c_[fit_x, fit_y]
+            self._update_centroid()
         return self._centroid
+
+    def _update_centroid(self):
+        like = self.data[..., 2:3]
+        self._centroid = np.nansum(self.xy * like, axis=1) / np.nansum(like, axis=1)
 
     @property
     def likelihood(self):
