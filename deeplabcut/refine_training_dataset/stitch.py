@@ -386,6 +386,7 @@ class TrackletStitcher:
         if min_length < 3:
             raise ValueError('A tracklet must have a minimal length of 3.')
 
+        self.min_length = min_length
         self.filename = ''
         self.header = None
         self.n_tracks = n_tracks
@@ -401,7 +402,7 @@ class TrackletStitcher:
                 continue
             if not tracklet.is_continuous and split_tracklets:
                 idx = np.flatnonzero(np.diff(tracklet.inds) != 1) + 1
-                tracklet = self.split_tracklet(tracklet, idx)
+                tracklet = self.split_tracklet(tracklet, tracklet.inds[idx])
             if not isinstance(tracklet, list):
                 tracklet = [tracklet]
             for t in tracklet:
@@ -409,9 +410,9 @@ class TrackletStitcher:
                     self.tracklets.append(t)
                 elif len(t) < min_length:
                     self.residuals.append(t)
-        self._first_frame = min(self.tracklets, key=lambda t: t.start).start
+        self.tracklets = sorted(self.tracklets, key=lambda t: t.start)
+        self._first_frame = self.tracklets[0].start
         self._last_frame = max(self.tracklets, key=lambda t: t.end).end
-        self.n_frames = self._last_frame - self._first_frame + 1
 
         # Note that if tracklets are very short, some may actually be part of the same track
         # and thus incorrectly reflect separate track endpoints...
@@ -459,7 +460,9 @@ class TrackletStitcher:
 
     @staticmethod
     def get_frame_ind(s):
-        return int(re.findall(r"\d+", s)[0])
+        if isinstance(s, str):
+            return int(re.findall(r"\d+", s)[0])
+        return s
 
     @staticmethod
     def purify_tracklet(tracklet):
@@ -470,9 +473,14 @@ class TrackletStitcher:
 
     @staticmethod
     def split_tracklet(tracklet, inds):
-        inds_new = np.split(tracklet.inds, inds)
-        data_new = np.split(tracklet.data, inds)
+        idx = sorted(set(np.searchsorted(tracklet.inds, inds)))
+        inds_new = np.split(tracklet.inds, idx)
+        data_new = np.split(tracklet.data, idx)
         return [Tracklet(data, inds) for data, inds in zip(data_new, inds_new)]
+
+    @property
+    def n_frames(self):
+        return self._last_frame - self._first_frame + 1
 
     # TODO Avoid looping over all pairs of tracklets
     def compute_max_gap(self):
@@ -603,6 +611,9 @@ class TrackletStitcher:
         if self.tracks is None:
             raise ValueError('No tracks were found. Call `stitch` first')
 
+        # Refresh temporal bounds
+        self._first_frame = min(self.tracks, key=lambda t: t.start).start
+        self._last_frame = max(self.tracks, key=lambda t: t.end).end
         data = []
         for track in self.tracks:
             flat_data = track.flat_data
@@ -633,16 +644,12 @@ class TrackletStitcher:
         df = self.format_df()
         if not output_name:
             output_name = self.filename.replace('pickle', 'h5')
-        df.to_hdf(output_name, 'df_with_missing', format='table', mode='w')
+        df.to_hdf(output_name, 'tracks', format='table', mode='w')
 
     @staticmethod
     def calculate_edge_weight(tracklet1, tracklet2):
-        return (
-                -np.log(tracklet1.box_overlap_with(tracklet2) + np.finfo(float).eps)
-                + tracklet1.distance_to(tracklet2)
-                + tracklet1.shape_dissimilarity_with(tracklet2)
-                + tracklet1.dynamic_dissimilarity_with(tracklet2)
-        )
+        # Default to the distance cost function
+        return tracklet1.distance_to(tracklet2)
 
     @property
     def weights(self):
@@ -723,6 +730,7 @@ class TrackletStitcher:
         for node, flow in self.flow[source].items():
             if flow == 1:
                 if node != 'sink':
+                    self.flow[source][node] -= 1
                     path.extend(self.reconstruct_path(node.replace('in', 'out')))
                 return path
 
