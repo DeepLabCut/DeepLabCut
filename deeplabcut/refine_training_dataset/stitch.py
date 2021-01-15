@@ -120,6 +120,18 @@ class Tracklet:
     def flat_data(self):
         return self.data[..., :3].reshape((len(self)), -1)
 
+    def get_data_at(self, ind):
+        return self.data[np.searchsorted(self.inds, ind)]
+
+    def set_data_at(self, ind, data):
+        self.data[np.searchsorted(self.inds, ind)] = data
+
+    def del_data_at(self, ind):
+        idx = np.searchsorted(self.inds, ind)
+        self.inds = np.delete(self.inds, idx)
+        self.data = np.delete(self.data, idx, axis=0)
+        self._update_centroid()
+
     def contains_duplicates(self, return_indices=False):
         """
         Evaluate whether the Tracklet contains duplicate time indices.
