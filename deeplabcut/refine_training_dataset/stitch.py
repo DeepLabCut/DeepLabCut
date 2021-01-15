@@ -518,19 +518,18 @@ class TrackletStitcher:
         self.G.add_edges_from(zip(nodes_out, ['sink'] * len(self)), capacity=1)
         if weight_func is None:
             weight_func = self.calculate_edge_weight
-        n_combinations = int(factorial(len(self)) / (2 * factorial(len(self) - 2)))
-        for tracklet1, tracklet2 in tqdm(combinations(self, 2), total=n_combinations):
-            time_gap = tracklet1.time_gap_to(tracklet2)
-            if 0 < time_gap <= max_gap:
-                # The algorithm works better with integer weights
-                w = int(100 * weight_func(tracklet1, tracklet2))
-                if tracklet2 > tracklet1:
-                    self.G.add_edge(self._mapping[tracklet1]['out'],
-                                    self._mapping[tracklet2]['in'],
-                                    weight=w, capacity=1)
-                else:
-                    self.G.add_edge(self._mapping[tracklet2]['out'],
-                                    self._mapping[tracklet1]['in'],
+        for i in trange(len(self)):
+            e = self[i].end
+            for j in range(i + 1, len(self)):
+                s = self[j].start
+                gap = s - e
+                if gap > max_gap:
+                    break
+                elif gap > 0:
+                    # The algorithm works better with integer weights
+                    w = int(100 * weight_func(self[i], self[j]))
+                    self.G.add_edge(self._mapping[self[i]]['out'],
+                                    self._mapping[self[j]]['in'],
                                     weight=w, capacity=1)
 
     def _update_edge_weights(self, weight_func):
