@@ -376,7 +376,14 @@ class Tracklet:
 
 
 class TrackletStitcher:
-    def __init__(self, tracklets, n_tracks, min_length=5, split_tracklets=True):
+    def __init__(
+        self,
+        tracklets,
+        n_tracks,
+        min_length=10,
+        split_tracklets=True,
+        prestitch_residuals=True,
+    ):
         if not len(tracklets):
             raise IOError("Tracklets are empty.")
 
@@ -411,6 +418,8 @@ class TrackletStitcher:
                     self.tracklets.append(t)
                 elif len(t) < min_length:
                     self.residuals.append(t)
+        if prestitch_residuals:
+            self._prestitch_residuals(5)  # Hard-coded but found to work very well
         self.tracklets = sorted(self.tracklets, key=lambda t: t.start)
         self._first_frame = self.tracklets[0].start
         self._last_frame = max(self.tracklets, key=lambda t: t.end).end
@@ -434,15 +443,31 @@ class TrackletStitcher:
         return len(self.tracklets)
 
     @classmethod
-    def from_pickle(cls, pickle_file, n_tracks, min_length=5, split_tracklets=True):
+    def from_pickle(
+        cls,
+        pickle_file,
+        n_tracks,
+        min_length=10,
+        split_tracklets=True,
+        prestitch_residuals=True,
+    ):
         with open(pickle_file, 'rb') as file:
             tracklets = pickle.load(file)
-        class_ = cls.from_dict_of_dict(tracklets, n_tracks, min_length, split_tracklets)
+        class_ = cls.from_dict_of_dict(
+            tracklets, n_tracks, min_length, split_tracklets, prestitch_residuals
+        )
         class_.filename = pickle_file
         return class_
 
     @classmethod
-    def from_dict_of_dict(cls, dict_of_dict, n_tracks, min_length=5, split_tracklets=True):
+    def from_dict_of_dict(
+        cls,
+        dict_of_dict,
+        n_tracks,
+        min_length=10,
+        split_tracklets=True,
+        prestitch_residuals=True,
+    ):
         tracklets = []
         header = dict_of_dict.pop('header', None)
         single = None
@@ -460,7 +485,13 @@ class TrackletStitcher:
                 single = tracklet
             else:
                 tracklets.append(Tracklet(data, inds))
-        class_ = cls(tracklets, n_tracks, min_length, split_tracklets)
+        class_ = cls(
+            tracklets,
+            n_tracks,
+            min_length,
+            split_tracklets,
+            prestitch_residuals,
+        )
         class_.header = header
         class_.single = single
         return class_
@@ -826,8 +857,9 @@ class TrackletStitcher:
 def stitch_tracklets(
     pickle_file,
     n_tracks,
-    min_length=5,
+    min_length=10,
     split_tracklets=True,
+    prestitch_residuals=True,
     weight_func=None,
     output_name='',
 ):
@@ -855,7 +887,7 @@ def stitch_tracklets(
         the lesser the computational cost, but the higher the chance of
         discarding relatively long and reliable tracklets that are
         essential to solving the stitching task.
-        Default is 5, and must be 3 at least.
+        Default is 10, and must be 3 at least.
 
     split_tracklets : bool, optional
         By default, tracklets whose time indices are not consecutive integers
@@ -865,6 +897,11 @@ def stitch_tracklets(
         time frame at the moment they occur. Note though that for long
         occlusions where tracker re-identification capability can be trusted,
         setting `split_tracklets` to False is preferable.
+
+    prestitch_residuals : bool, optional
+        Residuals will by default be grouped together according to their
+        temporal proximity prior to being added back to the tracks.
+        This is done to improve robustness and simultaneously reduce complexity.
 
     weight_func : callable, optional
         Function accepting two tracklets as arguments and returning a scalar
@@ -881,7 +918,9 @@ def stitch_tracklets(
     -------
     A TrackletStitcher object
     """
-    stitcher = TrackletStitcher.from_pickle(pickle_file, n_tracks, min_length, split_tracklets)
+    stitcher = TrackletStitcher.from_pickle(
+        pickle_file, n_tracks, min_length, split_tracklets, prestitch_residuals
+    )
     stitcher.build_graph(weight_func=weight_func)
     stitcher.stitch()
     stitcher.write_tracks(output_name)
