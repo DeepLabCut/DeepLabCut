@@ -389,6 +389,7 @@ class TrackletStitcher:
         self.min_length = min_length
         self.filename = ''
         self.header = None
+        self.single = None
         self.n_tracks = n_tracks
         self.G = None
         self.paths = None
@@ -444,7 +445,8 @@ class TrackletStitcher:
     def from_dict_of_dict(cls, dict_of_dict, n_tracks, min_length=5, split_tracklets=True):
         tracklets = []
         header = dict_of_dict.pop('header', None)
-        for dict_ in dict_of_dict.values():
+        single = None
+        for k, dict_ in dict_of_dict.items():
             inds, data = zip(*[(cls.get_frame_ind(k), v) for k, v in dict_.items()])
             inds = np.asarray(inds)
             data = np.asarray(data)
@@ -453,9 +455,14 @@ class TrackletStitcher:
                 data = data.reshape((nrows, ncols // 3, 3))
             except ValueError:
                 pass
-            tracklets.append(Tracklet(data, inds))
+            tracklet = Tracklet(data, inds)
+            if k == 'single':
+                single = tracklet
+            else:
+                tracklets.append(Tracklet(data, inds))
         class_ = cls(tracklets, n_tracks, min_length, split_tracklets)
         class_.header = header
+        class_.single = single
         return class_
 
     @staticmethod
@@ -711,7 +718,16 @@ class TrackletStitcher:
             names=['scorer', 'individuals', 'bodyparts', 'coords']
         )
         inds = range(self._first_frame, self._last_frame + 1)
-        return pd.DataFrame(data, columns=columns, index=inds)
+        df = pd.DataFrame(data, columns=columns, index=inds)
+        if self.single is not None:
+            n_dets = self.single.data.shape[1]
+            columns = pd.MultiIndex.from_product(
+                [scorer, ['single'], [f'bpt{i}' for i in range(1, n_dets + 1)], coords],
+                names=['scorer', 'individuals', 'bodyparts', 'coords']
+            )
+            df2 = pd.DataFrame(self.single.flat_data, columns=columns, index=self.single.inds)
+            df = df.join(df2, how='outer')
+        return df
 
     def write_tracks(self, output_name=''):
         df = self.format_df()
