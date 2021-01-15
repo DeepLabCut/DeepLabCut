@@ -526,7 +526,16 @@ class TrackletStitcher:
                                     self._mapping[tracklet1]['in'],
                                     weight=w, capacity=1)
 
-    def stitch(self):
+    def _update_edge_weights(self, weight_func):
+        if self.G is None:
+            raise ValueError('Inexistent graph. Call `build_graph` first')
+
+        for node1, node2, weight in self.G.edges.data('weight'):
+            if weight is not None:
+                w = weight_func(self._mapping_inv[node1], self._mapping_inv[node2])
+                self.G.edges[(node1, node2)]['weight'] = w
+
+    def stitch(self, add_back_residuals=True):
         if self.G is None:
             raise ValueError('Inexistent graph. Call `build_graph` first')
 
@@ -588,24 +597,88 @@ class TrackletStitcher:
                 raise NotImplementedError
             self.paths = paths
         finally:
-            self._finalize_tracks()
+            self.tracks = np.asarray([sum(path) for path in self.paths])
+            if add_back_residuals:
+                _ = self._finalize_tracks()
 
     def _finalize_tracks(self):
-        tracks = np.asarray([sum(path) for path in self.paths])
-        # Greedily incorporate the residual tracklets
-        residuals = sorted(self.residuals, key=len)
-        for _ in trange(len(residuals)):
-            residual = residuals.pop()
-            easy_fit = [residual not in track for track in tracks]
-            inds = np.flatnonzero(easy_fit)
-            if inds.size == 1:
-                tracks[inds[0]] += residual
-            elif inds.size >= 2:
-                # Disambiguate a residual from its distance to the candidate tracklets
-                dist = [residual.distance_to(track) for track in tracks[inds]]
-                ind = inds[np.argmin(dist)]
-                tracks[ind] += residual
-        self.tracks = tracks
+        residuals = [res for res in sorted(self.residuals, key=len) if len(res) > 2]
+        # Cycle through the residuals and incorporate back those
+        # that only fit in a single tracklet.
+        n_attemps = 0
+        n_max = len(residuals)
+        while n_attemps < n_max:
+            for res in tqdm(residuals[::-1]):
+                easy_fit = [i for i, track in enumerate(self.tracks) if res not in track]
+                if not easy_fit:
+                    residuals.remove(res)
+                    continue
+                if len(easy_fit) == 1:
+                    self.tracks[easy_fit[0]] += res
+                    residuals.remove(res)
+                    n_attemps = 0
+                else:
+                    n_attemps += 1
+
+        # Greedily add the remaining residuals
+        for res in tqdm(residuals[::-1]):
+            c1 = res.centroid[[0, -1]]
+            easy_fit = [i for i, track in enumerate(self.tracks) if res not in track]
+            dists = []
+            for n, track in enumerate(self.tracks[easy_fit]):
+                e = np.searchsorted(track.inds, res.end)
+                s = e - 1
+                try:
+                    t = track.inds[[s, e]]
+                except IndexError:
+                    continue
+                left_gap = res.start - t[0]
+                right_gap = t[1] - res.end
+                if not left_gap > 0 and right_gap > 0:
+                    continue
+                if left_gap <= 3:
+                    dist = np.linalg.norm(track.centroid[s] - c1[0])
+                elif right_gap <= 3:
+                    dist = np.linalg.norm(track.centroid[e] - c1[1])
+                else:
+                    dist = (np.linalg.norm(track.centroid[s] - c1[0])
+                            + np.linalg.norm(track.centroid[e] - c1[1]))
+                dists.append((n, dist))
+            if not dists:
+                continue
+            if len(dists) == 1:
+                ind = easy_fit[dists[0][0]]
+            else:
+                ind = sorted(dists, key=lambda x: x[1])[0][0]
+            self.tracks[ind] += res
+            residuals.remove(res)
+        return residuals
+
+    def _prestitch_residuals(self, max_gap=5):
+        G = nx.DiGraph()
+        residuals = sorted(self.residuals, key=lambda x: x.start)
+        for i in range(len(residuals)):
+            e = residuals[i].end
+            for j in range(i + 1, len(residuals)):
+                s = residuals[j].start
+                gap = s - e
+                if gap < 1:
+                    continue
+                if gap < max_gap:
+                    w = 1 - residuals[i].box_overlap_with(residuals[j])
+                    G.add_edge(i, j, weight=w)
+                else:
+                    break
+        mini_tracks = []
+        to_remove = []
+        for comp in nx.connected_components(G.to_undirected()):
+            sub_ = G.subgraph(comp)
+            inds = nx.dag_longest_path(sub_)
+            to_remove.extend(inds)
+            mini_tracks.append(sum(residuals[ind] for ind in inds))
+        for ind in sorted(to_remove, reverse=True):
+            self.residuals.pop(ind)
+        self.residuals.extend(mini_tracks)
 
     def concatenate_data(self):
         if self.tracks is None:
