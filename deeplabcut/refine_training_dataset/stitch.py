@@ -132,6 +132,26 @@ class Tracklet:
         self.data = np.delete(self.data, idx, axis=0)
         self._update_centroid()
 
+    def interpolate(self, max_gap=1):
+        if max_gap < 1:
+            raise ValueError('Gap should be a strictly positive integer.')
+
+        gaps = np.diff(self.inds) - 1
+        valid_gaps = (0 < gaps) & (gaps <= max_gap)
+        fills = []
+        for i in np.flatnonzero(valid_gaps):
+            s, e = self.inds[[i, i + 1]]
+            data1, data2 = self.data[[i, i + 1]]
+            diff = (data2 - data1) / (e - s)
+            diff[np.isnan(diff)] = 0
+            interp = diff[..., np.newaxis] * np.arange(1, e - s)
+            interp[:, 2] = 0.5  # Chance detections
+            if interp.shape[1] == 4:
+                interp[:, 3] = self.identity
+            data = data1 + np.rollaxis(interp, axis=2)
+            fills.append(Tracklet(data, np.arange(s + 1, e)))
+        return self + sum(fills)
+
     def contains_duplicates(self, return_indices=False):
         """
         Evaluate whether the Tracklet contains duplicate time indices.
