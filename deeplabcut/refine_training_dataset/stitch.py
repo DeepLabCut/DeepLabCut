@@ -6,8 +6,7 @@ import pickle
 import re
 import scipy.linalg.interpolative as sli
 from collections import defaultdict
-from itertools import combinations
-from math import factorial
+from itertools import combinations, cycle
 from networkx.algorithms.flow import preflow_push
 from scipy.linalg import hankel
 from scipy.spatial.distance import directed_hausdorff
@@ -351,15 +350,18 @@ class Tracklet:
         diff = np.abs(np.diff(eigen / eigen[0]))
         return np.argmin(diff > tol)
 
-    def plot(self, centroid_only=True, color='r'):
+    def plot(self, centroid_only=True, color=None, ax=None, interactive=False):
+        if ax is None:
+            fig, ax = plt.subplots()
         centroid = np.full((self.end + 1, 2), np.nan)
         centroid[self.inds] = self.centroid
-        plt.plot(centroid, c=color, lw=2)
+        lines = ax.plot(centroid, c=color, lw=2, picker=interactive)
         if not centroid_only:
             xy = np.full((self.end + 1, self.xy.shape[1], 2), np.nan)
             xy[self.inds] = self.xy
-            plt.plot(xy[..., 0], c=color, lw=1)
-            plt.plot(xy[..., 1], c=color, lw=1)
+            ax.plot(xy[..., 0], c=color, lw=1)
+            ax.plot(xy[..., 1], c=color, lw=1)
+        return lines
 
 
 class TrackletStitcher:
@@ -651,19 +653,51 @@ class TrackletStitcher:
         if self.paths is None:
             raise ValueError('No paths were found. Call `stitch` first')
 
+        fig, ax = plt.subplots()
+        ax.set_yticks([])
+        for loc, spine in ax.spines.items():
+            if loc != 'bottom':
+                spine.set_visible(False)
         for path in self.paths:
             length = len(path)
             colors = plt.get_cmap(colormap, length)(range(length))
             for tracklet, color in zip(path, colors):
-                tracklet.plot(color=color)
+                tracklet.plot(color=color, ax=ax)
 
     def plot_tracks(self, colormap='viridis'):
         if self.tracks is None:
             raise ValueError('No tracks were found. Call `stitch` first')
 
+        fig, ax = plt.subplots()
+        ax.set_yticks([])
+        for loc, spine in ax.spines.items():
+            if loc != 'bottom':
+                spine.set_visible(False)
         colors = plt.get_cmap(colormap, self.n_tracks)(range(self.n_tracks))
         for track, color in zip(self.tracks, colors):
-            track.plot(color=color)
+            track.plot(color=color, ax=ax)
+
+    def plot_tracklets(self, colormap='Paired'):
+        fig, axes = plt.subplots(ncols=2, figsize=(14, 4))
+        axes[0].set_yticks([])
+        for loc, spine in axes[0].spines.items():
+            if loc != 'bottom':
+                spine.set_visible(False)
+        axes[1].axis('off')
+
+        cmap = plt.get_cmap(colormap)
+        colors = cycle(cmap.colors)
+        line2tracklet = dict()
+        tracklet2lines = dict()
+        all_points = defaultdict(dict)
+        for tracklet in self:
+            color = next(colors)
+            lines = tracklet.plot(ax=axes[0], color=color)
+            tracklet2lines[tracklet] = lines
+            for line in lines:
+                line2tracklet[line] = tracklet
+            for i, (x, y) in zip(tracklet.inds, tracklet.centroid):
+                all_points[i][(x, y)] = color
 
     def reconstruct_paths(self):
         paths = []
