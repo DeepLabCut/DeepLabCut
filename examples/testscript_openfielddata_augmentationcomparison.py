@@ -117,22 +117,33 @@ Tensorpack:
 Results for 10000  training iterations: 95 3 train error: 2.9 pixels. Test error: 3.31  pixels.
 With pcutoff of 0.4  train error: 2.9 pixels. Test error: 3.31 pixels
 
-My results were (Run with DLC *2.1.9* on Jan 2021) for 10 k iterations
+My results were (Run with DLC *2.1.9* in Jan 2021) for 10 k iterations
 
 **ResNet50
 Imgaug:
+Results for 100000  training iterations: 95 1 train error: 2.13 pixels. Test error: 2.22  pixels.
+With pcutoff of 0.4  train error: 2.13 pixels. Test error: 2.22 pixels
 
 Scalecrop:
+Results for 100000  training iterations: 95 2 train error: 1.47 pixels. Test error: 1.77  pixels.
+With pcutoff of 0.4  train error: 1.47 pixels. Test error: 1.77 pixels
 
 Tensorpack:
-
+Results for 100000  training iterations: 95 3 train error: 2.09 pixels. Test error: 2.36  pixels.
+With pcutoff of 0.4  train error: 2.09 pixels. Test error: 2.36 pixels
 
 **EffNet-b3
 Imgaug:
+Results for 100000  training iterations: 95 4 train error: 2.39 pixels. Test error: 2.57  pixels.
+With pcutoff of 0.4  train error: 2.39 pixels. Test error: 2.57 pixels
 
 Scalecrop:
+Results for 100000  training iterations: 95 5 train error: 2.26 pixels. Test error: 2.24  pixels.
+With pcutoff of 0.4  train error: 2.26 pixels. Test error: 2.24 pixels
 
 Tensorpack:
+Results for 100000  training iterations: 95 6 train error: 1.65 pixels. Test error: 2.24  pixels.
+With pcutoff of 0.4  train error: 1.65 pixels. Test error: 2.24 pixels
 
 Notice: despite the higher RMSE for imgaug due to the augmentation,
 the network performs much better on the testvideo (see Neuron Primer: https://www.cell.com/neuron/pdf/S0896-6273(20)30717-0.pdf)
@@ -143,6 +154,7 @@ the network performs much better on the testvideo (see Neuron Primer: https://ww
 import os
 from pathlib import Path
 
+os.environ["CUDA_VISIBLE_DEVICES"] = str(0)
 os.environ["DLClight"] = "True"
 
 import deeplabcut
@@ -151,7 +163,7 @@ import numpy as np
 # Loading example data set
 path_config_file = os.path.join(os.getcwd(), "openfield-Pranav-2018-10-30/config.yaml")
 cfg = deeplabcut.auxiliaryfunctions.read_config(path_config_file)
-maxiters = 10000
+maxiters = 100000
 
 deeplabcut.load_demo_data(path_config_file)
 
@@ -164,26 +176,14 @@ deeplabcut.create_training_model_comparison(
     augmenter_types=["imgaug", "scalecrop", "tensorpack"],
 )
 
-
-## here is an "old way" to do this
-"""
-trainIndices, testIndices=deeplabcut.mergeandsplit(path_config_file,trainindex=0,uniform=True)
-deeplabcut.create_training_dataset(path_config_file,Shuffles=[2],trainIndices=trainIndices,testIndices=testIndices)
-deeplabcut.create_training_dataset(path_config_file,Shuffles=[3],trainIndices=trainIndices,testIndices=testIndices)
-for shuffle in [2,3]:
-	if shuffle==3:
-		posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(shuffle),'train/pose_cfg.yaml')
-
-		DLC_config=deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
-		DLC_config['dataset_type']='tensorpack'
-		deeplabcut.auxiliaryfunctions.write_plainconfig(posefile,DLC_config)
-"""
-
 for shuffle in 1 + np.arange(6):
 
     posefile, _, _ = deeplabcut.return_train_network_path(
         path_config_file, shuffle=shuffle
     )
+
+    edits = {"decay_steps": 100000, "lr_init": 0.0005 * 8}  # for EfficientNet
+    DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
 
     if shuffle % 3 == 1:  # imgaug
         edits = {"rotation": 180, "motion_blur": True}

@@ -47,7 +47,7 @@ def Check4weights(modeltype, parent_path, num_shuffles):
                     + modeltype.replace('_','-')))
     else:
         print(
-            "Currently ResNet (50, 101, 152) and MobilenetV2 (1, 0.75, 0.5 and 0.35) are supported, please change 'resnet' entry in config.yaml!"
+                        "Currently ResNet (50, 101, 152), MobilenetV2 (1, 0.75, 0.5 and 0.35) and EfficientNet (b0-b6) are supported, please change 'resnet' entry in config.yaml!"
         )
         num_shuffles = -1  # thus the loop below is empty...
         model_path = parent_path

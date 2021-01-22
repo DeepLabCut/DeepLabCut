@@ -222,8 +222,12 @@ def train(
     train_writer = TF.summary.FileWriter(cfg.log_dir, sess.graph)
 
     if cfg.get("freezeencoder", False):
-        print("Freezing...")
-        learning_rate, _, train_op = get_optimizer_with_freeze(loss_op, cfg)
+        if 'efficientnet' in cfg.net_type:
+            print("Freezing ONLY supported MobileNet/ResNet currently!!")
+            learning_rate, train_op, tstep = get_optimizer(total_loss, cfg)
+
+        print("Freezing encoder...")
+        learning_rate, _, train_op = get_optimizer_with_freeze(total_loss, cfg)
     else:
         learning_rate, train_op, tstep = get_optimizer(total_loss, cfg)
 
