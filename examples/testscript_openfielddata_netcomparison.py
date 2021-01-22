@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+This is a test script to compare the networks. On Jan 3rd 2020:
 
-This is a test script to compare the networks.
-
+Jan 2020:
 MobileNetV2 0.35
-Results for 10000  training iterations: 95 1 train error: 6.93 pixels. Test error: 6.58  pixels.
-With pcutoff of 0.4  train error: 6.58 pixels. Test error: 6.58 pixels
+Results for 10000  training iterations: 95 1 train error: 5.79 pixels. Test error: 5.63  pixels.
+With pcutoff of 0.4  train error: 5.79 pixels. Test error: 5.63 pixels
 
 ResNet 50
-Results for 10000  training iterations: 95 2 train error: 3.33 pixels. Test error: 3.05  pixels.
-With pcutoff of 0.4  train error: 3.33 pixels. Test error: 3.05 pixels
+Results for 10000  training iterations: 95 2 train error: 3.61 pixels. Test error: 3.7  pixels.
+With pcutoff of 0.4  train error: 3.61 pixels. Test error: 3.7 pixels
 
 EffNet-b3
-Results for 10000  training iterations: 95 3 train error: 10.51 pixels. Test error: 10.51  pixels.
-With pcutoff of 0.4  train error: 10.51 pixels. Test error: 10.51 pixels
+Results for 10000  training iterations: 95 3 train error: 6.86 pixels. Test error: 6.63  pixels.
+With pcutoff of 0.4  train error: 6.86 pixels. Test error: 6.63 pixels
 
+Note: Not too good on video either!
 
 TODO: Note we should still optimize the MobNet & EffNet LR for this dataset (also training is pretty short!)
 TODO: change to frozen backbone!
@@ -47,6 +48,7 @@ deeplabcut.create_training_model_comparison(
     augmenter_types=["imgaug"],
 )
 
+freezeencoder=False #True
 for shuffle in 1 + np.arange(3):
 
     posefile, _, _ = deeplabcut.return_train_network_path(
@@ -54,11 +56,10 @@ for shuffle in 1 + np.arange(3):
     )
 
     # for EfficientNet
-    edits = {"decay_steps": maxiters, "lr_init": 0.0005 * 12}
+    edits = {"decay_steps": maxiters, "lr_init": 0.0005 * 12, "freezeencoder": freezeencoder}
     DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
-
     # imgaug
-    edits = {"rotation": 180, "motion_blur": True}
+    edits = {"rotation": 180, "motion_blur": True, "freezeencoder": freezeencoder}
     DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
 
     print("TRAIN NETWORK", shuffle)
