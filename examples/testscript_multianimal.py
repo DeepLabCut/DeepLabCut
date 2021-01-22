@@ -1,6 +1,6 @@
 import os
 
-os.environ['DLClight'] = 'True'
+os.environ["DLClight"] = "True"
 
 import deeplabcut
 import numpy as np

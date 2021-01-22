@@ -48,7 +48,7 @@ deeplabcut.create_training_model_comparison(
     augmenter_types=["imgaug"],
 )
 
-freezeencoder=False #True
+freezeencoder = False  # True
 for shuffle in 1 + np.arange(3):
 
     posefile, _, _ = deeplabcut.return_train_network_path(
@@ -56,7 +56,11 @@ for shuffle in 1 + np.arange(3):
     )
 
     # for EfficientNet
-    edits = {"decay_steps": maxiters, "lr_init": 0.0005 * 12, "freezeencoder": freezeencoder}
+    edits = {
+        "decay_steps": maxiters,
+        "lr_init": 0.0005 * 12,
+        "freezeencoder": freezeencoder,
+    }
     DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
     # imgaug
     edits = {"rotation": 180, "motion_blur": True, "freezeencoder": freezeencoder}
