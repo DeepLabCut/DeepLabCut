@@ -381,6 +381,7 @@ def GetPoseF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
     pbar = tqdm(total=nframes)
     counter = 0
     step = max(10, int(nframes / 100))
+    inds = []
     while cap.isOpened():
         if counter % step == 0:
             pbar.update(step)
@@ -523,6 +524,7 @@ def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
     pbar = tqdm(total=nframes)
     counter = 0
     step = max(10, int(nframes / 100))
+    inds = []
     while cap.isOpened():
         if counter % step == 0:
             pbar.update(step)

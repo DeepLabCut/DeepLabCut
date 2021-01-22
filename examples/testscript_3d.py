@@ -93,7 +93,7 @@ shutil.copyfile(video[0], output2)
 try:
     config = glob.glob(os.path.join(basepath, "TEST*", "config.yaml"))[-1]
 except:
-    raise ("Please run the testscript.py first before testing for 3d")
+    raise RuntimeError("Please run the testscript.py first before testing for 3d")
 
 dfolder = None
 

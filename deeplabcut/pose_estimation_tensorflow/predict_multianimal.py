@@ -140,6 +140,7 @@ def GetPoseandCostsF(
     pbar = tqdm(total=nframes)
     counter = 0
     step = max(10, int(nframes / 100))
+    inds = []
 
     PredicteData = {}
     # initializing constants

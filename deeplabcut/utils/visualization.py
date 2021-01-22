@@ -302,7 +302,10 @@ def make_labeled_images_from_dataframe(
             filename = ic.files[i]
             ind = images_list.index(filename)
             coords = xy[ind]
-            im.set_data(color.gray2rgb(ic[i]))
+            img = ic[i]
+            if img.ndim == 2 or img.shape[-1] == 1:
+                img = color.gray2rgb(ic[i])
+            im.set_data(img)
             for pt, coord in zip(pts, coords):
                 pt.set_data(*coord)
             if ind_bones:
