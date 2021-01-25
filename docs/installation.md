@@ -69,6 +69,10 @@ Here are some additional resources users have found helpful (posted without endo
 FFMEG:
 
 - A few Windows users report needing to install ffmeg as described here: https://video.stackexchange.com/questions/20495/how-do-i-set-up-and-use-ffmpeg-in-windows (A potential error could occur when making new videos).
+- On Ubuntu, the command is: ``sudo apt install ffmpeg``
+
+LIBGTK:
+If facing ``ImportError: libgtk-x11-2.0.so.0: cannot open shared object file: No such file or directory`` upon importing DeepLabCut, run ``sudo apt-get install libgtk2.0-0`` in the terminal.
 
 DEEPLABCUT:
 
