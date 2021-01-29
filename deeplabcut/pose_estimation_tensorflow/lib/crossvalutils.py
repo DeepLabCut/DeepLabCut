@@ -196,8 +196,8 @@ def compute_crossval_metrics_preloadeddata(
             params["paf"],
             params["paf_graph"],
             params["paf_links"],
-            lowerbound,
-            upperbound,
+            lowerbound=lowerbound,
+            upperbound=upperbound,
             evaluation=True,
         )
 
