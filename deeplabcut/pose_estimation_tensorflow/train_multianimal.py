@@ -90,22 +90,15 @@ def start_preloading(sess, enqueue_op, dataset, placeholders):
 
 def get_optimizer(loss_op, cfg):
     tstep = tf.placeholder(tf.int32,shape=[],name='tstep')
-    if 'decay_steps' not in cfg.keys():
-        learning_rate = tf.placeholder(tf.float32, shape=[])
-        print("here")
+    if 'efficientnet' in cfg.net_type:
+        print("Switching to cosine decay schedule with adam!")
+        cfg.optimizer == "adam"
+        learning_rate = tf.train.cosine_decay(cfg.lr_init,
+                                              tstep,
+                                              cfg.decay_steps,
+                                              alpha=cfg.alpha_r)
     else:
-        if 't_mul' not in cfg.keys():
-            t_mul = 1.0
-        else:
-            t_mul = cfg['t_mul']
-        if 'm_mul' not in cfg.keys():
-            m_mul = 0.9
-        else:
-            m_mul = cfg['m_mul']
-        learning_rate = tf.train.cosine_decay_restarts(cfg['lr_init'],tstep,
-                                                       cfg['decay_steps'],
-                                                       t_mul=t_mul,m_mul=m_mul,
-                                                       alpha=cfg['alpha_r'])
+        learning_rate = tf.placeholder(tf.float32, shape=[])
 
     if cfg.optimizer == "sgd":
         optimizer = TF.train.MomentumOptimizer(
@@ -236,12 +229,12 @@ def train(
     print(cfg)
     print("Starting multi-animal training....")
     for it in range(max_iter + 1):
-        if 'decay_steps' not in cfg.keys():
-            current_lr = lr_gen.get_lr(it)
-            dict={learning_rate: current_lr}
-        else:
+        if 'efficientnet' in cfg.net_type:
             dict={tstep: it}
             current_lr = sess.run(learning_rate,feed_dict=dict)
+        else:
+            current_lr = lr_gen.get_lr(it)
+            dict={learning_rate: current_lr}
 
         # [_, loss_val, summary] = sess.run([train_op, total_loss, merged_summaries],feed_dict={learning_rate: current_lr})
         [_, alllosses, loss_val, summary] = sess.run(
