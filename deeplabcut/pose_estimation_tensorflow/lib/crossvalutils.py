@@ -35,6 +35,7 @@ from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import (
     _nest_detections_in_arrays,
     _extract_strong_connections,
     _link_detections,
+    Assembler,
 )
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
@@ -702,7 +703,7 @@ def _rebuild_uncropped_in(
         for file in filenames:
             if file.endswith("_full.pickle"):
                 full_data_file = os.path.join(dirpath, file)
-                metadata_file = full_data_file.replace("_full", "_meta")
+                metadata_file = full_data_file.replace("_full.", "_meta.")
                 with open(full_data_file, "rb") as file:
                     data = pickle.load(file)
                 with open(metadata_file, "rb") as file:
@@ -803,7 +804,7 @@ def _calc_within_between_pafs(
     return (within_train, within_test), (between_train, between_test)
 
 
-def _calibrate_distances(data, metadata):
+def _calibrate_distances(data, metadata, qs=(10, 90)):
     d = data.copy()
     d.pop('metadata', None)
     train_inds = set(metadata["data"]["trainIndices"])
@@ -812,12 +813,16 @@ def _calibrate_distances(data, metadata):
         if i in train_inds:
             for e, v in dict_['prediction']['costs'].items():
                 dists[e].extend(np.diag(v['distance']))
-    arr = np.ma.masked_invalid(np.vstack(list(dists.values())))
-    av = arr.mean(axis=1)
-    sd = arr.std(axis=1)
+    # arr = np.ma.masked_invalid(np.vstack(list(dists.values())))
+    # av = arr.mean(axis=1)
+    # sd = arr.std(axis=1)
     funcs = dict()
-    for ind in av.nonzero()[0]:
-        funcs[ind] = lambda x, ind=ind: np.exp(-(x - av[ind]) ** 2 / sd[ind] ** 2)
+    # for ind in av.nonzero()[0]:
+    #     funcs[ind] = lambda x, ind=ind: np.exp(-(x - av[ind]) ** 2 / sd[ind] ** 2)
+    for ind, vals in dists.items():
+        temp = np.asarray(vals)
+        temp = temp[np.isfinite(temp)]
+        funcs[ind] = np.percentile(temp, qs)
     return funcs
 
 
@@ -860,6 +865,14 @@ def _benchmark_paf_graphs(
         print(f"Graph {j}|{n_graphs}")
         graph = [paf_graph[i] for i in paf]
         funcs = [dist_funcs[i] for i in paf] if dist_funcs is not None else None
+        ass = Assembler(
+            data,
+            max_n_individuals=inference_cfg["topktoretain"],
+            n_multibodyparts=params['num_joints'],
+            graph=graph,
+            paf_inds=paf,
+            pcutoff=inference_cfg["pcutoff"],
+        )
         scores = np.full((len(image_paths), 2), np.nan)
         for i, imname in enumerate(tqdm(image_paths)):
             gt = ground_truth[i]
@@ -868,37 +881,28 @@ def _benchmark_paf_graphs(
                 continue
 
             # Break assembly down in stages
-            all_detections = _nest_detections_in_arrays(
-                data[imname]["prediction"]
-            )
-            if not np.any(all_detections):
+            all_detections = ass.flatten_detections(data[imname]["prediction"])
+            if all_detections is None:
                 continue
-            all_connections = _extract_strong_connections(
+            all_connections = ass.extract_best_edges(
                 all_detections,
-                graph,
-                paf,
                 data[imname]["prediction"]["costs"],
-                inference_cfg["topktoretain"],
-                inference_cfg["pcutoff"],
-                funcs,
             )
-            subsets, candidates = _link_detections(
+            subsets = ass.form_individuals(
                 all_detections,
                 all_connections,
-                inference_cfg["topktoretain"],
-                use_springs=use_springs,
             )
             ncols = 4 if inference_cfg["withid"] else 3
             animals = np.full((len(subsets), n_bodyparts, ncols), np.nan)
             for animal, subset in zip(animals, subsets):
-                inds = subset.astype(int)
-                mask = inds != -1
-                animal[mask] = candidates[inds[mask], :-2]
+                mask = subset != -1
+                animal[mask] = all_detections[subset[mask], :-2]
 
             # Count the number of missed bodyparts
             n_animals = len(animals)
+            n_dets = len(set((i for c in all_connections for i in c[:2])))
             if not n_animals:
-                if gt.shape[0]:
+                if n_dets:
                     scores[i, 0] = 1
             else:
                 animals = [
@@ -907,7 +911,7 @@ def _benchmark_paf_graphs(
                 ]
                 hyp = np.concatenate(animals)
                 hyp = hyp[~np.isnan(hyp).any(axis=1)]
-                scores[i, 0] = (gt.shape[0] - hyp.shape[0]) / gt.shape[0]
+                scores[i, 0] = (n_dets - hyp.shape[0]) / n_dets
                 neighbors = _find_closest_neighbors(gt[:, :2], hyp[:, :2])
                 valid = neighbors != -1
                 id_gt = gt[valid, 2]
