@@ -311,7 +311,9 @@ def evaluate_multianimal_full(
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
                             image_path = os.path.join(cfg["project_path"], imagename)
                             image = io.imread(image_path)
-                            frame = img_as_ubyte(skimage.color.gray2rgb(image))
+                            if image.ndim == 2 or image.shape[-1] == 1:
+                                image = skimage.color.gray2rgb(image)
+                            frame = img_as_ubyte(image)
 
                             GT = Data.iloc[imageindex]
                             df = GT.unstack("coords").reindex(joints, level='bodyparts')
