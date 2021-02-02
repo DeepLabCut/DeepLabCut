@@ -897,8 +897,9 @@ def _benchmark_paf_graphs(
 
             # Count the number of missed bodyparts
             n_animals = len(animals)
+            n_dets = np.sum(~np.isnan(candidates).any(axis=1))
             if not n_animals:
-                if gt.shape[0]:
+                if n_dets:
                     scores[i, 0] = 1
             else:
                 animals = [
@@ -907,7 +908,7 @@ def _benchmark_paf_graphs(
                 ]
                 hyp = np.concatenate(animals)
                 hyp = hyp[~np.isnan(hyp).any(axis=1)]
-                scores[i, 0] = (gt.shape[0] - hyp.shape[0]) / gt.shape[0]
+                scores[i, 0] = (n_dets - hyp.shape[0]) / n_dets
                 neighbors = _find_closest_neighbors(gt[:, :2], hyp[:, :2])
                 valid = neighbors != -1
                 id_gt = gt[valid, 2]
