@@ -321,11 +321,12 @@ def evaluate_multianimal_full(
                             xy = temp.values.reshape((-1, 2, temp.shape[1])).swapaxes(
                                 1, 2
                             )
-                            edges = xy[:, dlc_cfg["partaffinityfield_graph"]]
-                            lengths = np.sum(
-                                (edges[:, :, 0] - edges[:, :, 1]) ** 2, axis=2
-                            )
-                            distnorm[imageindex] = np.nanmax(lengths)
+                            if dlc_cfg['partaffinityfield_predict']:
+                                edges = xy[:, dlc_cfg["partaffinityfield_graph"]]
+                                lengths = np.sum(
+                                    (edges[:, :, 0] - edges[:, :, 1]) ** 2, axis=2
+                                )
+                                distnorm[imageindex] = np.nanmax(lengths)
 
                             # FIXME Is having an empty array vs nan really that necessary?!
                             groundtruthidentity = list(

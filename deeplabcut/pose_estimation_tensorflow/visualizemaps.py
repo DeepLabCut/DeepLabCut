@@ -468,10 +468,18 @@ def extract_save_all_maps(
                         list_of_inds.append(
                             [(2 * n, 2 * n + 1), (bptnames[edge[0]], bptnames[edge[1]])]
                         )
-                map_ = scmap[:, :, to_plot].sum(axis=2)
-                locref_x_ = locref_x[:, :, to_plot].sum(axis=2)
-                locref_y_ = locref_y[:, :, to_plot].sum(axis=2)
-
+                if len(to_plot)>1:
+                    map_ = scmap[:, :, to_plot].sum(axis=2)
+                    locref_x_ = locref_x[:, :, to_plot].sum(axis=2)
+                    locref_y_ = locref_y[:, :, to_plot].sum(axis=2)
+                elif len(to_plot)==1 and len(bptnames)>1:
+                    map_ = scmap[:, :, to_plot]
+                    locref_x_ = locref_x[:, :, to_plot]
+                    locref_y_ = locref_y[:, :, to_plot]
+                else:
+                    map_ = scmap[:, :]
+                    locref_x_ = locref_x[:, :]
+                    locref_y_ = locref_y[:, :]
                 fig1, _ = visualize_scoremaps(image, map_)
                 temp = dest_path.format(
                     imname=imname,
