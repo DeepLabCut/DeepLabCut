@@ -40,6 +40,7 @@ setuptools.setup(
         "numba==0.51.1",
         "matplotlib==3.1.3",
         "moviepy<=1.0.1",
+        "networkx",
         "numpy==1.16.4",
         "opencv-python-headless",
         "pandas>=1.0.1",
