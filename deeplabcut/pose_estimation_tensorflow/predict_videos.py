@@ -1192,7 +1192,7 @@ def convert_detections2tracklets(
         folder also needs to be passed.
 
     track_method: str, optional
-        Method uses to track animals, either 'box' or 'skeleton'.
+        Method uses to track animals, either 'box', 'skeleton', or 'ellipse'.
         By default, a constant velocity Kalman filter is used to track individual bounding boxes.
 
     BPTS: Default is None: all bodyparts are used.
@@ -1230,9 +1230,9 @@ def convert_detections2tracklets(
     from easydict import EasyDict as edict
     import pickle
 
-    if track_method not in ("box", "skeleton"):
+    if track_method not in ("box", "skeleton", "ellipse"):
         raise ValueError(
-            "Invalid tracking method. Only `box` and `skeleton` are currently supported."
+            "Invalid tracking method. Only `box`, `skeleton` and `ellipse` are currently supported."
         )
 
     cfg = auxiliaryfunctions.read_config(config)
@@ -1346,7 +1346,12 @@ def convert_detections2tracklets(
             vname = Path(video).stem
             dataname = os.path.join(videofolder, vname + DLCscorer + ".h5")
             data, metadata = auxfun_multianimal.LoadFullMultiAnimalData(dataname)
-            method = "sk" if track_method == "skeleton" else "bx"
+            if track_method == "ellipse":
+                method = "el"
+            elif track_method == "box":
+                method = "bx"
+            else:
+                method = "sk"
             trackname = dataname.split(".h5")[0] + f"_{method}.pickle"
             trackname = trackname.replace(videofolder, destfolder)
             if (
@@ -1421,19 +1426,24 @@ def convert_detections2tracklets(
 
                 if track_method == "box":
                     mot_tracker = trackingutils.Sort(inferencecfg)
-                else:
+                elif track_method == "skeleton":
                     mot_tracker = trackingutils.SORT(
                         numjoints,
                         inferencecfg["max_age"],
                         inferencecfg["min_hits"],
                         inferencecfg.get("oks_threshold", 0.5),
                     )
-
-                Tracks = {}
+                else:
+                    mot_tracker = trackingutils.SORTEllipse(
+                        inferencecfg["max_age"],
+                        inferencecfg["min_hits"],
+                        inferencecfg.get("iou_threshold", 0.6)
+                    )
+                tracklets = {}
                 if cfg[
                     "uniquebodyparts"
                 ]:  # Initialize storage of the 'single' individual track
-                    Tracks["s"] = {}
+                    tracklets["s"] = {}
                 for index, imname in tqdm(enumerate(imnames)):
                     animals = inferenceutils.assemble_individuals(
                         inferencecfg,
@@ -1449,15 +1459,14 @@ def convert_detections2tracklets(
                         print_intermediate=printintermediate,
                     )
                     if track_method == "box":
-                        # get corresponding bounding boxes!
-                        bb = inferenceutils.individual2boundingbox(
-                            inferencecfg, animals, 0
-                        )  # TODO: get cropping parameters and utilize!
-                        trackers = mot_tracker.update(bb)
+                        bboxes = trackingutils.calc_bboxes_from_keypoints(
+                            animals, inferencecfg["boundingboxslack"], offset=0
+                        )
+                        trackers = mot_tracker.update(bboxes)
                     else:
                         temp = [arr.reshape((-1, 3))[:, :2] for arr in animals]
                         trackers = mot_tracker.track(temp)
-                    trackingutils.fill_tracklets(Tracks, trackers, animals, imname)
+                    trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
 
                     # Test whether the unique bodyparts have been assembled
                     if cfg["uniquebodyparts"]:
@@ -1482,12 +1491,12 @@ def convert_detections2tracklets(
                                         dets, key=lambda x: x[2], reverse=True
                                     )[0]
                                     single[ind] = best[:3]
-                            Tracks["s"][imname] = single.flatten()
+                            tracklets["s"][imname] = single.flatten()
 
-                Tracks["header"] = pdindex
+                tracklets["header"] = pdindex
                 with open(trackname, "wb") as f:
                     # Pickle the 'labeled-data' dictionary using the highest protocol available.
-                    pickle.dump(Tracks, f, pickle.HIGHEST_PROTOCOL)
+                    pickle.dump(tracklets, f, pickle.HIGHEST_PROTOCOL)
 
         os.chdir(str(start_path))
 

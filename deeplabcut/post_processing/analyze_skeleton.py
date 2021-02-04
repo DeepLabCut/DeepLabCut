@@ -208,7 +208,7 @@ def analyzeskeleton(
 
     track_method: string, optional
         Specifies the tracker used to generate the data. Empty by default (corresponding to
-        a single animal project). For multiple animals, must be either 'box' or 'skeleton'.
+        a single animal project). For multiple animals, must be either 'box', 'skeleton', or 'ellipse'.
     """
     # Load config file, scorer and videos
     cfg = auxiliaryfunctions.read_config(config)
