@@ -863,6 +863,21 @@ def calc_bboxes_from_keypoints(data, slack=0, offset=0):
     return bboxes
 
 
+def reconstruct_all_ellipses(data, sd):
+    xy = data.droplevel("scorer", axis=1).drop("likelihood", axis=1, level=-1)
+    animals = xy.columns.get_level_values("individuals").unique()
+    nrows = xy.shape[0]
+    ellipses = np.full((len(animals), nrows, 5), np.nan)
+    fitter = EllipseFitter(sd)
+    for n, animal in enumerate(animals):
+        data = xy.xs(animal, axis=1, level="individuals").values.reshape((nrows, -1, 2))
+        for i, coords in enumerate(tqdm(data)):
+            el = fitter.fit(coords.astype(np.float64))
+            if el is not None:
+                ellipses[n, i] = el.parameters
+    return ellipses
+
+
 def _track_individuals(
     individuals,
     min_hits=1,
@@ -897,7 +912,8 @@ def _track_individuals(
         )
 
     tracklets = defaultdict(dict)
-    for i, (multi, *single) in enumerate(tqdm(individuals)):
+    all_hyps = dict()
+    for i, (multi, single) in enumerate(tqdm(individuals)):
         if single is not None:
             tracklets["single"][i] = single
         if multi is None:
@@ -909,8 +925,9 @@ def _track_individuals(
         else:
             xy = multi[..., :2]
             hyps = tracker.track(xy)
+        all_hyps[i] = hyps
         for hyp in hyps:
             tracklet_id, pred_id = hyp[-2:].astype(int)
             if pred_id != -1:
                 tracklets[tracklet_id][i] = multi[pred_id]
-    return tracklets
+    return tracklets, all_hyps
