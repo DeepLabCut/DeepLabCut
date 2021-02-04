@@ -180,6 +180,9 @@ class KalmanBoxTracker:
 
 class Ellipse:
     def __init__(self, x, y, width, height, theta):
+        if abs(theta) > 2 * np.pi:
+            raise ValueError("Theta must be in radians")
+
         self.x = x
         self.y = y
         self.width = width
