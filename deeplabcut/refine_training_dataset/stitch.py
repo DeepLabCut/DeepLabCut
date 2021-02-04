@@ -27,6 +27,12 @@ class Tracklet:
         inds : array-like
             Corresponding time frame indices.
         """
+        if data.ndim != 3 or data.shape[-1] not in (3, 4):
+            raise ValueError('Data must of shape (nframes, nbodyparts, 3 or 4)')
+
+        if data.shape[0] != len(inds):
+            raise ValueError('Data and corresponding indices must have the same length.')
+
         self.data = data.astype(np.float64)
         self.inds = np.array(inds)
         monotonically_increasing = all(a < b for a, b in zip(inds, inds[1:]))
