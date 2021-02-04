@@ -52,6 +52,7 @@ def test_tracklet_monotonic_indices(fake_tracklet):
 
 def test_tracklet(fake_tracklet):
     assert len(fake_tracklet) == TRACKLET_LEN
+    assert fake_tracklet.likelihood == 1
     assert fake_tracklet.identity == TRACKLET_ID
     assert fake_tracklet.start == TRACKLET_START
     assert fake_tracklet.end == TRACKLET_START + TRACKLET_LEN - 1
@@ -72,6 +73,11 @@ def test_tracklet(fake_tracklet):
     assert tracklet2.contains_duplicates()
 
 
+def test_tracklet_default_identity(fake_tracklet):
+    fake_tracklet.data = fake_tracklet.data[..., :3]
+    assert fake_tracklet.identity == -1
+
+
 def test_tracklet_data_access(fake_tracklet):
     np.testing.assert_equal(
         fake_tracklet.get_data_at(TRACKLET_START), fake_tracklet.data[0]
@@ -83,6 +89,27 @@ def test_tracklet_data_access(fake_tracklet):
     fake_tracklet.del_data_at(TRACKLET_START + 1)
     assert not fake_tracklet.is_continuous
     assert TRACKLET_START + 1 not in fake_tracklet.inds
+
+
+@pytest.mark.parametrize(
+    "where, norm",
+    [("head", False), ("tail", True)]
+)
+def test_tracklet_calc_velocity(fake_tracklet, where, norm):
+    _ = fake_tracklet.calc_velocity(where, norm)
+
+
+def test_tracklet_affinities(fake_tracklet):
+    other_tracklet = Tracklet(
+        fake_tracklet.data,
+        fake_tracklet.inds + TRACKLET_LEN
+    )
+    _ = fake_tracklet.dynamic_similarity_with(other_tracklet)
+    _ = fake_tracklet.dynamic_dissimilarity_with(other_tracklet)
+    _ = fake_tracklet.shape_dissimilarity_with(other_tracklet)
+    _ = fake_tracklet.box_overlap_with(other_tracklet)
+    _ = fake_tracklet.motion_affinity_with(other_tracklet)
+    _ = fake_tracklet.distance_to(other_tracklet)
 
 
 def test_stitcher_wrong_inputs(fake_tracklet):
