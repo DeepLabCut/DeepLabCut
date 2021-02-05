@@ -16,7 +16,7 @@ if __name__ == "__main__":
     NUM_FRAMES = 5
     TRAIN_SIZE = 0.8
     NET = "resnet_50"
-    #NET = "efficientnet-b0"
+    # NET = "efficientnet-b0"
     N_ITER = 5
 
     basepath = os.path.dirname(os.path.abspath("testscript_multianimal.py"))
@@ -101,13 +101,13 @@ if __name__ == "__main__":
         "batch_size": 1,
         "save_iters": N_ITER,
         "display_iters": N_ITER // 2,
-        #"multi_step": [[0.001, N_ITER]],
+        # "multi_step": [[0.001, N_ITER]],
     }
     deeplabcut.auxiliaryfunctions.edit_config(pose_config_path, edits)
     print("Pose config edited.")
 
     print("Training network...")
-    deeplabcut.train_network(config_path,maxiters=N_ITER)
+    deeplabcut.train_network(config_path, maxiters=N_ITER)
     print("Network trained.")
 
     print("Evaluating network...")
