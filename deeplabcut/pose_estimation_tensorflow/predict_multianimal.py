@@ -154,7 +154,6 @@ def GetPoseandCostsF(
         if counter % step == 0:
             pbar.update(step)
         frame = cap.read_frame(crop=cfg["cropping"])
-        inds = []
         if frame is not None:
             frames[batch_ind] = img_as_ubyte(frame)
             inds.append(counter)

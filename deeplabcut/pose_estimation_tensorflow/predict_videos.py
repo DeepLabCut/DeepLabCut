@@ -386,7 +386,6 @@ def GetPoseF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
         if counter % step == 0:
             pbar.update(step)
         ret, frame = cap.read()
-        inds = []
         if ret:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             if cfg["cropping"]:
@@ -523,7 +522,6 @@ def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
         if counter % step == 0:
             pbar.update(step)
         ret, frame = cap.read()
-        inds = []
         if ret:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             if cfg["cropping"]:
