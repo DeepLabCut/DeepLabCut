@@ -294,7 +294,7 @@ class VideoWriter(VideoReader):
         return output_path
 
     def rescale(
-        self, width, height=-1, rotateccw=False, suffix="rescale", dest_folder=None
+        self, width, height=-1, rotateccw=False, angle=0.1, suffix="rescale", dest_folder=None
     ):
         output_path = self.make_output_path(suffix, dest_folder)
         command = (
@@ -304,7 +304,7 @@ class VideoWriter(VideoReader):
         # Rotate, see: https://stackoverflow.com/questions/3937387/rotating-videos-with-ffmpeg
         # interesting option to just update metadata.
         command = (
-            command.format("-vf 'transpose=1' ") if rotateccw else command.format("")
+            command.format("-vf 'rotate=angle' ") if rotateccw else command.format("")
         )
         subprocess.call(command, shell=True)
         return output_path
