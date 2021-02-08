@@ -298,13 +298,12 @@ class VideoWriter(VideoReader):
     ):
         output_path = self.make_output_path(suffix, dest_folder)
         command = (
-            f"ffmpeg -n -i {self.video_path} -filter:v "
-            f"scale={width}:{height} {{}}-c:a copy {output_path}"
+            f'ffmpeg -n -i {self.video_path} -filter:v "scale={width}:{height}, {{}}" -c:a copy {output_path}'
         )
         # Rotate, see: https://stackoverflow.com/questions/3937387/rotating-videos-with-ffmpeg
         # interesting option to just update metadata.
         command = (
-            command.format("-vf 'rotate={angle}' ") if rotateccw else command.format("")
+            command.format(f'rotate={angle}') if rotateccw else command.format("")
         )
         subprocess.call(command, shell=True)
         return output_path
@@ -447,7 +446,7 @@ def CropVideo(
 
 
 def DownSampleVideo(
-    vname, width=-1, height=200, outsuffix="downsampled", outpath=None, rotateccw=False
+    vname, width=-1, height=200, outsuffix="downsampled", outpath=None, rotateccw=False, angle=0.1
 ):
     """
     Auxiliary function to downsample a video and output it to the same folder with "outsuffix" appended in its name.
@@ -490,7 +489,7 @@ def DownSampleVideo(
     Downsamples the video to a width of 220 and height of 320 and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1cropped.avi
     """
     writer = VideoWriter(vname)
-    return writer.rescale(width, height, rotateccw, outsuffix, outpath)
+    return writer.rescale(width, height, rotateccw, angle, outsuffix, outpath)
 
 
 def draw_bbox(video):
