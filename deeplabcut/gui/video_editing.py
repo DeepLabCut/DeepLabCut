@@ -117,7 +117,12 @@ class Video_Editing(wx.Panel):
             flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT,
             border=10,
         )
-
+        
+        angle = wx.StaticBox(self, label="Angle for rotation (rad) (if downsample True)")
+        vangle_boxsizer = wx.StaticBoxSizer(angle, wx.VERTICAL)
+        self.vangle = wx.SpinCtrl(self, value="1", min=-6.283, max=6.283)
+        vangle_boxsizer.Add(self.vangle, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+        
         video_start = wx.StaticBox(self, label="Shorten: start time (sec)")
         vstart_boxsizer = wx.StaticBoxSizer(video_start, wx.VERTICAL)
         self.vstart = wx.SpinCtrl(self, value="1", min=0, max=3600)
@@ -130,6 +135,7 @@ class Video_Editing(wx.Panel):
 
         hbox2.Add(vstart_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
         hbox2.Add(vstop_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+        hbox2.Add(vangle_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
         boxsizer.Add(hbox2, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
         self.help_button = wx.Button(self, label="Help")
