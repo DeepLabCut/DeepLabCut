@@ -304,7 +304,7 @@ class VideoWriter(VideoReader):
         # Rotate, see: https://stackoverflow.com/questions/3937387/rotating-videos-with-ffmpeg
         # interesting option to just update metadata.
         command = (
-            command.format("-vf 'rotate=angle' ") if rotateccw else command.format("")
+            command.format("-vf 'rotate={angle}' ") if rotateccw else command.format("")
         )
         subprocess.call(command, shell=True)
         return output_path
