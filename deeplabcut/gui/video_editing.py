@@ -117,10 +117,9 @@ class Video_Editing(wx.Panel):
             flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT,
             border=10,
         )
-        
         angle = wx.StaticBox(self, label="Angle for rotation (rad) (if downsample True)")
         vangle_boxsizer = wx.StaticBoxSizer(angle, wx.VERTICAL)
-        self.vangle = wx.SpinCtrl(self, value="1", min=-6.283, max=6.283)
+        self.vangle = wx.lib.agw.floatspin.FloatSpin(self, value="0.017", min_val=-6.283, max_val=6.283)
         vangle_boxsizer.Add(self.vangle, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
         
         video_start = wx.StaticBox(self, label="Shorten: start time (sec)")
@@ -197,6 +196,7 @@ class Video_Editing(wx.Panel):
                     width=-1,
                     height=self.height.GetValue(),
                     rotateccw=self.rotate_val,
+                    angle=self.vangle.GetValue(),
                 )
         else:
             print("Please select a video first!")
