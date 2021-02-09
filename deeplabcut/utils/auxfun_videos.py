@@ -294,13 +294,14 @@ class VideoWriter(VideoReader):
         return output_path
 
     def rescale(
-        self, width, height=-1, rotateccw=False, angle=0.017, suffix="rescale", dest_folder=None
+        self, width, height=-1, rotateccw=False, angle=0.0, suffix="rescale", dest_folder=None
     ):
         output_path = self.make_output_path(suffix, dest_folder)
         command = (
             f'ffmpeg -n -i {self.video_path} -filter:v '
             f'"scale={width}:{height}{{}}" -c:a copy {output_path}'
         )
+        angle = np.deg2rad(angle)
         # Rotate, see: https://stackoverflow.com/questions/3937387/rotating-videos-with-ffmpeg
         # interesting option to just update metadata.
         command = (
@@ -447,7 +448,7 @@ def CropVideo(
 
 
 def DownSampleVideo(
-    vname, width=-1, height=200, outsuffix="downsampled", outpath=None, rotateccw=False, angle=0.017
+    vname, width=-1, height=200, outsuffix="downsampled", outpath=None, rotateccw=False, angle=0.0
 ):
     """
     Auxiliary function to downsample a video and output it to the same folder with "outsuffix" appended in its name.
@@ -477,7 +478,7 @@ def DownSampleVideo(
         Default false, rotates counter-clockwise if true.
         
     angle: float
-        Angle to rotate by in radians, default 0.017 (~1 degree). Negative values rotate counter-clockwise
+        Angle to rotate by in degrees, default 0.0. Negative values rotate counter-clockwise
 
     Examples
     ----------
