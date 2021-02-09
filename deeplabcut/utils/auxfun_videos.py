@@ -294,7 +294,7 @@ class VideoWriter(VideoReader):
         return output_path
 
     def rescale(
-        self, width, height=-1, rotateccw=False, angle=0.017,, suffix="rescale", dest_folder=None
+        self, width, height=-1, rotateccw=False, angle=0.017, suffix="rescale", dest_folder=None
     ):
         output_path = self.make_output_path(suffix, dest_folder)
         command = (
