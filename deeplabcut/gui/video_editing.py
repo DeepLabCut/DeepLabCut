@@ -117,7 +117,7 @@ class Video_Editing(wx.Panel):
             flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT,
             border=10,
         )
-        angle = wx.StaticBox(self, label="Angle for rotation (rad) (if downsample True)")
+        angle = wx.StaticBox(self, label="Angle for rotation (rad) (if rotate video Yes)")
         vangle_boxsizer = wx.StaticBoxSizer(angle, wx.VERTICAL)
         self.vangle = wx.lib.agw.floatspin.FloatSpin(self, value="0.017", min_val=-6.283, max_val=6.283)
         vangle_boxsizer.Add(self.vangle, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
