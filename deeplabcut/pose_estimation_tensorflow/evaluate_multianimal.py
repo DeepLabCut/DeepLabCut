@@ -1,5 +1,5 @@
 """
-DeepLabCut2.0 Toolbox (deeplabcut.org)
+DeepLabCut 2.2 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
 
@@ -10,19 +10,94 @@ Licensed under GNU Lesser General Public License v3.0
 
 
 import os
-import argparse
+from pathlib import Path
 
-# Dependencies for anaysis
-import pickle
 import numpy as np
 import pandas as pd
 import skimage.color
-from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.utils import visualization
-from tqdm import tqdm
-from pathlib import Path
+from scipy.optimize import linear_sum_assignment
+from scipy.spatial import cKDTree
+from scipy.spatial.distance import cdist
 from skimage import io
 from skimage.util import img_as_ubyte
+from tqdm import tqdm
+
+from deeplabcut.pose_estimation_tensorflow.evaluate import make_results_file
+from deeplabcut.pose_estimation_tensorflow.config import load_config
+from deeplabcut.utils import visualization
+
+
+def _percentile(n):
+    def percentile_(x):
+        return x.quantile(n)
+
+    percentile_.__name__ = f"percentile_{100 * n:.0f}"
+    return percentile_
+
+
+def _compute_stats(df):
+    return df.agg(
+        [
+            "min",
+            "max",
+            "mean",
+            np.std,
+            _percentile(0.25),
+            _percentile(0.50),
+            _percentile(0.75),
+        ]
+    ).stack(level=1)
+
+
+def _find_closest_neighbors(xy_true, xy_pred, k=5):
+    n_preds = xy_pred.shape[0]
+    tree = cKDTree(xy_pred)
+    dist, inds = tree.query(xy_true, k=k)
+    idx = np.argsort(dist[:, 0])
+    neighbors = np.full(len(xy_true), -1, dtype=int)
+    picked = set()
+    for i, ind in enumerate(inds[idx]):
+        for j in ind:
+            if j not in picked:
+                picked.add(j)
+                neighbors[idx[i]] = j
+                break
+        if len(picked) == n_preds:
+            break
+    return neighbors
+
+
+def _calc_prediction_error(data):
+    _ = data.pop('metadata', None)
+    dists = []
+    for n, dict_ in enumerate(tqdm(data.values())):
+        gt = np.concatenate(dict_['groundtruth'][1])
+        xy = np.concatenate(dict_['prediction']['coordinates'][0])
+        p = np.concatenate(dict_['prediction']['confidence'])
+        neighbors = _find_closest_neighbors(gt, xy)
+        found = neighbors != -1
+        gt2 = gt[found]
+        xy2 = xy[neighbors[found]]
+        dists.append(np.c_[np.linalg.norm(gt2 - xy2, axis=1), p[neighbors[found]]])
+    return dists
+
+
+def _calc_train_test_error(data, metadata, pcutoff=0.3):
+    train_inds = set(metadata['data']['trainIndices'])
+    dists = _calc_prediction_error(data)
+    dists_train, dists_test = [], []
+    for n, dist in enumerate(dists):
+        if n in train_inds:
+            dists_train.append(dist)
+        else:
+            dists_test.append(dist)
+    dists_train = np.concatenate(dists_train)
+    dists_test = np.concatenate(dists_test)
+    error_train = np.nanmean(dists_train[:, 0])
+    error_train_cut = np.nanmean(dists_train[dists_train[:, 1] >= pcutoff, 0])
+    error_test = np.nanmean(dists_test[:, 0])
+    error_test_cut = np.nanmean(dists_test[dists_test[:, 1] >= pcutoff, 0])
+    return error_train, error_test, error_train_cut, error_test_cut
 
 
 def evaluate_multianimal_full(
@@ -36,18 +111,11 @@ def evaluate_multianimal_full(
     modelprefix="",
     c_engine=False,
 ):
-    """
-    WIP multi animal project.
-    """
-
-    import os
-
     from deeplabcut.pose_estimation_tensorflow.nnet import predict
     from deeplabcut.pose_estimation_tensorflow.nnet import (
         predict_multianimal as predictma,
     )
     from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
-    from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import data_to_input
 
     import tensorflow as tf
 
@@ -80,9 +148,16 @@ def evaluate_multianimal_full(
         ),
         "df_with_missing",
     )
+    # Handle data previously annotated on a different platform
+    sep = "/" if "/" in Data.index[0] else "\\"
+    if sep != os.path.sep:
+        Data.index = Data.index.str.replace(sep, os.path.sep)
     # Get list of body parts to evaluate network for
     comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
         cfg, comparisonbodyparts
+    )
+    all_bpts = np.asarray(
+        len(cfg["individuals"]) * cfg["multianimalbodyparts"] + cfg["uniquebodyparts"]
     )
     colors = visualization.get_cmap(len(comparisonbodyparts), name=cfg["colormap"])
     # Make folder for evaluation
@@ -128,6 +203,8 @@ def evaluate_multianimal_full(
             # TODO: IMPLEMENT for different batch sizes?
             dlc_cfg["batch_size"] = 1  # due to differently sized images!!!
 
+            joints = dlc_cfg["all_joints_names"]
+
             # Create folder structure to store results.
             evaluationfolder = os.path.join(
                 cfg["project_path"],
@@ -169,12 +246,6 @@ def evaluate_multianimal_full(
                     print(
                         "Invalid choice, only -1 (last), any integer up to last, or all (as string)!"
                     )
-
-                (
-                    individuals,
-                    uniquebodyparts,
-                    multianimalbodyparts,
-                ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
 
                 final_result = []
                 ##################################################
@@ -233,49 +304,45 @@ def evaluate_multianimal_full(
                         sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
 
                         PredicteData = {}
+                        dist = np.full((len(Data), len(all_bpts)), np.nan)
+                        conf = np.full_like(dist, np.nan)
+                        distnorm = np.full(len(Data), np.nan)
                         print("Analyzing data...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
                             image_path = os.path.join(cfg["project_path"], imagename)
                             image = io.imread(image_path)
-                            frame = img_as_ubyte(skimage.color.gray2rgb(image))
+                            if image.ndim == 2 or image.shape[-1] == 1:
+                                image = skimage.color.gray2rgb(image)
+                            frame = img_as_ubyte(image)
 
                             GT = Data.iloc[imageindex]
+                            df = GT.unstack("coords").reindex(joints, level='bodyparts')
 
-                            # Storing GT data as dictionary, so it can be used for calculating connection costs
-                            groundtruthcoordinates = []
-                            groundtruthidentity = []
-                            for bptindex, bpt in enumerate(dlc_cfg["all_joints_names"]):
-                                coords = np.zeros([len(individuals), 2]) * np.nan
-                                identity = []
-                                for prfxindex, prefix in enumerate(individuals):
-                                    if bpt in uniquebodyparts and prefix == "single":
-                                        coords[prfxindex, :] = np.array(
-                                            [
-                                                GT[cfg["scorer"]][prefix][bpt]["x"],
-                                                GT[cfg["scorer"]][prefix][bpt]["y"],
-                                            ]
-                                        )
-                                        identity.append(prefix)
-                                    elif (
-                                        bpt in multianimalbodyparts
-                                        and prefix != "single"
-                                    ):
-                                        coords[prfxindex, :] = np.array(
-                                            [
-                                                GT[cfg["scorer"]][prefix][bpt]["x"],
-                                                GT[cfg["scorer"]][prefix][bpt]["y"],
-                                            ]
-                                        )
-                                        identity.append(prefix)
-                                    else:
-                                        identity.append("nix")
+                            # Evaluate PAF edge lengths to calibrate `distnorm`
+                            temp = GT.unstack("bodyparts")[joints]
+                            xy = temp.values.reshape((-1, 2, temp.shape[1])).swapaxes(
+                                1, 2
+                            )
+                            if dlc_cfg['partaffinityfield_predict']:
+                                edges = xy[:, dlc_cfg["partaffinityfield_graph"]]
+                                lengths = np.sum(
+                                    (edges[:, :, 0] - edges[:, :, 1]) ** 2, axis=2
+                                )
+                                distnorm[imageindex] = np.nanmax(lengths)
 
-                                groundtruthcoordinates.append(
-                                    coords[np.isfinite(coords[:, 0]), :]
-                                )
-                                groundtruthidentity.append(
-                                    np.array(identity)[np.isfinite(coords[:, 0])]
-                                )
+                            # FIXME Is having an empty array vs nan really that necessary?!
+                            groundtruthidentity = list(
+                                df.index.get_level_values("individuals")
+                                .to_numpy()
+                                .reshape((-1, 1))
+                            )
+                            groundtruthcoordinates = list(df.values[:, np.newaxis])
+                            for i, coords in enumerate(groundtruthcoordinates):
+                                if np.isnan(coords).any():
+                                    groundtruthcoordinates[i] = np.empty(
+                                        (0, 2), dtype=float
+                                    )
+                                    groundtruthidentity[i] = np.array([], dtype=str)
 
                             PredicteData[imagename] = {}
                             PredicteData[imagename]["index"] = imageindex
@@ -299,9 +366,26 @@ def evaluate_multianimal_full(
                                 GT,
                             ]
 
+                            coords_pred = pred["coordinates"][0]
+                            probs_pred = pred["confidence"]
+                            for bpt, xy_gt in df.groupby(level="bodyparts"):
+                                inds_gt = np.flatnonzero(
+                                    np.all(~np.isnan(xy_gt), axis=1)
+                                )
+                                n_joint = joints.index(bpt)
+                                xy = coords_pred[n_joint]
+                                if inds_gt.size and xy.size:
+                                    # Pick the predictions closest to ground truth,
+                                    # rather than the ones the model has most confident in
+                                    d = cdist(xy_gt.iloc[inds_gt], xy)
+                                    rows, cols = linear_sum_assignment(d)
+                                    min_dists = d[rows, cols]
+                                    inds = np.flatnonzero(all_bpts == bpt)
+                                    sl = imageindex, inds[inds_gt[rows]]
+                                    dist[sl] = min_dists
+                                    conf[sl] = probs_pred[n_joint][cols].squeeze()
+
                             if plotting:
-                                coords_pred = pred["coordinates"][0]
-                                probs_pred = pred["confidence"]
                                 fig = visualization.make_multianimal_labeled_image(
                                     frame,
                                     groundtruthcoordinates,
@@ -321,6 +405,66 @@ def evaluate_multianimal_full(
                                 )
 
                         sess.close()  # closes the current tf session
+
+                        # Compute all distance statistics
+                        df_dist = pd.DataFrame(dist, columns=df.index)
+                        df_conf = pd.DataFrame(conf, columns=df.index)
+                        df_joint = pd.concat(
+                            [df_dist, df_conf],
+                            keys=["rmse", "conf"],
+                            names=["metrics"],
+                            axis=1
+                        )
+                        df_joint = df_joint.reorder_levels(
+                            list(np.roll(df_joint.columns.names, -1)), axis=1
+                        )
+                        df_joint.sort_index(
+                            axis=1,
+                            level=["individuals", "bodyparts"],
+                            ascending=[True, True],
+                            inplace=True
+                        )
+                        write_path = os.path.join(evaluationfolder, f"dist_{trainingsiterations}.csv")
+                        df_joint.to_csv(write_path)
+
+                        # Calculate overall prediction error
+                        error = df_joint.xs("rmse", level="metrics", axis=1)
+                        mask = df_joint.xs("conf", level="metrics", axis=1) >= cfg["pcutoff"]
+                        error_masked = error[mask]
+                        error_train = np.nanmean(error.iloc[trainIndices])
+                        error_train_cut = np.nanmean(error_masked.iloc[trainIndices])
+                        error_test = np.nanmean(error.iloc[testIndices])
+                        error_test_cut = np.nanmean(error_masked.iloc[testIndices])
+                        results = [
+                            trainingsiterations,
+                            int(100 * trainFraction),
+                            shuffle,
+                            np.round(error_train, 2),
+                            np.round(error_test, 2),
+                            cfg["pcutoff"],
+                            np.round(error_train_cut, 2),
+                            np.round(error_test_cut, 2),
+                        ]
+                        final_result.append(results)
+
+                        # For OKS/PCK, compute the standard deviation error across all frames
+                        sd = df_dist.groupby("bodyparts", axis=1).mean().std(axis=0)
+                        sd["distnorm"] = np.sqrt(np.nanmax(distnorm))
+                        sd.to_csv(write_path.replace("dist.csv", "sd.csv"))
+
+                        if show_errors:
+                            string = "Results for {} training iterations: {}, shuffle {}:\n" \
+                                     "Train error: {} pixels. Test error: {} pixels.\n" \
+                                     "With pcutoff of {}:\n" \
+                                     "Train error: {} pixels. Test error: {} pixels."
+                            print(string.format(*results))
+
+                            print("##########################################")
+                            print("Average Euclidean distance to GT per individual (in pixels)")
+                            print(error_masked.groupby('individuals', axis=1).mean().mean().to_string())
+                            print("Average Euclidean distance to GT per bodypart (in pixels)")
+                            print(error_masked.groupby('bodyparts', axis=1).mean().mean().to_string())
+
                         PredicteData["metadata"] = {
                             "nms radius": dlc_cfg.nmsradius,
                             "minimal confidence": dlc_cfg.minconfidence,
@@ -351,6 +495,9 @@ def evaluate_multianimal_full(
 
                         tf.reset_default_graph()
 
+                if len(final_result) > 0:  # Only append if results were calculated
+                    make_results_file(final_result, evaluationfolder, DLCscorer)
+
     # returning to intial folder
     os.chdir(str(start_path))
 
@@ -365,6 +512,7 @@ def evaluate_multianimal_crossvalidate(
     inferencecfg=None,
     init_points=20,
     n_iter=50,
+    log_file=None,
     dcorr=10.0,
     leastbpts=1,
     printingintermediatevalues=True,
@@ -372,21 +520,15 @@ def evaluate_multianimal_crossvalidate(
     plotting=False,
 ):
     """
-    Crossvalidate inference parameters on evaluation data; optimal parametrs will be stored in " inference_cfg.yaml".
+    Cross-validate inference parameters on evaluation data; optimal parameters will be stored in "inference_cfg.yaml".
 
     They will then be then used for inference (for analysis of videos). Performs Bayesian Optimization with https://github.com/fmfn/BayesianOptimization
 
-    This is a crucial step. The most important variable (in inferencecfg) to cross-validate is minimalnumberofconnections. Pass
-    a reasonable range to optimze (e.g. if you have 5 edges from 1 to 5. If you have 4 bpts and 11 connections from 3 to 9).
+    This is a crucial step. The most important variable (in inferencecfg) to cross-validate is minimalnumberofconnections.
+    Pass a reasonable range to optimize (e.g. if you have 5 edges from 1 to 5. If you have 4 bpts and 11 connections from 3 to 9).
 
     config: string
         Full path of the config.yaml file as a string.
-
-    videos: list
-        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
-
-    videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
 
     shuffle: int, optional
         An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.
@@ -420,6 +562,10 @@ def evaluate_multianimal_crossvalidate(
         Number of iterations of Bayesian optimization to perform.
         The larger it is, the higher the likelihood of finding a good extremum.
         Parameter from BayesianOptimization.
+
+    log_file: str, optional (default=None)
+        Path to a JSON file containing the progress of a previous Bayesian optimization run.
+        Note that previously probed points will not be evaluated again.
 
     dcorr: float,
         Distance thereshold for percent correct keypoints / relative percent correct keypoints (see paper).
@@ -472,7 +618,7 @@ def evaluate_multianimal_crossvalidate(
     _pbounds = {
         "pafthreshold": (0.05, 0.7),
         "detectionthresholdsquare": (
-            0,
+            0.0,
             0.9,
         ),  # TODO: set to minimum (from pose_cfg.yaml)
         "minimalnumberofconnections": (minconnections, maxconnections),
@@ -549,6 +695,19 @@ def evaluate_multianimal_crossvalidate(
             inferencecfg = edict(inferencecfg)
             auxfun_multianimal.check_inferencecfg_sanity(cfg, inferencecfg)
 
+        # Pick distance threshold for (r)PCK from the statistics computed during evaluation
+        stats_file = os.path.join(evaluationfolder, "sd.csv")
+        if os.path.isfile(stats_file):
+            stats = pd.read_csv(stats_file, header=None, index_col=0)
+            inferencecfg.distnormalization = np.round(
+                stats.loc["distnorm", 1], 2
+            ).item()
+            stats = stats.drop("distnorm")
+            dcorr = (
+                2 * stats.mean().squeeze()
+            )  # Taken as 2*SD error between predictions and ground truth
+        else:
+            dcorr = 10
         inferencecfg.topktoretain = np.inf
         inferencecfg, opt = crossvalutils.bayesian_search(
             config,
@@ -562,9 +721,11 @@ def evaluate_multianimal_crossvalidate(
             init_points=init_points,
             n_iter=n_iter,
             acq="ei",
+            log_file=log_file,
             dcorr=dcorr,
             leastbpts=leastbpts,
             modelprefix=modelprefix,
+            printingintermediatevalues=printingintermediatevalues,
         )
 
         # update number of individuals to retain.
@@ -579,13 +740,13 @@ def evaluate_multianimal_crossvalidate(
 
         path_inference_config = str(path_inference_config)
         # print("Quantification:", DataOptParams.head())
-        DataOptParams.to_hdf(
-            path_inference_config.split(".yaml")[0] + ".h5",
-            "df_with_missing",
-            format="table",
-            mode="w",
-        )
-        DataOptParams.to_csv(path_inference_config.split(".yaml")[0] + ".csv")
+        # DataOptParams.to_hdf(
+        #     path_inference_config.split(".yaml")[0] + ".h5",
+        #     "df_with_missing",
+        #     format="table",
+        #     mode="w",
+        # )
+        DataOptParams.to_csv(os.path.join(evaluationfolder, "results.csv"))
         print("Saving optimal inference parameters...")
         print(DataOptParams.to_string())
         auxiliaryfunctions.write_plainconfig(path_inference_config, dict(inferencecfg))

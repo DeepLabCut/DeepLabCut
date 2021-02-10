@@ -9,6 +9,7 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 from enum import Enum
+
 import numpy as np
 
 
@@ -47,7 +48,7 @@ def mirror_joints_map(all_joints, num_joints):
 
 def CropImage(joints, im, Xlabel, Ylabel, cfg):
     """ Randomly cropping image around xlabel,ylabel taking into account size of image.
-    Introduced in DLC 2 (Nature Protocols paper)"""
+    Introduced in DLC 2.0 (Nature Protocols paper)"""
     widthforward = int(cfg["minsize"] + np.random.randint(cfg["rightwidth"]))
     widthback = int(cfg["minsize"] + np.random.randint(cfg["leftwidth"]))
     hup = int(cfg["minsize"] + np.random.randint(cfg["topheight"]))

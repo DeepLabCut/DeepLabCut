@@ -138,8 +138,8 @@ class DraggablePoint:
             self.background = None
             self.point.figure.canvas.draw()
             self.final_point = (
-                event.xdata,
-                event.ydata,
+                self.point.center[0],
+                self.point.center[1],
                 self.individual_names,
                 self.bodyParts,
             )

@@ -8,15 +8,15 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import cv2
+import glob
 import os
 import pickle
-import pandas as pd
 from pathlib import Path
-import glob
+
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 
 def Foldernames3Dproject(cfg_3d):
@@ -35,11 +35,8 @@ def create_empty_df(dataframe, scorer, flag):
     # flag = 2d or 3d
 
     df = dataframe
-    bodyparts = df.columns.get_level_values(1)
-    _, idx = np.unique(bodyparts, return_index=True)
-    bodyparts = list(bodyparts[np.sort(idx)])
-    a = np.empty((df.shape[0], 3))
-    a[:] = np.nan
+    bodyparts = df.columns.get_level_values("bodyparts").unique()
+    a = np.full((df.shape[0], 3), np.nan)
     dataFrame = None
     for bodypart in bodyparts:
         if flag == "2d":
@@ -63,6 +60,8 @@ def compute_triangulation_calibration_images(
     """
     Performs triangulation of the calibration images.
     """
+    from mpl_toolkits.mplot3d import Axes3D
+
     triangulate = []
     P1 = stereo_matrix["P1"]
     P2 = stereo_matrix["P2"]
@@ -103,7 +102,7 @@ def get_camerawise_videos(path, cam_names, videotype):
     """
     This function returns the list of videos corresponding to the camera names specified in the cam_names.
     e.g. if cam_names = ['camera-1','camera-2']
-    
+
     then it will return [['somename-camera-1-othername.avi', 'somename-camera-2-othername.avi']]
     """
     import glob

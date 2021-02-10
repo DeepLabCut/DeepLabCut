@@ -8,15 +8,16 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 
 """
-
+import os
 import wx
-from deeplabcut.gui.welcome import Welcome
+
 from deeplabcut.gui.create_new_project import Create_new_project
+from deeplabcut.gui.welcome import Welcome
+from deeplabcut.utils import auxiliaryfunctions
 
 
 class MainFrame(wx.Frame):
     def __init__(self):
-        #        wx.Frame.__init__(self, None, title="DeepLabCut")
         displays = (
             wx.Display(i) for i in range(wx.Display.GetCount())
         )  # Gets the number of displays
@@ -36,7 +37,11 @@ class MainFrame(wx.Frame):
             pos=wx.DefaultPosition,
             style=wx.RESIZE_BORDER | wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL,
         )
-        #        wx.Frame.__init__( self, None, id = wx.ID_ANY, title = 'DeepLabCut',size = wx.Size(self.gui_size), pos = wx.DefaultPosition, style = wx.RESIZE_BORDER|wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+
+        dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
+        media_path = os.path.join(dlcparent_path, "gui", "media")
+        logo = os.path.join(media_path, "logo.png")
+        self.SetIcon(wx.Icon(logo))
         self.SetSizeHints(
             wx.Size(self.gui_size)
         )  #  This sets the minimum size of the GUI. It can scale now!

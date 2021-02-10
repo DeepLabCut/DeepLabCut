@@ -9,9 +9,13 @@ Licensed under GNU Lesser General Public License v3.0
 
 """
 
+import os
+import pydoc
+import sys
+
 import wx
+
 import deeplabcut
-import os, sys, pydoc
 
 media_path = os.path.join(deeplabcut.__path__[0], "gui", "media")
 logo = os.path.join(media_path, "logo.png")
@@ -210,8 +214,7 @@ class Extract_frames(wx.Panel):
         algo = self.algo_choice.GetValue()
         if self.crop_choice.GetStringSelection() == "True (read from config file)":
             crop = True
-
-        if self.crop_choice.GetStringSelection() == "GUI":
+        elif self.crop_choice.GetStringSelection() == "GUI":
             crop = "GUI"
         else:
             crop = False

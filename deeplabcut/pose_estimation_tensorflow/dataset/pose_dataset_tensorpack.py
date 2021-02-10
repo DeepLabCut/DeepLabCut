@@ -19,22 +19,16 @@ https://github.com/tensorpack/tensorpack
 """
 
 
-import os
-import cv2
 import multiprocessing
-import logging
+import os
 import random as rand
+
+import cv2
 import numpy as np
-import pandas as pd
-
-from enum import Enum
-from numpy import array as arr
-from numpy import concatenate as cat
 import scipy.io as sio
-
+from numpy import array as arr
 from tensorpack.dataflow.base import RNGDataFlow
 from tensorpack.dataflow.common import MapData
-from tensorpack.dataflow.imgaug.crop import RandomCropRandomShape
 from tensorpack.dataflow.imgaug import (
     Affine,
     Brightness,
@@ -44,9 +38,10 @@ from tensorpack.dataflow.imgaug import (
     GaussianNoise,
     GaussianBlur,
 )
-from tensorpack.dataflow.parallel import MultiProcessRunnerZMQ, MultiProcessRunner
+from tensorpack.dataflow.imgaug.crop import RandomCropRandomShape
+from tensorpack.dataflow.imgaug.meta import RandomApplyAug
 from tensorpack.dataflow.imgaug.transform import CropTransform
-from tensorpack.dataflow.imgaug.meta import RandomApplyAug, RandomChooseAug
+from tensorpack.dataflow.parallel import MultiProcessRunnerZMQ, MultiProcessRunner
 from tensorpack.utils.utils import get_rng
 
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import (
@@ -160,17 +155,26 @@ class Pose(RNGDataFlow):
 
 class PoseDataset:
     def __init__(self, cfg):
-        # Initializing variables if they don't exist...
-
+        # First, initializing variables (if they don't exist)
         # what is the fraction of training samples with scaling augmentation?
         cfg["scaleratio"] = cfg.get("scaleratio", 0.6)
 
+        # loading defaults for rotation range!
         # Randomly rotates an image with respect to the image center within the
         # range [-rotate_max_deg_abs; rotate_max_deg_abs] to augment training data
-        cfg["rotate_max_deg_abs"] = cfg.get("rotate_max_deg_abs", 45)
-        cfg["rotateratio"] = cfg.get(
-            "rotateratio", 0.4
-        )  # what is the fraction of training samples with rotation augmentation?
+
+        if cfg.get("rotation", True):  # i.e. pm 25 degrees
+            if type(cfg.get("rotation", False)) == int:
+                cfg["rotation"] = cfg.get("rotation", 25)
+            else:
+                cfg["rotation"] = 25
+
+            # cfg["rotateratio"] = cfg.get(
+            #    "rotratio", 0.4
+            # )  # what is the fraction of training samples with rotation augmentation?
+        else:
+            cfg["rotratio"] = 0.0
+            cfg["rotation"] = 0
 
         # Randomly adds brightness within the range [-brightness_dif, brightness_dif]
         # to augment training data
@@ -220,6 +224,19 @@ class PoseDataset:
         # Number of datapoints to prefetch at a time during training
         cfg["num_prefetch"] = cfg.get("num_prefetch", 50)
 
+        # Auto cropping is new (was not in Nature Neuroscience 2018 paper, but introduced in Nath et al. Nat. Protocols 2019)
+        # and boosts performance by 2X, particularly on challenging datasets, like the cheetah in Nath et al.
+        # Parameters for augmentation with regard to cropping:
+
+        # what is the minimal frames size for cropping plus/minus ie.. [-100,100]^2 for an arb. joint
+        cfg["minsize"] = cfg.get("minsize", 100)
+        cfg["leftwidth"] = cfg.get("leftwidth", 400)
+        cfg["rightwidth"] = cfg.get("rightwidth", 400)
+        cfg["topheight"] = cfg.get("topheight", 400)
+        cfg["bottomheight"] = cfg.get("bottomheight", 400)
+
+        cfg["cropratio"] = cfg.get("cropratio", 0.4)
+
         self.cfg = cfg
         self.scaling = RandomResize(
             xrange=(
@@ -235,7 +252,7 @@ class PoseDataset:
             wmax=self.cfg["leftwidth"] + self.cfg["rightwidth"] + self.cfg["minsize"],
             hmax=self.cfg["topheight"] + self.cfg["bottomheight"] + self.cfg["minsize"],
         )
-        self.rotation = Affine(rotate_max_deg=self.cfg["rotate_max_deg_abs"])
+        self.rotation = Affine(rotate_max_deg=self.cfg["rotation"])
         self.brightness = Brightness(self.cfg["brightness_dif"])
         self.contrast = Contrast(
             (self.cfg["contrast_factor_lo"], self.cfg["contrast_factor_up"]),
@@ -249,7 +266,7 @@ class PoseDataset:
         self.gaussian_blur = GaussianBlur(max_size=self.cfg["blur_max_window_size"])
         self.augmentors = [
             RandomApplyAug(self.cropping, self.cfg["cropratio"]),
-            RandomApplyAug(self.rotation, self.cfg["rotateratio"]),
+            RandomApplyAug(self.rotation, self.cfg["rotratio"]),
             RandomApplyAug(self.brightness, self.cfg["brightnessratio"]),
             RandomApplyAug(self.contrast, self.cfg["contrastratio"]),
             RandomApplyAug(self.saturation, self.cfg["saturationratio"]),

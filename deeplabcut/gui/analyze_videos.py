@@ -9,10 +9,16 @@ Licensed under GNU Lesser General Public License v3.0
 
 """
 
+import os
+import platform
+import pydoc
+import subprocess
+import sys
+import webbrowser
+
 import wx
-import os, sys, pydoc, platform
+
 import deeplabcut
-import webbrowser, subprocess
 from deeplabcut.utils import auxiliaryfunctions
 
 media_path = os.path.join(deeplabcut.__path__[0], "gui", "media")
@@ -135,23 +141,17 @@ class Analyze_videos(wx.Panel):
         self.hbox1.Add(shuffle_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         self.hbox1.Add(trainingset_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
-        boxsizer.Add(self.hbox1, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-        boxsizer.Add(self.hbox2, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-
-        # self.sizer.Add(boxsizer, pos=(4, 0), span=(1, 5),flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT , border=10)
-
         if self.cfg.get("multianimalproject", False):
 
             self.robust = wx.RadioBox(
                 self,
-                label="Use OpenCV to read the video (recommended)",
+                label="Use ffprobe to read video metadata (slow but robust)",
                 choices=["Yes", "No"],
                 majorDimension=1,
                 style=wx.RA_SPECIFY_COLS,
             )
-            self.robust.SetSelection(0)
+            self.robust.SetSelection(1)
             self.hbox1.Add(self.robust, 5, 5)
-            # boxsizer.Add(self.hbox1,0, 5)
 
             self.create_video_with_all_detections = wx.RadioBox(
                 self,
@@ -191,7 +191,6 @@ class Analyze_videos(wx.Panel):
             )
             self.overwrite.SetSelection(1)
             self.hbox2.Add(self.overwrite, 5, 5)
-            boxsizer.Add(self.hbox2, 0, 5)
 
         else:
             self.csv = wx.RadioBox(
@@ -246,6 +245,9 @@ class Analyze_videos(wx.Panel):
 
             self.hbox3.Add(self.dynamic, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
             self.hbox3.Add(self.trajectory, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+
+        boxsizer.Add(self.hbox1, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+        boxsizer.Add(self.hbox2, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
         config_file = auxiliaryfunctions.read_config(self.config)
         if config_file.get("multianimalproject", False):
@@ -452,9 +454,9 @@ class Analyze_videos(wx.Panel):
             else:
                 dynamic = (True, 0.5, 10)
             if self.filter.GetStringSelection() == "No":
-                filter = None
+                _filter = False
             else:
-                filter = True
+                _filter = True
 
         if self.cfg["cropping"] == "True":
             crop = self.cfg["x1"], self.cfg["x2"], self.cfg["y1"], self.cfg["y2"]
@@ -498,7 +500,7 @@ class Analyze_videos(wx.Panel):
                 cropping=crop,
                 dynamic=dynamic,
             )
-            if self.filter.GetStringSelection() == "Yes":
+            if _filter:
                 deeplabcut.filterpredictions(
                     self.config,
                     self.filelist,
@@ -507,7 +509,7 @@ class Analyze_videos(wx.Panel):
                     trainingsetindex=trainingsetindex,
                     filtertype="median",
                     windowlength=5,
-                    save_as_csv=True,
+                    save_as_csv=save_as_csv,
                 )
 
             if self.trajectory.GetStringSelection() == "Yes":
@@ -522,7 +524,7 @@ class Analyze_videos(wx.Panel):
                     videotype=self.videotype.GetValue(),
                     shuffle=shuffle,
                     trainingsetindex=trainingsetindex,
-                    filtered=True,
+                    filtered=_filter,
                     showfigures=showfig,
                 )
 

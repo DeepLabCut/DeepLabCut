@@ -9,12 +9,14 @@ Licensed under GNU Lesser General Public License v3.0
 
 """
 
-import wx
-from wx.lib.masked import TimeCtrl
 import datetime
-import os, sys, pydoc
+import os
+import pydoc
+import sys
+
+import wx
+
 import deeplabcut
-from deeplabcut.utils import auxiliaryfunctions
 
 media_path = os.path.join(deeplabcut.__path__[0], "gui", "media")
 logo = os.path.join(media_path, "logo.png")
@@ -177,28 +179,45 @@ class Video_Editing(wx.Panel):
 
     def downsample_video(self, event):
         if self.rotate.GetStringSelection() == "Yes":
-            self.rotate = True
+            self.rotate_val = True
         else:
-            self.rotate = False
-        deeplabcut.DownSampleVideo(
-            self.filelist[0],
-            width=-1,
-            height=self.height.GetValue(),
-            rotateccw=self.rotate,
-        )
+            self.rotate_val = False
+
+        Videos = self.filelist
+        if len(Videos) > 0:
+            for video in Videos:
+                deeplabcut.DownSampleVideo(
+                    video,
+                    width=-1,
+                    height=self.height.GetValue(),
+                    rotateccw=self.rotate_val,
+                )
+        else:
+            print("Please select a video first!")
 
     def shorten_video(self, event):
         def sweet_time_format(val):
             return str(datetime.timedelta(seconds=val))
 
-        deeplabcut.ShortenVideo(
-            self.filelist[0],
-            start=sweet_time_format(self.vstart.GetValue()),
-            stop=sweet_time_format(self.vstop.GetValue()),
-        )
+        Videos = self.filelist
+        if len(Videos) > 0:
+            for video in Videos:
+                deeplabcut.ShortenVideo(
+                    video,
+                    start=sweet_time_format(self.vstart.GetValue()),
+                    stop=sweet_time_format(self.vstop.GetValue()),
+                )
+
+        else:
+            print("Please select a video first!")
 
     def crop_video(self, event):
-        deeplabcut.CropVideo(self.filelist[0], useGUI=True)
+        Videos = self.filelist
+        if len(Videos) > 0:
+            for video in Videos:
+                deeplabcut.CropVideo(video, useGUI=True)
+        else:
+            print("Please select a video first!")
 
     def help_function(self, event):
 

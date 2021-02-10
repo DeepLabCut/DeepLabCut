@@ -8,29 +8,28 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-
-from __future__ import print_function
-import wx
-import wx.lib.scrolledpanel as SP
-import cv2
-import os
-import matplotlib
-import numpy as np
-from pathlib import Path
-import pandas as pd
 import argparse
-from deeplabcut.utils import auxiliaryfunctions, visualization
+import os
+from pathlib import Path
 
-from deeplabcut.create_project import add
-from skimage import io
-from skimage.util import img_as_ubyte
-import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
-from mpl_toolkits.axes_grid1 import make_axes_locatable
+import matplotlib
 import matplotlib.colors as mcolors
 import matplotlib.patches as patches
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import wx
+import wx.lib.scrolledpanel as SP
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
-from matplotlib.widgets import RectangleSelector
+from matplotlib.figure import Figure
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from skimage import io
+from skimage.util import img_as_ubyte
+
+from deeplabcut.create_project import add
+from deeplabcut.utils import auxiliaryfunctions, visualization
+from deeplabcut.utils.auxfun_videos import VideoWriter
+
 
 # ###########################################################################
 # Class for GUI MainFrame
@@ -254,7 +253,6 @@ class MainFrame(wx.Frame):
         self.extract_range_frame = False
         self.firstFrame = 0
         self.Colorscheme = []
-        # self.cropping = False
 
         # Read confing file
         self.cfg = auxiliaryfunctions.read_config(config)
@@ -293,10 +291,13 @@ class MainFrame(wx.Frame):
             )
             self.visualization_rdb.Bind(wx.EVT_RADIOBOX, self.clear_plot)
         # Read the video file
-        self.vid = cv2.VideoCapture(str(self.video_source))
-        self.videoPath = os.path.dirname(self.video_source)
+        self.vid = VideoWriter(str(self.video_source))
+        if self.cropping:
+            self.vid.set_bbox(
+                self.cfg["x1"], self.cfg["x2"], self.cfg["y1"], self.cfg["y2"]
+            )
         self.filename = Path(self.video_source).name
-        self.numberFrames = int(self.vid.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.numberFrames = len(self.vid)
         self.strwidth = int(np.ceil(np.log10(self.numberFrames)))
         # Set the values of slider and range of frames
         self.startFrame.SetMax(self.numberFrames - 1)
@@ -304,14 +305,11 @@ class MainFrame(wx.Frame):
         self.endFrame.SetMax(self.numberFrames - 1)
         self.startFrame.Bind(wx.EVT_SPINCTRL, self.updateSlider)  # wx.EVT_SPIN
         # Set the status bar
-        self.statusbar.SetStatusText(
-            "Working on video: {}".format(os.path.split(str(self.video_source))[-1])
-        )
+        self.statusbar.SetStatusText("Working on video: {}".format(self.filename))
         # Adding the video file to the config file.
-        if not (str(self.video_source.stem) in self.video_names):
+        if self.vid.name not in self.video_names:
             add.add_new_videos(self.config_path, [self.video_source])
 
-        self.filename = Path(self.video_source).name
         self.update()
         self.plot_labels()
         self.widget_panel.Layout()
@@ -382,24 +380,10 @@ class MainFrame(wx.Frame):
         self.grab.Enable(True)
         self.grab.Bind(wx.EVT_BUTTON, self.grabFrame)
         self.figure, self.axes, self.canvas = self.image_panel.getfigure()
-        self.vid.set(1, self.currFrame)
-        ret, frame = self.vid.read()
-        frame = img_as_ubyte(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-        if ret:
-            if self.cropping:
-                self.coords = (
-                    self.cfg["x1"],
-                    self.cfg["x2"],
-                    self.cfg["y1"],
-                    self.cfg["y2"],
-                )
-                frame = frame[
-                    int(self.coords[2]) : int(self.coords[3]),
-                    int(self.coords[0]) : int(self.coords[1]),
-                    :,
-                ]
-            else:
-                self.coords = None
+        self.vid.set_to_frame(self.currFrame)
+        frame = self.vid.read_frame(crop=self.cropping)
+        if frame is not None:
+            frame = img_as_ubyte(frame)
             self.ax = self.axes.imshow(frame, cmap=self.colormap)
             self.axes.set_title(
                 str(
@@ -415,22 +399,7 @@ class MainFrame(wx.Frame):
             print("Invalid frame")
 
     def chooseFrame(self):
-        ret, frame = self.vid.read()
-        frame = img_as_ubyte(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-        if self.cropping:
-            self.coords = (
-                self.cfg["x1"],
-                self.cfg["x2"],
-                self.cfg["y1"],
-                self.cfg["y2"],
-            )
-            frame = frame[
-                int(self.coords[2]) : int(self.coords[3]),
-                int(self.coords[0]) : int(self.coords[1]),
-                :,
-            ]
-        else:
-            self.coords = None
+        frame = img_as_ubyte(self.vid.read_frame(crop=self.cropping))
         fname = Path(self.filename)
         output_path = self.config_path.parents[0] / "labeled-data" / fname.stem
 
@@ -492,10 +461,10 @@ class MainFrame(wx.Frame):
             num_frames_extract = self.endFrame.GetValue()
             for i in range(self.currFrame, self.currFrame + num_frames_extract):
                 self.currFrame = i
-                self.vid.set(1, self.currFrame)
+                self.vid.set_to_frame(self.currFrame)
                 self.chooseFrame()
         else:
-            self.vid.set(1, self.currFrame)
+            self.vid.set_to_frame(self.currFrame)
             self.chooseFrame()
 
     def clear_plot(self, event):
@@ -507,10 +476,9 @@ class MainFrame(wx.Frame):
         """
         Plots the labels of the analyzed video
         """
-        self.vid.set(1, self.currFrame)
-        ret, frame = self.vid.read()
-        if ret:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        self.vid.set_to_frame(self.currFrame)
+        frame = self.vid.read_frame()
+        if frame is not None:
             divider = make_axes_locatable(self.axes)
             cax = divider.append_axes("right", size="5%", pad=0.05)
             if self.multianimal:
@@ -547,7 +515,9 @@ class MainFrame(wx.Frame):
                     cbar.set_ticklabels(self.all_bodyparts)
 
                 for ci, ind in enumerate(self.individual_names):
-                    col_idx = 0  # variable for iterating through the colorscheme for all bodyparts
+                    col_idx = (
+                        0
+                    )  # variable for iterating through the colorscheme for all bodyparts
                     image_points = []
                     if ind == "single":
                         if self.visualization_rdb.GetSelection() == 0:

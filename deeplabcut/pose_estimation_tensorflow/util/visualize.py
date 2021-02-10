@@ -3,22 +3,12 @@ Adapted from DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
 """
 
-import math, os
-import numpy as np
-from deeplabcut.utils.auxfun_videos import imresize
+import math
 
-import matplotlib
-import platform
-
-if os.environ.get("DLClight", default=False) == "True":
-    matplotlib.use(
-        "AGG"
-    )  # anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
-elif platform.system() == "Darwin":
-    matplotlib.use("WxAgg")  # TkAgg
-else:
-    matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
+import numpy as np
+
+from deeplabcut.utils.auxfun_videos import imresize
 
 
 def _npcircle(image, cx, cy, radius, color, transparency=0.0):

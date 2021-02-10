@@ -7,23 +7,27 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
-import cv2
-from pathlib import Path
+import logging
 import os
+import os.path
+import shutil
+
+from functools import lru_cache
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-import os.path
-import logging
-from functools import lru_cache
-from skimage import io
 import yaml
+from skimage import io
+
+from deeplabcut.pose_estimation_tensorflow import training
 from deeplabcut.utils import (
     auxiliaryfunctions,
     conversioncode,
     auxfun_models,
     auxfun_multianimal,
 )
-from deeplabcut.pose_estimation_tensorflow import training
+from deeplabcut.utils.auxfun_videos import VideoReader
 
 
 def comparevideolistsanddatafolders(config):
@@ -112,11 +116,9 @@ def adddatasetstovideolistandviceversa(config):
                     break
             if found:
                 video_path = os.path.join(cfg["project_path"], "videos", file)
-                clip = cv2.VideoCapture(video_path)
-                width = int(clip.get(cv2.CAP_PROP_FRAME_WIDTH))
-                height = int(clip.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                clip = VideoReader(video_path)
                 videos.update(
-                    {video_path: {"crop": ", ".join(map(str, [0, width, 0, height]))}}
+                    {video_path: {"crop": ", ".join(map(str, clip.get_bbox()))}}
                 )
 
     auxiliaryfunctions.write_config(config, cfg)
@@ -282,48 +284,45 @@ def cropimagesandlabels(
     from tqdm import trange
 
     indexlength = int(np.ceil(np.log10(numcrops)))
+    project_path = os.path.dirname(config)
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
+    video_names = []
+    for video in videos:
+        parent, filename, ext = _robust_path_split(video)
+        if excludealreadycropped and "_cropped" in filename:
+            continue
+        video_names.append([parent, filename, ext])
 
-    if excludealreadycropped:
-        video_names = [
-            (Path(i).parent, Path(i).stem, Path(i).suffix)
-            for i in videos
-            if "_cropped" not in str(Path(i).stem)
-        ]
-    else:
-        video_names = [(Path(i).parent, Path(i).stem, Path(i).suffix) for i in videos]
-
-    # folders = [Path(config).parent / 'labeled-data' /Path(i[1]) for i in video_names]
     if (
         "video_sets_original" not in cfg.keys() and updatevideoentries
     ):  # this dict is kept for storing links to original full-sized videos
         cfg["video_sets_original"] = {}
 
-    for (vidpath, vidname, videotype) in video_names:
-        folder = Path(config).parent / "labeled-data" / Path(vidname)
+    for vidpath, vidname, videotype in video_names:
+        folder = os.path.join(project_path, "labeled-data", vidname)
         if userfeedback:
             print("Do you want to crop frames for folder: ", folder, "?")
             askuser = input("(yes/no):")
         else:
             askuser = "y"
         if askuser == "y" or askuser == "yes" or askuser == "Y" or askuser == "Yes":
-            newfolder = str(Path(folder).stem) + "_cropped"
-            output_path = Path(config).parent / "labeled-data" / Path(newfolder)
-            auxiliaryfunctions.attempttomakefolder(output_path)
+            new_vidname = vidname + "_cropped"
+            new_folder = os.path.join(project_path, "labeled-data", new_vidname)
+            auxiliaryfunctions.attempttomakefolder(new_folder)
 
             AnnotationData = []
             pd_index = []
 
-            fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
+            fn = os.path.join(folder, f"CollectedData_{cfg['scorer']}.h5")
             df = pd.read_hdf(fn, "df_with_missing")
             data = df.values.reshape((df.shape[0], -1, 2))
             sep = "/" if "/" in df.index[0] else "\\"
-            images = cfg["project_path"] + sep + df.index
             if sep != os.path.sep:
-                images = images.str.replace(sep, os.path.sep)
+                df.index = df.index.str.replace(sep, os.path.sep)
+            images = project_path + os.path.sep + df.index
             # Avoid cropping already cropped images
-            cropped_images = auxiliaryfunctions.grab_files_in_folder(output_path, "png")
+            cropped_images = auxiliaryfunctions.grab_files_in_folder(new_folder, "png")
             cropped_names = set(map(lambda x: x.split("c")[0], cropped_images))
             imnames = [
                 im for im in images.to_list() if Path(im).stem not in cropped_names
@@ -331,9 +330,13 @@ def cropimagesandlabels(
             ic = io.imread_collection(imnames)
             for i in trange(len(ic)):
                 frame = ic[i]
-                imagename = os.path.relpath(ic.files[i], cfg["project_path"])
-                ind = np.flatnonzero(df.index == imagename)[0]
                 h, w = np.shape(frame)[:2]
+                if size[0] >= h or size[1] >= w:
+                    shutil.rmtree(new_folder, ignore_errors=True)
+                    raise ValueError("Crop dimensions are larger than image size")
+
+                imagename = os.path.relpath(ic.files[i], project_path)
+                ind = np.flatnonzero(df.index == imagename)[0]
                 cropindex = 0
                 attempts = -1
                 while cropindex < numcrops:
@@ -342,11 +345,10 @@ def cropimagesandlabels(
                         np.random.randint(h - size[0]),
                         np.random.randint(w - size[1]),
                     )
+                    y1 = y0 + size[0]
+                    x1 = x0 + size[1]
                     with np.errstate(invalid="ignore"):
-                        within = np.all(
-                            (dd >= [x0, y0]) & (dd < [x0 + size[1], y0 + size[0]]),
-                            axis=1,
-                        )
+                        within = np.all((dd >= [x0, y0]) & (dd < [x1, y1]), axis=1)
                     if cropdata:
                         dd[within] -= [x0, y0]
                         dd[~within] = np.nan
@@ -358,37 +360,28 @@ def cropimagesandlabels(
                             + str(cropindex).zfill(indexlength)
                             + ".png"
                         )
-                        cropppedimgname = os.path.join(output_path, newimname)
-                        io.imsave(
-                            cropppedimgname, frame[y0 : y0 + size[0], x0 : x0 + size[1]]
-                        )
+                        cropppedimgname = os.path.join(new_folder, newimname)
+                        io.imsave(cropppedimgname, frame[y0:y1, x0:x1])
                         cropindex += 1
                         pd_index.append(
-                            os.path.join("labeled-data", newfolder, newimname)
+                            os.path.join("labeled-data", new_vidname, newimname)
                         )
                         AnnotationData.append(dd.flatten())
 
             if cropdata:
                 df = pd.DataFrame(AnnotationData, index=pd_index, columns=df.columns)
-                fn_new = os.path.join(
-                    str(output_path), "CollectedData_" + cfg["scorer"] + ".h5"
-                )
+                fn_new = fn.replace(folder, new_folder)
                 df.to_hdf(fn_new, key="df_with_missing", mode="w")
                 df.to_csv(fn_new.replace(".h5", ".csv"))
 
             if updatevideoentries and cropdata:
                 # moving old entry to _original, dropping it from video_set and update crop parameters
-                cfg["video_sets_original"][
-                    str(os.path.join(vidpath, str(vidname) + str(videotype)))
-                ] = cfg["video_sets"][
-                    str(os.path.join(vidpath, str(vidname) + str(videotype)))
-                ]
-                cfg["video_sets"].pop(
-                    str(os.path.join(vidpath, str(vidname) + str(videotype)))
-                )
-                cfg["video_sets"][
-                    os.path.join(vidpath, str(folder) + "_cropped" + str(videotype))
-                ] = {"crop": ", ".join(map(str, [0, size[1], 0, size[0]]))}
+                video_orig = sep.join((vidpath, vidname + videotype))
+                cfg["video_sets_original"][video_orig] = cfg["video_sets"][video_orig]
+                cfg["video_sets"].pop(video_orig)
+                cfg["video_sets"][sep.join((vidpath, new_vidname + videotype))] = {
+                    "crop": ", ".join(map(str, [0, size[1], 0, size[0]]))
+                }
 
     cfg["croppedtraining"] = True
     auxiliaryfunctions.write_config(config, cfg)
@@ -484,7 +477,7 @@ def check_labels(
 
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
-    video_names = [Path(i).stem for i in videos]
+    video_names = [_robust_path_split(video)[1] for video in videos]
 
     folders = [
         os.path.join(cfg["project_path"], "labeled-data", str(Path(i)))
@@ -538,13 +531,21 @@ def ParseYaml(configfile):
     return docs
 
 
-def MakeTrain_pose_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
+def MakeTrain_pose_yaml(
+    itemstochange, saveasconfigfile, defaultconfigfile, items2drop={}
+):
     docs = ParseYaml(defaultconfigfile)
+    for key in items2drop.keys():
+        # print(key, "dropping?")
+        if key in docs[0].keys():
+            docs[0].pop(key)
+
     for key in itemstochange.keys():
         docs[0][key] = itemstochange[key]
 
     with open(saveasconfigfile, "w") as f:
         yaml.dump(docs[0], f)
+
     return docs[0]
 
 
@@ -576,27 +577,35 @@ def MakeInference_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
     return docs[0]
 
 
+def _robust_path_split(path):
+    sep = "\\" if "\\" in path else "/"
+    parent, file = path.rsplit(sep, 1)
+    filename, ext = os.path.splitext(file)
+    return parent, filename, ext
+
+
 def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
     """
     Merges all the h5 files for all labeled-datasets (from individual videos).
-    This is a bit of a mess because of cross platform compatablity.
+
+    This is a bit of a mess because of cross platform compatibility.
 
     Within platform comp. is straightforward. But if someone labels on windows and wants to train on a unix cluster or colab...
     """
     AnnotationData = []
     data_path = Path(os.path.join(cfg["project_path"], "labeled-data"))
     videos = cfg["video_sets"].keys()
-    video_names = [Path(i).stem for i in videos]
-    for i in video_names:
-        if cfg.get("croppedtraining", False):
-            i += "_cropped"
-        filename = os.path.join(data_path / i, f'CollectedData_{cfg["scorer"]}.h5')
+    for video in videos:
+        _, filename, _ = _robust_path_split(video)
+        file_path = os.path.join(
+            data_path / filename, f'CollectedData_{cfg["scorer"]}.h5'
+        )
         try:
-            data = pd.read_hdf(filename, "df_with_missing")
+            data = pd.read_hdf(file_path, "df_with_missing")
             AnnotationData.append(data)
         except FileNotFoundError:
             print(
-                filename,
+                file_path,
                 " not found (perhaps not annotated). If training on cropped data, "
                 "make sure to call `cropimagesandlabels` prior to creating the dataset.",
             )
@@ -638,9 +647,7 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
     else:
         askuser = "no"
 
-    filename = str(
-        str(trainingsetfolder_full) + "/" + "/CollectedData_" + cfg["scorer"]
-    )
+    filename = os.path.join(trainingsetfolder_full, f'CollectedData_{cfg["scorer"]}')
     if (
         windows2linux or askuser == "yes" or askuser == "y" or askuser == "Ja"
     ):  # convert windows path in pandas array \\ to unix / !
@@ -672,10 +679,10 @@ def SplitTrials(trialindex, trainFraction=0.8):
     else:
         trainsetsize = int(len(trialindex) * round(trainFraction, 2))
         shuffle = np.random.permutation(trialindex)
-        testIndexes = shuffle[trainsetsize:]
-        trainIndexes = shuffle[:trainsetsize]
+        testIndices = shuffle[trainsetsize:]
+        trainIndices = shuffle[:trainsetsize]
 
-        return (trainIndexes, testIndexes)
+        return (trainIndices, testIndices)
 
 
 def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
@@ -707,17 +714,15 @@ def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
     Examples
     --------
     To create a leave-one-folder-out model:
-    >>> trainIndexes, testIndexes=deeplabcut.mergeandsplit(config,trainindex=0,uniform=False)
-    returns the indices for the first video folder (as defined in config file) as testIndexes and all others as trainIndexes.
+    >>> trainIndices, testIndices=deeplabcut.mergeandsplit(config,trainindex=0,uniform=False)
+    returns the indices for the first video folder (as defined in config file) as testIndices and all others as trainIndices.
     You can then create the training set by calling (e.g. defining it as Shuffle 3):
-    >>> deeplabcut.create_training_dataset(config,Shuffles=[3],trainIndexes=trainIndexes,testIndexes=testIndexes)
+    >>> deeplabcut.create_training_dataset(config,Shuffles=[3],trainIndices=trainIndices,testIndices=testIndices)
 
-    To freeze a (uniform) split:
-    >>> trainIndexes, testIndexes=deeplabcut.mergeandsplit(config,trainindex=0,uniform=True)
+    To freeze a (uniform) split (i.e. iid sampled from all the data):
+    >>> trainIndices, testIndices=deeplabcut.mergeandsplit(config,trainindex=0,uniform=True)
     You can then create two model instances that have the identical trainingset. Thereby you can assess the role of various parameters on the performance of DLC.
-
-    >>> deeplabcut.create_training_dataset(config,Shuffles=[0],trainIndexes=trainIndexes,testIndexes=testIndexes)
-    >>> deeplabcut.create_training_dataset(config,Shuffles=[1],trainIndexes=trainIndexes,testIndexes=testIndexes)
+    >>> deeplabcut.create_training_dataset(config,Shuffles=[0,1],trainIndices=[trainIndices, trainIndices],testIndices=[testIndices, testIndices])
     --------
 
     """
@@ -750,21 +755,21 @@ def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
     if uniform == True:
         TrainingFraction = cfg["TrainingFraction"]
         trainFraction = TrainingFraction[trainindex]
-        trainIndexes, testIndexes = SplitTrials(range(len(Data.index)), trainFraction)
+        trainIndices, testIndices = SplitTrials(range(len(Data.index)), trainFraction)
     else:  # leave one folder out split
         videos = cfg["video_sets"].keys()
         test_video_name = [Path(i).stem for i in videos][trainindex]
         print("Excluding the following folder (from training):", test_video_name)
-        trainIndexes, testIndexes = [], []
+        trainIndices, testIndices = [], []
         for index, name in enumerate(Data.index):
             # print(index,name.split(os.sep)[1])
             if test_video_name == name.split(os.sep)[1]:  # this is the video name
                 # print(name,test_video_name)
-                testIndexes.append(index)
+                testIndices.append(index)
             else:
-                trainIndexes.append(index)
+                trainIndices.append(index)
 
-    return trainIndexes, testIndexes
+    return trainIndices, testIndices
 
 
 @lru_cache(maxsize=None)
@@ -822,8 +827,8 @@ def create_training_dataset(
     Shuffles=None,
     windows2linux=False,
     userfeedback=False,
-    trainIndexes=None,
-    testIndexes=None,
+    trainIndices=None,
+    testIndices=None,
     net_type=None,
     augmenter_type=None,
 ):
@@ -852,15 +857,17 @@ def create_training_dataset(
         If this is set to false, then all requested train/test splits are created (no matter if they already exist). If you
         want to assure that previous splits etc. are not overwritten, then set this to True and you will be asked for each split.
 
-    trainIndexes: list of lists, optional (default=None)
+    trainIndices: list of lists, optional (default=None)
         List of one or multiple lists containing train indexes.
         A list containing two lists of training indexes will produce two splits.
 
-    testIndexes: list of lists, optional (default=None)
-        List of test indexes.
+    testIndices: list of lists, optional (default=None)
+        List of one or multiple lists containing test indexes.
 
-    net_type: string
-        Type of networks. Currently resnet_50, resnet_101, resnet_152, mobilenet_v2_1.0,mobilenet_v2_0.75, mobilenet_v2_0.5, and mobilenet_v2_0.35 are supported.
+    net_type: list
+        Type of networks. Currently resnet_50, resnet_101, resnet_152, mobilenet_v2_1.0, mobilenet_v2_0.75,
+        mobilenet_v2_0.5, mobilenet_v2_0.35, efficientnet_b0, efficientnet_b1, efficientnet_b2, efficientnet_b3,
+        efficientnet_b4, efficientnet_b5, and efficientnet_b6 are supported.
 
     augmenter_type: string
         Type of augmenter. Currently default, imgaug, tensorpack, and deterministic are supported.
@@ -906,19 +913,25 @@ def create_training_dataset(
         if net_type is None:  # loading & linking pretrained models
             net_type = cfg.get("default_net_type", "resnet_50")
         else:
-            if "resnet" in net_type or "mobilenet" in net_type:
+            if "resnet" in net_type or "mobilenet" in net_type or "efficientnet" in net_type:
                 pass
             else:
                 raise ValueError("Invalid network type:", net_type)
 
         if augmenter_type is None:
-            augmenter_type = cfg.get("default_augmenter", "default")
+            augmenter_type = cfg.get("default_augmenter", "imgaug")
             if augmenter_type is None:  # this could be in config.yaml for old projects!
                 # updating variable if null/None! #backwardscompatability
-                auxiliaryfunctions.edit_config(config, {"default_augmenter": "default"})
-                augmenter_type = "default"
+                auxiliaryfunctions.edit_config(config, {"default_augmenter": "imgaug"})
+                augmenter_type = "imgaug"
         else:
-            if augmenter_type in ["default", "imgaug", "tensorpack", "deterministic"]:
+            if augmenter_type in [
+                "default",
+                "scalecrop",
+                "imgaug",
+                "tensorpack",
+                "deterministic",
+            ]:
                 pass
             else:
                 raise ValueError("Invalid augmenter type:", augmenter_type)
@@ -935,8 +948,8 @@ def create_training_dataset(
         else:
             Shuffles = [i for i in Shuffles if isinstance(i, int)]
 
-        # print(trainIndexes,testIndexes, Shuffles, augmenter_type,net_type)
-        if trainIndexes is None and testIndexes is None:
+        # print(trainIndices,testIndices, Shuffles, augmenter_type,net_type)
+        if trainIndices is None and testIndices is None:
             splits = [
                 (
                     trainFraction,
@@ -947,13 +960,13 @@ def create_training_dataset(
                 for shuffle in Shuffles
             ]
         else:
-            if len(trainIndexes) != len(testIndexes) != len(Shuffles):
+            if len(trainIndices) != len(testIndices) != len(Shuffles):
                 raise ValueError(
                     "Number of Shuffles and train and test indexes should be equal."
                 )
             splits = []
             for shuffle, (train_inds, test_inds) in enumerate(
-                zip(trainIndexes, testIndexes)
+                zip(trainIndices, testIndices)
             ):
                 trainFraction = round(
                     len(train_inds) * 1.0 / (len(train_inds) + len(test_inds)), 2
@@ -967,8 +980,8 @@ def create_training_dataset(
 
         bodyparts = cfg["bodyparts"]
         nbodyparts = len(bodyparts)
-        for trainFraction, shuffle, (trainIndexes, testIndexes) in splits:
-            if len(trainIndexes) > 0:
+        for trainFraction, shuffle, (trainIndices, testIndices) in splits:
+            if len(trainIndices) > 0:
                 if userfeedback:
                     trainposeconfigfile, _, _ = training.return_train_network_path(
                         config,
@@ -1004,7 +1017,7 @@ def create_training_dataset(
                 # Saving data file (convert to training file for deeper cut (*.mat))
                 ################################################################################
                 data, MatlabData = format_training_data(
-                    Data, trainIndexes, nbodyparts, project_path
+                    Data, trainIndices, nbodyparts, project_path
                 )
                 sio.savemat(
                     os.path.join(project_path, datafilename), {"dataset": MatlabData}
@@ -1016,8 +1029,8 @@ def create_training_dataset(
                 auxiliaryfunctions.SaveMetadata(
                     os.path.join(project_path, metadatafilename),
                     data,
-                    trainIndexes,
-                    testIndexes,
+                    trainIndices,
+                    testIndices,
                     trainFraction,
                 )
 
@@ -1066,9 +1079,17 @@ def create_training_dataset(
                     "net_type": net_type,
                     "dataset_type": augmenter_type,
                 }
+
+                items2drop = {}
+                if augmenter_type == "scalecrop":
+                    # these values are dropped as scalecrop
+                    # doesn't have rotation implemented
+                    items2drop = {"rotation": 0, "rotratio": 0.0}
+
                 trainingdata = MakeTrain_pose_yaml(
-                    items2change, path_train_config, defaultconfigfile
+                    items2change, path_train_config, defaultconfigfile, items2drop
                 )
+
                 keys2save = [
                     "dataset",
                     "num_joints",
@@ -1132,7 +1153,9 @@ def create_training_model_comparison(
         Number of shuffles of training dataset to create, i.e. [1,2,3] for num_shuffles=3. Default is set to 1.
 
     net_types: list
-        Type of networks. Currently resnet_50, resnet_101, resnet_152, mobilenet_v2_1.0,mobilenet_v2_0.75, mobilenet_v2_0.5, and mobilenet_v2_0.35 are supported.
+        Type of networks. Currently resnet_50, resnet_101, resnet_152, mobilenet_v2_1.0,mobilenet_v2_0.75, mobilenet_v2_0.5, mobilenet_v2_0.35,
+        efficientnet_b0, efficientnet_b1, efficientnet_b2, efficientnet_b3, efficientnet_b4,
+        efficientnet_b5, and efficientnet_b6 are supported.
 
     augmenter_types: list
         Type of augmenters. Currently "default", "imgaug", "tensorpack", and "deterministic" are supported.
@@ -1173,7 +1196,7 @@ def create_training_model_comparison(
     largestshuffleindex = get_largestshuffle_index(config)
 
     for shuffle in range(num_shuffles):
-        trainIndexes, testIndexes = mergeandsplit(
+        trainIndices, testIndices = mergeandsplit(
             config, trainindex=trainindex, uniform=True
         )
         for idx_net, net in enumerate(net_types):
@@ -1198,8 +1221,8 @@ def create_training_model_comparison(
                     config,
                     Shuffles=[get_max_shuffle_idx],
                     net_type=net,
-                    trainIndexes=[trainIndexes],
-                    testIndexes=[testIndexes],
+                    trainIndices=[trainIndices],
+                    testIndices=[testIndices],
                     augmenter_type=aug,
                     userfeedback=userfeedback,
                     windows2linux=windows2linux,

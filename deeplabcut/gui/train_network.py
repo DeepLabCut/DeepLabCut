@@ -9,10 +9,15 @@ Licensed under GNU Lesser General Public License v3.0
 
 """
 
-import wx
-import os, sys, pydoc
+import os
+import pydoc
+import subprocess
+import sys
+import webbrowser
 from pathlib import Path
-import webbrowser, subprocess
+
+import wx
+
 import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
 
@@ -116,7 +121,7 @@ class Train_network(wx.Panel):
         default_pose_cfg_path = os.path.join(
             Path(deeplabcut.__file__).parent, "pose_cfg.yaml"
         )
-        pose_cfg = auxiliaryfunctions.read_config(default_pose_cfg_path)
+        pose_cfg = auxiliaryfunctions.read_plainconfig(default_pose_cfg_path)
         display_iters = str(pose_cfg["display_iters"])
         save_iters = str(pose_cfg["save_iters"])
         max_iters = str(pose_cfg["multi_step"][-1][-1])
@@ -258,14 +263,14 @@ class Train_network(wx.Panel):
         else:
             self.file_open_bool = webbrowser.open(self.pose_cfg_path)
         if self.file_open_bool:
-            self.pose_cfg = auxiliaryfunctions.read_config(self.pose_cfg_path)
+            self.pose_cfg = auxiliaryfunctions.read_plainconfig(self.pose_cfg_path)
         else:
             raise FileNotFoundError("File not found!")
 
     def update_params(self, event):
         # update the variables with the edited values in the pose config file
         if self.file_open_bool:
-            self.pose_cfg = auxiliaryfunctions.read_config(self.pose_cfg_path)
+            self.pose_cfg = auxiliaryfunctions.read_plainconfig(self.pose_cfg_path)
             display_iters = str(self.pose_cfg["display_iters"])
             save_iters = str(self.pose_cfg["save_iters"])
             max_iters = str(self.pose_cfg["multi_step"][-1][-1])

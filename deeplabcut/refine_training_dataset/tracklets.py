@@ -1,17 +1,20 @@
-import cv2
+import pickle
+import re
+from threading import Event, Thread
+
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
 import numpy as np
 import pandas as pd
-import pickle
-import re
-from deeplabcut.post_processing import columnwise_spline_interp
-from deeplabcut.utils.auxiliaryfunctions import read_config, attempttomakefolder
-from deeplabcut import generate_training_dataset
 from matplotlib.path import Path
 from matplotlib.widgets import Slider, LassoSelector, Button, CheckButtons
-from threading import Event, Thread
+from tqdm import trange
+
+from deeplabcut import generate_training_dataset
+from deeplabcut.post_processing import columnwise_spline_interp
+from deeplabcut.utils.auxiliaryfunctions import read_config, attempttomakefolder
+from deeplabcut.utils.auxfun_videos import VideoReader
 
 
 class BackgroundPlayer:
@@ -21,16 +24,22 @@ class BackgroundPlayer:
         self.can_run.clear()
         self.running = True
         self.paused = True
-        self.speed = ""
+        self.speed = "F"
 
     def run(self):
         while self.running:
             self.can_run.wait()
-            i = self.viz.curr_frame + 1
+            i = self.viz.curr_frame
             if "F" in self.speed:
-                i += 2 * len(self.speed)
+                if len(self.speed) == 1:
+                    i += 1
+                else:
+                    i += 2 * (len(self.speed) - 1)
             elif "R" in self.speed:
-                i -= 2 * len(self.speed)
+                if len(self.speed) == 1:
+                    i -= 1
+                else:
+                    i -= 2 * (len(self.speed) - 1)
             if i > self.viz.manager.nframes:
                 i = 0
             elif i < 0:
@@ -54,18 +63,24 @@ class BackgroundPlayer:
     def forward(self):
         speed = self.speed
         if "R" in speed:
-            speed = ""
-        if len(speed) < 4:
+            speed = "F"
+        elif len(speed) < 5:
             speed += "F"
+        elif len(speed) == 5:
+            speed = "F"
+        print(speed)
         self.speed = speed
         self.resume()
 
     def rewind(self):
         speed = self.speed
         if "F" in speed:
-            speed = ""
-        if len(speed) < 4:
+            speed = "R"
+        elif len(speed) < 5:
             speed += "R"
+        elif len(speed) == 5:
+            speed = "R"
+        print(speed)
         self.speed = speed
         self.resume()
 
@@ -117,19 +132,19 @@ class PointSelector:
 
 
 class TrackletManager:
-    def __init__(self, config, min_swap_frac=0.01, min_tracklet_frac=0.01, max_gap=0):
+    def __init__(self, config, min_swap_len=2, min_tracklet_len=2, max_gap=0):
         """
 
         Parameters
         ----------
         config : str
             Path to a configuration file.
-        min_swap_frac : float, optional (default=0.01)
-            Relative fraction of the data below which bodypart swaps are ignored.
-            By default, swaps representing less than 1% of the total number of frames are discarded.
-        min_tracklet_frac : float, optional (default=0.01)
-            Relative fraction of the data below which tracklets are ignored.
-            By default, tracklets shorter than 1% of the total number of frames are discarded.
+        min_swap_len : float, optional (default=2)
+            Minimum swap length.
+            Swaps shorter than 2 frames are discarded by default.
+        min_tracklet_len : float, optional (default=2)
+            Minimum tracklet length.
+            Tracklets shorter than 2 frames are discarded by default.
         max_gap : int, optional (default = 0).
             Number of frames to consider when filling in missing data.
 
@@ -146,8 +161,8 @@ class TrackletManager:
         """
         self.config = config
         self.cfg = read_config(config)
-        self.min_swap_frac = min_swap_frac
-        self.min_tracklet_frac = min_tracklet_frac
+        self.min_swap_len = min_swap_len
+        self.min_tracklet_len = min_tracklet_len
         self.max_gap = max_gap
 
         self.filename = ""
@@ -170,14 +185,6 @@ class TrackletManager:
     def _load_tracklets(self, tracklets, auto_fill):
         header = tracklets.pop("header")
         self.scorer = header.get_level_values("scorer").unique().to_list()
-        frames = sorted(
-            set([frame for tracklet in tracklets.values() for frame in tracklet])
-        )
-        if not len(frames):
-            raise IOError("Tracklets are empty.")
-
-        self.nframes = int(re.findall(r"\d+", frames[-1])[0]) + 1
-        self.times = np.arange(self.nframes)
         bodyparts = header.get_level_values("bodyparts")
         bodyparts_multi = [
             bp for bp in self.cfg["multianimalbodyparts"] if bp in bodyparts
@@ -189,97 +196,114 @@ class TrackletManager:
             bodyparts[mask_single]
         )
 
-        # Store tracklets, such that we later manipulate long chains
-        # rather than data of individual frames, yielding greater continuity.
-        tracklets_unsorted = dict()
-        for num_tracklet in sorted(tracklets):
-            to_fill = np.full((self.nframes, len(bodyparts)), np.nan)
-            for frame_name, data in tracklets[num_tracklet].items():
-                ind_frame = int(re.findall(r"\d+", frame_name)[0])
-                to_fill[ind_frame] = data
-            nonempty = np.any(~np.isnan(to_fill), axis=1)
-            completeness = nonempty.sum() / self.nframes
-            if completeness >= self.min_tracklet_frac:
-                is_single = np.isnan(to_fill[:, mask_multi]).all()
-                if is_single:
-                    to_fill = to_fill[:, mask_single]
-                else:
-                    to_fill = to_fill[:, mask_multi]
-                if to_fill.size:
-                    tracklets_unsorted[num_tracklet] = to_fill, completeness, is_single
-        tracklets_sorted = sorted(tracklets_unsorted.items(), key=lambda kv: kv[1][1])
+        # Sort tracklets by length to prioritize greater continuity
+        temp = sorted(tracklets.values(), key=len)
+        if not len(temp):
+            raise IOError("Tracklets are empty.")
 
-        if auto_fill:
-            # Recursively fill the data containers
+        get_frame_ind = lambda s: int(re.findall(r"\d+", s)[0])
+
+        # Drop tracklets that are too short
+        tracklets_sorted = []
+        last_frames = []
+        for tracklet in temp:
+            last_frames.append(get_frame_ind(list(tracklet)[-1]))
+            if len(tracklet) > self.min_tracklet_len:
+                tracklets_sorted.append(tracklet)
+        self.nframes = max(last_frames) + 1
+        self.times = np.arange(self.nframes)
+
+        if auto_fill:  # Recursively fill the data containers
             tracklets_multi = np.full(
-                (self.nindividuals, self.nframes, len(bodyparts_multi) * 3), np.nan
+                (self.nindividuals, self.nframes, len(bodyparts_multi) * 3),
+                np.nan,
+                np.float16,
             )
             tracklets_single = np.full(
-                (self.nframes, len(bodyparts_single) * 3), np.nan
+                (self.nframes, len(bodyparts_single) * 3), np.nan, np.float16
             )
-            while tracklets_sorted:
-                _, (data, _, is_single) = tracklets_sorted.pop()
-                has_data = ~np.isnan(data)
-                if is_single:
+            for _ in trange(len(tracklets_sorted)):
+                tracklet = tracklets_sorted.pop()
+                inds, temp = zip(*[(get_frame_ind(k), v) for k, v in tracklet.items()])
+                inds = np.asarray(inds)
+                data = np.asarray(temp, dtype=np.float16)
+                data_single = data[:, mask_single]
+                is_multi = np.isnan(data_single).all()
+                if not is_multi:
                     # Where slots are available, copy the data over
-                    is_free = np.isnan(tracklets_single)
+                    is_free = np.isnan(tracklets_single[inds])
+                    has_data = ~np.isnan(data_single)
                     mask = has_data & is_free
-                    tracklets_single[mask] = data[mask]
+                    rows, cols = np.nonzero(mask)
+                    tracklets_single[inds[rows], cols] = data_single[mask]
                     # If about to overwrite data, keep tracklets with highest confidence
                     overwrite = has_data & ~is_free
                     if overwrite.any():
                         rows, cols = np.nonzero(overwrite)
                         more_confident = (
-                            data[overwrite] > tracklets_single[overwrite]
+                            data_single[overwrite] > tracklets_single[inds[rows], cols]
                         )[2::3]
-                        inds = np.flatnonzero(more_confident)
-                        for ind in inds:
-                            sl = slice(ind * 3, ind * 3 + 3)
-                            inds = rows[sl], cols[sl]
-                            tracklets_single[inds] = data[inds]
+                        idx = np.flatnonzero(more_confident)
+                        for i in idx:
+                            sl = slice(i * 3, i * 3 + 3)
+                            tracklets_single[inds[rows[sl]], cols[sl]] = data_single[
+                                rows[sl], cols[sl]
+                            ]
                 else:
-                    is_free = np.isnan(tracklets_multi)
+                    is_free = np.isnan(tracklets_multi[:, inds])
+                    data_multi = data[:, mask_multi]
+                    has_data = ~np.isnan(data_multi)
                     overwrite = has_data & ~is_free
                     overwrite_risk = np.any(overwrite, axis=(1, 2))
                     if overwrite_risk.all():
                         # Squeeze some data into empty slots
-                        mask = has_data & is_free
-                        space_left = mask.any(axis=(1, 2))
-                        for ind in np.flatnonzero(space_left):
+                        n_empty = is_free.all(axis=2).sum(axis=1)
+                        for ind in np.argsort(n_empty)[::-1]:
+                            mask = has_data & is_free
                             current_mask = mask[ind]
-                            tracklets_multi[ind, current_mask] = data[current_mask]
-                            has_data[current_mask] = False
-                        # For the remaining data, overwrite where we are least confident
-                        remaining = data[has_data].reshape((-1, 3))
-                        mask3d = np.broadcast_to(
-                            has_data, (self.nindividuals,) + has_data.shape
-                        )
-                        temp = tracklets_multi[mask3d].reshape(
-                            (self.nindividuals, -1, 3)
-                        )
-                        diff = remaining - temp
-                        # Find keypoints closest to the remaining data
-                        dist = np.sqrt(diff[:, :, 0] ** 2 + diff[:, :, 1] ** 2)
-                        closest = np.argmin(dist, axis=0)
-                        # Only overwrite if improving confidence
-                        prob = diff[closest, range(len(closest)), 2]
-                        better = np.flatnonzero(prob > 0)
-                        inds = closest[better]
-                        rows, cols = np.nonzero(has_data)
-                        for i, j in zip(inds, better):
-                            sl = slice(j * 3, j * 3 + 3)
-                            tracklets_multi[i, rows[sl], cols[sl]] = remaining.flat[sl]
+                            rows, cols = np.nonzero(current_mask)
+                            if rows.size:
+                                tracklets_multi[ind, inds[rows], cols] = data_multi[
+                                    current_mask
+                                ]
+                                is_free[ind, current_mask] = False
+                                has_data[current_mask] = False
+                        if has_data.any():
+                            # For the remaining data, overwrite where we are least confident
+                            remaining = data_multi[has_data].reshape((-1, 3))
+                            mask3d = np.broadcast_to(
+                                has_data, (self.nindividuals,) + has_data.shape
+                            )
+                            dims, rows, cols = np.nonzero(mask3d)
+                            temp = tracklets_multi[dims, inds[rows], cols].reshape(
+                                (self.nindividuals, -1, 3)
+                            )
+                            diff = remaining - temp
+                            # Find keypoints closest to the remaining data
+                            # Use Manhattan distance to avoid overflow
+                            dist = np.abs(diff[:, :, 0]) + np.abs(diff[:, :, 1])
+                            closest = np.argmin(dist, axis=0)
+                            # Only overwrite if improving confidence
+                            prob = diff[closest, range(len(closest)), 2]
+                            better = np.flatnonzero(prob > 0)
+                            idx = closest[better]
+                            rows, cols = np.nonzero(has_data)
+                            for i, j in zip(idx, better):
+                                sl = slice(j * 3, j * 3 + 3)
+                                tracklets_multi[
+                                    i, inds[rows[sl]], cols[sl]
+                                ] = remaining.flat[sl]
                     else:
-                        tracklets_multi[np.argmin(overwrite_risk), has_data] = data[
-                            has_data
-                        ]
+                        rows, cols = np.nonzero(has_data)
+                        n = np.argmin(overwrite_risk)
+                        tracklets_multi[n, inds[rows], cols] = data_multi[has_data]
 
             multi = tracklets_multi.swapaxes(0, 1).reshape((self.nframes, -1))
             data = np.c_[multi, tracklets_single].reshape((self.nframes, -1, 3))
             xy = data[:, :, :2].reshape((self.nframes, -1))
             prob = data[:, :, 2].reshape((self.nframes, -1))
 
-            # Fill existing gaps and slightly smooth the tracklets
+            # Fill existing gaps
             missing = np.isnan(xy)
             xy_filled = columnwise_spline_interp(xy, self.max_gap)
             filled = ~np.isnan(xy_filled)
@@ -309,11 +333,14 @@ class TrackletManager:
             self._label_pairs = self.get_label_pairs()
         else:
             tracklets_raw = np.full(
-                (len(tracklets_sorted), self.nframes, len(bodyparts)), np.nan
+                (len(tracklets_sorted), self.nframes, len(bodyparts)),
+                np.nan,
+                np.float16,
             )
-            for n, data in enumerate(tracklets_sorted[::-1]):
-                xy = data[1][0]
-                tracklets_raw[n, :, : xy.shape[1]] = xy
+            for n, tracklet in enumerate(tracklets_sorted[::-1]):
+                for frame, data in tracklet.items():
+                    i = get_frame_ind(frame)
+                    tracklets_raw[n, i] = data
             self.data = (
                 tracklets_raw.swapaxes(0, 1)
                 .reshape((self.nframes, -1, 3))
@@ -398,7 +425,7 @@ class TrackletManager:
                 zero_crossings = down | up
             # ID swaps occur when X and Y simultaneously intersect each other.
             self.tracklet_swaps = zero_crossings.all(axis=3)
-            cross = self.tracklet_swaps.sum(axis=2) > self.min_swap_frac * self.nframes
+            cross = self.tracklet_swaps.sum(axis=2) > self.min_swap_len
             mat = np.tril(cross)
             temp_pairs = np.where(mat)
             # Get only those bodypart pairs that belong to different individuals
@@ -459,10 +486,8 @@ class TrackletVisualizer:
             manager.cfg["colormap"], len(set(manager.tracklet2id))
         )
         self.videoname = videoname
-        self.video = cv2.VideoCapture(videoname)
-        if not self.video.isOpened():
-            raise IOError("Video could not be opened.")
-        self.nframes = int(self.video.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.video = VideoReader(videoname)
+        self.nframes = len(self.video)
         # Take into consideration imprecise OpenCV estimation of total number of frames
         if abs(self.nframes - manager.nframes) >= 0.05 * manager.nframes:
             print(
@@ -513,7 +538,7 @@ class TrackletVisualizer:
         self.colors = self.cmap(manager.tracklet2id)
         self.colors[:, -1] = self.alpha
 
-        img = self._read_frame()
+        img = self.video.read_frame()
         self.im = self.ax1.imshow(img)
         self.scat = self.ax1.scatter([], [], s=self.dotsize ** 2, picker=True)
         self.scat.set_offsets(manager.xy[:, 0])
@@ -522,10 +547,12 @@ class TrackletVisualizer:
             [self.ax1.plot([], [], "-", lw=2, c=c) for c in self.colors], []
         )
         self.lines_x = sum(
-            [self.ax2.plot([], [], "-", lw=1, c=c, picker=5) for c in self.colors], []
+            [self.ax2.plot([], [], "-", lw=1, c=c, pickradius=5) for c in self.colors],
+            [],
         )
         self.lines_y = sum(
-            [self.ax3.plot([], [], "-", lw=1, c=c, picker=5) for c in self.colors], []
+            [self.ax3.plot([], [], "-", lw=1, c=c, pickradius=5) for c in self.colors],
+            [],
         )
         self.vline_x = self.ax2.axvline(0, 0, 1, c="k", ls=":")
         self.vline_y = self.ax3.axvline(0, 0, 1, c="k", ls=":")
@@ -599,12 +626,6 @@ class TrackletVisualizer:
     def show(self, fig=None):
         self._prepare_canvas(self.manager, fig)
 
-    def _read_frame(self):
-        frame = self.video.read()[1]
-        if frame is None:
-            return
-        return frame[:, :, ::-1]
-
     def fill_shaded_areas(self):
         self.clean_collections()
         if self.picked_pair:
@@ -670,10 +691,16 @@ class TrackletVisualizer:
 
     def save_coords(self):
         coords, nonempty, inds = self.manager.get_non_nan_elements(self._curr_frame)
+        prob = self.manager.prob[:, self._curr_frame]
         for dp in self.dps:
             label = dp.individual_names, dp.bodyParts
             ind = self.manager._label_pairs.index(label)
-            coords[np.flatnonzero(inds == ind)[0]] = dp.point.center
+            nrow = np.flatnonzero(inds == ind)[0]
+            if not np.array_equal(
+                coords[nrow], dp.point.center
+            ):  # Keypoint has been displaced
+                coords[nrow] = dp.point.center
+                prob[ind] = 1
         self.manager.xy[nonempty, self._curr_frame] = coords
 
     def flag_frame(self, *args):
@@ -726,9 +753,9 @@ class TrackletVisualizer:
         self.fig.canvas.draw()
 
     def on_press(self, event):
-        if event.key == "right":
+        if event.key == "n" or event.key == "right":
             self.move_forward()
-        elif event.key == "left":
+        elif event.key == "b" or event.key == "left":
             self.move_backward()
         elif event.key == "s":
             self.swap()
@@ -778,7 +805,7 @@ class TrackletVisualizer:
             self.player.forward()
         elif event.key == "alt+left":
             self.player.rewind()
-        elif event.key == "tab":
+        elif event.key == " " or event.key == "tab":
             self.player.toggle()
 
     def move_forward(self):
@@ -916,9 +943,11 @@ class TrackletVisualizer:
             Key L: toggle the lasso selector
             Key S: swap two tracklets
             Key X: cut swapping tracklets
-            Left/Right arrow: navigate through the video
-            Tab: play/pause the video
-            Alt+Right/Left: fast forward/rewind
+            Left/Right arrow OR Key B/Key N: navigate through the video (back/next)
+            Tab or SPACE: play/pause the video
+            Alt+Right/Left: fast forward/rewind - toggles through 5 speed levels
+            Backspace: deletes last flag (if set) or deletes point
+            Key P: toggles on pan/zoom tool - left button and drag to pan, right button and drag to zoom
             """
             self.text = self.fig.text(
                 0.5,
@@ -939,8 +968,8 @@ class TrackletVisualizer:
 
     def on_change(self, val):
         self.curr_frame = int(val)
-        self.video.set(cv2.CAP_PROP_POS_FRAMES, self.curr_frame)
-        img = self._read_frame()
+        self.video.set_to_frame(self.curr_frame)
+        img = self.video.read_frame()
         if img is not None:
             # Automatically disable the draggable points
             if self.draggable:
@@ -963,7 +992,7 @@ class TrackletVisualizer:
         self.save_coords()
         self.manager.save()
 
-    def export_to_training_data(self):
+    def export_to_training_data(self, pcutoff=0.1):
         import os
         from skimage import io
 
@@ -974,13 +1003,14 @@ class TrackletVisualizer:
 
         # Save additional frames to the labeled-data directory
         strwidth = int(np.ceil(np.log10(self.nframes)))
-        vname = os.path.splitext(os.path.basename(self.videoname))[0]
         tmpfolder = os.path.join(
-            self.manager.cfg["project_path"], "labeled-data", vname
+            self.manager.cfg["project_path"], "labeled-data", self.video.name
         )
         if os.path.isdir(tmpfolder):
             print(
-                "Frames from video", vname, " already extracted (more will be added)!"
+                "Frames from video",
+                self.video.name,
+                " already extracted (more will be added)!",
             )
         else:
             attempttomakefolder(tmpfolder)
@@ -991,8 +1021,8 @@ class TrackletVisualizer:
             )
             index.append(os.path.join(*imagename.rsplit(os.path.sep, 3)[-3:]))
             if not os.path.isfile(imagename):
-                self.video.set(cv2.CAP_PROP_POS_FRAMES, ind)
-                frame = self._read_frame()
+                self.video.set_to_frame(ind)
+                frame = self.video.read_frame()
                 if frame is None:
                     print("Frame could not be read. Skipping...")
                     continue
@@ -1007,6 +1037,14 @@ class TrackletVisualizer:
         # Store the newly-refined data
         data = self.manager.format_data()
         df = data.iloc[inds]
+
+        # Uncertain keypoints are ignored
+        def filter_low_prob(cols, prob):
+            mask = cols.iloc[:, 2] < prob
+            cols.loc[mask] = np.nan
+            return cols
+
+        df = df.groupby(level="bodyparts", axis=1).apply(filter_low_prob, prob=pcutoff)
         df.index = index
         machinefile = os.path.join(
             tmpfolder, "machinelabels-iter" + str(self.manager.cfg["iteration"]) + ".h5"
@@ -1050,12 +1088,60 @@ def refine_tracklets(
     config,
     pickle_or_h5_file,
     video,
-    min_swap_frac=0.01,
-    min_tracklet_frac=0.01,
-    max_gap=0,
-    trail_len=50,
+    min_swap_len=2,
+    min_tracklet_len=2,
+    max_gap=2,
+    trail_len=0,
 ):
-    manager = TrackletManager(config, min_swap_frac, min_tracklet_frac, max_gap)
+    """
+    Refine tracklets stored either in pickle or h5 format.
+    The procedure is done in two stages:
+    (i) freshly-converted detections are read by the TrackletManager,
+    which automatically attempts to optimize tracklet continuity by
+    assigning higher priority to long tracks while maximizing
+    keypoint likelihood;
+    (ii) loaded tracklets are displayed into the TrackletVisualizer
+    for manual editing. Individual labels can be dragged around
+    like in the labeling toolbox; several of them can also be simultaneously
+    selected using the Lasso tool in order to re-assign multiple tracks
+    to another identity at once.
+
+    Parameters
+    ----------
+    config: str
+        Full path of the config.yaml file.
+
+    pickle_or_h5_file: str
+        Full path of either the pickle file obtained after calling
+        deeplabcut.convert_detections2tracklets, or the h5 file written after
+        refining the tracklets a first time. Note that refined tracklets are
+        always stored in the h5 format.
+
+    video: str
+        Full path of the corresponding video.
+        If the video duration and the total length of the tracklets disagree
+        by more than 5%, a message is printed indicating that the selected
+        video may not be the right one.
+
+    min_swap_len : float, optional (default=2)
+        Minimum swap length.
+        Set to 2 by default. Retained swaps appear in the right panel in
+        shaded regions.
+
+    min_tracklet_len : float, optional (default=2)
+        Minimum tracklet length.
+        By default, tracklets shorter than 2 frames are discarded,
+        leaving missing data instead. If set to 0, all tracklets are kept.
+
+    max_gap : int, optional (default=2).
+        Maximal gap size (in number of frames) of missing data to be filled.
+        The procedure fits a cubic spline over all individual trajectories,
+        and fills all gaps smaller than or equal to 2 frames by default.
+
+    trail_len : int, optional (default=0)
+        Number of trailing points. None by default, to accelerate visualization.
+    """
+    manager = TrackletManager(config, min_swap_len, min_tracklet_len, max_gap)
     if pickle_or_h5_file.endswith("pickle"):
         manager.load_tracklets_from_pickle(pickle_or_h5_file)
     else:
@@ -1066,7 +1152,9 @@ def refine_tracklets(
     return manager, viz
 
 
-def convert_raw_tracks_to_h5(config, tracks_pickle, output_name=""):
-    manager = TrackletManager(config, 0, 0)
+def convert_raw_tracks_to_h5(
+    config, tracks_pickle, output_name="", min_tracklet_len=5, max_gap=5
+):
+    manager = TrackletManager(config, 0, min_tracklet_len, max_gap)
     manager.load_tracklets_from_pickle(tracks_pickle)
     manager.save(output_name)

@@ -4,8 +4,7 @@
 /examples/TES*
 /examples/multi*
 /examples/3D*
-/examples-multianimal
-/benchmarking
+/examples/OUT
 
 # Tensorflow checkpoints
 *.ckpt
@@ -15,7 +14,6 @@ snapshot-*
 __pycache__/
 *.py[cod]
 *$py.class
-*.pyc
 
 # C extensions
 *.so
@@ -29,6 +27,7 @@ dist/
 downloads/
 eggs/
 .eggs/
+#lib/
 lib64/
 parts/
 sdist/
@@ -64,7 +63,12 @@ coverage.xml
 *.pot
 
 # Django stuff:
-*.log
+*.log*.ckpt
+snapshot-*
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
 local_settings.py
 
 # Flask stuff:

@@ -11,7 +11,12 @@ We suggest watching this video on how to navigate the docs: **Click on the image
 - :computer: [How to install DeepLabCut](/docs/installation.md)
 
 - :chart_with_upwards_trend: [Overview of How to use DLC & each function](/docs/UseOverviewGuide.md) 
-   - [Many more details on each function](functionDetails.md) (they are also linked within the "Overview!")
+    - [Many more details on each function](functionDetails.md) (they are also linked within the "Overview!")
+
+   - ***:purple_heart: [Overview of the entire DLC workflow](/docs/UseOverviewGuide.md#overview)***
+   - ***:blue_heart: [Important Information on how to use DLC in different scenarios (single vs multi animal)](/docs/UseOverviewGuide.md#important-information-on-using-deeplabcut)***
+   - ***:green_heart: [The different ways to use DLC: standalone GUI, Jupyter/COLAB Notebooks, and in the terminal.](/docs/UseOverviewGuide.md#the-options-for-using-deeplabcut)***
+   
 
 - :high_brightness: More details on how to use our "Stand Alone" [DeepLabCut Project Manager GUI](/docs/PROJECT_GUI.md)
    

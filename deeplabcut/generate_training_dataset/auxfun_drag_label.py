@@ -134,7 +134,11 @@ class DraggablePoint:
             self.point.set_animated(False)
             self.background = None
             self.point.figure.canvas.draw()
-            self.final_point = (event.xdata, event.ydata, self.bodyParts)
+            self.final_point = (
+                self.point.center[0],
+                self.point.center[1],
+                self.bodyParts,
+            )
             self.coords.append(self.final_point)
 
     def on_hover(self, event):

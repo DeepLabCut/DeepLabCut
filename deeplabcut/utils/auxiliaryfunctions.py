@@ -9,10 +9,11 @@ Licensed under GNU Lesser General Public License v3.0
 """
 import os
 import pickle
-import yaml
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
+import yaml
 from ruamel.yaml import YAML
 
 
@@ -166,10 +167,9 @@ def read_config(configname):
         try:
             with open(path, "r") as f:
                 cfg = ruamelFile.load(f)
-                # update path to current location of config.yaml (if different)
-                if cfg["project_path"] != configname.replace(
-                    f"{os.path.sep}config.yaml", ""
-                ):
+                curr_dir = os.path.dirname(configname)
+                if cfg["project_path"] != curr_dir:
+                    cfg["project_path"] = curr_dir
                     write_config(configname, cfg)
         except Exception as err:
             if len(err.args) > 2:
@@ -303,7 +303,14 @@ def write_pickle(filename, data):
 
 def Getlistofvideos(videos, videotype):
     """ Returns list of videos of videotype "videotype" in
-    folder videos or for list of videos. """
+    folder videos or for list of videos.
+
+    NOTE: excludes keyword videos of the form:
+
+    *_labeled.videotype
+    *_full.videotype
+
+    """
     if [os.path.isdir(i) for i in videos] == [True]:  # checks if input is a directory
         """
         Returns all the videos in the directory.
@@ -315,10 +322,13 @@ def Getlistofvideos(videos, videotype):
 
         os.chdir(videofolder)
         videolist = [
-            fn
+            os.path.join(videofolder, fn)
             for fn in os.listdir(os.curdir)
-            if os.path.isfile(fn) and fn.endswith(videotype) and "labeled" not in fn
-        ]  # exclude labeled-videos!
+            if os.path.isfile(fn)
+            and fn.endswith(videotype)
+            and "_labeled." not in fn
+            and "_full." not in fn
+        ]  # exclude labeled (also for multianimal projects) videos!
 
         Videos = sample(
             videolist, len(videolist)
@@ -327,13 +337,19 @@ def Getlistofvideos(videos, videotype):
     else:
         if isinstance(videos, str):
             if (
-                os.path.isfile(videos) and "labeled" not in videos
+                os.path.isfile(videos)
+                and "_labeled." not in videos
+                and "_full." not in videos
             ):  # #or just one direct path!
                 Videos = [videos]
             else:
                 Videos = []
         else:
-            Videos = [v for v in videos if os.path.isfile(v) and "labeled" not in v]
+            Videos = [
+                v
+                for v in videos
+                if os.path.isfile(v) and "_labeled." not in v and "_full." not in v
+            ]
     return Videos
 
 
@@ -349,11 +365,11 @@ def SaveData(PredicteData, metadata, dataname, pdindex, imagenames, save_as_csv)
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
 
-def SaveMetadata(metadatafilename, data, trainIndexes, testIndexes, trainFraction):
+def SaveMetadata(metadatafilename, data, trainIndices, testIndices, trainFraction):
     with open(metadatafilename, "wb") as f:
         # Pickle the 'labeled-data' dictionary using the highest protocol available.
         pickle.dump(
-            [data, trainIndexes, testIndexes, trainFraction], f, pickle.HIGHEST_PROTOCOL
+            [data, trainIndices, testIndices, trainFraction], f, pickle.HIGHEST_PROTOCOL
         )
 
 
@@ -361,11 +377,11 @@ def LoadMetadata(metadatafile):
     with open(metadatafile, "rb") as f:
         [
             trainingdata_details,
-            trainIndexes,
-            testIndexes,
+            trainIndices,
+            testIndices,
             testFraction_data,
         ] = pickle.load(f)
-        return trainingdata_details, trainIndexes, testIndexes, testFraction_data
+        return trainingdata_details, trainIndices, testIndices, testFraction_data
 
 
 def get_immediate_subdirectories(a_dir):
@@ -454,9 +470,13 @@ def GetEvaluationFolder(trainFraction, shuffle, cfg, modelprefix=""):
     Task = cfg["Task"]
     date = cfg["date"]
     iterate = "iteration-" + str(cfg["iteration"])
+    if 'eval_prefix' in cfg:
+        eval_prefix = cfg['eval_prefix']+'/'
+    else:
+        eval_prefix = 'evaluation-results'+'/'
     return Path(
         modelprefix,
-        "evaluation-results/"
+        eval_prefix
         + iterate
         + "/"
         + Task
@@ -549,9 +569,11 @@ def GetScorerName(
     if (
         "resnet" in dlc_cfg["net_type"]
     ):  # ABBREVIATE NETWORK NAMES -- esp. for mobilenet!
-        netname = dlc_cfg["net_type"].replace("_", "")
-    else:  # mobilenet >> mobnet_100; mobnet_35 etc.
+        netname = dlc_cfg["net_type"].replace(" _", "")
+    elif "mobilenet" in dlc_cfg["net_type"]:  # mobilenet >> mobnet_100; mobnet_35 etc.
         netname = "mobnet_" + str(int(float(dlc_cfg["net_type"].split("_")[-1]) * 100))
+    elif "efficientnet" in dlc_cfg["net_type"]:
+        netname = "effnet_" + dlc_cfg["net_type"].split("-")[1]
 
     scorer = (
         "DLC_"
@@ -695,6 +717,7 @@ def find_analyzed_data(folder, videoname, scorer, filtered=False, track_method="
                     file.startswith(videoname + scorer)
                     or file.startswith(videoname + scorer_legacy)
                 ),
+                "skeleton" not in file,
                 (tracker in file if tracker else not ("_sk" in file or "_bx" in file)),
                 (filtered and "filtered" in file)
                 or (not filtered and "filtered" not in file),

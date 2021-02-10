@@ -12,21 +12,23 @@ Licensed under GNU Lesser General Public License v3.0
 # Dependencies
 ####################################################
 
-import os.path
-from deeplabcut.pose_estimation_tensorflow.nnet import predict
-from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import data_to_input
-import time, sys
-import pandas as pd
-import numpy as np
-import os
 import argparse
+import os
+import os.path
+import time
 from pathlib import Path
-from tqdm import tqdm
-import tensorflow as tf
-from deeplabcut.utils import auxiliaryfunctions
+
 import cv2
+import numpy as np
+import pandas as pd
+import tensorflow as tf
 from skimage.util import img_as_ubyte
+from tqdm import tqdm
+
+from deeplabcut.pose_estimation_tensorflow.config import load_config
+from deeplabcut.pose_estimation_tensorflow.nnet import predict
+from deeplabcut.utils import auxiliaryfunctions
+
 
 ####################################################
 # Loading data, and defining model folder
@@ -379,6 +381,7 @@ def GetPoseF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
     pbar = tqdm(total=nframes)
     counter = 0
     step = max(10, int(nframes / 100))
+    inds = []
     while cap.isOpened():
         if counter % step == 0:
             pbar.update(step)
@@ -391,26 +394,21 @@ def GetPoseF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
                 )
             else:
                 frames[batch_ind] = img_as_ubyte(frame)
-
+            inds.append(counter)
             if batch_ind == batchsize - 1:
                 pose = predict.getposeNP(frames, dlc_cfg, sess, inputs, outputs)
-                PredictedData[
-                    batch_num * batchsize : (batch_num + 1) * batchsize, :
-                ] = pose
+                PredictedData[inds] = pose
                 batch_ind = 0
+                inds.clear()
                 batch_num += 1
             else:
                 batch_ind += 1
-        else:
-            nframes = counter
-            print("Detected frames: ", nframes)
+        elif counter >= nframes:
             if batch_ind > 0:
                 pose = predict.getposeNP(
                     frames, dlc_cfg, sess, inputs, outputs
                 )  # process the whole batch (some frames might be from previous batch!)
-                PredictedData[
-                    batch_num * batchsize : batch_num * batchsize + batch_ind, :
-                ] = pose[:batch_ind, :]
+                PredictedData[inds[:batch_ind]] = pose[:batch_ind]
             break
         counter += 1
 
@@ -448,8 +446,7 @@ def GetPoseS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
             ] = (
                 pose.flatten()
             )  # NOTE: thereby cfg['all_joints_names'] should be same order as bodyparts!
-        else:
-            nframes = counter
+        elif counter >= nframes:
             break
         counter += 1
 
@@ -494,8 +491,7 @@ def GetPoseS_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
             ] = (
                 pose.flatten()
             )  # NOTE: thereby cfg['all_joints_names'] should be same order as bodyparts!
-        else:
-            nframes = counter
+        elif counter >= nframes:
             break
         counter += 1
 
@@ -521,6 +517,7 @@ def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
     pbar = tqdm(total=nframes)
     counter = 0
     step = max(10, int(nframes / 100))
+    inds = []
     while cap.isOpened():
         if counter % step == 0:
             pbar.update(step)
@@ -533,7 +530,7 @@ def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
                 )
             else:
                 frames[batch_ind] = img_as_ubyte(frame)
-
+            inds.append(counter)
             if batch_ind == batchsize - 1:
                 # pose = predict.getposeNP(frames,dlc_cfg, sess, inputs, outputs)
                 pose = sess.run(pose_tensor, feed_dict={inputs: frames})
@@ -543,26 +540,19 @@ def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
                 pose = np.reshape(
                     pose, (batchsize, -1)
                 )  # bring into batchsize times x,y,conf etc.
-                PredictedData[
-                    batch_num * batchsize : (batch_num + 1) * batchsize, :
-                ] = pose
-
+                PredictedData[inds] = pose
                 batch_ind = 0
+                inds.clear()
                 batch_num += 1
             else:
                 batch_ind += 1
-        else:
-            nframes = counter
-            print("Detected frames: ", nframes)
+        elif counter >= nframes:
             if batch_ind > 0:
                 # pose = predict.getposeNP(frames, dlc_cfg, sess, inputs, outputs) #process the whole batch (some frames might be from previous batch!)
                 pose = sess.run(pose_tensor, feed_dict={inputs: frames})
                 pose[:, [0, 1, 2]] = pose[:, [1, 0, 2]]
                 pose = np.reshape(pose, (batchsize, -1))
-                PredictedData[
-                    batch_num * batchsize : batch_num * batchsize + batch_ind, :
-                ] = pose[:batch_ind, :]
-
+                PredictedData[inds[:batch_ind]] = pose[:batch_ind]
             break
         counter += 1
 
@@ -641,8 +631,7 @@ def GetPoseDynamic(
                 detected = False
 
             PredictedData[counter, :] = pose
-        else:
-            nframes = counter
+        elif counter >= nframes:
             break
         counter += 1
 
@@ -1383,7 +1372,6 @@ def convert_detections2tracklets(
                     )
                     upperbound *= 1.25
                     lowerbound *= 0.5  # SLACK!
-                    print(upperbound, lowerbound)
                 else:
                     lowerbound = None
                     upperbound = None
@@ -1427,6 +1415,10 @@ def convert_detections2tracklets(
                     )
 
                 Tracks = {}
+                if cfg[
+                    "uniquebodyparts"
+                ]:  # Initialize storage of the 'single' individual track
+                    Tracks["s"] = {}
                 for index, imname in tqdm(enumerate(imnames)):
                     animals = inferenceutils.assemble_individuals(
                         inferencecfg,
@@ -1437,9 +1429,9 @@ def convert_detections2tracklets(
                         PAF,
                         partaffinityfield_graph,
                         linkingpartaffinityfield_graph,
-                        lowerbound,
-                        upperbound,
-                        printintermediate,
+                        lowerbound=lowerbound,
+                        upperbound=upperbound,
+                        print_intermediate=printintermediate,
                     )
                     if track_method == "box":
                         # get corresponding bounding boxes!
@@ -1453,32 +1445,29 @@ def convert_detections2tracklets(
                     trackingutils.fill_tracklets(Tracks, trackers, animals, imname)
 
                     # Test whether the unique bodyparts have been assembled
-                    # TODO Perhaps easier to check whether links were defined in the PAF graph?
-                    inds_unique = [
-                        all_jointnames.index(bp) for bp in cfg["uniquebodyparts"]
-                    ]
-                    if not any(
-                        np.isfinite(a.reshape((-1, 3))[inds_unique]).all()
-                        for a in animals
-                    ):
-                        single = np.full((numjoints, 3), np.nan)
-                        single_dets = inferenceutils.convertdetectiondict2listoflist(
-                            data[imname], inds_unique
-                        )
-                        for ind, dets in zip(inds_unique, single_dets):
-                            if len(dets) == 1:
-                                single[ind] = dets[0][:3]
-                            elif len(dets) > 1:
-                                best = sorted(dets, key=lambda x: x[2], reverse=True)[0]
-                                single[ind] = best[:3]
-                        # Find an unused tracklet ID for the 'unique' bodyparts
-                        tracklet_id = 0
-                        while True:
-                            if tracklet_id not in Tracks:
-                                break
-                            tracklet_id += 1
-                        Tracks[tracklet_id] = {}
-                        Tracks[tracklet_id][imname] = single.flatten()
+                    if cfg["uniquebodyparts"]:
+                        inds_unique = [
+                            all_jointnames.index(bp) for bp in cfg["uniquebodyparts"]
+                        ]
+                        if not any(
+                            np.isfinite(a.reshape((-1, 3))[inds_unique]).all()
+                            for a in animals
+                        ):
+                            single = np.full((numjoints, 3), np.nan)
+                            single_dets = (
+                                inferenceutils.convertdetectiondict2listoflist(
+                                    data[imname], inds_unique
+                                )
+                            )
+                            for ind, dets in zip(inds_unique, single_dets):
+                                if len(dets) == 1:
+                                    single[ind] = dets[0][:3]
+                                elif len(dets) > 1:
+                                    best = sorted(
+                                        dets, key=lambda x: x[2], reverse=True
+                                    )[0]
+                                    single[ind] = best[:3]
+                            Tracks["s"][imname] = single.flatten()
 
                 Tracks["header"] = pdindex
                 with open(trackname, "wb") as f:

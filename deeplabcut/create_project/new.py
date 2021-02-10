@@ -9,10 +9,11 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import os
-from pathlib import Path
-import cv2
-from deeplabcut import DEBUG
 import shutil
+import warnings
+from pathlib import Path
+from deeplabcut import DEBUG
+from deeplabcut.utils.auxfun_videos import VideoReader
 
 
 def create_new_project(
@@ -146,7 +147,9 @@ def create_new_project(
             videos = destinations
 
     if copy_videos == True:
-        videos = destinations  # in this case the *new* location should be added to the config file
+        videos = (
+            destinations
+        )  # in this case the *new* location should be added to the config file
 
     # adds the video list to the config.yaml file
     video_sets = {}
@@ -158,22 +161,20 @@ def create_new_project(
         except:
             rel_video_path = os.readlink(str(video))
 
-        vcap = cv2.VideoCapture(rel_video_path)
-        if vcap.isOpened():
-            width = int(vcap.get(cv2.CAP_PROP_FRAME_WIDTH))
-            height = int(vcap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            video_sets[rel_video_path] = {
-                "crop": ", ".join(map(str, [0, width, 0, height]))
-            }
-        else:
-            print("Cannot open the video file! Skipping to the next one...")
+        try:
+            vid = VideoReader(rel_video_path)
+            video_sets[rel_video_path] = {"crop": ", ".join(map(str, vid.get_bbox()))}
+        except IOError:
+            warnings.warn("Cannot open the video file! Skipping to the next one...")
             os.remove(video)  # Removing the video or link from the project
 
     if not len(video_sets):
         # Silently sweep the files that were already written.
         shutil.rmtree(project_path, ignore_errors=True)
-        print("WARNING: No valid videos were found. The project was not created ...")
-        print("Verify the video files and re-create the project.")
+        warnings.warn(
+            "No valid videos were found. The project was not created... "
+            "Verify the video files and re-create the project."
+        )
         return "nothingcreated"
 
     # Set values to config file:
@@ -218,7 +219,9 @@ def create_new_project(
     cfg_file["y2"] = 624
     cfg_file[
         "batch_size"
-    ] = 8  # batch size during inference (video - analysis); see https://www.biorxiv.org/content/early/2018/10/30/457242
+    ] = (
+        8
+    )  # batch size during inference (video - analysis); see https://www.biorxiv.org/content/early/2018/10/30/457242
     cfg_file["corner2move2"] = (50, 50)
     cfg_file["move2corner"] = True
     cfg_file["skeleton_color"] = "black"

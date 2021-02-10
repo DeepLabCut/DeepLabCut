@@ -8,27 +8,30 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
+import argparse
+import glob
 import os
 import os.path
-import glob
+from pathlib import Path
+
 import cv2
+import matplotlib
+import matplotlib.colors as mcolors
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import wx
 import wx.lib.scrolledpanel as SP
-import pandas as pd
-import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import matplotlib.colors as mcolors
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-from pathlib import Path
-import argparse
-from deeplabcut.generate_training_dataset import auxfun_drag_label_multiple_individuals
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.backends.backend_wxagg import (
     NavigationToolbar2WxAgg as NavigationToolbar,
 )
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+from deeplabcut.generate_training_dataset import auxfun_drag_label_multiple_individuals
+from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
+
 
 # ###########################################################################
 # Class for GUI MainFrame
@@ -276,6 +279,11 @@ class MainFrame(wx.Frame):
         self.save.Bind(wx.EVT_BUTTON, self.saveDataSet)
         self.save.Enable(False)
 
+        self.delete = wx.Button(self.widget_panel, id=wx.ID_ANY, label="Delete Frame")
+        widgetsizer.Add(self.delete, 1, wx.ALL, 15)
+        self.delete.Bind(wx.EVT_BUTTON, self.deleteImage)
+        self.delete.Enable(False)
+
         widgetsizer.AddStretchSpacer(15)
         self.quit = wx.Button(self.widget_panel, id=wx.ID_ANY, label="Quit")
         widgetsizer.Add(self.quit, 1, wx.ALL | wx.ALIGN_RIGHT, 15)
@@ -315,6 +323,10 @@ class MainFrame(wx.Frame):
             self.nextImage(event=None)
         elif event.GetKeyCode() == wx.WXK_LEFT:
             self.prevImage(event=None)
+        elif event.GetKeyCode() == wx.WXK_DOWN:
+            self.nextLabel(event=None)
+        elif event.GetKeyCode() == wx.WXK_UP:
+            self.previousLabel(event=None)
         elif event.GetKeyCode() == wx.WXK_BACK:
             pos_abs = event.GetPosition()
             inv = self.axes.transData.inverted()
@@ -336,10 +348,48 @@ class MainFrame(wx.Frame):
                 self.buttonCounter[closest_dp.individual_names].remove(
                     closest_dp.bodyParts
                 )
+        elif event.ControlDown() and event.GetKeyCode() == 67:
+            self.duplicate_labels()
 
     @staticmethod
     def calc_distance(x1, y1, x2, y2):
         return np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+
+    def duplicate_labels(self):
+        if self.iter >= 1:
+            curr_individual = self.individualrdb.GetStringSelection()
+            curr_image = self.relativeimagenames[self.iter]
+            prev_image = self.relativeimagenames[self.iter - 1]
+            idx = pd.IndexSlice
+            self.dataFrame.loc[
+                curr_image, idx[:, curr_individual]
+            ] = self.dataFrame.loc[prev_image, idx[:, curr_individual]].values
+            img_name = Path(self.index[self.iter]).name
+            (
+                self.figure,
+                self.axes,
+                self.canvas,
+                self.toolbar,
+                self.image_axis,
+            ) = self.image_panel.drawplot(
+                self.img,
+                img_name,
+                self.iter,
+                self.index,
+                self.multibodyparts,
+                self.colormap,
+                keep_view=self.view_locked,
+            )
+            if curr_individual == "single":
+                self.norm, self.colorIndex = self.image_panel.getColorIndices(
+                    self.img, self.uniquebodyparts
+                )
+                self.buttonCounter = MainFrame.plot(self, self.img)
+            else:
+                self.norm, self.colorIndex = self.image_panel.getColorIndices(
+                    self.img, self.multibodyparts
+                )
+                self.buttonCounter = MainFrame.plot(self, self.img)
 
     def activateSlider(self, event):
         """
@@ -418,7 +468,7 @@ class MainFrame(wx.Frame):
         """
         MainFrame.updateZoomPan(self)
         wx.MessageBox(
-            "1. Select an individual and one of the body parts from the radio buttons to add a label (if necessary change config.yaml first to edit the label names). \n\n2. Right clicking on the image will add the selected label and the next available label will be selected from the radio button. \n The label will be marked as circle filled with a unique color.\n\n3. To change the marker size, mark the checkbox and move the slider. \n\n4. Hover your mouse over this newly added label to see its name. \n\n5. Use left click and drag to move the label position.  \n\n6. Once you are happy with the position, right click to add the next available label. You can always reposition the old labels, if required. You can delete a label with the middle button mouse click. \n\n7. Click Next/Previous to move to the next/previous image.\n User can also add a missing label by going to a previous/next image and using the left click to add the selected label.\n NOTE: the user cannot add a label if the label is already present. \n\n8. When finished labeling all the images, click 'Save' to save all the labels as a .h5 file. \n\n9. Click OK to continue using the labeling GUI.",
+            "1. Select an individual and one of the body parts from the radio buttons to add a label (if necessary change config.yaml first to edit the label names). \n\n2. Right clicking on the image will add the selected label and the next available label will be selected from the radio button. \n The label will be marked as circle filled with a unique color (and individual ID a unique color on the rim).\n\n3. To change the marker size, mark the checkbox and move the slider, then uncheck the box. \n\n4. Hover your mouse over this newly added label to see its name. \n\n5. Use left click and drag to move the label position.  \n\n6. Once you are happy with the position, right click to add the next available label. You can always reposition the old labels, if required. You can delete a label with the middle button mouse click (or click 'delete' key). \n\n7. Click Next/Previous to move to the next/previous image (or hot-key arrows left and right).\n User can also re-label a deletd point by going to a previous/next image then returning to the current iamge. \n NOTE: the user cannot add a label if the label is already present. \n \n8. You can click Cntrl+C to copy+paste labels from a previous image into the current image. For maDLC, you do this for each individual. \n\n9. When finished labeling all the images, click 'Save' to save all the labels as a .h5 file. \n\n10. Click OK to continue using the labeling GUI. For more tips and hotkeys: see docs!!",
             "User instructions",
             wx.OK | wx.ICON_INFORMATION,
         )
@@ -608,6 +658,20 @@ class MainFrame(wx.Frame):
                         MainFrame.select_individual(self, event)
         self.canvas.mpl_disconnect(self.onClick)
 
+    def nextLabel(self, event):
+        """
+        This function is to create a hotkey to skip down on the radio button panel.
+        """
+        if self.rdb.GetSelection() < len(self.multibodyparts) - 1:
+            self.rdb.SetSelection(self.rdb.GetSelection() + 1)
+
+    def previousLabel(self, event):
+        """
+        This function is to create a hotkey to skip up on the radio button panel.
+        """
+        if self.rdb.GetSelection() < len(self.multibodyparts) - 1:
+            self.rdb.SetSelection(self.rdb.GetSelection() - 1)
+
     def browseDir(self, event):
         """
         Show the DirDialog and ask the user to change the directory where machine labels are stored
@@ -636,6 +700,7 @@ class MainFrame(wx.Frame):
         self.home.Enable(True)
         self.pan.Enable(True)
         self.lock.Enable(True)
+        self.delete.Enable(True)
 
         # Reading config file and its variables
         self.cfg = auxiliaryfunctions.read_config(self.config_file)
@@ -647,6 +712,13 @@ class MainFrame(wx.Frame):
         ) = auxfun_multianimal.extractindividualsandbodyparts(self.cfg)
 
         self.multibodyparts = multianimalbodyparts
+        # checks for unique bodyparts
+        if len(self.multibodyparts) != len(set(self.multibodyparts)):
+            print(
+                "Error - bodyparts must have unique labels! Please choose unique bodyparts in config.yaml file and try again. Quitting for now!"
+            )
+            self.Close(True)
+
         self.uniquebodyparts = uniquebodyparts
         self.individual_names = individuals
 
@@ -683,17 +755,17 @@ class MainFrame(wx.Frame):
                 os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5"),
                 "df_with_missing",
             )
+            # Handle data previously labeled on a different platform
+            sep = "/" if "/" in self.dataFrame.index[0] else "\\"
+            if sep != os.path.sep:
+                self.dataFrame.index = self.dataFrame.index.str.replace(
+                    sep, os.path.sep
+                )
             self.dataFrame.sort_index(inplace=True)
             self.prev.Enable(True)
             # Finds the first empty row in the dataframe and sets the iteration to that index
-            for idx, j in enumerate(self.dataFrame.index):
-                values = self.dataFrame.loc[j, :].values
-                if np.prod(np.isnan(values)) == 1:
-                    self.iter = idx
-                    break
-                else:
-                    self.iter = idx
-        except:
+            self.iter = np.argmax(np.isnan(self.dataFrame.values).all(axis=1))
+        except FileNotFoundError:
             # Create an empty data frame
             self.dataFrame = MainFrame.create_dataframe(
                 self,
@@ -705,6 +777,22 @@ class MainFrame(wx.Frame):
             )
             self.iter = 0
 
+        # Cache original bodyparts
+        self._old_multi = (
+            self.dataFrame.xs(self.individual_names[0], axis=1, level="individuals")
+            .columns.get_level_values("bodyparts")
+            .unique()
+            .to_list()
+        )
+        self._old_unique = (
+            self.dataFrame.loc[
+                :, self.dataFrame.columns.get_level_values("individuals") == "single"
+            ]
+            .columns.get_level_values("bodyparts")
+            .unique()
+            .to_list()
+        )
+
         # Reading the image name
         self.img = self.index[self.iter]
         img_name = Path(self.index[self.iter]).name
@@ -712,9 +800,7 @@ class MainFrame(wx.Frame):
         # Checking for new frames and adding them to the existing dataframe
         old_imgs = np.sort(list(self.dataFrame.index))
         self.newimages = list(set(self.relativeimagenames) - set(old_imgs))
-        if self.newimages == []:
-            pass
-        else:
+        if self.newimages:
             print("Found new frames..")
             # Create an empty dataframe with all the new images and then merge this to the existing dataframe.
             self.df = MainFrame.create_dataframe(
@@ -726,45 +812,23 @@ class MainFrame(wx.Frame):
                 self.multibodyparts,
             )
             self.dataFrame = pd.concat([self.dataFrame, self.df], axis=0)
-            # Sort it by the index values
             self.dataFrame.sort_index(inplace=True)
-
-        # checks for unique bodyparts
-        if len(self.multibodyparts) != len(set(self.multibodyparts)):
-            print(
-                "Error - bodyparts must have unique labels! Please choose unique bodyparts in config.yaml file and try again. Quitting for now!"
+            # Rearrange bodypart columns in config order
+            bodyparts = self.multibodyparts + self.uniquebodyparts
+            self.dataFrame.reindex(
+                bodyparts, axis=1, level=self.dataFrame.columns.names.index("bodyparts")
             )
-            self.Close(True)
+        # Test whether there are missing frames and superfluous data
+        if len(old_imgs) > len(self.relativeimagenames):
+            missing_frames = set(old_imgs).difference(self.relativeimagenames)
+            self.dataFrame.drop(missing_frames, inplace=True)
 
-        # Extracting the list of old labels
-        oldMultiBodyParts = self.dataFrame.iloc[
-            :,
-            self.dataFrame.columns.get_level_values(1)
-            == [i for i in self.individual_names if i != "single"][0],
-        ].columns.get_level_values(2)
-        _, idx = np.unique(oldMultiBodyParts, return_index=True)
-        oldMultiBodyparts2plot = list(oldMultiBodyParts[np.sort(idx)])
-        # Extracting the list of old unique labels
-        if self.are_unique_bodyparts_present:
-            oldUniqueBodyParts = self.dataFrame.iloc[
-                :, self.dataFrame.columns.get_level_values(1) == "single"
-            ].columns.get_level_values(2)
-            _, idx_unique = np.unique(oldUniqueBodyParts, return_index=True)
-            oldUniqueBodyparts2plot = list(oldUniqueBodyParts[np.sort(idx_unique)])
-            self.new_UniqueBodyparts = [
-                x for x in self.uniquebodyparts if x not in oldUniqueBodyparts2plot
-            ]
-        else:
-            self.new_UniqueBodyparts = []
-        # Checking if new labels are added or not
-        self.new_Multibodyparts = [
-            x for x in self.multibodyparts if x not in oldMultiBodyparts2plot
-        ]
+        # Check whether new labels were added
+        self.new_multi = [x for x in self.multibodyparts if x not in self._old_multi]
+        self.new_unique = [x for x in self.uniquebodyparts if x not in self._old_unique]
 
         # Checking if user added a new label
-        if (
-            self.new_Multibodyparts == [] and self.new_UniqueBodyparts == []
-        ):  # i.e. no new labels
+        if not any([self.new_multi, self.new_unique]):  # i.e. no new labels
             (
                 self.figure,
                 self.axes,
@@ -790,18 +854,18 @@ class MainFrame(wx.Frame):
             )
             result = dlg.ShowModal()
             if result == wx.ID_NO:
-                if self.new_Multibodyparts != []:
-                    self.multibodyparts = self.new_Multibodyparts
-                if self.new_UniqueBodyparts != []:
-                    self.uniquebodyparts = self.new_UniqueBodyparts
+                if self.new_multi:
+                    self.multibodyparts = self.new_multi
+                if self.new_unique:
+                    self.uniquebodyparts = self.new_unique
 
             self.dataFrame = MainFrame.create_dataframe(
                 self,
                 self.dataFrame,
                 self.relativeimagenames,
                 self.individual_names,
-                self.new_UniqueBodyparts,
-                self.new_Multibodyparts,
+                self.new_unique,
+                self.new_multi,
             )
             (
                 self.figure,
@@ -854,7 +918,7 @@ class MainFrame(wx.Frame):
             )
         self.individualrdb.Bind(wx.EVT_RADIOBOX, self.select_individual)
         # check if single is slected when radio buttons are changed
-        if self.rdb.GetStringSelection == "single":
+        if self.individualrdb.GetStringSelection() == "single":
             self.norm, self.colorIndex = self.image_panel.getColorIndices(
                 self.img, self.uniquebodyparts
             )
@@ -863,7 +927,6 @@ class MainFrame(wx.Frame):
                 self.img, self.multibodyparts
             )
         self.buttonCounter = MainFrame.plot(self, self.img)
-        self.cidClick = self.canvas.mpl_connect("button_press_event", self.onClick)
         self.cidClick = self.canvas.mpl_connect("button_press_event", self.onClick)
 
         self.checkBox.Bind(wx.EVT_CHECKBOX, self.activateSlider)
@@ -877,7 +940,7 @@ class MainFrame(wx.Frame):
         uniquebodyparts,
         multibodyparts,
     ):
-        a = np.empty((len(relativeimagenames), 2,))
+        a = np.empty((len(relativeimagenames), 2))
         a[:] = np.nan
         for prfxindex, prefix in enumerate(individual_names):
             if uniquebodyparts != None:
@@ -1010,7 +1073,7 @@ class MainFrame(wx.Frame):
             )
             self.axes.callbacks.connect("xlim_changed", self.onZoom)
             self.axes.callbacks.connect("ylim_changed", self.onZoom)
-            if self.rdb.GetStringSelection == "single":
+            if self.individualrdb.GetStringSelection() == "single":
                 self.norm, self.colorIndex = self.image_panel.getColorIndices(
                     self.img, self.uniquebodyparts
                 )
@@ -1029,10 +1092,10 @@ class MainFrame(wx.Frame):
         """
         self.individualrdb.SetSelection(0)
         MainFrame.select_individual(self, event)
+        MainFrame.saveEachImage(self)
         # Checks for the first image and disables the Previous button
         if self.iter == 0:
             self.prev.Enable(False)
-            MainFrame.saveEachImage(self)
             return
         else:
             self.next.Enable(True)
@@ -1041,8 +1104,6 @@ class MainFrame(wx.Frame):
         self.statusbar.SetStatusText(
             "Working on folder: {}".format(os.path.split(str(self.dir))[-1])
         )
-
-        MainFrame.saveEachImage(self)
         self.buttonCounter = {i: [] for i in self.individual_names}
         self.iter = self.iter - 1
 
@@ -1078,9 +1139,7 @@ class MainFrame(wx.Frame):
         """
         self.drs = []
         self.updatedCoords = []
-        #        print(self.dataFrame)
         for j, ind in enumerate(self.individual_names):
-            image_points = []
             idcolor = self.idmap(j)
             if ind == "single":
                 for c, bp in enumerate(self.uniquebodyparts):
@@ -1154,7 +1213,7 @@ class MainFrame(wx.Frame):
                     self.updatedCoords.append(self.dr.coords)
                     if np.isnan(self.points)[0] == False:
                         self.buttonCounter[ind].append(self.multibodyparts[c])
-            MainFrame.saveEachImage(self)
+        MainFrame.saveEachImage(self)
         self.figure.canvas.draw()
         return self.buttonCounter
 
@@ -1171,24 +1230,97 @@ class MainFrame(wx.Frame):
                 self.scorer, bp[-1][2], bp[0][-1], "y"
             ] = bp[-1][1]
 
+    def ResetEachImage(self):
+        """
+        Reset data for each image
+        """
+        for idx, bp in enumerate(self.updatedCoords):
+            self.dataFrame.loc[self.relativeimagenames[self.iter]][
+                self.scorer, bp[-1][2], bp[0][-1], "x"
+            ] = None
+            self.dataFrame.loc[self.relativeimagenames[self.iter]][
+                self.scorer, bp[-1][2], bp[0][-1], "y"
+            ] = None
+
+    def deleteImage(self, event):
+        image_path = os.path.join(
+            self.currentDirectory, self.relativeimagenames[self.iter]
+        )
+        MainFrame.ResetEachImage(self)
+        # Reset updated coords
+        for i in self.updatedCoords:
+            i[0][0] = None  # Resets X-coordinate
+            i[0][1] = None  # Resets Y-coordinate
+        #  Checks for the last image and disables the Next button
+        MainFrame.saveEachImage(self)
+        self.nextImage(event=None)
+        print("Delete Image Path : ", image_path)
+        os.remove(image_path)
+        return
+
     def saveDataSet(self, event):
         """
         Saves the final dataframe
         """
+        # Backup previous save
+        from sys import platform
+
+        csv_path = os.path.join(self.dir, "CollectedData_" + self.scorer + ".csv")
+        hdf_path = os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5")
+        csv_backup_path = csv_path.replace(".csv", ".csv.backup")
+        hdf_backup_path = hdf_path.replace(".h5", ".h5.backup")
+
+        if platform == "linux" or platform == "linux2":
+            if os.path.exists(csv_path):
+                os.rename(csv_path, csv_backup_path)
+
+            if os.path.exists(hdf_path):
+                os.rename(hdf_path, hdf_backup_path)
+
+        elif platform == "win32":
+            if os.path.exists(csv_path):
+                if os.path.exists(
+                    csv_backup_path
+                ):  # check if backupfile exists already
+                    os.remove(
+                        csv_backup_path
+                    )  # requires double action as windows fails to rename file if exists already
+                    os.rename(csv_path, csv_backup_path)
+
+            if os.path.exists(hdf_path):
+                if os.path.exists(hdf_backup_path):
+                    os.remove(hdf_backup_path)
+                    os.rename(hdf_path, hdf_backup_path)
+
+        elif platform == "darwin":
+            try:
+                if os.path.exists(csv_path):
+                    os.rename(csv_path, csv_backup_path)
+
+                if os.path.exists(hdf_path):
+                    os.rename(hdf_path, hdf_backup_path)
+            except:
+                print(" Unexpected os.rename behaviour, try win32 approach")
+
         self.statusbar.SetStatusText("File saved")
         MainFrame.saveEachImage(self)
         MainFrame.updateZoomPan(self)
+
         # Windows compatible
         self.dataFrame.sort_index(inplace=True)
-        self.dataFrame.to_csv(
-            os.path.join(self.dir, "CollectedData_" + self.scorer + ".csv")
-        )
-        self.dataFrame.to_hdf(
-            os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5"),
-            "df_with_missing",
-            format="table",
-            mode="w",
-        )
+        # Discard data associated with bodyparts that are no longer in the config
+        config_bpts = self.cfg["multianimalbodyparts"] + self.cfg["uniquebodyparts"]
+        valid = [
+            bp in config_bpts
+            for bp in self.dataFrame.columns.get_level_values("bodyparts")
+        ]
+        self.dataFrame = self.dataFrame.loc[:, valid]
+        # Re-organize the dataframe so the CSV looks consistent with the config
+        self.dataFrame = self.dataFrame.reindex(
+            columns=self.individual_names, level="individuals"
+        ).reindex(columns=config_bpts, level="bodyparts")
+        self.dataFrame.to_csv(csv_path)
+        self.dataFrame.to_hdf(hdf_path, "df_with_missing", format="table", mode="w")
 
     def onChecked(self, event):
         self.cb = event.GetEventObject()

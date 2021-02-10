@@ -8,13 +8,13 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-import os
-import numpy as np
-import ruamel.yaml
 import glob
+import os
 import shutil
 import tarfile
 
+import numpy as np
+import ruamel.yaml
 import tensorflow as tf
 
 vers = (tf.__version__).split(".")
@@ -129,8 +129,8 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True, modelpre
     path_train_config = os.path.normpath(model_folder + "/train/pose_cfg.yaml")
 
     try:
-        dlc_cfg = load_config(str(path_test_config))
-        dlc_cfg_train = load_config(str(path_train_config))
+        dlc_cfg = load_config(str(path_train_config))
+        # dlc_cfg_train = load_config(str(path_train_config))
     except FileNotFoundError:
         raise FileNotFoundError(
             "It seems the model for shuffle %s and trainFraction %s does not exist."
@@ -194,7 +194,7 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True, modelpre
 
     input = tf.get_default_graph().get_operations()[0].name
 
-    return sess, input, output, dlc_cfg_train
+    return sess, input, output, dlc_cfg
 
 
 def tf_to_pb(sess, checkpoint, output, output_dir=None):

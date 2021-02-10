@@ -8,11 +8,12 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-import deeplabcut
 import os
-import subprocess
-import yaml
 from pathlib import Path
+
+import yaml
+
+import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions, auxfun_models
 
 Modeloptions = [
@@ -21,6 +22,8 @@ Modeloptions = [
     "full_dog",
     "primate_face",
     "mouse_pupil_vclose",
+    "horse_sideview",
+    "full_macaque",
 ]  # just expand this list with new projects
 
 
@@ -168,7 +171,7 @@ def create_pretrained_project(
             project, experimenter, videos, working_directory, copy_videos, videotype
         )
         if trainFraction is not None:
-            auxiliaryfunctions.edit_config(cfg, {"TrainingFraction": [tranFraction]})
+            auxiliaryfunctions.edit_config(cfg, {"TrainingFraction": [trainFraction]})
 
         config = auxiliaryfunctions.read_config(cfg)
         if model == "full_human":

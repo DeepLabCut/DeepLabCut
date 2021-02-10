@@ -8,11 +8,13 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-import os, pickle, yaml
-import pandas as pd
+import os
 from pathlib import Path
-import numpy as np
+
+import pandas as pd
+
 from deeplabcut.utils import auxiliaryfunctions
+import warnings
 
 
 def convertannotationdata_fromwindows2unixstyle(
@@ -51,11 +53,14 @@ def convertannotationdata_fromwindows2unixstyle(
 
         if askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha":
             fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"])
-            Data = pd.read_hdf(fn + ".h5", "df_with_missing")
-            if win2linux:
-                convertpaths_to_unixstyle(Data, fn)
+            if os.path.exists(fn + ".h5"):
+                Data = pd.read_hdf(fn + ".h5", "df_with_missing")
+                if win2linux:
+                    convertpaths_to_unixstyle(Data, fn)
+                else:
+                    convertpaths_to_windowsstyle(Data, fn)
             else:
-                convertpaths_to_windowsstyle(Data, fn)
+                warnings.warn(f"Could not find '{fn+'.h5'}'. skipping")
 
 
 def convertpaths_to_unixstyle(Data, fn):
