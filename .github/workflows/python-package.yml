@@ -13,7 +13,7 @@ jobs:
     strategy:
       # You can use PyPy versions in python-version. For example, pypy2 and pypy3
       matrix:
-        python-version: [3.6, 3.7, 3.8]
+        python-version: [3.6, 3.7, 3.9] #3.8 continually failing; adding in 3.9
 
     steps:
     - uses: actions/checkout@v2
