@@ -866,8 +866,8 @@ def create_training_dataset(
 
     net_type: list
         Type of networks. Currently resnet_50, resnet_101, resnet_152, mobilenet_v2_1.0, mobilenet_v2_0.75,
-        mobilenet_v2_0.5, mobilenet_v2_0.35, efficientnet_b0, efficientnet_b1, efficientnet_b2, efficientnet_b3,
-        efficientnet_b4, efficientnet_b5, and efficientnet_b6 are supported.
+        mobilenet_v2_0.5, mobilenet_v2_0.35, efficientnet-b0, efficientnet-b1, efficientnet-b2, efficientnet-b3,
+        efficientnet-b4, efficientnet-b5, and efficientnet-b6 are supported.
 
     augmenter_type: string
         Type of augmenter. Currently default, imgaug, tensorpack, and deterministic are supported.
@@ -1154,8 +1154,8 @@ def create_training_model_comparison(
 
     net_types: list
         Type of networks. Currently resnet_50, resnet_101, resnet_152, mobilenet_v2_1.0,mobilenet_v2_0.75, mobilenet_v2_0.5, mobilenet_v2_0.35,
-        efficientnet_b0, efficientnet_b1, efficientnet_b2, efficientnet_b3, efficientnet_b4,
-        efficientnet_b5, and efficientnet_b6 are supported.
+        efficientnet-b0, efficientnet-b1, efficientnet-b2, efficientnet-b3, efficientnet-b4,
+        efficientnet-b5, and efficientnet-b6 are supported.
 
     augmenter_types: list
         Type of augmenters. Currently "default", "imgaug", "tensorpack", and "deterministic" are supported.
