@@ -121,6 +121,7 @@ class Video_Editing(wx.Panel):
         angle = wx.StaticBox(self, label="Angle for rotation (deg) (if rotate video Yes)")
         vangle_boxsizer = wx.StaticBoxSizer(angle, wx.VERTICAL)
         self.vangle = FS.FloatSpin(self, value="0.0", min_val=-360.0, max_val=360.0)
+        self.vangle.SetDigits(2)
         vangle_boxsizer.Add(self.vangle, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
         
         video_start = wx.StaticBox(self, label="Shorten: start time (sec)")
