@@ -6,6 +6,7 @@ from collections import defaultdict
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial import cKDTree
 from scipy.spatial.distance import pdist, cdist
+from scipy.stats import gaussian_kde, chi2
 from sklearn.cluster._kmeans import kmeans_plusplus
 from tqdm import tqdm
 
@@ -31,9 +32,10 @@ def _find_closest_neighbors(query, ref, k=3):
 class Assembler:
     def __init__(
         self,
-        pickle_file,
+        data,
         *,
         max_n_individuals,
+        n_multibodyparts,
         graph=None,
         paf_inds=None,
         greedy=False,
@@ -45,23 +47,28 @@ class Assembler:
         if sort_by not in ('affinity', 'degree'):
             raise ValueError("`sort_by` must either be 'affinity' or 'degree'.")
 
-        with open(pickle_file, 'rb') as file:
-            self.data = pickle.load(file)
+        self.data = data
+        self.metadata = self.parse_metadata(self.data)
         self.max_n_individuals = max_n_individuals
+        self.n_multibodyparts = n_multibodyparts
         self.greedy = greedy
         self.pcutoff = pcutoff
         self.paf_threshold = paf_threshold
         self.sort_by = sort_by
         self.method = method
-        self.metadata = self.parse_metadata(self.data)
         self.graph = graph or self.metadata['paf_graph']
         self.paf_inds = paf_inds or self.metadata['paf']
 
         self.assemblies = np.full(
-            (len(self.metadata['imnames']), self.max_n_individuals, self.n_keypoints, 4),
+            (len(self.metadata['imnames']), max_n_individuals, n_multibodyparts, 4),
+            fill_value=np.nan,
+        )
+        self.single = np.full(
+            (len(self.metadata['imnames']), self.n_keypoints - n_multibodyparts, 3),
             fill_value=np.nan,
         )
         self._trees = dict()
+        self._kde = None
 
     def __getitem__(self, item):
         return self.data[self.metadata['imnames'][item]]
@@ -69,6 +76,28 @@ class Assembler:
     @property
     def n_keypoints(self):
         return self.metadata['num_joints']
+
+    def _calibrate(self, train_data_file):
+        df = pd.read_hdf(train_data_file)
+        try:
+            df.drop('single', level='individuals', axis=1, inplace=True)
+        except KeyError:
+            pass
+        n_bpts = len(df.columns.get_level_values('bodyparts').unique())
+        xy = df.to_numpy().reshape((-1, n_bpts, 2))
+        xy = xy[~np.isnan(xy).any(axis=(1, 2))]
+        dists = np.vstack([pdist(data) for data in xy])
+        kde = gaussian_kde(dists.T)
+        kde.mean = np.mean(dists, axis=0)
+        self._kde = kde
+
+    def _calc_assembly_proba(self, xy):
+        if self._kde is None:
+            raise ValueError('Assembler should be calibrated first with training data.')
+
+        dists = pdist(xy) - self._kde.mean
+        mahal = np.sqrt(np.sum(((dists @ self._kde.inv_cov) * dists), axis=-1))
+        return 1 - chi2.cdf(mahal, self._kde.d)
 
     def rank_frames_by_crowdedness(self, pcutoff=0.8, seed=None):
         if seed is None:
@@ -119,14 +148,12 @@ class Assembler:
             aff = costs[ind][self.method].copy()
             aff[np.isnan(aff)] = 0  # FIXME Why is it even NaN??
 
-            if any(trees):
+            if trees:
                 vecs = np.vstack(
                     [[*xy_s, *xy_t] for xy_s in dets_s[:, :2] for xy_t in dets_t[:, :2]]
                 )
                 dists = []
                 for n, tree in enumerate(trees, start=1):
-                    if tree is None:
-                        break
                     d, _ = tree.query(vecs)
                     dists.append(np.exp(-0.01 * n * d))
                 w = np.sum(dists, axis=0) / np.sum(np.exp(-0.01 * np.arange(1, len(dists) + 1)))
@@ -302,10 +329,28 @@ class Assembler:
             detections = self.flatten_detections(data_dict)
             if detections is None:
                 continue
+
+            single_detections = detections[detections[:, -2] >= self.n_multibodyparts]
+            if len(single_detections):
+                for n, dets in enumerate(single_detections):
+                    if len(dets) > 1:
+                        self.single[i, n] = dets[np.argmax(dets[:, 2]), :3]
+                    elif len(dets) == 1:
+                        self.single[i, n] = dets[0, :3]
+
+            multi_detections = detections[detections[:, -2] < self.n_multibodyparts]
+            if not len(multi_detections):
+                continue
+
+            trees = []
+            for j in range(1, window_size + 1):
+                tree = self._trees.get(i - j, None)
+                if tree is not None:
+                    trees.append(tree)
             edges = self.extract_best_edges(
                 detections,
                 data_dict["costs"],
-                [self._trees.get(i - j, None) for j in range(1, window_size + 1)]
+                trees,
             )
             # Store selected edges for subsequent frames
             vecs = np.vstack([detections[edge[:2], :2] for edge in edges])
@@ -371,11 +416,122 @@ class Assembler:
 
 
 full_data_file = '/Users/Jessy/Desktop/MultiMouse-Daniel-2019-12-16/videos/videocompressed1DLC_resnet50_MultiMouseDec16shuffle0_60000_full.pickle'
+with open(full_data_file, 'rb') as file:
+    data = pickle.load(file)
 ass = Assembler(
-    full_data_file,
+    data,
     max_n_individuals=3,
+    n_multibodyparts=12,
 )
-ass.assemble(window_size=5)
+ass._calibrate('/Users/Jessy/Desktop/MultiMouse-Daniel-2019-12-16/training-datasets/iteration-1/UnaugmentedDataSet_MultiMouseDec16/CollectedData_Daniel.h5')
+i = 113  # 113
+dets = ass.flatten_detections(ass[i])
+edges = ass.extract_best_edges(dets, ass[i]['costs'])
+ani = ass.form_individuals(dets, edges)
+xy = dets[ani, :2]
+p = [ass._calc_assembly_proba(x) for x in xy]
+
+
+def viz(dets, edges):
+    import matplotlib.pyplot as plt
+    fig, ax = plt.subplots()
+    ax.invert_yaxis()
+    ax.scatter(*dets[:, :2].T, c=dets[:, 2], cmap='Reds')
+    inds = [edge[:2] for edge in edges]
+    xy = dets[inds, :2]
+    orig = xy[:, 0]
+    dxy = xy[:, 1] - orig
+    ax.quiver(*orig.T, *dxy.T, [edge[-1] for edge in edges],
+              angles='xy', scale_units='xy', scale=1, cmap='Reds')
+
+
+# n_missing = ass.n_keypoints - len(np.unique(dets[:, -2]))
+# all_inds = dets[:, -2].astype(int)
+# G = nx.Graph()
+# G.add_weighted_edges_from(edges)
+# subsets0 = np.empty((0, ass.n_keypoints))
+# # Fill the subsets with unambiguous, complete individuals
+# to_remove = []
+# for chain in nx.connected_components(G):
+#     if len(chain) == ass.n_keypoints - n_missing:
+#         row = -1 * np.ones(ass.n_keypoints)
+#         nodes = list(chain)
+#         row[all_inds[nodes]] = nodes
+#         subsets0 = np.vstack((subsets0, row))
+#         to_remove.extend(nodes)
+# G.remove_nodes_from(to_remove)
+# edges_left = sorted(
+#     G.edges.data('weight'),
+#     key=lambda x: x[2],
+#     reverse=True
+# )
+# nodes_weight = defaultdict(int)
+# for ind1, ind2, score in G.edges.data('weight'):
+#     nodes_weight[ind1] += score
+#     nodes_weight[ind2] += score
+# for node in nodes_weight:
+#     nodes_weight[node] /= G.degree(node)
+# edges_left = sorted(
+#     G.edges.data('weight'),
+#     key=lambda x: x[2] + nodes_weight[x[0]] + nodes_weight[x[1]],
+#     reverse=True
+# )
+# ambiguous = []
+# subsets = np.empty((0, ass.n_keypoints))
+# for edge in edges_left:
+#     nodes = list(edge[:2])
+#     inds = all_inds[nodes]
+#     subset_inds = np.nonzero(subsets[:, inds] == nodes)[0]
+#     found = subset_inds.size
+#     if found == 1:
+#         subset = subsets[subset_inds[0]]
+#         if np.all(subset[inds] != -1):
+#             ambiguous.append(edge)
+#         elif subset[inds[0]] == -1:
+#             subset[inds[0]] = nodes[0]
+#         else:
+#             subset[inds[1]] = nodes[1]
+#     elif found == 2:
+#         # Test whether nodes were found in the same subset
+#         if subset_inds[0] == subset_inds[1]:
+#             continue
+#         membership = np.sum(subsets[subset_inds] >= 0, axis=0)
+#         if not np.any(membership == 2):
+#             subsets = ass._merge_disjoint_subsets(subsets, *subset_inds)
+#         else:
+#             ambiguous.append(edge)
+#     else:
+#         row = -1 * np.ones(ass.n_keypoints)
+#         row[inds] = nodes
+#         subsets = np.vstack((subsets, row))
+#
+# nrows = len(subsets)
+# left = self.max_n_individuals - len(subsets0)
+# if nrows > left > 0:
+#     subsets = subsets[np.argsort(np.sum(subsets == -1, axis=1))]
+#     for nrow in range(nrows - 1, left - 1, -1):
+#         mask = (subsets[:left] >= 0).astype(int)
+#         row = subsets[nrow]
+#         mask2 = (row >= 0).astype(int)
+#         temp = mask + mask2
+#         free_rows = np.flatnonzero(~np.any(temp == 2, axis=1))
+#         if not len(free_rows):
+#             continue
+#         if free_rows.size == 1:
+#             ind = free_rows[0]
+#         else:
+#             xy = detections[row[row != -1].astype(int), :2]
+#             dists = []
+#             for free_row in free_rows:
+#                 sub_ = subsets[free_row]
+#                 xy_ref = detections[sub_[sub_ != -1].astype(int), :2]
+#                 dists.append(cdist(xy, xy_ref).min())
+#             ind = free_rows[np.argmin(dists)]
+#         subsets = self._merge_disjoint_subsets(subsets, ind, nrow)
+
+
+# ass.assemble(window_size=0)
+# ass.to_h5('/Users/Jessy/Desktop/mouse.h5')
 
 
 def flag_anomalous_assemblies(assemblies):
