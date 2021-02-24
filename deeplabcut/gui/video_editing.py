@@ -102,7 +102,7 @@ class Video_Editing(wx.Panel):
         self.rotate = wx.RadioBox(
             self,
             label="Downsample: rotate video?",
-            choices=["Yes", "No"],
+            choices=["Yes", "No", "Arbitrary"]
             majorDimension=1,
             style=wx.RA_SPECIFY_COLS,
         )
@@ -118,7 +118,7 @@ class Video_Editing(wx.Panel):
             flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT,
             border=10,
         )
-        angle = wx.StaticBox(self, label="Angle for rotation (deg) (if rotate video Yes)")
+        angle = wx.StaticBox(self, label="Angle for arbitrary rotation (deg)")
         vangle_boxsizer = wx.StaticBoxSizer(angle, wx.VERTICAL)
         self.vangle = FS.FloatSpin(self, value="0.0", min_val=-360.0, max_val=360.0, digits=2)
         vangle_boxsizer.Add(self.vangle, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
@@ -185,9 +185,13 @@ class Video_Editing(wx.Panel):
 
     def downsample_video(self, event):
         if self.rotate.GetStringSelection() == "Yes":
-            self.rotate_val = True
+            self.rotate_val = "Yes"
+            
+        elif self.rotate.GetStringSelection() == "Arbitrary":
+            self.rotate_val = "Arbitrary"
+
         else:
-            self.rotate_val = False
+            self.rotate_val = "No"
 
         Videos = self.filelist
         if len(Videos) > 0:
