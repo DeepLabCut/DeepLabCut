@@ -451,7 +451,7 @@ def CropVideo(
 
 
 def DownSampleVideo(
-    vname, width=-1, height=200, outsuffix="downsampled", outpath=None, rotateccw=False, angle=0.0
+    vname, width=-1, height=200, outsuffix="downsampled", outpath=None, rotateccw="No", angle=0.0
 ):
     """
     Auxiliary function to downsample a video and output it to the same folder with "outsuffix" appended in its name.
@@ -477,8 +477,8 @@ def DownSampleVideo(
     outpath: str
         Output path for saving video to (by default will be the same folder as the video)
 
-    rotateccw: bool
-        Default false, rotates counter-clockwise if true.
+    rotateccw: str
+        Default "No", rotates clockwise if "Yes", "Arbitrary" for arbitrary rotation by specified angle.
         
     angle: float
         Angle to rotate by in degrees, default 0.0. Negative values rotate counter-clockwise
