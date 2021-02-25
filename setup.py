@@ -25,7 +25,6 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/DeepLabCut/DeepLabCut",
     install_requires=[
-        "bayesian-optimization",
         "certifi",
         "chardet",
         "click",
@@ -38,7 +37,7 @@ setuptools.setup(
         "ipython",
         "ipython-genutils",
         "numba==0.51.1",
-        "matplotlib==3.1.3",
+        "matplotlib==3.0.3",
         "moviepy<=1.0.1",
         "networkx",
         "numpy==1.16.4",
@@ -57,7 +56,9 @@ setuptools.setup(
         "statsmodels>=0.11",
         "tables",
         "tensorpack==0.9.8",
+        "tensorflow<=1.15"
         "tqdm",
+        "bayesian-optimization",
         "wheel",
     ],
     scripts=["deeplabcut/pose_estimation_tensorflow/models/pretrained/download.sh"],
