@@ -8,6 +8,7 @@ cython
 easydict
 filterpy
 h5py~=2.7
+ruamel.yaml>=0.15.0
 intel-openmp
 imgaug
 numba==0.51.1
@@ -20,7 +21,6 @@ pandas>=1.0.1
 patsy
 pyyaml
 requests
-ruamel.yaml>=0.15.0
 setuptools
 scikit-image
 scikit-learn
