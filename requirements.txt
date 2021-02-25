@@ -1,6 +1,7 @@
 python-dateutil
 ipython
 ipython-genutils
+wheel
 certifi
 chardet
 click
@@ -31,4 +32,3 @@ tables
 tensorpack==0.9.8
 tqdm
 bayesian-optimization
-wheel
