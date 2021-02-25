@@ -15,7 +15,7 @@ matplotlib==3.0.3
 moviepy<=1.0.1
 networkx
 numpy==1.16.4
-opencv-python-headless==4.4.0
+opencv-python-headless==4.4.0.40
 pandas>=1.0.1
 patsy
 pyyaml
@@ -28,7 +28,7 @@ scipy>=1.4
 six
 statsmodels>=0.11
 tables
-tensorflow
+tensorflow<=1.15
 tensorpack==0.9.8
 tqdm
 bayesian-optimization
