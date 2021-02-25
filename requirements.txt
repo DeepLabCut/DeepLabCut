@@ -28,7 +28,6 @@ scipy>=1.4
 six
 statsmodels>=0.11
 tables
-tensorflow<=1.15
 tensorpack==0.9.8
 tqdm
 bayesian-optimization
