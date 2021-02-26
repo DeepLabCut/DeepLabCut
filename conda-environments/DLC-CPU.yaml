@@ -20,7 +20,7 @@ dependencies:
   - pip
   - jupyter
   - nb_conda
-  - tensorflow==1.13.1
+  - tensorflow==1.15.5
   - wxpython<4.1.0
   - pip:
     - deeplabcut
