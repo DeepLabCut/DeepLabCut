@@ -56,7 +56,6 @@ setuptools.setup(
         "statsmodels>=0.11",
         "tables",
         "tensorpack==0.9.8",
-        "tensorflow<=1.15"
         "tqdm",
         "bayesian-optimization",
         "wheel",
