@@ -277,7 +277,7 @@ class PoseDataset:
 
         self.has_gt = True
         self.set_shuffle(cfg['shuffle'])
-        p = Pose(cfg=self.cfg, shuffle=self.set_shuffle)
+        p = Pose(cfg=self.cfg, shuffle=self.shuffle)
         self.data = p.load_dataset()
         self.num_images = len(self.data)
         df = self.get_dataflow(self.cfg)
