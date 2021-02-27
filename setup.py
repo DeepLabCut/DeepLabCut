@@ -33,7 +33,6 @@ setuptools.setup(
         "chardet",
         "click",
         "cython",
-        "easydict",
         "filterpy",
         "h5py",
         "ruamel.yaml>=0.15.0",

@@ -1212,7 +1212,6 @@ def convert_detections2tracklets(
     """
     from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingutils
     from deeplabcut.utils import auxfun_multianimal
-    from easydict import EasyDict as edict
     import pickle
 
     if track_method not in ("box", "skeleton"):
@@ -1255,7 +1254,6 @@ def convert_detections2tracklets(
     if inferencecfg is None:  # then load or initialize
         inferencecfg = auxfun_multianimal.read_inferencecfg(path_inference_config, cfg)
     else:
-        inferencecfg = edict(inferencecfg)
         auxfun_multianimal.check_inferencecfg_sanity(cfg, inferencecfg)
 
     if edgewisecondition:

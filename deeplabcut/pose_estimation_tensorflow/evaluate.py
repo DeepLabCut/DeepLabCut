@@ -115,9 +115,9 @@ def calculatepafdistancebounds(
         dlc_cfg = load_config(str(path_test_config))
 
         # get the graph!
-        partaffinityfield_graph = dlc_cfg.partaffinityfield_graph
+        partaffinityfield_graph = dlc_cfg['partaffinityfield_graph']
         jointnames = [
-            dlc_cfg.all_joints_names[i] for i in range(len(dlc_cfg.all_joints))
+            dlc_cfg['all_joints_names'][i] for i in range(len(dlc_cfg['all_joints']))
         ]
         path_inferencebounds_config = (
             Path(modelfolder) / "test" / "inferencebounds.yaml"
@@ -794,7 +794,7 @@ def evaluate_network(
 
                             # Extract maximum scoring location from the heatmap, assume 1 person
                             pose = predict.argmax_pose_predict(
-                                scmap, locref, dlc_cfg.stride
+                                scmap, locref, dlc_cfg['stride']
                             )
                             PredicteData[
                                 imageindex, :
