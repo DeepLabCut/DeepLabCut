@@ -32,4 +32,5 @@ jobs:
         pip install pytest
     - name: Run functional tests
       run: |
-        examples/test.sh
+        python examples/testscript.py
+        python examples/testscript_multianimal.py
