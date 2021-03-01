@@ -26,4 +26,10 @@ jobs:
       run: python -c "import sys; print(sys.version)"
     #test installation of DLC-core dependencies:
     - name: Install dependencies
-      run: pip install -r requirements.txt
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest
+    - name: Run functional tests
+      run: |
+        examples/test.sh
