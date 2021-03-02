@@ -42,9 +42,9 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install --upgrade pip
+        python -m pip install --upgrade pip setuptools wheel
         pip install -r requirements.txt
-        pip install tensorflow==1.13.1 wheel pytest
+        pip install tensorflow==1.13.1
 
     - name: Run functional tests
       run: |
@@ -54,4 +54,5 @@ jobs:
 
     - name: Run pytest tests
       run: |
+        pip install pytest
         python -m pytest
