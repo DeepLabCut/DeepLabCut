@@ -31,10 +31,10 @@ jobs:
         pip install --upgrade pip
         pip install -r requirements.txt
         pip install tensorflow==1.13.1 wheel pytest ffmpeg-python
+   - name: Run functional tests
+     run: |
+       python -m examples/testscript.py
+       python -m examples/testscript_multianimal.py
     - name: Run pytest tests
       run: |
         python -m pytest
-    - name: Run functional tests
-      run: |
-        python -m examples/testscript.py
-        python -m examples/testscript_multianimal.py
