@@ -21,30 +21,30 @@ jobs:
           - os: windows-latest
             path: ~\AppData\Local\pip\Cache
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/cache@v2
-      with:
-        path: ${{ matrix.path }}
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-    - name: Set up Python ${{ matrix.python-version }}
-    - uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Display Python version
-      run: python -c "import sys; print(sys.version)"
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip setuptools wheel
-        pip install -r requirements.txt
-        pip install tensorflow==1.13.1
-    - name: Run functional tests
-      run: |
-        pip install git+git://github.com/${{ github.repository }}.git@${{ github.sha }}
-        python examples/testscript.py
-        python examples/testscript_multianimal.py
-    - name: Run pytest tests
-      run: |
-        pip install pytest
-        python -m pytest
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: ${{ matrix.path }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Set up Python ${{ matrix.python-version }}
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -r requirements.txt
+          pip install tensorflow==1.13.1
+      - name: Run functional tests
+        run: |
+          pip install git+git://github.com/${{ github.repository }}.git@${{ github.sha }}
+          python examples/testscript.py
+          python examples/testscript_multianimal.py
+      - name: Run pytest tests
+        run: |
+          pip install pytest
+          python -m pytest
