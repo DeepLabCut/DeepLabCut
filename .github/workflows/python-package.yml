@@ -48,13 +48,13 @@ jobs:
           pip install -r requirements.txt
           pip install tensorflow==1.13.1
 
+      - name: Run pytest tests
+        run: |
+          pip install pytest
+          python -m pytest
+
       - name: Run functional tests
         run: |
           pip install git+git://github.com/${{ github.repository }}.git@${{ github.sha }}
           python examples/testscript.py
           python examples/testscript_multianimal.py
-
-      - name: Run pytest tests
-        run: |
-          pip install pytest
-          python -m pytest
