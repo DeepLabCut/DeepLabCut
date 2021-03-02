@@ -42,7 +42,7 @@ setuptools.setup(
         "moviepy<=1.0.1",
         "networkx",
         "numpy==1.16.4",
-        "opencv-python-headless",
+        "opencv-python-headless==3.4.8.29",
         "pandas>=1.0.1",
         "patsy",
         "python-dateutil",
