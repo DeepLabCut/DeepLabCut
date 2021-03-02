@@ -57,6 +57,7 @@ jobs:
             brew install ffmpeg
           else
             choco install ffmpeg
+          fi
 
       - name: Run pytest tests
         run: |
