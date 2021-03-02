@@ -50,7 +50,7 @@ jobs:
 
       - name: Run pytest tests
         run: |
-          pip install pytest
+          pip install pytest ffmpeg-python ffprobe-python
           python -m pytest
 
       - name: Run functional tests
