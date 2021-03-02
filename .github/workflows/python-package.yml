@@ -33,6 +33,7 @@ jobs:
         pip install -r requirements.txt
         pip install tensorflow==1.13.1 wheel pytest ffmpeg-python
     - name: Run functional tests
+      working-directory: deeplabcut
       run: |
         python -m examples/testscript.py
         python -m examples/testscript_multianimal.py
