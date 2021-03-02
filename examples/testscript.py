@@ -28,7 +28,8 @@ if __name__ == "__main__":
     scorer = "Alex"  # Enter the name of the experimenter/labeler
 
     print("Imported DLC!")
-    basepath = os.path.dirname(os.path.abspath("testscript.py"))
+    # basepath = os.path.dirname(os.path.abspath("testscript.py"))
+    basepath = os.path.dirname(os.path.realpath(__file__))
     videoname = "reachingvideo1"
     video = [
         os.path.join(
