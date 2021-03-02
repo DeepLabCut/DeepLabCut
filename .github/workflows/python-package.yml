@@ -58,10 +58,11 @@ jobs:
           else
             choco install ffmpeg
           fi
+        shell: bash
 
       - name: Run pytest tests
         run: |
-          pip install pytest ffmpeg-python ffprobe-python
+          pip install pytest
           python -m pytest
 
       - name: Run functional tests

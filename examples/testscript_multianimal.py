@@ -19,7 +19,7 @@ if __name__ == "__main__":
     # NET = "efficientnet-b0"
     N_ITER = 5
 
-    basepath = os.path.dirname(os.path.abspath("testscript_multianimal.py"))
+    basepath = os.path.dirname(os.path.realpath(__file__))
     video = "m3v1mp4"
     video_path = os.path.join(
         basepath, "openfield-Pranav-2018-10-30", "videos", video + ".mp4"
