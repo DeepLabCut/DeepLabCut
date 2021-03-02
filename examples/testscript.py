@@ -12,8 +12,9 @@ It should take about 1:30 minutes on a GPU (incl. downloading the ResNet weights
 
 It produces nothing of interest scientifically.
 """
-import deeplabcut
 import os
+os.environ["DLClight"] = "True"
+import deeplabcut
 import platform
 import subprocess
 from pathlib import Path
