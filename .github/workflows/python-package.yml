@@ -30,7 +30,7 @@ jobs:
       run: |
         pip install --upgrade pip
         pip install -r requirements.txt
-        pip install tensorflow==1.15.1
+        pip install tensorflow==1.13.1
         pip install pytest
     - name: Run pytest tests
       run: |
