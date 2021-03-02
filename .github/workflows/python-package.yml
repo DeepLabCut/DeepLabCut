@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest] #, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: [3.6, 3.7] #3.8 continually failing; adding in 3.9 also failing
         include:
           - os: ubuntu-latest
@@ -51,7 +51,12 @@ jobs:
 
       - name: Install ffmpeg
         run: |
-          sudo apt-get install ffmpeg
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt-get install ffmpeg
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            brew install ffmpeg
+          else
+            choco install ffmpeg
 
       - name: Run pytest tests
         run: |
