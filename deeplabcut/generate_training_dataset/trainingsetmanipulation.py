@@ -432,7 +432,8 @@ def label_frames(config, multiple_individualsGUI=False, imtypes=["*.png"]):
 
     os.chdir(startpath)
 
-def verify_labeled_frames(config, frames=[], multiple_individualsGUI=False, imtypes=["*.png"]):
+
+def verify_labeled_frames(config, frames, multiple_individualsGUI=False, imtypes=["*.png"]):
     """
     Verify labels for particular
     TODO: multi_individualGUI!
@@ -455,23 +456,21 @@ def verify_labeled_frames(config, frames=[], multiple_individualsGUI=False, imty
     --------
 
     """
+    if not len(frames):
+        raise ValueError('A list of at least a frame should be passed in.')
+
     startpath = os.getcwd()
     wd = Path(config).resolve().parents[0]
     os.chdir(str(wd))
     cfg = auxiliaryfunctions.read_config(config)
     if cfg.get("multianimalproject", False) or multiple_individualsGUI:
-        print("MODE currently not supported for multianimal project")
         from deeplabcut.generate_training_dataset import (
             multiple_individuals_labeling_toolbox,
         )
-
-        multiple_individuals_labeling_toolbox.show(config)
+        multiple_individuals_labeling_toolbox.verify(config, frames, imtypes)
     else:
         from deeplabcut.generate_training_dataset import labeling_toolbox
-        if len(frames)>0:
-            labeling_toolbox.verify(config,frames=frames, imtypes=imtypes)
-        else:
-            print("Emty list passed, so those were verified!")
+        labeling_toolbox.verify(config, frames=frames, imtypes=imtypes)
     os.chdir(startpath)
 
 

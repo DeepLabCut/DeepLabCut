@@ -143,7 +143,7 @@ class ScrollPanel(SP.ScrolledPanel):
 class MainFrame(wx.Frame):
     """Contains the main GUI and button boxes"""
 
-    def __init__(self, parent, config, imtypes,verify=False,frames=None):
+    def __init__(self, parent, config, imtypes, verify=False, frames=None):
         ''' frames list of frames to verify for verify=True mode!'''
 
         # Settting the GUI size and panels design
@@ -159,10 +159,7 @@ class MainFrame(wx.Frame):
         self.gui_size = (screenWidth * 0.7, screenHeight * 0.85)
         self.imtypes = imtypes  # imagetypes to look for in folder e.g. *.png
 
-        if verify:
-            self.verify=True
-        else:
-            self.verify=False
+        self.verify = verify
 
         wx.Frame.__init__(
             self,
@@ -294,7 +291,6 @@ class MainFrame(wx.Frame):
             self.home.Enable(True)
             self.pan.Enable(True)
             self.lock.Enable(True)
-            self.delete.Enable(False)
             self.load.Enable(False)
 
             self.save.Enable(True)
@@ -314,13 +310,13 @@ class MainFrame(wx.Frame):
             # vid names
             self.verify_video_names = [Path(i).stem for i in self.videos]
             #folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
-            self.verify_frames=frames
-            self.verify_counter=0
+            self.verify_frames = frames
+            self.verify_counter = 0
 
-            folder,imname=self.verify_frames[self.verify_counter].split(os.sep)
+            folder, imname = os.path.split(self.verify_frames[self.verify_counter])
             if folder in self.verify_video_names:
-                print("Processing....", folder,imname)
-                MainFrame.load_labeled_frame4verification(self,folder,imname)
+                print("Processing....", folder, imname)
+                MainFrame.load_labeled_frame4verification(self, folder, imname)
 
     ###############################################################################################################################
     # BUTTONS FUNCTIONS FOR HOTKEYS
@@ -795,15 +791,14 @@ class MainFrame(wx.Frame):
 
             self.prev.Enable(False)
 
-            self.verify_counter+=1
-            if self.verify_counter>=len(self.verify_frames):
+            self.verify_counter += 1
+            if self.verify_counter >= len(self.verify_frames):
                 print("DONE.... exit GUI or so")
             else:
                 self.figure.delaxes(
                     self.figure.axes[1]
                 )  # Removes the axes corresponding to the colorbar
-
-                folder,imname=self.verify_frames[self.verify_counter].split(os.sep)
+                folder,imname=os.path.split(self.verify_frames[self.verify_counter])
                 if folder in self.verify_video_names:
                     print("Processing....", folder,imname)
                     MainFrame.load_labeled_frame4verification(self,folder,imname)
@@ -1002,7 +997,7 @@ class MainFrame(wx.Frame):
             self.zoom.SetValue(False)
 
     def load_labeled_frame4verification(self,folder,imname):
-        self.dir = os.path.join(self.project_path,'labeled-data',folder)
+        self.dir = os.path.join(self.project_path, 'labeled-data', folder)
 
         imlist = []
         for imtype in self.imtypes:
@@ -1016,6 +1011,7 @@ class MainFrame(wx.Frame):
 
         if len(imlist) == 0:
             print("No images found!!")
+            return
 
         if imname not in [fn.split(os.sep)[-1] for fn in imlist]:
             print("Image not found!!!")
@@ -1073,10 +1069,9 @@ def show(config, imtypes=["*.png"]):
     frame = MainFrame(None, config, imtypes).Show()
     app.MainLoop()
 
-def verify(config, frames=[], imtypes=["*.png"]): #for verification mode
+def verify(config, frames, imtypes=["*.png"]): #for verification mode
     app = wx.App()
-    frame = MainFrame(None, config, imtypes,verify=True,frames=frames).Show()
-
+    frame = MainFrame(None, config, imtypes, verify=True, frames=frames).Show()
     app.MainLoop()
 
 
