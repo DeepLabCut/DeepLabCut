@@ -355,8 +355,8 @@ def evaluate_multianimal_full(
                                 inputs,
                                 outputs,
                                 outall=False,
-                                nms_radius=dlc_cfg.nmsradius,
-                                det_min_score=dlc_cfg.minconfidence,
+                                nms_radius=dlc_cfg['nmsradius'],
+                                det_min_score=dlc_cfg['minconfidence'],
                                 c_engine=c_engine,
                             )
                             PredicteData[imagename]["prediction"] = pred
@@ -466,13 +466,13 @@ def evaluate_multianimal_full(
                             print(error_masked.groupby('bodyparts', axis=1).mean().mean().to_string())
 
                         PredicteData["metadata"] = {
-                            "nms radius": dlc_cfg.nmsradius,
-                            "minimal confidence": dlc_cfg.minconfidence,
-                            "PAFgraph": dlc_cfg.partaffinityfield_graph,
-                            "all_joints": [[i] for i in range(len(dlc_cfg.all_joints))],
+                            "nms radius": dlc_cfg['nmsradius'],
+                            "minimal confidence": dlc_cfg['minconfidence'],
+                            "PAFgraph": dlc_cfg['partaffinityfield_graph'],
+                            "all_joints": [[i] for i in range(len(dlc_cfg['all_joints']))],
                             "all_joints_names": [
-                                dlc_cfg.all_joints_names[i]
-                                for i in range(len(dlc_cfg.all_joints))
+                                dlc_cfg['all_joints_names'][i]
+                                for i in range(len(dlc_cfg['all_joints']))
                             ],
                             "stride": dlc_cfg.get("stride", 8),
                         }
@@ -593,7 +593,6 @@ def evaluate_multianimal_crossvalidate(
     """
     from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
     from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
-    from easydict import EasyDict as edict
 
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
@@ -692,14 +691,13 @@ def evaluate_multianimal_crossvalidate(
                 path_inference_config, cfg
             )
         else:
-            inferencecfg = edict(inferencecfg)
             auxfun_multianimal.check_inferencecfg_sanity(cfg, inferencecfg)
 
         # Pick distance threshold for (r)PCK from the statistics computed during evaluation
         stats_file = os.path.join(evaluationfolder, "sd.csv")
         if os.path.isfile(stats_file):
             stats = pd.read_csv(stats_file, header=None, index_col=0)
-            inferencecfg.distnormalization = np.round(
+            inferencecfg['distnormalization'] = np.round(
                 stats.loc["distnorm", 1], 2
             ).item()
             stats = stats.drop("distnorm")
@@ -708,7 +706,7 @@ def evaluate_multianimal_crossvalidate(
             )  # Taken as 2*SD error between predictions and ground truth
         else:
             dcorr = 10
-        inferencecfg.topktoretain = np.inf
+        inferencecfg['topktoretain'] = np.inf
         inferencecfg, opt = crossvalutils.bayesian_search(
             config,
             inferencecfg,
@@ -729,7 +727,7 @@ def evaluate_multianimal_crossvalidate(
         )
 
         # update number of individuals to retain.
-        inferencecfg.topktoretain = len(cfg["individuals"]) + 1 * (
+        inferencecfg['topktoretain'] = len(cfg["individuals"]) + 1 * (
             len(cfg["uniquebodyparts"]) > 0
         )
 
