@@ -12,8 +12,9 @@ It should take about 1:30 minutes on a GPU (incl. downloading the ResNet weights
 
 It produces nothing of interest scientifically.
 """
-import deeplabcut
 import os
+os.environ["DLClight"] = "True"
+import deeplabcut
 import platform
 import subprocess
 from pathlib import Path
@@ -27,7 +28,7 @@ if __name__ == "__main__":
     scorer = "Alex"  # Enter the name of the experimenter/labeler
 
     print("Imported DLC!")
-    basepath = os.path.dirname(os.path.abspath("testscript.py"))
+    basepath = os.path.dirname(os.path.realpath(__file__))
     videoname = "reachingvideo1"
     video = [
         os.path.join(
