@@ -283,8 +283,8 @@ def extract_outlier_frames(
 
 
 def convertparms2start(pn):
-    """ Creating a start value for sarimax in case of an value error
-    See: https://groups.google.com/forum/#!topic/pystatsmodels/S_Fo53F25Rk """
+    """Creating a start value for sarimax in case of an value error
+    See: https://groups.google.com/forum/#!topic/pystatsmodels/S_Fo53F25Rk"""
     if "ar." in pn:
         return 0
     elif "ma." in pn:
@@ -339,8 +339,8 @@ def FitSARIMAXModel(x, p, pcutoff, alpha, ARdegree, MAdegree, nforecast=0, disp=
 def compute_deviations(
     Dataframe, dataname, p_bound, alpha, ARdegree, MAdegree, storeoutput=None
 ):
-    """ Fits Seasonal AutoRegressive Integrated Moving Average with eXogenous regressors model to data and computes confidence interval
-    as well as mean fit. """
+    """Fits Seasonal AutoRegressive Integrated Moving Average with eXogenous regressors model to data and computes confidence interval
+    as well as mean fit."""
 
     print("Fitting state-space models with parameters:", ARdegree, MAdegree)
     df_x, df_y, df_likelihood = Dataframe.values.reshape((Dataframe.shape[0], -1, 3)).T

@@ -23,8 +23,7 @@ logo = os.path.join(media_path, "logo.png")
 
 
 class Label_frames(wx.Panel):
-    """
-    """
+    """"""
 
     def __init__(self, parent, gui_size, cfg):
         """Constructor"""
@@ -143,8 +142,7 @@ class Label_frames(wx.Panel):
         skeleton.SkeletonBuilder(self.config)
 
     def select_config(self, event):
-        """
-        """
+        """"""
         self.config = self.sel_config.GetPath()
 
     def label_frames(self, event):

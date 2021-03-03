@@ -26,8 +26,7 @@ logo = os.path.join(media_path, "logo.png")
 
 
 class Train_network(wx.Panel):
-    """
-    """
+    """"""
 
     def __init__(self, parent, gui_size, cfg):
         """Constructor"""
@@ -231,13 +230,11 @@ class Train_network(wx.Panel):
             self.sizer.Fit(self)
 
     def select_config(self, event):
-        """
-        """
+        """"""
         self.config = self.sel_config.GetPath()
 
     def edit_pose_config(self, event):
-        """
-        """
+        """"""
         self.shuffles.Enable(True)
         self.trainingindex.Enable(True)
         self.display_iters.Enable(True)

@@ -64,8 +64,8 @@ def convertannotationdata_fromwindows2unixstyle(
 
 
 def convertpaths_to_unixstyle(Data, fn):
-    """ auxiliary function that converts paths in annotation files:
-        labeled-data\\video\\imgXXX.png to labeled-data/video/imgXXX.png """
+    """auxiliary function that converts paths in annotation files:
+    labeled-data\\video\\imgXXX.png to labeled-data/video/imgXXX.png"""
     Data.to_csv(fn + "windows" + ".csv")
     Data.to_hdf(fn + "windows" + ".h5", "df_with_missing", format="table", mode="w")
     Data.index = Data.index.str.replace("\\", "/")
@@ -75,8 +75,8 @@ def convertpaths_to_unixstyle(Data, fn):
 
 
 def convertpaths_to_windowsstyle(Data, fn):
-    """ auxiliary function that converts paths in annotation files:
-        labeled-data/video/imgXXX.png to labeled-data\\video\\imgXXX.png """
+    """auxiliary function that converts paths in annotation files:
+    labeled-data/video/imgXXX.png to labeled-data\\video\\imgXXX.png"""
     Data.to_csv(fn + "unix" + ".csv")
     Data.to_hdf(fn + "unix" + ".h5", "df_with_missing", format="table", mode="w")
     Data.index = Data.index.str.replace("/", "\\")
@@ -199,9 +199,9 @@ def analyze_videos_converth5_to_csv(videopath, videotype=".avi"):
 
 
 def merge_windowsannotationdataONlinuxsystem(cfg):
-    """ If a project was created on Windows (and labeled there,) but ran on unix then the data folders
+    """If a project was created on Windows (and labeled there,) but ran on unix then the data folders
     corresponding in the keys in cfg['video_sets'] are not found. This function gets them directly by
-    looping over all folders in labeled-data """
+    looping over all folders in labeled-data"""
 
     AnnotationData = []
     data_path = Path(cfg["project_path"], "labeled-data")

@@ -24,19 +24,19 @@ slim = tf.contrib.slim
 def _fixed_padding(inputs, kernel_size, rate=1):
     """Pads the input along the spatial dimensions independently of input size.
 
-  Pads the input such that if it was used in a convolution with 'VALID' padding,
-  the output would have the same dimensions as if the unpadded input was used
-  in a convolution with 'SAME' padding.
+    Pads the input such that if it was used in a convolution with 'VALID' padding,
+    the output would have the same dimensions as if the unpadded input was used
+    in a convolution with 'SAME' padding.
 
-  Args:
-    inputs: A tensor of size [batch, height_in, width_in, channels].
-    kernel_size: The kernel to be used in the conv2d or max_pool2d operation.
-    rate: An integer, rate for atrous convolution.
+    Args:
+      inputs: A tensor of size [batch, height_in, width_in, channels].
+      kernel_size: The kernel to be used in the conv2d or max_pool2d operation.
+      rate: An integer, rate for atrous convolution.
 
-  Returns:
-    output: A tensor of size [batch, height_out, width_out, channels] with the
-      input, either intact (if kernel_size == 1) or padded (if kernel_size > 1).
-  """
+    Returns:
+      output: A tensor of size [batch, height_out, width_out, channels] with the
+        input, either intact (if kernel_size == 1) or padded (if kernel_size > 1).
+    """
     kernel_size_effective = [
         kernel_size[0] + (kernel_size[0] - 1) * (rate - 1),
         kernel_size[0] + (kernel_size[0] - 1) * (rate - 1),
@@ -105,29 +105,29 @@ def split_separable_conv2d(
 ):
     """Separable mobilenet V1 style convolution.
 
-  Depthwise convolution, with default non-linearity,
-  followed by 1x1 depthwise convolution.  This is similar to
-  slim.separable_conv2d, but differs in tha it applies batch
-  normalization and non-linearity to depthwise. This  matches
-  the basic building of Mobilenet Paper
-  (https://arxiv.org/abs/1704.04861)
+    Depthwise convolution, with default non-linearity,
+    followed by 1x1 depthwise convolution.  This is similar to
+    slim.separable_conv2d, but differs in tha it applies batch
+    normalization and non-linearity to depthwise. This  matches
+    the basic building of Mobilenet Paper
+    (https://arxiv.org/abs/1704.04861)
 
-  Args:
-    input_tensor: input
-    num_outputs: number of outputs
-    scope: optional name of the scope. Note if provided it will use
-    scope_depthwise for deptwhise, and scope_pointwise for pointwise.
-    normalizer_fn: which normalizer function to use for depthwise/pointwise
-    stride: stride
-    rate: output rate (also known as dilation rate)
-    endpoints: optional, if provided, will export additional tensors to it.
-    use_explicit_padding: Use 'VALID' padding for convolutions, but prepad
-      inputs so that the output dimensions are the same as if 'SAME' padding
-      were used.
+    Args:
+      input_tensor: input
+      num_outputs: number of outputs
+      scope: optional name of the scope. Note if provided it will use
+      scope_depthwise for deptwhise, and scope_pointwise for pointwise.
+      normalizer_fn: which normalizer function to use for depthwise/pointwise
+      stride: stride
+      rate: output rate (also known as dilation rate)
+      endpoints: optional, if provided, will export additional tensors to it.
+      use_explicit_padding: Use 'VALID' padding for convolutions, but prepad
+        inputs so that the output dimensions are the same as if 'SAME' padding
+        were used.
 
-  Returns:
-    output tesnor
-  """
+    Returns:
+      output tesnor
+    """
 
     with _v1_compatible_scope_naming(scope) as scope:
         dw_scope = scope + "depthwise"
@@ -192,53 +192,53 @@ def expanded_conv(
 ):
     """Depthwise Convolution Block with expansion.
 
-  Builds a composite convolution that has the following structure
-  expansion (1x1) -> depthwise (kernel_size) -> projection (1x1)
+    Builds a composite convolution that has the following structure
+    expansion (1x1) -> depthwise (kernel_size) -> projection (1x1)
 
-  Args:
-    input_tensor: input
-    num_outputs: number of outputs in the final layer.
-    expansion_size: the size of expansion, could be a constant or a callable.
-      If latter it will be provided 'num_inputs' as an input. For forward
-      compatibility it should accept arbitrary keyword arguments.
-      Default will expand the input by factor of 6.
-    stride: depthwise stride
-    rate: depthwise rate
-    kernel_size: depthwise kernel
-    residual: whether to include residual connection between input
-      and output.
-    normalizer_fn: batchnorm or otherwise
-    project_activation_fn: activation function for the project layer
-    split_projection: how many ways to split projection operator
-      (that is conv expansion->bottleneck)
-    split_expansion: how many ways to split expansion op
-      (that is conv bottleneck->expansion) ops will keep depth divisible
-      by this value.
-    split_divisible_by: make sure every split group is divisible by this number.
-    expansion_transform: Optional function that takes expansion
-      as a single input and returns output.
-    depthwise_location: where to put depthwise covnvolutions supported
-      values None, 'input', 'output', 'expansion'
-    depthwise_channel_multiplier: depthwise channel multiplier:
-    each input will replicated (with different filters)
-    that many times. So if input had c channels,
-    output will have c x depthwise_channel_multpilier.
-    endpoints: An optional dictionary into which intermediate endpoints are
-      placed. The keys "expansion_output", "depthwise_output",
-      "projection_output" and "expansion_transform" are always populated, even
-      if the corresponding functions are not invoked.
-    use_explicit_padding: Use 'VALID' padding for convolutions, but prepad
-      inputs so that the output dimensions are the same as if 'SAME' padding
-      were used.
-    padding: Padding type to use if `use_explicit_padding` is not set.
-    scope: optional scope.
+    Args:
+      input_tensor: input
+      num_outputs: number of outputs in the final layer.
+      expansion_size: the size of expansion, could be a constant or a callable.
+        If latter it will be provided 'num_inputs' as an input. For forward
+        compatibility it should accept arbitrary keyword arguments.
+        Default will expand the input by factor of 6.
+      stride: depthwise stride
+      rate: depthwise rate
+      kernel_size: depthwise kernel
+      residual: whether to include residual connection between input
+        and output.
+      normalizer_fn: batchnorm or otherwise
+      project_activation_fn: activation function for the project layer
+      split_projection: how many ways to split projection operator
+        (that is conv expansion->bottleneck)
+      split_expansion: how many ways to split expansion op
+        (that is conv bottleneck->expansion) ops will keep depth divisible
+        by this value.
+      split_divisible_by: make sure every split group is divisible by this number.
+      expansion_transform: Optional function that takes expansion
+        as a single input and returns output.
+      depthwise_location: where to put depthwise covnvolutions supported
+        values None, 'input', 'output', 'expansion'
+      depthwise_channel_multiplier: depthwise channel multiplier:
+      each input will replicated (with different filters)
+      that many times. So if input had c channels,
+      output will have c x depthwise_channel_multpilier.
+      endpoints: An optional dictionary into which intermediate endpoints are
+        placed. The keys "expansion_output", "depthwise_output",
+        "projection_output" and "expansion_transform" are always populated, even
+        if the corresponding functions are not invoked.
+      use_explicit_padding: Use 'VALID' padding for convolutions, but prepad
+        inputs so that the output dimensions are the same as if 'SAME' padding
+        were used.
+      padding: Padding type to use if `use_explicit_padding` is not set.
+      scope: optional scope.
 
-  Returns:
-    Tensor of depth num_outputs
+    Returns:
+      Tensor of depth num_outputs
 
-  Raises:
-    TypeError: on inval
-  """
+    Raises:
+      TypeError: on inval
+    """
     with tf.variable_scope(scope, default_name="expanded_conv") as s, tf.name_scope(
         s.original_name_scope
     ):
@@ -341,20 +341,20 @@ def expanded_conv(
 def split_conv(input_tensor, num_outputs, num_ways, scope, divisible_by=8, **kwargs):
     """Creates a split convolution.
 
-  Split convolution splits the input and output into
-  'num_blocks' blocks of approximately the same size each,
-  and only connects $i$-th input to $i$ output.
+    Split convolution splits the input and output into
+    'num_blocks' blocks of approximately the same size each,
+    and only connects $i$-th input to $i$ output.
 
-  Args:
-    input_tensor: input tensor
-    num_outputs: number of output filters
-    num_ways: num blocks to split by.
-    scope: scope for all the operators.
-    divisible_by: make sure that every part is divisiable by this.
-    **kwargs: will be passed directly into conv2d operator
-  Returns:
-    tensor
-  """
+    Args:
+      input_tensor: input tensor
+      num_outputs: number of output filters
+      num_ways: num blocks to split by.
+      scope: scope for all the operators.
+      divisible_by: make sure that every part is divisiable by this.
+      **kwargs: will be passed directly into conv2d operator
+    Returns:
+      tensor
+    """
     b = input_tensor.get_shape().as_list()[3]
 
     if num_ways == 1 or min(b // num_ways, num_outputs // num_ways) < divisible_by:

@@ -432,7 +432,10 @@ def label_frames(config, multiple_individualsGUI=False, imtypes=["*.png"]):
 
     os.chdir(startpath)
 
-def verify_labeled_frames(config, frames=[], multiple_individualsGUI=False, imtypes=["*.png"]):
+
+def verify_labeled_frames(
+    config, frames=[], multiple_individualsGUI=False, imtypes=["*.png"]
+):
     """
     Verify labels for particular
     TODO: multi_individualGUI!
@@ -468,14 +471,17 @@ def verify_labeled_frames(config, frames=[], multiple_individualsGUI=False, imty
         multiple_individuals_labeling_toolbox.show(config)
     else:
         from deeplabcut.generate_training_dataset import labeling_toolbox
-        if len(frames)>0:
-            labeling_toolbox.verify(config,frames=frames, imtypes=imtypes)
+
+        if len(frames) > 0:
+            labeling_toolbox.verify(config, frames=frames, imtypes=imtypes)
         else:
             print("Emty list passed, so those were verified!")
     os.chdir(startpath)
 
 
-def verify_labeled_frames(config, frames, multiple_individualsGUI=False, imtypes=["*.png"]):
+def verify_labeled_frames(
+    config, frames, multiple_individualsGUI=False, imtypes=["*.png"]
+):
     """
     Verify labels for particular
     TODO: multi_individualGUI!
@@ -499,7 +505,7 @@ def verify_labeled_frames(config, frames, multiple_individualsGUI=False, imtypes
 
     """
     if not len(frames):
-        raise ValueError('A list of at least a frame should be passed in.')
+        raise ValueError("A list of at least a frame should be passed in.")
 
     startpath = os.getcwd()
     wd = Path(config).resolve().parents[0]
@@ -509,9 +515,11 @@ def verify_labeled_frames(config, frames, multiple_individualsGUI=False, imtypes
         from deeplabcut.generate_training_dataset import (
             multiple_individuals_labeling_toolbox,
         )
+
         multiple_individuals_labeling_toolbox.verify(config, frames, imtypes)
     else:
         from deeplabcut.generate_training_dataset import labeling_toolbox
+
         labeling_toolbox.verify(config, frames=frames, imtypes=imtypes)
     os.chdir(startpath)
 
@@ -746,8 +754,8 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
 
 
 def SplitTrials(trialindex, trainFraction=0.8):
-    """ Split a trial index into train and test sets. Also checks that the trainFraction is a two digit number between 0 an 1. The reason
-    is that the folders contain the trainfraction as int(100*trainFraction). """
+    """Split a trial index into train and test sets. Also checks that the trainFraction is a two digit number between 0 an 1. The reason
+    is that the folders contain the trainfraction as int(100*trainFraction)."""
     if trainFraction > 1 or trainFraction < 0:
         print(
             "The training fraction should be a two digit number between 0 and 1; i.e. 0.95. Please change accordingly."
@@ -996,7 +1004,11 @@ def create_training_dataset(
         if net_type is None:  # loading & linking pretrained models
             net_type = cfg.get("default_net_type", "resnet_50")
         else:
-            if "resnet" in net_type or "mobilenet" in net_type or "efficientnet" in net_type:
+            if (
+                "resnet" in net_type
+                or "mobilenet" in net_type
+                or "efficientnet" in net_type
+            ):
                 pass
             else:
                 raise ValueError("Invalid network type:", net_type)

@@ -22,8 +22,7 @@ logo = os.path.join(media_path, "logo.png")
 
 
 class Refine_labels(wx.Panel):
-    """
-    """
+    """"""
 
     def __init__(self, parent, gui_size, cfg, page):
         """Constructor"""
@@ -109,8 +108,7 @@ class Refine_labels(wx.Panel):
         os.remove("help.txt")
 
     def select_config(self, event):
-        """
-        """
+        """"""
         self.config = self.sel_config.GetPath()
 
     def refine_labels(self, event):

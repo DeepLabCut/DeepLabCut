@@ -26,8 +26,7 @@ logo = os.path.join(media_path, "logo.png")
 
 
 class Analyze_videos(wx.Panel):
-    """
-    """
+    """"""
 
     def __init__(self, parent, gui_size, cfg):
         """Constructor"""
@@ -330,8 +329,7 @@ class Analyze_videos(wx.Panel):
         self.sizer.Fit(self)
 
     def edit_config(self, event):
-        """
-        """
+        """"""
         if platform.system() == "Darwin":
             self.file_open_bool = subprocess.call(["open", self.config])
             self.file_open_bool = True
@@ -391,8 +389,7 @@ class Analyze_videos(wx.Panel):
         os.remove("help.txt")
 
     def select_config(self, event):
-        """
-        """
+        """"""
         self.config = self.sel_config.GetPath()
 
     def convert2_tracklets(self, event):

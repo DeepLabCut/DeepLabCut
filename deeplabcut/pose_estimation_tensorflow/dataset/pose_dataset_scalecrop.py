@@ -36,31 +36,33 @@ class PoseDataset:
         self.num_images = len(self.data)
         self.max_input_sizesquare = cfg.get("max_input_size", 1500) ** 2
         self.min_input_sizesquare = cfg.get("min_input_size", 64) ** 2
-        self.locref_scale = 1.0 / cfg['locref_stdev']
-        self.stride = cfg['stride']
+        self.locref_scale = 1.0 / cfg["locref_stdev"]
+        self.stride = cfg["stride"]
         self.half_stride = self.stride / 2
-        self.scale = cfg['global_scale']
+        self.scale = cfg["global_scale"]
         self.scale_jitter_lo = cfg.get("scale_jitter_lo", 0.75)
         self.scale_jitter_up = cfg.get("scale_jitter_up", 1.25)
 
-        self.cfg['crop'] = cfg.get("crop", True)
-        self.cfg['cropratio'] = cfg.get("cropratio", 0.4)
+        self.cfg["crop"] = cfg.get("crop", True)
+        self.cfg["cropratio"] = cfg.get("cropratio", 0.4)
 
         # what is the minimal frames size for cropping plus/minus ie.. [-100,100]^2 for an arb. joint
-        self.cfg['minsize'] = cfg.get("minsize", 100)
-        self.cfg['leftwidth'] = cfg.get("leftwidth", 400)
-        self.cfg['rightwidth'] = cfg.get("rightwidth", 400)
-        self.cfg['topheight'] = cfg.get("topheight", 400)
-        self.cfg['bottomheight'] = cfg.get("bottomheight", 400)
+        self.cfg["minsize"] = cfg.get("minsize", 100)
+        self.cfg["leftwidth"] = cfg.get("leftwidth", 400)
+        self.cfg["rightwidth"] = cfg.get("rightwidth", 400)
+        self.cfg["topheight"] = cfg.get("topheight", 400)
+        self.cfg["bottomheight"] = cfg.get("bottomheight", 400)
 
-        if self.cfg['mirror']:
-            self.symmetric_joints = mirror_joints_map(cfg['all_joints'], cfg['num_joints'])
+        if self.cfg["mirror"]:
+            self.symmetric_joints = mirror_joints_map(
+                cfg["all_joints"], cfg["num_joints"]
+            )
         self.curr_img = 0
-        self.set_shuffle(cfg['shuffle'])
+        self.set_shuffle(cfg["shuffle"])
 
     def load_dataset(self):
         cfg = self.cfg
-        file_name = os.path.join(self.cfg['project_path'], cfg['dataset'])
+        file_name = os.path.join(self.cfg["project_path"], cfg["dataset"])
         # Load Matlab file dataset annotation
         mlab = sio.loadmat(file_name)
         self.raw_data = mlab
@@ -84,7 +86,7 @@ class PoseDataset:
                 joint_id = joints[:, 0]
                 # make sure joint ids are 0-indexed
                 if joint_id.size != 0:
-                    assert (joint_id < cfg['num_joints']).any()
+                    assert (joint_id < cfg["num_joints"]).any()
                 joints[:, 0] = joint_id
                 item.joints = [joints]
             else:
@@ -103,7 +105,7 @@ class PoseDataset:
     def set_shuffle(self, shuffle):
         self.shuffle = shuffle
         if not shuffle:
-            assert not self.cfg['mirror']
+            assert not self.cfg["mirror"]
             self.image_indices = np.arange(self.num_images)
 
     def mirror_joint_coords(self, joints, image_width):
@@ -122,7 +124,7 @@ class PoseDataset:
 
     def shuffle_images(self):
         num_images = self.num_images
-        if self.cfg['mirror']:
+        if self.cfg["mirror"]:
             image_indices = np.random.permutation(num_images * 2)
             self.mirrored = image_indices >= num_images
             image_indices[self.mirrored] = image_indices[self.mirrored] - num_images
@@ -132,7 +134,7 @@ class PoseDataset:
 
     def num_training_samples(self):
         num = self.num_images
-        if self.cfg['mirror']:
+        if self.cfg["mirror"]:
             num *= 2
         return num
 
@@ -144,7 +146,7 @@ class PoseDataset:
         self.curr_img = (self.curr_img + 1) % self.num_training_samples()
 
         imidx = self.image_indices[curr_img]
-        mirror = self.cfg['mirror'] and self.mirrored[curr_img]
+        mirror = self.cfg["mirror"] and self.mirrored[curr_img]
 
         return imidx, mirror
 
@@ -181,13 +183,13 @@ class PoseDataset:
         im_file = data_item.im_path
         logging.debug("image %s", im_file)
         logging.debug("mirror %r", mirror)
-        image = imread(os.path.join(self.cfg['project_path'], im_file), mode="RGB")
+        image = imread(os.path.join(self.cfg["project_path"], im_file), mode="RGB")
 
         if self.has_gt:
             joints = np.copy(data_item.joints)
 
-        if self.cfg['crop']:  # adapted cropping for DLC
-            if np.random.rand() < self.cfg['cropratio']:
+        if self.cfg["crop"]:  # adapted cropping for DLC
+            if np.random.rand() < self.cfg["cropratio"]:
                 j = np.random.randint(np.shape(joints)[1])  # pick a random joint
                 joints, image = CropImage(
                     joints, image, joints[0, j, 1], joints[0, j, 2], self.cfg
@@ -211,7 +213,7 @@ class PoseDataset:
         batch = {Batch.inputs: img}
 
         if self.has_gt:
-            stride = self.cfg['stride']
+            stride = self.cfg["stride"]
 
             if mirror:
                 joints = [
@@ -251,9 +253,9 @@ class PoseDataset:
         return batch
 
     def compute_target_part_scoremap(self, joint_id, coords, data_item, size, scale):
-        dist_thresh = self.cfg['pos_dist_thresh'] * scale
+        dist_thresh = self.cfg["pos_dist_thresh"] * scale
         dist_thresh_sq = dist_thresh ** 2
-        num_joints = self.cfg['num_joints']
+        num_joints = self.cfg["num_joints"]
 
         scmap = np.zeros(cat([size, arr([num_joints])]))
         locref_size = cat([size, arr([num_joints * 2])])
@@ -299,7 +301,7 @@ class PoseDataset:
         return scmap, weights, locref_map, locref_mask
 
     def compute_scmap_weights(self, scmap_shape, joint_id, data_item):
-        if self.cfg['weigh_only_present_joints']:
+        if self.cfg["weigh_only_present_joints"]:
             weights = np.zeros(scmap_shape)
             for person_joint_id in joint_id:
                 for j_id in person_joint_id:

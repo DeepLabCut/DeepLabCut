@@ -103,40 +103,40 @@ def mobilenet(
 ):
     """Creates mobilenet V2 network.
 
-  Inference mode is created by default. To create training use training_scope
-  below.
+    Inference mode is created by default. To create training use training_scope
+    below.
 
-  with tf.contrib.slim.arg_scope(mobilenet_v2.training_scope()):
-     logits, endpoints = mobilenet_v2.mobilenet(input_tensor)
+    with tf.contrib.slim.arg_scope(mobilenet_v2.training_scope()):
+       logits, endpoints = mobilenet_v2.mobilenet(input_tensor)
 
-  Args:
-    input_tensor: The input tensor
-    num_classes: number of classes
-    depth_multiplier: The multiplier applied to scale number of
-    channels in each layer.
-    scope: Scope of the operator
-    conv_defs: Allows to override default conv def.
-    finegrain_classification_mode: When set to True, the model
-    will keep the last layer large even for small multipliers. Following
-    https://arxiv.org/abs/1801.04381
-    suggests that it improves performance for ImageNet-type of problems.
-      *Note* ignored if final_endpoint makes the builder exit earlier.
-    min_depth: If provided, will ensure that all layers will have that
-    many channels after application of depth multiplier.
-    divisible_by: If provided will ensure that all layers # channels
-    will be divisible by this number.
-    activation_fn: Activation function to use, defaults to tf.nn.relu6 if not
-      specified.
-    **kwargs: passed directly to mobilenet.mobilenet:
-      prediction_fn- what prediction function to use.
-      reuse-: whether to reuse variables (if reuse set to true, scope
-      must be given).
-  Returns:
-    logits/endpoints pair
+    Args:
+      input_tensor: The input tensor
+      num_classes: number of classes
+      depth_multiplier: The multiplier applied to scale number of
+      channels in each layer.
+      scope: Scope of the operator
+      conv_defs: Allows to override default conv def.
+      finegrain_classification_mode: When set to True, the model
+      will keep the last layer large even for small multipliers. Following
+      https://arxiv.org/abs/1801.04381
+      suggests that it improves performance for ImageNet-type of problems.
+        *Note* ignored if final_endpoint makes the builder exit earlier.
+      min_depth: If provided, will ensure that all layers will have that
+      many channels after application of depth multiplier.
+      divisible_by: If provided will ensure that all layers # channels
+      will be divisible by this number.
+      activation_fn: Activation function to use, defaults to tf.nn.relu6 if not
+        specified.
+      **kwargs: passed directly to mobilenet.mobilenet:
+        prediction_fn- what prediction function to use.
+        reuse-: whether to reuse variables (if reuse set to true, scope
+        must be given).
+    Returns:
+      logits/endpoints pair
 
-  Raises:
-    ValueError: On invalid arguments
-  """
+    Raises:
+      ValueError: On invalid arguments
+    """
     if conv_defs is None:
         conv_defs = V2_DEF
     if "multiplier" in kwargs:
@@ -207,23 +207,23 @@ def mobilenet_base(input_tensor, depth_multiplier=1.0, **kwargs):
 def training_scope(**kwargs):
     """Defines MobilenetV2 training scope.
 
-  Usage:
-     with tf.contrib.slim.arg_scope(mobilenet_v2.training_scope()):
-       logits, endpoints = mobilenet_v2.mobilenet(input_tensor)
+    Usage:
+       with tf.contrib.slim.arg_scope(mobilenet_v2.training_scope()):
+         logits, endpoints = mobilenet_v2.mobilenet(input_tensor)
 
-  with slim.
+    with slim.
 
-  Args:
-    **kwargs: Passed to mobilenet.training_scope. The following parameters
-    are supported:
-      weight_decay- The weight decay to use for regularizing the model.
-      stddev-  Standard deviation for initialization, if negative uses xavier.
-      dropout_keep_prob- dropout keep probability
-      bn_decay- decay for the batch norm moving averages.
+    Args:
+      **kwargs: Passed to mobilenet.training_scope. The following parameters
+      are supported:
+        weight_decay- The weight decay to use for regularizing the model.
+        stddev-  Standard deviation for initialization, if negative uses xavier.
+        dropout_keep_prob- dropout keep probability
+        bn_decay- decay for the batch norm moving averages.
 
-  Returns:
-    An `arg_scope` to use for the mobilenet v2 model.
-  """
+    Returns:
+      An `arg_scope` to use for the mobilenet v2 model.
+    """
     return lib.training_scope(**kwargs)
 
 

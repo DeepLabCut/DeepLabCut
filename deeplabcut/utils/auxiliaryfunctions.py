@@ -302,7 +302,7 @@ def write_pickle(filename, data):
 
 
 def Getlistofvideos(videos, videotype):
-    """ Returns list of videos of videotype "videotype" in
+    """Returns list of videos of videotype "videotype" in
     folder videos or for list of videos.
 
     NOTE: excludes keyword videos of the form:
@@ -470,10 +470,10 @@ def GetEvaluationFolder(trainFraction, shuffle, cfg, modelprefix=""):
     Task = cfg["Task"]
     date = cfg["date"]
     iterate = "iteration-" + str(cfg["iteration"])
-    if 'eval_prefix' in cfg:
-        eval_prefix = cfg['eval_prefix']+'/'
+    if "eval_prefix" in cfg:
+        eval_prefix = cfg["eval_prefix"] + "/"
     else:
-        eval_prefix = 'evaluation-results'+'/'
+        eval_prefix = "evaluation-results" + "/"
     return Path(
         modelprefix,
         eval_prefix
@@ -528,8 +528,8 @@ def form_data_containers(df, bodyparts):
 def GetScorerName(
     cfg, shuffle, trainFraction, trainingsiterations="unknown", modelprefix=""
 ):
-    """ Extract the scorer/network name for a particular shuffle, training fraction, etc.
-        Returns tuple of DLCscorer, DLCscorerlegacy (old naming convention)
+    """Extract the scorer/network name for a particular shuffle, training fraction, etc.
+    Returns tuple of DLCscorer, DLCscorerlegacy (old naming convention)
     """
 
     Task = cfg["Task"]
@@ -603,8 +603,8 @@ def GetScorerName(
 
 
 def CheckifPostProcessing(folder, vname, DLCscorer, DLCscorerlegacy, suffix="filtered"):
-    """ Checks if filtered/bone lengths were already calculated. If not, figures
-    out if data was already analyzed (either with legacy scorer name or new one!) """
+    """Checks if filtered/bone lengths were already calculated. If not, figures
+    out if data was already analyzed (either with legacy scorer name or new one!)"""
     outdataname = os.path.join(folder, vname + DLCscorer + suffix + ".h5")
     sourcedataname = os.path.join(folder, vname + DLCscorer + ".h5")
     if os.path.isfile(outdataname):  # was data already processed?

@@ -24,8 +24,7 @@ from deeplabcut.utils import auxiliaryfunctions
 
 
 class Create_Labeled_Videos(wx.Panel):
-    """
-    """
+    """"""
 
     def __init__(self, parent, gui_size, cfg):
         """Constructor"""
@@ -250,8 +249,7 @@ class Create_Labeled_Videos(wx.Panel):
         self.sizer.Fit(self)
 
     def select_config(self, event):
-        """
-        """
+        """"""
         self.config = self.sel_config.GetPath()
 
     def select_videos(self, event):

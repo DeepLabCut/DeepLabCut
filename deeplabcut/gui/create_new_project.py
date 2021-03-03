@@ -276,8 +276,7 @@ class Create_new_project(wx.Panel):
             self.sizer.Fit(self)
 
     def edit_config(self, event):
-        """
-        """
+        """"""
         if self.cfg != "":
             # For mac compatibility
             if platform.system() == "Darwin":

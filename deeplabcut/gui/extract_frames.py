@@ -22,8 +22,7 @@ logo = os.path.join(media_path, "logo.png")
 
 
 class Extract_frames(wx.Panel):
-    """
-    """
+    """"""
 
     def __init__(self, parent, gui_size, cfg):
         """Constructor"""
@@ -188,8 +187,7 @@ class Extract_frames(wx.Panel):
         os.remove("help.txt")
 
     def select_config(self, event):
-        """
-        """
+        """"""
         self.config = self.sel_config.GetPath()
 
     def select_extract_method(self, event):

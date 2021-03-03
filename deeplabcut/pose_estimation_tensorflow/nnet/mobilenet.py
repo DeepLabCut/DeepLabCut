@@ -36,19 +36,19 @@ def apply_activation(x, name=None, activation_fn=None):
 def _fixed_padding(inputs, kernel_size, rate=1):
     """Pads the input along the spatial dimensions independently of input size.
 
-  Pads the input such that if it was used in a convolution with 'VALID' padding,
-  the output would have the same dimensions as if the unpadded input was used
-  in a convolution with 'SAME' padding.
+    Pads the input such that if it was used in a convolution with 'VALID' padding,
+    the output would have the same dimensions as if the unpadded input was used
+    in a convolution with 'SAME' padding.
 
-  Args:
-    inputs: A tensor of size [batch, height_in, width_in, channels].
-    kernel_size: The kernel to be used in the conv2d or max_pool2d operation.
-    rate: An integer, rate for atrous convolution.
+    Args:
+      inputs: A tensor of size [batch, height_in, width_in, channels].
+      kernel_size: The kernel to be used in the conv2d or max_pool2d operation.
+      rate: An integer, rate for atrous convolution.
 
-  Returns:
-    output: A tensor of size [batch, height_out, width_out, channels] with the
-      input, either intact (if kernel_size == 1) or padded (if kernel_size > 1).
-  """
+    Returns:
+      output: A tensor of size [batch, height_out, width_out, channels] with the
+        input, either intact (if kernel_size == 1) or padded (if kernel_size > 1).
+    """
     kernel_size_effective = [
         kernel_size[0] + (kernel_size[0] - 1) * (rate - 1),
         kernel_size[0] + (kernel_size[0] - 1) * (rate - 1),
@@ -76,13 +76,13 @@ def _make_divisible(v, divisor, min_value=None):
 def _set_arg_scope_defaults(defaults):
     """Sets arg scope defaults for all items present in defaults.
 
-  Args:
-    defaults: dictionary/list of pairs, containing a mapping from
-    function to a dictionary of default args.
+    Args:
+      defaults: dictionary/list of pairs, containing a mapping from
+      function to a dictionary of default args.
 
-  Yields:
-    context manager where all defaults are set.
-  """
+    Yields:
+      context manager where all defaults are set.
+    """
     if hasattr(defaults, "items"):
         items = list(defaults.items())
     else:
@@ -129,16 +129,16 @@ class NoOpScope(object):
 def safe_arg_scope(funcs, **kwargs):
     """Returns `slim.arg_scope` with all None arguments removed.
 
-  Arguments:
-    funcs: Functions to pass to `arg_scope`.
-    **kwargs: Arguments to pass to `arg_scope`.
+    Arguments:
+      funcs: Functions to pass to `arg_scope`.
+      **kwargs: Arguments to pass to `arg_scope`.
 
-  Returns:
-    arg_scope or No-op context manager.
+    Returns:
+      arg_scope or No-op context manager.
 
-  Note: can be useful if None value should be interpreted as "do not overwrite
-    this parameter value".
-  """
+    Note: can be useful if None value should be interpreted as "do not overwrite
+      this parameter value".
+    """
     filtered_args = {name: value for name, value in kwargs.items() if value is not None}
     if filtered_args:
         return slim.arg_scope(funcs, **filtered_args)
@@ -159,55 +159,55 @@ def mobilenet_base(  # pylint: disable=invalid-name
 ):
     """Mobilenet base network.
 
-  Constructs a network from inputs to the given final endpoint. By default
-  the network is constructed in inference mode. To create network
-  in training mode use:
+    Constructs a network from inputs to the given final endpoint. By default
+    the network is constructed in inference mode. To create network
+    in training mode use:
 
-  with slim.arg_scope(mobilenet.training_scope()):
-     logits, endpoints = mobilenet_base(...)
+    with slim.arg_scope(mobilenet.training_scope()):
+       logits, endpoints = mobilenet_base(...)
 
-  Args:
-    inputs: a tensor of shape [batch_size, height, width, channels].
-    conv_defs: A list of op(...) layers specifying the net architecture.
-    multiplier: Float multiplier for the depth (number of channels)
-      for all convolution ops. The value must be greater than zero. Typical
-      usage will be to set this value in (0, 1) to reduce the number of
-      parameters or computation cost of the model.
-    final_endpoint: The name of last layer, for early termination for
-    for V1-based networks: last layer is "layer_14", for V2: "layer_20"
-    output_stride: An integer that specifies the requested ratio of input to
-      output spatial resolution. If not None, then we invoke atrous convolution
-      if necessary to prevent the network from reducing the spatial resolution
-      of the activation maps. Allowed values are 1 or any even number, excluding
-      zero. Typical values are 8 (accurate fully convolutional mode), 16
-      (fast fully convolutional mode), and 32 (classification mode).
+    Args:
+      inputs: a tensor of shape [batch_size, height, width, channels].
+      conv_defs: A list of op(...) layers specifying the net architecture.
+      multiplier: Float multiplier for the depth (number of channels)
+        for all convolution ops. The value must be greater than zero. Typical
+        usage will be to set this value in (0, 1) to reduce the number of
+        parameters or computation cost of the model.
+      final_endpoint: The name of last layer, for early termination for
+      for V1-based networks: last layer is "layer_14", for V2: "layer_20"
+      output_stride: An integer that specifies the requested ratio of input to
+        output spatial resolution. If not None, then we invoke atrous convolution
+        if necessary to prevent the network from reducing the spatial resolution
+        of the activation maps. Allowed values are 1 or any even number, excluding
+        zero. Typical values are 8 (accurate fully convolutional mode), 16
+        (fast fully convolutional mode), and 32 (classification mode).
 
-      NOTE- output_stride relies on all consequent operators to support dilated
-      operators via "rate" parameter. This might require wrapping non-conv
-      operators to operate properly.
+        NOTE- output_stride relies on all consequent operators to support dilated
+        operators via "rate" parameter. This might require wrapping non-conv
+        operators to operate properly.
 
-    use_explicit_padding: Use 'VALID' padding for convolutions, but prepad
-      inputs so that the output dimensions are the same as if 'SAME' padding
-      were used.
-    scope: optional variable scope.
-    is_training: How to setup batch_norm and other ops. Note: most of the time
-      this does not need be set directly. Use mobilenet.training_scope() to set
-      up training instead. This parameter is here for backward compatibility
-      only. It is safe to set it to the value matching
-      training_scope(is_training=...). It is also safe to explicitly set
-      it to False, even if there is outer training_scope set to to training.
-      (The network will be built in inference mode). If this is set to None,
-      no arg_scope is added for slim.batch_norm's is_training parameter.
+      use_explicit_padding: Use 'VALID' padding for convolutions, but prepad
+        inputs so that the output dimensions are the same as if 'SAME' padding
+        were used.
+      scope: optional variable scope.
+      is_training: How to setup batch_norm and other ops. Note: most of the time
+        this does not need be set directly. Use mobilenet.training_scope() to set
+        up training instead. This parameter is here for backward compatibility
+        only. It is safe to set it to the value matching
+        training_scope(is_training=...). It is also safe to explicitly set
+        it to False, even if there is outer training_scope set to to training.
+        (The network will be built in inference mode). If this is set to None,
+        no arg_scope is added for slim.batch_norm's is_training parameter.
 
-  Returns:
-    tensor_out: output tensor.
-    end_points: a set of activations for external use, for example summaries or
-                losses.
+    Returns:
+      tensor_out: output tensor.
+      end_points: a set of activations for external use, for example summaries or
+                  losses.
 
-  Raises:
-    ValueError: depth_multiplier <= 0, or the target output_stride is not
-                allowed.
-  """
+    Raises:
+      ValueError: depth_multiplier <= 0, or the target output_stride is not
+                  allowed.
+    """
     if multiplier <= 0:
         raise ValueError("multiplier is not greater than zero.")
 
@@ -324,43 +324,43 @@ def mobilenet(
 ):
     """Mobilenet model for classification, supports both V1 and V2.
 
-  Note: default mode is inference, use mobilenet.training_scope to create
-  training network.
+    Note: default mode is inference, use mobilenet.training_scope to create
+    training network.
 
 
-  Args:
-    inputs: a tensor of shape [batch_size, height, width, channels].
-    num_classes: number of predicted classes. If 0 or None, the logits layer
-      is omitted and the input features to the logits layer (before dropout)
-      are returned instead.
-    prediction_fn: a function to get predictions out of logits
-      (default softmax).
-    reuse: whether or not the network and its variables should be reused. To be
-      able to reuse 'scope' must be given.
-    scope: Optional variable_scope.
-    base_only: if True will only create the base of the network (no pooling
-    and no logits).
-    **mobilenet_args: passed to mobilenet_base verbatim.
-      - conv_defs: list of conv defs
-      - multiplier: Float multiplier for the depth (number of channels)
-      for all convolution ops. The value must be greater than zero. Typical
-      usage will be to set this value in (0, 1) to reduce the number of
-      parameters or computation cost of the model.
-      - output_stride: will ensure that the last layer has at most total stride.
-      If the architecture calls for more stride than that provided
-      (e.g. output_stride=16, but the architecture has 5 stride=2 operators),
-      it will replace output_stride with fractional convolutions using Atrous
-      Convolutions.
+    Args:
+      inputs: a tensor of shape [batch_size, height, width, channels].
+      num_classes: number of predicted classes. If 0 or None, the logits layer
+        is omitted and the input features to the logits layer (before dropout)
+        are returned instead.
+      prediction_fn: a function to get predictions out of logits
+        (default softmax).
+      reuse: whether or not the network and its variables should be reused. To be
+        able to reuse 'scope' must be given.
+      scope: Optional variable_scope.
+      base_only: if True will only create the base of the network (no pooling
+      and no logits).
+      **mobilenet_args: passed to mobilenet_base verbatim.
+        - conv_defs: list of conv defs
+        - multiplier: Float multiplier for the depth (number of channels)
+        for all convolution ops. The value must be greater than zero. Typical
+        usage will be to set this value in (0, 1) to reduce the number of
+        parameters or computation cost of the model.
+        - output_stride: will ensure that the last layer has at most total stride.
+        If the architecture calls for more stride than that provided
+        (e.g. output_stride=16, but the architecture has 5 stride=2 operators),
+        it will replace output_stride with fractional convolutions using Atrous
+        Convolutions.
 
-  Returns:
-    logits: the pre-softmax activations, a tensor of size
-      [batch_size, num_classes]
-    end_points: a dictionary from components of the network to the corresponding
-      activation tensor.
+    Returns:
+      logits: the pre-softmax activations, a tensor of size
+        [batch_size, num_classes]
+      end_points: a dictionary from components of the network to the corresponding
+        activation tensor.
 
-  Raises:
-    ValueError: Input rank is invalid.
-  """
+    Raises:
+      ValueError: Input rank is invalid.
+    """
     is_training = mobilenet_args.get("is_training", False)
     input_shape = inputs.get_shape().as_list()
     if len(input_shape) != 4:
@@ -404,15 +404,15 @@ def mobilenet(
 def global_pool(input_tensor, pool_op=tf.nn.avg_pool):
     """Applies avg pool to produce 1x1 output.
 
-  NOTE: This function is funcitonally equivalenet to reduce_mean, but it has
-  baked in average pool which has better support across hardware.
+    NOTE: This function is funcitonally equivalenet to reduce_mean, but it has
+    baked in average pool which has better support across hardware.
 
-  Args:
-    input_tensor: input tensor
-    pool_op: pooling op (avg pool is default)
-  Returns:
-    a tensor batch_size x 1 x 1 x depth.
-  """
+    Args:
+      input_tensor: input tensor
+      pool_op: pooling op (avg pool is default)
+    Returns:
+      a tensor batch_size x 1 x 1 x depth.
+    """
     shape = input_tensor.get_shape().as_list()
     if shape[1] is None or shape[2] is None:
         kernel_size = tf.convert_to_tensor(
@@ -437,28 +437,28 @@ def training_scope(
 ):
     """Defines Mobilenet training scope.
 
-  Usage:
-     with tf.contrib.slim.arg_scope(mobilenet.training_scope()):
-       logits, endpoints = mobilenet_v2.mobilenet(input_tensor)
+    Usage:
+       with tf.contrib.slim.arg_scope(mobilenet.training_scope()):
+         logits, endpoints = mobilenet_v2.mobilenet(input_tensor)
 
-     # the network created will be trainble with dropout/batch norm
-     # initialized appropriately.
-  Args:
-    is_training: if set to False this will ensure that all customizations are
-      set to non-training mode. This might be helpful for code that is reused
-      across both training/evaluation, but most of the time training_scope with
-      value False is not needed. If this is set to None, the parameters is not
-      added to the batch_norm arg_scope.
+       # the network created will be trainble with dropout/batch norm
+       # initialized appropriately.
+    Args:
+      is_training: if set to False this will ensure that all customizations are
+        set to non-training mode. This might be helpful for code that is reused
+        across both training/evaluation, but most of the time training_scope with
+        value False is not needed. If this is set to None, the parameters is not
+        added to the batch_norm arg_scope.
 
-    weight_decay: The weight decay to use for regularizing the model.
-    stddev: Standard deviation for initialization, if negative uses xavier.
-    dropout_keep_prob: dropout keep probability (not set if equals to None).
-    bn_decay: decay for the batch norm moving averages (not set if equals to
-      None).
+      weight_decay: The weight decay to use for regularizing the model.
+      stddev: Standard deviation for initialization, if negative uses xavier.
+      dropout_keep_prob: dropout keep probability (not set if equals to None).
+      bn_decay: decay for the batch norm moving averages (not set if equals to
+        None).
 
-  Returns:
-    An argument scope to use via arg_scope.
-  """
+    Returns:
+      An argument scope to use via arg_scope.
+    """
     # Note: do not introduce parameters that would change the inference
     # model here (for example whether to use bias), modify conv_def instead.
     batch_norm_params = {"decay": bn_decay, "is_training": is_training}

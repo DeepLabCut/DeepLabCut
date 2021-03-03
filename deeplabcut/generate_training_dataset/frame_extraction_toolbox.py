@@ -267,7 +267,7 @@ class MainFrame(wx.Frame):
         self.new_x2, self.new_y2 = erelease.xdata, erelease.ydata
 
     def CheckCropping(self):
-        """ Display frame at time "time" for video to check if cropping is fine.
+        """Display frame at time "time" for video to check if cropping is fine.
         Select ROI of interest by adjusting values in myconfig.py
 
         USAGE for cropping:

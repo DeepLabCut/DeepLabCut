@@ -353,7 +353,7 @@ class MainFrame(wx.Frame):
             self.buttonCounter = {i: [] for i in self.individual_names}
             # vid names
             self.verify_video_names = [Path(i).stem for i in self.videos]
-            #folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
+            # folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
             self.verify_frames = frames
             self.verify_counter = 0
 
@@ -1130,7 +1130,9 @@ class MainFrame(wx.Frame):
                     )
                     self.buttonCounter = MainFrame.plot(self, self.img)
 
-                self.cidClick = self.canvas.mpl_connect("button_press_event", self.onClick)
+                self.cidClick = self.canvas.mpl_connect(
+                    "button_press_event", self.onClick
+                )
 
         else:
             MainFrame.saveEachImage(self)
@@ -1340,8 +1342,8 @@ class MainFrame(wx.Frame):
             self.toolbar.zoom()
             self.zoom.SetValue(False)
 
-    def load_labeled_frame4verification(self,folder,imname):
-        self.dir = os.path.join(self.project_path, 'labeled-data', folder)
+    def load_labeled_frame4verification(self, folder, imname):
+        self.dir = os.path.join(self.project_path, "labeled-data", folder)
 
         imlist = []
         for imtype in self.imtypes:
@@ -1377,7 +1379,9 @@ class MainFrame(wx.Frame):
             self.dataFrame.sort_index(inplace=True)
 
             # Find the corresponding frame!
-            self.iter=self.dataFrame.index.get_loc(os.path.join('labeled-data',folder,imname))
+            self.iter = self.dataFrame.index.get_loc(
+                os.path.join("labeled-data", folder, imname)
+            )
             self.img = self.dataFrame.index[self.iter]
             img_name = Path(self.img).name
 
@@ -1407,7 +1411,10 @@ class MainFrame(wx.Frame):
                     self.change_marker_size,
                     self.checkBox,
                 ) = self.choice_panel.addRadioButtons(
-                    self.uniquebodyparts, self.individual_names, self.file, self.markerSize
+                    self.uniquebodyparts,
+                    self.individual_names,
+                    self.file,
+                    self.markerSize,
                 )
                 self.image_panel.addcolorbar(
                     self.img,
@@ -1424,10 +1431,17 @@ class MainFrame(wx.Frame):
                     self.change_marker_size,
                     self.checkBox,
                 ) = self.choice_panel.addRadioButtons(
-                    self.multibodyparts, self.individual_names, self.file, self.markerSize
+                    self.multibodyparts,
+                    self.individual_names,
+                    self.file,
+                    self.markerSize,
                 )
                 self.image_panel.addcolorbar(
-                    self.img, self.image_axis, self.iter, self.multibodyparts, self.colormap
+                    self.img,
+                    self.image_axis,
+                    self.iter,
+                    self.multibodyparts,
+                    self.colormap,
                 )
             self.individualrdb.Bind(wx.EVT_RADIOBOX, self.select_individual)
             # check if single is slected when radio buttons are changed
@@ -1452,7 +1466,7 @@ def show(config):
     app.MainLoop()
 
 
-def verify(config, frames, imtypes=["*.png"]): #for verification mode
+def verify(config, frames, imtypes=["*.png"]):  # for verification mode
     app = wx.App()
     frame = MainFrame(None, config, imtypes, verify=True, frames=frames).Show()
     app.MainLoop()

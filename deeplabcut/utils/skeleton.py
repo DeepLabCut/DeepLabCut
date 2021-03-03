@@ -62,7 +62,7 @@ class SkeletonBuilder:
                     found = True
                     break
         if self.df is None:
-            raise IOError('No labeled data were found.')
+            raise IOError("No labeled data were found.")
 
         self.bpts = self.df.columns.get_level_values("bodyparts").unique()
         if not found:

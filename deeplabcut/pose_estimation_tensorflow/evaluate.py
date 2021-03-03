@@ -115,9 +115,9 @@ def calculatepafdistancebounds(
         dlc_cfg = load_config(str(path_test_config))
 
         # get the graph!
-        partaffinityfield_graph = dlc_cfg['partaffinityfield_graph']
+        partaffinityfield_graph = dlc_cfg["partaffinityfield_graph"]
         jointnames = [
-            dlc_cfg['all_joints_names'][i] for i in range(len(dlc_cfg['all_joints']))
+            dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))
         ]
         path_inferencebounds_config = (
             Path(modelfolder) / "test" / "inferencebounds.yaml"
@@ -135,10 +135,13 @@ def calculatepafdistancebounds(
                             j2,
                             "y",
                         ) in Data.keys():
-                            distances = np.sqrt(
-                                (Data[ind, j1, "x"] - Data[ind2, j2, "x"]) ** 2
-                                + (Data[ind, j1, "y"] - Data[ind2, j2, "y"]) ** 2
-                            ) / dlc_cfg["stride"]
+                            distances = (
+                                np.sqrt(
+                                    (Data[ind, j1, "x"] - Data[ind2, j2, "x"]) ** 2
+                                    + (Data[ind, j1, "y"] - Data[ind2, j2, "y"]) ** 2
+                                )
+                                / dlc_cfg["stride"]
+                            )
                         else:
                             distances = None
 
@@ -622,8 +625,10 @@ def evaluate_network(
         )
 
         # Get list of body parts to evaluate network for
-        comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
-            cfg, comparisonbodyparts
+        comparisonbodyparts = (
+            auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
+                cfg, comparisonbodyparts
+            )
         )
         # Make folder for evaluation
         auxiliaryfunctions.attempttomakefolder(
@@ -794,7 +799,7 @@ def evaluate_network(
 
                             # Extract maximum scoring location from the heatmap, assume 1 person
                             pose = predict.argmax_pose_predict(
-                                scmap, locref, dlc_cfg['stride']
+                                scmap, locref, dlc_cfg["stride"]
                             )
                             PredicteData[
                                 imageindex, :

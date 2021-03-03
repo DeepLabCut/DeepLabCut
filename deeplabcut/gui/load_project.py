@@ -21,8 +21,7 @@ logo = os.path.join(media_path, "logo.png")
 
 
 class Load_project(wx.Panel):
-    """
-    """
+    """"""
 
     def __init__(self, parent, gui_size, cfg):
         """Constructor"""
@@ -93,8 +92,7 @@ class Load_project(wx.Panel):
         self.sizer.Fit(self)
 
     def select_config(self, event):
-        """
-        """
+        """"""
         self.config = self.sel_config.GetPath()
 
     def load_project(self, event):

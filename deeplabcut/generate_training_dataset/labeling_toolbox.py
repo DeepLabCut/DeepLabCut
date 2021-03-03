@@ -144,7 +144,7 @@ class MainFrame(wx.Frame):
     """Contains the main GUI and button boxes"""
 
     def __init__(self, parent, config, imtypes, verify=False, frames=None):
-        ''' frames list of frames to verify for verify=True mode!'''
+        """ frames list of frames to verify for verify=True mode!"""
 
         # Settting the GUI size and panels design
         displays = (
@@ -309,7 +309,7 @@ class MainFrame(wx.Frame):
 
             # vid names
             self.verify_video_names = [Path(i).stem for i in self.videos]
-            #folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
+            # folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
             self.verify_frames = frames
             self.verify_counter = 0
 
@@ -798,10 +798,10 @@ class MainFrame(wx.Frame):
                 self.figure.delaxes(
                     self.figure.axes[1]
                 )  # Removes the axes corresponding to the colorbar
-                folder,imname=os.path.split(self.verify_frames[self.verify_counter])
+                folder, imname = os.path.split(self.verify_frames[self.verify_counter])
                 if folder in self.verify_video_names:
-                    print("Processing....", folder,imname)
-                    MainFrame.load_labeled_frame4verification(self,folder,imname)
+                    print("Processing....", folder, imname)
+                    MainFrame.load_labeled_frame4verification(self, folder, imname)
 
         else:
             #  Checks for the last image and disables the Next button
@@ -842,7 +842,9 @@ class MainFrame(wx.Frame):
                 self.axes.callbacks.connect("ylim_changed", self.onZoom)
 
                 self.buttonCounter = MainFrame.plot(self, self.img)
-                self.cidClick = self.canvas.mpl_connect("button_press_event", self.onClick)
+                self.cidClick = self.canvas.mpl_connect(
+                    "button_press_event", self.onClick
+                )
                 self.canvas.mpl_connect("button_release_event", self.onButtonRelease)
 
     def prevImage(self, event):
@@ -977,7 +979,6 @@ class MainFrame(wx.Frame):
             mode="w",
         )
 
-
     def onChecked(self, event):
         self.cb = event.GetEventObject()
         if self.cb.GetValue() == True:
@@ -996,8 +997,8 @@ class MainFrame(wx.Frame):
             self.toolbar.zoom()
             self.zoom.SetValue(False)
 
-    def load_labeled_frame4verification(self,folder,imname):
-        self.dir = os.path.join(self.project_path, 'labeled-data', folder)
+    def load_labeled_frame4verification(self, folder, imname):
+        self.dir = os.path.join(self.project_path, "labeled-data", folder)
 
         imlist = []
         for imtype in self.imtypes:
@@ -1033,7 +1034,9 @@ class MainFrame(wx.Frame):
             self.dataFrame.sort_index(inplace=True)
 
             # Find the corresponding frame!
-            self.iter=self.dataFrame.index.get_loc(os.path.join('labeled-data',folder,imname))
+            self.iter = self.dataFrame.index.get_loc(
+                os.path.join("labeled-data", folder, imname)
+            )
             self.img = self.dataFrame.index[self.iter]
             img_name = Path(self.img).name
 
@@ -1069,7 +1072,8 @@ def show(config, imtypes=["*.png"]):
     frame = MainFrame(None, config, imtypes).Show()
     app.MainLoop()
 
-def verify(config, frames, imtypes=["*.png"]): #for verification mode
+
+def verify(config, frames, imtypes=["*.png"]):  # for verification mode
     app = wx.App()
     frame = MainFrame(None, config, imtypes, verify=True, frames=frames).Show()
     app.MainLoop()

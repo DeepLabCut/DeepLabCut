@@ -69,8 +69,8 @@ def visualize_joints(image, pose):
 
 def show_heatmaps(cfg, img, scmap, pose, cmap="jet"):
     interp = "bilinear"
-    all_joints = cfg['all_joints']
-    all_joints_names = cfg['all_joints_names']
+    all_joints = cfg["all_joints"]
+    all_joints_names = cfg["all_joints_names"]
     subplot_width = 3
     subplot_height = math.ceil((len(all_joints) + 1) / subplot_width)
     f, axarr = plt.subplots(subplot_height, subplot_width)

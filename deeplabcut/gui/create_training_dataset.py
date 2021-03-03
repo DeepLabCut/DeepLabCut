@@ -23,8 +23,7 @@ logo = os.path.join(media_path, "logo.png")
 
 
 class Create_training_dataset(wx.Panel):
-    """
-    """
+    """"""
 
     def __init__(self, parent, gui_size, cfg):
         """Constructor"""
@@ -311,8 +310,7 @@ class Create_training_dataset(wx.Panel):
         os.remove("help.txt")
 
     def select_config(self, event):
-        """
-        """
+        """"""
         self.config = self.sel_config.GetPath()
 
     def chooseOption(self, event):
@@ -350,8 +348,7 @@ class Create_training_dataset(wx.Panel):
         self.aug_type = list(self.augmentation_to_compare.GetCheckedStrings())
 
     def create_training_dataset(self, event):
-        """
-        """
+        """"""
         num_shuffles = self.shuffle.GetValue()
         config_file = auxiliaryfunctions.read_config(self.config)
         trainindex = self.trainingindex.GetValue()

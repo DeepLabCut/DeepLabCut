@@ -515,9 +515,7 @@ class MainFrame(wx.Frame):
                     cbar.set_ticklabels(self.all_bodyparts)
 
                 for ci, ind in enumerate(self.individual_names):
-                    col_idx = (
-                        0
-                    )  # variable for iterating through the colorscheme for all bodyparts
+                    col_idx = 0  # variable for iterating through the colorscheme for all bodyparts
                     image_points = []
                     if ind == "single":
                         if self.visualization_rdb.GetSelection() == 0:

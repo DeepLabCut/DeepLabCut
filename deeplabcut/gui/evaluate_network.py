@@ -26,8 +26,7 @@ from deeplabcut.utils import auxiliaryfunctions
 
 
 class Evaluate_network(wx.Panel):
-    """
-    """
+    """"""
 
     def __init__(self, parent, gui_size, cfg):
         """Constructor"""
