@@ -432,6 +432,48 @@ def label_frames(config, multiple_individualsGUI=False, imtypes=["*.png"]):
 
     os.chdir(startpath)
 
+def verify_labeled_frames(config, frames=[], multiple_individualsGUI=False, imtypes=["*.png"]):
+    """
+    Verify labels for particular
+    TODO: multi_individualGUI!
+
+    Parameter
+    ----------
+    config : string
+        String containing the full path of the config file in the project.
+
+    multiple_individualsGUI: bool, optional
+          If this is set to True, a user can label multiple individuals. Note for "multianimalproject=True" this is automatically used.
+          The default is ``False``; if provided it must be either ``True`` or ``False``.
+
+    imtypes: list of imagetypes to look for in folder to be labeled. By default only png images are considered.
+
+    Example
+    --------
+    Standard use case:
+    >>> deeplabcut.verify_labeled_frames('/myawesomeproject/reaching4thestars/config.yaml',frames=['labeled-data/video1/img00.png'])
+    --------
+
+    """
+    startpath = os.getcwd()
+    wd = Path(config).resolve().parents[0]
+    os.chdir(str(wd))
+    cfg = auxiliaryfunctions.read_config(config)
+    if cfg.get("multianimalproject", False) or multiple_individualsGUI:
+        print("MODE currently not supported for multianimal project")
+        from deeplabcut.generate_training_dataset import (
+            multiple_individuals_labeling_toolbox,
+        )
+
+        multiple_individuals_labeling_toolbox.show(config)
+    else:
+        from deeplabcut.generate_training_dataset import labeling_toolbox
+        if len(frames)>0:
+            labeling_toolbox.verify(config,frames=frames, imtypes=imtypes)
+        else:
+            print("Emty list passed, so those were verified!")
+    os.chdir(startpath)
+
 
 def verify_labeled_frames(config, frames, multiple_individualsGUI=False, imtypes=["*.png"]):
     """
