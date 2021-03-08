@@ -1462,7 +1462,7 @@ class MainFrame(wx.Frame):
 
 def show(config):
     app = wx.App()
-    frame = MainFrame(None, config).Show()
+    frame = MainFrame(None, config, ["*.png"]).Show()
     app.MainLoop()
 
 
