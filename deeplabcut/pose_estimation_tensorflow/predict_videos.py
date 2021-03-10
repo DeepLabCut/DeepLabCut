@@ -1160,6 +1160,8 @@ def convert_detections2tracklets(
     modelprefix="",
     track_method="box",
     edgewisecondition=True,
+    greedy=False,
+    calibrate=False,
 ):
     """
     This should be called at the end of deeplabcut.analyze_videos for multianimal projects!
@@ -1431,14 +1433,28 @@ def convert_detections2tracklets(
                     "uniquebodyparts"
                 ]:  # Initialize storage of the 'single' individual track
                     tracklets["s"] = {}
-                for index, imname in tqdm(enumerate(imnames)):
-                    animals, single = inferenceutils.assemble_individuals(
-                        inferencecfg,
-                        data[imname],
-                        len(cfg["multianimalbodyparts"]),
-                        PAF,
-                        partaffinityfield_graph,
+
+                ass = inferenceutils.Assembler(
+                    data,
+                    max_n_individuals=inferencecfg["topktoretain"],
+                    n_multibodyparts=len(cfg["multianimalbodyparts"]),
+                    graph=partaffinityfield_graph,
+                    paf_inds=PAF,
+                    greedy=greedy,
+                    pcutoff=inferencecfg["pcutoff"],
+                    min_affinity=inferencecfg["paf_threshold"]
+                )
+                if calibrate:
+                    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+                    train_data_file = os.path.join(
+                        cfg["project_path"],
+                        str(trainingsetfolder),
+                        "CollectedData_" + cfg["scorer"] + ".h5",
                     )
+                    ass.calibrate(train_data_file)
+
+                for index, imname in tqdm(enumerate(imnames)):
+                    animals, single = ass._assemble(data[imname], index)
                     if single is not None:
                         tracklets["s"][imname] = single
                     if animals is None:
