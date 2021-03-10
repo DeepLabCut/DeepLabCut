@@ -804,7 +804,7 @@ def _calc_within_between_pafs(
     return (within_train, within_test), (between_train, between_test)
 
 
-def _calibrate_distances(data, metadata, qs=(10, 90)):
+def _calibrate_distances(data, metadata):
     d = data.copy()
     d.pop('metadata', None)
     train_inds = set(metadata["data"]["trainIndices"])
@@ -813,16 +813,12 @@ def _calibrate_distances(data, metadata, qs=(10, 90)):
         if i in train_inds:
             for e, v in dict_['prediction']['costs'].items():
                 dists[e].extend(np.diag(v['distance']))
-    # arr = np.ma.masked_invalid(np.vstack(list(dists.values())))
-    # av = arr.mean(axis=1)
-    # sd = arr.std(axis=1)
+    arr = np.ma.masked_invalid(np.vstack(list(dists.values())))
+    av = arr.mean(axis=1)
+    sd = arr.std(axis=1)
     funcs = dict()
-    # for ind in av.nonzero()[0]:
-    #     funcs[ind] = lambda x, ind=ind: np.exp(-(x - av[ind]) ** 2 / sd[ind] ** 2)
-    for ind, vals in dists.items():
-        temp = np.asarray(vals)
-        temp = temp[np.isfinite(temp)]
-        funcs[ind] = np.percentile(temp, qs)
+    for ind in av.nonzero()[0]:
+        funcs[ind] = lambda x, ind=ind: np.exp(-(x - av[ind]) ** 2 / sd[ind] ** 2)
     return funcs
 
 
