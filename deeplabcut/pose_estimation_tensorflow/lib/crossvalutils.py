@@ -935,10 +935,8 @@ def compare_best_and_worst_graphs(
     inference_config,
     full_data_file,
     metadata_file,
-    use_springs=False,
     pcutoff=0.3,
     metric="auc",
-    use_dists=True,
     naive_edges=None,
 ):
     cfg = auxiliaryfunctions.read_plainconfig(inference_config)
@@ -949,8 +947,6 @@ def compare_best_and_worst_graphs(
         data = pickle.load(file)
     with open(metadata_file, "rb") as file:
         metadata = pickle.load(file)
-
-    dist_funcs = _calibrate_distances(data, metadata) if use_dists else None
 
     params = _set_up_evaluation(data)
     _ = data.pop("metadata")
@@ -967,8 +963,6 @@ def compare_best_and_worst_graphs(
         data,
         params,
         paf_inds_best,
-        use_springs,
-        dist_funcs,
     )
     paf_inds_worst, thresholds = _get_n_best_paf_graphs(
         data,
@@ -983,8 +977,6 @@ def compare_best_and_worst_graphs(
         data,
         params,
         paf_inds_worst,
-        use_springs,
-        dist_funcs,
     )
     if naive_edges is None:
         inds = sorted(set(ind for i in thresholds for ind in params["paf_graph"][i]))
@@ -1004,8 +996,6 @@ def compare_best_and_worst_graphs(
         data,
         params,
         paf_inds_naive,
-        use_springs,
-        dist_funcs,
     )
     return pd.concat(
         (results_naive[1], results_best[1], results_worst[1]),
@@ -1088,7 +1078,6 @@ def cross_validate_paf_graphs(
     full_data_file,
     metadata_file,
     output_name="",
-    use_springs=False,
     pcutoff=0.3,
     overwrite_config=False,
 ):
@@ -1116,8 +1105,6 @@ def cross_validate_paf_graphs(
         data,
         params,
         paf_inds,
-        use_springs,
-        dist_funcs
     )
     # Select optimal PAF graph
     df = results[1]
