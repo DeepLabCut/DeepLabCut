@@ -7,15 +7,21 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
+import heapq
+import itertools
 import networkx as nx
 import numpy as np
+import pandas as pd
 from collections import defaultdict
-from itertools import combinations
-from math import sqrt
+from dataclasses import dataclass
+from math import sqrt, erf
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial import cKDTree
-from scipy.spatial.distance import cdist
+from scipy.spatial.distance import pdist, cdist
+from scipy.stats import gaussian_kde, chi2
 from tqdm import tqdm
+from typing import Tuple
+
 
 ###################################
 #### auxiliaryfunctions
@@ -458,9 +464,9 @@ def _link_detections(
                         curr_coords = [spring.layout[i] for i in curr_inds if i != -1]
                         new_coords = [spring.layout[i] for i in new_inds if i != -1]
                         curr_e = sum(sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-                                     for (x1, y1), (x2, y2) in combinations(curr_coords, 2))
+                                     for (x1, y1), (x2, y2) in itertools.combinations(curr_coords, 2))
                         new_e = sum(sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-                                    for (x1, y1), (x2, y2) in combinations(new_coords, 2))
+                                    for (x1, y1), (x2, y2) in itertools.combinations(new_coords, 2))
                         if new_e < curr_e:
                             subsets[[neigh_id, row], col] = ind, new_ind
                         counts[ind] = 0
@@ -639,9 +645,9 @@ def link_joints_to_individuals(
                         curr_coords = [spring.layout[i] for i in curr_inds if i != -1]
                         new_coords = [spring.layout[i] for i in new_inds if i != -1]
                         curr_e = sum(sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-                                     for (x1, y1), (x2, y2) in combinations(curr_coords, 2))
+                                     for (x1, y1), (x2, y2) in itertools.combinations(curr_coords, 2))
                         new_e = sum(sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-                                    for (x1, y1), (x2, y2) in combinations(new_coords, 2))
+                                    for (x1, y1), (x2, y2) in itertools.combinations(new_coords, 2))
                         if new_e < curr_e:
                             subsets[[neigh_id, row], col] = ind, new_ind
                         counts[ind] = 0
@@ -787,6 +793,133 @@ def assemble_individuals(
     return animals, single
 
 
+def _conv_square_to_condensed_indices(ind_row, ind_col, n):
+    if ind_row == ind_col:
+        raise ValueError('There are no diagonal elements in condensed matrices.')
+
+    if ind_row < ind_col:
+        ind_row, ind_col = ind_col, ind_row
+    return n * ind_col - ind_col * (ind_col + 1) // 2 + ind_row - 1 - ind_col
+
+
+Position = Tuple[float, float]
+
+
+@dataclass(frozen=True)
+class Joint:
+    pos: Position
+    confidence: float = 1.
+    label: int = None
+    idx: int = None
+    group: int = -1
+
+
+class Link:
+    def __init__(self, j1, j2, affinity=1):
+        self.j1 = j1
+        self.j2 = j2
+        self.affinity = affinity
+        self._length = sqrt((j1.pos[0] - j2.pos[0]) ** 2
+                            + (j1.pos[1] - j2.pos[1]) ** 2)
+
+    def __repr__(self):
+        return f'Link {self.idx}, affinity={self.affinity:.2f}, length={self.length:.2f}'
+
+    @property
+    def confidence(self):
+        return self.j1.confidence * self.j2.confidence
+
+    @property
+    def idx(self):
+        return self.j1.idx, self.j2.idx
+
+    @property
+    def length(self):
+        return self._length
+
+    @length.setter
+    def length(self, length):
+        self._length = length
+
+    def to_vector(self):
+        return [*self.j1.pos, *self.j2.pos]
+
+
+class Assembly:
+    def __init__(self, size):
+        self.data = np.full((size, 4), np.nan)
+        self._affinity = 0
+        self._links = []
+        self._visible = set()
+        self._idx = set()
+        self._dict = dict()
+
+    def __len__(self):
+        return len(self._visible)
+
+    def __contains__(self, assembly):
+        return bool(self._visible.intersection(assembly._visible))
+
+    def __add__(self, other):
+        if other in self:
+            raise ValueError('Assemblies contain shared joints.')
+
+        assembly = Assembly(self.data.shape[0])
+        for link in self._links + other._links:
+            assembly.add_link(link)
+        return assembly
+
+    @property
+    def affinity(self):
+        return self._affinity / self.n_links
+
+    @property
+    def n_links(self):
+        return len(self._links)
+
+    def add_joint(self, joint):
+        if joint.label in self._visible:
+            return False
+        self.data[joint.label] = *joint.pos, joint.confidence, joint.group
+        self._visible.add(joint.label)
+        self._idx.add(joint.idx)
+        return True
+
+    def remove_joint(self, joint):
+        if joint.label not in self._visible:
+            return False
+        self.data[joint.label] = np.nan
+        self._visible.remove(joint.label)
+        self._idx.remove(joint.idx)
+        return True
+
+    def add_link(self, link, store_dict=False):
+        if store_dict:
+            # Selective copy; deepcopy is >5x slower
+            self._dict = {
+                'data': self.data.copy(),
+                '_affinity': self._affinity,
+                '_links': self._links.copy(),
+                '_visible': self._visible.copy(),
+                '_idx': self._idx.copy(),
+            }
+        i1, i2 = link.idx
+        if i1 in self._idx and i2 in self._idx:
+            self._affinity += link.affinity
+            self._links.append(link)
+            return False
+        if link.j1.label in self._visible and link.j2.label in self._visible:
+            return False
+        self.add_joint(link.j1)
+        self.add_joint(link.j2)
+        self._affinity += link.affinity
+        self._links.append(link)
+        return True
+
+    def calc_pairwise_distances(self):
+        return pdist(self.data, metric='sqeuclidean')
+
+
 class Assembler:
     def __init__(
         self,
@@ -797,35 +930,32 @@ class Assembler:
         graph=None,
         paf_inds=None,
         greedy=False,
+        safe_edge=True,
         pcutoff=0.1,
-        paf_threshold=0.05,
-        sort_by='degree',
+        min_affinity=0.1,
+        nan_policy='little',
+        window_size=0,
         method='m1',
     ):
-        if sort_by not in ('affinity', 'degree'):
-            raise ValueError("`sort_by` must either be 'affinity' or 'degree'.")
-
         self.data = data
         self.metadata = self.parse_metadata(self.data)
         self.max_n_individuals = max_n_individuals
         self.n_multibodyparts = n_multibodyparts
+        self.n_uniquebodyparts = self.n_keypoints - n_multibodyparts
         self.greedy = greedy
+        self.safe_edge = safe_edge
         self.pcutoff = pcutoff
-        self.paf_threshold = paf_threshold
-        self.sort_by = sort_by
+        self.min_affinity = min_affinity
+        self.nan_policy = nan_policy
+        self.window_size = window_size
         self.method = method
         self.graph = graph or self.metadata['paf_graph']
         self.paf_inds = paf_inds or self.metadata['paf']
-
-        self.assemblies = np.full(
-            (len(self.metadata['imnames']), max_n_individuals, n_multibodyparts, 4),
-            fill_value=np.nan,
-        )
-        self.single = np.full(
-            (len(self.metadata['imnames']), self.n_keypoints - n_multibodyparts, 3),
-            fill_value=np.nan,
-        )
+        self._gamma = 0.01
         self._trees = dict()
+        self._kde = None
+        self.assemblies = dict()
+        self.unique = dict()
 
     def __getitem__(self, item):
         return self.data[self.metadata['imnames'][item]]
@@ -834,300 +964,410 @@ class Assembler:
     def n_keypoints(self):
         return self.metadata['num_joints']
 
-    def rank_frames_by_crowdedness(self, pcutoff=0.8, seed=None):
-        if seed is None:
-            seed = np.random.RandomState(69)
-        dists = []
-        for data in tqdm(self):
-            detections = self.flatten_detections(data)
-            xy = detections[detections[:, 2] >= pcutoff, :2]
-            centroids = kmeans_plusplus(xy, self.max_n_individuals, random_state=seed)[0]
-            dists.append(pdist(centroids).min())
-        return np.argsort(dists)[::-1]
+    def calibrate(self, train_data_file):
+        df = pd.read_hdf(train_data_file)
+        try:
+            df.drop('single', level='individuals', axis=1, inplace=True)
+        except KeyError:
+            pass
+        n_bpts = len(df.columns.get_level_values('bodyparts').unique())
+        xy = df.to_numpy().reshape((-1, n_bpts, 2))
+        xy = xy[~np.isnan(xy).any(axis=(1, 2))]
+        # TODO Normalize dists by longest length?
+        # TODO Bayesian multiple imputation of missing data
+        dists = np.vstack([pdist(data, 'sqeuclidean') for data in xy])
+        kde = gaussian_kde(dists.T)
+        kde.mean = np.mean(dists, axis=0)
+        self._kde = kde
+
+    def calc_assembly_mahalanobis_dist(
+        self,
+        assembly,
+        return_proba=False,
+        nan_policy='little',
+    ):
+        if self._kde is None:
+            raise ValueError('Assembler should be calibrated first with training data.')
+
+        dists = assembly.calc_pairwise_distances() - self._kde.mean
+        mask = np.isnan(dists)
+        if mask.any() and nan_policy == 'little':
+            inds = np.flatnonzero(~mask)
+            dists = dists[inds]
+            inv_cov = self._kde.inv_cov[np.ix_(inds, inds)]
+            # Correct distance to account for missing observations
+            factor = self._kde.d / len(inds)
+        else:
+            # Alternatively, reduce contribution of missing values to the Mahalanobis
+            # distance to zero by substituting the corresponding means.
+            dists[mask] = 0
+            mask.fill(False)
+            inv_cov = self._kde.inv_cov
+            factor = 1
+        dot = dists @ inv_cov
+        mahal = factor * sqrt(np.sum((dot * dists), axis=-1))
+        if return_proba:
+            proba = 1 - chi2.cdf(mahal, np.sum(~mask))
+            return mahal, proba
+        return mahal
+
+    def calc_link_probability(
+        self,
+        link,
+    ):
+        if self._kde is None:
+            raise ValueError('Assembler should be calibrated first with training data.')
+
+        i = link.j1.label
+        j = link.j2.label
+        ind = _conv_square_to_condensed_indices(i, j, self.n_multibodyparts)
+        mu = self._kde.mean[ind]
+        sigma = self._kde.covariance[i, j]
+        z = (link.length ** 2 - mu) / sigma
+        return 1 - 0.5 * (1 + erf(abs(z) / sqrt(2)))
 
     @staticmethod
-    def flatten_detections(data_dict):
-        xy = []
-        for i, (coords, conf) in enumerate(zip(data_dict['coordinates'][0],
-                                               data_dict['confidence'])):
+    def _flatten_detections(data_dict):
+        ind = 0
+        coordinates = data_dict['coordinates'][0]
+        confidence = data_dict['confidence']
+        ids = data_dict.get('identity', None)
+        if ids is None:
+            ids = [np.ones(len(arr), dtype=int) * -1 for arr in confidence]
+        else:
+            ids = [arr.argmax(axis=1) for arr in ids]
+        for i, (coords, conf, id_) in enumerate(zip(coordinates, confidence, ids)):
             if not np.any(coords):
                 continue
-            xy.append(np.c_[(coords, conf, [i] * len(coords))])
-        if not xy:
-            return None
-        xy = np.concatenate(xy)
-        ids = data_dict.get('identity', None)
-        if ids is not None:
-            data = np.empty((xy.shape[0], 6))
-            data[:, 3] = np.concatenate(ids).argmax(axis=1)
-        else:
-            data = np.empty((xy.shape[0], 5))
-        data[:, [0, 1, 2, -2]] = xy
-        data[:, -1] = np.arange(data.shape[0])
-        return data
+            for xy, p, g in zip(coords, conf, id_):
+                joint = Joint(tuple(xy), p.item(), i, ind, g)
+                ind += 1
+                yield joint
 
-    def extract_best_edges(
+    def extract_best_links(
         self,
-        detections,
+        joints_dict,
         costs,
         trees=None,
     ):
-        edges = []
+        links = []
         for (s, t), ind in zip(self.graph, self.paf_inds):
-            mask_s = detections[:, -2] == s
-            mask_t = detections[:, -2] == t
-            if not (np.any(mask_s) and np.any(mask_t)):
+            dets_s = joints_dict.get(s, None)
+            dets_t = joints_dict.get(t, None)
+            if dets_s is None or dets_t is None:
                 continue
-            dets_s = detections[mask_s]
-            dets_t = detections[mask_t]
+            lengths = costs[ind]['distance']
+            if np.isinf(lengths).all():
+                continue
             aff = costs[ind][self.method].copy()
-            aff[np.isnan(aff)] = 0  # FIXME Why is it even NaN??
+            aff[np.isnan(aff)] = 0
 
             if trees:
                 vecs = np.vstack(
-                    [[*xy_s, *xy_t] for xy_s in dets_s[:, :2] for xy_t in dets_t[:, :2]]
+                    [[*det_s.pos, *det_t.pos] for det_s in dets_s for det_t in dets_t]
                 )
                 dists = []
                 for n, tree in enumerate(trees, start=1):
                     d, _ = tree.query(vecs)
-                    dists.append(np.exp(-0.01 * n * d))
-                w = np.sum(dists, axis=0) / np.sum(np.exp(-0.01 * np.arange(1, len(dists) + 1)))
-                aff += w.reshape(aff.shape)
+                    dists.append(np.exp(-self._gamma * n * d))
+                w = np.mean(dists, axis=0)
+                aff *= w.reshape(aff.shape)
 
             if self.greedy:
-                conf = np.outer(dets_s[:, 2], dets_t[:, 2])
+                conf = np.asarray([
+                    [det_s.confidence * det_t.confidence for det_t in dets_t] for det_s in dets_s]
+                )
                 rows, cols = np.where(
                     (conf >= self.pcutoff * self.pcutoff)
-                    & (aff >= self.paf_threshold)
+                    & (aff >= self.min_affinity)
                 )
                 candidates = sorted(
-                    zip(rows, cols, aff[rows, cols]),
+                    zip(rows, cols, aff[rows, cols], lengths[rows, cols]),
                     key=lambda x: x[2], reverse=True,
                 )
-                connections = []
                 i_seen = set()
                 j_seen = set()
-                for i, j, w in candidates:
+                for i, j, w, l in candidates:
                     if i not in i_seen and j not in j_seen:
                         i_seen.add(i)
                         j_seen.add(j)
-                        ii = int(dets_s[i, -1])
-                        jj = int(dets_t[j, -1])
-                        connections.append([ii, jj, w])
-                        if len(connections) == self.max_n_individuals:
+                        links.append(Link(dets_s[i], dets_t[j], w))
+                        if len(i_seen) == self.max_n_individuals:
                             break
-                edges.extend(connections)
             else:  # Optimal keypoint pairing
-                inds_s = np.argsort(dets_s[:, 2])[::-1][:self.max_n_individuals]
-                inds_t = np.argsort(dets_t[:, 2])[::-1][:self.max_n_individuals]
-                keep_s = inds_s[dets_s[inds_s, 2] >= self.pcutoff]
-                keep_t = inds_t[dets_t[inds_t, 2] >= self.pcutoff]
-                dets_s = dets_s[keep_s]
-                dets_t = dets_t[keep_t]
+                inds_s = sorted(range(len(dets_s)),
+                                key=lambda x: dets_s[x].confidence,
+                                reverse=True)[:self.max_n_individuals]
+                inds_t = sorted(range(len(dets_t)),
+                                key=lambda x: dets_t[x].confidence,
+                                reverse=True)[:self.max_n_individuals]
+                keep_s = [ind for ind in inds_s if dets_s[ind].confidence >= self.pcutoff]
+                keep_t = [ind for ind in inds_t if dets_t[ind].confidence >= self.pcutoff]
                 aff = aff[np.ix_(keep_s, keep_t)]
                 rows, cols = linear_sum_assignment(aff, maximize=True)
                 for row, col in zip(rows, cols):
                     w = aff[row, col]
-                    if w >= self.paf_threshold:
-                        edges.append(
-                            [int(dets_s[row, -1]), int(dets_t[col, -1]), w]
-                        )
-        return edges
+                    if w >= self.min_affinity:
+                        links.append(Link(dets_s[keep_s[row]], dets_t[keep_t[col]], w))
+        return links
 
-    def form_individuals(
+    def _fill_assembly(
         self,
-        detections,
-        edges,
+        assembly,
+        lookup,
+        assembled,
+        safe_edge,
+        nan_policy,
     ):
-        n_missing = self.n_keypoints - len(np.unique(detections[:, -2]))
-        all_inds = detections[:, -2].astype(int)
-        G = nx.Graph()
-        G.add_weighted_edges_from(edges)
-        subsets0 = np.empty((0, self.n_keypoints))
+        stack = []
+        visited = set()
+        tabu = []
+        counter = itertools.count()
+
+        def push_to_stack(i):
+            for j, link in lookup[i].items():
+                if j in assembly._idx:
+                    continue
+                if link.idx in visited:
+                    continue
+                heapq.heappush(stack, (-link.affinity, link))
+                visited.add(link.idx)
+
+        for idx in assembly._idx:
+            push_to_stack(idx)
+
+        while stack and len(assembly) < self.n_multibodyparts:
+            _, best = heapq.heappop(stack)
+            i, j = best.idx
+            if i in assembly._idx:
+                new_ind = j
+            elif j in assembly._idx:
+                new_ind = i
+            else:
+                continue
+            if new_ind in assembled:
+                continue
+            if safe_edge:
+                d_old = self.calc_assembly_mahalanobis_dist(assembly, nan_policy=nan_policy)
+                success = assembly.add_link(best, store_dict=True)
+                if not success:
+                    assembly._dict = dict()
+                    continue
+                d = self.calc_assembly_mahalanobis_dist(assembly, nan_policy=nan_policy)
+                if d < d_old:
+                    push_to_stack(new_ind)
+                    try:
+                        _, _, link = heapq.heappop(tabu)
+                        heapq.heappush(stack, (-link.affinity, link))
+                    except IndexError:
+                        pass
+                else:
+                    heapq.heappush(tabu, (d - d_old, next(counter), best))
+                    assembly.__dict__.update(assembly._dict)
+                assembly._dict = dict()
+            else:
+                assembly.add_link(best)
+                push_to_stack(new_ind)
+
+    def build_assemblies(
+        self,
+        joints,
+        links,
+    ):
+        safe_edge = self.safe_edge & (self._kde is not None)
+
+        lookup = defaultdict(dict)
+        for link in links:
+            i, j = link.idx
+            lookup[i][j] = link
+            lookup[j][i] = link
+
+        assemblies = []
+        assembled = set()
+
         # Fill the subsets with unambiguous, complete individuals
-        to_remove = []
+        G = nx.Graph([link.idx for link in links])
         for chain in nx.connected_components(G):
-            if len(chain) == self.n_keypoints - n_missing:
-                row = -1 * np.ones(self.n_keypoints)
-                nodes = list(chain)
-                row[all_inds[nodes]] = nodes
-                subsets0 = np.vstack((subsets0, row))
-                to_remove.extend(nodes)
-        G.remove_nodes_from(to_remove)
-        if not len(G):
-            return subsets0.astype(int)
+            if len(chain) == self.n_multibodyparts:
+                edges = G.edges(chain)
+                assembly = Assembly(self.n_multibodyparts)
+                for link in links:
+                    i, j = link.idx
+                    if (i, j) in edges:
+                        assembly.add_link(link)
+                        lookup[i].pop(j)
+                        lookup[j].pop(i)
+                assembled.update(assembly._idx)
+                assemblies.append(assembly)
+        if len(assemblies) == self.max_n_individuals:
+            return assemblies
 
-        if self.sort_by == 'affinity':
-            # Sort connections in descending order of part affinity
-            edges_left = sorted(
-                G.edges.data('weight'),
-                key=lambda x: x[2],
-                reverse=True
+        for link in sorted(links, key=lambda x: x.affinity, reverse=True):
+            if any(i in assembled for i in link.idx):
+                continue
+            assembly = Assembly(self.n_multibodyparts)
+            assembly.add_link(link)
+            self._fill_assembly(
+                assembly, lookup, assembled, safe_edge, self.nan_policy,
             )
+            for link in assembly._links:
+                i, j = link.idx
+                lookup[i].pop(j)
+                lookup[j].pop(i)
+            assembled.update(assembly._idx)
+            assemblies.append(assembly)
+
+        # Fuse superfluous assemblies
+        if len(assemblies) > self.max_n_individuals:
+            if safe_edge:
+                ds_old = [self.calc_assembly_mahalanobis_dist(assembly)
+                          for assembly in assemblies]
+                while len(assemblies) > self.max_n_individuals:
+                    ds = []
+                    for i, j in itertools.combinations(range(len(assemblies)), 2):
+                        if assemblies[j] not in assemblies[i]:
+                            temp = assemblies[i] + assemblies[j]
+                            d = self.calc_assembly_mahalanobis_dist(temp)
+                            delta = d - max(ds_old[i], ds_old[j])
+                            ds.append((i, j, delta, d, temp))
+                    if not ds:
+                        break
+                    min_ = sorted(ds, key=lambda x: x[2])
+                    i, j, delta, d, new = min_[0]
+                    if delta < 0 or len(min_) == 1:
+                        assemblies[i] = new
+                        assemblies.pop(j)
+                        ds_old[i] = d
+                        ds_old.pop(j)
+                    else:
+                        break
+            else:
+                store = dict()
+                for assembly in assemblies:
+                    if len(assembly) != self.n_multibodyparts:
+                        for i in assembly._idx:
+                            store[i] = assembly
+                used = [link for assembly in assemblies for link in assembly._links]
+                unconnected = [link for link in links if link not in used]
+                for link in unconnected:
+                    i, j = link.idx
+                    try:
+                        if store[j] not in store[i]:
+                            temp = store[i] + store[j]
+                            store[i].__dict__.update(temp.__dict__)
+                            assemblies.remove(store[j])
+                            for idx in store[j]._idx:
+                                store[idx] = store[i]
+                    except KeyError:
+                        pass
+
+        # Second pass without edge safety
+        for assembly in assemblies:
+            if len(assembly) != self.n_multibodyparts:
+                self._fill_assembly(assembly, lookup, assembled, False, '')
+                assembled.update(assembly._idx)
+
+        # Last pass to fill assemblies
+        discarded = set(joint for joint in joints if joint.idx not in assembled)
+        if len(assemblies) > self.max_n_individuals:
+            assemblies = sorted(assemblies, key=len, reverse=True)
+            for assembly in assemblies[self.max_n_individuals:]:
+                for link in assembly._links:
+                    discarded.update((link.j1, link.j2))
+            assemblies = assemblies[:self.max_n_individuals]
+        for joint in sorted(discarded, key=lambda x: x.confidence, reverse=True):
+            if safe_edge:
+                for assembly in assemblies:
+                    if joint.label in assembly._visible:
+                        continue
+                    d_old = self.calc_assembly_mahalanobis_dist(assembly)
+                    assembly.add_joint(joint)
+                    d = self.calc_assembly_mahalanobis_dist(assembly)
+                    if d < d_old:
+                        break
+                    assembly.remove_joint(joint)
+            else:
+                dists = []
+                for i, assembly in enumerate(assemblies):
+                    if joint.label in assembly._visible:
+                        continue
+                    d = cdist(assembly.data[:, :2], np.atleast_2d(joint.pos))
+                    dists.append((i, d.min()))
+                if not dists:
+                    continue
+                min_ = sorted(dists, key=lambda x: x[1])
+                ind, _ = min_[0]
+                assemblies[ind].add_joint(joint)
+
+        return assemblies
+
+    def _assemble(
+        self,
+        data_dict,
+        ind_frame,
+    ):
+        joints = list(self._flatten_detections(data_dict))
+        if not joints:
+            return None, None
+
+        bag = defaultdict(list)
+        for joint in joints:
+            bag[joint.label].append(joint)
+
+        if self.n_uniquebodyparts:
+            unique = np.full((self.n_uniquebodyparts, 3), np.nan)
+            for n, ind in enumerate(range(self.n_multibodyparts, self.n_keypoints)):
+                dets = bag[ind]
+                if not dets:
+                    continue
+                if len(dets) > 1:
+                    det = max(dets, key=lambda x: x.confidence)
+                else:
+                    det = dets[0]
+                unique[n] = *det.pos, det.confidence
+            if np.isnan(unique).all():
+                unique = None
         else:
-            # Alternatively, sort edges in decreasing order
-            # of their vertices' weighted degree. This is to encourage
-            # dense, strong connections to come first.
-            nodes_weight = defaultdict(int)
-            for ind1, ind2, score in G.edges.data('weight'):
-                nodes_weight[ind1] += score
-                nodes_weight[ind2] += score
-            for node in nodes_weight:
-                nodes_weight[node] /= G.degree(node)
-            edges_left = sorted(
-                G.edges.data('weight'),
-                key=lambda x: x[2] + nodes_weight[x[0]] + nodes_weight[x[1]],
-                reverse=True
-            )
+            unique = None
 
-        ambiguous = []
-        subsets = np.empty((0, self.n_keypoints))
-        for edge in edges_left:
-            nodes = list(edge[:2])
-            inds = all_inds[nodes]
-            subset_inds = np.nonzero(subsets[:, inds] == nodes)[0]
-            found = subset_inds.size
-            if found == 1:
-                subset = subsets[subset_inds[0]]
-                if np.all(subset[inds] != -1):
-                    ambiguous.append(edge)
-                elif subset[inds[0]] == -1:
-                    subset[inds[0]] = nodes[0]
-                else:
-                    subset[inds[1]] = nodes[1]
-            elif found == 2:
-                # Test whether nodes were found in the same subset
-                if subset_inds[0] == subset_inds[1]:
-                    continue
-                membership = np.sum(subsets[subset_inds] >= 0, axis=0)
-                if not np.any(membership == 2):
-                    subsets = self._merge_disjoint_subsets(subsets, *subset_inds)
-                else:
-                    ambiguous.append(edge)
-            else:
-                row = -1 * np.ones(self.n_keypoints)
-                row[inds] = nodes
-                subsets = np.vstack((subsets, row))
+        if not any(i in bag for i in range(self.n_multibodyparts)):
+            return None, unique
 
-        nrows = len(subsets)
-        left = self.max_n_individuals - len(subsets0)
-        if nrows > left > 0:
-            subsets = subsets[np.argsort(np.sum(subsets == -1, axis=1))]
-            for nrow in range(nrows - 1, left - 1, -1):
-                mask = (subsets[:left] >= 0).astype(int)
-                row = subsets[nrow]
-                mask2 = (row >= 0).astype(int)
-                temp = mask + mask2
-                free_rows = np.flatnonzero(~np.any(temp == 2, axis=1))
-                if not len(free_rows):
-                    continue
-                if free_rows.size == 1:
-                    ind = free_rows[0]
-                else:
-                    xy = detections[row[row != -1].astype(int), :2]
-                    dists = []
-                    for free_row in free_rows:
-                        sub_ = subsets[free_row]
-                        xy_ref = detections[sub_[sub_ != -1].astype(int), :2]
-                        dists.append(cdist(xy, xy_ref).min())
-                    ind = free_rows[np.argmin(dists)]
-                subsets = self._merge_disjoint_subsets(subsets, ind, nrow)
+        trees = []
+        for j in range(1, self.window_size + 1):
+            tree = self._trees.get(ind_frame - j, None)
+            if tree is not None:
+                trees.append(tree)
 
-        subsets = np.vstack((subsets0, subsets)).astype(int)
-        individuals, discarded = np.split(subsets, [self.max_n_individuals], axis=0)
-        if np.any(discarded):
-            # Add back the discarded groups of detections
-            dists = np.full((len(individuals), len(discarded)), np.inf)
-            # mask = (individuals >= 0).astype(int)
-            # mask2 = (discarded >= 0).astype(int)
-            # temp = mask[:, None] + mask2
-            # free_rows = ~np.any(temp == 2, axis=2)
-            # for i, row in enumerate(free_rows):
-            #     if not np.any(row):
-            #         continue
-            #     sub_ = individuals[i]
-            #     sub_ = sub_[sub_ != -1]
-            #     xy_ref = detections[sub_, :2]
-            #     for j, col in enumerate(row):
-            #         if col:
-            #             meh = discarded[j]
-            #             meh = meh[meh != -1]
-            #             xy = detections[meh, :2]
-            #             dists[i, j] = cdist(xy_ref, xy).min()
-            # rows, cols = linear_sum_assignment(dists)
-            # for row, col in zip(rows, cols):
-            #     individuals[row] += discarded[col] + 1
-        return individuals
+        links = self.extract_best_links(
+            bag,
+            data_dict["costs"],
+            trees,
+        )
+        if self._kde:
+            for link in links[::-1]:
+                p = max(self.calc_link_probability(link), 0.001)
+                link.affinity *= p
+                if link.affinity < self.min_affinity:
+                    links.remove(link)
 
-    def assemble(self, window_size=1):
-        all_animals = []
-        for i, data_dict in enumerate(tqdm(self)):
-            detections = self.flatten_detections(data_dict)
-            if detections is None:
-                all_animals.append((None, None))
-                continue
-
-            single_detections = detections[detections[:, -2] >= self.n_multibodyparts]
-            if len(single_detections):
-                single = np.full((len(single_detections), 3), np.nan)
-                for n, dets in enumerate(single_detections):
-                    if len(dets) > 1:
-                        single[n] = dets[np.argmax(dets[:, 2]), :3]
-                    elif len(dets) == 1:
-                        single[n] = dets[0, :3]
-            else:
-                single = None
-
-            multi_detections = detections[detections[:, -2] < self.n_multibodyparts]
-            if not len(multi_detections):
-                all_animals.append((None, single))
-                continue
-
-            trees = []
-            for j in range(1, window_size + 1):
-                tree = self._trees.get(i - j, None)
-                if tree is not None:
-                    trees.append(tree)
-            edges = self.extract_best_edges(
-                detections,
-                data_dict["costs"],
-                trees,
-            )
+        if self.window_size >= 1:
             # Store selected edges for subsequent frames
-            vecs = np.vstack([detections[edge[:2], :2] for edge in edges])
-            self._trees[i] = cKDTree(vecs.reshape((-1, 4)))
+            vecs = np.vstack([link.to_vector() for link in links])
+            self._trees[ind_frame] = cKDTree(vecs)
 
-            subsets = self.form_individuals(
-                detections,
-                edges,
-            )
-            for assembly, subset in zip(self.assemblies[i], subsets):
-                mask = subset != -1
-                assembly[mask, :3] = detections[subset[mask], :-2]
-            all_animals.append((self.assemblies[i], single))
-        return all_animals
+        assemblies = self.build_assemblies(joints, links)
+        return assemblies, unique
 
-    @staticmethod
-    def _merge_disjoint_subsets(subsets, row1, row2):
-        subsets[row1] += subsets[row2] + 1
-        return np.delete(subsets, row2, axis=0)
-
-    def propagate_assemblies(self, ind):
-        ref = np.concatenate(self.assemblies[ind])
-        valid = ~np.isnan(ref).any(axis=1)
-        ref = ref[valid]
-        xy_ref = ref[:, :2]
-        ids_ref = np.array([i for i in range(self.max_n_individuals)
-                            for _ in range(self.n_keypoints)])[valid]
-        dest = ind + 1
-        candidates = self.flatten_detections(self[dest])
-        neighbors = _find_closest_neighbors(xy_ref, candidates[:, :2], 2)
-        mask = neighbors != -1
-        inds = neighbors[mask]
-        ids_ref = ids_ref[mask]
-        for id_ in np.unique(ids_ref):
-            temp = candidates[inds[ids_ref == id_]]
-            self.assemblies[dest, id_, temp[:, -1].astype(int)] = temp[:, :3]
+    def assemble(
+        self,
+    ):
+        for i, data_dict in enumerate(tqdm(self)):
+            assemblies, unique = self._assemble(data_dict, i)
+            if assemblies is not None:
+                self.assemblies[i] = assemblies
+            if unique is not None:
+                self.unique[i] = unique
 
     @staticmethod
     def parse_metadata(data):
@@ -1144,15 +1384,24 @@ class Assembler:
         return params
 
     def to_h5(self, output_name):
-        data = self.assemblies[..., :3].reshape((self.assemblies.shape[0], -1))
+        data = np.full(
+            (len(self.metadata['imnames']),
+             self.max_n_individuals,
+             self.n_multibodyparts, 4),
+            fill_value=np.nan,
+        )
+        for ind, assemblies in self.assemblies.items():
+            for n, assembly in enumerate(assemblies):
+                data[ind, n] = assembly.data
         index = pd.MultiIndex.from_product(
             [
                 ['scorer'],
                 map(str, range(self.max_n_individuals)),
-                map(str, range(self.n_keypoints)),
+                map(str, range(self.n_multibodyparts)),
                 ['x', 'y', 'likelihood']
             ],
             names=['scorer', 'individuals', 'bodyparts', 'coords']
         )
-        df = pd.DataFrame(data, columns=index)
+        temp = data[..., :3].reshape((data.shape[0], -1))
+        df = pd.DataFrame(temp, columns=index)
         df.to_hdf(output_name, key='ass')
