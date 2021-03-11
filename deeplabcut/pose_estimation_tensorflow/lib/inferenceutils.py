@@ -1305,6 +1305,7 @@ class Assembler:
         self,
         data_dict,
         ind_frame,
+        return_links=False,
     ):
         joints = list(self._flatten_detections(data_dict))
         if not joints:
@@ -1357,6 +1358,8 @@ class Assembler:
             self._trees[ind_frame] = cKDTree(vecs)
 
         assemblies = self.build_assemblies(joints, links)
+        if return_links:
+            return assemblies, unique, links
         return assemblies, unique
 
     def assemble(

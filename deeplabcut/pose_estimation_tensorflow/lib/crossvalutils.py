@@ -772,7 +772,9 @@ def _calc_within_between_pafs(
     between_train = defaultdict(list)
     between_test = defaultdict(list)
     mask_diag = None
-    for i, dict_ in enumerate(data.values()):
+    for i, (key, dict_) in enumerate(data.items()):
+        if key == "metadata":
+            continue
         is_test = i in test_inds
         if test_set_only and not is_test:
             continue
@@ -863,7 +865,7 @@ def _benchmark_paf_graphs(
             paf_inds=paf,
             greedy=greedy,
             pcutoff=inference_cfg["pcutoff"],
-            min_affinity=inference_cfg["paf_threshold"]
+            min_affinity=inference_cfg["pafthreshold"]
         )
         if calibration_file:
             ass.calibrate(calibration_file)
@@ -875,17 +877,18 @@ def _benchmark_paf_graphs(
             if len(np.unique(gt[:, 2])) < 2:
                 continue
 
-            animals, unique = ass._assemble(data[imname]["prediction"], i)
-
-            # Count the number of missed bodyparts
+            animals, unique, links = ass._assemble(
+                data[imname]["prediction"], i, return_links=True,
+            )
+            # Count the number of unassembled bodyparts
+            n_dets = len(set((i for link in links for i in link.idx)))
             n_animals = len(animals)
-            n_dets = gt.shape[0]
             if not n_animals:
                 if n_dets:
                     scores[i, 0] = 1
             else:
                 animals = [
-                    np.c_[animal, np.ones(animal.shape[0]) * n]
+                    np.c_[animal.data, np.ones(animal.data.shape[0]) * n]
                     for n, animal in enumerate(animals)
                 ]
                 hyp = np.concatenate(animals)
@@ -923,9 +926,10 @@ def compare_best_and_worst_graphs(
     metric="auc",
     naive_edges=None,
 ):
-    cfg = auxiliaryfunctions.read_plainconfig(inference_config)
-    cfg_temp = cfg.copy()
-    cfg_temp["pcutoff"] = pcutoff
+    cfg = auxiliaryfunctions.read_config(config)
+    inf_cfg = auxiliaryfunctions.read_plainconfig(inference_config)
+    inf_cfg_temp = inf_cfg.copy()
+    inf_cfg_temp["pcutoff"] = pcutoff
 
     with open(full_data_file, "rb") as file:
         data = pickle.load(file)
@@ -933,7 +937,6 @@ def compare_best_and_worst_graphs(
         metadata = pickle.load(file)
 
     params = _set_up_evaluation(data)
-    _ = data.pop("metadata")
     to_ignore = _filter_unwanted_paf_connections(config, params["paf_graph"])
     paf_inds_best, thresholds = _get_n_best_paf_graphs(
         data,
@@ -943,8 +946,8 @@ def compare_best_and_worst_graphs(
         metric=metric,
     )
     results_best = _benchmark_paf_graphs(
-        config,
-        cfg_temp,
+        cfg,
+        inf_cfg_temp,
         data,
         params,
         paf_inds_best,
@@ -959,8 +962,8 @@ def compare_best_and_worst_graphs(
         metric=metric,
     )
     results_worst = _benchmark_paf_graphs(
-        config,
-        cfg_temp,
+        cfg,
+        inf_cfg_temp,
         data,
         params,
         paf_inds_worst,
@@ -980,8 +983,8 @@ def compare_best_and_worst_graphs(
         metric=metric,
     )
     results_naive = _benchmark_paf_graphs(
-        config,
-        cfg_temp,
+        cfg,
+        inf_cfg_temp,
         data,
         params,
         paf_inds_naive,
@@ -1073,9 +1076,10 @@ def cross_validate_paf_graphs(
     calibrate=False,
     overwrite_config=False,
 ):
-    cfg = auxiliaryfunctions.read_plainconfig(inference_config)
-    cfg_temp = cfg.copy()
-    cfg_temp["pcutoff"] = pcutoff
+    cfg = auxiliaryfunctions.read_config(config)
+    inf_cfg = auxiliaryfunctions.read_plainconfig(inference_config)
+    inf_cfg_temp = inf_cfg.copy()
+    inf_cfg_temp["pcutoff"] = pcutoff
 
     with open(full_data_file, "rb") as file:
         data = pickle.load(file)
@@ -1083,7 +1087,6 @@ def cross_validate_paf_graphs(
         metadata = pickle.load(file)
 
     params = _set_up_evaluation(data)
-    _ = data.pop("metadata")
     to_ignore = _filter_unwanted_paf_connections(config, params["paf_graph"])
     paf_inds, thresholds = _get_n_best_paf_graphs(
         data,
@@ -1103,8 +1106,8 @@ def cross_validate_paf_graphs(
         calibration_file = ""
 
     results = _benchmark_paf_graphs(
-        config,
-        cfg_temp,
+        cfg,
+        inf_cfg_temp,
         data,
         params,
         paf_inds,
