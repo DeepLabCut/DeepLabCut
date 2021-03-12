@@ -26,8 +26,8 @@ else:
 import tensorflow.contrib.slim as slim
 
 from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.pose_estimation_tensorflow.dataset.factory import (
-    create as create_dataset,
+from deeplabcut.pose_estimation_tensorflow.datasets.factory import (
+    pose_factory,
 )
 from deeplabcut.pose_estimation_tensorflow.nnet.net_factory import pose_net
 from deeplabcut.pose_estimation_tensorflow.nnet.pose_net import get_batch_spec
@@ -143,7 +143,7 @@ def train(
         print("Activating limb prediction...")
         cfg["pairwise_predict"] = True
 
-    dataset = create_dataset(cfg)
+    dataset = pose_factory.build_dataset(cfg)
     batch_spec = get_batch_spec(cfg)
     batch, enqueue_op, placeholders = setup_preloading(batch_spec)
 

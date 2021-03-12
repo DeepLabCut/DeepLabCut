@@ -17,7 +17,7 @@ import tensorflow as tf
 import tensorflow.contrib.slim as slim
 from tensorflow.contrib.slim.nets import resnet_v1
 
-from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import Batch
+from deeplabcut.pose_estimation_tensorflow.datasets.pose_base import Batch
 from deeplabcut.pose_estimation_tensorflow.nnet import losses
 
 vers = (tf.__version__).split(".")

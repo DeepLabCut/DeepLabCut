@@ -9,7 +9,7 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 from deeplabcut.pose_estimation_tensorflow.config import *
-from deeplabcut.pose_estimation_tensorflow.dataset import *
+from deeplabcut.pose_estimation_tensorflow.datasets import *
 from deeplabcut.pose_estimation_tensorflow.default_config import *
 from deeplabcut.pose_estimation_tensorflow.evaluate import *
 from deeplabcut.pose_estimation_tensorflow.evaluate_multianimal import (

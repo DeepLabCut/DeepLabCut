@@ -59,7 +59,7 @@ def extract_maps(
         predict_multianimal as predictma,
     )
     from deeplabcut.pose_estimation_tensorflow.config import load_config
-    from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import data_to_input
+    from deeplabcut.pose_estimation_tensorflow.datasets.pose_base import data_to_input
     from deeplabcut.utils import auxiliaryfunctions
     from tqdm import tqdm
     import tensorflow as tf

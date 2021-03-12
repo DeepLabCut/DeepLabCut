@@ -12,10 +12,10 @@ import scipy.io
 import scipy.ndimage
 
 from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.pose_estimation_tensorflow.dataset.factory import (
-    create as create_dataset,
+from deeplabcut.pose_estimation_tensorflow.datasets.factory import (
+    pose_factory
 )
-from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import Batch
+from deeplabcut.pose_estimation_tensorflow.datasets.pose_base import Batch
 from deeplabcut.pose_estimation_tensorflow.nnet.predict import (
     setup_pose_prediction,
     extract_cnn_output,
@@ -28,7 +28,7 @@ def test_net(visualise, cache_scoremaps):
     logging.basicConfig(level=logging.INFO)
 
     cfg = load_config()
-    dataset = create_dataset(cfg)
+    dataset = pose_factory.build_dataset(cfg)
     dataset.set_shuffle(False)
     dataset.set_test_mode(True)
 
