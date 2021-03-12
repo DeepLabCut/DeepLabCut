@@ -1,6 +1,4 @@
 import os
-
-os.environ["DLClight"] = "True"
 import pytest
 from deeplabcut.utils.auxfun_videos import VideoWriter
 

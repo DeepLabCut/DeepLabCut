@@ -27,10 +27,3 @@ from deeplabcut.pose_estimation_tensorflow.train import *
 from deeplabcut.pose_estimation_tensorflow.training import *
 from deeplabcut.pose_estimation_tensorflow.util import *
 from deeplabcut.pose_estimation_tensorflow.visualizemaps import *
-
-"""
-import os
-if os.environ.get('DLClight', default=False) == 'True':
-    pass
-else:
-"""

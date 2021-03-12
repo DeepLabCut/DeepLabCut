@@ -7,16 +7,17 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
-
-import os
-
-guistate = os.environ.get("DLClight", default="False")
+try:
+    import wx
+    lite = False
+except ModuleNotFoundError:
+    lite = True
 
 # if module is executed directly (i.e. `python -m deeplabcut.__init__`) launch straight into the GUI
-if guistate == "False":  # or not guistate:
+if not lite:
     print("Starting GUI...")
     import deeplabcut
 
     deeplabcut.launch_dlc()
 else:
-    print("You are in DLClight mode, GUI cannot be started.")
+    print("You installed DLC lite, GUI cannot be started.")

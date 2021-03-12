@@ -19,8 +19,6 @@ def install(package):
 
 install('tensorflow==1.13.1')
 
-os.environ["DLClight"]="True"
-
 import deeplabcut as dlc
 
 from pathlib import Path
