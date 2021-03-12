@@ -9,15 +9,9 @@ Licensed under GNU Lesser General Public License v3.0
 
 """
 
-import os
+import sys
 
 import wx
-
-from deeplabcut.utils import auxiliaryfunctions
-
-dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
-media_path = os.path.join(dlcparent_path, "gui", "media")
-logo = os.path.join(media_path, "logo.png")
 
 
 class Load_project(wx.Panel):

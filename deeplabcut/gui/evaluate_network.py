@@ -18,10 +18,7 @@ import webbrowser
 import wx
 
 import deeplabcut
-
-media_path = os.path.join(deeplabcut.__path__[0], "gui", "media")
-logo = os.path.join(media_path, "logo.png")
-
+from deeplabcut.gui import LOGO_PATH
 from deeplabcut.utils import auxiliaryfunctions
 
 
@@ -42,7 +39,7 @@ class Evaluate_network(wx.Panel):
         text = wx.StaticText(self, label="DeepLabCut - Step 6. Evaluate Network")
         self.sizer.Add(text, pos=(0, 0), flag=wx.TOP | wx.LEFT | wx.BOTTOM, border=15)
         # Add logo of DLC
-        icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(logo))
+        icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(LOGO_PATH))
         self.sizer.Add(
             icon, pos=(0, 4), flag=wx.TOP | wx.RIGHT | wx.ALIGN_RIGHT, border=5
         )

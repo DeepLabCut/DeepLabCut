@@ -15,11 +15,56 @@ import sys
 
 import wx
 
-import deeplabcut
+from deeplabcut.generate_training_dataset import check_labels
+from deeplabcut.gui import LOGO_PATH
 from deeplabcut.utils import auxiliaryfunctions, skeleton
+from pathlib import Path
 
-media_path = os.path.join(deeplabcut.__path__[0], "gui", "media")
-logo = os.path.join(media_path, "logo.png")
+
+def label_frames(config, multiple_individualsGUI=False, imtypes=["*.png"]):
+    """
+    Manually label/annotate the extracted frames. Update the list of body parts you want to localize in the config.yaml file first.
+
+    Parameter
+    ----------
+    config : string
+        String containing the full path of the config file in the project.
+
+    multiple_individualsGUI: bool, optional
+          If this is set to True, a user can label multiple individuals. Note for "multianimalproject=True" this is automatically used.
+          The default is ``False``; if provided it must be either ``True`` or ``False``.
+
+    imtypes: list of imagetypes to look for in folder to be labeled. By default only png images are considered.
+
+    Example
+    --------
+    Standard use case:
+    >>> deeplabcut.label_frames('/myawesomeproject/reaching4thestars/config.yaml')
+
+    To label multiple individuals (without having a multiple individuals project); otherwise this GUI is loaded automatically
+    >>> deeplabcut.label_frames('/analysis/project/reaching-task/config.yaml',multiple_individualsGUI=True)
+
+    To label other image types
+    >>> label_frames(config,multiple=False,imtypes=['*.jpg','*.jpeg'])
+    --------
+
+    """
+    startpath = os.getcwd()
+    wd = Path(config).resolve().parents[0]
+    os.chdir(str(wd))
+    cfg = auxiliaryfunctions.read_config(config)
+    if cfg.get("multianimalproject", False) or multiple_individualsGUI:
+        from deeplabcut.gui import (
+            multiple_individuals_labeling_toolbox,
+        )
+
+        multiple_individuals_labeling_toolbox.show(config)
+    else:
+        from deeplabcut.gui import labeling_toolbox
+
+        labeling_toolbox.show(config, imtypes=imtypes)
+
+    os.chdir(startpath)
 
 
 class Label_frames(wx.Panel):
@@ -39,7 +84,7 @@ class Label_frames(wx.Panel):
         text = wx.StaticText(self, label="DeepLabCut - Step 3. Label Frames")
         sizer.Add(text, pos=(0, 0), flag=wx.TOP | wx.LEFT | wx.BOTTOM, border=15)
         # Add logo of DLC
-        icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(logo))
+        icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(LOGO_PATH))
         sizer.Add(icon, pos=(0, 4), flag=wx.TOP | wx.RIGHT | wx.ALIGN_RIGHT, border=5)
 
         line1 = wx.StaticLine(self)
@@ -129,7 +174,7 @@ class Label_frames(wx.Panel):
             "This will now plot the labeled frames afer you have finished labeling!",
         )
         result = dlg.ShowModal()
-        deeplabcut.check_labels(self.config, visualizeindividuals=False)
+        check_labels(self.config, visualizeindividuals=False)
 
     def check_labelInd(self, event):
         dlg = wx.MessageDialog(
@@ -137,7 +182,7 @@ class Label_frames(wx.Panel):
             "This will now plot the labeled frames afer you have finished labeling!",
         )
         result = dlg.ShowModal()
-        deeplabcut.check_labels(self.config, visualizeindividuals=True)
+        check_labels(self.config, visualizeindividuals=True)
 
     def build_skeleton(self, event):
         skeleton.SkeletonBuilder(self.config)
@@ -148,7 +193,7 @@ class Label_frames(wx.Panel):
         self.config = self.sel_config.GetPath()
 
     def label_frames(self, event):
-        deeplabcut.label_frames(self.config)
+        label_frames(self.config)
 
     def reset_label_frames(self, event):
         """
