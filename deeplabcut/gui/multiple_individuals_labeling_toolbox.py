@@ -29,7 +29,7 @@ from matplotlib.backends.backend_wxagg import (
 )
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from deeplabcut.generate_training_dataset import auxfun_drag_label_multiple_individuals
+from deeplabcut.gui import auxfun_drag
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
 
@@ -565,8 +565,10 @@ class MainFrame(wx.Frame):
                     ]
                     self.num.append(circle)
                     self.axes.add_patch(circle[0])
-                    self.dr = auxfun_drag_label_multiple_individuals.DraggablePoint(
-                        circle[0], indiv, self.uniquebodyparts[self.rdb.GetSelection()]
+                    self.dr = auxfun_drag.DraggablePoint(
+                        circle[0],
+                        self.uniquebodyparts[self.rdb.GetSelection()],
+                        individual_names=indiv,
                     )
                     self.dr.connect()
                     self.buttonCounter[indiv].append(
@@ -626,8 +628,10 @@ class MainFrame(wx.Frame):
                     ]
                     self.num.append(circle)
                     self.axes.add_patch(circle[0])
-                    self.dr = auxfun_drag_label_multiple_individuals.DraggablePoint(
-                        circle[0], indiv, self.multibodyparts[self.rdb.GetSelection()]
+                    self.dr = auxfun_drag.DraggablePoint(
+                        circle[0],
+                        self.multibodyparts[self.rdb.GetSelection()],
+                        individual_names=indiv,
                     )
                     self.dr.connect()
                     self.buttonCounter[indiv].append(
@@ -1162,8 +1166,10 @@ class MainFrame(wx.Frame):
                         alpha=self.alpha,
                     )
                     self.axes.add_patch(circle)
-                    self.dr = auxfun_drag_label_multiple_individuals.DraggablePoint(
-                        circle, ind, self.uniquebodyparts[c]
+                    self.dr = auxfun_drag.DraggablePoint(
+                        circle,
+                        self.uniquebodyparts[c],
+                        individual_names=ind,
                     )
                     self.dr.connect()
                     self.dr.coords = image_points
@@ -1198,8 +1204,10 @@ class MainFrame(wx.Frame):
                         alpha=self.alpha,
                     )
                     self.axes.add_patch(circle)
-                    self.dr = auxfun_drag_label_multiple_individuals.DraggablePoint(
-                        circle, ind, self.multibodyparts[c]
+                    self.dr = auxfun_drag.DraggablePoint(
+                        circle,
+                        self.multibodyparts[c],
+                        individual_names=ind,
                     )
                     self.dr.connect()
                     self.dr.coords = image_points

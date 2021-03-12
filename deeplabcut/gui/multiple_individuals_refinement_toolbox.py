@@ -31,7 +31,7 @@ from matplotlib.backends.backend_wxagg import (
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from skimage import io
 
-from deeplabcut.refine_training_dataset import auxfun_drag_multi_individuals
+from deeplabcut.gui import auxfun_drag
 from deeplabcut.utils import auxiliaryfunctions, visualization
 
 
@@ -1086,8 +1086,11 @@ class MainFrame(wx.Frame):
                                 )
                             ]
                         self.axes.add_patch(self.circle[0])
-                        self.dr = auxfun_drag_multi_individuals.DraggablePoint(
-                            self.circle[0], ind, bp, self.likelihood
+                        self.dr = auxfun_drag.DraggablePoint(
+                            self.circle[0],
+                            bp,
+                            individual_names=ind,
+                            likelihood=self.likelihood,
                         )
                         self.dr.connect()
                         self.dr.coords = MainFrame.getLabels(
@@ -1137,8 +1140,11 @@ class MainFrame(wx.Frame):
                             ]
                         self.axes.add_patch(self.circle[0])
                         col_idx = col_idx + 1
-                        self.dr = auxfun_drag_multi_individuals.DraggablePoint(
-                            self.circle[0], ind, bp, self.likelihood
+                        self.dr = auxfun_drag.DraggablePoint(
+                            self.circle[0],
+                            bp,
+                            individual_names=ind,
+                            likelihood=self.likelihood,
                         )
                         self.dr.connect()
                         self.dr.coords = MainFrame.getLabels(
@@ -1188,8 +1194,11 @@ class MainFrame(wx.Frame):
                                 )
                             ]
                         self.axes.add_patch(self.circle[0])
-                        self.dr = auxfun_drag_multi_individuals.DraggablePoint(
-                            self.circle[0], ind, bp, self.likelihood
+                        self.dr = auxfun_drag.DraggablePoint(
+                            self.circle[0],
+                            bp,
+                            individual_names=ind,
+                            likelihood=self.likelihood,
                         )
                         self.dr.connect()
                         self.dr.coords = MainFrame.getLabels(
@@ -1239,8 +1248,11 @@ class MainFrame(wx.Frame):
                             ]
                         self.axes.add_patch(self.circle[0])
                         col_idx = col_idx + 1
-                        self.dr = auxfun_drag_multi_individuals.DraggablePoint(
-                            self.circle[0], ind, bp, self.likelihood
+                        self.dr = auxfun_drag.DraggablePoint(
+                            self.circle[0],
+                            bp,
+                            individual_names=ind,
+                            likelihood=self.likelihood,
                         )
                         self.dr.connect()
                         self.dr.coords = MainFrame.getLabels(

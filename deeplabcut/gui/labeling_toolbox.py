@@ -29,7 +29,7 @@ from matplotlib.backends.backend_wxagg import (
 )
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from deeplabcut.generate_training_dataset import auxfun_drag_label
+from deeplabcut.gui import auxfun_drag
 from deeplabcut.utils import auxiliaryfunctions
 
 # ###########################################################################
@@ -493,7 +493,7 @@ class MainFrame(wx.Frame):
                 ]
                 self.num.append(circle)
                 self.axes.add_patch(circle[0])
-                self.dr = auxfun_drag_label.DraggablePoint(
+                self.dr = auxfun_drag.DraggablePoint(
                     circle[0], self.bodyparts[self.rdb.GetSelection()]
                 )
                 self.dr.connect()
@@ -866,7 +866,7 @@ class MainFrame(wx.Frame):
                 )
             ]
             self.axes.add_patch(circle[0])
-            self.dr = auxfun_drag_label.DraggablePoint(
+            self.dr = auxfun_drag.DraggablePoint(
                 circle[0], self.bodyparts[bpindex]
             )
             self.dr.connect()
