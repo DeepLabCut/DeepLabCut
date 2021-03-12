@@ -25,4 +25,4 @@ dependencies:
   - nb_conda
   - Shapely
   - pip:
-    - deeplabcut[gui]
+    - deeplabcut
