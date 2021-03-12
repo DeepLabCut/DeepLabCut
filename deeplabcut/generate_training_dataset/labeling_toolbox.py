@@ -902,7 +902,7 @@ class MainFrame(wx.Frame):
         # Windows compatible
         self.dataFrame.sort_index(inplace=True)
         self.dataFrame = self.dataFrame.reindex(
-            self.bodyparts,
+            self.cfg["bodyparts"],
             axis=1,
             level=self.dataFrame.columns.names.index("bodyparts"),
         )
