@@ -31,7 +31,7 @@ from matplotlib.backends.backend_wxagg import (
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from skimage import io
 
-from deeplabcut.refine_training_dataset import auxfun_drag
+from deeplabcut.gui import auxfun_drag
 from deeplabcut.utils import auxiliaryfunctions
 
 
@@ -351,16 +351,6 @@ class MainFrame(wx.Frame):
 
     def closewindow(self, event):
         self.Destroy()
-
-    def delete_data(self):
-        self.press = None
-        DraggablePoint.lock = None
-        self.point.set_animated(False)
-        self.background = None
-        self.final_point = (np.nan, np.nan, self.individual_names, self.bodyParts)
-        self.point.center = (np.nan, np.nan)
-        self.coords.append(self.final_point)
-        self.point.figure.canvas.draw()
 
     def homeButton(self, event):
         self.image_panel.resetView()
@@ -999,7 +989,11 @@ class MainFrame(wx.Frame):
                 ]
 
             self.axes.add_patch(circle[0])
-            self.dr = auxfun_drag.DraggablePoint(circle[0], bp, self.likelihood)
+            self.dr = auxfun_drag.DraggablePoint(
+                circle[0],
+                bp,
+                likelihood=self.likelihood
+            )
             self.dr.connect()
             self.dr.coords = MainFrame.getLabels(self, self.iter)[bpindex]
             self.drs.append(self.dr)

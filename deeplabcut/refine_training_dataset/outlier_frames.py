@@ -204,9 +204,7 @@ def extract_outlier_frames(
             elif outlieralgorithm == "manual":
                 wd = Path(config).resolve().parents[0]
                 os.chdir(str(wd))
-                from deeplabcut.refine_training_dataset import (
-                    outlier_frame_extraction_toolbox,
-                )
+                from deeplabcut.gui import outlier_frame_extraction_toolbox
 
                 outlier_frame_extraction_toolbox.show(
                     config,
@@ -719,48 +717,6 @@ def PlottingSingleFramecv2(
             plt.gca().invert_yaxis()
             plt.savefig(imagename2)
             plt.close("all")
-
-
-def refine_labels(config, multianimal=False):
-    """
-    Refines the labels of the outlier frames extracted from the analyzed videos.\n Helps in augmenting the training dataset.
-    Use the function ``analyze_video`` to analyze a video and extracts the outlier frames using the function
-    ``extract_outlier_frames`` before refining the labels.
-
-    Parameters
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
-
-    Screens : int value of the number of Screens in landscape mode, i.e. if you have 2 screens, enter 2. Default is 1.
-
-    scale_h & scale_w : you can modify how much of the screen the GUI should occupy. The default is .9 and .8, respectively.
-
-    img_scale : if you want to make the plot of the frame larger, consider changing this to .008 or more. Be careful though, too large and you will not see the buttons fully!
-
-    Examples
-    --------
-    >>> deeplabcut.refine_labels('/analysis/project/reaching-task/config.yaml', Screens=2, imag_scale=.0075)
-    --------
-
-    """
-
-    startpath = os.getcwd()
-    wd = Path(config).resolve().parents[0]
-    os.chdir(str(wd))
-    cfg = auxiliaryfunctions.read_config(config)
-    if multianimal == False and not cfg.get("multianimalproject", False):
-        from deeplabcut.refine_training_dataset import refinement
-
-        refinement.show(config)
-    else:  # loading multianimal labeling GUI
-        from deeplabcut.refine_training_dataset import (
-            multiple_individuals_refinement_toolbox,
-        )
-
-        multiple_individuals_refinement_toolbox.show(config)
-
-    os.chdir(startpath)
 
 
 def merge_datasets(config, forceiterate=None):
