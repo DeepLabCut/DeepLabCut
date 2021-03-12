@@ -8,9 +8,10 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-from enum import Enum
 
+import abc
 import numpy as np
+from enum import Enum
 
 
 class Batch(Enum):
@@ -32,11 +33,6 @@ def data_to_input(data):
     return np.expand_dims(data, axis=0).astype(float)
 
 
-def data_to_input_batch(batch_data):
-    return np.array(batch_data)
-
-
-# Augmentation functions
 def mirror_joints_map(all_joints, num_joints):
     res = np.arange(num_joints)
     symmetric_joints = [p for p in all_joints if len(p) == 2]
@@ -46,7 +42,7 @@ def mirror_joints_map(all_joints, num_joints):
     return res
 
 
-def CropImage(joints, im, Xlabel, Ylabel, cfg):
+def crop_image(joints, im, Xlabel, Ylabel, cfg):
     """ Randomly cropping image around xlabel,ylabel taking into account size of image.
     Introduced in DLC 2.0 (Nature Protocols paper)"""
     widthforward = int(cfg["minsize"] + np.random.randint(cfg["rightwidth"]))
@@ -67,3 +63,17 @@ def CropImage(joints, im, Xlabel, Ylabel, cfg):
         * (joints[0, :, 2] < np.shape(im)[0])
     )[0]
     return joints[:, inbounds, :], im[Ystart : Ystop + 1, Xstart : Xstop + 1, :]
+
+
+class BasePoseDataset(metaclass=abc.ABCMeta):
+    # TODO Finish implementing actual abstract class
+    def __init__(self, cfg):
+        self.cfg = cfg
+
+    @abc.abstractmethod
+    def load_dataset(self):
+        ...
+
+    @abc.abstractmethod
+    def next_batch(self):
+        ...

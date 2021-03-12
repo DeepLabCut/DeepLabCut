@@ -23,20 +23,14 @@ import random as rand
 import imgaug.augmenters as iaa
 import numpy as np
 import scipy.io as sio
-from numpy import array as arr
-from numpy import concatenate as cat
 
-from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import (
-    Batch,
-    DataItem,
-    data_to_input_batch,
-)
 from deeplabcut.utils.auxfun_videos import imread
+from .pose_base import Batch, DataItem, BasePoseDataset
 
 
-class PoseDataset:
+class ImgaugPoseDataset(BasePoseDataset):
     def __init__(self, cfg):
-        self.cfg = cfg
+        super(ImgaugPoseDataset, self).__init__(cfg)
         self.data = self.load_dataset()
         self.batch_size = cfg.get("batch_size", 1)
         self.num_images = len(self.data)
@@ -216,7 +210,6 @@ class PoseDataset:
         scale = self.get_scale()
         while True:
             idx = np.random.choice(self.num_images)
-            scale = self.get_scale()
             size = self.data[idx].im_size
             target_size = np.ceil(size[1:3] * scale).astype(int)
             if self.is_valid_size(target_size[1] * target_size[0]):
@@ -237,7 +230,7 @@ class PoseDataset:
                 joint_id = [person_joints[:, 0].astype(int) for person_joints in joints]
                 joint_points = [person_joints[:, 1:3] for person_joints in joints]
                 joint_ids.append(joint_id)
-                batch_joints.append(arr(joint_points)[0])
+                batch_joints.append(np.array(joint_points)[0])
             batch_images.append(image)
         sm_size = np.ceil(target_size / (stride * 2)).astype(int) * 2
         assert len(batch_images) == self.batch_size
@@ -311,15 +304,15 @@ class PoseDataset:
             #    im = kps.draw_on_image(batch_images[i])
             #    imageio.imwrite('some_location/augmented/'+str(i)+'.png', im)
 
-            image_shape = arr(batch_images).shape[1:3]
-            batch = {Batch.inputs: arr(batch_images).astype(np.float64)}
+            image_shape = np.array(batch_images).shape[1:3]
+            batch = {Batch.inputs: np.array(batch_images).astype(np.float64)}
             if self.has_gt:
                 scmap_update = self.get_scmap_update(
                     joint_ids, batch_joints, data_items, sm_size, image_shape
                 )
                 batch.update(scmap_update)
 
-            batch = {key: data_to_input_batch(data) for (key, data) in batch.items()}
+            batch = {key: np.asarray(data) for (key, data) in batch.items()}
             batch[Batch.data_item] = data_items
             return batch
 
@@ -354,8 +347,8 @@ class PoseDataset:
     def gaussian_scmap(self, joint_id, coords, data_item, size, scale):
         # dist_thresh = float(self.cfg.pos_dist_thresh * scale)
         num_joints = self.cfg['num_joints']
-        scmap = np.zeros(cat([size, arr([num_joints])]))
-        locref_size = cat([size, arr([num_joints * 2])])
+        scmap = np.zeros(np.concatenate([size, np.array([num_joints])]))
+        locref_size = np.concatenate([size, np.array([num_joints * 2])])
         locref_mask = np.zeros(locref_size)
         locref_map = np.zeros(locref_size)
 
@@ -406,8 +399,8 @@ class PoseDataset:
         dist_thresh_sq = dist_thresh ** 2
         num_joints = self.cfg['num_joints']
 
-        scmap = np.zeros(cat([size, arr([num_joints])]))
-        locref_size = cat([size, arr([num_joints * 2])])
+        scmap = np.zeros(np.concatenate([size, np.array([num_joints])]))
+        locref_size = np.concatenate([size, np.array([num_joints * 2])])
         locref_mask = np.zeros(locref_size)
         locref_map = np.zeros(locref_size)
 

@@ -44,10 +44,7 @@ from tensorpack.dataflow.imgaug.transform import CropTransform
 from tensorpack.dataflow.parallel import MultiProcessRunnerZMQ, MultiProcessRunner
 from tensorpack.utils.utils import get_rng
 
-from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import (
-    Batch,
-    data_to_input,
-)
+from .pose_base import Batch, BasePoseDataset
 
 
 def img_to_bgr(im_path):
@@ -153,7 +150,7 @@ class Pose(RNGDataFlow):
                 yield data_item
 
 
-class PoseDataset:
+class TensorpackPoseDataset(BasePoseDataset):
     def __init__(self, cfg):
         # First, initializing variables (if they don't exist)
         # what is the fraction of training samples with scaling augmentation?
@@ -237,7 +234,7 @@ class PoseDataset:
 
         cfg["cropratio"] = cfg.get("cropratio", 0.4)
 
-        self.cfg = cfg
+        super(TensorpackPoseDataset, self).__init__(cfg)
         self.scaling = RandomResize(
             xrange=(
                 self.cfg["scale_jitter_lo"] * self.cfg["global_scale"],
@@ -459,7 +456,7 @@ class PoseDataset:
                 }
             )
 
-        batch = {key: data_to_input(data) for (key, data) in batch.items()}
+        batch = {key: np.asarray(data) for (key, data) in batch.items()}
 
         batch[Batch.data_item] = data_item
 

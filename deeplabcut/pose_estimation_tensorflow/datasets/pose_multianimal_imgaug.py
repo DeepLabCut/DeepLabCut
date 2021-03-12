@@ -17,20 +17,13 @@ import imageio
 import imgaug.augmenters as iaa
 import numpy as np
 from imgaug.augmentables import Keypoint, KeypointsOnImage
-from numpy import array as arr
-from numpy import concatenate as cat
-
-from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import (
-    Batch,
-    DataItem,
-    data_to_input_batch,
-)
+from .pose_base import BasePoseDataset, Batch, DataItem
 from deeplabcut.utils.auxfun_videos import imread
 
 
-class MAPoseDataset:
+class MAImgaugPoseDataset(BasePoseDataset):
     def __init__(self, cfg):
-        self.cfg = cfg
+        super(MAImgaugPoseDataset, self).__init__(cfg)
         self.data = self.load_dataset()
         self.num_images = len(self.data)
         self.batch_size = cfg['batch_size']
@@ -168,7 +161,7 @@ class MAPoseDataset:
                     [Joints[person_id][:, 1:3] for person_id in Joints.keys()]
                 )
                 joint_ids.append(joint_id)
-                batch_joints.append(arr(joint_points))
+                batch_joints.append(np.array(joint_points))
 
             batch_images.append(image)
 
@@ -264,8 +257,8 @@ class MAPoseDataset:
                     # imageio.imwrite(data_items[i].im_path.split('/')[-1],im)
                     imageio.imwrite(os.path.join(self.cfg['project_path'], str(i) + ".png"), im)
 
-            image_shape = arr(batch_images).shape[1:3]
-            batch = {Batch.inputs: arr(batch_images).astype(np.float64)}
+            image_shape = np.array(batch_images).shape[1:3]
+            batch = {Batch.inputs: np.array(batch_images).astype(np.float64)}
             if self.has_gt:
                 targetmaps = self.get_targetmaps_update(
                     joint_ids, batch_joints, data_items, sm_size, image_shape
@@ -275,7 +268,7 @@ class MAPoseDataset:
             # if returndata:
             #        return batch_images,batch_joints,targetmaps
 
-            batch = {key: data_to_input_batch(data) for (key, data) in batch.items()}
+            batch = {key: np.array(data) for (key, data) in batch.items()}
             batch[Batch.data_item] = data_items
             return batch
 
@@ -330,14 +323,14 @@ class MAPoseDataset:
         num_joints = self.cfg['num_joints']
         half_stride = stride / 2
 
-        scmap = np.zeros(cat([size, arr([num_joints + num_idchannel])]))
-        locref_size = cat([size, arr([num_joints * 2])])
+        scmap = np.zeros(np.concatenate([size, np.array([num_joints + num_idchannel])]))
+        locref_size = np.concatenate([size, np.array([num_joints * 2])])
 
         locref_map = np.zeros(locref_size)
         locref_scale = 1.0 / self.cfg['locref_stdev']
         dist_thresh_sq = dist_thresh ** 2
 
-        partaffinityfield_shape = cat([size, arr([self.cfg['num_limbs'] * 2])])
+        partaffinityfield_shape = np.concatenate([size, np.array([self.cfg['num_limbs'] * 2])])
         partaffinityfield_map = np.zeros(partaffinityfield_shape)
         if self.cfg['weigh_only_present_joints']:
             partaffinityfield_mask = np.zeros(partaffinityfield_shape)
@@ -559,15 +552,15 @@ class MAPoseDataset:
 
         num_joints = self.cfg['num_joints']
         half_stride = stride / 2
-        scmap = np.zeros(cat([size, arr([num_joints])]))
-        locref_size = cat([size, arr([num_joints * 2])])
+        scmap = np.zeros(np.concatenate([size, np.array([num_joints])]))
+        locref_size = np.concatenate([size, np.array([num_joints * 2])])
         locref_mask = np.zeros(locref_size)
         locref_map = np.zeros(locref_size)
 
         locref_scale = 1.0 / self.cfg['locref_stdev']
         dist_thresh_sq = dist_thresh ** 2
 
-        partaffinityfield_shape = cat([size, arr([self.cfg['num_limbs'] * 2])])
+        partaffinityfield_shape = np.concatenate([size, np.array([self.cfg['num_limbs'] * 2])])
         partaffinityfield_map = np.zeros(partaffinityfield_shape)
         if self.cfg['weigh_only_present_joints']:
             partaffinityfield_mask = np.zeros(partaffinityfield_shape)
