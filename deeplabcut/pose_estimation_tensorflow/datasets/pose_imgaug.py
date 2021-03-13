@@ -25,9 +25,11 @@ import numpy as np
 import scipy.io as sio
 
 from deeplabcut.utils.auxfun_videos import imread
+from .factory import PoseDatasetFactory
 from .pose_base import Batch, DataItem, BasePoseDataset
 
 
+@PoseDatasetFactory.register("imgaug")
 class ImgaugPoseDataset(BasePoseDataset):
     def __init__(self, cfg):
         super(ImgaugPoseDataset, self).__init__(cfg)

@@ -44,6 +44,7 @@ from tensorpack.dataflow.imgaug.transform import CropTransform
 from tensorpack.dataflow.parallel import MultiProcessRunnerZMQ, MultiProcessRunner
 from tensorpack.utils.utils import get_rng
 
+from .factory import PoseDatasetFactory
 from .pose_base import Batch, BasePoseDataset
 
 
@@ -150,6 +151,7 @@ class Pose(RNGDataFlow):
                 yield data_item
 
 
+@PoseDatasetFactory.register("tensorpack")
 class TensorpackPoseDataset(BasePoseDataset):
     def __init__(self, cfg):
         # First, initializing variables (if they don't exist)

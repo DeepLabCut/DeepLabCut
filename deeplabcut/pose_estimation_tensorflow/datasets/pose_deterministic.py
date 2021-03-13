@@ -16,6 +16,7 @@ import numpy as np
 import os
 import scipy.io as sio
 from deeplabcut.utils.auxfun_videos import imread, imresize
+from .factory import PoseDatasetFactory
 from .pose_base import (
     BasePoseDataset,
     DataItem,
@@ -26,6 +27,7 @@ from .pose_base import (
 )
 
 
+@PoseDatasetFactory.register("deterministic")
 class DeterministicPoseDataset(BasePoseDataset):
     def __init__(self, cfg):
         super(DeterministicPoseDataset, self).__init__(cfg)

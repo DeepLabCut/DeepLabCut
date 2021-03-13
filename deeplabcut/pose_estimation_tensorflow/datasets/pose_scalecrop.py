@@ -10,10 +10,11 @@ Adapted from DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
 """
 
-
+from .factory import PoseDatasetFactory
 from .pose_deterministic import DeterministicPoseDataset
 
 
+@PoseDatasetFactory.register("scalecrop")
 class ScalecropPoseDataset(DeterministicPoseDataset):
     def __init__(self, cfg):
         super(ScalecropPoseDataset, self).__init__(cfg)

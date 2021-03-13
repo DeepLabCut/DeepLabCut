@@ -17,10 +17,12 @@ import imageio
 import imgaug.augmenters as iaa
 import numpy as np
 from imgaug.augmentables import Keypoint, KeypointsOnImage
+from .factory import PoseDatasetFactory
 from .pose_base import BasePoseDataset, Batch, DataItem
 from deeplabcut.utils.auxfun_videos import imread
 
 
+@PoseDatasetFactory.register("multi-animal-imgaug")
 class MAImgaugPoseDataset(BasePoseDataset):
     def __init__(self, cfg):
         super(MAImgaugPoseDataset, self).__init__(cfg)

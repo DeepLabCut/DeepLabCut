@@ -10,29 +10,25 @@ Adapted from DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
 """
 
-
-from deeplabcut.pose_estimation_tensorflow.datasets import *
+import warnings
 
 
 class PoseDatasetFactory:
-    def __init__(self):
-        self._datasets = dict()
+    _datasets = dict()
 
-    def register_dataset(self, type_, dataset):
-        self._datasets[type_] = dataset
+    @classmethod
+    def register(cls, type_):
+        def wrapper(dataset):
+            if type_ in cls._datasets:
+                warnings.warn("Overwriting existing dataset {}.")
+            cls._datasets[type_] = dataset
+            return dataset
+        return wrapper
 
-    def build_dataset(self, cfg):
+    @classmethod
+    def create(cls, cfg):
         dataset_type = cfg["dataset_type"]
-        dataset = self._datasets.get(dataset_type)
+        dataset = cls._datasets.get(dataset_type)
         if dataset is None:
-            raise ValueError(f"Unsupported datasets of type {dataset_type}")
+            raise ValueError(f"Unsupported dataset of type {dataset_type}")
         return dataset(cfg)
-
-
-pose_factory = PoseDatasetFactory()
-pose_factory.register_dataset("default", ImgaugPoseDataset)
-pose_factory.register_dataset("imgaug", ImgaugPoseDataset)
-pose_factory.register_dataset("scalecrop", ScalecropPoseDataset)
-pose_factory.register_dataset("deterministic", DeterministicPoseDataset)
-pose_factory.register_dataset("tensorpack", TensorpackPoseDataset)
-pose_factory.register_dataset("multi-animal-imgaug", MAImgaugPoseDataset)
