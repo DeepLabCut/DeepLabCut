@@ -11,7 +11,6 @@ Adapted from DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
 """
 import re
-
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 from tensorflow.contrib.slim.nets import resnet_v1
@@ -20,11 +19,6 @@ from .base import BasePoseNet
 from .factory import PoseNetFactory
 from .layers import prediction_layer
 
-vers = tf.__version__.split(".")
-if int(vers[0]) == 1 and int(vers[1]) > 12:
-    TF = tf.compat.v1
-else:
-    TF = tf
 
 net_funcs = {
     "resnet_50": resnet_v1.resnet_v1_50,
@@ -54,7 +48,6 @@ class PoseResnet(BasePoseNet):
         self,
         features,
         end_points,
-        no_interm=False,
         scope="pose",
         reuse=None,
     ):
@@ -62,7 +55,7 @@ class PoseResnet(BasePoseNet):
             features, scope, reuse,
         )
         with tf.variable_scope(scope, reuse=reuse):
-            if self.cfg['intermediate_supervision'] and not no_interm:
+            if self.cfg['intermediate_supervision']:
                 layer_name = "resnet_v1_{}/block{}/unit_{}/bottleneck_v1"
                 num_layers = re.findall("resnet_([0-9]*)", self.cfg['net_type'])[0]
                 interm_name = layer_name.format(

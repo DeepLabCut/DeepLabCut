@@ -25,12 +25,6 @@ from .layers import prediction_layer
 from .utils import wrapper
 
 
-vers = tf.__version__.split(".")
-if int(vers[0]) == 1 and int(vers[1]) > 12:
-    TF = tf.compat.v1
-else:
-    TF = tf
-
 # Change the stride from 2 to 1 to get 16x downscaling instead of 32x.
 mobilenet_v2.V2_DEF["spec"][14] = mobilenet.op(conv_blocks.expanded_conv, stride=1, num_outputs=160)
 
@@ -175,6 +169,8 @@ class PoseMultiNet(BasePoseNet):
                         num_layers, 3, self.cfg['intermediate_supervision_layer']
                     )
                     feat = end_points[interm_name]
+                else:
+                    return out
                 pred_layer = out["part_pred_interm"] = prediction_layer(
                     self.cfg,
                     feat,

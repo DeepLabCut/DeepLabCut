@@ -17,11 +17,6 @@
   EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks.
   ICML'19, https://arxiv.org/abs/1905.11946
 """
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import collections
 import math
 import numpy as np

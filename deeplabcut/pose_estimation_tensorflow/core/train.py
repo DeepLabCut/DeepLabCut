@@ -93,17 +93,16 @@ def load_and_enqueue(sess, enqueue_op, coord, dataset, placeholders):
 
 def start_preloading(sess, enqueue_op, dataset, placeholders):
     coord = TF.train.Coordinator()
-
     t = threading.Thread(
-        target=load_and_enqueue, args=(sess, enqueue_op, coord, dataset, placeholders)
+        target=load_and_enqueue,
+        args=(sess, enqueue_op, coord, dataset, placeholders),
     )
     t.start()
-
     return coord, t
 
 
 def get_optimizer(loss_op, cfg):
-    tstep = tf.placeholder(tf.int32,shape=[],name='tstep')
+    tstep = tf.placeholder(tf.int32, shape=[], name='tstep')
     if 'efficientnet' in cfg['net_type']:
         print("Switching to cosine decay schedule with adam!")
         cfg['optimizer'] = "adam"
@@ -150,13 +149,13 @@ def get_optimizer_with_freeze(loss_op, cfg):
 
 
 def train(
-    config_yaml,
-    displayiters,
-    saveiters,
-    maxiters,
-    max_to_keep=5,
-    keepdeconvweights=True,
-    allow_growth=False,
+        config_yaml,
+        displayiters,
+        saveiters,
+        maxiters,
+        max_to_keep=5,
+        keepdeconvweights=True,
+        allow_growth=False,
 ):
     start_path = os.getcwd()
     os.chdir(
@@ -198,8 +197,8 @@ def train(
         elif 'efficientnet' in net_type:
             variables_to_restore = slim.get_variables_to_restore(include=["efficientnet"])
             variables_to_restore = {
-                    var.op.name.replace("efficientnet/", "")
-                    + '/ExponentialMovingAverage':var for var in variables_to_restore}
+                var.op.name.replace("efficientnet/", "")
+                + '/ExponentialMovingAverage': var for var in variables_to_restore}
         else:
             print("Wait for DLC 2.3.")
 
@@ -208,7 +207,7 @@ def train(
         max_to_keep=max_to_keep
     )  # selects how many snapshots are stored, see https://github.com/AlexEMG/DeepLabCut/issues/8#issuecomment-387404835
 
-    if allow_growth == True:
+    if allow_growth:
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
         sess = TF.Session(config=config)
@@ -233,20 +232,20 @@ def train(
 
     # Restore variables from disk.
     restorer.restore(sess, cfg['init_weights'])
-    if maxiters == None:
+    if maxiters is None:
         max_iter = int(cfg['multi_step'][-1][1])
     else:
         max_iter = min(int(cfg['multi_step'][-1][1]), int(maxiters))
         # display_iters = max(1,int(displayiters))
         print("Max_iters overwritten as", max_iter)
 
-    if displayiters == None:
+    if displayiters is None:
         display_iters = max(1, int(cfg['display_iters']))
     else:
         display_iters = max(1, int(displayiters))
         print("Display_iters overwritten as", display_iters)
 
-    if saveiters == None:
+    if saveiters is None:
         save_iters = max(1, int(cfg['save_iters']))
 
     else:
@@ -264,11 +263,11 @@ def train(
     print("Starting training....")
     for it in range(max_iter + 1):
         if 'efficientnet' in net_type:
-            dict={tstep: it}
-            current_lr = sess.run(learning_rate,feed_dict=dict)
+            dict = {tstep: it}
+            current_lr = sess.run(learning_rate, feed_dict=dict)
         else:
             current_lr = lr_gen.get_lr(it)
-            dict={learning_rate: current_lr}
+            dict = {learning_rate: current_lr}
 
         [_, loss_val, summary] = sess.run(
             [train_op, total_loss, merged_summaries],

@@ -567,7 +567,7 @@ def evaluate_network(
         )
     else:
         from deeplabcut.utils.auxfun_videos import imread, imresize
-        from deeplabcut.pose_estimation_tensorflow.apis import predict
+        from deeplabcut.pose_estimation_tensorflow.core import predict
         from deeplabcut.pose_estimation_tensorflow.config import load_config
         from deeplabcut.pose_estimation_tensorflow.datasets.utils import (
             data_to_input,

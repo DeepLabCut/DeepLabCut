@@ -13,7 +13,6 @@ https://github.com/eldar/pose-tensorflow
 import argparse
 import logging
 import os
-import threading
 from pathlib import Path
 
 import tensorflow as tf
@@ -30,85 +29,12 @@ from deeplabcut.pose_estimation_tensorflow.datasets import PoseDatasetFactory
 from deeplabcut.pose_estimation_tensorflow.nnets import PoseNetFactory
 from deeplabcut.pose_estimation_tensorflow.nnets.utils import get_batch_spec
 from deeplabcut.pose_estimation_tensorflow.util.logging import setup_logging
-
-
-class LearningRate(object):
-    def __init__(self, cfg):
-        self.steps = cfg['multi_step']
-        self.current_step = 0
-
-    def get_lr(self, iteration):
-        lr = self.steps[self.current_step][0]
-        if iteration == self.steps[self.current_step][1]:
-            self.current_step += 1
-
-        return lr
-
-
-def setup_preloading(batch_spec):
-    placeholders = {
-        name: TF.placeholder(tf.float32, shape=spec)
-        for (name, spec) in batch_spec.items()
-    }
-    names = placeholders.keys()
-    placeholders_list = list(placeholders.values())
-
-    QUEUE_SIZE = 20
-    vers = (tf.__version__).split(".")
-    if int(vers[0]) == 1 and int(vers[1]) > 12:
-        q = tf.queue.FIFOQueue(QUEUE_SIZE, [tf.float32] * len(batch_spec))
-    else:
-        q = tf.FIFOQueue(QUEUE_SIZE, [tf.float32] * len(batch_spec))
-    enqueue_op = q.enqueue(placeholders_list)
-    batch_list = q.dequeue()
-
-    batch = {}
-    for idx, name in enumerate(names):
-        batch[name] = batch_list[idx]
-        batch[name].set_shape(batch_spec[name])
-    return batch, enqueue_op, placeholders
-
-
-def load_and_enqueue(sess, enqueue_op, coord, dataset, placeholders):
-    while not coord.should_stop():
-        batch_np = dataset.next_batch()
-        food = {pl: batch_np[name] for (name, pl) in placeholders.items()}
-        sess.run(enqueue_op, feed_dict=food)
-
-
-def start_preloading(sess, enqueue_op, dataset, placeholders):
-    coord = TF.train.Coordinator()
-    t = threading.Thread(
-        target=load_and_enqueue, args=(sess, enqueue_op, coord, dataset, placeholders)
-    )
-    t.start()
-
-    return coord, t
-
-
-def get_optimizer(loss_op, cfg):
-    tstep = tf.placeholder(tf.int32,shape=[],name='tstep')
-    if 'efficientnet' in cfg['net_type']:
-        print("Switching to cosine decay schedule with adam!")
-        cfg['optimizer'] == "adam"
-        learning_rate = tf.train.cosine_decay(cfg['lr_init'],
-                                              tstep,
-                                              cfg['decay_steps'],
-                                              alpha=cfg['alpha_r'])
-    else:
-        learning_rate = tf.placeholder(tf.float32, shape=[])
-
-    if cfg['optimizer'] == "sgd":
-        optimizer = TF.train.MomentumOptimizer(
-            learning_rate=learning_rate, momentum=0.9
-        )
-    elif cfg['optimizer'] == "adam":
-        optimizer = TF.train.AdamOptimizer(learning_rate)
-    else:
-        raise ValueError("unknown optimizer {}".format(cfg['optimizer']))
-    train_op = slim.learning.create_train_op(loss_op, optimizer)
-
-    return learning_rate, train_op, tstep
+from deeplabcut.pose_estimation_tensorflow.core.train import (
+    setup_preloading,
+    start_preloading,
+    get_optimizer,
+    LearningRate
+)
 
 
 def train(
@@ -199,20 +125,20 @@ def train(
         init_weights = cfg['init_weights']
 
     restorer.restore(sess, init_weights)
-    if maxiters == None:
+    if maxiters is None:
         max_iter = int(cfg['multi_step'][-1][1])
     else:
         max_iter = min(int(cfg['multi_step'][-1][1]), int(maxiters))
         # display_iters = max(1,int(displayiters))
         print("Max_iters overwritten as", max_iter)
 
-    if displayiters == None:
+    if displayiters is None:
         display_iters = max(1, int(cfg['display_iters']))
     else:
         display_iters = max(1, int(displayiters))
         print("Display_iters overwritten as", display_iters)
 
-    if saveiters == None:
+    if saveiters is None:
         save_iters = max(1, int(cfg['save_iters']))
 
     else:
