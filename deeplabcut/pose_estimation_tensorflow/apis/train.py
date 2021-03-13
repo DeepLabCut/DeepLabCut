@@ -27,11 +27,11 @@ else:
 import tensorflow.contrib.slim as slim
 
 from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.pose_estimation_tensorflow.datasets.pose_base import Batch
-from deeplabcut.pose_estimation_tensorflow.datasets.factory import (
-    pose_factory,
+from deeplabcut.pose_estimation_tensorflow.datasets import (
+    Batch,
+    PoseDatasetFactory,
 )
-from deeplabcut.pose_estimation_tensorflow.nnet.net_factory import pose_net
+from deeplabcut.pose_estimation_tensorflow.nnets import PoseNetFactory
 from deeplabcut.pose_estimation_tensorflow.util.logging import setup_logging
 
 
@@ -172,11 +172,11 @@ def train(
         )
         cfg["batch_size"] = 1  # in case this was edited for analysis.-
 
-    dataset = pose_factory.build_dataset(cfg)
+    dataset = PoseDatasetFactory.create(cfg)
     batch_spec = get_batch_spec(cfg)
     batch, enqueue_op, placeholders = setup_preloading(batch_spec)
 
-    losses = pose_net(cfg).train(batch)
+    losses = PoseNetFactory.create(cfg).train(batch)
     total_loss = losses["total_loss"]
 
     for k, t in losses.items():

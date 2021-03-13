@@ -22,7 +22,7 @@ from skimage import io
 from skimage.util import img_as_ubyte
 from tqdm import tqdm
 
-from deeplabcut.pose_estimation_tensorflow.evaluate import make_results_file
+from deeplabcut.pose_estimation_tensorflow.apis.evaluate import make_results_file
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.utils import visualization
 
@@ -111,8 +111,8 @@ def evaluate_multianimal_full(
     modelprefix="",
     c_engine=False,
 ):
-    from deeplabcut.pose_estimation_tensorflow.nnet import predict
-    from deeplabcut.pose_estimation_tensorflow.nnet import (
+    from deeplabcut.pose_estimation_tensorflow.apis import (
+        predict,
         predict_multianimal as predictma,
     )
     from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal

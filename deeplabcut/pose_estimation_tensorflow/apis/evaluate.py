@@ -12,8 +12,6 @@ Licensed under GNU Lesser General Public License v3.0
 import argparse
 import os
 from pathlib import Path
-
-# Dependencies for anaysis
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -554,9 +552,7 @@ def evaluate_network(
     cfg = auxiliaryfunctions.read_config(config)
 
     if cfg.get("multianimalproject", False):
-        from deeplabcut.pose_estimation_tensorflow.evaluate_multianimal import (
-            evaluate_multianimal_full,
-        )
+        from .evaluate_multianimal import evaluate_multianimal_full
 
         # TODO: Make this code not so redundant!
         evaluate_multianimal_full(
@@ -571,9 +567,9 @@ def evaluate_network(
         )
     else:
         from deeplabcut.utils.auxfun_videos import imread, imresize
-        from deeplabcut.pose_estimation_tensorflow.nnet import predict
+        from deeplabcut.pose_estimation_tensorflow.apis import predict
         from deeplabcut.pose_estimation_tensorflow.config import load_config
-        from deeplabcut.pose_estimation_tensorflow.datasets.pose_base import (
+        from deeplabcut.pose_estimation_tensorflow.datasets.utils import (
             data_to_input,
         )
         from deeplabcut.utils import auxiliaryfunctions

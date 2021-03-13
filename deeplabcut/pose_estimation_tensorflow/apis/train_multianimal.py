@@ -26,11 +26,9 @@ else:
 import tensorflow.contrib.slim as slim
 
 from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.pose_estimation_tensorflow.datasets.factory import (
-    pose_factory,
-)
-from deeplabcut.pose_estimation_tensorflow.nnet.net_factory import pose_net
-from deeplabcut.pose_estimation_tensorflow.nnet.pose_net import get_batch_spec
+from deeplabcut.pose_estimation_tensorflow.datasets import PoseDatasetFactory
+from deeplabcut.pose_estimation_tensorflow.nnets import PoseNetFactory
+from deeplabcut.pose_estimation_tensorflow.nnets.utils import get_batch_spec
 from deeplabcut.pose_estimation_tensorflow.util.logging import setup_logging
 
 
@@ -143,11 +141,11 @@ def train(
         print("Activating limb prediction...")
         cfg["pairwise_predict"] = True
 
-    dataset = pose_factory.build_dataset(cfg)
+    dataset = PoseDatasetFactory.create(cfg)
     batch_spec = get_batch_spec(cfg)
     batch, enqueue_op, placeholders = setup_preloading(batch_spec)
 
-    losses = pose_net(cfg).train(batch)
+    losses = PoseNetFactory.create(cfg).train(batch)
     total_loss = losses["total_loss"]
 
     for k, t in losses.items():

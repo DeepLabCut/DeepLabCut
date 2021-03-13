@@ -30,13 +30,13 @@ if int(vers[0]) == 1 and int(vers[1]) > 12:
     TF = tf.compat.v1
 else:
     TF = tf
-from deeplabcut.pose_estimation_tensorflow.nnet.net_factory import pose_net
+from deeplabcut.pose_estimation_tensorflow.nnets.factory import PoseNetFactory
 
 
 def setup_pose_prediction(cfg):
     TF.reset_default_graph()
     inputs = TF.placeholder(tf.float32, shape=[cfg['batch_size'], None, None, 3])
-    net_heads = pose_net(cfg).test(inputs)
+    net_heads = PoseNetFactory.create(cfg).test(inputs)
     outputs = [net_heads["part_prob"]]
     if cfg['location_refinement']:
         outputs.append(net_heads["locref"])
@@ -205,7 +205,7 @@ def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
 def setup_GPUpose_prediction(cfg):
     tf.reset_default_graph()
     inputs = tf.placeholder(tf.float32, shape=[cfg['batch_size'], None, None, 3])
-    net_heads = pose_net(cfg).inference(inputs)
+    net_heads = PoseNetFactory.create(cfg).inference(inputs)
     outputs = [net_heads["pose"]]
 
     restorer = tf.train.Saver()
