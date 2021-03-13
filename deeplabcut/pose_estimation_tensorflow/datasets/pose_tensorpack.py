@@ -45,7 +45,8 @@ from tensorpack.dataflow.parallel import MultiProcessRunnerZMQ, MultiProcessRunn
 from tensorpack.utils.utils import get_rng
 
 from .factory import PoseDatasetFactory
-from .pose_base import Batch, BasePoseDataset
+from .pose_base import BasePoseDataset
+from .utils import Batch
 
 
 def img_to_bgr(im_path):

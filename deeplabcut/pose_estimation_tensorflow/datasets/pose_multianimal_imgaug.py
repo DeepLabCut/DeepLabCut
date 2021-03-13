@@ -18,7 +18,8 @@ import imgaug.augmenters as iaa
 import numpy as np
 from imgaug.augmentables import Keypoint, KeypointsOnImage
 from .factory import PoseDatasetFactory
-from .pose_base import BasePoseDataset, Batch, DataItem
+from .pose_base import BasePoseDataset
+from .utils import DataItem, Batch
 from deeplabcut.utils.auxfun_videos import imread
 
 

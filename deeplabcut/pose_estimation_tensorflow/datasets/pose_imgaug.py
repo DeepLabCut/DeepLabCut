@@ -26,7 +26,8 @@ import scipy.io as sio
 
 from deeplabcut.utils.auxfun_videos import imread
 from .factory import PoseDatasetFactory
-from .pose_base import Batch, DataItem, BasePoseDataset
+from .pose_base import BasePoseDataset
+from .utils import DataItem, Batch
 
 
 @PoseDatasetFactory.register("imgaug")

@@ -12,6 +12,8 @@ from .pose_scalecrop import ScalecropPoseDataset
 from .pose_imgaug import ImgaugPoseDataset
 from .pose_tensorpack import TensorpackPoseDataset
 from .pose_multianimal_imgaug import MAImgaugPoseDataset
+from .utils import Batch
+
 
 __all__ = [
     "DeterministicPoseDataset",
@@ -19,4 +21,5 @@ __all__ = [
     "ImgaugPoseDataset",
     "TensorpackPoseDataset",
     "MAImgaugPoseDataset",
+    "Batch",
 ]

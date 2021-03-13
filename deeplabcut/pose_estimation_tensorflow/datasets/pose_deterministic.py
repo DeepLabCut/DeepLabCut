@@ -17,8 +17,8 @@ import os
 import scipy.io as sio
 from deeplabcut.utils.auxfun_videos import imread, imresize
 from .factory import PoseDatasetFactory
-from .pose_base import (
-    BasePoseDataset,
+from .pose_base import BasePoseDataset
+from .utils import (
     DataItem,
     mirror_joints_map,
     crop_image,
