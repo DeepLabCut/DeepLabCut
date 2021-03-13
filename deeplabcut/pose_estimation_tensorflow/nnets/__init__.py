@@ -11,7 +11,17 @@ pose_estimation_tensorflow is based of Eldar's repository:
 https://github.com/eldar/pose-tensorflow
 
 """
-from deeplabcut.pose_estimation_tensorflow.nnet.losses import *
-from deeplabcut.pose_estimation_tensorflow.nnet.net_factory import *
-from deeplabcut.pose_estimation_tensorflow.nnet.pose_net import *
-from deeplabcut.pose_estimation_tensorflow.nnet.predict import *
+from .factory import PoseNetFactory
+from .efficientnet import PoseEfficientNet
+from .mobilenet import PoseMobileNet
+from .multi import PoseMultiNet
+from .resnet import PoseResnet
+
+
+__all__ = [
+    "PoseNetFactory",
+    "PoseEfficientNet",
+    "PoseMobileNet",
+    "PoseMultiNet",
+    "PoseResnet",
+]

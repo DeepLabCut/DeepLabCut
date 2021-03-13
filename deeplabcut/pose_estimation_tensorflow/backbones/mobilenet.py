@@ -27,49 +27,15 @@ import tensorflow as tf
 
 slim = tf.contrib.slim
 
+from deeplabcut.pose_estimation_tensorflow.nnets.conv_blocks import (
+    _fixed_padding,
+    _make_divisible,
+)
+
 
 @slim.add_arg_scope
 def apply_activation(x, name=None, activation_fn=None):
     return activation_fn(x, name=name) if activation_fn else x
-
-
-def _fixed_padding(inputs, kernel_size, rate=1):
-    """Pads the input along the spatial dimensions independently of input size.
-
-  Pads the input such that if it was used in a convolution with 'VALID' padding,
-  the output would have the same dimensions as if the unpadded input was used
-  in a convolution with 'SAME' padding.
-
-  Args:
-    inputs: A tensor of size [batch, height_in, width_in, channels].
-    kernel_size: The kernel to be used in the conv2d or max_pool2d operation.
-    rate: An integer, rate for atrous convolution.
-
-  Returns:
-    output: A tensor of size [batch, height_out, width_out, channels] with the
-      input, either intact (if kernel_size == 1) or padded (if kernel_size > 1).
-  """
-    kernel_size_effective = [
-        kernel_size[0] + (kernel_size[0] - 1) * (rate - 1),
-        kernel_size[0] + (kernel_size[0] - 1) * (rate - 1),
-    ]
-    pad_total = [kernel_size_effective[0] - 1, kernel_size_effective[1] - 1]
-    pad_beg = [pad_total[0] // 2, pad_total[1] // 2]
-    pad_end = [pad_total[0] - pad_beg[0], pad_total[1] - pad_beg[1]]
-    padded_inputs = tf.pad(
-        inputs, [[0, 0], [pad_beg[0], pad_end[0]], [pad_beg[1], pad_end[1]], [0, 0]]
-    )
-    return padded_inputs
-
-
-def _make_divisible(v, divisor, min_value=None):
-    if min_value is None:
-        min_value = divisor
-    new_v = max(min_value, int(v + divisor / 2) // divisor * divisor)
-    # Make sure that round down does not go down by more than 10%.
-    if new_v < 0.9 * v:
-        new_v += divisor
-    return new_v
 
 
 @contextlib.contextmanager

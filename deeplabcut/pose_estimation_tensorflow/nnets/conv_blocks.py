@@ -37,10 +37,8 @@ def _fixed_padding(inputs, kernel_size, rate=1):
     output: A tensor of size [batch, height_out, width_out, channels] with the
       input, either intact (if kernel_size == 1) or padded (if kernel_size > 1).
   """
-    kernel_size_effective = [
-        kernel_size[0] + (kernel_size[0] - 1) * (rate - 1),
-        kernel_size[0] + (kernel_size[0] - 1) * (rate - 1),
-    ]
+    size = kernel_size[0] + (kernel_size[0] - 1) * (rate - 1)
+    kernel_size_effective = [size, size]
     pad_total = [kernel_size_effective[0] - 1, kernel_size_effective[1] - 1]
     pad_beg = [pad_total[0] // 2, pad_total[1] // 2]
     pad_end = [pad_total[0] - pad_beg[0], pad_total[1] - pad_beg[1]]

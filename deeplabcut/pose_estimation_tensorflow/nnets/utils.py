@@ -18,14 +18,76 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import functools
 import json
 import os
 import sys
 import numpy as np
 import tensorflow as tf
-
+from deeplabcut.pose_estimation_tensorflow.datasets import Batch
 from tensorflow.contrib.tpu.python.ops import tpu_ops
 from tensorflow.contrib.tpu.python.tpu import tpu_function
+
+
+def wrapper(func, *args, **kwargs):
+    partial_func = functools.partial(func, *args, **kwargs)
+    functools.update_wrapper(partial_func, func)
+    return partial_func
+
+
+def get_batch_spec(cfg):
+    num_joints = cfg['num_joints']
+    num_limbs = cfg['num_limbs']
+    batch_size = cfg['batch_size']
+    batch_spec = {
+        Batch.inputs: [batch_size, None, None, 3],
+        Batch.part_score_targets: [
+            batch_size,
+            None,
+            None,
+            num_joints + cfg.get("num_idchannel", 0),
+        ],
+        Batch.part_score_weights: [
+            batch_size,
+            None,
+            None,
+            num_joints + cfg.get("num_idchannel", 0),
+        ],
+    }
+    if cfg['location_refinement']:
+        batch_spec[Batch.locref_targets] = [batch_size, None, None, num_joints * 2]
+        batch_spec[Batch.locref_mask] = [batch_size, None, None, num_joints * 2]
+    if cfg['pairwise_predict']:
+        print("Getting specs", cfg['dataset_type'], num_limbs, num_joints)
+        if (
+            "multi-animal" not in cfg['dataset_type']
+        ):  # this can be used for pairwise conditional
+            batch_spec[Batch.pairwise_targets] = [
+                batch_size,
+                None,
+                None,
+                num_joints * (num_joints - 1) * 2,
+            ]
+            batch_spec[Batch.pairwise_mask] = [
+                batch_size,
+                None,
+                None,
+                num_joints * (num_joints - 1) * 2,
+            ]
+        else:  # train partaffinity fields
+            batch_spec[Batch.pairwise_targets] = [
+                batch_size,
+                None,
+                None,
+                num_limbs * 2,
+            ]
+            batch_spec[Batch.pairwise_mask] = [
+                batch_size,
+                None,
+                None,
+                num_limbs * 2,
+            ]
+    return batch_spec
 
 
 def build_learning_rate(initial_lr,
