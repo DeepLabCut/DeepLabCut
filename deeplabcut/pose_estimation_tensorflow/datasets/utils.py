@@ -51,4 +51,3 @@ def crop_image(joints, im, Xlabel, Ylabel, cfg):
         * (joints[0, :, 2] < np.shape(im)[0])
     )[0]
     return joints[:, inbounds, :], im[Ystart : Ystop + 1, Xstart : Xstop + 1, :]
-

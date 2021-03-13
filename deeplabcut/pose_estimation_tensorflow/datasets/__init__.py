@@ -7,6 +7,7 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
+from .factory import PoseDatasetFactory
 from .pose_deterministic import DeterministicPoseDataset
 from .pose_scalecrop import ScalecropPoseDataset
 from .pose_imgaug import ImgaugPoseDataset
@@ -16,6 +17,7 @@ from .utils import Batch
 
 
 __all__ = [
+    "PoseDatasetFactory",
     "DeterministicPoseDataset",
     "ScalecropPoseDataset",
     "ImgaugPoseDataset",

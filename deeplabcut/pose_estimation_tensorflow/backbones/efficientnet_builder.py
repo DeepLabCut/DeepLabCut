@@ -23,8 +23,8 @@ import os
 import re
 import tensorflow as tf
 
-import deeplabcut.pose_estimation_tensorflow.nnet.efficientnet_model as efficientnet_model
-import deeplabcut.pose_estimation_tensorflow.nnet.utils as utils
+import deeplabcut.pose_estimation_tensorflow.backbones.efficientnet_model as efficientnet_model
+import deeplabcut.pose_estimation_tensorflow.nnets.utils as utils
 
 MEAN_RGB = [0.485 * 255, 0.456 * 255, 0.406 * 255]
 STDDEV_RGB = [0.229 * 255, 0.224 * 255, 0.225 * 255]
