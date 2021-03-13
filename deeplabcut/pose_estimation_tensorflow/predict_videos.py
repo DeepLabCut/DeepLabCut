@@ -26,7 +26,7 @@ from skimage.util import img_as_ubyte
 from tqdm import tqdm
 
 from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.pose_estimation_tensorflow.nnet import predict
+from deeplabcut.pose_estimation_tensorflow.core import predict
 from deeplabcut.utils import auxiliaryfunctions
 
 

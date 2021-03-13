@@ -19,7 +19,16 @@ class PoseNetFactory:
             net_type = "multi"
         else:
             net_type = cfg["net_type"]
-        net = cls._nets.get(net_type)
-        if net is None:
+        key = cls._find_matching_key(cls._nets, net_type)
+        if key is None:
             raise ValueError(f"Unsupported network of type {net_type}")
+        net = cls._nets.get(key)
         return net(cfg)
+
+    @staticmethod
+    def _find_matching_key(dict_, key):
+        try:
+            match = next(k for k in dict_ if k in key)
+        except StopIteration:
+            match = None
+        return match

@@ -44,10 +44,10 @@ class DeterministicPoseDataset(BasePoseDataset):
 
     def load_dataset(self):
         cfg = self.cfg
-        file_name = os.path.join(self.cfg['project_path'], cfg['datasets'])
+        file_name = os.path.join(self.cfg['project_path'], cfg['dataset'])
         mlab = sio.loadmat(file_name)
         self.raw_data = mlab
-        mlab = mlab["datasets"]
+        mlab = mlab["dataset"]
 
         num_images = mlab.shape[1]
         data = []

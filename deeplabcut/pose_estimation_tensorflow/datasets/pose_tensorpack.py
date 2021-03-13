@@ -46,7 +46,7 @@ from tensorpack.utils.utils import get_rng
 
 from .factory import PoseDatasetFactory
 from .pose_base import BasePoseDataset
-from .utils import Batch
+from .utils import Batch, data_to_input
 
 
 def img_to_bgr(im_path):
@@ -99,13 +99,11 @@ class Pose(RNGDataFlow):
     def load_dataset(self):
         cfg = self.cfg
         file_name = os.path.join(self.cfg['project_path'], cfg['dataset'])
-        # Load Matlab file dataset annotation
         mlab = sio.loadmat(file_name)
         self.raw_data = mlab
         mlab = mlab["dataset"]
 
         num_images = mlab.shape[1]
-        #        print('Dataset has {} images'.format(num_images))
         data = []
         has_gt = True
 
@@ -120,7 +118,6 @@ class Pose(RNGDataFlow):
             item.im_size = sample[1][0]
             if len(sample) >= 3:
                 joints = sample[2][0][0]
-                #                print(sample)
                 joint_id = joints[:, 0]
                 # make sure joint ids are 0-indexed
                 if joint_id.size != 0:
@@ -277,12 +274,15 @@ class TensorpackPoseDataset(BasePoseDataset):
 
         self.has_gt = True
         self.set_shuffle(cfg['shuffle'])
-        p = Pose(cfg=self.cfg, shuffle=self.shuffle)
-        self.data = p.load_dataset()
+        self.data = self.load_dataset()
         self.num_images = len(self.data)
         df = self.get_dataflow(self.cfg)
         df.reset_state()
         self.aug = iter(df)
+
+    def load_dataset(self):
+        p = Pose(cfg=self.cfg, shuffle=self.shuffle)
+        return p.load_dataset()
 
     def augment(self, data):
         img = img_to_bgr(data.im_path)
@@ -459,7 +459,7 @@ class TensorpackPoseDataset(BasePoseDataset):
                 }
             )
 
-        batch = {key: np.asarray(data) for (key, data) in batch.items()}
+        batch = {key: data_to_input(data) for (key, data) in batch.items()}
 
         batch[Batch.data_item] = data_item
 

@@ -26,7 +26,7 @@ from tensorflow.python.tools import freeze_graph
 
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.pose_estimation_tensorflow.nnet import predict
+from deeplabcut.pose_estimation_tensorflow.core import predict
 
 
 def create_deploy_config_template():

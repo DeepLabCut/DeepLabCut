@@ -16,7 +16,7 @@ import numpy as np
 from skimage.util import img_as_ubyte
 from tqdm import tqdm
 
-from deeplabcut.pose_estimation_tensorflow.nnet import predict_multianimal as predict
+from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal as predict
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 from deeplabcut.utils.auxfun_videos import VideoWriter
 

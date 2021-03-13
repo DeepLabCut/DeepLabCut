@@ -30,6 +30,7 @@ from .pose_base import BasePoseDataset
 from .utils import DataItem, Batch
 
 
+@PoseDatasetFactory.register("default")
 @PoseDatasetFactory.register("imgaug")
 class ImgaugPoseDataset(BasePoseDataset):
     def __init__(self, cfg):

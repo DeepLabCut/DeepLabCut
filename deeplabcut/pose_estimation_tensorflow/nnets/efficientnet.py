@@ -1,4 +1,4 @@
-'''
+"""
 DeepLabCut 2.1.9 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
@@ -14,7 +14,7 @@ Effnet added by T. Biasi & AM
 Efficient Nets added by T. Biasi & AM
 See https://openaccess.thecvf.com/content/WACV2021/html/Mathis_Pretraining_Boosts_Out-of-Domain_Robustness_for_Pose_Estimation_WACV_2021_paper.html
 
-'''
+"""
 
 import tensorflow as tf
 import deeplabcut.pose_estimation_tensorflow.backbones.efficientnet_builder as eff
@@ -45,8 +45,8 @@ class PoseEfficientNet(BasePoseNet):
         return net, end_points
 
     def get_net(self, inputs, use_batch_norm=False, use_drop_out=False):
-        net, end_points = self.extract_features(inputs, use_batch_norm, use_drop_out)
-        return self.prediction_layers(net, end_points)
+        net, _ = self.extract_features(inputs, use_batch_norm, use_drop_out)
+        return self.prediction_layers(net)
 
     def test(self, inputs):
         heads = self.get_net(inputs, self.cfg['use_batch_norm'], self.cfg['use_drop_out'])
