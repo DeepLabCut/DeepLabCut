@@ -64,17 +64,11 @@ def extract_maps(
     from tqdm import tqdm
     import tensorflow as tf
 
-    vers = (tf.__version__).split(".")
-    if int(vers[0]) == 1 and int(vers[1]) > 12:
-        TF = tf.compat.v1
-    else:
-        TF = tf
-
     import pandas as pd
     from pathlib import Path
     import numpy as np
 
-    TF.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  #
     #    tf.logging.set_verbosity(tf.logging.WARN)
 

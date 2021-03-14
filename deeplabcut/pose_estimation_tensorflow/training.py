@@ -116,12 +116,6 @@ def train_network(
     """
     import tensorflow as tf
 
-    vers = (tf.__version__).split(".")
-    if int(vers[0]) == 1 and int(vers[1]) > 12:
-        TF = tf.compat.v1
-    else:
-        TF = tf
-
     # reload logger.
     import importlib
     import logging
@@ -131,7 +125,7 @@ def train_network(
 
     from deeplabcut.utils import auxiliaryfunctions
 
-    TF.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
     start_path = os.getcwd()
 
     # Read file path for pose_config file. >> pass it on

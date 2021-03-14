@@ -34,7 +34,7 @@ class PoseEfficientNet(BasePoseNet):
     def extract_features(self, inputs, use_batch_norm=False, use_drop_out=False):
         im_centered = self.center_inputs(inputs)
         im_centered /= tf.constant(eff.STDDEV_RGB, shape=[1, 1, 3])
-        with tf.variable_scope("efficientnet"):
+        with tf.compat.v1.variable_scope("efficientnet"):
             eff_net_type = self.cfg['net_type'].replace('_', '-')
             net, end_points = eff.build_model_base(
                 im_centered,

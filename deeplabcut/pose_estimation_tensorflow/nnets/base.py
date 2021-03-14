@@ -1,7 +1,6 @@
 import abc
 import tensorflow as tf
 from deeplabcut.pose_estimation_tensorflow.datasets import Batch
-from deeplabcut.pose_estimation_tensorflow.nnets import losses
 from .layers import prediction_layer
 
 
@@ -25,7 +24,7 @@ class BasePoseNet(metaclass=abc.ABCMeta):
             part_score_weights = 1.0
 
         def add_part_loss(pred_layer):
-            return tf.losses.sigmoid_cross_entropy(
+            return tf.compat.v1.losses.sigmoid_cross_entropy(
                 batch[Batch.part_score_targets],
                 heads[pred_layer],
                 part_score_weights
@@ -43,9 +42,9 @@ class BasePoseNet(metaclass=abc.ABCMeta):
             locref_targets = batch[Batch.locref_targets]
             locref_weights = batch[Batch.locref_mask]
             loss_func = (
-                losses.huber_loss
+                tf.compat.v1.losses.huber_loss
                 if self.cfg['locref_huber_loss']
-                else tf.losses.mean_squared_error
+                else tf.compat.v1.losses.mean_squared_error
             )
             loss["locref_loss"] = self.cfg['locref_loss_weight'] * loss_func(
                 locref_targets, locref_pred, locref_weights
@@ -57,9 +56,9 @@ class BasePoseNet(metaclass=abc.ABCMeta):
             pairwise_targets = batch[Batch.pairwise_targets]
             pairwise_weights = batch[Batch.pairwise_mask]
             loss_func = (
-                losses.huber_loss
+                tf.compat.v1.losses.huber_loss
                 if self.cfg['pairwise_huber_loss']
-                else tf.losses.mean_squared_error
+                else tf.compat.v1.losses.mean_squared_error
             )
             loss["pairwise_loss"] = self.cfg['pairwise_loss_weight'] * loss_func(
                 pairwise_targets, pairwise_pred, pairwise_weights
@@ -81,7 +80,7 @@ class BasePoseNet(metaclass=abc.ABCMeta):
     ):
         out = {}
         n_joints = self.cfg['num_joints']
-        with tf.variable_scope(scope, reuse=reuse):
+        with tf.compat.v1.variable_scope(scope, reuse=reuse):
             out['part_pred'] = prediction_layer(
                 self.cfg,
                 features,
@@ -122,10 +121,10 @@ class BasePoseNet(metaclass=abc.ABCMeta):
         if self.cfg['batch_size'] == 1:
             probs = tf.squeeze(probs, axis=0)
             locref = tf.squeeze(locref, axis=0)
-            l_shape = tf.shape(probs)
+            l_shape = tf.shape(input=probs)
             locref = tf.reshape(locref, (l_shape[0] * l_shape[1], -1, 2))
             probs = tf.reshape(probs, (l_shape[0] * l_shape[1], -1))
-            maxloc = tf.argmax(probs, axis=0)
+            maxloc = tf.argmax(input=probs, axis=0)
             loc = tf.unravel_index(
                 maxloc, (tf.cast(l_shape[0], tf.int64), tf.cast(l_shape[1], tf.int64))
             )
@@ -135,19 +134,19 @@ class BasePoseNet(metaclass=abc.ABCMeta):
                 tf.range(0, tf.cast(l_shape[2], dtype=tf.int64)), (1, -1)
             )
         else:
-            l_shape = tf.shape(probs)  # batchsize times x times y times body parts
+            l_shape = tf.shape(input=probs)  # batchsize times x times y times body parts
             locref = tf.reshape(
                 locref, (l_shape[0], l_shape[1], l_shape[2], l_shape[3], 2)
             )
             # turn into x times y time bs * bpts
-            locref = tf.transpose(locref, [1, 2, 0, 3, 4])
-            probs = tf.transpose(probs, [1, 2, 0, 3])
+            locref = tf.transpose(a=locref, perm=[1, 2, 0, 3, 4])
+            probs = tf.transpose(a=probs, perm=[1, 2, 0, 3])
 
-            l_shape = tf.shape(probs)  # x times y times batch times body parts
+            l_shape = tf.shape(input=probs)  # x times y times batch times body parts
 
             locref = tf.reshape(locref, (l_shape[0] * l_shape[1], -1, 2))
             probs = tf.reshape(probs, (l_shape[0] * l_shape[1], -1))
-            maxloc = tf.argmax(probs, axis=0)
+            maxloc = tf.argmax(input=probs, axis=0)
             loc = tf.unravel_index(
                 maxloc, (tf.cast(l_shape[0], tf.int64), tf.cast(l_shape[1], tf.int64))
             )  # tuple of max indices
@@ -157,13 +156,13 @@ class BasePoseNet(metaclass=abc.ABCMeta):
             )
 
         # extract corresponding locref x and y as well as probability
-        indices = tf.transpose(tf.concat([maxloc, joints], axis=0))
+        indices = tf.transpose(a=tf.concat([maxloc, joints], axis=0))
         offset = tf.gather_nd(locref, indices)
         offset = tf.gather(offset, [1, 0], axis=1)
         likelihood = tf.reshape(tf.gather_nd(probs, indices), (-1, 1))
 
         pose = (
-                self.cfg['stride'] * tf.cast(tf.transpose(loc), dtype=tf.float32)
+                self.cfg['stride'] * tf.cast(tf.transpose(a=loc), dtype=tf.float32)
                 + self.cfg['stride'] * 0.5
                 + offset * self.cfg['locref_stdev']
         )

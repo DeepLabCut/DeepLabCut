@@ -17,7 +17,7 @@ https://github.com/tensorflow/models/blob/master/research/slim/nets/mobilenet/mo
 """
 
 import tensorflow as tf
-import tensorflow.contrib.slim as slim
+import tf_slim as slim
 
 from deeplabcut.pose_estimation_tensorflow.backbones import mobilenet_v2
 from .base import BasePoseNet
@@ -78,7 +78,7 @@ class PoseMobileNet(BasePoseNet):
         out = super(PoseMobileNet, self).prediction_layers(
             features, scope, reuse,
         )
-        with tf.variable_scope(scope, reuse=reuse):
+        with tf.compat.v1.variable_scope(scope, reuse=reuse):
             if self.cfg['intermediate_supervision']:
                 out["part_pred_interm"] = prediction_layer(
                     self.cfg,

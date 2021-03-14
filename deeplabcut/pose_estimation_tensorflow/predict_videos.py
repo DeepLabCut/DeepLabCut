@@ -152,7 +152,7 @@ def analyze_videos(
     if gputouse is not None:  # gpu selection
         os.environ["CUDA_VISIBLE_DEVICES"] = str(gputouse)
 
-    tf.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
     start_path = os.getcwd()  # record cwd to return to this directory in the end
 
     cfg = auxiliaryfunctions.read_config(config)
@@ -962,13 +962,7 @@ def analyze_time_lapse_frames(
     if gputouse is not None:  # gpu selection
         os.environ["CUDA_VISIBLE_DEVICES"] = str(gputouse)
 
-    vers = (tf.__version__).split(".")
-    if int(vers[0]) == 1 and int(vers[1]) > 12:
-        TF = tf.compat.v1
-    else:
-        TF = tf
-
-    TF.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
     start_path = os.getcwd()  # record cwd to return to this directory in the end
 
     cfg = auxiliaryfunctions.read_config(config)

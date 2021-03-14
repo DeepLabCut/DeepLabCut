@@ -1,17 +1,15 @@
 import tensorflow as tf
-import tensorflow.contrib.slim as slim
 
 
 def prediction_layer(cfg, input, name, num_outputs):
-    with slim.arg_scope(
-        [slim.conv2d, slim.conv2d_transpose],
-        padding="SAME",
-        activation_fn=None,
-        normalizer_fn=None,
-        weights_regularizer=slim.l2_regularizer(cfg['weight_decay']),
-    ):
-        with tf.variable_scope(name):
-            pred = slim.conv2d_transpose(
-                input, num_outputs, kernel_size=[3, 3], stride=2, scope="block4"
-            )
-            return pred
+    with tf.compat.v1.variable_scope(name):
+        layer = tf.keras.layers.Conv2DTranspose(
+            filters=num_outputs,
+            kernel_size=(3, 3),
+            strides=2,
+            padding="same",
+            kernel_regularizer=tf.keras.regularizers.l2(0.5 * (cfg['weight_decay'])),
+            name=name,
+            dtype=input.dtype.base_dtype,
+        )
+        return layer(input)

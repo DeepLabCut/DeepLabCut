@@ -12,8 +12,8 @@ https://github.com/eldar/pose-tensorflow
 """
 import re
 import tensorflow as tf
-import tensorflow.contrib.slim as slim
-from tensorflow.contrib.slim.nets import resnet_v1
+import tf_slim as slim
+from tf_slim.nets import resnet_v1
 
 from .base import BasePoseNet
 from .factory import PoseNetFactory
@@ -54,7 +54,7 @@ class PoseResnet(BasePoseNet):
         out = super(PoseResnet, self).prediction_layers(
             features, scope, reuse,
         )
-        with tf.variable_scope(scope, reuse=reuse):
+        with tf.compat.v1.variable_scope(scope, reuse=reuse):
             if self.cfg['intermediate_supervision']:
                 layer_name = "resnet_v1_{}/block{}/unit_{}/bottleneck_v1"
                 num_layers = re.findall("resnet_([0-9]*)", self.cfg['net_type'])[0]

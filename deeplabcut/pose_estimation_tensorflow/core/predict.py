@@ -24,18 +24,12 @@ https://arxiv.org/abs/1909.11229
 
 import numpy as np
 import tensorflow as tf
-
-vers = (tf.__version__).split(".")
-if int(vers[0]) == 1 and int(vers[1]) > 12:
-    TF = tf.compat.v1
-else:
-    TF = tf
 from deeplabcut.pose_estimation_tensorflow.nnets.factory import PoseNetFactory
 
 
 def setup_pose_prediction(cfg):
-    TF.reset_default_graph()
-    inputs = TF.placeholder(tf.float32, shape=[cfg['batch_size'], None, None, 3])
+    tf.compat.v1.reset_default_graph()
+    inputs = tf.compat.v1.placeholder(tf.float32, shape=[cfg['batch_size'], None, None, 3])
     net_heads = PoseNetFactory.create(cfg).test(inputs)
     outputs = [net_heads["part_prob"]]
     if cfg['location_refinement']:
@@ -45,10 +39,10 @@ def setup_pose_prediction(cfg):
         print("Activating extracting of PAFs")
         outputs.append(net_heads["pairwise_pred"])
 
-    restorer = TF.train.Saver()
-    sess = TF.Session()
-    sess.run(TF.global_variables_initializer())
-    sess.run(TF.local_variables_initializer())
+    restorer = tf.compat.v1.train.Saver()
+    sess = tf.compat.v1.Session()
+    sess.run(tf.compat.v1.global_variables_initializer())
+    sess.run(tf.compat.v1.local_variables_initializer())
 
     # Restore variables from disk.
     restorer.restore(sess, cfg['init_weights'])
@@ -203,16 +197,16 @@ def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
 
 ### Code for TF inference on GPU
 def setup_GPUpose_prediction(cfg):
-    tf.reset_default_graph()
-    inputs = tf.placeholder(tf.float32, shape=[cfg['batch_size'], None, None, 3])
+    tf.compat.v1.reset_default_graph()
+    inputs = tf.compat.v1.placeholder(tf.float32, shape=[cfg['batch_size'], None, None, 3])
     net_heads = PoseNetFactory.create(cfg).inference(inputs)
     outputs = [net_heads["pose"]]
 
-    restorer = tf.train.Saver()
-    sess = tf.Session()
+    restorer = tf.compat.v1.train.Saver()
+    sess = tf.compat.v1.Session()
 
-    sess.run(tf.global_variables_initializer())
-    sess.run(tf.local_variables_initializer())
+    sess.run(tf.compat.v1.global_variables_initializer())
+    sess.run(tf.compat.v1.local_variables_initializer())
 
     # Restore variables from disk.
     restorer.restore(sess, cfg['init_weights'])

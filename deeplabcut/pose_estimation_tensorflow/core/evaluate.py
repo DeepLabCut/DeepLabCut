@@ -580,7 +580,7 @@ def evaluate_network(
                 "TF_CUDNN_USE_AUTOTUNE"
             ]  # was potentially set during training
 
-        tf.reset_default_graph()
+        tf.compat.v1.reset_default_graph()
         os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  #
         #    tf.logging.set_verbosity(tf.logging.WARN)
 
@@ -904,7 +904,7 @@ def evaluate_network(
                                 foldername,
                             )  # Rescaling coordinates to have figure in original size!
 
-                        tf.reset_default_graph()
+                        tf.compat.v1.reset_default_graph()
                         # print(final_result)
                     else:
                         DataMachine = pd.read_hdf(resultsfilename, "df_with_missing")

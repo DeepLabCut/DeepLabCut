@@ -13,8 +13,8 @@ https://github.com/eldar/pose-tensorflow
 
 import re
 import tensorflow as tf
-import tensorflow.contrib.slim as slim
-from tensorflow.contrib.slim.nets import resnet_v1
+import tf_slim as slim
+from tf_slim.nets import resnet_v1
 
 import deeplabcut.pose_estimation_tensorflow.backbones.efficientnet_builder as eff
 from deeplabcut.pose_estimation_tensorflow.nnets import conv_blocks
@@ -127,30 +127,30 @@ class PoseMultiNet(BasePoseNet):
         else:
             raise ValueError(f"Unknown network of type {net_type}")
 
-        final_dims = tf.ceil(
-            tf.divide(input_shape[1:3], tf.convert_to_tensor(16))
+        final_dims = tf.math.ceil(
+            tf.divide(input_shape[1:3], tf.convert_to_tensor(value=16))
         )
         interim_dims = tf.scalar_mul(2, final_dims)
         interim_dims = tf.cast(interim_dims, tf.int32)
         bank_3 = end_points[mid_pt]
-        bank_3 = tf.image.resize_images(bank_3, interim_dims)
+        bank_3 = tf.image.resize(bank_3, interim_dims)
 
         with slim.arg_scope(
             [slim.conv2d],
             padding="SAME",
             normalizer_fn=None,
-            weights_regularizer=slim.l2_regularizer(self.cfg['weight_decay']),
+            weights_regularizer=tf.keras.regularizers.l2(0.5 * (self.cfg['weight_decay'])),
         ):
-            with tf.variable_scope("decoder_filters"):
+            with tf.compat.v1.variable_scope("decoder_filters"):
                 bank_3 = slim.conv2d(bank_3, self.cfg['bank3'], 1, scope="decoder_parallel_1")
 
         with slim.arg_scope(
             [slim.conv2d_transpose],
             padding="SAME",
             normalizer_fn=None,
-            weights_regularizer=slim.l2_regularizer(self.cfg['weight_decay']),
+            weights_regularizer=tf.keras.regularizers.l2(0.5 * (self.cfg['weight_decay'])),
         ):
-            with tf.variable_scope("upsampled_features"):
+            with tf.compat.v1.variable_scope("upsampled_features"):
                 upsampled_features = slim.conv2d_transpose(
                     features, self.cfg['bank5'], kernel_size=[3, 3], stride=2, scope="block4",
                 )
@@ -158,7 +158,7 @@ class PoseMultiNet(BasePoseNet):
         out = super(PoseMultiNet, self).prediction_layers(
             net, scope, reuse,
         )
-        with tf.variable_scope(scope, reuse=reuse):
+        with tf.compat.v1.variable_scope(scope, reuse=reuse):
             if self.cfg['intermediate_supervision'] and "efficientnet" not in net_type:
                 if "mobilenet" in net_type:
                     feat = end_points[f"layer_{self.cfg['intermediate_supervision_layer']}"]
@@ -182,4 +182,4 @@ class PoseMultiNet(BasePoseNet):
 
     def get_net(self, inputs):
         net, end_points = self.extract_features(inputs)
-        return self.prediction_layers(net, end_points, tf.shape(inputs))
+        return self.prediction_layers(net, end_points, tf.shape(input=inputs))

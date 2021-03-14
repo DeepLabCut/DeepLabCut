@@ -16,13 +16,7 @@ import os
 from pathlib import Path
 
 import tensorflow as tf
-
-vers = (tf.__version__).split(".")
-if int(vers[0]) == 1 and int(vers[1]) > 12:
-    TF = tf.compat.v1
-else:
-    TF = tf
-import tensorflow.contrib.slim as slim
+import tf_slim as slim
 
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.datasets import PoseDatasetFactory
@@ -75,8 +69,8 @@ def train(
     total_loss = losses["total_loss"]
 
     for k, t in losses.items():
-        TF.summary.scalar(k, t)
-    merged_summaries = TF.summary.merge_all()
+        tf.compat.v1.summary.scalar(k, t)
+    merged_summaries = tf.compat.v1.summary.merge_all()
     net_type = cfg['net_type']
 
     if "snapshot" in Path(cfg['init_weights']).stem and keepdeconvweights:
@@ -99,24 +93,24 @@ def train(
         else:
             print("Wait for DLC 2.3.")
 
-    restorer = TF.train.Saver(variables_to_restore)
-    saver = TF.train.Saver(
+    restorer = tf.compat.v1.train.Saver(variables_to_restore)
+    saver = tf.compat.v1.train.Saver(
         max_to_keep=max_to_keep
     )  # selects how many snapshots are stored, see https://github.com/AlexEMG/DeepLabCut/issues/8#issuecomment-387404835
 
     if allow_growth:
-        config = tf.ConfigProto()
+        config = tf.compat.v1.ConfigProto()
         config.gpu_options.allow_growth = True
-        sess = TF.Session(config=config)
+        sess = tf.compat.v1.Session(config=config)
     else:
-        sess = TF.Session()
+        sess = tf.compat.v1.Session()
 
     coord, thread = start_preloading(sess, enqueue_op, dataset, placeholders)
-    train_writer = TF.summary.FileWriter(cfg['log_dir'], sess.graph)
+    train_writer = tf.compat.v1.summary.FileWriter(cfg['log_dir'], sess.graph)
     learning_rate, train_op, tstep = get_optimizer(total_loss, cfg)
 
-    sess.run(TF.global_variables_initializer())
-    sess.run(TF.local_variables_initializer())
+    sess.run(tf.compat.v1.global_variables_initializer())
+    sess.run(tf.compat.v1.local_variables_initializer())
 
     # Restore variables from disk.
     if 'efficientnet' in net_type:

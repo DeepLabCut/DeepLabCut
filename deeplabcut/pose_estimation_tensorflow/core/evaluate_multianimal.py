@@ -122,7 +122,7 @@ def evaluate_multianimal_full(
     if "TF_CUDNN_USE_AUTOTUNE" in os.environ:
         del os.environ["TF_CUDNN_USE_AUTOTUNE"]  # was potentially set during training
 
-    tf.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  #
     if gputouse is not None:  # gpu selectinon
         os.environ["CUDA_VISIBLE_DEVICES"] = str(gputouse)
@@ -493,7 +493,7 @@ def evaluate_multianimal_full(
                             PredicteData, metadata, resultsfilename
                         )
 
-                        tf.reset_default_graph()
+                        tf.compat.v1.reset_default_graph()
 
                 if len(final_result) > 0:  # Only append if results were calculated
                     make_results_file(final_result, evaluationfolder, DLCscorer)

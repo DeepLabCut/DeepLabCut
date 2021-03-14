@@ -17,8 +17,8 @@ import functools
 import numpy as np
 import tensorflow as tf
 from deeplabcut.pose_estimation_tensorflow.datasets import Batch
-from tensorflow.contrib.tpu.python.ops import tpu_ops
-from tensorflow.contrib.tpu.python.tpu import tpu_function
+from tensorflow.python.tpu.ops import tpu_ops
+from tensorflow.python.tpu import tpu_function
 
 
 def wrapper(func, *args, **kwargs):
@@ -82,19 +82,21 @@ def get_batch_spec(cfg):
     return batch_spec
 
 
-def build_learning_rate(initial_lr,
-                        global_step,
-                        steps_per_epoch=None,
-                        lr_decay_type='exponential',
-                        decay_factor=0.97,
-                        decay_epochs=2.4,
-                        total_steps=None,
-                        warmup_epochs=5):
+def build_learning_rate(
+    initial_lr,
+    global_step,
+    steps_per_epoch=None,
+    lr_decay_type='exponential',
+    decay_factor=0.97,
+    decay_epochs=2.4,
+    total_steps=None,
+    warmup_epochs=5
+):
     """Build learning rate."""
     if lr_decay_type == 'exponential':
         assert steps_per_epoch is not None
         decay_steps = steps_per_epoch * decay_epochs
-        lr = tf.train.exponential_decay(
+        lr = tf.compat.v1.train.exponential_decay(
             initial_lr, global_step, decay_steps, decay_factor, staircase=True)
     elif lr_decay_type == 'cosine':
         assert total_steps is not None
@@ -106,40 +108,43 @@ def build_learning_rate(initial_lr,
         assert False, 'Unknown lr_decay_type : %s' % lr_decay_type
 
     if warmup_epochs:
-        tf.logging.info('Learning rate warmup_epochs: %d' % warmup_epochs)
+        tf.compat.v1.logging.info('Learning rate warmup_epochs: %d' % warmup_epochs)
         warmup_steps = int(warmup_epochs * steps_per_epoch)
         warmup_lr = (
                 initial_lr * tf.cast(global_step, tf.float32) / tf.cast(
             warmup_steps, tf.float32))
-        lr = tf.cond(global_step < warmup_steps, lambda: warmup_lr, lambda: lr)
+        lr = tf.cond(pred=global_step < warmup_steps, true_fn=lambda: warmup_lr, false_fn=lambda: lr)
 
     return lr
 
 
-def build_optimizer(learning_rate,
-                    optimizer_name='rmsprop',
-                    decay=0.9,
-                    epsilon=0.001,
-                    momentum=0.9):
+def build_optimizer(
+    learning_rate,
+    optimizer_name='rmsprop',
+    decay=0.9,
+    epsilon=0.001,
+    momentum=0.9
+):
     """Build optimizer."""
     if optimizer_name == 'sgd':
-        tf.logging.info('Using SGD optimizer')
-        optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
+        tf.compat.v1.logging.info('Using SGD optimizer')
+        optimizer = tf.compat.v1.train.GradientDescentOptimizer(learning_rate=learning_rate)
     elif optimizer_name == 'momentum':
-        tf.logging.info('Using Momentum optimizer')
-        optimizer = tf.train.MomentumOptimizer(
-            learning_rate=learning_rate, momentum=momentum)
+        tf.compat.v1.logging.info('Using Momentum optimizer')
+        optimizer = tf.compat.v1.train.MomentumOptimizer(
+            learning_rate=learning_rate, momentum=momentum
+        )
     elif optimizer_name == 'rmsprop':
-        tf.logging.info('Using RMSProp optimizer')
-        optimizer = tf.train.RMSPropOptimizer(learning_rate, decay, momentum,
-                                              epsilon)
+        tf.compat.v1.logging.info('Using RMSProp optimizer')
+        optimizer = tf.compat.v1.train.RMSPropOptimizer(
+            learning_rate, decay, momentum, epsilon
+        )
     else:
-        tf.logging.fatal('Unknown optimizer:', optimizer_name)
-
+        tf.compat.v1.logging.fatal('Unknown optimizer:', optimizer_name)
     return optimizer
 
 
-class TpuBatchNormalization(tf.layers.BatchNormalization):
+class TpuBatchNormalization(tf.compat.v1.layers.BatchNormalization):
     """Cross replica batch normalization."""
 
     def __init__(self, fused=False, **kwargs):
@@ -173,8 +178,8 @@ class TpuBatchNormalization(tf.layers.BatchNormalization):
             num_shards_per_group = 1
         else:
             num_shards_per_group = max(8, num_shards // 8)
-        tf.logging.info('TpuBatchNormalization with num_shards_per_group %s',
-                        num_shards_per_group)
+        tf.compat.v1.logging.info('TpuBatchNormalization with num_shards_per_group %s',
+                                  num_shards_per_group)
         if num_shards_per_group > 1:
             # Compute variance using: Var[X]= E[X^2] - E[X]^2.
             shard_square_of_mean = tf.math.square(shard_mean)
@@ -188,7 +193,7 @@ class TpuBatchNormalization(tf.layers.BatchNormalization):
         return shard_mean, shard_variance
 
 
-class BatchNormalization(tf.layers.BatchNormalization):
+class BatchNormalization(tf.compat.v1.layers.BatchNormalization):
     """Fixed default name of BatchNormalization to match TpuBatchNormalization."""
 
     def __init__(self, name='tpu_batch_normalization', **kwargs):
@@ -205,15 +210,15 @@ def drop_connect(inputs, is_training, drop_connect_rate):
     keep_prob = 1.0 - drop_connect_rate
 
     # Compute drop_connect tensor
-    batch_size = tf.shape(inputs)[0]
+    batch_size = tf.shape(input=inputs)[0]
     random_tensor = keep_prob
-    random_tensor += tf.random_uniform([batch_size, 1, 1, 1], dtype=inputs.dtype)
+    random_tensor += tf.random.uniform([batch_size, 1, 1, 1], dtype=inputs.dtype)
     binary_tensor = tf.floor(random_tensor)
-    output = tf.div(inputs, keep_prob) * binary_tensor
+    output = tf.compat.v1.div(inputs, keep_prob) * binary_tensor
     return output
 
 
-class DepthwiseConv2D(tf.keras.layers.DepthwiseConv2D, tf.layers.Layer):
+class DepthwiseConv2D(tf.keras.layers.DepthwiseConv2D, tf.compat.v1.layers.Layer):
     """Wrap keras DepthwiseConv2D to tf.layers."""
 
     pass
