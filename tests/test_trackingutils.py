@@ -19,10 +19,6 @@ def ellipse():
 
 
 def test_ellipse(ellipse):
-    params = list(ellipse.parameters)
-    params[-1] = 90
-    with pytest.raises(ValueError):
-        _ = trackingutils.Ellipse(*params)
     assert ellipse.aspect_ratio == 2
     assert ellipse.geometry is not None
     np.testing.assert_equal(
