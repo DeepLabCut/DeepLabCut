@@ -709,9 +709,9 @@ def find_analyzed_data(folder, videoname, scorer, filtered=False, track_method="
     elif track_method == "box":
         tracker = "_bx"
     elif track_method == 'ellipse':
-        tracker = '_el'
+        tracker = "_el"
     else:
-        raise ValueError(f"Unrecognized track_method={track_method}")
+        tracker = ""
 
     candidates = []
     for file in grab_files_in_folder(folder, "h5"):
