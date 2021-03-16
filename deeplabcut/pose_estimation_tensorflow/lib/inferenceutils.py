@@ -1408,3 +1408,101 @@ class Assembler:
         temp = data[..., :3].reshape((data.shape[0], -1))
         df = pd.DataFrame(temp, columns=index)
         df.to_hdf(output_name, key='ass')
+
+
+def calc_object_keypoint_similarity(xy_pred, xy_true, sigma):
+    visible = ~np.isnan(xy_pred * xy_true).all(axis=1)
+    pred = xy_pred[visible]
+    true = xy_true[visible]
+    dist_squared = np.sum((pred - true) ** 2, axis=1)
+    scale_squared = np.product(np.ptp(true, axis=0))
+    k_squared = (2 * sigma) ** 2
+    oks = np.exp(-dist_squared / (2 * scale_squared * k_squared))
+    return np.mean(oks)
+
+
+def match_assemblies(ass_pred, ass_true, sigma):
+    inds_true = list(range(len(ass_true)))
+    inds_pred = np.argsort([ins.affinity for ins in ass_pred])[::-1]
+    matched = []
+    for ind_pred in inds_pred:
+        xy_pred = ass_pred[ind_pred].data[:, :2]
+        oks = []
+        for ind_true in inds_true:
+            xy_true = ass_true[ind_true].data[:, :2]
+            oks.append(calc_object_keypoint_similarity(xy_pred, xy_true, sigma))
+        ind_best = np.argmax(oks)
+        ind_true_best = inds_true.pop(ind_best)
+        matched.append((ass_pred[ind_pred], ass_true[ind_true_best], oks[ind_best]))
+        if not inds_true:
+            break
+    unmatched = [ass_true[ind] for ind in inds_true]
+    return matched, unmatched
+
+
+def parse_ground_truth_data(h5_file):
+    df = pd.read_hdf(h5_file)
+    try:
+        df.drop("single", axis=1, level="individuals", inplace=True)
+    except KeyError:
+        pass
+    n_individuals = len(df.columns.get_level_values("individuals").unique())
+    n_bodyparts = len(df.columns.get_level_values("bodyparts").unique())
+    data = df.to_numpy().reshape((df.shape[0], n_individuals, n_bodyparts, 3))
+    gt = dict()
+    for i, arr in enumerate(data):
+        temp = []
+        for row in arr:
+            if np.isnan(row).all():
+                continue
+            ass = Assembly(n_bodyparts)
+            ass.data[:, :3] = row
+            temp.append(ass)
+        if not temp:
+            continue
+        gt[i] = temp
+    return gt
+
+
+def evaluate_assembly(
+    ass_pred_dict,
+    ass_true_dict,
+    oks_sigma=0.072,
+    oks_thresholds=np.linspace(0.5, 0.95, 10),
+):
+    # sigma is taken as the median of all COCO keypoint standard deviations
+    all_matched = []
+    all_unmatched = []
+    for ind, ass_pred in tqdm(ass_pred_dict.items()):
+        ass_true = ass_true_dict.get(ind)
+        if ass_true is None:
+            continue
+        matched, unmatched = match_assemblies(ass_pred, ass_true, oks_sigma)
+        all_matched.extend(matched)
+        all_unmatched.extend(unmatched)
+    oks = np.asarray([match[2] for match in all_matched])
+    ntot = len(all_matched) + len(all_unmatched)
+    recall_thresholds = np.linspace(0, 1, 101)
+    precisions = []
+    recalls = []
+    for th in oks_thresholds:
+        tp = np.cumsum(oks >= th)
+        fp = np.cumsum(oks < th)
+        rc = tp / ntot
+        pr = tp / (fp + tp + np.spacing(1))
+        recall = rc[-1]
+        pr = np.sort(pr)[::-1]
+        inds_rc = np.searchsorted(rc, recall_thresholds)
+        precision = np.zeros(inds_rc.shape)
+        valid = inds_rc < len(pr)
+        precision[valid] = pr[inds_rc[valid]]
+        precisions.append(precision)
+        recalls.append(recall)
+    precisions = np.asarray(precisions)
+    recalls = np.asarray(recalls)
+    return {
+        "precisions": precisions,
+        "recalls": recalls,
+        "mAP": precisions.mean(),
+        "mAR": recalls.mean(),
+    }
