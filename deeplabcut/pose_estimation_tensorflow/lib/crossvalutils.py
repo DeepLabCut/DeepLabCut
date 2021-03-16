@@ -31,10 +31,9 @@ from sklearn.metrics.cluster import contingency_matrix
 
 from deeplabcut.pose_estimation_tensorflow import return_evaluate_network_data
 from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import (
-    assemble_individuals,
-    _nest_detections_in_arrays,
-    _extract_strong_connections,
-    _link_detections,
+    Assembler,
+    evaluate_assembly,
+    _parse_ground_truth_data,
 )
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
@@ -702,7 +701,7 @@ def _rebuild_uncropped_in(
         for file in filenames:
             if file.endswith("_full.pickle"):
                 full_data_file = os.path.join(dirpath, file)
-                metadata_file = full_data_file.replace("_full", "_meta")
+                metadata_file = full_data_file.replace("_full.", "_meta.")
                 with open(full_data_file, "rb") as file:
                     data = pickle.load(file)
                 with open(metadata_file, "rb") as file:
@@ -777,7 +776,9 @@ def _calc_within_between_pafs(
     between_train = defaultdict(list)
     between_test = defaultdict(list)
     mask_diag = None
-    for i, dict_ in enumerate(data.values()):
+    for i, (key, dict_) in enumerate(data.items()):
+        if key == "metadata":
+            continue
         is_test = i in test_inds
         if test_set_only and not is_test:
             continue
@@ -822,12 +823,13 @@ def _calibrate_distances(data, metadata):
 
 
 def _benchmark_paf_graphs(
+    config,
     inference_cfg,
     data,
     params,
     paf_inds,
-    use_springs=False,
-    dist_funcs=None,
+    greedy=False,
+    calibration_file="",
 ):
     paf_graph = params["paf_graph"]
     image_paths = params["imnames"]
@@ -848,7 +850,10 @@ def _benchmark_paf_graphs(
         temp = data[imname]["groundtruth"][2]
         ground_truth.append(temp.to_numpy().reshape((-1, 2)))
     ground_truth = np.stack(ground_truth)
-    n_bodyparts = ground_truth.shape[1] // n_individuals
+    temp = np.ones((*ground_truth.shape[:2], 3))
+    temp[..., :2] = ground_truth
+    temp = temp.reshape((temp.shape[0], n_individuals, -1, 3))
+    ass_true_dict = _parse_ground_truth_data(temp)
     ids = np.vectorize(map_.get)(idx.get_level_values("individuals").to_numpy())
     ground_truth = np.insert(ground_truth, 2, ids, axis=2)
 
@@ -856,54 +861,45 @@ def _benchmark_paf_graphs(
     paf_inds = sorted(paf_inds, key=len)
     n_graphs = len(paf_inds)
     all_scores = []
+    all_metrics = []
+    n_multi = len(auxfun_multianimal.extractindividualsandbodyparts(config)[2])
     for j, paf in enumerate(paf_inds, start=1):
         print(f"Graph {j}|{n_graphs}")
         graph = [paf_graph[i] for i in paf]
-        funcs = [dist_funcs[i] for i in paf] if dist_funcs is not None else None
+        ass = Assembler(
+            data,
+            max_n_individuals=inference_cfg["topktoretain"],
+            n_multibodyparts=n_multi,
+            graph=graph,
+            paf_inds=paf,
+            greedy=greedy,
+            pcutoff=inference_cfg["pcutoff"],
+            min_affinity=inference_cfg.get("pafthreshold", 0.1)
+        )
+        if calibration_file:
+            ass.calibrate(calibration_file)
+
         scores = np.full((len(image_paths), 2), np.nan)
+        ass_pred_dict = dict()
         for i, imname in enumerate(tqdm(image_paths)):
             gt = ground_truth[i]
             gt = gt[~np.isnan(gt).any(axis=1)]
             if len(np.unique(gt[:, 2])) < 2:
                 continue
 
-            # Break assembly down in stages
-            all_detections = _nest_detections_in_arrays(
-                data[imname]["prediction"]
+            animals, unique, links = ass._assemble(
+                data[imname]["prediction"], i, return_links=True,
             )
-            if not np.any(all_detections):
-                continue
-            all_connections = _extract_strong_connections(
-                all_detections,
-                graph,
-                paf,
-                data[imname]["prediction"]["costs"],
-                inference_cfg["topktoretain"],
-                inference_cfg["pcutoff"],
-                funcs,
-            )
-            subsets, candidates = _link_detections(
-                all_detections,
-                all_connections,
-                inference_cfg["topktoretain"],
-                use_springs=use_springs,
-            )
-            ncols = 4 if inference_cfg["withid"] else 3
-            animals = np.full((len(subsets), n_bodyparts, ncols), np.nan)
-            for animal, subset in zip(animals, subsets):
-                inds = subset.astype(int)
-                mask = inds != -1
-                animal[mask] = candidates[inds[mask], :-2]
-
-            # Count the number of missed bodyparts
+            ass_pred_dict[i] = animals
+            # Count the number of unassembled bodyparts
+            n_dets = len(set((i for link in links for i in link.idx)))
             n_animals = len(animals)
-            n_dets = np.sum(~np.isnan(candidates).any(axis=1))
             if not n_animals:
                 if n_dets:
                     scores[i, 0] = 1
             else:
                 animals = [
-                    np.c_[animal, np.ones(animal.shape[0]) * n]
+                    np.c_[animal.data, np.ones(animal.data.shape[0]) * n]
                     for n, animal in enumerate(animals)
                 ]
                 hyp = np.concatenate(animals)
@@ -917,6 +913,7 @@ def _benchmark_paf_graphs(
                 purity = mat.max(axis=0).sum() / mat.sum()
                 scores[i, 1] = purity
         all_scores.append((scores, paf))
+        all_metrics.append(evaluate_assembly(ass_pred_dict, ass_true_dict))
 
     dfs = []
     for score, inds in all_scores:
@@ -928,6 +925,7 @@ def _benchmark_paf_graphs(
     return (
         all_scores,
         group.agg(["mean", "std"]).T,
+        all_metrics,
     )
 
 
@@ -936,25 +934,22 @@ def compare_best_and_worst_graphs(
     inference_config,
     full_data_file,
     metadata_file,
-    use_springs=False,
     pcutoff=0.3,
+    greedy=False,
     metric="auc",
-    use_dists=True,
     naive_edges=None,
 ):
-    cfg = auxiliaryfunctions.read_plainconfig(inference_config)
-    cfg_temp = cfg.copy()
-    cfg_temp["pcutoff"] = pcutoff
+    cfg = auxiliaryfunctions.read_config(config)
+    inf_cfg = auxiliaryfunctions.read_plainconfig(inference_config)
+    inf_cfg_temp = inf_cfg.copy()
+    inf_cfg_temp["pcutoff"] = pcutoff
 
     with open(full_data_file, "rb") as file:
         data = pickle.load(file)
     with open(metadata_file, "rb") as file:
         metadata = pickle.load(file)
 
-    dist_funcs = _calibrate_distances(data, metadata) if use_dists else None
-
     params = _set_up_evaluation(data)
-    _ = data.pop("metadata")
     to_ignore = _filter_unwanted_paf_connections(config, params["paf_graph"])
     paf_inds_best, thresholds = _get_n_best_paf_graphs(
         data,
@@ -964,12 +959,12 @@ def compare_best_and_worst_graphs(
         metric=metric,
     )
     results_best = _benchmark_paf_graphs(
-        cfg_temp,
+        cfg,
+        inf_cfg_temp,
         data,
         params,
         paf_inds_best,
-        use_springs,
-        dist_funcs,
+        greedy,
     )
     paf_inds_worst, thresholds = _get_n_best_paf_graphs(
         data,
@@ -980,12 +975,12 @@ def compare_best_and_worst_graphs(
         metric=metric,
     )
     results_worst = _benchmark_paf_graphs(
-        cfg_temp,
+        cfg,
+        inf_cfg_temp,
         data,
         params,
         paf_inds_worst,
-        use_springs,
-        dist_funcs,
+        greedy,
     )
     if naive_edges is None:
         inds = sorted(set(ind for i in thresholds for ind in params["paf_graph"][i]))
@@ -1001,12 +996,12 @@ def compare_best_and_worst_graphs(
         metric=metric,
     )
     results_naive = _benchmark_paf_graphs(
-        cfg_temp,
+        cfg,
+        inf_cfg_temp,
         data,
         params,
         paf_inds_naive,
-        use_springs,
-        dist_funcs,
+        greedy,
     )
     return pd.concat(
         (results_naive[1], results_best[1], results_worst[1]),
@@ -1089,13 +1084,15 @@ def cross_validate_paf_graphs(
     full_data_file,
     metadata_file,
     output_name="",
-    use_springs=False,
     pcutoff=0.3,
+    greedy=False,
+    calibrate=False,
     overwrite_config=False,
 ):
-    cfg = auxiliaryfunctions.read_plainconfig(inference_config)
-    cfg_temp = cfg.copy()
-    cfg_temp["pcutoff"] = pcutoff
+    cfg = auxiliaryfunctions.read_config(config)
+    inf_cfg = auxiliaryfunctions.read_plainconfig(inference_config)
+    inf_cfg_temp = inf_cfg.copy()
+    inf_cfg_temp["pcutoff"] = pcutoff
 
     with open(full_data_file, "rb") as file:
         data = pickle.load(file)
@@ -1103,7 +1100,6 @@ def cross_validate_paf_graphs(
         metadata = pickle.load(file)
 
     params = _set_up_evaluation(data)
-    _ = data.pop("metadata")
     to_ignore = _filter_unwanted_paf_connections(config, params["paf_graph"])
     paf_inds, thresholds = _get_n_best_paf_graphs(
         data,
@@ -1111,14 +1107,25 @@ def cross_validate_paf_graphs(
         params["paf_graph"],
         ignore_inds=to_ignore,
     )
-    dist_funcs = _calibrate_distances(data, metadata)
+
+    if calibrate:
+        trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+        calibration_file = os.path.join(
+            cfg["project_path"],
+            str(trainingsetfolder),
+            "CollectedData_" + cfg["scorer"] + ".h5",
+        )
+    else:
+        calibration_file = ""
+
     results = _benchmark_paf_graphs(
-        cfg_temp,
+        cfg,
+        inf_cfg_temp,
         data,
         params,
         paf_inds,
-        use_springs,
-        dist_funcs
+        greedy,
+        calibration_file,
     )
     # Select optimal PAF graph
     df = results[1]

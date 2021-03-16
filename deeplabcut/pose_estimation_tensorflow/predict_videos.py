@@ -381,7 +381,6 @@ def GetPoseF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
     pbar = tqdm(total=nframes)
     counter = 0
     step = max(10, int(nframes / 100))
-    inds = []
     while cap.isOpened():
         if counter % step == 0:
             pbar.update(step)
@@ -394,21 +393,26 @@ def GetPoseF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
                 )
             else:
                 frames[batch_ind] = img_as_ubyte(frame)
-            inds.append(counter)
+
             if batch_ind == batchsize - 1:
                 pose = predict.getposeNP(frames, dlc_cfg, sess, inputs, outputs)
-                PredictedData[inds] = pose
+                PredictedData[
+                    batch_num * batchsize : (batch_num + 1) * batchsize, :
+                ] = pose
                 batch_ind = 0
-                inds.clear()
                 batch_num += 1
             else:
                 batch_ind += 1
-        elif counter >= nframes:
+        else:
+            nframes = counter
+            print("Detected frames: ", nframes)
             if batch_ind > 0:
                 pose = predict.getposeNP(
                     frames, dlc_cfg, sess, inputs, outputs
                 )  # process the whole batch (some frames might be from previous batch!)
-                PredictedData[inds[:batch_ind]] = pose[:batch_ind]
+                PredictedData[
+                    batch_num * batchsize : batch_num * batchsize + batch_ind, :
+                ] = pose[:batch_ind, :]
             break
         counter += 1
 
@@ -446,7 +450,8 @@ def GetPoseS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
             ] = (
                 pose.flatten()
             )  # NOTE: thereby cfg['all_joints_names'] should be same order as bodyparts!
-        elif counter >= nframes:
+        else:
+            nframes = counter
             break
         counter += 1
 
@@ -491,7 +496,8 @@ def GetPoseS_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
             ] = (
                 pose.flatten()
             )  # NOTE: thereby cfg['all_joints_names'] should be same order as bodyparts!
-        elif counter >= nframes:
+        else:
+            nframes = counter
             break
         counter += 1
 
@@ -517,7 +523,6 @@ def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
     pbar = tqdm(total=nframes)
     counter = 0
     step = max(10, int(nframes / 100))
-    inds = []
     while cap.isOpened():
         if counter % step == 0:
             pbar.update(step)
@@ -530,7 +535,7 @@ def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
                 )
             else:
                 frames[batch_ind] = img_as_ubyte(frame)
-            inds.append(counter)
+
             if batch_ind == batchsize - 1:
                 # pose = predict.getposeNP(frames,dlc_cfg, sess, inputs, outputs)
                 pose = sess.run(pose_tensor, feed_dict={inputs: frames})
@@ -540,19 +545,26 @@ def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
                 pose = np.reshape(
                     pose, (batchsize, -1)
                 )  # bring into batchsize times x,y,conf etc.
-                PredictedData[inds] = pose
+                PredictedData[
+                    batch_num * batchsize : (batch_num + 1) * batchsize, :
+                ] = pose
+
                 batch_ind = 0
-                inds.clear()
                 batch_num += 1
             else:
                 batch_ind += 1
-        elif counter >= nframes:
+        else:
+            nframes = counter
+            print("Detected frames: ", nframes)
             if batch_ind > 0:
                 # pose = predict.getposeNP(frames, dlc_cfg, sess, inputs, outputs) #process the whole batch (some frames might be from previous batch!)
                 pose = sess.run(pose_tensor, feed_dict={inputs: frames})
                 pose[:, [0, 1, 2]] = pose[:, [1, 0, 2]]
                 pose = np.reshape(pose, (batchsize, -1))
-                PredictedData[inds[:batch_ind]] = pose[:batch_ind]
+                PredictedData[
+                    batch_num * batchsize : batch_num * batchsize + batch_ind, :
+                ] = pose[:batch_ind, :]
+
             break
         counter += 1
 
@@ -631,7 +643,8 @@ def GetPoseDynamic(
                 detected = False
 
             PredictedData[counter, :] = pose
-        elif counter >= nframes:
+        else:
+            nframes = counter
             break
         counter += 1
 
@@ -1143,11 +1156,12 @@ def convert_detections2tracklets(
     BPTS=None,
     iBPTS=None,
     PAF=None,
-    printintermediate=False,
     inferencecfg=None,
     modelprefix="",
     track_method="box",
     edgewisecondition=True,
+    greedy=False,
+    calibrate=False,
 ):
     """
     This should be called at the end of deeplabcut.analyze_videos for multianimal projects!
@@ -1419,20 +1433,30 @@ def convert_detections2tracklets(
                     "uniquebodyparts"
                 ]:  # Initialize storage of the 'single' individual track
                     tracklets["s"] = {}
-                for index, imname in tqdm(enumerate(imnames)):
-                    animals = inferenceutils.assemble_individuals(
-                        inferencecfg,
-                        data[imname],
-                        numjoints,
-                        BPTS,
-                        iBPTS,
-                        PAF,
-                        partaffinityfield_graph,
-                        linkingpartaffinityfield_graph,
-                        lowerbound=lowerbound,
-                        upperbound=upperbound,
-                        print_intermediate=printintermediate,
+
+                ass = inferenceutils.Assembler(
+                    data,
+                    max_n_individuals=inferencecfg["topktoretain"],
+                    n_multibodyparts=len(cfg["multianimalbodyparts"]),
+                    graph=partaffinityfield_graph,
+                    paf_inds=PAF,
+                    greedy=greedy,
+                    pcutoff=inferencecfg["pcutoff"],
+                    min_affinity=inferencecfg["paf_threshold"]
+                )
+                if calibrate:
+                    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+                    train_data_file = os.path.join(
+                        cfg["project_path"],
+                        str(trainingsetfolder),
+                        "CollectedData_" + cfg["scorer"] + ".h5",
                     )
+                    ass.calibrate(train_data_file)
+
+                for index, imname in tqdm(enumerate(imnames)):
+                    animals, single = ass._assemble(data[imname], index)
+                    if single is not None:
+                        tracklets["s"][imname] = single
                     if animals is None:
                         continue
 
@@ -1445,31 +1469,6 @@ def convert_detections2tracklets(
                         xy = animals[..., :2]
                         trackers = mot_tracker.track(xy)
                     trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
-
-                    # Test whether the unique bodyparts have been assembled
-                    if cfg["uniquebodyparts"]:
-                        inds_unique = [
-                            all_jointnames.index(bp) for bp in cfg["uniquebodyparts"]
-                        ]
-                        if not any(
-                            np.isfinite(a.reshape((-1, 3))[inds_unique]).all()
-                            for a in animals
-                        ):
-                            single = np.full((numjoints, 3), np.nan)
-                            single_dets = (
-                                inferenceutils.convertdetectiondict2listoflist(
-                                    data[imname], inds_unique
-                                )
-                            )
-                            for ind, dets in zip(inds_unique, single_dets):
-                                if len(dets) == 1:
-                                    single[ind] = dets[0][:3]
-                                elif len(dets) > 1:
-                                    best = sorted(
-                                        dets, key=lambda x: x[2], reverse=True
-                                    )[0]
-                                    single[ind] = best[:3]
-                            tracklets["s"][imname] = single
 
                 tracklets["header"] = pdindex
                 with open(trackname, "wb") as f:
