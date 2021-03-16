@@ -1440,7 +1440,7 @@ def match_assemblies(ass_pred, ass_true, sigma):
     return matched, unmatched
 
 
-def parse_ground_truth_data(h5_file):
+def parse_ground_truth_data_file(h5_file):
     df = pd.read_hdf(h5_file)
     try:
         df.drop("single", axis=1, level="individuals", inplace=True)
@@ -1449,13 +1449,17 @@ def parse_ground_truth_data(h5_file):
     n_individuals = len(df.columns.get_level_values("individuals").unique())
     n_bodyparts = len(df.columns.get_level_values("bodyparts").unique())
     data = df.to_numpy().reshape((df.shape[0], n_individuals, n_bodyparts, 3))
+    return _parse_ground_truth_data(data)
+
+
+def _parse_ground_truth_data(data):
     gt = dict()
     for i, arr in enumerate(data):
         temp = []
         for row in arr:
             if np.isnan(row).all():
                 continue
-            ass = Assembly(n_bodyparts)
+            ass = Assembly(row.shape[0])
             ass.data[:, :3] = row
             temp.append(ass)
         if not temp:

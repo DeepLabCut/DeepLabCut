@@ -30,7 +30,11 @@ from scipy.optimize import linear_sum_assignment
 from sklearn.metrics.cluster import contingency_matrix
 
 from deeplabcut.pose_estimation_tensorflow import return_evaluate_network_data
-from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import Assembler
+from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import (
+    Assembler,
+    evaluate_assembly,
+    _parse_ground_truth_data,
+)
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
 
@@ -846,6 +850,10 @@ def _benchmark_paf_graphs(
         temp = data[imname]["groundtruth"][2]
         ground_truth.append(temp.to_numpy().reshape((-1, 2)))
     ground_truth = np.stack(ground_truth)
+    temp = np.ones((*ground_truth.shape[:2], 3))
+    temp[..., :2] = ground_truth
+    temp = temp.reshape((temp.shape[0], n_individuals, -1, 3))
+    ass_true_dict = _parse_ground_truth_data(temp)
     ids = np.vectorize(map_.get)(idx.get_level_values("individuals").to_numpy())
     ground_truth = np.insert(ground_truth, 2, ids, axis=2)
 
@@ -853,6 +861,7 @@ def _benchmark_paf_graphs(
     paf_inds = sorted(paf_inds, key=len)
     n_graphs = len(paf_inds)
     all_scores = []
+    all_metrics = []
     n_multi = len(auxfun_multianimal.extractindividualsandbodyparts(config)[2])
     for j, paf in enumerate(paf_inds, start=1):
         print(f"Graph {j}|{n_graphs}")
@@ -865,12 +874,13 @@ def _benchmark_paf_graphs(
             paf_inds=paf,
             greedy=greedy,
             pcutoff=inference_cfg["pcutoff"],
-            min_affinity=inference_cfg["pafthreshold"]
+            min_affinity=inference_cfg.get("pafthreshold", 0.1)
         )
         if calibration_file:
             ass.calibrate(calibration_file)
 
         scores = np.full((len(image_paths), 2), np.nan)
+        ass_pred_dict = dict()
         for i, imname in enumerate(tqdm(image_paths)):
             gt = ground_truth[i]
             gt = gt[~np.isnan(gt).any(axis=1)]
@@ -880,6 +890,7 @@ def _benchmark_paf_graphs(
             animals, unique, links = ass._assemble(
                 data[imname]["prediction"], i, return_links=True,
             )
+            ass_pred_dict[i] = animals
             # Count the number of unassembled bodyparts
             n_dets = len(set((i for link in links for i in link.idx)))
             n_animals = len(animals)
@@ -902,6 +913,7 @@ def _benchmark_paf_graphs(
                 purity = mat.max(axis=0).sum() / mat.sum()
                 scores[i, 1] = purity
         all_scores.append((scores, paf))
+        all_metrics.append(evaluate_assembly(ass_pred_dict, ass_true_dict))
 
     dfs = []
     for score, inds in all_scores:
@@ -913,6 +925,7 @@ def _benchmark_paf_graphs(
     return (
         all_scores,
         group.agg(["mean", "std"]).T,
+        all_metrics,
     )
 
 
