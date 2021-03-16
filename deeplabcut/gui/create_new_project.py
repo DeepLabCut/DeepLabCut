@@ -306,7 +306,7 @@ class Create_new_project(wx.Panel):
         Activates the option to copy videos
         """
         self.change_copy = event.GetEventObject()
-        if self.change_copy.GetValue() == True:
+        if self.change_copy.GetValue():
             self.copy = True
         else:
             self.copy = False
@@ -316,7 +316,7 @@ class Create_new_project(wx.Panel):
         Activates the option to change the working directory
         """
         self.change_wd = event.GetEventObject()
-        if self.change_wd.GetValue() == True:
+        if self.change_wd.GetValue():
             self.sel_wd.Enable(True)
         else:
             self.sel_wd.Enable(False)

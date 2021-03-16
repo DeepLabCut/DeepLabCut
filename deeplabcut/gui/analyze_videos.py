@@ -368,7 +368,7 @@ class Analyze_videos(wx.Panel):
         Activates the option to change the working directory
         """
         self.change_wd = event.GetEventObject()
-        if self.change_wd.GetValue() == True:
+        if self.change_wd.GetValue():
             self.sel_wd.Enable(True)
         else:
             self.sel_wd.Enable(False)

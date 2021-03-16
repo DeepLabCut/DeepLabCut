@@ -342,7 +342,7 @@ class MainFrame(wx.Frame):
         Activates the frame range boxes
         """
         self.checkSlider = event.GetEventObject()
-        if self.checkSlider.GetValue() == True:
+        if self.checkSlider.GetValue():
             self.extract_range_frame = True
             self.startFrame.Enable(True)
             self.startFrame.SetValue(self.slider.GetValue())
@@ -457,7 +457,7 @@ class MainFrame(wx.Frame):
         Extracts the frame and saves in the current directory
         """
 
-        if self.extract_range_frame == True:
+        if self.extract_range_frame:
             num_frames_extract = self.endFrame.GetValue()
             for i in range(self.currFrame, self.currFrame + num_frames_extract):
                 self.currFrame = i

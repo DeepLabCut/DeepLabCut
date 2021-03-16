@@ -391,7 +391,7 @@ class MainFrame(wx.Frame):
         Activates the slider to increase the markersize
         """
         self.checkSlider = event.GetEventObject()
-        if self.checkSlider.GetValue() == True:
+        if self.checkSlider.GetValue():
             self.activate_slider = True
             self.change_marker_size.Enable(True)
             MainFrame.updateZoomPan(self)
@@ -478,7 +478,7 @@ class MainFrame(wx.Frame):
         self.statusbar.SetStatusText("")
 
     def panButton(self, event):
-        if self.pan.GetValue() == True:
+        if self.pan.GetValue():
             self.toolbar.pan()
             self.statusbar.SetStatusText("Pan On")
             self.zoom.SetValue(False)
@@ -487,7 +487,7 @@ class MainFrame(wx.Frame):
             self.statusbar.SetStatusText("Pan Off")
 
     def zoomButton(self, event):
-        if self.zoom.GetValue() == True:
+        if self.zoom.GetValue():
             # Save pre-zoom xlim and ylim values
             self.prezoom_xlim = self.axes.get_xlim()
             self.prezoom_ylim = self.axes.get_ylim()
@@ -729,7 +729,7 @@ class MainFrame(wx.Frame):
         self.idmap = plt.cm.get_cmap("Set1", len(individuals))
         self.project_path = self.cfg["project_path"]
 
-        if self.uniquebodyparts == []:
+        if not self.uniquebodyparts:
             self.are_unique_bodyparts_present = False
 
         self.buttonCounter = {i: [] for i in self.individual_names}
@@ -941,7 +941,7 @@ class MainFrame(wx.Frame):
         a = np.empty((len(relativeimagenames), 2))
         a[:] = np.nan
         for prfxindex, prefix in enumerate(individual_names):
-            if uniquebodyparts != None:
+            if uniquebodyparts is not None:
                 if prefix == "single":
                     for c, bp in enumerate(uniquebodyparts):
                         index = pd.MultiIndex.from_product(
@@ -1175,7 +1175,7 @@ class MainFrame(wx.Frame):
                     self.dr.coords = image_points
                     self.drs.append(self.dr)
                     self.updatedCoords.append(self.dr.coords)
-                    if np.isnan(self.points)[0] == False:
+                    if not np.isnan(self.points)[0]:
                         self.buttonCounter[ind].append(self.uniquebodyparts[c])
             else:
                 for c, bp in enumerate(self.multibodyparts):
@@ -1213,7 +1213,7 @@ class MainFrame(wx.Frame):
                     self.dr.coords = image_points
                     self.drs.append(self.dr)
                     self.updatedCoords.append(self.dr.coords)
-                    if np.isnan(self.points)[0] == False:
+                    if not np.isnan(self.points)[0]:
                         self.buttonCounter[ind].append(self.multibodyparts[c])
         MainFrame.saveEachImage(self)
         self.figure.canvas.draw()
@@ -1265,7 +1265,7 @@ class MainFrame(wx.Frame):
 
     def onChecked(self, event):
         self.cb = event.GetEventObject()
-        if self.cb.GetValue() == True:
+        if self.cb.GetValue():
             self.change_marker_size.Enable(True)
             self.cidClick = self.canvas.mpl_connect("button_press_event", self.onClick)
         else:
@@ -1273,10 +1273,10 @@ class MainFrame(wx.Frame):
 
     def updateZoomPan(self):
         # Checks if zoom/pan button is ON
-        if self.pan.GetValue() == True:
+        if self.pan.GetValue():
             self.toolbar.pan()
             self.pan.SetValue(False)
-        if self.zoom.GetValue() == True:
+        if self.zoom.GetValue():
             self.toolbar.zoom()
             self.zoom.SetValue(False)
 

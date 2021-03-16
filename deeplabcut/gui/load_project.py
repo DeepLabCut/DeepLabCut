@@ -58,7 +58,7 @@ class Load_project(wx.Panel):
                 wildcard="config.yaml",
             )
 
-        if self.config == None:
+        if self.config is None:
             self.config = "Please select the config file"
 
         self.sel_config.SetPath(self.config)

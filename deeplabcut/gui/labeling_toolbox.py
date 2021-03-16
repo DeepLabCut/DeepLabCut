@@ -343,7 +343,7 @@ class MainFrame(wx.Frame):
         Activates the slider to increase the markersize
         """
         self.checkSlider = event.GetEventObject()
-        if self.checkSlider.GetValue() == True:
+        if self.checkSlider.GetValue():
             self.activate_slider = True
             self.slider.Enable(True)
             MainFrame.updateZoomPan(self)
@@ -425,7 +425,7 @@ class MainFrame(wx.Frame):
         self.statusbar.SetStatusText("")
 
     def panButton(self, event):
-        if self.pan.GetValue() == True:
+        if self.pan.GetValue():
             self.toolbar.pan()
             self.statusbar.SetStatusText("Pan On")
             self.zoom.SetValue(False)
@@ -434,7 +434,7 @@ class MainFrame(wx.Frame):
             self.statusbar.SetStatusText("Pan Off")
 
     def zoomButton(self, event):
-        if self.zoom.GetValue() == True:
+        if self.zoom.GetValue():
             # Save pre-zoom xlim and ylim values
             self.prezoom_xlim = self.axes.get_xlim()
             self.prezoom_ylim = self.axes.get_ylim()
@@ -629,7 +629,7 @@ class MainFrame(wx.Frame):
         # Checking for new frames and adding them to the existing dataframe
         old_imgs = np.sort(list(self.dataFrame.index))
         self.newimages = list(set(self.relativeimagenames) - set(old_imgs))
-        if self.newimages == []:
+        if not self.newimages:
             pass
         else:
             print("Found new frames..")
@@ -661,7 +661,7 @@ class MainFrame(wx.Frame):
         oldbodyparts2plot = list(oldBodyParts[np.sort(idx)])
         self.new_bodyparts = [x for x in self.bodyparts if x not in oldbodyparts2plot]
         # Checking if user added a new label
-        if self.new_bodyparts == []:  # i.e. no new label
+        if not self.new_bodyparts:  # i.e. no new label
             (
                 self.figure,
                 self.axes,
@@ -873,7 +873,7 @@ class MainFrame(wx.Frame):
             self.dr.coords = MainFrame.getLabels(self, self.iter)[bpindex]
             self.drs.append(self.dr)
             self.updatedCoords.append(self.dr.coords)
-            if np.isnan(self.points)[0] == False:
+            if not np.isnan(self.points)[0]:
                 self.buttonCounter.append(bpindex)
         self.figure.canvas.draw()
 
@@ -918,7 +918,7 @@ class MainFrame(wx.Frame):
 
     def onChecked(self, event):
         self.cb = event.GetEventObject()
-        if self.cb.GetValue() == True:
+        if self.cb.GetValue():
             self.slider.Enable(True)
             self.cidClick = self.canvas.mpl_connect("button_press_event", self.onClick)
             self.canvas.mpl_connect("button_release_event", self.onButtonRelease)
@@ -927,10 +927,10 @@ class MainFrame(wx.Frame):
 
     def updateZoomPan(self):
         # Checks if zoom/pan button is ON
-        if self.pan.GetValue() == True:
+        if self.pan.GetValue():
             self.toolbar.pan()
             self.pan.SetValue(False)
-        if self.zoom.GetValue() == True:
+        if self.zoom.GetValue():
             self.toolbar.zoom()
             self.zoom.SetValue(False)
 

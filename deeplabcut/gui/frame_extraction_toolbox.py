@@ -237,7 +237,7 @@ class MainFrame(wx.Frame):
     def updateSlider(self, event):
         self.slider.SetValue(self.startFrame.GetValue())
         self.currFrame = self.slider.GetValue()
-        if self.extract_from_analyse_video == True:
+        if self.extract_from_analyse_video:
             self.figure.delaxes(self.figure.axes[1])
             self.plot_labels()
         self.update()
@@ -247,7 +247,7 @@ class MainFrame(wx.Frame):
         Activates the frame range boxes
         """
         self.checkSlider = event.GetEventObject()
-        if self.checkSlider.GetValue() == True:
+        if self.checkSlider.GetValue():
             self.extract_range_frame = True
             self.startFrame.Enable(True)
             self.startFrame.SetValue(self.slider.GetValue())
@@ -286,7 +286,7 @@ class MainFrame(wx.Frame):
         self.y1 = int(self.cfg["video_sets"][videosource]["crop"].split(",")[2])
         self.y2 = int(self.cfg["video_sets"][videosource]["crop"].split(",")[3])
 
-        if self.cropping == True:
+        if self.cropping:
             # Select ROI of interest by drawing a rectangle
             self.cid = RectangleSelector(
                 self.axes,

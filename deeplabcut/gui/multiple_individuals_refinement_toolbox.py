@@ -67,7 +67,7 @@ class ImagePanel(wx.Panel):
         self.ax = self.axes.imshow(im, cmap=cmap)
         self.orig_xlim = self.axes.get_xlim()
         self.orig_ylim = self.axes.get_ylim()
-        if preview == False:
+        if not preview:
             self.axes.set_title(
                 str(
                     str(itr)
@@ -363,7 +363,7 @@ class MainFrame(wx.Frame):
         self.statusbar.SetStatusText("")
 
     def panButton(self, event):
-        if self.pan.GetValue() == True:
+        if self.pan.GetValue():
             self.toolbar.pan()
             self.statusbar.SetStatusText("Pan On")
             self.zoom.SetValue(False)
@@ -372,7 +372,7 @@ class MainFrame(wx.Frame):
             self.statusbar.SetStatusText("Pan Off")
 
     def zoomButton(self, event):
-        if self.zoom.GetValue() == True:
+        if self.zoom.GetValue():
             # Save pre-zoom xlim and ylim values
             self.prezoom_xlim = self.axes.get_xlim()
             self.prezoom_ylim = self.axes.get_ylim()
@@ -401,7 +401,7 @@ class MainFrame(wx.Frame):
         Activates the slider to increase the markersize
         """
         self.checkSlider = event.GetEventObject()
-        if self.checkSlider.GetValue() == True:
+        if self.checkSlider.GetValue():
             self.activate_slider = True
             self.slider.Enable(True)
             MainFrame.updateZoomPan(self)
@@ -852,7 +852,7 @@ class MainFrame(wx.Frame):
     def onChecked(self, event):
         MainFrame.saveEachImage(self)
         self.cb = event.GetEventObject()
-        if self.cb.GetValue() == True:
+        if self.cb.GetValue():
             self.slider.Enable(True)
         else:
             self.slider.Enable(False)
@@ -1057,7 +1057,7 @@ class MainFrame(wx.Frame):
                         self.likelihood = self.points[2]
 
                         # fix move to corner
-                        if self.move2corner == True:
+                        if self.move2corner:
                             ny, nx = np.shape(img)[0], np.shape(img)[1]
                             if self.points[0] > nx or self.points[0] < 0:
                                 print("fixing x for ", bp)
@@ -1110,7 +1110,7 @@ class MainFrame(wx.Frame):
                         self.likelihood = self.points[2]
 
                         # fix move to corner
-                        if self.move2corner == True:
+                        if self.move2corner:
                             ny, nx = np.shape(img)[0], np.shape(img)[1]
                             if self.points[0] > nx or self.points[0] < 0:
                                 print("fixing x for ", bp)
@@ -1165,7 +1165,7 @@ class MainFrame(wx.Frame):
                         self.likelihood = self.points[2]
 
                         # fix move to corner
-                        if self.move2corner == True:
+                        if self.move2corner:
                             ny, nx = np.shape(img)[0], np.shape(img)[1]
                             if self.points[0] > nx or self.points[0] < 0:
                                 print("fixing x for ", bp)
@@ -1218,7 +1218,7 @@ class MainFrame(wx.Frame):
                         self.likelihood = self.points[2]
 
                         # fix move to corner
-                        if self.move2corner == True:
+                        if self.move2corner:
                             ny, nx = np.shape(img)[0], np.shape(img)[1]
                             if self.points[0] > nx or self.points[0] < 0:
                                 print("fixing x for ", bp)
@@ -1264,10 +1264,10 @@ class MainFrame(wx.Frame):
 
     def updateZoomPan(self):
         # Checks if zoom/pan button is ON
-        if self.pan.GetValue() == True:
+        if self.pan.GetValue():
             self.toolbar.pan()
             self.pan.SetValue(False)
-        if self.zoom.GetValue() == True:
+        if self.zoom.GetValue():
             self.toolbar.zoom()
             self.zoom.SetValue(False)
 
