@@ -38,11 +38,11 @@ try:
         adddatasetstovideolistandviceversa,
         dropduplicatesinannotatinfiles,
     )
+    from deeplabcut.gui import select_crop_parameters
     from deeplabcut.gui.launch_script import launch_dlc
     from deeplabcut.gui.label_frames import label_frames
     from deeplabcut.gui.refine_labels import refine_labels
 
-    from deeplabcut.utils import select_crop_parameters
     from deeplabcut.utils.skeleton import SkeletonBuilder
     from deeplabcut.refine_training_dataset.tracklets import refine_tracklets
 except ModuleNotFoundError:
