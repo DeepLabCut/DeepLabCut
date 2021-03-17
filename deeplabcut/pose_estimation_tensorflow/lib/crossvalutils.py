@@ -894,7 +894,10 @@ def _benchmark_paf_graphs(
                 continue
 
             # Count the number of unassembled bodyparts
-            n_dets = len(gt)
+            n_dets = min(
+                len(gt), sum(1 for d in ass._flatten_detections(ass[i])
+                             if np.isfinite(d.confidence))
+            )
             animals = ass.assemblies.get(i)
             if animals is None:
                 if n_dets:
