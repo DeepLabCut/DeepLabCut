@@ -830,6 +830,7 @@ def _benchmark_paf_graphs(
     paf_inds,
     greedy=False,
     calibration_file="",
+    oks_sigma=0.1,
 ):
     paf_graph = params["paf_graph"]
     image_paths = params["imnames"]
@@ -879,22 +880,21 @@ def _benchmark_paf_graphs(
         if calibration_file:
             ass.calibrate(calibration_file)
 
+        ass.assemble()
+        oks = evaluate_assembly(ass.assemblies, ass_true_dict, oks_sigma)
+        all_metrics.append(oks)
+
         scores = np.full((len(image_paths), 2), np.nan)
-        ass_pred_dict = dict()
         for i, imname in enumerate(tqdm(image_paths)):
             gt = ground_truth[i]
             gt = gt[~np.isnan(gt).any(axis=1)]
-            if len(np.unique(gt[:, 2])) < 2:
+            if len(np.unique(gt[:, 2])) < 2:  # Only consider frames with 2+ animals
                 continue
 
-            animals, unique, links = ass._assemble(
-                data[imname]["prediction"], i, return_links=True,
-            )
-            ass_pred_dict[i] = animals
             # Count the number of unassembled bodyparts
-            n_dets = len(set((i for link in links for i in link.idx)))
-            n_animals = len(animals)
-            if not n_animals:
+            n_dets = sum(1 for _ in ass._flatten_detections(ass[i]))
+            animals = ass.assemblies.get(i)
+            if animals is None:
                 if n_dets:
                     scores[i, 0] = 1
             else:
@@ -913,7 +913,6 @@ def _benchmark_paf_graphs(
                 purity = mat.max(axis=0).sum() / mat.sum()
                 scores[i, 1] = purity
         all_scores.append((scores, paf))
-        all_metrics.append(evaluate_assembly(ass_pred_dict, ass_true_dict))
 
     dfs = []
     for score, inds in all_scores:

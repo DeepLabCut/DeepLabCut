@@ -15,6 +15,7 @@ import pandas as pd
 from collections import defaultdict
 from dataclasses import dataclass
 from math import sqrt, erf
+from multiprocessing import Pool
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial import cKDTree
 from scipy.spatial.distance import pdist, cdist
@@ -1174,7 +1175,7 @@ class Assembler:
         joints,
         links,
     ):
-        safe_edge = self.safe_edge & (self._kde is not None)
+        safe_edge = self.safe_edge and self._kde is not None
 
         lookup = defaultdict(dict)
         for link in links:
@@ -1364,13 +1365,35 @@ class Assembler:
 
     def assemble(
         self,
+        chunk_size=1,
+        n_processes=None,
     ):
-        for i, data_dict in enumerate(tqdm(self)):
-            assemblies, unique = self._assemble(data_dict, i)
-            if assemblies is not None:
-                self.assemblies[i] = assemblies
-            if unique is not None:
-                self.unique[i] = unique
+        if chunk_size == 0:
+            for i, data_dict in enumerate(tqdm(self)):
+                assemblies, unique = self._assemble(data_dict, i)
+                if assemblies is not None:
+                    self.assemblies[i] = assemblies
+                if unique is not None:
+                    self.unique[i] = unique
+        else:
+            global wrapped  # Hack to make the function pickable
+
+            def wrapped(i):
+                return i, self._assemble(self[i], i)
+
+            n_frames = len(self.metadata['imnames'])
+            with Pool(n_processes) as p:
+                with tqdm(total=n_frames) as pbar:
+                    for i, (assemblies, unique) in p.imap_unordered(
+                            wrapped,
+                            range(n_frames),
+                            chunksize=chunk_size
+                    ):
+                        if assemblies is not None:
+                            self.assemblies[i] = assemblies
+                        if unique is not None:
+                            self.unique[i] = unique
+                        pbar.update()
 
     @staticmethod
     def parse_metadata(data):
