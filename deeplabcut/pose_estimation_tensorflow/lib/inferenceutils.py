@@ -1130,14 +1130,14 @@ class Assembler:
                     continue
                 if link.idx in visited:
                     continue
-                heapq.heappush(stack, (-link.affinity, link))
+                heapq.heappush(stack, (-link.affinity, next(counter), link))
                 visited.add(link.idx)
 
         for idx in assembly._idx:
             push_to_stack(idx)
 
         while stack and len(assembly) < self.n_multibodyparts:
-            _, best = heapq.heappop(stack)
+            _, _, best = heapq.heappop(stack)
             i, j = best.idx
             if i in assembly._idx:
                 new_ind = j
@@ -1189,16 +1189,18 @@ class Assembler:
         G = nx.Graph([link.idx for link in links])
         for chain in nx.connected_components(G):
             if len(chain) == self.n_multibodyparts:
-                edges = G.edges(chain)
+                edges = [tuple(sorted(edge)) for edge in G.edges(chain)]
                 assembly = Assembly(self.n_multibodyparts)
                 for link in links:
                     i, j = link.idx
                     if (i, j) in edges:
-                        assembly.add_link(link)
-                        lookup[i].pop(j)
-                        lookup[j].pop(i)
+                        success = assembly.add_link(link)
+                        if success:
+                            lookup[i].pop(j)
+                            lookup[j].pop(i)
                 assembled.update(assembly._idx)
                 assemblies.append(assembly)
+                
         if len(assemblies) == self.max_n_individuals:
             return assemblies
 
