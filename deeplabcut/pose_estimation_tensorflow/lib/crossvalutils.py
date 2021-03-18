@@ -826,13 +826,27 @@ def _benchmark_paf_graphs(
     config,
     inference_cfg,
     data,
-    params,
     paf_inds,
     greedy=False,
     calibration_file="",
     oks_sigma=0.1,
 ):
-    paf_graph = params["paf_graph"]
+    n_multi = len(auxfun_multianimal.extractindividualsandbodyparts(config)[2])
+    data_ = {"metadata": data.pop("metadata")}
+    for k, v in data.items():
+        data_[k] = v["prediction"]
+    ass = Assembler(
+        data_,
+        max_n_individuals=inference_cfg["topktoretain"],
+        n_multibodyparts=n_multi,
+        greedy=greedy,
+        pcutoff=inference_cfg["pcutoff"],
+        min_affinity=inference_cfg.get("pafthreshold", 0.1)
+    )
+    if calibration_file:
+        ass.calibrate(calibration_file)
+
+    params = ass.metadata
     image_paths = params["imnames"]
     bodyparts = params["joint_names"]
     idx = (
@@ -860,30 +874,18 @@ def _benchmark_paf_graphs(
 
     # Assemble animals on the full set of detections
     paf_inds = sorted(paf_inds, key=len)
+    paf_graph = ass.graph
     n_graphs = len(paf_inds)
     all_scores = []
     all_metrics = []
-    n_multi = len(auxfun_multianimal.extractindividualsandbodyparts(config)[2])
     for j, paf in enumerate(paf_inds, start=1):
         print(f"Graph {j}|{n_graphs}")
         graph = [paf_graph[i] for i in paf]
-        ass = Assembler(
-            data,
-            max_n_individuals=inference_cfg["topktoretain"],
-            n_multibodyparts=n_multi,
-            graph=graph,
-            paf_inds=paf,
-            greedy=greedy,
-            pcutoff=inference_cfg["pcutoff"],
-            min_affinity=inference_cfg.get("pafthreshold", 0.1)
-        )
-        if calibration_file:
-            ass.calibrate(calibration_file)
-
+        ass.paf_inds = paf
+        ass.graph = graph
         ass.assemble()
         oks = evaluate_assembly(ass.assemblies, ass_true_dict, oks_sigma)
         all_metrics.append(oks)
-
         scores = np.full((len(image_paths), 2), np.nan)
         for i, imname in enumerate(tqdm(image_paths)):
             gt = ground_truth[i]
@@ -892,7 +894,7 @@ def _benchmark_paf_graphs(
                 continue
 
             # Count the number of unassembled bodyparts
-            n_dets = sum(1 for _ in ass._flatten_detections(ass[i]))
+            n_dets = len(gt)
             animals = ass.assemblies.get(i)
             if animals is None:
                 if n_dets:
