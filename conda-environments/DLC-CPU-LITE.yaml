@@ -20,6 +20,6 @@ dependencies:
   - pip
   - jupyter
   - nb_conda
-  - tensorflow==1.15.5
   - pip:
+    - tensorflow==1.15.5
     - deeplabcut
