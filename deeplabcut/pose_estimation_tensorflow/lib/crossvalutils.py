@@ -826,12 +826,27 @@ def _benchmark_paf_graphs(
     config,
     inference_cfg,
     data,
-    params,
     paf_inds,
     greedy=False,
     calibration_file="",
+    oks_sigma=0.1,
 ):
-    paf_graph = params["paf_graph"]
+    n_multi = len(auxfun_multianimal.extractindividualsandbodyparts(config)[2])
+    data_ = {"metadata": data.pop("metadata")}
+    for k, v in data.items():
+        data_[k] = v["prediction"]
+    ass = Assembler(
+        data_,
+        max_n_individuals=inference_cfg["topktoretain"],
+        n_multibodyparts=n_multi,
+        greedy=greedy,
+        pcutoff=inference_cfg["pcutoff"],
+        min_affinity=inference_cfg.get("pafthreshold", 0.1)
+    )
+    if calibration_file:
+        ass.calibrate(calibration_file)
+
+    params = ass.metadata
     image_paths = params["imnames"]
     bodyparts = params["joint_names"]
     idx = (
@@ -859,42 +874,32 @@ def _benchmark_paf_graphs(
 
     # Assemble animals on the full set of detections
     paf_inds = sorted(paf_inds, key=len)
+    paf_graph = ass.graph
     n_graphs = len(paf_inds)
     all_scores = []
     all_metrics = []
-    n_multi = len(auxfun_multianimal.extractindividualsandbodyparts(config)[2])
     for j, paf in enumerate(paf_inds, start=1):
         print(f"Graph {j}|{n_graphs}")
         graph = [paf_graph[i] for i in paf]
-        ass = Assembler(
-            data,
-            max_n_individuals=inference_cfg["topktoretain"],
-            n_multibodyparts=n_multi,
-            graph=graph,
-            paf_inds=paf,
-            greedy=greedy,
-            pcutoff=inference_cfg["pcutoff"],
-            min_affinity=inference_cfg.get("pafthreshold", 0.1)
-        )
-        if calibration_file:
-            ass.calibrate(calibration_file)
-
+        ass.paf_inds = paf
+        ass.graph = graph
+        ass.assemble()
+        oks = evaluate_assembly(ass.assemblies, ass_true_dict, oks_sigma)
+        all_metrics.append(oks)
         scores = np.full((len(image_paths), 2), np.nan)
-        ass_pred_dict = dict()
         for i, imname in enumerate(tqdm(image_paths)):
             gt = ground_truth[i]
             gt = gt[~np.isnan(gt).any(axis=1)]
-            if len(np.unique(gt[:, 2])) < 2:
+            if len(np.unique(gt[:, 2])) < 2:  # Only consider frames with 2+ animals
                 continue
 
-            animals, unique, links = ass._assemble(
-                data[imname]["prediction"], i, return_links=True,
-            )
-            ass_pred_dict[i] = animals
             # Count the number of unassembled bodyparts
-            n_dets = len(set((i for link in links for i in link.idx)))
-            n_animals = len(animals)
-            if not n_animals:
+            n_dets = min(
+                len(gt), sum(1 for d in ass._flatten_detections(ass[i])
+                             if np.isfinite(d.confidence))
+            )
+            animals = ass.assemblies.get(i)
+            if animals is None:
                 if n_dets:
                     scores[i, 0] = 1
             else:
@@ -913,7 +918,6 @@ def _benchmark_paf_graphs(
                 purity = mat.max(axis=0).sum() / mat.sum()
                 scores[i, 1] = purity
         all_scores.append((scores, paf))
-        all_metrics.append(evaluate_assembly(ass_pred_dict, ass_true_dict))
 
     dfs = []
     for score, inds in all_scores:

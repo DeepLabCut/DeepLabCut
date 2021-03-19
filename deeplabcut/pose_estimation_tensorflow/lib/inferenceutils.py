@@ -15,6 +15,7 @@ import pandas as pd
 from collections import defaultdict
 from dataclasses import dataclass
 from math import sqrt, erf
+from multiprocessing import Pool
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial import cKDTree
 from scipy.spatial.distance import pdist, cdist
@@ -870,6 +871,10 @@ class Assembly:
         return assembly
 
     @property
+    def xy(self):
+        return self.data[:, :2]
+
+    @property
     def affinity(self):
         return self._affinity / self.n_links
 
@@ -934,6 +939,8 @@ class Assembler:
         pcutoff=0.1,
         min_affinity=0.1,
         nan_policy='little',
+        force_fusion=False,
+        add_discarded=False,
         window_size=0,
         method='m1',
     ):
@@ -947,6 +954,8 @@ class Assembler:
         self.pcutoff = pcutoff
         self.min_affinity = min_affinity
         self.nan_policy = nan_policy
+        self.force_fusion = force_fusion
+        self.add_discarded = add_discarded
         self.window_size = window_size
         self.method = method
         self.graph = graph or self.metadata['paf_graph']
@@ -1024,7 +1033,7 @@ class Assembler:
         mu = self._kde.mean[ind]
         sigma = self._kde.covariance[i, j]
         z = (link.length ** 2 - mu) / sigma
-        return 1 - 0.5 * (1 + erf(abs(z) / sqrt(2)))
+        return 2 * (1 - 0.5 * (1 + erf(abs(z) / sqrt(2))))
 
     @staticmethod
     def _flatten_detections(data_dict):
@@ -1158,7 +1167,7 @@ class Assembler:
                     push_to_stack(new_ind)
                     try:
                         _, _, link = heapq.heappop(tabu)
-                        heapq.heappush(stack, (-link.affinity, link))
+                        heapq.heappush(stack, (-link.affinity, next(counter), link))
                     except IndexError:
                         pass
                 else:
@@ -1174,7 +1183,7 @@ class Assembler:
         joints,
         links,
     ):
-        safe_edge = self.safe_edge & (self._kde is not None)
+        safe_edge = self.safe_edge and self._kde is not None
 
         lookup = defaultdict(dict)
         for link in links:
@@ -1200,7 +1209,7 @@ class Assembler:
                             lookup[j].pop(i)
                 assembled.update(assembly._idx)
                 assemblies.append(assembly)
-                
+
         if len(assemblies) == self.max_n_individuals:
             return assemblies
 
@@ -1220,7 +1229,8 @@ class Assembler:
             assemblies.append(assembly)
 
         # Fuse superfluous assemblies
-        if len(assemblies) > self.max_n_individuals:
+        n_extra = len(assemblies) - self.max_n_individuals
+        if n_extra > 0:
             if safe_edge:
                 ds_old = [self.calc_assembly_mahalanobis_dist(assembly)
                           for assembly in assemblies]
@@ -1243,6 +1253,23 @@ class Assembler:
                         ds_old.pop(j)
                     else:
                         break
+            elif self.force_fusion:
+                assemblies = sorted(assemblies, key=len)
+                for nrow in range(n_extra):
+                    assembly = assemblies[nrow]
+                    candidates = [a for a in assemblies[nrow:] if assembly not in a]
+                    if not candidates:
+                        continue
+                    if len(candidates) == 1:
+                        candidate = candidates[0]
+                    else:
+                        dists = []
+                        for cand in candidates:
+                            d = cdist(assembly.xy, cand.xy)
+                            dists.append(np.nanmin(d))
+                        candidate = candidates[np.argmin(dists)]
+                    ind = assemblies.index(candidate)
+                    assemblies[ind] += assembly
             else:
                 store = dict()
                 for assembly in assemblies:
@@ -1269,37 +1296,41 @@ class Assembler:
                 self._fill_assembly(assembly, lookup, assembled, False, '')
                 assembled.update(assembly._idx)
 
-        # Last pass to fill assemblies
-        discarded = set(joint for joint in joints if joint.idx not in assembled)
-        if len(assemblies) > self.max_n_individuals:
-            assemblies = sorted(assemblies, key=len, reverse=True)
-            for assembly in assemblies[self.max_n_individuals:]:
-                for link in assembly._links:
-                    discarded.update((link.j1, link.j2))
-            assemblies = assemblies[:self.max_n_individuals]
-        for joint in sorted(discarded, key=lambda x: x.confidence, reverse=True):
-            if safe_edge:
-                for assembly in assemblies:
-                    if joint.label in assembly._visible:
-                        continue
-                    d_old = self.calc_assembly_mahalanobis_dist(assembly)
-                    assembly.add_joint(joint)
-                    d = self.calc_assembly_mahalanobis_dist(assembly)
-                    if d < d_old:
-                        break
-                    assembly.remove_joint(joint)
-            else:
-                dists = []
-                for i, assembly in enumerate(assemblies):
-                    if joint.label in assembly._visible:
-                        continue
-                    d = cdist(assembly.data[:, :2], np.atleast_2d(joint.pos))
-                    dists.append((i, d.min()))
-                if not dists:
-                    continue
-                min_ = sorted(dists, key=lambda x: x[1])
-                ind, _ = min_[0]
-                assemblies[ind].add_joint(joint)
+        if self.add_discarded:
+            # Last pass to fill assemblies with unconnected body parts
+            discarded = set(joint for joint in joints
+                            if joint.idx not in assembled
+                            and np.isfinite(joint.confidence))
+            if len(assemblies) > self.max_n_individuals:
+                assemblies = sorted(assemblies, key=len, reverse=True)
+                for assembly in assemblies[self.max_n_individuals:]:
+                    for link in assembly._links:
+                        discarded.update((link.j1, link.j2))
+                assemblies = assemblies[:self.max_n_individuals]
+            if discarded:
+                for joint in sorted(discarded, key=lambda x: x.confidence, reverse=True):
+                    if safe_edge:
+                        for assembly in assemblies:
+                            if joint.label in assembly._visible:
+                                continue
+                            d_old = self.calc_assembly_mahalanobis_dist(assembly)
+                            assembly.add_joint(joint)
+                            d = self.calc_assembly_mahalanobis_dist(assembly)
+                            if d < d_old:
+                                break
+                            assembly.remove_joint(joint)
+                    else:
+                        dists = []
+                        for i, assembly in enumerate(assemblies):
+                            if joint.label in assembly._visible:
+                                continue
+                            d = cdist(assembly.xy, np.atleast_2d(joint.pos))
+                            dists.append((i, np.nanmin(d)))
+                        if not dists:
+                            continue
+                        min_ = sorted(dists, key=lambda x: x[1])
+                        ind, _ = min_[0]
+                        assemblies[ind].add_joint(joint)
 
         return assemblies
 
@@ -1366,13 +1397,35 @@ class Assembler:
 
     def assemble(
         self,
+        chunk_size=1,
+        n_processes=None,
     ):
-        for i, data_dict in enumerate(tqdm(self)):
-            assemblies, unique = self._assemble(data_dict, i)
-            if assemblies is not None:
-                self.assemblies[i] = assemblies
-            if unique is not None:
-                self.unique[i] = unique
+        if chunk_size == 0:
+            for i, data_dict in enumerate(tqdm(self)):
+                assemblies, unique = self._assemble(data_dict, i)
+                if assemblies:
+                    self.assemblies[i] = assemblies
+                if unique:
+                    self.unique[i] = unique
+        else:
+            global wrapped  # Hack to make the function pickable
+
+            def wrapped(i):
+                return i, self._assemble(self[i], i)
+
+            n_frames = len(self.metadata['imnames'])
+            with Pool(n_processes) as p:
+                with tqdm(total=n_frames) as pbar:
+                    for i, (assemblies, unique) in p.imap_unordered(
+                            wrapped,
+                            range(n_frames),
+                            chunksize=chunk_size
+                    ):
+                        if assemblies:
+                            self.assemblies[i] = assemblies
+                        if unique:
+                            self.unique[i] = unique
+                        pbar.update()
 
     @staticmethod
     def parse_metadata(data):
@@ -1414,10 +1467,12 @@ class Assembler:
 
 def calc_object_keypoint_similarity(xy_pred, xy_true, sigma):
     visible = ~np.isnan(xy_pred * xy_true).all(axis=1)
+    if visible.sum() < 2:  # 2 points needed
+        return np.nan
     pred = xy_pred[visible]
     true = xy_true[visible]
     dist_squared = np.sum((pred - true) ** 2, axis=1)
-    scale_squared = np.product(np.ptp(true, axis=0))
+    scale_squared = np.product(np.ptp(true, axis=0) + np.spacing(1))
     k_squared = (2 * sigma) ** 2
     oks = np.exp(-dist_squared / (2 * scale_squared * k_squared))
     return np.mean(oks)
@@ -1428,10 +1483,10 @@ def match_assemblies(ass_pred, ass_true, sigma):
     inds_pred = np.argsort([ins.affinity for ins in ass_pred])[::-1]
     matched = []
     for ind_pred in inds_pred:
-        xy_pred = ass_pred[ind_pred].data[:, :2]
+        xy_pred = ass_pred[ind_pred].xy
         oks = []
         for ind_true in inds_true:
-            xy_true = ass_true[ind_true].data[:, :2]
+            xy_true = ass_true[ind_true].xy
             oks.append(calc_object_keypoint_similarity(xy_pred, xy_true, sigma))
         ind_best = np.argmax(oks)
         ind_true_best = inds_true.pop(ind_best)
@@ -1459,7 +1514,7 @@ def _parse_ground_truth_data(data):
     for i, arr in enumerate(data):
         temp = []
         for row in arr:
-            if np.isnan(row).all():
+            if np.isnan(row[:, :2]).all():
                 continue
             ass = Assembly(row.shape[0])
             ass.data[:, :3] = row

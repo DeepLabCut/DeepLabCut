@@ -1452,14 +1452,14 @@ def convert_detections2tracklets(
                         "CollectedData_" + cfg["scorer"] + ".h5",
                     )
                     ass.calibrate(train_data_file)
+                ass.assemble()
+                tracklets["s"].update(ass.unique)
 
                 for index, imname in tqdm(enumerate(imnames)):
-                    animals, single = ass._assemble(data[imname], index)
-                    if single is not None:
-                        tracklets["s"][imname] = single
-                    if animals is None:
+                    assemblies = ass.assemblies.get(index)
+                    if assemblies is None:
                         continue
-
+                    animals = np.stack([ass.data[:, :3] for ass in assemblies])
                     if track_method == "box":
                         bboxes = inferenceutils.calc_bboxes_from_keypoints(
                             animals, inferencecfg["boundingboxslack"], offset=0
