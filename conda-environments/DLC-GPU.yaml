@@ -19,10 +19,10 @@ name: DLC-GPU
 dependencies:
   - python=3.7
   - pip
-  - tensorflow-gpu==1.15.5
   - cudnn=7
   - jupyter
   - nb_conda
   - Shapely
   - pip:
+    - tensorflow-gpu==1.15.5
     - deeplabcut[gui]
