@@ -279,8 +279,9 @@ class MainFrame(BaseFrame):
             pos_abs = event.GetPosition()
             inv = self.axes.transData.inverted()
             pos_rel = list(inv.transform(pos_abs))
+            y1, y2 = self.axes.get_ylim()
             pos_rel[1] = (
-                self.axes.get_ylim()[0] - pos_rel[1]
+                y1 - pos_rel[1] + y2
             )  # Recall y-axis is inverted
             i = np.nanargmin(
                 [self.calc_distance(*dp.point.center, *pos_rel) for dp in self.drs]
