@@ -16,11 +16,11 @@
 
 name: DLC-CPU
 dependencies:
-  - python=3.7
+  - python=3.8
   - pip
   - jupyter
   - nb_conda
-  - tensorflow==1.15.5
   - wxpython<4.1.0
   - pip:
+    - tensorflow
     - deeplabcut
