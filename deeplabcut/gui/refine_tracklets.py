@@ -17,8 +17,7 @@ import wx
 
 import deeplabcut
 
-media_path = os.path.join(deeplabcut.__path__[0], "gui", "media")
-logo = os.path.join(media_path, "logo.png")
+from deeplabcut.gui import LOGO_PATH
 
 
 class Refine_tracklets(wx.Panel):
@@ -39,7 +38,7 @@ class Refine_tracklets(wx.Panel):
         text = wx.StaticText(self, label="DeepLabCut - Tracklets: Extract and Refine")
         sizer.Add(text, pos=(0, 0), flag=wx.TOP | wx.LEFT | wx.BOTTOM, border=15)
         # Add logo of DLC
-        icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(logo))
+        icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(LOGO_PATH))
         sizer.Add(icon, pos=(0, 4), flag=wx.TOP | wx.RIGHT | wx.ALIGN_RIGHT, border=5)
 
         line1 = wx.StaticLine(self)

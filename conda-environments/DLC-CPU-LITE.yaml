@@ -22,4 +22,4 @@ dependencies:
   - nb_conda
   - pip:
     - tensorflow==1.15.5
-    - deeplabcut[gui]
+    - deeplabcut

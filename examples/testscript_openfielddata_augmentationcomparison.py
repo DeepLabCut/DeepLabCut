@@ -152,11 +152,7 @@ the network performs much better on the testvideo (see Neuron Primer: https://ww
 
 
 import os
-from pathlib import Path
-
 os.environ["CUDA_VISIBLE_DEVICES"] = str(0)
-os.environ["DLClight"] = "True"
-
 import deeplabcut
 import numpy as np
 
