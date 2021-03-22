@@ -82,7 +82,7 @@ class BaseFrame(wx.Frame):
         self.pan.SetValue(False)
         self.statusbar.SetStatusText("")
 
-    def updateZoomPan(self):
+    def updateZoomPan(self, *args):
         # Checks if zoom/pan button is ON
         if self.pan.GetValue():
             self.toolbar.pan()
