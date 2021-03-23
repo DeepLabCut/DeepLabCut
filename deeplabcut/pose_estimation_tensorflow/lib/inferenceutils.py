@@ -1405,7 +1405,7 @@ class Assembler:
                 assemblies, unique = self._assemble(data_dict, i)
                 if assemblies:
                     self.assemblies[i] = assemblies
-                if unique:
+                if unique is not None:
                     self.unique[i] = unique
         else:
             global wrapped  # Hack to make the function pickable
@@ -1423,7 +1423,7 @@ class Assembler:
                     ):
                         if assemblies:
                             self.assemblies[i] = assemblies
-                        if unique:
+                        if unique is not None:
                             self.unique[i] = unique
                         pbar.update()
 
