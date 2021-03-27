@@ -58,20 +58,20 @@ mirror: False #imgaug & tensorpack do not consider mirror symmetric joints now,
 # set True to use with default parameters, otherwise give a dictionary for keyword arguments 
 # If no ratio value is given, set to 0.4 by default
 
-contrast:
-  clahe: True
-  claheratio: 0.3
-  histeq: True
-  histeqratio: 0.1
-
-convolution:
-  sharpen: True
-  sharpenratio: 0.3
-  edge: True
-  emboss:
-    alpha: [0.0, 1.0]
-    strength: [0.5, 1.5]
-  embossratio: 0.1
+# contrast:
+#   clahe: True
+#   claheratio: 0.3
+#   histeq: True
+#   histeqratio: 0.1
+# 
+# convolution:
+#   sharpen: True
+#   sharpenratio: 0.3
+#   edge: True
+#   emboss:
+#     alpha: [0.0, 1.0]
+#     strength: [0.5, 1.5]
+#   embossratio: 0.1
 
 ##############################################################################
 #### Augmentation type: scalecrop + tensorpack variables
