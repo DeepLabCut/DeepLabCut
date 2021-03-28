@@ -11,10 +11,13 @@ Licensed under GNU Lesser General Public License v3.0
 import os
 import pydoc
 import sys
+import platform
+import subprocess
 
 import wx
 
 import deeplabcut
+from deeplabcut.utils import auxiliaryfunctions
 
 from deeplabcut.gui import LOGO_PATH
 
@@ -118,14 +121,14 @@ class Refine_tracklets(wx.Panel):
         hbox_ = wx.BoxSizer(wx.HORIZONTAL)
         slider_gap_text = wx.StaticBox(
             self,
-            label="Specify the max gap size to fill, in frames (initial pickle file only!)",
+            label="Specify the max gap size to fill, in frames (used for the initial pickle file only!)",
         )
         slider_gap_sizer = wx.StaticBoxSizer(slider_gap_text, wx.VERTICAL)
         self.slider_gap = wx.SpinCtrl(self, value="5")
         slider_gap_sizer.Add(self.slider_gap, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
         hbox_.Add(slider_gap_sizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
-        traillength_text = wx.StaticBox(self, label="Trail Length (visualization)")
+        traillength_text = wx.StaticBox(self, label="Trail Length (for visualization)")
         traillength_sizer = wx.StaticBoxSizer(traillength_text, wx.VERTICAL)
         self.length_track = wx.SpinCtrl(self, value="25")
         traillength_sizer.Add(self.length_track, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
@@ -182,6 +185,11 @@ class Refine_tracklets(wx.Panel):
             hbox2, pos=(7, 0), flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, border=10
         )
 
+
+        self.inf_cfg_text = wx.Button(self, label="Edit inference_config.yaml")
+        sizer.Add(self.inf_cfg_text, pos=(10, 1), flag=wx.BOTTOM | wx.RIGHT, border=10)
+        self.inf_cfg_text.Bind(wx.EVT_BUTTON, self.edit_inf_config)
+
         self.ok = wx.Button(self, label="Step1: Launch GUI")
         sizer.Add(self.ok, pos=(6, 3))
         self.ok.Bind(wx.EVT_BUTTON, self.refine_tracklets)
@@ -194,7 +202,7 @@ class Refine_tracklets(wx.Panel):
         sizer.Add(self.reset, pos=(8, 1), flag=wx.BOTTOM | wx.RIGHT, border=10)
         self.reset.Bind(wx.EVT_BUTTON, self.reset_refine_tracklets)
 
-        self.filter = wx.Button(self, label=" Step2: Filter Tracks")
+        self.filter = wx.Button(self, label=" Step2: Filter Tracks (then you also get a CSV file!)")
         sizer.Add(self.filter, pos=(8, 3), flag=wx.BOTTOM | wx.RIGHT, border=10)
         self.filter.Bind(wx.EVT_BUTTON, self.filter_after_refinement)
 
@@ -207,6 +215,30 @@ class Refine_tracklets(wx.Panel):
 
         self.SetSizer(sizer)
         sizer.Fit(self)
+
+    def edit_inf_config(self, event):
+        # Read the infer config file
+        cfg = auxiliaryfunctions.read_config(self.config)
+        trainingsetindex = self.trainingset.GetValue()
+        trainFraction = cfg["TrainingFraction"][trainingsetindex]
+        self.inf_cfg_path = os.path.join(
+            cfg["project_path"],
+            auxiliaryfunctions.GetModelFolder(
+                trainFraction, self.shuffle.GetValue(), cfg
+            ),
+            "test",
+            "inference_cfg.yaml",
+        )
+        # let the user open the file with default text editor. Also make it mac compatible
+        if sys.platform == "darwin":
+            self.file_open_bool = subprocess.call(["open", self.inf_cfg_path])
+            self.file_open_bool = True
+        else:
+            self.file_open_bool = webbrowser.open(self.inf_cfg_path)
+        if self.file_open_bool:
+            self.inf_cfg = auxiliaryfunctions.read_config(self.inf_cfg_path)
+        else:
+            raise FileNotFoundError("File not found!")
 
     def filter_after_refinement(self, event):  # why is video type needed?
         shuffle = self.shuffle.GetValue()
