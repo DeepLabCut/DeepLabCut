@@ -91,8 +91,8 @@ class Label_frames(wx.Panel):
                 self,
                 path="",
                 style=wx.FLP_USE_TEXTCTRL,
-                message="Choose the config.yaml file for the 3d project",
-                wildcard="config.yaml",
+                message="Optional: select the 3D config.yaml",
+                wildcard="*.yaml",
             )
         sizer.Add(
             self.sel_config3d,
