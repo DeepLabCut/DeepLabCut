@@ -286,20 +286,25 @@ def cropimagesandlabels(
     indexlength = int(np.ceil(np.log10(numcrops)))
     project_path = os.path.dirname(config)
     cfg = auxiliaryfunctions.read_config(config)
-    videos = cfg["video_sets"].keys()
-    video_names = []
-    for video in videos:
-        parent, filename, ext = _robust_path_split(video)
-        if excludealreadycropped and "_cropped" in filename:
-            continue
-        video_names.append([parent, filename, ext])
+    videos = cfg.get("video_sets_original")
+    if videos is None:
+        videos = cfg["video_sets"]
+    elif excludealreadycropped:
+        for video in list(videos):
+            _, ext = os.path.splitext(video)
+            s = video.replace(ext, f"_cropped{ext}")
+            if s in cfg['video_sets']:
+                videos.pop(video)
+    if not videos:
+        return
 
     if (
         "video_sets_original" not in cfg.keys() and updatevideoentries
     ):  # this dict is kept for storing links to original full-sized videos
         cfg["video_sets_original"] = {}
 
-    for vidpath, vidname, videotype in video_names:
+    for video in videos:
+        vidpath, vidname, videotype = _robust_path_split(video)
         folder = os.path.join(project_path, "labeled-data", vidname)
         if userfeedback:
             print("Do you want to crop frames for folder: ", folder, "?")
@@ -332,7 +337,6 @@ def cropimagesandlabels(
                 frame = ic[i]
                 h, w = np.shape(frame)[:2]
                 if size[0] >= h or size[1] >= w:
-                    shutil.rmtree(new_folder, ignore_errors=True)
                     raise ValueError("Crop dimensions are larger than image size")
 
                 imagename = os.path.relpath(ic.files[i], project_path)
@@ -371,17 +375,23 @@ def cropimagesandlabels(
             if cropdata:
                 df = pd.DataFrame(AnnotationData, index=pd_index, columns=df.columns)
                 fn_new = fn.replace(folder, new_folder)
+                try:
+                    df_old = pd.read_hdf(fn_new)
+                    df = pd.concat((df_old, df))
+                except FileNotFoundError:
+                    pass
                 df.to_hdf(fn_new, key="df_with_missing", mode="w")
                 df.to_csv(fn_new.replace(".h5", ".csv"))
 
             if updatevideoentries and cropdata:
                 # moving old entry to _original, dropping it from video_set and update crop parameters
                 video_orig = sep.join((vidpath, vidname + videotype))
-                cfg["video_sets_original"][video_orig] = cfg["video_sets"][video_orig]
-                cfg["video_sets"].pop(video_orig)
-                cfg["video_sets"][sep.join((vidpath, new_vidname + videotype))] = {
-                    "crop": ", ".join(map(str, [0, size[1], 0, size[0]]))
-                }
+                if video_orig not in cfg["video_sets_original"]:
+                    cfg["video_sets_original"][video_orig] = cfg["video_sets"][video_orig]
+                    cfg["video_sets"].pop(video_orig)
+                    cfg["video_sets"][sep.join((vidpath, new_vidname + videotype))] = {
+                        "crop": ", ".join(map(str, [0, size[1], 0, size[0]]))
+                    }
 
     cfg["croppedtraining"] = True
     auxiliaryfunctions.write_config(config, cfg)
