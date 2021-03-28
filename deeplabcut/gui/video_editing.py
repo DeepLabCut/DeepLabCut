@@ -102,8 +102,8 @@ class Video_Editing(wx.Panel):
         self.rotate = wx.RadioBox(
             self,
             label="Downsample: rotate video?",
-            choices=["Yes", "No", "Arbitrary"]
-            majorDimension=1,
+            choices=["Yes", "No", "Arbitrary"],
+            #majorDimension=0,
             style=wx.RA_SPECIFY_COLS,
         )
         self.rotate.SetSelection(1)
@@ -122,7 +122,7 @@ class Video_Editing(wx.Panel):
         vangle_boxsizer = wx.StaticBoxSizer(angle, wx.VERTICAL)
         self.vangle = FS.FloatSpin(self, value="0.0", min_val=-360.0, max_val=360.0, digits=2)
         vangle_boxsizer.Add(self.vangle, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-        
+
         video_start = wx.StaticBox(self, label="Shorten: start time (sec)")
         vstart_boxsizer = wx.StaticBoxSizer(video_start, wx.VERTICAL)
         self.vstart = wx.SpinCtrl(self, value="1", min=0, max=3600)
@@ -143,21 +143,20 @@ class Video_Editing(wx.Panel):
         self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
 
         self.ok = wx.Button(self, label="DOWNSAMPLE")
-        self.sizer.Add(self.ok, pos=(5, 2))
+        self.sizer.Add(self.ok, pos=(5, 2), flag=wx.LEFT, border=10)
         self.ok.Bind(wx.EVT_BUTTON, self.downsample_video)
 
         self.ok = wx.Button(self, label="SHORTEN")
-        self.sizer.Add(self.ok, pos=(5, 3))
+        self.sizer.Add(self.ok, pos=(5, 3), flag=wx.LEFT, border=10)
         self.ok.Bind(wx.EVT_BUTTON, self.shorten_video)
 
         self.ok = wx.Button(self, label="CROP")
-        self.sizer.Add(self.ok, pos=(5, 4))
+        self.sizer.Add(self.ok, pos=(5, 4), flag=wx.LEFT, border=10)
         self.ok.Bind(wx.EVT_BUTTON, self.crop_video)
 
         self.reset = wx.Button(self, label="Reset")
         self.sizer.Add(
-            self.reset, pos=(5, 1), span=(1, 1), flag=wx.BOTTOM | wx.RIGHT, border=10
-        )
+            self.reset, pos=(6, 0), flag=wx.LEFT, border=10)
         self.reset.Bind(wx.EVT_BUTTON, self.reset_edit_videos)
 
         self.sizer.AddGrowableCol(3)
@@ -186,7 +185,7 @@ class Video_Editing(wx.Panel):
     def downsample_video(self, event):
         if self.rotate.GetStringSelection() == "Yes":
             self.rotate_val = "Yes"
-            
+
         elif self.rotate.GetStringSelection() == "Arbitrary":
             self.rotate_val = "Arbitrary"
 
