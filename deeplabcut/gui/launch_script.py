@@ -1,10 +1,10 @@
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 Please see AUTHORS for contributors.
 
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 
 """
@@ -20,7 +20,7 @@ from deeplabcut.utils import auxiliaryfunctions
 class MainFrame(BaseFrame):
     def __init__(self):
         super(MainFrame, self).__init__("DeepLabCut")
-        self.statusbar.SetStatusText("Welcome!")
+        self.statusbar.SetStatusText("www.deeplabcut.org")
         dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
         media_path = os.path.join(dlcparent_path, "gui", "media")
         logo = os.path.join(media_path, "logo.png")
