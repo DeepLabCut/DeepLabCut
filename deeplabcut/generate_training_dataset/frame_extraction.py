@@ -81,7 +81,7 @@ def extract_frames(
     Three important parameters for automatic extraction: numframes2pick, start and stop are set in the config file.
 
     After frames have been extracted from all videos from one camera, matched frames from other cameras can be extracted using mode = ``match``.
-    This is necessary if you plan to use epipolar lines to improve labeling across multiple camera angles. It will overwrite previously extracted 
+    This is necessary if you plan to use epipolar lines to improve labeling across multiple camera angles. It will overwrite previously extracted
     images from the second camera angle if necessary. #+++
 
     Please refer to the user guide for more details on methods and parameters https://www.nature.com/articles/s41596-019-0176-0
@@ -93,8 +93,10 @@ def extract_frames(
         Full path of the config.yaml file as a string.
 
     mode : string
-        String containing the mode of extraction. It must be either ``automatic`` or ``manual`` to extract the inital set of frames. It can also be ''match'' to match frames between
-        the cameras in preparation for the use of epipolar lines during labeling. #+++
+        String containing the mode of extraction. It must be either ``automatic`` or ``manual`` to extract the inital set of frames. It can also be ``match`` to match frames between
+        the cameras in preparation for the use of epipolar lines during labeling; namely, extract from camera_1 first, then run this to extact the matched frames in camera_2.
+        WARNING: if you use match, and you previously extracted and labeled frames from the second camera, this will overwrite your data. This will require you deleting the
+        collectdata.h5/.csv files before labeling.... Use with caution!
 
     algo : string
         String specifying the algorithm to use for selecting the frames. Currently, deeplabcut supports either ``kmeans`` or ``uniform`` based selection. This flag is
@@ -128,13 +130,13 @@ def extract_frames(
     slider_width: number, default: 25
         Width of the video frames slider, in percent of window
 
-    config3d: string, optional #+++
-        Path to the config.yaml file in the 3D project. This will be used to match frames extracted from all cameras present in the field 'camera_names' to the 
+    config3d: string, optional
+        Path to the config.yaml file in the 3D project. This will be used to match frames extracted from all cameras present in the field 'camera_names' to the
         frames extracted from the camera given by the parameter 'extracted_cam'
 
-    extracted_cam: number, default: 0 #+++
+    extracted_cam: number, default: 0
         The index of the camera that already has extracted frames. This will match frame numbers to extract for all other cameras.
-        This parameter is necessary if you wish to use epipolar lines in the labeling toolbox. Only use if mode = 'match' and config3d is provided. 
+        This parameter is necessary if you wish to use epipolar lines in the labeling toolbox. Only use if mode = 'match' and config3d is provided.
 
     Examples
     --------
@@ -419,9 +421,7 @@ def extract_frames(
                     cfg = select_cropping_area(config, [video])
                     print("in gui code")
                 coords = cfg["video_sets"][video]["crop"].split(",")
-                print("got here")
-                print(coords)
-                print(crop)
+
                 if crop and not opencv:
                     clip = clip.crop(
                         y1=int(coords[2]),
