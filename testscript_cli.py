@@ -69,7 +69,7 @@ dlc.auxiliaryfunctions.write_config(path_config_file,cfg)
 print("EXTRACTING FRAMES")
 dlc.extract_frames(path_config_file,mode='automatic',userfeedback=False)
 
-print("CREATING-SOME LABELS FOR THE FRAMES")
+print("CREATING SOME LABELS FOR THE FRAMES")
 frames=os.listdir(os.path.join(cfg['project_path'],'labeled-data',videoname))
 #As this next step is manual, we update the labels by putting them on the diagonal (fixed for all frames)
 for index,bodypart in enumerate(cfg['bodyparts']):
