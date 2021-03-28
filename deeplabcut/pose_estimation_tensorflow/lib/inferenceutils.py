@@ -875,6 +875,13 @@ class Assembly:
         return self.data[:, :2]
 
     @property
+    def extent(self):
+        bbox = np.empty(4)
+        bbox[:2] = np.nanmin(self.xy, axis=0)
+        bbox[2:] = np.nanmax(self.xy, axis=0)
+        return bbox
+
+    @property
     def affinity(self):
         return self._affinity / self.n_links
 
@@ -1588,14 +1595,6 @@ def calc_iou(bbox1, bbox2):
                  - wh), wh
 
 
-def calc_bbox(assembly):
-    xy = assembly.xy
-    bbox = np.empty(4)
-    bbox[:2] = np.nanmin(xy, axis=0)
-    bbox[2:] = np.nanmax(xy, axis=0)
-    return bbox
-
-
 import pickle
 # with open('/media/data/SocialPaperDatasets/CrackingParenting-Mostafizur-2019-08-08/videos/F35 Day1shortDLC_resnet50_CrackingParentingAug8shuffle0_60000_full.pickle', 'rb') as file:
 # with open('F35 Day1shortDLC_resnet50_CrackingParentingAug8shuffle0_60000_full.pickle', 'rb') as file:
@@ -1617,9 +1616,9 @@ for k, aa in ass.assemblies.items():
     if len(aa) == 2:
         b1 = calc_bbox(aa[0])
         b2 = calc_bbox(aa[1])
-        iou.append((k, calc_iou(b1, b2)[0]))
+        iou.append((k, calc_iou(aa[0].extent, aa[1].extent)[0]))
 iou2 = sorted(iou, key=lambda x: x[1], reverse=True)
 
 aa = ass.assemblies[6021]
-bbox1 = calc_bbox(aa[0])
-bbox2 = calc_bbox(aa[1])
+bbox1 = aa[0].extent
+bbox2 = aa[1].extent
