@@ -77,7 +77,7 @@ class ImagePanel(wx.Panel):
                         ][0] #WHY?
                     else:
                         sourceCam = self.sourceCam
-            
+
             sourceCamIdx = np.where(np.array(cams) == sourceCam)[0][0]
             labelCamIdx = np.where(np.array(cams) == labelCam)[0][0]
 
@@ -101,7 +101,7 @@ class ImagePanel(wx.Panel):
                 )
                 dataFrame.sort_index(inplace=True)
             except IOError:
-                print("source camera images have not yet been labeled")
+                print("source camera images have not yet been labeled, or you have opened this folder in the wrong mode!")
                 return None, None, None
 
             # Find offset terms for drawing epipolar Lines
