@@ -74,12 +74,13 @@ class ImagePanel(wx.Panel):
                     if self.sourceCam is None:
                         sourceCam = [
                             otherCam for otherCam in cams if cam not in otherCam
-                        ][0]
+                        ][0] #WHY?
                     else:
                         sourceCam = self.sourceCam
+            
+            sourceCamIdx = np.where(np.array(cams) == sourceCam)[0][0]
+            labelCamIdx = np.where(np.array(cams) == labelCam)[0][0]
 
-            sourceCamIdx = int(re.findall("[0-9]{1,3}", sourceCam)[0]) - 1
-            labelCamIdx = int(re.findall("[0-9]{1,3}", labelCam)[0]) - 1
             if sourceCamIdx < labelCamIdx:
                 camera_pair = cams[sourceCamIdx] + "-" + cams[labelCamIdx]
                 sourceCam_numInPair = 1
