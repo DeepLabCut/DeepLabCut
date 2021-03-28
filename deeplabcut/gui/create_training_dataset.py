@@ -81,35 +81,36 @@ class Create_training_dataset(wx.Panel):
         self.hbox3 = wx.BoxSizer(wx.HORIZONTAL)
 
         config_file = auxiliaryfunctions.read_config(self.config)
-        if config_file.get("multianimalproject", False):
-            print("note to user: currently only ResNet50-v1 is available for maDLC")
-        else:
-            net_text = wx.StaticBox(self, label="Select the network")
-            netboxsizer = wx.StaticBoxSizer(net_text, wx.VERTICAL)
-            self.net_choice = wx.ComboBox(self, style=wx.CB_READONLY)
-            options = [
-                "resnet_50",
-                "resnet_101",
-                "resnet_152",
-                "mobilenet_v2_1.0",
-                "mobilenet_v2_0.75",
-                "mobilenet_v2_0.5",
-                "mobilenet_v2_0.35",
-            ]
-            self.net_choice.Set(options)
-            self.net_choice.SetValue("resnet_50")
-            netboxsizer.Add(self.net_choice, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
-            aug_text = wx.StaticBox(self, label="Select the augmentation method")
-            augboxsizer = wx.StaticBoxSizer(aug_text, wx.VERTICAL)
-            self.aug_choice = wx.ComboBox(self, style=wx.CB_READONLY)
-            options = ["default", "tensorpack", "imgaug"]
-            self.aug_choice.Set(options)
-            self.aug_choice.SetValue("imgaug")
-            augboxsizer.Add(self.aug_choice, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+        net_text = wx.StaticBox(self, label="Select the network")
+        netboxsizer = wx.StaticBoxSizer(net_text, wx.VERTICAL)
+        self.net_choice = wx.ComboBox(self, style=wx.CB_READONLY)
+        options = [
+            "resnet_50",
+            "resnet_101",
+            "resnet_152",
+            "mobilenet_v2_1.0",
+            "mobilenet_v2_0.75",
+            "mobilenet_v2_0.5",
+            "mobilenet_v2_0.35",
+            "efficientnet-b0",
+            "efficientnet-b3",
+            "efficientnet-b6",
+        ]
+        self.net_choice.Set(options)
+        self.net_choice.SetValue("resnet_50")
+        netboxsizer.Add(self.net_choice, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
-            self.hbox1.Add(netboxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-            self.hbox1.Add(augboxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        aug_text = wx.StaticBox(self, label="Select the augmentation method")
+        augboxsizer = wx.StaticBoxSizer(aug_text, wx.VERTICAL)
+        self.aug_choice = wx.ComboBox(self, style=wx.CB_READONLY)
+        options = ["default", "tensorpack", "imgaug"]
+        self.aug_choice.Set(options)
+        self.aug_choice.SetValue("imgaug")
+        augboxsizer.Add(self.aug_choice, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+
+        self.hbox1.Add(netboxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        self.hbox1.Add(augboxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         shuffle_text = wx.StaticBox(
             self, label="Set a specific shuffle indx (1 network only)"
@@ -138,14 +139,14 @@ class Create_training_dataset(wx.Panel):
 
             self.cropandlabel = wx.RadioBox(
                 self,
-                label="Crop and Label Data (Recommended)?",
+                label="Crop and Label Data (Yes is required, set crop values)",
                 choices=["Yes", "No"],
                 majorDimension=1,
                 style=wx.RA_SPECIFY_COLS,
             )
             self.cropandlabel.Bind(wx.EVT_RADIOBOX, self.input_crop_size)
             self.cropandlabel.SetSelection(0)
-            self.crop_text = wx.StaticBox(self, label="Crop settings")
+            self.crop_text = wx.StaticBox(self, label="Crop settings (set to smaller than your input images)")
             self.crop_sizer = wx.StaticBoxSizer(self.crop_text, wx.VERTICAL)
             self.crop_widgets = []
             for name, val in [
@@ -170,7 +171,7 @@ class Create_training_dataset(wx.Panel):
         self.hbox3.Add(self.userfeedback, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         if config_file.get("multianimalproject", False):
-            print("note to user: currently model comparison is not available in maDLC")
+            print("more networks are available soon for maDLC, but currenlty this uses DLC-ResNet50 only")
             self.model_comparison_choice = "No"
         else:
             self.model_comparison_choice = wx.RadioBox(
@@ -202,6 +203,9 @@ class Create_training_dataset(wx.Panel):
                 "mobilenet_v2_0.75",
                 "mobilenet_v2_0.5",
                 "mobilenet_v2_0.35",
+                "efficientnet-b0",
+                "efficientnet-b3",
+                "efficientnet-b6",
             ]
             augmentation_methods = ["default", "tensorpack", "imgaug"]
             self.network_box = wx.StaticBox(self, label="Select the networks")
