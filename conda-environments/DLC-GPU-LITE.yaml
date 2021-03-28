@@ -14,6 +14,9 @@
 # install: conda env create -f DLC-GPU-LITE.yaml
 # update:  conda env update -f DLC-GPU-LITE.yaml
 name: DLC-GPU-LITE
+channels:
+  - conda-forge
+  - defaults
 dependencies:
   - python=3.7
   - pip

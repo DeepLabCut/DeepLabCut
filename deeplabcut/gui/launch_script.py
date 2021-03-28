@@ -20,7 +20,7 @@ from deeplabcut.utils import auxiliaryfunctions
 class MainFrame(BaseFrame):
     def __init__(self):
         super(MainFrame, self).__init__("DeepLabCut")
-        self.statusbar.SetStatusText("Welcome!")
+        self.statusbar.SetStatusText("www.deeplabcut.org")
         dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
         media_path = os.path.join(dlcparent_path, "gui", "media")
         logo = os.path.join(media_path, "logo.png")

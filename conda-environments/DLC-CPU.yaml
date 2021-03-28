@@ -12,6 +12,9 @@
 # update:  conda env update -f DLC-CPU.yaml
 
 name: DLC-CPU
+channels:
+  - conda-forge
+  - defaults
 dependencies:
   - python=3.7
   - pip

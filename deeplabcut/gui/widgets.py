@@ -50,7 +50,7 @@ class BaseFrame(wx.Frame):
         index = 0  # For display 1.
         screenWidth = screenSizes[index][0]
         screenHeight = screenSizes[index][1]
-        self.gui_size = (screenWidth * 0.7, screenHeight * 0.85)
+        self.gui_size = (screenWidth * 0.8, screenHeight * 0.75)
         self.imtypes = imtypes  # imagetypes to look for in folder e.g. *.png
 
         wx.Frame.__init__(
@@ -128,4 +128,3 @@ class BaseFrame(wx.Frame):
     def lockChecked(self, event):
         self.cb = event.GetEventObject()
         self.view_locked = self.cb.GetValue()
-
