@@ -11,7 +11,7 @@ from matplotlib.path import Path
 from matplotlib.widgets import Slider, LassoSelector, Button, CheckButtons
 from tqdm import trange
 
-from deeplabcut import generate_training_dataset
+from deeplabcut.gui import auxfun_drag
 from deeplabcut.post_processing import columnwise_spline_interp
 from deeplabcut.utils.auxiliaryfunctions import read_config, attempttomakefolder
 from deeplabcut.utils.auxfun_videos import VideoReader
@@ -660,8 +660,8 @@ class TrackletVisualizer:
     def add_point(self, center, animal, bodypart, **kwargs):
         circle = patches.Circle(center, **kwargs)
         self.ax1.add_patch(circle)
-        dp = generate_training_dataset.auxfun_drag_label_multiple_individuals.DraggablePoint(
-            circle, animal, bodypart
+        dp = auxfun_drag.DraggablePoint(
+            circle, bodypart, animal,
         )
         dp.connect()
         self.dps.append(dp)
