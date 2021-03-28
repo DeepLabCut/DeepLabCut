@@ -1302,41 +1302,40 @@ class Assembler:
                 self._fill_assembly(assembly, lookup, assembled, False, '')
                 assembled.update(assembly._idx)
 
-        if self.add_discarded:
+        discarded = set(joint for joint in joints
+                        if joint.idx not in assembled
+                        and np.isfinite(joint.confidence))
+        if len(assemblies) > self.max_n_individuals:
+            assemblies = sorted(assemblies, key=len, reverse=True)
+            for assembly in assemblies[self.max_n_individuals:]:
+                for link in assembly._links:
+                    discarded.update((link.j1, link.j2))
+            assemblies = assemblies[:self.max_n_individuals]
+        if self.add_discarded and discarded:
             # Last pass to fill assemblies with unconnected body parts
-            discarded = set(joint for joint in joints
-                            if joint.idx not in assembled
-                            and np.isfinite(joint.confidence))
-            if len(assemblies) > self.max_n_individuals:
-                assemblies = sorted(assemblies, key=len, reverse=True)
-                for assembly in assemblies[self.max_n_individuals:]:
-                    for link in assembly._links:
-                        discarded.update((link.j1, link.j2))
-                assemblies = assemblies[:self.max_n_individuals]
-            if discarded:
-                for joint in sorted(discarded, key=lambda x: x.confidence, reverse=True):
-                    if safe_edge:
-                        for assembly in assemblies:
-                            if joint.label in assembly._visible:
-                                continue
-                            d_old = self.calc_assembly_mahalanobis_dist(assembly)
-                            assembly.add_joint(joint)
-                            d = self.calc_assembly_mahalanobis_dist(assembly)
-                            if d < d_old:
-                                break
-                            assembly.remove_joint(joint)
-                    else:
-                        dists = []
-                        for i, assembly in enumerate(assemblies):
-                            if joint.label in assembly._visible:
-                                continue
-                            d = cdist(assembly.xy, np.atleast_2d(joint.pos))
-                            dists.append((i, np.nanmin(d)))
-                        if not dists:
+            for joint in sorted(discarded, key=lambda x: x.confidence, reverse=True):
+                if safe_edge:
+                    for assembly in assemblies:
+                        if joint.label in assembly._visible:
                             continue
-                        min_ = sorted(dists, key=lambda x: x[1])
-                        ind, _ = min_[0]
-                        assemblies[ind].add_joint(joint)
+                        d_old = self.calc_assembly_mahalanobis_dist(assembly)
+                        assembly.add_joint(joint)
+                        d = self.calc_assembly_mahalanobis_dist(assembly)
+                        if d < d_old:
+                            break
+                        assembly.remove_joint(joint)
+                else:
+                    dists = []
+                    for i, assembly in enumerate(assemblies):
+                        if joint.label in assembly._visible:
+                            continue
+                        d = cdist(assembly.xy, np.atleast_2d(joint.pos))
+                        dists.append((i, np.nanmin(d)))
+                    if not dists:
+                        continue
+                    min_ = sorted(dists, key=lambda x: x[1])
+                    ind, _ = min_[0]
+                    assemblies[ind].add_joint(joint)
 
         return assemblies
 
@@ -1573,3 +1572,54 @@ def evaluate_assembly(
         "mAP": precisions.mean(),
         "mAR": recalls.mean(),
     }
+
+
+# Double check pups
+def calc_iou(bbox1, bbox2):
+    x1 = max(bbox1[0], bbox2[0])
+    y1 = max(bbox1[1], bbox2[1])
+    x2 = min(bbox1[2], bbox2[2])
+    y2 = min(bbox1[3], bbox2[3])
+    w = max(0, x2 - x1)
+    h = max(0, y2 - y1)
+    wh = w * h
+    return wh / ((bbox1[2] - bbox1[0]) * (bbox1[3] - bbox1[1])
+                 + (bbox2[2] - bbox2[0]) * (bbox2[3] - bbox2[1])
+                 - wh), wh
+
+
+def calc_bbox(assembly):
+    xy = assembly.xy
+    bbox = np.empty(4)
+    bbox[:2] = np.nanmin(xy, axis=0)
+    bbox[2:] = np.nanmax(xy, axis=0)
+    return bbox
+
+
+import pickle
+# with open('/media/data/SocialPaperDatasets/CrackingParenting-Mostafizur-2019-08-08/videos/F35 Day1shortDLC_resnet50_CrackingParentingAug8shuffle0_60000_full.pickle', 'rb') as file:
+# with open('F35 Day1shortDLC_resnet50_CrackingParentingAug8shuffle0_60000_full.pickle', 'rb') as file:
+with open('short_videocropDLC_resnet50_MarmosetMay29shuffle0_60000_full.pickle', 'rb') as file:
+    data = pickle.load(file)
+ass = Assembler(
+    data,
+    max_n_individuals=2,
+    n_multibodyparts=15,
+)
+# graph = [[i, j] for i in range(5) for j in range(i + 1, 5)]
+# inds = [ass.graph.index(edge) for edge in graph]
+# ass.graph = graph
+# ass.paf_inds = inds
+ass.assemble()
+
+iou = []
+for k, aa in ass.assemblies.items():
+    if len(aa) == 2:
+        b1 = calc_bbox(aa[0])
+        b2 = calc_bbox(aa[1])
+        iou.append((k, calc_iou(b1, b2)[0]))
+iou2 = sorted(iou, key=lambda x: x[1], reverse=True)
+
+aa = ass.assemblies[6021]
+bbox1 = calc_bbox(aa[0])
+bbox2 = calc_bbox(aa[1])
