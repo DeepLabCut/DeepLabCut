@@ -1,10 +1,10 @@
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 
 Please see AUTHORS for contributors.
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 try:
@@ -20,4 +20,4 @@ if not lite:
 
     deeplabcut.launch_dlc()
 else:
-    print("You installed DLC lite, GUI cannot be started.")
+    print("You installed DLC lite, thus GUI's cannot be used. If you need GUI support please: pip install deeplabcut[gui]")
