@@ -293,7 +293,7 @@ def cropimagesandlabels(
         for video in list(videos):
             _, ext = os.path.splitext(video)
             s = video.replace(ext, f"_cropped{ext}")
-            if s in cfg['video_sets']:
+            if s in cfg["video_sets"]:
                 videos.pop(video)
     if not videos:
         return
@@ -325,6 +325,12 @@ def cropimagesandlabels(
             sep = "/" if "/" in df.index[0] else "\\"
             if sep != os.path.sep:
                 df.index = df.index.str.replace(sep, os.path.sep)
+            video_new = sep.join((vidpath, new_vidname + videotype))
+            if video_new in cfg["video_sets"]:
+                _, w, _, h = map(int, cfg["video_sets"][video_new]["crop"].split(","))
+                temp_size = (h, w)
+            else:
+                temp_size = size
             images = project_path + os.path.sep + df.index
             # Avoid cropping already cropped images
             cropped_images = auxiliaryfunctions.grab_files_in_folder(new_folder, "png")
@@ -332,11 +338,13 @@ def cropimagesandlabels(
             imnames = [
                 im for im in images.to_list() if Path(im).stem not in cropped_names
             ]
+            if not imnames:
+                continue
             ic = io.imread_collection(imnames)
             for i in trange(len(ic)):
                 frame = ic[i]
                 h, w = np.shape(frame)[:2]
-                if size[0] >= h or size[1] >= w:
+                if temp_size[0] >= h or temp_size[1] >= w:
                     raise ValueError("Crop dimensions are larger than image size")
 
                 imagename = os.path.relpath(ic.files[i], project_path)
@@ -346,11 +354,11 @@ def cropimagesandlabels(
                 while cropindex < numcrops:
                     dd = np.array(data[ind].copy(), dtype=float)
                     y0, x0 = (
-                        np.random.randint(h - size[0]),
-                        np.random.randint(w - size[1]),
+                        np.random.randint(h - temp_size[0]),
+                        np.random.randint(w - temp_size[1]),
                     )
-                    y1 = y0 + size[0]
-                    x1 = x0 + size[1]
+                    y1 = y0 + temp_size[0]
+                    x1 = x0 + temp_size[1]
                     with np.errstate(invalid="ignore"):
                         within = np.all((dd >= [x0, y0]) & (dd < [x1, y1]), axis=1)
                     if cropdata:
@@ -390,7 +398,7 @@ def cropimagesandlabels(
                     cfg["video_sets_original"][video_orig] = cfg["video_sets"][video_orig]
                     cfg["video_sets"].pop(video_orig)
                     cfg["video_sets"][sep.join((vidpath, new_vidname + videotype))] = {
-                        "crop": ", ".join(map(str, [0, size[1], 0, size[0]]))
+                        "crop": ", ".join(map(str, [0, temp_size[1], 0, temp_size[0]]))
                     }
 
     cfg["croppedtraining"] = True
