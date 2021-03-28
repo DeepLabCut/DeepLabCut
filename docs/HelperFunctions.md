@@ -1,4 +1,4 @@
-## Helper Function Documentation
+## Helper & Advanced Optional Function Documentation
 
 ### There are additional functions that are not required, but can be extremely helpful. 
 
@@ -105,6 +105,12 @@ deeplabcut.extract_frames(config_path, mode = 'match', config3d=config_path3d, e
 You can set `extracted_cam=0` to match all other camera images to the frame numbers in the `camera_1` folder, or change this to match to other cameras. If you `deeplabcut.extract_frames` with `mode='automatic'` before, it shouldn't matter which camera you pick. If you already extracted from both cameras, be warned this will overwrite the images for `camera_2`. 
 
 - Three, now you can label with epipolar lines:
-```python
-deeplabcut.label_frames(config_path, config3d=config_path3d)
-```
+
+     - Here, label `camera_1` as you would normally, i.e.:
+    ```python
+    deeplabcut.label_frames(config_path)
+    ```
+    - Then for `camera_2` (now it will compute the epipolar lines based on camera_1 labels and project them onto the GUI):
+    ```python
+    deeplabcut.label_frames(config_path, config3d=config_path3d)
+    ```
