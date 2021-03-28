@@ -294,18 +294,22 @@ class VideoWriter(VideoReader):
         return output_path
 
     def rescale(
-        self, width, height=-1, rotateccw=False, suffix="rescale", dest_folder=None
+        self, width, height=-1, rotateccw="No", angle=0.0, suffix="rescale", dest_folder=None
     ):
         output_path = self.make_output_path(suffix, dest_folder)
         command = (
-            f"ffmpeg -n -i {self.video_path} -filter:v "
-            f"scale={width}:{height} {{}}-c:a copy {output_path}"
+            f'ffmpeg -n -i {self.video_path} -filter:v '
+            f'"scale={width}:{height}{{}}" -c:a copy {output_path}'
         )
         # Rotate, see: https://stackoverflow.com/questions/3937387/rotating-videos-with-ffmpeg
         # interesting option to just update metadata.
-        command = (
-            command.format("-vf 'transpose=1' ") if rotateccw else command.format("")
-        )
+        if rotateccw == "Arbitrary":
+            angle = np.deg2rad(angle)
+            command = (command.format(f', rotate={angle}'))
+        elif rotateccw == "Yes":
+            command = (command.format(f', transpose=1'))
+        else:
+            command = (command.format(''))
         subprocess.call(command, shell=True)
         return output_path
 
@@ -447,7 +451,7 @@ def CropVideo(
 
 
 def DownSampleVideo(
-    vname, width=-1, height=200, outsuffix="downsampled", outpath=None, rotateccw=False
+    vname, width=-1, height=200, outsuffix="downsampled", outpath=None, rotateccw="No", angle=0.0
 ):
     """
     Auxiliary function to downsample a video and output it to the same folder with "outsuffix" appended in its name.
@@ -473,8 +477,11 @@ def DownSampleVideo(
     outpath: str
         Output path for saving video to (by default will be the same folder as the video)
 
-    rotateccw: bool
-        Default false, rotates counter-clockwise if true.
+    rotateccw: str
+        Default "No", rotates clockwise if "Yes", "Arbitrary" for arbitrary rotation by specified angle.
+        
+    angle: float
+        Angle to rotate by in degrees, default 0.0. Negative values rotate counter-clockwise
 
     Examples
     ----------
@@ -490,7 +497,7 @@ def DownSampleVideo(
     Downsamples the video to a width of 220 and height of 320 and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1cropped.avi
     """
     writer = VideoWriter(vname)
-    return writer.rescale(width, height, rotateccw, outsuffix, outpath)
+    return writer.rescale(width, height, rotateccw, angle, outsuffix, outpath)
 
 
 def draw_bbox(video):
