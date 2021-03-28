@@ -981,13 +981,19 @@ class Assembler:
             pass
         n_bpts = len(df.columns.get_level_values('bodyparts').unique())
         xy = df.to_numpy().reshape((-1, n_bpts, 2))
-        xy = xy[~np.isnan(xy).any(axis=(1, 2))]
+        frac_valid = np.mean(~np.isnan(xy), axis=(1, 2))
+        # Only keeps skeletons that are more than 90% complete
+        xy = xy[frac_valid >= 0.9]
         # TODO Normalize dists by longest length?
-        # TODO Bayesian multiple imputation of missing data
+        # TODO Smarter imputation technique (Bayesian? Grassmann averages?)
         dists = np.vstack([pdist(data, 'sqeuclidean') for data in xy])
+        mu = np.nanmean(dists, axis=0)
+        missing = np.isnan(dists)
+        dists = np.where(missing, mu, dists)
         kde = gaussian_kde(dists.T)
-        kde.mean = np.mean(dists, axis=0)
+        kde.mean = mu
         self._kde = kde
+        self.safe_edge = True
 
     def calc_assembly_mahalanobis_dist(
         self,
