@@ -207,7 +207,7 @@ Note, we also highly recommend that you use more bodypoints that you might other
 ```
 HOT KEYS IN THE Labeling GUI (also see "help" in GUI)
 ```
-Ctrl + C: Copy labels from previous frame.
+Ctrl + C: Copy labels from previous frame. With multi-animal DLC, only the keypoints of the animal currently selected are duplicated.
 Keyboard arrows: advance frames
 delete key: delete label
 ```
