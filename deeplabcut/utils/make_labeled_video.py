@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FFMpegWriter
 from matplotlib.collections import LineCollection
-from skimage.draw import circle, line_aa
+from skimage.draw import disk, line_aa
 from skimage.util import img_as_ubyte
 from tqdm import trange
 
@@ -163,15 +163,14 @@ def CreateVideo(
                         color = colors[num_ind]
                     if trailpoints > 0:
                         for k in range(1, min(trailpoints, index + 1)):
-                            rr, cc = circle(
-                                df_y[ind, index - k],
-                                df_x[ind, index - k],
+                            rr, cc = disk(
+                                (df_y[ind, index - k], df_x[ind, index - k]),
                                 dotsize,
                                 shape=(ny, nx),
                             )
                             image[rr, cc] = color
-                    rr, cc = circle(
-                        df_y[ind, index], df_x[ind, index], dotsize, shape=(ny, nx)
+                    rr, cc = disk(
+                        (df_y[ind, index], df_x[ind, index]), dotsize, shape=(ny, nx)
                     )
                     image[rr, cc] = color
 
@@ -843,7 +842,7 @@ def create_video_with_all_detections(
                         color = colors[i]
                         for x, y, p, _ in det:
                             if p > pcutoff:
-                                rr, cc = circle(y, x, dotsize, shape=(ny, nx))
+                                rr, cc = disk((y, x), dotsize, shape=(ny, nx))
                                 frame[rr, cc] = color
                 except ValueError:  # No data stored for that particular frame
                     print(n, "no data")
