@@ -179,7 +179,7 @@ class ImagePanel(wx.Panel):
         ylim = self.axes.get_ylim()
         self.axes.clear()
 
-        im = cv2.imread(img)
+        im = cv2.imread(img)[..., ::-1]
         colorIndex = np.linspace(np.max(im), np.min(im), len(bodyparts))
         # draw epipolar lines
         epLines, sourcePts, offsets = self.retrieveData_and_computeEpLines(img, itr)
