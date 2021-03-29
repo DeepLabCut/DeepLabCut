@@ -882,6 +882,15 @@ class Assembly:
         return bbox
 
     @property
+    def area(self):
+        x1, y1, x2, y2 = self.extent
+        return (x2 - x1) * (y2 - y1)
+
+    @property
+    def confidence(self):
+        return np.mean(self.data[:, 2])
+
+    @property
     def affinity(self):
         return self._affinity / self.n_links
 
@@ -1537,6 +1546,28 @@ def _parse_ground_truth_data(data):
     return gt
 
 
+def find_outlier_assemblies(
+    dict_of_assemblies,
+    criterion="area",
+    qs=(5, 95),
+):
+    if not hasattr(Assembly, criterion):
+        raise ValueError(f"Invalid criterion {criterion}.")
+
+    if len(qs) != 2:
+        raise ValueError("Two percentiles (for lower and upper bounds) should be given.")
+
+    tuples = []
+    for frame_ind, assemblies in dict_of_assemblies.items():
+        for assembly in assemblies:
+            tuples.append((frame_ind, getattr(assembly, criterion)))
+    frame_inds, vals = zip(*tuples)
+    vals = np.asarray(vals)
+    lo, up = np.percentile(vals, qs, interpolation="nearest")
+    inds = np.flatnonzero((vals < lo) | (vals > up)).tolist()
+    return set(frame_inds[i] for i in inds)
+
+
 def evaluate_assembly(
     ass_pred_dict,
     ass_true_dict,
@@ -1579,46 +1610,3 @@ def evaluate_assembly(
         "mAP": precisions.mean(),
         "mAR": recalls.mean(),
     }
-
-
-# Double check pups
-def calc_iou(bbox1, bbox2):
-    x1 = max(bbox1[0], bbox2[0])
-    y1 = max(bbox1[1], bbox2[1])
-    x2 = min(bbox1[2], bbox2[2])
-    y2 = min(bbox1[3], bbox2[3])
-    w = max(0, x2 - x1)
-    h = max(0, y2 - y1)
-    wh = w * h
-    return wh / ((bbox1[2] - bbox1[0]) * (bbox1[3] - bbox1[1])
-                 + (bbox2[2] - bbox2[0]) * (bbox2[3] - bbox2[1])
-                 - wh), wh
-
-
-import pickle
-# with open('/media/data/SocialPaperDatasets/CrackingParenting-Mostafizur-2019-08-08/videos/F35 Day1shortDLC_resnet50_CrackingParentingAug8shuffle0_60000_full.pickle', 'rb') as file:
-# with open('F35 Day1shortDLC_resnet50_CrackingParentingAug8shuffle0_60000_full.pickle', 'rb') as file:
-with open('short_videocropDLC_resnet50_MarmosetMay29shuffle0_60000_full.pickle', 'rb') as file:
-    data = pickle.load(file)
-ass = Assembler(
-    data,
-    max_n_individuals=2,
-    n_multibodyparts=15,
-)
-# graph = [[i, j] for i in range(5) for j in range(i + 1, 5)]
-# inds = [ass.graph.index(edge) for edge in graph]
-# ass.graph = graph
-# ass.paf_inds = inds
-ass.assemble()
-
-iou = []
-for k, aa in ass.assemblies.items():
-    if len(aa) == 2:
-        b1 = calc_bbox(aa[0])
-        b2 = calc_bbox(aa[1])
-        iou.append((k, calc_iou(aa[0].extent, aa[1].extent)[0]))
-iou2 = sorted(iou, key=lambda x: x[1], reverse=True)
-
-aa = ass.assemblies[6021]
-bbox1 = aa[0].extent
-bbox2 = aa[1].extent
