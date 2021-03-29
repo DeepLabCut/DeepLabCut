@@ -242,7 +242,7 @@ def cropimagesandlabels(
     size=(400, 400),
     userfeedback=True,
     cropdata=True,
-    excludealreadycropped=True,
+    excludealreadycropped=False,
     updatevideoentries=True,
 ):
     """
@@ -268,8 +268,10 @@ def cropimagesandlabels(
     cropdata: bool, default True:
         If true creates corresponding annotation data (from ground truth)
 
-    excludealreadycropped: bool, def true
-        If true excludes folders that already contain _cropped in their name.
+    excludealreadycropped: bool, default False:
+        If true, ignore original videos whose frames are already cropped.
+        This is only useful after adding new videos post dataset creation,
+        as folders containing no new frames are otherwise automatically ignored.
 
     updatevideoentries, bool, default true
         If true updates video_list entries to refer to cropped frames instead. This makes sense for subsequent processing.
