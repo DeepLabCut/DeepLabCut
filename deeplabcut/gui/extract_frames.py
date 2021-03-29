@@ -1,10 +1,10 @@
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 Please see AUTHORS for contributors.
 
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 
 """
@@ -80,7 +80,7 @@ class Extract_frames(wx.Panel):
         self.method_choice = wx.RadioBox(
             self,
             label="Choose the extraction method",
-            choices=["automatic", "manual", "match"],
+            choices=["automatic", "manual"],
             majorDimension=1,
             style=wx.RA_SPECIFY_COLS,
         )
@@ -153,65 +153,17 @@ class Extract_frames(wx.Panel):
             border=10,
         )
 
-        self.cfg3d_text = wx.StaticText(self, label="Select the config3d file")
-        sizer.Add(
-            self.cfg3d_text,
-            pos=(4, 0),
-            flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT,
-            border=5,
-        )
-
-        if sys.platform == "darwin":
-            self.sel_config3d = wx.FilePickerCtrl(
-                self,
-                path="",
-                style=wx.FLP_USE_TEXTCTRL,
-                message="Choose the config.yaml file for the 3d project",
-                wildcard="*.yaml",
-            )
-        else:
-            self.sel_config3d = wx.FilePickerCtrl(
-                self,
-                path="",
-                style=wx.FLP_USE_TEXTCTRL,
-                message="Choose the config.yaml file for the 3d project",
-                wildcard="config.yaml",
-            )
-        # self.sel_config = wx.FilePickerCtrl(self, path="",style=wx.FLP_USE_TEXTCTRL,message="Choose the config.yaml file", wildcard="config.yaml")
-        sizer.Add(
-            self.sel_config3d,
-            pos=(4, 1),
-            span=(1, 3),
-            flag=wx.ALIGN_CENTER_VERTICAL | wx.EXPAND,
-            border=5,
-        )
-        self.sel_config3d.SetPath("")
-        self.config3d = None
-        self.sel_config3d.Bind(wx.EVT_FILEPICKER_CHANGED, self.select_config3d)
-
-        extracted_cam_text = wx.StaticBox(
-            self, label="Index of the source camera to which frames will be matched"
-        )
-        extracted_cam_boxsizer = wx.StaticBoxSizer(extracted_cam_text, wx.VERTICAL)
-        self.extracted_cam = wx.SpinCtrl(self, value="0")
-        extracted_cam_boxsizer.Add(
-            self.extracted_cam, 15, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
-        )
-        sizer.Add(
-            extracted_cam_boxsizer, pos=(4, 4), flag=wx.TOP | wx.EXPAND, border=10
-        )
-
         self.help_button = wx.Button(self, label="Help")
-        sizer.Add(self.help_button, pos=(5, 0), flag=wx.LEFT, border=10)
+        sizer.Add(self.help_button, pos=(4, 0), flag=wx.LEFT, border=10)
         self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
 
         self.ok = wx.Button(self, label="Ok")
-        sizer.Add(self.ok, pos=(5, 4))
+        sizer.Add(self.ok, pos=(4, 4))
         self.ok.Bind(wx.EVT_BUTTON, self.extract_frames)
 
         self.reset = wx.Button(self, label="Reset")
         sizer.Add(
-            self.reset, pos=(5, 1), span=(1, 1), flag=wx.BOTTOM | wx.RIGHT, border=10
+            self.reset, pos=(4, 1), span=(1, 1), flag=wx.BOTTOM | wx.RIGHT, border=10
         )
         self.reset.Bind(wx.EVT_BUTTON, self.reset_extract_frames)
 
@@ -240,11 +192,6 @@ class Extract_frames(wx.Panel):
         """
         self.config = self.sel_config.GetPath()
 
-    def select_config3d(self, event):
-        """
-        """
-        self.config3d = self.sel_config3d.GetPath()
-
     def select_extract_method(self, event):
         self.method = self.method_choice.GetStringSelection()
         if self.method == "manual":
@@ -254,17 +201,6 @@ class Extract_frames(wx.Panel):
             self.algo_choice.Enable(False)
             self.cluster_step.Enable(False)
             self.slider_width.Enable(False)
-            self.sel_config3d.Enable(False)
-            self.extracted_cam.Enable(False)
-        elif self.method == "match":
-            self.crop_choice.Enable(True)
-            self.feedback_choice.Enable(False)
-            self.opencv_choice.Enable(False)
-            self.algo_choice.Enable(False)
-            self.cluster_step.Enable(False)
-            self.slider_width.Enable(False)
-            self.sel_config3d.Enable(True)
-            self.extracted_cam.Enable(True)
         else:
             self.crop_choice.Enable(True)
             self.feedback_choice.Enable(True)
@@ -272,15 +208,12 @@ class Extract_frames(wx.Panel):
             self.algo_choice.Enable(True)
             self.cluster_step.Enable(True)
             self.slider_width.Enable(True)
-            self.sel_config3d.Enable(False)
-            self.extracted_cam.Enable(False)
 
     def extract_frames(self, event):
         mode = self.method
         algo = self.algo_choice.GetValue()
         if self.crop_choice.GetStringSelection() == "True (read from config file)":
             crop = True
-
         elif self.crop_choice.GetStringSelection() == "GUI":
             crop = "GUI"
         else:
@@ -297,8 +230,6 @@ class Extract_frames(wx.Panel):
             opencv = False
 
         slider_width = self.slider_width.GetValue()
-        extracted_cam = self.extracted_cam.GetValue()
-        print("crop=" + str(crop))
         deeplabcut.extract_frames(
             self.config,
             mode,
@@ -310,8 +241,6 @@ class Extract_frames(wx.Panel):
             cluster_color=False,
             opencv=opencv,
             slider_width=slider_width,
-            config3d=self.config3d,
-            extracted_cam=extracted_cam,
         )
 
     def reset_extract_frames(self, event):
@@ -320,7 +249,6 @@ class Extract_frames(wx.Panel):
         """
         self.config = []
         self.sel_config.SetPath("")
-        self.sel_config3d.SetPath("")
         self.method_choice.SetStringSelection("automatic")
         self.crop_choice.Enable(True)
         self.feedback_choice.Enable(True)
@@ -328,11 +256,9 @@ class Extract_frames(wx.Panel):
         self.algo_choice.Enable(True)
         self.cluster_step.Enable(True)
         self.slider_width.Enable(True)
-        self.extracted_cam.Enable(False)
         self.crop_choice.SetStringSelection("False")
         self.feedback_choice.SetStringSelection("No")
         self.opencv_choice.SetStringSelection("Yes")
         self.algo_choice.SetValue("kmeans")
         self.cluster_step.SetValue(1)
         self.slider_width.SetValue(25)
-        self.extracted_cam.SetValue(0)
