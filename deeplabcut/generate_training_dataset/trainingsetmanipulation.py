@@ -1,10 +1,10 @@
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 
 Please see AUTHORS for contributors.
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 import logging
@@ -405,69 +405,6 @@ def cropimagesandlabels(
 
     cfg["croppedtraining"] = True
     auxiliaryfunctions.write_config(config, cfg)
-
-
-def label_frames(
-    config,
-    multiple_individualsGUI=False,
-    imtypes=["*.png"],
-    config3d=None,
-    sourceCam=None,
-):  # +++
-    """
-    Manually label/annotate the extracted frames. Update the list of body parts you want to localize in the config.yaml file first.
-
-    Parameter
-    ----------
-    config : string
-        String containing the full path of the config file in the project.
-
-    multiple_individualsGUI: bool, optional
-          If this is set to True, a user can label multiple individuals. Note for "multianimalproject=True" this is automatically used.
-          The default is ``False``; if provided it must be either ``True`` or ``False``.
-
-    imtypes: list of imagetypes to look for in folder to be labeled. By default only png images are considered.
-
-    config3d: string, optional #+++
-        String containing the full path of the config file in the 3D project. Include when epipolar lines would be helpful for labeling additional camera angles.
-
-    sourceCam: string, optional #+++
-        String containing the camera name from which to pull labeling data to generate epipolar lines. This must match the pattern in 'camera_names' in the 3D config file.
-        If no value is entered, data will be pulled from either cam1 or cam2
-
-    Example
-    --------
-    Standard use case:
-    >>> deeplabcut.label_frames('/myawesomeproject/reaching4thestars/config.yaml')
-
-    To label multiple individuals (without having a multiple individuals project); otherwise this GUI is loaded automatically
-    >>> deeplabcut.label_frames('/analysis/project/reaching-task/config.yaml',multiple_individualsGUI=True)
-
-    To label other image types
-    >>> label_frames(config,multiple=False,imtypes=['*.jpg','*.jpeg'])
-    
-    To label with epipolar lines projected from labels in another camera angle #+++
-    >>> label_frames(config, config3d='/analysis/project/reaching-task/reaching-task-3d/config.yaml', sourceCam='cam1')
-
-    --------
-
-    """
-    startpath = os.getcwd()
-    wd = Path(config).resolve().parents[0]
-    os.chdir(str(wd))
-    cfg = auxiliaryfunctions.read_config(config)
-    if cfg.get("multianimalproject", False) or multiple_individualsGUI:
-        from deeplabcut.generate_training_dataset import (
-            multiple_individuals_labeling_toolbox,
-        )
-
-        multiple_individuals_labeling_toolbox.show(config, config3d, sourceCam)
-    else:
-        from deeplabcut.generate_training_dataset import labeling_toolbox
-
-        labeling_toolbox.show(config, config3d, sourceCam, imtypes=imtypes)
-
-    os.chdir(startpath)
 
 
 def check_labels(

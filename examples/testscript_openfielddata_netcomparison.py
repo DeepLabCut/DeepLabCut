@@ -24,11 +24,7 @@ TODO: change to frozen backbone!
 
 
 import os
-from pathlib import Path
-
 os.environ["CUDA_VISIBLE_DEVICES"] = str(0)
-os.environ["DLClight"] = "True"
-
 import deeplabcut
 import numpy as np
 

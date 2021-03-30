@@ -73,7 +73,7 @@ def extract_frames(
     opencv=True,
     slider_width=25,
     config3d=None,
-    extracted_cam=0,  # +++
+    extracted_cam=0,
 ):
     """
     Extracts frames from the videos in the config.yaml file. Only the videos in the config.yaml will be used to select the frames.\n
@@ -86,7 +86,7 @@ def extract_frames(
 
     After frames have been extracted from all videos from one camera, matched frames from other cameras can be extracted using mode = ``match``.
     This is necessary if you plan to use epipolar lines to improve labeling across multiple camera angles. It will overwrite previously extracted
-    images from the second camera angle if necessary. #+++
+    images from the second camera angle if necessary.
 
     Please refer to the user guide for more details on methods and parameters https://www.nature.com/articles/s41596-019-0176-0
     or the preprint: https://www.biorxiv.org/content/biorxiv/early/2018/11/24/476531.full.pdf
@@ -172,8 +172,8 @@ def extract_frames(
     """
     import os
     import sys
-    import re  # +++
-    import glob  # +++
+    import re
+    import glob
     import numpy as np
     from pathlib import Path
     from skimage import io
@@ -184,7 +184,7 @@ def extract_frames(
     if mode == "manual":
         wd = Path(config).resolve().parents[0]
         os.chdir(str(wd))
-        from deeplabcut.generate_training_dataset import frame_extraction_toolbox
+        from deeplabcut.gui import frame_extraction_toolbox
 
         frame_extraction_toolbox.show(config, slider_width)
 

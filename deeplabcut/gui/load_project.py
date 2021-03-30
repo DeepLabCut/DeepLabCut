@@ -1,23 +1,17 @@
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 Please see AUTHORS for contributors.
 
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 
 """
 
-import os
+import sys
 
 import wx
-
-from deeplabcut.utils import auxiliaryfunctions
-
-dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
-media_path = os.path.join(dlcparent_path, "gui", "media")
-logo = os.path.join(media_path, "logo.png")
 
 
 class Load_project(wx.Panel):
@@ -64,7 +58,7 @@ class Load_project(wx.Panel):
                 wildcard="config.yaml",
             )
 
-        if self.config == None:
+        if self.config is None:
             self.config = "Please select the config file"
 
         self.sel_config.SetPath(self.config)

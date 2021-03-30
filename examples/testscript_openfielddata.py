@@ -19,10 +19,6 @@ With pcutoff of 0.1  train error: 2.89 pixels. Test error: 2.81 pixels
 
 The analysis of the video takes 41 seconds (batch size 32) and creating the frames 8 seconds (+ a few seconds for ffmpeg) to create the video.
 """
-import os
-
-os.environ["DLClight"] = "True"
-
 import deeplabcut
 import os
 

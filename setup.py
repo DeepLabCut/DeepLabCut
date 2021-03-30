@@ -58,6 +58,9 @@ setuptools.setup(
         "moviepy<=1.0.1",
         "bayesian-optimization"
     ],
+    extras_require={
+        "gui": ["wxpython<4.1"]
+    },
     scripts=["deeplabcut/pose_estimation_tensorflow/models/pretrained/download.sh"],
     packages=setuptools.find_packages(),
     data_files=[
