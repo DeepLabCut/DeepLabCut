@@ -249,11 +249,6 @@ class MainFrame(wx.Frame):
         self.save.Bind(wx.EVT_BUTTON, self.saveDataSet)
         self.save.Enable(False)
 
-        self.delete = wx.Button(self.widget_panel, id=wx.ID_ANY, label="Delete Frame")
-        widgetsizer.Add(self.delete, 1, wx.ALL, 15)
-        self.delete.Bind(wx.EVT_BUTTON, self.deleteImage)
-        self.delete.Enable(False)
-
         widgetsizer.AddStretchSpacer(15)
         self.quit = wx.Button(self.widget_panel, id=wx.ID_ANY, label="Quit")
         widgetsizer.Add(self.quit, 1, wx.ALL | wx.ALIGN_RIGHT, 15)
@@ -561,7 +556,6 @@ class MainFrame(wx.Frame):
         self.home.Enable(True)
         self.pan.Enable(True)
         self.lock.Enable(True)
-        self.delete.Enable(True)
 
         # Reading config file and its variables
         self.cfg = auxiliaryfunctions.read_config(self.config_file)
@@ -897,95 +891,30 @@ class MainFrame(wx.Frame):
                 self.scorer, bp[0][-2], "y"
             ] = bp[-1][1]
 
-    def ResetEachImage(self):
-        """
-	    Reset data for each image
-	    """
-        for idx, bp in enumerate(self.updatedCoords):
-            self.dataFrame.loc[self.relativeimagenames[self.iter]][
-                self.scorer, bp[0][-2], "x"
-            ] = None
-            self.dataFrame.loc[self.relativeimagenames[self.iter]][
-                self.scorer, bp[0][-2], "y"
-            ] = None
-
-    def deleteImage(self, event):
-        image_path = os.path.join(
-            self.currentDirectory, self.relativeimagenames[self.iter]
-        )
-        MainFrame.ResetEachImage(self)
-        # Reset updated coords
-        for i in self.updatedCoords:
-            i[0][0] = None  # Resets X-coordinate
-            i[0][1] = None  # Resets Y-coordinate
-        #  Checks for the last image and disables the Next button
-        MainFrame.saveEachImage(self)
-        self.nextImage(event=None)
-        print("Delete Image Path : ", image_path)
-        os.remove(image_path)
-        return
-
     def saveDataSet(self, event):
         """
         Saves the final dataframe
         """
-
-        # Backup previous save
-        from sys import platform
-
-        csv_path = os.path.join(self.dir, "CollectedData_" + self.scorer + ".csv")
-        hdf_path = os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5")
-        csv_backup_path = csv_path.replace(".csv", ".csv.backup")
-        hdf_backup_path = hdf_path.replace(".h5", ".h5.backup")
-
-        if platform == "linux" or platform == "linux2":
-            if os.path.exists(csv_path):
-                os.rename(csv_path, csv_backup_path)
-
-            if os.path.exists(hdf_path):
-                os.rename(hdf_path, hdf_backup_path)
-
-        elif platform == "win32":
-            if os.path.exists(csv_path):
-                if os.path.exists(
-                    csv_backup_path
-                ):  # check if backupfile exists already
-                    os.remove(
-                        csv_backup_path
-                    )  # requires double action as windows fails to rename file if exists already
-                    os.rename(csv_path, csv_backup_path)
-
-            if os.path.exists(hdf_path):
-                if os.path.exists(hdf_backup_path):
-                    os.remove(hdf_backup_path)
-                    os.rename(hdf_path, hdf_backup_path)
-
-        elif platform == "darwin":
-            try:
-                if os.path.exists(csv_path):
-                    os.rename(csv_path, csv_backup_path)
-
-                if os.path.exists(hdf_path):
-                    os.rename(hdf_path, hdf_backup_path)
-            except:
-                print(" Unexpected os.rename behaviour, try win32 approach")
-
         self.statusbar.SetStatusText("File saved")
         MainFrame.saveEachImage(self)
         MainFrame.updateZoomPan(self)
 
-        # Drop Nan data frames
-        self.dataFrame = self.dataFrame.dropna(how="all")
-
         # Windows compatible
         self.dataFrame.sort_index(inplace=True)
         self.dataFrame = self.dataFrame.reindex(
-            self.bodyparts,
+            self.cfg["bodyparts"],
             axis=1,
             level=self.dataFrame.columns.names.index("bodyparts"),
         )
-        self.dataFrame.to_csv(csv_path)
-        self.dataFrame.to_hdf(hdf_path, "df_with_missing", format="table", mode="w")
+        self.dataFrame.to_csv(
+            os.path.join(self.dir, "CollectedData_" + self.scorer + ".csv")
+        )
+        self.dataFrame.to_hdf(
+            os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5"),
+            "df_with_missing",
+            format="table",
+            mode="w",
+        )
 
     def onChecked(self, event):
         self.cb = event.GetEventObject()

@@ -242,7 +242,7 @@ def cropimagesandlabels(
     size=(400, 400),
     userfeedback=True,
     cropdata=True,
-    excludealreadycropped=True,
+    excludealreadycropped=False,
     updatevideoentries=True,
 ):
     """
@@ -268,8 +268,10 @@ def cropimagesandlabels(
     cropdata: bool, default True:
         If true creates corresponding annotation data (from ground truth)
 
-    excludealreadycropped: bool, def true
-        If true excludes folders that already contain _cropped in their name.
+    excludealreadycropped: bool, default False:
+        If true, ignore original videos whose frames are already cropped.
+        This is only useful after adding new videos post dataset creation,
+        as folders containing no new frames are otherwise automatically ignored.
 
     updatevideoentries, bool, default true
         If true updates video_list entries to refer to cropped frames instead. This makes sense for subsequent processing.
@@ -286,20 +288,25 @@ def cropimagesandlabels(
     indexlength = int(np.ceil(np.log10(numcrops)))
     project_path = os.path.dirname(config)
     cfg = auxiliaryfunctions.read_config(config)
-    videos = cfg["video_sets"].keys()
-    video_names = []
-    for video in videos:
-        parent, filename, ext = _robust_path_split(video)
-        if excludealreadycropped and "_cropped" in filename:
-            continue
-        video_names.append([parent, filename, ext])
+    videos = cfg.get("video_sets_original")
+    if videos is None:
+        videos = cfg["video_sets"]
+    elif excludealreadycropped:
+        for video in list(videos):
+            _, ext = os.path.splitext(video)
+            s = video.replace(ext, f"_cropped{ext}")
+            if s in cfg["video_sets"]:
+                videos.pop(video)
+    if not videos:
+        return
 
     if (
         "video_sets_original" not in cfg.keys() and updatevideoentries
     ):  # this dict is kept for storing links to original full-sized videos
         cfg["video_sets_original"] = {}
 
-    for vidpath, vidname, videotype in video_names:
+    for video in videos:
+        vidpath, vidname, videotype = _robust_path_split(video)
         folder = os.path.join(project_path, "labeled-data", vidname)
         if userfeedback:
             print("Do you want to crop frames for folder: ", folder, "?")
@@ -320,6 +327,12 @@ def cropimagesandlabels(
             sep = "/" if "/" in df.index[0] else "\\"
             if sep != os.path.sep:
                 df.index = df.index.str.replace(sep, os.path.sep)
+            video_new = sep.join((vidpath, new_vidname + videotype))
+            if video_new in cfg["video_sets"]:
+                _, w, _, h = map(int, cfg["video_sets"][video_new]["crop"].split(","))
+                temp_size = (h, w)
+            else:
+                temp_size = size
             images = project_path + os.path.sep + df.index
             # Avoid cropping already cropped images
             cropped_images = auxiliaryfunctions.grab_files_in_folder(new_folder, "png")
@@ -327,12 +340,13 @@ def cropimagesandlabels(
             imnames = [
                 im for im in images.to_list() if Path(im).stem not in cropped_names
             ]
+            if not imnames:
+                continue
             ic = io.imread_collection(imnames)
             for i in trange(len(ic)):
                 frame = ic[i]
                 h, w = np.shape(frame)[:2]
-                if size[0] >= h or size[1] >= w:
-                    shutil.rmtree(new_folder, ignore_errors=True)
+                if temp_size[0] >= h or temp_size[1] >= w:
                     raise ValueError("Crop dimensions are larger than image size")
 
                 imagename = os.path.relpath(ic.files[i], project_path)
@@ -342,11 +356,11 @@ def cropimagesandlabels(
                 while cropindex < numcrops:
                     dd = np.array(data[ind].copy(), dtype=float)
                     y0, x0 = (
-                        np.random.randint(h - size[0]),
-                        np.random.randint(w - size[1]),
+                        np.random.randint(h - temp_size[0]),
+                        np.random.randint(w - temp_size[1]),
                     )
-                    y1 = y0 + size[0]
-                    x1 = x0 + size[1]
+                    y1 = y0 + temp_size[0]
+                    x1 = x0 + temp_size[1]
                     with np.errstate(invalid="ignore"):
                         within = np.all((dd >= [x0, y0]) & (dd < [x1, y1]), axis=1)
                     if cropdata:
@@ -371,17 +385,23 @@ def cropimagesandlabels(
             if cropdata:
                 df = pd.DataFrame(AnnotationData, index=pd_index, columns=df.columns)
                 fn_new = fn.replace(folder, new_folder)
+                try:
+                    df_old = pd.read_hdf(fn_new)
+                    df = pd.concat((df_old, df))
+                except FileNotFoundError:
+                    pass
                 df.to_hdf(fn_new, key="df_with_missing", mode="w")
                 df.to_csv(fn_new.replace(".h5", ".csv"))
 
             if updatevideoentries and cropdata:
                 # moving old entry to _original, dropping it from video_set and update crop parameters
                 video_orig = sep.join((vidpath, vidname + videotype))
-                cfg["video_sets_original"][video_orig] = cfg["video_sets"][video_orig]
-                cfg["video_sets"].pop(video_orig)
-                cfg["video_sets"][sep.join((vidpath, new_vidname + videotype))] = {
-                    "crop": ", ".join(map(str, [0, size[1], 0, size[0]]))
-                }
+                if video_orig not in cfg["video_sets_original"]:
+                    cfg["video_sets_original"][video_orig] = cfg["video_sets"][video_orig]
+                    cfg["video_sets"].pop(video_orig)
+                    cfg["video_sets"][sep.join((vidpath, new_vidname + videotype))] = {
+                        "crop": ", ".join(map(str, [0, temp_size[1], 0, temp_size[0]]))
+                    }
 
     cfg["croppedtraining"] = True
     auxiliaryfunctions.write_config(config, cfg)
@@ -866,8 +886,8 @@ def create_training_dataset(
 
     net_type: list
         Type of networks. Currently resnet_50, resnet_101, resnet_152, mobilenet_v2_1.0, mobilenet_v2_0.75,
-        mobilenet_v2_0.5, mobilenet_v2_0.35, efficientnet_b0, efficientnet_b1, efficientnet_b2, efficientnet_b3,
-        efficientnet_b4, efficientnet_b5, and efficientnet_b6 are supported.
+        mobilenet_v2_0.5, mobilenet_v2_0.35, efficientnet-b0, efficientnet-b1, efficientnet-b2, efficientnet-b3,
+        efficientnet-b4, efficientnet-b5, and efficientnet-b6 are supported.
 
     augmenter_type: string
         Type of augmenter. Currently default, imgaug, tensorpack, and deterministic are supported.
@@ -1154,8 +1174,8 @@ def create_training_model_comparison(
 
     net_types: list
         Type of networks. Currently resnet_50, resnet_101, resnet_152, mobilenet_v2_1.0,mobilenet_v2_0.75, mobilenet_v2_0.5, mobilenet_v2_0.35,
-        efficientnet_b0, efficientnet_b1, efficientnet_b2, efficientnet_b3, efficientnet_b4,
-        efficientnet_b5, and efficientnet_b6 are supported.
+        efficientnet-b0, efficientnet-b1, efficientnet-b2, efficientnet-b3, efficientnet-b4,
+        efficientnet-b5, and efficientnet-b6 are supported.
 
     augmenter_types: list
         Type of augmenters. Currently "default", "imgaug", "tensorpack", and "deterministic" are supported.

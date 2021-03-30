@@ -14,7 +14,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from easydict import EasyDict as edict
 
 from deeplabcut.utils import auxiliaryfunctions
 
@@ -454,7 +453,6 @@ def read_inferencecfg(path_inference_config, cfg):
     """Load inferencecfg or initialize it."""
     try:
         inferencecfg = auxiliaryfunctions.read_plainconfig(str(path_inference_config))
-        inferencecfg = edict(inferencecfg)
     except FileNotFoundError:
         inferencecfg = form_default_inferencecfg(cfg)
         auxiliaryfunctions.write_plainconfig(

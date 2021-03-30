@@ -19,7 +19,7 @@ name: DLC-GPU
 dependencies:
   - python=3.7
   - pip
-  - tensorflow-gpu==1.13.1
+  - tensorflow-gpu==1.15.5
   - cudnn=7
   - wxpython<4.1.0
   - jupyter

@@ -10,7 +10,7 @@ Licensed under GNU Lesser General Public License v3.0
 
 
 def pose_net(cfg):
-    net_type = cfg.net_type
+    net_type = cfg['net_type']
     if "mobilenet" in net_type:  # multi currently not supported
         if (
             cfg.get("stride", 8) < 8
