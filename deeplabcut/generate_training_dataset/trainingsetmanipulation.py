@@ -407,7 +407,13 @@ def cropimagesandlabels(
     auxiliaryfunctions.write_config(config, cfg)
 
 
-def label_frames(config, multiple_individualsGUI=False, imtypes=["*.png"]):
+def label_frames(
+    config,
+    multiple_individualsGUI=False,
+    imtypes=["*.png"],
+    config3d=None,
+    sourceCam=None,
+):  # +++
     """
     Manually label/annotate the extracted frames. Update the list of body parts you want to localize in the config.yaml file first.
 
@@ -422,6 +428,13 @@ def label_frames(config, multiple_individualsGUI=False, imtypes=["*.png"]):
 
     imtypes: list of imagetypes to look for in folder to be labeled. By default only png images are considered.
 
+    config3d: string, optional #+++
+        String containing the full path of the config file in the 3D project. Include when epipolar lines would be helpful for labeling additional camera angles.
+
+    sourceCam: string, optional #+++
+        String containing the camera name from which to pull labeling data to generate epipolar lines. This must match the pattern in 'camera_names' in the 3D config file.
+        If no value is entered, data will be pulled from either cam1 or cam2
+
     Example
     --------
     Standard use case:
@@ -432,6 +445,10 @@ def label_frames(config, multiple_individualsGUI=False, imtypes=["*.png"]):
 
     To label other image types
     >>> label_frames(config,multiple=False,imtypes=['*.jpg','*.jpeg'])
+    
+    To label with epipolar lines projected from labels in another camera angle #+++
+    >>> label_frames(config, config3d='/analysis/project/reaching-task/reaching-task-3d/config.yaml', sourceCam='cam1')
+
     --------
 
     """
@@ -444,11 +461,11 @@ def label_frames(config, multiple_individualsGUI=False, imtypes=["*.png"]):
             multiple_individuals_labeling_toolbox,
         )
 
-        multiple_individuals_labeling_toolbox.show(config)
+        multiple_individuals_labeling_toolbox.show(config, config3d, sourceCam)
     else:
         from deeplabcut.generate_training_dataset import labeling_toolbox
 
-        labeling_toolbox.show(config, imtypes=imtypes)
+        labeling_toolbox.show(config, config3d, sourceCam, imtypes=imtypes)
 
     os.chdir(startpath)
 
@@ -741,6 +758,7 @@ def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
 
     To freeze a (uniform) split (i.e. iid sampled from all the data):
     >>> trainIndices, testIndices=deeplabcut.mergeandsplit(config,trainindex=0,uniform=True)
+
     You can then create two model instances that have the identical trainingset. Thereby you can assess the role of various parameters on the performance of DLC.
     >>> deeplabcut.create_training_dataset(config,Shuffles=[0,1],trainIndices=[trainIndices, trainIndices],testIndices=[testIndices, testIndices])
     --------
