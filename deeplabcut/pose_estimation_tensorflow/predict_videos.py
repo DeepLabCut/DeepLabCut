@@ -1143,11 +1143,12 @@ def convert_detections2tracklets(
     BPTS=None,
     iBPTS=None,
     PAF=None,
-    printintermediate=False,
     inferencecfg=None,
     modelprefix="",
     track_method="box",
     edgewisecondition=True,
+    greedy=False,
+    calibrate=False,
 ):
     """
     This should be called at the end of deeplabcut.analyze_videos for multianimal projects!
@@ -1427,61 +1428,45 @@ def convert_detections2tracklets(
                     "uniquebodyparts"
                 ]:  # Initialize storage of the 'single' individual track
                     tracklets["s"] = {}
-                for index, imname in tqdm(enumerate(imnames)):
-                    animals = inferenceutils.assemble_individuals(
-                        inferencecfg,
-                        data[imname],
-                        numjoints,
-                        BPTS,
-                        iBPTS,
-                        PAF,
-                        partaffinityfield_graph,
-                        linkingpartaffinityfield_graph,
-                        lowerbound=lowerbound,
-                        upperbound=upperbound,
-                        print_intermediate=printintermediate,
+
+                ass = inferenceutils.Assembler(
+                    data,
+                    max_n_individuals=inferencecfg["topktoretain"],
+                    n_multibodyparts=len(cfg["multianimalbodyparts"]),
+                    graph=partaffinityfield_graph,
+                    paf_inds=PAF,
+                    greedy=greedy,
+                    pcutoff=inferencecfg["pcutoff"],
+                    min_affinity=inferencecfg["paf_threshold"]
+                )
+                if calibrate:
+                    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+                    train_data_file = os.path.join(
+                        cfg["project_path"],
+                        str(trainingsetfolder),
+                        "CollectedData_" + cfg["scorer"] + ".h5",
                     )
-                    if not animals:
+                    ass.calibrate(train_data_file)
+                ass.assemble()
+                tracklets["s"].update(ass.unique)
+
+                for index, imname in tqdm(enumerate(imnames)):
+                    assemblies = ass.assemblies.get(index)
+                    if assemblies is None:
                         continue
+                    animals = np.stack([ass.data[:, :3] for ass in assemblies])
                     if track_method == "box":
-                        temp = np.asarray(animals).reshape((len(animals), -1, 3))
-                        bboxes = trackingutils.calc_bboxes_from_keypoints(
-                            temp, inferencecfg["boundingboxslack"], offset=0
-                        )
+                        bboxes = inferenceutils.calc_bboxes_from_keypoints(
+                            animals, inferencecfg["boundingboxslack"], offset=0
+                        )  # TODO: get cropping parameters and utilize!
                         trackers = mot_tracker.update(bboxes)
                     else:
-                        temp = [arr.reshape((-1, 3))[:, :2] for arr in animals]
-                        trackers = mot_tracker.track(temp)
+                        xy = animals[..., :2]
+                        trackers = mot_tracker.track(xy)
                     trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
-
-                    # Test whether the unique bodyparts have been assembled
-                    if cfg["uniquebodyparts"]:
-                        inds_unique = [
-                            all_jointnames.index(bp) for bp in cfg["uniquebodyparts"]
-                        ]
-                        if not any(
-                            np.isfinite(a.reshape((-1, 3))[inds_unique]).all()
-                            for a in animals
-                        ):
-                            single = np.full((numjoints, 3), np.nan)
-                            single_dets = (
-                                inferenceutils.convertdetectiondict2listoflist(
-                                    data[imname], inds_unique
-                                )
-                            )
-                            for ind, dets in zip(inds_unique, single_dets):
-                                if len(dets) == 1:
-                                    single[ind] = dets[0][:3]
-                                elif len(dets) > 1:
-                                    best = sorted(
-                                        dets, key=lambda x: x[2], reverse=True
-                                    )[0]
-                                    single[ind] = best[:3]
-                            tracklets["s"][imname] = single.flatten()
 
                 tracklets["header"] = pdindex
                 with open(trackname, "wb") as f:
-                    # Pickle the 'labeled-data' dictionary using the highest protocol available.
                     pickle.dump(tracklets, f, pickle.HIGHEST_PROTOCOL)
 
         os.chdir(str(start_path))
