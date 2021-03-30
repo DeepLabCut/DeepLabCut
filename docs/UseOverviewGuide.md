@@ -94,7 +94,7 @@ Some tips: i.e. this is good for say, a hand or a mouse if you feel the "skeleto
 :movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/Kp-stcTm77g)
 
 - **I have multiple animals, *but I can tell them apart,* in my videos and want to use DLC2.2:**
-   - quick start: when you `create_new_project` set the flag `multianimal=True`. And always label the "individual" ID name the same; i.e. if you have mouse1 and mouse2 but mouse2 always has a miniscope, in every frame label mouse2 consistently. See this [labeling w/2.2 demo video](https://www.youtube.com/watch?v=_qbEqNKApsI)
+   - quick start: when you `create_new_project` set the flag `multianimal=True`. And always label the "individual" ID name the same; i.e. if you have mouse1 and mouse2 but mouse2 always has a miniscope, in every frame label mouse2 consistently. See this [labeling w/2.2 demo video](https://www.youtube.com/watch?v=_qbEqNKApsI). Then, you MUST put the following in the config.yaml file: `identity: true`
 
 :movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/Kp-stcTm77g) - ALSO, if you can tell them apart, label animals them consistently!
 
@@ -192,12 +192,6 @@ config_path = r'C:\home\computername\DeepLabCut\yourprojectname\config.yaml'
 
 - or you already set it as a variable in step "create_new_project" directly above.
 
-**mini-demo:** create project and edit the yaml file
-
-<p align="center">
-<img src="http://www.people.fas.harvard.edu/~amathis/dlc/startdeeplabcut.gif" width="90%">
-</p>
-
 
 ### Select Frames to Label:
 
@@ -206,6 +200,8 @@ deeplabcut.extract_frames(config_path, mode='automatic', algo='kmeans', crop=Tru
 ```
 
 (more details [here](functionDetails.md#c-data-selection)) *update: as of 2.0.5 (spring 2019) ``checkcropping=True`` is dropped; you now just have the option to directly draw a rectangle over the image to crop before extraction (i.e. there no need to manually change in config.yaml then check).
+
+**NEW** If you are going to use 3D functions in DeepLabCut, you can also leverage labeling across the cameras. See advanced features [here](HelperFunctions.md).
 
 ### Label Frames:
 
