@@ -230,7 +230,7 @@ class MainFrame(BaseFrame):
 
         widgetsizer.AddStretchSpacer(15)
         self.quit = wx.Button(self.widget_panel, id=wx.ID_ANY, label="Quit")
-        widgetsizer.Add(self.quit, 1, wx.ALL | wx.ALIGN_RIGHT, 15)
+        widgetsizer.Add(self.quit, 1, wx.ALL, 15)
         self.quit.Bind(wx.EVT_BUTTON, self.quitButton)
 
         self.widget_panel.SetSizer(widgetsizer)
