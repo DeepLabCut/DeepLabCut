@@ -159,7 +159,8 @@ class MainFrame(BaseFrame):
         self.date = self.cfg["date"]
         self.trainFraction = self.cfg["TrainingFraction"]
         self.trainFraction = self.trainFraction[0]
-        self.videos = self.cfg["video_sets"].keys()
+        self.videos = list(self.cfg.get("video_sets_original")
+                           or self.cfg["video_sets"])
         self.bodyparts = self.cfg["bodyparts"]
         self.colormap = plt.get_cmap(self.cfg["colormap"])
         self.colormap = self.colormap.reversed()
@@ -230,10 +231,15 @@ class MainFrame(BaseFrame):
         """
 
         videosource = self.video_source
-        self.x1 = int(self.cfg["video_sets"][videosource]["crop"].split(",")[0])
-        self.x2 = int(self.cfg["video_sets"][videosource]["crop"].split(",")[1])
-        self.y1 = int(self.cfg["video_sets"][videosource]["crop"].split(",")[2])
-        self.y2 = int(self.cfg["video_sets"][videosource]["crop"].split(",")[3])
+        try:
+            self.x1 = int(self.cfg["video_sets"][videosource]["crop"].split(",")[0])
+            self.x2 = int(self.cfg["video_sets"][videosource]["crop"].split(",")[1])
+            self.y1 = int(self.cfg["video_sets"][videosource]["crop"].split(",")[2])
+            self.y2 = int(self.cfg["video_sets"][videosource]["crop"].split(",")[3])
+        except KeyError:
+            self.x1, self.x2, self.y1, self.y2 = map(
+                int, self.cfg["video_sets_original"][videosource]["crop"].split(",")
+            )
 
         if self.cropping:
             # Select ROI of interest by drawing a rectangle

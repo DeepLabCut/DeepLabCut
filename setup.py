@@ -47,7 +47,7 @@ setuptools.setup(
         "patsy",
         "pyyaml",
         "setuptools",
-        "scikit-image",
+        "scikit-image>=0.17",
         "scikit-learn",
         "scipy>=1.4",
         "six",

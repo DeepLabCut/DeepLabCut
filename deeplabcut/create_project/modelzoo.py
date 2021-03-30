@@ -1,10 +1,10 @@
 """
 DeepLabCut 2.1.8 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 
 Please see AUTHORS for contributors.
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCu/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
@@ -24,6 +24,7 @@ Modeloptions = [
     "mouse_pupil_vclose",
     "horse_sideview",
     "full_macaque",
+    "full_cheetah",
 ]  # just expand this list with new projects
 
 
@@ -117,7 +118,7 @@ def create_pretrained_project(
 
     The project will also be initialized with a pre-trained model from the DeepLabCut model zoo!
 
-    http://www.mousemotorlab.org/dlc-modelzoo
+    http://modelzoo.deeplabcut.org
 
     Parameters
     ----------

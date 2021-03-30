@@ -34,12 +34,12 @@ def select_cropping_area(config, videos=None):
 
     cfg = auxiliaryfunctions.read_config(config)
     if videos is None:
-        videos = cfg["video_sets"]
+        videos = list(cfg.get("video_sets_original") or cfg["video_sets"])
 
     for video in videos:
         coords = auxfun_videos.draw_bbox(video)
         if coords:
-            cfg["video_sets"][video] = {
+            temp = {
                 "crop": ", ".join(
                     map(
                         str,
@@ -52,6 +52,10 @@ def select_cropping_area(config, videos=None):
                     )
                 )
             }
+            try:
+                cfg["video_sets"][video] = temp
+            except KeyError:
+                cfg["video_sets_original"][video] = temp
 
     auxiliaryfunctions.write_config(config, cfg)
     return cfg
@@ -203,14 +207,14 @@ def extract_frames(
                 "Perhaps consider extracting more, or a natural number of frames."
             )
 
-        videos = cfg["video_sets"].keys()
+        videos = cfg.get("video_sets_original") or cfg["video_sets"]
         if opencv:
             from deeplabcut.utils.auxfun_videos import VideoReader
         else:
             from moviepy.editor import VideoFileClip
 
         has_failed = []
-        for vindex, video in enumerate(videos):
+        for video in videos:
             if userfeedback:
                 print(
                     "Do you want to extract (perhaps additional) frames for video:",
@@ -263,7 +267,11 @@ def extract_frames(
 
                 if crop == "GUI":
                     cfg = select_cropping_area(config, [video])
-                coords = cfg["video_sets"][video]["crop"].split(",")
+                try:
+                    coords = cfg["video_sets"][video]["crop"].split(",")
+                except KeyError:
+                    coords = cfg["video_sets_original"][video]["crop"].split(",")
+
                 if crop and not opencv:
                     clip = clip.crop(
                         y1=int(coords[2]),

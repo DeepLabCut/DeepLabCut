@@ -173,13 +173,14 @@ def extract_detections(cfg, scmap, locref, pafs, nms_radius, det_min_score):
 
 
 def find_local_maxima(scmap, radius, threshold):
-    grid = peak_local_max(
+    peak_idx = peak_local_max(
         scmap,
         min_distance=radius,
         threshold_abs=threshold,
         exclude_border=False,
-        indices=False,
     )
+    grid = np.zeros_like(scmap, dtype=bool)
+    grid[tuple(peak_idx.T)] = True
     labels = measurements.label(grid)[0]
     xy = measurements.center_of_mass(grid, labels, range(1, np.max(labels) + 1))
     return np.asarray(xy, dtype=np.int).reshape((-1, 2))

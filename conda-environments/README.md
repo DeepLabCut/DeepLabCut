@@ -9,8 +9,8 @@
 <img src= https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1582763070742-Q45NTO6B5NVXISBQU9TI/ke17ZwdGBToddI8pDm48kCn9JOE-Zo6yZRQwL29ZJRUUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYy7Mythp_T-mtop-vrsUOmeInPi9iDjx9w8K4ZfjXt2dnJa5czOiI-P3uZePqbYB3W1QVt6sqQ11VFBgt-Giz29CjLISwBs8eEdxAxTptZAUg/condaexample.png?format=2500w width="60%">
 </p>
 
-or download or git clone this repo (in the terminal/cmd program, while **in a folder** you wish to place DeepLabCut
-type ``git clone https://github.com/AlexEMG/DeepLabCut.git``).\
+or download/git clone this repo (in the terminal/cmd program, while **in a folder** you wish to place DeepLabCut
+type ``git clone https://github.com/DeepLabCut/DeepLabCut.git``).\
 Now, always in Terminal (or Command Prompt), go to the folder named ``conda-environments`` using the command "cd" (which stands for change directory). For example, if you downloaded or cloned the repo onto your Desktop, the command may look like:\
 ``cd C:\Users\YourUserName\Desktop\DeepLabCut\conda-environments``\
 To get the location right, a cool trick is to drag the folder and drop it into Terminal. Alternatively, you can (on Windows) hold SHIFT and right-click > Copy as path, or (on Mac) right-click and while in the menu press the OPTION key to reveal Copy as Pathname.
@@ -31,7 +31,7 @@ or
 Now you should see (nameofenv) on the left of your teminal screen, i.e. ``(dlc-macOS-CPU) YourName-MacBook...``
 NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)
 
-However, if you ever want to update your DLC, just run `pip install --upgrade deeplabcut` once you are inside your env. If you want to use a beta release, then you need to specify the specific version you want, such as `pip install deeplabcut==2.2b8`. Once installed, you can check the version by running `import deeplabcut` `deeplabcut.__version__`. Don't be afraid to update, DLC is backwards compatible with your 2.0+ projects and performance continues to get better and new features are added nearly monthly.
+However, if you ever want to update your DLC, just run `pip install --upgrade deeplabcut` once you are inside your env. If you want to use a beta release, then you need to specify the specific version you want, such as `pip install deeplabcut==2.2`. Once installed, you can check the version by running `import deeplabcut` `deeplabcut.__version__`. Don't be afraid to update, DLC is backwards compatible with your 2.0+ projects and performance continues to get better and new features are added nearly monthly.
 
 Here are some conda environment management tips: https://kapeli.com/cheat_sheets/Conda.docset/Contents/Resources/Documents/index
 
@@ -43,6 +43,8 @@ Simply run ``ipython`` or ``pythonw`` (**macOS only**) to lauch the terminal, ``
 
 
 # Creating your own customized conda env (recommended route for Linux: Ubuntu, CentOS, Mint, etc.)
+
+*Note in a fresh ubuntu install, you will often have to run: ``sudo apt-get install gcc python3-dev`` to install the GNU Compiler Collection and the python developing environment.
 
 Some users might want to create their own customize env. -  Here is an example.
 
