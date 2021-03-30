@@ -13,8 +13,8 @@ import glob
 import os
 import os.path
 from pathlib import Path
-
 import cv2
+import re
 import matplotlib
 import matplotlib.colors as mcolors
 import matplotlib.patches as patches
@@ -30,13 +30,13 @@ from matplotlib.backends.backend_wxagg import (
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from deeplabcut.generate_training_dataset import auxfun_drag_label
-from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils import auxiliaryfunctions, auxiliaryfunctions_3d
 
 # ###########################################################################
 # Class for GUI MainFrame
 # ###########################################################################
 class ImagePanel(wx.Panel):
-    def __init__(self, parent, config, gui_size, **kwargs):
+    def __init__(self, parent, config, config3d, sourceCam, gui_size, **kwargs):
         h = gui_size[0] / 2
         w = gui_size[1] / 3
         wx.Panel.__init__(self, parent, -1, style=wx.SUNKEN_BORDER, size=(h, w))
@@ -50,22 +50,148 @@ class ImagePanel(wx.Panel):
         self.sizer.Add(self.canvas, 1, wx.LEFT | wx.TOP | wx.GROW)
         self.SetSizer(self.sizer)
         self.Fit()
+        self.config = config
+        self.config3d = config3d
+        self.sourceCam = sourceCam
 
     def getfigure(self):
         return self.figure
+
+    def retrieveData_and_computeEpLines(self, img, imNum):
+
+        # load labeledPoints and fundamental Matrix
+
+        if self.config3d is not None:
+            cfg_3d = auxiliaryfunctions.read_config(self.config3d)
+            cams = cfg_3d["camera_names"]
+            path_camera_matrix = auxiliaryfunctions_3d.Foldernames3Dproject(cfg_3d)[2]
+            path_stereo_file = os.path.join(path_camera_matrix, "stereo_params.pickle")
+            stereo_file = auxiliaryfunctions.read_pickle(path_stereo_file)
+
+            for cam in cams:
+                if cam in img:
+                    labelCam = cam
+                    if self.sourceCam is None:
+                        sourceCam = [
+                            otherCam for otherCam in cams if cam not in otherCam
+                        ][0] #WHY?
+                    else:
+                        sourceCam = self.sourceCam
+
+            sourceCamIdx = np.where(np.array(cams) == sourceCam)[0][0]
+            labelCamIdx = np.where(np.array(cams) == labelCam)[0][0]
+
+            if sourceCamIdx < labelCamIdx:
+                camera_pair = cams[sourceCamIdx] + "-" + cams[labelCamIdx]
+                sourceCam_numInPair = 1
+            else:
+                camera_pair = cams[labelCamIdx] + "-" + cams[sourceCamIdx]
+                sourceCam_numInPair = 2
+
+            fundMat = stereo_file[camera_pair]["F"]
+            sourceCam_path = os.path.split(img.replace(labelCam, sourceCam))[0]
+
+            cfg = auxiliaryfunctions.read_config(self.config)
+            scorer = cfg["scorer"]
+
+            try:
+                dataFrame = pd.read_hdf(
+                    os.path.join(sourceCam_path, "CollectedData_" + scorer + ".h5"),
+                    "df_with_missing",
+                )
+                dataFrame.sort_index(inplace=True)
+            except IOError:
+                print("source camera images have not yet been labeled, or you have opened this folder in the wrong mode!")
+                return None, None, None
+
+            # Find offset terms for drawing epipolar Lines
+            # Get crop params for camera being labeled
+            foundEvent = 0
+            eventSearch = re.compile(os.path.split(os.path.split(img)[0])[1])
+            cropPattern = re.compile("[0-9]{1,4}")
+            with open(self.config, "rt") as config:
+                for line in config:
+                    if foundEvent == 1:
+                        crop_labelCam = np.int32(re.findall(cropPattern, line))
+                        break
+                    if eventSearch.search(line) != None:
+                        foundEvent = 1
+            # Get crop params for other camera
+            foundEvent = 0
+            eventSearch = re.compile(os.path.split(sourceCam_path)[1])
+            cropPattern = re.compile("[0-9]{1,4}")
+            with open(self.config, "rt") as config:
+                for line in config:
+                    if foundEvent == 1:
+                        crop_sourceCam = np.int32(re.findall(cropPattern, line))
+                        break
+                    if eventSearch.search(line) != None:
+                        foundEvent = 1
+
+            labelCam_offsets = [crop_labelCam[0], crop_labelCam[2]]
+            sourceCam_offsets = [crop_sourceCam[0], crop_sourceCam[2]]
+
+            sourceCam_pts = np.asarray(dataFrame, dtype=np.int32)
+            sourceCam_pts = sourceCam_pts.reshape(
+                (sourceCam_pts.shape[0], int(sourceCam_pts.shape[1] / 2), 2)
+            )
+            sourceCam_pts = np.moveaxis(sourceCam_pts, [0, 1, 2], [1, 0, 2])
+            sourceCam_pts[..., 0] = sourceCam_pts[..., 0] + sourceCam_offsets[0]
+            sourceCam_pts[..., 1] = sourceCam_pts[..., 1] + sourceCam_offsets[1]
+
+            sourcePts = sourceCam_pts[:, imNum, :]
+
+            epLines_source2label = cv2.computeCorrespondEpilines(
+                sourcePts, int(sourceCam_numInPair), fundMat
+            )
+            epLines_source2label.reshape(-1, 3)
+
+            return epLines_source2label, sourcePts, labelCam_offsets
+
+        else:
+            return None, None, None
+
+    def drawEpLines(self, drawImage, lines, sourcePts, offsets, colorIndex, cmap):
+        drawImage = cv2.cvtColor(drawImage, cv2.COLOR_BGR2RGB)
+        height, width, depth = drawImage.shape
+        labelNum = 0
+        for line, pt, cIdx in zip(lines, sourcePts, colorIndex):
+            if pt[0] > -1000:
+                coeffs = line[0]
+                x0, y0 = map(int, [0 - offsets[0], -coeffs[2] / coeffs[1] - offsets[1]])
+                x1, y1 = map(
+                    int,
+                    [
+                        width,
+                        -(coeffs[2] + coeffs[0] * (width + offsets[0])) / coeffs[1]
+                        - offsets[1],
+                    ],
+                )
+                cIdx = cIdx / 255
+                color = cmap(cIdx, bytes=True)[:-1]
+                color = tuple([int(x) for x in color])
+                drawImage = cv2.line(drawImage, (x0, y0), (x1, y1), color, 1)
+
+        return drawImage
 
     def drawplot(self, img, img_name, itr, index, bodyparts, cmap, keep_view=False):
         xlim = self.axes.get_xlim()
         ylim = self.axes.get_ylim()
         self.axes.clear()
 
-        # convert the image to RGB as you are showing the image with matplotlib
         im = cv2.imread(img)[..., ::-1]
+        colorIndex = np.linspace(np.max(im), np.min(im), len(bodyparts))
+        # draw epipolar lines
+        epLines, sourcePts, offsets = self.retrieveData_and_computeEpLines(img, itr)
+        if epLines is not None:
+            im = self.drawEpLines(im, epLines, sourcePts, offsets, colorIndex, cmap)
+        else:
+            # convert the image to RGB as you are showing the image with matplotlib
+            im = im[..., ::-1]
         ax = self.axes.imshow(im, cmap=cmap)
         self.orig_xlim = self.axes.get_xlim()
         self.orig_ylim = self.axes.get_ylim()
         divider = make_axes_locatable(self.axes)
-        colorIndex = np.linspace(np.min(im), np.max(im), len(bodyparts))
         cax = divider.append_axes("right", size="5%", pad=0.05)
         cbar = self.figure.colorbar(
             ax, cax=cax, spacing="proportional", ticks=colorIndex
@@ -143,7 +269,7 @@ class ScrollPanel(SP.ScrolledPanel):
 class MainFrame(wx.Frame):
     """Contains the main GUI and button boxes"""
 
-    def __init__(self, parent, config, imtypes):
+    def __init__(self, parent, config, imtypes, config3d, sourceCam):
         # Settting the GUI size and panels design
         displays = (
             wx.Display(i) for i in range(wx.Display.GetCount())
@@ -182,7 +308,9 @@ class MainFrame(wx.Frame):
         topSplitter = wx.SplitterWindow(self)
         vSplitter = wx.SplitterWindow(topSplitter)
 
-        self.image_panel = ImagePanel(vSplitter, config, self.gui_size)
+        self.image_panel = ImagePanel(
+            vSplitter, config, config3d, sourceCam, self.gui_size
+        )
         self.choice_panel = ScrollPanel(vSplitter)
         vSplitter.SplitVertically(
             self.image_panel, self.choice_panel, sashPosition=self.gui_size[0] * 0.8
@@ -608,7 +736,7 @@ class MainFrame(wx.Frame):
                     self.iter = 0
 
         except:
-            a = np.empty((len(self.index), 2))
+            a = np.empty((len(self.index), 2,))
             a[:] = np.nan
             for bodypart in self.bodyparts:
                 index = pd.MultiIndex.from_product(
@@ -620,8 +748,8 @@ class MainFrame(wx.Frame):
             self.iter = 0
 
         # Reading the image name
-        self.img = self.dataFrame.index[self.iter]
-        img_name = Path(self.img).name
+        self.img = self.index[self.iter]
+        img_name = Path(self.index[self.iter]).name
         self.norm, self.colorIndex = self.image_panel.getColorIndices(
             self.img, self.bodyparts
         )
@@ -635,7 +763,7 @@ class MainFrame(wx.Frame):
             print("Found new frames..")
             # Create an empty dataframe with all the new images and then merge this to the existing dataframe.
             self.df = None
-            a = np.empty((len(self.newimages), 2))
+            a = np.empty((len(self.newimages), 2,))
             a[:] = np.nan
             for bodypart in self.bodyparts:
                 index = pd.MultiIndex.from_product(
@@ -697,7 +825,7 @@ class MainFrame(wx.Frame):
                 self.norm, self.colorIndex = self.image_panel.getColorIndices(
                     self.img, self.bodyparts
                 )
-            a = np.empty((len(self.index), 2))
+            a = np.empty((len(self.index), 2,))
             a[:] = np.nan
             for bodypart in self.new_bodyparts:
                 index = pd.MultiIndex.from_product(
@@ -753,8 +881,8 @@ class MainFrame(wx.Frame):
         self.file = 1
         # Refreshing the button counter
         self.buttonCounter = []
-
         MainFrame.saveEachImage(self)
+
         self.iter = self.iter + 1
 
         if len(self.index) >= self.iter:
@@ -898,11 +1026,10 @@ class MainFrame(wx.Frame):
         self.statusbar.SetStatusText("File saved")
         MainFrame.saveEachImage(self)
         MainFrame.updateZoomPan(self)
-
         # Windows compatible
         self.dataFrame.sort_index(inplace=True)
         self.dataFrame = self.dataFrame.reindex(
-            self.cfg["bodyparts"],
+            self.bodyparts,
             axis=1,
             level=self.dataFrame.columns.names.index("bodyparts"),
         )
@@ -935,13 +1062,15 @@ class MainFrame(wx.Frame):
             self.zoom.SetValue(False)
 
 
-def show(config, imtypes=["*.png"]):
+def show(config, config3d, sourceCam, imtypes=["*.png"]):
     app = wx.App()
-    frame = MainFrame(None, config, imtypes).Show()
+    frame = MainFrame(None, config, imtypes, config3d, sourceCam).Show()
     app.MainLoop()
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("config")
+    parser.add_argument("config3d")
+    parser.add_argument("sourceCam")
     cli_args = parser.parse_args()
