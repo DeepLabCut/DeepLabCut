@@ -1461,9 +1461,9 @@ def convert_detections2tracklets(
                     if not animals:
                         continue
                     if track_method == "box":
-                        animals = np.asarray(animals).reshape((len(animals), -1, 3))
+                        temp = np.asarray(animals).reshape((len(animals), -1, 3))
                         bboxes = trackingutils.calc_bboxes_from_keypoints(
-                            animals, inferencecfg["boundingboxslack"], offset=0
+                            temp, inferencecfg["boundingboxslack"], offset=0
                         )
                         trackers = mot_tracker.update(bboxes)
                     else:
