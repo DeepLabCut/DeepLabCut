@@ -13,7 +13,6 @@ import os
 from pathlib import Path
 
 import cv2
-import matplotlib
 import matplotlib.colors as mcolors
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt

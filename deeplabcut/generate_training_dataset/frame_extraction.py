@@ -184,7 +184,7 @@ def extract_frames(
     if mode == "manual":
         wd = Path(config).resolve().parents[0]
         os.chdir(str(wd))
-        from deeplabcut.generate_training_dataset import frame_extraction_toolbox
+        from deeplabcut.gui import frame_extraction_toolbox
 
         frame_extraction_toolbox.show(config, slider_width)
 

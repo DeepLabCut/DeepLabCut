@@ -93,7 +93,8 @@ class ImagePanel(BasePanel):
             self.axes.set_xlim(xlim)
             self.axes.set_ylim(ylim)
         self.figure.canvas.draw()
-        self.toolbar = NavigationToolbar(self.canvas)
+        if not hasattr(self, 'toolbar'):
+            self.toolbar = NavigationToolbar(self.canvas)
         return (self.figure, self.axes, self.canvas, self.toolbar)
 
     def getColorIndices(self, img, bodyparts):

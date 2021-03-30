@@ -46,6 +46,7 @@ class ImagePanel(BasePanel):
         self.cfg = auxiliaryfunctions.read_config(self.config)
         self.config3d = config3d
         self.sourceCam = sourceCam
+        self.toolbar = None
 
     def retrieveData_and_computeEpLines(self, img, imNum):
 
@@ -191,7 +192,8 @@ class ImagePanel(BasePanel):
         if keep_view:
             self.axes.set_xlim(xlim)
             self.axes.set_ylim(ylim)
-        self.toolbar = NavigationToolbar(self.canvas)
+        if self.toolbar is None:
+            self.toolbar = NavigationToolbar(self.canvas)
         return (self.figure, self.axes, self.canvas, self.toolbar, ax)
 
     def addcolorbar(self, img, ax, itr, bodyparts, cmap):
@@ -204,7 +206,8 @@ class ImagePanel(BasePanel):
         )
         cbar.set_ticklabels(bodyparts[::-1])
         self.figure.canvas.draw()
-        self.toolbar = NavigationToolbar(self.canvas)
+        if self.toolbar is None:
+            self.toolbar = NavigationToolbar(self.canvas)
         return (self.figure, self.axes, self.canvas, self.toolbar)
 
     def getColorIndices(self, img, bodyparts):
