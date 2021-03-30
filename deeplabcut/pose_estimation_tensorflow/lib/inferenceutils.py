@@ -888,7 +888,7 @@ class Assembly:
 
     @property
     def confidence(self):
-        return np.mean(self.data[:, 2])
+        return np.nanmean(self.data[:, 2])
 
     @property
     def affinity(self):
@@ -897,6 +897,23 @@ class Assembly:
     @property
     def n_links(self):
         return len(self._links)
+
+    def n_intersecting_points_with(self, other):
+        x11, y11, x21, y21 = self.extent
+        x12, y12, x22, y22 = other.extent
+        x1 = max(x11, x12)
+        y1 = max(y11, y12)
+        x2 = min(x21, x22)
+        y2 = min(y21, y22)
+        if x2 < x1 or y2 < y1:
+            return 0
+        ll = np.array([x1, y1])
+        ur = np.array([x2, y2])
+        xy1 = self.xy[~np.isnan(self.xy).any(axis=1)]
+        xy2 = other.xy[~np.isnan(other.xy).any(axis=1)]
+        in1 = np.all((xy1 >= ll) & (xy1 <= ur), axis=1).sum()
+        in2 = np.all((xy2 >= ll) & (xy2 <= ur), axis=1).sum()
+        return min(in1 / len(self), in2 / len(other))
 
     def add_joint(self, joint):
         if joint.label in self._visible:
