@@ -136,7 +136,7 @@ if __name__ == "__main__":
     print("Video created.")
 
     edgewisecondition = True
-    print("Convert detections...")
+    print("Convert detections to tracklets...")
     deeplabcut.convert_detections2tracklets(
         config_path,
         [new_video_path],
@@ -147,6 +147,10 @@ if __name__ == "__main__":
     deeplabcut.convert_detections2tracklets(
         config_path, [new_video_path], "mp4", track_method="skeleton"
     )
+    deeplabcut.convert_detections2tracklets(
+        config_path, [new_video_path], "mp4", track_method="ellipse"
+    )
+    print("Tracklets created...")
 
     print("Extracting maps...")
     deeplabcut.extract_save_all_maps(config_path, Indices=[0, 1, 2])
@@ -161,15 +165,6 @@ if __name__ == "__main__":
         config_path, [new_video_path], scorer, displayedbodyparts=["bodypart1"]
     )
     print("Video created.")
-
-    print("Convert detections to tracklets...")
-    deeplabcut.convert_detections2tracklets(
-        config_path, [new_video_path], "mp4", track_method="box"
-    )
-    deeplabcut.convert_detections2tracklets(
-        config_path, [new_video_path], "mp4", track_method="skeleton"
-    )
-    print("Tracklets created...")
 
     print("Create data file...")
     picklefile = os.path.splitext(new_video_path)[0] + scorer + "_sk.pickle"

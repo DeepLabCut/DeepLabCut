@@ -213,9 +213,13 @@ class Refine_tracklets(wx.Panel):
     def filter_after_refinement(self, event):  # why is video type needed?
         shuffle = self.shuffle.GetValue()
         trainingsetindex = self.trainingset.GetValue()
-        tracker = (
-            "skeleton" if os.path.splitext(self.datafile)[0].endswith("sk") else "box"
-        )
+        method = os.path.splitext(self.datafile)[0]
+        if method.endswith("sk"):
+            tracker = "skeleton"
+        elif method.endswith("bx"):
+            tracker = "box"
+        else:
+            tracker = "ellipse"
         window_length = self.filterlength_track.GetValue()
         if window_length % 2 != 1:
             raise ValueError("Window length should be odd.")
