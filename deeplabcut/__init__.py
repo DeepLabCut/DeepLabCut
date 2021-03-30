@@ -42,9 +42,9 @@ try:
     from deeplabcut.gui.launch_script import launch_dlc
     from deeplabcut.gui.label_frames import label_frames
     from deeplabcut.gui.refine_labels import refine_labels
+    from deeplabcut.gui.tracklet_toolbox import refine_tracklets
 
     from deeplabcut.utils.skeleton import SkeletonBuilder
-    from deeplabcut.refine_training_dataset.tracklets import refine_tracklets
 except ModuleNotFoundError:
     print(
         "DLC loaded in light mode; you cannot use any GUI (labeling, relabeling and standalone GUI)"
