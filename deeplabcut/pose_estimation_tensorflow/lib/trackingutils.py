@@ -850,6 +850,7 @@ def fill_tracklets(tracklets, trackers, animals, imname):
 
 
 def calc_bboxes_from_keypoints(data, slack=0, offset=0):
+    data = np.asarray(data)
     if data.shape[-1] < 3:
         raise ValueError("Data should be of shape (n_animals, n_bodyparts, 3)")
 
