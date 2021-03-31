@@ -169,11 +169,11 @@ class Analyze_videos(wx.Panel):
                 self, label="Specify the Tracker Method (you can try each)"
             )
             tracker_text_boxsizer = wx.StaticBoxSizer(tracker_text, wx.VERTICAL)
-            trackertypes = ["skeleton", "box"]
+            trackertypes = ["skeleton", "box", "ellipse"]
             self.trackertypes = wx.ComboBox(
                 self, choices=trackertypes, style=wx.CB_READONLY
             )
-            self.trackertypes.SetValue("box")
+            self.trackertypes.SetValue("ellipse")
             tracker_text_boxsizer.Add(
                 self.trackertypes, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
             )

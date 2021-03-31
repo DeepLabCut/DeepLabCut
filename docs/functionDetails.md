@@ -515,6 +515,8 @@ Firstly, you need to convert detections to tracklets. This step has several trac
 
    - `box` detects the assembled animals (individuals) with bounding boxes, with a defined slack/margin specified at: `boundingboxslack` and connects them across time with a greedy box overlap metric `iou_threshold`.
 
+   - `ellipse` rather uses covariance error ellipses fitted to the animal body parts—a parametrization that is more robust to outlier detection and more sensitive to changes in body conformation.
+
    - `skeleton` uses the skeleton, as defined in the config.yaml file to associate detected individuals across different frames.
 
    - `single_object`: is a single-object tracker. I.e. links instances of the same bodyparts across frames (with no regard to individual animals, i.e. assembled individuals). Thus, this is ideally suited for rapid single object tracking (i.e. single-point animal tracking, cell tracking, etc.). For details, see https://github.com/DeepLabCut/DeepLabCut/pull/736
