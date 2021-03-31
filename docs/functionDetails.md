@@ -550,12 +550,21 @@ from deeplabcut.utils.make_labeled_video import create_video_from_pickled_tracks
 create_video_from_pickled_tracks(videopath, picklepath)
 ```
 
-**Secondly,** you need to refine the tracklets. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Note, if you see very little data once you launch the GUI, consider relaxing the `pafthreshold` value (dropping it lower), and re-running convert to tracklets (this is very fast; see the "short demo" above).
+**Secondly,** tracklets need to be stitched to reconstruct the full animal tracks in a kinematically consistent manner.
+This is conveniently (and automatically) done using:
+```python
+deeplabcut.stitch_tracklets(pickle_file, n_tracks)
+```
+where ``n_tracks`` is the number of animal tracks to reconstruct.
+By default, the `.h5` output file (akin to what you might be used to from standard DLC) will be written alongside the pickle file.
+This `.h5` file can be (1) filtered to take care of small jitters, and/or (2) refined as described below.
 
-Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc!
+Refinement allows fixing both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points.
+You will load the `...trackertype.h5` file that was created above, and then you can launch a GUI to interactively refine the data.
+This also has several options, so please check out the docstring. Note, if you see very little data once you launch the GUI, consider relaxing the `pafthreshold` value (dropping it lower), and re-running convert to tracklets (this is very fast; see the "short demo" above).
 
 ```python
-deeplabcut.refine_tracklets(path_config_file, pickle_or_h5_file, videofile_path, min_swap_len=2, min_tracklet_len=2, trail_len=50)
+deeplabcut.refine_tracklets(path_config_file, h5_file, videofile_path, min_swap_len=2, min_tracklet_len=2, trail_len=50)
 ```
 HOT KEYS IN THE Tracklet GUI:
 ```
@@ -579,13 +588,6 @@ Short demo:
  <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588690928000-90ZMRIM8SN6QE20ZOMNX/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/refineDEMO.gif?format=750w" width="70%">
 </p>
-
-
-Lastly, let's say you've optimized the `inference_cfg.yaml` (i.e., tracking) parameters, and you want to just apply this to a set of videos and by-pass the tracklet GUI, you can pass the pickle file directly from `analyze_videos` (and your `config.yaml` full path) and run:
-
-```python
-deeplabcut.convert_raw_tracks_to_h5(config_path, picklefile)
-```
 
 ### (I) Novel Video Analysis: extra features
 
