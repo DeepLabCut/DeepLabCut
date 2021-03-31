@@ -1,10 +1,10 @@
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 Please see AUTHORS for contributors.
 
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 
 """
@@ -15,10 +15,8 @@ import sys
 
 import wx
 
-import deeplabcut
-
-media_path = os.path.join(deeplabcut.__path__[0], "gui", "media")
-logo = os.path.join(media_path, "logo.png")
+from deeplabcut.generate_training_dataset import extract_frames
+from deeplabcut.gui import LOGO_PATH
 
 
 class Extract_frames(wx.Panel):
@@ -38,7 +36,7 @@ class Extract_frames(wx.Panel):
         text = wx.StaticText(self, label="DeepLabCut - Step 2. Extract Frames")
         sizer.Add(text, pos=(0, 0), flag=wx.TOP | wx.LEFT | wx.BOTTOM, border=15)
         # Add logo of DLC
-        icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(logo))
+        icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(LOGO_PATH))
         sizer.Add(icon, pos=(0, 4), flag=wx.TOP | wx.RIGHT | wx.ALIGN_RIGHT, border=5)
 
         line1 = wx.StaticLine(self)
@@ -230,7 +228,7 @@ class Extract_frames(wx.Panel):
             opencv = False
 
         slider_width = self.slider_width.GetValue()
-        deeplabcut.extract_frames(
+        extract_frames(
             self.config,
             mode,
             algo,

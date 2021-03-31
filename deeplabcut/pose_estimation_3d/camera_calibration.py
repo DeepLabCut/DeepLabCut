@@ -79,6 +79,7 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4):
         path_corners,
         path_camera_matrix,
         path_undistort,
+        path_removed_images,
     ) = auxiliaryfunctions_3d.Foldernames3Dproject(cfg_3d)
 
     images = glob.glob(os.path.join(img_path, "*.jpg"))
@@ -119,9 +120,10 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4):
             "No calibration images found. Make sure the calibration images are saved as .jpg and with prefix as the camera name as specified in the config.yaml file."
         )
 
+    skip_images = []
     for fname in images:
         for cam in cam_names:
-            if cam in fname:
+            if cam in fname and Path(fname).name not in skip_images:
                 filename = Path(fname).stem
                 img = cv2.imread(fname)
                 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -131,6 +133,7 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4):
                     gray, (cbcol, cbrow), None
                 )  #  (8,6) pattern (dimensions = common points of black squares)
                 # If found, add object points, image points (after refining them)
+
                 if ret == True:
                     img_shape[cam] = gray.shape[::-1]
                     objpoints[cam].append(objp)
@@ -145,6 +148,15 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4):
                     )
                 else:
                     print("Corners not found for the image %s" % Path(fname).name)
+                    for new_cam in cam_names:
+                        remove_fname = Path(fname).name.replace(cam, new_cam)
+                        os.rename(
+                            os.path.join(str(img_path), remove_fname),
+                            os.path.join(str(path_removed_images), remove_fname),
+                        )
+                        if new_cam != cam:
+                            skip_images.append(remove_fname)
+
     try:
         h, w = img.shape[:2]
     except:
@@ -306,6 +318,7 @@ def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
         path_corners,
         path_camera_matrix,
         path_undistort,
+        path_removed_images,
     ) = auxiliaryfunctions_3d.Foldernames3Dproject(cfg_3d)
 
     # colormap = plt.get_cmap(cfg_3d['colormap'])

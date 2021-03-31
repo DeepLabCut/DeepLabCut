@@ -1,17 +1,15 @@
-# DLC-CPU.yaml
+# DLC-CPU-LITE.yaml
 
 #DeepLabCut2.0 Toolbox (deeplabcut.org)
 #© A. & M. Mathis Labs
 #https://github.com/DeepLabCut/DeepLabCut
 #Please see AUTHORS for contributors.
-
-#https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 #Licensed under GNU Lesser General Public License v3.0
 #
-# install: conda env create -f DLC-CPU.yaml
-# update:  conda env update -f DLC-CPU.yaml
+# install: conda env create -f DLC-CPU-LITE.yaml
+# update:  conda env update -f DLC-CPU-LITE.yaml
 
-name: DLC-CPU
+name: DLC-CPU-LITE
 channels:
   - conda-forge
   - defaults
@@ -22,4 +20,4 @@ dependencies:
   - nb_conda
   - pip:
     - tensorflow==1.15.5
-    - deeplabcut[gui]
+    - deeplabcut

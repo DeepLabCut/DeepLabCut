@@ -1,10 +1,10 @@
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 Please see AUTHORS for contributors.
 
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 
 """
@@ -18,7 +18,7 @@ import webbrowser
 
 import wx
 
-import deeplabcut
+from deeplabcut.create_project import create_new_project, add_new_videos
 from deeplabcut.gui.analyze_videos import Analyze_videos
 from deeplabcut.gui.create_training_dataset import Create_training_dataset
 from deeplabcut.gui.create_videos import Create_Labeled_Videos
@@ -31,9 +31,6 @@ from deeplabcut.gui.refine_tracklets import Refine_tracklets
 from deeplabcut.gui.train_network import Train_network
 from deeplabcut.gui.video_editing import Video_Editing
 from deeplabcut.utils import auxiliaryfunctions
-
-media_path = os.path.join(deeplabcut.__path__[0], "gui", "media")
-logo = os.path.join(media_path, "logo.png")
 
 
 class Create_new_project(wx.Panel):
@@ -309,7 +306,7 @@ class Create_new_project(wx.Panel):
         Activates the option to copy videos
         """
         self.change_copy = event.GetEventObject()
-        if self.change_copy.GetValue() == True:
+        if self.change_copy.GetValue():
             self.copy = True
         else:
             self.copy = False
@@ -319,7 +316,7 @@ class Create_new_project(wx.Panel):
         Activates the option to change the working directory
         """
         self.change_wd = event.GetEventObject()
-        if self.change_wd.GetValue() == True:
+        if self.change_wd.GetValue():
             self.sel_wd.Enable(True)
         else:
             self.sel_wd.Enable(False)
@@ -359,7 +356,7 @@ class Create_new_project(wx.Panel):
             self.scorer = self.exp_txt_box.GetValue()
 
             if self.task != "" and self.scorer != "" and self.filelist != []:
-                self.cfg = deeplabcut.create_new_project(
+                self.cfg = create_new_project(
                     self.task,
                     self.scorer,
                     self.filelist,
@@ -429,7 +426,7 @@ class Create_new_project(wx.Panel):
         self.cfg = self.sel_config.GetPath()
         if len(self.filelistnew) > 0:
             self.filelistnew = self.filelistnew + self.addvids
-            deeplabcut.add_new_videos(self.cfg, self.filelistnew)
+            add_new_videos(self.cfg, self.filelistnew)
         else:
             print("Please select videos to add first. Click 'Load New Videos'...")
 

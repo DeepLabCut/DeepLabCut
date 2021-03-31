@@ -145,7 +145,7 @@ def convertcsv2h5(config, userfeedback=True, scorer=None):
             print("Attention:", folder, "does not appear to have labeled data!")
 
 
-def analyze_videos_converth5_to_csv(videopath, videotype=".avi"):
+def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4"):
     """
     By default the output poses (when running analyze_videos) are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position \n
     in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
@@ -157,11 +157,11 @@ def analyze_videos_converth5_to_csv(videopath, videotype=".avi"):
     Parameters
     ----------
 
-    videopath : string
-        A strings containing the full paths to videos for analysis or a path to the directory where all the videos with same extension are stored.
+    video_folder : string
+        Absolute path of a folder containing videos and the corresponding h5 data files.
 
-    videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\nOnly videos with this extension are analyzed. The default is ``.avi``
+    videotype: string, optional (default=.mp4)
+        Only videos with this extension are screened.
 
     Examples
     --------
@@ -170,31 +170,20 @@ def analyze_videos_converth5_to_csv(videopath, videotype=".avi"):
     deeplabcut.analyze_videos_converth5_to_csv('/media/alex/experimentaldata/cheetahvideos','.mp4')
 
     """
-    start_path = os.getcwd()
-    os.chdir(videopath)
-    Videos = [
-        fn
-        for fn in os.listdir(os.curdir)
-        if (videotype in fn) and ("_labeled.mp4" not in fn)
-    ]  # exclude labeled-videos!
-
-    Allh5files = [
-        fn for fn in os.listdir(os.curdir) if (".h5" in fn) and ("resnet" in fn)
-    ]
-
-    for video in Videos:
+    h5_files = list(auxiliaryfunctions.grab_files_in_folder(video_folder, "h5", relative=False))
+    videos = auxiliaryfunctions.grab_files_in_folder(video_folder, videotype, relative=False)
+    for video in videos:
+        if "_labeled" in video:
+            continue
         vname = Path(video).stem
-        # Is there a scorer for this?
-        PutativeOutputFiles = [fn for fn in Allh5files if vname in fn]
-        for pfn in PutativeOutputFiles:
-            scorer = pfn.split(vname)[1].split(".h5")[0]
-            if "DLC" in scorer or "DeepCut" in scorer:
-                DC = pd.read_hdf(pfn, "df_with_missing")
-                print("Found output file for scorer:", scorer)
-                print("Converting to csv...")
-                DC.to_csv(pfn.split(".h5")[0] + ".csv")
-
-    os.chdir(str(start_path))
+        for file in h5_files:
+            if vname in file:
+                scorer = file.split(vname)[1].split(".h5")[0]
+                if "DLC" in scorer or "DeepCut" in scorer:
+                    print("Found output file for scorer:", scorer)
+                    print(f"Converting {file}...")
+                    df = pd.read_hdf(file, "df_with_missing")
+                    df.to_csv(file.replace(".h5", ".csv"))
     print("All pose files were converted.")
 
 
