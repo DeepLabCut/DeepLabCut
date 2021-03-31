@@ -3,7 +3,6 @@ import deeplabcut
 import numpy as np
 import pandas as pd
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
-from deeplabcut.refine_training_dataset.tracklets import convert_raw_tracks_to_h5
 
 
 if __name__ == "__main__":
@@ -165,20 +164,30 @@ if __name__ == "__main__":
     print("Create data file...")
     picklefile = os.path.splitext(new_video_path)[0] + scorer + "_sk.pickle"
     try:
-        convert_raw_tracks_to_h5(config_path, picklefile)
-        convert_raw_tracks_to_h5(config_path, picklefile.replace("_sk.pi", "_bx.pi"))
-
-    except IOError:
+        deeplabcut.stitch_tracklets(
+            picklefile,
+            n_tracks=n_animals,
+            min_length=3,
+            split_tracklets=False,
+            prestitch_residuals=False,
+            output_name=picklefile.replace("pickle", "h5"),
+        )
+        deeplabcut.stitch_tracklets(
+            picklefile.replace("_sk.pi", "_bx.pi"),
+            n_tracks=n_animals,
+            output_name=picklefile.replace("sk", "bx").replace("pickle", "h5"),
+        )
+    except:
         print("Empty tracklets properly caught! Using fake data rather...")
         temp = pd.read_hdf(os.path.join(image_folder, f"CollectedData_{SCORER}.h5"))
         # Need to add the 'likelihood' level value to simulate analyzed data
         # Ugliest hack in the history of pandas
         columns = (
             temp.columns.to_series()
-            .unstack([0, 1, 2])
-            .append(pd.Series(None, name="likelihood"))
-            .unstack()
-            .index
+                .unstack([0, 1, 2])
+                .append(pd.Series(None, name="likelihood"))
+                .unstack()
+                .index
         )
         data = np.ones((temp.shape[0], temp.shape[1] // 2 * 3))
         data.reshape((data.shape[0], -1, 3))[:, :, :2] = temp.values.reshape(
