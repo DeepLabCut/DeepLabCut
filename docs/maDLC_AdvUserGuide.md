@@ -543,7 +543,7 @@ First, you need to convert detections to tracklets. This step has several tracke
 
 ```python
 deeplabcut.convert_detections2tracklets(path_config_file, ['videofile_path'], videotype='mp4',
-                                                    shuffle=1, trainingsetindex=0, track_method='box/skeleton')
+                                                    shuffle=1, trainingsetindex=0, track_method='box/ellipse/skeleton')
 ```
 You should **cross-validate** the tracking parameters. ([Here is more information](functionDetails.md#cross-validation-of-inference-parameters-a-madeeplabcut-critical-point)). Namely, you can iteratively change the parameters, run `convert_detections2tracklets` then load them in the GUI (`refine_tracklets`). Note, that in the main Project Manager GUI there is a button for you to launch the inference file to seemlessly edit and rapidly test.
 
@@ -578,7 +578,7 @@ Firstly, Here are some tips for scaling up your video analysis, including loopin
 
 You can also filter the predicted bodyparts by:
 ```python
-deeplabcut.filterpredictions(config_path,['/fullpath/project/videos/reachingvideo1.avi'], track_method='box/skeleton')
+deeplabcut.filterpredictions(config_path,['/fullpath/project/videos/reachingvideo1.avi'], track_method='box/ellipse/skeleton')
 ```
 Note, this creates a file with the ending filtered.h5 that you can use for further analysis. This filtering step has many parameters, so please see the full docstring by typing: ``deeplabcut.filterpredictions?``
 
@@ -591,12 +591,12 @@ Note, this creates a file with the ending filtered.h5 that you can use for furth
 
 Plot the outputs:
 ```python
-deeplabcut.plot_trajectories(config_path,['/fullpath/project/videos/reachingvideo1.avi'],filtered = True, track_method='box/skeleton')
+deeplabcut.plot_trajectories(config_path,['/fullpath/project/videos/reachingvideo1.avi'],filtered = True, track_method='box/ellipse/skeleton')
 ```
 
 Create videos:
 ```python
-deeplabcut.create_labeled_video(config_path, [`/analysis/project/videos/reachingvideo1.avi','/fullpath/project/videos/reachingvideo2.avi'],filtered = True, track_method='box/skeleton')
+deeplabcut.create_labeled_video(config_path, [`/analysis/project/videos/reachingvideo1.avi','/fullpath/project/videos/reachingvideo2.avi'],filtered = True, track_method='box/ellipse/skeleton')
 ```
 
 (more details [here](functionDetails.md#i-video-analysis-and-plotting-results))
