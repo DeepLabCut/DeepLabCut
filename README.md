@@ -1,8 +1,8 @@
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 ![Python package](https://github.com/DeepLabCut/DeepLabCut/workflows/Python%20package/badge.svg)
 [![PyPI version](https://badge.fury.io/py/deeplabcut.svg)](https://badge.fury.io/py/deeplabcut)
-[![Downloads](https://static.pepy.tech/personalized-badge/deeplabcut?period=total&units=international_system&left_color=black&right_color=black&left_text=Downloads)](https://pepy.tech/project/deeplabcut)
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/deeplabcut.svg?color=purple&label=PyPi)](https://pypistats.org/packages/deeplabcut)
+[![Downloads](https://pepy.tech/badge/deeplabcut)](https://pepy.tech/project/deeplabcut)
+[![Downloads](https://pepy.tech/badge/deeplabcut/month)](https://pepy.tech/project/deeplabcut)
 [![GitHub stars](https://img.shields.io/github/stars/AlexEMG/DeepLabCut.svg?style=social&label=Star)](https://github.com/AlexEMG/DeepLabCut)
 
 [![Generic badge](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)](CONTRIBUTING.md)
@@ -40,8 +40,8 @@ DeepLabCut is a toolbox for markerless pose estimation of animals performing var
 
 # [Installation: how to install DeepLabCut](docs/installation.md)
 
-Very quick start: `pip install deeplabcut`
-* you also need tensorflow and wxPython see [here](https://github.com/DeepLabCut/DeepLabCut/blob/master/conda-environments/README.md#creating-your-own-customized-conda-env-recommended-route-for-linux-ubuntu-centos-mint-etc)
+Very quick start: `pip install deeplabcut[gui]` that includes all GUI functions, or `pip install deeplabcut` (headless version)
+* you also need TensorFlow (1.x currently), therefore we recommend using our conda files, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/master/conda-environments/README.md#creating-your-own-customized-conda-env-recommended-route-for-linux-ubuntu-centos-mint-etc)
 
 # [Documentation: The DeepLabCut Process](docs/UseOverviewGuide.md)
 

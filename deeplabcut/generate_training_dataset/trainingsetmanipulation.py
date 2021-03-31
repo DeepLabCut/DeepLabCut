@@ -1,10 +1,10 @@
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 
 Please see AUTHORS for contributors.
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 import logging
@@ -407,52 +407,6 @@ def cropimagesandlabels(
     auxiliaryfunctions.write_config(config, cfg)
 
 
-def label_frames(config, multiple_individualsGUI=False, imtypes=["*.png"]):
-    """
-    Manually label/annotate the extracted frames. Update the list of body parts you want to localize in the config.yaml file first.
-
-    Parameter
-    ----------
-    config : string
-        String containing the full path of the config file in the project.
-
-    multiple_individualsGUI: bool, optional
-          If this is set to True, a user can label multiple individuals. Note for "multianimalproject=True" this is automatically used.
-          The default is ``False``; if provided it must be either ``True`` or ``False``.
-
-    imtypes: list of imagetypes to look for in folder to be labeled. By default only png images are considered.
-
-    Example
-    --------
-    Standard use case:
-    >>> deeplabcut.label_frames('/myawesomeproject/reaching4thestars/config.yaml')
-
-    To label multiple individuals (without having a multiple individuals project); otherwise this GUI is loaded automatically
-    >>> deeplabcut.label_frames('/analysis/project/reaching-task/config.yaml',multiple_individualsGUI=True)
-
-    To label other image types
-    >>> label_frames(config,multiple=False,imtypes=['*.jpg','*.jpeg'])
-    --------
-
-    """
-    startpath = os.getcwd()
-    wd = Path(config).resolve().parents[0]
-    os.chdir(str(wd))
-    cfg = auxiliaryfunctions.read_config(config)
-    if cfg.get("multianimalproject", False) or multiple_individualsGUI:
-        from deeplabcut.generate_training_dataset import (
-            multiple_individuals_labeling_toolbox,
-        )
-
-        multiple_individuals_labeling_toolbox.show(config)
-    else:
-        from deeplabcut.generate_training_dataset import labeling_toolbox
-
-        labeling_toolbox.show(config, imtypes=imtypes)
-
-    os.chdir(startpath)
-
-
 def check_labels(
     config,
     Labels=["+", ".", "x"],
@@ -741,6 +695,7 @@ def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
 
     To freeze a (uniform) split (i.e. iid sampled from all the data):
     >>> trainIndices, testIndices=deeplabcut.mergeandsplit(config,trainindex=0,uniform=True)
+
     You can then create two model instances that have the identical trainingset. Thereby you can assess the role of various parameters on the performance of DLC.
     >>> deeplabcut.create_training_dataset(config,Shuffles=[0,1],trainIndices=[trainIndices, trainIndices],testIndices=[testIndices, testIndices])
     --------

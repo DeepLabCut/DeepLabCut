@@ -196,6 +196,7 @@ def triangulate(
                         path_corners,
                         path_camera_matrix,
                         path_undistort,
+                        _,
                     ) = auxiliaryfunctions_3d.Foldernames3Dproject(cfg_3d)
                     path_stereo_file = os.path.join(
                         path_camera_matrix, "stereo_params.pickle"
@@ -432,6 +433,7 @@ def undistort_points(config, dataframe, camera_pair):
         path_corners,
         path_camera_matrix,
         path_undistort,
+        _,
     ) = auxiliaryfunctions_3d.Foldernames3Dproject(cfg_3d)
     """
     path_undistort = destfolder

@@ -1,10 +1,10 @@
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 Please see AUTHORS for contributors.
 
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
@@ -16,7 +16,6 @@ from pathlib import Path
 
 # from skimage import io
 import PIL
-import matplotlib
 import matplotlib.colors as mcolors
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
@@ -24,39 +23,21 @@ import numpy as np
 import pandas as pd
 import wx
 import wx.lib.scrolledpanel as SP
-from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.backends.backend_wxagg import (
     NavigationToolbar2WxAgg as NavigationToolbar,
 )
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from skimage import io
 
-from deeplabcut.refine_training_dataset import auxfun_drag
+from deeplabcut.gui import auxfun_drag
+from deeplabcut.gui.widgets import BasePanel, WidgetPanel, BaseFrame
 from deeplabcut.utils import auxiliaryfunctions
 
 
 # ###########################################################################
 # Class for GUI MainFrame
 # ###########################################################################
-class ImagePanel(wx.Panel):
-    def __init__(self, parent, config, gui_size, **kwargs):
-        h = gui_size[0] / 2
-        w = gui_size[1] / 3
-        wx.Panel.__init__(self, parent, -1, style=wx.SUNKEN_BORDER, size=(h, w))
-
-        self.figure = matplotlib.figure.Figure()
-        self.axes = self.figure.add_subplot(1, 1, 1)
-        self.canvas = FigureCanvas(self, -1, self.figure)
-        self.orig_xlim = None
-        self.orig_ylim = None
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.Add(self.canvas, 1, wx.LEFT | wx.TOP | wx.GROW)
-        self.SetSizer(self.sizer)
-        self.Fit()
-
-    def getfigure(self):
-        return self.figure
-
+class ImagePanel(BasePanel):
     def drawplot(
         self,
         img,
@@ -84,7 +65,7 @@ class ImagePanel(wx.Panel):
         )
         cbar.set_ticklabels(bodyparts[::-1])
 
-        if preview == False:
+        if not preview:
             self.axes.set_title(
                 str(
                     str(itr)
@@ -112,12 +93,9 @@ class ImagePanel(wx.Panel):
             self.axes.set_xlim(xlim)
             self.axes.set_ylim(ylim)
         self.figure.canvas.draw()
-        self.toolbar = NavigationToolbar(self.canvas)
+        if not hasattr(self, 'toolbar'):
+            self.toolbar = NavigationToolbar(self.canvas)
         return (self.figure, self.axes, self.canvas, self.toolbar)
-
-    def resetView(self):
-        self.axes.set_xlim(self.orig_xlim)
-        self.axes.set_ylim(self.orig_ylim)
 
     def getColorIndices(self, img, bodyparts):
         """
@@ -127,11 +105,6 @@ class ImagePanel(wx.Panel):
         norm = mcolors.Normalize(vmin=0, vmax=np.max(im))
         ticks = np.linspace(0, np.max(im), len(bodyparts))[::-1]
         return norm, ticks
-
-
-class WidgetPanel(wx.Panel):
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent, -1, style=wx.SUNKEN_BORDER)
 
 
 class ScrollPanel(SP.ScrolledPanel):
@@ -170,38 +143,13 @@ class ScrollPanel(SP.ScrolledPanel):
         self.choiceBox.Clear(True)
 
 
-class MainFrame(wx.Frame):
-    """Contains the main GUI and button boxes"""
-
+class MainFrame(BaseFrame):
     def __init__(self, parent, config):
-        # Settting the GUI size and panels design
-        displays = (
-            wx.Display(i) for i in range(wx.Display.GetCount())
-        )  # Gets the number of displays
-        screenSizes = [
-            display.GetGeometry().GetSize() for display in displays
-        ]  # Gets the size of each display
-        index = 0  # For display 1.
-        screenWidth = screenSizes[index][0]
-        screenHeight = screenSizes[index][1]
-        self.gui_size = (screenWidth * 0.7, screenHeight * 0.85)
-
-        wx.Frame.__init__(
-            self,
-            parent,
-            id=wx.ID_ANY,
-            title="DeepLabCut2.0 - Refinement ToolBox",
-            size=wx.Size(self.gui_size),
-            pos=wx.DefaultPosition,
-            style=wx.RESIZE_BORDER | wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL,
+        super(MainFrame, self).__init__(
+            "DeepLabCut2.0 - Refinement ToolBox", parent,
         )
-        self.statusbar = self.CreateStatusBar()
-        self.statusbar.SetStatusText("")
         self.Bind(wx.EVT_CHAR_HOOK, self.OnKeyPressed)
 
-        self.SetSizeHints(
-            wx.Size(self.gui_size)
-        )  #  This sets the minimum size of the GUI. It can scale now!
         ###################################################################################################################################################
 
         # Spliting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
@@ -280,7 +228,7 @@ class MainFrame(wx.Frame):
 
         widgetsizer.AddStretchSpacer(15)
         self.quit = wx.Button(self.widget_panel, id=wx.ID_ANY, label="Quit")
-        widgetsizer.Add(self.quit, 1, wx.ALL | wx.ALIGN_RIGHT, 15)
+        widgetsizer.Add(self.quit, 1, wx.ALL, 15)
         self.quit.Bind(wx.EVT_BUTTON, self.quitButton)
 
         self.widget_panel.SetSizer(widgetsizer)
@@ -330,8 +278,9 @@ class MainFrame(wx.Frame):
             pos_abs = event.GetPosition()
             inv = self.axes.transData.inverted()
             pos_rel = list(inv.transform(pos_abs))
+            y1, y2 = self.axes.get_ylim()
             pos_rel[1] = (
-                self.axes.get_ylim()[0] - pos_rel[1]
+                y1 - pos_rel[1] + y2
             )  # Recall y-axis is inverted
             i = np.nanargmin(
                 [self.calc_distance(*dp.point.center, *pos_rel) for dp in self.drs]
@@ -345,71 +294,12 @@ class MainFrame(wx.Frame):
             if msg == 2:
                 closest_dp.delete_data()
 
-    @staticmethod
-    def calc_distance(x1, y1, x2, y2):
-        return np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
-
-    def closewindow(self, event):
-        self.Destroy()
-
-    def delete_data(self):
-        self.press = None
-        DraggablePoint.lock = None
-        self.point.set_animated(False)
-        self.background = None
-        self.final_point = (np.nan, np.nan, self.individual_names, self.bodyParts)
-        self.point.center = (np.nan, np.nan)
-        self.coords.append(self.final_point)
-        self.point.figure.canvas.draw()
-
-    def homeButton(self, event):
-        self.image_panel.resetView()
-        self.figure.canvas.draw()
-        MainFrame.updateZoomPan(self)
-        self.zoom.SetValue(False)
-        self.pan.SetValue(False)
-        self.statusbar.SetStatusText("")
-
-    def panButton(self, event):
-        if self.pan.GetValue() == True:
-            self.toolbar.pan()
-            self.statusbar.SetStatusText("Pan On")
-            self.zoom.SetValue(False)
-        else:
-            self.toolbar.pan()
-            self.statusbar.SetStatusText("Pan Off")
-
-    def zoomButton(self, event):
-        if self.zoom.GetValue() == True:
-            # Save pre-zoom xlim and ylim values
-            self.prezoom_xlim = self.axes.get_xlim()
-            self.prezoom_ylim = self.axes.get_ylim()
-            self.toolbar.zoom()
-            self.statusbar.SetStatusText("Zoom On")
-            self.pan.SetValue(False)
-        else:
-            self.toolbar.zoom()
-            self.statusbar.SetStatusText("Zoom Off")
-
-    def onZoom(self, ax):
-        # See if axis limits have actually changed
-        curr_xlim = self.axes.get_xlim()
-        curr_ylim = self.axes.get_ylim()
-        if self.zoom.GetValue() and not (
-            self.prezoom_xlim[0] == curr_xlim[0]
-            and self.prezoom_xlim[1] == curr_xlim[1]
-            and self.prezoom_ylim[0] == curr_ylim[0]
-            and self.prezoom_ylim[1] == curr_ylim[1]
-        ):
-            self.updateZoomPan()
-            self.statusbar.SetStatusText("Zoom Off")
-
     def activateSlider(self, event):
         """
         Activates the slider to increase the markersize
         """
         self.checkSlider = event.GetEventObject()
-        if self.checkSlider.GetValue() == True:
+        if self.checkSlider.GetValue():
             self.activate_slider = True
             self.slider.Enable(True)
             MainFrame.updateZoomPan(self)
@@ -443,10 +333,6 @@ class MainFrame(wx.Frame):
         self.axes.callbacks.connect("ylim_changed", self.onZoom)
 
         MainFrame.plot(self, self.img)
-
-    def lockChecked(self, event):
-        self.cb = event.GetEventObject()
-        self.view_locked = self.cb.GetValue()
 
     def browseDir(self, event):
         """
@@ -492,6 +378,7 @@ class MainFrame(wx.Frame):
         else:
             dlg.Destroy()
             self.Destroy()
+            return
         dlg.Destroy()
 
         try:
@@ -806,7 +693,7 @@ class MainFrame(wx.Frame):
     def onChecked(self, event):
         MainFrame.saveEachImage(self)
         self.cb = event.GetEventObject()
-        if self.cb.GetValue() == True:
+        if self.cb.GetValue():
             self.slider.Enable(True)
         else:
             self.slider.Enable(False)
@@ -969,7 +856,7 @@ class MainFrame(wx.Frame):
                 ]
                 self.likelihood = self.points[2]
 
-            if self.move2corner == True:
+            if self.move2corner:
                 ny, nx = np.shape(im)[0], np.shape(im)[1]
                 if self.points[0] > nx or self.points[0] < 0:
                     self.points[0] = self.center[0]
@@ -999,21 +886,16 @@ class MainFrame(wx.Frame):
                 ]
 
             self.axes.add_patch(circle[0])
-            self.dr = auxfun_drag.DraggablePoint(circle[0], bp, self.likelihood)
+            self.dr = auxfun_drag.DraggablePoint(
+                circle[0],
+                bp,
+                likelihood=self.likelihood
+            )
             self.dr.connect()
             self.dr.coords = MainFrame.getLabels(self, self.iter)[bpindex]
             self.drs.append(self.dr)
             self.updatedCoords.append(self.dr.coords)
         self.figure.canvas.draw()
-
-    def updateZoomPan(self):
-        # Checks if zoom/pan button is ON
-        if self.pan.GetValue() == True:
-            self.toolbar.pan()
-            self.pan.SetValue(False)
-        if self.zoom.GetValue() == True:
-            self.toolbar.zoom()
-            self.zoom.SetValue(False)
 
 
 def show(config):
