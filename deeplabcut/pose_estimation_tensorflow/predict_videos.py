@@ -1435,8 +1435,8 @@ def convert_detections2tracklets(
                     )
                 else:
                     mot_tracker = trackingutils.SORTEllipse(
-                        inferencecfg["max_age"],
-                        inferencecfg["min_hits"],
+                        inferencecfg.get("max_age", 1),
+                        inferencecfg.get("min_hits", 5),
                         inferencecfg.get("iou_threshold", 0.6)
                     )
                 tracklets = {}
