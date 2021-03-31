@@ -1143,7 +1143,7 @@ def convert_detections2tracklets(
     BPTS=None,
     inferencecfg=None,
     modelprefix="",
-    track_method="box",
+    track_method="ellipse",
     greedy=False,
     calibrate=False,
 ):
@@ -1176,7 +1176,8 @@ def convert_detections2tracklets(
 
     track_method: str, optional
         Method uses to track animals, either 'box', 'skeleton', or 'ellipse'.
-        By default, a constant velocity Kalman filter is used to track individual bounding boxes.
+        By default, a constant velocity Kalman filter is used to track
+        covariance error ellipses fitted to an individual's body parts.
 
     BPTS: Default is None: all bodyparts are used.
         Pass list of indices if only certain bodyparts should be used (advanced).

@@ -130,7 +130,7 @@ class Extract_outlier_frames(wx.Panel):
             self.trackertypes = wx.ComboBox(
                 self, choices=trackertypes, style=wx.CB_READONLY
             )
-            self.trackertypes.SetValue("box")
+            self.trackertypes.SetValue("ellipse")
             tracker_text_boxsizer.Add(
                 self.trackertypes, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
             )
