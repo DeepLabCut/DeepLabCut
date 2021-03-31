@@ -894,10 +894,7 @@ def _benchmark_paf_graphs(
                 continue
 
             # Count the number of unassembled bodyparts
-            n_dets = min(
-                len(gt), sum(1 for d in ass._flatten_detections(ass[i])
-                             if np.isfinite(d.confidence))
-            )
+            n_dets = len(gt)
             animals = ass.assemblies.get(i)
             if animals is None:
                 if n_dets:
@@ -1088,10 +1085,10 @@ def cross_validate_paf_graphs(
     full_data_file,
     metadata_file,
     output_name="",
-    pcutoff=0.3,
+    pcutoff=0.1,
     greedy=False,
     calibrate=False,
-    overwrite_config=False,
+    overwrite_config=True,
 ):
     cfg = auxiliaryfunctions.read_config(config)
     inf_cfg = auxiliaryfunctions.read_plainconfig(inference_config)
@@ -1126,7 +1123,6 @@ def cross_validate_paf_graphs(
         cfg,
         inf_cfg_temp,
         data,
-        params,
         paf_inds,
         greedy,
         calibration_file,
