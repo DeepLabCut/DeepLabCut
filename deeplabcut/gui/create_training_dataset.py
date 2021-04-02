@@ -171,7 +171,7 @@ class Create_training_dataset(wx.Panel):
         self.hbox3.Add(self.userfeedback, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         if config_file.get("multianimalproject", False):
-            print("more networks are available soon for maDLC, but currenlty this uses DLC-ResNet50 only")
+            print("more networks are available soon for maDLC, but currently this uses DLC-ResNet50 only")
             self.model_comparison_choice = "No"
         else:
             self.model_comparison_choice = wx.RadioBox(
