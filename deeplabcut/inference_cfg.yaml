@@ -33,6 +33,7 @@ method: 'm1'
 #least number of connections (to actually form an animal)
 minimalnumberofconnections: willbeautomaticallyupdatedbycreate_training_datasetcode
 #reasonable default: len(cfg['multianimalbodyparts'])/2
+pcutoff: 0.5
 
 # Least average score (average over paf costs of all edges)
 averagescore: 0.1
