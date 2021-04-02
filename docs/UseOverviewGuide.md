@@ -1,10 +1,12 @@
 ## Documentation:
 
+Below we will first outline what you need to get started, the different ways you can use DeepLabCut, and then the full workflow. Note, we highly recommend you also read and follow our [Nature Protocols paper](https://www.nature.com/articles/s41596-019-0176-0), which is (still) fully relevant to standard DeepLabCut.
+
  <p align="center">
 <img src= https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1582931103893-0YCXSXAKJR218B101W38/ke17ZwdGBToddI8pDm48kJ1KQcuvke5FTEGELkUtJ-tZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIrueQmuW2z7_VjRAJlsMCy1JrSO6-zKAUtz5k3N9334U/learningpanel+%284%29.png?format=1000w width="80%">
  </p>
 
- **This page provides resources for:**
+ **Additional Resources:**
 
  - [TUTORIALS:](https://www.youtube.com/channel/UC2HEbWpC_1v6i9RnDMy-dfA?view_as=subscriber) video tutorials that demonstrate various aspects of using the code base.
  - [HOW-TO-GUIDES:](/docs/UseOverviewGuide.md#how-to-guides) step-by-step user guidelines for using DeepLabCut on your own datasets (or on demo data)
