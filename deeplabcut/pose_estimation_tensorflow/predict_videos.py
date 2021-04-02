@@ -1437,7 +1437,7 @@ def convert_detections2tracklets(
                     paf_inds=PAF,
                     greedy=greedy,
                     pcutoff=inferencecfg["pcutoff"],
-                    min_affinity=inferencecfg["paf_threshold"]
+                    min_affinity=inferencecfg["pafthreshold"]
                 )
                 if calibrate:
                     trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
