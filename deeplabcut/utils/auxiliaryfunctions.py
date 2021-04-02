@@ -28,6 +28,7 @@ def create_config_template(multianimal=False):
         scorer:
         date:
         multianimalproject:
+        identity:
         \n
     # Project path (change when moving around)
         project_path:
@@ -78,6 +79,7 @@ def create_config_template(multianimal=False):
         scorer:
         date:
         multianimalproject:
+        identity:
         \n
     # Project path (change when moving around)
         project_path:
