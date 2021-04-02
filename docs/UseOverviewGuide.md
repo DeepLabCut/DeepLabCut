@@ -224,27 +224,14 @@ deeplabcut.label_frames(config_path)
 ```python
 deeplabcut.check_labels(config_path)
 ```
+
 **maDeepLabCut**: you can also look at both bodypart labeling (standard) and individual IDs by also passing `visualizeindividuals=True`
 
 (more details [here](functionDetails.md#e-check-annotated-frames))
 
-- Note, we also have a new, optional, functional to crop frames /labels for more efficient training. You can call this before you create a training dataset by:
-```python
-deeplabcut.cropimagesandlabels(path_config_file, userfeedback=False)
-```
-#### Reminder: Build your skeleton connections before you create a training set!
-
-If you did not do this already be sure to define a skeleton in the `config.yaml` - See [more here for cruical details](functionDetails.md#b-configure-the-project-).
-
-There is also a graphical way to define your skeleton:
-```python
-deeplabcut.SkeletonBuilder(config_path)
-```
-<p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589410182515-9SJO9MML6CNCXBAWQ6Z6/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/ezgif.com-video-to-gif+%2811%29.gif?format=750w" width="80%">
-</p>
-
 ### Create Training Dataset:
+
+Standard DeepLabCut, please run:
 
 ```python
 deeplabcut.create_training_dataset(config_path)
@@ -281,22 +268,9 @@ deeplabcut.train_network(config_path)
 
 Here, for traditional projects you will get a pixel distance metric and you should inspect the individual frames:
 ```python
-deeplabcut.evaluate_network(config_path, plotting=True)
+deeplabcut.evaluate_network(config_path, plotting=True/False)
 ```
 :movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=bgfnz1wtlpo)
-
-**maDeepLabCut [CRITICAL POINT]:**
-
-You need to **cross validate parameters** before inference. Here, you will run the new function:
-```python
-deeplabcut.evaluate_multianimal_crossvalidate(config_path, Shuffles=[1], edgewisecondition=True, leastbpts=1, init_points=20, n_iter=50)
-```
-We highly suggest that you read the docstring for this function to edit inputs appropriately.
-
-([Here is more information](functionDetails.md#cross-validation-of-inference-parameters-a-madeeplabcut-critical-point))
-
-
-**maDeepLabCut**: (or on normal projects!)
 
 You can also plot the scoremaps, locref layers, and PAFs:
 ```python
@@ -306,52 +280,39 @@ deeplabcut.extract_save_all_maps(config_path, shuffle=shuffle, Indices=[0, 5])
 
 (more details [here](functionDetails.md#h-evaluate-the-trained-network))
 
+Now, if you are happy with the performance of your pose estimation network, you can use this model on videos! 
+
+**maDeepLabCut**: Please note, at this point, if you have a maDLC project, please go here: [maDLC Advanced UserGuide](docs/maDLC_AdvUserGuide.md#---------------------decision--break-point--------------------)
+
+
 ### Video Analysis:
 - Please note that **novel videos DO NOT need to be added to the config.yaml file**. You can simply have a folder elsewhere on your computer and pass the video folder (then it will analyze all videos of the specified type (i.e. ``videotype='.mp4'``), or pass the path to the **folder** or exact video(s) you wish to analyze:
 
 ```python
 deeplabcut.analyze_videos(config_path,['/fullpath/project/videos/'], videotype='.mp4', save_as_csv = True)
 ```
-**maDeepLabCut**: there is a new step that allows you to plot *all* detections first. This allows you to check the pose-estimation quality before tracking of individuals! We recommend doing this step when you are running quality checks on new videos, etc. Once you have optimized pose-estimation and tracking, this is not required. `scorername` can be gotten from `scorername = deeplabcut.analyze_videos (...)` or just looking at the name of the DLC scorer in the folder name, h5 file, etc.
+### Filter Your Data: 
+- Although a good pose predictor needs little refinement, you may want to smooth your data or remove large outliers. 
 
+[DOCSTRING](https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#filterpredictions)
+
+You can also filter the predictions with a median filter (default) or with a [SARIMAX model](https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html), if you wish. This creates a new .h5 file with the ending *_filtered* that you can use in create_labeled_data and/or plot trajectories.
 ```python
-deeplabcut.create_video_with_all_detections(config_path, ['videofile_path'], scorername)
+deeplabcut.filterpredictions(config_path, ['fullpath/analysis/project/videos/reachingvideo1.avi'])
 ```
-
-### Assemble & Refine Tracklets in maDeepLabCut:
-
-:movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://youtu.be/bEuBKB7eqmk)
-- Now that you have detections (which are saved as a pickle file, not h5, btw), we need to assemble and track the animals.
-
-First, you need to convert detections to tracklets. This step has several tracker types (`track_method`), and we recommend testing which one works best on your data.
-
-```python
-deeplabcut.convert_detections2tracklets(config_path, ['videofile_path'], videotype='mp4',
-                                                    shuffle=1, trainingsetindex=0, track_method='')
+  An example call:
+ ```python
+deeplabcut.filterpredictions(config_path,['fullpath/analysis/project/videos'], videotype='.mp4',filtertype= 'arima',ARdegree=5,MAdegree=2)
+ ```            
+  Here are parameters you can modify and pass:
+```python        
+deeplabcut.filterpredictions(config_path, ['fullpath/analysis/project/videos/reachingvideo1.avi'], shuffle=1, trainingsetindex=0, comparisonbodyparts='all', filtertype='arima', p_bound=0.01, ARdegree=3, MAdegree=1, alpha=0.01)
 ```
-You should **cross-validate** the tracking parameters. ([Here is more information](functionDetails.md#cross-validation-of-inference-parameters-a-madeeplabcut-critical-point)). Namely, you can iteratively change the parameters, run `convert_detections2tracklets` then load them in the GUI (`refine_tracklets`). Note, that in the main Project Manager GUI there is a button for you to launch the inference file to seemlessly edit and rapidly test.
+ Here is an example of how this can be applied to a video:
 
-Secondly, you need to **refine the tracklets**. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc!
-
-```python
-deeplabcut.refine_tracklets(config_path, pickle_or_h5_file, videofile_path, min_swap_len=2, min_tracklet_len=2, trail_len=50)
-```
-[Read more here!](functionDetails.md#madeeplabcut-critical-point---assemble--refine-tracklets)
-
-Short demo:  
  <p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588690928000-90ZMRIM8SN6QE20ZOMNX/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/refineDEMO.gif?format=750w" width="70%">
+<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc8b8ae6e8df000100a995/1556908943893/filter_example-01.png?format=1000w" width="70%">
 </p>
-
-### Once you have analyzed video data (and refined your maDeepLabCut tracklets):
-
-Firstly, Here are some tips for scaling up your video analysis, including looping over many folders for batch processing: https://github.com/AlexEMG/DeepLabCut/wiki/Batch-Processing-your-Analysis
-
-You can also filter the predicted bodyparts by:
-```python
-deeplabcut.filterpredictions(config_path,['/fullpath/project/videos/reachingvideo1.avi'])
-```
-Note, this creates a file with the ending filtered.h5 that you can use for further analysis. This filtering step has many parameters, so please see the full docstring by typing: ``deeplabcut.filterpredictions?``
 
 ### Plotting Results:
 
