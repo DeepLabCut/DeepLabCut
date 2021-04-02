@@ -147,31 +147,13 @@ skeleton:
 ```
 **Individuals:** are names of "individuals" in the annotation dataset. These should be generic (e.g. mouse1, mouse2, etc.). These individuals are comprised of the same bodyparts defined by `multianimalbodyparts`. For annotation in the GUI and training, it is important that all individuals in each frame are labeled. Thus, keep in mind that you might need to have many individuals, .i.e. if there is (even just one frame) with 17 animals then the list should be `- indv1` to `- indv17`. For inference, once trained if you have a video with more or less animals, that is fine - you can change this number before running video analysis.
 
+**Identity:** If you can tell the animals apart, i.e.,  one might have a collar, or a black marker on the tail of a mouse, then you should label these individuals consistently (i.e., always label the mouse with the black marker as "indv1", etc). If you have this scenario, please set `identity: True` in your `config.yaml` file. If you have 4 black mice, and you truly cannot tell them apart, then leave this as `false`.
+
 **Multianimalbodyparts:** are the bodyparts of each individual (in the above list). Each bodypart should be connected to all the others by at least one path (E.g. like in a [tree](https://en.wikipedia.org/wiki/Tree_(graph_theory)).). However, we recommend to have multiple paths, in a redundant way. These connections are defined in the skeleton. See below how to define the skeleton.
 
 **Uniquebodyparts:** are points that you want to track, but that appear only once within each frame, i.e. they are "unique". Typically these are things like unique objects, landmarks, tools, etc. They are treated similar to pre-2.2 projects; namely, they do not require a skeleton. They can also be animals, e.g. in the case where one German shepherd is attending to many sheep the sheep bodyparts would be multianimalbodyparts, the shepherd parts would be uniquebodyparts and the individuals would be the list of sheep (e.g. Polly, Molly, Dolly, ...).
 
 **Note**, if your does not have any uniquebodyparts please format as: `uniquebodyparts: []`.
-
-**HOW TO CONNECT YOUR SKELETON:** For identifying individuals, it is crucial to define links between bodyparts as a skeleton, and "over-connect" the bodyparts, as shown above. Each bodypart should be connected to all the others by at least one path (E.g. like in a [tree](https://en.wikipedia.org/wiki/Tree_(graph_theory)).). However, we recommend to have multiple paths, in a redundant way, this helps to correctly assemble animals even if they occlude each other.
-
-For example, let's say you have the following bodyparts (left). What you might connect for plotting is in the middle, but what we ask you to do for training is on the far right (note, you can edit this after training to indeed plot just as in the middle!).
-
-You can define the skeleton by creating a list of "edges" in the config.yaml file as shown above, or you can use our helper GUI (far right):
-
-```python
-deeplabcut.SkeletonBuilder(config_path)
-```
-:movie_camera: [How to Connect The Skeleton](https://www.youtube.com/watch?v=fQSJ0S08UyY)
-
-
-<p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589256735280-SCN7CROSJNJWCDS6EK5T/ke17ZwdGBToddI8pDm48kB08p9-rNkpPD7A3fw8YFjZZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIno0kSvzOWihTW1zp8-1-7mzYxUQjsVr2n3nmNdVcso4/bodyparts-skeleton.png?format=1000w" width="400">
-
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589410182515-9SJO9MML6CNCXBAWQ6Z6/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/ezgif.com-video-to-gif+%2811%29.gif?format=750w" width="400">
-</p>
-</p>
-
 
 ### Select Frames to Label:
 
@@ -269,18 +251,6 @@ For each video directory in labeled-data this function creates a subdirectory wi
 ```python
 deeplabcut.cropimagesandlabels(path_config_file, userfeedback=False)
 ```
-#### Reminder: Build your skeleton connections before you create a training set!
-
-If you did not do this already be sure to define a skeleton in the `config.yaml` - See [more here for cruical details](functionDetails.md#b-configure-the-project-).
-
-There is also a graphical way to define your skeleton:
-```python
-deeplabcut.SkeletonBuilder(config_path)
-```
-<p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589410182515-9SJO9MML6CNCXBAWQ6Z6/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/ezgif.com-video-to-gif+%2811%29.gif?format=750w" width="80%">
-</p>
-
 ### Create Training Dataset:
 
 Ideally for training DNNs, one uses large batch sizes. Thus, for mutli-animal training batch processing is preferred. This means that we'd like the images to be similarly sized. You can of course have differing size of images you label (but we suggest cropping out useless pixels!). So, we have a new function that can pre-process your data to be compatible with batch training. As noted above, please run this function before you `create_multianmialtraining_dataset`. This function assures that each crop is "small", by default 400 x 400, which allows larger batchsizes and that there are multiple crops so that different parts of larger images are covered. 
