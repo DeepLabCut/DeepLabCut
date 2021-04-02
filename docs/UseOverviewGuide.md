@@ -110,7 +110,7 @@ Great - now that you get the overall workflow let's jump in! Here, you have seve
 
 [**Option 1**](/docs/UseOverviewGuide.md#option-1-demo-notebooks) DEMOs: for a quick introduction to DLC on our data.
 
-[**Option 2**](/docs/UseOverviewGuide.md#option-2-using-the-project-manger-gui) Standalone GUI: is the perfect place for beginners who want to start using DeepLabCut on your own data.
+[**Option 2**](/docs/UseOverviewGuide.md#option-2-using-the-project-manager-gui) Standalone GUI: is the perfect place for beginners who want to start using DeepLabCut on your own data.
 
 [**Option 3**](/docs/UseOverviewGuide.md#option-3-using-the-program-terminal-start-ipython) In the terminal: is best for more advanced users, as with the terminal interface you get the most versatility and options.  
 
