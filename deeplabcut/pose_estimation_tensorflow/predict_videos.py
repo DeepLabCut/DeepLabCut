@@ -1362,10 +1362,6 @@ def convert_detections2tracklets(
                         inferencecfg.get("iou_threshold", 0.6)
                     )
                 tracklets = {}
-                if cfg[
-                    "uniquebodyparts"
-                ]:  # Initialize storage of the 'single' individual track
-                    tracklets["single"] = {}
 
                 ass = inferenceutils.Assembler(
                     data,
@@ -1386,7 +1382,13 @@ def convert_detections2tracklets(
                     )
                     ass.calibrate(train_data_file)
                 ass.assemble()
-                tracklets["single"].update(ass.unique)
+                ass.to_pickle(dataname.split(".h5")[0] + "_assemblies.pickle")
+
+                if cfg[
+                    "uniquebodyparts"
+                ]:  # Initialize storage of the 'single' individual track
+                    tracklets["single"] = {}
+                    tracklets["single"].update(ass.unique)
 
                 for index, imname in tqdm(enumerate(imnames)):
                     assemblies = ass.assemblies.get(index)

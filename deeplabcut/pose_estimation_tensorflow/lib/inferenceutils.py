@@ -12,6 +12,7 @@ import itertools
 import networkx as nx
 import numpy as np
 import pandas as pd
+import pickle
 from collections import defaultdict
 from dataclasses import dataclass
 from math import sqrt, erf
@@ -1258,7 +1259,7 @@ class Assembler:
                 assemblies, unique = self._assemble(data_dict, i)
                 if assemblies:
                     self.assemblies[i] = assemblies
-                if unique:
+                if unique is not None:
                     self.unique[i] = unique
         else:
             global wrapped  # Hack to make the function pickable
@@ -1276,7 +1277,7 @@ class Assembler:
                     ):
                         if assemblies:
                             self.assemblies[i] = assemblies
-                        if unique:
+                        if unique is not None:
                             self.unique[i] = unique
                         pbar.update()
 
@@ -1316,6 +1317,15 @@ class Assembler:
         temp = data[..., :3].reshape((data.shape[0], -1))
         df = pd.DataFrame(temp, columns=index)
         df.to_hdf(output_name, key='ass')
+
+    def to_pickle(self, output_name):
+        data = dict()
+        for ind, assemblies in self.assemblies.items():
+            data[ind] = [ass.data for ass in assemblies]
+        if self.unique:
+            data['single'] = self.unique
+        with open(output_name, 'wb') as file:
+            pickle.dump(data, file, pickle.HIGHEST_PROTOCOL)
 
 
 def calc_object_keypoint_similarity(xy_pred, xy_true, sigma):
