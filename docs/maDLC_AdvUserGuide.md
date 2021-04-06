@@ -440,43 +440,17 @@ You can either:
 
 ### ------------------- TRACKING ACROSS FRAMES ------------------- 
 
-After pose estimation, now you perform tracking. There are several parameters we can automatically set based on your data, but some you will need to tune yourself, as it is dataset-dependent. First, let's set the automatic ones.
-
-### Cross Validation of Inference parameters:
-
-The neural network will detect bodyparts as well as "limbs" (i.e., the skeleton connections). These will then be assembled to create individuals; for this step, the graph of connections that you provided (skeleton) will be used. Note that several parameters will strongly influence the assembly of individuals. You need to cross validate parameters before inference. Here, you will run the new function (below) that will smartly try to optimize your `inference_config.yaml` file. You can also manually edit this file afterwards (more below). But, this first part will validate the parameters and optimize *either* hits/misses, RMSE, and percent correct keypoints (tracking we deal with below). Which objective might depend on your case; check the docstrings to see
-what is the default. This step uses a [global optimization with gaussian processes](https://github.com/fmfn/BayesianOptimization); by default
-only the parameters defined in `bpounds` will be optimzed within the provided ranges. All other parameters will be taken from the `inference_cfg.yaml` file.
-
-```python
-deeplabcut.evaluate_multianimal_crossvalidate(config_path, Shuffles=[1], edgewisecondition=True, leastbpts=1, init_points=20, n_iter=50, target='rpck_train')
-```
-:movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/jKsU1vb8ovQ)
- <p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588964838417-EQ1OA4QTZIU98DCEHPTJ/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/ezgif.com-video-to-gif+%287%29.gif?format=750w" width="90%">
-</p>
-
-We highly suggest that you read the docstring for this function to edit inputs appropriately if you don't run with our suggested defaults. Of course, you also can edit the `inference_config.yaml` file. [Here](/deeplabcut/inference_cfg.yaml) provides a description of the parameters. Here is a quick-start:
+After pose estimation, now you perform tracking. There are several parameters we can automatically set based on your data,
+but some you will need to tune yourself, as it is dataset-dependent. First, let's set the automatic ones.
 
 ```
 THESE CAN ALL BE X-VALIDATED:
 (so please only change them if you know what you are doing :)
 variant: 0
-minimalnumberofconnections: 4 <--- if you have a lot of "missing data" in frames, consider lowering.
-averagescore: 0.1
-# before assembly exclude all bpts farther apart than:
-distnormalization: 1000
-# and closer than:
-distnormalizationLOWER: 0 <--- if different body parts can be in the same space, consider increasing this (if edges was set to False, this is used).
-distnormalization: 400
-detectionthresholdsquare: 0
-addlikelihoods: 0.15
 pafthreshold: 0.15139643821853171
 method: m1
 withid: false
 topktoretain: .inf <--- maximum number of animals one expects to see; we assume "infinity" during cross-valiation.
-upperbound_factor: 1.25
-lowerbound_factor: .75
 
 ##########################
 TRACKING: THESE ARE NOT X-VALIDATED: (i.e. you should test them out! See more below):
@@ -486,15 +460,6 @@ max_age: 100 <--- maximum duration of a lost tracklet before it's considered a "
 min_hits: 3
 iou_threshold: 0.2
 ```
-
-After this process is complete you will get metrics in the terminal, and your `inference_cfg.yaml` is updated, here is an example:
-```
-Saving optimal inference parameters...
-   train_iter  train_frac  shuffle  rmse_train  hits_train  misses_train  falsepos_train  ndetects_train  pck_train  rpck_train  rmse_test  hits_test  misses_test  falsepos_test  ndetects_test  pck_test  rpck_test
-0     50000.0        95.0      1.0   36.681365     9.89759     11.645783         0.63494        1.761446   0.306809    0.288352   33.81332      8.675       13.025           0.45          1.625  0.286614   0.264459
-```
-
-Here, please check the PCK fractions are high (close to 1), the RMSE values are low. *The hits/misses false positive/#detections will be described in greater detail in the near future (they are related to another output head of the network that is not described at this time).*
 
 ### Video Analysis:
 - Please note that **novel videos DO NOT need to be added to the config.yaml file**. You can simply have a folder elsewhere on your computer and pass the video folder (then it will analyze all videos of the specified type (i.e. ``videotype='.mp4'``), or pass the path to the **folder** or exact video(s) you wish to analyze:

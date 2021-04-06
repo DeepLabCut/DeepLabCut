@@ -24,34 +24,6 @@ from tqdm import tqdm
 from typing import Tuple
 
 
-###################################
-#### auxiliaryfunctions
-###################################
-
-
-def distance(v, w):
-    return np.sqrt(np.sum((v - w) ** 2))
-
-
-def minmax(array, slack=10):
-    return np.nanmin(array) - slack, np.nanmax(array) + slack
-
-
-def individual2boundingbox(cfg, animals, X1=0):
-    boundingboxes = np.zeros((len(animals), 5)) * np.nan
-
-    for id, individual in enumerate(animals):
-        boundingboxes[id, 0:4:2] = minmax(
-            individual[::3] + X1, slack=cfg['boundingboxslack']
-        )
-        boundingboxes[id, 1:4:2] = minmax(individual[1::3], slack=cfg['boundingboxslack'])
-        boundingboxes[id, 4] = np.nanmean(
-            individual[2::3]
-        )  # average likelihood of all bpts
-
-    return boundingboxes
-
-
 def calc_bboxes_from_keypoints(data, slack=0, offset=0):
     if data.shape[-1] < 3:
         raise ValueError("Data should be of shape (n_animals, n_bodyparts, 3)")
@@ -64,11 +36,6 @@ def calc_bboxes_from_keypoints(data, slack=0, offset=0):
     bboxes[:, -1] = np.nanmean(data[..., 2])  # Average confidence
     bboxes[:, [0, 2]] += offset
     return bboxes
-
-
-##########################################################
-#### conversion & greedy bodypart matching code
-##########################################################
 
 
 def convertdetectiondict2listoflist(dataimage, BPTS, withid=False, evaluation=False):
@@ -113,120 +80,6 @@ def convertdetectiondict2listoflist(dataimage, BPTS, withid=False, evaluation=Fa
         detection_counter += len(detections_with_likelihood)
 
     return all_detections
-
-
-def extract_strong_connections(
-    cfg,
-    dataimage,
-    all_detections,
-    iBPTS,
-    partaffinityfield_graph,
-    PAF,
-    paf_thresholds,
-    lowerbound=None,
-    upperbound=None,
-    evaluation=False,
-):
-    """Auxiliary function;  Returns list of connections (limbs) of a particular type.
-
-    Specifically, per edge a list containing is returned: [index start (global), index stop (global) score, score with detection likelihoods, index start (local), index stop (local)]
-    Thereby, index start and stop refer to the index of the bpt from the beginning to the end of the edge. Local index refers to the index within the list of bodyparts, and
-    global to the index for all the detections (in all_detections)
-
-    Parameters
-    ----------
-    cfg : dictionary
-        configuation file for inference parameters
-
-    dataimage: dict
-        predictions (detections + paf scores) for a particular image
-
-    all_detections: list of lists
-        result of convertdetectiondict2listoflist
-
-    iBPTS: list
-        source of bpts.
-
-    partaffinityfield_graph: list of part affinity matchconnections
-
-    PAF: PAF is a subset of the indices that should be used in the partaffinityfield_graph
-
-    paf_thresholds : list of floats
-        List holding the PAF thresholds of individual graph edges
-    """
-    all_connections = []
-    missing_connections = []
-    costs = dataimage["prediction"]["costs"] if evaluation else dataimage["costs"]
-    for edge in range(len(partaffinityfield_graph)):
-        a, b = partaffinityfield_graph[edge]
-        paf_threshold = paf_thresholds[edge]
-        cand_a = all_detections[
-            iBPTS[a]
-        ]  # convert bpt index to the one in all_detections!
-        cand_b = all_detections[iBPTS[b]]
-        n_a = len(cand_a)
-        n_b = len(cand_b)
-        if n_a != 0 and n_b != 0:
-            scores = costs[PAF[edge]][cfg["method"]]
-            dist = costs[PAF[edge]]["distance"]
-            connection_candidate = []
-            for i in range(n_a):
-                si = cand_a[i][2]  # likelihoood for detection
-                for j in range(n_b):
-                    sj = cand_b[j][2]  # likelihoood for detection
-                    score_with_dist_prior = abs(scores[i, j])
-                    d = dist[i, j]
-                    if lowerbound is None and upperbound is None:
-                        if (
-                            score_with_dist_prior > paf_threshold
-                            and cfg["distnormalizationLOWER"] <= d < cfg["distnormalization"]
-                            and si * sj > cfg["detectionthresholdsquare"]
-                        ):
-                            connection_candidate.append(
-                                [
-                                    i,
-                                    j,
-                                    score_with_dist_prior,
-                                    d,
-                                ]
-                            )
-                    else:
-                        if (
-                            score_with_dist_prior > paf_threshold
-                            and lowerbound[edge] <= d < upperbound[edge]
-                            and si * sj > cfg['detectionthresholdsquare']
-                        ):
-                            connection_candidate.append(
-                                [
-                                    i,
-                                    j,
-                                    score_with_dist_prior,
-                                    d,
-                                ]
-                            )
-
-            # sort candidate connections by score
-            connection_candidate = sorted(
-                connection_candidate, key=lambda x: x[2], reverse=True
-            )
-            connection = []
-            i_seen = set()
-            j_seen = set()
-            nrows = min(n_a, n_b)
-            for i, j, score, d in connection_candidate:
-                if i not in i_seen and j not in j_seen:
-                    i_seen.add(i)
-                    j_seen.add(j)
-                    ii = int(cand_a[i][-1])  # global index!
-                    jj = int(cand_b[j][-1])
-                    connection.append([ii, jj, score, d, i, j])
-                    if len(connection) == nrows:
-                        break
-            all_connections.append(connection)
-        else:
-            missing_connections.append(edge)
-            all_connections.append([])
-    return all_connections, missing_connections
 
 
 def _nest_detections_in_arrays(
