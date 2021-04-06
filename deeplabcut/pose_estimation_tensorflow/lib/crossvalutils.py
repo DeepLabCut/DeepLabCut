@@ -385,6 +385,7 @@ def _benchmark_paf_graphs(
     data,
     paf_inds,
     greedy=False,
+    add_discarded=True,
     calibration_file="",
     oks_sigma=0.1,
 ):
@@ -398,7 +399,8 @@ def _benchmark_paf_graphs(
         n_multibodyparts=n_multi,
         greedy=greedy,
         pcutoff=inference_cfg.get("pcutoff", 0.1),
-        min_affinity=inference_cfg.get("pafthreshold", 0.1)
+        min_affinity=inference_cfg.get("pafthreshold", 0.1),
+        add_discarded=add_discarded,
     )
     if calibration_file:
         ass.calibrate(calibration_file)
@@ -520,7 +522,6 @@ def compare_best_and_worst_graphs(
         cfg,
         inf_cfg_temp,
         data,
-        params,
         paf_inds_best,
         greedy,
     )
@@ -536,7 +537,6 @@ def compare_best_and_worst_graphs(
         cfg,
         inf_cfg_temp,
         data,
-        params,
         paf_inds_worst,
         greedy,
     )
@@ -557,7 +557,6 @@ def compare_best_and_worst_graphs(
         cfg,
         inf_cfg_temp,
         data,
-        params,
         paf_inds_naive,
         greedy,
     )
@@ -644,6 +643,7 @@ def cross_validate_paf_graphs(
     output_name="",
     pcutoff=0.1,
     greedy=False,
+    add_discarded=True,
     calibrate=False,
     overwrite_config=True,
 ):
@@ -682,6 +682,7 @@ def cross_validate_paf_graphs(
         data,
         paf_inds,
         greedy,
+        add_discarded,
         calibration_file,
     )
     # Select optimal PAF graph

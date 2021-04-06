@@ -729,12 +729,45 @@ class Assembly:
         return self.data[:, :2]
 
     @property
+    def extent(self):
+        bbox = np.empty(4)
+        bbox[:2] = np.nanmin(self.xy, axis=0)
+        bbox[2:] = np.nanmax(self.xy, axis=0)
+        return bbox
+
+    @property
+    def area(self):
+        x1, y1, x2, y2 = self.extent
+        return (x2 - x1) * (y2 - y1)
+
+    @property
+    def confidence(self):
+        return np.nanmean(self.data[:, 2])
+
+    @property
     def affinity(self):
         return self._affinity / self.n_links
 
     @property
     def n_links(self):
         return len(self._links)
+
+    def n_intersecting_points_with(self, other):
+        x11, y11, x21, y21 = self.extent
+        x12, y12, x22, y22 = other.extent
+        x1 = max(x11, x12)
+        y1 = max(y11, y12)
+        x2 = min(x21, x22)
+        y2 = min(y21, y22)
+        if x2 < x1 or y2 < y1:
+            return 0
+        ll = np.array([x1, y1])
+        ur = np.array([x2, y2])
+        xy1 = self.xy[~np.isnan(self.xy).any(axis=1)]
+        xy2 = other.xy[~np.isnan(other.xy).any(axis=1)]
+        in1 = np.all((xy1 >= ll) & (xy1 <= ur), axis=1).sum()
+        in2 = np.all((xy2 >= ll) & (xy2 <= ur), axis=1).sum()
+        return min(in1 / len(self), in2 / len(other))
 
     def add_joint(self, joint):
         if joint.label in self._visible:
@@ -835,13 +868,19 @@ class Assembler:
             pass
         n_bpts = len(df.columns.get_level_values('bodyparts').unique())
         xy = df.to_numpy().reshape((-1, n_bpts, 2))
-        xy = xy[~np.isnan(xy).any(axis=(1, 2))]
+        frac_valid = np.mean(~np.isnan(xy), axis=(1, 2))
+        # Only keeps skeletons that are more than 90% complete
+        xy = xy[frac_valid >= 0.9]
         # TODO Normalize dists by longest length?
-        # TODO Bayesian multiple imputation of missing data
+        # TODO Smarter imputation technique (Bayesian? Grassmann averages?)
         dists = np.vstack([pdist(data, 'sqeuclidean') for data in xy])
+        mu = np.nanmean(dists, axis=0)
+        missing = np.isnan(dists)
+        dists = np.where(missing, mu, dists)
         kde = gaussian_kde(dists.T)
-        kde.mean = np.mean(dists, axis=0)
+        kde.mean = mu
         self._kde = kde
+        self.safe_edge = True
 
     def calc_assembly_mahalanobis_dist(
         self,
@@ -1150,41 +1189,40 @@ class Assembler:
                 self._fill_assembly(assembly, lookup, assembled, False, '')
                 assembled.update(assembly._idx)
 
-        if self.add_discarded:
+        discarded = set(joint for joint in joints
+                        if joint.idx not in assembled
+                        and np.isfinite(joint.confidence))
+        if len(assemblies) > self.max_n_individuals:
+            assemblies = sorted(assemblies, key=len, reverse=True)
+            for assembly in assemblies[self.max_n_individuals:]:
+                for link in assembly._links:
+                    discarded.update((link.j1, link.j2))
+            assemblies = assemblies[:self.max_n_individuals]
+        if self.add_discarded and discarded:
             # Last pass to fill assemblies with unconnected body parts
-            discarded = set(joint for joint in joints
-                            if joint.idx not in assembled
-                            and np.isfinite(joint.confidence))
-            if len(assemblies) > self.max_n_individuals:
-                assemblies = sorted(assemblies, key=len, reverse=True)
-                for assembly in assemblies[self.max_n_individuals:]:
-                    for link in assembly._links:
-                        discarded.update((link.j1, link.j2))
-                assemblies = assemblies[:self.max_n_individuals]
-            if discarded:
-                for joint in sorted(discarded, key=lambda x: x.confidence, reverse=True):
-                    if safe_edge:
-                        for assembly in assemblies:
-                            if joint.label in assembly._visible:
-                                continue
-                            d_old = self.calc_assembly_mahalanobis_dist(assembly)
-                            assembly.add_joint(joint)
-                            d = self.calc_assembly_mahalanobis_dist(assembly)
-                            if d < d_old:
-                                break
-                            assembly.remove_joint(joint)
-                    else:
-                        dists = []
-                        for i, assembly in enumerate(assemblies):
-                            if joint.label in assembly._visible:
-                                continue
-                            d = cdist(assembly.xy, np.atleast_2d(joint.pos))
-                            dists.append((i, np.nanmin(d)))
-                        if not dists:
+            for joint in sorted(discarded, key=lambda x: x.confidence, reverse=True):
+                if safe_edge:
+                    for assembly in assemblies:
+                        if joint.label in assembly._visible:
                             continue
-                        min_ = sorted(dists, key=lambda x: x[1])
-                        ind, _ = min_[0]
-                        assemblies[ind].add_joint(joint)
+                        d_old = self.calc_assembly_mahalanobis_dist(assembly)
+                        assembly.add_joint(joint)
+                        d = self.calc_assembly_mahalanobis_dist(assembly)
+                        if d < d_old:
+                            break
+                        assembly.remove_joint(joint)
+                else:
+                    dists = []
+                    for i, assembly in enumerate(assemblies):
+                        if joint.label in assembly._visible:
+                            continue
+                        d = cdist(assembly.xy, np.atleast_2d(joint.pos))
+                        dists.append((i, np.nanmin(d)))
+                    if not dists:
+                        continue
+                    min_ = sorted(dists, key=lambda x: x[1])
+                    ind, _ = min_[0]
+                    assemblies[ind].add_joint(joint)
 
         return assemblies
 
@@ -1386,6 +1424,28 @@ def _parse_ground_truth_data(data):
             continue
         gt[i] = temp
     return gt
+
+
+def find_outlier_assemblies(
+    dict_of_assemblies,
+    criterion="area",
+    qs=(5, 95),
+):
+    if not hasattr(Assembly, criterion):
+        raise ValueError(f"Invalid criterion {criterion}.")
+
+    if len(qs) != 2:
+        raise ValueError("Two percentiles (for lower and upper bounds) should be given.")
+
+    tuples = []
+    for frame_ind, assemblies in dict_of_assemblies.items():
+        for assembly in assemblies:
+            tuples.append((frame_ind, getattr(assembly, criterion)))
+    frame_inds, vals = zip(*tuples)
+    vals = np.asarray(vals)
+    lo, up = np.percentile(vals, qs, interpolation="nearest")
+    inds = np.flatnonzero((vals < lo) | (vals > up)).tolist()
+    return set(frame_inds[i] for i in inds)
 
 
 def evaluate_assembly(
