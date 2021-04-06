@@ -108,9 +108,6 @@ if __name__ == "__main__":
 
     print("Evaluating network...")
     deeplabcut.evaluate_network(config_path, plotting=True)
-    deeplabcut.evaluate_multianimal_crossvalidate(
-        config_path, n_iter=8, init_points=3
-    )  # parameters so it is fast
 
     print("Network evaluated....")
 
@@ -131,14 +128,12 @@ if __name__ == "__main__":
     deeplabcut.create_video_with_all_detections(config_path, [new_video_path], scorer)
     print("Video created.")
 
-    edgewisecondition = True
     print("Convert detections to tracklets...")
     deeplabcut.convert_detections2tracklets(
         config_path,
         [new_video_path],
         "mp4",
         track_method="box",
-        edgewisecondition=edgewisecondition,
     )
     deeplabcut.convert_detections2tracklets(
         config_path, [new_video_path], "mp4", track_method="skeleton"

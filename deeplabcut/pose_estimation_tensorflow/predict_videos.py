@@ -1146,7 +1146,6 @@ def convert_detections2tracklets(
     inferencecfg=None,
     modelprefix="",
     track_method="box",
-    edgewisecondition=True,
     greedy=False,
     calibrate=False,
 ):
@@ -1200,10 +1199,6 @@ def convert_detections2tracklets(
         the parameters are loaded from inference_cfg.yaml, but these get_level_values
         can be overwritten.
 
-    edgewisecondition: bool, default False.
-        If true pairwise Euclidean distances of limbs (connections in PAF) will be
-        estimated from the annotated data and used for excluding possible connections.
-
     Examples
     --------
     If you want to convert detections to tracklets:
@@ -1256,25 +1251,6 @@ def convert_detections2tracklets(
         inferencecfg = auxfun_multianimal.read_inferencecfg(path_inference_config, cfg)
     else:
         auxfun_multianimal.check_inferencecfg_sanity(cfg, inferencecfg)
-
-    if edgewisecondition:
-        path_inferencebounds_config = (
-            Path(modelfolder) / "test" / "inferencebounds.yaml"
-        )
-        try:
-            inferenceboundscfg = auxiliaryfunctions.read_plainconfig(
-                path_inferencebounds_config
-            )
-        except FileNotFoundError:
-            print("Computing distances...")
-            from deeplabcut.pose_estimation_tensorflow import calculatepafdistancebounds
-
-            inferenceboundscfg = calculatepafdistancebounds(
-                config, shuffle, trainingsetindex
-            )
-            auxiliaryfunctions.write_plainconfig(
-                path_inferencebounds_config, inferenceboundscfg
-            )
 
     # Check which snapshots are available and sort them by # iterations
     try:
@@ -1353,40 +1329,12 @@ def convert_detections2tracklets(
                 all_joints = data["metadata"]["all_joints"]
                 all_jointnames = data["metadata"]["all_joints_names"]
 
-                if edgewisecondition:
-                    upperbound = np.array(
-                        [
-                            float(
-                                inferenceboundscfg[str(edge[0]) + "_" + str(edge[1])][
-                                    "intra_max"
-                                ]
-                            )
-                            for edge in partaffinityfield_graph
-                        ]
-                    )
-                    lowerbound = np.array(
-                        [
-                            float(
-                                inferenceboundscfg[str(edge[0]) + "_" + str(edge[1])][
-                                    "intra_min"
-                                ]
-                            )
-                            for edge in partaffinityfield_graph
-                        ]
-                    )
-                    upperbound *= 1.25
-                    lowerbound *= 0.5  # SLACK!
-                else:
-                    lowerbound = None
-                    upperbound = None
-
                 if PAF is None:
                     PAF = np.arange(
                         len(partaffinityfield_graph)
                     )  # THIS CAN BE A SUBSET!
 
                 partaffinityfield_graph = [partaffinityfield_graph[l] for l in PAF]
-                linkingpartaffinityfield_graph = partaffinityfield_graph
 
                 numjoints = len(all_jointnames)
                 if BPTS is None and iBPTS is None:
@@ -1427,17 +1375,17 @@ def convert_detections2tracklets(
                 if cfg[
                     "uniquebodyparts"
                 ]:  # Initialize storage of the 'single' individual track
-                    tracklets["s"] = {}
+                    tracklets["single"] = {}
 
                 ass = inferenceutils.Assembler(
                     data,
                     max_n_individuals=inferencecfg["topktoretain"],
                     n_multibodyparts=len(cfg["multianimalbodyparts"]),
                     graph=partaffinityfield_graph,
-                    paf_inds=PAF,
+                    paf_inds=list(PAF),
                     greedy=greedy,
-                    pcutoff=inferencecfg["pcutoff"],
-                    min_affinity=inferencecfg["pafthreshold"]
+                    pcutoff=inferencecfg.get("pcutoff", 0.1),
+                    min_affinity=inferencecfg.get("pafthreshold", 0.1)
                 )
                 if calibrate:
                     trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
@@ -1448,7 +1396,7 @@ def convert_detections2tracklets(
                     )
                     ass.calibrate(train_data_file)
                 ass.assemble()
-                tracklets["s"].update(ass.unique)
+                tracklets["single"].update(ass.unique)
 
                 for index, imname in tqdm(enumerate(imnames)):
                     assemblies = ass.assemblies.get(index)

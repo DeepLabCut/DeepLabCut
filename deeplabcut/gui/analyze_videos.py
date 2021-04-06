@@ -405,7 +405,6 @@ class Analyze_videos(wx.Panel):
             videotype=self.videotype.GetValue(),
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
-            edgewisecondition=True,
             overwrite=overwrite,
             track_method=self.trackertypes.GetValue(),
         )
