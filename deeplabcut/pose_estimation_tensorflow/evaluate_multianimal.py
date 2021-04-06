@@ -24,6 +24,7 @@ from tqdm import tqdm
 
 from deeplabcut.pose_estimation_tensorflow.evaluate import make_results_file
 from deeplabcut.pose_estimation_tensorflow.config import load_config
+from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
 from deeplabcut.utils import visualization
 
 
@@ -286,7 +287,8 @@ def evaluate_multianimal_full(
                         Snapshots[snapindex],
                     )
 
-                    if os.path.isfile(resultsfilename.split(".h5")[0] + "_full.pickle"):
+                    data_path = resultsfilename.split(".h5")[0] + "_full.pickle"
+                    if os.path.isfile(data_path):
                         print("Model already evaluated.", resultsfilename)
                     else:
                         if plotting:
@@ -489,11 +491,23 @@ def evaluate_multianimal_full(
                             "trainFraction": trainFraction,
                         }
                         metadata = {"data": dictionary}
-                        auxfun_multianimal.SaveFullMultiAnimalData(
+                        _ = auxfun_multianimal.SaveFullMultiAnimalData(
                             PredicteData, metadata, resultsfilename
                         )
 
                         tf.reset_default_graph()
+
+                    # Data-driven skeleton selection
+                    uncropped_data_path = data_path.replace(".pickle", "_uncropped.pickle")
+                    if not os.path.isfile(uncropped_data_path):
+                        print("Selecting best skeleton...")
+                        crossvalutils._rebuild_uncropped_in(evaluationfolder)
+                        crossvalutils.cross_validate_paf_graphs(
+                            config,
+                            str(path_test_config).replace("pose_", "inference_"),
+                            uncropped_data_path,
+                            uncropped_data_path.replace("_full_", "_meta_"),
+                        )
 
                 if len(final_result) > 0:  # Only append if results were calculated
                     make_results_file(final_result, evaluationfolder, DLCscorer)

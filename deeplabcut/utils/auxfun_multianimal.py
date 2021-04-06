@@ -91,13 +91,13 @@ def graph2names(cfg, partaffinityfield_graph):
 
 def SaveFullMultiAnimalData(data, metadata, dataname, suffix="_full"):
     """ Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py """
-    with open(dataname.split(".h5")[0] + suffix + ".pickle", "wb") as f:
-        # Pickle the 'labeled-data' dictionary using the highest protocol available.
+    data_path = dataname.split(".h5")[0] + suffix + ".pickle"
+    metadata_path = dataname.split(".h5")[0] + "_meta.pickle"
+    with open(data_path, "wb") as f:
         pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
-    # if suffix=='_full': #save metadata!
-    with open(dataname.split(".h5")[0] + "_meta.pickle", "wb") as f:
-        # Pickle the 'labeled-data' dictionary using the highest protocol available.
+    with open(metadata_path, "wb") as f:
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
+    return data_path, metadata_path
 
 
 def LoadFullMultiAnimalData(dataname):

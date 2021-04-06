@@ -397,7 +397,7 @@ def _benchmark_paf_graphs(
         max_n_individuals=inference_cfg["topktoretain"],
         n_multibodyparts=n_multi,
         greedy=greedy,
-        pcutoff=inference_cfg["pcutoff"],
+        pcutoff=inference_cfg.get("pcutoff", 0.1),
         min_affinity=inference_cfg.get("pafthreshold", 0.1)
     )
     if calibration_file:
@@ -687,11 +687,10 @@ def cross_validate_paf_graphs(
     # Select optimal PAF graph
     df = results[1]
     size_opt = np.argmax((1 - df.loc["miss", "mean"]) * df.loc["purity", "mean"])
-    best_graph = [params["paf_graph"][ind] for ind in paf_inds[size_opt]]
     pose_config = inference_config.replace("inference_cfg", "pose_cfg")
     if not overwrite_config:
         shutil.copy(pose_config, pose_config.replace(".yaml", "_old.yaml"))
-    auxiliaryfunctions.edit_config(pose_config, {"partaffinityfield_graph": best_graph})
+    auxiliaryfunctions.edit_config(pose_config, {"paf_best": list(paf_inds[size_opt])})
     if output_name:
         with open(output_name, "wb") as file:
             pickle.dump([results], file)

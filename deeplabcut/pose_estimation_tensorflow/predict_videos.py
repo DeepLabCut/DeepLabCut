@@ -1141,8 +1141,6 @@ def convert_detections2tracklets(
     overwrite=False,
     destfolder=None,
     BPTS=None,
-    iBPTS=None,
-    PAF=None,
     inferencecfg=None,
     modelprefix="",
     track_method="box",
@@ -1182,13 +1180,6 @@ def convert_detections2tracklets(
 
     BPTS: Default is None: all bodyparts are used.
         Pass list of indices if only certain bodyparts should be used (advanced).
-
-    iBPTS: Default is None: all bodyparts are used.
-        The inverse indices from BPTS.
-        TODO: calculate from BPTS
-
-    PAF: Default is None: all connections are used.
-        Pass list of indices if only certain connections should be used (advanced).
 
     printintermediate: ## TODO
         Default is false.
@@ -1329,18 +1320,17 @@ def convert_detections2tracklets(
                 all_joints = data["metadata"]["all_joints"]
                 all_jointnames = data["metadata"]["all_joints_names"]
 
+                PAF = inferencecfg.get("paf_best")
                 if PAF is None:
                     PAF = np.arange(
                         len(partaffinityfield_graph)
-                    )  # THIS CAN BE A SUBSET!
-
+                    )
                 partaffinityfield_graph = [partaffinityfield_graph[l] for l in PAF]
 
                 numjoints = len(all_jointnames)
-                if BPTS is None and iBPTS is None:
+                if BPTS is None:
                     # NOTE: this can be used if only a subset is relevant. I.e. [0,1] for only first and second joint!
                     BPTS = range(numjoints)
-                    iBPTS = range(numjoints)  # the corresponding inverse!
 
                 # TODO: adjust this for multi + unique bodyparts!
                 # this is only for multianimal parts and uniquebodyparts as one (not one uniquebodyparts guy tracked etc. )
