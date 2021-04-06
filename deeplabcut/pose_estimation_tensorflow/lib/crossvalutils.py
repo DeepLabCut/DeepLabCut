@@ -620,7 +620,7 @@ def _get_n_best_paf_graphs(
     paf_inds = [root]
     for length in lengths:
         paf_inds.append(root + list(order[:length]))
-    return paf_inds, dict(zip(existing_edges, thresholds))
+    return paf_inds, dict(zip(existing_edges, scores))
 
 
 def _filter_unwanted_paf_connections(
@@ -659,7 +659,7 @@ def cross_validate_paf_graphs(
 
     params = _set_up_evaluation(data)
     to_ignore = _filter_unwanted_paf_connections(config, params["paf_graph"])
-    paf_inds, thresholds = _get_n_best_paf_graphs(
+    paf_inds, paf_scores = _get_n_best_paf_graphs(
         data,
         metadata,
         params["paf_graph"],
@@ -690,7 +690,15 @@ def cross_validate_paf_graphs(
     pose_config = inference_config.replace("inference_cfg", "pose_cfg")
     if not overwrite_config:
         shutil.copy(pose_config, pose_config.replace(".yaml", "_old.yaml"))
-    auxiliaryfunctions.edit_config(pose_config, {"paf_best": list(paf_inds[size_opt])})
+    inds = list(paf_inds[size_opt])
+    scores = [paf_scores[i] for i in inds]
+    auxiliaryfunctions.edit_config(
+        pose_config,
+        {
+            "paf_best": inds,
+            "paf_scores": scores,
+        }
+    )
     if output_name:
         with open(output_name, "wb") as file:
             pickle.dump([results], file)
