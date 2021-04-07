@@ -34,6 +34,36 @@ def find_outliers_in_raw_data(
     with_annotations=True,
     extraction_algo="kmeans",
 ):
+    """
+    Extract outlier frames from either raw detections or assemblies of multiple animals.
+
+    Parameter
+    ----------
+    config : str
+        Absolute path to the project config.yaml.
+
+    pickled_file : str
+        Path to a *_full.pickle or *_assemblies.pickle.
+
+    video_file : str
+        Path to the corresponding video file for frame extraction.
+
+    pcutoff : float, optional (default=0.1)
+        Detection confidence threshold below which frames are flagged as
+        containing outliers. Only considered if raw detections are passed in.
+
+    percentiles : tuple, optional (default=(5, 95))
+        Assemblies are considered outliers if their areas are beyond the 5th
+        and 95th percentiles. Must contain a lower and upper bound.
+
+    with_annotations : bool, optional (default=True)
+        If true, extract frames and the corresponding network predictions.
+        Otherwise, only the frames are extracted.
+
+    extraction_algo : string, optional (default="kmeans")
+        Outlier detection algorithm. Must be either ``uniform`` or ``kmeans``.
+
+    """
     if extraction_algo not in ("kmeans", "uniform"):
         raise ValueError(f"Unsupported extraction algorithm {extraction_algo}.")
 
