@@ -56,6 +56,7 @@ setuptools.setup(
         "tensorpack==0.9.8",
         "tqdm",
         "moviepy<=1.0.1",
+        "Pillow>=7.1"
     ],
     extras_require={
         "gui": ["wxpython<4.1"]
