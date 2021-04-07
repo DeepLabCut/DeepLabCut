@@ -1445,7 +1445,7 @@ def find_outlier_assemblies(
     vals = np.asarray(vals)
     lo, up = np.percentile(vals, qs, interpolation="nearest")
     inds = np.flatnonzero((vals < lo) | (vals > up)).tolist()
-    return set(frame_inds[i] for i in inds)
+    return list(set(frame_inds[i] for i in inds))
 
 
 def evaluate_assembly(
