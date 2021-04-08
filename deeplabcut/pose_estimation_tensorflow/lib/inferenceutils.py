@@ -1418,7 +1418,8 @@ def calc_object_keypoint_similarity(xy_pred, xy_true, sigma):
 
 def match_assemblies(ass_pred, ass_true, sigma):
     inds_true = list(range(len(ass_true)))
-    inds_pred = np.argsort([ins.affinity for ins in ass_pred])[::-1]
+    inds_pred = np.argsort([ins.affinity if ins.n_links else ins.confidence
+                            for ins in ass_pred])[::-1]
     matched = []
     for ind_pred in inds_pred:
         xy_pred = ass_pred[ind_pred].xy

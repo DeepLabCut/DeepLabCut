@@ -386,6 +386,7 @@ def _benchmark_paf_graphs(
     paf_inds,
     greedy=False,
     add_discarded=True,
+    identity_only=False,
     calibration_file="",
     oks_sigma=0.1,
 ):
@@ -401,6 +402,7 @@ def _benchmark_paf_graphs(
         pcutoff=inference_cfg.get("pcutoff", 0.1),
         min_affinity=inference_cfg.get("pafthreshold", 0.1),
         add_discarded=add_discarded,
+        identity_only=identity_only,
     )
     if calibration_file:
         ass.calibrate(calibration_file)
@@ -683,7 +685,7 @@ def cross_validate_paf_graphs(
         paf_inds,
         greedy,
         add_discarded,
-        calibration_file,
+        calibration_file=calibration_file,
     )
     # Select optimal PAF graph
     df = results[1]
