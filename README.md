@@ -40,8 +40,8 @@ DeepLabCut is a toolbox for markerless pose estimation of animals performing var
 
 # [Installation: how to install DeepLabCut](docs/installation.md)
 
-Very quick start: `pip install deeplabcut[gui]` that includes all GUI functions, or `pip install deeplabcut` (headless version)
-* you also need TensorFlow (1.x currently), therefore we recommend using our conda files, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/master/conda-environments/README.md#creating-your-own-customized-conda-env-recommended-route-for-linux-ubuntu-centos-mint-etc)
+Very quick start: `pip install 'deeplabcut[gui]'` that includes all GUI functions, or `pip install deeplabcut` (headless version)
+* you also need TensorFlow (1.x currently), therefore we recommend using our conda files, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/master/conda-environments/README.md)
 
 # [Documentation: The DeepLabCut Process](docs/UseOverviewGuide.md)
 
@@ -55,7 +55,7 @@ For a deeper understanding and more resources for you to get started with Python
 
 # [DEMO the code](/examples)
 
-We provide several Jupyter Notebooks: one that walks you through a demo dataset to test your installation, and another Notebook to run DeepLabCut from the beginning on your own data. We also show you how to use the code in Docker, and on Google Colab.
+We provide data and several Jupyter Notebooks: one that walks you through a demo dataset to test your installation, and another Notebook to run DeepLabCut from the beginning on your own data. We also show you how to use the code in Docker, and on Google Colab.
 
 # Why use DeepLabCut?
 
