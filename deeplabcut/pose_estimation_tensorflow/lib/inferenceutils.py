@@ -752,7 +752,7 @@ class Assembly:
     def n_links(self):
         return len(self._links)
 
-    def n_intersecting_points_with(self, other):
+    def intersection_with(self, other):
         x11, y11, x21, y21 = self.extent
         x12, y12, x22, y22 = other.extent
         x1 = max(x11, x12)
@@ -825,6 +825,8 @@ class Assembler:
         safe_edge=True,
         pcutoff=0.1,
         min_affinity=0.1,
+        min_n_links=2,
+        max_overlap=0.5,
         nan_policy='little',
         force_fusion=False,
         add_discarded=False,
@@ -840,6 +842,8 @@ class Assembler:
         self.safe_edge = safe_edge
         self.pcutoff = pcutoff
         self.min_affinity = min_affinity
+        self.min_n_links = min_n_links
+        self.max_overlap = max_overlap
         self.nan_policy = nan_policy
         self.force_fusion = force_fusion
         self.add_discarded = add_discarded
@@ -1189,9 +1193,30 @@ class Assembler:
                 self._fill_assembly(assembly, lookup, assembled, False, '')
                 assembled.update(assembly._idx)
 
+        # Remove invalid assemblies
         discarded = set(joint for joint in joints
                         if joint.idx not in assembled
                         and np.isfinite(joint.confidence))
+        for assembly in assemblies[::-1]:
+            if len(assembly._links) < self.min_n_links:
+                for link in assembly._links:
+                    discarded.update((link.j1, link.j2))
+                assemblies.remove(assembly)
+        if 0 < self.max_overlap < 1:  # Non-maximum pose suppression
+            if self._kde is not None:
+                scores = [-self.calc_assembly_mahalanobis_dist(ass)
+                          for ass in assemblies]
+            else:
+                scores = [ass._affinity for ass in assemblies]
+            lst = list(zip(scores, assemblies))
+            assemblies = []
+            while lst:
+                temp = max(lst, key=lambda x: x[0])
+                lst.remove(temp)
+                assemblies.append(temp[1])
+                for pair in lst[::-1]:
+                    if temp[1].intersection_with(pair[1]) >= self.max_overlap:
+                        lst.remove(pair)
         if len(assemblies) > self.max_n_individuals:
             assemblies = sorted(assemblies, key=len, reverse=True)
             for assembly in assemblies[self.max_n_individuals:]:
