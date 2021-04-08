@@ -11,6 +11,7 @@ import heapq
 import itertools
 import networkx as nx
 import numpy as np
+import operator
 import pandas as pd
 import pickle
 from collections import defaultdict
@@ -822,11 +823,11 @@ class Assembler:
         graph=None,
         paf_inds=None,
         greedy=False,
-        safe_edge=True,
         pcutoff=0.1,
         min_affinity=0.1,
         min_n_links=2,
         max_overlap=0.5,
+        identity_only=False,
         nan_policy='little',
         force_fusion=False,
         add_discarded=False,
@@ -839,11 +840,11 @@ class Assembler:
         self.n_multibodyparts = n_multibodyparts
         self.n_uniquebodyparts = self.n_keypoints - n_multibodyparts
         self.greedy = greedy
-        self.safe_edge = safe_edge
         self.pcutoff = pcutoff
         self.min_affinity = min_affinity
         self.min_n_links = min_n_links
         self.max_overlap = max_overlap
+        self.identity_only = identity_only
         self.nan_policy = nan_policy
         self.force_fusion = force_fusion
         self.add_discarded = add_discarded
@@ -853,6 +854,7 @@ class Assembler:
         self.paf_inds = paf_inds or self.metadata['paf']
         self._gamma = 0.01
         self._trees = dict()
+        self.safe_edge = False
         self._kde = None
         self.assemblies = dict()
         self.unique = dict()
@@ -1077,11 +1079,8 @@ class Assembler:
 
     def build_assemblies(
         self,
-        joints,
         links,
     ):
-        safe_edge = self.safe_edge and self._kde is not None
-
         lookup = defaultdict(dict)
         for link in links:
             i, j = link.idx
@@ -1116,7 +1115,7 @@ class Assembler:
             assembly = Assembly(self.n_multibodyparts)
             assembly.add_link(link)
             self._fill_assembly(
-                assembly, lookup, assembled, safe_edge, self.nan_policy,
+                assembly, lookup, assembled, self.safe_edge, self.nan_policy,
             )
             for link in assembly._links:
                 i, j = link.idx
@@ -1128,7 +1127,7 @@ class Assembler:
         # Fuse superfluous assemblies
         n_extra = len(assemblies) - self.max_n_individuals
         if n_extra > 0:
-            if safe_edge:
+            if self.safe_edge:
                 ds_old = [self.calc_assembly_mahalanobis_dist(assembly)
                           for assembly in assemblies]
                 while len(assemblies) > self.max_n_individuals:
@@ -1193,69 +1192,12 @@ class Assembler:
                 self._fill_assembly(assembly, lookup, assembled, False, '')
                 assembled.update(assembly._idx)
 
-        # Remove invalid assemblies
-        discarded = set(joint for joint in joints
-                        if joint.idx not in assembled
-                        and np.isfinite(joint.confidence))
-        for assembly in assemblies[::-1]:
-            if len(assembly._links) < self.min_n_links:
-                for link in assembly._links:
-                    discarded.update((link.j1, link.j2))
-                assemblies.remove(assembly)
-        if 0 < self.max_overlap < 1:  # Non-maximum pose suppression
-            if self._kde is not None:
-                scores = [-self.calc_assembly_mahalanobis_dist(ass)
-                          for ass in assemblies]
-            else:
-                scores = [ass._affinity for ass in assemblies]
-            lst = list(zip(scores, assemblies))
-            assemblies = []
-            while lst:
-                temp = max(lst, key=lambda x: x[0])
-                lst.remove(temp)
-                assemblies.append(temp[1])
-                for pair in lst[::-1]:
-                    if temp[1].intersection_with(pair[1]) >= self.max_overlap:
-                        lst.remove(pair)
-        if len(assemblies) > self.max_n_individuals:
-            assemblies = sorted(assemblies, key=len, reverse=True)
-            for assembly in assemblies[self.max_n_individuals:]:
-                for link in assembly._links:
-                    discarded.update((link.j1, link.j2))
-            assemblies = assemblies[:self.max_n_individuals]
-        if self.add_discarded and discarded:
-            # Last pass to fill assemblies with unconnected body parts
-            for joint in sorted(discarded, key=lambda x: x.confidence, reverse=True):
-                if safe_edge:
-                    for assembly in assemblies:
-                        if joint.label in assembly._visible:
-                            continue
-                        d_old = self.calc_assembly_mahalanobis_dist(assembly)
-                        assembly.add_joint(joint)
-                        d = self.calc_assembly_mahalanobis_dist(assembly)
-                        if d < d_old:
-                            break
-                        assembly.remove_joint(joint)
-                else:
-                    dists = []
-                    for i, assembly in enumerate(assemblies):
-                        if joint.label in assembly._visible:
-                            continue
-                        d = cdist(assembly.xy, np.atleast_2d(joint.pos))
-                        dists.append((i, np.nanmin(d)))
-                    if not dists:
-                        continue
-                    min_ = sorted(dists, key=lambda x: x[1])
-                    ind, _ = min_[0]
-                    assemblies[ind].add_joint(joint)
-
-        return assemblies
+        return assemblies, assembled
 
     def _assemble(
         self,
         data_dict,
         ind_frame,
-        return_links=False,
     ):
         joints = list(self._flatten_detections(data_dict))
         if not joints:
@@ -1284,32 +1226,100 @@ class Assembler:
         if not any(i in bag for i in range(self.n_multibodyparts)):
             return None, unique
 
-        trees = []
-        for j in range(1, self.window_size + 1):
-            tree = self._trees.get(ind_frame - j, None)
-            if tree is not None:
-                trees.append(tree)
+        if self.identity_only:
+            assemblies = []
+            assembled = set()
+            get_attr = operator.attrgetter('group')
+            groups = itertools.groupby(sorted(joints, key=get_attr), get_attr)
+            for _, group in groups:
+                ass = Assembly(self.n_multibodyparts)
+                for joint in sorted(group, key=lambda x: x.confidence, reverse=True):
+                    ass.add_joint(joint)
+                assemblies.append(ass)
+                assembled.update(ass._idx)
+        else:
+            trees = []
+            for j in range(1, self.window_size + 1):
+                tree = self._trees.get(ind_frame - j, None)
+                if tree is not None:
+                    trees.append(tree)
 
-        links = self.extract_best_links(
-            bag,
-            data_dict["costs"],
-            trees,
-        )
-        if self._kde:
-            for link in links[::-1]:
-                p = max(self.calc_link_probability(link), 0.001)
-                link.affinity *= p
-                if link.affinity < self.min_affinity:
-                    links.remove(link)
+            links = self.extract_best_links(
+                bag,
+                data_dict["costs"],
+                trees,
+            )
+            if self._kde:
+                for link in links[::-1]:
+                    p = max(self.calc_link_probability(link), 0.001)
+                    link.affinity *= p
+                    if link.affinity < self.min_affinity:
+                        links.remove(link)
 
-        if self.window_size >= 1:
-            # Store selected edges for subsequent frames
-            vecs = np.vstack([link.to_vector() for link in links])
-            self._trees[ind_frame] = cKDTree(vecs)
+            if self.window_size >= 1:
+                # Store selected edges for subsequent frames
+                vecs = np.vstack([link.to_vector() for link in links])
+                self._trees[ind_frame] = cKDTree(vecs)
 
-        assemblies = self.build_assemblies(joints, links)
-        if return_links:
-            return assemblies, unique, links
+            assemblies, assembled = self.build_assemblies(links)
+
+        # Remove invalid assemblies
+        discarded = set(joint for joint in joints
+                        if joint.idx not in assembled
+                        and np.isfinite(joint.confidence))
+        for assembly in assemblies[::-1]:
+            if 0 < assembly.n_links < self.min_n_links:
+                for link in assembly._links:
+                    discarded.update((link.j1, link.j2))
+                assemblies.remove(assembly)
+        if 0 < self.max_overlap < 1:  # Non-maximum pose suppression
+            if self._kde is not None:
+                scores = [-self.calc_assembly_mahalanobis_dist(ass)
+                          for ass in assemblies]
+            else:
+                scores = [ass._affinity for ass in assemblies]
+            lst = list(zip(scores, assemblies))
+            assemblies = []
+            while lst:
+                temp = max(lst, key=lambda x: x[0])
+                lst.remove(temp)
+                assemblies.append(temp[1])
+                for pair in lst[::-1]:
+                    if temp[1].intersection_with(pair[1]) >= self.max_overlap:
+                        lst.remove(pair)
+        if len(assemblies) > self.max_n_individuals:
+            assemblies = sorted(assemblies, key=len, reverse=True)
+            for assembly in assemblies[self.max_n_individuals:]:
+                for link in assembly._links:
+                    discarded.update((link.j1, link.j2))
+            assemblies = assemblies[:self.max_n_individuals]
+
+        if self.add_discarded and discarded:
+            # Fill assemblies with unconnected body parts
+            for joint in sorted(discarded, key=lambda x: x.confidence, reverse=True):
+                if self.safe_edge:
+                    for assembly in assemblies:
+                        if joint.label in assembly._visible:
+                            continue
+                        d_old = self.calc_assembly_mahalanobis_dist(assembly)
+                        assembly.add_joint(joint)
+                        d = self.calc_assembly_mahalanobis_dist(assembly)
+                        if d < d_old:
+                            break
+                        assembly.remove_joint(joint)
+                else:
+                    dists = []
+                    for i, assembly in enumerate(assemblies):
+                        if joint.label in assembly._visible:
+                            continue
+                        d = cdist(assembly.xy, np.atleast_2d(joint.pos))
+                        dists.append((i, np.nanmin(d)))
+                    if not dists:
+                        continue
+                    min_ = sorted(dists, key=lambda x: x[1])
+                    ind, _ = min_[0]
+                    assemblies[ind].add_joint(joint)
+
         return assemblies, unique
 
     def assemble(
@@ -1317,6 +1327,8 @@ class Assembler:
         chunk_size=1,
         n_processes=None,
     ):
+        self.assemblies = dict()
+        self.unique = dict()
         if chunk_size == 0:
             for i, data_dict in enumerate(tqdm(self)):
                 assemblies, unique = self._assemble(data_dict, i)
