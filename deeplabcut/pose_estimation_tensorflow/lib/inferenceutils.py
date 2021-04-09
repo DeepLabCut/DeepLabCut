@@ -825,7 +825,7 @@ class Assembler:
         paf_inds=None,
         greedy=False,
         pcutoff=0.1,
-        min_affinity=0.1,
+        min_affinity=0.05,
         min_n_links=2,
         max_overlap=0.8,
         identity_only=False,
@@ -1417,6 +1417,8 @@ def calc_object_keypoint_similarity(xy_pred, xy_true, sigma):
     true = xy_true[visible]
     dist_squared = np.sum((pred - true) ** 2, axis=1)
     scale_squared = np.product(np.ptp(true, axis=0) + np.spacing(1))
+    if np.isclose(scale_squared, 0):
+        return np.nan
     k_squared = (2 * sigma) ** 2
     oks = np.exp(-dist_squared / (2 * scale_squared * k_squared))
     return np.mean(oks)
@@ -1433,7 +1435,9 @@ def match_assemblies(ass_pred, ass_true, sigma):
         for ind_true in inds_true:
             xy_true = ass_true[ind_true].xy
             oks.append(calc_object_keypoint_similarity(xy_pred, xy_true, sigma))
-        ind_best = np.argmax(oks)
+        if np.all(np.isnan(oks)):
+            continue
+        ind_best = np.nanargmax(oks)
         ind_true_best = inds_true.pop(ind_best)
         matched.append((ass_pred[ind_pred], ass_true[ind_true_best], oks[ind_best]))
         if not inds_true:
