@@ -48,7 +48,8 @@ def _set_up_evaluation(data):
 
 def _form_original_path(path):
     root, filename = os.path.split(path)
-    return os.path.join(root, filename.split("c")[0])
+    base, ext = os.path.splitext(filename)
+    return os.path.join(root, filename.split("c")[0] + ext)
 
 
 def _unsorted_unique(array):
@@ -63,11 +64,10 @@ def _rebuild_uncropped_metadata(
 ):
     train_inds_orig = set(metadata["data"]["trainIndices"])
     train_inds, test_inds = [], []
-    for k, (basename, group) in tqdm(
+    for k, (_, group) in tqdm(
         enumerate(groupby(image_paths, _form_original_path))
     ):
-        imnames_ = list(group)
-        if image_paths.index(imnames_[0]) in train_inds_orig:
+        if image_paths.index(next(group)) in train_inds_orig:
             train_inds.append(k)
         else:
             test_inds.append(k)
@@ -171,8 +171,8 @@ def _rebuild_uncropped_data(
             if has_single:
                 temp.drop("single", level="individuals", inplace=True)
             ref_pred = np.full(
-                (n_individuals, len(temp) // n_individuals, 4), np.nan
-            )  # Hold x, y, prob, dist
+                (n_individuals, len(temp) // n_individuals, 4 + n_individuals), np.nan
+            )  # Hold x, y, prob, dist, ids
             costs = dict()
             shape = n_individuals, n_individuals
             for ind in params["paf"]:
@@ -190,22 +190,28 @@ def _rebuild_uncropped_data(
                     coords_pred = data[imname]["prediction"]["coordinates"][0]
                     probs_pred = data[imname]["prediction"]["confidence"]
                     costs_pred = data[imname]["prediction"]["costs"]
+                    try:
+                        ids_pred = data[imname]["prediction"]["identity"]
+                    except KeyError:
+                        ids_pred = None
                     map_ = dict()
                     for n, bpt in enumerate(ref_gt_):
                         xy_gt, inds_gt = ref_gt_[bpt]
                         ind = bodyparts.index(bpt)
                         xy = coords_pred[ind]
                         prob = probs_pred[ind]
+                        ids = None if ids_pred is None else ids_pred[ind]
                         if inds_gt.size and xy.size:
                             xy_trans = xy - all_trans[i]
                             d = cdist(xy_gt[inds_gt], xy_trans)
                             rows, cols = linear_sum_assignment(d)
                             probs_ = prob[cols]
+                            ids_ = ids[cols] if ids is not None else None
                             dists_ = d[rows, cols]
                             inds_rows = inds_gt[rows]
                             map_[n] = inds_rows, cols
                             is_free = np.isnan(ref_pred[inds_rows, n]).all(axis=1)
-                            closer = dists_ < ref_pred[inds_rows, n, -1]
+                            closer = dists_ < ref_pred[inds_rows, n, 3]
                             mask = np.logical_or(is_free, closer)
                             if mask.any():
                                 coords_ = xy_trans[cols]
@@ -213,6 +219,8 @@ def _rebuild_uncropped_data(
                                 ref_pred[sl, n, :2] = coords_[mask]
                                 ref_pred[sl, n, 2] = probs_[mask].squeeze()
                                 ref_pred[sl, n, 3] = dists_[mask]
+                                if ids_ is not None:
+                                    ref_pred[sl, n, 4:] = ids_[mask]
                     # Store the costs associated with the retained candidates
                     for n, (ind1, ind2) in enumerate(params["paf_graph"]):
                         if ind1 in map_ and ind2 in map_:
@@ -239,7 +247,10 @@ def _rebuild_uncropped_data(
                 },
                 "groundtruth": (None, None, temp.stack(dropna=False)),
             }
-            data_new[basename + ".png"] = pred_dict
+            identities = ref_pred_[..., 4:]
+            if ~np.all(np.isnan(identities)):
+                pred_dict["prediction"]["identity"] = identities
+            data_new[basename] = pred_dict
 
     image_paths = list(data_new)
     data_new["metadata"] = data["metadata"]

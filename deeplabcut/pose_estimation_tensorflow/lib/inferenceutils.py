@@ -1230,11 +1230,13 @@ class Assembler:
             assemblies = []
             assembled = set()
             get_attr = operator.attrgetter('group')
-            groups = itertools.groupby(sorted(joints, key=get_attr), get_attr)
+            temp = sorted((joint for joint in joints if np.isfinite(joint.confidence)), key=get_attr)
+            groups = itertools.groupby(temp, get_attr)
             for _, group in groups:
                 ass = Assembly(self.n_multibodyparts)
                 for joint in sorted(group, key=lambda x: x.confidence, reverse=True):
-                    ass.add_joint(joint)
+                    if joint.confidence >= self.pcutoff:
+                        ass.add_joint(joint)
                 assemblies.append(ass)
                 assembled.update(ass._idx)
         else:
