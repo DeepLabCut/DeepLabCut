@@ -1111,7 +1111,7 @@ class Assembler:
                 assemblies.append(assembly)
 
         if len(assemblies) == self.max_n_individuals:
-            return assemblies
+            return assemblies, assembled
 
         for link in sorted(links, key=lambda x: x.affinity, reverse=True):
             if any(i in assembled for i in link.idx):
