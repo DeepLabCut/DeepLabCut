@@ -14,6 +14,7 @@ import numpy as np
 import operator
 import pandas as pd
 import pickle
+import warnings
 from collections import defaultdict
 from dataclasses import dataclass
 from math import sqrt, erf
@@ -826,7 +827,7 @@ class Assembler:
         pcutoff=0.1,
         min_affinity=0.1,
         min_n_links=2,
-        max_overlap=0.5,
+        max_overlap=0.8,
         identity_only=False,
         nan_policy='little',
         force_fusion=False,
@@ -844,7 +845,10 @@ class Assembler:
         self.min_affinity = min_affinity
         self.min_n_links = min_n_links
         self.max_overlap = max_overlap
-        self.identity_only = identity_only
+        has_identity = 'identity' in self[0]
+        if identity_only and not has_identity:
+            warnings.warn('The network was not trained with identity; setting `identity_only` to False.')
+        self.identity_only = identity_only & has_identity
         self.nan_policy = nan_policy
         self.force_fusion = force_fusion
         self.add_discarded = add_discarded
