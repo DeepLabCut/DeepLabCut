@@ -17,6 +17,7 @@ import functools
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 from tensorflow.contrib.slim.nets import resnet_v1
+from tensorflow.contrib.layers.python.layers import batch_norm
 
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import Batch
 import deeplabcut.pose_estimation_tensorflow.nnet.efficientnet_builder as eff
@@ -79,6 +80,20 @@ parallel_layers = {
     "b7": "17"
     }
 
+### new add: for multi-stage
+def prediction_layer_stage(cfg, input, name, num_outputs):
+    with slim.arg_scope(
+        [slim.conv2d, slim.conv2d_transpose],
+        padding="SAME",
+        activation_fn=None,
+        normalizer_fn=None,
+        weights_regularizer=slim.l2_regularizer(cfg['weight_decay']),
+    ):
+        with tf.variable_scope(name):
+            pred = slim.conv2d(
+                input, num_outputs, kernel_size=[3, 3], stride=1#, scope="block5"
+            )
+            return pred
 
 def prediction_layer(cfg, input, name, num_outputs):
     with slim.arg_scope(
@@ -90,7 +105,7 @@ def prediction_layer(cfg, input, name, num_outputs):
     ):
         with tf.variable_scope(name):
             pred = slim.conv2d_transpose(
-                input, num_outputs, kernel_size=[3, 3], stride=2, scope="block4"
+                input, num_outputs, kernel_size=[3, 3], stride=2#, scope="block4"
             )
             return pred
 
@@ -208,29 +223,53 @@ class PoseNet:
             layer_name = (
                 "resnet_v1_{}".format(num_layers) + "/block{}/unit_{}/bottleneck_v1"
             )
-            mid_pt = layer_name.format(2,3)
+            mid_pt_block1 = layer_name.format(1,3)            
+            mid_pt_block2 = layer_name.format(2,3)
         elif "mobilenet" in cfg['net_type']:
             mid_pt = "layer_7"
         elif "efficientnet" in cfg['net_type']:
             mid_pt = "block_"+parallel_layers[cfg['net_type'].split('-')[1]]
 
-        final_dims = tf.ceil(
-            tf.divide(input_shape[1:3], tf.convert_to_tensor(16))
-        )
-        interim_dims = tf.scalar_mul(2, final_dims)
-        interim_dims = tf.cast(interim_dims, tf.int32)
-        bank_3 = end_points[mid_pt]
-        bank_3 = tf.image.resize_images(bank_3, interim_dims)
+            
+        final_dims = tf.ceil(tf.divide(input_shape[1:3], tf.convert_to_tensor(16)))
+
+        interim_dims_s8 = tf.scalar_mul(2, final_dims)
+        interim_dims_s8 = tf.cast(interim_dims_s8, tf.int32)
+        interim_dims_s4 = tf.scalar_mul(2, interim_dims_s8) 
+        interim_dims_s4 = tf.cast(interim_dims_s4, tf.int32)
+
+        bank_1 = end_points[mid_pt_block1]
+        bank_2 = end_points[mid_pt_block2]
+
+        bank_2_s8 = tf.image.resize_images(bank_2, interim_dims_s8)
+        bank_1_s4 = tf.image.resize_images(bank_1,interim_dims_s4)
 
         with slim.arg_scope(
             [slim.conv2d],
             padding="SAME",
-            normalizer_fn=None,
+            normalizer_fn=batch_norm,
+            activation_fn=tf.nn.relu,
             weights_regularizer=slim.l2_regularizer(cfg['weight_decay']),
         ):
             with tf.variable_scope("decoder_filters"):
-                bank_3 = slim.conv2d(bank_3, cfg['bank3'], 1, scope="decoder_parallel_1")
+                bank_2_s16 = slim.conv2d(
+                    bank_2_s8, 512, kernel_size=[3,3], stride=2, scope="decoder_parallel_1"
+                )
+                bank_2_s16 = slim.conv2d(
+                    bank_2_s16, 128, kernel_size=[1,1], stride=1, scope="decoder_parallel_2"
+                )                    
+                                
+                bank_1_s8 = slim.conv2d(
+                    bank_1_s4, 256, kernel_size=[3,3], stride=2, scope="decoder_parallel_3",
+                )
+                bank_1_s16 = slim.conv2d(
+                    bank_1_s8, 256, kernel_size=[3,3], stride=2, scope="decoder_parallel_4",
+                )
+                bank_1_s16 = slim.conv2d(
+                    bank_1_s16, 128, kernel_size=[1,1], stride=1, scope="decoder_parallel_5",
+                )                
 
+                
         with slim.arg_scope(
             [slim.conv2d_transpose],
             padding="SAME",
@@ -238,16 +277,37 @@ class PoseNet:
             weights_regularizer=slim.l2_regularizer(cfg['weight_decay']),
         ):
             with tf.variable_scope("upsampled_features"):
-                upsampled_features = slim.conv2d_transpose(
-                    features, cfg['bank5'], kernel_size=[3, 3], stride=2, scope="block4"
-                )
-        net = tf.concat([bank_3, upsampled_features], 3)
 
+                concat_3_s16 = tf.concat([bank_1_s16, bank_2_s16, features], 3)
+
+                if cfg['stride'] == 8:
+                    net = concat_3_s16
+
+                elif cfg['stride'] == 4:
+                    upsampled_features_2x = slim.conv2d_transpose(
+                        concat_3_s16, cfg['bank3'], kernel_size=[3, 3], stride=2, scope='block3'
+                    )
+                    net = upsampled_features_2x
+                    
+                elif cfg['stride'] == 2:
+                    upsampled_features_2x = slim.conv2d_transpose(
+                        concat_3_s16, cfg['bank3'], kernel_size=[3, 3], stride=2, scope='block3'
+                    )
+                    upsampled_features_4x = slim.conv2d_transpose(
+                        upsampled_features_2x, cfg['bank5'], kernel_size=[3,3], stride=2, scope="block4"
+                    )
+                    net = upsampled_features_4x
+
+                    
         out = {}
+
         with tf.variable_scope(scope, reuse=reuse):
-            out["part_pred"] = prediction_layer(
-                cfg, net, "part_pred", cfg['num_joints'] + cfg.get("num_idchannel", 0)
+
+            #out["part_pred"]
+            stage1_hm_out = prediction_layer(
+                cfg, net, "part_pred_s1", cfg['num_joints'] + cfg.get("num_idchannel", 0)
             )
+            
             if cfg['location_refinement']:
                 out["locref"] = prediction_layer(
                     cfg, net, "locref_pred", cfg['num_joints'] * 2
@@ -257,9 +317,59 @@ class PoseNet:
                     cfg, net, "pairwise_pred", cfg['num_joints'] * (cfg['num_joints'] - 1) * 2
                 )
             if cfg['partaffinityfield_predict'] and "multi-animal" in cfg['dataset_type']:
-                out["pairwise_pred"] = prediction_layer(
-                    cfg, net, "pairwise_pred", cfg['num_limbs'] * 2
+
+                feature = slim.conv2d_transpose(
+                    net, cfg['bank3'], kernel_size=[3, 3], stride = 2
+                    )
+                
+                stage1_paf_out = prediction_layer(
+                    cfg, net, "pairwise_pred_s1", cfg['num_limbs'] * 2
                 )
+
+                stage2_in = tf.concat([stage1_hm_out, stage1_paf_out, feature],3)
+                stage_input = stage2_in
+                stage_paf_output = stage1_paf_out
+                stage_hm_output = stage1_hm_out
+                
+                for i in range(2, 5):
+                    pre_stage_paf_output = stage_paf_output
+                    pre_stage_hm_output = stage_hm_output
+                    
+                    stage_paf_output = prediction_layer_stage(
+                        cfg, stage_input, f'pairwise_pred_s{i}',cfg['num_limbs']*2
+                        )
+
+                    stage_hm_output = prediction_layer_stage(
+                        cfg, stage_input, f'part_pred_s{i}',cfg['num_joints'] + cfg.get("num_idchannel", 0)
+                        )
+                    
+                    if i > 2:
+                        #stage_paf_output = stage_paf_output + pre_stage_paf_output
+                        stage_hm_output = stage_hm_output + pre_stage_hm_output
+                    
+                    stage_input = tf.concat([stage_hm_output, stage_paf_output, feature],3)
+                
+                '''
+                stage2_paf_out = prediction_layer_stage(
+                    cfg, stage2_in, 'pairwise_pred_s2',cfg.num_limbs*2
+                    )
+                
+                stage2_hm_out = prediction_layer_stage(
+                    cfg, stage2_in, 'part_pred_s2',cfg.num_joints + cfg.get("num_idchannel", 0)
+                    )
+
+                stage3_in = tf.concat([stage2_hm_out, stage2_paf_out, feature],3)
+                stage_input = stage3_in
+                '''
+                
+                out["part_pred"] = prediction_layer_stage(
+                    cfg, stage_input, "part_pred", cfg['num_joints'] + cfg.get("num_idchannel", 0)
+                )
+                
+                out["pairwise_pred"] = prediction_layer_stage(
+                    cfg, stage_input, "pairwise_pred", cfg['num_limbs'] * 2
+                )
+
 
             if cfg['intermediate_supervision'] and "efficientnet" not in cfg['net_type']:
                 if "mobilenet" in cfg['net_type']:
