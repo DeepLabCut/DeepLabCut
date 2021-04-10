@@ -30,10 +30,10 @@ from numpy import array as arr
 from tensorpack.dataflow.base import RNGDataFlow
 from tensorpack.dataflow.common import MapData
 from tensorpack.dataflow.imgaug import (
-    Affine,
     Brightness,
     Contrast,
     RandomResize,
+    Rotation,
     Saturation,
     GaussianNoise,
     GaussianBlur,
@@ -249,7 +249,7 @@ class TensorpackPoseDataset(BasePoseDataset):
             wmax=self.cfg["leftwidth"] + self.cfg["rightwidth"] + self.cfg["minsize"],
             hmax=self.cfg["topheight"] + self.cfg["bottomheight"] + self.cfg["minsize"],
         )
-        self.rotation = Affine(rotate_max_deg=self.cfg["rotation"])
+        self.rotation = Rotation(max_deg=self.cfg["rotation"])
         self.brightness = Brightness(self.cfg["brightness_dif"])
         self.contrast = Contrast(
             (self.cfg["contrast_factor_lo"], self.cfg["contrast_factor_up"]),
