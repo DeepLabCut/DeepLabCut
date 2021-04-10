@@ -707,13 +707,8 @@ def cross_validate_paf_graphs(
     if not overwrite_config:
         shutil.copy(pose_config, pose_config.replace(".yaml", "_old.yaml"))
     inds = list(paf_inds[size_opt])
-    scores = [paf_scores[i] for i in inds]
     auxiliaryfunctions.edit_config(
-        pose_config,
-        {
-            "paf_best": inds,
-            "paf_scores": scores,
-        }
+        pose_config, {"paf_best": inds}
     )
     if output_name:
         with open(output_name, "wb") as file:
