@@ -348,20 +348,7 @@ class PoseNet:
                         stage_hm_output = stage_hm_output + pre_stage_hm_output
                     
                     stage_input = tf.concat([stage_hm_output, stage_paf_output, feature],3)
-                
-                '''
-                stage2_paf_out = prediction_layer_stage(
-                    cfg, stage2_in, 'pairwise_pred_s2',cfg.num_limbs*2
-                    )
-                
-                stage2_hm_out = prediction_layer_stage(
-                    cfg, stage2_in, 'part_pred_s2',cfg.num_joints + cfg.get("num_idchannel", 0)
-                    )
 
-                stage3_in = tf.concat([stage2_hm_out, stage2_paf_out, feature],3)
-                stage_input = stage3_in
-                '''
-                
                 out["part_pred"] = prediction_layer_stage(
                     cfg, stage_input, "part_pred", cfg['num_joints'] + cfg.get("num_idchannel", 0)
                 )
