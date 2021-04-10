@@ -336,9 +336,9 @@ def _calc_within_between_pafs(
     data,
     metadata,
     per_bodypart=True,
-    test_set_only=True,
+    train_set_only=True,
 ):
-    test_inds = set(metadata["data"]["testIndices"])
+    train_inds = set(metadata["data"]["trainIndices"])
     within_train = defaultdict(list)
     within_test = defaultdict(list)
     between_train = defaultdict(list)
@@ -347,8 +347,8 @@ def _calc_within_between_pafs(
     for i, (key, dict_) in enumerate(data.items()):
         if key == "metadata":
             continue
-        is_test = i in test_inds
-        if test_set_only and not is_test:
+        is_train = i in train_inds
+        if train_set_only and not is_train:
             continue
         costs = dict_["prediction"]["costs"]
         for k, v in costs.items():
@@ -358,12 +358,12 @@ def _calc_within_between_pafs(
                 mask_diag = np.eye(paf.shape[0], dtype=bool)
             within_vals = paf[np.logical_and(mask_diag, nonzero)]
             between_vals = paf[np.logical_and(~mask_diag, nonzero)]
-            if is_test:
-                within_test[k].extend(within_vals)
-                between_test[k].extend(between_vals)
-            else:
+            if is_train:
                 within_train[k].extend(within_vals)
                 between_train[k].extend(between_vals)
+            else:
+                within_test[k].extend(within_vals)
+                between_test[k].extend(between_vals)
     if not per_bodypart:
         within_train = np.concatenate([*within_train.values()])
         within_test = np.concatenate([*within_test.values()])
@@ -592,18 +592,18 @@ def _get_n_best_paf_graphs(
     if which not in ("best", "worst"):
         raise ValueError('`which` must be either "best" or "worst"')
 
-    (_, within_test), (_, between_test) = _calc_within_between_pafs(data, metadata)
+    (within_train, _), (between_train, _) = _calc_within_between_pafs(data, metadata)
 
     # Handle unlabeled bodyparts...
-    existing_edges = set(k for k, v in within_test.items() if v)
+    existing_edges = set(k for k, v in within_train.items() if v)
     if ignore_inds is not None:
         existing_edges = existing_edges.difference(ignore_inds)
     existing_edges = list(existing_edges)
     scores, thresholds = zip(
         *[
-            _calc_separability(b_test, w_test, metric=metric)
-            for n, (w_test, b_test) in enumerate(
-                zip(within_test.values(), between_test.values())
+            _calc_separability(b_train, w_train, metric=metric)
+            for n, (w_train, b_train) in enumerate(
+                zip(within_train.values(), between_train.values())
             )
             if n in existing_edges
         ]
