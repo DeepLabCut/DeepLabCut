@@ -592,10 +592,12 @@ def _get_n_best_paf_graphs(
     if which not in ("best", "worst"):
         raise ValueError('`which` must be either "best" or "worst"')
 
-    (within_train, _), (between_train, _) = _calc_within_between_pafs(data, metadata)
+    (within_train, within_test), (between_train, _) = _calc_within_between_pafs(
+        data, metadata, train_set_only=False
+    )
 
     # Handle unlabeled bodyparts...
-    existing_edges = set(k for k, v in within_train.items() if v)
+    existing_edges = set(k for k, v in within_test.items() if v)
     if ignore_inds is not None:
         existing_edges = existing_edges.difference(ignore_inds)
     existing_edges = list(existing_edges)
