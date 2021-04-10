@@ -1,14 +1,11 @@
 """
 DeepLabCut2.2 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 
 Please see AUTHORS for contributors.
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
-
-Adapted from DeeperCut by Eldar Insafutdinov
-https://github.com/eldar/pose-tensorflow
 """
 
 import re
@@ -80,7 +77,7 @@ parallel_layers = {
     "b7": "17"
     }
 
-### new add: for multi-stage
+### new DLCNet Addition: for multi-stage
 def prediction_layer_stage(cfg, input, name, num_outputs):
     with slim.arg_scope(
         [slim.conv2d, slim.conv2d_transpose],
