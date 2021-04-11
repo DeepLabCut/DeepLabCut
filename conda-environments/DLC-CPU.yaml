@@ -22,5 +22,4 @@ dependencies:
   - nb_conda
   - wxpython<4.1.0
   - pip:
-    - tensorflow
     - deeplabcut

@@ -40,7 +40,9 @@ setuptools.setup(
         "scipy>=1.4",
         "statsmodels>=0.11",
         "tables",
+        "tensorflow>=2",
         "tensorpack",
+        "tf_slim",
         "tqdm",
         "moviepy",
         "bayesian-optimization"
