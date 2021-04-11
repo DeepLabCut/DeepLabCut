@@ -53,9 +53,7 @@ setuptools.setup(
         "six",
         "statsmodels>=0.11",
         "tables",
-        "tensorflow>=2",
         "tensorpack==0.9.8",
-        "tf_slim",
         "tqdm",
         "moviepy<=1.0.1",
         "Pillow>=7.1"
