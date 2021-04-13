@@ -80,6 +80,7 @@ mirror: False #imgaug & tensorpack do not consider mirror symmetric joints now,
 # NOTE: as of DLC 2.1 these are defined when creating the training set!
 # Type of the CNN to use, currently resnets + mobilenets are supported (see docs)
 net_type: resnet_50
+multi_stage: false
 #init_weights: ./snapshot-5000
 
 
