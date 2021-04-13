@@ -96,6 +96,7 @@ class Create_training_dataset(wx.Panel):
             "efficientnet-b0",
             "efficientnet-b3",
             "efficientnet-b6",
+            "dlcnet",
         ]
         self.net_choice.Set(options)
         self.net_choice.SetValue("resnet_50")
@@ -206,6 +207,7 @@ class Create_training_dataset(wx.Panel):
                 "efficientnet-b0",
                 "efficientnet-b3",
                 "efficientnet-b6",
+                "dlcnet",
             ]
             augmentation_methods = ["default", "tensorpack", "imgaug"]
             self.network_box = wx.StaticBox(self, label="Select the networks")
@@ -374,7 +376,10 @@ class Create_training_dataset(wx.Panel):
             else:
                 random = False
             deeplabcut.create_multianimaltraining_dataset(
-                self.config, num_shuffles, Shuffles=[self.shuffle.GetValue()]
+                self.config,
+                num_shuffles,
+                Shuffles=[self.shuffle.GetValue()],
+                net_type=self.net_choice.GetValue(),
             )
         else:
             if self.model_comparison_choice.GetStringSelection() == "No":
