@@ -113,11 +113,13 @@ def create_multianimaltraining_dataset(
     # CURRENTLY ONLY ResNet supported!
     if net_type is None:  # loading & linking pretrained models
         net_type = cfg.get("default_net_type", "resnet_50")
-    else:
-        if "resnet" in net_type:  # or 'mobilenet' in net_type:
-            pass
-        else:
-            raise ValueError("Currently only resnet is supported.")
+    elif not any(net in net_type for net in ('resnet', 'eff', 'dlc')):
+        raise ValueError(f"Unsupported network {net_type}.")
+
+    multi_stage = False
+    if net_type == "dlcnet":
+        net_type = "resnet_50"
+        multi_stage = True
 
     # multianimal case:
     dataset_type = "multi-animal-imgaug"
@@ -326,6 +328,7 @@ def create_multianimaltraining_dataset(
                     "init_weights": model_path,
                     "project_path": str(cfg["project_path"]),
                     "net_type": net_type,
+                    "multi_stage": multi_stage,
                     "pairwise_loss_weight": 0.1,
                     "pafwidth": 20,
                     "partaffinityfield_graph": partaffinityfield_graph,
@@ -350,6 +353,7 @@ def create_multianimaltraining_dataset(
                     "all_joints",
                     "all_joints_names",
                     "net_type",
+                    "multi_stage",
                     "init_weights",
                     "global_scale",
                     "location_refinement",
