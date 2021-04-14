@@ -1410,11 +1410,12 @@ class Assembler:
 
 
 def calc_object_keypoint_similarity(xy_pred, xy_true, sigma):
-    visible = ~np.isnan(xy_pred * xy_true).all(axis=1)
-    if visible.sum() < 2:  # 2 points needed
+    visible_gt = ~np.isnan(xy_true).all(axis=1)
+    if visible_gt.sum() < 2:  # At least 2 points needed to calculate scale
         return np.nan
-    pred = xy_pred[visible]
-    true = xy_true[visible]
+    true = xy_true[visible_gt]
+    pred = xy_pred[visible_gt]
+    pred[np.isnan(pred)] = np.inf
     dist_squared = np.sum((pred - true) ** 2, axis=1)
     scale_squared = np.product(np.ptp(true, axis=0) + np.spacing(1))
     if np.isclose(scale_squared, 0):
