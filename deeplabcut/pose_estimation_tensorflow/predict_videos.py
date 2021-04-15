@@ -15,6 +15,7 @@ Licensed under GNU Lesser General Public License v3.0
 import argparse
 import os
 import os.path
+import pickle
 import time
 from pathlib import Path
 
@@ -26,8 +27,9 @@ from skimage.util import img_as_ubyte
 from tqdm import tqdm
 
 from deeplabcut.pose_estimation_tensorflow.config import load_config
+from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingutils
 from deeplabcut.pose_estimation_tensorflow.nnet import predict
-from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
 
 ####################################################
@@ -1132,6 +1134,96 @@ def analyze_time_lapse_frames(
     os.chdir(str(start_path))
 
 
+def _convert_detections_to_tracklets(
+    cfg,
+    inference_cfg,
+    data,
+    metadata,
+    output_path,
+    track_method="ellipse",
+    greedy=False,
+    calibrate=False,
+):
+    joints = data["metadata"]["all_joints_names"]
+    partaffinityfield_graph = data["metadata"]["PAFgraph"]
+    paf_inds = inference_cfg.get("paf_best")
+    if paf_inds is None:
+        paf_inds = np.arange(len(partaffinityfield_graph))
+    paf_graph = [partaffinityfield_graph[l] for l in paf_inds]
+
+    if track_method == "box":
+        mot_tracker = trackingutils.Sort(inference_cfg)
+    elif track_method == "skeleton":
+        mot_tracker = trackingutils.SORT(
+            len(joints),
+            inference_cfg["max_age"],
+            inference_cfg["min_hits"],
+            inference_cfg.get("oks_threshold", 0.5),
+        )
+    else:
+        mot_tracker = trackingutils.SORTEllipse(
+            inference_cfg.get("max_age", 1),
+            inference_cfg.get("min_hits", 1),
+            inference_cfg.get("iou_threshold", 0.6)
+        )
+    tracklets = {}
+
+    ass = inferenceutils.Assembler(
+        data,
+        max_n_individuals=inference_cfg["topktoretain"],
+        n_multibodyparts=len(cfg["multianimalbodyparts"]),
+        graph=paf_graph,
+        paf_inds=list(paf_inds),
+        greedy=greedy,
+        pcutoff=inference_cfg.get("pcutoff", 0.1),
+        min_affinity=inference_cfg.get("pafthreshold", 0.05)
+    )
+    if calibrate:
+        trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+        train_data_file = os.path.join(
+            cfg["project_path"],
+            str(trainingsetfolder),
+            "CollectedData_" + cfg["scorer"] + ".h5",
+        )
+        ass.calibrate(train_data_file)
+    ass.assemble()
+
+    output_path, _ = os.path.splitext(output_path)
+    output_path += ".pickle"
+    ass.to_pickle(output_path.replace(".pickle", "_assemblies.pickle"))
+
+    if cfg["uniquebodyparts"]:
+        tracklets["single"] = {}
+        tracklets["single"].update(ass.unique)
+
+    for i, imname in tqdm(enumerate(ass.metadata['imnames'])):
+        assemblies = ass.assemblies.get(i)
+        if assemblies is None:
+            continue
+        animals = np.stack([ass.data[:, :3] for ass in assemblies])
+        if track_method == "box":
+            bboxes = inferenceutils.calc_bboxes_from_keypoints(
+                animals, inference_cfg.get("boundingboxslack", 0),
+            )  # TODO: get cropping parameters and utilize!
+            trackers = mot_tracker.update(bboxes)
+        else:
+            xy = animals[..., :2]
+            trackers = mot_tracker.track(xy)
+        trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
+
+    bodypartlabels = [joint for joint in joints for _ in range(3)]
+    numentries = len(bodypartlabels)
+    scorers = numentries * [metadata["data"]["Scorer"]]
+    xylvalue = len(bodypartlabels) // 3 * ["x", "y", "likelihood"]
+    pdindex = pd.MultiIndex.from_arrays(
+        np.vstack([scorers, bodypartlabels, xylvalue]),
+        names=["scorer", "bodyparts", "coords"],
+    )
+    tracklets["header"] = pdindex
+    with open(output_path, "wb") as f:
+        pickle.dump(tracklets, f, pickle.HIGHEST_PROTOCOL)
+
+
 def convert_detections2tracklets(
     config,
     videos,
@@ -1198,10 +1290,6 @@ def convert_detections2tracklets(
     --------
 
     """
-    from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingutils
-    from deeplabcut.utils import auxfun_multianimal
-    import pickle
-
     if track_method not in ("box", "skeleton", "ellipse"):
         raise ValueError(
             "Invalid tracking method. Only `box`, `skeleton` and `ellipse` are currently supported."
