@@ -19,7 +19,7 @@ name: DLC-GPU
 dependencies:
   - python=3.8
   - pip
-  - cudnn=8
+  - cudnn=7
   - wxpython<4.1.0
   - jupyter
   - nb_conda
