@@ -11,9 +11,25 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import setuptools
+import importlib
+import platform
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
+
+with open("requirements.txt", "r") as fr:
+    required = fr.read().splitlines()
+
+if platform.machine() == "ppc64le":
+    conda_modules = ["cv2", "tensorflow", "imgaug"]
+    err = "Missing requirement {}. Please install it using conda"
+    for modname in conda_modules:
+        try:
+            importlib.import_module(modname)
+        except ModuleNotFoundError as exc:
+            raise ImportError(err.format(modname)) from exc
+        except Exception as exc:
+            raise exc
 
 setuptools.setup(
     name="deeplabcut",
@@ -24,40 +40,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/DeepLabCut/DeepLabCut",
-    install_requires=[
-        "python-dateutil",
-        "ipython",
-        "ipython-genutils",
-        "wheel",
-        "certifi",
-        "chardet",
-        "click",
-        "cython",
-        "filterpy",
-        "h5py",
-        "ruamel.yaml>=0.15.0",
-        "intel-openmp",
-        "imgaug",
-        "numba==0.51.1",
-        "matplotlib==3.1.3",
-        "networkx",
-        "numpy~=1.17.3",
-        "opencv-python-headless~=3.4.9.33",
-        "pandas>=1.0.1",
-        "patsy",
-        "pyyaml",
-        "setuptools",
-        "scikit-image>=0.17",
-        "scikit-learn",
-        "scipy>=1.4",
-        "six",
-        "statsmodels>=0.11",
-        "tables",
-        "tensorpack==0.9.8",
-        "tqdm",
-        "moviepy<=1.0.1",
-        "bayesian-optimization"
-    ],
+    install_requires=required,
     extras_require={
         "gui": ["wxpython<4.1"]
     },
@@ -80,11 +63,11 @@ setuptools.setup(
         )
     ],
     include_package_data=True,
-    classifiers=(
+    classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
         "Operating System :: OS Independent",
-    ),
+    ],
     entry_points="""[console_scripts]
             dlc=dlc:main""",
 )

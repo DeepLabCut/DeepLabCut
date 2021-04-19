@@ -14,6 +14,12 @@ import numpy as np
 import os
 import subprocess
 import warnings
+import platform
+
+if platform.machine() == "ppc64le":
+    default_codec = "mpeg4"
+else:
+    default_codec = "h264"
 
 
 class VideoReader:
@@ -169,7 +175,7 @@ class VideoReader:
 
 
 class VideoWriter(VideoReader):
-    def __init__(self, video_path, codec="h264", dpi=100, fps=None):
+    def __init__(self, video_path, codec=default_codec, dpi=100, fps=None):
         super(VideoWriter, self).__init__(video_path)
         self.codec = codec
         self.dpi = dpi
@@ -479,7 +485,7 @@ def DownSampleVideo(
 
     rotateccw: str
         Default "No", rotates clockwise if "Yes", "Arbitrary" for arbitrary rotation by specified angle.
-        
+
     angle: float
         Angle to rotate by in degrees, default 0.0. Negative values rotate counter-clockwise
 

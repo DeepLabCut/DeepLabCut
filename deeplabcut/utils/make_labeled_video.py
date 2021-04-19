@@ -35,7 +35,7 @@ from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualizati
 from deeplabcut.utils.video_processor import (
     VideoProcessorCV as vp,
 )  # used to CreateVideo
-from deeplabcut.utils.auxfun_videos import VideoWriter
+from deeplabcut.utils.auxfun_videos import VideoWriter, default_codec
 
 
 def get_segment_indices(bodyparts2connect, all_bpts):
@@ -280,7 +280,7 @@ def CreateVideoSlow(
     fig = plt.figure(frameon=False, figsize=(nx / dpi, ny / dpi))
     ax = fig.add_subplot(111)
 
-    writer = FFMpegWriter(fps=fps, codec="h264")
+    writer = FFMpegWriter(fps=fps, codec=default_codec)
     with writer.saving(fig, videooutname, dpi=dpi), np.errstate(invalid="ignore"):
         for index in trange(nframes):
             imagename = tmpfolder + "/file" + str(index).zfill(nframes_digits) + ".png"
@@ -394,7 +394,7 @@ def create_labeled_video(
 
     keypoints_only: bool, optional
         By default, both video frames and keypoints are visible. If true, only the keypoints are shown. These clips are an hommage to Johansson movies,
-        see https://www.youtube.com/watch?v=1F5ICP9SYLU and of course his seminal paper: "Visual perception of biological motion and a model for its analysis" 
+        see https://www.youtube.com/watch?v=1F5ICP9SYLU and of course his seminal paper: "Visual perception of biological motion and a model for its analysis"
         by Gunnar Johansson in Perception & Psychophysics 1973.
 
     Frames2plot: List of indices
@@ -688,7 +688,7 @@ def create_video_with_keypoints_only(
     colormap="viridis",
     fps=25,
     dpi=200,
-    codec="h264",
+    codec=default_codec,
 ):
     bodyparts = df.columns.get_level_values("bodyparts")[::3]
     bodypart_names = bodyparts.unique()
