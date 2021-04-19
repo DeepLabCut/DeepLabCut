@@ -146,7 +146,6 @@ def evaluate_multianimal_full(
             str(trainingsetfolder),
             "CollectedData_" + cfg["scorer"] + ".h5",
         ),
-        "df_with_missing",
     )
     # Handle data previously annotated on a different platform
     sep = "/" if "/" in Data.index[0] else "\\"
@@ -603,7 +602,6 @@ def evaluate_multianimal_crossvalidate(
             str(trainingsetfolder),
             "CollectedData_" + cfg["scorer"] + ".h5",
         ),
-        "df_with_missing",
     )
     comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
         cfg, "all"

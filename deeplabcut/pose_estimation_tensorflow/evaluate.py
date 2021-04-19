@@ -107,8 +107,7 @@ def calculatepafdistancebounds(
                 cfg["project_path"],
                 str(trainingsetfolder),
                 "CollectedData_" + cfg["scorer"] + ".h5",
-            ),
-            "df_with_missing",
+            )
         )[cfg["scorer"]]
 
         path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
@@ -314,7 +313,6 @@ def return_evaluate_network_data(
                     str(trainingsetfolder),
                     "CollectedData_" + cfg["scorer"] + ".h5",
                 ),
-                "df_with_missing",
             )
             * scale
         )
@@ -326,7 +324,6 @@ def return_evaluate_network_data(
                 str(trainingsetfolder),
                 "CollectedData_" + cfg["scorer"] + ".h5",
             ),
-            "df_with_missing",
         )
 
     evaluationfolder = os.path.join(
@@ -404,7 +401,7 @@ def return_evaluate_network_data(
         resultsfns.append(resultsfilename)
         if not returnjustfns:
             if not notanalyzed and os.path.isfile(resultsfilename):  # data exists..
-                DataMachine = pd.read_hdf(resultsfilename, "df_with_missing")
+                DataMachine = pd.read_hdf(resultsfilename)
                 DataCombined = pd.concat([Data.T, DataMachine.T], axis=0).T
                 RMSE, RMSEpcutoff = pairwisedistances(
                     DataCombined,
@@ -618,7 +615,6 @@ def evaluate_network(
                 str(trainingsetfolder),
                 "CollectedData_" + cfg["scorer"] + ".h5",
             ),
-            "df_with_missing",
         )
 
         # Get list of body parts to evaluate network for
@@ -724,7 +720,6 @@ def evaluate_network(
                                 str(trainingsetfolder),
                                 "CollectedData_" + cfg["scorer"] + ".h5",
                             ),
-                            "df_with_missing",
                         )
                         * scale
                     )
@@ -911,7 +906,7 @@ def evaluate_network(
                         tf.reset_default_graph()
                         # print(final_result)
                     else:
-                        DataMachine = pd.read_hdf(resultsfilename, "df_with_missing")
+                        DataMachine = pd.read_hdf(resultsfilename)
                         if plotting == True:
                             DataCombined = pd.concat(
                                 [Data.T, DataMachine.T], axis=0, sort=False

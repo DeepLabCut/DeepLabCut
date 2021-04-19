@@ -210,7 +210,7 @@ def create_labeled_video_3d(
                     )[0]
                 )
 
-            df_3d = pd.read_hdf(triangulate_file, "df_with_missing")
+            df_3d = pd.read_hdf(triangulate_file)
             plt.rcParams.update({"figure.max_open_warning": 0})
 
             if end == None:

@@ -143,7 +143,7 @@ def dropduplicatesinannotatinfiles(config):
     for folder in folders:
         try:
             fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
-            DC = pd.read_hdf(fn, "df_with_missing")
+            DC = pd.read_hdf(fn)
             numimages = len(DC.index)
             DC = DC[~DC.index.duplicated(keep="first")]
             if len(DC.index) < numimages:
@@ -175,7 +175,7 @@ def dropannotationfileentriesduetodeletedimages(config):
 
     for folder in folders:
         fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
-        DC = pd.read_hdf(fn, "df_with_missing")
+        DC = pd.read_hdf(fn)
         dropped = False
         for imagename in DC.index:
             if os.path.isfile(os.path.join(cfg["project_path"], imagename)):
@@ -208,7 +208,7 @@ def dropimagesduetolackofannotation(config):
 
     for folder in folders:
         fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
-        DC = pd.read_hdf(fn, "df_with_missing")
+        DC = pd.read_hdf(fn)
         dropped = False
         annotatedimages = [fn.split(os.sep)[-1] for fn in DC.index]
         imagelist = [fns for fns in os.listdir(str(folder)) if ".png" in fns]
@@ -322,7 +322,7 @@ def cropimagesandlabels(
             pd_index = []
 
             fn = os.path.join(folder, f"CollectedData_{cfg['scorer']}.h5")
-            df = pd.read_hdf(fn, "df_with_missing")
+            df = pd.read_hdf(fn)
             data = df.values.reshape((df.shape[0], -1, 2))
             sep = "/" if "/" in df.index[0] else "\\"
             if sep != os.path.sep:
@@ -462,7 +462,6 @@ def check_labels(
         try:
             DataCombined = pd.read_hdf(
                 os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5"),
-                "df_with_missing",
             )
             if cfg.get("multianimalproject", False):
                 color_by = "individual" if visualizeindividuals else "bodypart"
@@ -575,7 +574,7 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
             data_path / filename, f'CollectedData_{cfg["scorer"]}.h5'
         )
         try:
-            data = pd.read_hdf(file_path, "df_with_missing")
+            data = pd.read_hdf(file_path)
             AnnotationData.append(data)
         except FileNotFoundError:
             print(
@@ -715,7 +714,7 @@ def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
     fn = os.path.join(project_path, trainingsetfolder, "CollectedData_" + cfg["scorer"])
 
     try:
-        Data = pd.read_hdf(fn + ".h5", "df_with_missing")
+        Data = pd.read_hdf(fn + ".h5")
     except FileNotFoundError:
         Data = merge_annotateddatasets(
             cfg,

@@ -81,7 +81,6 @@ class ImagePanel(BasePanel):
             try:
                 dataFrame = pd.read_hdf(
                     os.path.join(sourceCam_path, "CollectedData_" + scorer + ".h5"),
-                    "df_with_missing",
                 )
                 dataFrame.sort_index(inplace=True)
             except IOError:
@@ -621,7 +620,6 @@ class MainFrame(BaseFrame):
         try:
             self.dataFrame = pd.read_hdf(
                 os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5"),
-                "df_with_missing",
             )
             self.dataFrame.sort_index(inplace=True)
             self.prev.Enable(True)

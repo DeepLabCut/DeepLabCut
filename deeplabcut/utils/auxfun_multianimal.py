@@ -193,7 +193,7 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
         ):  # multilanguage support :)
 
             fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"])
-            Data = pd.read_hdf(fn + ".h5", "df_with_missing")
+            Data = pd.read_hdf(fn + ".h5")
             imindex = Data.index
 
             print("This is a single animal data set, converting to multi...", folder)
@@ -286,7 +286,7 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
             askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha"
         ):  # multilanguage support :)
             fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"])
-            Data = pd.read_hdf(fn + ".h5", "df_with_missing")
+            Data = pd.read_hdf(fn + ".h5")
             imindex = Data.index
 
             if "individuals" in Data.columns.names and (
