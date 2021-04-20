@@ -1241,8 +1241,9 @@ class Assembler:
                 for joint in sorted(group, key=lambda x: x.confidence, reverse=True):
                     if joint.confidence >= self.pcutoff:
                         ass.add_joint(joint)
-                assemblies.append(ass)
-                assembled.update(ass._idx)
+                if len(ass):
+                    assemblies.append(ass)
+                    assembled.update(ass._idx)
         else:
             trees = []
             for j in range(1, self.window_size + 1):
