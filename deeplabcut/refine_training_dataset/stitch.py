@@ -11,7 +11,7 @@ from networkx.algorithms.flow import preflow_push
 from scipy.linalg import hankel
 from scipy.spatial.distance import directed_hausdorff
 from scipy.stats import mode
-from tqdm import tqdm, trange
+from tqdm import trange
 
 
 class Tracklet:
@@ -156,6 +156,8 @@ class Tracklet:
                 interp[:, 3] = self.identity
             data = data1 + np.rollaxis(interp, axis=2)
             fills.append(Tracklet(data, np.arange(s + 1, e)))
+        if not fills:
+            return self
         return self + sum(fills)
 
     def contains_duplicates(self, return_indices=False):
@@ -661,6 +663,11 @@ class TrackletStitcher:
                 raise NotImplementedError
             self.paths = paths
         finally:
+            if self.paths is None:
+                raise ValueError(
+                    f'Could not reconstruct {self.n_tracks} tracks from the tracklets given.'
+                )
+
             self.tracks = np.asarray([sum(path) for path in self.paths])
             if add_back_residuals:
                 _ = self._finalize_tracks()
@@ -672,7 +679,7 @@ class TrackletStitcher:
         n_attemps = 0
         n_max = len(residuals)
         while n_attemps < n_max and residuals:
-            for res in tqdm(residuals[::-1]):
+            for res in residuals[::-1]:
                 easy_fit = [i for i, track in enumerate(self.tracks) if res not in track]
                 if not easy_fit:
                     residuals.remove(res)
@@ -685,7 +692,7 @@ class TrackletStitcher:
                     n_attemps += 1
 
         # Greedily add the remaining residuals
-        for res in tqdm(residuals[::-1]):
+        for res in residuals[::-1]:
             c1 = res.centroid[[0, -1]]
             easy_fit = [i for i, track in enumerate(self.tracks) if res not in track]
             dists = []

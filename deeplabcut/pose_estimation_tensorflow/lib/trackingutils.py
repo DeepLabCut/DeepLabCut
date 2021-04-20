@@ -866,6 +866,8 @@ def calc_bboxes_from_keypoints(data, slack=0, offset=0):
 
 def reconstruct_all_ellipses(data, sd):
     xy = data.droplevel("scorer", axis=1).drop("likelihood", axis=1, level=-1)
+    if 'single' in xy:
+        xy.drop("single", axis=1, level='individuals', inplace=True)
     animals = xy.columns.get_level_values("individuals").unique()
     nrows = xy.shape[0]
     ellipses = np.full((len(animals), nrows, 5), np.nan)
