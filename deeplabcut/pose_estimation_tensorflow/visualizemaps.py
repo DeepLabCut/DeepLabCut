@@ -105,8 +105,7 @@ def extract_maps(
             cfg["project_path"],
             str(trainingsetfolder),
             "CollectedData_" + cfg["scorer"] + ".h5",
-        ),
-        "df_with_missing",
+        )
     )
 
     # Make folder for evaluation

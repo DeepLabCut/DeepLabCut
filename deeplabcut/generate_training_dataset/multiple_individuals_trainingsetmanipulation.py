@@ -32,7 +32,7 @@ def rename_bodyparts(config, pairs):
 
     for folder in folders:
         filename = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
-        df = pd.read_hdf(filename, "df_with_missing")
+        df = pd.read_hdf(filename)
         df.rename(dict_, level="bodyparts", axis=1, inplace=True)
         df.to_hdf(filename)
 

@@ -394,7 +394,7 @@ class MainFrame(BaseFrame):
         self.iter = 0
 
         if os.path.isfile(self.dataname):
-            self.Dataframe = pd.read_hdf(self.dataname, "df_with_missing")
+            self.Dataframe = pd.read_hdf(self.dataname)
             self.Dataframe.sort_index(inplace=True)
             self.scorer = self.Dataframe.columns.get_level_values(0)[0]
 
@@ -740,7 +740,6 @@ class MainFrame(BaseFrame):
             )
             DataU1 = pd.read_hdf(
                 os.path.join(self.dir, "CollectedData_" + self.humanscorer + ".h5"),
-                "df_with_missing",
             )
             # combine datasets Original Col. + corrected machinefiles:
             DataCombined = pd.concat([self.Dataframe, DataU1])

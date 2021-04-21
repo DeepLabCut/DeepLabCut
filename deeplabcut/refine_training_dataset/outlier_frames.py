@@ -536,7 +536,7 @@ def ExtractFramesbasedonPreselection(
             tmpfolder, "machinelabels-iter" + str(cfg["iteration"]) + ".h5"
         )
         if Path(machinefile).is_file():
-            Data = pd.read_hdf(machinefile, "df_with_missing")
+            Data = pd.read_hdf(machinefile)
             DataCombined = pd.concat([Data, DF])
             # drop duplicate labels:
             DataCombined = DataCombined[~DataCombined.index.duplicated(keep="first")]
