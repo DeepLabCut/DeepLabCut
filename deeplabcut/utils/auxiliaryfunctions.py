@@ -569,7 +569,7 @@ def GetScorerName(
     if (
         "resnet" in dlc_cfg["net_type"]
     ):  # ABBREVIATE NETWORK NAMES -- esp. for mobilenet!
-        netname = dlc_cfg["net_type"].replace(" _", "")
+        netname = dlc_cfg["net_type"].replace("_", "")
     elif "mobilenet" in dlc_cfg["net_type"]:  # mobilenet >> mobnet_100; mobnet_35 etc.
         netname = "mobnet_" + str(int(float(dlc_cfg["net_type"].split("_")[-1]) * 100))
     elif "efficientnet" in dlc_cfg["net_type"]:
