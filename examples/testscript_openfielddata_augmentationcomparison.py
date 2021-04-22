@@ -148,6 +148,16 @@ With pcutoff of 0.4  train error: 1.65 pixels. Test error: 2.24 pixels
 Notice: despite the higher RMSE for imgaug due to the augmentation,
 the network performs much better on the testvideo (see Neuron Primer: https://www.cell.com/neuron/pdf/S0896-6273(20)30717-0.pdf)
 
+My results were (Run with DLC *2.10.4* in Apr 2021) for 100 k iterations
+
+ResNet50:
+Imgaug: (includes new default contrast augmentation!)
+Done and results stored for snapshot:  snapshot-100000
+Results for 100000  training iterations: 95 1 train error: 1.77 pixels. Test error: 2.24  pixels.
+With pcutoff of 0.4  train error: 1.77 pixels. Test error: 2.24 pixels
+
+
+
 """
 
 
