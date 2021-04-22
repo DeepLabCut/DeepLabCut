@@ -12,6 +12,7 @@ Licensed under GNU Lesser General Public License v3.0
 import argparse
 import os
 from pathlib import Path
+from numba import cuda
 
 # Dependencies for anaysis
 import numpy as np
@@ -945,7 +946,7 @@ def evaluate_network(
 
     # returning to intial folder
     os.chdir(str(start_path))
-
+    cuda.close()
 
 def make_results_file(final_result, evaluationfolder, DLCscorer):
     """
