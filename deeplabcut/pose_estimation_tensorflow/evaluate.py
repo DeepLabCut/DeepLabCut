@@ -971,6 +971,15 @@ def make_results_file(final_result, evaluationfolder, DLCscorer):
 
     df.to_csv(output_path)
 
+    ## Also storing one "large" table with results:
+    #note: evaluationfolder.parents[0] to get common folder above all shuffle evaluations.
+    df = pd.DataFrame(final_result, columns=col_names)
+    output_path = os.path.join(str(Path(evaluationfolder).parents[0]), "CombinedEvaluation-results.csv")
+    if os.path.exists(output_path):
+        temp = pd.read_csv(output_path, index_col=0)
+        df = pd.concat((df, temp)).reset_index(drop=True)
+
+    df.to_csv(output_path)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

@@ -176,7 +176,10 @@ import numpy as np
 # Loading example data set
 path_config_file = os.path.join(os.getcwd(), "openfield-Pranav-2018-10-30/config.yaml")
 cfg = deeplabcut.auxiliaryfunctions.read_config(path_config_file)
-maxiters = 100000
+maxiters = 50000
+saveiters= 10000
+displayiters=500
+Shuffles=1 + np.arange(6)
 
 deeplabcut.load_demo_data(path_config_file)
 
@@ -189,13 +192,13 @@ deeplabcut.create_training_model_comparison(
     augmenter_types=["imgaug", "scalecrop", "tensorpack"],
 )
 
-for shuffle in 1 + np.arange(6):
+for shuffle in Shuffles:
 
     posefile, _, _ = deeplabcut.return_train_network_path(
         path_config_file, shuffle=shuffle
     )
 
-    edits = {"decay_steps": 100000, "lr_init": 0.0005 * 8}  # for EfficientNet
+    edits = {"decay_steps": maxiters, "lr_init": 0.0005 * 8}  # for EfficientNet
     DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
 
     if shuffle % 3 == 1:  # imgaug
@@ -210,15 +213,16 @@ for shuffle in 1 + np.arange(6):
     deeplabcut.train_network(
         path_config_file,
         shuffle=shuffle,
-        saveiters=10000,
-        displayiters=200,
+        saveiters=saveiters,
+        displayiters=displayiters,
         maxiters=maxiters,
         max_snapshots_to_keep=11,
     )
 
-    print("EVALUATE")
-    deeplabcut.evaluate_network(path_config_file, Shuffles=[shuffle], plotting=True)
+print("EVALUATE")
+deeplabcut.evaluate_network(path_config_file, Shuffles=Shuffles, plotting=True)
 
+for shuffles in Shuffle:
     print("Analyze Video")
 
     videofile_path = os.path.join(
