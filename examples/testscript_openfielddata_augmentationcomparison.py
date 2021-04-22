@@ -156,7 +156,14 @@ Done and results stored for snapshot:  snapshot-100000
 Results for 100000  training iterations: 95 1 train error: 1.77 pixels. Test error: 2.24  pixels.
 With pcutoff of 0.4  train error: 1.77 pixels. Test error: 2.24 pixels
 
+Scalecrop:
+Done and results stored for snapshot:  snapshot-100000
+Results for 100000  training iterations: 95 2 train error: 2.11 pixels. Test error: 3.26  pixels.
+With pcutoff of 0.4  train error: 2.11 pixels. Test error: 3.26 pixels
 
+TensorPack:
+Results for 100000  training iterations: 95 3 train error: 1.35 pixels. Test error: 2.3  pixels.
+With pcutoff of 0.4  train error: 1.35 pixels. Test error: 2.3 pixels
 
 """
 
