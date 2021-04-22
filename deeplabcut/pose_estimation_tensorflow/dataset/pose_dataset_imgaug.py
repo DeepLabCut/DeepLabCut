@@ -43,36 +43,36 @@ class PoseDataset:
         self.max_input_sizesquare = cfg.get("max_input_size", 1500) ** 2
         self.min_input_sizesquare = cfg.get("min_input_size", 64) ** 2
 
-        self.locref_scale = 1.0 / cfg['locref_stdev']
-        self.stride = cfg['stride']
+        self.locref_scale = 1.0 / cfg["locref_stdev"]
+        self.stride = cfg["stride"]
         self.half_stride = self.stride / 2
-        self.scale = cfg['global_scale']
+        self.scale = cfg["global_scale"]
 
         # parameter initialization for augmentation pipeline:
         self.scale_jitter_lo = cfg.get("scale_jitter_lo", 0.75)
         self.scale_jitter_up = cfg.get("scale_jitter_up", 1.25)
 
-        cfg['mirror'] = cfg.get("mirror", False)
-        cfg['rotation'] = cfg.get("rotation", True)
+        cfg["mirror"] = cfg.get("mirror", False)
+        cfg["rotation"] = cfg.get("rotation", True)
         if cfg.get("rotation", True):  # i.e. pm 10 degrees
             opt = cfg.get("rotation", False)
             if type(opt) == int:
-                cfg['rotation'] = cfg.get("rotation", 25)
+                cfg["rotation"] = cfg.get("rotation", 25)
             else:
-                cfg['rotation'] = 25
-            cfg['rotratio'] = cfg.get(
+                cfg["rotation"] = 25
+            cfg["rotratio"] = cfg.get(
                 "rotateratio", 0.4
             )  # what is the fraction of training samples with rotation augmentation?
         else:
-            cfg['rotratio'] = 0.0
-            cfg['rotation'] = 0
+            cfg["rotratio"] = 0.0
+            cfg["rotation"] = 0
 
-        cfg['covering'] = cfg.get("covering", True)
-        cfg['elastic_transform'] = cfg.get("elastic_transform", True)
+        cfg["covering"] = cfg.get("covering", True)
+        cfg["elastic_transform"] = cfg.get("elastic_transform", True)
 
-        cfg['motion_blur'] = cfg.get("motion_blur", True)
-        if cfg['motion_blur']:
-            cfg['motion_blur_params'] = dict(
+        cfg["motion_blur"] = cfg.get("motion_blur", True)
+        if cfg["motion_blur"]:
+            cfg["motion_blur_params"] = dict(
                 cfg.get("motion_blur_params", {"k": 7, "angle": (-90, 90)})
             )
 
@@ -80,7 +80,7 @@ class PoseDataset:
 
     def load_dataset(self):
         cfg = self.cfg
-        file_name = os.path.join(self.cfg['project_path'], cfg['dataset'])
+        file_name = os.path.join(self.cfg["project_path"], cfg["dataset"])
         if ".mat" in file_name:  # legacy loader
             mlab = sio.loadmat(file_name)
             self.raw_data = mlab
@@ -102,7 +102,7 @@ class PoseDataset:
                     joint_id = joints[:, 0]
                     # make sure joint ids are 0-indexed
                     if joint_id.size != 0:
-                        assert (joint_id < cfg['num_joints']).any()
+                        assert (joint_id < cfg["num_joints"]).any()
                     joints[:, 0] = joint_id
                     item.joints = [joints]
                 else:
@@ -113,8 +113,8 @@ class PoseDataset:
             return data
         else:
             print("Loading pickle data with float coordinates!")
-            file_name = cfg['dataset'].split(".")[0] + ".pickle"
-            with open(os.path.join(self.cfg['project_path'], file_name), "rb") as f:
+            file_name = cfg["dataset"].split(".")[0] + ".pickle"
+            with open(os.path.join(self.cfg["project_path"], file_name), "rb") as f:
                 pickledata = pickle.load(f)
 
             self.raw_data = pickledata
@@ -142,30 +142,31 @@ class PoseDataset:
         pipeline = iaa.Sequential(random_order=False)
 
         cfg = self.cfg
-        if cfg['mirror']:
-            opt = cfg['mirror']  # fliplr
+        if cfg["mirror"]:
+            opt = cfg["mirror"]  # fliplr
             if type(opt) == int:
                 pipeline.add(sometimes(iaa.Fliplr(opt)))
             else:
                 pipeline.add(sometimes(iaa.Fliplr(0.5)))
 
-        if cfg['rotation'] > 0:
+        if cfg["rotation"] > 0:
             pipeline.add(
                 iaa.Sometimes(
-                    cfg['rotratio'], iaa.Affine(rotate=(-cfg['rotation'], cfg['rotation']))
+                    cfg["rotratio"],
+                    iaa.Affine(rotate=(-cfg["rotation"], cfg["rotation"])),
                 )
             )
 
-        if cfg['motion_blur']:
-            opts = cfg['motion_blur_params']
+        if cfg["motion_blur"]:
+            opts = cfg["motion_blur_params"]
             pipeline.add(sometimes(iaa.MotionBlur(**opts)))
 
-        if cfg['covering']:
+        if cfg["covering"]:
             pipeline.add(
                 sometimes(iaa.CoarseDropout(0.02, size_percent=0.3, per_channel=0.5))
             )
 
-        if cfg['elastic_transform']:
+        if cfg["elastic_transform"]:
             pipeline.add(sometimes(iaa.ElasticTransformation(sigma=5)))
 
         if cfg.get("gaussian_noise", False):
@@ -189,8 +190,75 @@ class PoseDataset:
         if cfg.get("grayscale", False):
             pipeline.add(sometimes(iaa.Grayscale(alpha=(0.5, 1.0))))
 
-        if cfg.get("hist_eq", False):
-            pipeline.add(sometimes(iaa.AllChannelsHistogramEqualization()))
+        def get_aug_param(cfg_value):
+            if isinstance(cfg_value, dict):
+                opt = cfg_value
+            else:
+                opt = {}
+            return opt
+
+        cfg_cnt = cfg.get("contrast", {})
+        cfg_cnv = cfg.get("convolution", {})
+
+        contrast_aug = ["histeq", "clahe", "gamma", "sigmoid", "log", "linear"]
+        for aug in contrast_aug:
+            aug_val = cfg_cnt.get(aug, False)
+            cfg_cnt[aug] = aug_val
+            if aug_val:
+                cfg_cnt[aug + "ratio"] = cfg_cnt.get(aug + "ratio", 0.1)
+
+        convolution_aug = ["sharpen", "emboss", "edge"]
+        for aug in convolution_aug:
+            aug_val = cfg_cnv.get(aug, False)
+            cfg_cnv[aug] = aug_val
+            if aug_val:
+                cfg_cnv[aug + "ratio"] = cfg_cnv.get(aug + "ratio", 0.1)
+
+        if cfg_cnt["histeq"]:
+            opt = get_aug_param(cfg_cnt["histeq"])
+            pipeline.add(
+                iaa.Sometimes(
+                    cfg_cnt["histeqratio"], iaa.AllChannelsHistogramEqualization(**opt)
+                )
+            )
+
+        if cfg_cnt["clahe"]:
+            opt = get_aug_param(cfg_cnt["clahe"])
+            pipeline.add(
+                iaa.Sometimes(cfg_cnt["claheratio"], iaa.AllChannelsCLAHE(**opt))
+            )
+
+        if cfg_cnt["log"]:
+            opt = get_aug_param(cfg_cnt["log"])
+            pipeline.add(iaa.Sometimes(cfg_cnt["logratio"], iaa.LogContrast(**opt)))
+
+        if cfg_cnt["linear"]:
+            opt = get_aug_param(cfg_cnt["linear"])
+            pipeline.add(
+                iaa.Sometimes(cfg_cnt["linearratio"], iaa.LinearContrast(**opt))
+            )
+
+        if cfg_cnt["sigmoid"]:
+            opt = get_aug_param(cfg_cnt["sigmoid"])
+            pipeline.add(
+                iaa.Sometimes(cfg_cnt["sigmoidratio"], iaa.SigmoidContrast(**opt))
+            )
+
+        if cfg_cnt["gamma"]:
+            opt = get_aug_param(cfg_cnt["gamma"])
+            pipeline.add(iaa.Sometimes(cfg_cnt["gammaratio"], iaa.GammaContrast(**opt)))
+
+        if cfg_cnv["sharpen"]:
+            opt = get_aug_param(cfg_cnv["sharpen"])
+            pipeline.add(iaa.Sometimes(cfg_cnv["sharpenratio"], iaa.Sharpen(**opt)))
+
+        if cfg_cnv["emboss"]:
+            opt = get_aug_param(cfg_cnv["emboss"])
+            pipeline.add(iaa.Sometimes(cfg_cnv["embossratio"], iaa.Emboss(**opt)))
+
+        if cfg_cnv["edge"]:
+            opt = get_aug_param(cfg_cnv["edge"])
+            pipeline.add(iaa.Sometimes(cfg_cnv["edgeratio"], iaa.EdgeDetect(**opt)))
 
         if height is not None and width is not None:
             if not cfg.get("crop_by", False):
@@ -222,7 +290,7 @@ class PoseDataset:
             if self.is_valid_size(target_size[1] * target_size[0]):
                 break
 
-        stride = self.cfg['stride']
+        stride = self.cfg["stride"]
         for i in range(self.batch_size):
             data_item = self.data[img_idx[i]]
 
@@ -230,7 +298,7 @@ class PoseDataset:
             im_file = data_item.im_path
 
             logging.debug("image %s", im_file)
-            image = imread(os.path.join(self.cfg['project_path'], im_file), mode="RGB")
+            image = imread(os.path.join(self.cfg["project_path"], im_file), mode="RGB")
 
             if self.has_gt:
                 joints = np.copy(data_item.joints)
@@ -328,16 +396,16 @@ class PoseDataset:
 
     def num_training_samples(self):
         num = self.num_images
-        if self.cfg['mirror']:
+        if self.cfg["mirror"]:
             num *= 2
         return num
 
     def get_scale(self):
         cfg = self.cfg
-        scale = cfg['global_scale']
+        scale = cfg["global_scale"]
         if hasattr(cfg, "scale_jitter_lo") and hasattr(cfg, "scale_jitter_up"):
             scale_jitter = rand.uniform(
-                0.75 * cfg['scale_jitter_lo'], 1.25 * cfg['scale_jitter_up']
+                0.75 * cfg["scale_jitter_lo"], 1.25 * cfg["scale_jitter_up"]
             )
             scale *= scale_jitter
         return scale
@@ -353,7 +421,7 @@ class PoseDataset:
 
     def gaussian_scmap(self, joint_id, coords, data_item, size, scale):
         # dist_thresh = float(self.cfg.pos_dist_thresh * scale)
-        num_joints = self.cfg['num_joints']
+        num_joints = self.cfg["num_joints"]
         scmap = np.zeros(cat([size, arr([num_joints])]))
         locref_size = cat([size, arr([num_joints * 2])])
         locref_mask = np.zeros(locref_size)
@@ -390,7 +458,7 @@ class PoseDataset:
         return scmap, weights, locref_map, locref_mask
 
     def compute_scmap_weights(self, scmap_shape, joint_id, data_item):
-        if self.cfg['weigh_only_present_joints']:
+        if self.cfg["weigh_only_present_joints"]:
             weights = np.zeros(scmap_shape)
             for person_joint_id in joint_id:
                 for j_id in person_joint_id:
@@ -402,9 +470,9 @@ class PoseDataset:
     def compute_target_part_scoremap_numpy(
         self, joint_id, coords, data_item, size, scale
     ):
-        dist_thresh = float(self.cfg['pos_dist_thresh'] * scale)
+        dist_thresh = float(self.cfg["pos_dist_thresh"] * scale)
         dist_thresh_sq = dist_thresh ** 2
-        num_joints = self.cfg['num_joints']
+        num_joints = self.cfg["num_joints"]
 
         scmap = np.zeros(cat([size, arr([num_joints])]))
         locref_size = cat([size, arr([num_joints * 2])])
