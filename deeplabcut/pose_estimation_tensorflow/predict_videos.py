@@ -24,7 +24,6 @@ import pandas as pd
 import tensorflow as tf
 from skimage.util import img_as_ubyte
 from tqdm import tqdm
-from numba import cuda
 
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.nnet import predict
@@ -43,6 +42,7 @@ def analyze_videos(
     shuffle=1,
     trainingsetindex=0,
     gputouse=None,
+    term_gpu=False,
     save_as_csv=False,
     destfolder=None,
     batchsize=None,
@@ -81,6 +81,9 @@ def analyze_videos(
 
     gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU put None.
     See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+
+    term_gpu:: bool, optional
+        Terminate GPU processes and release GPU memory upon completion.
 
     save_as_csv: bool, optional
         Saves the predictions in a .csv file. The default is ``False``; if provided it must be either ``True`` or ``False``
@@ -336,7 +339,9 @@ def analyze_videos(
             print(
                 "If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames."
             )
-        cuda.close()
+        if term_gpu:
+            from numba import cuda
+            cuda.close()
         return DLCscorer  # note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
     else:
         print("No video(s) were found. Please check your paths and/or 'video_type'.")

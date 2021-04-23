@@ -10,7 +10,6 @@ Licensed under GNU Lesser General Public License v3.0
 
 import os
 from pathlib import Path
-from numba import cuda
 
 def return_train_network_path(config, shuffle=1, trainingsetindex=0, modelprefix=""):
     """ Returns the training and test pose config file names as well as the folder where the snapshot is
@@ -58,6 +57,7 @@ def train_network(
     maxiters=None,
     allow_growth=False,
     gputouse=None,
+    term_gpu=False,
     autotune=False,
     keepdeconvweights=True,
     modelprefix="",
@@ -96,6 +96,9 @@ def train_network(
 
     gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU put None.
         See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+
+    term_gpu:: bool, optional
+        Terminate GPU processes and release GPU memory upon completion.
 
     autotune: property of TensorFlow, somehow faster if 'false' (as Eldar found out, see https://github.com/tensorflow/tensorflow/issues/13317). Default: False
 
@@ -196,5 +199,7 @@ def train_network(
     print(
         "The network is now trained and ready to evaluate. Use the function 'evaluate_network' to evaluate the network."
     )
-    cuda.close()
+    if term_gpu:
+        from numba import cuda
+        cuda.close()
     

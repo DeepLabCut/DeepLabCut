@@ -12,7 +12,6 @@ Licensed under GNU Lesser General Public License v3.0
 import argparse
 import os
 from pathlib import Path
-from numba import cuda
 
 # Dependencies for anaysis
 import numpy as np
@@ -495,6 +494,7 @@ def evaluate_network(
     show_errors=True,
     comparisonbodyparts="all",
     gputouse=None,
+    term_gpu=False,
     rescale=False,
     modelprefix="",
     c_engine=False,
@@ -527,6 +527,9 @@ def evaluate_network(
 
     gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU put None.
         See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+
+    term_gpu:: bool, optional
+        Terminate GPU processes and release GPU memory upon completion.
 
     rescale: bool, default False
         Evaluate the model at the 'global_scale' variable (as set in the test/pose_config.yaml file for a particular project). I.e. every
@@ -946,7 +949,9 @@ def evaluate_network(
 
     # returning to intial folder
     os.chdir(str(start_path))
-    cuda.close()
+    if term_gpu:
+        from numba import cuda
+        cuda.close()
 
 def make_results_file(final_result, evaluationfolder, DLCscorer):
     """
