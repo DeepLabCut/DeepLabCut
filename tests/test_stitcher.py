@@ -139,7 +139,18 @@ def test_stitcher_real(tmpdir_factory, real_tracklets):
     stitcher = TrackletStitcher.from_dict_of_dict(
         real_tracklets, n_tracks=3,
     )
+    assert len(stitcher) == 3
+    assert all(tracklet.is_continuous for tracklet in stitcher.tracklets)
+    assert not stitcher.residuals
+    assert stitcher.compute_max_gap() == 0
+
     stitcher.build_graph()
+    assert stitcher.G.number_of_edges() == 9
+    assert all(weight is None for *_, weight in stitcher.G.edges.data('weight'))
+
     stitcher.stitch()
+    assert len(stitcher.tracks) == 3
+    assert all(len(track) == 2330 for track in stitcher.tracks)
+
     output_name = tmpdir_factory.mktemp('data').join('fake.h5')
     stitcher.write_tracks(output_name, ['mickey', 'minnie', 'bianca'])
