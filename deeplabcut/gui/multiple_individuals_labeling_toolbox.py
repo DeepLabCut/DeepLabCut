@@ -86,11 +86,13 @@ class ImagePanel(BasePanel):
 
             try:
                 dataFrame = pd.read_hdf(
-                    os.path.join(sourceCam_path, "CollectedData_" + scorer + ".h5"),
+                    os.path.join(sourceCam_path, "CollectedData_" + scorer + ".h5")
                 )
                 dataFrame.sort_index(inplace=True)
             except IOError:
-                print("source camera images have not yet been labeled, or you have opened this folder in the wrong mode!")
+                print(
+                    "source camera images have not yet been labeled, or you have opened this folder in the wrong mode!"
+                )
                 return None, None, None
 
             # Find offset terms for drawing epipolar Lines
@@ -283,7 +285,7 @@ class ScrollPanel(SP.ScrolledPanel):
 class MainFrame(BaseFrame):
     def __init__(self, parent, config, config3d, sourceCam):
         super(MainFrame, self).__init__(
-            "DeepLabCut2.0 - Multiple Individuals Labeling ToolBox", parent,
+            "DeepLabCut2.0 - Multiple Individuals Labeling ToolBox", parent
         )
 
         self.statusbar.SetStatusText(
@@ -415,9 +417,7 @@ class MainFrame(BaseFrame):
             inv = self.axes.transData.inverted()
             pos_rel = list(inv.transform(pos_abs))
             y1, y2 = self.axes.get_ylim()
-            pos_rel[1] = (
-                y1 - pos_rel[1] + y2
-            )  # Recall y-axis is inverted
+            pos_rel[1] = y1 - pos_rel[1] + y2  # Recall y-axis is inverted
             i = np.nanargmin(
                 [self.calc_distance(*dp.point.center, *pos_rel) for dp in self.drs]
             )
@@ -789,7 +789,7 @@ class MainFrame(BaseFrame):
         # Reading the existing dataset,if already present
         try:
             self.dataFrame = pd.read_hdf(
-                os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5"),
+                os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5")
             )
             # Handle data previously labeled on a different platform
             sep = "/" if "/" in self.dataFrame.index[0] else "\\"
@@ -1205,9 +1205,7 @@ class MainFrame(BaseFrame):
                     )
                     self.axes.add_patch(circle)
                     self.dr = auxfun_drag.DraggablePoint(
-                        circle,
-                        self.uniquebodyparts[c],
-                        individual_names=ind,
+                        circle, self.uniquebodyparts[c], individual_names=ind
                     )
                     self.dr.connect()
                     self.dr.coords = image_points
@@ -1243,9 +1241,7 @@ class MainFrame(BaseFrame):
                     )
                     self.axes.add_patch(circle)
                     self.dr = auxfun_drag.DraggablePoint(
-                        circle,
-                        self.multibodyparts[c],
-                        individual_names=ind,
+                        circle, self.multibodyparts[c], individual_names=ind
                     )
                     self.dr.connect()
                     self.dr.coords = image_points

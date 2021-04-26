@@ -30,22 +30,17 @@ def fake_stitcher():
     track = Tracklet(data, inds)
     idx = np.linspace(0, inds.size, N_TRACKLETS + 1, dtype=int)
     tracklets = TrackletStitcher.split_tracklet(track, idx[1:-1])
-    return TrackletStitcher(
-        tracklets,
-        n_tracks=2,
-    )
+    return TrackletStitcher(tracklets, n_tracks=2)
 
 
 def test_tracklet_wrong_inputs(fake_tracklet):
     with pytest.raises(ValueError):
         _ = Tracklet(fake_tracklet.data[..., :2], fake_tracklet.inds)
-        _ = Tracklet(fake_tracklet.data[:TRACKLET_LEN - 2], fake_tracklet.inds)
+        _ = Tracklet(fake_tracklet.data[: TRACKLET_LEN - 2], fake_tracklet.inds)
 
 
 def test_tracklet_monotonic_indices(fake_tracklet):
-    tracklet_inv = Tracklet(
-        fake_tracklet.data[::-1], fake_tracklet.inds[::-1]
-    )
+    tracklet_inv = Tracklet(fake_tracklet.data[::-1], fake_tracklet.inds[::-1])
     np.testing.assert_equal(fake_tracklet.inds, tracklet_inv.inds)
     np.testing.assert_equal(fake_tracklet.xy, tracklet_inv.xy)
 
@@ -57,13 +52,9 @@ def test_tracklet(fake_tracklet):
     assert fake_tracklet.start == TRACKLET_START
     assert fake_tracklet.end == TRACKLET_START + TRACKLET_LEN - 1
     np.testing.assert_equal(
-        fake_tracklet.centroid,
-        np.full((TRACKLET_LEN, 2), np.arange(N_DETS).mean())
+        fake_tracklet.centroid, np.full((TRACKLET_LEN, 2), np.arange(N_DETS).mean())
     )
-    fake_tracklet2 = Tracklet(
-        fake_tracklet.data,
-        fake_tracklet.inds + TRACKLET_LEN
-    )
+    fake_tracklet2 = Tracklet(fake_tracklet.data, fake_tracklet.inds + TRACKLET_LEN)
     assert fake_tracklet not in fake_tracklet2
     tracklet = fake_tracklet + fake_tracklet2
     tracklet -= fake_tracklet
@@ -83,27 +74,19 @@ def test_tracklet_data_access(fake_tracklet):
         fake_tracklet.get_data_at(TRACKLET_START), fake_tracklet.data[0]
     )
     fake_tracklet.set_data_at(TRACKLET_START + 1, fake_tracklet.data[0] * 2)
-    np.testing.assert_equal(
-        fake_tracklet.data[1], fake_tracklet.data[0] * 2
-    )
+    np.testing.assert_equal(fake_tracklet.data[1], fake_tracklet.data[0] * 2)
     fake_tracklet.del_data_at(TRACKLET_START + 1)
     assert not fake_tracklet.is_continuous
     assert TRACKLET_START + 1 not in fake_tracklet.inds
 
 
-@pytest.mark.parametrize(
-    "where, norm",
-    [("head", False), ("tail", True)]
-)
+@pytest.mark.parametrize("where, norm", [("head", False), ("tail", True)])
 def test_tracklet_calc_velocity(fake_tracklet, where, norm):
     _ = fake_tracklet.calc_velocity(where, norm)
 
 
 def test_tracklet_affinities(fake_tracklet):
-    other_tracklet = Tracklet(
-        fake_tracklet.data,
-        fake_tracklet.inds + TRACKLET_LEN
-    )
+    other_tracklet = Tracklet(fake_tracklet.data, fake_tracklet.inds + TRACKLET_LEN)
     _ = fake_tracklet.dynamic_similarity_with(other_tracklet)
     _ = fake_tracklet.dynamic_dissimilarity_with(other_tracklet)
     _ = fake_tracklet.shape_dissimilarity_with(other_tracklet)
@@ -134,5 +117,5 @@ def test_stitcher(tmpdir_factory, fake_stitcher):
     assert fake_stitcher.compute_max_gap() == 1
     fake_stitcher.build_graph(max_gap=1)
     fake_stitcher.stitch(add_back_residuals=True)
-    output_name = tmpdir_factory.mktemp('data').join('fake.h5')
+    output_name = tmpdir_factory.mktemp("data").join("fake.h5")
     fake_stitcher.write_tracks(output_name)

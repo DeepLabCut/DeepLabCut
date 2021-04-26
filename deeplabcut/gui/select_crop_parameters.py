@@ -19,7 +19,7 @@ from deeplabcut.gui.widgets import BasePanel, WidgetPanel, BaseFrame
 class MainFrame(BaseFrame):
     def __init__(self, parent, config, image):
         super(MainFrame, self).__init__(
-            "DeepLabCut2.0 - Select Crop Parameters", parent,
+            "DeepLabCut2.0 - Select Crop Parameters", parent
         )
 
         ###################################################################################################################################################

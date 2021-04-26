@@ -397,7 +397,9 @@ def cropimagesandlabels(
                 # moving old entry to _original, dropping it from video_set and update crop parameters
                 video_orig = sep.join((vidpath, vidname + videotype))
                 if video_orig not in cfg["video_sets_original"]:
-                    cfg["video_sets_original"][video_orig] = cfg["video_sets"][video_orig]
+                    cfg["video_sets_original"][video_orig] = cfg["video_sets"][
+                        video_orig
+                    ]
                     cfg["video_sets"].pop(video_orig)
                     cfg["video_sets"][sep.join((vidpath, new_vidname + videotype))] = {
                         "crop": ", ".join(map(str, [0, temp_size[1], 0, temp_size[0]]))
@@ -461,7 +463,7 @@ def check_labels(
     for folder in folders:
         try:
             DataCombined = pd.read_hdf(
-                os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5"),
+                os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
             )
             if cfg.get("multianimalproject", False):
                 color_by = "individual" if visualizeindividuals else "bodypart"
@@ -887,7 +889,11 @@ def create_training_dataset(
         if net_type is None:  # loading & linking pretrained models
             net_type = cfg.get("default_net_type", "resnet_50")
         else:
-            if "resnet" in net_type or "mobilenet" in net_type or "efficientnet" in net_type:
+            if (
+                "resnet" in net_type
+                or "mobilenet" in net_type
+                or "efficientnet" in net_type
+            ):
                 pass
             else:
                 raise ValueError("Invalid network type:", net_type)

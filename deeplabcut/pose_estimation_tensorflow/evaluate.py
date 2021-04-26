@@ -114,9 +114,9 @@ def calculatepafdistancebounds(
         dlc_cfg = load_config(str(path_test_config))
 
         # get the graph!
-        partaffinityfield_graph = dlc_cfg['partaffinityfield_graph']
+        partaffinityfield_graph = dlc_cfg["partaffinityfield_graph"]
         jointnames = [
-            dlc_cfg['all_joints_names'][i] for i in range(len(dlc_cfg['all_joints']))
+            dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))
         ]
         path_inferencebounds_config = (
             Path(modelfolder) / "test" / "inferencebounds.yaml"
@@ -134,10 +134,13 @@ def calculatepafdistancebounds(
                             j2,
                             "y",
                         ) in Data.keys():
-                            distances = np.sqrt(
-                                (Data[ind, j1, "x"] - Data[ind2, j2, "x"]) ** 2
-                                + (Data[ind, j1, "y"] - Data[ind2, j2, "y"]) ** 2
-                            ) / dlc_cfg["stride"]
+                            distances = (
+                                np.sqrt(
+                                    (Data[ind, j1, "x"] - Data[ind2, j2, "x"]) ** 2
+                                    + (Data[ind, j1, "y"] - Data[ind2, j2, "y"]) ** 2
+                                )
+                                / dlc_cfg["stride"]
+                            )
                         else:
                             distances = None
 
@@ -312,7 +315,7 @@ def return_evaluate_network_data(
                     cfg["project_path"],
                     str(trainingsetfolder),
                     "CollectedData_" + cfg["scorer"] + ".h5",
-                ),
+                )
             )
             * scale
         )
@@ -323,7 +326,7 @@ def return_evaluate_network_data(
                 cfg["project_path"],
                 str(trainingsetfolder),
                 "CollectedData_" + cfg["scorer"] + ".h5",
-            ),
+            )
         )
 
     evaluationfolder = os.path.join(
@@ -614,7 +617,7 @@ def evaluate_network(
                 cfg["project_path"],
                 str(trainingsetfolder),
                 "CollectedData_" + cfg["scorer"] + ".h5",
-            ),
+            )
         )
 
         # Get list of body parts to evaluate network for
@@ -719,7 +722,7 @@ def evaluate_network(
                                 cfg["project_path"],
                                 str(trainingsetfolder),
                                 "CollectedData_" + cfg["scorer"] + ".h5",
-                            ),
+                            )
                         )
                         * scale
                     )
@@ -789,7 +792,7 @@ def evaluate_network(
 
                             # Extract maximum scoring location from the heatmap, assume 1 person
                             pose = predict.argmax_pose_predict(
-                                scmap, locref, dlc_cfg['stride']
+                                scmap, locref, dlc_cfg["stride"]
                             )
                             PredicteData[
                                 imageindex, :
@@ -972,14 +975,17 @@ def make_results_file(final_result, evaluationfolder, DLCscorer):
     df.to_csv(output_path)
 
     ## Also storing one "large" table with results:
-    #note: evaluationfolder.parents[0] to get common folder above all shuffle evaluations.
+    # note: evaluationfolder.parents[0] to get common folder above all shuffle evaluations.
     df = pd.DataFrame(final_result, columns=col_names)
-    output_path = os.path.join(str(Path(evaluationfolder).parents[0]), "CombinedEvaluation-results.csv")
+    output_path = os.path.join(
+        str(Path(evaluationfolder).parents[0]), "CombinedEvaluation-results.csv"
+    )
     if os.path.exists(output_path):
         temp = pd.read_csv(output_path, index_col=0)
         df = pd.concat((df, temp)).reset_index(drop=True)
 
     df.to_csv(output_path)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

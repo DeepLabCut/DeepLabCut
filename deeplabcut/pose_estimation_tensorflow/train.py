@@ -37,7 +37,7 @@ from deeplabcut.pose_estimation_tensorflow.util.logging import setup_logging
 
 class LearningRate(object):
     def __init__(self, cfg):
-        self.steps = cfg['multi_step']
+        self.steps = cfg["multi_step"]
         self.current_step = 0
 
     def get_lr(self, iteration):
@@ -49,8 +49,8 @@ class LearningRate(object):
 
 
 def get_batch_spec(cfg):
-    num_joints = cfg['num_joints']
-    batch_size = cfg['batch_size']
+    num_joints = cfg["num_joints"]
+    batch_size = cfg["batch_size"]
     return {
         Batch.inputs: [batch_size, None, None, 3],
         Batch.part_score_targets: [batch_size, None, None, num_joints],
@@ -103,25 +103,24 @@ def start_preloading(sess, enqueue_op, dataset, placeholders):
 
 
 def get_optimizer(loss_op, cfg):
-    tstep = tf.placeholder(tf.int32,shape=[],name='tstep')
-    if 'efficientnet' in cfg['net_type']:
+    tstep = tf.placeholder(tf.int32, shape=[], name="tstep")
+    if "efficientnet" in cfg["net_type"]:
         print("Switching to cosine decay schedule with adam!")
-        cfg['optimizer'] = "adam"
-        learning_rate = tf.train.cosine_decay(cfg['lr_init'],
-                                              tstep,
-                                              cfg['decay_steps'],
-                                              alpha=cfg['alpha_r'])
+        cfg["optimizer"] = "adam"
+        learning_rate = tf.train.cosine_decay(
+            cfg["lr_init"], tstep, cfg["decay_steps"], alpha=cfg["alpha_r"]
+        )
     else:
         learning_rate = tf.placeholder(tf.float32, shape=[])
 
-    if cfg['optimizer'] == "sgd":
+    if cfg["optimizer"] == "sgd":
         optimizer = TF.train.MomentumOptimizer(
             learning_rate=learning_rate, momentum=0.9
         )
-    elif cfg['optimizer'] == "adam":
+    elif cfg["optimizer"] == "adam":
         optimizer = TF.train.AdamOptimizer(learning_rate)
     else:
-        raise ValueError("unknown optimizer {}".format(cfg['optimizer']))
+        raise ValueError("unknown optimizer {}".format(cfg["optimizer"]))
     train_op = slim.learning.create_train_op(loss_op, optimizer)
 
     return learning_rate, train_op, tstep
@@ -130,14 +129,14 @@ def get_optimizer(loss_op, cfg):
 def get_optimizer_with_freeze(loss_op, cfg):
     learning_rate = TF.placeholder(tf.float32, shape=[])
 
-    if cfg['optimizer'] == "sgd":
+    if cfg["optimizer"] == "sgd":
         optimizer = TF.train.MomentumOptimizer(
             learning_rate=learning_rate, momentum=0.9
         )
-    elif cfg['optimizer'] == "adam":
+    elif cfg["optimizer"] == "adam":
         optimizer = TF.train.AdamOptimizer(learning_rate)
     else:
-        raise ValueError("unknown optimizer {}".format(cfg['optimizer']))
+        raise ValueError("unknown optimizer {}".format(cfg["optimizer"]))
 
     train_unfrozen_op = slim.learning.create_train_op(loss_op, optimizer)
     variables_unfrozen = TF.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, "pose")
@@ -165,8 +164,8 @@ def train(
     setup_logging()
 
     cfg = load_config(config_yaml)
-    net_type = cfg['net_type']
-    if cfg['dataset_type'] in ("scalecrop", "tensorpack", "deterministic"):
+    net_type = cfg["net_type"]
+    if cfg["dataset_type"] in ("scalecrop", "tensorpack", "deterministic"):
         print(
             "Switching batchsize to 1, as tensorpack/scalecrop/deterministic loaders do not support batches >1. Use imgaug/default loader."
         )
@@ -183,7 +182,7 @@ def train(
         TF.summary.scalar(k, t)
     merged_summaries = TF.summary.merge_all()
 
-    if "snapshot" in Path(cfg['init_weights']).stem and keepdeconvweights:
+    if "snapshot" in Path(cfg["init_weights"]).stem and keepdeconvweights:
         print("Loading already trained DLC with backbone:", net_type)
         variables_to_restore = slim.get_variables_to_restore()
     else:
@@ -195,11 +194,15 @@ def train(
             variables_to_restore = slim.get_variables_to_restore(
                 include=["MobilenetV2"]
             )
-        elif 'efficientnet' in net_type:
-            variables_to_restore = slim.get_variables_to_restore(include=["efficientnet"])
+        elif "efficientnet" in net_type:
+            variables_to_restore = slim.get_variables_to_restore(
+                include=["efficientnet"]
+            )
             variables_to_restore = {
-                    var.op.name.replace("efficientnet/", "")
-                    + '/ExponentialMovingAverage':var for var in variables_to_restore}
+                var.op.name.replace("efficientnet/", "")
+                + "/ExponentialMovingAverage": var
+                for var in variables_to_restore
+            }
         else:
             print("Wait for DLC 2.3.")
 
@@ -216,10 +219,10 @@ def train(
         sess = TF.Session()
 
     coord, thread = start_preloading(sess, enqueue_op, dataset, placeholders)
-    train_writer = TF.summary.FileWriter(cfg['log_dir'], sess.graph)
+    train_writer = TF.summary.FileWriter(cfg["log_dir"], sess.graph)
 
     if cfg.get("freezeencoder", False):
-        if 'efficientnet' in net_type:
+        if "efficientnet" in net_type:
             print("Freezing ONLY supported MobileNet/ResNet currently!!")
             learning_rate, train_op, tstep = get_optimizer(total_loss, cfg)
 
@@ -232,22 +235,22 @@ def train(
     sess.run(TF.local_variables_initializer())
 
     # Restore variables from disk.
-    restorer.restore(sess, cfg['init_weights'])
+    restorer.restore(sess, cfg["init_weights"])
     if maxiters == None:
-        max_iter = int(cfg['multi_step'][-1][1])
+        max_iter = int(cfg["multi_step"][-1][1])
     else:
-        max_iter = min(int(cfg['multi_step'][-1][1]), int(maxiters))
+        max_iter = min(int(cfg["multi_step"][-1][1]), int(maxiters))
         # display_iters = max(1,int(displayiters))
         print("Max_iters overwritten as", max_iter)
 
     if displayiters == None:
-        display_iters = max(1, int(cfg['display_iters']))
+        display_iters = max(1, int(cfg["display_iters"]))
     else:
         display_iters = max(1, int(displayiters))
         print("Display_iters overwritten as", display_iters)
 
     if saveiters == None:
-        save_iters = max(1, int(cfg['save_iters']))
+        save_iters = max(1, int(cfg["save_iters"]))
 
     else:
         save_iters = max(1, int(saveiters))
@@ -263,16 +266,15 @@ def train(
     print(cfg)
     print("Starting training....")
     for it in range(max_iter + 1):
-        if 'efficientnet' in net_type:
-            dict={tstep: it}
-            current_lr = sess.run(learning_rate,feed_dict=dict)
+        if "efficientnet" in net_type:
+            dict = {tstep: it}
+            current_lr = sess.run(learning_rate, feed_dict=dict)
         else:
             current_lr = lr_gen.get_lr(it)
-            dict={learning_rate: current_lr}
+            dict = {learning_rate: current_lr}
 
         [_, loss_val, summary] = sess.run(
-            [train_op, total_loss, merged_summaries],
-            feed_dict=dict,
+            [train_op, total_loss, merged_summaries], feed_dict=dict
         )
         cum_loss += loss_val
         train_writer.add_summary(summary, it)
@@ -290,7 +292,7 @@ def train(
 
         # Save snapshot
         if (it % save_iters == 0 and it != 0) or it == max_iter:
-            model_name = cfg['snapshot_prefix']
+            model_name = cfg["snapshot_prefix"]
             saver.save(sess, model_name, global_step=it)
 
     lrf.close()

@@ -470,10 +470,10 @@ def GetEvaluationFolder(trainFraction, shuffle, cfg, modelprefix=""):
     Task = cfg["Task"]
     date = cfg["date"]
     iterate = "iteration-" + str(cfg["iteration"])
-    if 'eval_prefix' in cfg:
-        eval_prefix = cfg['eval_prefix']+'/'
+    if "eval_prefix" in cfg:
+        eval_prefix = cfg["eval_prefix"] + "/"
     else:
-        eval_prefix = 'evaluation-results'+'/'
+        eval_prefix = "evaluation-results" + "/"
     return Path(
         modelprefix,
         eval_prefix
@@ -708,7 +708,7 @@ def find_analyzed_data(folder, videoname, scorer, filtered=False, track_method="
         tracker = "_sk"
     elif track_method == "box":
         tracker = "_bx"
-    elif track_method == 'ellipse':
+    elif track_method == "ellipse":
         tracker = "_el"
     else:
         tracker = ""
@@ -764,8 +764,8 @@ def load_detection_data(video, scorer, track_method):
         tracker = "sk"
     elif track_method == "box":
         tracker = "bx"
-    elif track_method == 'ellipse':
-        tracker = 'el'
+    elif track_method == "ellipse":
+        tracker = "el"
     else:
         raise ValueError(f"Unrecognized track_method={track_method}")
 

@@ -54,9 +54,7 @@ def refine_labels(config, multianimal=False):
 
         refinement.show(config)
     else:  # loading multianimal labeling GUI
-        from deeplabcut.gui import (
-            multiple_individuals_refinement_toolbox,
-        )
+        from deeplabcut.gui import multiple_individuals_refinement_toolbox
 
         multiple_individuals_refinement_toolbox.show(config)
 

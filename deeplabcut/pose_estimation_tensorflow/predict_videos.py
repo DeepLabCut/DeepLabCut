@@ -335,7 +335,9 @@ def analyze_videos(
             print(
                 "If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames."
             )
-        return DLCscorer  # note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
+        return (
+            DLCscorer
+        )  # note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
     else:
         print("No video(s) were found. Please check your paths and/or 'video_type'.")
         return DLCscorer
@@ -1421,7 +1423,7 @@ def convert_detections2tracklets(
                     mot_tracker = trackingutils.SORTEllipse(
                         inferencecfg.get("max_age", 1),
                         inferencecfg.get("min_hits", 5),
-                        inferencecfg.get("iou_threshold", 0.6)
+                        inferencecfg.get("iou_threshold", 0.6),
                     )
                 tracklets = {}
                 if cfg[
@@ -1465,10 +1467,8 @@ def convert_detections2tracklets(
                             for a in animals
                         ):
                             single = np.full((numjoints, 3), np.nan)
-                            single_dets = (
-                                inferenceutils.convertdetectiondict2listoflist(
-                                    data[imname], inds_unique
-                                )
+                            single_dets = inferenceutils.convertdetectiondict2listoflist(
+                                data[imname], inds_unique
                             )
                             for ind, dets in zip(inds_unique, single_dets):
                                 if len(dets) == 1:

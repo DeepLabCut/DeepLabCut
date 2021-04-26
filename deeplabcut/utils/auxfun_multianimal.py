@@ -68,7 +68,7 @@ def getpafgraph(cfg, printnames=True):
             print("Attention, parts do not exist!", link)
 
     unconnected = set(range(len(multianimalbodyparts))).difference(connected)
-    if unconnected and len(multianimalbodyparts)>1: #for single bpt not important!
+    if unconnected and len(multianimalbodyparts) > 1:  # for single bpt not important!
         raise ValueError(
             f'Unconnected {", ".join(multianimalbodyparts[i] for i  in unconnected)}. '
             f"For multi-animal projects, all multianimalbodyparts should be connected. "

@@ -185,7 +185,6 @@ class Refine_tracklets(wx.Panel):
             hbox2, pos=(7, 0), flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, border=10
         )
 
-
         self.inf_cfg_text = wx.Button(self, label="Edit inference_config.yaml")
         sizer.Add(self.inf_cfg_text, pos=(10, 1), flag=wx.BOTTOM | wx.RIGHT, border=10)
         self.inf_cfg_text.Bind(wx.EVT_BUTTON, self.edit_inf_config)
@@ -202,7 +201,9 @@ class Refine_tracklets(wx.Panel):
         sizer.Add(self.reset, pos=(8, 1), flag=wx.BOTTOM | wx.RIGHT, border=10)
         self.reset.Bind(wx.EVT_BUTTON, self.reset_refine_tracklets)
 
-        self.filter = wx.Button(self, label=" Step2: Filter Tracks (then you also get a CSV file!)")
+        self.filter = wx.Button(
+            self, label=" Step2: Filter Tracks (then you also get a CSV file!)"
+        )
         sizer.Add(self.filter, pos=(8, 3), flag=wx.BOTTOM | wx.RIGHT, border=10)
         self.filter.Bind(wx.EVT_BUTTON, self.filter_after_refinement)
 

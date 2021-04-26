@@ -26,7 +26,9 @@ class Welcome(wx.Panel):
         ##         design the panel
         sizer = wx.GridBagSizer(10, 7)
         # Add image of DLC
-        icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(os.path.join(MEDIA_PATH, "dlc_1-01.png")))
+        icon = wx.StaticBitmap(
+            self, bitmap=wx.Bitmap(os.path.join(MEDIA_PATH, "dlc_1-01.png"))
+        )
         sizer.Add(icon, pos=(0, 0), span=(0, 8), flag=wx.EXPAND | wx.BOTTOM, border=10)
         line = wx.StaticLine(self)
         sizer.Add(line, pos=(1, 0), span=(1, 8), flag=wx.EXPAND | wx.BOTTOM, border=10)
