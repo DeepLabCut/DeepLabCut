@@ -80,3 +80,22 @@ def test_calc_bboxes_from_keypoints():
         trackingutils.calc_bboxes_from_keypoints(xy, 20, 10),
         [[-10, -20, 30, 20, 1]],
     )
+
+    width = 200
+    height = width * 2
+    xyp = np.zeros((1, 2, 3))
+    xyp[:, 1, :2] = width, height
+    xyp[:, 1, 2] = 1
+    with pytest.raises(ValueError):
+        _ = trackingutils.calc_bboxes_from_keypoints(xyp[..., :2])
+
+    bboxes = trackingutils.calc_bboxes_from_keypoints(xyp)
+    np.testing.assert_equal(bboxes, [[0, 0, width, height, 0.5]])
+
+    slack = 20
+    bboxes = trackingutils.calc_bboxes_from_keypoints(xyp, slack=slack)
+    np.testing.assert_equal(bboxes, [[-slack, -slack, width + slack, height + slack, 0.5]])
+
+    offset = 50
+    bboxes = trackingutils.calc_bboxes_from_keypoints(xyp, offset=offset)
+    np.testing.assert_equal(bboxes, [[offset, 0, width + offset, height, 0.5]])

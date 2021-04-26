@@ -1202,7 +1202,7 @@ def _convert_detections_to_tracklets(
             continue
         animals = np.stack([ass.data[:, :3] for ass in assemblies])
         if track_method == "box":
-            bboxes = inferenceutils.calc_bboxes_from_keypoints(
+            bboxes = trackingutils.calc_bboxes_from_keypoints(
                 animals, inference_cfg.get("boundingboxslack", 0),
             )  # TODO: get cropping parameters and utilize!
             trackers = mot_tracker.update(bboxes)
@@ -1485,7 +1485,7 @@ def convert_detections2tracklets(
                         continue
                     animals = np.stack([ass.data[:, :3] for ass in assemblies])
                     if track_method == "box":
-                        bboxes = inferenceutils.calc_bboxes_from_keypoints(
+                        bboxes = trackingutils.calc_bboxes_from_keypoints(
                             animals, inferencecfg["boundingboxslack"], offset=0
                         )  # TODO: get cropping parameters and utilize!
                         trackers = mot_tracker.update(bboxes)

@@ -19,27 +19,6 @@ def ground_truth_assemblies():
     return inferenceutils._parse_ground_truth_data(data[..., :3])
 
 
-def test_calc_bboxes_from_keypoints():
-    width = 200
-    height = width * 2
-    xyp = np.zeros((1, 2, 3))
-    xyp[:, 1, :2] = width, height
-    xyp[:, 1, 2] = 1
-    with pytest.raises(ValueError):
-        _ = inferenceutils.calc_bboxes_from_keypoints(xyp[..., :2])
-
-    bboxes = inferenceutils.calc_bboxes_from_keypoints(xyp)
-    np.testing.assert_equal(bboxes, [[0, 0, width, height, 0.5]])
-
-    slack = 20
-    bboxes = inferenceutils.calc_bboxes_from_keypoints(xyp, slack=slack)
-    np.testing.assert_equal(bboxes, [[-slack, -slack, width + slack, height + slack, 0.5]])
-
-    offset = 50
-    bboxes = inferenceutils.calc_bboxes_from_keypoints(xyp, offset=offset)
-    np.testing.assert_equal(bboxes, [[offset, 0, width + offset, height, 0.5]])
-
-
 def test_conv_square_to_condensed_indices():
     n = 5
     rows, cols = np.triu_indices(n, k=1)
