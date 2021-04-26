@@ -169,6 +169,7 @@ With pcutoff of 0.4  train error: 1.35 pixels. Test error: 2.3 pixels
 
 
 import os
+
 os.environ["CUDA_VISIBLE_DEVICES"] = str(0)
 import deeplabcut
 import numpy as np
@@ -176,13 +177,13 @@ import numpy as np
 # Loading example data set
 path_config_file = os.path.join(os.getcwd(), "openfield-Pranav-2018-10-30/config.yaml")
 cfg = deeplabcut.auxiliaryfunctions.read_config(path_config_file)
+
 maxiters = 50000
-saveiters= 10000
-displayiters=500
-Shuffles=1 + np.arange(6)
+saveiters = 10000
+displayiters = 500
+Shuffles = 1 + np.arange(6)
 
 deeplabcut.load_demo_data(path_config_file)
-
 ## Create one split and make Shuffle 2 and 3 have the same split.
 ###Note that the new function in DLC 2.1 simplifies network/augmentation comparisons greatly:
 deeplabcut.create_training_model_comparison(
@@ -192,13 +193,14 @@ deeplabcut.create_training_model_comparison(
     augmenter_types=["imgaug", "scalecrop", "tensorpack"],
 )
 
+
 for shuffle in Shuffles:
 
     posefile, _, _ = deeplabcut.return_train_network_path(
         path_config_file, shuffle=shuffle
     )
 
-    edits = {"decay_steps": maxiters, "lr_init": 0.0005 * 8}  # for EfficientNet
+    edits = {"decay_steps": maxiters, "lr_init": 0.0005}  # * 8}  # for EfficientNet
     DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
 
     if shuffle % 3 == 1:  # imgaug
