@@ -8,15 +8,6 @@ from scipy.spatial.distance import squareform
 
 TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
 pickled_data = os.path.join(TEST_DATA_DIR, "trimouse_full.pickle")
-pickled_assemblies = os.path.join(TEST_DATA_DIR, "trimouse_assemblies.pickle")
-
-
-@pytest.fixture(scope="module")
-def ground_truth_assemblies():
-    with open(pickled_assemblies, "rb") as file:
-        temp = pickle.load(file)
-    data = np.stack(list(temp.values()))
-    return inferenceutils._parse_ground_truth_data(data[..., :3])
 
 
 def test_conv_square_to_condensed_indices():
@@ -32,10 +23,10 @@ def test_conv_square_to_condensed_indices():
     np.testing.assert_equal(vec, vals)
 
 
-def test_calc_object_keypoint_similarity(ground_truth_assemblies):
+def test_calc_object_keypoint_similarity(real_assemblies):
     sigma = 0.01
-    xy1 = ground_truth_assemblies[0][0].xy
-    xy2 = ground_truth_assemblies[0][1].xy
+    xy1 = real_assemblies[0][0].xy
+    xy2 = real_assemblies[0][1].xy
     assert inferenceutils.calc_object_keypoint_similarity(xy1, xy1, sigma) == 1
     assert np.isclose(inferenceutils.calc_object_keypoint_similarity(xy1, xy2, sigma), 0)
     xy3 = xy1.copy()
@@ -46,8 +37,8 @@ def test_calc_object_keypoint_similarity(ground_truth_assemblies):
     assert np.isnan(inferenceutils.calc_object_keypoint_similarity(xy1, xy3, sigma))
 
 
-def test_match_assemblies(ground_truth_assemblies):
-    assemblies = ground_truth_assemblies[0]
+def test_match_assemblies(real_assemblies):
+    assemblies = real_assemblies[0]
     matched, unmatched = inferenceutils.match_assemblies(
         assemblies, assemblies[::-1], 0.01
     )
@@ -63,8 +54,8 @@ def test_match_assemblies(ground_truth_assemblies):
     assert all(ass1 is ass2 for ass1, ass2 in zip(unmatched, assemblies))
 
 
-def test_evaluate_assemblies(ground_truth_assemblies):
-    assemblies = {i: ground_truth_assemblies[i] for i in range(3)}
+def test_evaluate_assemblies(real_assemblies):
+    assemblies = {i: real_assemblies[i] for i in range(3)}
     n_thresholds = 5
     thresholds = np.linspace(0.5, 0.95, n_thresholds)
     dict_ = inferenceutils.evaluate_assembly(
@@ -90,7 +81,7 @@ def test_link():
     assert link.to_vector() == [*pos1, *pos2]
 
 
-def test_assembler(ground_truth_assemblies):
+def test_assembler(real_assemblies):
     with open(pickled_data, "rb") as file:
         data = pickle.load(file)
     with pytest.warns(UserWarning):
@@ -98,7 +89,7 @@ def test_assembler(ground_truth_assemblies):
             data,
             max_n_individuals=3,
             n_multibodyparts=12,
-            identity_only=True,  # Test warning is properly raised
+            identity_only=True,  # Test whether warning is properly raised
         )
     assert len(ass.metadata['imnames']) == 2330
     assert ass.n_keypoints == 12
@@ -122,6 +113,6 @@ def test_assembler(ground_truth_assemblies):
     ass.paf_inds = paf_inds
     ass.assemble()
     assert not ass.unique
-    assert len(ass.assemblies) == len(ground_truth_assemblies)
+    assert len(ass.assemblies) == len(real_assemblies)
     assert (sum(1 for a in ass.assemblies.values() for _ in a)
-            == sum(1 for a in ground_truth_assemblies.values() for _ in a))
+            == sum(1 for a in real_assemblies.values() for _ in a))

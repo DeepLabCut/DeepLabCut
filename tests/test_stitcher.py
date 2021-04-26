@@ -1,6 +1,3 @@
-import os
-
-os.environ["DLClight"] = "True"
 import numpy as np
 import pytest
 from deeplabcut.refine_training_dataset.stitch import Tracklet, TrackletStitcher
@@ -136,3 +133,13 @@ def test_stitcher(tmpdir_factory, fake_stitcher):
     fake_stitcher.stitch(add_back_residuals=True)
     output_name = tmpdir_factory.mktemp('data').join('fake.h5')
     fake_stitcher.write_tracks(output_name)
+
+
+def test_stitcher_real(tmpdir_factory, real_tracklets):
+    stitcher = TrackletStitcher.from_dict_of_dict(
+        real_tracklets, n_tracks=3,
+    )
+    stitcher.build_graph()
+    stitcher.stitch()
+    output_name = tmpdir_factory.mktemp('data').join('fake.h5')
+    stitcher.write_tracks(output_name, ['mickey', 'minnie', 'bianca'])

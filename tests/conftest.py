@@ -1,8 +1,9 @@
+import numpy as np
 import os
-
-os.environ["DLClight"] = "True"
+import pickle
 import pytest
 from deeplabcut.create_project import create_new_project
+from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
 from deeplabcut.utils.auxiliaryfunctions import read_config, edit_config
 
 
@@ -16,6 +17,20 @@ MULTI_CONFIG_PATH = os.path.join(TEST_DATA_DIR, "multi-dlc-2020-04-21/config.yam
 SCORER = "dlc"
 NUM_FRAMES = 5
 TRAIN_SIZE = 0.8
+
+
+@pytest.fixture(scope="session")
+def real_assemblies():
+    with open(os.path.join(TEST_DATA_DIR, "trimouse_assemblies.pickle"), "rb") as file:
+        temp = pickle.load(file)
+    data = np.stack(list(temp.values()))
+    return inferenceutils._parse_ground_truth_data(data[..., :3])
+
+
+@pytest.fixture(scope="session")
+def real_tracklets():
+    with open(os.path.join(TEST_DATA_DIR, "trimouse_tracklets.pickle"), "rb") as file:
+        return pickle.load(file)
 
 
 @pytest.fixture()

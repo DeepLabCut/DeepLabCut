@@ -1,6 +1,3 @@
-import os
-
-os.environ["DLClight"] = "True"
 import numpy as np
 import pytest
 from deeplabcut.pose_estimation_tensorflow.lib import trackingutils
@@ -65,9 +62,21 @@ def test_sort_ellipse():
         tracklets,
         trackers,
         poses,
-        imname=0
+        imname=0,
     )
     assert all(id_ in tracklets for id_ in trackers[:, -2])
+
+
+def test_tracking(real_assemblies, real_tracklets):
+    tracklets_ref = real_tracklets.copy()
+    _ = tracklets_ref.pop("header")
+    tracklets = dict()
+    mot_tracker = trackingutils.SORTEllipse(1, 1, 0.6)
+    for ind, assemblies in real_assemblies.items():
+        animals = np.stack([ass.data[:, :3] for ass in assemblies])
+        trackers = mot_tracker.track(animals[..., :2])
+        trackingutils.fill_tracklets(tracklets, trackers, animals, ind)
+    assert len(tracklets) == len(tracklets_ref)
 
 
 def test_calc_bboxes_from_keypoints():
