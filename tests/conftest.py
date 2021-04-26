@@ -3,7 +3,7 @@ import os
 import pickle
 import pytest
 from deeplabcut.create_project import create_new_project
-from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
+from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, crossvalutils
 from deeplabcut.utils.auxiliaryfunctions import read_config, edit_config
 
 
@@ -31,6 +31,20 @@ def real_assemblies():
 def real_tracklets():
     with open(os.path.join(TEST_DATA_DIR, "trimouse_tracklets.pickle"), "rb") as file:
         return pickle.load(file)
+
+
+@pytest.fixture(scope="session")
+def uncropped_data_and_metadata():
+    full_data_file = os.path.join(TEST_DATA_DIR, "trimouse_eval.pickle")
+    metadata_file = full_data_file.replace("eval", "meta")
+    with open(full_data_file, "rb") as file:
+        data = pickle.load(file)
+    with open(metadata_file, "rb") as file:
+        metadata = pickle.load(file)
+    params = crossvalutils._set_up_evaluation(data)
+    data_unc, _ = crossvalutils._rebuild_uncropped_data(data, params)
+    meta_unc = crossvalutils._rebuild_uncropped_metadata(metadata, params["imnames"])
+    return data_unc, meta_unc
 
 
 @pytest.fixture()
