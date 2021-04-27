@@ -117,7 +117,7 @@ def create_multianimaltraining_dataset(
         raise ValueError(f"Unsupported network {net_type}.")
 
     multi_stage = False
-    if net_type == "dlcnet":
+    if net_type == "dlcrnet_ms5":
         net_type = "resnet_50"
         multi_stage = True
 

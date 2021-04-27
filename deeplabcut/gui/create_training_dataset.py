@@ -96,7 +96,7 @@ class Create_training_dataset(wx.Panel):
             "efficientnet-b0",
             "efficientnet-b3",
             "efficientnet-b6",
-            "dlcnet",
+            "dlcrnet_ms5",
         ]
         self.net_choice.Set(options)
         self.net_choice.SetValue("resnet_50")
@@ -209,7 +209,7 @@ class Create_training_dataset(wx.Panel):
                 "efficientnet-b0",
                 "efficientnet-b3",
                 "efficientnet-b6",
-                "dlcnet",
+                "dlcrnet_ms5",
             ]
             augmentation_methods = ["default", "tensorpack", "imgaug"]
             self.network_box = wx.StaticBox(self, label="Select the networks")
