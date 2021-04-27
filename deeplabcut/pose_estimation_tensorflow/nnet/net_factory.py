@@ -29,7 +29,7 @@ def pose_net(cfg):
     elif "resnet" in net_type:
         if (
             cfg.get("stride", 8) < 8
-        ) or cfg['multi_stage']:  # this supports multianimal (with PAFs) or pairwise prediction
+        ) or cfg.get('multi_stage', False):  # this supports multianimal (with PAFs) or pairwise prediction
             print(
                 "Initialing PAFDLC with multiscale deconvolution!", cfg.get("stride", 8)
             )
