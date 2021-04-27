@@ -5,6 +5,7 @@ import pandas as pd
 import pickle
 import re
 import scipy.linalg.interpolative as sli
+import warnings
 from collections import defaultdict
 from itertools import combinations, cycle
 from networkx.algorithms.flow import preflow_push
@@ -151,10 +152,10 @@ class Tracklet:
             diff = (data2 - data1) / (e - s)
             diff[np.isnan(diff)] = 0
             interp = diff[..., np.newaxis] * np.arange(1, e - s)
-            interp[:, 2] = 0.5  # Chance detections
-            if interp.shape[1] == 4:
-                interp[:, 3] = self.identity
             data = data1 + np.rollaxis(interp, axis=2)
+            data[..., 2] = 0.5  # Chance detections
+            if data.shape[1] == 4:
+                data[:, 3] = self.identity
             fills.append(Tracklet(data, np.arange(s + 1, e)))
         if not fills:
             return self
@@ -609,7 +610,7 @@ class TrackletStitcher:
             _, self.flow = nx.capacity_scaling(self.G)
             self.paths = self.reconstruct_paths()
         except nx.exception.NetworkXUnfeasible:
-            print('No optimal solution found. Employing black magic...')
+            warnings.warn('No optimal solution found. Employing black magic...')
             # Let us prune the graph by removing all source and sink edges
             # but those connecting the `n_tracks` first and last tracklets.
             in_to_keep = [self._mapping[first_tracklet]['in']

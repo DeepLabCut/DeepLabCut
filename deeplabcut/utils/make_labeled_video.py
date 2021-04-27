@@ -782,9 +782,7 @@ def create_video_with_all_detections(
         Specifies the destination folder that was used for storing analysis data (default is the path of the video).
 
     """
-    from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import (
-        convertdetectiondict2listoflist,
-    )
+    from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import Assembler
     import pickle, re
 
     cfg = auxiliaryfunctions.read_config(config)
@@ -837,13 +835,13 @@ def create_video_with_all_detections(
                 frame = clip.load_frame()
                 try:
                     ind = frames.index(n)
-                    dets = convertdetectiondict2listoflist(data[frame_names[ind]], bpts)
-                    for i, det in enumerate(dets):
-                        color = colors[i]
-                        for x, y, p, _ in det:
-                            if p > pcutoff:
-                                rr, cc = disk((y, x), dotsize, shape=(ny, nx))
-                                frame[rr, cc] = color
+                    dets = Assembler._flatten_detections(data[frame_names[ind]])
+                    for det in dets:
+                        if det.label not in bpts or det.confidence < pcutoff:
+                            continue
+                        x, y = det.pos
+                        rr, cc = disk((y, x), dotsize, shape=(ny, nx))
+                        frame[rr, cc] = colors[bpts.index(det.label)]
                 except ValueError:  # No data stored for that particular frame
                     print(n, "no data")
                     pass
