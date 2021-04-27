@@ -99,7 +99,7 @@ class Pose(RNGDataFlow):
 
     def load_dataset(self):
         cfg = self.cfg
-        file_name = os.path.join(self.cfg['project_path'], cfg['dataset'])
+        file_name = os.path.join(self.cfg["project_path"], cfg["dataset"])
         # Load Matlab file dataset annotation
         mlab = sio.loadmat(file_name)
         self.raw_data = mlab
@@ -125,7 +125,7 @@ class Pose(RNGDataFlow):
                 joint_id = joints[:, 0]
                 # make sure joint ids are 0-indexed
                 if joint_id.size != 0:
-                    assert (joint_id < cfg['num_joints']).any()
+                    assert (joint_id < cfg["num_joints"]).any()
                 joints[:, 0] = joint_id
                 coords = [joint[1:] for joint in joints]
                 coords = arr(coords)
@@ -276,7 +276,7 @@ class PoseDataset:
         ]
 
         self.has_gt = True
-        self.set_shuffle(cfg['shuffle'])
+        self.set_shuffle(cfg["shuffle"])
         p = Pose(cfg=self.cfg, shuffle=self.shuffle)
         self.data = p.load_dataset()
         self.num_images = len(self.data)
@@ -335,9 +335,9 @@ class PoseDataset:
         img_size = components[4]
         scale = components[5]
 
-        stride = self.cfg['stride']
-        dist_thresh = self.cfg['pos_dist_thresh'] * scale
-        num_joints = self.cfg['num_joints']
+        stride = self.cfg["stride"]
+        dist_thresh = self.cfg["pos_dist_thresh"] * scale
+        num_joints = self.cfg["num_joints"]
         half_stride = stride / 2
         size = np.ceil(arr(img_size) / (stride * 2)).astype(int) * 2
         scmap = np.zeros(np.append(size, num_joints))
@@ -345,7 +345,7 @@ class PoseDataset:
         locref_mask = np.zeros(locref_size)
         locref_map = np.zeros(locref_size)
 
-        locref_scale = 1.0 / self.cfg['locref_stdev']
+        locref_scale = 1.0 / self.cfg["locref_stdev"]
         dist_thresh_sq = dist_thresh ** 2
 
         width = size[1]
@@ -393,12 +393,12 @@ class PoseDataset:
     def set_shuffle(self, shuffle):
         self.shuffle = shuffle
         if not shuffle:
-            assert not self.cfg['mirror']
+            assert not self.cfg["mirror"]
             self.image_indices = np.arange(self.num_images)
 
     def shuffle_images(self):
         num_images = self.num_images
-        if self.cfg['mirror']:
+        if self.cfg["mirror"]:
             image_indices = np.random.permutation(num_images * 2)
             self.mirrored = image_indices >= num_images
             image_indices[self.mirrored] = image_indices[self.mirrored] - num_images
@@ -408,9 +408,9 @@ class PoseDataset:
 
     def get_scale(self):
         cfg = self.cfg
-        scale = cfg['global_scale']
+        scale = cfg["global_scale"]
         if hasattr(cfg, "scale_jitter_lo") and hasattr(cfg, "scale_jitter_up"):
-            scale_jitter = rand.uniform(cfg['scale_jitter_lo'], cfg['scale_jitter_up'])
+            scale_jitter = rand.uniform(cfg["scale_jitter_lo"], cfg["scale_jitter_up"])
             scale *= scale_jitter
         return scale
 
@@ -423,11 +423,11 @@ class PoseDataset:
             input_width = image_size[2] * scale
             input_height = image_size[1] * scale
             if (
-                input_height < self.cfg['min_input_size']
-                or input_width < self.cfg['min_input_size']
+                input_height < self.cfg["min_input_size"]
+                or input_width < self.cfg["min_input_size"]
             ):
                 return False
-            if input_height * input_width > self.cfg['max_input_size'] ** 2:
+            if input_height * input_width > self.cfg["max_input_size"] ** 2:
                 return False
 
         return True
@@ -467,7 +467,7 @@ class PoseDataset:
 
     def compute_scmap_weights(self, scmap_shape, joint_id):
         cfg = self.cfg
-        if cfg['weigh_only_present_joints']:
+        if cfg["weigh_only_present_joints"]:
             weights = np.zeros(scmap_shape)
             for person_joint_id in joint_id:
                 for j_id in person_joint_id:

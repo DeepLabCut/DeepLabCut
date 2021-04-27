@@ -28,9 +28,11 @@ def individual2boundingbox(cfg, animals, X1=0):
 
     for id, individual in enumerate(animals):
         boundingboxes[id, 0:4:2] = minmax(
-            individual[::3] + X1, slack=cfg['boundingboxslack']
+            individual[::3] + X1, slack=cfg["boundingboxslack"]
         )
-        boundingboxes[id, 1:4:2] = minmax(individual[1::3], slack=cfg['boundingboxslack'])
+        boundingboxes[id, 1:4:2] = minmax(
+            individual[1::3], slack=cfg["boundingboxslack"]
+        )
         boundingboxes[id, 4] = np.nanmean(
             individual[2::3]
         )  # average likelihood of all bpts
@@ -139,7 +141,7 @@ def extractstrongconnections(
                 for j in range(n_b):
                     if evaluation:
                         score_with_dist_prior = abs(
-                            dataimage["prediction"]["costs"][PAF[edge]][cfg['method']][
+                            dataimage["prediction"]["costs"][PAF[edge]][cfg["method"]][
                                 i, j
                             ]
                         )
@@ -148,7 +150,7 @@ def extractstrongconnections(
                         ]
                     else:
                         score_with_dist_prior = abs(
-                            dataimage["costs"][PAF[edge]][cfg['method']][i, j]
+                            dataimage["costs"][PAF[edge]][cfg["method"]][i, j]
                         )
                         d = dataimage["costs"][PAF[edge]]["distance"][i, j]
 
@@ -157,9 +159,11 @@ def extractstrongconnections(
                     # filtering with global distance bounds
                     if lowerbound is None and upperbound is None:
                         if (
-                            score_with_dist_prior > cfg['pafthreshold']
-                            and cfg['distnormalizationLOWER'] <= d < cfg['distnormalization']
-                            and si * sj > cfg['detectionthresholdsquare']
+                            score_with_dist_prior > cfg["pafthreshold"]
+                            and cfg["distnormalizationLOWER"]
+                            <= d
+                            < cfg["distnormalization"]
+                            and si * sj > cfg["detectionthresholdsquare"]
                         ):
 
                             connection_candidate.append(
@@ -168,15 +172,15 @@ def extractstrongconnections(
                                     j,
                                     score_with_dist_prior,
                                     score_with_dist_prior
-                                    + np.sqrt(si * sj) * cfg['addlikelihoods'],
+                                    + np.sqrt(si * sj) * cfg["addlikelihoods"],
                                 ]
                             )
 
                     else:  # filtering with edgewise distance bounds
                         if (
-                            score_with_dist_prior > cfg['pafthreshold']
+                            score_with_dist_prior > cfg["pafthreshold"]
                             and lowerbound[edge] <= d < upperbound[edge]
-                            and si * sj > cfg['detectionthresholdsquare']
+                            and si * sj > cfg["detectionthresholdsquare"]
                         ):
                             connection_candidate.append(
                                 [
@@ -184,7 +188,7 @@ def extractstrongconnections(
                                     j,
                                     score_with_dist_prior,
                                     score_with_dist_prior
-                                    + np.sqrt(si * sj) * cfg['addlikelihoods'],
+                                    + np.sqrt(si * sj) * cfg["addlikelihoods"],
                                 ]
                             )
 
@@ -302,8 +306,8 @@ def linkjoints2individuals(
         len(subset)
     ):  # delete animal proposals with too few edges or too low average score
         if (
-            subset[i][-1] < cfg['minimalnumberofconnections']
-            or subset[i][-2] / subset[i][-1] < cfg['averagescore']
+            subset[i][-1] < cfg["minimalnumberofconnections"]
+            or subset[i][-2] / subset[i][-1] < cfg["averagescore"]
         ):
             deleteIdx.append(i)
 
@@ -328,7 +332,7 @@ def assemble_individuals(
 
     # filter detections according to inferencecfg parameters
     all_detections = convertdetectiondict2listoflist(
-        data, BPTS, withid=inference_cfg['withid'], evaluation=evaluation
+        data, BPTS, withid=inference_cfg["withid"], evaluation=evaluation
     )
 
     # filter connections according to inferencecfg parameters
@@ -359,8 +363,8 @@ def assemble_individuals(
         print(subset)
 
     sortedindividuals = np.argsort(-subset[:, -2])  # sort by top score!
-    if len(sortedindividuals) > inference_cfg['topktoretain']:
-        sortedindividuals = sortedindividuals[: inference_cfg['topktoretain']]
+    if len(sortedindividuals) > inference_cfg["topktoretain"]:
+        sortedindividuals = sortedindividuals[: inference_cfg["topktoretain"]]
 
     animals = []
     for n in sortedindividuals:  # number of individuals

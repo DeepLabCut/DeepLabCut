@@ -17,7 +17,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="deeplabcut",
-    version="2.1.10.2",
+    version="2.1.10.4",
     author="A. & M. Mathis Labs",
     author_email="alexander@deeplabcut.org",
     description="Markerless pose-estimation of user-defined features with deep learning",
@@ -56,11 +56,9 @@ setuptools.setup(
         "tensorpack==0.9.8",
         "tqdm",
         "moviepy<=1.0.1",
-        "bayesian-optimization"
+        "bayesian-optimization",
     ],
-    extras_require={
-        "gui": ["wxpython<4.1"]
-    },
+    extras_require={"gui": ["wxpython<4.1"]},
     scripts=["deeplabcut/pose_estimation_tensorflow/models/pretrained/download.sh"],
     packages=setuptools.find_packages(),
     data_files=[

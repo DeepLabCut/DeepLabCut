@@ -105,8 +105,7 @@ def extract_maps(
             cfg["project_path"],
             str(trainingsetfolder),
             "CollectedData_" + cfg["scorer"] + ".h5",
-        ),
-        "df_with_missing",
+        )
     )
 
     # Make folder for evaluation
@@ -468,11 +467,11 @@ def extract_save_all_maps(
                         list_of_inds.append(
                             [(2 * n, 2 * n + 1), (bptnames[edge[0]], bptnames[edge[1]])]
                         )
-                if len(to_plot)>1:
+                if len(to_plot) > 1:
                     map_ = scmap[:, :, to_plot].sum(axis=2)
                     locref_x_ = locref_x[:, :, to_plot].sum(axis=2)
                     locref_y_ = locref_y[:, :, to_plot].sum(axis=2)
-                elif len(to_plot)==1 and len(bptnames)>1:
+                elif len(to_plot) == 1 and len(bptnames) > 1:
                     map_ = scmap[:, :, to_plot]
                     locref_x_ = locref_x[:, :, to_plot]
                     locref_y_ = locref_y[:, :, to_plot]

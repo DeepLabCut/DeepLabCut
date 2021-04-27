@@ -148,10 +148,28 @@ With pcutoff of 0.4  train error: 1.65 pixels. Test error: 2.24 pixels
 Notice: despite the higher RMSE for imgaug due to the augmentation,
 the network performs much better on the testvideo (see Neuron Primer: https://www.cell.com/neuron/pdf/S0896-6273(20)30717-0.pdf)
 
+My results were (Run with DLC *2.10.4* in Apr 2021) for 100 k iterations
+
+ResNet50:
+Imgaug: (includes new default contrast augmentation!)
+Done and results stored for snapshot:  snapshot-100000
+Results for 100000  training iterations: 95 1 train error: 1.77 pixels. Test error: 2.24  pixels.
+With pcutoff of 0.4  train error: 1.77 pixels. Test error: 2.24 pixels
+
+Scalecrop:
+Done and results stored for snapshot:  snapshot-100000
+Results for 100000  training iterations: 95 2 train error: 2.11 pixels. Test error: 3.26  pixels.
+With pcutoff of 0.4  train error: 2.11 pixels. Test error: 3.26 pixels
+
+TensorPack:
+Results for 100000  training iterations: 95 3 train error: 1.35 pixels. Test error: 2.3  pixels.
+With pcutoff of 0.4  train error: 1.35 pixels. Test error: 2.3 pixels
+
 """
 
 
 import os
+
 os.environ["CUDA_VISIBLE_DEVICES"] = str(0)
 import deeplabcut
 import numpy as np
@@ -159,10 +177,13 @@ import numpy as np
 # Loading example data set
 path_config_file = os.path.join(os.getcwd(), "openfield-Pranav-2018-10-30/config.yaml")
 cfg = deeplabcut.auxiliaryfunctions.read_config(path_config_file)
-maxiters = 100000
+
+maxiters = 50000
+saveiters = 10000
+displayiters = 500
+Shuffles = 1 + np.arange(6)
 
 deeplabcut.load_demo_data(path_config_file)
-
 ## Create one split and make Shuffle 2 and 3 have the same split.
 ###Note that the new function in DLC 2.1 simplifies network/augmentation comparisons greatly:
 deeplabcut.create_training_model_comparison(
@@ -172,13 +193,14 @@ deeplabcut.create_training_model_comparison(
     augmenter_types=["imgaug", "scalecrop", "tensorpack"],
 )
 
-for shuffle in 1 + np.arange(6):
+
+for shuffle in Shuffles:
 
     posefile, _, _ = deeplabcut.return_train_network_path(
         path_config_file, shuffle=shuffle
     )
 
-    edits = {"decay_steps": 100000, "lr_init": 0.0005 * 8}  # for EfficientNet
+    edits = {"decay_steps": maxiters, "lr_init": 0.0005}  # * 8}  # for EfficientNet
     DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
 
     if shuffle % 3 == 1:  # imgaug
@@ -193,15 +215,16 @@ for shuffle in 1 + np.arange(6):
     deeplabcut.train_network(
         path_config_file,
         shuffle=shuffle,
-        saveiters=10000,
-        displayiters=200,
+        saveiters=saveiters,
+        displayiters=displayiters,
         maxiters=maxiters,
         max_snapshots_to_keep=11,
     )
 
-    print("EVALUATE")
-    deeplabcut.evaluate_network(path_config_file, Shuffles=[shuffle], plotting=True)
+print("EVALUATE")
+deeplabcut.evaluate_network(path_config_file, Shuffles=Shuffles, plotting=True)
 
+for shuffles in Shuffle:
     print("Analyze Video")
 
     videofile_path = os.path.join(

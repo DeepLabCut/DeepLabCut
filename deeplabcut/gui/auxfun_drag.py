@@ -89,11 +89,7 @@ class DraggablePoint:
             message = f"Do you want to remove the label {self.bodyParts}?"
             if self.likelihood is not None:
                 message += " You cannot undo this step!"
-            msg = wx.MessageBox(
-                message,
-                "Remove!",
-                wx.YES_NO | wx.ICON_WARNING,
-            )
+            msg = wx.MessageBox(message, "Remove!", wx.YES_NO | wx.ICON_WARNING)
             if msg == 2:
                 self.delete_data()
 

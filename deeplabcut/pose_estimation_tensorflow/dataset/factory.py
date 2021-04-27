@@ -15,7 +15,7 @@ Updated to allow more data set loaders.
 
 
 def create(cfg):
-    dataset_type = cfg['dataset_type']
+    dataset_type = cfg["dataset_type"]
     if dataset_type == "scalecrop":
         print("Starting with scalecrop pose-dataset loader.")
         from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset_scalecrop import (

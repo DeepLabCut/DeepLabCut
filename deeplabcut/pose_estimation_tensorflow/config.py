@@ -21,11 +21,14 @@ def _merge_a_into_b(a, b):
 
         # recursively merge dicts
         if isinstance(v, dict):
-            try:
-                _merge_a_into_b(a[k], b[k])
-            except:
-                print("Error under config key: {}".format(k))
-                raise
+            if not b.get(k, False):
+                b[k] = v
+            else:
+                try:
+                    _merge_a_into_b(a[k], b[k])
+                except:
+                    print("Error under config key: {}".format(k))
+                    raise
         else:
             b[k] = v
 

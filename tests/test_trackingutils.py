@@ -8,13 +8,7 @@ from deeplabcut.pose_estimation_tensorflow.lib import trackingutils
 
 @pytest.fixture()
 def ellipse():
-    params = {
-        'x': 0,
-        'y': 0,
-        'width': 2,
-        'height': 4,
-        'theta': np.pi / 2,
-    }
+    params = {"x": 0, "y": 0, "width": 2, "height": 4, "theta": np.pi / 2}
     return trackingutils.Ellipse(**params)
 
 
@@ -22,8 +16,7 @@ def test_ellipse(ellipse):
     assert ellipse.aspect_ratio == 2
     assert ellipse.geometry is not None
     np.testing.assert_equal(
-        ellipse.contains_points(np.asarray([[0, 0], [10, 10]])),
-        [True, False],
+        ellipse.contains_points(np.asarray([[0, 0], [10, 10]])), [True, False]
     )
 
 
@@ -61,22 +54,15 @@ def test_sort_ellipse():
     poses = np.random.rand(2, 10, 3)
     trackers = mot.track(poses[..., :2])
     assert trackers.shape == (2, 7)
-    trackingutils.fill_tracklets(
-        tracklets,
-        trackers,
-        poses,
-        imname=0
-    )
+    trackingutils.fill_tracklets(tracklets, trackers, poses, imname=0)
     assert all(id_ in tracklets for id_ in trackers[:, -2])
 
 
 def test_calc_bboxes_from_keypoints():
     xy = np.asarray([[[0, 0, 1]]])
     np.testing.assert_equal(
-        trackingutils.calc_bboxes_from_keypoints(xy, 10),
-        [[-10, -10, 10, 10, 1]],
+        trackingutils.calc_bboxes_from_keypoints(xy, 10), [[-10, -10, 10, 10, 1]]
     )
     np.testing.assert_equal(
-        trackingutils.calc_bboxes_from_keypoints(xy, 20, 10),
-        [[-10, -20, 30, 20, 1]],
+        trackingutils.calc_bboxes_from_keypoints(xy, 20, 10), [[-10, -20, 30, 20, 1]]
     )

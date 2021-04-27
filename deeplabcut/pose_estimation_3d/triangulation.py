@@ -203,7 +203,9 @@ def triangulate(
                     )
                     stereo_file = auxiliaryfunctions.read_pickle(path_stereo_file)
                     cam_pair = str(cam_names[0] + "-" + cam_names[1])
-                    if_video_analyzed = False  # variable to keep track if the video was already analyzed
+                    if_video_analyzed = (
+                        False
+                    )  # variable to keep track if the video was already analyzed
                     # Check for the camera matrix
                     for k in metadata_["stereo_matrix"].keys():
                         if np.all(

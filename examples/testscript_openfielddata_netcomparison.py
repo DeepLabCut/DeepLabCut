@@ -18,12 +18,13 @@ With pcutoff of 0.4  train error: 6.86 pixels. Test error: 6.63 pixels
 
 Note: Not too good on video either!
 
-TODO: Note we should still optimize the MobNet & EffNet LR for this dataset (also training is pretty short!)
+TODO: Note we should still optimize the MobNet & EffNet learning rates for this dataset (also training is pretty short!)
 TODO: change to frozen backbone!
 """
 
 
 import os
+
 os.environ["CUDA_VISIBLE_DEVICES"] = str(0)
 import deeplabcut
 import numpy as np
