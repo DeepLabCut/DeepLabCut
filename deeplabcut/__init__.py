@@ -28,6 +28,7 @@ import matplotlib as mpl
 
 try:
     import wx
+
     mpl.use("WxAgg")
     from deeplabcut import generate_training_dataset
     from deeplabcut import refine_training_dataset

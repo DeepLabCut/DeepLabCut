@@ -69,12 +69,12 @@ def _find_closest_neighbors(xy_true, xy_pred, k=5):
 
 
 def _calc_prediction_error(data):
-    _ = data.pop('metadata', None)
+    _ = data.pop("metadata", None)
     dists = []
     for n, dict_ in enumerate(tqdm(data.values())):
-        gt = np.concatenate(dict_['groundtruth'][1])
-        xy = np.concatenate(dict_['prediction']['coordinates'][0])
-        p = np.concatenate(dict_['prediction']['confidence'])
+        gt = np.concatenate(dict_["groundtruth"][1])
+        xy = np.concatenate(dict_["prediction"]["coordinates"][0])
+        p = np.concatenate(dict_["prediction"]["confidence"])
         neighbors = _find_closest_neighbors(gt, xy)
         found = neighbors != -1
         gt2 = gt[found]
@@ -84,7 +84,7 @@ def _calc_prediction_error(data):
 
 
 def _calc_train_test_error(data, metadata, pcutoff=0.3):
-    train_inds = set(metadata['data']['trainIndices'])
+    train_inds = set(metadata["data"]["trainIndices"])
     dists = _calc_prediction_error(data)
     dists_train, dists_test = [], []
     for n, dist in enumerate(dists):
@@ -146,8 +146,7 @@ def evaluate_multianimal_full(
             cfg["project_path"],
             str(trainingsetfolder),
             "CollectedData_" + cfg["scorer"] + ".h5",
-        ),
-        "df_with_missing",
+        )
     )
     # Handle data previously annotated on a different platform
     sep = "/" if "/" in Data.index[0] else "\\"
@@ -318,14 +317,14 @@ def evaluate_multianimal_full(
                             frame = img_as_ubyte(image)
 
                             GT = Data.iloc[imageindex]
-                            df = GT.unstack("coords").reindex(joints, level='bodyparts')
+                            df = GT.unstack("coords").reindex(joints, level="bodyparts")
 
                             # Evaluate PAF edge lengths to calibrate `distnorm`
-                            temp = GT.unstack("bodyparts")[joints]
-                            xy = temp.values.reshape((-1, 2, temp.shape[1])).swapaxes(
-                                1, 2
-                            )
-                            if dlc_cfg['partaffinityfield_predict']:
+                            temp_xy = GT.unstack("bodyparts")[joints]
+                            xy = temp_xy.values.reshape(
+                                (-1, 2, temp_xy.shape[1])
+                            ).swapaxes(1, 2)
+                            if dlc_cfg["partaffinityfield_predict"]:
                                 edges = xy[:, dlc_cfg["partaffinityfield_graph"]]
                                 lengths = np.sum(
                                     (edges[:, :, 0] - edges[:, :, 1]) ** 2, axis=2
@@ -357,8 +356,8 @@ def evaluate_multianimal_full(
                                 inputs,
                                 outputs,
                                 outall=False,
-                                nms_radius=dlc_cfg['nmsradius'],
-                                det_min_score=dlc_cfg['minconfidence'],
+                                nms_radius=dlc_cfg["nmsradius"],
+                                det_min_score=dlc_cfg["minconfidence"],
                                 c_engine=c_engine,
                             )
                             PredicteData[imagename]["prediction"] = pred
@@ -388,9 +387,12 @@ def evaluate_multianimal_full(
                                     conf[sl] = probs_pred[n_joint][cols].squeeze()
 
                             if plotting:
+                                gt = temp_xy.values.reshape(
+                                    (-1, 2, temp_xy.shape[1])
+                                ).T.swapaxes(1, 2)
                                 fig = visualization.make_multianimal_labeled_image(
                                     frame,
-                                    groundtruthcoordinates,
+                                    gt,
                                     coords_pred,
                                     probs_pred,
                                     colors,
@@ -415,7 +417,7 @@ def evaluate_multianimal_full(
                             [df_dist, df_conf],
                             keys=["rmse", "conf"],
                             names=["metrics"],
-                            axis=1
+                            axis=1,
                         )
                         df_joint = df_joint.reorder_levels(
                             list(np.roll(df_joint.columns.names, -1)), axis=1
@@ -424,9 +426,11 @@ def evaluate_multianimal_full(
                             axis=1,
                             level=["individuals", "bodyparts"],
                             ascending=[True, True],
-                            inplace=True
+                            inplace=True,
                         )
-                        write_path = os.path.join(evaluationfolder, f"dist_{trainingsiterations}.csv")
+                        write_path = os.path.join(
+                            evaluationfolder, f"dist_{trainingsiterations}.csv"
+                        )
                         df_joint.to_csv(write_path)
 
                         # Calculate overall prediction error
@@ -455,26 +459,44 @@ def evaluate_multianimal_full(
                         sd.to_csv(write_path.replace("dist_", "sd_"))
 
                         if show_errors:
-                            string = "Results for {} training iterations: {}, shuffle {}:\n" \
-                                     "Train error: {} pixels. Test error: {} pixels.\n" \
-                                     "With pcutoff of {}:\n" \
-                                     "Train error: {} pixels. Test error: {} pixels."
+                            string = (
+                                "Results for {} training iterations: {}, shuffle {}:\n"
+                                "Train error: {} pixels. Test error: {} pixels.\n"
+                                "With pcutoff of {}:\n"
+                                "Train error: {} pixels. Test error: {} pixels."
+                            )
                             print(string.format(*results))
 
                             print("##########################################")
-                            print("Average Euclidean distance to GT per individual (in pixels)")
-                            print(error_masked.groupby('individuals', axis=1).mean().mean().to_string())
-                            print("Average Euclidean distance to GT per bodypart (in pixels)")
-                            print(error_masked.groupby('bodyparts', axis=1).mean().mean().to_string())
+                            print(
+                                "Average Euclidean distance to GT per individual (in pixels)"
+                            )
+                            print(
+                                error_masked.groupby("individuals", axis=1)
+                                .mean()
+                                .mean()
+                                .to_string()
+                            )
+                            print(
+                                "Average Euclidean distance to GT per bodypart (in pixels)"
+                            )
+                            print(
+                                error_masked.groupby("bodyparts", axis=1)
+                                .mean()
+                                .mean()
+                                .to_string()
+                            )
 
                         PredicteData["metadata"] = {
-                            "nms radius": dlc_cfg['nmsradius'],
-                            "minimal confidence": dlc_cfg['minconfidence'],
-                            "PAFgraph": dlc_cfg['partaffinityfield_graph'],
-                            "all_joints": [[i] for i in range(len(dlc_cfg['all_joints']))],
+                            "nms radius": dlc_cfg["nmsradius"],
+                            "minimal confidence": dlc_cfg["minconfidence"],
+                            "PAFgraph": dlc_cfg["partaffinityfield_graph"],
+                            "all_joints": [
+                                [i] for i in range(len(dlc_cfg["all_joints"]))
+                            ],
                             "all_joints_names": [
-                                dlc_cfg['all_joints_names'][i]
-                                for i in range(len(dlc_cfg['all_joints']))
+                                dlc_cfg["all_joints_names"][i]
+                                for i in range(len(dlc_cfg["all_joints"]))
                             ],
                             "stride": dlc_cfg.get("stride", 8),
                         }

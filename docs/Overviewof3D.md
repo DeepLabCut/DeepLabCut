@@ -70,7 +70,7 @@ Use a chessboard as big as possible, ideally a chessboard with of at least 8x6 s
 
  (**CRITICAL!**) You must take images of a checkerboard to calibrate your images. Here are example boards you could print and use (mount it on a flat, hard surface!): https://markhedleyjones.com/projects/calibration-checkerboard-collection.
 - You must save the image pairs as .jpg files.
-- They should be named with the **camera-#** as the prefix, i.e. **camera-1-01.jpg** and **camera-2-01.jpg** for the first pair of images. plesae note, this cannot be changed after the project is created.
+- They should be named with the **camera-#** as the prefix, i.e. **camera-1-01.jpg** and **camera-2-01.jpg** for the first pair of images. Please note, this cannot be changed after the project is created.
 
 **TIP:** If you want to take a short video (vs. snapping pairs of frames) while you move the checkerboard around, you can use this command inside your conda environment (but outside of ipython!) to convert the video to **.jpg** frames (this will take the first 20 frames (set with ``-vframes``) and name them camera-1-001.jpg, etc; edit appropriately):
 

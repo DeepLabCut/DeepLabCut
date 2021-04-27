@@ -54,7 +54,7 @@ def convertannotationdata_fromwindows2unixstyle(
         if askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha":
             fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"])
             if os.path.exists(fn + ".h5"):
-                Data = pd.read_hdf(fn + ".h5", "df_with_missing")
+                Data = pd.read_hdf(fn + ".h5")
                 if win2linux:
                     convertpaths_to_unixstyle(Data, fn)
                 else:
@@ -170,8 +170,12 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4"):
     deeplabcut.analyze_videos_converth5_to_csv('/media/alex/experimentaldata/cheetahvideos','.mp4')
 
     """
-    h5_files = list(auxiliaryfunctions.grab_files_in_folder(video_folder, "h5", relative=False))
-    videos = auxiliaryfunctions.grab_files_in_folder(video_folder, videotype, relative=False)
+    h5_files = list(
+        auxiliaryfunctions.grab_files_in_folder(video_folder, "h5", relative=False)
+    )
+    videos = auxiliaryfunctions.grab_files_in_folder(
+        video_folder, videotype, relative=False
+    )
     for video in videos:
         if "_labeled" in video:
             continue
@@ -182,7 +186,7 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4"):
                 if "DLC" in scorer or "DeepCut" in scorer:
                     print("Found output file for scorer:", scorer)
                     print(f"Converting {file}...")
-                    df = pd.read_hdf(file, "df_with_missing")
+                    df = pd.read_hdf(file)
                     df.to_csv(file.replace(".h5", ".csv"))
     print("All pose files were converted.")
 
@@ -206,7 +210,7 @@ def merge_windowsannotationdataONlinuxsystem(cfg):
     for folder in annotationfolders:
         filename = os.path.join(folder, "CollectedData_" + cfg["scorer"] + ".h5")
         try:
-            data = pd.read_hdf(filename, "df_with_missing")
+            data = pd.read_hdf(filename)
             AnnotationData.append(data)
         except FileNotFoundError:
             print(filename, " not found (perhaps not annotated)")

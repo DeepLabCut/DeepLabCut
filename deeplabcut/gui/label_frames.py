@@ -71,9 +71,7 @@ def label_frames(
     os.chdir(str(wd))
     cfg = auxiliaryfunctions.read_config(config)
     if cfg.get("multianimalproject", False) or multiple_individualsGUI:
-        from deeplabcut.gui import (
-            multiple_individuals_labeling_toolbox,
-        )
+        from deeplabcut.gui import multiple_individuals_labeling_toolbox
 
         multiple_individuals_labeling_toolbox.show(config, config3d, sourceCam)
     else:

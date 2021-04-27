@@ -307,9 +307,7 @@ class TrackletVisualizer:
     def add_point(self, center, animal, bodypart, **kwargs):
         circle = patches.Circle(center, **kwargs)
         self.ax1.add_patch(circle)
-        dp = auxfun_drag.DraggablePoint(
-            circle, bodypart, animal,
-        )
+        dp = auxfun_drag.DraggablePoint(circle, bodypart, animal)
         dp.connect()
         self.dps.append(dp)
 
@@ -697,7 +695,7 @@ class TrackletVisualizer:
             tmpfolder, "machinelabels-iter" + str(self.manager.cfg["iteration"]) + ".h5"
         )
         if os.path.isfile(machinefile):
-            df_old = pd.read_hdf(machinefile, "df_with_missing")
+            df_old = pd.read_hdf(machinefile)
             df_joint = pd.concat([df_old, df])
             df_joint = df_joint[~df_joint.index.duplicated(keep="first")]
             df_joint.to_hdf(machinefile, key="df_with_missing", mode="w")
@@ -718,7 +716,7 @@ class TrackletVisualizer:
             print(
                 "A training dataset file is already found for this video. The refined machine labels are merged to this data!"
             )
-            df_orig = pd.read_hdf(output_path, "df_with_missing")
+            df_orig = pd.read_hdf(output_path)
             df_joint = pd.concat([df, df_orig])
             # Now drop redundant ones keeping the first one [this will make sure that the refined machine file gets preference]
             df_joint = df_joint[~df_joint.index.duplicated(keep="first")]

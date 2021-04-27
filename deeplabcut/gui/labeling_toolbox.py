@@ -58,7 +58,9 @@ class ImagePanel(BasePanel):
                     if self.sourceCam is None:
                         sourceCam = [
                             otherCam for otherCam in cams if cam not in otherCam
-                        ][0] #WHY?
+                        ][
+                            0
+                        ]  # WHY?
                     else:
                         sourceCam = self.sourceCam
 
@@ -80,12 +82,13 @@ class ImagePanel(BasePanel):
 
             try:
                 dataFrame = pd.read_hdf(
-                    os.path.join(sourceCam_path, "CollectedData_" + scorer + ".h5"),
-                    "df_with_missing",
+                    os.path.join(sourceCam_path, "CollectedData_" + scorer + ".h5")
                 )
                 dataFrame.sort_index(inplace=True)
             except IOError:
-                print("source camera images have not yet been labeled, or you have opened this folder in the wrong mode!")
+                print(
+                    "source camera images have not yet been labeled, or you have opened this folder in the wrong mode!"
+                )
                 return None, None, None
 
             # Find offset terms for drawing epipolar Lines
@@ -242,7 +245,7 @@ class ScrollPanel(SP.ScrolledPanel):
 class MainFrame(BaseFrame):
     def __init__(self, parent, config, imtypes, config3d, sourceCam):
         super(MainFrame, self).__init__(
-            "DeepLabCut2.0 - Labeling ToolBox", parent, imtypes,
+            "DeepLabCut2.0 - Labeling ToolBox", parent, imtypes
         )
 
         self.statusbar.SetStatusText(
@@ -371,9 +374,7 @@ class MainFrame(BaseFrame):
             inv = self.axes.transData.inverted()
             pos_rel = list(inv.transform(pos_abs))
             y1, y2 = self.axes.get_ylim()
-            pos_rel[1] = (
-                y1 - pos_rel[1] + y2
-            )  # Recall y-axis is inverted
+            pos_rel[1] = y1 - pos_rel[1] + y2  # Recall y-axis is inverted
             i = np.nanargmin(
                 [self.calc_distance(*dp.point.center, *pos_rel) for dp in self.drs]
             )
@@ -620,8 +621,7 @@ class MainFrame(BaseFrame):
         # Reading the existing dataset,if already present
         try:
             self.dataFrame = pd.read_hdf(
-                os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5"),
-                "df_with_missing",
+                os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5")
             )
             self.dataFrame.sort_index(inplace=True)
             self.prev.Enable(True)
@@ -894,9 +894,7 @@ class MainFrame(BaseFrame):
                 )
             ]
             self.axes.add_patch(circle[0])
-            self.dr = auxfun_drag.DraggablePoint(
-                circle[0], self.bodyparts[bpindex]
-            )
+            self.dr = auxfun_drag.DraggablePoint(circle[0], self.bodyparts[bpindex])
             self.dr.connect()
             self.dr.coords = MainFrame.getLabels(self, self.iter)[bpindex]
             self.drs.append(self.dr)
@@ -952,7 +950,6 @@ class MainFrame(BaseFrame):
             self.canvas.mpl_connect("button_release_event", self.onButtonRelease)
         else:
             self.slider.Enable(False)
-
 
 
 def show(config, config3d, sourceCam, imtypes=["*.png"]):

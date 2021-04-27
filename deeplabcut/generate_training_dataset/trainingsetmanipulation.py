@@ -143,7 +143,7 @@ def dropduplicatesinannotatinfiles(config):
     for folder in folders:
         try:
             fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
-            DC = pd.read_hdf(fn, "df_with_missing")
+            DC = pd.read_hdf(fn)
             numimages = len(DC.index)
             DC = DC[~DC.index.duplicated(keep="first")]
             if len(DC.index) < numimages:
@@ -175,7 +175,7 @@ def dropannotationfileentriesduetodeletedimages(config):
 
     for folder in folders:
         fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
-        DC = pd.read_hdf(fn, "df_with_missing")
+        DC = pd.read_hdf(fn)
         dropped = False
         for imagename in DC.index:
             if os.path.isfile(os.path.join(cfg["project_path"], imagename)):
@@ -208,7 +208,7 @@ def dropimagesduetolackofannotation(config):
 
     for folder in folders:
         fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
-        DC = pd.read_hdf(fn, "df_with_missing")
+        DC = pd.read_hdf(fn)
         dropped = False
         annotatedimages = [fn.split(os.sep)[-1] for fn in DC.index]
         imagelist = [fns for fns in os.listdir(str(folder)) if ".png" in fns]
@@ -305,7 +305,7 @@ def cropimagesandlabels(
     ):  # this dict is kept for storing links to original full-sized videos
         cfg["video_sets_original"] = {}
 
-    for video in videos:
+    for video in list(videos):
         vidpath, vidname, videotype = _robust_path_split(video)
         folder = os.path.join(project_path, "labeled-data", vidname)
         if userfeedback:
@@ -322,7 +322,7 @@ def cropimagesandlabels(
             pd_index = []
 
             fn = os.path.join(folder, f"CollectedData_{cfg['scorer']}.h5")
-            df = pd.read_hdf(fn, "df_with_missing")
+            df = pd.read_hdf(fn)
             data = df.values.reshape((df.shape[0], -1, 2))
             sep = "/" if "/" in df.index[0] else "\\"
             if sep != os.path.sep:
@@ -397,7 +397,9 @@ def cropimagesandlabels(
                 # moving old entry to _original, dropping it from video_set and update crop parameters
                 video_orig = sep.join((vidpath, vidname + videotype))
                 if video_orig not in cfg["video_sets_original"]:
-                    cfg["video_sets_original"][video_orig] = cfg["video_sets"][video_orig]
+                    cfg["video_sets_original"][video_orig] = cfg["video_sets"][
+                        video_orig
+                    ]
                     cfg["video_sets"].pop(video_orig)
                     cfg["video_sets"][sep.join((vidpath, new_vidname + videotype))] = {
                         "crop": ", ".join(map(str, [0, temp_size[1], 0, temp_size[0]]))
@@ -461,8 +463,7 @@ def check_labels(
     for folder in folders:
         try:
             DataCombined = pd.read_hdf(
-                os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5"),
-                "df_with_missing",
+                os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
             )
             if cfg.get("multianimalproject", False):
                 color_by = "individual" if visualizeindividuals else "bodypart"
@@ -575,7 +576,7 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
             data_path / filename, f'CollectedData_{cfg["scorer"]}.h5'
         )
         try:
-            data = pd.read_hdf(file_path, "df_with_missing")
+            data = pd.read_hdf(file_path)
             AnnotationData.append(data)
         except FileNotFoundError:
             print(
@@ -715,7 +716,7 @@ def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
     fn = os.path.join(project_path, trainingsetfolder, "CollectedData_" + cfg["scorer"])
 
     try:
-        Data = pd.read_hdf(fn + ".h5", "df_with_missing")
+        Data = pd.read_hdf(fn + ".h5")
     except FileNotFoundError:
         Data = merge_annotateddatasets(
             cfg,
@@ -888,7 +889,11 @@ def create_training_dataset(
         if net_type is None:  # loading & linking pretrained models
             net_type = cfg.get("default_net_type", "resnet_50")
         else:
-            if "resnet" in net_type or "mobilenet" in net_type or "efficientnet" in net_type:
+            if (
+                "resnet" in net_type
+                or "mobilenet" in net_type
+                or "efficientnet" in net_type
+            ):
                 pass
             else:
                 raise ValueError("Invalid network type:", net_type)

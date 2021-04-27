@@ -147,7 +147,9 @@ class Create_training_dataset(wx.Panel):
             )
             self.cropandlabel.Bind(wx.EVT_RADIOBOX, self.input_crop_size)
             self.cropandlabel.SetSelection(0)
-            self.crop_text = wx.StaticBox(self, label="Crop settings (set to smaller than your input images)")
+            self.crop_text = wx.StaticBox(
+                self, label="Crop settings (set to smaller than your input images)"
+            )
             self.crop_sizer = wx.StaticBoxSizer(self.crop_text, wx.VERTICAL)
             self.crop_widgets = []
             for name, val in [

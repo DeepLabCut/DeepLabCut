@@ -480,10 +480,10 @@ def GetEvaluationFolder(trainFraction, shuffle, cfg, modelprefix=""):
     Task = cfg["Task"]
     date = cfg["date"]
     iterate = "iteration-" + str(cfg["iteration"])
-    if 'eval_prefix' in cfg:
-        eval_prefix = cfg['eval_prefix']+'/'
+    if "eval_prefix" in cfg:
+        eval_prefix = cfg["eval_prefix"] + "/"
     else:
-        eval_prefix = 'evaluation-results'+'/'
+        eval_prefix = "evaluation-results" + "/"
     return Path(
         modelprefix,
         eval_prefix
@@ -579,7 +579,7 @@ def GetScorerName(
     if (
         "resnet" in dlc_cfg["net_type"]
     ):  # ABBREVIATE NETWORK NAMES -- esp. for mobilenet!
-        netname = dlc_cfg["net_type"].replace(" _", "")
+        netname = dlc_cfg["net_type"].replace("_", "")
     elif "mobilenet" in dlc_cfg["net_type"]:  # mobilenet >> mobnet_100; mobnet_35 etc.
         netname = "mobnet_" + str(int(float(dlc_cfg["net_type"].split("_")[-1]) * 100))
     elif "efficientnet" in dlc_cfg["net_type"]:
@@ -718,7 +718,7 @@ def find_analyzed_data(folder, videoname, scorer, filtered=False, track_method="
         tracker = "_sk"
     elif track_method == "box":
         tracker = "_bx"
-    elif track_method == 'ellipse':
+    elif track_method == "ellipse":
         tracker = "_el"
     else:
         tracker = ""
@@ -774,8 +774,8 @@ def load_detection_data(video, scorer, track_method):
         tracker = "sk"
     elif track_method == "box":
         tracker = "bx"
-    elif track_method == 'ellipse':
-        tracker = 'el'
+    elif track_method == "ellipse":
+        tracker = "el"
     else:
         raise ValueError(f"Unrecognized track_method={track_method}")
 

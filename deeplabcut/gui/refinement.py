@@ -93,7 +93,7 @@ class ImagePanel(BasePanel):
             self.axes.set_xlim(xlim)
             self.axes.set_ylim(ylim)
         self.figure.canvas.draw()
-        if not hasattr(self, 'toolbar'):
+        if not hasattr(self, "toolbar"):
             self.toolbar = NavigationToolbar(self.canvas)
         return (self.figure, self.axes, self.canvas, self.toolbar)
 
@@ -145,9 +145,7 @@ class ScrollPanel(SP.ScrolledPanel):
 
 class MainFrame(BaseFrame):
     def __init__(self, parent, config):
-        super(MainFrame, self).__init__(
-            "DeepLabCut2.0 - Refinement ToolBox", parent,
-        )
+        super(MainFrame, self).__init__("DeepLabCut2.0 - Refinement ToolBox", parent)
         self.Bind(wx.EVT_CHAR_HOOK, self.OnKeyPressed)
 
         ###################################################################################################################################################
@@ -279,9 +277,7 @@ class MainFrame(BaseFrame):
             inv = self.axes.transData.inverted()
             pos_rel = list(inv.transform(pos_abs))
             y1, y2 = self.axes.get_ylim()
-            pos_rel[1] = (
-                y1 - pos_rel[1] + y2
-            )  # Recall y-axis is inverted
+            pos_rel[1] = y1 - pos_rel[1] + y2  # Recall y-axis is inverted
             i = np.nanargmin(
                 [self.calc_distance(*dp.point.center, *pos_rel) for dp in self.drs]
             )
@@ -394,7 +390,7 @@ class MainFrame(BaseFrame):
         self.iter = 0
 
         if os.path.isfile(self.dataname):
-            self.Dataframe = pd.read_hdf(self.dataname, "df_with_missing")
+            self.Dataframe = pd.read_hdf(self.dataname)
             self.Dataframe.sort_index(inplace=True)
             self.scorer = self.Dataframe.columns.get_level_values(0)[0]
 
@@ -739,8 +735,7 @@ class MainFrame(BaseFrame):
                 "A training dataset file is already found for this video. The refined machine labels are merged to this data!"
             )
             DataU1 = pd.read_hdf(
-                os.path.join(self.dir, "CollectedData_" + self.humanscorer + ".h5"),
-                "df_with_missing",
+                os.path.join(self.dir, "CollectedData_" + self.humanscorer + ".h5")
             )
             # combine datasets Original Col. + corrected machinefiles:
             DataCombined = pd.concat([self.Dataframe, DataU1])
@@ -887,9 +882,7 @@ class MainFrame(BaseFrame):
 
             self.axes.add_patch(circle[0])
             self.dr = auxfun_drag.DraggablePoint(
-                circle[0],
-                bp,
-                likelihood=self.likelihood
+                circle[0], bp, likelihood=self.likelihood
             )
             self.dr.connect()
             self.dr.coords = MainFrame.getLabels(self, self.iter)[bpindex]
