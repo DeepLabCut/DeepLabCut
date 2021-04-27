@@ -372,24 +372,6 @@ def _calc_within_between_pafs(
     return (within_train, within_test), (between_train, between_test)
 
 
-def _calibrate_distances(data, metadata):
-    d = data.copy()
-    d.pop('metadata', None)
-    train_inds = set(metadata["data"]["trainIndices"])
-    dists = defaultdict(list)
-    for i, dict_ in enumerate(tqdm(d.values())):
-        if i in train_inds:
-            for e, v in dict_['prediction']['costs'].items():
-                dists[e].extend(np.diag(v['distance']))
-    arr = np.ma.masked_invalid(np.vstack(list(dists.values())))
-    av = arr.mean(axis=1)
-    sd = arr.std(axis=1)
-    funcs = dict()
-    for ind in av.nonzero()[0]:
-        funcs[ind] = lambda x, ind=ind: np.exp(-(x - av[ind]) ** 2 / sd[ind] ** 2)
-    return funcs
-
-
 def _benchmark_paf_graphs(
     config,
     inference_cfg,
@@ -499,83 +481,6 @@ def _benchmark_paf_graphs(
         all_scores,
         group.agg(["mean", "std"]).T,
         all_metrics,
-    )
-
-
-def compare_best_and_worst_graphs(
-    config,
-    inference_config,
-    full_data_file,
-    metadata_file,
-    pcutoff=0.3,
-    greedy=False,
-    metric="auc",
-    naive_edges=None,
-):
-    cfg = auxiliaryfunctions.read_config(config)
-    inf_cfg = auxiliaryfunctions.read_plainconfig(inference_config)
-    inf_cfg_temp = inf_cfg.copy()
-    inf_cfg_temp["pcutoff"] = pcutoff
-
-    with open(full_data_file, "rb") as file:
-        data = pickle.load(file)
-    with open(metadata_file, "rb") as file:
-        metadata = pickle.load(file)
-
-    params = _set_up_evaluation(data)
-    to_ignore = _filter_unwanted_paf_connections(config, params["paf_graph"])
-    paf_inds_best, thresholds = _get_n_best_paf_graphs(
-        data,
-        metadata,
-        params["paf_graph"],
-        ignore_inds=to_ignore,
-        metric=metric,
-    )
-    results_best = _benchmark_paf_graphs(
-        cfg,
-        inf_cfg_temp,
-        data,
-        paf_inds_best,
-        greedy,
-    )
-    paf_inds_worst, thresholds = _get_n_best_paf_graphs(
-        data,
-        metadata,
-        params["paf_graph"],
-        which="worst",
-        ignore_inds=to_ignore,
-        metric=metric,
-    )
-    results_worst = _benchmark_paf_graphs(
-        cfg,
-        inf_cfg_temp,
-        data,
-        paf_inds_worst,
-        greedy,
-    )
-    if naive_edges is None:
-        inds = sorted(set(ind for i in thresholds for ind in params["paf_graph"][i]))
-        naive_edges = list(zip(inds, inds[1:]))
-    naive_graph = [params["paf_graph"].index(list(edge)) for edge in naive_edges]
-    paf_inds_naive, thresholds = _get_n_best_paf_graphs(
-        data,
-        metadata,
-        params["paf_graph"],
-        root=naive_graph,
-        which="worst",
-        ignore_inds=to_ignore,
-        metric=metric,
-    )
-    results_naive = _benchmark_paf_graphs(
-        cfg,
-        inf_cfg_temp,
-        data,
-        paf_inds_naive,
-        greedy,
-    )
-    return pd.concat(
-        (results_naive[1], results_best[1], results_worst[1]),
-        keys=["naive", "best", "worst"],
     )
 
 
