@@ -118,9 +118,9 @@ def test_tracklet_affinities(fake_tracklet):
 def test_stitcher_wrong_inputs(fake_tracklet):
     with pytest.raises(IOError):
         _ = TrackletStitcher([], n_tracks=2)
-    with pytest.raises(IOError):
+    with pytest.raises(ValueError):
         _ = TrackletStitcher([fake_tracklet], n_tracks=1)
-    with pytest.raises(IOError):
+    with pytest.raises(ValueError):
         _ = TrackletStitcher([fake_tracklet], n_tracks=2, min_length=2)
 
 
@@ -146,6 +146,15 @@ def test_stitcher(tmpdir_factory, fake_stitcher):
     fake_stitcher.G.remove_edge('source', '0in')
     with pytest.warns(UserWarning):
         fake_stitcher.stitch(add_back_residuals=True)
+
+
+def test_stitcher_plot(fake_stitcher):
+    fake_stitcher.build_graph(max_gap=1)
+    fake_stitcher.draw_graph(with_weights=True)
+    fake_stitcher.stitch(add_back_residuals=True)
+    fake_stitcher.plot_tracklets()
+    fake_stitcher.plot_paths()
+    fake_stitcher.plot_tracks()
 
 
 def test_tracklet_interpolate(real_tracklets):
