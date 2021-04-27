@@ -174,7 +174,7 @@ class Create_training_dataset(wx.Panel):
         self.hbox3.Add(self.userfeedback, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         if config_file.get("multianimalproject", False):
-            print("more networks are available soon for maDLC, but currently this uses DLC-ResNet50 only")
+
             self.model_comparison_choice = "No"
         else:
             self.model_comparison_choice = wx.RadioBox(
@@ -199,6 +199,7 @@ class Create_training_dataset(wx.Panel):
             )
 
             networks = [
+                "dlcrnet_ms5",
                 "resnet_50",
                 "resnet_101",
                 "resnet_152",
@@ -208,8 +209,7 @@ class Create_training_dataset(wx.Panel):
                 "mobilenet_v2_0.35",
                 "efficientnet-b0",
                 "efficientnet-b3",
-                "efficientnet-b6",
-                "dlcrnet_ms5",
+                "efficientnet-b6"
             ]
             augmentation_methods = ["default", "tensorpack", "imgaug"]
             self.network_box = wx.StaticBox(self, label="Select the networks")
