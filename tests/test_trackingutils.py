@@ -69,7 +69,7 @@ def test_sort_ellipse():
 
 def test_tracking(real_assemblies, real_tracklets):
     tracklets_ref = real_tracklets.copy()
-    _ = tracklets_ref.pop("header")
+    _ = tracklets_ref.pop("header", None)
     tracklets = dict()
     mot_tracker = trackingutils.SORTEllipse(1, 1, 0.6)
     for ind, assemblies in real_assemblies.items():

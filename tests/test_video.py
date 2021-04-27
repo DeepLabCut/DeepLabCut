@@ -22,7 +22,7 @@ def test_reader_wrong_inputs(tmp_path):
         VideoWriter(str(fake_vid))
 
 
-def test_reader_check_integrity(tmp_path, video_clip):
+def test_reader_check_integrity(video_clip):
     video_clip.check_integrity()
     log_file = os.path.join(video_clip.directory, f"{video_clip.name}.log")
     assert os.path.getsize(log_file) == 0
