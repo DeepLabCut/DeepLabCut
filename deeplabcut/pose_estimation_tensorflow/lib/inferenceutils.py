@@ -188,7 +188,7 @@ class Assembly:
         return True
 
     def calc_pairwise_distances(self):
-        return pdist(self.data, metric='sqeuclidean')
+        return pdist(self.xy, metric='sqeuclidean')
 
 
 class Assembler:

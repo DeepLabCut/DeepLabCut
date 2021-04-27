@@ -7,7 +7,6 @@ from scipy.spatial.distance import squareform
 
 
 TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
-pickled_data = os.path.join(TEST_DATA_DIR, "trimouse_full.pickle")
 
 
 def test_conv_square_to_condensed_indices():
@@ -110,7 +109,7 @@ def test_assembly():
 
 
 def test_assembler(tmpdir_factory, real_assemblies):
-    with open(pickled_data, "rb") as file:
+    with open(os.path.join(TEST_DATA_DIR, "trimouse_full.pickle"), "rb") as file:
         data = pickle.load(file)
     with pytest.warns(UserWarning):
         ass = inferenceutils.Assembler(
@@ -148,3 +147,33 @@ def test_assembler(tmpdir_factory, real_assemblies):
     output_name = tmpdir_factory.mktemp('data').join('fake.h5')
     ass.to_h5(output_name)
     ass.to_pickle(str(output_name).replace('h5', 'pickle'))
+
+
+def test_assembler_calibration(real_assemblies):
+    with open(os.path.join(TEST_DATA_DIR, "trimouse_full.pickle"), "rb") as file:
+        data = pickle.load(file)
+    ass = inferenceutils.Assembler(
+        data,
+        max_n_individuals=3,
+        n_multibodyparts=12,
+    )
+    ass.calibrate(os.path.join(TEST_DATA_DIR, "trimouse_calib.h5"))
+    assert ass._kde is not None
+    assert ass.safe_edge
+
+    assembly = real_assemblies[0][0]
+    mahal, proba = ass.calc_assembly_mahalanobis_dist(
+        assembly, return_proba=True
+    )
+    assert np.isclose(mahal, 9.976, atol=1e-3)
+    assert np.isclose(proba, 1, atol=1e-3)
+
+    j1 = inferenceutils.Joint(tuple(assembly.xy[0]), label=0)
+    j2 = inferenceutils.Joint(tuple(assembly.xy[1]), label=1)
+    link = inferenceutils.Link(j1, j2)
+    p = ass.calc_link_probability(link)
+    assert np.isclose(p, 0.995, atol=1e-3)
+
+
+def test_find_outlier_assemblies(real_assemblies):
+    assert len(inferenceutils.find_outlier_assemblies(real_assemblies)) == 644
