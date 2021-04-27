@@ -181,6 +181,7 @@ def create_new_project(
     if multianimal:  # parameters specific to multianimal project
         cfg_file, ruamelFile = auxiliaryfunctions.create_config_template(multianimal)
         cfg_file["multianimalproject"] = multianimal
+        cfg_file["identity"] = false
         cfg_file["individuals"] = ["individual1", "individual2", "individual3"]
         cfg_file["multianimalbodyparts"] = ["bodypart1", "bodypart2", "bodypart3"]
         cfg_file["uniquebodyparts"] = []

@@ -164,8 +164,8 @@ def create_multianimaltraining_dataset(
 
             # Make training file!
             data = []
-            print("Creating training data for ", shuffle, trainFraction)
-            print("This can take some time...")
+            print("Creating training data for: Shuffle:", shuffle, "TrainFraction: ", trainFraction)
+            print("This can take some time ...")
             for jj in tqdm(trainIndices):
                 jointsannotated = False
                 H = {}
