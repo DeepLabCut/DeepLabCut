@@ -305,7 +305,7 @@ def cropimagesandlabels(
     ):  # this dict is kept for storing links to original full-sized videos
         cfg["video_sets_original"] = {}
 
-    for video in videos:
+    for video in list(videos):
         vidpath, vidname, videotype = _robust_path_split(video)
         folder = os.path.join(project_path, "labeled-data", vidname)
         if userfeedback:
