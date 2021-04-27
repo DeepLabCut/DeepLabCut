@@ -341,6 +341,7 @@ def create_multianimaltraining_dataset(
                     "multi_step": [[1e-4, 7500], [5 * 1e-5, 12000], [1e-5, 200000]],
                     "save_iters": 10000,
                     "display_iters": 500,
+                    "num_idchannel": len(cfg["individuals"]) if cfg.get("identity", False) else 0
                 }
 
                 defaultconfigfile = os.path.join(dlcparent_path, "pose_cfg.yaml")
@@ -364,6 +365,7 @@ def create_multianimaltraining_dataset(
                     "partaffinityfield_graph",
                     "num_limbs",
                     "dataset_type",
+                    "num_idchannel",
                 ]
 
                 trainingsetmanipulation.MakeTest_pose_yaml(
