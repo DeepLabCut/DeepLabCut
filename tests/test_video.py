@@ -60,6 +60,8 @@ def test_reader_set_frame(video_clip):
     assert int(video_clip.video.get(POS_FRAMES)) == 2
     video_clip.set_to_frame(len(video_clip) + 10)
     assert int(video_clip.video.get(POS_FRAMES)) == len(video_clip) - 1
+    video_clip.reset()
+    assert int(video_clip.video.get(POS_FRAMES)) == 0
 
 
 @pytest.mark.parametrize("shrink, crop", [(1, False), (1, True), (2, False), (2, True)])

@@ -81,7 +81,35 @@ def test_link():
     assert link.to_vector() == [*pos1, *pos2]
 
 
-def test_assembler(real_assemblies):
+def test_assembly():
+    ass = inferenceutils.Assembly(3)
+    assert len(ass) == 0
+
+    j1 = inferenceutils.Joint((1, 1), label=0)
+    j2 = inferenceutils.Joint((1, 1), label=1)
+    assert ass.add_link(inferenceutils.Link(j1, j2), store_dict=True)
+    assert len(ass) == 2
+    assert ass.data[j2.label, 0] == 1
+    assert ass.data[j2.label, -1] == -1
+    assert ass.area == 0
+    assert ass.intersection_with(ass) == 1.0
+    assert np.all(np.isnan(ass._dict['data']))
+
+    ass.remove_joint(j2)
+    assert len(ass) == 1
+    assert np.all(np.isnan(ass.data[j2.label]))
+
+    ass2 = inferenceutils.Assembly(2)
+    ass2.add_link(inferenceutils.Link(j1, j2))
+    with pytest.raises(ValueError):
+        _ = ass + ass2
+    ass2.remove_joint(j1)
+    assert ass2 not in ass
+    ass3 = ass + ass2
+    assert len(ass3) == 2
+
+
+def test_assembler(tmpdir_factory, real_assemblies):
     with open(pickled_data, "rb") as file:
         data = pickle.load(file)
     with pytest.warns(UserWarning):
@@ -116,3 +144,7 @@ def test_assembler(real_assemblies):
     assert len(ass.assemblies) == len(real_assemblies)
     assert (sum(1 for a in ass.assemblies.values() for _ in a)
             == sum(1 for a in real_assemblies.values() for _ in a))
+
+    output_name = tmpdir_factory.mktemp('data').join('fake.h5')
+    ass.to_h5(output_name)
+    ass.to_pickle(str(output_name).replace('h5', 'pickle'))
