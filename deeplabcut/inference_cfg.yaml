@@ -4,13 +4,8 @@
 variant: 0
 
 ##############################################################################
-#### Assembly of PAFs to individuals (should be crossvalidated)
-#### Happens in evaluation step.
+#### Assembly of PAFs to individuals
 ##############################################################################
-
-# Filtering bodyparts:
-# Least strength of a bodypart detection (to be included in assembly)
-detectionthresholdsquare: 0.1
 
 # Filtering connections:
 # Least strength of a paf cost (to be included in assembly)
@@ -22,7 +17,7 @@ method: 'm1'
 #least number of connections (to actually form an animal)
 minimalnumberofconnections: willbeautomaticallyupdatedbycreate_training_datasetcode
 #reasonable default: len(cfg['multianimalbodyparts'])/2
-pcutoff: 0.5
+pcutoff: 0.1
 
 # max. number of objects to keep:
 topktoretain: willbeautomaticallyupdatedbycreate_training_datasetcode
@@ -38,8 +33,8 @@ withid: False
 boundingboxslack : 0
 
 # Intersection over Union (IoU) threshold for linking two bounding boxes
-iou_threshold: .2
+iou_threshold: .6
 # maximum duration of a lost tracklet before it's considered a "new animal" (in frames)
-max_age: 100
+max_age: 1
 # minimum number of consecutive frames before a detection is tracked
-min_hits: 3
+min_hits: 1
