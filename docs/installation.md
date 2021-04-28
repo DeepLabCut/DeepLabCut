@@ -53,7 +53,7 @@ NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)
 
 **Great, that's it! DeepLabCut is installed!**
 
-Next, [head over to the Docs to decide whihc mode to use!](/docs#readme)
+Next, [head over to the Docs to decide which mode to use DeepLabCut in. You have both standard and multi-animal installed.](/docs#readme)
 
 If you want to test your installation in an automatic way, see: :video_camera: [how to test your installation](https://www.youtube.com/watch?v=IOWtKn3l33s)!
 
