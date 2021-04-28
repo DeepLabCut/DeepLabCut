@@ -14,12 +14,6 @@ If you are new to DeepLabCut, we have 3 resources we recommend before jumping in
 - :green_heart: Decide on how you want to interact with the code (also info is contained within the guides above); if you are new, we recommend the Project GUI, but there are several options, so if you want to [check it out, see more here!](/docs/UseOverviewGuide.md#the-options-for-using-deeplabcut)
 
 
-
-
-We provide a lot of documentation on how to use DeepLabCut - it can be a bit overwhelming when you get started, so we made a quick video to help you navigate the docs:  **Click on the image!** :arrow_down:
-
-[![Watch the video](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1582931103893-0YCXSXAKJR218B101W38/ke17ZwdGBToddI8pDm48kJ1KQcuvke5FTEGELkUtJ-tZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIrueQmuW2z7_VjRAJlsMCy1JrSO6-zKAUtz5k3N9334U/learningpanel+%284%29.png?format=1000w)](https://www.youtube.com/watch?v=A9qZidI7tL8)
-
 ## More resources for help, additional docs, and roadmap of the project!
    
  - [DeepLabCut 3D](/docs/Overviewof3D.md)
@@ -31,3 +25,7 @@ We provide a lot of documentation on how to use DeepLabCut - it can be a bit ove
  - [How to Contribute to DeepLabCut](/CONTRIBUTING.md) and the [Code of Conduct](/CODE_OF_CONDUCT.md)
  
  - [The Authors of DeepLabCut](/AUTHORS)
+
+A quick video to help you navigate the docs:  **Click on the image!** :arrow_down:
+
+[![Watch the video](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1582931103893-0YCXSXAKJR218B101W38/ke17ZwdGBToddI8pDm48kJ1KQcuvke5FTEGELkUtJ-tZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIrueQmuW2z7_VjRAJlsMCy1JrSO6-zKAUtz5k3N9334U/learningpanel+%284%29.png?format=1000w)](https://www.youtube.com/watch?v=A9qZidI7tL8)
