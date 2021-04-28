@@ -95,14 +95,6 @@ The ONLY thing you need to do **first** if you have an NVIDIA GPU, NVIDIA driver
 
 - Here we provide notes on how to install and check your GPU use with TensorFlow (which is used by DeepLabCut and already installed with the Anaconda files above). Thus, you do not need to independently install tensorflow.
 
-**All of the TensorFlow 1.x versions work with DeepLabCut**. But, please be mindful different versions of TensorFlow require different CUDA versions.
-
-Note, **if you wish to use TensorFlow 2.x**, then you should use currently [DeepLabCut-core](https://github.com/DeepLabCut/DeepLabCut-core). Here is a [blog post](http://www.mackenziemathislab.org/deeplabcutblog/2020/11/23/rolling-up-to-tensorflow-2) describing how to do this and the roadmap for the eventual change to tensorflow 2 for this repo as well.
-
-As the combination of TensorFlow and CUDA matters, we strongly encourgae you to **check your driver/cuDNN/CUDA/TensorFlow versions** [on this StackOverflow post](https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-304-125/30820690#30820690).
-
-
-Here is an example on how to install **the GPU driver + CUDA 10** will follow here:
 
 **FIRST**, install a driver for your GPU (and compatable up to CUDA 10). Find DRIVER HERE: https://www.nvidia.com/download/index.aspx
 - check which driver is installed by typing this into the terminal: ``nvidia-smi``.
@@ -111,7 +103,12 @@ Here is an example on how to install **the GPU driver + CUDA 10** will follow he
 
 **THIRD:** Follow the steps above to get the `DLC-GPU` conda file and install it!
 
-- To check your GPU is working, in the terminal, run:
+##### Notes:
+
+ - **All of the TensorFlow 1.x versions work with DeepLabCut**. But, please be mindful different versions of TensorFlow require different CUDA versions.
+ - As the combination of TensorFlow and CUDA matters, we strongly encourgae you to **check your driver/cuDNN/CUDA/TensorFlow versions** [on this StackOverflow post](https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-304-125/30820690#30820690).
+ - **if you wish to use TensorFlow 2.x**, then you should use currently [DeepLabCut-core](https://github.com/DeepLabCut/DeepLabCut-core). Here is a [blog post](http://www.mackenziemathislab.org/deeplabcutblog/2020/11/23/rolling-up-to-tensorflow-2) describing how to do this and the roadmap for the eventual change to tensorflow 2 for this repo as well.
+ - To check your GPU is working, in the terminal, run:
 
   `nvcc -V` to check your installed version(s).
 
