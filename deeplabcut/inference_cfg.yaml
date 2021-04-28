@@ -29,7 +29,7 @@ topktoretain: willbeautomaticallyupdatedbycreate_training_datasetcode
 #reasonable default: len(cfg['individuals'])+1*(len(cfg['uniquebodyparts'])>0)
 
 # Also extract ID:
-withid: False #TODO: set automatically (if >0 id channels!)
+withid: False
 
 ##############################################################################
 #### Tracker variables (should be crossvalidated)
