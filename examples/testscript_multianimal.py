@@ -11,7 +11,7 @@ if __name__ == "__main__":
     SCORER = "dlc_team"
     NUM_FRAMES = 5
     TRAIN_SIZE = 0.8
-    NET = "resnet_50"
+    NET = "dlcrnet_ms5"
     # NET = "efficientnet-b0"
     N_ITER = 5
 
@@ -111,6 +111,9 @@ if __name__ == "__main__":
 
     print("Network evaluated....")
 
+    print("Extracting maps...")
+    deeplabcut.extract_save_all_maps(config_path, Indices=[0, 1, 2])
+
     new_video_path = deeplabcut.ShortenVideo(
         video_path,
         start="00:00:00",
@@ -142,8 +145,6 @@ if __name__ == "__main__":
     )
     print("Tracklets created...")
 
-    print("Extracting maps...")
-    deeplabcut.extract_save_all_maps(config_path, Indices=[0, 1, 2])
 
     print("Create data file...")
     picklefile = os.path.splitext(new_video_path)[0] + scorer + "_el.pickle"
