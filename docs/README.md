@@ -8,10 +8,8 @@ If you are new to DeepLabCut, we have 3 resources we recommend before jumping in
 
 - :information_desk_person: Decide on your needs: there are **two main modes, standard DeepLabCut or multi-animal DeepLabCut**. We highly recommend carefully considering which one is best for your needs. For example, a white mouse + black mouse would call for standard, while two black mice would use multi-animal. **:blue_heart: [Important Information on how to use DLC in different scenarios (single vs multi animal)](/docs/UseOverviewGuide.md#important-information-on-using-deeplabcut)** Then pick: 
 
-- :chart_with_upwards_trend: (1) [How to use standard DeepLabCut](/docs/standardDeepLabCut_UserGuide.md) 
-- :chart_with_upwards_trend: (2) [How to use multi-animal DeepLabCut](/docs/maDLC_UserGuide.md)
-
-- :green_heart: Decide on how you want to interact with the code (also info is contained within the guides above); if you are new, we recommend the Project GUI, but there are several options, so if you want to [check it out, see more here!](/docs/UseOverviewGuide.md#the-options-for-using-deeplabcut)
+- :chart_with_upwards_trend: **(1) [How to use standard DeepLabCut](/docs/standardDeepLabCut_UserGuide.md)** 
+- :chart_with_upwards_trend: **(2) [How to use multi-animal DeepLabCut](/docs/maDLC_UserGuide.md)**
 
 
 ## More resources for help, additional docs, and roadmap of the project!
