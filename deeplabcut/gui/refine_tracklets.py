@@ -37,7 +37,7 @@ class Refine_tracklets(wx.Panel):
         # design the panel
         sizer = wx.GridBagSizer(5, 5)
 
-        text = wx.StaticText(self, label="DeepLabCut - Tracklets: Extract and Refine")
+        text = wx.StaticText(self, label="DeepLabCut - Tracklets: Extract/Refine")
         sizer.Add(text, pos=(0, 0), flag=wx.TOP | wx.LEFT | wx.BOTTOM, border=15)
         # Add logo of DLC
         icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(LOGO_PATH))
@@ -112,7 +112,7 @@ class Refine_tracklets(wx.Panel):
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
 
-        slider_swap_text = wx.StaticBox(self, label="Specify the min swap fraction")
+        slider_swap_text = wx.StaticBox(self, label="Specify the min swap length to highlight")
         slider_swap_sizer = wx.StaticBoxSizer(slider_swap_text, wx.VERTICAL)
         self.slider_swap = wx.SpinCtrl(self, value="2")
         slider_swap_sizer.Add(self.slider_swap, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
