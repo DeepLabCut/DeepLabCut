@@ -386,6 +386,7 @@ def create_multianimaltraining_dataset(
                     ),
                     "topktoretain": len(cfg["individuals"])
                     + 1 * (len(cfg["uniquebodyparts"]) > 0),
+                    "withid": cfg.get("identity", False),
                 }
                 trainingsetmanipulation.MakeInference_yaml(
                     items2change, path_inference_config, defaultinference_configfile
