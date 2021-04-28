@@ -299,6 +299,7 @@ def evaluate_multianimal_full(
                                 + Snapshots[snapindex],
                             )
                             auxiliaryfunctions.attempttomakefolder(foldername)
+                            fig, ax = visualization.create_minimal_figure()
 
                         # print(dlc_cfg)
                         # Specifying state of model (snapshot / training state)
@@ -390,7 +391,12 @@ def evaluate_multianimal_full(
                                 gt = temp_xy.values.reshape(
                                     (-1, 2, temp_xy.shape[1])
                                 ).T.swapaxes(1, 2)
-                                fig = visualization.make_multianimal_labeled_image(
+                                h, w, _ = np.shape(frame)
+                                fig.set_size_inches(w / 100, h / 100)
+                                ax.set_xlim(0, w)
+                                ax.set_ylim(0, h)
+                                ax.invert_yaxis()
+                                ax = visualization.make_multianimal_labeled_image(
                                     frame,
                                     gt,
                                     coords_pred,
@@ -399,14 +405,15 @@ def evaluate_multianimal_full(
                                     cfg["dotsize"],
                                     cfg["alphavalue"],
                                     cfg["pcutoff"],
+                                    ax=ax
                                 )
-
                                 visualization.save_labeled_frame(
                                     fig,
                                     image_path,
                                     foldername,
                                     imageindex in trainIndices,
                                 )
+                                visualization.erase_artists(ax)
 
                         sess.close()  # closes the current tf session
 
