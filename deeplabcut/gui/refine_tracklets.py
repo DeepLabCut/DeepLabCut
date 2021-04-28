@@ -37,7 +37,7 @@ class Refine_tracklets(wx.Panel):
         # design the panel
         sizer = wx.GridBagSizer(5, 5)
 
-        text = wx.StaticText(self, label="DeepLabCut - Tracklets: Extract and Refine")
+        text = wx.StaticText(self, label="DeepLabCut - Tracklets: Extract/Refine")
         sizer.Add(text, pos=(0, 0), flag=wx.TOP | wx.LEFT | wx.BOTTOM, border=15)
         # Add logo of DLC
         icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(LOGO_PATH))
