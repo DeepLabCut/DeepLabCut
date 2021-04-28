@@ -20,24 +20,6 @@ from tqdm import tqdm
 from deeplabcut.generate_training_dataset import trainingsetmanipulation
 from deeplabcut.utils import auxiliaryfunctions, auxfun_models, auxfun_multianimal
 
-
-def rename_bodyparts(config, pairs):
-    """
-    Rename bodyparts for list of pairs, e.g. [['snout','nose']] rename snout to nose!
-    """
-    cfg = auxiliaryfunctions.read_config(config)
-    videos = cfg["video_sets"].keys()
-    video_names = [Path(i).stem for i in videos]
-    folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
-    dict_ = {k: v for k, v in pairs}
-
-    for folder in folders:
-        filename = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
-        df = pd.read_hdf(filename)
-        df.rename(dict_, level="bodyparts", axis=1, inplace=True)
-        df.to_hdf(filename)
-
-
 def create_multianimaltraining_dataset(
     config,
     num_shuffles=1,
