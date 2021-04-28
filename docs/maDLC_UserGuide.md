@@ -469,7 +469,7 @@ max_age: 100
 # minimum number of consecutive frames before a detection is tracked
 min_hits: 3
 ```
-### Video Analysis:
+### Animal Assembly + Video Analysis:
 - Please note that **novel videos DO NOT need to be added to the config.yaml file**. You can simply have a folder elsewhere on your computer and pass the video folder (then it will analyze all videos of the specified type (i.e. ``videotype='.mp4'``), or pass the path to the **folder** or exact video(s) you wish to analyze:
 
 ```python
@@ -477,7 +477,7 @@ deeplabcut.analyze_videos(config_path,['/fullpath/project/videos/'], videotype='
 ```
 Reminder: you do **not** get the .h5/csv file you might be used to getting (this comes after tracking!).
 
-### Assemble & Refine Tracklets in maDeepLabCut:
+### Refine Tracklets in maDeepLabCut:
 
 :movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://youtu.be/bEuBKB7eqmk)
 - Now that you have detections (which are saved as a pickle file, not h5, btw), we need to assemble and track the animals.
@@ -488,7 +488,7 @@ First, you need to convert detections to tracklets. This step has several tracke
 deeplabcut.convert_detections2tracklets(path_config_file, ['videofile_path'], videotype='mp4',
                                                     shuffle=1, trainingsetindex=0, track_method='box/ellipse/skeleton')
 ```
-You should **cross-validate** the tracking parameters. ([Here is more information](functionDetails.md#cross-validation-of-inference-parameters-a-madeeplabcut-critical-point)). Namely, you can iteratively change the parameters, run `convert_detections2tracklets` then load them in the GUI (`refine_tracklets`). Note, that in the main Project Manager GUI there is a button for you to launch the inference file to seemlessly edit and rapidly test.
+You can **cross-validate** the tracking parameters. Namely, you can iteratively change the parameters, run `convert_detections2tracklets` then load them in the GUI (`refine_tracklets`). Note, that in the main Project Manager GUI there is a button for you to launch the inference file to seemlessly edit and rapidly test.
 
 **Animal assembly and tracking quality** can be assessed via `deeplabcut.utils.make_labeled_video.create_video_from_pickled_tracks`. This function provides an additional diagnostic tool before moving on to refining tracklets.
 
