@@ -6,6 +6,8 @@ https://github.com/DeepLabCut/DeepLabCut
 Please see AUTHORS for contributors.
 https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
+
+Multifusion and multistage decoder for maDLC paper
 """
 
 import re
@@ -98,7 +100,7 @@ parallel_layers = {
     "b7": "17",
 }
 
-### new DLCNet Addition: for multi-stage
+### New DLCNet Addition: multi-stage decoder
 def prediction_layer_stage(cfg, input, name, num_outputs):
     with slim.arg_scope(
         [slim.conv2d, slim.conv2d_transpose],
@@ -113,7 +115,7 @@ def prediction_layer_stage(cfg, input, name, num_outputs):
             )
             return pred
 
-
+# standard stride 2 decoder
 def prediction_layer(cfg, input, name, num_outputs):
     with slim.arg_scope(
         [slim.conv2d, slim.conv2d_transpose],
@@ -186,11 +188,8 @@ def get_batch_spec(cfg):
 class PoseNet:
     def __init__(self, cfg):
         self.cfg = cfg
-        if 'use_batch_norm' not in self.cfg.keys():
-            self.cfg['use_batch_norm'] = False
-        if 'use_drop_out' not in self.cfg.keys():
-            self.cfg['use_drop_out'] = False
         multi_stage = self.cfg.get('multi_stage', False)
+
         # Multi stage is currently only implemented for resnets
         self.cfg['multi_stage'] = multi_stage and 'resnet' in self.cfg['net_type']
 
@@ -204,7 +203,7 @@ class PoseNet:
         im_centered = inputs - mean
 
         if "resnet" in self.cfg["net_type"]:
-            # The next part of the code depends upon which tensorflow version you have.
+            # The next part of the code depends upon the tensorflow version
             vers = tf.__version__
             vers = vers.split(
                 "."
@@ -229,6 +228,11 @@ class PoseNet:
             with slim.arg_scope(mobilenet_v2.training_scope()):
                 net, end_points = net_fun(im_centered)
         elif "efficientnet" in self.cfg["net_type"]:
+            if 'use_batch_norm' not in self.cfg.keys():
+                self.cfg['use_batch_norm'] = False
+            if 'use_drop_out' not in self.cfg.keys():
+                self.cfg['use_drop_out'] = False
+
             im_centered /= tf.constant(eff.STDDEV_RGB, shape=[1, 1, 3])
             net, end_points = eff.build_model_base(
                 im_centered,
@@ -248,7 +252,7 @@ class PoseNet:
         scope="pose",
     ):
         cfg = self.cfg
-        if cfg['multi_stage']:
+        if cfg['multi_stage']: #MuNet!
             num_layers = re.findall("resnet_([0-9]*)", cfg['net_type'])[0]
             layer_name = (
                 "resnet_v1_{}".format(num_layers) + "/block{}/unit_{}/bottleneck_v1"
@@ -338,7 +342,6 @@ class PoseNet:
                         cfg, net, "pairwise_pred", cfg['num_joints'] * (cfg['num_joints'] - 1) * 2
                     )
                 if cfg['partaffinityfield_predict'] and "multi-animal" in cfg['dataset_type']:
-
                     feature = slim.conv2d_transpose(
                         net, cfg.get('bank3', 128), kernel_size=[3, 3], stride = 2
                         )
@@ -388,7 +391,7 @@ class PoseNet:
                         cfg['num_joints'] + cfg.get("num_idchannel", 0),
                     )
 
-        else:
+        else: # dual fusion net (for stride 4 experiments)
             if "resnet" in cfg['net_type']:
                 num_layers = re.findall("resnet_([0-9]*)", cfg['net_type'])[0]
                 layer_name = (

@@ -9,6 +9,8 @@ Licensed under GNU Lesser General Public License v3.0
 
 Adapted from DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
+
+Implements ResNet 50 - 152 with 1 deconv. layer and overall stride 8 for single and multi-animal (with PAF)
 """
 
 import re
