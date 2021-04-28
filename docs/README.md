@@ -4,7 +4,7 @@ If you are new to DeepLabCut, we have 3 resources we recommend before jumping in
 
 **Otherwise, here are the linked to all the key steps to get you up and running within a day!**
 
-- :computer:  [How to install DeepLabCut](/docs/installation.md)
+- :computer:  **[How to install DeepLabCut](/docs/installation.md)**
 
 - :information_desk_person: Decide on your needs: there are **two main modes, standard DeepLabCut or multi-animal DeepLabCut**. We highly recommend carefully considering which one is best for your needs. For example, a white mouse + black mouse would call for standard, while two black mice would use multi-animal. **:blue_heart: [Important Information on how to use DLC in different scenarios (single vs multi animal)](/docs/UseOverviewGuide.md#important-information-on-using-deeplabcut)** Then pick: 
 
