@@ -156,7 +156,7 @@ class Evaluate_network(wx.Panel):
         self.sizer.Add(self.help_button, pos=(4, 0), flag=wx.LEFT, border=10)
         self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
 
-        self.ok = wx.Button(self, label="Step1: Evaluate Network")
+        self.ok = wx.Button(self, label="RUN: Evaluate Network")
         self.sizer.Add(self.ok, pos=(4, 3))
         self.ok.Bind(wx.EVT_BUTTON, self.evaluate_network)
 
