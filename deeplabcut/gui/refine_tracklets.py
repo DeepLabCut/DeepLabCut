@@ -123,6 +123,16 @@ class Refine_tracklets(wx.Panel):
         )
 
         hbox_ = wx.BoxSizer(wx.HORIZONTAL)
+
+        slider_gap_text = wx.StaticBox(
+            self,
+            label="Specify the max gap size of missing data to fill",
+        )
+        slider_gap_sizer = wx.StaticBoxSizer(slider_gap_text, wx.VERTICAL)
+        self.slider_gap = wx.SpinCtrl(self, value="5")
+        slider_gap_sizer.Add(self.slider_gap, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+        hbox_.Add(slider_gap_sizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+
         traillength_text = wx.StaticBox(self, label="Trail Length (for visualization)")
         traillength_sizer = wx.StaticBoxSizer(traillength_text, wx.VERTICAL)
         self.length_track = wx.SpinCtrl(self, value="25")
@@ -307,6 +317,7 @@ class Refine_tracklets(wx.Panel):
             self.video,
             min_swap_len=self.slider_swap.GetValue(),
             trail_len=self.length_track.GetValue(),
+            max_gap=self.slider_gap.GetValue(),
         )
         self.export.Enable()
 
@@ -322,4 +333,5 @@ class Refine_tracklets(wx.Panel):
         self.sel_video.SetPath("")
         self.slider_swap.SetValue(2)
         self.length_track.SetValue(25)
+        self.slider_gap.SetValue(5)
         # self.save.Enable(False)
