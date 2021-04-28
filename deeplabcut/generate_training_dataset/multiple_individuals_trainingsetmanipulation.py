@@ -129,7 +129,7 @@ def create_multianimaltraining_dataset(
         multianimalbodyparts,
     ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
     # Automatically form a complete PAF graph
-    partaffinityfield_graph = list(combinations(range(len(multianimalbodyparts)), 2))
+    partaffinityfield_graph = [list(edge) for edge in combinations(range(len(multianimalbodyparts)), 2)]
     print("Utilizing the following graph:", partaffinityfield_graph)
     num_limbs = len(partaffinityfield_graph)
     partaffinityfield_predict = True
