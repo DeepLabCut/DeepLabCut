@@ -309,16 +309,16 @@ class PoseNet:
 
                     elif cfg['stride'] == 4:
                         upsampled_features_2x = slim.conv2d_transpose(
-                            concat_3_s16, cfg['bank3'], kernel_size=[3, 3], stride=2, scope='block3'
+                            concat_3_s16, cfg.get('bank3', 128), kernel_size=[3, 3], stride=2, scope='block3'
                         )
                         net = upsampled_features_2x
 
                     elif cfg['stride'] == 2:
                         upsampled_features_2x = slim.conv2d_transpose(
-                            concat_3_s16, cfg['bank3'], kernel_size=[3, 3], stride=2, scope='block3'
+                            concat_3_s16, cfg.get('bank3', 128), kernel_size=[3, 3], stride=2, scope='block3'
                         )
                         upsampled_features_4x = slim.conv2d_transpose(
-                            upsampled_features_2x, cfg['bank5'], kernel_size=[3,3], stride=2, scope="block4"
+                            upsampled_features_2x, cfg.get('bank5', 128), kernel_size=[3,3], stride=2, scope="block4"
                         )
                         net = upsampled_features_4x
 
@@ -340,7 +340,7 @@ class PoseNet:
                 if cfg['partaffinityfield_predict'] and "multi-animal" in cfg['dataset_type']:
 
                     feature = slim.conv2d_transpose(
-                        net, cfg['bank3'], kernel_size=[3, 3], stride = 2
+                        net, cfg.get('bank3', 128), kernel_size=[3, 3], stride = 2
                         )
 
                     stage1_paf_out = prediction_layer(
@@ -414,7 +414,7 @@ class PoseNet:
         ):
             with tf.variable_scope("decoder_filters"):
                 bank_3 = slim.conv2d(
-                    bank_3, cfg["bank3"], 1, scope="decoder_parallel_1"
+                    bank_3, cfg.get("bank3", 128), 1, scope="decoder_parallel_1"
                 )
 
         with slim.arg_scope(
@@ -425,7 +425,7 @@ class PoseNet:
         ):
             with tf.variable_scope("upsampled_features"):
                 upsampled_features = slim.conv2d_transpose(
-                    features, cfg["bank5"], kernel_size=[3, 3], stride=2, scope="block4"
+                    features, cfg.get("bank5", 128), kernel_size=[3, 3], stride=2, scope="block4"
                 )
         net = tf.concat([bank_3, upsampled_features], 3)
 
