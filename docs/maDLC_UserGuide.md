@@ -29,7 +29,7 @@ Thus, you should always label, train, and evaluate the pose estimation performan
 
 - if you are looking for resources to increase your understanding of the software and general guidelines, we have an open source, free course: http://DLCcourse.deeplabcut.org. 
 
-**Please note:** what we cannot do is provided support or help designing your experiments and data analysis. The number of requests for this is too great to sustain. We are happy to answer such questions in the forum as a community, in a scalable way. We hope and believe we have given enough tools and resources to get started and to accelerate your research program, and this is backed by the >500 citations using DLC, 2 clinical trials by others, and countless applications. Thus, we believe this code works, is accessible, and with limited programming knowledge can be used. Please read our [Missions & Values statement](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/MISSION_AND_VALUES.md) to learn more about what we DO hope to provide you. 
+**Please note:** what we cannot do is provided support or help designing your experiments and data analysis. The number of requests for this is too great to sustain in our inbox. We are happy to answer such questions in the forum as a community, in a scalable way. We hope and believe we have given enough tools and resources to get started and to accelerate your research program, and this is backed by the >700 citations using DLC, 2 clinical trials by others, and countless applications. Thus, we believe this code works, is accessible, and with limited programming knowledge can be used. Please read our [Missions & Values statement](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/MISSION_AND_VALUES.md) to learn more about what we DO hope to provide you. 
 
 # Install and test: 
 
@@ -46,7 +46,11 @@ python testscript_multianimal.py
 **GUI:** simply open your conda env, and windows/linux type `python -m deeplabcut`. MacOS users: `pythonw -m deeplabcut.` 
 Then follow the tabs! It might be useful to read the following, however, so you understand what each command does.
 
-**TERMINAL:** Start iPython, or if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython`` or ``python``, but otherwise it's the same.
+**TERMINAL:** 
+
+To begin, (windows) navigate to anaconda prompt and right-click to "open as admin ", or (unix/MacOS) simply launch "terminal" on your computer. We assume you have DeepLabCut installed (if not, go [here](/docs/installation.md)). Next, launch your conda env (i.e., for example `conda activate DLC-CPU`).
+
+Start iPython, or if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython`` or ``python``, but otherwise it's the same.
 If you use Windows, please always open the terminal with administrator privileges. Please read more [here](https://github.com/DeepLabCut/Docker4DeepLabCut2.0), and in our Nature Protocols paper [here](https://www.nature.com/articles/s41596-019-0176-0). And, see our [troubleshooting wiki](https://github.com/AlexEMG/DeepLabCut/wiki/Troubleshooting-Tips).
 
 Open an ``ipython`` session and import the package by typing in the terminal:
