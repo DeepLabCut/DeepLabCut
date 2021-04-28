@@ -34,7 +34,7 @@ DeepLabCut is a toolbox for markerless pose estimation of animals performing var
 
 **Latest updates:**
 
-:purple_heart: DeepLabCut supports multi-animal pose estimation (**update:** maDLC is out of beta mode, thanks to the testers out there! The beta releases are depreciated! Your labeled data will be backwards compatible, but not all other steps. Please see new 2.2rc1).
+:purple_heart: DeepLabCut supports multi-animal pose estimation (**update:** maDLC is out of beta mode and depreciated, thanks to the testers out there! Your labeled data will be backwards compatible, but not all other steps. Please see the new `2.2rc1` release).
 
 :purple_heart: We have a real-time package available! http://DLClive.deeplabcut.org
 
