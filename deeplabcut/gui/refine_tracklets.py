@@ -86,9 +86,9 @@ class Refine_tracklets(wx.Panel):
         )
         self.sel_datafile.Bind(wx.EVT_FILEPICKER_CHANGED, self.select_datafile)
 
-        self.ntracks_text = wx.StaticText(self, label="Number of tracks to reconstruct")
+        self.ntracks_text = wx.StaticText(self, label="Number of animals")
         sizer.Add(self.ntracks_text, pos=(4, 0), flag=wx.TOP | wx.LEFT, border=5)
-        self.ntracks = wx.SpinCtrl(self, value="2", min=2, max=1000)
+        self.ntracks = wx.SpinCtrl(self, value=str(len(self.cfg["individuals"])), min=2, max=1000)
         sizer.Add(
             self.ntracks, pos=(4, 1), span=(1, 3), flag=wx.EXPAND | wx.TOP, border=5
         )
