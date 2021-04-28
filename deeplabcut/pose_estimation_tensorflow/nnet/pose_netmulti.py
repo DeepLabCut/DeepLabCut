@@ -400,83 +400,83 @@ class PoseNet:
             elif "efficientnet" in cfg['net_type']:
                 mid_pt = "block_" + parallel_layers[cfg['net_type'].split('-')[1]]
 
-        final_dims = tf.ceil(tf.divide(input_shape[1:3], tf.convert_to_tensor(16)))
-        interim_dims = tf.scalar_mul(2, final_dims)
-        interim_dims = tf.cast(interim_dims, tf.int32)
-        bank_3 = end_points[mid_pt]
-        bank_3 = tf.image.resize_images(bank_3, interim_dims)
+            final_dims = tf.ceil(tf.divide(input_shape[1:3], tf.convert_to_tensor(16)))
+            interim_dims = tf.scalar_mul(2, final_dims)
+            interim_dims = tf.cast(interim_dims, tf.int32)
+            bank_3 = end_points[mid_pt]
+            bank_3 = tf.image.resize_images(bank_3, interim_dims)
 
-        with slim.arg_scope(
-            [slim.conv2d],
-            padding="SAME",
-            normalizer_fn=None,
-            weights_regularizer=slim.l2_regularizer(cfg["weight_decay"]),
-        ):
-            with tf.variable_scope("decoder_filters"):
-                bank_3 = slim.conv2d(
-                    bank_3, cfg.get("bank3", 128), 1, scope="decoder_parallel_1"
-                )
-
-        with slim.arg_scope(
-            [slim.conv2d_transpose],
-            padding="SAME",
-            normalizer_fn=None,
-            weights_regularizer=slim.l2_regularizer(cfg["weight_decay"]),
-        ):
-            with tf.variable_scope("upsampled_features"):
-                upsampled_features = slim.conv2d_transpose(
-                    features, cfg.get("bank5", 128), kernel_size=[3, 3], stride=2, scope="block4"
-                )
-        net = tf.concat([bank_3, upsampled_features], 3)
-
-        out = {}
-        with tf.variable_scope(scope, reuse=reuse):
-            out["part_pred"] = prediction_layer(
-                cfg, net, "part_pred", cfg["num_joints"] + cfg.get("num_idchannel", 0)
-            )
-            if cfg["location_refinement"]:
-                out["locref"] = prediction_layer(
-                    cfg, net, "locref_pred", cfg["num_joints"] * 2
-                )
-            if cfg["pairwise_predict"] and "multi-animal" not in cfg["dataset_type"]:
-                out["pairwise_pred"] = prediction_layer(
-                    cfg,
-                    net,
-                    "pairwise_pred",
-                    cfg["num_joints"] * (cfg["num_joints"] - 1) * 2,
-                )
-            if (
-                cfg["partaffinityfield_predict"]
-                and "multi-animal" in cfg["dataset_type"]
+            with slim.arg_scope(
+                [slim.conv2d],
+                padding="SAME",
+                normalizer_fn=None,
+                weights_regularizer=slim.l2_regularizer(cfg["weight_decay"]),
             ):
-                out["pairwise_pred"] = prediction_layer(
-                    cfg, net, "pairwise_pred", cfg["num_limbs"] * 2
-                )
+                with tf.variable_scope("decoder_filters"):
+                    bank_3 = slim.conv2d(
+                        bank_3, cfg.get("bank3", 128), 1, scope="decoder_parallel_1"
+                    )
 
-            if (
-                cfg["intermediate_supervision"]
-                and "efficientnet" not in cfg["net_type"]
+            with slim.arg_scope(
+                [slim.conv2d_transpose],
+                padding="SAME",
+                normalizer_fn=None,
+                weights_regularizer=slim.l2_regularizer(cfg["weight_decay"]),
             ):
-                if "mobilenet" in cfg["net_type"]:
-                    out["part_pred_interm"] = prediction_layer(
+                with tf.variable_scope("upsampled_features"):
+                    upsampled_features = slim.conv2d_transpose(
+                        features, cfg.get("bank5", 128), kernel_size=[3, 3], stride=2, scope="block4"
+                    )
+            net = tf.concat([bank_3, upsampled_features], 3)
+
+            out = {}
+            with tf.variable_scope(scope, reuse=reuse):
+                out["part_pred"] = prediction_layer(
+                    cfg, net, "part_pred", cfg["num_joints"] + cfg.get("num_idchannel", 0)
+                )
+                if cfg["location_refinement"]:
+                    out["locref"] = prediction_layer(
+                        cfg, net, "locref_pred", cfg["num_joints"] * 2
+                    )
+                if cfg["pairwise_predict"] and "multi-animal" not in cfg["dataset_type"]:
+                    out["pairwise_pred"] = prediction_layer(
                         cfg,
-                        end_points[
-                            "layer_" + str(cfg["intermediate_supervision_layer"])
-                        ],
-                        "intermediate_supervision",
-                        cfg["num_joints"],
+                        net,
+                        "pairwise_pred",
+                        cfg["num_joints"] * (cfg["num_joints"] - 1) * 2,
                     )
-                elif "resnet" in cfg["net_type"]:
-                    interm_name = layer_name.format(
-                        3, cfg["intermediate_supervision_layer"]
+                if (
+                    cfg["partaffinityfield_predict"]
+                    and "multi-animal" in cfg["dataset_type"]
+                ):
+                    out["pairwise_pred"] = prediction_layer(
+                        cfg, net, "pairwise_pred", cfg["num_limbs"] * 2
                     )
-                    block_interm_out = end_points[interm_name]
-                    out["part_pred_interm"] = prediction_layer(
-                        cfg,
-                        block_interm_out,
-                        "intermediate_supervision",
-                        cfg["num_joints"] + cfg.get("num_idchannel", 0),
-                    )
+
+                if (
+                    cfg["intermediate_supervision"]
+                    and "efficientnet" not in cfg["net_type"]
+                ):
+                    if "mobilenet" in cfg["net_type"]:
+                        out["part_pred_interm"] = prediction_layer(
+                            cfg,
+                            end_points[
+                                "layer_" + str(cfg["intermediate_supervision_layer"])
+                            ],
+                            "intermediate_supervision",
+                            cfg["num_joints"],
+                        )
+                    elif "resnet" in cfg["net_type"]:
+                        interm_name = layer_name.format(
+                            3, cfg["intermediate_supervision_layer"]
+                        )
+                        block_interm_out = end_points[interm_name]
+                        out["part_pred_interm"] = prediction_layer(
+                            cfg,
+                            block_interm_out,
+                            "intermediate_supervision",
+                            cfg["num_joints"] + cfg.get("num_idchannel", 0),
+                        )
 
         return out
 
