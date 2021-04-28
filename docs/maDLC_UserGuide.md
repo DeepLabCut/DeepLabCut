@@ -428,18 +428,13 @@ deeplabcut.analyze_videos(config_path,['/fullpath/project/videos/'], videotype='
 ```
 Reminder: you do **not** get the .h5/csv file you might be used to getting (this comes after tracking!).
 
-##### To then convert to tracks:
-
-:movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://youtu.be/bEuBKB7eqmk)
-- Now that you have detections (which are saved as a pickle file, not h5, btw), we need to assemble and track the animals.
-
-Next you need to convert detections to tracklets. This step has several tracker types (`track_method`), and we recommend testing which one works best on your data.
+Now that you have detections (which are saved as a pickle file, not h5, btw), we need to assemble and track the animals. This step has several tracker types (`track_method`), and we recommend testing which one works best on your data (but typically we find ellipse is best).
 
 ```python
 deeplabcut.convert_detections2tracklets(path_config_file, ['videofile_path'], videotype='mp4',
                                                     shuffle=1, trainingsetindex=0, track_method='box/ellipse/skeleton')
 ```
-You can **validate** the tracking parameters. Namely, you can iteratively change the parameters, run `convert_detections2tracklets` then load them in the GUI (`refine_tracklets`). Note, that in the main Project Manager GUI there is a button for you to launch the inference file to seemlessly edit and rapidly test. If you want to edit these, you will need to open the `inference_cfg.yaml` file (or click button in GUI). The options are:
+You can validate the tracking parameters. Namely, you can iteratively change the parameters, run `convert_detections2tracklets` then load them in the GUI (`refine_tracklets`) if you want to look at the performance. If you want to edit these, you will need to open the `inference_cfg.yaml` file (or click button in GUI). The options are:
 
 ```python
 # Tracking:
