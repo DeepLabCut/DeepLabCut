@@ -6,7 +6,7 @@ The standard documents include all changes to the package to run standard and ma
 Note, we STRONGLY encourage you to use the [Project Manager GUI](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/PROJECT_GUI.md) when you first start using multi-animal mode. Each tab is customized for multi-animal when you create or load a multi-animal project. As long as you follow the recommendations within the GUI, you should be good to go! 
 
 This document should serve as an **advanced user guide for maDLC,**
-and it is here to support the scientific advances presented in a forethcoming preprint.
+and it is here to support the scientific advances presented in Lauer et al. 2021.
 
 # How to think about using maDLC:
 
@@ -36,16 +36,21 @@ Thus, you should always label, train, and evaluate the pose estimation performan
 
 # Install and test: 
 
-Install DLC as noted elsewhere, then run the test script found here (you will need to git clone first):
+**Quick start:** If you are using DeepLabCut on the cloud, or otherwise cannot use the GUIs and you should install with: `pip install deeplabcut`; if you need GUI support, please use: `pip install 'deeplabcut[gui]'`.
+
+Install DLC (we recommend using our supplied conda env) then run the test script found here (you will need to git clone first):
 https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/testscript_multianimal.py
 ```python
 python testscript_multianimal.py
 ```
 
-# Get started in the terminal:
+# Get started in the terminal or Project GUI:
 
-Start iPython, or if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython`` or ``python``, but otherwise it's the same.
-If you are using DeepLabCut on the cloud, you cannot use the GUIs and you need to first set `DLClight=True`. If you use Windows, please always open the terminal with administrator privileges. Please read more [here](https://github.com/DeepLabCut/Docker4DeepLabCut2.0), and in our Nature Protocols paper [here](https://www.nature.com/articles/s41596-019-0176-0). And, see our [troubleshooting wiki](https://github.com/AlexEMG/DeepLabCut/wiki/Troubleshooting-Tips).
+**GUI:** simply open your conda env, and windows/linux type `python -m deeplabcut`. MacOS users: `pythonw -m deeplabcut.` 
+Then follow the tabs! It might be useful to read the following, however, so you understand what each command does.
+
+**TERMINAL:** Start iPython, or if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython`` or ``python``, but otherwise it's the same.
+If you use Windows, please always open the terminal with administrator privileges. Please read more [here](https://github.com/DeepLabCut/Docker4DeepLabCut2.0), and in our Nature Protocols paper [here](https://www.nature.com/articles/s41596-019-0176-0). And, see our [troubleshooting wiki](https://github.com/AlexEMG/DeepLabCut/wiki/Troubleshooting-Tips).
 
 Open an ``ipython`` session and import the package by typing in the terminal:
 ```python
@@ -102,25 +107,26 @@ An easy way to programmatically edit the config file at any time is to use the f
 
 ````python
 edits = {'colormap': 'summer',
-         'individuals': ['mickey', 'minnie'],
+         'individuals': ['mickey', 'minnie', 'bianca'],
          'skeleton': [['snout', 'tailbase'], ['snout', 'rightear']]}
 deeplabcut.auxiliaryfunctions.edit_config(config_path, edits)
 ````
 
 Please DO NOT have spaces in the names of bodyparts, uniquebodyparts, individuals, etc.
 
-**maDeepLabCut:** You need to edit the config.yaml file to **modify the following items** which specify the animal ID, body parts, and any unique labels. You should also define an over-connected 'skeleton' at this time in the config.yaml file. For example, for a "simple" 4 body part animal see the example skeleton. Note, we also highly recommend that you use **more bodypoints** that you might be interested in for your experiment, i.e., labeling along the spine/tail for 8 bodypoints would be better than four. This will help the performance.
+**ATTENTIONt:** You need to edit the config.yaml file to **modify the following items** which specify the animal ID, body parts, and any unique labels. Note, we also highly recommend that you use **more bodypoints** that you might be interested in for your experiment, i.e., labeling along the spine/tail for 8 bodypoints would be better than four. This will help the performance.
 
-Modifying the `config.yaml` is crucial, especially connecting the skeleton:
+Modifying the `config.yaml` is crucial:
 
 ```python
 individuals:
-- mouse1
-- mouse2
+- m1
+- m2
+- m3
 
 uniquebodyparts:
-- topleftcorner
-- toprightcorner
+- topleftcornerofBox
+- toprightcornerofBox
 
 multianimalbodyparts:
 - snout
@@ -128,24 +134,9 @@ multianimalbodyparts:
 - rightear
 - tailbase
 
-skeleton:
-- - snout
-  - tailbase
-- - snout
-  - leftear
-- - snout
-  - rightear
-- - leftear
-  - rightear
-- - leftear
-  - tailbase
-- - rightear
-  - tailbase
-
-- - topleftcorner
-  - toprightcorner
+identity: True/False
 ```
-**Individuals:** are names of "individuals" in the annotation dataset. These should be generic (e.g. mouse1, mouse2, etc.). These individuals are comprised of the same bodyparts defined by `multianimalbodyparts`. For annotation in the GUI and training, it is important that all individuals in each frame are labeled. Thus, keep in mind that you might need to have many individuals, .i.e. if there is (even just one frame) with 17 animals then the list should be `- indv1` to `- indv17`. For inference, once trained if you have a video with more or less animals, that is fine - you can change this number before running video analysis.
+**Individuals:** are names of "individuals" in the annotation dataset. These should/can be generic (e.g. mouse1, mouse2, etc.). These individuals are comprised of the same bodyparts defined by `multianimalbodyparts`. For annotation in the GUI and training, it is important that all individuals in each frame are labeled. Thus, keep in mind that you need to set individuals to the maximum number in your labeled-data set, .i.e., if there is (even just one frame) with 17 animals then the list should be `- indv1` to `- indv17`. Note, once trained if you have a video with more or less animals, that is fine - you can have more or less animals during video analysis!
 
 **Identity:** If you can tell the animals apart, i.e.,  one might have a collar, or a black marker on the tail of a mouse, then you should label these individuals consistently (i.e., always label the mouse with the black marker as "indv1", etc). If you have this scenario, please set `identity: True` in your `config.yaml` file. If you have 4 black mice, and you truly cannot tell them apart, then leave this as `false`.
 
@@ -157,15 +148,15 @@ skeleton:
 
 ### Select Frames to Label:
 
-**CRITICAL:** A good training dataset should consist of a sufficient number of frames that capture the breadth of the behavior. This ideally implies to select the frames from different (behavioral) sessions, different lighting and different animals, if those vary substantially (to train an invariant, robust feature detector). Thus for creating a robust network that you can reuse in the laboratory, a good training dataset should reflect the diversity of the behavior with respect to postures, luminance conditions, background conditions, animal identities,etc. of the data that will be analyzed. For the simple lab behaviors comprising mouse reaching, open-field behavior and fly behavior, 100−200 frames gave good results [Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y). However, depending on the required accuracy, the nature of behavior, the video quality (e.g. motion blur, bad lighting) and the context, more or less frames might be necessary to create a good network. Ultimately, in order to scale up the analysis to large collections of videos with perhaps unexpected conditions, one can also refine the data set in an adaptive way (see refinement below).
+**CRITICAL:** A good training dataset should consist of a sufficient number of frames that capture the breadth of the behavior. This ideally implies to select the frames from different (behavioral) sessions, different lighting and different animals, if those vary substantially (to train an invariant, robust feature detector). Thus for creating a robust network that you can reuse in the laboratory, a good training dataset should reflect the diversity of the behavior with respect to postures, luminance conditions, background conditions, animal identities, etc. of the data that will be analyzed. For the simple lab behaviors comprising mouse reaching, open-field behavior and fly behavior, 100−200 frames gave good results [Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y). However, depending on the required accuracy, the nature of behavior, the video quality (e.g. motion blur, bad lighting) and the context, more or less frames might be necessary to create a good network. Ultimately, in order to scale up the analysis to large collections of videos with perhaps unexpected conditions, one can also refine the data set in an adaptive way (see refinement below). **For maDLC, be sure you have labeled frames with closely interacting animals!**
 
 The function `extract_frames` extracts frames from all the videos in the project configuration file in order to create a training dataset. The extracted frames from all the videos are stored in a separate subdirectory named after the video file’s name under the ‘labeled-data’. This function also has various parameters that might be useful based on the user’s need.
 ```python
 deeplabcut.extract_frames(config_path, mode='automatic/manual', algo='uniform/kmeans', userfeedback=False, crop=True/False)
 ```
 **CRITICAL POINT:** It is advisable to keep the frame size small, as large frames increase the training and
-inference time. The cropping parameters for each video can be provided in the config.yaml file (and see below).
-When running the function extract_frames, if the parameter crop=True, then you will be asked to draw a box within the GUI (and this is written to the config.yaml file).
+inference time, or you might not have a large enough GPU for this.
+When running the function `extract_frames`, if the parameter crop=True, then you will be asked to draw a box within the GUI (and this is written to the config.yaml file).
 
 `userfeedback` allows the user to check which videos they wish to extract frames from. In this way, if you added more videos to the config.yaml file it does not, by default, extract frames (again) from every video. If you wish to disable this question, set `userfeedback = True`.
 
@@ -182,7 +173,9 @@ code is slow due to computational complexity.
 **CRITICAL POINT:** It is advisable to extract frames from a period of the video that contains interesting
 behaviors, and not extract the frames across the whole video. This can be achieved by using the start and stop
 parameters in the config.yaml file. Also, the user can change the number of frames to extract from each video using
-the numframes2extract in the config.yaml file.
+the numframes2extract in the config.yaml file. 
+
+ **For maDLC, be sure you have labeled frames with closely interacting animals!** Therefore, manually selecting some frames is a good idea if interactions are not highly frequent in the video.
 
 However, picking frames is highly dependent on the data and the behavior being studied. Therefore, it is hard to
 provide all purpose code that extracts frames to create a good training dataset for every behavior and animal. If the user feels specific frames are lacking, they can extract hand selected frames of interest using the interactive GUI
@@ -192,6 +185,7 @@ deeplabcut.extract_frames(config_path, 'manual')
 ```
 The user can use the *Load Video* button to load one of the videos in the project configuration file, use the scroll
 bar to navigate across the video and *Grab a Frame* (or a range of frames, as of version 2.0.5) to extract the frame(s). The user can also look at the extracted frames and e.g. delete frames (from the directory) that are too similar before reloading the set and then manually annotating them.
+
 
 ### Label Frames:
 
@@ -206,26 +200,25 @@ an interactive graphical user interface (GUI). The user should have already name
 interest) in the project’s configuration file by providing a list. The following command invokes the labeling toolbox.
 
 The user needs to use the *Load Frames* button to select the directory which stores the extracted frames from one of
-the videos. Subsequently, the user can use one of the radio buttons (top right) to select a body part to label. RIGHT click to add the label. Left click to drag the label, if needed. If you label a part accidentally, you can use the middle button on your mouse to delete! If you cannot see a body part in the frame, skip over the label! Please see the ``HELP`` button for more user instructions. This auto-advances once you labeled the first body part. You can also advance to the next frame by clicking on the RIGHT arrow on your keyboard (and go to a previous frame with LEFT arrow).
-Each label will be plotted as a dot in a unique color (see Figure 4 for more details).
+the videos. Subsequently, the user can use one of the radio buttons (top right) to select a body part to label. **RIGHT** click to add the label. Left click to drag the label, if needed. If you label a part accidentally, you can use the middle button on your mouse to delete (or hit the delete key while you hover over the point)! If you cannot see a body part in the frame, skip over the label! Please see the ``HELP`` button for more user instructions. This auto-advances once you labeled the first body part. You can also advance to the next frame by clicking on the RIGHT arrow on your keyboard (and go to a previous frame with LEFT arrow).
+Each label will be plotted as a dot in a unique color.
 
 The user is free to move around the body part and once satisfied with its position, can select another radio button
 (in the top right) to switch to the respective body part (it otherwise auto-advances). The user can skip a body part if it is not visible. Once all the visible body parts are labeled, then the user can use ‘Next Frame’ to load the following frame. The user needs to save the labels after all the frames from one of the videos are labeled by clicking the save button at the bottom right. Saving the labels will create a labeled dataset for each video in a hierarchical data file format (HDF) in the
 subdirectory corresponding to the particular video in **labeled-data**. You can save at any intermediate step (even without closing the GUI, just hit save) and you return to labeling a dataset by reloading it!
 
 **CRITICAL POINT:** It is advisable to **consistently label similar spots** (e.g., on a wrist that is very large, try
-to label the same location). In general, invisible or occluded points should not be labeled by the user. They can
-simply be skipped by not applying the label anywhere on the frame.
+to label the same location). In general, invisible or occluded points should not be labeled by the user, unless you want to teach the network to "guess" - this is possible, but could affect accuracy. If you don't want/or don't see a bodypart, they can simply be skipped by not applying the label anywhere on the frame.
 
 OPTIONAL: In the event of adding more labels to the existing labeled dataset, the user need to append the new
-labels to the bodyparts in the config.yaml file. Thereafter, the user can call the function **label_frames**. As of 2.0.5+: then a box will pop up and ask the user if they wish to display all parts, or only add in the new labels. Saving the labels after all the images are labelled will append the new labels to the existing labeled dataset.
+labels to the bodyparts in the config.yaml file. Thereafter, the user can call the function **label_frames**. A box will pop up and ask the user if they wish to display all parts, or only add in the new labels. Saving the labels after all the images are labelled will append the new labels to the existing labeled dataset.
 
 **maDeepLabCut CRITICAL POINT:** For multi-animal labeling, unless you can tell apart the animals, you do not need to worry about the "ID" of each animal. For example: if you have a white and black mouse label the white mouse as animal 1, and black as animal 2 across all frames. If two black mice, then the ID label 1 or 2 can switch between frames - no need for you to try to identify them (but always label consistently within a frame). If you have 2 black mice but one always has an optical fiber (for example), then DO label them consistently as animal1 and animal_fiber (for example). The point of multi-animal DLC is to train models that can first group the correct bodyparts to individuals, then associate those points in a given video to a specific individual, which then also uses temporal information to link across the video frames.
 
 Note, we also highly recommend that you use more bodypoints that you might otherwise have (see the example below).
 
 **Example Labeling with maDeepLabCut:**
-- note you should within an animal be consistent, i.e. all bodyparts on mouse1 should be on mouse1, but across frames "mouse1" can be any of the black mice (as here it is nearly impossible to tell them apart visually). IF you can tell them apart, do label consistently!
+- note you should within an animal be consistent, i.e., all bodyparts on mouse1 should be on mouse1, but across frames "mouse1" can be any of the black mice (as here it is nearly impossible to tell them apart visually). IF you can tell them apart, do label consistently!
 
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588028248844-43RXXUNLE1VKJDKGGVFO/ke17ZwdGBToddI8pDm48kAxoZwLd0g_s-irkR9O2vUhZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxFjgZOWy5voI9x7QCcY8v6pdjAnJRY2VhSKj43SxhWXRPK8F08AQobuqKWFB6l9T0/labelingdemo.gif?format=750w" width="70%">
@@ -255,9 +248,11 @@ deeplabcut.cropimagesandlabels(path_config_file, userfeedback=False)
 
 Ideally for training DNNs, one uses large batch sizes. Thus, for mutli-animal training batch processing is preferred. This means that we'd like the images to be similarly sized. You can of course have differing size of images you label (but we suggest cropping out useless pixels!). So, we have a new function that can pre-process your data to be compatible with batch training. As noted above, please run this function before you `create_multianmialtraining_dataset`. This function assures that each crop is "small", by default 400 x 400, which allows larger batchsizes and that there are multiple crops so that different parts of larger images are covered. 
 
-**maDeepLabCut CRITICAL POINT**- you must use this new function if you have a multi-animal project (and the skeleton in the `config.yaml` **must be defined** before you run this step, if not already done). You **should also run** `deeplabcut.cropimagesandlabels(config_path)` before creating a training set, as we use batch processing and many users have smaller GPUs that cannot accommodate larger images + larger batchsizes. This is also a type of data augmentation.
+At this point you also select your neural network type. Please see Lauer et al. 2021 for options.
 
-NOTE: you can edit the crop size. If your images are very large (2k, 4k pixels), consider increasing this size, but be aware unless you have a lagre GPU (24 GB or more), you will hit memory errors. You can lower the batchsize, but this may affect performance.
+You **should also first run** `deeplabcut.cropimagesandlabels(config_path)` before creating a training set, as we use batch processing and many users have smaller GPUs that cannot accommodate larger images + larger batchsizes. This is also a type of data augmentation.
+
+NOTE: you can edit the crop size. If your images are very large (2k, 4k pixels), consider increasing this size, but be aware unless you have a lagre GPU (24 GB or more), you will hit memory errors. _You can lower the batchsize, but this may affect performance._
 
 ```python
 deeplabcut.cropimagesandlabels(path_config_file, size=(400, 400), userfeedback=False
@@ -319,9 +314,9 @@ At user specified iterations during training checkpoints are stored in the subdi
 If the user wishes to restart the training at a specific checkpoint they can specify the full path of the checkpoint to
 the variable ``init_weights`` in the **pose_cfg.yaml** file under the *train* subdirectory (see Box 2).
 
-**CRITICAL POINT:** It is recommended to train the ResNets or MobileNets for thousands of iterations until the loss plateaus (typically around **200,000**) if you use batch size 1. If you want to batch train, we recommend using Adam, see more here: https://github.com/AlexEMG/DeepLabCut/wiki/Data-Augmentation.
+**CRITICAL POINT:** It is recommended to train the networks for thousands of iterations until the loss plateaus (typically around **500,000**) if you use batch size 1, and **50-100K** if you use batchsize 8 (the default).
 
-If you use **maDeepLabCut** the recommended training iterations is **20K-50K** (it automatically stops at 200K!), as we use Adam and batchsize 8; if you have to reduce the batchsize for memory reasons then the number of iterations need to increase. 
+If you use **maDeepLabCut** the recommended training iterations is **20K-100K** (it automatically stops at 200K!), as we use Adam and batchsize 8; if you have to reduce the batchsize for memory reasons then the number of iterations needs to be increased. 
 
 The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file allows the user to alter how often the loss is displayed and how often the weights are stored.
 
@@ -412,12 +407,12 @@ labeled accurately
 
 **maDeepLabCut: (or on normal projects!)**
 
-You should also plot the scoremaps, locref layers, and PAFs:
+You should also plot the scoremaps, locref layers, and PAFs to assess performance:
 
 ```python
 deeplabcut.extract_save_all_maps(config_path, shuffle=shuffle, Indices=[0, 5])
 ```
-you can drop "Indices" to run this on all training/testing images (this is slow!)
+you can drop "Indices" to run this on all training/testing images (this is very slow!)
 
 ### -------------------- DECISION / BREAK POINT -------------------
 
@@ -438,29 +433,41 @@ You can either:
 1. extract more frames from existing or new videos and label as when initially building the training data set, or
 2. extract outlier frames based on the videos you just analyzed. To do this, you first need to analyze a video and convert to tracklets (Step 1 and 2 in the Analyze Video tab of the GUI), then you load the tracklet file into the refine tracklet GUI, and "Save" without making any modifications (or run `deeplabcut.convert_raw_tracks_to_h5(config_path, picklefile)`). That will create the files needed in the Extract Outlier Frames tab of the GUI. 
 
-### ------------------- TRACKING ACROSS FRAMES ------------------- 
+### ------------------- ANIMAL ASSEMBLY & TRACKING ACROSS FRAMES ------------------- 
 
-After pose estimation, now you perform tracking. There are several parameters we can automatically set based on your data,
-but some you will need to tune yourself, as it is dataset-dependent. First, let's set the automatic ones.
+After pose estimation, now you perform assembly and tracking. *NEW* in 2.2 is a novel data-driven way to set the optimal skeleton and assembly metrics, so this no longer requires user input. Here are the metrics, in case you do want to edit them in the inference_cfg.yaml file.
 
-```
-THESE CAN ALL BE X-VALIDATED:
-(so please only change them if you know what you are doing :)
+```python
+# Hyperparameters for combinatorics code to assemble individuals:
 variant: 0
-pafthreshold: 0.15139643821853171
-method: m1
-withid: false
-topktoretain: .inf <--- maximum number of animals one expects to see; we assume "infinity" during cross-valiation.
+# Filtering bodyparts:
+# Least strength of a bodypart detection (to be included in assembly)
+detectionthresholdsquare: 0.1
+# Filtering connections:
+# Least strength of a paf cost (to be included in assembly)
+pafthreshold: 0.1
+method: 'm1'
+# Assembly:
+#least number of connections (to actually form an animal)
+minimalnumberofconnections: willbeautomaticallyupdatedbycreate_training_datasetcode
+#reasonable default: len(cfg['multianimalbodyparts'])/2
+pcutoff: 0.5
+# max. number of objects to keep:
+topktoretain: willbeautomaticallyupdatedbycreate_training_datasetcode
+#reasonable default: len(cfg['individuals'])+1*(len(cfg['uniquebodyparts'])>0)
+# Also extract ID:
+withid: set automatically
 
-##########################
-TRACKING: THESE ARE NOT X-VALIDATED: (i.e. you should test them out! See more below):
-##########################
-boundingboxslack: 10
-max_age: 100 <--- maximum duration of a lost tracklet before it's considered a "new animal" (in frames)
+# Tracking:
+#p/m pixels in width and height for increasing bounding boxes.
+boundingboxslack : 0
+# Intersection over Union (IoU) threshold for linking two bounding boxes
+iou_threshold: .2
+# maximum duration of a lost tracklet before it's considered a "new animal" (in frames)
+max_age: 100
+# minimum number of consecutive frames before a detection is tracked
 min_hits: 3
-iou_threshold: 0.2
 ```
-
 ### Video Analysis:
 - Please note that **novel videos DO NOT need to be added to the config.yaml file**. You can simply have a folder elsewhere on your computer and pass the video folder (then it will analyze all videos of the specified type (i.e. ``videotype='.mp4'``), or pass the path to the **folder** or exact video(s) you wish to analyze:
 
