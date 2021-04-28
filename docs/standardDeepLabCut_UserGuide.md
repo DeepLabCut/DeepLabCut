@@ -1,6 +1,8 @@
 # standard (single animal) DeepLabCut UserGuide
 
-This document covers single/standard DeepLabCut use. If you have a complicated multi-animal scenario (i.e., the look the same), then please see our maDLC user guide.
+This document covers single/standard DeepLabCut use. If you have a complicated multi-animal scenario (i.e., they look the same), then please see our [maDLC user guide](/docs/maDLC_UserGuide.md).
+
+To get started, you can use the GUI, or the terminal. See below.
 
 ### DeepLabCut Project Manager GUI (recommended for beginners)
 
@@ -13,6 +15,9 @@ Simply ``python -m deeplabcut`` or MacOS: ``pythonw -m deeplabcut``. The below f
 
 As a reminder, the core functions are described in our [Nature Protocols](https://www.nature.com/articles/s41596-019-0176-0) paper (published at the time of 2.0.6). Additional functions and features are continually added to the package. Thus, we recommend you read over the protocol and then please look at the following documentation and the doctrings. Thanks for using DeepLabCut!
 
+### DeepLabCut in the Terminal:
+
+To begin, navigate to anaconda prompt and right-click to "open as admin "(windows), or simply launch "terminal" (unix/MacOS) on your computer. We assume you have DeepLabCut installed (if not, go here). Next, launch your conda env (i.e., for example `conda activate DLC-CPU`) and then type (windows/unix) `ipython` or  (macOS) `pythonw`. Then type `import deeplabcut`.
 
 ### (A) Create a New Project
 [DOCSTRING](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#create_new_project)
