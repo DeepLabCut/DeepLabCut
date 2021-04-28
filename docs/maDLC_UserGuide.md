@@ -418,29 +418,30 @@ You can either:
 
 ### ------------------- ANIMAL ASSEMBLY & TRACKING ACROSS FRAMES ------------------- 
 
-After pose estimation, now you perform assembly and tracking. *NEW* in 2.2 is a novel data-driven way to set the optimal skeleton and assembly metrics, so this no longer requires user input. Here are the metrics, in case you do want to edit them in the inference_cfg.yaml file.
+After pose estimation, now you perform assembly and tracking. *NEW* in 2.2 is a novel data-driven way to set the optimal skeleton and assembly metrics, so this no longer requires user input. The metrics, in case you do want to edit them, can be found in the `inference_cfg.yaml` file.
+
+### Optimized Animal Assembly + Video Analysis:
+- Please note that **novel videos DO NOT need to be added to the config.yaml file**. You can simply have a folder elsewhere on your computer and pass the video folder (then it will analyze all videos of the specified type (i.e. ``videotype='.mp4'``), or pass the path to the **folder** or exact video(s) you wish to analyze:
 
 ```python
-# Hyperparameters for combinatorics code to assemble individuals:
-variant: 0
-# Filtering bodyparts:
-# Least strength of a bodypart detection (to be included in assembly)
-detectionthresholdsquare: 0.1
-# Filtering connections:
-# Least strength of a paf cost (to be included in assembly)
-pafthreshold: 0.1
-method: 'm1'
-# Assembly:
-#least number of connections (to actually form an animal)
-minimalnumberofconnections: willbeautomaticallyupdatedbycreate_training_datasetcode
-#reasonable default: len(cfg['multianimalbodyparts'])/2
-pcutoff: 0.5
-# max. number of objects to keep:
-topktoretain: willbeautomaticallyupdatedbycreate_training_datasetcode
-#reasonable default: len(cfg['individuals'])+1*(len(cfg['uniquebodyparts'])>0)
-# Also extract ID:
-withid: set automatically
+deeplabcut.analyze_videos(config_path,['/fullpath/project/videos/'], videotype='.mp4')
+```
+Reminder: you do **not** get the .h5/csv file you might be used to getting (this comes after tracking!).
 
+##### To then convert to tracks:
+
+:movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://youtu.be/bEuBKB7eqmk)
+- Now that you have detections (which are saved as a pickle file, not h5, btw), we need to assemble and track the animals.
+
+Next you need to convert detections to tracklets. This step has several tracker types (`track_method`), and we recommend testing which one works best on your data.
+
+```python
+deeplabcut.convert_detections2tracklets(path_config_file, ['videofile_path'], videotype='mp4',
+                                                    shuffle=1, trainingsetindex=0, track_method='box/ellipse/skeleton')
+```
+You can **validate** the tracking parameters. Namely, you can iteratively change the parameters, run `convert_detections2tracklets` then load them in the GUI (`refine_tracklets`). Note, that in the main Project Manager GUI there is a button for you to launch the inference file to seemlessly edit and rapidly test. If you want to edit these, you will need to open the `inference_cfg.yaml` file (or click button in GUI). The options are:
+
+```python
 # Tracking:
 #p/m pixels in width and height for increasing bounding boxes.
 boundingboxslack : 0
@@ -451,30 +452,20 @@ max_age: 100
 # minimum number of consecutive frames before a detection is tracked
 min_hits: 3
 ```
-### Animal Assembly + Video Analysis:
-- Please note that **novel videos DO NOT need to be added to the config.yaml file**. You can simply have a folder elsewhere on your computer and pass the video folder (then it will analyze all videos of the specified type (i.e. ``videotype='.mp4'``), or pass the path to the **folder** or exact video(s) you wish to analyze:
-
-```python
-deeplabcut.analyze_videos(config_path,['/fullpath/project/videos/'], videotype='.mp4')
-```
-Reminder: you do **not** get the .h5/csv file you might be used to getting (this comes after tracking!).
-
-### Refine Tracklets in maDeepLabCut:
-
-:movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://youtu.be/bEuBKB7eqmk)
-- Now that you have detections (which are saved as a pickle file, not h5, btw), we need to assemble and track the animals.
-
-First, you need to convert detections to tracklets. This step has several tracker types (`track_method`), and we recommend testing which one works best on your data.
-
-```python
-deeplabcut.convert_detections2tracklets(path_config_file, ['videofile_path'], videotype='mp4',
-                                                    shuffle=1, trainingsetindex=0, track_method='box/ellipse/skeleton')
-```
-You can **cross-validate** the tracking parameters. Namely, you can iteratively change the parameters, run `convert_detections2tracklets` then load them in the GUI (`refine_tracklets`). Note, that in the main Project Manager GUI there is a button for you to launch the inference file to seemlessly edit and rapidly test.
 
 **Animal assembly and tracking quality** can be assessed via `deeplabcut.utils.make_labeled_video.create_video_from_pickled_tracks`. This function provides an additional diagnostic tool before moving on to refining tracklets.
 
-Secondly, you need to **refine the tracklets**. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc!
+**Next, you can interactively refine and create the tracklets**, or 
+If you do not want to refine tracklets, but use the data "as is" after the `convert_detections2tracklets` step, you can skip refinement and just create the final h5/csv file by running: 
+
+```python
+deeplabcut.convert_raw_tracks_to_h5(config_path, picklefile)
+```
+^ this is NOT required if you run `refine_tracklets` below.
+
+### Refine Tracklets:
+
+You can also optionally **refine the tracklets**. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc!
 
 ```python
 deeplabcut.refine_tracklets(path_config_file, pickle_or_h5_file, videofile_path, max_gap=0, min_swap_len=2, min_tracklet_len=2, trail_len=50)
@@ -489,13 +480,6 @@ Short demo:
  <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588690928000-90ZMRIM8SN6QE20ZOMNX/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/refineDEMO.gif?format=750w" width="70%">
 </p>
-
-If you do not want to refine tracklets, but use the data "as is" after the `convert_detections2tracklets` step, you can skip refinement and just create the final h5/csv file by running: 
-
-```python
-deeplabcut.convert_raw_tracks_to_h5(config_path, picklefile)
-```
-^ this is NOT required if you run `refine_tracklets` above!
 
 ### Once you have analyzed video data (and refined your maDeepLabCut tracklets):
 
