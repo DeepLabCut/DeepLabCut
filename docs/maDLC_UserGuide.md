@@ -123,11 +123,9 @@ identity: True/False
 
 **Identity:** If you can tell the animals apart, i.e.,  one might have a collar, or a black marker on the tail of a mouse, then you should label these individuals consistently (i.e., always label the mouse with the black marker as "indv1", etc). If you have this scenario, please set `identity: True` in your `config.yaml` file. If you have 4 black mice, and you truly cannot tell them apart, then leave this as `false`.
 
-**Multianimalbodyparts:** are the bodyparts of each individual (in the above list). Each bodypart should be connected to all the others by at least one path (E.g. like in a [tree](https://en.wikipedia.org/wiki/Tree_(graph_theory)).). However, we recommend to have multiple paths, in a redundant way. These connections are defined in the skeleton. See below how to define the skeleton.
+**Multianimalbodyparts:** are the bodyparts of each individual (in the above list).
 
-**Uniquebodyparts:** are points that you want to track, but that appear only once within each frame, i.e. they are "unique". Typically these are things like unique objects, landmarks, tools, etc. They are treated similar to pre-2.2 projects; namely, they do not require a skeleton. They can also be animals, e.g. in the case where one German shepherd is attending to many sheep the sheep bodyparts would be multianimalbodyparts, the shepherd parts would be uniquebodyparts and the individuals would be the list of sheep (e.g. Polly, Molly, Dolly, ...).
-
-**Note**, if your does not have any uniquebodyparts please format as: `uniquebodyparts: []`.
+**Uniquebodyparts:** are points that you want to track, but that appear only once within each frame, i.e. they are "unique". Typically these are things like unique objects, landmarks, tools, etc. They can also be animals, e.g. in the case where one German shepherd is attending to many sheep the sheep bodyparts would be multianimalbodyparts, the shepherd parts would be uniquebodyparts and the individuals would be the list of sheep (e.g. Polly, Molly, Dolly, ...).
 
 ### Select Frames to Label:
 
@@ -238,7 +236,7 @@ You **should also first run** `deeplabcut.cropimagesandlabels(config_path)` befo
 NOTE: you can edit the crop size. If your images are very large (2k, 4k pixels), consider increasing this size, but be aware unless you have a lagre GPU (24 GB or more), you will hit memory errors. _You can lower the batchsize, but this may affect performance._
 
 ```python
-deeplabcut.cropimagesandlabels(path_config_file, size=(400, 400), userfeedback=False
+deeplabcut.cropimagesandlabels(path_config_file, size=(400, 400), userfeedback=False)
 ```
 Then run:
 ```python
@@ -432,7 +430,7 @@ Now that you have detections (which are saved as a pickle file, not h5, btw), we
 
 ```python
 deeplabcut.convert_detections2tracklets(path_config_file, ['videofile_path'], videotype='mp4',
-                                                    shuffle=1, trainingsetindex=0, track_method='box/ellipse/skeleton')
+                                        shuffle=1, trainingsetindex=0, track_method='box/ellipse/skeleton')
 ```
 You can validate the tracking parameters. Namely, you can iteratively change the parameters, run `convert_detections2tracklets` then load them in the GUI (`refine_tracklets`) if you want to look at the performance. If you want to edit these, you will need to open the `inference_cfg.yaml` file (or click button in GUI). The options are:
 
@@ -450,12 +448,11 @@ min_hits: 3
 
 **Animal assembly and tracking quality** can be assessed via `deeplabcut.utils.make_labeled_video.create_video_from_pickled_tracks`. This function provides an additional diagnostic tool before moving on to refining tracklets.
 
-**Next, you can interactively refine and create the tracklets**, or if you do not want to refine tracklets, but use the data "as is" after the `convert_detections2tracklets` step, you can skip refinement and just create the final h5/csv file by running: 
+**Next, tracklets are stitched to form *n* complete tracks with:
 
 ```python
-deeplabcut.convert_raw_tracks_to_h5(config_path, picklefile)
+deeplabcut.stitch_tracklets(pickle_file, n_tracks=n)
 ```
-^ this is NOT required if you run `refine_tracklets` below.
 
 ### Refine Tracklets:
 
