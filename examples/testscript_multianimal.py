@@ -125,7 +125,9 @@ if __name__ == "__main__":
 
     print("Create video with all detections...")
     scorer, _ = auxiliaryfunctions.GetScorerName(cfg, 1, TRAIN_SIZE)
-    deeplabcut.create_video_with_all_detections(config_path, [new_video_path], scorer)
+    deeplabcut.create_video_with_all_detections(
+        config_path, [new_video_path], scorer, displayedbodyparts=["bodypart1"],
+    )
     print("Video created.")
 
     print("Convert detections to tracklets...")
@@ -136,9 +138,6 @@ if __name__ == "__main__":
         track_method="box",
     )
     deeplabcut.convert_detections2tracklets(
-        config_path, [new_video_path], "mp4", track_method="skeleton"
-    )
-    deeplabcut.convert_detections2tracklets(
         config_path, [new_video_path], "mp4", track_method="ellipse"
     )
     print("Tracklets created...")
@@ -146,23 +145,10 @@ if __name__ == "__main__":
     print("Extracting maps...")
     deeplabcut.extract_save_all_maps(config_path, Indices=[0, 1, 2])
 
-    print("Analyzing video...")
-    deeplabcut.analyze_videos(config_path, [new_video_path], "mp4", save_as_csv=True)
-    print("Video analyzed.")
-
-    print("Create video with all detections...")
-    scorer, _ = auxiliaryfunctions.GetScorerName(cfg, 1, TRAIN_SIZE)
-    deeplabcut.create_video_with_all_detections(
-        config_path, [new_video_path], scorer, displayedbodyparts=["bodypart1"]
-    )
-    print("Video created.")
-
     print("Create data file...")
-    picklefile = os.path.splitext(new_video_path)[0] + scorer + "_sk.pickle"
+    picklefile = os.path.splitext(new_video_path)[0] + scorer + "_el.pickle"
     try:
-        convert_raw_tracks_to_h5(config_path, picklefile)
-        convert_raw_tracks_to_h5(config_path, picklefile.replace("_sk.pi", "_bx.pi"))
-
+        deeplabcut.stitch_tracklets(picklefile, n_tracks=3)
     except IOError:
         print("Empty tracklets properly caught! Using fake data rather...")
         temp = pd.read_hdf(os.path.join(image_folder, f"CollectedData_{SCORER}.h5"))
@@ -186,19 +172,10 @@ if __name__ == "__main__":
             format="table",
             mode="w",
         )
-        df.to_hdf(
-            picklefile.replace("sk", "bx").replace("pickle", "h5"),
-            "df_with_missing",
-            format="table",
-            mode="w",
-        )
 
     print("Plotting trajectories...")
     deeplabcut.plot_trajectories(
-        config_path, [new_video_path], "mp4", track_method="box"
-    )
-    deeplabcut.plot_trajectories(
-        config_path, [new_video_path], "mp4", track_method="skeleton"
+        config_path, [new_video_path], "mp4", track_method="ellipse"
     )
     print("Trajectory plotted.")
 
@@ -209,27 +186,19 @@ if __name__ == "__main__":
         "mp4",
         save_frames=False,
         color_by="individual",
-        track_method="box",
-    )
-    deeplabcut.create_labeled_video(
-        config_path,
-        [new_video_path],
-        "mp4",
-        save_frames=False,
-        color_by="bodypart",
-        track_method="skeleton",
+        track_method="ellipse",
     )
     print("Labeled video created.")
 
     print("Filtering predictions...")
     deeplabcut.filterpredictions(
-        config_path, [new_video_path], "mp4", track_method="box"
+        config_path, [new_video_path], "mp4", track_method="ellipse"
     )
     print("Predictions filtered.")
 
     print("Extracting outlier frames...")
     deeplabcut.extract_outlier_frames(
-        config_path, [new_video_path], "mp4", automatic=True, track_method="box"
+        config_path, [new_video_path], "mp4", automatic=True, track_method="ellipse"
     )
     print("Outlier frames extracted.")
 
