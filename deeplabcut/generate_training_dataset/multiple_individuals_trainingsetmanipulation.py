@@ -10,6 +10,7 @@ Licensed under GNU Lesser General Public License v3.0
 
 import os
 import os.path
+from itertools import combinations
 from pathlib import Path
 
 import numpy as np
@@ -112,16 +113,23 @@ def create_multianimaltraining_dataset(
     # CURRENTLY ONLY ResNet supported!
     if net_type is None:  # loading & linking pretrained models
         net_type = cfg.get("default_net_type", "resnet_50")
-    else:
-        if "resnet" in net_type:  # or 'mobilenet' in net_type:
-            pass
-        else:
-            raise ValueError("Currently only resnet is supported.")
+    elif not any(net in net_type for net in ('resnet', 'eff', 'dlc')):
+        raise ValueError(f"Unsupported network {net_type}.")
+
+    multi_stage = False
+    if net_type == "dlcrnet_ms5":
+        net_type = "resnet_50"
+        multi_stage = True
 
     # multianimal case:
     dataset_type = "multi-animal-imgaug"
+    (
+        individuals,
+        uniquebodyparts,
+        multianimalbodyparts,
+    ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
+    # Automatically form a complete PAF graph
     partaffinityfield_graph = auxfun_multianimal.getpafgraph(cfg, printnames=False)
-    # ATTENTION: order has to be multibodyparts, then uniquebodyparts (for indexing)
     print("Utilizing the following graph:", partaffinityfield_graph)
     num_limbs = len(partaffinityfield_graph)
     partaffinityfield_predict = True
@@ -137,12 +145,6 @@ def create_multianimaltraining_dataset(
         Shuffles = range(1, num_shuffles + 1, 1)
     else:
         Shuffles = [i for i in Shuffles if isinstance(i, int)]
-
-    (
-        individuals,
-        uniquebodyparts,
-        multianimalbodyparts,
-    ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
 
     TrainingFraction = cfg["TrainingFraction"]
     for shuffle in Shuffles:  # Creating shuffles starting from 1
@@ -162,8 +164,8 @@ def create_multianimaltraining_dataset(
 
             # Make training file!
             data = []
-            print("Creating training data for ", shuffle, trainFraction)
-            print("This can take some time...")
+            print("Creating training data for: Shuffle:", shuffle, "TrainFraction: ", trainFraction)
+            print("This can take some time ...")
             for jj in tqdm(trainIndices):
                 jointsannotated = False
                 H = {}
@@ -326,6 +328,7 @@ def create_multianimaltraining_dataset(
                     "init_weights": model_path,
                     "project_path": str(cfg["project_path"]),
                     "net_type": net_type,
+                    "multi_stage": multi_stage,
                     "pairwise_loss_weight": 0.1,
                     "pafwidth": 20,
                     "partaffinityfield_graph": partaffinityfield_graph,
@@ -338,6 +341,7 @@ def create_multianimaltraining_dataset(
                     "multi_step": [[1e-4, 7500], [5 * 1e-5, 12000], [1e-5, 200000]],
                     "save_iters": 10000,
                     "display_iters": 500,
+                    "num_idchannel": len(cfg["individuals"]) if cfg.get("identity", False) else 0
                 }
 
                 defaultconfigfile = os.path.join(dlcparent_path, "pose_cfg.yaml")
@@ -350,6 +354,7 @@ def create_multianimaltraining_dataset(
                     "all_joints",
                     "all_joints_names",
                     "net_type",
+                    "multi_stage",
                     "init_weights",
                     "global_scale",
                     "location_refinement",
@@ -360,6 +365,7 @@ def create_multianimaltraining_dataset(
                     "partaffinityfield_graph",
                     "num_limbs",
                     "dataset_type",
+                    "num_idchannel",
                 ]
 
                 trainingsetmanipulation.MakeTest_pose_yaml(

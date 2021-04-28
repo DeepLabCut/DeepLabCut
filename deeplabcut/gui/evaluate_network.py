@@ -182,20 +182,10 @@ class Evaluate_network(wx.Panel):
             self.inf_cfg_text = wx.Button(self, label="Edit the inference_config.yaml")
             self.inf_cfg_text.Bind(wx.EVT_BUTTON, self.edit_inf_config)
 
-            self.edgeWise = wx.RadioBox(
-                self,
-                label="Use Edges (keep as true)",
-                choices=["True", "False"],
-                majorDimension=1,
-                style=wx.RA_SPECIFY_COLS,
-            )
-            self.edgeWise.SetSelection(0)
-
             self.hbox3.Add(infg_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
             self.hbox3.Add(n_iter_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
             self.hbox3.Add(inpts_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
             self.hbox3.Add(target_text_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-            self.hbox3.Add(self.edgeWise, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
             self.hbox3.Add(self.inf_cfg_text, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
             boxsizer.Add(self.hbox3, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
@@ -203,19 +193,9 @@ class Evaluate_network(wx.Panel):
         self.sizer.Add(self.help_button, pos=(4, 0), flag=wx.LEFT, border=10)
         self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
 
-        self.help2_button = wx.Button(self, label="Help (X-val)")
-        self.sizer.Add(self.help2_button, pos=(5, 0), flag=wx.LEFT, border=10)
-        self.help2_button.Bind(wx.EVT_BUTTON, self.help_val_function)
-
         self.ok = wx.Button(self, label="Step1: Evaluate Network")
         self.sizer.Add(self.ok, pos=(4, 3))
         self.ok.Bind(wx.EVT_BUTTON, self.evaluate_network)
-
-        if config_file.get("multianimalproject", False):
-
-            self.ok = wx.Button(self, label="Step2: X-validate")
-            self.sizer.Add(self.ok, pos=(4, 4))
-            self.ok.Bind(wx.EVT_BUTTON, self.cross_validate)
 
         self.ok = wx.Button(self, label="Optional: Plot 3 test maps")
         self.sizer.Add(self.ok, pos=(5, 3))
@@ -246,21 +226,6 @@ class Evaluate_network(wx.Panel):
         wx.MessageBox(help_text, "Help", wx.OK | wx.ICON_INFORMATION)
         help_file.close()
         os.remove("help.txt")
-
-    def help_val_function(self, event):
-
-        filepath = "help2.txt"
-        f = open(filepath, "w")
-        sys.stdout = f
-        fnc_name = "deeplabcut.evaluate_multianimal_crossvalidate"
-        pydoc.help(fnc_name)
-        f.close()
-        sys.stdout = sys.__stdout__
-        help_file = open("help2.txt", "r+")
-        help_text = help_file.read()
-        wx.MessageBox(help_text, "Help (X-val)", wx.OK | wx.ICON_INFORMATION)
-        help_file.close()
-        os.remove("help2.txt")
 
     def chooseOption(self, event):
         if self.bodypart_choice.GetStringSelection() == "No":
@@ -335,37 +300,6 @@ class Evaluate_network(wx.Panel):
             plotting=plotting,
             show_errors=True,
             comparisonbodyparts=self.bodyparts,
-        )
-
-    def cross_validate(self, event):
-        trainingsetindex = self.trainingset.GetValue()
-        shuffle = [self.shuffles.GetValue()]
-        cfg = auxiliaryfunctions.read_config(self.config)
-        trainFraction = cfg["TrainingFraction"][trainingsetindex]
-        self.inf_cfg_path = os.path.join(
-            cfg["project_path"],
-            auxiliaryfunctions.GetModelFolder(
-                trainFraction, self.shuffles.GetValue(), cfg
-            ),
-            "test",
-            "inference_cfg.yaml",
-        )
-        # Read from edited inf. file first ...
-        print(self.inf_cfg_path)
-        print(
-            "optimizing parameters using "
-            + self.targettypes.GetValue()
-            + " as a target..."
-        )
-        deeplabcut.evaluate_multianimal_crossvalidate(
-            self.config,
-            Shuffles=shuffle,
-            trainingsetindex=trainingsetindex,
-            edgewisecondition=self.edgeWise.GetStringSelection(),
-            leastbpts=self.infg.GetValue(),
-            init_points=self.inpts.GetValue(),
-            n_iter=self.n_iter.GetValue(),
-            target=self.targettypes.GetValue(),
         )
 
     def cancel_evaluate_network(self, event):

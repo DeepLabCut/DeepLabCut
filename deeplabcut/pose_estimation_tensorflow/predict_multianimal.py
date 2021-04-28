@@ -120,7 +120,7 @@ def AnalyzeMultiAnimalVideo(
         metadata = {"data": dictionary}
         print("Saving results in %s..." % (destfolder))
 
-        auxfun_multianimal.SaveFullMultiAnimalData(PredicteData, metadata, dataname)
+        _ = auxfun_multianimal.SaveFullMultiAnimalData(PredicteData, metadata, dataname)
 
 
 def GetPoseandCostsF(

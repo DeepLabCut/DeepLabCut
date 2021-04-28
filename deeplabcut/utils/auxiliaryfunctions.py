@@ -9,10 +9,11 @@ Licensed under GNU Lesser General Public License v3.0
 """
 import os
 import pickle
+import warnings
 from pathlib import Path
-
 import numpy as np
 import pandas as pd
+import ruamel.yaml.representer
 import yaml
 from ruamel.yaml import YAML
 
@@ -28,6 +29,7 @@ def create_config_template(multianimal=False):
         scorer:
         date:
         multianimalproject:
+        identity:
         \n
     # Project path (change when moving around)
         project_path:
@@ -78,6 +80,7 @@ def create_config_template(multianimal=False):
         scorer:
         date:
         multianimalproject:
+        identity:
         \n
     # Project path (change when moving around)
         project_path:
@@ -237,7 +240,14 @@ def edit_config(configname, edits, output_name=""):
         cfg[key] = value
     if not output_name:
         output_name = configname
-    write_plainconfig(output_name, cfg)
+    try:
+        write_plainconfig(output_name, cfg)
+    except ruamel.yaml.representer.RepresenterError:
+        warnings.warn("Some edits could not be written. "
+                      "The configuration file will be left unchanged.")
+        for key in edits:
+            cfg.pop(key)
+        write_plainconfig(output_name, cfg)
     return cfg
 
 
