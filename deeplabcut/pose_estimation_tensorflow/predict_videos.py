@@ -277,6 +277,18 @@ def analyze_videos(
         names=["scorer", "bodyparts", "coords"],
     )
 
+    # Re-use data-driven PAF graph for video analysis. Note that this must
+    # happen after setting up the TF session to avoid graph mismatch.
+    best_edges = dlc_cfg.get("paf_best")
+    if best_edges is not None:
+        best_graph = [dlc_cfg["partaffinityfield_graph"][i]
+                      for i in best_edges]
+    else:
+        best_graph = dlc_cfg["partaffinityfield_graph"]
+
+    dlc_cfg["partaffinityfield_graph"] = best_graph
+    dlc_cfg["num_limbs"] = len(best_graph)
+
     ##################################################
     # Looping over videos
     ##################################################
@@ -1402,19 +1414,7 @@ def convert_detections2tracklets(
             else:
                 print("Analyzing", dataname)
                 DLCscorer = metadata["data"]["Scorer"]
-                dlc_cfg = metadata["data"]["DLC-model-config file"]
-                nms_radius = data["metadata"]["nms radius"]
-                minconfidence = data["metadata"]["minimal confidence"]
-                partaffinityfield_graph = data["metadata"]["PAFgraph"]
-                all_joints = data["metadata"]["all_joints"]
                 all_jointnames = data["metadata"]["all_joints_names"]
-
-                PAF = inferencecfg.get("paf_best")
-                if PAF is None:
-                    PAF = np.arange(
-                        len(partaffinityfield_graph)
-                    )
-                partaffinityfield_graph = [partaffinityfield_graph[l] for l in PAF]
 
                 numjoints = len(all_jointnames)
                 if BPTS is None:
@@ -1456,8 +1456,6 @@ def convert_detections2tracklets(
                     data,
                     max_n_individuals=inferencecfg["topktoretain"],
                     n_multibodyparts=len(cfg["multianimalbodyparts"]),
-                    graph=partaffinityfield_graph,
-                    paf_inds=list(PAF),
                     greedy=greedy,
                     pcutoff=inferencecfg.get("pcutoff", 0.1),
                     min_affinity=inferencecfg.get("pafthreshold", 0.1)
