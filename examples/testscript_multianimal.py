@@ -3,7 +3,6 @@ import deeplabcut
 import numpy as np
 import pandas as pd
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
-from deeplabcut.refine_training_dataset.tracklets import convert_raw_tracks_to_h5
 
 
 if __name__ == "__main__":
@@ -149,7 +148,9 @@ if __name__ == "__main__":
     print("Create data file...")
     picklefile = os.path.splitext(new_video_path)[0] + scorer + "_el.pickle"
     try:
-        deeplabcut.stitch_tracklets(picklefile, n_tracks=3)
+        deeplabcut.stitch_tracklets(
+            picklefile, n_tracks=3, animal_names=cfg["individuals"]
+        )
     except IOError:
         print("Empty tracklets properly caught! Using fake data rather...")
         temp = pd.read_hdf(os.path.join(image_folder, f"CollectedData_{SCORER}.h5"))
@@ -158,7 +159,7 @@ if __name__ == "__main__":
         columns = (
             temp.columns.to_series()
             .unstack([0, 1, 2])
-            .append(pd.Series(None, name="likelihood"))
+            .append(pd.Series(None, name="likelihood", dtype="float64"))
             .unstack()
             .index
         )
