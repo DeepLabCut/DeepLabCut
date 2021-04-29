@@ -51,8 +51,12 @@ def AssociationCosts(
     """ Association costs for detections based on PAFs """
     Distances = {}
     ny, nx, nlimbs = np.shape(partaffinitymaps)
-    for l in range(cfg["num_limbs"]):
-        bp1, bp2 = cfg["partaffinityfield_graph"][l]  # [(0,1),(1,2)
+    graph = cfg["partaffinityfield_graph"]
+    limbs = cfg.get("paf_best", np.arange(len(graph)))
+    if len(graph) != len(limbs):
+        limbs = np.arange(len(graph))
+
+    for l, (bp1, bp2) in zip(limbs, graph):
         # get coordinates for bp1 and bp2
         C1 = coordinates[bp1]
         C2 = coordinates[bp2]
