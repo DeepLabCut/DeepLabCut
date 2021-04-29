@@ -746,7 +746,7 @@ class Assembler:
         params["joint_names"] = data["metadata"]["all_joints_names"]
         params["num_joints"] = len(params["joint_names"])
         params["paf_graph"] = data["metadata"]["PAFgraph"]
-        params["paf"] = data["metadata"]["PAFinds"]
+        params["paf"] = data["metadata"].get("PAFinds", np.arange(len(params["joint_names"])))
         params["bpts"] = params["ibpts"] = range(params["num_joints"])
         params["imnames"] = [fn for fn in list(data) if fn != "metadata"]
         return params
