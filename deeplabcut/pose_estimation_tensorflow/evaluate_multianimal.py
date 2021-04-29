@@ -498,6 +498,7 @@ def evaluate_multianimal_full(
                             "nms radius": dlc_cfg["nmsradius"],
                             "minimal confidence": dlc_cfg["minconfidence"],
                             "PAFgraph": dlc_cfg["partaffinityfield_graph"],
+                            "PAFinds": dlc_cfg.get("paf_best", np.arange(len(dlc_cfg["partaffinityfield_graph"]))),
                             "all_joints": [
                                 [i] for i in range(len(dlc_cfg["all_joints"]))
                             ],

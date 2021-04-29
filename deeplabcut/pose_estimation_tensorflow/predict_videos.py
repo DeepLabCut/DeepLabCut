@@ -1158,9 +1158,7 @@ def _convert_detections_to_tracklets(
 ):
     joints = data["metadata"]["all_joints_names"]
     partaffinityfield_graph = data["metadata"]["PAFgraph"]
-    paf_inds = inference_cfg.get("paf_best")
-    if paf_inds is None:
-        paf_inds = np.arange(len(partaffinityfield_graph))
+    paf_inds = data["metadata"]["PAFinds"]
     paf_graph = [partaffinityfield_graph[l] for l in paf_inds]
 
     if track_method == "box":
