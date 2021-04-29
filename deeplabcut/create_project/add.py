@@ -94,11 +94,13 @@ def add_new_videos(config, videos, copy_videos=False, coords=None):
         vid = VideoReader(video_path)
         if coords is not None:
             c = coords[idx]
-            cfg["video_sets"].update({video_path: {"crop": ", ".join(map(str, c))}})
         else:
-            cfg["video_sets"].update(
-                {video_path: {"crop": ", ".join(map(str, vid.get_bbox()))}}
-            )
+            c = vid.get_bbox()
+        params = {video_path: {"crop": ", ".join(map(str, c))}}
+        if "video_sets_original" not in cfg:
+            cfg["video_sets"].update(params)
+        else:
+            cfg["video_sets_original"].update(params)
 
     auxiliaryfunctions.write_config(config, cfg)
     print(
