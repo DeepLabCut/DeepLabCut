@@ -252,7 +252,8 @@ class PoseNet:
         scope="pose",
     ):
         cfg = self.cfg
-        if cfg['multi_stage']: #MuNet!
+        if cfg['multi_stage']: #MuNet! (multi_stage decoder + multi_fusion)
+            # Defining multi_fusion backbone
             num_layers = re.findall("resnet_([0-9]*)", cfg['net_type'])[0]
             layer_name = (
                 "resnet_v1_{}".format(num_layers) + "/block{}/unit_{}/bottleneck_v1"
@@ -327,7 +328,7 @@ class PoseNet:
                         net = upsampled_features_4x
 
             out = {}
-
+            # Attaching multi-stage decoder
             with tf.variable_scope(scope, reuse=reuse):
                 stage1_hm_out = prediction_layer(
                     cfg, net, "part_pred_s1", cfg['num_joints'] + cfg.get("num_idchannel", 0)
