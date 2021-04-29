@@ -15,7 +15,7 @@ def pose_net(cfg):
         if (
             cfg.get("stride", 8) < 8
         ):  # this supports multianimal (with PAFs) or pairwise prediction
-            from deeplabcut.pose_estimation_tensorflow.nnet.pose_multifusion import PoseNet
+            from deeplabcut.pose_estimation_tensorflow.nnet.pose_netmultifusion import PoseNet
 
         else:
             print("Initializing MobileNet")
@@ -32,7 +32,7 @@ def pose_net(cfg):
             print(
                 "Initialing PAFDLC with multiscale deconvolution!", cfg.get("stride", 8)
             )
-            from deeplabcut.pose_estimation_tensorflow.nnet.pose_multifusion import PoseNet
+            from deeplabcut.pose_estimation_tensorflow.nnet.pose_netmultifusion import PoseNet
 
         else:
             print("Initializing ResNet")
