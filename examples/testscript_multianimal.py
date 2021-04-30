@@ -144,35 +144,14 @@ if __name__ == "__main__":
     )
     print("Tracklets created...")
 
-
-    picklefile = os.path.splitext(new_video_path)[0] + scorer + "_el.pickle"
-    try:
-        deeplabcut.stitch_tracklets(
-            picklefile, n_tracks=3, animal_names=cfg["individuals"]
-        )
-    except IOError:
-        print("Empty tracklets properly caught! Using fake data rather...")
-        temp = pd.read_hdf(os.path.join(image_folder, f"CollectedData_{SCORER}.h5"))
-        # Need to add the 'likelihood' level value to simulate analyzed data
-        # Ugliest hack in the history of pandas
-        columns = (
-            temp.columns.to_series()
-            .unstack([0, 1, 2])
-            .append(pd.Series(None, name="likelihood", dtype="float64"))
-            .unstack()
-            .index
-        )
-        data = np.ones((temp.shape[0], temp.shape[1] // 2 * 3))
-        data.reshape((data.shape[0], -1, 3))[:, :, :2] = temp.values.reshape(
-            (temp.shape[0], -1, 2)
-        )
-        df = pd.DataFrame(data, columns=columns)
-        df.to_hdf(
-            picklefile.replace("pickle", "h5"),
-            "df_with_missing",
-            format="table",
-            mode="w",
-        )
+    pickle_file = os.path.join(os.path.dirname(basepath),
+                               "tests", "data", "trimouse_tracklets.pickle")
+    deeplabcut.stitch_tracklets(
+        pickle_file,
+        n_tracks=3,
+        animal_names=cfg["individuals"],
+        output_name=os.path.splitext(new_video_path)[0] + scorer + "_el.h5",
+    )
 
     print("Plotting trajectories...")
     deeplabcut.plot_trajectories(
