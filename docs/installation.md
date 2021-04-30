@@ -19,9 +19,9 @@ You first **need to decide if you want to use a CPU or GPU for your models**: (N
 
    - **CPU?** Great, jump to the next section below!
 
-  - **GPU?**  If you want to use your own GPU (i.e., a GPU is in your workstation), then you need to be sure you have a CUDA compatable GPU and CUDA installed. PLease note, which CUDA you install depends on what version of tensorflow you want to use. So, please check "GPU Support" below carefully. Then, please use the GPU conda file.
+  - **GPU?**  If you want to use your own GPU (i.e., a GPU is in your workstation), then you need to be sure you have a CUDA compatible GPU and CUDA installed. PLease note, which CUDA you install depends on what version of tensorflow you want to use. So, please check "GPU Support" below carefully. Then, please use the GPU conda file.
 
-  - **DIY:** For the experts, it's also on pypi, simply `pip install deeplabcut[gui]` (and have tensorflow 1.x and wxPython also installed) for DeepLabCut + gui_size.  Deeplabcut without the GUIs can be installed with `pip install deeplabcut`. The only other requirement is having TensorFlow 1.x installed. See more at the bottom as well.
+  - **DIY:** For the experts, it's also on pypi, simply `pip install deeplabcut[gui]` (and have tensorflow 1.x and wxPython also installed) for DeepLabCut + GUI.  Deeplabcut without the GUIs can be installed with `pip install deeplabcut`. The only other requirement is having TensorFlow 1.x installed. See more at the bottom as well.
 
 ### CPU or GPU:
 
