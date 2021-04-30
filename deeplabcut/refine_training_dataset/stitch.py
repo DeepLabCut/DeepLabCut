@@ -5,13 +5,14 @@ import pandas as pd
 import pickle
 import re
 import scipy.linalg.interpolative as sli
+import warnings
 from collections import defaultdict
 from itertools import combinations, cycle
 from networkx.algorithms.flow import preflow_push
 from scipy.linalg import hankel
 from scipy.spatial.distance import directed_hausdorff
 from scipy.stats import mode
-from tqdm import tqdm, trange
+from tqdm import trange
 
 
 class Tracklet:
@@ -155,11 +156,13 @@ class Tracklet:
             diff = (data2 - data1) / (e - s)
             diff[np.isnan(diff)] = 0
             interp = diff[..., np.newaxis] * np.arange(1, e - s)
-            interp[:, 2] = 0.5  # Chance detections
-            if interp.shape[1] == 4:
-                interp[:, 3] = self.identity
             data = data1 + np.rollaxis(interp, axis=2)
+            data[..., 2] = 0.5  # Chance detections
+            if data.shape[1] == 4:
+                data[:, 3] = self.identity
             fills.append(Tracklet(data, np.arange(s + 1, e)))
+        if not fills:
+            return self
         return self + sum(fills)
 
     def contains_duplicates(self, return_indices=False):
@@ -258,15 +261,11 @@ class Tracklet:
         if time_gap > 0:
             if self < other_tracklet:
                 d1 = self.centroid[-1] + time_gap * self.calc_velocity(norm=False)
-                d2 = other_tracklet.centroid[
-                    0
-                ] - time_gap * other_tracklet.calc_velocity("tail", False)
+                d2 = other_tracklet.centroid[0] - time_gap * other_tracklet.calc_velocity("tail", False)
                 delta1 = other_tracklet.centroid[0] - d1
                 delta2 = self.centroid[-1] - d2
             else:
-                d1 = other_tracklet.centroid[
-                    -1
-                ] + time_gap * other_tracklet.calc_velocity(norm=False)
+                d1 = other_tracklet.centroid[-1] + time_gap * other_tracklet.calc_velocity(norm=False)
                 d2 = self.centroid[0] - time_gap * self.calc_velocity("tail", False)
                 delta1 = self.centroid[0] - d1
                 delta2 = other_tracklet.centroid[-1] - d2
@@ -429,9 +428,6 @@ class TrackletStitcher:
         split_tracklets=True,
         prestitch_residuals=True,
     ):
-        if not len(tracklets):
-            raise IOError("Tracklets are empty.")
-
         if n_tracks < 2:
             raise ValueError("There must at least be two tracks to reconstruct.")
 
@@ -463,6 +459,10 @@ class TrackletStitcher:
                     self.tracklets.append(t)
                 elif len(t) < min_length:
                     self.residuals.append(t)
+
+        if not len(self.tracklets):
+            raise IOError("Tracklets are empty.")
+
         if prestitch_residuals:
             self._prestitch_residuals(5)  # Hard-coded but found to work very well
         self.tracklets = sorted(self.tracklets, key=lambda t: t.start)
@@ -471,8 +471,8 @@ class TrackletStitcher:
 
         # Note that if tracklets are very short, some may actually be part of the same track
         # and thus incorrectly reflect separate track endpoints...
-        self._first_tracklets = sorted(self, key=lambda t: t.start)[: self.n_tracks]
-        self._last_tracklets = sorted(self, key=lambda t: t.end)[-self.n_tracks :]
+        self._first_tracklets = sorted(self, key=lambda t: t.start)[:self.n_tracks]
+        self._last_tracklets = sorted(self, key=lambda t: t.end)[-self.n_tracks:]
 
         # Map each Tracklet to an entry and output nodes and vice versa,
         # which is convenient once the tracklets are stitched.
@@ -627,7 +627,7 @@ class TrackletStitcher:
             _, self.flow = nx.capacity_scaling(self.G)
             self.paths = self.reconstruct_paths()
         except nx.exception.NetworkXUnfeasible:
-            print("No optimal solution found. Employing black magic...")
+            warnings.warn("No optimal solution found. Employing black magic...")
             # Let us prune the graph by removing all source and sink edges
             # but those connecting the `n_tracks` first and last tracklets.
             in_to_keep = [
@@ -658,9 +658,7 @@ class TrackletStitcher:
                     temp.add(self._mapping_inv[node])
                 paths.append(list(temp))
             incomplete_tracks = self.n_tracks - len(paths)
-            if (
-                incomplete_tracks == 1
-            ):  # All remaining nodes ought to belong to the same track
+            if incomplete_tracks == 1:  # All remaining nodes must belong to the same track
                 nodes = set(
                     self._mapping_inv[node]
                     for node in self.G
@@ -693,6 +691,11 @@ class TrackletStitcher:
                 raise NotImplementedError
             self.paths = paths
         finally:
+            if self.paths is None:
+                raise ValueError(
+                    f"Could not reconstruct {self.n_tracks} tracks from the tracklets given."
+                )
+
             self.tracks = np.asarray([sum(path) for path in self.paths])
             if add_back_residuals:
                 _ = self._finalize_tracks()
@@ -703,8 +706,8 @@ class TrackletStitcher:
         # that only fit in a single tracklet.
         n_attemps = 0
         n_max = len(residuals)
-        while n_attemps < n_max:
-            for res in tqdm(residuals[::-1]):
+        while n_attemps < n_max and residuals:
+            for res in residuals[::-1]:
                 easy_fit = [
                     i for i, track in enumerate(self.tracks) if res not in track
                 ]
@@ -719,7 +722,7 @@ class TrackletStitcher:
                     n_attemps += 1
 
         # Greedily add the remaining residuals
-        for res in tqdm(residuals[::-1]):
+        for res in residuals[::-1]:
             c1 = res.centroid[[0, -1]]
             easy_fit = [i for i, track in enumerate(self.tracks) if res not in track]
             dists = []
@@ -739,9 +742,8 @@ class TrackletStitcher:
                 elif right_gap <= 3:
                     dist = np.linalg.norm(track.centroid[e] - c1[1])
                 else:
-                    dist = np.linalg.norm(track.centroid[s] - c1[0]) + np.linalg.norm(
-                        track.centroid[e] - c1[1]
-                    )
+                    dist = (np.linalg.norm(track.centroid[s] - c1[0])
+                            + np.linalg.norm(track.centroid[e] - c1[1]))
                 dists.append((n, dist))
             if not dists:
                 continue
@@ -794,28 +796,32 @@ class TrackletStitcher:
             data.append(temp)
         return np.hstack(data)
 
-    def format_df(self):
+    def format_df(self, animal_names=None):
         data = self.concatenate_data()
-        individuals = [f"ind{i}" for i in range(1, self.n_tracks + 1)]
+        if not animal_names or len(animal_names) != self.n_tracks:
+            animal_names = [f"ind{i}" for i in range(1, self.n_tracks + 1)]
         coords = ["x", "y", "likelihood"]
+        n_multi_bpts = data.shape[1] // (len(animal_names) * len(coords))
+        n_unique_bpts = 0 if self.single is None else self.single.data.shape[1]
+
         if self.header is not None:
             scorer = self.header.get_level_values("scorer").unique().to_list()
             bpts = self.header.get_level_values("bodyparts").unique().to_list()
         else:
             scorer = ["scorer"]
-            n_bpts = data.shape[1] // (len(individuals) * len(coords))
-            bpts = [f"bpt{i}" for i in range(1, n_bpts + 1)]
+            bpts = [f"bpt{i}" for i in range(1, n_multi_bpts + 1)]
+            bpts += [f"bpt_unique{i}" for i in range(1, n_unique_bpts + 1)]
+
         columns = pd.MultiIndex.from_product(
-            [scorer, individuals, bpts, coords],
-            names=["scorer", "individuals", "bodyparts", "coords"],
+            [scorer, animal_names, bpts[:n_multi_bpts], coords],
+            names=["scorer", "individuals", "bodyparts", "coords"]
         )
         inds = range(self._first_frame, self._last_frame + 1)
         df = pd.DataFrame(data, columns=columns, index=inds)
         if self.single is not None:
-            n_dets = self.single.data.shape[1]
             columns = pd.MultiIndex.from_product(
-                [scorer, ["single"], [f"bpt{i}" for i in range(1, n_dets + 1)], coords],
-                names=["scorer", "individuals", "bodyparts", "coords"],
+                [scorer, ["single"], bpts[-n_unique_bpts:], coords],
+                names=["scorer", "individuals", "bodyparts", "coords"]
             )
             df2 = pd.DataFrame(
                 self.single.flat_data, columns=columns, index=self.single.inds
@@ -823,8 +829,8 @@ class TrackletStitcher:
             df = df.join(df2, how="outer")
         return df
 
-    def write_tracks(self, output_name=""):
-        df = self.format_df()
+    def write_tracks(self, output_name="", animal_names=None):
+        df = self.format_df(animal_names)
         if not output_name:
             output_name = self.filename.replace("pickle", "h5")
         df.to_hdf(output_name, "tracks", format="table", mode="w")
@@ -925,6 +931,7 @@ def stitch_tracklets(
     split_tracklets=True,
     prestitch_residuals=True,
     weight_func=None,
+    animal_names=None,
     output_name="",
 ):
     """
@@ -973,6 +980,10 @@ def stitch_tracklets(
         belong to the same track; i.e., the higher the confidence that the
         tracklets should be stitched together, the lower the returned value.
 
+    animal_names : list, optional
+        List of animal names to populate the output file header.
+        By default, columns are named "ind_i" for i in range(1, n_animals + 1).
+
     output_name : str, optional
         Name of the output h5 file.
         By default, tracks are automatically stored into the same directory
@@ -987,5 +998,5 @@ def stitch_tracklets(
     )
     stitcher.build_graph(weight_func=weight_func)
     stitcher.stitch()
-    stitcher.write_tracks(output_name)
+    stitcher.write_tracks(output_name, animal_names)
     return stitcher

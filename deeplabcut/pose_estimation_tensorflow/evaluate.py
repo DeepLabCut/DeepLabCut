@@ -198,8 +198,9 @@ def Plotting(
 
     colors = visualization.get_cmap(len(comparisonbodyparts), name=cfg["colormap"])
     NumFrames = np.size(DataCombined.index)
+    fig, ax = visualization.create_minimal_figure()
     for ind in tqdm(np.arange(NumFrames)):
-        visualization.plot_and_save_labeled_frame(
+        ax = visualization.plot_and_save_labeled_frame(
             DataCombined,
             ind,
             trainIndices,
@@ -208,7 +209,10 @@ def Plotting(
             comparisonbodyparts,
             DLCscorer,
             foldername,
+            fig,
+            ax,
         )
+        visualization.erase_artists(ax)
 
 
 def return_evaluate_network_data(
@@ -714,7 +718,7 @@ def evaluate_network(
                 final_result = []
 
                 ########################### RESCALING (to global scale)
-                if rescale == True:
+                if rescale:
                     scale = dlc_cfg["global_scale"]
                     Data = (
                         pd.read_hdf(
@@ -887,7 +891,7 @@ def evaluate_network(
                                 "Thereby, the errors are given by the average distances between the labels by DLC and the scorer."
                             )
 
-                        if plotting == True:
+                        if plotting:
                             print("Plotting...")
                             foldername = os.path.join(
                                 str(evaluationfolder),
@@ -910,7 +914,7 @@ def evaluate_network(
                         # print(final_result)
                     else:
                         DataMachine = pd.read_hdf(resultsfilename)
-                        if plotting == True:
+                        if plotting:
                             DataCombined = pd.concat(
                                 [Data.T, DataMachine.T], axis=0, sort=False
                             ).T
