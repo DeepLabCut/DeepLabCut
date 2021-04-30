@@ -145,7 +145,6 @@ if __name__ == "__main__":
     print("Tracklets created...")
 
 
-    print("Create data file...")
     picklefile = os.path.splitext(new_video_path)[0] + scorer + "_el.pickle"
     try:
         deeplabcut.stitch_tracklets(

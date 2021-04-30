@@ -696,7 +696,7 @@ class TrackletStitcher:
                     f"Could not reconstruct {self.n_tracks} tracks from the tracklets given."
                 )
 
-            self.tracks = np.asarray([sum(path) for path in self.paths])
+            self.tracks = np.asarray([sum(path) for path in self.paths if path])
             if add_back_residuals:
                 _ = self._finalize_tracks()
 
