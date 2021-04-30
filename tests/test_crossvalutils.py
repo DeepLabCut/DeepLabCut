@@ -2,7 +2,7 @@ import numpy as np
 from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
 
 
-BEST_GRAPH = [38, 30, 46, 45, 21, 13, 57, 63, 56, 65, 2]
+BEST_GRAPH = [2, 56, 7, 31, 38, 63, 65, 60, 54, 1, 13]
 
 
 def test_get_n_best_paf_graphs(uncropped_data_and_metadata):
@@ -39,6 +39,6 @@ def test_benchmark_paf_graphs(uncropped_data_and_metadata):
     all_scores = results[0]
     assert len(all_scores) == 1
     assert all_scores[0][1] == BEST_GRAPH
-    miss, purity = results[1].xs('mean', level=1).to_numpy()
-    assert np.isclose(miss, 0.0005, atol=1e-4)
-    assert np.isclose(purity, 0.9936, atol=1e-4)
+    miss, purity = results[1].xs('mean', level=1).to_numpy().squeeze()
+    assert np.isclose(miss, 0.0)
+    assert np.isclose(purity, 1.0)

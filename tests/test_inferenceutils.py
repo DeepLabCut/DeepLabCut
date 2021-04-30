@@ -118,7 +118,7 @@ def test_assembler(tmpdir_factory, real_assemblies):
             n_multibodyparts=12,
             identity_only=True,  # Test whether warning is properly raised
         )
-    assert len(ass.metadata['imnames']) == 2330
+    assert len(ass.metadata['imnames']) == 50
     assert ass.n_keypoints == 12
     assert len(ass.graph) == len(ass.paf_inds) == 66
     # Assemble based on the smallest graph to speed up testing
@@ -165,15 +165,15 @@ def test_assembler_calibration(real_assemblies):
     mahal, proba = ass.calc_assembly_mahalanobis_dist(
         assembly, return_proba=True
     )
-    assert np.isclose(mahal, 9.976, atol=1e-3)
+    assert np.isclose(mahal, 19.541, atol=1e-3)
     assert np.isclose(proba, 1, atol=1e-3)
 
     j1 = inferenceutils.Joint(tuple(assembly.xy[0]), label=0)
     j2 = inferenceutils.Joint(tuple(assembly.xy[1]), label=1)
     link = inferenceutils.Link(j1, j2)
     p = ass.calc_link_probability(link)
-    assert np.isclose(p, 0.995, atol=1e-3)
+    assert np.isclose(p, 0.990, atol=1e-3)
 
 
 def test_find_outlier_assemblies(real_assemblies):
-    assert len(inferenceutils.find_outlier_assemblies(real_assemblies)) == 644
+    assert len(inferenceutils.find_outlier_assemblies(real_assemblies)) == 13

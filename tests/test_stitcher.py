@@ -170,7 +170,8 @@ def test_stitcher_real(tmpdir_factory, real_tracklets):
 
     stitcher.stitch()
     assert len(stitcher.tracks) == 3
-    assert all(len(track) == 2330 for track in stitcher.tracks)
+    assert all(len(track) == 50 for track in stitcher.tracks)
+    assert all(0.998 <= track.likelihood <= 1 for track in stitcher.tracks)
 
     output_name = tmpdir_factory.mktemp('data').join('fake.h5')
     stitcher.write_tracks(output_name, ['mickey', 'minnie', 'bianca'])
