@@ -1,12 +1,13 @@
 """
 DeepLabCut2.2 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
+
 Please see AUTHORS for contributors.
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
-Adapted from DeeperCut by Eldar Insafutdinov
-https://github.com/eldar/pose-tensorflow
+
+Multifusion and multistage decoder for maDLC paper
 """
 
 import re
@@ -15,6 +16,7 @@ import functools
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 from tensorflow.contrib.slim.nets import resnet_v1
+from tensorflow.contrib.layers.python.layers import batch_norm
 
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import Batch
 import deeplabcut.pose_estimation_tensorflow.nnet.efficientnet_builder as eff
@@ -98,7 +100,22 @@ parallel_layers = {
     "b7": "17",
 }
 
+### New DLCNet Addition: multi-stage decoder
+def prediction_layer_stage(cfg, input, name, num_outputs):
+    with slim.arg_scope(
+        [slim.conv2d, slim.conv2d_transpose],
+        padding="SAME",
+        activation_fn=None,
+        normalizer_fn=None,
+        weights_regularizer=slim.l2_regularizer(cfg['weight_decay']),
+    ):
+        with tf.variable_scope(name):
+            pred = slim.conv2d(
+                input, num_outputs, kernel_size=[3, 3], stride=1#, scope="block5"
+            )
+            return pred
 
+# standard stride 2 decoder
 def prediction_layer(cfg, input, name, num_outputs):
     with slim.arg_scope(
         [slim.conv2d, slim.conv2d_transpose],
@@ -109,7 +126,7 @@ def prediction_layer(cfg, input, name, num_outputs):
     ):
         with tf.variable_scope(name):
             pred = slim.conv2d_transpose(
-                input, num_outputs, kernel_size=[3, 3], stride=2, scope="block4"
+                input, num_outputs, kernel_size=[3, 3], stride=2#, scope="block4"
             )
             return pred
 
@@ -171,10 +188,10 @@ def get_batch_spec(cfg):
 class PoseNet:
     def __init__(self, cfg):
         self.cfg = cfg
-        if "use_batch_norm" not in self.cfg.keys():
-            self.cfg["use_batch_norm"] = False
-        if "use_drop_out" not in self.cfg.keys():
-            self.cfg["use_drop_out"] = False
+        multi_stage = self.cfg.get('multi_stage', False)
+
+        # Multi stage is currently only implemented for resnets
+        self.cfg['multi_stage'] = multi_stage and 'resnet' in self.cfg['net_type']
 
     def extract_features(self, inputs):
         mean = tf.constant(
@@ -186,16 +203,14 @@ class PoseNet:
         im_centered = inputs - mean
 
         if "resnet" in self.cfg["net_type"]:
-            # The next part of the code depends upon which tensorflow version you have.
+            # The next part of the code depends upon the tensorflow version
             vers = tf.__version__
             vers = vers.split(
                 "."
             )  # Updated based on https://github.com/AlexEMG/DeepLabCut/issues/44
 
-            net_fun = net_funcs[self.cfg["net_type"]]
-            if (
-                int(vers[0]) == 1 and int(vers[1]) < 4
-            ):  # check if lower than version 1.4.
+            net_fun = net_funcs[self.cfg['net_type']]
+            if int(vers[0]) == 1 and int(vers[1]) < 4:
                 with slim.arg_scope(resnet_v1.resnet_arg_scope(False)):
                     net, end_points = net_fun(
                         im_centered, global_pool=False, output_stride=16
@@ -213,6 +228,11 @@ class PoseNet:
             with slim.arg_scope(mobilenet_v2.training_scope()):
                 net, end_points = net_fun(im_centered)
         elif "efficientnet" in self.cfg["net_type"]:
+            if 'use_batch_norm' not in self.cfg.keys():
+                self.cfg['use_batch_norm'] = False
+            if 'use_drop_out' not in self.cfg.keys():
+                self.cfg['use_drop_out'] = False
+
             im_centered /= tf.constant(eff.STDDEV_RGB, shape=[1, 1, 3])
             net, end_points = eff.build_model_base(
                 im_centered,
@@ -232,94 +252,235 @@ class PoseNet:
         scope="pose",
     ):
         cfg = self.cfg
-        if "resnet" in cfg["net_type"]:
-            num_layers = re.findall("resnet_([0-9]*)", cfg["net_type"])[0]
+        if cfg['multi_stage']: #MuNet! (multi_stage decoder + multi_fusion)
+            # Defining multi_fusion backbone
+            num_layers = re.findall("resnet_([0-9]*)", cfg['net_type'])[0]
             layer_name = (
                 "resnet_v1_{}".format(num_layers) + "/block{}/unit_{}/bottleneck_v1"
             )
-            mid_pt = layer_name.format(2, 3)
-        elif "mobilenet" in cfg["net_type"]:
-            mid_pt = "layer_7"
-        elif "efficientnet" in cfg["net_type"]:
-            mid_pt = "block_" + parallel_layers[cfg["net_type"].split("-")[1]]
+            mid_pt_block1 = layer_name.format(1,3)
+            mid_pt_block2 = layer_name.format(2,3)
 
-        final_dims = tf.ceil(tf.divide(input_shape[1:3], tf.convert_to_tensor(16)))
-        interim_dims = tf.scalar_mul(2, final_dims)
-        interim_dims = tf.cast(interim_dims, tf.int32)
-        bank_3 = end_points[mid_pt]
-        bank_3 = tf.image.resize_images(bank_3, interim_dims)
+            final_dims = tf.ceil(tf.divide(input_shape[1:3], tf.convert_to_tensor(16)))
 
-        with slim.arg_scope(
-            [slim.conv2d],
-            padding="SAME",
-            normalizer_fn=None,
-            weights_regularizer=slim.l2_regularizer(cfg["weight_decay"]),
-        ):
-            with tf.variable_scope("decoder_filters"):
-                bank_3 = slim.conv2d(
-                    bank_3, cfg["bank3"], 1, scope="decoder_parallel_1"
-                )
+            interim_dims_s8 = tf.scalar_mul(2, final_dims)
+            interim_dims_s8 = tf.cast(interim_dims_s8, tf.int32)
+            interim_dims_s4 = tf.scalar_mul(2, interim_dims_s8)
+            interim_dims_s4 = tf.cast(interim_dims_s4, tf.int32)
 
-        with slim.arg_scope(
-            [slim.conv2d_transpose],
-            padding="SAME",
-            normalizer_fn=None,
-            weights_regularizer=slim.l2_regularizer(cfg["weight_decay"]),
-        ):
-            with tf.variable_scope("upsampled_features"):
-                upsampled_features = slim.conv2d_transpose(
-                    features, cfg["bank5"], kernel_size=[3, 3], stride=2, scope="block4"
-                )
-        net = tf.concat([bank_3, upsampled_features], 3)
+            bank_1 = end_points[mid_pt_block1]
+            bank_2 = end_points[mid_pt_block2]
 
-        out = {}
-        with tf.variable_scope(scope, reuse=reuse):
-            out["part_pred"] = prediction_layer(
-                cfg, net, "part_pred", cfg["num_joints"] + cfg.get("num_idchannel", 0)
-            )
-            if cfg["location_refinement"]:
-                out["locref"] = prediction_layer(
-                    cfg, net, "locref_pred", cfg["num_joints"] * 2
-                )
-            if cfg["pairwise_predict"] and "multi-animal" not in cfg["dataset_type"]:
-                out["pairwise_pred"] = prediction_layer(
-                    cfg,
-                    net,
-                    "pairwise_pred",
-                    cfg["num_joints"] * (cfg["num_joints"] - 1) * 2,
-                )
-            if (
-                cfg["partaffinityfield_predict"]
-                and "multi-animal" in cfg["dataset_type"]
+            bank_2_s8 = tf.image.resize_images(bank_2, interim_dims_s8)
+            bank_1_s4 = tf.image.resize_images(bank_1,interim_dims_s4)
+
+            with slim.arg_scope(
+                [slim.conv2d],
+                padding="SAME",
+                normalizer_fn=batch_norm,
+                activation_fn=tf.nn.relu,
+                weights_regularizer=slim.l2_regularizer(cfg['weight_decay']),
             ):
-                out["pairwise_pred"] = prediction_layer(
-                    cfg, net, "pairwise_pred", cfg["num_limbs"] * 2
+                with tf.variable_scope("decoder_filters"):
+                    bank_2_s16 = slim.conv2d(
+                        bank_2_s8, 512, kernel_size=[3,3], stride=2, scope="decoder_parallel_1"
+                    )
+                    bank_2_s16 = slim.conv2d(
+                        bank_2_s16, 128, kernel_size=[1,1], stride=1, scope="decoder_parallel_2"
+                    )
+
+                    bank_1_s8 = slim.conv2d(
+                        bank_1_s4, 256, kernel_size=[3,3], stride=2, scope="decoder_parallel_3",
+                    )
+                    bank_1_s16 = slim.conv2d(
+                        bank_1_s8, 256, kernel_size=[3,3], stride=2, scope="decoder_parallel_4",
+                    )
+                    bank_1_s16 = slim.conv2d(
+                        bank_1_s16, 128, kernel_size=[1,1], stride=1, scope="decoder_parallel_5",
+                    )
+
+            with slim.arg_scope(
+                [slim.conv2d_transpose],
+                padding="SAME",
+                normalizer_fn=None,
+                weights_regularizer=slim.l2_regularizer(cfg['weight_decay']),
+            ):
+                with tf.variable_scope("upsampled_features"):
+
+                    concat_3_s16 = tf.concat([bank_1_s16, bank_2_s16, features], 3)
+
+                    if cfg['stride'] == 8:
+                        net = concat_3_s16
+
+                    elif cfg['stride'] == 4:
+                        upsampled_features_2x = slim.conv2d_transpose(
+                            concat_3_s16, cfg.get('bank3', 128), kernel_size=[3, 3], stride=2, scope='block3'
+                        )
+                        net = upsampled_features_2x
+
+                    elif cfg['stride'] == 2:
+                        upsampled_features_2x = slim.conv2d_transpose(
+                            concat_3_s16, cfg.get('bank3', 128), kernel_size=[3, 3], stride=2, scope='block3'
+                        )
+                        upsampled_features_4x = slim.conv2d_transpose(
+                            upsampled_features_2x, cfg.get('bank5', 128), kernel_size=[3,3], stride=2, scope="block4"
+                        )
+                        net = upsampled_features_4x
+
+            out = {}
+            # Attaching multi-stage decoder
+            with tf.variable_scope(scope, reuse=reuse):
+                stage1_hm_out = prediction_layer(
+                    cfg, net, "part_pred_s1", cfg['num_joints'] + cfg.get("num_idchannel", 0)
                 )
 
-            if (
-                cfg["intermediate_supervision"]
-                and "efficientnet" not in cfg["net_type"]
-            ):
-                if "mobilenet" in cfg["net_type"]:
-                    out["part_pred_interm"] = prediction_layer(
-                        cfg,
-                        end_points[
-                            "layer_" + str(cfg["intermediate_supervision_layer"])
-                        ],
-                        "intermediate_supervision",
-                        cfg["num_joints"],
+                if cfg['location_refinement']:
+                    out["locref"] = prediction_layer(
+                        cfg, net, "locref_pred", cfg['num_joints'] * 2
                     )
-                elif "resnet" in cfg["net_type"]:
-                    interm_name = layer_name.format(
-                        3, cfg["intermediate_supervision_layer"]
+                if cfg['pairwise_predict'] and "multi-animal" not in cfg['dataset_type']:
+                    out["pairwise_pred"] = prediction_layer(
+                        cfg, net, "pairwise_pred", cfg['num_joints'] * (cfg['num_joints'] - 1) * 2
                     )
+                if cfg['partaffinityfield_predict'] and "multi-animal" in cfg['dataset_type']:
+                    feature = slim.conv2d_transpose(
+                        net, cfg.get('bank3', 128), kernel_size=[3, 3], stride = 2
+                        )
+
+                    stage1_paf_out = prediction_layer(
+                        cfg, net, "pairwise_pred_s1", cfg['num_limbs'] * 2
+                    )
+
+                    stage2_in = tf.concat([stage1_hm_out, stage1_paf_out, feature],3)
+                    stage_input = stage2_in
+                    stage_paf_output = stage1_paf_out
+                    stage_hm_output = stage1_hm_out
+
+                    for i in range(2, 5):
+                        pre_stage_paf_output = stage_paf_output
+                        pre_stage_hm_output = stage_hm_output
+
+                        stage_paf_output = prediction_layer_stage(
+                            cfg, stage_input, f'pairwise_pred_s{i}',cfg['num_limbs']*2
+                            )
+
+                        stage_hm_output = prediction_layer_stage(
+                            cfg, stage_input, f'part_pred_s{i}',cfg['num_joints'] + cfg.get("num_idchannel", 0)
+                            )
+
+                        if i > 2:
+                            #stage_paf_output = stage_paf_output + pre_stage_paf_output
+                            stage_hm_output = stage_hm_output + pre_stage_hm_output
+
+                        stage_input = tf.concat([stage_hm_output, stage_paf_output, feature],3)
+
+                    out["part_pred"] = prediction_layer_stage(
+                        cfg, stage_input, "part_pred", cfg['num_joints'] + cfg.get("num_idchannel", 0)
+                    )
+
+                    out["pairwise_pred"] = prediction_layer_stage(
+                        cfg, stage_input, "pairwise_pred", cfg['num_limbs'] * 2
+                    )
+
+                if cfg['intermediate_supervision']:
+                    interm_name = layer_name.format(3, cfg['intermediate_supervision_layer'])
                     block_interm_out = end_points[interm_name]
                     out["part_pred_interm"] = prediction_layer(
                         cfg,
                         block_interm_out,
                         "intermediate_supervision",
-                        cfg["num_joints"] + cfg.get("num_idchannel", 0),
+                        cfg['num_joints'] + cfg.get("num_idchannel", 0),
                     )
+
+        else: # dual fusion net (for stride 4 experiments)
+            if "resnet" in cfg['net_type']:
+                num_layers = re.findall("resnet_([0-9]*)", cfg['net_type'])[0]
+                layer_name = (
+                        "resnet_v1_{}".format(num_layers) + "/block{}/unit_{}/bottleneck_v1"
+                )
+                mid_pt = layer_name.format(2, 3)
+            elif "mobilenet" in cfg['net_type']:
+                mid_pt = "layer_7"
+            elif "efficientnet" in cfg['net_type']:
+                mid_pt = "block_" + parallel_layers[cfg['net_type'].split('-')[1]]
+
+            final_dims = tf.ceil(tf.divide(input_shape[1:3], tf.convert_to_tensor(16)))
+            interim_dims = tf.scalar_mul(2, final_dims)
+            interim_dims = tf.cast(interim_dims, tf.int32)
+            bank_3 = end_points[mid_pt]
+            bank_3 = tf.image.resize_images(bank_3, interim_dims)
+
+            with slim.arg_scope(
+                [slim.conv2d],
+                padding="SAME",
+                normalizer_fn=None,
+                weights_regularizer=slim.l2_regularizer(cfg["weight_decay"]),
+            ):
+                with tf.variable_scope("decoder_filters"):
+                    bank_3 = slim.conv2d(
+                        bank_3, cfg.get("bank3", 128), 1, scope="decoder_parallel_1"
+                    )
+
+            with slim.arg_scope(
+                [slim.conv2d_transpose],
+                padding="SAME",
+                normalizer_fn=None,
+                weights_regularizer=slim.l2_regularizer(cfg["weight_decay"]),
+            ):
+                with tf.variable_scope("upsampled_features"):
+                    upsampled_features = slim.conv2d_transpose(
+                        features, cfg.get("bank5", 128), kernel_size=[3, 3], stride=2, scope="block4"
+                    )
+            net = tf.concat([bank_3, upsampled_features], 3)
+
+            out = {}
+            with tf.variable_scope(scope, reuse=reuse):
+                out["part_pred"] = prediction_layer(
+                    cfg, net, "part_pred", cfg["num_joints"] + cfg.get("num_idchannel", 0)
+                )
+                if cfg["location_refinement"]:
+                    out["locref"] = prediction_layer(
+                        cfg, net, "locref_pred", cfg["num_joints"] * 2
+                    )
+                if cfg["pairwise_predict"] and "multi-animal" not in cfg["dataset_type"]:
+                    out["pairwise_pred"] = prediction_layer(
+                        cfg,
+                        net,
+                        "pairwise_pred",
+                        cfg["num_joints"] * (cfg["num_joints"] - 1) * 2,
+                    )
+                if (
+                    cfg["partaffinityfield_predict"]
+                    and "multi-animal" in cfg["dataset_type"]
+                ):
+                    out["pairwise_pred"] = prediction_layer(
+                        cfg, net, "pairwise_pred", cfg["num_limbs"] * 2
+                    )
+
+                if (
+                    cfg["intermediate_supervision"]
+                    and "efficientnet" not in cfg["net_type"]
+                ):
+                    if "mobilenet" in cfg["net_type"]:
+                        out["part_pred_interm"] = prediction_layer(
+                            cfg,
+                            end_points[
+                                "layer_" + str(cfg["intermediate_supervision_layer"])
+                            ],
+                            "intermediate_supervision",
+                            cfg["num_joints"],
+                        )
+                    elif "resnet" in cfg["net_type"]:
+                        interm_name = layer_name.format(
+                            3, cfg["intermediate_supervision_layer"]
+                        )
+                        block_interm_out = end_points[interm_name]
+                        out["part_pred_interm"] = prediction_layer(
+                            cfg,
+                            block_interm_out,
+                            "intermediate_supervision",
+                            cfg["num_joints"] + cfg.get("num_idchannel", 0),
+                        )
 
         return out
 
