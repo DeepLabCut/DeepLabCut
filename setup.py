@@ -56,7 +56,8 @@ setuptools.setup(
         "tensorpack==0.9.8",
         "tqdm",
         "moviepy<=1.0.1",
-        "Pillow>=7.1"
+        "Pillow>=7.1",
+        "bayesian-optimization"
     ],
     extras_require={"gui": ["wxpython<4.1"]},
     scripts=["deeplabcut/pose_estimation_tensorflow/models/pretrained/download.sh"],
