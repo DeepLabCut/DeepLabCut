@@ -177,10 +177,6 @@ class MAPoseDataset:
             int
         ) * self.cfg.get("smfactor", 2)
 
-        if stride==2:
-            sm_size = np.ceil(target_size / 16).astype(int)
-            sm_size *= 8
-
         # assert len(batch_images) == self.batch_size
         return batch_images, joint_ids, batch_joints, data_items, sm_size, target_size
 
