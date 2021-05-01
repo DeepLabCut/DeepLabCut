@@ -138,7 +138,7 @@ def test_assembler(tmpdir_factory, real_assemblies):
     paf_inds = [ass.graph.index(edge) for edge in naive_graph]
     ass.graph = naive_graph
     ass.paf_inds = paf_inds
-    ass.assemble(chunk_size=0)
+    ass.assemble()
     assert not ass.unique
     assert len(ass.assemblies) == len(real_assemblies)
     assert (sum(1 for a in ass.assemblies.values() for _ in a)
