@@ -67,11 +67,19 @@ A. Mathis, M. Yüksekgönül, B. Rogers, M. Bethge, M. Mathis
 
 ############################################################################################################
 
-DeepLabCut 2.1 - 2.2 additions (currently unpublished):
+DeepLabCut 2.1 - 2.2 additions:
 A Mathis, alexander.mathis@epfl.ch | https://github.com/AlexEMG/DeepLabCut
 J Lauer, jessy@deeplabcut.org | https://github.com/jeylau
-T Biasi, tbiasi@college.harvard.edu | https://github.com/tbiasi
-G Kane, gkane@rowland.harvard.edu | https://github.com/gkane26
-M Yüksekgönül, mertyuksekgonul@gmail.com | https://github.com/mertyg
-T Nath, nath@rowland.harvard.edu | https://github.com/meet10may
 M Mathis, mackenzie@post.harvard.edu | https://github.com/MMathisLab
+M Zhou, https://github.com/zhoumu53
+S Ye, https://github.com/yeshaokai
+T Biasi, https://github.com/tbiasi
+G Kane, https://github.com/gkane26
+M Yüksekgönül, https://github.com/mertyg
+T Nath, https://github.com/meet10may
+
+Preprint:
+Multi-animal pose estimation and tracking with DeepLabCut
+J Lauer,  M Zhou,  S Ye,  W Menegas,  T Nath,  MM Rahman, V Di Santo, 
+D Soberanes, G Feng, VN Murthy, G Lauder, C Dulac,  M Mathis, A Mathis
+https://www.biorxiv.org/content/10.1101/2021.04.30.442096v1
