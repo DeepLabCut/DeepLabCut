@@ -12,6 +12,7 @@ import itertools
 import networkx as nx
 import numpy as np
 import operator
+import os
 import pandas as pd
 import pickle
 import warnings
@@ -713,7 +714,7 @@ class Assembler:
     ):
         self.assemblies = dict()
         self.unique = dict()
-        if chunk_size == 0:
+        if chunk_size == 0 or os.name == "nt":  # Avoid multiprocessing on Windows
             for i, data_dict in enumerate(tqdm(self)):
                 assemblies, unique = self._assemble(data_dict, i)
                 if assemblies:
