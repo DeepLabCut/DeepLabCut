@@ -106,10 +106,7 @@ def find_outliers_in_raw_data(
 
 
 def find_outliers_in_raw_detections(
-    pickled_data,
-    algo="uncertain",
-    threshold=0.1,
-    kept_keypoints=None,
+    pickled_data, algo="uncertain", threshold=0.1, kept_keypoints=None
 ):
     """
     Find outlier frames from the raw detections of multiple animals.
@@ -144,17 +141,17 @@ def find_outliers_in_raw_detections(
     except KeyError:
         pass
 
-    def get_frame_ind(s): return int(re.findall(r"\d+", s)[0])
+    def get_frame_ind(s):
+        return int(re.findall(r"\d+", s)[0])
 
     candidates = []
     data = dict()
     for frame_name, dict_ in pickled_data.items():
         frame_ind = get_frame_ind(frame_name)
-        temp_coords = dict_['coordinates'][0]
+        temp_coords = dict_["coordinates"][0]
         temp = dict_["confidence"]
         if kept_keypoints is not None:
-            temp = [vals for i, vals in enumerate(temp)
-                    if i in kept_keypoints]
+            temp = [vals for i, vals in enumerate(temp) if i in kept_keypoints]
         coords = np.concatenate(temp_coords).squeeze()
         conf = np.concatenate(temp).squeeze()
         data[frame_ind] = np.c_[coords, conf]
@@ -319,12 +316,12 @@ def extract_outlier_frames(
             df_temp = df.loc[:, mask]
             Indices = []
             if outlieralgorithm == "uncertain":
-                p = df_temp.xs("likelihood", level=-1, axis=1)
+                p = df_temp.xs("likelihood", level="coords", axis=1)
                 ind = df_temp.index[(p < p_bound).any(axis=1)].tolist()
                 Indices.extend(ind)
             elif outlieralgorithm == "jump":
                 temp_dt = df_temp.diff(axis=0) ** 2
-                temp_dt.drop("likelihood", axis=1, level=-1, inplace=True)
+                temp_dt.drop("likelihood", axis=1, level="coords", inplace=True)
                 sum_ = temp_dt.sum(axis=1, level=1)
                 ind = df_temp.index[(sum_ > epsilon ** 2).any(axis=1)].tolist()
                 Indices.extend(ind)
@@ -686,30 +683,52 @@ def ExtractFramesbasedonPreselection(
                 df = data.loc[frames2pick]
                 df.index = [
                     os.path.join(
-                        "labeled-data", vname, "img" + str(index).zfill(strwidth) + ".png"
+                        "labeled-data",
+                        vname,
+                        "img" + str(index).zfill(strwidth) + ".png",
                     )
                     for index in df.index
                 ]  # exchange index number by file names.
             elif isinstance(data, dict):
-                idx = [os.path.join(
-                    "labeled-data", vname, "img" + str(index).zfill(strwidth) + ".png"
-                ) for index in frames2pick]
-                filename = os.path.join(str(tmpfolder), f"CollectedData_{cfg['scorer']}.h5")
+                idx = [
+                    os.path.join(
+                        "labeled-data",
+                        vname,
+                        "img" + str(index).zfill(strwidth) + ".png",
+                    )
+                    for index in frames2pick
+                ]
+                filename = os.path.join(
+                    str(tmpfolder), f"CollectedData_{cfg['scorer']}.h5"
+                )
                 try:
                     df_temp = pd.read_hdf(filename, "df_with_missing")
                     columns = df_temp.columns
                 except FileNotFoundError:
                     columns = pd.MultiIndex.from_product(
-                        [[cfg['scorer']], cfg['individuals'], cfg['multianimalbodyparts'], ['x', 'y']],
-                        names=['scorer', 'individuals', 'bodyparts', 'coords']
+                        [
+                            [cfg["scorer"]],
+                            cfg["individuals"],
+                            cfg["multianimalbodyparts"],
+                            ["x", "y"],
+                        ],
+                        names=["scorer", "individuals", "bodyparts", "coords"],
                     )
-                    if cfg['uniquebodyparts']:
+                    if cfg["uniquebodyparts"]:
                         columns2 = pd.MultiIndex.from_product(
-                            [[cfg['scorer']], ['single'], cfg['uniquebodyparts'], ['x', 'y']],
-                            names=['scorer', 'individuals', 'bodyparts', 'coords']
+                            [
+                                [cfg["scorer"]],
+                                ["single"],
+                                cfg["uniquebodyparts"],
+                                ["x", "y"],
+                            ],
+                            names=["scorer", "individuals", "bodyparts", "coords"],
                         )
                         df_temp = pd.concat(
-                            (pd.DataFrame(columns=columns), pd.DataFrame(columns=columns2))
+                            (
+                                pd.DataFrame(columns=columns),
+                                pd.DataFrame(columns=columns2),
+                            )
                         )
                         columns = df_temp.columns
                 array = np.full((len(frames2pick), len(columns)), np.nan)
@@ -717,7 +736,7 @@ def ExtractFramesbasedonPreselection(
                     data_temp = data.get(index)
                     if data_temp is not None:
                         vals = np.concatenate(data_temp)[:, :2].flatten()
-                        array[i, :len(vals)] = vals
+                        array[i, : len(vals)] = vals
                 df = pd.DataFrame(array, index=idx, columns=columns)
             else:
                 return
@@ -725,7 +744,9 @@ def ExtractFramesbasedonPreselection(
                 Data = pd.read_hdf(machinefile, "df_with_missing")
                 DataCombined = pd.concat([Data, df])
                 # drop duplicate labels:
-                DataCombined = DataCombined[~DataCombined.index.duplicated(keep="first")]
+                DataCombined = DataCombined[
+                    ~DataCombined.index.duplicated(keep="first")
+                ]
 
                 DataCombined.to_hdf(machinefile, key="df_with_missing", mode="w")
                 DataCombined.to_csv(

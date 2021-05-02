@@ -243,8 +243,10 @@ def edit_config(configname, edits, output_name=""):
     try:
         write_plainconfig(output_name, cfg)
     except ruamel.yaml.representer.RepresenterError:
-        warnings.warn("Some edits could not be written. "
-                      "The configuration file will be left unchanged.")
+        warnings.warn(
+            "Some edits could not be written. "
+            "The configuration file will be left unchanged."
+        )
         for key in edits:
             cfg.pop(key)
         write_plainconfig(output_name, cfg)
@@ -507,9 +509,12 @@ def get_deeplabcut_path():
 
 def IntersectionofBodyPartsandOnesGivenbyUser(cfg, comparisonbodyparts):
     """ Returns all body parts when comparisonbodyparts=='all', otherwise all bpts that are in the intersection of comparisonbodyparts and the actual bodyparts """
-    allbpts = cfg["bodyparts"]
-    if "MULTI" in allbpts:
+    # if "MULTI!" in allbpts:
+    if cfg["multianimalproject"]:
         allbpts = cfg["multianimalbodyparts"] + cfg["uniquebodyparts"]
+    else:
+        allbpts = cfg["bodyparts"]
+
     if comparisonbodyparts == "all":
         return allbpts
     else:  # take only items in list that are actually bodyparts...
@@ -578,7 +583,7 @@ def GetScorerName(
     )
     # ABBREVIATE NETWORK NAMES -- esp. for mobilenet!
     if "resnet" in dlc_cfg["net_type"]:
-        if dlc_cfg.get('multi_stage', False):
+        if dlc_cfg.get("multi_stage", False):
             netname = "dlcrnetms5"
         else:
             netname = dlc_cfg["net_type"].replace("_", "")
