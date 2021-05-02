@@ -95,7 +95,6 @@ from deeplabcut.pose_estimation_tensorflow import (
     return_train_network_path,
     evaluate_network,
     return_evaluate_network_data,
-    evaluate_multianimal_crossvalidate,
     analyze_videos,
     analyze_time_lapse_frames,
     convert_detections2tracklets,
@@ -114,7 +113,7 @@ from deeplabcut.pose_estimation_3d import (
     create_labeled_video_3d,
 )
 
-from deeplabcut.refine_training_dataset.tracklets import convert_raw_tracks_to_h5
+from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.refine_training_dataset import extract_outlier_frames, merge_datasets
 from deeplabcut.post_processing import filterpredictions, analyzeskeleton
 

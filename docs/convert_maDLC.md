@@ -18,6 +18,7 @@ multianimalproject: true
 individuals:
 uniquebodyparts: []
 multianimalbodyparts:
+identity: false/true
 ```
 - Now, please name the animal you have a new name under individuals, i.e.:
 ```python

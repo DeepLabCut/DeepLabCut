@@ -5,6 +5,7 @@
 /examples/multi*
 /examples/3D*
 /examples/OUT
+.local
 
 # Tensorflow checkpoints
 *.ckpt

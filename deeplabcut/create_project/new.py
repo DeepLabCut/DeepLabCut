@@ -181,6 +181,7 @@ def create_new_project(
     if multianimal:  # parameters specific to multianimal project
         cfg_file, ruamelFile = auxiliaryfunctions.create_config_template(multianimal)
         cfg_file["multianimalproject"] = multianimal
+        cfg_file["identity"] = False
         cfg_file["individuals"] = ["individual1", "individual2", "individual3"]
         cfg_file["multianimalbodyparts"] = ["bodypart1", "bodypart2", "bodypart3"]
         cfg_file["uniquebodyparts"] = []
@@ -228,7 +229,7 @@ def create_new_project(
     cfg_file["pcutoff"] = 0.6
     cfg_file["dotsize"] = 12  # for plots size of dots
     cfg_file["alphavalue"] = 0.7  # for plots transparency of markers
-    cfg_file["colormap"] = "plasma"  # for plots type of colormap
+    cfg_file["colormap"] = "rainbow"  # for plots type of colormap
 
     projconfigfile = os.path.join(str(project_path), "config.yaml")
     # Write dictionary to yaml  config file

@@ -1,6 +1,3 @@
-import os
-
-os.environ["DLClight"] = "True"
 import numpy as np
 import pytest
 from deeplabcut.refine_training_dataset.stitch import Tracklet, TrackletStitcher
@@ -36,7 +33,8 @@ def fake_stitcher():
 def test_tracklet_wrong_inputs(fake_tracklet):
     with pytest.raises(ValueError):
         _ = Tracklet(fake_tracklet.data[..., :2], fake_tracklet.inds)
-        _ = Tracklet(fake_tracklet.data[: TRACKLET_LEN - 2], fake_tracklet.inds)
+    with pytest.raises(ValueError):
+        _ = Tracklet(fake_tracklet.data[:TRACKLET_LEN - 2], fake_tracklet.inds)
 
 
 def test_tracklet_monotonic_indices(fake_tracklet):
@@ -85,6 +83,11 @@ def test_tracklet_calc_velocity(fake_tracklet, where, norm):
     _ = fake_tracklet.calc_velocity(where, norm)
 
 
+def test_tracklet_calc_rate_of_turn(fake_tracklet):
+    for where in ("head", "tail"):
+        _ = fake_tracklet.calc_rate_of_turn(where)
+
+
 def test_tracklet_affinities(fake_tracklet):
     other_tracklet = Tracklet(fake_tracklet.data, fake_tracklet.inds + TRACKLET_LEN)
     _ = fake_tracklet.dynamic_similarity_with(other_tracklet)
@@ -98,7 +101,9 @@ def test_tracklet_affinities(fake_tracklet):
 def test_stitcher_wrong_inputs(fake_tracklet):
     with pytest.raises(IOError):
         _ = TrackletStitcher([], n_tracks=2)
+    with pytest.raises(ValueError):
         _ = TrackletStitcher([fake_tracklet], n_tracks=1)
+    with pytest.raises(ValueError):
         _ = TrackletStitcher([fake_tracklet], n_tracks=2, min_length=2)
 
 
@@ -119,3 +124,54 @@ def test_stitcher(tmpdir_factory, fake_stitcher):
     fake_stitcher.stitch(add_back_residuals=True)
     output_name = tmpdir_factory.mktemp("data").join("fake.h5")
     fake_stitcher.write_tracks(output_name)
+
+    # Break the graph to test stitching failure
+    fake_stitcher.G.remove_edge("source", "0in")
+    with pytest.warns(UserWarning):
+        fake_stitcher.stitch(add_back_residuals=True)
+
+
+def test_stitcher_plot(fake_stitcher):
+    fake_stitcher.build_graph(max_gap=1)
+    fake_stitcher.draw_graph(with_weights=True)
+    fake_stitcher.stitch(add_back_residuals=True)
+    fake_stitcher.plot_tracklets()
+    fake_stitcher.plot_paths()
+    fake_stitcher.plot_tracks()
+
+
+def test_tracklet_interpolate(real_tracklets):
+    data = np.stack(list(real_tracklets[0].values()))[:10]
+    inds = np.arange(len(data))
+    gap = 2
+    inds[len(inds) // 2:] += gap
+    tracklet = Tracklet(data, inds)
+    assert len(tracklet) == len(data)
+    new_tracklet = tracklet.interpolate(max_gap=1)
+    assert len(new_tracklet) == len(data)
+    new_tracklet = tracklet.interpolate(max_gap=gap)
+    assert len(new_tracklet) == len(data) + gap
+    missing_inds = list(set(range(inds.max())).difference(inds))
+    assert np.all(new_tracklet.data[missing_inds, :, 2] == 0.5)
+
+
+def test_stitcher_real(tmpdir_factory, real_tracklets):
+    stitcher = TrackletStitcher.from_dict_of_dict(
+        real_tracklets, n_tracks=3,
+    )
+    assert len(stitcher) == 3
+    assert all(tracklet.is_continuous for tracklet in stitcher.tracklets)
+    assert not stitcher.residuals
+    assert stitcher.compute_max_gap() == 0
+
+    stitcher.build_graph()
+    assert stitcher.G.number_of_edges() == 9
+    assert all(weight is None for *_, weight in stitcher.G.edges.data('weight'))
+
+    stitcher.stitch()
+    assert len(stitcher.tracks) == 3
+    assert all(len(track) == 50 for track in stitcher.tracks)
+    assert all(0.998 <= track.likelihood <= 1 for track in stitcher.tracks)
+
+    output_name = tmpdir_factory.mktemp('data').join('fake.h5')
+    stitcher.write_tracks(output_name, ['mickey', 'minnie', 'bianca'])

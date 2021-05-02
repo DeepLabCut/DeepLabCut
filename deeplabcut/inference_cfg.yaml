@@ -4,44 +4,27 @@
 variant: 0
 
 ##############################################################################
-#### Assembly of PAFs to individuals (should be crossvalidated)
-#### Happens in evaluation step.
+#### Assembly of PAFs to individuals
 ##############################################################################
-
-# Filtering bodyparts:
-# Least strength of a bodypart detection (to be included in assembly)
-detectionthresholdsquare: 0.1
 
 # Filtering connections:
 # Least strength of a paf cost (to be included in assembly)
 pafthreshold: 0.1
 
-# before assembly exclude all bpts more apart than:
-distnormalization: 1000
-# and closer than:
-distnormalizationLOWER: 0
-
-#For edgewisecondition (slack variables)
-upperbound_factor: 1.25 # edges that are > upperbound_factor * maximum edge length
-lowerbound_factor: .5   # edges that are < lowerbound_factor * minimum edge length
-
-# weighing an edge by paf costs + addlikelihoods*geometric mean of detection likelihood
-addlikelihoods: .15
 method: 'm1'
 
 # Assembly:
 #least number of connections (to actually form an animal)
 minimalnumberofconnections: willbeautomaticallyupdatedbycreate_training_datasetcode
 #reasonable default: len(cfg['multianimalbodyparts'])/2
+pcutoff: 0.1
 
-# Least average score (average over paf costs of all edges)
-averagescore: 0.1
 # max. number of objects to keep:
 topktoretain: willbeautomaticallyupdatedbycreate_training_datasetcode
 #reasonable default: len(cfg['individuals'])+1*(len(cfg['uniquebodyparts'])>0)
 
 # Also extract ID:
-withid: False #TODO: set automatically (if >0 id channels!)
+withid: False
 
 ##############################################################################
 #### Tracker variables (should be crossvalidated)
@@ -50,7 +33,8 @@ withid: False #TODO: set automatically (if >0 id channels!)
 boundingboxslack : 0
 
 # Intersection over Union (IoU) threshold for linking two bounding boxes
-iou_threshold: .2
-# maximum duration of a tracklet and length
-max_age: 100
-min_hits: 3
+iou_threshold: .6
+# maximum duration of a lost tracklet before it's considered a "new animal" (in frames)
+max_age: 1
+# minimum number of consecutive frames before a detection is tracked
+min_hits: 1

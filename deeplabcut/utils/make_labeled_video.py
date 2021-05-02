@@ -88,7 +88,7 @@ def CreateVideo(
         ny, nx = clip.height(), clip.width()
 
     fps = clip.fps()
-    nframes = len(Dataframe.index)
+    nframes = clip.nframes
     duration = nframes / fps
 
     print(
@@ -103,7 +103,7 @@ def CreateVideo(
     )
     print("Generating frames and creating video.")
 
-    df_x, df_y, df_likelihood = Dataframe.values.reshape((nframes, -1, 3)).T
+    df_x, df_y, df_likelihood = Dataframe.values.reshape((len(Dataframe), -1, 3)).T
     if cropping and not displaycropped:
         df_x += x1
         df_y += y1
@@ -134,7 +134,7 @@ def CreateVideo(
     colors = (C[:, :3] * 255).astype(np.uint8)
 
     with np.errstate(invalid="ignore"):
-        for index in trange(nframes):
+        for index in trange(min(nframes, len(Dataframe))):
             image = clip.load_frame()
             if displaycropped:
                 image = image[y1:y2, x1:x2]
@@ -216,7 +216,7 @@ def CreateVideoSlow(
     if outputframerate is None:  # by def. same as input rate.
         outputframerate = clip.fps()
 
-    nframes = len(Dataframe.index)
+    nframes = clip.nframes
     duration = nframes / fps
 
     print(
@@ -230,7 +230,7 @@ def CreateVideoSlow(
         )
     )
     print("Generating frames and creating video.")
-    df_x, df_y, df_likelihood = Dataframe.values.reshape((nframes, -1, 3)).T
+    df_x, df_y, df_likelihood = Dataframe.values.reshape((len(Dataframe), -1, 3)).T
     if cropping and not displaycropped:
         df_x += x1
         df_y += y1
@@ -282,7 +282,7 @@ def CreateVideoSlow(
 
     writer = FFMpegWriter(fps=fps, codec="h264")
     with writer.saving(fig, videooutname, dpi=dpi), np.errstate(invalid="ignore"):
-        for index in trange(nframes):
+        for index in trange(min(nframes, len(Dataframe))):
             imagename = tmpfolder + "/file" + str(index).zfill(nframes_digits) + ".png"
             image = img_as_ubyte(clip.load_frame())
             if index in Index:  # then extract the frame!
@@ -782,9 +782,7 @@ def create_video_with_all_detections(
         Specifies the destination folder that was used for storing analysis data (default is the path of the video).
 
     """
-    from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import (
-        convertdetectiondict2listoflist,
-    )
+    from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import Assembler
     import pickle, re
 
     cfg = auxiliaryfunctions.read_config(config)
@@ -837,13 +835,13 @@ def create_video_with_all_detections(
                 frame = clip.load_frame()
                 try:
                     ind = frames.index(n)
-                    dets = convertdetectiondict2listoflist(data[frame_names[ind]], bpts)
-                    for i, det in enumerate(dets):
-                        color = colors[i]
-                        for x, y, p, _ in det:
-                            if p > pcutoff:
-                                rr, cc = disk((y, x), dotsize, shape=(ny, nx))
-                                frame[rr, cc] = color
+                    dets = Assembler._flatten_detections(data[frame_names[ind]])
+                    for det in dets:
+                        if det.label not in bpts or det.confidence < pcutoff:
+                            continue
+                        x, y = det.pos
+                        rr, cc = disk((y, x), dotsize, shape=(ny, nx))
+                        frame[rr, cc] = colors[bpts.index(det.label)]
                 except ValueError:  # No data stored for that particular frame
                     print(n, "no data")
                     pass
