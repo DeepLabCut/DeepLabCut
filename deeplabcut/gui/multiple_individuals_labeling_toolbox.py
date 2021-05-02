@@ -1,5 +1,5 @@
 """
-DeepLabCut2.0 Toolbox (deeplabcut.org)
+DeepLabCut2.2 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
 https://github.com/DeepLabCut/DeepLabCut
 Please see AUTHORS for contributors.
@@ -285,7 +285,7 @@ class ScrollPanel(SP.ScrolledPanel):
 class MainFrame(BaseFrame):
     def __init__(self, parent, config, config3d, sourceCam):
         super(MainFrame, self).__init__(
-            "DeepLabCut2.0 - Multiple Individuals Labeling ToolBox", parent
+            "DeepLabCut 2.2 - Multiple Individuals Labeling", parent
         )
 
         self.statusbar.SetStatusText(

@@ -9,11 +9,18 @@ Licensed under GNU Lesser General Public License v3.0
 
 Adopted from DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
-
 Effnet added by T. Biasi & AM
-Efficient Nets added by T. Biasi & AM
-See https://openaccess.thecvf.com/content/WACV2021/html/Mathis_Pretraining_Boosts_Out-of-Domain_Robustness_for_Pose_Estimation_WACV_2021_paper.html
 
+See our paper:
+
+Pretraining boosts out-of-domain robustness for pose estimation
+by Alexander Mathis, Thomas Biasi, Steffen Schneider, Mert Yuksekgonul, Byron Rogers, Matthias Bethge, Mackenzie W. Mathis
+Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (WACV), 2021, pp. 1859-1868
+https://openaccess.thecvf.com/content/WACV2021/html/Mathis_Pretraining_Boosts_Out-of-Domain_Robustness_for_Pose_Estimation_WACV_2021_paper.html
+and preprint
+https://arxiv.org/abs/1909.11229
+
+Implements EffNet backbones with 1 deconv. layer and overall stride 8 for single and multi-animal (with PAF)
 """
 
 import re

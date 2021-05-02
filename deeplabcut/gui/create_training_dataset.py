@@ -96,9 +96,10 @@ class Create_training_dataset(wx.Panel):
             "efficientnet-b0",
             "efficientnet-b3",
             "efficientnet-b6",
+            "dlcrnet_ms5",
         ]
         self.net_choice.Set(options)
-        self.net_choice.SetValue("resnet_50")
+        self.net_choice.SetValue("dlcrnet_ms5")
         netboxsizer.Add(self.net_choice, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
         aug_text = wx.StaticBox(self, label="Select the augmentation method")
@@ -173,9 +174,7 @@ class Create_training_dataset(wx.Panel):
         self.hbox3.Add(self.userfeedback, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         if config_file.get("multianimalproject", False):
-            print(
-                "more networks are available soon for maDLC, but currenlty this uses DLC-ResNet50 only"
-            )
+
             self.model_comparison_choice = "No"
         else:
             self.model_comparison_choice = wx.RadioBox(
@@ -200,6 +199,7 @@ class Create_training_dataset(wx.Panel):
             )
 
             networks = [
+                "dlcrnet_ms5",
                 "resnet_50",
                 "resnet_101",
                 "resnet_152",
@@ -209,7 +209,7 @@ class Create_training_dataset(wx.Panel):
                 "mobilenet_v2_0.35",
                 "efficientnet-b0",
                 "efficientnet-b3",
-                "efficientnet-b6",
+                "efficientnet-b6"
             ]
             augmentation_methods = ["default", "tensorpack", "imgaug"]
             self.network_box = wx.StaticBox(self, label="Select the networks")
@@ -378,7 +378,10 @@ class Create_training_dataset(wx.Panel):
             else:
                 random = False
             deeplabcut.create_multianimaltraining_dataset(
-                self.config, num_shuffles, Shuffles=[self.shuffle.GetValue()]
+                self.config,
+                num_shuffles,
+                Shuffles=[self.shuffle.GetValue()],
+                net_type=self.net_choice.GetValue(),
             )
         else:
             if self.model_comparison_choice.GetStringSelection() == "No":

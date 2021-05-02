@@ -7,13 +7,19 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 
-Also see our paper:
+See our paper:
+
 Pretraining boosts out-of-domain robustness for pose estimation
-by Alexander Mathis, Mert Yüksekgönül, Byron Rogers, Matthias Bethge, Mackenzie W. Mathis
+by Alexander Mathis, Thomas Biasi, Steffen Schneider, Mert Yuksekgonul, Byron Rogers, Matthias Bethge, Mackenzie W. Mathis
+Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (WACV), 2021, pp. 1859-1868
+https://openaccess.thecvf.com/content/WACV2021/html/Mathis_Pretraining_Boosts_Out-of-Domain_Robustness_for_Pose_Estimation_WACV_2021_paper.html
+and preprint
 https://arxiv.org/abs/1909.11229
 
 Based on Slim implementation of mobilenets:
 https://github.com/tensorflow/models/blob/master/research/slim/nets/mobilenet/mobilenet.py
+
+Implements MobileNetv2 backbone with 1 deconv. layer and overall stride 8 for single and multi-animal (with PAF)
 """
 
 import functools
