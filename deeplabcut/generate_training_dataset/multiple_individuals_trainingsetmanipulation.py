@@ -20,6 +20,7 @@ from tqdm import tqdm
 from deeplabcut.generate_training_dataset import trainingsetmanipulation
 from deeplabcut.utils import auxiliaryfunctions, auxfun_models, auxfun_multianimal
 
+
 def create_multianimaltraining_dataset(
     config,
     num_shuffles=1,
@@ -95,7 +96,7 @@ def create_multianimaltraining_dataset(
     # CURRENTLY ONLY ResNet supported!
     if net_type is None:  # loading & linking pretrained models
         net_type = cfg.get("default_net_type", "resnet_50")
-    elif not any(net in net_type for net in ('resnet', 'eff', 'dlc')):
+    elif not any(net in net_type for net in ("resnet", "eff", "dlc")):
         raise ValueError(f"Unsupported network {net_type}.")
 
     multi_stage = False
@@ -111,7 +112,9 @@ def create_multianimaltraining_dataset(
         multianimalbodyparts,
     ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
     # Automatically form a complete PAF graph
-    partaffinityfield_graph = [list(edge) for edge in combinations(range(len(multianimalbodyparts)), 2)]
+    partaffinityfield_graph = [
+        list(edge) for edge in combinations(range(len(multianimalbodyparts)), 2)
+    ]
     print("Utilizing the following graph:", partaffinityfield_graph)
     num_limbs = len(partaffinityfield_graph)
     partaffinityfield_predict = True
@@ -146,7 +149,12 @@ def create_multianimaltraining_dataset(
 
             # Make training file!
             data = []
-            print("Creating training data for: Shuffle:", shuffle, "TrainFraction: ", trainFraction)
+            print(
+                "Creating training data for: Shuffle:",
+                shuffle,
+                "TrainFraction: ",
+                trainFraction,
+            )
             print("This can take some time...")
             for jj in tqdm(trainIndices):
                 jointsannotated = False
@@ -323,7 +331,9 @@ def create_multianimaltraining_dataset(
                     "multi_step": [[1e-4, 7500], [5 * 1e-5, 12000], [1e-5, 200000]],
                     "save_iters": 10000,
                     "display_iters": 500,
-                    "num_idchannel": len(cfg["individuals"]) if cfg.get("identity", False) else 0
+                    "num_idchannel": len(cfg["individuals"])
+                    if cfg.get("identity", False)
+                    else 0,
                 }
 
                 defaultconfigfile = os.path.join(dlcparent_path, "pose_cfg.yaml")

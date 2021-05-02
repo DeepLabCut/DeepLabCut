@@ -261,11 +261,15 @@ class Tracklet:
         if time_gap > 0:
             if self < other_tracklet:
                 d1 = self.centroid[-1] + time_gap * self.calc_velocity(norm=False)
-                d2 = other_tracklet.centroid[0] - time_gap * other_tracklet.calc_velocity("tail", False)
+                d2 = other_tracklet.centroid[
+                    0
+                ] - time_gap * other_tracklet.calc_velocity("tail", False)
                 delta1 = other_tracklet.centroid[0] - d1
                 delta2 = self.centroid[-1] - d2
             else:
-                d1 = other_tracklet.centroid[-1] + time_gap * other_tracklet.calc_velocity(norm=False)
+                d1 = other_tracklet.centroid[
+                    -1
+                ] + time_gap * other_tracklet.calc_velocity(norm=False)
                 d2 = self.centroid[0] - time_gap * self.calc_velocity("tail", False)
                 delta1 = self.centroid[0] - d1
                 delta2 = other_tracklet.centroid[-1] - d2
@@ -471,8 +475,8 @@ class TrackletStitcher:
 
         # Note that if tracklets are very short, some may actually be part of the same track
         # and thus incorrectly reflect separate track endpoints...
-        self._first_tracklets = sorted(self, key=lambda t: t.start)[:self.n_tracks]
-        self._last_tracklets = sorted(self, key=lambda t: t.end)[-self.n_tracks:]
+        self._first_tracklets = sorted(self, key=lambda t: t.start)[: self.n_tracks]
+        self._last_tracklets = sorted(self, key=lambda t: t.end)[-self.n_tracks :]
 
         # Map each Tracklet to an entry and output nodes and vice versa,
         # which is convenient once the tracklets are stitched.
@@ -658,7 +662,9 @@ class TrackletStitcher:
                     temp.add(self._mapping_inv[node])
                 paths.append(list(temp))
             incomplete_tracks = self.n_tracks - len(paths)
-            if incomplete_tracks == 1:  # All remaining nodes must belong to the same track
+            if (
+                incomplete_tracks == 1
+            ):  # All remaining nodes must belong to the same track
                 nodes = set(
                     self._mapping_inv[node]
                     for node in self.G
@@ -742,8 +748,9 @@ class TrackletStitcher:
                 elif right_gap <= 3:
                     dist = np.linalg.norm(track.centroid[e] - c1[1])
                 else:
-                    dist = (np.linalg.norm(track.centroid[s] - c1[0])
-                            + np.linalg.norm(track.centroid[e] - c1[1]))
+                    dist = np.linalg.norm(track.centroid[s] - c1[0]) + np.linalg.norm(
+                        track.centroid[e] - c1[1]
+                    )
                 dists.append((n, dist))
             if not dists:
                 continue
@@ -814,14 +821,14 @@ class TrackletStitcher:
 
         columns = pd.MultiIndex.from_product(
             [scorer, animal_names, bpts[:n_multi_bpts], coords],
-            names=["scorer", "individuals", "bodyparts", "coords"]
+            names=["scorer", "individuals", "bodyparts", "coords"],
         )
         inds = range(self._first_frame, self._last_frame + 1)
         df = pd.DataFrame(data, columns=columns, index=inds)
         if self.single is not None:
             columns = pd.MultiIndex.from_product(
                 [scorer, ["single"], bpts[-n_unique_bpts:], coords],
-                names=["scorer", "individuals", "bodyparts", "coords"]
+                names=["scorer", "individuals", "bodyparts", "coords"],
             )
             df2 = pd.DataFrame(
                 self.single.flat_data, columns=columns, index=self.single.inds

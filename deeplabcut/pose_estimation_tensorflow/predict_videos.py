@@ -286,12 +286,12 @@ def analyze_videos(
             from deeplabcut.pose_estimation_tensorflow.predict_multianimal import (
                 AnalyzeMultiAnimalVideo,
             )
+
             # Re-use data-driven PAF graph for video analysis. Note that this must
             # happen after setting up the TF session to avoid graph mismatch.
             best_edges = dlc_cfg.get("paf_best")
             if best_edges is not None:
-                best_graph = [dlc_cfg["partaffinityfield_graph"][i]
-                              for i in best_edges]
+                best_graph = [dlc_cfg["partaffinityfield_graph"][i] for i in best_edges]
             else:
                 best_graph = dlc_cfg["partaffinityfield_graph"]
 
@@ -348,7 +348,9 @@ def analyze_videos(
             print(
                 "If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames."
             )
-        return DLCscorer  # note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
+        return (
+            DLCscorer
+        )  # note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
     else:
         print("No video(s) were found. Please check your paths and/or 'video_type'.")
         return DLCscorer
@@ -1173,7 +1175,7 @@ def _convert_detections_to_tracklets(
         mot_tracker = trackingutils.SORTEllipse(
             inference_cfg.get("max_age", 1),
             inference_cfg.get("min_hits", 1),
-            inference_cfg.get("iou_threshold", 0.6)
+            inference_cfg.get("iou_threshold", 0.6),
         )
     tracklets = {}
 
@@ -1185,7 +1187,7 @@ def _convert_detections_to_tracklets(
         paf_inds=list(paf_inds),
         greedy=greedy,
         pcutoff=inference_cfg.get("pcutoff", 0.1),
-        min_affinity=inference_cfg.get("pafthreshold", 0.05)
+        min_affinity=inference_cfg.get("pafthreshold", 0.05),
     )
     if calibrate:
         trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
@@ -1205,14 +1207,14 @@ def _convert_detections_to_tracklets(
         tracklets["single"] = {}
         tracklets["single"].update(ass.unique)
 
-    for i, imname in tqdm(enumerate(ass.metadata['imnames'])):
+    for i, imname in tqdm(enumerate(ass.metadata["imnames"])):
         assemblies = ass.assemblies.get(i)
         if assemblies is None:
             continue
         animals = np.stack([ass.data[:, :3] for ass in assemblies])
         if track_method == "box":
             bboxes = trackingutils.calc_bboxes_from_keypoints(
-                animals, inference_cfg.get("boundingboxslack", 0),
+                animals, inference_cfg.get("boundingboxslack", 0)
             )  # TODO: get cropping parameters and utilize!
             trackers = mot_tracker.update(bboxes)
         else:
@@ -1445,7 +1447,7 @@ def convert_detections2tracklets(
                     mot_tracker = trackingutils.SORTEllipse(
                         inferencecfg.get("max_age", 1),
                         inferencecfg.get("min_hits", 1),
-                        inferencecfg.get("iou_threshold", 0.6)
+                        inferencecfg.get("iou_threshold", 0.6),
                     )
                 tracklets = {}
 
@@ -1455,7 +1457,7 @@ def convert_detections2tracklets(
                     n_multibodyparts=len(cfg["multianimalbodyparts"]),
                     greedy=greedy,
                     pcutoff=inferencecfg.get("pcutoff", 0.1),
-                    min_affinity=inferencecfg.get("pafthreshold", 0.1)
+                    min_affinity=inferencecfg.get("pafthreshold", 0.1),
                 )
                 if calibrate:
                     trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)

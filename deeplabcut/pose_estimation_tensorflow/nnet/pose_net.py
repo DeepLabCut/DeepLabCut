@@ -73,7 +73,14 @@ def get_batch_spec(cfg):
         batch_spec[Batch.locref_targets] = [batch_size, None, None, num_joints * 2]
         batch_spec[Batch.locref_mask] = [batch_size, None, None, num_joints * 2]
     if cfg["pairwise_predict"]:
-        print("Getting specs:", cfg["dataset_type"], "Number of Limbs:", num_limbs, "No. of Joints:", num_joints)
+        print(
+            "Getting specs:",
+            cfg["dataset_type"],
+            "Number of Limbs:",
+            num_limbs,
+            "No. of Joints:",
+            num_joints,
+        )
         if (
             "multi-animal" not in cfg["dataset_type"]
         ):  # this can be used for pairwise conditional

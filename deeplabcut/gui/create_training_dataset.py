@@ -209,7 +209,7 @@ class Create_training_dataset(wx.Panel):
                 "mobilenet_v2_0.35",
                 "efficientnet-b0",
                 "efficientnet-b3",
-                "efficientnet-b6"
+                "efficientnet-b6",
             ]
             augmentation_methods = ["default", "tensorpack", "imgaug"]
             self.network_box = wx.StaticBox(self, label="Select the networks")

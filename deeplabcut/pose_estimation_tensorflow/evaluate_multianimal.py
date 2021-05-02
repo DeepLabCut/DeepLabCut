@@ -405,7 +405,7 @@ def evaluate_multianimal_full(
                                     cfg["dotsize"],
                                     cfg["alphavalue"],
                                     cfg["pcutoff"],
-                                    ax=ax
+                                    ax=ax,
                                 )
                                 visualization.save_labeled_frame(
                                     fig,
@@ -442,7 +442,10 @@ def evaluate_multianimal_full(
 
                         # Calculate overall prediction error
                         error = df_joint.xs("rmse", level="metrics", axis=1)
-                        mask = df_joint.xs("conf", level="metrics", axis=1) >= cfg["pcutoff"]
+                        mask = (
+                            df_joint.xs("conf", level="metrics", axis=1)
+                            >= cfg["pcutoff"]
+                        )
                         error_masked = error[mask]
                         error_train = np.nanmean(error.iloc[trainIndices])
                         error_train_cut = np.nanmean(error_masked.iloc[trainIndices])
@@ -498,7 +501,10 @@ def evaluate_multianimal_full(
                             "nms radius": dlc_cfg["nmsradius"],
                             "minimal confidence": dlc_cfg["minconfidence"],
                             "PAFgraph": dlc_cfg["partaffinityfield_graph"],
-                            "PAFinds": dlc_cfg.get("paf_best", np.arange(len(dlc_cfg["partaffinityfield_graph"]))),
+                            "PAFinds": dlc_cfg.get(
+                                "paf_best",
+                                np.arange(len(dlc_cfg["partaffinityfield_graph"])),
+                            ),
                             "all_joints": [
                                 [i] for i in range(len(dlc_cfg["all_joints"]))
                             ],
@@ -528,7 +534,9 @@ def evaluate_multianimal_full(
                         tf.reset_default_graph()
 
                     # Data-driven skeleton selection
-                    uncropped_data_path = data_path.replace(".pickle", "_uncropped.pickle")
+                    uncropped_data_path = data_path.replace(
+                        ".pickle", "_uncropped.pickle"
+                    )
                     if not os.path.isfile(uncropped_data_path):
                         print("Selecting best skeleton...")
                         crossvalutils._rebuild_uncropped_in(evaluationfolder)
