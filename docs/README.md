@@ -2,7 +2,8 @@
 
 If you are new to DeepLabCut, we have 3 resources we recommend before jumping in. (1) Please first [read at the Nature Protocol paper](https://www.nature.com/articles/s41596-019-0176-0); (2) Check out the [quick video on navigating the docs](https://www.youtube.com/watch?v=A9qZidI7tL8); (3) Check out the [free DeepLabCut Course](https://github.com/DeepLabCut/DeepLabCut-Workshop-Materials/blob/master/summer_course2020.md): we have put together a "course" on the science of DeepLabCut and how to use it.
 
-**Otherwise, here are the linked to all the key steps to get you up and running within a day!**
+
+**Otherwise, here are the links to all the key steps to get you up and running within a day!**
 
 - :computer:  **[How to install DeepLabCut](/docs/installation.md)**
 
