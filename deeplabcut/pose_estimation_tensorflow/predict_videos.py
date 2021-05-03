@@ -1249,6 +1249,7 @@ def convert_detections2tracklets(
     track_method="ellipse",
     greedy=False,
     calibrate=False,
+    window_size=0,
 ):
     """
     This should be called at the end of deeplabcut.analyze_videos for multianimal projects!
@@ -1285,14 +1286,21 @@ def convert_detections2tracklets(
     BPTS: Default is None: all bodyparts are used.
         Pass list of indices if only certain bodyparts should be used (advanced).
 
-    printintermediate: ## TODO
-        Default is false.
-
     inferencecfg: Default is None.
         Configuaration file for inference (assembly of individuals). Ideally
         should be optained from cross validation (during evaluation). By default
         the parameters are loaded from inference_cfg.yaml, but these get_level_values
         can be overwritten.
+
+    calibrate: bool, optional (default=False)
+        If True, use training data to calibrate the animal assembly procedure.
+        This improves its robustness to wrong body part links,
+        but requires very little missing data.
+
+    window_size: int, optional (default=0)
+        Recurrent connections in the past `window_size` frames are
+        prioritized during assembly. By default, no temporal coherence cost
+        is added, and assembly is driven mainly by part affinity costs.
 
     Examples
     --------
@@ -1458,6 +1466,7 @@ def convert_detections2tracklets(
                     greedy=greedy,
                     pcutoff=inferencecfg.get("pcutoff", 0.1),
                     min_affinity=inferencecfg.get("pafthreshold", 0.1),
+                    window_size=window_size,
                 )
                 if calibrate:
                     trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)

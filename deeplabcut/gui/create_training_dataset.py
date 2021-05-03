@@ -96,10 +96,9 @@ class Create_training_dataset(wx.Panel):
             "efficientnet-b0",
             "efficientnet-b3",
             "efficientnet-b6",
-            "dlcrnet_ms5",
         ]
         self.net_choice.Set(options)
-        self.net_choice.SetValue("dlcrnet_ms5")
+        self.net_choice.SetValue("resnet_50")
         netboxsizer.Add(self.net_choice, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
         aug_text = wx.StaticBox(self, label="Select the augmentation method")
