@@ -175,7 +175,7 @@ class Analyze_videos(wx.Panel):
             )
             self.trackertypes.SetValue("ellipse")
             tracker_text_boxsizer.Add(
-                self.trackertypes, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
+                self.trackertypes, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1
             )
             self.hbox2.Add(tracker_text_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
@@ -188,6 +188,22 @@ class Analyze_videos(wx.Panel):
             )
             self.overwrite.SetSelection(1)
             self.hbox2.Add(self.overwrite, 5, 5)
+
+            self.calibrate = wx.RadioBox(
+                self,
+                label="Calibrate animal assembly?",
+                choices=["Yes", "No"],
+                majorDimension=1,
+                style=wx.RA_SPECIFY_COLS,
+            )
+            self.calibrate.SetSelection(1)
+            self.hbox3.Add(self.calibrate, 1, 1)
+
+            winsize_text = wx.StaticBox(self, label="Prioritize past connections over a window of size:")
+            winsize_sizer = wx.StaticBoxSizer(winsize_text, wx.VERTICAL)
+            self.winsize = wx.SpinCtrl(self, value="0")
+            winsize_sizer.Add(self.winsize, 1, 1)
+            self.hbox3.Add(winsize_sizer, 1, 1)
 
         else:
             self.csv = wx.RadioBox(
@@ -244,7 +260,8 @@ class Analyze_videos(wx.Panel):
             self.hbox3.Add(self.trajectory, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         boxsizer.Add(self.hbox1, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-        boxsizer.Add(self.hbox2, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+        boxsizer.Add(self.hbox2, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+        boxsizer.Add(self.hbox3, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
         config_file = auxiliaryfunctions.read_config(self.config)
         if config_file.get("multianimalproject", False):
@@ -407,6 +424,8 @@ class Analyze_videos(wx.Panel):
             trainingsetindex=trainingsetindex,
             overwrite=overwrite,
             track_method=self.trackertypes.GetValue(),
+            calibrate=self.calibrate.GetStringSelection() == "Yes",
+            window_size=self.winsize.GetValue(),
         )
 
     # def video_tracklets(self,event):
