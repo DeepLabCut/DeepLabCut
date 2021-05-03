@@ -247,7 +247,6 @@ class Analyze_videos(wx.Panel):
 
         boxsizer.Add(self.hbox1, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
         boxsizer.Add(self.hbox2, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-        boxsizer.Add(self.hbox3, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
         config_file = auxiliaryfunctions.read_config(self.config)
         if config_file.get("multianimalproject", False):
