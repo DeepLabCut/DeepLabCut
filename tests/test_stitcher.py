@@ -34,7 +34,7 @@ def test_tracklet_wrong_inputs(fake_tracklet):
     with pytest.raises(ValueError):
         _ = Tracklet(fake_tracklet.data[..., :2], fake_tracklet.inds)
     with pytest.raises(ValueError):
-        _ = Tracklet(fake_tracklet.data[:TRACKLET_LEN - 2], fake_tracklet.inds)
+        _ = Tracklet(fake_tracklet.data[: TRACKLET_LEN - 2], fake_tracklet.inds)
 
 
 def test_tracklet_monotonic_indices(fake_tracklet):
@@ -144,7 +144,7 @@ def test_tracklet_interpolate(real_tracklets):
     data = np.stack(list(real_tracklets[0].values()))[:10]
     inds = np.arange(len(data))
     gap = 2
-    inds[len(inds) // 2:] += gap
+    inds[len(inds) // 2 :] += gap
     tracklet = Tracklet(data, inds)
     assert len(tracklet) == len(data)
     new_tracklet = tracklet.interpolate(max_gap=1)
@@ -156,9 +156,7 @@ def test_tracklet_interpolate(real_tracklets):
 
 
 def test_stitcher_real(tmpdir_factory, real_tracklets):
-    stitcher = TrackletStitcher.from_dict_of_dict(
-        real_tracklets, n_tracks=3,
-    )
+    stitcher = TrackletStitcher.from_dict_of_dict(real_tracklets, n_tracks=3)
     assert len(stitcher) == 3
     assert all(tracklet.is_continuous for tracklet in stitcher.tracklets)
     assert not stitcher.residuals
@@ -166,12 +164,12 @@ def test_stitcher_real(tmpdir_factory, real_tracklets):
 
     stitcher.build_graph()
     assert stitcher.G.number_of_edges() == 9
-    assert all(weight is None for *_, weight in stitcher.G.edges.data('weight'))
+    assert all(weight is None for *_, weight in stitcher.G.edges.data("weight"))
 
     stitcher.stitch()
     assert len(stitcher.tracks) == 3
     assert all(len(track) == 50 for track in stitcher.tracks)
     assert all(0.998 <= track.likelihood <= 1 for track in stitcher.tracks)
 
-    output_name = tmpdir_factory.mktemp('data').join('fake.h5')
-    stitcher.write_tracks(output_name, ['mickey', 'minnie', 'bianca'])
+    output_name = tmpdir_factory.mktemp("data").join("fake.h5")
+    stitcher.write_tracks(output_name, ["mickey", "minnie", "bianca"])

@@ -177,7 +177,7 @@ class MAPoseDataset:
             int
         ) * self.cfg.get("smfactor", 2)
 
-        if stride==2:
+        if stride == 2:
             sm_size = np.ceil(target_size / 16).astype(int)
             sm_size *= 8
 

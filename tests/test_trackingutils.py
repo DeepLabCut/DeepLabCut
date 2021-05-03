@@ -65,8 +65,9 @@ def test_tracking(real_assemblies, real_tracklets):
         trackers = mot_tracker.track(animals[..., :2])
         trackingutils.fill_tracklets(tracklets, trackers, animals, ind)
     assert len(tracklets) == len(tracklets_ref)
-    assert ([len(tracklet) for tracklet in tracklets.values()]
-            == [len(tracklet) for tracklet in tracklets_ref.values()])
+    assert [len(tracklet) for tracklet in tracklets.values()] == [
+        len(tracklet) for tracklet in tracklets_ref.values()
+    ]
 
 
 def test_calc_bboxes_from_keypoints():
@@ -91,7 +92,9 @@ def test_calc_bboxes_from_keypoints():
 
     slack = 20
     bboxes = trackingutils.calc_bboxes_from_keypoints(xyp, slack=slack)
-    np.testing.assert_equal(bboxes, [[-slack, -slack, width + slack, height + slack, 0.5]])
+    np.testing.assert_equal(
+        bboxes, [[-slack, -slack, width + slack, height + slack, 0.5]]
+    )
 
     offset = 50
     bboxes = trackingutils.calc_bboxes_from_keypoints(xyp, offset=offset)

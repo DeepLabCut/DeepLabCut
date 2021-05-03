@@ -103,7 +103,7 @@ def make_multianimal_labeled_image(
     alphavalue=0.7,
     pcutoff=0.6,
     labels=["+", ".", "x"],
-    ax=None
+    ax=None,
 ):
     if ax is None:
         h, w, _ = np.shape(frame)

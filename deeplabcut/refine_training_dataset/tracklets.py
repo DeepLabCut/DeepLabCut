@@ -239,7 +239,7 @@ class TrackletManager:
 
         # Fill existing gaps
         data = df.to_numpy()
-        mask = ~df.columns.get_level_values(level='coords').str.contains('likelihood')
+        mask = ~df.columns.get_level_values(level="coords").str.contains("likelihood")
         xy = data[:, mask]
         prob = data[:, ~mask]
         missing = np.isnan(xy)

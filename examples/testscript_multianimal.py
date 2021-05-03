@@ -128,24 +128,22 @@ if __name__ == "__main__":
     print("Create video with all detections...")
     scorer, _ = auxiliaryfunctions.GetScorerName(cfg, 1, TRAIN_SIZE)
     deeplabcut.create_video_with_all_detections(
-        config_path, [new_video_path], scorer, displayedbodyparts=["bodypart1"],
+        config_path, [new_video_path], scorer, displayedbodyparts=["bodypart1"]
     )
     print("Video created.")
 
     print("Convert detections to tracklets...")
     deeplabcut.convert_detections2tracklets(
-        config_path,
-        [new_video_path],
-        "mp4",
-        track_method="box",
+        config_path, [new_video_path], "mp4", track_method="box"
     )
     deeplabcut.convert_detections2tracklets(
         config_path, [new_video_path], "mp4", track_method="ellipse"
     )
     print("Tracklets created...")
 
-    pickle_file = os.path.join(os.path.dirname(basepath),
-                               "tests", "data", "trimouse_tracklets.pickle")
+    pickle_file = os.path.join(
+        os.path.dirname(basepath), "tests", "data", "trimouse_tracklets.pickle"
+    )
     deeplabcut.stitch_tracklets(
         pickle_file,
         n_tracks=3,
@@ -175,11 +173,11 @@ if __name__ == "__main__":
         config_path, [new_video_path], "mp4", track_method="ellipse"
     )
     print("Predictions filtered.")
-
+    """
     print("Extracting outlier frames...")
     deeplabcut.extract_outlier_frames(
         config_path, [new_video_path], "mp4", automatic=True, track_method="ellipse"
     )
     print("Outlier frames extracted.")
-
+    """
     print("ALL DONE!!! - default multianimal cases are functional.")

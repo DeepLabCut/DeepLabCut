@@ -27,9 +27,11 @@ def test_calc_object_keypoint_similarity(real_assemblies):
     xy1 = real_assemblies[0][0].xy
     xy2 = real_assemblies[0][1].xy
     assert inferenceutils.calc_object_keypoint_similarity(xy1, xy1, sigma) == 1
-    assert np.isclose(inferenceutils.calc_object_keypoint_similarity(xy1, xy2, sigma), 0)
+    assert np.isclose(
+        inferenceutils.calc_object_keypoint_similarity(xy1, xy2, sigma), 0
+    )
     xy3 = xy1.copy()
-    xy3[:len(xy3) // 2] = np.nan
+    xy3[: len(xy3) // 2] = np.nan
     assert inferenceutils.calc_object_keypoint_similarity(xy3, xy1, sigma) == 0.5
     xy3[:] = np.nan
     assert inferenceutils.calc_object_keypoint_similarity(xy3, xy1, sigma) == 0
@@ -46,9 +48,7 @@ def test_match_assemblies(real_assemblies):
         assert ass1 is ass2
         assert oks == 1
 
-    matched, unmatched = inferenceutils.match_assemblies(
-        [], assemblies, 0.01
-    )
+    matched, unmatched = inferenceutils.match_assemblies([], assemblies, 0.01)
     assert not matched
     assert all(ass1 is ass2 for ass1, ass2 in zip(unmatched, assemblies))
 
@@ -92,7 +92,7 @@ def test_assembly():
     assert ass.data[j2.label, -1] == -1
     assert ass.area == 0
     assert ass.intersection_with(ass) == 1.0
-    assert np.all(np.isnan(ass._dict['data']))
+    assert np.all(np.isnan(ass._dict["data"]))
 
     ass.remove_joint(j2)
     assert len(ass) == 1
@@ -118,7 +118,7 @@ def test_assembler(tmpdir_factory, real_assemblies):
             n_multibodyparts=12,
             identity_only=True,  # Test whether warning is properly raised
         )
-    assert len(ass.metadata['imnames']) == 50
+    assert len(ass.metadata["imnames"]) == 50
     assert ass.n_keypoints == 12
     assert len(ass.graph) == len(ass.paf_inds) == 66
     # Assemble based on the smallest graph to speed up testing
@@ -133,7 +133,7 @@ def test_assembler(tmpdir_factory, real_assemblies):
         [9, 10],
         [0, 3],
         [3, 4],
-        [0, 2]
+        [0, 2],
     ]
     paf_inds = [ass.graph.index(edge) for edge in naive_graph]
     ass.graph = naive_graph
@@ -141,30 +141,25 @@ def test_assembler(tmpdir_factory, real_assemblies):
     ass.assemble()
     assert not ass.unique
     assert len(ass.assemblies) == len(real_assemblies)
-    assert (sum(1 for a in ass.assemblies.values() for _ in a)
-            == sum(1 for a in real_assemblies.values() for _ in a))
+    assert sum(1 for a in ass.assemblies.values() for _ in a) == sum(
+        1 for a in real_assemblies.values() for _ in a
+    )
 
-    output_name = tmpdir_factory.mktemp('data').join('fake.h5')
+    output_name = tmpdir_factory.mktemp("data").join("fake.h5")
     ass.to_h5(output_name)
-    ass.to_pickle(str(output_name).replace('h5', 'pickle'))
+    ass.to_pickle(str(output_name).replace("h5", "pickle"))
 
 
 def test_assembler_calibration(real_assemblies):
     with open(os.path.join(TEST_DATA_DIR, "trimouse_full.pickle"), "rb") as file:
         data = pickle.load(file)
-    ass = inferenceutils.Assembler(
-        data,
-        max_n_individuals=3,
-        n_multibodyparts=12,
-    )
+    ass = inferenceutils.Assembler(data, max_n_individuals=3, n_multibodyparts=12)
     ass.calibrate(os.path.join(TEST_DATA_DIR, "trimouse_calib.h5"))
     assert ass._kde is not None
     assert ass.safe_edge
 
     assembly = real_assemblies[0][0]
-    mahal, proba = ass.calc_assembly_mahalanobis_dist(
-        assembly, return_proba=True
-    )
+    mahal, proba = ass.calc_assembly_mahalanobis_dist(assembly, return_proba=True)
     assert np.isclose(mahal, 19.541, atol=1e-3)
     assert np.isclose(proba, 1, atol=1e-3)
 
