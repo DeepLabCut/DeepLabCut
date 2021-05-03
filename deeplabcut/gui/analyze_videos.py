@@ -46,7 +46,7 @@ class Analyze_videos(wx.Panel):
         else:
             text = wx.StaticText(self, label="DeepLabCut - Step 7. Analyze Videos ....")
 
-        self.sizer.Add(text, pos=(0, 0), flag=wx.TOP | wx.LEFT | wx.BOTTOM, border=10)
+        self.sizer.Add(text, pos=(0, 0), flag=wx.TOP | wx.LEFT | wx.BOTTOM, border=15)
         # Add logo of DLC
         icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(LOGO_PATH))
         self.sizer.Add(
@@ -98,7 +98,7 @@ class Analyze_videos(wx.Panel):
         self.hbox2 = wx.BoxSizer(wx.HORIZONTAL)
         self.hbox3 = wx.BoxSizer(wx.HORIZONTAL)
         self.hbox4 = wx.BoxSizer(wx.HORIZONTAL)
-        self.hbox5 = wx.BoxSizer(wx.HORIZONTAL)
+
 
         videotype_text = wx.StaticBox(self, label="Specify the videotype")
         videotype_text_boxsizer = wx.StaticBoxSizer(videotype_text, wx.VERTICAL)
