@@ -46,7 +46,7 @@ class Analyze_videos(wx.Panel):
         else:
             text = wx.StaticText(self, label="DeepLabCut - Step 7. Analyze Videos ....")
 
-        self.sizer.Add(text, pos=(0, 0), flag=wx.TOP | wx.LEFT | wx.BOTTOM, border=15)
+        self.sizer.Add(text, pos=(0, 0), flag=wx.TOP | wx.LEFT | wx.BOTTOM, border=10)
         # Add logo of DLC
         icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(LOGO_PATH))
         self.sizer.Add(
@@ -98,6 +98,7 @@ class Analyze_videos(wx.Panel):
         self.hbox2 = wx.BoxSizer(wx.HORIZONTAL)
         self.hbox3 = wx.BoxSizer(wx.HORIZONTAL)
         self.hbox4 = wx.BoxSizer(wx.HORIZONTAL)
+        self.hbox5 = wx.BoxSizer(wx.HORIZONTAL)
 
         videotype_text = wx.StaticBox(self, label="Specify the videotype")
         videotype_text_boxsizer = wx.StaticBoxSizer(videotype_text, wx.VERTICAL)
@@ -105,38 +106,23 @@ class Analyze_videos(wx.Panel):
         self.videotype = wx.ComboBox(self, choices=videotypes, style=wx.CB_READONLY)
         self.videotype.SetValue(".avi")
         videotype_text_boxsizer.Add(
-            self.videotype, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 5
+            self.videotype, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1
         )
 
         shuffle_text = wx.StaticBox(self, label="Specify the shuffle")
         shuffle_boxsizer = wx.StaticBoxSizer(shuffle_text, wx.VERTICAL)
         self.shuffle = wx.SpinCtrl(self, value="1", min=0, max=100)
-        shuffle_boxsizer.Add(self.shuffle, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        shuffle_boxsizer.Add(self.shuffle, 1,wx.EXPAND | wx.TOP | wx.BOTTOM,  1)
 
         trainingset = wx.StaticBox(self, label="Specify the trainingset index")
         trainingset_boxsizer = wx.StaticBoxSizer(trainingset, wx.VERTICAL)
         self.trainingset = wx.SpinCtrl(self, value="0", min=0, max=100)
-        trainingset_boxsizer.Add(self.trainingset, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        trainingset_boxsizer.Add(self.trainingset, 1,wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
 
-        # if self.cfg.get("multianimalproject", False):
-        # pass
-        # else:
-        # removing this as several downstream maDLC steps don't support dest_folder at this time:
-        # destfolder_text = wx.StaticBox(self, label="Specify destination folder")
-        # destfolderboxsizer = wx.StaticBoxSizer(destfolder_text, wx.VERTICAL)
-        # self.change_workingdir = wx.CheckBox(
-        #    self, label="optional destination folder"
-        # )
-        # self.hbox2.Add(self.change_workingdir)
-        # self.change_workingdir.Bind(wx.EVT_CHECKBOX, self.activate_change_wd)
-        # self.sel_wd = wx.Button(self, label="Browse")
-        # self.sel_wd.Enable(False)
-        # self.sel_wd.Bind(wx.EVT_BUTTON, self.select_destfolder)
-        # self.hbox2.Add(self.sel_wd, 0, wx.ALL, -1)
 
-        self.hbox1.Add(videotype_text_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-        self.hbox1.Add(shuffle_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-        self.hbox1.Add(trainingset_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        self.hbox1.Add(videotype_text_boxsizer, 1, wx.EXPAND | wx.TOP | wx.BOTTOM,1)
+        self.hbox1.Add(shuffle_boxsizer, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
+        self.hbox1.Add(trainingset_boxsizer, 1, wx.EXPAND | wx.TOP | wx.BOTTOM,1)
 
         if self.cfg.get("multianimalproject", False):
 
@@ -148,7 +134,7 @@ class Analyze_videos(wx.Panel):
                 style=wx.RA_SPECIFY_COLS,
             )
             self.robust.SetSelection(1)
-            self.hbox1.Add(self.robust, 5, 5)
+            self.hbox2.Add(self.robust, 1, 1)
 
             self.create_video_with_all_detections = wx.RadioBox(
                 self,
@@ -160,9 +146,9 @@ class Analyze_videos(wx.Panel):
             self.create_video_with_all_detections.SetSelection(1)
             self.hbox2.Add(
                 self.create_video_with_all_detections,
-                5,
+                1,
                 wx.EXPAND | wx.TOP | wx.BOTTOM,
-                5,
+                1,
             )
 
             tracker_text = wx.StaticBox(
@@ -175,9 +161,9 @@ class Analyze_videos(wx.Panel):
             )
             self.trackertypes.SetValue("ellipse")
             tracker_text_boxsizer.Add(
-                self.trackertypes, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1
+                self.trackertypes, 1,wx.EXPAND | wx.TOP | wx.BOTTOM,1
             )
-            self.hbox2.Add(tracker_text_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+            self.hbox3.Add(tracker_text_boxsizer, 1,  1)
 
             self.overwrite = wx.RadioBox(
                 self,
@@ -187,7 +173,7 @@ class Analyze_videos(wx.Panel):
                 style=wx.RA_SPECIFY_COLS,
             )
             self.overwrite.SetSelection(1)
-            self.hbox2.Add(self.overwrite, 5, 5)
+            self.hbox3.Add(self.overwrite, 1, 1)
 
             self.calibrate = wx.RadioBox(
                 self,
@@ -197,13 +183,13 @@ class Analyze_videos(wx.Panel):
                 style=wx.RA_SPECIFY_COLS,
             )
             self.calibrate.SetSelection(1)
-            self.hbox3.Add(self.calibrate, 1, 1)
+            self.hbox4.Add(self.calibrate, 1, 1)
 
             winsize_text = wx.StaticBox(self, label="Prioritize past connections over a window of size:")
             winsize_sizer = wx.StaticBoxSizer(winsize_text, wx.VERTICAL)
             self.winsize = wx.SpinCtrl(self, value="0")
-            winsize_sizer.Add(self.winsize, 1, 1)
-            self.hbox3.Add(winsize_sizer, 1, 1)
+            winsize_sizer.Add(self.winsize, 1, wx.EXPAND | wx.TOP | wx.BOTTOM,1)
+            self.hbox4.Add(winsize_sizer, 1, 1)
 
         else:
             self.csv = wx.RadioBox(
@@ -316,16 +302,16 @@ class Analyze_videos(wx.Panel):
         self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
 
         self.ok = wx.Button(self, label="Step 1: Analyze Videos")
-        self.sizer.Add(self.ok, pos=(7, 6), flag=wx.BOTTOM | wx.RIGHT, border=10)
+        self.sizer.Add(self.ok, pos=(7, 4), flag=wx.BOTTOM | wx.RIGHT, border=10)
         self.ok.Bind(wx.EVT_BUTTON, self.analyze_videos)
 
         if config_file.get("multianimalproject", False):
             self.ok = wx.Button(self, label="Step 2: Convert to Tracklets")
-            self.sizer.Add(self.ok, pos=(7, 7), border=10)
+            self.sizer.Add(self.ok, pos=(7, 5), border=10)
             self.ok.Bind(wx.EVT_BUTTON, self.convert2_tracklets)
 
             self.inf_cfg_text = wx.Button(self, label="Edit inference_config.yaml")
-            self.sizer.Add(self.inf_cfg_text, pos=(8, 7), border=10)
+            self.sizer.Add(self.inf_cfg_text, pos=(8, 5), border=10)
             self.inf_cfg_text.Bind(wx.EVT_BUTTON, self.edit_inf_config)
 
         self.reset = wx.Button(self, label="Reset")
@@ -335,7 +321,7 @@ class Analyze_videos(wx.Panel):
         self.reset.Bind(wx.EVT_BUTTON, self.reset_analyze_videos)
 
         self.edit_config_file = wx.Button(self, label="Edit config.yaml")
-        self.sizer.Add(self.edit_config_file, pos=(8, 6))
+        self.sizer.Add(self.edit_config_file, pos=(8, 4))
         self.edit_config_file.Bind(wx.EVT_BUTTON, self.edit_config)
 
         self.sizer.AddGrowableCol(2)
