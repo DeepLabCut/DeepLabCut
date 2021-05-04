@@ -51,7 +51,7 @@ def display_dataset():
                 curr_plot = axarr[plot_j, plot_i]
                 curr_plot.axis("off")
 
-                if j >= cfg['num_joints']:
+                if j >= cfg["num_joints"]:
                     continue
 
                 scmap_part = scmap[:, :, j]

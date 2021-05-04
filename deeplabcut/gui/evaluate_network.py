@@ -1,10 +1,10 @@
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 Please see AUTHORS for contributors.
 
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 
 """
@@ -18,10 +18,7 @@ import webbrowser
 import wx
 
 import deeplabcut
-
-media_path = os.path.join(deeplabcut.__path__[0], "gui", "media")
-logo = os.path.join(media_path, "logo.png")
-
+from deeplabcut.gui import LOGO_PATH
 from deeplabcut.utils import auxiliaryfunctions
 
 
@@ -42,7 +39,7 @@ class Evaluate_network(wx.Panel):
         text = wx.StaticText(self, label="DeepLabCut - Step 6. Evaluate Network")
         self.sizer.Add(text, pos=(0, 0), flag=wx.TOP | wx.LEFT | wx.BOTTOM, border=15)
         # Add logo of DLC
-        icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(logo))
+        icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(LOGO_PATH))
         self.sizer.Add(
             icon, pos=(0, 4), flag=wx.TOP | wx.RIGHT | wx.ALIGN_RIGHT, border=5
         )
@@ -155,70 +152,13 @@ class Evaluate_network(wx.Panel):
             border=10,
         )
 
-        if config_file.get("multianimalproject", False):
-            infg = wx.StaticBox(self, label="Least # of Bpts to be considered")
-            infg_boxsizer = wx.StaticBoxSizer(infg, wx.VERTICAL)
-            self.infg = wx.SpinCtrl(self, value="1", min=0, max=100)
-            infg_boxsizer.Add(self.infg, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-
-            inpts = wx.StaticBox(self, label="Specify the Inital Points")
-            inpts_boxsizer = wx.StaticBoxSizer(inpts, wx.VERTICAL)
-            self.inpts = wx.SpinCtrl(self, value="20", min=0, max=100)
-            inpts_boxsizer.Add(self.inpts, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-
-            n_iter = wx.StaticBox(self, label="Specify the # of iterations")
-            n_iter_boxsizer = wx.StaticBoxSizer(n_iter, wx.VERTICAL)
-            self.n_iter = wx.SpinCtrl(self, value="50", min=0, max=300)
-            n_iter_boxsizer.Add(self.n_iter, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-
-            target_text = wx.StaticBox(self, label="Specify the Target to optimize!")
-            target_text_boxsizer = wx.StaticBoxSizer(target_text, wx.VERTICAL)
-            targettypes = ["rpck_train", "rpck_test", "rmse_test", "rmse_train"]
-            self.targettypes = wx.ComboBox(
-                self, choices=targettypes, style=wx.CB_READONLY
-            )
-            self.targettypes.SetValue("rpck_train")
-            target_text_boxsizer.Add(
-                self.targettypes, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
-            )
-
-            self.inf_cfg_text = wx.Button(self, label="Edit the inference_config.yaml")
-            self.inf_cfg_text.Bind(wx.EVT_BUTTON, self.edit_inf_config)
-
-            self.edgeWise = wx.RadioBox(
-                self,
-                label="Use Edges (keep as true)",
-                choices=["True", "False"],
-                majorDimension=1,
-                style=wx.RA_SPECIFY_COLS,
-            )
-            self.edgeWise.SetSelection(0)
-
-            self.hbox3.Add(infg_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-            self.hbox3.Add(n_iter_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-            self.hbox3.Add(inpts_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-            self.hbox3.Add(target_text_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-            self.hbox3.Add(self.edgeWise, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-            self.hbox3.Add(self.inf_cfg_text, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-            boxsizer.Add(self.hbox3, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-
         self.help_button = wx.Button(self, label="Help")
         self.sizer.Add(self.help_button, pos=(4, 0), flag=wx.LEFT, border=10)
         self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
 
-        self.help2_button = wx.Button(self, label="Help (X-val)")
-        self.sizer.Add(self.help2_button, pos=(5, 0), flag=wx.LEFT, border=10)
-        self.help2_button.Bind(wx.EVT_BUTTON, self.help_val_function)
-
-        self.ok = wx.Button(self, label="Step1: Evaluate Network")
+        self.ok = wx.Button(self, label="RUN: Evaluate Network")
         self.sizer.Add(self.ok, pos=(4, 3))
         self.ok.Bind(wx.EVT_BUTTON, self.evaluate_network)
-
-        if config_file.get("multianimalproject", False):
-
-            self.ok = wx.Button(self, label="Step2: X-validate")
-            self.sizer.Add(self.ok, pos=(4, 4))
-            self.ok.Bind(wx.EVT_BUTTON, self.cross_validate)
 
         self.ok = wx.Button(self, label="Optional: Plot 3 test maps")
         self.sizer.Add(self.ok, pos=(5, 3))
@@ -229,6 +169,17 @@ class Evaluate_network(wx.Panel):
             self.cancel, pos=(4, 1), span=(1, 1), flag=wx.BOTTOM | wx.RIGHT, border=10
         )
         self.cancel.Bind(wx.EVT_BUTTON, self.cancel_evaluate_network)
+
+        if config_file.get("multianimalproject", False):
+            self.inf_cfg_text = wx.Button(self, label="Edit the inference_config.yaml")
+            self.inf_cfg_text.Bind(wx.EVT_BUTTON, self.edit_inf_config)
+            self.sizer.Add(
+                self.inf_cfg_text,
+                pos=(4, 2),
+                span=(1, 1),
+                flag=wx.BOTTOM | wx.RIGHT,
+                border=10,
+            )
 
         self.sizer.AddGrowableCol(2)
 
@@ -249,21 +200,6 @@ class Evaluate_network(wx.Panel):
         wx.MessageBox(help_text, "Help", wx.OK | wx.ICON_INFORMATION)
         help_file.close()
         os.remove("help.txt")
-
-    def help_val_function(self, event):
-
-        filepath = "help2.txt"
-        f = open(filepath, "w")
-        sys.stdout = f
-        fnc_name = "deeplabcut.evaluate_multianimal_crossvalidate"
-        pydoc.help(fnc_name)
-        f.close()
-        sys.stdout = sys.__stdout__
-        help_file = open("help2.txt", "r+")
-        help_text = help_file.read()
-        wx.MessageBox(help_text, "Help (X-val)", wx.OK | wx.ICON_INFORMATION)
-        help_file.close()
-        os.remove("help2.txt")
 
     def chooseOption(self, event):
         if self.bodypart_choice.GetStringSelection() == "No":
@@ -338,37 +274,6 @@ class Evaluate_network(wx.Panel):
             plotting=plotting,
             show_errors=True,
             comparisonbodyparts=self.bodyparts,
-        )
-
-    def cross_validate(self, event):
-        trainingsetindex = self.trainingset.GetValue()
-        shuffle = [self.shuffles.GetValue()]
-        cfg = auxiliaryfunctions.read_config(self.config)
-        trainFraction = cfg["TrainingFraction"][trainingsetindex]
-        self.inf_cfg_path = os.path.join(
-            cfg["project_path"],
-            auxiliaryfunctions.GetModelFolder(
-                trainFraction, self.shuffles.GetValue(), cfg
-            ),
-            "test",
-            "inference_cfg.yaml",
-        )
-        # Read from edited inf. file first ...
-        print(self.inf_cfg_path)
-        print(
-            "optimizing parameters using "
-            + self.targettypes.GetValue()
-            + " as a target..."
-        )
-        deeplabcut.evaluate_multianimal_crossvalidate(
-            self.config,
-            Shuffles=shuffle,
-            trainingsetindex=trainingsetindex,
-            edgewisecondition=self.edgeWise.GetStringSelection(),
-            leastbpts=self.infg.GetValue(),
-            init_points=self.inpts.GetValue(),
-            n_iter=self.n_iter.GetValue(),
-            target=self.targettypes.GetValue(),
         )
 
     def cancel_evaluate_network(self, event):

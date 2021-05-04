@@ -1,10 +1,10 @@
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
-Please see AUTHORS for contributors.
+https://github.com/DeepLabCut/DeepLabCut
 
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+Please see AUTHORS for contributors.
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
@@ -22,9 +22,10 @@ import wx
 class DraggablePoint:
     lock = None  # only one can be animated at a time
 
-    def __init__(self, point, bodyParts, likelihood):
+    def __init__(self, point, bodyParts, individual_names=None, likelihood=None):
         self.point = point
         self.bodyParts = bodyParts
+        self.individual_names = individual_names
         self.likelihood = likelihood
         self.press = None
         self.background = None
@@ -39,8 +40,6 @@ class DraggablePoint:
         )
         self.annot.set_visible(False)
         self.coords = []
-
-    #        self.adjust_original_labels = adjust_original_labels
 
     def connect(self):
         "connect to all the events we need"
@@ -62,7 +61,6 @@ class DraggablePoint:
         """
         Define the event for the button press!
         """
-
         if event.inaxes != self.point.axes:
             return
         if DraggablePoint.lock is not None:
@@ -83,17 +81,15 @@ class DraggablePoint:
             self.background = canvas.copy_from_bbox(self.point.axes.bbox)
             axes.draw_artist(self.point)
             canvas.blit(axes.bbox)
-        elif event.button == 3:
+        elif event.button == 2:
             """
             To remove a predicted label. Internally, the coordinates of the selected predicted label is replaced with nan. The user needs to right click for the event.After right
             click the data point is removed from the plot.
             """
-            msg = wx.MessageBox(
-                "Do you want to remove %s ? You cannot undo this step!"
-                % self.bodyParts,
-                "Remove!",
-                wx.YES_NO | wx.ICON_WARNING,
-            )
+            message = f"Do you want to remove the label {self.bodyParts}?"
+            if self.likelihood is not None:
+                message += " You cannot undo this step!"
+            msg = wx.MessageBox(message, "Remove!", wx.YES_NO | wx.ICON_WARNING)
             if msg == 2:
                 self.delete_data()
 
@@ -102,7 +98,7 @@ class DraggablePoint:
         DraggablePoint.lock = None
         self.point.set_animated(False)
         self.background = None
-        self.final_point = (np.nan, np.nan)
+        self.final_point = (np.nan, np.nan, self.individual_names, self.bodyParts)
         self.point.center = (np.nan, np.nan)
         self.coords.append(self.final_point)
         self.point.figure.canvas.draw()
@@ -138,7 +134,12 @@ class DraggablePoint:
             self.point.set_animated(False)
             self.background = None
             self.point.figure.canvas.draw()
-            self.final_point = (event.xdata, event.ydata, self.bodyParts)
+            self.final_point = (
+                self.point.center[0],
+                self.point.center[1],
+                self.individual_names,
+                self.bodyParts,
+            )
             self.coords.append(self.final_point)
 
     def on_hover(self, event):
@@ -146,16 +147,16 @@ class DraggablePoint:
         Annotate the lables and likelihood when the user hovers over the data points.
         """
         vis = self.annot.get_visible()
+
         if event.inaxes == self.point.axes:
             contains, attrd = self.point.contains(event)
             if contains:
                 self.annot.xy = (self.point.center[0], self.point.center[1])
-                #                if self.adjust_original_labels == True:
-                #                    text = str(self.bodyParts)
-                #                else:
-                text = str(
-                    self.bodyParts + ",p=" + str("{0:.2f}".format(self.likelihood))
-                )
+                text = str(self.bodyParts)
+                if self.individual_names is not None:
+                    text = f"{self.individual_names},{text}"
+                if self.likelihood is not None:
+                    text += f",p={self.likelihood:.2f}"
                 self.annot.set_text(text)
                 self.annot.get_bbox_patch().set_alpha(0.4)
                 self.annot.set_visible(True)

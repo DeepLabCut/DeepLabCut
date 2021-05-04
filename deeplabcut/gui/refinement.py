@@ -1,10 +1,10 @@
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 Please see AUTHORS for contributors.
 
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
@@ -16,7 +16,6 @@ from pathlib import Path
 
 # from skimage import io
 import PIL
-import matplotlib
 import matplotlib.colors as mcolors
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
@@ -24,50 +23,49 @@ import numpy as np
 import pandas as pd
 import wx
 import wx.lib.scrolledpanel as SP
-from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.backends.backend_wxagg import (
     NavigationToolbar2WxAgg as NavigationToolbar,
 )
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from skimage import io
 
-from deeplabcut.refine_training_dataset import auxfun_drag_multi_individuals
-from deeplabcut.utils import auxiliaryfunctions, visualization
+from deeplabcut.gui import auxfun_drag
+from deeplabcut.gui.widgets import BasePanel, WidgetPanel, BaseFrame
+from deeplabcut.utils import auxiliaryfunctions
 
 
 # ###########################################################################
 # Class for GUI MainFrame
 # ###########################################################################
-class ImagePanel(wx.Panel):
-    def __init__(self, parent, config, gui_size, **kwargs):
-        h = gui_size[0] / 2
-        w = gui_size[1] / 3
-        wx.Panel.__init__(self, parent, -1, style=wx.SUNKEN_BORDER, size=(h, w))
-
-        self.figure = matplotlib.figure.Figure()
-        self.axes = self.figure.add_subplot(1, 1, 1)
-        self.canvas = FigureCanvas(self, -1, self.figure)
-        self.orig_xlim = None
-        self.orig_ylim = None
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.Add(self.canvas, 1, wx.LEFT | wx.TOP | wx.GROW)
-        self.SetSizer(self.sizer)
-        self.Fit()
-
-    def getfigure(self):
-        return self.figure
-
+class ImagePanel(BasePanel):
     def drawplot(
-        self, img, img_name, itr, index, threshold, cmap, preview, keep_view=False
+        self,
+        img,
+        img_name,
+        itr,
+        index,
+        threshold,
+        bodyparts,
+        cmap,
+        preview,
+        keep_view=False,
     ):
         xlim = self.axes.get_xlim()
         ylim = self.axes.get_ylim()
         self.axes.clear()
         im = io.imread(img)
-        self.ax = self.axes.imshow(im, cmap=cmap)
+        ax = self.axes.imshow(im, cmap=cmap)
         self.orig_xlim = self.axes.get_xlim()
         self.orig_ylim = self.axes.get_ylim()
-        if preview == False:
+        divider = make_axes_locatable(self.axes)
+        colorIndex = np.linspace(np.min(im), np.max(im), len(bodyparts))
+        cax = divider.append_axes("right", size="5%", pad=0.05)
+        cbar = self.figure.colorbar(
+            ax, cax=cax, spacing="proportional", ticks=colorIndex
+        )
+        cbar.set_ticklabels(bodyparts[::-1])
+
+        if not preview:
             self.axes.set_title(
                 str(
                     str(itr)
@@ -90,30 +88,23 @@ class ImagePanel(wx.Panel):
                     + str(Path(index[itr]).stem)
                 )
             )
+
         if keep_view:
             self.axes.set_xlim(xlim)
             self.axes.set_ylim(ylim)
         self.figure.canvas.draw()
-        self.toolbar = NavigationToolbar(self.canvas)
-        return (self.figure, self.axes, self.canvas, self.toolbar, self.ax)
-
-    def resetView(self):
-        self.axes.set_xlim(self.orig_xlim)
-        self.axes.set_ylim(self.orig_ylim)
+        if not hasattr(self, "toolbar"):
+            self.toolbar = NavigationToolbar(self.canvas)
+        return (self.figure, self.axes, self.canvas, self.toolbar)
 
     def getColorIndices(self, img, bodyparts):
         """
         Returns the colormaps ticks and . The order of ticks labels is reversed.
         """
         im = io.imread(img)
-        norm = mcolors.Normalize(vmin=np.min(im), vmax=np.max(im))
-        ticks = np.linspace(np.min(im), np.max(im), len(bodyparts))[::-1]
+        norm = mcolors.Normalize(vmin=0, vmax=np.max(im))
+        ticks = np.linspace(0, np.max(im), len(bodyparts))[::-1]
         return norm, ticks
-
-
-class WidgetPanel(wx.Panel):
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent, -1, style=wx.SUNKEN_BORDER)
 
 
 class ScrollPanel(SP.ScrolledPanel):
@@ -144,56 +135,19 @@ class ScrollPanel(SP.ScrolledPanel):
         self.checkBox = wx.CheckBox(self, id=wx.ID_ANY, label="Adjust marker size.")
         self.choiceBox.Add(self.slider, 0, wx.ALL, 5)
         self.choiceBox.Add(self.checkBox, 0, wx.ALL, 5)
-        names = ["Color individuals", "Color bodyparts"]
-        self.visualization_radiobox = wx.RadioBox(
-            self,
-            label="Select the visualization scheme",
-            majorDimension=1,
-            style=wx.RA_SPECIFY_COLS,
-            choices=names,
-        )
-        self.choiceBox.Add(self.visualization_radiobox, 0, wx.EXPAND | wx.ALL, 10)
-
         self.SetSizerAndFit(self.choiceBox)
         self.Layout()
-        return (self.choiceBox, self.slider, self.checkBox, self.visualization_radiobox)
+        return (self.choiceBox, self.slider, self.checkBox)
 
     def clearBoxer(self):
         self.choiceBox.Clear(True)
 
 
-class MainFrame(wx.Frame):
-    """Contains the main GUI and button boxes"""
-
+class MainFrame(BaseFrame):
     def __init__(self, parent, config):
-        # Settting the GUI size and panels design
-        displays = (
-            wx.Display(i) for i in range(wx.Display.GetCount())
-        )  # Gets the number of displays
-        screenSizes = [
-            display.GetGeometry().GetSize() for display in displays
-        ]  # Gets the size of each display
-        index = 0  # For display 1.
-        screenWidth = screenSizes[index][0]
-        screenHeight = screenSizes[index][1]
-        self.gui_size = (screenWidth * 0.7, screenHeight * 0.85)
-
-        wx.Frame.__init__(
-            self,
-            parent,
-            id=wx.ID_ANY,
-            title="DeepLabCut - Refinement ToolBox",
-            size=wx.Size(self.gui_size),
-            pos=wx.DefaultPosition,
-            style=wx.RESIZE_BORDER | wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL,
-        )
-        self.statusbar = self.CreateStatusBar()
-        self.statusbar.SetStatusText("")
+        super(MainFrame, self).__init__("DeepLabCut2.0 - Refinement ToolBox", parent)
         self.Bind(wx.EVT_CHAR_HOOK, self.OnKeyPressed)
 
-        self.SetSizeHints(
-            wx.Size(self.gui_size)
-        )  #  This sets the minimum size of the GUI. It can scale now!
         ###################################################################################################################################################
 
         # Spliting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
@@ -272,7 +226,7 @@ class MainFrame(wx.Frame):
 
         widgetsizer.AddStretchSpacer(15)
         self.quit = wx.Button(self.widget_panel, id=wx.ID_ANY, label="Quit")
-        widgetsizer.Add(self.quit, 1, wx.ALL | wx.ALIGN_RIGHT, 15)
+        widgetsizer.Add(self.quit, 1, wx.ALL, 15)
         self.quit.Bind(wx.EVT_BUTTON, self.quitButton)
 
         self.widget_panel.SetSizer(widgetsizer)
@@ -287,19 +241,20 @@ class MainFrame(wx.Frame):
         self.threshold = []
         self.file = 0
         self.updatedCoords = []
+        self.dataFrame = None
         self.drs = []
-        self.cfg = auxiliaryfunctions.read_config(config)
-        self.humanscorer = self.cfg["scorer"]
-        self.move2corner = self.cfg["move2corner"]
-        self.center = self.cfg["corner2move2"]
-        self.colormap = plt.get_cmap(self.cfg["colormap"])
+        cfg = auxiliaryfunctions.read_config(config)
+        self.humanscorer = cfg["scorer"]
+        self.move2corner = cfg["move2corner"]
+        self.center = cfg["corner2move2"]
+        self.colormap = plt.get_cmap(cfg["colormap"])
         self.colormap = self.colormap.reversed()
-        self.markerSize = self.cfg["dotsize"]
-        self.alpha = self.cfg["alphavalue"]
-        self.iterationindex = self.cfg["iteration"]
-        self.project_path = self.cfg["project_path"]
-        self.bodyparts = self.cfg["bodyparts"]
-        self.threshold = 0.1
+        self.markerSize = cfg["dotsize"]
+        self.alpha = cfg["alphavalue"]
+        self.iterationindex = cfg["iteration"]
+        self.project_path = cfg["project_path"]
+        self.bodyparts = cfg["bodyparts"]
+        self.threshold = 0.4
         self.img_size = (10, 6)  # (imgW, imgH)  # width, height in inches.
         self.preview = False
         self.view_locked = False
@@ -307,17 +262,6 @@ class MainFrame(wx.Frame):
         # xlim and ylim have actually changed before turning zoom off
         self.prezoom_xlim = []
         self.prezoom_ylim = []
-        from deeplabcut.utils import auxfun_multianimal
-
-        (
-            self.individual_names,
-            self.uniquebodyparts,
-            self.multianimalbodyparts,
-        ) = auxfun_multianimal.extractindividualsandbodyparts(self.cfg)
-        # self.choiceBox,self.visualization_rdb = self.choice_panel.addRadioButtons()
-        self.Colorscheme = visualization.get_cmap(
-            len(self.individual_names), self.cfg["colormap"]
-        )
 
     # ###########################################################################
     # functions for button responses
@@ -332,76 +276,26 @@ class MainFrame(wx.Frame):
             pos_abs = event.GetPosition()
             inv = self.axes.transData.inverted()
             pos_rel = list(inv.transform(pos_abs))
-            pos_rel[1] = (
-                self.axes.get_ylim()[0] - pos_rel[1]
-            )  # Recall y-axis is inverted
+            y1, y2 = self.axes.get_ylim()
+            pos_rel[1] = y1 - pos_rel[1] + y2  # Recall y-axis is inverted
             i = np.nanargmin(
                 [self.calc_distance(*dp.point.center, *pos_rel) for dp in self.drs]
             )
             closest_dp = self.drs[i]
             msg = wx.MessageBox(
-                f"Do you want to remove the label {closest_dp.individual_name}:{closest_dp.bodyParts}?",
+                "Do you want to remove the label %s ?" % closest_dp.bodyParts,
                 "Remove!",
                 wx.YES_NO | wx.ICON_WARNING,
             )
             if msg == 2:
                 closest_dp.delete_data()
 
-    @staticmethod
-    def calc_distance(x1, y1, x2, y2):
-        return np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
-
-    def closewindow(self, event):
-        self.Destroy()
-
-    def homeButton(self, event):
-        self.image_panel.resetView()
-        self.figure.canvas.draw()
-        MainFrame.updateZoomPan(self)
-        self.zoom.SetValue(False)
-        self.pan.SetValue(False)
-        self.statusbar.SetStatusText("")
-
-    def panButton(self, event):
-        if self.pan.GetValue() == True:
-            self.toolbar.pan()
-            self.statusbar.SetStatusText("Pan On")
-            self.zoom.SetValue(False)
-        else:
-            self.toolbar.pan()
-            self.statusbar.SetStatusText("Pan Off")
-
-    def zoomButton(self, event):
-        if self.zoom.GetValue() == True:
-            # Save pre-zoom xlim and ylim values
-            self.prezoom_xlim = self.axes.get_xlim()
-            self.prezoom_ylim = self.axes.get_ylim()
-            self.toolbar.zoom()
-            self.statusbar.SetStatusText("Zoom On")
-            self.pan.SetValue(False)
-        else:
-            self.toolbar.zoom()
-            self.statusbar.SetStatusText("Zoom Off")
-
-    def onZoom(self, ax):
-        # See if axis limits have actually changed
-        curr_xlim = self.axes.get_xlim()
-        curr_ylim = self.axes.get_ylim()
-        if self.zoom.GetValue() and not (
-            self.prezoom_xlim[0] == curr_xlim[0]
-            and self.prezoom_xlim[1] == curr_xlim[1]
-            and self.prezoom_ylim[0] == curr_ylim[0]
-            and self.prezoom_ylim[1] == curr_ylim[1]
-        ):
-            self.updateZoomPan()
-            self.statusbar.SetStatusText("Zoom Off")
-
     def activateSlider(self, event):
         """
         Activates the slider to increase the markersize
         """
         self.checkSlider = event.GetEventObject()
-        if self.checkSlider.GetValue() == True:
+        if self.checkSlider.GetValue():
             self.activate_slider = True
             self.slider.Enable(True)
             MainFrame.updateZoomPan(self)
@@ -420,18 +314,13 @@ class MainFrame(wx.Frame):
         img_name = Path(self.index[self.iter]).name
         #        self.axes.clear()
         self.figure.delaxes(self.figure.axes[1])
-        (
-            self.figure,
-            self.axes,
-            self.canvas,
-            self.toolbar,
-            self.ax,
-        ) = self.image_panel.drawplot(
+        self.figure, self.axes, self.canvas, self.toolbar = self.image_panel.drawplot(
             self.img,
             img_name,
             self.iter,
             self.index,
             self.threshold,
+            self.bodyparts,
             self.colormap,
             self.preview,
             keep_view=True,
@@ -440,10 +329,6 @@ class MainFrame(wx.Frame):
         self.axes.callbacks.connect("ylim_changed", self.onZoom)
 
         MainFrame.plot(self, self.img)
-
-    def lockChecked(self, event):
-        self.cb = event.GetEventObject()
-        self.view_locked = self.cb.GetValue()
 
     def browseDir(self, event):
         """
@@ -454,10 +339,11 @@ class MainFrame(wx.Frame):
         self.statusbar.SetStatusText("Looking for a folder to start refining...")
         cwd = os.path.join(os.getcwd(), "labeled-data")
         #        dlg = wx.FileDialog(self, "Choose the machinelabels file for current iteration.",cwd, "",wildcard=fname,style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+        platform.system()
         if platform.system() == "Darwin":
             dlg = wx.FileDialog(
                 self,
-                "Choose the machinelabels file for current iteration.",
+                "Select the machinelabels-iterX.h5 file.",
                 cwd,
                 fname,
                 wildcard="(*.h5)|*.h5",
@@ -466,7 +352,7 @@ class MainFrame(wx.Frame):
         else:
             dlg = wx.FileDialog(
                 self,
-                "Choose the machinelabels file for current iteration.",
+                "Select the machinelabels-iterX.h5 file.",
                 cwd,
                 "",
                 wildcard=fname,
@@ -488,6 +374,7 @@ class MainFrame(wx.Frame):
         else:
             dlg.Destroy()
             self.Destroy()
+            return
         dlg.Destroy()
 
         try:
@@ -503,7 +390,7 @@ class MainFrame(wx.Frame):
         self.iter = 0
 
         if os.path.isfile(self.dataname):
-            self.Dataframe = pd.read_hdf(self.dataname, "df_with_missing")
+            self.Dataframe = pd.read_hdf(self.dataname)
             self.Dataframe.sort_index(inplace=True)
             self.scorer = self.Dataframe.columns.get_level_values(0)[0]
 
@@ -525,37 +412,26 @@ class MainFrame(wx.Frame):
                 self.choiceBox,
                 self.slider,
                 self.checkBox,
-                self.visualization_rdb,
             ) = self.choice_panel.addCheckBoxSlider(
                 self.bodyparts, self.file, self.markerSize
             )
             self.slider.Bind(wx.EVT_SLIDER, self.OnSliderScroll)
             self.checkBox.Bind(wx.EVT_CHECKBOX, self.activateSlider)
-            self.visualization_rdb.Bind(wx.EVT_RADIOBOX, self.clear_plot)
             self.slider.Enable(False)
-
-            # take into account of all the bodyparts for the colorscheme. Sort the bodyparts to have same order as in the config file
-            self.all_bodyparts = np.array(
-                self.multianimalbodyparts + self.uniquebodyparts
-            )
-            _, return_idx = np.unique(self.all_bodyparts, return_index=True)
-            self.all_bodyparts = list(self.all_bodyparts[np.sort(return_idx)])
-
             # Show image
             # Setting axis title:dont want to show the threshold as it is not selected yet.
-
             (
                 self.figure,
                 self.axes,
                 self.canvas,
                 self.toolbar,
-                self.ax,
             ) = self.image_panel.drawplot(
                 self.img,
                 img_name,
                 self.iter,
                 self.index,
                 self.threshold,
+                self.bodyparts,
                 self.colormap,
                 self.preview,
             )
@@ -576,7 +452,7 @@ class MainFrame(wx.Frame):
                     self,
                     "Select the likelihood threshold",
                     caption="Enter the threshold",
-                    value="0.1",
+                    value="0.4",
                 )
                 textBox.ShowModal()
                 self.threshold = float(textBox.GetValue())
@@ -585,19 +461,21 @@ class MainFrame(wx.Frame):
                 img_name = Path(self.img).name
                 self.axes.clear()
                 self.preview = False
-                # self.figure.delaxes(self.figure.axes[1]) # Removes the axes corresponding to the colorbar
+                self.figure.delaxes(
+                    self.figure.axes[1]
+                )  # Removes the axes corresponding to the colorbar
                 (
                     self.figure,
                     self.axes,
                     self.canvas,
                     self.toolbar,
-                    self.ax,
                 ) = self.image_panel.drawplot(
                     self.img,
                     img_name,
                     self.iter,
                     self.index,
                     self.threshold,
+                    self.bodyparts,
                     self.colormap,
                     self.preview,
                 )
@@ -606,19 +484,21 @@ class MainFrame(wx.Frame):
                 MainFrame.plot(self, self.img)
                 MainFrame.saveEachImage(self)
             else:
-                # self.figure.delaxes(self.figure.axes[1]) # Removes the axes corresponding to the colorbar
+                self.figure.delaxes(
+                    self.figure.axes[1]
+                )  # Removes the axes corresponding to the colorbar
                 (
                     self.figure,
                     self.axes,
                     self.canvas,
                     self.toolbar,
-                    self.ax,
                 ) = self.image_panel.drawplot(
                     self.img,
                     img_name,
                     self.iter,
                     self.index,
                     self.threshold,
+                    self.bodyparts,
                     self.colormap,
                     self.preview,
                 )
@@ -638,12 +518,6 @@ class MainFrame(wx.Frame):
                 self.next.Enable(False)
                 self.save.Enable(False)
 
-    def clear_plot(self, event):
-        MainFrame.saveEachImage(self)
-        self.figure.delaxes(self.figure.axes[1])
-        [p.remove() for p in reversed(self.axes.patches)]
-        self.plot(self.img)
-
     def nextImage(self, event):
         """
         Reads the next image and enables the user to move the annotations
@@ -658,7 +532,6 @@ class MainFrame(wx.Frame):
         MainFrame.updateZoomPan(self)
 
         MainFrame.saveEachImage(self)
-        # print(self.Dataframe.head())
         self.statusbar.SetStatusText(
             "Working on folder: {}".format(os.path.split(str(self.dir))[-1])
         )
@@ -674,40 +547,22 @@ class MainFrame(wx.Frame):
             self.figure.delaxes(
                 self.figure.axes[1]
             )  # Removes the axes corresponding to the colorbar
-            if self.visualization_rdb.GetSelection() == 0:
-                (
-                    self.figure,
-                    self.axes,
-                    self.canvas,
-                    self.toolbar,
-                    self.ax,
-                ) = self.image_panel.drawplot(
-                    self.img,
-                    img_name,
-                    self.iter,
-                    self.index,
-                    self.threshold,
-                    self.colormap,
-                    self.preview,
-                    keep_view=self.view_locked,
-                )
-            else:
-                (
-                    self.figure,
-                    self.axes,
-                    self.canvas,
-                    self.toolbar,
-                    self.ax,
-                ) = self.image_panel.drawplot(
-                    self.img,
-                    img_name,
-                    self.iter,
-                    self.index,
-                    self.threshold,
-                    self.colormap,
-                    self.preview,
-                    keep_view=self.view_locked,
-                )
+            (
+                self.figure,
+                self.axes,
+                self.canvas,
+                self.toolbar,
+            ) = self.image_panel.drawplot(
+                self.img,
+                img_name,
+                self.iter,
+                self.index,
+                self.threshold,
+                self.bodyparts,
+                self.colormap,
+                self.preview,
+                keep_view=self.view_locked,
+            )
             im = io.imread(self.img)
             self.axes.callbacks.connect("xlim_changed", self.onZoom)
             self.axes.callbacks.connect("ylim_changed", self.onZoom)
@@ -730,13 +585,13 @@ class MainFrame(wx.Frame):
                     self.axes,
                     self.canvas,
                     self.toolbar,
-                    self.ax,
                 ) = self.image_panel.drawplot(
                     self.img,
                     img_name,
                     self.iter,
                     self.index,
                     self.threshold,
+                    self.bodyparts,
                     self.colormap,
                     self.preview,
                     keep_view=self.view_locked,
@@ -778,40 +633,22 @@ class MainFrame(wx.Frame):
             self.figure.delaxes(
                 self.figure.axes[1]
             )  # Removes the axes corresponding to the colorbar
-            if self.visualization_rdb.GetSelection() == 0:
-                (
-                    self.figure,
-                    self.axes,
-                    self.canvas,
-                    self.toolbar,
-                    self.ax,
-                ) = self.image_panel.drawplot(
-                    self.img,
-                    img_name,
-                    self.iter,
-                    self.index,
-                    self.threshold,
-                    self.colormap,
-                    self.preview,
-                    keep_view=self.view_locked,
-                )
-            else:
-                (
-                    self.figure,
-                    self.axes,
-                    self.canvas,
-                    self.toolbar,
-                    self.ax,
-                ) = self.image_panel.drawplot(
-                    self.img,
-                    img_name,
-                    self.iter,
-                    self.index,
-                    self.threshold,
-                    self.colormap,
-                    self.preview,
-                    keep_view=self.view_locked,
-                )
+            (
+                self.figure,
+                self.axes,
+                self.canvas,
+                self.toolbar,
+            ) = self.image_panel.drawplot(
+                self.img,
+                img_name,
+                self.iter,
+                self.index,
+                self.threshold,
+                self.bodyparts,
+                self.colormap,
+                self.preview,
+                keep_view=self.view_locked,
+            )
             self.axes.callbacks.connect("xlim_changed", self.onZoom)
             self.axes.callbacks.connect("ylim_changed", self.onZoom)
             MainFrame.plot(self, self.img)
@@ -852,43 +689,28 @@ class MainFrame(wx.Frame):
     def onChecked(self, event):
         MainFrame.saveEachImage(self)
         self.cb = event.GetEventObject()
-        if self.cb.GetValue() == True:
+        if self.cb.GetValue():
             self.slider.Enable(True)
         else:
             self.slider.Enable(False)
-
-    def force_outside_labels_Nans(self, index, ind, bodyparts):
-        """
-        Checks the dataframe for any labels outside the image and forces them Nans.
-        """
-        for bpindex, bp in enumerate(bodyparts):
-            testCondition = (
-                self.Dataframe.loc[index, (self.scorer, ind, bp, "x")] > self.width
-                or self.Dataframe.loc[index, (self.scorer, ind, bp, "x")] < 0
-                or self.Dataframe.loc[index, (self.scorer, ind, bp, "y")] > self.height
-                or self.Dataframe.loc[index, (self.scorer, ind, bp, "y")] < 0
-            )
-            if testCondition:
-                print("Found %s outside the image %s.Setting it to NaN" % (bp, index))
-                self.Dataframe.loc[index, (self.scorer, ind, bp, "x")] = np.nan
-                self.Dataframe.loc[index, (self.scorer, ind, bp, "y")] = np.nan
-        return self.Dataframe
 
     def check_labels(self):
         print("Checking labels if they are outside the image")
         for i in self.Dataframe.index:
             image_name = os.path.join(self.project_path, i)
             im = PIL.Image.open(image_name)
-            self.width, self.height = im.size
-            for ind in self.individual_names:
-                if ind == "single":
-                    self.Dataframe = MainFrame.force_outside_labels_Nans(
-                        self, i, ind, self.uniquebodyparts
-                    )
-                else:
-                    self.Dataframe = MainFrame.force_outside_labels_Nans(
-                        self, i, ind, self.multianimalbodyparts
-                    )
+            width, height = im.size
+            for bpindex, bp in enumerate(self.bodyparts):
+                testCondition = (
+                    self.Dataframe.loc[i, (self.scorer, bp, "x")] > width
+                    or self.Dataframe.loc[i, (self.scorer, bp, "x")] < 0
+                    or self.Dataframe.loc[i, (self.scorer, bp, "y")] > height
+                    or self.Dataframe.loc[i, (self.scorer, bp, "y")] < 0
+                )
+                if testCondition:
+                    print("Found %s outside the image %s.Setting it to NaN" % (bp, i))
+                    self.Dataframe.loc[i, (self.scorer, bp, "x")] = np.nan
+                    self.Dataframe.loc[i, (self.scorer, bp, "y")] = np.nan
         return self.Dataframe
 
     def saveDataSet(self, event):
@@ -906,15 +728,14 @@ class MainFrame(wx.Frame):
         self.Dataframe.columns.set_levels(
             [self.scorer.replace(self.scorer, self.humanscorer)], level=0, inplace=True
         )
-        self.Dataframe = self.Dataframe.drop("likelihood", axis=1, level=3)
+        self.Dataframe = self.Dataframe.drop("likelihood", axis=1, level=2)
 
         if Path(self.dir, "CollectedData_" + self.humanscorer + ".h5").is_file():
             print(
                 "A training dataset file is already found for this video. The refined machine labels are merged to this data!"
             )
             DataU1 = pd.read_hdf(
-                os.path.join(self.dir, "CollectedData_" + self.humanscorer + ".h5"),
-                "df_with_missing",
+                os.path.join(self.dir, "CollectedData_" + self.humanscorer + ".h5")
             )
             # combine datasets Original Col. + corrected machinefiles:
             DataCombined = pd.concat([self.Dataframe, DataU1])
@@ -959,11 +780,15 @@ class MainFrame(wx.Frame):
         )
         if nextFilemsg == 2:
             self.file = 1
-            self.axes.clear()
+            # self.buttonCounter = []
+            self.updatedCoords = []
+            self.dataFrame = None
+            self.prev.Enable(False)
+            # self.bodyparts = []
             self.figure.delaxes(self.figure.axes[1])
+            self.axes.clear()
             self.choiceBox.Clear(True)
             MainFrame.updateZoomPan(self)
-            self.load.Enable(True)
             MainFrame.browseDir(self, event)
 
     # ###########################################################################
@@ -973,28 +798,27 @@ class MainFrame(wx.Frame):
         """
         Updates the dataframe for the current image with the new datapoints
         """
+        for bpindex, bp in enumerate(self.bodyparts):
+            if self.updatedCoords[bpindex]:
+                self.Dataframe.loc[
+                    self.Dataframe.index[self.iter], (self.scorer, bp, "x")
+                ] = self.updatedCoords[bpindex][-1][0]
+                self.Dataframe.loc[
+                    self.Dataframe.index[self.iter], (self.scorer, bp, "y")
+                ] = self.updatedCoords[bpindex][-1][1]
 
-        for bpindex, bp in enumerate(self.updatedCoords):
-            self.Dataframe.loc[self.Dataframe.index[self.iter]][
-                self.scorer, bp[0][-1], bp[0][-3], "x"
-            ] = self.updatedCoords[bpindex][-1][0]
-            self.Dataframe.loc[self.Dataframe.index[self.iter]][
-                self.scorer, bp[0][-1], bp[0][-3], "y"
-            ] = self.updatedCoords[bpindex][-1][1]
-
-    def getLabels(self, img_index, ind, bodyparts):
+    def getLabels(self, img_index):
         """
         Returns a list of x and y labels of the corresponding image index
         """
         self.previous_image_points = []
-        for bpindex, bp in enumerate(bodyparts):
+        for bpindex, bp in enumerate(self.bodyparts):
             image_points = [
                 [
-                    self.Dataframe[self.scorer][ind][bp]["x"].values[self.iter],
-                    self.Dataframe[self.scorer][ind][bp]["y"].values[self.iter],
+                    self.Dataframe[self.scorer][bp]["x"].values[self.iter],
+                    self.Dataframe[self.scorer][bp]["y"].values[self.iter],
                     bp,
                     bpindex,
-                    ind,
                 ]
             ]
             self.previous_image_points.append(image_points)
@@ -1005,259 +829,66 @@ class MainFrame(wx.Frame):
         Plots and call auxfun_drag class for moving and removing points.
         """
         # small hack in case there are any 0 intensity images!
-        img = io.imread(im)
-        maxIntensity = np.max(img)
+        im = io.imread(im)
+        maxIntensity = np.max(im)
         if maxIntensity == 0:
-            maxIntensity = np.max(img) + 255
-
-        divider = make_axes_locatable(self.axes)
-        cax = divider.append_axes("right", size="5%", pad=0.05)
+            maxIntensity = np.max(im) + 255
         self.drs = []
-
-        if (
-            self.visualization_rdb.GetSelection() == 0
-        ):  # i.e. for color scheme for individuals
-            self.Colorscheme = visualization.get_cmap(
-                len(self.individual_names), self.cfg["colormap"]
-            )
-            self.norm, self.colorIndex = self.image_panel.getColorIndices(
-                im, self.individual_names
-            )
-            cbar = self.figure.colorbar(
-                self.ax, cax=cax, spacing="proportional", ticks=self.colorIndex
-            )
-            cbar.set_ticklabels(self.individual_names)
-        else:  # i.e. for color scheme for all bodyparts
-            self.Colorscheme = visualization.get_cmap(
-                len(self.all_bodyparts), self.cfg["colormap"]
-            )
-            self.norm, self.colorIndex = self.image_panel.getColorIndices(
-                im, self.all_bodyparts
-            )
-            cbar = self.figure.colorbar(
-                self.ax, cax=cax, spacing="proportional", ticks=self.colorIndex
-            )
-            cbar.set_ticklabels(self.all_bodyparts)
-
-        for ci, ind in enumerate(self.individual_names):
-            col_idx = (
-                0  # variable for iterating through the colorscheme for all bodyparts
-            )
-            image_points = []
-            if ind == "single":
-                if self.visualization_rdb.GetSelection() == 0:
-                    for c, bp in enumerate(self.uniquebodyparts):
-                        self.points = [
-                            self.Dataframe[self.scorer][ind][bp]["x"].values[self.iter],
-                            self.Dataframe[self.scorer][ind][bp]["y"].values[self.iter],
-                            self.Dataframe[self.scorer][ind][bp]["likelihood"].values[
-                                self.iter
-                            ],
-                        ]
-                        self.likelihood = self.points[2]
-
-                        # fix move to corner
-                        if self.move2corner == True:
-                            ny, nx = np.shape(img)[0], np.shape(img)[1]
-                            if self.points[0] > nx or self.points[0] < 0:
-                                print("fixing x for ", bp)
-                                self.points[0] = self.center[0]
-                            if self.points[1] > ny or self.points[1] < 0:
-                                print("fixing y for ", bp)
-                                self.points[1] = self.center[1]
-
-                        if self.likelihood < self.threshold:
-                            self.circle = [
-                                patches.Circle(
-                                    (self.points[0], self.points[1]),
-                                    radius=self.markerSize,
-                                    facecolor="None",
-                                    edgecolor=self.Colorscheme(ci),
-                                    alpha=self.alpha,
-                                )
-                            ]
-                        else:
-                            self.circle = [
-                                patches.Circle(
-                                    (self.points[0], self.points[1]),
-                                    radius=self.markerSize,
-                                    fc=self.Colorscheme(ci),
-                                    alpha=self.alpha,
-                                )
-                            ]
-                        self.axes.add_patch(self.circle[0])
-                        self.dr = auxfun_drag_multi_individuals.DraggablePoint(
-                            self.circle[0], ind, bp, self.likelihood
-                        )
-                        self.dr.connect()
-                        self.dr.coords = MainFrame.getLabels(
-                            self, self.iter, ind, self.uniquebodyparts
-                        )[c]
-                        self.drs.append(self.dr)
-                        self.updatedCoords.append(self.dr.coords)
-                else:
-                    for c, bp in enumerate(self.uniquebodyparts):
-                        self.points = [
-                            self.Dataframe[self.scorer][ind][bp]["x"].values[self.iter],
-                            self.Dataframe[self.scorer][ind][bp]["y"].values[self.iter],
-                            self.Dataframe[self.scorer][ind][bp]["likelihood"].values[
-                                self.iter
-                            ],
-                        ]
-                        self.likelihood = self.points[2]
-
-                        # fix move to corner
-                        if self.move2corner == True:
-                            ny, nx = np.shape(img)[0], np.shape(img)[1]
-                            if self.points[0] > nx or self.points[0] < 0:
-                                print("fixing x for ", bp)
-                                self.points[0] = self.center[0]
-                            if self.points[1] > ny or self.points[1] < 0:
-                                print("fixing y for ", bp)
-                                self.points[1] = self.center[1]
-
-                        if self.likelihood < self.threshold:
-                            self.circle = [
-                                patches.Circle(
-                                    (self.points[0], self.points[1]),
-                                    radius=self.markerSize,
-                                    fc="None",
-                                    edgecolor=self.Colorscheme(col_idx),
-                                    alpha=self.alpha,
-                                )
-                            ]
-                        else:
-                            self.circle = [
-                                patches.Circle(
-                                    (self.points[0], self.points[1]),
-                                    radius=self.markerSize,
-                                    fc=self.Colorscheme(col_idx),
-                                    alpha=self.alpha,
-                                )
-                            ]
-                        self.axes.add_patch(self.circle[0])
-                        col_idx = col_idx + 1
-                        self.dr = auxfun_drag_multi_individuals.DraggablePoint(
-                            self.circle[0], ind, bp, self.likelihood
-                        )
-                        self.dr.connect()
-                        self.dr.coords = MainFrame.getLabels(
-                            self, self.iter, ind, self.uniquebodyparts
-                        )[c]
-                        self.drs.append(self.dr)
-                        self.updatedCoords.append(self.dr.coords)
+        for bpindex, bp in enumerate(self.bodyparts):
+            color = self.colormap(self.norm(self.colorIndex[bpindex]))
+            if "CollectedData_" in self.fileName:
+                self.points = [
+                    self.Dataframe[self.scorer][bp]["x"].values[self.iter],
+                    self.Dataframe[self.scorer][bp]["y"].values[self.iter],
+                    1.0,
+                ]
+                self.likelihood = self.points[2]
             else:
-                if self.visualization_rdb.GetSelection() == 0:
-                    for c, bp in enumerate(self.multianimalbodyparts):
-                        self.points = [
-                            self.Dataframe[self.scorer][ind][bp]["x"].values[self.iter],
-                            self.Dataframe[self.scorer][ind][bp]["y"].values[self.iter],
-                            self.Dataframe[self.scorer][ind][bp]["likelihood"].values[
-                                self.iter
-                            ],
-                        ]
-                        self.likelihood = self.points[2]
+                self.points = [
+                    self.Dataframe[self.scorer][bp]["x"].values[self.iter],
+                    self.Dataframe[self.scorer][bp]["y"].values[self.iter],
+                    self.Dataframe[self.scorer][bp]["likelihood"].values[self.iter],
+                ]
+                self.likelihood = self.points[2]
 
-                        # fix move to corner
-                        if self.move2corner == True:
-                            ny, nx = np.shape(img)[0], np.shape(img)[1]
-                            if self.points[0] > nx or self.points[0] < 0:
-                                print("fixing x for ", bp)
-                                self.points[0] = self.center[0]
-                            if self.points[1] > ny or self.points[1] < 0:
-                                print("fixing y for ", bp)
-                                self.points[1] = self.center[1]
+            if self.move2corner:
+                ny, nx = np.shape(im)[0], np.shape(im)[1]
+                if self.points[0] > nx or self.points[0] < 0:
+                    self.points[0] = self.center[0]
+                if self.points[1] > ny or self.points[1] < 0:
+                    self.points[1] = self.center[1]
 
-                        if self.likelihood < self.threshold:
-                            self.circle = [
-                                patches.Circle(
-                                    (self.points[0], self.points[1]),
-                                    radius=self.markerSize,
-                                    fc="None",
-                                    edgecolor=self.Colorscheme(ci),
-                                    alpha=self.alpha,
-                                )
-                            ]
-                        else:
-                            self.circle = [
-                                patches.Circle(
-                                    (self.points[0], self.points[1]),
-                                    radius=self.markerSize,
-                                    fc=self.Colorscheme(ci),
-                                    alpha=self.alpha,
-                                )
-                            ]
-                        self.axes.add_patch(self.circle[0])
-                        self.dr = auxfun_drag_multi_individuals.DraggablePoint(
-                            self.circle[0], ind, bp, self.likelihood
-                        )
-                        self.dr.connect()
-                        self.dr.coords = MainFrame.getLabels(
-                            self, self.iter, ind, self.multianimalbodyparts
-                        )[c]
-                        self.drs.append(self.dr)
-                        self.updatedCoords.append(self.dr.coords)
-                else:
-                    for c, bp in enumerate(self.multianimalbodyparts):
-                        self.points = [
-                            self.Dataframe[self.scorer][ind][bp]["x"].values[self.iter],
-                            self.Dataframe[self.scorer][ind][bp]["y"].values[self.iter],
-                            self.Dataframe[self.scorer][ind][bp]["likelihood"].values[
-                                self.iter
-                            ],
-                        ]
-                        self.likelihood = self.points[2]
+            if (
+                not ("CollectedData_" in self.fileName)
+                and self.likelihood < self.threshold
+            ):
+                circle = [
+                    patches.Circle(
+                        (self.points[0], self.points[1]),
+                        radius=self.markerSize,
+                        facecolor="None",
+                        edgecolor=color,
+                    )
+                ]
+            else:
+                circle = [
+                    patches.Circle(
+                        (self.points[0], self.points[1]),
+                        radius=self.markerSize,
+                        fc=color,
+                        alpha=self.alpha,
+                    )
+                ]
 
-                        # fix move to corner
-                        if self.move2corner == True:
-                            ny, nx = np.shape(img)[0], np.shape(img)[1]
-                            if self.points[0] > nx or self.points[0] < 0:
-                                print("fixing x for ", bp)
-                                self.points[0] = self.center[0]
-                            if self.points[1] > ny or self.points[1] < 0:
-                                print("fixing y for ", bp)
-                                self.points[1] = self.center[1]
-
-                        if self.likelihood < self.threshold:
-                            self.circle = [
-                                patches.Circle(
-                                    (self.points[0], self.points[1]),
-                                    radius=self.markerSize,
-                                    fc="None",
-                                    edgecolor=self.Colorscheme(col_idx),
-                                    alpha=self.alpha,
-                                )
-                            ]
-                        else:
-                            self.circle = [
-                                patches.Circle(
-                                    (self.points[0], self.points[1]),
-                                    radius=self.markerSize,
-                                    fc=self.Colorscheme(col_idx),
-                                    alpha=self.alpha,
-                                )
-                            ]
-                        self.axes.add_patch(self.circle[0])
-                        col_idx = col_idx + 1
-                        self.dr = auxfun_drag_multi_individuals.DraggablePoint(
-                            self.circle[0], ind, bp, self.likelihood
-                        )
-                        self.dr.connect()
-                        self.dr.coords = MainFrame.getLabels(
-                            self, self.iter, ind, self.multianimalbodyparts
-                        )[c]
-                        self.drs.append(self.dr)
-                        self.updatedCoords.append(self.dr.coords)
+            self.axes.add_patch(circle[0])
+            self.dr = auxfun_drag.DraggablePoint(
+                circle[0], bp, likelihood=self.likelihood
+            )
+            self.dr.connect()
+            self.dr.coords = MainFrame.getLabels(self, self.iter)[bpindex]
+            self.drs.append(self.dr)
+            self.updatedCoords.append(self.dr.coords)
         self.figure.canvas.draw()
-
-    def updateZoomPan(self):
-        # Checks if zoom/pan button is ON
-        if self.pan.GetValue() == True:
-            self.toolbar.pan()
-            self.pan.SetValue(False)
-        if self.zoom.GetValue() == True:
-            self.toolbar.zoom()
-            self.zoom.SetValue(False)
 
 
 def show(config):

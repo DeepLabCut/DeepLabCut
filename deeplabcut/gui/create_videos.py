@@ -1,10 +1,10 @@
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 Please see AUTHORS for contributors.
 
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 
 """
@@ -17,10 +17,8 @@ import wx
 
 import deeplabcut
 
-media_path = os.path.join(deeplabcut.__path__[0], "gui", "media")
-logo = os.path.join(media_path, "logo.png")
-
-from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.gui import LOGO_PATH
+from deeplabcut.utils import auxiliaryfunctions, skeleton
 
 
 class Create_Labeled_Videos(wx.Panel):
@@ -42,7 +40,7 @@ class Create_Labeled_Videos(wx.Panel):
         text = wx.StaticText(self, label="DeepLabCut - Create Labeled Videos")
         self.sizer.Add(text, pos=(0, 0), flag=wx.TOP | wx.LEFT | wx.BOTTOM, border=15)
         # Add logo of DLC
-        icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(logo))
+        icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(LOGO_PATH))
         self.sizer.Add(
             icon, pos=(0, 4), flag=wx.TOP | wx.RIGHT | wx.ALIGN_RIGHT, border=5
         )
@@ -207,11 +205,11 @@ class Create_Labeled_Videos(wx.Panel):
         if self.cfg.get("multianimalproject", False):
             tracker_text = wx.StaticBox(self, label="Specify the Tracker Method!")
             tracker_text_boxsizer = wx.StaticBoxSizer(tracker_text, wx.VERTICAL)
-            trackertypes = ["skeleton", "box"]
+            trackertypes = ["skeleton", "box", "ellipse"]
             self.trackertypes = wx.ComboBox(
                 self, choices=trackertypes, style=wx.CB_READONLY
             )
-            self.trackertypes.SetValue("box")
+            self.trackertypes.SetValue("ellipse")
             tracker_text_boxsizer.Add(
                 self.trackertypes, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
             )
@@ -229,6 +227,11 @@ class Create_Labeled_Videos(wx.Panel):
 
         boxsizer.Add(hbox3, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
         boxsizer.Add(hbox4, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+
+        self.build = wx.Button(self, label="Build skeleton")
+        self.sizer.Add(self.build, pos=(5, 3), flag=wx.BOTTOM | wx.RIGHT, border=10)
+        self.build.Bind(wx.EVT_BUTTON, self.build_skeleton)
+        self.build.Enable(True)
 
         self.help_button = wx.Button(self, label="Help")
         self.sizer.Add(self.help_button, pos=(5, 0), flag=wx.LEFT, border=10)
@@ -248,6 +251,9 @@ class Create_Labeled_Videos(wx.Panel):
 
         self.SetSizer(self.sizer)
         self.sizer.Fit(self)
+
+    def build_skeleton(self, event):
+        skeleton.SkeletonBuilder(self.config)
 
     def select_config(self, event):
         """

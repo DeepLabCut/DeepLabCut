@@ -1,6 +1,4 @@
 import os
-
-os.environ["DLClight"] = "True"
 import pytest
 from deeplabcut.utils.auxfun_videos import VideoWriter
 
@@ -24,7 +22,7 @@ def test_reader_wrong_inputs(tmp_path):
         VideoWriter(str(fake_vid))
 
 
-def test_reader_check_integrity(tmp_path, video_clip):
+def test_reader_check_integrity(video_clip):
     video_clip.check_integrity()
     log_file = os.path.join(video_clip.directory, f"{video_clip.name}.log")
     assert os.path.getsize(log_file) == 0
@@ -62,6 +60,8 @@ def test_reader_set_frame(video_clip):
     assert int(video_clip.video.get(POS_FRAMES)) == 2
     video_clip.set_to_frame(len(video_clip) + 10)
     assert int(video_clip.video.get(POS_FRAMES)) == len(video_clip) - 1
+    video_clip.reset()
+    assert int(video_clip.video.get(POS_FRAMES)) == 0
 
 
 @pytest.mark.parametrize("shrink, crop", [(1, False), (1, True), (2, False), (2, True)])

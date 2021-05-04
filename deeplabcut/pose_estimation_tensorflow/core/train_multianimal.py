@@ -71,9 +71,9 @@ def train(
     for k, t in losses.items():
         tf.compat.v1.summary.scalar(k, t)
     merged_summaries = tf.compat.v1.summary.merge_all()
-    net_type = cfg['net_type']
+    net_type = cfg["net_type"]
 
-    if "snapshot" in Path(cfg['init_weights']).stem and keepdeconvweights:
+    if "snapshot" in Path(cfg["init_weights"]).stem and keepdeconvweights:
         print("Loading already trained DLC with backbone:", net_type)
         variables_to_restore = slim.get_variables_to_restore()
     else:
@@ -85,11 +85,12 @@ def train(
             variables_to_restore = slim.get_variables_to_restore(
                 include=["MobilenetV2"]
             )
-        elif 'efficientnet' in net_type:
+        elif "efficientnet" in net_type:
             variables_to_restore = slim.get_variables_to_restore(include=["efficientnet"])
             variables_to_restore = {
                     var.op.name.replace("efficientnet/", "")
-                    + '/ExponentialMovingAverage':var for var in variables_to_restore}
+                    + "/ExponentialMovingAverage":var for var in variables_to_restore
+            }
         else:
             print("Wait for DLC 2.3.")
 
@@ -106,34 +107,34 @@ def train(
         sess = tf.compat.v1.Session()
 
     coord, thread = start_preloading(sess, enqueue_op, dataset, placeholders)
-    train_writer = tf.compat.v1.summary.FileWriter(cfg['log_dir'], sess.graph)
+    train_writer = tf.compat.v1.summary.FileWriter(cfg["log_dir"], sess.graph)
     learning_rate, train_op, tstep = get_optimizer(total_loss, cfg)
 
     sess.run(tf.compat.v1.global_variables_initializer())
     sess.run(tf.compat.v1.local_variables_initializer())
 
     # Restore variables from disk.
-    if 'efficientnet' in net_type:
-        init_weights = os.path.join(cfg['init_weights'],"model.ckpt")
+    if "efficientnet" in net_type:
+        init_weights = os.path.join(cfg["init_weights"], "model.ckpt")
     else:
-        init_weights = cfg['init_weights']
+        init_weights = cfg["init_weights"]
 
     restorer.restore(sess, init_weights)
     if maxiters is None:
-        max_iter = int(cfg['multi_step'][-1][1])
+        max_iter = int(cfg["multi_step"][-1][1])
     else:
-        max_iter = min(int(cfg['multi_step'][-1][1]), int(maxiters))
+        max_iter = min(int(cfg["multi_step"][-1][1]), int(maxiters))
         # display_iters = max(1,int(displayiters))
         print("Max_iters overwritten as", max_iter)
 
     if displayiters is None:
-        display_iters = max(1, int(cfg['display_iters']))
+        display_iters = max(1, int(cfg["display_iters"]))
     else:
         display_iters = max(1, int(displayiters))
         print("Display_iters overwritten as", display_iters)
 
     if saveiters is None:
-        save_iters = max(1, int(cfg['save_iters']))
+        save_iters = max(1, int(cfg["save_iters"]))
 
     else:
         save_iters = max(1, int(saveiters))
@@ -148,23 +149,22 @@ def train(
     print(cfg)
     print("Starting multi-animal training....")
     for it in range(max_iter + 1):
-        if 'efficientnet' in net_type:
-            dict={tstep: it}
-            current_lr = sess.run(learning_rate,feed_dict=dict)
+        if "efficientnet" in net_type:
+            dict = {tstep: it}
+            current_lr = sess.run(learning_rate, feed_dict=dict)
         else:
             current_lr = lr_gen.get_lr(it)
-            dict={learning_rate: current_lr}
+            dict = {learning_rate: current_lr}
 
         # [_, loss_val, summary] = sess.run([train_op, total_loss, merged_summaries],feed_dict={learning_rate: current_lr})
         [_, alllosses, loss_val, summary] = sess.run(
-            [train_op, losses, total_loss, merged_summaries],
-            feed_dict=dict,
+            [train_op, losses, total_loss, merged_summaries], feed_dict=dict
         )
 
         partloss += alllosses["part_loss"]  # scoremap loss
-        if cfg['location_refinement']:
+        if cfg["location_refinement"]:
             locrefloss += alllosses["locref_loss"]
-        if cfg['pairwise_predict']:  # paf loss
+        if cfg["pairwise_predict"]:  # paf loss
             pwloss += alllosses["pairwise_loss"]
 
         cumloss += loss_val
@@ -198,7 +198,7 @@ def train(
 
         # Save snapshot
         if (it % save_iters == 0 and it != 0) or it == max_iter:
-            model_name = cfg['snapshot_prefix']
+            model_name = cfg["snapshot_prefix"]
             saver.save(sess, model_name, global_step=it)
 
     lrf.close()

@@ -1,10 +1,10 @@
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 Please see AUTHORS for contributors.
 
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 
 """
@@ -18,8 +18,7 @@ import wx
 import deeplabcut
 from deeplabcut import utils
 
-media_path = os.path.join(deeplabcut.__path__[0], "gui", "media")
-logo = os.path.join(media_path, "logo.png")
+from deeplabcut.gui import LOGO_PATH
 
 
 class Extract_outlier_frames(wx.Panel):
@@ -40,7 +39,7 @@ class Extract_outlier_frames(wx.Panel):
         text = wx.StaticText(self, label="DeepLabCut - Step 8. Extract outlier frames")
         self.sizer.Add(text, pos=(0, 0), flag=wx.TOP | wx.LEFT | wx.BOTTOM, border=15)
         # Add logo of DLC
-        icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(logo))
+        icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(LOGO_PATH))
         self.sizer.Add(
             icon, pos=(0, 4), flag=wx.TOP | wx.RIGHT | wx.ALIGN_RIGHT, border=5
         )
@@ -127,11 +126,11 @@ class Extract_outlier_frames(wx.Panel):
         if self.cfg.get("multianimalproject", False):
             tracker_text = wx.StaticBox(self, label="Specify the Tracker Method!")
             tracker_text_boxsizer = wx.StaticBoxSizer(tracker_text, wx.VERTICAL)
-            trackertypes = ["skeleton", "box"]
+            trackertypes = ["skeleton", "box", "ellipse"]
             self.trackertypes = wx.ComboBox(
                 self, choices=trackertypes, style=wx.CB_READONLY
             )
-            self.trackertypes.SetValue("box")
+            self.trackertypes.SetValue("ellipse")
             tracker_text_boxsizer.Add(
                 self.trackertypes, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
             )

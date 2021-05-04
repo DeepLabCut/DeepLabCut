@@ -15,6 +15,7 @@ Licensed under GNU Lesser General Public License v3.0
 import argparse
 import os
 import os.path
+import pickle
 import time
 from pathlib import Path
 
@@ -27,7 +28,8 @@ from tqdm import tqdm
 
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.core import predict
-from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingutils
+from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
 
 ####################################################
@@ -284,6 +286,17 @@ def analyze_videos(
             from deeplabcut.pose_estimation_tensorflow.predict_multianimal import (
                 AnalyzeMultiAnimalVideo,
             )
+
+            # Re-use data-driven PAF graph for video analysis. Note that this must
+            # happen after setting up the TF session to avoid graph mismatch.
+            best_edges = dlc_cfg.get("paf_best")
+            if best_edges is not None:
+                best_graph = [dlc_cfg["partaffinityfield_graph"][i] for i in best_edges]
+            else:
+                best_graph = dlc_cfg["partaffinityfield_graph"]
+
+            dlc_cfg["partaffinityfield_graph"] = best_graph
+            dlc_cfg["num_limbs"] = len(best_graph)
 
             for video in Videos:
                 AnalyzeMultiAnimalVideo(
@@ -1126,6 +1139,94 @@ def analyze_time_lapse_frames(
     os.chdir(str(start_path))
 
 
+def _convert_detections_to_tracklets(
+    cfg,
+    inference_cfg,
+    data,
+    metadata,
+    output_path,
+    track_method="ellipse",
+    greedy=False,
+    calibrate=False,
+):
+    joints = data["metadata"]["all_joints_names"]
+    partaffinityfield_graph = data["metadata"]["PAFgraph"]
+    paf_inds = data["metadata"]["PAFinds"]
+    paf_graph = [partaffinityfield_graph[l] for l in paf_inds]
+
+    if track_method == "box":
+        mot_tracker = trackingutils.Sort(inference_cfg)
+    elif track_method == "skeleton":
+        mot_tracker = trackingutils.SORT(
+            len(joints),
+            inference_cfg["max_age"],
+            inference_cfg["min_hits"],
+            inference_cfg.get("oks_threshold", 0.5),
+        )
+    else:
+        mot_tracker = trackingutils.SORTEllipse(
+            inference_cfg.get("max_age", 1),
+            inference_cfg.get("min_hits", 1),
+            inference_cfg.get("iou_threshold", 0.6),
+        )
+    tracklets = {}
+
+    ass = inferenceutils.Assembler(
+        data,
+        max_n_individuals=inference_cfg["topktoretain"],
+        n_multibodyparts=len(cfg["multianimalbodyparts"]),
+        graph=paf_graph,
+        paf_inds=list(paf_inds),
+        greedy=greedy,
+        pcutoff=inference_cfg.get("pcutoff", 0.1),
+        min_affinity=inference_cfg.get("pafthreshold", 0.05),
+    )
+    if calibrate:
+        trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+        train_data_file = os.path.join(
+            cfg["project_path"],
+            str(trainingsetfolder),
+            "CollectedData_" + cfg["scorer"] + ".h5",
+        )
+        ass.calibrate(train_data_file)
+    ass.assemble()
+
+    output_path, _ = os.path.splitext(output_path)
+    output_path += ".pickle"
+    ass.to_pickle(output_path.replace(".pickle", "_assemblies.pickle"))
+
+    if cfg["uniquebodyparts"]:
+        tracklets["single"] = {}
+        tracklets["single"].update(ass.unique)
+
+    for i, imname in tqdm(enumerate(ass.metadata["imnames"])):
+        assemblies = ass.assemblies.get(i)
+        if assemblies is None:
+            continue
+        animals = np.stack([ass.data[:, :3] for ass in assemblies])
+        if track_method == "box":
+            bboxes = trackingutils.calc_bboxes_from_keypoints(
+                animals, inference_cfg.get("boundingboxslack", 0)
+            )  # TODO: get cropping parameters and utilize!
+            trackers = mot_tracker.update(bboxes)
+        else:
+            xy = animals[..., :2]
+            trackers = mot_tracker.track(xy)
+        trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
+
+    bodypartlabels = [joint for joint in joints for _ in range(3)]
+    numentries = len(bodypartlabels)
+    scorers = numentries * [metadata["data"]["Scorer"]]
+    xylvalue = len(bodypartlabels) // 3 * ["x", "y", "likelihood"]
+    pdindex = pd.MultiIndex.from_arrays(
+        np.vstack([scorers, bodypartlabels, xylvalue]),
+        names=["scorer", "bodyparts", "coords"],
+    )
+    tracklets["header"] = pdindex
+    with open(output_path, "wb") as f:
+        pickle.dump(tracklets, f, pickle.HIGHEST_PROTOCOL)
+
+
 def convert_detections2tracklets(
     config,
     videos,
@@ -1135,13 +1236,12 @@ def convert_detections2tracklets(
     overwrite=False,
     destfolder=None,
     BPTS=None,
-    iBPTS=None,
-    PAF=None,
-    printintermediate=False,
     inferencecfg=None,
     modelprefix="",
-    track_method="box",
-    edgewisecondition=True,
+    track_method="ellipse",
+    greedy=False,
+    calibrate=False,
+    window_size=0,
 ):
     """
     This should be called at the end of deeplabcut.analyze_videos for multianimal projects!
@@ -1171,21 +1271,12 @@ def convert_detections2tracklets(
         folder also needs to be passed.
 
     track_method: str, optional
-        Method uses to track animals, either 'box' or 'skeleton'.
-        By default, a constant velocity Kalman filter is used to track individual bounding boxes.
+        Method uses to track animals, either 'box', 'skeleton', or 'ellipse'.
+        By default, a constant velocity Kalman filter is used to track
+        covariance error ellipses fitted to an individual's body parts.
 
     BPTS: Default is None: all bodyparts are used.
         Pass list of indices if only certain bodyparts should be used (advanced).
-
-    iBPTS: Default is None: all bodyparts are used.
-        The inverse indices from BPTS.
-        TODO: calculate from BPTS
-
-    PAF: Default is None: all connections are used.
-        Pass list of indices if only certain connections should be used (advanced).
-
-    printintermediate: ## TODO
-        Default is false.
 
     inferencecfg: Default is None.
         Configuaration file for inference (assembly of individuals). Ideally
@@ -1193,9 +1284,15 @@ def convert_detections2tracklets(
         the parameters are loaded from inference_cfg.yaml, but these get_level_values
         can be overwritten.
 
-    edgewisecondition: bool, default False.
-        If true pairwise Euclidean distances of limbs (connections in PAF) will be
-        estimated from the annotated data and used for excluding possible connections.
+    calibrate: bool, optional (default=False)
+        If True, use training data to calibrate the animal assembly procedure.
+        This improves its robustness to wrong body part links,
+        but requires very little missing data.
+
+    window_size: int, optional (default=0)
+        Recurrent connections in the past `window_size` frames are
+        prioritized during assembly. By default, no temporal coherence cost
+        is added, and assembly is driven mainly by part affinity costs.
 
     Examples
     --------
@@ -1204,13 +1301,9 @@ def convert_detections2tracklets(
     --------
 
     """
-    from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingutils
-    from deeplabcut.utils import auxfun_multianimal
-    import pickle
-
-    if track_method not in ("box", "skeleton"):
+    if track_method not in ("box", "skeleton", "ellipse"):
         raise ValueError(
-            "Invalid tracking method. Only `box` and `skeleton` are currently supported."
+            "Invalid tracking method. Only `box`, `skeleton` and `ellipse` are currently supported."
         )
 
     cfg = auxiliaryfunctions.read_config(config)
@@ -1249,25 +1342,6 @@ def convert_detections2tracklets(
         inferencecfg = auxfun_multianimal.read_inferencecfg(path_inference_config, cfg)
     else:
         auxfun_multianimal.check_inferencecfg_sanity(cfg, inferencecfg)
-
-    if edgewisecondition:
-        path_inferencebounds_config = (
-            Path(modelfolder) / "test" / "inferencebounds.yaml"
-        )
-        try:
-            inferenceboundscfg = auxiliaryfunctions.read_plainconfig(
-                path_inferencebounds_config
-            )
-        except FileNotFoundError:
-            print("Computing distances...")
-            from deeplabcut.pose_estimation_tensorflow import calculatepafdistancebounds
-
-            inferenceboundscfg = calculatepafdistancebounds(
-                config, shuffle, trainingsetindex
-            )
-            auxiliaryfunctions.write_plainconfig(
-                path_inferencebounds_config, inferenceboundscfg
-            )
 
     # Check which snapshots are available and sort them by # iterations
     try:
@@ -1323,7 +1397,12 @@ def convert_detections2tracklets(
             vname = Path(video).stem
             dataname = os.path.join(videofolder, vname + DLCscorer + ".h5")
             data, metadata = auxfun_multianimal.LoadFullMultiAnimalData(dataname)
-            method = "sk" if track_method == "skeleton" else "bx"
+            if track_method == "ellipse":
+                method = "el"
+            elif track_method == "box":
+                method = "bx"
+            else:
+                method = "sk"
             trackname = dataname.split(".h5")[0] + f"_{method}.pickle"
             trackname = trackname.replace(videofolder, destfolder)
             if (
@@ -1334,53 +1413,12 @@ def convert_detections2tracklets(
             else:
                 print("Analyzing", dataname)
                 DLCscorer = metadata["data"]["Scorer"]
-                dlc_cfg = metadata["data"]["DLC-model-config file"]
-                nms_radius = data["metadata"]["nms radius"]
-                minconfidence = data["metadata"]["minimal confidence"]
-                partaffinityfield_graph = data["metadata"]["PAFgraph"]
-                all_joints = data["metadata"]["all_joints"]
                 all_jointnames = data["metadata"]["all_joints_names"]
 
-                if edgewisecondition:
-                    upperbound = np.array(
-                        [
-                            float(
-                                inferenceboundscfg[str(edge[0]) + "_" + str(edge[1])][
-                                    "intra_max"
-                                ]
-                            )
-                            for edge in partaffinityfield_graph
-                        ]
-                    )
-                    lowerbound = np.array(
-                        [
-                            float(
-                                inferenceboundscfg[str(edge[0]) + "_" + str(edge[1])][
-                                    "intra_min"
-                                ]
-                            )
-                            for edge in partaffinityfield_graph
-                        ]
-                    )
-                    upperbound *= 1.25
-                    lowerbound *= 0.5  # SLACK!
-                else:
-                    lowerbound = None
-                    upperbound = None
-
-                if PAF is None:
-                    PAF = np.arange(
-                        len(partaffinityfield_graph)
-                    )  # THIS CAN BE A SUBSET!
-
-                partaffinityfield_graph = [partaffinityfield_graph[l] for l in PAF]
-                linkingpartaffinityfield_graph = partaffinityfield_graph
-
                 numjoints = len(all_jointnames)
-                if BPTS is None and iBPTS is None:
+                if BPTS is None:
                     # NOTE: this can be used if only a subset is relevant. I.e. [0,1] for only first and second joint!
                     BPTS = range(numjoints)
-                    iBPTS = range(numjoints)  # the corresponding inverse!
 
                 # TODO: adjust this for multi + unique bodyparts!
                 # this is only for multianimal parts and uniquebodyparts as one (not one uniquebodyparts guy tracked etc. )
@@ -1398,73 +1436,65 @@ def convert_detections2tracklets(
 
                 if track_method == "box":
                     mot_tracker = trackingutils.Sort(inferencecfg)
-                else:
+                elif track_method == "skeleton":
                     mot_tracker = trackingutils.SORT(
                         numjoints,
                         inferencecfg["max_age"],
                         inferencecfg["min_hits"],
                         inferencecfg.get("oks_threshold", 0.5),
                     )
+                else:
+                    mot_tracker = trackingutils.SORTEllipse(
+                        inferencecfg.get("max_age", 1),
+                        inferencecfg.get("min_hits", 1),
+                        inferencecfg.get("iou_threshold", 0.6),
+                    )
+                tracklets = {}
 
-                Tracks = {}
+                ass = inferenceutils.Assembler(
+                    data,
+                    max_n_individuals=inferencecfg["topktoretain"],
+                    n_multibodyparts=len(cfg["multianimalbodyparts"]),
+                    greedy=greedy,
+                    pcutoff=inferencecfg.get("pcutoff", 0.1),
+                    min_affinity=inferencecfg.get("pafthreshold", 0.1),
+                    window_size=window_size,
+                )
+                if calibrate:
+                    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+                    train_data_file = os.path.join(
+                        cfg["project_path"],
+                        str(trainingsetfolder),
+                        "CollectedData_" + cfg["scorer"] + ".h5",
+                    )
+                    ass.calibrate(train_data_file)
+                ass.assemble()
+                ass.to_pickle(dataname.split(".h5")[0] + "_assemblies.pickle")
+
                 if cfg[
                     "uniquebodyparts"
                 ]:  # Initialize storage of the 'single' individual track
-                    Tracks["s"] = {}
+                    tracklets["single"] = {}
+                    tracklets["single"].update(ass.unique)
+
                 for index, imname in tqdm(enumerate(imnames)):
-                    animals = inferenceutils.assemble_individuals(
-                        inferencecfg,
-                        data[imname],
-                        numjoints,
-                        BPTS,
-                        iBPTS,
-                        PAF,
-                        partaffinityfield_graph,
-                        linkingpartaffinityfield_graph,
-                        lowerbound=lowerbound,
-                        upperbound=upperbound,
-                        print_intermediate=printintermediate,
-                    )
+                    assemblies = ass.assemblies.get(index)
+                    if assemblies is None:
+                        continue
+                    animals = np.stack([ass.data[:, :3] for ass in assemblies])
                     if track_method == "box":
-                        # get corresponding bounding boxes!
-                        bb = inferenceutils.individual2boundingbox(
-                            inferencecfg, animals, 0
+                        bboxes = trackingutils.calc_bboxes_from_keypoints(
+                            animals, inferencecfg["boundingboxslack"], offset=0
                         )  # TODO: get cropping parameters and utilize!
-                        trackers = mot_tracker.update(bb)
+                        trackers = mot_tracker.update(bboxes)
                     else:
-                        temp = [arr.reshape((-1, 3))[:, :2] for arr in animals]
-                        trackers = mot_tracker.track(temp)
-                    trackingutils.fill_tracklets(Tracks, trackers, animals, imname)
+                        xy = animals[..., :2]
+                        trackers = mot_tracker.track(xy)
+                    trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
 
-                    # Test whether the unique bodyparts have been assembled
-                    if cfg["uniquebodyparts"]:
-                        inds_unique = [
-                            all_jointnames.index(bp) for bp in cfg["uniquebodyparts"]
-                        ]
-                        if not any(
-                            np.isfinite(a.reshape((-1, 3))[inds_unique]).all()
-                            for a in animals
-                        ):
-                            single = np.full((numjoints, 3), np.nan)
-                            single_dets = (
-                                inferenceutils.convertdetectiondict2listoflist(
-                                    data[imname], inds_unique
-                                )
-                            )
-                            for ind, dets in zip(inds_unique, single_dets):
-                                if len(dets) == 1:
-                                    single[ind] = dets[0][:3]
-                                elif len(dets) > 1:
-                                    best = sorted(
-                                        dets, key=lambda x: x[2], reverse=True
-                                    )[0]
-                                    single[ind] = best[:3]
-                            Tracks["s"][imname] = single.flatten()
-
-                Tracks["header"] = pdindex
+                tracklets["header"] = pdindex
                 with open(trackname, "wb") as f:
-                    # Pickle the 'labeled-data' dictionary using the highest protocol available.
-                    pickle.dump(Tracks, f, pickle.HIGHEST_PROTOCOL)
+                    pickle.dump(tracklets, f, pickle.HIGHEST_PROTOCOL)
 
         os.chdir(str(start_path))
 

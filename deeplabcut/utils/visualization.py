@@ -1,10 +1,10 @@
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 Please see AUTHORS for contributors.
 
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
@@ -27,30 +27,30 @@ def get_cmap(n, name="hsv"):
 
 
 def make_labeled_image(
+    frame,
     DataCombined,
     imagenr,
     pcutoff,
-    imagebasefolder,
     Scorers,
     bodyparts,
     colors,
     cfg,
     labels=["+", ".", "x"],
     scaling=1,
+    ax=None,
 ):
     """Creating a labeled image with the original human labels, as well as the DeepLabCut's! """
-    from skimage import io
 
     alphavalue = cfg["alphavalue"]  # .5
     dotsize = cfg["dotsize"]  # =15
 
-    im = io.imread(os.path.join(imagebasefolder, DataCombined.index[imagenr]))
-    if np.ndim(im) > 2:  # color image!
-        h, w, numcolors = np.shape(im)
-    else:
-        h, w = np.shape(im)
-    fig, ax = prepare_figure_axes(w, h, scaling)
-    ax.imshow(im, "gray")
+    if ax is None:
+        if np.ndim(frame) > 2:  # color image!
+            h, w, numcolors = np.shape(frame)
+        else:
+            h, w = np.shape(frame)
+        _, ax = prepare_figure_axes(w, h, scaling)
+    ax.imshow(frame, "gray")
     for scorerindex, loopscorer in enumerate(Scorers):
         for bpindex, bp in enumerate(bodyparts):
             if np.isfinite(
@@ -90,8 +90,7 @@ def make_labeled_image(
                         alpha=alphavalue,
                         color=colors(int(bpindex)),
                     )
-    fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-    return fig
+    return ax
 
 
 def make_multianimal_labeled_image(
@@ -104,9 +103,11 @@ def make_multianimal_labeled_image(
     alphavalue=0.7,
     pcutoff=0.6,
     labels=["+", ".", "x"],
+    ax=None,
 ):
-    h, w, numcolors = np.shape(frame)
-    fig, ax = prepare_figure_axes(w, h)
+    if ax is None:
+        h, w, _ = np.shape(frame)
+        _, ax = prepare_figure_axes(w, h)
     ax.imshow(frame, "gray")
     for n, data in enumerate(zip(coords_truth, coords_pred, probs_pred)):
         color = colors(n)
@@ -132,8 +133,7 @@ def make_multianimal_labeled_image(
                 alpha=alphavalue,
                 color=color,
             )
-    fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-    return fig
+    return ax
 
 
 def plot_and_save_labeled_frame(
@@ -145,21 +145,34 @@ def plot_and_save_labeled_frame(
     comparisonbodyparts,
     DLCscorer,
     foldername,
+    fig,
+    ax,
     scaling=1,
 ):
-    fn = Path(cfg["project_path"] + "/" + DataCombined.index[ind])
-    fig = make_labeled_image(
+    image_path = os.path.join(cfg["project_path"], DataCombined.index[ind])
+    frame = io.imread(image_path)
+    if np.ndim(frame) > 2:  # color image!
+        h, w, numcolors = np.shape(frame)
+    else:
+        h, w = np.shape(frame)
+    fig.set_size_inches(w / 100, h / 100)
+    ax.set_xlim(0, w)
+    ax.set_ylim(0, h)
+    ax.invert_yaxis()
+    ax = make_labeled_image(
+        frame,
         DataCombined,
         ind,
         cfg["pcutoff"],
-        cfg["project_path"],
         [cfg["scorer"], DLCscorer],
         comparisonbodyparts,
         colors,
         cfg,
         scaling=scaling,
+        ax=ax,
     )
-    save_labeled_frame(fig, fn, foldername, ind in trainIndices)
+    save_labeled_frame(fig, image_path, foldername, ind in trainIndices)
+    return ax
 
 
 def save_labeled_frame(fig, image_path, dest_folder, belongs_to_train):
@@ -176,8 +189,21 @@ def save_labeled_frame(fig, image_path, dest_folder, belongs_to_train):
     # See https://docs.microsoft.com/en-us/windows/desktop/fileio/naming-a-file#maximum-path-length-limitation
     if len(full_path) >= 260 and os.name == "nt":
         full_path = "\\\\?\\" + full_path
+    fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
     fig.savefig(full_path)
-    plt.close(fig)
+
+
+def create_minimal_figure(dpi=100):
+    fig, ax = plt.subplots(frameon=False, dpi=dpi)
+    ax.axis("off")
+    ax.invert_yaxis()
+    return fig, ax
+
+
+def erase_artists(ax):
+    for artist in ax.lines + ax.collections + ax.artists + ax.patches + ax.images:
+        artist.remove()
+    ax.figure.canvas.draw_idle()
 
 
 def prepare_figure_axes(width, height, scale=1.0, dpi=100):

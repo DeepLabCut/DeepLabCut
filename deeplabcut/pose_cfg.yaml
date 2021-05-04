@@ -50,6 +50,29 @@ scale_jitter_up: 1.25
 mirror: False #imgaug & tensorpack do not consider mirror symmetric joints now,
 #i.e. left hand and right hand are not swapped
 
+# Functions from augmenters.contrast
+# set True to use with default parameters, otherwise give a dictionary for keyword arguments
+# If no ratio value is given, set to 0.4 by default
+
+# Functions from augmenters.convolve,
+# set True to use with default parameters, otherwise give a dictionary for keyword arguments
+# If no ratio value is given, set to 0.4 by default
+
+# contrast:
+clahe: True
+claheratio: 0.1
+histeq: True
+histeqratio: 0.1
+#
+# convolution:
+sharpen: False
+sharpenratio: 0.3
+edge: False
+emboss:
+   alpha: [0.0, 1.0]
+   strength: [0.5, 1.5]
+   embossratio: 0.1
+
 ##############################################################################
 #### Augmentation type: scalecrop + tensorpack variables
 ##############################################################################
@@ -78,8 +101,9 @@ mirror: False #imgaug & tensorpack do not consider mirror symmetric joints now,
 ##############################################################################
 
 # NOTE: as of DLC 2.1 these are defined when creating the training set!
-# Type of the CNN to use, currently resnets + mobilenets are supported (see docs)
+# Type of the CNN to use, currently resnets + mobilenets + efficientnets + our dlcrnet are supported (see docs)
 net_type: resnet_50
+multi_stage: false
 #init_weights: ./snapshot-5000
 
 

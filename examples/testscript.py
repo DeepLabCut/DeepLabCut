@@ -13,7 +13,6 @@ It should take about 1:30 minutes on a GPU (incl. downloading the ResNet weights
 It produces nothing of interest scientifically.
 """
 import os
-os.environ["DLClight"] = "True"
 import deeplabcut
 import platform
 import subprocess
@@ -44,7 +43,6 @@ if __name__ == "__main__":
 
     dfolder = None
     net_type = "resnet_50"  #'mobilenet_v2_0.35' #'resnet_50'
-
     # net_type = "mobilenet_v2_0.35"
     # net_type = "efficientnet-b0"  # to -b6
 
@@ -402,6 +400,3 @@ if __name__ == "__main__":
     )
 
     print("ALL DONE!!! - default cases are functional.")
-    print("Re-import DLC with env. variable set to test DLC light mode.")
-    os.environ["DLClight"] = "True"
-    subprocess.call(["python3", "-c", "import deeplabcut"])

@@ -1,10 +1,10 @@
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 Please see AUTHORS for contributors.
 
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 
 """
@@ -13,38 +13,18 @@ import wx
 
 from deeplabcut.gui.create_new_project import Create_new_project
 from deeplabcut.gui.welcome import Welcome
+from deeplabcut.gui.widgets import BaseFrame
 from deeplabcut.utils import auxiliaryfunctions
 
 
-class MainFrame(wx.Frame):
+class MainFrame(BaseFrame):
     def __init__(self):
-        displays = (
-            wx.Display(i) for i in range(wx.Display.GetCount())
-        )  # Gets the number of displays
-        screenSizes = [
-            display.GetGeometry().GetSize() for display in displays
-        ]  # Gets the size of each display
-        index = 0  # For display 1.
-        screenWidth = screenSizes[index][0]
-        screenHeight = screenSizes[index][1]
-        self.gui_size = (screenWidth * 0.7, screenHeight * 0.55)
-        wx.Frame.__init__(
-            self,
-            None,
-            wx.ID_ANY,
-            "DeepLabCut",
-            size=wx.Size(self.gui_size),
-            pos=wx.DefaultPosition,
-            style=wx.RESIZE_BORDER | wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL,
-        )
-
+        super(MainFrame, self).__init__("DeepLabCut")
+        self.statusbar.SetStatusText("www.deeplabcut.org")
         dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
         media_path = os.path.join(dlcparent_path, "gui", "media")
         logo = os.path.join(media_path, "logo.png")
         self.SetIcon(wx.Icon(logo))
-        self.SetSizeHints(
-            wx.Size(self.gui_size)
-        )  #  This sets the minimum size of the GUI. It can scale now!
         # Here we create a panel and a notebook on the panel
         self.panel = wx.Panel(self)
         self.nb = wx.Notebook(self.panel)

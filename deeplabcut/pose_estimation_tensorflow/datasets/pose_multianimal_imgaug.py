@@ -29,13 +29,13 @@ class MAImgaugPoseDataset(BasePoseDataset):
         super(MAImgaugPoseDataset, self).__init__(cfg)
         self.data = self.load_dataset()
         self.num_images = len(self.data)
-        self.batch_size = cfg['batch_size']
+        self.batch_size = cfg["batch_size"]
         print("Batch Size is %d" % self.batch_size)
 
     def load_dataset(self):
         cfg = self.cfg
-        file_name = os.path.join(self.cfg['project_path'], cfg['dataset'])
-        with open(os.path.join(self.cfg['project_path'], file_name), "rb") as f:
+        file_name = os.path.join(self.cfg["project_path"], cfg["dataset"])
+        with open(os.path.join(self.cfg["project_path"], file_name), "rb") as f:
             # Pickle the 'data' dictionary using the highest protocol available.
             pickledata = pickle.load(f)
 
@@ -123,7 +123,8 @@ class MAImgaugPoseDataset(BasePoseDataset):
         if height is not None and width is not None:
             pipeline.add(
                 iaa.Sometimes(
-                    cfg['cropratio'], iaa.CropAndPad(percent=(-0.3, 0.1), keep_size=False)
+                    cfg["cropratio"],
+                    iaa.CropAndPad(percent=(-0.3, 0.1), keep_size=False),
                 )
             )
             pipeline.add(iaa.Resize({"height": height, "width": width}))
@@ -146,7 +147,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             if self.is_valid_size(target_size):
                 break
 
-        stride = self.cfg['stride']
+        stride = self.cfg["stride"]
         for i in range(self.batch_size):
             data_item = self.data[img_idx[i]]
 
@@ -154,7 +155,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             im_file = data_item.im_path
 
             logging.debug("image %s", im_file)
-            image = imread(os.path.join(self.cfg['project_path'], im_file), mode="RGB")
+            image = imread(os.path.join(self.cfg["project_path"], im_file), mode="RGB")
             if self.has_gt:
                 Joints = data_item.joints
                 joint_id = [
@@ -171,6 +172,11 @@ class MAImgaugPoseDataset(BasePoseDataset):
         sm_size = np.ceil(target_size / (stride * self.cfg.get("smfactor", 2))).astype(
             int
         ) * self.cfg.get("smfactor", 2)
+
+        if stride == 2:
+            sm_size = np.ceil(target_size / 16).astype(int)
+            sm_size *= 8
+
         # assert len(batch_images) == self.batch_size
         return batch_images, joint_ids, batch_joints, data_items, sm_size, target_size
 
@@ -258,7 +264,9 @@ class MAImgaugPoseDataset(BasePoseDataset):
                     )
                     im = kps.draw_on_image(batch_images[i])
                     # imageio.imwrite(data_items[i].im_path.split('/')[-1],im)
-                    imageio.imwrite(os.path.join(self.cfg['project_path'], str(i) + ".png"), im)
+                    imageio.imwrite(
+                        os.path.join(self.cfg["project_path"], str(i) + ".png"), im
+                    )
 
             image_shape = np.array(batch_images).shape[1:3]
             batch = {Batch.inputs: np.array(batch_images).astype(np.float64)}
@@ -280,15 +288,15 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
     def num_training_samples(self):
         num = self.num_images
-        if self.cfg['mirror']:
+        if self.cfg["mirror"]:
             num *= 2
         return num
 
     def get_scale(self):
         cfg = self.cfg
-        scale = cfg['global_scale']
+        scale = cfg["global_scale"]
         if hasattr(cfg, "scale_jitter_lo") and hasattr(cfg, "scale_jitter_up"):
-            scale_jitter = rand.uniform(cfg['scale_jitter_lo'], cfg['scale_jitter_up'])
+            scale_jitter = rand.uniform(cfg["scale_jitter_lo"], cfg["scale_jitter_up"])
             scale *= scale_jitter
         return scale
 
@@ -299,14 +307,14 @@ class MAImgaugPoseDataset(BasePoseDataset):
         if im_height < min_input_size or im_width < min_input_size:
             return False
         if hasattr(self.cfg, "max_input_size"):
-            max_input_size = self.cfg['max_input_size']
+            max_input_size = self.cfg["max_input_size"]
             if im_width * im_height > max_input_size * max_input_size:
                 return False
         return True
 
     def compute_scmap_weights(self, scmap_shape, joint_id, data_item):
         cfg = self.cfg
-        if cfg['weigh_only_present_joints']:
+        if cfg["weigh_only_present_joints"]:
             weights = np.zeros(scmap_shape)
             for k, j_id in enumerate(
                 np.concatenate(joint_id)
@@ -319,23 +327,23 @@ class MAImgaugPoseDataset(BasePoseDataset):
     def compute_target_part_scoremap_numpy(
         self, joint_id, coords, data_item, size, scale
     ):
-        stride = self.cfg['stride']
-        dist_thresh = float(self.cfg['pos_dist_thresh'] * scale)
+        stride = self.cfg["stride"]
+        dist_thresh = float(self.cfg["pos_dist_thresh"] * scale)
         num_idchannel = self.cfg.get("num_idchannel", 0)
 
-        num_joints = self.cfg['num_joints']
+        num_joints = self.cfg["num_joints"]
         half_stride = stride / 2
 
         scmap = np.zeros(np.concatenate([size, np.array([num_joints + num_idchannel])]))
         locref_size = np.concatenate([size, np.array([num_joints * 2])])
 
         locref_map = np.zeros(locref_size)
-        locref_scale = 1.0 / self.cfg['locref_stdev']
+        locref_scale = 1.0 / self.cfg["locref_stdev"]
         dist_thresh_sq = dist_thresh ** 2
 
-        partaffinityfield_shape = np.concatenate([size, np.array([self.cfg['num_limbs'] * 2])])
+        partaffinityfield_shape = np.concatenate([size, np.array([self.cfg["num_limbs"] * 2])])
         partaffinityfield_map = np.zeros(partaffinityfield_shape)
-        if self.cfg['weigh_only_present_joints']:
+        if self.cfg["weigh_only_present_joints"]:
             partaffinityfield_mask = np.zeros(partaffinityfield_shape)
             locref_mask = np.zeros(locref_size)
         else:
@@ -369,7 +377,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             mask3 = (y >= min_y) & (y <= max_y)
             mask = mask1 & mask2 & mask3
             scmap[mask, j_id] = 1
-            if self.cfg['weigh_only_present_joints']:
+            if self.cfg["weigh_only_present_joints"]:
                 locref_mask[mask, j_id * 2 + 0] = 1.0
                 locref_mask[mask, j_id * 2 + 1] = 1.0
             locref_map[mask, j_id * 2 + 0] = (dx * locref_scale)[mask]
@@ -416,8 +424,8 @@ class MAImgaugPoseDataset(BasePoseDataset):
             joint_ids = joint_id[person_id].copy()
             if len(joint_ids) > 1:  # otherwise there cannot be a joint!
                 # CONSIDER SMARTER SEARCHES here... (i.e. calculate the bpts beforehand?)
-                for l in range(self.cfg['num_limbs']):
-                    bp1, bp2 = self.cfg['partaffinityfield_graph'][l]
+                for l in range(self.cfg["num_limbs"]):
+                    bp1, bp2 = self.cfg["partaffinityfield_graph"][l]
                     I1 = np.where(np.array(joint_ids) == bp1)[0]
                     I2 = np.where(np.array(joint_ids) == bp2)[0]
                     if (len(I1) > 0) * (len(I2) > 0):
@@ -456,7 +464,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
                                     - d2mid
                                 )
                                 * 1.0
-                                / self.cfg['pafwidth']
+                                / self.cfg["pafwidth"]
                                 * scale
                             )
 
@@ -478,7 +486,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
                             # mask3 = ((x >= 0) & (x <= width-1))
                             # mask4 = ((y >= 0) & (y <= height-1))
                             mask = mask1 & mask2  # &mask3 &mask4
-                            if self.cfg['weigh_only_present_joints']:
+                            if self.cfg["weigh_only_present_joints"]:
                                 partaffinityfield_mask[mask, l * 2 + 0] = 1.0
                                 partaffinityfield_mask[mask, l * 2 + 1] = 1.0
 
@@ -549,23 +557,23 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
     def gaussian_scmap(self, joint_id, coords, data_item, size, scale):
         # WIP!
-        stride = self.cfg['stride']
-        dist_thresh = float(self.cfg['pos_dist_thresh'] * scale)
+        stride = self.cfg["stride"]
+        dist_thresh = float(self.cfg["pos_dist_thresh"] * scale)
         num_idchannel = self.cfg.get("num_idchannel", 0)
 
-        num_joints = self.cfg['num_joints']
+        num_joints = self.cfg["num_joints"]
         half_stride = stride / 2
         scmap = np.zeros(np.concatenate([size, np.array([num_joints])]))
         locref_size = np.concatenate([size, np.array([num_joints * 2])])
         locref_mask = np.zeros(locref_size)
         locref_map = np.zeros(locref_size)
 
-        locref_scale = 1.0 / self.cfg['locref_stdev']
+        locref_scale = 1.0 / self.cfg["locref_stdev"]
         dist_thresh_sq = dist_thresh ** 2
 
-        partaffinityfield_shape = np.concatenate([size, np.array([self.cfg['num_limbs'] * 2])])
+        partaffinityfield_shape = np.concatenate([size, np.array([self.cfg["num_limbs"] * 2])])
         partaffinityfield_map = np.zeros(partaffinityfield_shape)
-        if self.cfg['weigh_only_present_joints']:
+        if self.cfg["weigh_only_present_joints"]:
             partaffinityfield_mask = np.zeros(partaffinityfield_shape)
             locref_mask = np.zeros(locref_size)
         else:
@@ -610,8 +618,8 @@ class MAImgaugPoseDataset(BasePoseDataset):
             joint_ids = joint_id[person_id].copy()
             if len(joint_ids) > 1:  # otherwise there cannot be a joint!
                 # CONSIDER SMARTER SEARCHES here... (i.e. calculate the bpts beforehand?)
-                for l in range(self.cfg['num_limbs']):
-                    bp1, bp2 = self.cfg['partaffinityfield_graph'][l]
+                for l in range(self.cfg["num_limbs"]):
+                    bp1, bp2 = self.cfg["partaffinityfield_graph"][l]
                     I1 = np.where(np.array(joint_ids) == bp1)[0]
                     I2 = np.where(np.array(joint_ids) == bp2)[0]
                     if (len(I1) > 0) * (len(I2) > 0):
@@ -650,7 +658,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
                                     - d2mid
                                 )
                                 * 1.0
-                                / self.cfg['pafwidth']
+                                / self.cfg["pafwidth"]
                                 * scale
                             )
                             mask1 = (distance_along >= d1lowerboundary) & (
@@ -660,7 +668,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
                             # mask3 = ((x >= 0) & (x <= width-1))
                             # mask4 = ((y >= 0) & (y <= height-1))
                             mask = mask1 & mask2  # &mask3 &mask4
-                            if self.cfg['weigh_only_present_joints']:
+                            if self.cfg["weigh_only_present_joints"]:
                                 partaffinityfield_mask[mask, l * 2 + 0] = 1.0
                                 partaffinityfield_mask[mask, l * 2 + 1] = 1.0
 

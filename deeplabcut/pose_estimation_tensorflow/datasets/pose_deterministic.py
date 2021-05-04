@@ -3,6 +3,7 @@ DeepLabCut2.2 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
 https://github.com/AlexEMG/DeepLabCut
 Please see AUTHORS for contributors.
+
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 
@@ -33,18 +34,20 @@ class DeterministicPoseDataset(BasePoseDataset):
         super(DeterministicPoseDataset, self).__init__(cfg)
         self.data = self.load_dataset()
         self.num_images = len(self.data)
-        if self.cfg['mirror']:
-            self.symmetric_joints = mirror_joints_map(cfg['all_joints'], cfg['num_joints'])
+        if self.cfg["mirror"]:
+            self.symmetric_joints = mirror_joints_map(
+                cfg["all_joints"], cfg["num_joints"]
+            )
         self.curr_img = 0
-        self.scale = cfg['global_scale']
-        self.locref_scale = 1.0 / cfg['locref_stdev']
-        self.stride = cfg['stride']
+        self.scale = cfg["global_scale"]
+        self.locref_scale = 1.0 / cfg["locref_stdev"]
+        self.stride = cfg["stride"]
         self.half_stride = self.stride / 2
-        self.set_shuffle(cfg['shuffle'])
+        self.set_shuffle(cfg["shuffle"])
 
     def load_dataset(self):
         cfg = self.cfg
-        file_name = os.path.join(self.cfg['project_path'], cfg['dataset'])
+        file_name = os.path.join(self.cfg["project_path"], cfg['dataset'])
         mlab = sio.loadmat(file_name)
         self.raw_data = mlab
         mlab = mlab["dataset"]
@@ -65,7 +68,7 @@ class DeterministicPoseDataset(BasePoseDataset):
                 joint_id = joints[:, 0]
                 # make sure joint ids are 0-indexed
                 if joint_id.size != 0:
-                    assert np.any(joint_id < cfg['num_joints'])
+                    assert np.any(joint_id < cfg["num_joints"])
                 joints[:, 0] = joint_id
                 item.joints = [joints]
             else:
@@ -84,7 +87,7 @@ class DeterministicPoseDataset(BasePoseDataset):
     def set_shuffle(self, shuffle):
         self.shuffle = shuffle
         if not shuffle:
-            assert not self.cfg['mirror']
+            assert not self.cfg["mirror"]
             self.image_indices = np.arange(self.num_images)
 
     def mirror_joint_coords(self, joints, image_width):
@@ -102,10 +105,10 @@ class DeterministicPoseDataset(BasePoseDataset):
         return res
 
     def shuffle_images(self):
-        if self.cfg['deterministic']:
+        if self.cfg["deterministic"]:
             np.random.seed(42)
         num_images = self.num_images
-        if self.cfg['mirror']:
+        if self.cfg["mirror"]:
             image_indices = np.random.permutation(num_images * 2)
             self.mirrored = image_indices >= num_images
             image_indices[self.mirrored] = image_indices[self.mirrored] - num_images
@@ -115,7 +118,7 @@ class DeterministicPoseDataset(BasePoseDataset):
 
     def num_training_samples(self):
         num = self.num_images
-        if self.cfg['mirror']:
+        if self.cfg["mirror"]:
             num *= 2
         return num
 
@@ -127,7 +130,7 @@ class DeterministicPoseDataset(BasePoseDataset):
         self.curr_img = (self.curr_img + 1) % self.num_training_samples()
 
         imidx = self.image_indices[curr_img]
-        mirror = self.cfg['mirror'] and self.mirrored[curr_img]
+        mirror = self.cfg["mirror"] and self.mirrored[curr_img]
 
         return imidx, mirror
 
@@ -135,7 +138,7 @@ class DeterministicPoseDataset(BasePoseDataset):
         return self.data[imidx]
 
     def get_scale(self):
-        if self.cfg['deterministic']:
+        if self.cfg["deterministic"]:
             np.random.seed(42)
         scale = self.scale
         if hasattr(self.cfg, "scale_jitter_lo") and hasattr(self.cfg, "scale_jitter_up"):
@@ -159,11 +162,11 @@ class DeterministicPoseDataset(BasePoseDataset):
             input_width = image_size[2] * scale
             input_height = image_size[1] * scale
             if (
-                input_height < self.cfg['min_input_size']
-                or input_width < self.cfg['min_input_size']
+                input_height < self.cfg["min_input_size"]
+                or input_width < self.cfg["min_input_size"]
             ):
                 return False
-            if input_height * input_width > self.cfg['max_input_size'] ** 2:
+            if input_height * input_width > self.cfg["max_input_size"] ** 2:
                 return False
 
         return True
@@ -177,8 +180,8 @@ class DeterministicPoseDataset(BasePoseDataset):
         if self.has_gt:
             joints = np.copy(data_item.joints)
 
-        if self.cfg['crop']:  # adapted cropping for DLC
-            if np.random.rand() < self.cfg['cropratio']:
+        if self.cfg["crop"]:  # adapted cropping for DLC
+            if np.random.rand() < self.cfg["cropratio"]:
                 j = np.random.randint(np.shape(joints)[1])
                 joints, image = crop_image(
                     joints, image, joints[0, j, 1], joints[0, j, 2], self.cfg
@@ -193,7 +196,7 @@ class DeterministicPoseDataset(BasePoseDataset):
         batch = {Batch.inputs: img}
 
         if self.has_gt:
-            stride = self.cfg['stride']
+            stride = self.cfg["stride"]
             if mirror:
                 joints = [
                     self.mirror_joints(
@@ -229,9 +232,9 @@ class DeterministicPoseDataset(BasePoseDataset):
         return batch
 
     def compute_target_part_scoremap(self, joint_id, coords, data_item, size, scale):
-        dist_thresh = self.cfg['pos_dist_thresh'] * scale
+        dist_thresh = self.cfg["pos_dist_thresh"] * scale
         dist_thresh_sq = dist_thresh ** 2
-        num_joints = self.cfg['num_joints']
+        num_joints = self.cfg["num_joints"]
         scmap = np.zeros(np.concatenate([size, np.array([num_joints])]))
         locref_size = np.concatenate([size, np.array([num_joints * 2])])
         locref_mask = np.zeros(locref_size)
@@ -276,7 +279,7 @@ class DeterministicPoseDataset(BasePoseDataset):
         return scmap, weights, locref_map, locref_mask
 
     def compute_scmap_weights(self, scmap_shape, joint_id, data_item):
-        if self.cfg['weigh_only_present_joints']:
+        if self.cfg["weigh_only_present_joints"]:
             weights = np.zeros(scmap_shape)
             for person_joint_id in joint_id:
                 for j_id in person_joint_id:

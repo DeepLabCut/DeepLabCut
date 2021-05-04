@@ -32,10 +32,10 @@ def setup_pose_prediction(cfg):
     inputs = tf.compat.v1.placeholder(tf.float32, shape=[cfg['batch_size'], None, None, 3])
     net_heads = PoseNetFactory.create(cfg).test(inputs)
     outputs = [net_heads["part_prob"]]
-    if cfg['location_refinement']:
+    if cfg["location_refinement"]:
         outputs.append(net_heads["locref"])
 
-    if ("multi-animal" in cfg['dataset_type']) and cfg['partaffinityfield_predict']:
+    if ("multi-animal" in cfg["dataset_type"]) and cfg["partaffinityfield_predict"]:
         print("Activating extracting of PAFs")
         outputs.append(net_heads["pairwise_pred"])
 
@@ -45,7 +45,7 @@ def setup_pose_prediction(cfg):
     sess.run(tf.compat.v1.local_variables_initializer())
 
     # Restore variables from disk.
-    restorer.restore(sess, cfg['init_weights'])
+    restorer.restore(sess, cfg["init_weights"])
 
     return sess, inputs, outputs
 
@@ -55,11 +55,11 @@ def extract_cnn_output(outputs_np, cfg):
     scmap = outputs_np[0]
     scmap = np.squeeze(scmap)
     locref = None
-    if cfg['location_refinement']:
+    if cfg["location_refinement"]:
         locref = np.squeeze(outputs_np[1])
         shape = locref.shape
         locref = np.reshape(locref, (shape[0], shape[1], -1, 2))
-        locref *= cfg['locref_stdev']
+        locref *= cfg["locref_stdev"]
     if len(scmap.shape) == 2:  # for single body part!
         scmap = np.expand_dims(scmap, axis=2)
     return scmap, locref
@@ -110,9 +110,9 @@ def getpose(image, cfg, sess, inputs, outputs, outall=False):
     scmap, locref = extract_cnn_output(outputs_np, cfg)
     num_outputs = cfg.get("num_outputs", 1)
     if num_outputs > 1:
-        pose = multi_pose_predict(scmap, locref, cfg['stride'], num_outputs)
+        pose = multi_pose_predict(scmap, locref, cfg["stride"], num_outputs)
     else:
-        pose = argmax_pose_predict(scmap, locref, cfg['stride'])
+        pose = argmax_pose_predict(scmap, locref, cfg["stride"])
     if outall:
         return scmap, locref, pose
     else:
@@ -125,11 +125,11 @@ def extract_cnn_outputmulti(outputs_np, cfg):
     Dimensions: image batch x imagedim1 x imagedim2 x bodypart"""
     scmap = outputs_np[0]
     locref = None
-    if cfg['location_refinement']:
+    if cfg["location_refinement"]:
         locref = outputs_np[1]
         shape = locref.shape
         locref = np.reshape(locref, (shape[0], shape[1], shape[2], -1, 2))
-        locref *= cfg['locref_stdev']
+        locref *= cfg["locref_stdev"]
     if len(scmap.shape) == 2:  # for single body part!
         scmap = np.expand_dims(scmap, axis=2)
     return scmap, locref
@@ -174,8 +174,8 @@ def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
                 DZ[m, l, k, :2] = locref[l, y, x, k, :]
                 DZ[m, l, k, 2] = scmap[l, y, x, k]
 
-    X = X.astype("float32") * cfg['stride'] + 0.5 * cfg['stride'] + DZ[:, :, :, 0]
-    Y = Y.astype("float32") * cfg['stride'] + 0.5 * cfg['stride'] + DZ[:, :, :, 1]
+    X = X.astype("float32") * cfg["stride"] + 0.5 * cfg["stride"] + DZ[:, :, :, 0]
+    Y = Y.astype("float32") * cfg["stride"] + 0.5 * cfg["stride"] + DZ[:, :, :, 1]
     P = DZ[:, :, :, 2]
 
     Xs = X.swapaxes(0, 2).swapaxes(0, 1)
@@ -209,7 +209,7 @@ def setup_GPUpose_prediction(cfg):
     sess.run(tf.compat.v1.local_variables_initializer())
 
     # Restore variables from disk.
-    restorer.restore(sess, cfg['init_weights'])
+    restorer.restore(sess, cfg["init_weights"])
 
     return sess, inputs, outputs
 

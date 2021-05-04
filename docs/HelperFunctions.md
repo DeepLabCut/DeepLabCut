@@ -1,4 +1,4 @@
-## Helper Function Documentation
+## Helper & Advanced Optional Function Documentation
 
 ### There are additional functions that are not required, but can be extremely helpful. 
 
@@ -88,3 +88,29 @@ This function allows you to export a well-trained model for real-time applicatio
 ```python
 deeplabcut.export_model(cfg_path, iteration=None, shuffle=1, trainingsetindex=0, snapshotindex=None, TFGPUinference=True, overwrite=False, make_tar=True)
 ```
+
+### New! Advanced Labeling across Cameras:
+
+#### If you have two cameras and you want to make a 3D Project from your data, you can leverage this in the Labeling GUI:
+If you have multiple cameras, you may want to use epipolar lines projected on the images you are labeling to help you label the same position on the body in each camera angle. An epipolar line is a projection from one camera to all the possible points in the second camera's image that could match the labeled point in the first camera's image. A correctly labeled point will fall somewhere along this projected line.
+
+In order to label with epipolar lines, you must complete two additional sets of steps **prior to labeling.**
+
+- First, you must create a 3d project and calibrate the cameras - to do so, complete steps 1-3: https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/Overviewof3D.md. 
+
+- Second, you must extract imagr from `camera_1` first; here you would have run the standard `deeplabcut.extract_frames(config_path, userfeedback=True)`, but just extract files from 1 camera. Next, you need to extract matching frames from `camera_2`:
+```python
+deeplabcut.extract_frames(config_path, mode = 'match', config3d=config_path3d, extracted_cam=0)
+```
+You can set `extracted_cam=0` to match all other camera images to the frame numbers in the `camera_1` folder, or change this to match to other cameras. If you `deeplabcut.extract_frames` with `mode='automatic'` before, it shouldn't matter which camera you pick. If you already extracted from both cameras, be warned this will overwrite the images for `camera_2`. 
+
+- Three, now you can label with epipolar lines:
+
+     - Here, label `camera_1` as you would normally, i.e.:
+    ```python
+    deeplabcut.label_frames(config_path)
+    ```
+    - Then for `camera_2` (now it will compute the epipolar lines based on camera_1 labels and project them onto the GUI):
+    ```python
+    deeplabcut.label_frames(config_path, config3d=config_path3d)
+    ```

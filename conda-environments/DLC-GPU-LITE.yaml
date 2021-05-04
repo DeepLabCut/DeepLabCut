@@ -1,0 +1,29 @@
+# DLC-GPU-LITE.yaml
+
+#DeepLabCut2.0 Toolbox (deeplabcut.org)
+#© A. & M. Mathis Labs
+#https://github.com/DeepLabCut/DeepLabCut
+#Please see AUTHORS for contributors.
+
+#https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#Licensed under GNU Lesser General Public License v3.0
+#
+# DeepLabCut environment
+# FIRST: INSTALL CORRECT DRIVER for GPU, see https://stackoverflow.com/questions/30820513/what-is-the-correct-version-of-cuda-for-my-nvidia-driver/30820690
+#
+# install: conda env create -f DLC-GPU-LITE.yaml
+# update:  conda env update -f DLC-GPU-LITE.yaml
+name: DLC-GPU-LITE
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.7
+  - pip
+  - cudnn=7
+  - jupyter
+  - nb_conda
+  - Shapely
+  - pip:
+    - tensorflow-gpu==1.15.5
+    - deeplabcut

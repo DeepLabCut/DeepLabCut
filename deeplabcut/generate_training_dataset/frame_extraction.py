@@ -34,12 +34,12 @@ def select_cropping_area(config, videos=None):
 
     cfg = auxiliaryfunctions.read_config(config)
     if videos is None:
-        videos = cfg["video_sets"]
+        videos = list(cfg.get("video_sets_original") or cfg["video_sets"])
 
     for video in videos:
         coords = auxfun_videos.draw_bbox(video)
         if coords:
-            cfg["video_sets"][video] = {
+            temp = {
                 "crop": ", ".join(
                     map(
                         str,
@@ -52,6 +52,10 @@ def select_cropping_area(config, videos=None):
                     )
                 )
             }
+            try:
+                cfg["video_sets"][video] = temp
+            except KeyError:
+                cfg["video_sets_original"][video] = temp
 
     auxiliaryfunctions.write_config(config, cfg)
     return cfg
@@ -68,6 +72,8 @@ def extract_frames(
     cluster_color=False,
     opencv=True,
     slider_width=25,
+    config3d=None,
+    extracted_cam=0,
 ):
     """
     Extracts frames from the videos in the config.yaml file. Only the videos in the config.yaml will be used to select the frames.\n
@@ -78,6 +84,10 @@ def extract_frames(
 
     Three important parameters for automatic extraction: numframes2pick, start and stop are set in the config file.
 
+    After frames have been extracted from all videos from one camera, matched frames from other cameras can be extracted using mode = ``match``.
+    This is necessary if you plan to use epipolar lines to improve labeling across multiple camera angles. It will overwrite previously extracted
+    images from the second camera angle if necessary.
+
     Please refer to the user guide for more details on methods and parameters https://www.nature.com/articles/s41596-019-0176-0
     or the preprint: https://www.biorxiv.org/content/biorxiv/early/2018/11/24/476531.full.pdf
 
@@ -87,7 +97,10 @@ def extract_frames(
         Full path of the config.yaml file as a string.
 
     mode : string
-        String containing the mode of extraction. It must be either ``automatic`` or ``manual``.
+        String containing the mode of extraction. It must be either ``automatic`` or ``manual`` to extract the inital set of frames. It can also be ``match`` to match frames between
+        the cameras in preparation for the use of epipolar lines during labeling; namely, extract from camera_1 first, then run this to extact the matched frames in camera_2.
+        WARNING: if you use match, and you previously extracted and labeled frames from the second camera, this will overwrite your data. This will require you deleting the
+        collectdata.h5/.csv files before labeling.... Use with caution!
 
     algo : string
         String specifying the algorithm to use for selecting the frames. Currently, deeplabcut supports either ``kmeans`` or ``uniform`` based selection. This flag is
@@ -121,6 +134,14 @@ def extract_frames(
     slider_width: number, default: 25
         Width of the video frames slider, in percent of window
 
+    config3d: string, optional
+        Path to the config.yaml file in the 3D project. This will be used to match frames extracted from all cameras present in the field 'camera_names' to the
+        frames extracted from the camera given by the parameter 'extracted_cam'
+
+    extracted_cam: number, default: 0
+        The index of the camera that already has extracted frames. This will match frame numbers to extract for all other cameras.
+        This parameter is necessary if you wish to use epipolar lines in the labeling toolbox. Only use if mode = 'match' and config3d is provided.
+
     Examples
     --------
     for selecting frames automatically with 'kmeans' and want to crop the frames.
@@ -140,6 +161,9 @@ def extract_frames(
     --------
     for selecting frames manually, with a 60% wide frames slider
     >>> deeplabcut.extract_frames('/analysis/project/reaching-task/config.yaml','manual', slider_width=60)
+    --------
+    for extracting frames from a second camera that match the frames extracted from the first
+    >>> deeplabcut.extract_frames('/analysis/project/reaching-task/config.yaml', mode='match', extracted_cam=0)
 
     While selecting the frames manually, you do not need to specify the ``crop`` parameter in the command. Rather, you will get a prompt in the graphic user interface to choose
     if you need to crop or not.
@@ -148,6 +172,8 @@ def extract_frames(
     """
     import os
     import sys
+    import re
+    import glob
     import numpy as np
     from pathlib import Path
     from skimage import io
@@ -158,7 +184,7 @@ def extract_frames(
     if mode == "manual":
         wd = Path(config).resolve().parents[0]
         os.chdir(str(wd))
-        from deeplabcut.generate_training_dataset import frame_extraction_toolbox
+        from deeplabcut.gui import frame_extraction_toolbox
 
         frame_extraction_toolbox.show(config, slider_width)
 
@@ -181,14 +207,14 @@ def extract_frames(
                 "Perhaps consider extracting more, or a natural number of frames."
             )
 
-        videos = cfg["video_sets"].keys()
+        videos = cfg.get("video_sets_original") or cfg["video_sets"]
         if opencv:
             from deeplabcut.utils.auxfun_videos import VideoReader
         else:
             from moviepy.editor import VideoFileClip
 
         has_failed = []
-        for vindex, video in enumerate(videos):
+        for video in videos:
             if userfeedback:
                 print(
                     "Do you want to extract (perhaps additional) frames for video:",
@@ -241,7 +267,11 @@ def extract_frames(
 
                 if crop == "GUI":
                     cfg = select_cropping_area(config, [video])
-                coords = cfg["video_sets"][video]["crop"].split(",")
+                try:
+                    coords = cfg["video_sets"][video]["crop"].split(",")
+                except KeyError:
+                    coords = cfg["video_sets_original"][video]["crop"].split(",")
+
                 if crop and not opencv:
                     clip = clip.crop(
                         y1=int(coords[2]),
@@ -368,8 +398,93 @@ def extract_frames(
             "\nYou can now label the frames using the function 'label_frames' "
             "(if you extracted enough frames for all videos)."
         )
+
+    elif mode == "match":
+        import cv2
+
+        config_file = Path(config).resolve()
+        cfg = auxiliaryfunctions.read_config(config_file)
+        print("Config file read successfully.")
+        videos = sorted(cfg["video_sets"].keys())
+        project_path = Path(config).parents[0]
+        labels_path = os.path.join(project_path, "labeled-data/")
+        video_dir = os.path.join(project_path, "videos/")
+        try:
+            cfg_3d = auxiliaryfunctions.read_config(config3d)
+        except:
+            raise Exception(
+                "You must create a 3D project and edit the 3D config file before extracting matched frames. \n"
+            )
+        cams = cfg_3d["camera_names"]
+        extCam_name = cams[extracted_cam]
+        del cams[extracted_cam]
+        label_dirs = sorted(
+            glob.glob(os.path.join(labels_path, "*" + extCam_name + "*"))
+        )
+
+        # select crop method
+        crop_list = []
+        for video in videos:
+            if extCam_name not in video:
+                if crop == "GUI":
+                    cfg = select_cropping_area(config, [video])
+                    print("in gui code")
+                coords = cfg["video_sets"][video]["crop"].split(",")
+
+                if crop and not opencv:
+                    clip = clip.crop(
+                        y1=int(coords[2]),
+                        y2=int(coords[3]),
+                        x1=int(coords[0]),
+                        x2=int(coords[1]),
+                    )
+                elif not crop:
+                    coords = None
+                crop_list.append(coords)
+        print(crop_list)
+
+        for coords, dirPath in zip(crop_list, label_dirs):
+            extracted_images = glob.glob(os.path.join(dirPath, "*png"))
+
+            imgPattern = re.compile("[0-9]{1,10}")
+            for cam in cams:
+                output_path = re.sub(extCam_name, cam, dirPath)
+
+                for fname in os.listdir(output_path):
+                    if fname.endswith(".png"):
+                        os.remove(os.path.join(output_path, fname))
+
+                vid = os.path.join(video_dir, os.path.basename(output_path)) + ".avi"
+                cap = cv2.VideoCapture(vid)
+                print(
+                    "\n extracting matched frames from "
+                    + os.path.basename(output_path)
+                    + ".avi"
+                )
+                for img in extracted_images:
+                    imgNum = re.findall(imgPattern, os.path.basename(img))[0]
+                    cap.set(1, int(imgNum))
+                    ret, frame = cap.read()
+                    if ret:
+                        image = img_as_ubyte(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+                        img_name = str(output_path) + "/img" + imgNum + ".png"
+                        if crop:
+                            io.imsave(
+                                img_name,
+                                image[
+                                    int(coords[2]) : int(coords[3]),
+                                    int(coords[0]) : int(coords[1]),
+                                    :,
+                                ],
+                            )
+                        else:
+                            io.imsave(img_name, image)
+        print(
+            "\n Done extracting matched frames. You can now begin labeling frames using the function label_frames\n"
+        )
+
     else:
         print(
-            "Invalid MODE. Choose either 'manual' or 'automatic'. Check ``help(deeplabcut.extract_frames)`` on python and ``deeplabcut.extract_frames?`` \
+            "Invalid MODE. Choose either 'manual', 'automatic' or 'match'. Check ``help(deeplabcut.extract_frames)`` on python and ``deeplabcut.extract_frames?`` \
               for ipython/jupyter notebook for more details."
         )

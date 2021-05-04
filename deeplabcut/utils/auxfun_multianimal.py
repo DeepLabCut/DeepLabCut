@@ -53,8 +53,6 @@ def getpafgraph(cfg, printnames=True):
     if cfg["skeleton"] is None:
         cfg["skeleton"] = []
 
-    # CHECKS if each bpt is connected to at least one other bpt
-    # TODO: check that there is a path leading from each (multi)bpt to each other (multi)bpt!
     connected = set()
     partaffinityfield_graph = []
     for link in cfg["skeleton"]:
@@ -68,7 +66,7 @@ def getpafgraph(cfg, printnames=True):
             print("Attention, parts do not exist!", link)
 
     unconnected = set(range(len(multianimalbodyparts))).difference(connected)
-    if unconnected and len(multianimalbodyparts)>1: #for single bpt not important!
+    if unconnected and len(multianimalbodyparts) > 1:  # for single bpt not important!
         raise ValueError(
             f'Unconnected {", ".join(multianimalbodyparts[i] for i  in unconnected)}. '
             f"For multi-animal projects, all multianimalbodyparts should be connected. "
@@ -93,13 +91,13 @@ def graph2names(cfg, partaffinityfield_graph):
 
 def SaveFullMultiAnimalData(data, metadata, dataname, suffix="_full"):
     """ Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py """
-    with open(dataname.split(".h5")[0] + suffix + ".pickle", "wb") as f:
-        # Pickle the 'labeled-data' dictionary using the highest protocol available.
+    data_path = dataname.split(".h5")[0] + suffix + ".pickle"
+    metadata_path = dataname.split(".h5")[0] + "_meta.pickle"
+    with open(data_path, "wb") as f:
         pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
-    # if suffix=='_full': #save metadata!
-    with open(dataname.split(".h5")[0] + "_meta.pickle", "wb") as f:
-        # Pickle the 'labeled-data' dictionary using the highest protocol available.
+    with open(metadata_path, "wb") as f:
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
+    return data_path, metadata_path
 
 
 def LoadFullMultiAnimalData(dataname):
@@ -193,7 +191,7 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
         ):  # multilanguage support :)
 
             fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"])
-            Data = pd.read_hdf(fn + ".h5", "df_with_missing")
+            Data = pd.read_hdf(fn + ".h5")
             imindex = Data.index
 
             print("This is a single animal data set, converting to multi...", folder)
@@ -286,7 +284,7 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
             askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha"
         ):  # multilanguage support :)
             fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"])
-            Data = pd.read_hdf(fn + ".h5", "df_with_missing")
+            Data = pd.read_hdf(fn + ".h5")
             imindex = Data.index
 
             if "individuals" in Data.columns.names and (

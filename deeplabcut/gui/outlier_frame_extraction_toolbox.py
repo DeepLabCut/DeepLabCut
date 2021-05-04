@@ -1,10 +1,10 @@
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 Please see AUTHORS for contributors.
 
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
@@ -12,7 +12,6 @@ import argparse
 import os
 from pathlib import Path
 
-import matplotlib
 import matplotlib.colors as mcolors
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
@@ -20,13 +19,13 @@ import numpy as np
 import pandas as pd
 import wx
 import wx.lib.scrolledpanel as SP
-from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.figure import Figure
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from skimage import io
 from skimage.util import img_as_ubyte
 
 from deeplabcut.create_project import add
+from deeplabcut.gui.widgets import BasePanel, WidgetPanel, BaseFrame
 from deeplabcut.utils import auxiliaryfunctions, visualization
 from deeplabcut.utils.auxfun_videos import VideoWriter
 
@@ -34,26 +33,7 @@ from deeplabcut.utils.auxfun_videos import VideoWriter
 # ###########################################################################
 # Class for GUI MainFrame
 # ###########################################################################
-class ImagePanel(wx.Panel):
-    def __init__(self, parent, gui_size, **kwargs):
-        h = gui_size[0] / 2
-        w = gui_size[1] / 3
-        wx.Panel.__init__(self, parent, -1, style=wx.SUNKEN_BORDER, size=(h, w))
-
-        self.figure = matplotlib.figure.Figure()
-        self.axes = self.figure.add_subplot(1, 1, 1)
-        self.canvas = FigureCanvas(self, -1, self.figure)
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.Add(self.canvas, 1, wx.LEFT | wx.TOP | wx.GROW)
-        self.SetSizer(self.sizer)
-        self.Fit()
-
-    def getfigure(self):
-        """
-        Returns the figure, axes and canvas
-        """
-        return (self.figure, self.axes, self.canvas)
-
+class ImagePanel(BasePanel):
     def getColorIndices(self, img, bodyparts):
         """
         Returns the colormaps ticks and . The order of ticks labels is reversed.
@@ -62,11 +42,6 @@ class ImagePanel(wx.Panel):
         norm = mcolors.Normalize(vmin=np.min(img), vmax=np.max(img))
         ticks = np.linspace(np.min(img), np.max(img), len(bodyparts))[::-1]
         return norm, ticks
-
-
-class WidgetPanel(wx.Panel):
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent, -1, style=wx.SUNKEN_BORDER)
 
 
 class ScrollPanel(SP.ScrolledPanel):
@@ -98,39 +73,15 @@ class ScrollPanel(SP.ScrolledPanel):
         return (self.choiceBox, self.visualization_radiobox)
 
 
-class MainFrame(wx.Frame):
+class MainFrame(BaseFrame):
     """Contains the main GUI and button boxes"""
 
     def __init__(
         self, parent, config, video, shuffle, Dataframe, savelabeled, multianimal
     ):
-        # Settting the GUI size and panels design
-        displays = (
-            wx.Display(i) for i in range(wx.Display.GetCount())
-        )  # Gets the number of displays
-        screenSizes = [
-            display.GetGeometry().GetSize() for display in displays
-        ]  # Gets the size of each display
-        index = 0  # For display 1.
-        screenWidth = screenSizes[index][0]
-        screenHeight = screenSizes[index][1]
-        self.gui_size = (screenWidth * 0.7, screenHeight * 0.85)
-
-        wx.Frame.__init__(
-            self,
-            parent,
-            id=wx.ID_ANY,
-            title="DeepLabCut2.0 - Manual Outlier Frame Extraction",
-            size=wx.Size(self.gui_size),
-            pos=wx.DefaultPosition,
-            style=wx.RESIZE_BORDER | wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL,
+        super(MainFrame, self).__init__(
+            "DeepLabCut2.0 - Manual Outlier Frame Extraction", parent
         )
-        self.statusbar = self.CreateStatusBar()
-        self.statusbar.SetStatusText("")
-
-        self.SetSizeHints(
-            wx.Size(self.gui_size)
-        )  #  This sets the minimum size of the GUI. It can scale now!
 
         ###################################################################################################################################################
         # Spliting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
@@ -342,7 +293,7 @@ class MainFrame(wx.Frame):
         Activates the frame range boxes
         """
         self.checkSlider = event.GetEventObject()
-        if self.checkSlider.GetValue() == True:
+        if self.checkSlider.GetValue():
             self.extract_range_frame = True
             self.startFrame.Enable(True)
             self.startFrame.SetValue(self.slider.GetValue())
@@ -432,7 +383,7 @@ class MainFrame(wx.Frame):
             io.imsave(img_name, frame)
             if self.savelabeled:
                 self.figure.savefig(labeled_img_name, bbox_inches="tight")
-            Data = pd.read_hdf(self.machinefile, "df_with_missing")
+            Data = pd.read_hdf(self.machinefile)
             DataCombined = pd.concat([Data, DF])
             DataCombined = DataCombined[~DataCombined.index.duplicated(keep="first")]
             DataCombined.to_hdf(self.machinefile, key="df_with_missing", mode="w")
@@ -457,7 +408,7 @@ class MainFrame(wx.Frame):
         Extracts the frame and saves in the current directory
         """
 
-        if self.extract_range_frame == True:
+        if self.extract_range_frame:
             num_frames_extract = self.endFrame.GetValue()
             for i in range(self.currFrame, self.currFrame + num_frames_extract):
                 self.currFrame = i

@@ -1,10 +1,10 @@
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 
 Please see AUTHORS for contributors.
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
@@ -13,45 +13,25 @@ import os
 from pathlib import Path
 
 import cv2
-import matplotlib
 import matplotlib.colors as mcolors
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
 import wx
-from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.widgets import RectangleSelector
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from skimage import io
 from skimage.util import img_as_ubyte
 
+from deeplabcut.gui.widgets import BasePanel, WidgetPanel, BaseFrame
 from deeplabcut.utils import auxiliaryfunctions
 
 
 # ###########################################################################
 # Class for GUI MainFrame
 # ###########################################################################
-class ImagePanel(wx.Panel):
-    def __init__(self, parent, config, gui_size, **kwargs):
-        h = gui_size[0] / 2
-        w = gui_size[1] / 3
-        wx.Panel.__init__(self, parent, -1, style=wx.SUNKEN_BORDER, size=(h, w))
-
-        self.figure = matplotlib.figure.Figure()
-        self.axes = self.figure.add_subplot(1, 1, 1)
-        self.canvas = FigureCanvas(self, -1, self.figure)
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.Add(self.canvas, 1, wx.LEFT | wx.TOP | wx.GROW)
-        self.SetSizer(self.sizer)
-        self.Fit()
-
-    def getfigure(self):
-        """
-        Returns the figure, axes and canvas
-        """
-        return (self.figure, self.axes, self.canvas)
-
+class ImagePanel(BasePanel):
     def getColorIndices(self, img, bodyparts):
         """
         Returns the colormaps ticks and . The order of ticks labels is reversed.
@@ -62,43 +42,11 @@ class ImagePanel(wx.Panel):
         return norm, ticks
 
 
-class WidgetPanel(wx.Panel):
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent, -1, style=wx.SUNKEN_BORDER)
-
-
-class MainFrame(wx.Frame):
-    """Contains the main GUI and button boxes"""
-
+class MainFrame(BaseFrame):
     def __init__(self, parent, config, slider_width=25):
-        # Settting the GUI size and panels design
-        displays = (
-            wx.Display(i) for i in range(wx.Display.GetCount())
-        )  # Gets the number of displays
-        screenSizes = [
-            display.GetGeometry().GetSize() for display in displays
-        ]  # Gets the size of each display
-        index = 0  # For display 1.
-        screenWidth = screenSizes[index][0]
-        screenHeight = screenSizes[index][1]
-        self.gui_size = (screenWidth * 0.7, screenHeight * 0.85)
-
-        wx.Frame.__init__(
-            self,
-            parent,
-            id=wx.ID_ANY,
-            title="DeepLabCut2.0 - Manual Frame Extraction",
-            size=wx.Size(self.gui_size),
-            pos=wx.DefaultPosition,
-            style=wx.RESIZE_BORDER | wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL,
+        super(MainFrame, self).__init__(
+            "DeepLabCut2.0 - Manual Frame Extraction", parent
         )
-
-        self.statusbar = self.CreateStatusBar()
-        self.statusbar.SetStatusText("")
-
-        self.SetSizeHints(
-            wx.Size(self.gui_size)
-        )  #  This sets the minimum size of the GUI. It can scale now!
 
         ###################################################################################################################################################
         # Spliting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
@@ -210,7 +158,9 @@ class MainFrame(wx.Frame):
         self.date = self.cfg["date"]
         self.trainFraction = self.cfg["TrainingFraction"]
         self.trainFraction = self.trainFraction[0]
-        self.videos = self.cfg["video_sets"].keys()
+        self.videos = list(
+            self.cfg.get("video_sets_original") or self.cfg["video_sets"]
+        )
         self.bodyparts = self.cfg["bodyparts"]
         self.colormap = plt.get_cmap(self.cfg["colormap"])
         self.colormap = self.colormap.reversed()
@@ -237,7 +187,7 @@ class MainFrame(wx.Frame):
     def updateSlider(self, event):
         self.slider.SetValue(self.startFrame.GetValue())
         self.currFrame = self.slider.GetValue()
-        if self.extract_from_analyse_video == True:
+        if self.extract_from_analyse_video:
             self.figure.delaxes(self.figure.axes[1])
             self.plot_labels()
         self.update()
@@ -247,7 +197,7 @@ class MainFrame(wx.Frame):
         Activates the frame range boxes
         """
         self.checkSlider = event.GetEventObject()
-        if self.checkSlider.GetValue() == True:
+        if self.checkSlider.GetValue():
             self.extract_range_frame = True
             self.startFrame.Enable(True)
             self.startFrame.SetValue(self.slider.GetValue())
@@ -281,12 +231,17 @@ class MainFrame(wx.Frame):
         """
 
         videosource = self.video_source
-        self.x1 = int(self.cfg["video_sets"][videosource]["crop"].split(",")[0])
-        self.x2 = int(self.cfg["video_sets"][videosource]["crop"].split(",")[1])
-        self.y1 = int(self.cfg["video_sets"][videosource]["crop"].split(",")[2])
-        self.y2 = int(self.cfg["video_sets"][videosource]["crop"].split(",")[3])
+        try:
+            self.x1 = int(self.cfg["video_sets"][videosource]["crop"].split(",")[0])
+            self.x2 = int(self.cfg["video_sets"][videosource]["crop"].split(",")[1])
+            self.y1 = int(self.cfg["video_sets"][videosource]["crop"].split(",")[2])
+            self.y2 = int(self.cfg["video_sets"][videosource]["crop"].split(",")[3])
+        except KeyError:
+            self.x1, self.x2, self.y1, self.y2 = map(
+                int, self.cfg["video_sets_original"][videosource]["crop"].split(",")
+            )
 
-        if self.cropping == True:
+        if self.cropping:
             # Select ROI of interest by drawing a rectangle
             self.cid = RectangleSelector(
                 self.axes,

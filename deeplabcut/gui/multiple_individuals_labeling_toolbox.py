@@ -1,10 +1,10 @@
 """
-DeepLabCut2.0 Toolbox (deeplabcut.org)
+DeepLabCut2.2 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 Please see AUTHORS for contributors.
 
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
@@ -14,8 +14,8 @@ import os
 import os.path
 from pathlib import Path
 
+import re
 import cv2
-import matplotlib
 import matplotlib.colors as mcolors
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
@@ -23,45 +23,163 @@ import numpy as np
 import pandas as pd
 import wx
 import wx.lib.scrolledpanel as SP
-from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.backends.backend_wxagg import (
     NavigationToolbar2WxAgg as NavigationToolbar,
 )
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from deeplabcut.generate_training_dataset import auxfun_drag_label_multiple_individuals
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
-
+from deeplabcut.gui import auxfun_drag
+from deeplabcut.gui.widgets import BasePanel, WidgetPanel, BaseFrame
+from deeplabcut.utils import (
+    auxiliaryfunctions,
+    auxfun_multianimal,
+    auxiliaryfunctions_3d,
+)
 
 # ###########################################################################
 # Class for GUI MainFrame
 # ###########################################################################
-class ImagePanel(wx.Panel):
-    def __init__(self, parent, config, gui_size, **kwargs):
-        h = gui_size[0] / 2
-        w = gui_size[1] / 3
-        wx.Panel.__init__(self, parent, -1, style=wx.SUNKEN_BORDER, size=(h, w))
+class ImagePanel(BasePanel):
+    def __init__(self, parent, config, config3d, sourceCam, gui_size, **kwargs):
+        super(ImagePanel, self).__init__(parent, config, gui_size, **kwargs)
+        self.config = config
+        self.cfg = auxiliaryfunctions.read_config(self.config)
+        self.config3d = config3d
+        self.sourceCam = sourceCam
+        self.toolbar = None
 
-        self.figure = matplotlib.figure.Figure()
-        self.axes = self.figure.add_subplot(1, 1, 1)
-        self.canvas = FigureCanvas(self, -1, self.figure)
-        self.orig_xlim = None
-        self.orig_ylim = None
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.Add(self.canvas, 1, wx.LEFT | wx.TOP | wx.GROW)
-        self.SetSizer(self.sizer)
-        self.Fit()
+    def retrieveData_and_computeEpLines(self, img, imNum):
 
-    def getfigure(self):
-        return self.figure
+        # load labeledPoints and fundamental Matrix
+
+        if self.config3d is not None:
+            cfg_3d = auxiliaryfunctions.read_config(self.config3d)
+            cams = cfg_3d["camera_names"]
+            path_camera_matrix = auxiliaryfunctions_3d.Foldernames3Dproject(cfg_3d)[2]
+            path_stereo_file = os.path.join(path_camera_matrix, "stereo_params.pickle")
+            stereo_file = auxiliaryfunctions.read_pickle(path_stereo_file)
+
+            for cam in cams:
+                if cam in img:
+                    labelCam = cam
+                    if self.sourceCam is None:
+                        sourceCam = [
+                            otherCam for otherCam in cams if cam not in otherCam
+                        ][0]
+                    else:
+                        sourceCam = self.sourceCam
+
+            sourceCamIdx = np.where(np.array(cams) == sourceCam)[0][0]
+            labelCamIdx = np.where(np.array(cams) == labelCam)[0][0]
+            if sourceCamIdx < labelCamIdx:
+                camera_pair = cams[sourceCamIdx] + "-" + cams[labelCamIdx]
+                sourceCam_numInPair = 1
+            else:
+                camera_pair = cams[labelCamIdx] + "-" + cams[sourceCamIdx]
+                sourceCam_numInPair = 2
+
+            fundMat = stereo_file[camera_pair]["F"]
+            sourceCam_path = os.path.split(img.replace(labelCam, sourceCam))[0]
+
+            cfg = auxiliaryfunctions.read_config(self.config)
+            scorer = cfg["scorer"]
+
+            try:
+                dataFrame = pd.read_hdf(
+                    os.path.join(sourceCam_path, "CollectedData_" + scorer + ".h5")
+                )
+                dataFrame.sort_index(inplace=True)
+            except IOError:
+                print(
+                    "source camera images have not yet been labeled, or you have opened this folder in the wrong mode!"
+                )
+                return None, None, None
+
+            # Find offset terms for drawing epipolar Lines
+            # Get crop params for camera being labeled
+            foundEvent = 0
+            eventSearch = re.compile(os.path.split(os.path.split(img)[0])[1])
+            cropPattern = re.compile("[0-9]{1,4}")
+            with open(self.config, "rt") as config:
+                for line in config:
+                    if foundEvent == 1:
+                        crop_labelCam = np.int32(re.findall(cropPattern, line))
+                        break
+                    if eventSearch.search(line) != None:
+                        foundEvent = 1
+            # Get crop params for other camera
+            foundEvent = 0
+            eventSearch = re.compile(os.path.split(sourceCam_path)[1])
+            cropPattern = re.compile("[0-9]{1,4}")
+            with open(self.config, "rt") as config:
+                for line in config:
+                    if foundEvent == 1:
+                        crop_sourceCam = np.int32(re.findall(cropPattern, line))
+                        break
+                    if eventSearch.search(line) != None:
+                        foundEvent = 1
+
+            labelCam_offsets = [crop_labelCam[0], crop_labelCam[2]]
+            sourceCam_offsets = [crop_sourceCam[0], crop_sourceCam[2]]
+
+            sourceCam_pts = np.asarray(dataFrame, dtype=np.int32)
+            sourceCam_pts = sourceCam_pts.reshape(
+                (sourceCam_pts.shape[0], int(sourceCam_pts.shape[1] / 2), 2)
+            )
+            sourceCam_pts = np.moveaxis(sourceCam_pts, [0, 1, 2], [1, 0, 2])
+            sourceCam_pts[..., 0] = sourceCam_pts[..., 0] + sourceCam_offsets[0]
+            sourceCam_pts[..., 1] = sourceCam_pts[..., 1] + sourceCam_offsets[1]
+
+            sourcePts = sourceCam_pts[:, imNum, :]
+
+            epLines_source2label = cv2.computeCorrespondEpilines(
+                sourcePts, int(sourceCam_numInPair), fundMat
+            )
+            epLines_source2label.reshape(-1, 3)
+
+            return epLines_source2label, sourcePts, labelCam_offsets
+
+        else:
+            return None, None, None
+
+    def drawEpLines(self, drawImage, lines, sourcePts, offsets, colorIndex, cmap):
+        drawImage = cv2.cvtColor(drawImage, cv2.COLOR_BGR2RGB)
+        height, width, depth = drawImage.shape
+        for line, pt, cIdx in zip(lines, sourcePts, colorIndex):
+            if pt[0] > -1000:
+                coeffs = line[0]
+                x0, y0 = map(int, [0 - offsets[0], -coeffs[2] / coeffs[1] - offsets[1]])
+                x1, y1 = map(
+                    int,
+                    [
+                        width,
+                        -(coeffs[2] + coeffs[0] * (width + offsets[0])) / coeffs[1]
+                        - offsets[1],
+                    ],
+                )
+                cIdx = cIdx / 255
+                color = cmap(cIdx, bytes=True)[:-1]
+                color = tuple([int(x) for x in color])
+                drawImage = cv2.line(drawImage, (x0, y0), (x1, y1), color, 1)
+        return drawImage
 
     def drawplot(self, img, img_name, itr, index, bodyparts, cmap, keep_view=False):
+        individuals = self.cfg["individuals"]
         xlim = self.axes.get_xlim()
         ylim = self.axes.get_ylim()
         self.axes.clear()
         #        im = cv2.imread(img)
         # convert the image to RGB as you are showing the image with matplotlib
         im = cv2.imread(img)[..., ::-1]
+        colorIndex = []
+        for indiv in range(len(individuals)):
+            colorIndex.extend(np.linspace(np.max(im), np.min(im), len(bodyparts)))
+        colorIndex = np.array(colorIndex)
+        # draw epipolar lines
+        epLines, sourcePts, offsets = self.retrieveData_and_computeEpLines(img, itr)
+        if epLines is not None:
+            im = self.drawEpLines(im, epLines, sourcePts, offsets, colorIndex, cmap)
+
         ax = self.axes.imshow(im, cmap=cmap)
         self.orig_xlim = self.axes.get_xlim()
         self.orig_ylim = self.axes.get_ylim()
@@ -71,11 +189,12 @@ class ImagePanel(wx.Panel):
         #        cbar = self.figure.colorbar(ax, cax=cax,spacing='proportional', ticks=colorIndex)
         #        cbar.set_ticklabels(bodyparts[::-1])
         self.axes.set_title(str(str(itr) + "/" + str(len(index) - 1) + " " + img_name))
-        #        self.figure.canvas.draw()
+        # self.figure.canvas.draw()
         if keep_view:
             self.axes.set_xlim(xlim)
             self.axes.set_ylim(ylim)
-        self.toolbar = NavigationToolbar(self.canvas)
+        if self.toolbar is None:
+            self.toolbar = NavigationToolbar(self.canvas)
         return (self.figure, self.axes, self.canvas, self.toolbar, ax)
 
     def addcolorbar(self, img, ax, itr, bodyparts, cmap):
@@ -88,12 +207,9 @@ class ImagePanel(wx.Panel):
         )
         cbar.set_ticklabels(bodyparts[::-1])
         self.figure.canvas.draw()
-        self.toolbar = NavigationToolbar(self.canvas)
+        if self.toolbar is None:
+            self.toolbar = NavigationToolbar(self.canvas)
         return (self.figure, self.axes, self.canvas, self.toolbar)
-
-    def resetView(self):
-        self.axes.set_xlim(self.orig_xlim)
-        self.axes.set_ylim(self.orig_ylim)
 
     def getColorIndices(self, img, bodyparts):
         """
@@ -103,11 +219,6 @@ class ImagePanel(wx.Panel):
         norm = mcolors.Normalize(vmin=0, vmax=np.max(im))
         ticks = np.linspace(0, np.max(im), len(bodyparts))[::-1]
         return norm, ticks
-
-
-class WidgetPanel(wx.Panel):
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent, -1, style=wx.SUNKEN_BORDER)
 
 
 class ScrollPanel(SP.ScrolledPanel):
@@ -171,40 +282,17 @@ class ScrollPanel(SP.ScrolledPanel):
         self.choiceBox.Clear(True)
 
 
-class MainFrame(wx.Frame):
-    """Contains the main GUI and button boxes"""
-
-    def __init__(self, parent, config):
-        # Settting the GUI size and panels design
-        displays = (
-            wx.Display(i) for i in range(wx.Display.GetCount())
-        )  # Gets the number of displays
-        screenSizes = [
-            display.GetGeometry().GetSize() for display in displays
-        ]  # Gets the size of each display
-        index = 0  # For display 1.
-        screenWidth = screenSizes[index][0]
-        screenHeight = screenSizes[index][1]
-        self.gui_size = (screenWidth * 0.7, screenHeight * 0.85)
-
-        wx.Frame.__init__(
-            self,
-            parent,
-            id=wx.ID_ANY,
-            title="DeepLabCut2.0 - Multiple Individuals Labeling ToolBox",
-            size=wx.Size(self.gui_size),
-            pos=wx.DefaultPosition,
-            style=wx.RESIZE_BORDER | wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL,
+class MainFrame(BaseFrame):
+    def __init__(self, parent, config, config3d, sourceCam):
+        super(MainFrame, self).__init__(
+            "DeepLabCut 2.2 - Multiple Individuals Labeling", parent
         )
-        self.statusbar = self.CreateStatusBar()
+
         self.statusbar.SetStatusText(
             "Looking for a folder to start labeling. Click 'Load frames' to begin."
         )
         self.Bind(wx.EVT_CHAR_HOOK, self.OnKeyPressed)
 
-        self.SetSizeHints(
-            wx.Size(self.gui_size)
-        )  #  This sets the minimum size of the GUI. It can scale now!
         ###################################################################################################################################################
 
         # Spliting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
@@ -212,7 +300,9 @@ class MainFrame(wx.Frame):
         topSplitter = wx.SplitterWindow(self)
         vSplitter = wx.SplitterWindow(topSplitter)
 
-        self.image_panel = ImagePanel(vSplitter, config, self.gui_size)
+        self.image_panel = ImagePanel(
+            vSplitter, config, config3d, sourceCam, self.gui_size
+        )
         self.choice_panel = ScrollPanel(vSplitter)
 
         vSplitter.SplitVertically(
@@ -281,7 +371,7 @@ class MainFrame(wx.Frame):
 
         widgetsizer.AddStretchSpacer(15)
         self.quit = wx.Button(self.widget_panel, id=wx.ID_ANY, label="Quit")
-        widgetsizer.Add(self.quit, 1, wx.ALL | wx.ALIGN_RIGHT, 15)
+        widgetsizer.Add(self.quit, 1, wx.ALL, 15)
         self.quit.Bind(wx.EVT_BUTTON, self.quitButton)
 
         self.widget_panel.SetSizer(widgetsizer)
@@ -326,9 +416,8 @@ class MainFrame(wx.Frame):
             pos_abs = event.GetPosition()
             inv = self.axes.transData.inverted()
             pos_rel = list(inv.transform(pos_abs))
-            pos_rel[1] = (
-                self.axes.get_ylim()[0] - pos_rel[1]
-            )  # Recall y-axis is inverted
+            y1, y2 = self.axes.get_ylim()
+            pos_rel[1] = y1 - pos_rel[1] + y2  # Recall y-axis is inverted
             i = np.nanargmin(
                 [self.calc_distance(*dp.point.center, *pos_rel) for dp in self.drs]
             )
@@ -345,10 +434,6 @@ class MainFrame(wx.Frame):
                 )
         elif event.ControlDown() and event.GetKeyCode() == 67:
             self.duplicate_labels()
-
-    @staticmethod
-    def calc_distance(x1, y1, x2, y2):
-        return np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
     def duplicate_labels(self):
         if self.iter >= 1:
@@ -391,7 +476,7 @@ class MainFrame(wx.Frame):
         Activates the slider to increase the markersize
         """
         self.checkSlider = event.GetEventObject()
-        if self.checkSlider.GetValue() == True:
+        if self.checkSlider.GetValue():
             self.activate_slider = True
             self.change_marker_size.Enable(True)
             MainFrame.updateZoomPan(self)
@@ -469,56 +554,10 @@ class MainFrame(wx.Frame):
         )
         self.statusbar.SetStatusText("Help")
 
-    def homeButton(self, event):
-        self.image_panel.resetView()
-        self.figure.canvas.draw()
-        MainFrame.updateZoomPan(self)
-        self.zoom.SetValue(False)
-        self.pan.SetValue(False)
-        self.statusbar.SetStatusText("")
-
-    def panButton(self, event):
-        if self.pan.GetValue() == True:
-            self.toolbar.pan()
-            self.statusbar.SetStatusText("Pan On")
-            self.zoom.SetValue(False)
-        else:
-            self.toolbar.pan()
-            self.statusbar.SetStatusText("Pan Off")
-
-    def zoomButton(self, event):
-        if self.zoom.GetValue() == True:
-            # Save pre-zoom xlim and ylim values
-            self.prezoom_xlim = self.axes.get_xlim()
-            self.prezoom_ylim = self.axes.get_ylim()
-            self.toolbar.zoom()
-            self.statusbar.SetStatusText("Zoom On")
-            self.pan.SetValue(False)
-        else:
-            self.toolbar.zoom()
-            self.statusbar.SetStatusText("Zoom Off")
-
-    def onZoom(self, ax):
-        # See if axis limits have actually changed
-        curr_xlim = self.axes.get_xlim()
-        curr_ylim = self.axes.get_ylim()
-        if self.zoom.GetValue() and not (
-            self.prezoom_xlim[0] == curr_xlim[0]
-            and self.prezoom_xlim[1] == curr_xlim[1]
-            and self.prezoom_ylim[0] == curr_ylim[0]
-            and self.prezoom_ylim[1] == curr_ylim[1]
-        ):
-            self.updateZoomPan()
-            self.statusbar.SetStatusText("Zoom Off")
-
     def onButtonRelease(self, event):
         if self.pan.GetValue():
             self.updateZoomPan()
             self.statusbar.SetStatusText("Pan Off")
-
-    def lockChecked(self, event):
-        self.cb = event.GetEventObject()
-        self.view_locked = self.cb.GetValue()
 
     def onClick(self, event):
         """
@@ -565,8 +604,10 @@ class MainFrame(wx.Frame):
                     ]
                     self.num.append(circle)
                     self.axes.add_patch(circle[0])
-                    self.dr = auxfun_drag_label_multiple_individuals.DraggablePoint(
-                        circle[0], indiv, self.uniquebodyparts[self.rdb.GetSelection()]
+                    self.dr = auxfun_drag.DraggablePoint(
+                        circle[0],
+                        self.uniquebodyparts[self.rdb.GetSelection()],
+                        individual_names=indiv,
                     )
                     self.dr.connect()
                     self.buttonCounter[indiv].append(
@@ -626,8 +667,10 @@ class MainFrame(wx.Frame):
                     ]
                     self.num.append(circle)
                     self.axes.add_patch(circle[0])
-                    self.dr = auxfun_drag_label_multiple_individuals.DraggablePoint(
-                        circle[0], indiv, self.multibodyparts[self.rdb.GetSelection()]
+                    self.dr = auxfun_drag.DraggablePoint(
+                        circle[0],
+                        self.multibodyparts[self.rdb.GetSelection()],
+                        individual_names=indiv,
                     )
                     self.dr.connect()
                     self.buttonCounter[indiv].append(
@@ -725,7 +768,7 @@ class MainFrame(wx.Frame):
         self.idmap = plt.cm.get_cmap("Set1", len(individuals))
         self.project_path = self.cfg["project_path"]
 
-        if self.uniquebodyparts == []:
+        if not self.uniquebodyparts:
             self.are_unique_bodyparts_present = False
 
         self.buttonCounter = {i: [] for i in self.individual_names}
@@ -746,8 +789,7 @@ class MainFrame(wx.Frame):
         # Reading the existing dataset,if already present
         try:
             self.dataFrame = pd.read_hdf(
-                os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5"),
-                "df_with_missing",
+                os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5")
             )
             # Handle data previously labeled on a different platform
             sep = "/" if "/" in self.dataFrame.index[0] else "\\"
@@ -937,7 +979,7 @@ class MainFrame(wx.Frame):
         a = np.empty((len(relativeimagenames), 2))
         a[:] = np.nan
         for prfxindex, prefix in enumerate(individual_names):
-            if uniquebodyparts != None:
+            if uniquebodyparts is not None:
                 if prefix == "single":
                     for c, bp in enumerate(uniquebodyparts):
                         index = pd.MultiIndex.from_product(
@@ -1162,14 +1204,14 @@ class MainFrame(wx.Frame):
                         alpha=self.alpha,
                     )
                     self.axes.add_patch(circle)
-                    self.dr = auxfun_drag_label_multiple_individuals.DraggablePoint(
-                        circle, ind, self.uniquebodyparts[c]
+                    self.dr = auxfun_drag.DraggablePoint(
+                        circle, self.uniquebodyparts[c], individual_names=ind
                     )
                     self.dr.connect()
                     self.dr.coords = image_points
                     self.drs.append(self.dr)
                     self.updatedCoords.append(self.dr.coords)
-                    if np.isnan(self.points)[0] == False:
+                    if not np.isnan(self.points)[0]:
                         self.buttonCounter[ind].append(self.uniquebodyparts[c])
             else:
                 for c, bp in enumerate(self.multibodyparts):
@@ -1198,14 +1240,14 @@ class MainFrame(wx.Frame):
                         alpha=self.alpha,
                     )
                     self.axes.add_patch(circle)
-                    self.dr = auxfun_drag_label_multiple_individuals.DraggablePoint(
-                        circle, ind, self.multibodyparts[c]
+                    self.dr = auxfun_drag.DraggablePoint(
+                        circle, self.multibodyparts[c], individual_names=ind
                     )
                     self.dr.connect()
                     self.dr.coords = image_points
                     self.drs.append(self.dr)
                     self.updatedCoords.append(self.dr.coords)
-                    if np.isnan(self.points)[0] == False:
+                    if not np.isnan(self.points)[0]:
                         self.buttonCounter[ind].append(self.multibodyparts[c])
         MainFrame.saveEachImage(self)
         self.figure.canvas.draw()
@@ -1257,29 +1299,22 @@ class MainFrame(wx.Frame):
 
     def onChecked(self, event):
         self.cb = event.GetEventObject()
-        if self.cb.GetValue() == True:
+        if self.cb.GetValue():
             self.change_marker_size.Enable(True)
             self.cidClick = self.canvas.mpl_connect("button_press_event", self.onClick)
         else:
             self.change_marker_size.Enable(False)
 
-    def updateZoomPan(self):
-        # Checks if zoom/pan button is ON
-        if self.pan.GetValue() == True:
-            self.toolbar.pan()
-            self.pan.SetValue(False)
-        if self.zoom.GetValue() == True:
-            self.toolbar.zoom()
-            self.zoom.SetValue(False)
 
-
-def show(config):
+def show(config, config3d, sourceCam):
     app = wx.App()
-    frame = MainFrame(None, config).Show()
+    frame = MainFrame(None, config, config3d, sourceCam).Show()
     app.MainLoop()
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("config")
+    parser.add_argument("config3d")
+    parser.add_argument("sourceCam")
     cli_args = parser.parse_args()

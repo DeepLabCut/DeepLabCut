@@ -196,13 +196,16 @@ def triangulate(
                         path_corners,
                         path_camera_matrix,
                         path_undistort,
+                        _,
                     ) = auxiliaryfunctions_3d.Foldernames3Dproject(cfg_3d)
                     path_stereo_file = os.path.join(
                         path_camera_matrix, "stereo_params.pickle"
                     )
                     stereo_file = auxiliaryfunctions.read_pickle(path_stereo_file)
                     cam_pair = str(cam_names[0] + "-" + cam_names[1])
-                    if_video_analyzed = False  # variable to keep track if the video was already analyzed
+                    if_video_analyzed = (
+                        False
+                    )  # variable to keep track if the video was already analyzed
                     # Check for the camera matrix
                     for k in metadata_["stereo_matrix"].keys():
                         if np.all(
@@ -432,6 +435,7 @@ def undistort_points(config, dataframe, camera_pair):
         path_corners,
         path_camera_matrix,
         path_undistort,
+        _,
     ) = auxiliaryfunctions_3d.Foldernames3Dproject(cfg_3d)
     """
     path_undistort = destfolder

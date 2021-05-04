@@ -10,6 +10,8 @@ Licensed under GNU Lesser General Public License v3.0
 
 import argparse
 import os
+import pickle
+import re
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -18,8 +20,144 @@ import pandas as pd
 import statsmodels.api as sm
 from skimage.util import img_as_ubyte
 
+from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
 from deeplabcut.utils import auxiliaryfunctions, visualization, frameselectiontools
 from deeplabcut.utils.auxfun_videos import VideoWriter
+
+
+def find_outliers_in_raw_data(
+    config,
+    pickle_file,
+    video_file,
+    pcutoff=0.1,
+    percentiles=(5, 95),
+    with_annotations=True,
+    extraction_algo="kmeans",
+):
+    """
+    Extract outlier frames from either raw detections or assemblies of multiple animals.
+
+    Parameter
+    ----------
+    config : str
+        Absolute path to the project config.yaml.
+
+    pickled_file : str
+        Path to a *_full.pickle or *_assemblies.pickle.
+
+    video_file : str
+        Path to the corresponding video file for frame extraction.
+
+    pcutoff : float, optional (default=0.1)
+        Detection confidence threshold below which frames are flagged as
+        containing outliers. Only considered if raw detections are passed in.
+
+    percentiles : tuple, optional (default=(5, 95))
+        Assemblies are considered outliers if their areas are beyond the 5th
+        and 95th percentiles. Must contain a lower and upper bound.
+
+    with_annotations : bool, optional (default=True)
+        If true, extract frames and the corresponding network predictions.
+        Otherwise, only the frames are extracted.
+
+    extraction_algo : string, optional (default="kmeans")
+        Outlier detection algorithm. Must be either ``uniform`` or ``kmeans``.
+
+    """
+    if extraction_algo not in ("kmeans", "uniform"):
+        raise ValueError(f"Unsupported extraction algorithm {extraction_algo}.")
+
+    video_name = Path(video_file).stem
+    pickle_name = Path(pickle_file).stem
+    if not pickle_name.startswith(video_name):
+        raise ValueError("Video and pickle files do not match.")
+
+    with open(pickle_file, "rb") as file:
+        data = pickle.load(file)
+    if pickle_file.endswith("_full.pickle"):
+        inds, data = find_outliers_in_raw_detections(data, threshold=pcutoff)
+        with_annotations = False
+    elif pickle_file.endswith("_assemblies.pickle"):
+        assemblies = dict()
+        for k, lst in data.items():
+            if k == "single":
+                continue
+            ass = []
+            for vals in lst:
+                a = inferenceutils.Assembly(len(vals))
+                a.data = vals
+                ass.append(a)
+            assemblies[k] = ass
+        inds = inferenceutils.find_outlier_assemblies(assemblies, qs=percentiles)
+    else:
+        raise IOError(f"Raw data file {pickle_file} could not be parsed.")
+
+    cfg = auxiliaryfunctions.read_config(config)
+    ExtractFramesbasedonPreselection(
+        inds,
+        extraction_algo,
+        data,
+        video=video_file,
+        cfg=cfg,
+        config=config,
+        savelabeled=False,
+        with_annotations=with_annotations,
+    )
+
+
+def find_outliers_in_raw_detections(
+    pickled_data, algo="uncertain", threshold=0.1, kept_keypoints=None
+):
+    """
+    Find outlier frames from the raw detections of multiple animals.
+
+    Parameter
+    ----------
+    pickled_data : dict
+        Data in the *_full.pickle file obtained after `analyze_videos`.
+
+    algo : string, optional (default="uncertain")
+        Outlier detection algorithm. Currently, only 'uncertain' is supported
+        for multi-animal raw detections.
+
+    threshold: float, optional (default=0.1)
+        Detection confidence threshold below which frames are flagged as
+        containing outliers. Only considered if `algo`==`uncertain`.
+
+    kept_keypoints : list, optional (default=None)
+        Indices in the list of labeled body parts to be kept of the analysis.
+        By default, all keypoints are used for outlier search.
+
+    Returns
+    -------
+    candidates : list
+        Indices of video frames containing potential outliers
+    """
+    if algo != "uncertain":
+        raise ValueError(f"Only method 'uncertain' is currently supported.")
+
+    try:
+        _ = pickled_data.pop("metadata")
+    except KeyError:
+        pass
+
+    def get_frame_ind(s):
+        return int(re.findall(r"\d+", s)[0])
+
+    candidates = []
+    data = dict()
+    for frame_name, dict_ in pickled_data.items():
+        frame_ind = get_frame_ind(frame_name)
+        temp_coords = dict_["coordinates"][0]
+        temp = dict_["confidence"]
+        if kept_keypoints is not None:
+            temp = [vals for i, vals in enumerate(temp) if i in kept_keypoints]
+        coords = np.concatenate(temp_coords).squeeze()
+        conf = np.concatenate(temp).squeeze()
+        data[frame_ind] = np.c_[coords, conf]
+        if np.any(conf < threshold):
+            candidates.append(frame_ind)
+    return candidates, data
 
 
 def extract_outlier_frames(
@@ -178,12 +316,12 @@ def extract_outlier_frames(
             df_temp = df.loc[:, mask]
             Indices = []
             if outlieralgorithm == "uncertain":
-                p = df_temp.xs("likelihood", level=-1, axis=1)
+                p = df_temp.xs("likelihood", level="coords", axis=1)
                 ind = df_temp.index[(p < p_bound).any(axis=1)].tolist()
                 Indices.extend(ind)
             elif outlieralgorithm == "jump":
                 temp_dt = df_temp.diff(axis=0) ** 2
-                temp_dt.drop("likelihood", axis=1, level=-1, inplace=True)
+                temp_dt.drop("likelihood", axis=1, level="coords", inplace=True)
                 sum_ = temp_dt.sum(axis=1, level=1)
                 ind = df_temp.index[(sum_ > epsilon ** 2).any(axis=1)].tolist()
                 Indices.extend(ind)
@@ -204,9 +342,7 @@ def extract_outlier_frames(
             elif outlieralgorithm == "manual":
                 wd = Path(config).resolve().parents[0]
                 os.chdir(str(wd))
-                from deeplabcut.refine_training_dataset import (
-                    outlier_frame_extraction_toolbox,
-                )
+                from deeplabcut.gui import outlier_frame_extraction_toolbox
 
                 outlier_frame_extraction_toolbox.show(
                     config,
@@ -260,7 +396,6 @@ def extract_outlier_frames(
                         Indices,
                         extractionalgorithm,
                         df,
-                        dataname,
                         video,
                         cfg,
                         config,
@@ -394,8 +529,7 @@ def compute_deviations(
 def ExtractFramesbasedonPreselection(
     Index,
     extractionalgorithm,
-    Dataframe,
-    dataname,
+    data,
     video,
     cfg,
     config,
@@ -403,6 +537,7 @@ def ExtractFramesbasedonPreselection(
     cluster_resizewidth=30,
     cluster_color=False,
     savelabeled=True,
+    with_annotations=True,
 ):
     from deeplabcut.create_project import add
 
@@ -417,9 +552,9 @@ def ExtractFramesbasedonPreselection(
     if os.path.isdir(tmpfolder):
         print("Frames from video", vname, " already extracted (more will be added)!")
     else:
-        auxiliaryfunctions.attempttomakefolder(tmpfolder)
+        auxiliaryfunctions.attempttomakefolder(tmpfolder, recursive=True)
 
-    nframes = len(Dataframe)
+    nframes = len(data)
     print("Loading video...")
     if opencv:
         vid = VideoWriter(video)
@@ -490,7 +625,7 @@ def ExtractFramesbasedonPreselection(
                 vid,
                 cfg["cropping"],
                 coords,
-                Dataframe,
+                data,
                 bodyparts,
                 tmpfolder,
                 index,
@@ -504,7 +639,7 @@ def ExtractFramesbasedonPreselection(
         else:
             PlottingSingleFrame(
                 clip,
-                Dataframe,
+                data,
                 bodyparts,
                 tmpfolder,
                 index,
@@ -526,30 +661,6 @@ def ExtractFramesbasedonPreselection(
 
     # Extract annotations based on DeepLabCut and store in the folder (with name derived from video name) under labeled-data
     if len(frames2pick) > 0:
-        DF = Dataframe.loc[frames2pick]
-        DF.index = [
-            os.path.join(
-                "labeled-data", vname, "img" + str(index).zfill(strwidth) + ".png"
-            )
-            for index in DF.index
-        ]  # exchange index number by file names.
-
-        machinefile = os.path.join(
-            tmpfolder, "machinelabels-iter" + str(cfg["iteration"]) + ".h5"
-        )
-        if Path(machinefile).is_file():
-            Data = pd.read_hdf(machinefile, "df_with_missing")
-            DataCombined = pd.concat([Data, DF])
-            # drop duplicate labels:
-            DataCombined = DataCombined[~DataCombined.index.duplicated(keep="first")]
-
-            DataCombined.to_hdf(machinefile, key="df_with_missing", mode="w")
-            DataCombined.to_csv(
-                os.path.join(tmpfolder, "machinelabels.csv")
-            )  # this is always the most current one (as reading is from h5)
-        else:
-            DF.to_hdf(machinefile, key="df_with_missing", mode="w")
-            DF.to_csv(os.path.join(tmpfolder, "machinelabels.csv"))
         try:
             if cfg["cropping"]:
                 add.add_new_videos(
@@ -563,6 +674,87 @@ def ExtractFramesbasedonPreselection(
             )
             print("Videopath:", video, "Coordinates for cropping:", coords)
             pass
+
+        if with_annotations:
+            machinefile = os.path.join(
+                tmpfolder, "machinelabels-iter" + str(cfg["iteration"]) + ".h5"
+            )
+            if isinstance(data, pd.DataFrame):
+                df = data.loc[frames2pick]
+                df.index = [
+                    os.path.join(
+                        "labeled-data",
+                        vname,
+                        "img" + str(index).zfill(strwidth) + ".png",
+                    )
+                    for index in df.index
+                ]  # exchange index number by file names.
+            elif isinstance(data, dict):
+                idx = [
+                    os.path.join(
+                        "labeled-data",
+                        vname,
+                        "img" + str(index).zfill(strwidth) + ".png",
+                    )
+                    for index in frames2pick
+                ]
+                filename = os.path.join(
+                    str(tmpfolder), f"CollectedData_{cfg['scorer']}.h5"
+                )
+                try:
+                    df_temp = pd.read_hdf(filename, "df_with_missing")
+                    columns = df_temp.columns
+                except FileNotFoundError:
+                    columns = pd.MultiIndex.from_product(
+                        [
+                            [cfg["scorer"]],
+                            cfg["individuals"],
+                            cfg["multianimalbodyparts"],
+                            ["x", "y"],
+                        ],
+                        names=["scorer", "individuals", "bodyparts", "coords"],
+                    )
+                    if cfg["uniquebodyparts"]:
+                        columns2 = pd.MultiIndex.from_product(
+                            [
+                                [cfg["scorer"]],
+                                ["single"],
+                                cfg["uniquebodyparts"],
+                                ["x", "y"],
+                            ],
+                            names=["scorer", "individuals", "bodyparts", "coords"],
+                        )
+                        df_temp = pd.concat(
+                            (
+                                pd.DataFrame(columns=columns),
+                                pd.DataFrame(columns=columns2),
+                            )
+                        )
+                        columns = df_temp.columns
+                array = np.full((len(frames2pick), len(columns)), np.nan)
+                for i, index in enumerate(frames2pick):
+                    data_temp = data.get(index)
+                    if data_temp is not None:
+                        vals = np.concatenate(data_temp)[:, :2].flatten()
+                        array[i, : len(vals)] = vals
+                df = pd.DataFrame(array, index=idx, columns=columns)
+            else:
+                return
+            if Path(machinefile).is_file():
+                Data = pd.read_hdf(machinefile, "df_with_missing")
+                DataCombined = pd.concat([Data, df])
+                # drop duplicate labels:
+                DataCombined = DataCombined[
+                    ~DataCombined.index.duplicated(keep="first")
+                ]
+
+                DataCombined.to_hdf(machinefile, key="df_with_missing", mode="w")
+                DataCombined.to_csv(
+                    os.path.join(tmpfolder, "machinelabels.csv")
+                )  # this is always the most current one (as reading is from h5)
+            else:
+                df.to_hdf(machinefile, key="df_with_missing", mode="w")
+                df.to_csv(os.path.join(tmpfolder, "machinelabels.csv"))
 
         print(
             "The outlier frames are extracted. They are stored in the subdirectory labeled-data\%s."
@@ -719,48 +911,6 @@ def PlottingSingleFramecv2(
             plt.gca().invert_yaxis()
             plt.savefig(imagename2)
             plt.close("all")
-
-
-def refine_labels(config, multianimal=False):
-    """
-    Refines the labels of the outlier frames extracted from the analyzed videos.\n Helps in augmenting the training dataset.
-    Use the function ``analyze_video`` to analyze a video and extracts the outlier frames using the function
-    ``extract_outlier_frames`` before refining the labels.
-
-    Parameters
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
-
-    Screens : int value of the number of Screens in landscape mode, i.e. if you have 2 screens, enter 2. Default is 1.
-
-    scale_h & scale_w : you can modify how much of the screen the GUI should occupy. The default is .9 and .8, respectively.
-
-    img_scale : if you want to make the plot of the frame larger, consider changing this to .008 or more. Be careful though, too large and you will not see the buttons fully!
-
-    Examples
-    --------
-    >>> deeplabcut.refine_labels('/analysis/project/reaching-task/config.yaml', Screens=2, imag_scale=.0075)
-    --------
-
-    """
-
-    startpath = os.getcwd()
-    wd = Path(config).resolve().parents[0]
-    os.chdir(str(wd))
-    cfg = auxiliaryfunctions.read_config(config)
-    if multianimal == False and not cfg.get("multianimalproject", False):
-        from deeplabcut.refine_training_dataset import refinement
-
-        refinement.show(config)
-    else:  # loading multianimal labeling GUI
-        from deeplabcut.refine_training_dataset import (
-            multiple_individuals_refinement_toolbox,
-        )
-
-        multiple_individuals_refinement_toolbox.show(config)
-
-    os.chdir(startpath)
 
 
 def merge_datasets(config, forceiterate=None):

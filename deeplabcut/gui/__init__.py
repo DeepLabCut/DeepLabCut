@@ -1,25 +1,17 @@
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 Please see AUTHORS for contributors.
 
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 
 """
+import os
+from deeplabcut.utils.auxiliaryfunctions import get_deeplabcut_path
 
-from deeplabcut.gui.analyze_videos import *
-from deeplabcut.gui.create_new_project import *
-from deeplabcut.gui.create_training_dataset import *
-from deeplabcut.gui.create_videos import *
-from deeplabcut.gui.evaluate_network import *
-from deeplabcut.gui.extract_frames import *
-from deeplabcut.gui.extract_outlier_frames import *
-from deeplabcut.gui.label_frames import *
-from deeplabcut.gui.load_project import *
-from deeplabcut.gui.media import *
-from deeplabcut.gui.refine_labels import *
-from deeplabcut.gui.train_network import *
-from deeplabcut.gui.video_editing import *
-from deeplabcut.gui.welcome import *
+
+DLC_PATH = get_deeplabcut_path()
+MEDIA_PATH = os.path.join(DLC_PATH, "gui", "media")
+LOGO_PATH = os.path.join(MEDIA_PATH, "logo.png")
