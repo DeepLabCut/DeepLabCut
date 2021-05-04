@@ -25,5 +25,4 @@ dependencies:
   - nb_conda
   - Shapely
   - pip:
-    - tensorflow-gpu==1.15.5
     - deeplabcut[gui]

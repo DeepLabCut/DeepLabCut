@@ -4,6 +4,8 @@
 #© A. & M. Mathis Labs
 #https://github.com/DeepLabCut/DeepLabCut
 #Please see AUTHORS for contributors.
+
+#https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 #Licensed under GNU Lesser General Public License v3.0
 #
 # install: conda env create -f DLC-CPU-LITE.yaml
@@ -14,10 +16,9 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.7
+  - python=3.8
   - pip
   - jupyter
   - nb_conda
   - pip:
-    - tensorflow==1.15.5
     - deeplabcut

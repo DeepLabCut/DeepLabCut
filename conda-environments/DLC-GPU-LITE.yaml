@@ -18,12 +18,11 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.7
+  - python=3.8
   - pip
   - cudnn=7
   - jupyter
   - nb_conda
   - Shapely
   - pip:
-    - tensorflow-gpu==1.15.5
     - deeplabcut
