@@ -9,23 +9,30 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import os
+import pickle
+import shutil
 import warnings
-from pathlib import Path
+from collections import defaultdict
+from itertools import groupby
+from tqdm import tqdm
 
+import networkx as nx
 import numpy as np
 import pandas as pd
-from bayes_opt import BayesianOptimization
-from bayes_opt.event import Events
-from bayes_opt.logger import JSONLogger
-from bayes_opt.util import load_logs
+from scipy.spatial import cKDTree
+from scipy.spatial.distance import cdist
 from scipy.optimize import linear_sum_assignment
+from sklearn.metrics.cluster import contingency_matrix
 
-from deeplabcut.pose_estimation_tensorflow import return_evaluate_network_data
-from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
+from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import (
+    Assembler,
+    evaluate_assembly,
+    _parse_ground_truth_data,
+)
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
 
-def set_up_evaluation(data):
+def _set_up_evaluation(data):
     params = dict()
     params["joint_names"] = data["metadata"]["all_joints_names"]
     params["num_joints"] = len(params["joint_names"])
@@ -39,436 +46,541 @@ def set_up_evaluation(data):
     return params
 
 
-def compute_crossval_metrics(
-    config_path,
-    inference_cfg,
-    shuffle=1,
-    trainingsetindex=0,
-    modelprefix="",
-    snapshotindex=-1,
-    dcorr=5,
-    leastbpts=3,
-):
+def _form_original_path(path):
+    root, filename = os.path.split(path)
+    base, ext = os.path.splitext(filename)
+    return os.path.join(root, filename.split("c")[0] + ext)
 
-    fns = return_evaluate_network_data(
-        config_path,
-        shuffle=shuffle,
-        trainingsetindex=trainingsetindex,
-        modelprefix=modelprefix,
+
+def _unsorted_unique(array):
+    _, inds = np.unique(array, return_index=True)
+    return np.asarray(array)[np.sort(inds)]
+
+
+def _rebuild_uncropped_metadata(metadata, image_paths, output_name=""):
+    train_inds_orig = set(metadata["data"]["trainIndices"])
+    train_inds, test_inds = [], []
+    for k, (_, group) in tqdm(enumerate(groupby(image_paths, _form_original_path))):
+        if image_paths.index(next(group)) in train_inds_orig:
+            train_inds.append(k)
+        else:
+            test_inds.append(k)
+    meta_new = metadata.copy()
+    meta_new["data"]["trainIndices"] = train_inds
+    meta_new["data"]["testIndices"] = test_inds
+
+    if output_name:
+        with open(output_name, "wb") as file:
+            pickle.dump(meta_new, file)
+
+    return meta_new
+
+
+def _rebuild_uncropped_data(data, params, output_name=""):
+    """
+    Reconstruct predicted data as if they had been obtained on full size images.
+    This is required to evaluate part affinity fields and cross-validate
+    and animal assembly.
+
+    Parameters
+    ----------
+    data : dict
+        Dictionary of predicted data as loaded from
+        _full.pickle files under evaluation-results.
+
+    params : dict
+        Evaluation settings. Formed from the metadata using _set_up_evaluation().
+
+    output_name : str
+        If passed, dump the uncropped data into a pickle file of the same name.
+
+    Returns
+    -------
+    (uncropped data, list of image paths)
+
+    """
+    image_paths = params["imnames"]
+    bodyparts = params["joint_names"]
+    idx = (
+        data[image_paths[0]]["groundtruth"][2]
+        .unstack("coords")
+        .reindex(bodyparts, level="bodyparts")
+        .index
     )
+    individuals = idx.get_level_values("individuals").unique()
+    has_single = "single" in individuals
+    n_individuals = len(individuals) - has_single
 
-    predictionsfn = fns[snapshotindex]
-    data, metadata = auxfun_multianimal.LoadFullMultiAnimalData(predictionsfn)
-    params = set_up_evaluation(data)
-
-    n_images = len(params["imnames"])
-    poses = []
-    poses_gt = []
-    stats = np.full(
-        (n_images, 7), np.nan
-    )  # RMSE, hits, misses, false_pos, num_detections, pck
-    columns = ["train_iter", "train_frac", "shuffle"]
-    columns += [
-        "_".join((b, a))
-        for a in ("train", "test")
-        for b in ("rmse", "hits", "misses", "falsepos", "ndetects", "pck", "rpck")
-    ]
-    for n, imname in enumerate(params["imnames"]):
-        animals = inferenceutils.assemble_individuals(
-            inference_cfg,
-            data[imname],
-            params["num_joints"],
-            params["bpts"],
-            params["ibpts"],
-            params["paf"],
-            params["paf_graph"],
-            params["paf_links"],
-            evaluation=True,
-        )
-        n_animals = len(animals)
-        if n_animals:
-            _, _, GT = data[imname]["groundtruth"]
-            GT = GT.droplevel("scorer").unstack(level=["bodyparts", "coords"])
-            gt = GT.values.reshape((GT.shape[0], -1, 2))
-            poses_gt.append(gt)
-
-            if (
-                leastbpts > 0
-            ):  # ONLY KEEP animals with at least as many bpts (to get rid of crops that cannot be assembled)
-                gt = gt[np.nansum(gt, axis=(1, 2)) > leastbpts]
-
-            temp = np.stack(animals).reshape((n_animals, -1, 3))
-            poses.append(temp)
-            ani = temp[:, : gt.shape[1], :2]
-            mat = np.full((gt.shape[0], n_animals), np.nan)
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", category=RuntimeWarning)
-                for i in range(len(gt)):
-                    for j in range(len(animals)):
-                        mat[i, j] = np.sqrt(
-                            np.nanmean(np.sum((gt[i] - ani[j, :, :2]) ** 2, axis=1))
-                        )
-
-            if np.nansum(mat) > 0:  # also assures at least one not nan np.size(mat)>0:
-                mat[np.isnan(mat)] = np.nanmax(mat) + 1
-                row_indices, col_indices = linear_sum_assignment(mat)
-                stats[n, 0] = mat[row_indices, col_indices].mean()  # rmse
-
-                gt_annot = np.any(~np.isnan(gt), axis=2)
-                gt_matched = gt_annot[row_indices].flatten()
-
-                dlc_annot = np.any(~np.isnan(ani), axis=2)  # DLC assemblies
-                dlc_matched = dlc_annot[col_indices].flatten()
-
-                stats[n, 1] = np.logical_and(gt_matched, dlc_matched).sum()  # hits
-                stats[n, 2] = gt_annot.sum() - stats[n, 1]  # misses
-                stats[n, 3] = np.logical_and(
-                    ~gt_matched, dlc_matched
-                ).sum()  # additional detections
-                stats[n, 4] = n_animals
-
-                numgtpts = gt_annot.sum()
-                # animal & bpt-wise distance!
-                if numgtpts > 0:
-                    # corrkps=np.sum((gt[row_indices]-ani[col_indices])**2,axis=2)<dcorr**2
-                    dists = np.sum((gt[row_indices] - ani[col_indices]) ** 2, axis=2)
-                    corrkps = dists[np.isfinite(dists)] < dcorr ** 2
-                    pck = (
-                        corrkps.sum() * 1.0 / numgtpts
-                    )  # weigh by actually annotated ones!
-                    rpck = (
-                        np.sum(
-                            np.exp(-dists[np.isfinite(dists)] * 1.0 / (2 * dcorr ** 2))
-                        )
-                        * 1.0
-                        / numgtpts
-                    )
-
-                else:
-                    pck = 1.0  # does that make sense? As a convention fully correct...
-                    rpck = 1.0
-
-                stats[n, 5] = pck
-                stats[n, 6] = rpck
-
-    train_iter = int(predictionsfn.split("-")[-1].split(".")[0])
-    train_frac = int(predictionsfn.split("trainset")[1].split("shuffle")[0])
-
+    data_new = dict()
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=RuntimeWarning)
-        res = np.r_[
-            train_iter,
-            train_frac,
-            shuffle,
-            np.nanmean(stats[metadata["data"]["trainIndices"]], axis=0),
-            np.nanmean(stats[metadata["data"]["testIndices"]], axis=0),
-        ]
+        for basename, group in tqdm(groupby(image_paths, _form_original_path)):
+            imnames_ = list(group)
+            n_crops = len(imnames_)
 
-    return pd.DataFrame(res.reshape((1, -1)), columns=columns), poses_gt, poses
+            # Sort crop patches to maximize the probability they overlap with others
+            all_coords_gt = [
+                data[imname]["groundtruth"][2].to_numpy().reshape((-1, 2))
+                for imname in imnames_
+            ]
+            overlap = np.zeros((n_crops, n_crops))
+            inds = list(zip(*np.triu_indices(n_crops, k=1)))
+            masks = dict()  # Cache boolean masks
+            for i1, i2 in inds:
+                if i1 not in masks:
+                    masks[i1] = np.isfinite(all_coords_gt[i1]).any(axis=1)
+                if i2 not in masks:
+                    masks[i2] = np.isfinite(all_coords_gt[i2]).any(axis=1)
+                overlap[i1, i2] = overlap[i2, i1] = np.sum(masks[i1] & masks[i2])
+            count = np.count_nonzero(overlap, axis=1)
+            imnames = [imnames_[i] for i in np.argsort(count)[::-1]]
+
+            # Form the ground truth back
+            ref_gt = None
+            all_trans = np.zeros(
+                (len(imnames), 2)
+            )  # Store translations w.r.t. first ref crop
+            for i, imname in enumerate(imnames):
+                coords_gt = data[imname]["groundtruth"][2].to_numpy().reshape((-1, 2))
+                if ref_gt is None:
+                    ref_gt = coords_gt
+                    continue
+                trans = np.nanmean(coords_gt - ref_gt, axis=0)
+                if np.all(~np.isnan(trans)):
+                    all_trans[i] = trans
+                empty = np.isnan(ref_gt)
+                has_value = ~np.isnan(coords_gt)
+                mask = np.any(empty & has_value, axis=1)
+                if mask.any():
+                    coords_gt_trans = coords_gt - all_trans[i]
+                    ref_gt[mask] = coords_gt_trans[mask]
+
+            # Match detections across crops
+            temp = pd.DataFrame(ref_gt, index=idx, columns=["x", "y"])
+            temp.columns.names = ["coords"]
+            if has_single:
+                temp.drop("single", level="individuals", inplace=True)
+            ref_pred = np.full(
+                (n_individuals, len(temp) // n_individuals, 4 + n_individuals), np.nan
+            )  # Hold x, y, prob, dist, ids
+            costs = dict()
+            shape = n_individuals, n_individuals
+            for ind in params["paf"]:
+                costs[ind] = {"m1": np.zeros(shape), "distance": np.full(shape, np.inf)}
+            if not np.isnan(temp.to_numpy()).all():
+                ref_gt_ = dict()
+                for bpt, df_ in temp.groupby("bodyparts"):
+                    values = df_.to_numpy()
+                    inds = np.flatnonzero(np.all(~np.isnan(values), axis=1))
+                    ref_gt_[bpt] = values, inds
+                for i, imname in enumerate(imnames):
+                    coords_pred = data[imname]["prediction"]["coordinates"][0]
+                    probs_pred = data[imname]["prediction"]["confidence"]
+                    costs_pred = data[imname]["prediction"]["costs"]
+                    try:
+                        ids_pred = data[imname]["prediction"]["identity"]
+                    except KeyError:
+                        ids_pred = None
+                    map_ = dict()
+                    for n, bpt in enumerate(ref_gt_):
+                        xy_gt, inds_gt = ref_gt_[bpt]
+                        ind = bodyparts.index(bpt)
+                        xy = coords_pred[ind]
+                        prob = probs_pred[ind]
+                        ids = None if ids_pred is None else ids_pred[ind]
+                        if inds_gt.size and xy.size:
+                            xy_trans = xy - all_trans[i]
+                            d = cdist(xy_gt[inds_gt], xy_trans)
+                            rows, cols = linear_sum_assignment(d)
+                            probs_ = prob[cols]
+                            ids_ = ids[cols] if ids is not None else None
+                            dists_ = d[rows, cols]
+                            inds_rows = inds_gt[rows]
+                            map_[n] = inds_rows, cols
+                            is_free = np.isnan(ref_pred[inds_rows, n]).all(axis=1)
+                            closer = dists_ < ref_pred[inds_rows, n, 3]
+                            mask = np.logical_or(is_free, closer)
+                            if mask.any():
+                                coords_ = xy_trans[cols]
+                                sl = inds_rows[mask]
+                                ref_pred[sl, n, :2] = coords_[mask]
+                                ref_pred[sl, n, 2] = probs_[mask].squeeze()
+                                ref_pred[sl, n, 3] = dists_[mask]
+                                if ids_ is not None:
+                                    ref_pred[sl, n, 4:] = ids_[mask]
+                    # Store the costs associated with the retained candidates
+                    for n, (ind1, ind2) in enumerate(params["paf_graph"]):
+                        if ind1 in map_ and ind2 in map_:
+                            sl1 = np.ix_(map_[ind1][0], map_[ind2][0])
+                            sl2 = np.ix_(map_[ind1][1], map_[ind2][1])
+                            mask = costs_pred[n]["m1"][sl2] > costs[n]["m1"][sl1]
+                            if mask.any():
+                                inds_lin = (sl1[0] * n_individuals + sl1[1])[mask]
+                                costs[n]["m1"].ravel()[inds_lin] = costs_pred[n]["m1"][
+                                    sl2
+                                ][mask]
+                                costs[n]["distance"].ravel()[inds_lin] = costs_pred[n][
+                                    "distance"
+                                ][sl2][mask]
+
+            ref_pred_ = ref_pred.swapaxes(0, 1)
+            coordinates = ref_pred_[..., :2]
+            confidence = ref_pred_[..., 2]
+            pred_dict = {
+                "prediction": {
+                    "coordinates": (coordinates,),
+                    "confidence": confidence,
+                    "costs": costs,
+                },
+                "groundtruth": (None, None, temp.stack(dropna=False)),
+            }
+            identities = ref_pred_[..., 4:]
+            if ~np.all(np.isnan(identities)):
+                pred_dict["prediction"]["identity"] = identities
+            data_new[basename] = pred_dict
+
+    image_paths = list(data_new)
+    data_new["metadata"] = data["metadata"]
+
+    if output_name:
+        with open(output_name, "wb") as file:
+            pickle.dump(data_new, file)
+
+    return data_new, image_paths
 
 
-def compute_crossval_metrics_preloadeddata(
-    params,
-    columns,
+def _rebuild_uncropped_in(base_folder,):
+    for dirpath, dirnames, filenames in os.walk(base_folder):
+        for file in filenames:
+            if file.endswith("_full.pickle"):
+                full_data_file = os.path.join(dirpath, file)
+                metadata_file = full_data_file.replace("_full.", "_meta.")
+                with open(full_data_file, "rb") as file:
+                    data = pickle.load(file)
+                with open(metadata_file, "rb") as file:
+                    metadata = pickle.load(file)
+                params = _set_up_evaluation(data)
+                _rebuild_uncropped_data(
+                    data, params, full_data_file.replace(".pickle", "_uncropped.pickle")
+                )
+                _rebuild_uncropped_metadata(
+                    metadata,
+                    params["imnames"],
+                    metadata_file.replace(".pickle", "_uncropped.pickle"),
+                )
+
+
+def _find_closest_neighbors(query, ref, k=3):
+    n_preds = ref.shape[0]
+    tree = cKDTree(ref)
+    dist, inds = tree.query(query, k=k)
+    idx = np.argsort(dist[:, 0])
+    neighbors = np.full(len(query), -1, dtype=int)
+    picked = set()
+    for i, ind in enumerate(inds[idx]):
+        for j in ind:
+            if j not in picked:
+                picked.add(j)
+                neighbors[idx[i]] = j
+                break
+        if len(picked) == n_preds:
+            break
+    return neighbors
+
+
+def _calc_separability(
+    vals_left, vals_right, n_bins=101, metric="jeffries", max_sensitivity=False
+):
+    if metric not in ("jeffries", "auc"):
+        raise ValueError("`metric` should be either 'jeffries' or 'auc'.")
+
+    bins = np.linspace(0, 1, n_bins)
+    hist_left = np.histogram(vals_left, bins=bins)[0]
+    hist_left = hist_left / hist_left.sum()
+    hist_right = np.histogram(vals_right, bins=bins)[0]
+    hist_right = hist_right / hist_right.sum()
+    tpr = np.cumsum(hist_right)
+    if metric == "jeffries":
+        sep = np.sqrt(
+            2 * (1 - np.sum(np.sqrt(hist_left * hist_right)))
+        )  # Jeffries-Matusita distance
+    else:
+        sep = np.trapz(np.cumsum(hist_left), tpr)
+    if max_sensitivity:
+        threshold = bins[max(1, np.argmax(tpr > 0))]
+    else:
+        threshold = bins[np.argmin(1 - np.cumsum(hist_left) + tpr)]
+    return sep, threshold
+
+
+def _calc_within_between_pafs(data, metadata, per_bodypart=True, train_set_only=True):
+    train_inds = set(metadata["data"]["trainIndices"])
+    within_train = defaultdict(list)
+    within_test = defaultdict(list)
+    between_train = defaultdict(list)
+    between_test = defaultdict(list)
+    mask_diag = None
+    for i, (key, dict_) in enumerate(data.items()):
+        if key == "metadata":
+            continue
+        is_train = i in train_inds
+        if train_set_only and not is_train:
+            continue
+        costs = dict_["prediction"]["costs"]
+        for k, v in costs.items():
+            paf = v["m1"]
+            nonzero = paf != 0
+            if mask_diag is None:
+                mask_diag = np.eye(paf.shape[0], dtype=bool)
+            within_vals = paf[np.logical_and(mask_diag, nonzero)]
+            between_vals = paf[np.logical_and(~mask_diag, nonzero)]
+            if is_train:
+                within_train[k].extend(within_vals)
+                between_train[k].extend(between_vals)
+            else:
+                within_test[k].extend(within_vals)
+                between_test[k].extend(between_vals)
+    if not per_bodypart:
+        within_train = np.concatenate([*within_train.values()])
+        within_test = np.concatenate([*within_test.values()])
+        between_train = np.concatenate([*between_train.values()])
+        between_test = np.concatenate([*between_test.values()])
+    return (within_train, within_test), (between_train, between_test)
+
+
+def _benchmark_paf_graphs(
+    config,
     inference_cfg,
     data,
-    trainIndices,
-    testIndices,
-    train_iter,
-    train_frac,
-    shuffle,
-    lowerbound,
-    upperbound,
-    dcorr,
-    leastbpts,
+    paf_inds,
+    greedy=False,
+    add_discarded=True,
+    identity_only=False,
+    calibration_file="",
+    oks_sigma=0.1,
 ):
-    n_images = len(params["imnames"])
-    stats = np.full(
-        (n_images, 7), np.nan
-    )  # RMSE, hits, misses, false_pos, num_detections, pck, rpck
-    for n, imname in enumerate(params["imnames"]):
-        animals = inferenceutils.assemble_individuals(
-            inference_cfg,
-            data[imname],
-            params["num_joints"],
-            params["bpts"],
-            params["ibpts"],
-            params["paf"],
-            params["paf_graph"],
-            params["paf_links"],
-            lowerbound=lowerbound,
-            upperbound=upperbound,
-            evaluation=True,
-        )
+    n_multi = len(auxfun_multianimal.extractindividualsandbodyparts(config)[2])
+    data_ = {"metadata": data.pop("metadata")}
+    for k, v in data.items():
+        data_[k] = v["prediction"]
+    ass = Assembler(
+        data_,
+        max_n_individuals=inference_cfg["topktoretain"],
+        n_multibodyparts=n_multi,
+        greedy=greedy,
+        pcutoff=inference_cfg.get("pcutoff", 0.1),
+        min_affinity=inference_cfg.get("pafthreshold", 0.1),
+        add_discarded=add_discarded,
+        identity_only=identity_only,
+    )
+    if calibration_file:
+        ass.calibrate(calibration_file)
 
-        n_animals = len(animals)
-        if n_animals:
-            _, _, GT = data[imname]["groundtruth"]
-            GT = GT.droplevel("scorer").unstack(level=["bodyparts", "coords"])
-            gt = GT.values.reshape((GT.shape[0], -1, 2))
+    params = ass.metadata
+    image_paths = params["imnames"]
+    bodyparts = params["joint_names"]
+    idx = (
+        data[image_paths[0]]["groundtruth"][2]
+        .unstack("coords")
+        .reindex(bodyparts, level="bodyparts")
+        .index
+    )
+    individuals = idx.get_level_values("individuals").unique()
+    n_individuals = len(individuals)
+    map_ = dict(zip(individuals, range(n_individuals)))
 
-            if (
-                leastbpts > 0
-            ):  # ONLY KEEP animals with at least as many bpts (to get rid of crops that cannot be assembled)
-                gt = gt[np.nansum(gt, axis=(1, 2)) > leastbpts]
+    # Form ground truth beforehand
+    ground_truth = []
+    for i, imname in enumerate(image_paths):
+        temp = data[imname]["groundtruth"][2]
+        ground_truth.append(temp.to_numpy().reshape((-1, 2)))
+    ground_truth = np.stack(ground_truth)
+    temp = np.ones((*ground_truth.shape[:2], 3))
+    temp[..., :2] = ground_truth
+    temp = temp.reshape((temp.shape[0], n_individuals, -1, 3))
+    ass_true_dict = _parse_ground_truth_data(temp)
+    ids = np.vectorize(map_.get)(idx.get_level_values("individuals").to_numpy())
+    ground_truth = np.insert(ground_truth, 2, ids, axis=2)
 
-            ani = np.stack(animals).reshape((n_animals, -1, 3))[:, : gt.shape[1], :2]
-            mat = np.full((gt.shape[0], n_animals), np.nan)
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", category=RuntimeWarning)
-                for i in range(len(gt)):
-                    for j in range(len(animals)):
-                        mat[i, j] = np.sqrt(
-                            np.nanmean(np.sum((gt[i] - ani[j, :, :2]) ** 2, axis=1))
-                        )
+    # Assemble animals on the full set of detections
+    paf_inds = sorted(paf_inds, key=len)
+    paf_graph = ass.graph
+    n_graphs = len(paf_inds)
+    all_scores = []
+    all_metrics = []
+    for j, paf in enumerate(paf_inds, start=1):
+        print(f"Graph {j}|{n_graphs}")
+        graph = [paf_graph[i] for i in paf]
+        ass.paf_inds = paf
+        ass.graph = graph
+        ass.assemble()
+        oks = evaluate_assembly(ass.assemblies, ass_true_dict, oks_sigma)
+        all_metrics.append(oks)
+        scores = np.full((len(image_paths), 2), np.nan)
+        for i, imname in enumerate(tqdm(image_paths)):
+            gt = ground_truth[i]
+            gt = gt[~np.isnan(gt).any(axis=1)]
+            if len(np.unique(gt[:, 2])) < 2:  # Only consider frames with 2+ animals
+                continue
 
-            if np.nansum(mat) > 0:  # np.size(mat)>0:
-                mat[np.isnan(mat)] = np.nanmax(mat) + 1
-                row_indices, col_indices = linear_sum_assignment(mat)
-                stats[n, 0] = mat[row_indices, col_indices].mean()  # rmse
+            # Count the number of unassembled bodyparts
+            n_dets = len(gt)
+            animals = ass.assemblies.get(i)
+            if animals is None:
+                if n_dets:
+                    scores[i, 0] = 1
+            else:
+                animals = [
+                    np.c_[animal.data, np.ones(animal.data.shape[0]) * n]
+                    for n, animal in enumerate(animals)
+                ]
+                hyp = np.concatenate(animals)
+                hyp = hyp[~np.isnan(hyp).any(axis=1)]
+                scores[i, 0] = (n_dets - hyp.shape[0]) / n_dets
+                neighbors = _find_closest_neighbors(gt[:, :2], hyp[:, :2])
+                valid = neighbors != -1
+                id_gt = gt[valid, 2]
+                id_hyp = hyp[neighbors[valid], -1]
+                mat = contingency_matrix(id_gt, id_hyp)
+                purity = mat.max(axis=0).sum() / mat.sum()
+                scores[i, 1] = purity
+        all_scores.append((scores, paf))
 
-                gt_annot = np.any(~np.isnan(gt), axis=2)
-                gt_matched = gt_annot[row_indices].flatten()
+    dfs = []
+    for score, inds in all_scores:
+        df = pd.DataFrame(score, columns=["miss", "purity"])
+        df["ngraph"] = len(inds)
+        dfs.append(df)
+    big_df = pd.concat(dfs)
+    group = big_df.groupby("ngraph")
+    return (all_scores, group.agg(["mean", "std"]).T, all_metrics)
 
-                dlc_annot = np.any(~np.isnan(ani), axis=2)  # DLC assemblies
-                dlc_matched = dlc_annot[col_indices].flatten()
 
-                stats[n, 1] = np.logical_and(gt_matched, dlc_matched).sum()  # hits
-                stats[n, 2] = gt_annot.sum() - stats[n, 1]  # misses
-                stats[n, 3] = np.logical_and(
-                    ~gt_matched, dlc_matched
-                ).sum()  # additional detections
-                stats[n, 4] = n_animals
+def _get_n_best_paf_graphs(
+    data,
+    metadata,
+    full_graph,
+    n_graphs=10,
+    root=None,
+    which="best",
+    ignore_inds=None,
+    metric="auc",
+):
+    if which not in ("best", "worst"):
+        raise ValueError('`which` must be either "best" or "worst"')
 
-                numgtpts = gt_annot.sum()
-                # animal & bpt-wise distance!
-                if numgtpts > 0:
-                    # corrkps=np.sum((gt[row_indices]-ani[col_indices])**2,axis=2)<dcorr**2
-                    dists = np.sum((gt[row_indices] - ani[col_indices]) ** 2, axis=2)
-                    corrkps = dists[np.isfinite(dists)] < dcorr ** 2
-                    pck = (
-                        corrkps.sum() * 1.0 / numgtpts
-                    )  # weigh by actually annotated ones!
-                    rpck = (
-                        np.sum(
-                            np.exp(-dists[np.isfinite(dists)] * 1.0 / (2 * dcorr ** 2))
-                        )
-                        * 1.0
-                        / numgtpts
-                    )
+    (within_train, within_test), (between_train, _) = _calc_within_between_pafs(
+        data, metadata, train_set_only=False
+    )
 
-                else:
-                    pck = 1.0  # does that make sense? As a convention fully correct...
-                    rpck = 1.0
-
-                stats[n, 5] = pck
-                stats[n, 6] = rpck
-
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", category=RuntimeWarning)
-        res = np.r_[
-            train_iter,
-            train_frac,
-            shuffle,
-            np.nanmean(stats[trainIndices], axis=0),
-            np.nanmean(stats[testIndices], axis=0),
+    # Handle unlabeled bodyparts...
+    existing_edges = set(k for k, v in within_test.items() if v)
+    if ignore_inds is not None:
+        existing_edges = existing_edges.difference(ignore_inds)
+    existing_edges = list(existing_edges)
+    scores, thresholds = zip(
+        *[
+            _calc_separability(b_train, w_train, metric=metric)
+            for n, (w_train, b_train) in enumerate(
+                zip(within_train.values(), between_train.values())
+            )
+            if n in existing_edges
         ]
-
-    return pd.DataFrame(res.reshape((1, -1)), columns=columns)
-
-
-def bayesian_search(
-    config_path,
-    inferencecfg,
-    pbounds,
-    edgewisecondition=True,
-    shuffle=1,
-    trainingsetindex=0,
-    modelprefix="",
-    snapshotindex=-1,
-    target="rpck_test",
-    maximize=True,
-    init_points=20,
-    n_iter=50,
-    acq="ei",
-    log_file=None,
-    dcorr=5,
-    leastbpts=3,
-    printingintermediatevalues=True,
-):  #
-
-    if "rpck" in target:
-        assert maximize == True
-
-    if "rmse" in target:
-        assert maximize == False
-
-    cfg = auxiliaryfunctions.read_config(config_path)
-    evaluationfolder = os.path.join(
-        cfg["project_path"],
-        str(
-            auxiliaryfunctions.GetEvaluationFolder(
-                cfg["TrainingFraction"][int(trainingsetindex)],
-                shuffle,
-                cfg,
-                modelprefix=modelprefix,
-            )
-        ),
     )
 
-    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
-        cfg,
-        shuffle,
-        cfg["TrainingFraction"][int(trainingsetindex)],
-        cfg["iteration"],
-        modelprefix=modelprefix,
-    )
-
-    # load params
-    fns = return_evaluate_network_data(
-        config_path,
-        shuffle=shuffle,
-        trainingsetindex=trainingsetindex,
-        modelprefix=modelprefix,
-    )
-    predictionsfn = fns[snapshotindex]
-    data, metadata = auxfun_multianimal.LoadFullMultiAnimalData(predictionsfn)
-    params = set_up_evaluation(data)
-    columns = ["train_iter", "train_frac", "shuffle"]
-    columns += [
-        "_".join((b, a))
-        for a in ("train", "test")
-        for b in ("rmse", "hits", "misses", "falsepos", "ndetects", "pck", "rpck")
-    ]
-
-    train_iter = trainingsetindex  # int(predictionsfn.split('-')[-1].split('.')[0])
-    train_frac = cfg["TrainingFraction"][
-        train_iter
-    ]  # int(predictionsfn.split('trainset')[1].split('shuffle')[0])
-    trainIndices = metadata["data"]["trainIndices"]
-    testIndices = metadata["data"]["testIndices"]
-
-    if edgewisecondition:
-        mf = str(
-            auxiliaryfunctions.GetModelFolder(
-                cfg["TrainingFraction"][int(trainingsetindex)],
-                shuffle,
-                cfg,
-                modelprefix=modelprefix,
-            )
-        )
-        modelfolder = os.path.join(cfg["project_path"], mf)
-        path_inferencebounds_config = (
-            Path(modelfolder) / "test" / "inferencebounds.yaml"
-        )
-        try:
-            inferenceboundscfg = auxiliaryfunctions.read_plainconfig(
-                path_inferencebounds_config
-            )
-        except FileNotFoundError:
-            print("Computing distances...")
-            from deeplabcut.pose_estimation_tensorflow import calculatepafdistancebounds
-
-            inferenceboundscfg = calculatepafdistancebounds(
-                config_path, shuffle, trainingsetindex
-            )
-            auxiliaryfunctions.write_plainconfig(
-                path_inferencebounds_config, inferenceboundscfg
-            )
-
-        partaffinityfield_graph = params["paf_graph"]
-        upperbound = np.array(
-            [
-                float(
-                    inferenceboundscfg[str(edge[0]) + "_" + str(edge[1])]["intra_max"]
-                )
-                for edge in partaffinityfield_graph
-            ]
-        )
-        lowerbound = np.array(
-            [
-                float(
-                    inferenceboundscfg[str(edge[0]) + "_" + str(edge[1])]["intra_min"]
-                )
-                for edge in partaffinityfield_graph
-            ]
-        )
-
-        upperbound *= inferencecfg["upperbound_factor"]
-        lowerbound *= inferencecfg["lowerbound_factor"]
-
+    # Find minimal skeleton
+    G = nx.Graph()
+    for edge, score in zip(existing_edges, scores):
+        G.add_edge(*full_graph[edge], weight=score)
+    if which == "best":
+        order = np.asarray(existing_edges)[np.argsort(scores)[::-1]]
+        if root is None:
+            root = []
+            for edge in nx.maximum_spanning_edges(G, data=False):
+                root.append(full_graph.index(list(edge)))
     else:
-        lowerbound = None
-        upperbound = None
+        order = np.asarray(existing_edges)[np.argsort(scores)]
+        if root is None:
+            root = []
+            for edge in nx.minimum_spanning_edges(G, data=False):
+                root.append(full_graph.index(list(edge)))
 
-    def dlc_hyperparams(**kwargs):
-        inferencecfg.update(kwargs)
-        # Ensure type consistency
-        for k, (bound, _) in pbounds.items():
-            inferencecfg[k] = type(bound)(inferencecfg[k])
+    n_edges = len(existing_edges) - len(root)
+    lengths = np.linspace(0, n_edges, min(n_graphs, n_edges + 1), dtype=int)[1:]
+    order = order[np.isin(order, root, invert=True)]
+    paf_inds = [root]
+    for length in lengths:
+        paf_inds.append(root + list(order[:length]))
+    return paf_inds, dict(zip(existing_edges, scores))
 
-        stats = compute_crossval_metrics_preloadeddata(
-            params,
-            columns,
-            inferencecfg,
-            data,
-            trainIndices,
-            testIndices,
-            train_iter,
-            train_frac,
-            shuffle,
-            lowerbound,
-            upperbound,
-            dcorr=dcorr,
-            leastbpts=leastbpts,
-        )
 
-        # stats = compute_crossval_metrics(config_path, inferencecfg, shuffle,trainingsetindex,
-        #                                    dcorr=dcorr,leastbpts=leastbpts,modelprefix=modelprefix)
+def _filter_unwanted_paf_connections(config, paf_graph):
+    """Get rid of skeleton connections between multi and unique body parts."""
+    from itertools import combinations
 
-        if printingintermediatevalues:
-            print(
-                "rpck",
-                stats["rpck_test"].values[0],
-                "rpck train:",
-                stats["rpck_train"].values[0],
-            )
-            print(
-                "rmse",
-                stats["rmse_test"].values[0],
-                "miss",
-                stats["misses_test"].values[0],
-                "hit",
-                stats["hits_test"].values[0],
-            )
+    cfg = auxiliaryfunctions.read_config(config)
+    multi = auxfun_multianimal.extractindividualsandbodyparts(cfg)[2]
+    desired = list(combinations(range(len(multi)), 2))
+    return [i for i, edge in enumerate(paf_graph) if tuple(edge) not in desired]
 
-        # val = stats['rmse_test'].values[0]*(1+stats['misses_test'].values[0]*1./stats['hits_test'].values[0])
-        val = stats[target].values[0]
-        if np.isnan(val):
-            if maximize:  # pck case
-                val = -1e9  # random small number
-            else:  # RMSE, return a large RMSE
-                val = 1e9
 
-        if not maximize:
-            val = -val
+def cross_validate_paf_graphs(
+    config,
+    inference_config,
+    full_data_file,
+    metadata_file,
+    output_name="",
+    pcutoff=0.1,
+    greedy=False,
+    add_discarded=True,
+    calibrate=False,
+    overwrite_config=True,
+):
+    cfg = auxiliaryfunctions.read_config(config)
+    inf_cfg = auxiliaryfunctions.read_plainconfig(inference_config)
+    inf_cfg_temp = inf_cfg.copy()
+    inf_cfg_temp["pcutoff"] = pcutoff
 
-        return val
+    with open(full_data_file, "rb") as file:
+        data = pickle.load(file)
+    with open(metadata_file, "rb") as file:
+        metadata = pickle.load(file)
 
-    opt = BayesianOptimization(f=dlc_hyperparams, pbounds=pbounds, random_state=42)
-    if log_file:
-        load_logs(opt, log_file)
-    logger = JSONLogger(
-        path=os.path.join(evaluationfolder, "opti_log" + DLCscorer + ".json")
+    params = _set_up_evaluation(data)
+    to_ignore = _filter_unwanted_paf_connections(config, params["paf_graph"])
+    paf_inds, paf_scores = _get_n_best_paf_graphs(
+        data, metadata, params["paf_graph"], ignore_inds=to_ignore
     )
-    opt.subscribe(Events.OPTIMIZATION_STEP, logger)
-    opt.maximize(init_points=init_points, n_iter=n_iter, acq=acq)
 
-    inferencecfg.update(opt.max["params"])
-    for k, (bound, _) in pbounds.items():
-        tmp = type(bound)(inferencecfg[k])
-        if isinstance(tmp, np.floating):
-            tmp = np.round(tmp, 2).item()
-        inferencecfg[k] = tmp
+    if calibrate:
+        trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+        calibration_file = os.path.join(
+            cfg["project_path"],
+            str(trainingsetfolder),
+            "CollectedData_" + cfg["scorer"] + ".h5",
+        )
+    else:
+        calibration_file = ""
 
-    return inferencecfg, opt
+    results = _benchmark_paf_graphs(
+        cfg,
+        inf_cfg_temp,
+        data,
+        paf_inds,
+        greedy,
+        add_discarded,
+        calibration_file=calibration_file,
+    )
+    # Select optimal PAF graph
+    df = results[1]
+    size_opt = np.argmax((1 - df.loc["miss", "mean"]) * df.loc["purity", "mean"])
+    pose_config = inference_config.replace("inference_cfg", "pose_cfg")
+    if not overwrite_config:
+        shutil.copy(pose_config, pose_config.replace(".yaml", "_old.yaml"))
+    inds = list(paf_inds[size_opt])
+    auxiliaryfunctions.edit_config(
+        pose_config, {"paf_best": [int(ind) for ind in inds]}
+    )
+    if output_name:
+        with open(output_name, "wb") as file:
+            pickle.dump([results], file)

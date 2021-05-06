@@ -45,7 +45,7 @@ class ImagePanel(BasePanel):
 class MainFrame(BaseFrame):
     def __init__(self, parent, config, slider_width=25):
         super(MainFrame, self).__init__(
-            "DeepLabCut2.0 - Manual Frame Extraction", parent,
+            "DeepLabCut2.0 - Manual Frame Extraction", parent
         )
 
         ###################################################################################################################################################
@@ -158,8 +158,9 @@ class MainFrame(BaseFrame):
         self.date = self.cfg["date"]
         self.trainFraction = self.cfg["TrainingFraction"]
         self.trainFraction = self.trainFraction[0]
-        self.videos = list(self.cfg.get("video_sets_original")
-                           or self.cfg["video_sets"])
+        self.videos = list(
+            self.cfg.get("video_sets_original") or self.cfg["video_sets"]
+        )
         self.bodyparts = self.cfg["bodyparts"]
         self.colormap = plt.get_cmap(self.cfg["colormap"])
         self.colormap = self.colormap.reversed()

@@ -120,7 +120,7 @@ def AnalyzeMultiAnimalVideo(
         metadata = {"data": dictionary}
         print("Saving results in %s..." % (destfolder))
 
-        auxfun_multianimal.SaveFullMultiAnimalData(PredicteData, metadata, dataname)
+        _ = auxfun_multianimal.SaveFullMultiAnimalData(PredicteData, metadata, dataname)
 
 
 def GetPoseandCostsF(
@@ -144,11 +144,11 @@ def GetPoseandCostsF(
 
     PredicteData = {}
     # initializing constants
-    dist_grid = predict.make_nms_grid(dlc_cfg['nmsradius'])
-    stride = dlc_cfg['stride']
+    dist_grid = predict.make_nms_grid(dlc_cfg["nmsradius"])
+    stride = dlc_cfg["stride"]
     halfstride = stride * 0.5
-    num_joints = dlc_cfg['num_joints']
-    det_min_score = dlc_cfg['minconfidence']
+    num_joints = dlc_cfg["num_joints"]
+    det_min_score = dlc_cfg["minconfidence"]
 
     num_idchannel = dlc_cfg.get("num_idchannel", 0)
     while cap.video.isOpened():
@@ -208,12 +208,15 @@ def GetPoseandCostsF(
     cap.close()
     pbar.close()
     PredicteData["metadata"] = {
-        "nms radius": dlc_cfg['nmsradius'],
-        "minimal confidence": dlc_cfg['minconfidence'],
-        "PAFgraph": dlc_cfg['partaffinityfield_graph'],
-        "all_joints": [[i] for i in range(len(dlc_cfg['all_joints']))],
+        "nms radius": dlc_cfg["nmsradius"],
+        "minimal confidence": dlc_cfg["minconfidence"],
+        "PAFgraph": dlc_cfg["partaffinityfield_graph"],
+        "PAFinds": dlc_cfg.get(
+            "paf_best", np.arange(len(dlc_cfg["partaffinityfield_graph"]))
+        ),
+        "all_joints": [[i] for i in range(len(dlc_cfg["all_joints"]))],
         "all_joints_names": [
-            dlc_cfg['all_joints_names'][i] for i in range(len(dlc_cfg['all_joints']))
+            dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))
         ],
         "nframes": nframes,
         "c_engine": c_engine,
@@ -246,8 +249,8 @@ def GetPoseandCostsS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, c_engine
                 inputs,
                 outputs,
                 outall=False,
-                nms_radius=dlc_cfg['nmsradius'],
-                det_min_score=dlc_cfg['minconfidence'],
+                nms_radius=dlc_cfg["nmsradius"],
+                det_min_score=dlc_cfg["minconfidence"],
                 c_engine=c_engine,
             )
         elif counter >= nframes:
@@ -256,12 +259,15 @@ def GetPoseandCostsS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, c_engine
 
     pbar.close()
     PredicteData["metadata"] = {
-        "nms radius": dlc_cfg['nmsradius'],
-        "minimal confidence": dlc_cfg['minconfidence'],
-        "PAFgraph": dlc_cfg['partaffinityfield_graph'],
-        "all_joints": [[i] for i in range(len(dlc_cfg['all_joints']))],
+        "nms radius": dlc_cfg["nmsradius"],
+        "minimal confidence": dlc_cfg["minconfidence"],
+        "PAFgraph": dlc_cfg["partaffinityfield_graph"],
+        "PAFinds": dlc_cfg.get(
+            "paf_best", np.arange(len(dlc_cfg["partaffinityfield_graph"]))
+        ),
+        "all_joints": [[i] for i in range(len(dlc_cfg["all_joints"]))],
         "all_joints_names": [
-            dlc_cfg['all_joints_names'][i] for i in range(len(dlc_cfg['all_joints']))
+            dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))
         ],
         "nframes": nframes,
     }

@@ -86,6 +86,7 @@ class Create_training_dataset(wx.Panel):
         netboxsizer = wx.StaticBoxSizer(net_text, wx.VERTICAL)
         self.net_choice = wx.ComboBox(self, style=wx.CB_READONLY)
         options = [
+            "dlcrnet_ms5",
             "resnet_50",
             "resnet_101",
             "resnet_152",
@@ -146,7 +147,9 @@ class Create_training_dataset(wx.Panel):
             )
             self.cropandlabel.Bind(wx.EVT_RADIOBOX, self.input_crop_size)
             self.cropandlabel.SetSelection(0)
-            self.crop_text = wx.StaticBox(self, label="Crop settings (set to smaller than your input images)")
+            self.crop_text = wx.StaticBox(
+                self, label="Crop settings (set to smaller than your input images)"
+            )
             self.crop_sizer = wx.StaticBoxSizer(self.crop_text, wx.VERTICAL)
             self.crop_widgets = []
             for name, val in [
@@ -171,8 +174,9 @@ class Create_training_dataset(wx.Panel):
         self.hbox3.Add(self.userfeedback, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         if config_file.get("multianimalproject", False):
-            print("more networks are available soon for maDLC, but currenlty this uses DLC-ResNet50 only")
+
             self.model_comparison_choice = "No"
+            print("currently DLCRNet is only supported in multi-animal mode")
         else:
             self.model_comparison_choice = wx.RadioBox(
                 self,
@@ -374,7 +378,10 @@ class Create_training_dataset(wx.Panel):
             else:
                 random = False
             deeplabcut.create_multianimaltraining_dataset(
-                self.config, num_shuffles, Shuffles=[self.shuffle.GetValue()]
+                self.config,
+                num_shuffles,
+                Shuffles=[self.shuffle.GetValue()],
+                net_type=self.net_choice.GetValue(),
             )
         else:
             if self.model_comparison_choice.GetStringSelection() == "No":

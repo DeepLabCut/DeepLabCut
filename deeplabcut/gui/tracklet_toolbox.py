@@ -307,9 +307,7 @@ class TrackletVisualizer:
     def add_point(self, center, animal, bodypart, **kwargs):
         circle = patches.Circle(center, **kwargs)
         self.ax1.add_patch(circle)
-        dp = auxfun_drag.DraggablePoint(
-            circle, bodypart, animal,
-        )
+        dp = auxfun_drag.DraggablePoint(circle, bodypart, animal)
         dp.connect()
         self.dps.append(dp)
 

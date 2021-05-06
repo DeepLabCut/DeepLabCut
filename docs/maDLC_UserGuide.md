@@ -1,51 +1,39 @@
 # DeepLabCut for Multi-Animal Projects <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1596370260800-SP2GWKDPJCOIR7LJ31VM/ke17ZwdGBToddI8pDm48kB4fL2ovSQh5dRlH2jCMtpoUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcSV94BuD0XUinmig_1P1RJNYVU597j3jgswapL4c_w92BJE9r6UgUperYhWQ2ubQ_/workflow.png?format=2500w" width="550" title="maDLC" alt="maDLC" align="right" vspace = "50">
 
+This document should serve as the user guide for maDLC,
+and it is here to support the scientific advances presented in Lauer et al. 2021.
 
-The standard documents include all changes to the package to run standard and maDLC, but here is an extended version compiled for using DeepLabCut 2.2+ with multiple animals. 
-
-Note, we STRONGLY encourage you to use the [Project Manager GUI](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/PROJECT_GUI.md) when you first start using multi-animal mode. Each tab is customized for multi-animal when you create or load a multi-animal project. As long as you follow the recommendations within the GUI, you should be good to go! 
-
-This document should serve as an **advanced user guide for maDLC,**
-and it is here to support the scientific advances presented in a forethcoming preprint.
+Note, we strongly encourage you to use the [Project Manager GUI](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/PROJECT_GUI.md) when you first start using multi-animal mode. Each tab is customized for multi-animal when you create or load a multi-animal project. As long as you follow the recommendations within the GUI, you should be good to go! 
 
 # How to think about using maDLC:
 
 Firstly, you should think of maDLC being **four** parts. 
 - (1) curate data that allows you to track the objects/animals of interest. 
 - (2) Create a high-quality pose estimation model.
-- (3) IF you need to track in time (i.e., propagate identity), you need to perform tracking. 
+- (3) Then, to track in time (i.e., propagate identity), you need to perform assembly and tracking. 
 - (4) Any and all post-processing you wish to do with the output data, either within DLC or outside of it. 
 
 Thus, you should always label, train, and evaluate the pose estimation performance first. If and when that performance is high, then you should go advance to the tracking step (and video analysis). There is a natural break point for this, as you will see below. 
 
-# Getting help with maDLC:
-
-- If you have a detailed question about how to use the code, or you hit errors that are not "bugs" but you want code assistance, please post on the [![Image.sc forum](https://img.shields.io/badge/dynamic/json.svg?label=forum&amp;url=https%3A%2F%2Fforum.image.sc%2Ftags%2Fdeeplabcut.json&amp;query=%24.topic_list.tags.0.topic_count&amp;colorB=brightgreen&amp;&amp;suffix=%20topics&amp;logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC)](https://forum.image.sc/tags/deeplabcut)
-
-- If you have a quick, short question that fits a "chat" format:
-[![Gitter](https://badges.gitter.im/DeepLabCut/community.svg)](https://gitter.im/DeepLabCut/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-
-- If you want to share some results, or see others:
-[![Twitter Follow](https://img.shields.io/twitter/follow/DeepLabCut.svg?label=DeepLabCut&style=social)](https://twitter.com/DeepLabCut)
-
-- If you have a code bug report, please create an issue and show the minimal code to reproduce the error: https://github.com/DeepLabCut/DeepLabCut/issues
-
-- if you are looking for resources to increase your understanding of the software and general guidelines, we have an open source, free course: http://DLCcourse.deeplabcut.org. 
-
-**Please note:** what we cannot do is provided support or help designing your experiments and data analysis. The number of requests for this is too great to sustain. We are happy to answer such questions in the forum as a community, in a scalable way. We hope and believe we have given enough tools and resources to get started and to accelerate your research program, and this is backed by the >500 citations using DLC, 2 clinical trials by others, and countless applications. Thus, we believe this code works, is accessible, and with limited programming knowledge can be used. Please read our [Missions & Values statement](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/MISSION_AND_VALUES.md) to learn more about what we DO hope to provide you. 
-
 # Install and test: 
 
-Install DLC as noted elsewhere, then run the test script found here (you will need to git clone first):
+**Quick start:** If you are using DeepLabCut on the cloud, or otherwise cannot use the GUIs and you should install with: `pip install deeplabcut`; if you need GUI support, please use: `pip install 'deeplabcut[gui]'`.
+
+Install DLC (we recommend using our supplied conda env) then run the test script found here (you will need to git clone first):
 https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/testscript_multianimal.py
 ```python
 python testscript_multianimal.py
 ```
 
-# Get started in the terminal:
+# Get started in the terminal or Project GUI:
+
+**GUI:** simply open your conda env, and windows/linux type `python -m deeplabcut`. MacOS users: `pythonw -m deeplabcut.` 
+Then follow the tabs! It might be useful to read the following, however, so you understand what each command does.
+
+**TERMINAL:** To begin, (windows) navigate to anaconda prompt and right-click to "open as admin ", or (unix/MacOS) simply launch "terminal" on your computer. We assume you have DeepLabCut installed (if not, go [here](/docs/installation.md)). Next, launch your conda env (i.e., for example `conda activate DLC-CPU`).
 
 Start iPython, or if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython`` or ``python``, but otherwise it's the same.
-If you are using DeepLabCut on the cloud, you cannot use the GUIs and you need to first set `DLClight=True`. If you use Windows, please always open the terminal with administrator privileges. Please read more [here](https://github.com/DeepLabCut/Docker4DeepLabCut2.0), and in our Nature Protocols paper [here](https://www.nature.com/articles/s41596-019-0176-0). And, see our [troubleshooting wiki](https://github.com/AlexEMG/DeepLabCut/wiki/Troubleshooting-Tips).
+If you use Windows, please always open the terminal with administrator privileges. Please read more [here](https://github.com/DeepLabCut/Docker4DeepLabCut2.0), and in our Nature Protocols paper [here](https://www.nature.com/articles/s41596-019-0176-0). And, see our [troubleshooting wiki](https://github.com/AlexEMG/DeepLabCut/wiki/Troubleshooting-Tips).
 
 Open an ``ipython`` session and import the package by typing in the terminal:
 ```python
@@ -102,25 +90,26 @@ An easy way to programmatically edit the config file at any time is to use the f
 
 ````python
 edits = {'colormap': 'summer',
-         'individuals': ['mickey', 'minnie'],
+         'individuals': ['mickey', 'minnie', 'bianca'],
          'skeleton': [['snout', 'tailbase'], ['snout', 'rightear']]}
 deeplabcut.auxiliaryfunctions.edit_config(config_path, edits)
 ````
 
 Please DO NOT have spaces in the names of bodyparts, uniquebodyparts, individuals, etc.
 
-**maDeepLabCut:** You need to edit the config.yaml file to **modify the following items** which specify the animal ID, body parts, and any unique labels. You should also define an over-connected 'skeleton' at this time in the config.yaml file. For example, for a "simple" 4 body part animal see the example skeleton. Note, we also highly recommend that you use **more bodypoints** that you might be interested in for your experiment, i.e., labeling along the spine/tail for 8 bodypoints would be better than four. This will help the performance.
+**ATTENTIONt:** You need to edit the config.yaml file to **modify the following items** which specify the animal ID, body parts, and any unique labels. Note, we also highly recommend that you use **more bodypoints** that you might be interested in for your experiment, i.e., labeling along the spine/tail for 8 bodypoints would be better than four. This will help the performance.
 
-Modifying the `config.yaml` is crucial, especially connecting the skeleton:
+Modifying the `config.yaml` is crucial:
 
 ```python
 individuals:
-- mouse1
-- mouse2
+- m1
+- m2
+- m3
 
 uniquebodyparts:
-- topleftcorner
-- toprightcorner
+- topleftcornerofBox
+- toprightcornerofBox
 
 multianimalbodyparts:
 - snout
@@ -128,62 +117,27 @@ multianimalbodyparts:
 - rightear
 - tailbase
 
-skeleton:
-- - snout
-  - tailbase
-- - snout
-  - leftear
-- - snout
-  - rightear
-- - leftear
-  - rightear
-- - leftear
-  - tailbase
-- - rightear
-  - tailbase
-
-- - topleftcorner
-  - toprightcorner
+identity: True/False
 ```
-**Individuals:** are names of "individuals" in the annotation dataset. These should be generic (e.g. mouse1, mouse2, etc.). These individuals are comprised of the same bodyparts defined by `multianimalbodyparts`. For annotation in the GUI and training, it is important that all individuals in each frame are labeled. Thus, keep in mind that you might need to have many individuals, .i.e. if there is (even just one frame) with 17 animals then the list should be `- indv1` to `- indv17`. For inference, once trained if you have a video with more or less animals, that is fine - you can change this number before running video analysis.
+**Individuals:** are names of "individuals" in the annotation dataset. These should/can be generic (e.g. mouse1, mouse2, etc.). These individuals are comprised of the same bodyparts defined by `multianimalbodyparts`. For annotation in the GUI and training, it is important that all individuals in each frame are labeled. Thus, keep in mind that you need to set individuals to the maximum number in your labeled-data set, .i.e., if there is (even just one frame) with 17 animals then the list should be `- indv1` to `- indv17`. Note, once trained if you have a video with more or less animals, that is fine - you can have more or less animals during video analysis!
 
-**Multianimalbodyparts:** are the bodyparts of each individual (in the above list). Each bodypart should be connected to all the others by at least one path (E.g. like in a [tree](https://en.wikipedia.org/wiki/Tree_(graph_theory)).). However, we recommend to have multiple paths, in a redundant way. These connections are defined in the skeleton. See below how to define the skeleton.
+**Identity:** If you can tell the animals apart, i.e.,  one might have a collar, or a black marker on the tail of a mouse, then you should label these individuals consistently (i.e., always label the mouse with the black marker as "indv1", etc). If you have this scenario, please set `identity: True` in your `config.yaml` file. If you have 4 black mice, and you truly cannot tell them apart, then leave this as `false`.
 
-**Uniquebodyparts:** are points that you want to track, but that appear only once within each frame, i.e. they are "unique". Typically these are things like unique objects, landmarks, tools, etc. They are treated similar to pre-2.2 projects; namely, they do not require a skeleton. They can also be animals, e.g. in the case where one German shepherd is attending to many sheep the sheep bodyparts would be multianimalbodyparts, the shepherd parts would be uniquebodyparts and the individuals would be the list of sheep (e.g. Polly, Molly, Dolly, ...).
+**Multianimalbodyparts:** are the bodyparts of each individual (in the above list).
 
-**Note**, if your does not have any uniquebodyparts please format as: `uniquebodyparts: []`.
-
-**HOW TO CONNECT YOUR SKELETON:** For identifying individuals, it is crucial to define links between bodyparts as a skeleton, and "over-connect" the bodyparts, as shown above. Each bodypart should be connected to all the others by at least one path (E.g. like in a [tree](https://en.wikipedia.org/wiki/Tree_(graph_theory)).). However, we recommend to have multiple paths, in a redundant way, this helps to correctly assemble animals even if they occlude each other.
-
-For example, let's say you have the following bodyparts (left). What you might connect for plotting is in the middle, but what we ask you to do for training is on the far right (note, you can edit this after training to indeed plot just as in the middle!).
-
-You can define the skeleton by creating a list of "edges" in the config.yaml file as shown above, or you can use our helper GUI (far right):
-
-```python
-deeplabcut.SkeletonBuilder(config_path)
-```
-:movie_camera: [How to Connect The Skeleton](https://www.youtube.com/watch?v=fQSJ0S08UyY)
-
-
-<p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589256735280-SCN7CROSJNJWCDS6EK5T/ke17ZwdGBToddI8pDm48kB08p9-rNkpPD7A3fw8YFjZZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIno0kSvzOWihTW1zp8-1-7mzYxUQjsVr2n3nmNdVcso4/bodyparts-skeleton.png?format=1000w" width="400">
-
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589410182515-9SJO9MML6CNCXBAWQ6Z6/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/ezgif.com-video-to-gif+%2811%29.gif?format=750w" width="400">
-</p>
-</p>
-
+**Uniquebodyparts:** are points that you want to track, but that appear only once within each frame, i.e. they are "unique". Typically these are things like unique objects, landmarks, tools, etc. They can also be animals, e.g. in the case where one German shepherd is attending to many sheep the sheep bodyparts would be multianimalbodyparts, the shepherd parts would be uniquebodyparts and the individuals would be the list of sheep (e.g. Polly, Molly, Dolly, ...).
 
 ### Select Frames to Label:
 
-**CRITICAL:** A good training dataset should consist of a sufficient number of frames that capture the breadth of the behavior. This ideally implies to select the frames from different (behavioral) sessions, different lighting and different animals, if those vary substantially (to train an invariant, robust feature detector). Thus for creating a robust network that you can reuse in the laboratory, a good training dataset should reflect the diversity of the behavior with respect to postures, luminance conditions, background conditions, animal identities,etc. of the data that will be analyzed. For the simple lab behaviors comprising mouse reaching, open-field behavior and fly behavior, 100−200 frames gave good results [Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y). However, depending on the required accuracy, the nature of behavior, the video quality (e.g. motion blur, bad lighting) and the context, more or less frames might be necessary to create a good network. Ultimately, in order to scale up the analysis to large collections of videos with perhaps unexpected conditions, one can also refine the data set in an adaptive way (see refinement below).
+**CRITICAL:** A good training dataset should consist of a sufficient number of frames that capture the breadth of the behavior. This ideally implies to select the frames from different (behavioral) sessions, different lighting and different animals, if those vary substantially (to train an invariant, robust feature detector). Thus for creating a robust network that you can reuse in the laboratory, a good training dataset should reflect the diversity of the behavior with respect to postures, luminance conditions, background conditions, animal identities, etc. of the data that will be analyzed. For the simple lab behaviors comprising mouse reaching, open-field behavior and fly behavior, 100−200 frames gave good results [Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y). However, depending on the required accuracy, the nature of behavior, the video quality (e.g. motion blur, bad lighting) and the context, more or less frames might be necessary to create a good network. Ultimately, in order to scale up the analysis to large collections of videos with perhaps unexpected conditions, one can also refine the data set in an adaptive way (see refinement below). **For maDLC, be sure you have labeled frames with closely interacting animals!**
 
 The function `extract_frames` extracts frames from all the videos in the project configuration file in order to create a training dataset. The extracted frames from all the videos are stored in a separate subdirectory named after the video file’s name under the ‘labeled-data’. This function also has various parameters that might be useful based on the user’s need.
 ```python
 deeplabcut.extract_frames(config_path, mode='automatic/manual', algo='uniform/kmeans', userfeedback=False, crop=True/False)
 ```
 **CRITICAL POINT:** It is advisable to keep the frame size small, as large frames increase the training and
-inference time. The cropping parameters for each video can be provided in the config.yaml file (and see below).
-When running the function extract_frames, if the parameter crop=True, then you will be asked to draw a box within the GUI (and this is written to the config.yaml file).
+inference time, or you might not have a large enough GPU for this.
+When running the function `extract_frames`, if the parameter crop=True, then you will be asked to draw a box within the GUI (and this is written to the config.yaml file).
 
 `userfeedback` allows the user to check which videos they wish to extract frames from. In this way, if you added more videos to the config.yaml file it does not, by default, extract frames (again) from every video. If you wish to disable this question, set `userfeedback = True`.
 
@@ -200,7 +154,9 @@ code is slow due to computational complexity.
 **CRITICAL POINT:** It is advisable to extract frames from a period of the video that contains interesting
 behaviors, and not extract the frames across the whole video. This can be achieved by using the start and stop
 parameters in the config.yaml file. Also, the user can change the number of frames to extract from each video using
-the numframes2extract in the config.yaml file.
+the numframes2extract in the config.yaml file. 
+
+ **For maDLC, be sure you have labeled frames with closely interacting animals!** Therefore, manually selecting some frames is a good idea if interactions are not highly frequent in the video.
 
 However, picking frames is highly dependent on the data and the behavior being studied. Therefore, it is hard to
 provide all purpose code that extracts frames to create a good training dataset for every behavior and animal. If the user feels specific frames are lacking, they can extract hand selected frames of interest using the interactive GUI
@@ -210,6 +166,7 @@ deeplabcut.extract_frames(config_path, 'manual')
 ```
 The user can use the *Load Video* button to load one of the videos in the project configuration file, use the scroll
 bar to navigate across the video and *Grab a Frame* (or a range of frames, as of version 2.0.5) to extract the frame(s). The user can also look at the extracted frames and e.g. delete frames (from the directory) that are too similar before reloading the set and then manually annotating them.
+
 
 ### Label Frames:
 
@@ -224,26 +181,25 @@ an interactive graphical user interface (GUI). The user should have already name
 interest) in the project’s configuration file by providing a list. The following command invokes the labeling toolbox.
 
 The user needs to use the *Load Frames* button to select the directory which stores the extracted frames from one of
-the videos. Subsequently, the user can use one of the radio buttons (top right) to select a body part to label. RIGHT click to add the label. Left click to drag the label, if needed. If you label a part accidentally, you can use the middle button on your mouse to delete! If you cannot see a body part in the frame, skip over the label! Please see the ``HELP`` button for more user instructions. This auto-advances once you labeled the first body part. You can also advance to the next frame by clicking on the RIGHT arrow on your keyboard (and go to a previous frame with LEFT arrow).
-Each label will be plotted as a dot in a unique color (see Figure 4 for more details).
+the videos. Subsequently, the user can use one of the radio buttons (top right) to select a body part to label. **RIGHT** click to add the label. Left click to drag the label, if needed. If you label a part accidentally, you can use the middle button on your mouse to delete (or hit the delete key while you hover over the point)! If you cannot see a body part in the frame, skip over the label! Please see the ``HELP`` button for more user instructions. This auto-advances once you labeled the first body part. You can also advance to the next frame by clicking on the RIGHT arrow on your keyboard (and go to a previous frame with LEFT arrow).
+Each label will be plotted as a dot in a unique color.
 
 The user is free to move around the body part and once satisfied with its position, can select another radio button
 (in the top right) to switch to the respective body part (it otherwise auto-advances). The user can skip a body part if it is not visible. Once all the visible body parts are labeled, then the user can use ‘Next Frame’ to load the following frame. The user needs to save the labels after all the frames from one of the videos are labeled by clicking the save button at the bottom right. Saving the labels will create a labeled dataset for each video in a hierarchical data file format (HDF) in the
 subdirectory corresponding to the particular video in **labeled-data**. You can save at any intermediate step (even without closing the GUI, just hit save) and you return to labeling a dataset by reloading it!
 
 **CRITICAL POINT:** It is advisable to **consistently label similar spots** (e.g., on a wrist that is very large, try
-to label the same location). In general, invisible or occluded points should not be labeled by the user. They can
-simply be skipped by not applying the label anywhere on the frame.
+to label the same location). In general, invisible or occluded points should not be labeled by the user, unless you want to teach the network to "guess" - this is possible, but could affect accuracy. If you don't want/or don't see a bodypart, they can simply be skipped by not applying the label anywhere on the frame.
 
 OPTIONAL: In the event of adding more labels to the existing labeled dataset, the user need to append the new
-labels to the bodyparts in the config.yaml file. Thereafter, the user can call the function **label_frames**. As of 2.0.5+: then a box will pop up and ask the user if they wish to display all parts, or only add in the new labels. Saving the labels after all the images are labelled will append the new labels to the existing labeled dataset.
+labels to the bodyparts in the config.yaml file. Thereafter, the user can call the function **label_frames**. A box will pop up and ask the user if they wish to display all parts, or only add in the new labels. Saving the labels after all the images are labelled will append the new labels to the existing labeled dataset.
 
 **maDeepLabCut CRITICAL POINT:** For multi-animal labeling, unless you can tell apart the animals, you do not need to worry about the "ID" of each animal. For example: if you have a white and black mouse label the white mouse as animal 1, and black as animal 2 across all frames. If two black mice, then the ID label 1 or 2 can switch between frames - no need for you to try to identify them (but always label consistently within a frame). If you have 2 black mice but one always has an optical fiber (for example), then DO label them consistently as animal1 and animal_fiber (for example). The point of multi-animal DLC is to train models that can first group the correct bodyparts to individuals, then associate those points in a given video to a specific individual, which then also uses temporal information to link across the video frames.
 
 Note, we also highly recommend that you use more bodypoints that you might otherwise have (see the example below).
 
 **Example Labeling with maDeepLabCut:**
-- note you should within an animal be consistent, i.e. all bodyparts on mouse1 should be on mouse1, but across frames "mouse1" can be any of the black mice (as here it is nearly impossible to tell them apart visually). IF you can tell them apart, do label consistently!
+- note you should within an animal be consistent, i.e., all bodyparts on mouse1 should be on mouse1, but across frames "mouse1" can be any of the black mice (as here it is nearly impossible to tell them apart visually). IF you can tell them apart, do label consistently!
 
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588028248844-43RXXUNLE1VKJDKGGVFO/ke17ZwdGBToddI8pDm48kAxoZwLd0g_s-irkR9O2vUhZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxFjgZOWy5voI9x7QCcY8v6pdjAnJRY2VhSKj43SxhWXRPK8F08AQobuqKWFB6l9T0/labelingdemo.gif?format=750w" width="70%">
@@ -269,28 +225,18 @@ For each video directory in labeled-data this function creates a subdirectory wi
 ```python
 deeplabcut.cropimagesandlabels(path_config_file, userfeedback=False)
 ```
-#### Reminder: Build your skeleton connections before you create a training set!
-
-If you did not do this already be sure to define a skeleton in the `config.yaml` - See [more here for cruical details](functionDetails.md#b-configure-the-project-).
-
-There is also a graphical way to define your skeleton:
-```python
-deeplabcut.SkeletonBuilder(config_path)
-```
-<p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589410182515-9SJO9MML6CNCXBAWQ6Z6/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/ezgif.com-video-to-gif+%2811%29.gif?format=750w" width="80%">
-</p>
-
 ### Create Training Dataset:
 
 Ideally for training DNNs, one uses large batch sizes. Thus, for mutli-animal training batch processing is preferred. This means that we'd like the images to be similarly sized. You can of course have differing size of images you label (but we suggest cropping out useless pixels!). So, we have a new function that can pre-process your data to be compatible with batch training. As noted above, please run this function before you `create_multianmialtraining_dataset`. This function assures that each crop is "small", by default 400 x 400, which allows larger batchsizes and that there are multiple crops so that different parts of larger images are covered. 
 
-**maDeepLabCut CRITICAL POINT**- you must use this new function if you have a multi-animal project (and the skeleton in the `config.yaml` **must be defined** before you run this step, if not already done). You **should also run** `deeplabcut.cropimagesandlabels(config_path)` before creating a training set, as we use batch processing and many users have smaller GPUs that cannot accommodate larger images + larger batchsizes. This is also a type of data augmentation.
+At this point you also select your neural network type. Please see Lauer et al. 2021 for options.
 
-NOTE: you can edit the crop size. If your images are very large (2k, 4k pixels), consider increasing this size, but be aware unless you have a lagre GPU (24 GB or more), you will hit memory errors. You can lower the batchsize, but this may affect performance.
+You **should also first run** `deeplabcut.cropimagesandlabels(config_path)` before creating a training set, as we use batch processing and many users have smaller GPUs that cannot accommodate larger images + larger batchsizes. This is also a type of data augmentation.
+
+NOTE: you can edit the crop size. If your images are very large (2k, 4k pixels), consider increasing this size, but be aware unless you have a lagre GPU (24 GB or more), you will hit memory errors. _You can lower the batchsize, but this may affect performance._
 
 ```python
-deeplabcut.cropimagesandlabels(path_config_file, size=(400, 400), userfeedback=False
+deeplabcut.cropimagesandlabels(path_config_file, size=(400, 400), userfeedback=False)
 ```
 Then run:
 ```python
@@ -349,9 +295,9 @@ At user specified iterations during training checkpoints are stored in the subdi
 If the user wishes to restart the training at a specific checkpoint they can specify the full path of the checkpoint to
 the variable ``init_weights`` in the **pose_cfg.yaml** file under the *train* subdirectory (see Box 2).
 
-**CRITICAL POINT:** It is recommended to train the ResNets or MobileNets for thousands of iterations until the loss plateaus (typically around **200,000**) if you use batch size 1. If you want to batch train, we recommend using Adam, see more here: https://github.com/AlexEMG/DeepLabCut/wiki/Data-Augmentation.
+**CRITICAL POINT:** It is recommended to train the networks for thousands of iterations until the loss plateaus (typically around **500,000**) if you use batch size 1, and **50-100K** if you use batchsize 8 (the default).
 
-If you use **maDeepLabCut** the recommended training iterations is **20K-50K** (it automatically stops at 200K!), as we use Adam and batchsize 8; if you have to reduce the batchsize for memory reasons then the number of iterations need to increase. 
+If you use **maDeepLabCut** the recommended training iterations is **20K-100K** (it automatically stops at 200K!), as we use Adam and batchsize 8; if you have to reduce the batchsize for memory reasons then the number of iterations needs to be increased. 
 
 The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file allows the user to alter how often the loss is displayed and how often the weights are stored.
 
@@ -442,12 +388,12 @@ labeled accurately
 
 **maDeepLabCut: (or on normal projects!)**
 
-You should also plot the scoremaps, locref layers, and PAFs:
+You should also plot the scoremaps, locref layers, and PAFs to assess performance:
 
 ```python
 deeplabcut.extract_save_all_maps(config_path, shuffle=shuffle, Indices=[0, 5])
 ```
-you can drop "Indices" to run this on all training/testing images (this is slow!)
+you can drop "Indices" to run this on all training/testing images (this is very slow!)
 
 ### -------------------- DECISION / BREAK POINT -------------------
 
@@ -468,93 +414,59 @@ You can either:
 1. extract more frames from existing or new videos and label as when initially building the training data set, or
 2. extract outlier frames based on the videos you just analyzed. To do this, you first need to analyze a video and convert to tracklets (Step 1 and 2 in the Analyze Video tab of the GUI), then you load the tracklet file into the refine tracklet GUI, and "Save" without making any modifications (or run `deeplabcut.convert_raw_tracks_to_h5(config_path, picklefile)`). That will create the files needed in the Extract Outlier Frames tab of the GUI. 
 
-### ------------------- TRACKING ACROSS FRAMES ------------------- 
+### ------------------- ANIMAL ASSEMBLY & TRACKING ACROSS FRAMES ------------------- 
 
-After pose estimation, now you perform tracking. There are several parameters we can automatically set based on your data, but some you will need to tune yourself, as it is dataset-dependent. First, let's set the automatic ones.
+After pose estimation, now you perform assembly and tracking. *NEW* in 2.2 is a novel data-driven way to set the optimal skeleton and assembly metrics, so this no longer requires user input. The metrics, in case you do want to edit them, can be found in the `inference_cfg.yaml` file.
 
-### Cross Validation of Inference parameters:
-
-The neural network will detect bodyparts as well as "limbs" (i.e., the skeleton connections). These will then be assembled to create individuals; for this step, the graph of connections that you provided (skeleton) will be used. Note that several parameters will strongly influence the assembly of individuals. You need to cross validate parameters before inference. Here, you will run the new function (below) that will smartly try to optimize your `inference_config.yaml` file. You can also manually edit this file afterwards (more below). But, this first part will validate the parameters and optimize *either* hits/misses, RMSE, and percent correct keypoints (tracking we deal with below). Which objective might depend on your case; check the docstrings to see
-what is the default. This step uses a [global optimization with gaussian processes](https://github.com/fmfn/BayesianOptimization); by default
-only the parameters defined in `bpounds` will be optimzed within the provided ranges. All other parameters will be taken from the `inference_cfg.yaml` file.
-
-```python
-deeplabcut.evaluate_multianimal_crossvalidate(config_path, Shuffles=[1], edgewisecondition=True, leastbpts=1, init_points=20, n_iter=50, target='rpck_train')
-```
-:movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/jKsU1vb8ovQ)
- <p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588964838417-EQ1OA4QTZIU98DCEHPTJ/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/ezgif.com-video-to-gif+%287%29.gif?format=750w" width="90%">
-</p>
-
-We highly suggest that you read the docstring for this function to edit inputs appropriately if you don't run with our suggested defaults. Of course, you also can edit the `inference_config.yaml` file. [Here](/deeplabcut/inference_cfg.yaml) provides a description of the parameters. Here is a quick-start:
-
-```
-THESE CAN ALL BE X-VALIDATED:
-(so please only change them if you know what you are doing :)
-variant: 0
-minimalnumberofconnections: 4 <--- if you have a lot of "missing data" in frames, consider lowering.
-averagescore: 0.1
-# before assembly exclude all bpts farther apart than:
-distnormalization: 1000
-# and closer than:
-distnormalizationLOWER: 0 <--- if different body parts can be in the same space, consider increasing this (if edges was set to False, this is used).
-distnormalization: 400
-detectionthresholdsquare: 0
-addlikelihoods: 0.15
-pafthreshold: 0.15139643821853171
-method: m1
-withid: false
-topktoretain: .inf <--- maximum number of animals one expects to see; we assume "infinity" during cross-valiation.
-upperbound_factor: 1.25
-lowerbound_factor: .75
-
-##########################
-TRACKING: THESE ARE NOT X-VALIDATED: (i.e. you should test them out! See more below):
-##########################
-boundingboxslack: 10
-max_age: 100 <--- maximum duration of a lost tracklet before it's considered a "new animal" (in frames)
-min_hits: 3
-iou_threshold: 0.2
-```
-
-After this process is complete you will get metrics in the terminal, and your `inference_cfg.yaml` is updated, here is an example:
-```
-Saving optimal inference parameters...
-   train_iter  train_frac  shuffle  rmse_train  hits_train  misses_train  falsepos_train  ndetects_train  pck_train  rpck_train  rmse_test  hits_test  misses_test  falsepos_test  ndetects_test  pck_test  rpck_test
-0     50000.0        95.0      1.0   36.681365     9.89759     11.645783         0.63494        1.761446   0.306809    0.288352   33.81332      8.675       13.025           0.45          1.625  0.286614   0.264459
-```
-
-Here, please check the PCK fractions are high (close to 1), the RMSE values are low. *The hits/misses false positive/#detections will be described in greater detail in the near future (they are related to another output head of the network that is not described at this time).*
-
-### Video Analysis:
+### Optimized Animal Assembly + Video Analysis:
 - Please note that **novel videos DO NOT need to be added to the config.yaml file**. You can simply have a folder elsewhere on your computer and pass the video folder (then it will analyze all videos of the specified type (i.e. ``videotype='.mp4'``), or pass the path to the **folder** or exact video(s) you wish to analyze:
 
 ```python
 deeplabcut.analyze_videos(config_path,['/fullpath/project/videos/'], videotype='.mp4')
 ```
-Reminder: you do **not** get the .h5/csv file you might be used to getting (this comes after tracking!).
+Note: You do **not** get the .h5/csv file you might be used to getting in standard DLC (this comes next!).
 
-### Assemble & Refine Tracklets in maDeepLabCut:
-
-:movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://youtu.be/bEuBKB7eqmk)
-- Now that you have detections (which are saved as a pickle file, not h5, btw), we need to assemble and track the animals.
-
-First, you need to convert detections to tracklets. This step has several tracker types (`track_method`), and we recommend testing which one works best on your data.
+Now that you have detections (which are saved as a pickle file, not h5, btw), we need to assemble and track the animals. This step has several tracker types (`track_method`), and we recommend testing which one works best on your data (but typically we find ellipse is best). 
 
 ```python
 deeplabcut.convert_detections2tracklets(path_config_file, ['videofile_path'], videotype='mp4',
-                                                    shuffle=1, trainingsetindex=0, track_method='box/ellipse/skeleton')
+                                        shuffle=1, trainingsetindex=0, track_method='box/ellipse/skeleton')
 ```
-You should **cross-validate** the tracking parameters. ([Here is more information](functionDetails.md#cross-validation-of-inference-parameters-a-madeeplabcut-critical-point)). Namely, you can iteratively change the parameters, run `convert_detections2tracklets` then load them in the GUI (`refine_tracklets`). Note, that in the main Project Manager GUI there is a button for you to launch the inference file to seemlessly edit and rapidly test.
+You can validate the tracking parameters. Namely, you can iteratively change the parameters, run `convert_detections2tracklets` then load them in the GUI (`refine_tracklets`) if you want to look at the performance. If you want to edit these, you will need to open the `inference_cfg.yaml` file (or click button in GUI). The options are:
+
+```python
+# Tracking:
+#p/m pixels in width and height for increasing bounding boxes.
+boundingboxslack : 0
+# Intersection over Union (IoU) threshold for linking two bounding boxes
+iou_threshold: .2
+# maximum duration of a lost tracklet before it's considered a "new animal" (in frames)
+max_age: 100
+# minimum number of consecutive frames before a detection is tracked
+min_hits: 3
+```
 
 **Animal assembly and tracking quality** can be assessed via `deeplabcut.utils.make_labeled_video.create_video_from_pickled_tracks`. This function provides an additional diagnostic tool before moving on to refining tracklets.
 
-Secondly, you need to **refine the tracklets**. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc!
+**Next, tracklets are stitched to form *n* complete tracks with:
+
+```python
+deeplabcut.stitch_tracklets(pickle_file, n_tracks=n)
+```
+
+### Refine Tracklets:
+
+You can also optionally **refine the tracklets**. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc!
 
 ```python
 deeplabcut.refine_tracklets(path_config_file, pickle_or_h5_file, videofile_path, max_gap=0, min_swap_len=2, min_tracklet_len=2, trail_len=50)
 ```
-*note, setting `max_gap=0` can be used to fill in all frames across the video; otherwise, 1-n is the # of frames you want to fill in, i.e. maybe you want to fill in short gaps of 5 frames, but 15 frames indicates another issue, etc. You can test this inthe GUI. 
+
+If you use the GUI (or otherwise), here are some settings to consider:
+
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1619628014395-BQ09VLLTKCLQQGRB5T9A/ke17ZwdGBToddI8pDm48kLMj_XrWI9gi4tVeBdgcB8p7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z4YTzHvnKhyp6Da-NYroOW3ZGjoBKy3azqku80C789l0lt53wR20brczws2A6XSGt3kSTbW7uM0ncVKHWPvgHR4kN5Ka1TcK96ljy4ji9jPkQ/TrackletGUI.png?format=1000w" width="950" title="maDLCtrack" alt="maDLC" align="center" vspace = "50">
+
+*note, setting `max_gap=0` can be used to fill in all frames across the video; otherwise, 1-n is the # of frames you want to fill in, i.e. maybe you want to fill in short gaps of 5 frames, but 15 frames indicates another issue, etc. You can test this in the GUI very easy by editing the value and then re-launch pop-up GUI.
 
 If you fill in gaps, they will be associated to an ultra low probability, 0.01, so you are aware this is not the networks best estimate, this is the human-override! Thus, if you create a video, you need to set your pcutoff to 0 if you want to see these filled in frames.
 
@@ -564,13 +476,6 @@ Short demo:
  <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588690928000-90ZMRIM8SN6QE20ZOMNX/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/refineDEMO.gif?format=750w" width="70%">
 </p>
-
-If you do not want to refine tracklets, but use the data "as is" after the `convert_detections2tracklets` step, you can skip refinement and just create the final h5/csv file by running: 
-
-```python
-deeplabcut.convert_raw_tracks_to_h5(config_path, picklefile)
-```
-^ this is NOT required if you run `refine_tracklets` above!
 
 ### Once you have analyzed video data (and refined your maDeepLabCut tracklets):
 
@@ -639,3 +544,20 @@ config_path = r'C:\home\yourprojectfolder\config.yaml'
 ```
 
 Now, you can run any of the functions described in this documentation.
+
+# Getting help with maDLC:
+
+- If you have a detailed question about how to use the code, or you hit errors that are not "bugs" but you want code assistance, please post on the [![Image.sc forum](https://img.shields.io/badge/dynamic/json.svg?label=forum&amp;url=https%3A%2F%2Fforum.image.sc%2Ftags%2Fdeeplabcut.json&amp;query=%24.topic_list.tags.0.topic_count&amp;colorB=brightgreen&amp;&amp;suffix=%20topics&amp;logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC)](https://forum.image.sc/tags/deeplabcut)
+
+- If you have a quick, short question that fits a "chat" format:
+[![Gitter](https://badges.gitter.im/DeepLabCut/community.svg)](https://gitter.im/DeepLabCut/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
+- If you want to share some results, or see others:
+[![Twitter Follow](https://img.shields.io/twitter/follow/DeepLabCut.svg?label=DeepLabCut&style=social)](https://twitter.com/DeepLabCut)
+
+- If you have a code bug report, please create an issue and show the minimal code to reproduce the error: https://github.com/DeepLabCut/DeepLabCut/issues
+
+- if you are looking for resources to increase your understanding of the software and general guidelines, we have an open source, free course: http://DLCcourse.deeplabcut.org. 
+
+**Please note:** what we cannot do is provided support or help designing your experiments and data analysis. The number of requests for this is too great to sustain in our inbox. We are happy to answer such questions in the forum as a community, in a scalable way. We hope and believe we have given enough tools and resources to get started and to accelerate your research program, and this is backed by the >700 citations using DLC, 2 clinical trials by others, and countless applications. Thus, we believe this code works, is accessible, and with limited programming knowledge can be used. Please read our [Missions & Values statement](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/MISSION_AND_VALUES.md) to learn more about what we DO hope to provide you. 
+

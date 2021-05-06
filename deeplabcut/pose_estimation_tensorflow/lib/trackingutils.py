@@ -42,7 +42,7 @@ from tqdm import tqdm
 from shapely.geometry import Polygon
 
 
-warnings.simplefilter('ignore', category=NumbaPerformanceWarning)
+warnings.simplefilter("ignore", category=NumbaPerformanceWarning)
 
 
 @jit
@@ -225,7 +225,9 @@ class Ellipse:
         max_dist = max(
             self.height, self.width, other_ellipse.height, other_ellipse.width
         )
-        dist = math.sqrt((self.x - other_ellipse.x) ** 2 + (self.y - other_ellipse.y) ** 2)
+        dist = math.sqrt(
+            (self.x - other_ellipse.x) ** 2 + (self.y - other_ellipse.y) ** 2
+        )
         cost1 = 1 - min(dist / max_dist, 1)
         cost2 = abs(math.cos(self.theta - other_ellipse.theta))
         return 0.8 * cost1 + 0.2 * cost2 * cost1
@@ -235,8 +237,10 @@ class Ellipse:
         sa = math.sin(self.theta)
         x_demean = xy[:, 0] - self.x
         y_demean = xy[:, 1] - self.y
-        return (((ca * x_demean + sa * y_demean) ** 2 / (0.5 * self.width) ** 2)
-                + ((sa * x_demean - ca * y_demean) ** 2 / (0.5 * self.height) ** 2)) <= 1 + tol
+        return (
+            ((ca * x_demean + sa * y_demean) ** 2 / (0.5 * self.width) ** 2)
+            + ((sa * x_demean - ca * y_demean) ** 2 / (0.5 * self.height) ** 2)
+        ) <= 1 + tol
 
     def draw(self, show_axes=True, ax=None, **kwargs):
         import matplotlib.pyplot as plt
@@ -244,15 +248,21 @@ class Ellipse:
         from matplotlib.transforms import Affine2D
 
         if ax is None:
-            ax = plt.subplot(111, aspect='equal')
-        el = patches.Ellipse(xy=(self.x, self.y), width=self.width, height=self.height,
-                             angle=np.rad2deg(self.theta), **kwargs)
+            ax = plt.subplot(111, aspect="equal")
+        el = patches.Ellipse(
+            xy=(self.x, self.y),
+            width=self.width,
+            height=self.height,
+            angle=np.rad2deg(self.theta),
+            **kwargs,
+        )
         ax.add_patch(el)
         if show_axes:
             major = Line2D([-self.width / 2, self.width / 2], [0, 0], lw=3, zorder=3)
             minor = Line2D([0, 0], [-self.height / 2, self.height / 2], lw=3, zorder=3)
-            trans = (Affine2D().rotate(self.theta).translate(self.x, self.y)
-                     + ax.transData)
+            trans = (
+                Affine2D().rotate(self.theta).translate(self.x, self.y) + ax.transData
+            )
             major.set_transform(trans)
             minor.set_transform(trans)
             ax.add_artist(major)
@@ -363,13 +373,13 @@ class EllipseFitter:
         f *= 0.5
 
         # Ellipse center coordinates
-        x0 = (c*d - b*f) / (b*b - a*c)
-        y0 = (a*f - b*d) / (b*b - a*c)
+        x0 = (c * d - b * f) / (b * b - a * c)
+        y0 = (a * f - b * d) / (b * b - a * c)
 
         # Semi-axes lengths
-        num = 2 * (a*f*f + c*d*d + g*b*b - 2*b*d*f - a*c*g)
-        den1 = (b*b - a*c) * (np.sqrt((a - c)**2 + 4*b*b) - (a + c))
-        den2 = (b*b - a*c) * (-np.sqrt((a - c)**2 + 4*b*b) - (a + c))
+        num = 2 * (a * f * f + c * d * d + g * b * b - 2 * b * d * f - a * c * g)
+        den1 = (b * b - a * c) * (np.sqrt((a - c) ** 2 + 4 * b * b) - (a + c))
+        den2 = (b * b - a * c) * (-np.sqrt((a - c) ** 2 + 4 * b * b) - (a + c))
         major = np.sqrt(num / den1)
         minor = np.sqrt(num / den2)
 
@@ -378,12 +388,12 @@ class EllipseFitter:
             if a < c:
                 phi = 0
             else:
-                phi = np.pi/2
+                phi = np.pi / 2
         else:
             if a < c:
-                phi = np.arctan(2*b / (a-c)) / 2
+                phi = np.arctan(2 * b / (a - c)) / 2
             else:
-                phi = np.pi/2 + np.arctan(2*b / (a-c)) / 2
+                phi = np.pi / 2 + np.arctan(2 * b / (a - c)) / 2
 
         return [x0, y0, 2 * major, 2 * minor, phi]
 
@@ -394,7 +404,9 @@ class EllipseTracker:
     def __init__(self, params):
         self.kf = kinematic_kf(5, order=1, dim_z=5, order_by_dim=False)
         self.kf.R[2:, 2:] *= 10.0
-        self.kf.P[5:, 5:] *= 1000.0  # High uncertainty to the unobservable initial velocities
+        self.kf.P[
+            5:, 5:
+        ] *= 1000.0  # High uncertainty to the unobservable initial velocities
         self.kf.P *= 10.0
         self.kf.Q[5:, 5:] *= 0.01
         self.state = params
@@ -473,8 +485,12 @@ class SORTEllipse:
                         cost *= match
                     cost_matrix[i, j] = cost
             row_indices, col_indices = linear_sum_assignment(cost_matrix, maximize=True)
-            unmatched_detections = [i for i, _ in enumerate(ellipses) if i not in row_indices]
-            unmatched_trackers = [j for j, _ in enumerate(trackers) if j not in col_indices]
+            unmatched_detections = [
+                i for i, _ in enumerate(ellipses) if i not in row_indices
+            ]
+            unmatched_trackers = [
+                j for j, _ in enumerate(trackers) if j not in col_indices
+            ]
             matches = []
             for row, col in zip(row_indices, col_indices):
                 val = cost_matrix[row, col]
@@ -518,7 +534,7 @@ class SORTEllipse:
         for trk in reversed(self.trackers):
             d = trk.state
             if (trk.time_since_update < 1) and (
-                    trk.hit_streak >= self.min_hits or self.n_frames <= self.min_hits
+                trk.hit_streak >= self.min_hits or self.n_frames <= self.min_hits
             ):
                 ret.append(
                     np.concatenate((d, [trk.id, int(animalindex[i - 1])])).reshape(
@@ -866,6 +882,8 @@ def calc_bboxes_from_keypoints(data, slack=0, offset=0):
 
 def reconstruct_all_ellipses(data, sd):
     xy = data.droplevel("scorer", axis=1).drop("likelihood", axis=1, level=-1)
+    if "single" in xy:
+        xy.drop("single", axis=1, level="individuals", inplace=True)
     animals = xy.columns.get_level_values("individuals").unique()
     nrows = xy.shape[0]
     ellipses = np.full((len(animals), nrows, 5), np.nan)
@@ -880,37 +898,24 @@ def reconstruct_all_ellipses(data, sd):
 
 
 def _track_individuals(
-    individuals,
-    min_hits=1,
-    max_age=5,
-    similarity_threshold=0.6,
-    track_method='ellipse',
+    individuals, min_hits=1, max_age=5, similarity_threshold=0.6, track_method="ellipse"
 ):
-    if track_method not in ('box', 'skeleton', 'ellipse'):
-        raise ValueError(f'Unknown {track_method} tracker.')
+    if track_method not in ("box", "skeleton", "ellipse"):
+        raise ValueError(f"Unknown {track_method} tracker.")
 
-    if track_method == 'ellipse':
-        tracker = SORTEllipse(
-            max_age,
-            min_hits,
-            similarity_threshold
-        )
-    elif track_method == 'box':
+    if track_method == "ellipse":
+        tracker = SORTEllipse(max_age, min_hits, similarity_threshold)
+    elif track_method == "box":
         tracker = Sort(
             {
-                'max_age': max_age,
-                'min_hits': min_hits,
-                'iou_threshold': similarity_threshold
+                "max_age": max_age,
+                "min_hits": min_hits,
+                "iou_threshold": similarity_threshold,
             }
         )
     else:
         n_bodyparts = individuals[0][0].shape[0]
-        tracker = SORT(
-            n_bodyparts,
-            max_age,
-            min_hits,
-            similarity_threshold,
-        )
+        tracker = SORT(n_bodyparts, max_age, min_hits, similarity_threshold)
 
     tracklets = defaultdict(dict)
     all_hyps = dict()

@@ -170,8 +170,12 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4"):
     deeplabcut.analyze_videos_converth5_to_csv('/media/alex/experimentaldata/cheetahvideos','.mp4')
 
     """
-    h5_files = list(auxiliaryfunctions.grab_files_in_folder(video_folder, "h5", relative=False))
-    videos = auxiliaryfunctions.grab_files_in_folder(video_folder, videotype, relative=False)
+    h5_files = list(
+        auxiliaryfunctions.grab_files_in_folder(video_folder, "h5", relative=False)
+    )
+    videos = auxiliaryfunctions.grab_files_in_folder(
+        video_folder, videotype, relative=False
+    )
     for video in videos:
         if "_labeled" in video:
             continue

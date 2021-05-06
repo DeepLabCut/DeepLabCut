@@ -294,22 +294,28 @@ class VideoWriter(VideoReader):
         return output_path
 
     def rescale(
-        self, width, height=-1, rotateccw="No", angle=0.0, suffix="rescale", dest_folder=None
+        self,
+        width,
+        height=-1,
+        rotateccw="No",
+        angle=0.0,
+        suffix="rescale",
+        dest_folder=None,
     ):
         output_path = self.make_output_path(suffix, dest_folder)
         command = (
-            f'ffmpeg -n -i {self.video_path} -filter:v '
+            f"ffmpeg -n -i {self.video_path} -filter:v "
             f'"scale={width}:{height}{{}}" -c:a copy {output_path}'
         )
         # Rotate, see: https://stackoverflow.com/questions/3937387/rotating-videos-with-ffmpeg
         # interesting option to just update metadata.
         if rotateccw == "Arbitrary":
             angle = np.deg2rad(angle)
-            command = (command.format(f', rotate={angle}'))
+            command = command.format(f", rotate={angle}")
         elif rotateccw == "Yes":
-            command = (command.format(f', transpose=1'))
+            command = command.format(f", transpose=1")
         else:
-            command = (command.format(''))
+            command = command.format("")
         subprocess.call(command, shell=True)
         return output_path
 
@@ -451,7 +457,13 @@ def CropVideo(
 
 
 def DownSampleVideo(
-    vname, width=-1, height=200, outsuffix="downsampled", outpath=None, rotateccw="No", angle=0.0
+    vname,
+    width=-1,
+    height=200,
+    outsuffix="downsampled",
+    outpath=None,
+    rotateccw="No",
+    angle=0.0,
 ):
     """
     Auxiliary function to downsample a video and output it to the same folder with "outsuffix" appended in its name.

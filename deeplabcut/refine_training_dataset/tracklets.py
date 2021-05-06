@@ -236,6 +236,26 @@ class TrackletManager:
     def load_tracklets_from_hdf(self, filename):
         self.filename = filename
         df = pd.read_hdf(filename)
+
+        # Fill existing gaps
+        data = df.to_numpy()
+        mask = ~df.columns.get_level_values(level="coords").str.contains("likelihood")
+        xy = data[:, mask]
+        prob = data[:, ~mask]
+        missing = np.isnan(xy)
+        xy_filled = columnwise_spline_interp(xy, self.max_gap)
+        filled = ~np.isnan(xy_filled)
+        xy[filled] = xy_filled[filled]
+        inds = np.argwhere(missing & filled)
+        if inds.size:
+            # Retrieve original individual label indices
+            inds[:, 1] //= 2
+            inds = np.unique(inds, axis=0)
+            prob[inds[:, 0], inds[:, 1]] = 0.01
+        data[:, mask] = xy
+        data[:, ~mask] = prob
+        df = pd.DataFrame(data, index=df.index, columns=df.columns)
+
         idx = df.columns
         self.scorer = idx.get_level_values("scorer").unique().to_list()
         self.bodyparts = idx.get_level_values("bodyparts")

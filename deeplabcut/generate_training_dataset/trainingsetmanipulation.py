@@ -305,7 +305,7 @@ def cropimagesandlabels(
     ):  # this dict is kept for storing links to original full-sized videos
         cfg["video_sets_original"] = {}
 
-    for video in videos:
+    for video in list(videos):
         vidpath, vidname, videotype = _robust_path_split(video)
         folder = os.path.join(project_path, "labeled-data", vidname)
         if userfeedback:
@@ -396,10 +396,17 @@ def cropimagesandlabels(
             if updatevideoentries and cropdata:
                 # moving old entry to _original, dropping it from video_set and update crop parameters
                 video_orig = sep.join((vidpath, vidname + videotype))
+                video_new = sep.join((vidpath, new_vidname + videotype))
                 if video_orig not in cfg["video_sets_original"]:
-                    cfg["video_sets_original"][video_orig] = cfg["video_sets"][video_orig]
+                    cfg["video_sets_original"][video_orig] = cfg["video_sets"][
+                        video_orig
+                    ]
                     cfg["video_sets"].pop(video_orig)
-                    cfg["video_sets"][sep.join((vidpath, new_vidname + videotype))] = {
+                    cfg["video_sets"][video_new] = {
+                        "crop": ", ".join(map(str, [0, temp_size[1], 0, temp_size[0]]))
+                    }
+                elif video_new not in cfg["video_sets"]:
+                    cfg["video_sets"][video_new] = {
                         "crop": ", ".join(map(str, [0, temp_size[1], 0, temp_size[0]]))
                     }
 
@@ -461,7 +468,7 @@ def check_labels(
     for folder in folders:
         try:
             DataCombined = pd.read_hdf(
-                os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5"),
+                os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
             )
             if cfg.get("multianimalproject", False):
                 color_by = "individual" if visualizeindividuals else "bodypart"
@@ -887,7 +894,11 @@ def create_training_dataset(
         if net_type is None:  # loading & linking pretrained models
             net_type = cfg.get("default_net_type", "resnet_50")
         else:
-            if "resnet" in net_type or "mobilenet" in net_type or "efficientnet" in net_type:
+            if (
+                "resnet" in net_type
+                or "mobilenet" in net_type
+                or "efficientnet" in net_type
+            ):
                 pass
             else:
                 raise ValueError("Invalid network type:", net_type)

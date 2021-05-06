@@ -24,6 +24,7 @@ from tqdm import tqdm
 
 from deeplabcut.pose_estimation_tensorflow.evaluate import make_results_file
 from deeplabcut.pose_estimation_tensorflow.config import load_config
+from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
 from deeplabcut.utils import visualization
 
 
@@ -68,12 +69,12 @@ def _find_closest_neighbors(xy_true, xy_pred, k=5):
 
 
 def _calc_prediction_error(data):
-    _ = data.pop('metadata', None)
+    _ = data.pop("metadata", None)
     dists = []
     for n, dict_ in enumerate(tqdm(data.values())):
-        gt = np.concatenate(dict_['groundtruth'][1])
-        xy = np.concatenate(dict_['prediction']['coordinates'][0])
-        p = np.concatenate(dict_['prediction']['confidence'])
+        gt = np.concatenate(dict_["groundtruth"][1])
+        xy = np.concatenate(dict_["prediction"]["coordinates"][0])
+        p = np.concatenate(dict_["prediction"]["confidence"])
         neighbors = _find_closest_neighbors(gt, xy)
         found = neighbors != -1
         gt2 = gt[found]
@@ -83,7 +84,7 @@ def _calc_prediction_error(data):
 
 
 def _calc_train_test_error(data, metadata, pcutoff=0.3):
-    train_inds = set(metadata['data']['trainIndices'])
+    train_inds = set(metadata["data"]["trainIndices"])
     dists = _calc_prediction_error(data)
     dists_train, dists_test = [], []
     for n, dist in enumerate(dists):
@@ -145,7 +146,7 @@ def evaluate_multianimal_full(
             cfg["project_path"],
             str(trainingsetfolder),
             "CollectedData_" + cfg["scorer"] + ".h5",
-        ),
+        )
     )
     # Handle data previously annotated on a different platform
     sep = "/" if "/" in Data.index[0] else "\\"
@@ -285,7 +286,8 @@ def evaluate_multianimal_full(
                         Snapshots[snapindex],
                     )
 
-                    if os.path.isfile(resultsfilename.split(".h5")[0] + "_full.pickle"):
+                    data_path = resultsfilename.split(".h5")[0] + "_full.pickle"
+                    if os.path.isfile(data_path):
                         print("Model already evaluated.", resultsfilename)
                     else:
                         if plotting:
@@ -297,6 +299,7 @@ def evaluate_multianimal_full(
                                 + Snapshots[snapindex],
                             )
                             auxiliaryfunctions.attempttomakefolder(foldername)
+                            fig, ax = visualization.create_minimal_figure()
 
                         # print(dlc_cfg)
                         # Specifying state of model (snapshot / training state)
@@ -315,14 +318,14 @@ def evaluate_multianimal_full(
                             frame = img_as_ubyte(image)
 
                             GT = Data.iloc[imageindex]
-                            df = GT.unstack("coords").reindex(joints, level='bodyparts')
+                            df = GT.unstack("coords").reindex(joints, level="bodyparts")
 
                             # Evaluate PAF edge lengths to calibrate `distnorm`
                             temp_xy = GT.unstack("bodyparts")[joints]
-                            xy = temp_xy.values.reshape((-1, 2, temp_xy.shape[1])).swapaxes(
-                                1, 2
-                            )
-                            if dlc_cfg['partaffinityfield_predict']:
+                            xy = temp_xy.values.reshape(
+                                (-1, 2, temp_xy.shape[1])
+                            ).swapaxes(1, 2)
+                            if dlc_cfg["partaffinityfield_predict"]:
                                 edges = xy[:, dlc_cfg["partaffinityfield_graph"]]
                                 lengths = np.sum(
                                     (edges[:, :, 0] - edges[:, :, 1]) ** 2, axis=2
@@ -354,8 +357,8 @@ def evaluate_multianimal_full(
                                 inputs,
                                 outputs,
                                 outall=False,
-                                nms_radius=dlc_cfg['nmsradius'],
-                                det_min_score=dlc_cfg['minconfidence'],
+                                nms_radius=dlc_cfg["nmsradius"],
+                                det_min_score=dlc_cfg["minconfidence"],
                                 c_engine=c_engine,
                             )
                             PredicteData[imagename]["prediction"] = pred
@@ -385,10 +388,15 @@ def evaluate_multianimal_full(
                                     conf[sl] = probs_pred[n_joint][cols].squeeze()
 
                             if plotting:
-                                gt = (temp_xy.values
-                                      .reshape((-1, 2, temp_xy.shape[1]))
-                                      .T.swapaxes(1, 2))
-                                fig = visualization.make_multianimal_labeled_image(
+                                gt = temp_xy.values.reshape(
+                                    (-1, 2, temp_xy.shape[1])
+                                ).T.swapaxes(1, 2)
+                                h, w, _ = np.shape(frame)
+                                fig.set_size_inches(w / 100, h / 100)
+                                ax.set_xlim(0, w)
+                                ax.set_ylim(0, h)
+                                ax.invert_yaxis()
+                                ax = visualization.make_multianimal_labeled_image(
                                     frame,
                                     gt,
                                     coords_pred,
@@ -397,14 +405,15 @@ def evaluate_multianimal_full(
                                     cfg["dotsize"],
                                     cfg["alphavalue"],
                                     cfg["pcutoff"],
+                                    ax=ax,
                                 )
-
                                 visualization.save_labeled_frame(
                                     fig,
                                     image_path,
                                     foldername,
                                     imageindex in trainIndices,
                                 )
+                                visualization.erase_artists(ax)
 
                         sess.close()  # closes the current tf session
 
@@ -415,7 +424,7 @@ def evaluate_multianimal_full(
                             [df_dist, df_conf],
                             keys=["rmse", "conf"],
                             names=["metrics"],
-                            axis=1
+                            axis=1,
                         )
                         df_joint = df_joint.reorder_levels(
                             list(np.roll(df_joint.columns.names, -1)), axis=1
@@ -424,14 +433,19 @@ def evaluate_multianimal_full(
                             axis=1,
                             level=["individuals", "bodyparts"],
                             ascending=[True, True],
-                            inplace=True
+                            inplace=True,
                         )
-                        write_path = os.path.join(evaluationfolder, f"dist_{trainingsiterations}.csv")
+                        write_path = os.path.join(
+                            evaluationfolder, f"dist_{trainingsiterations}.csv"
+                        )
                         df_joint.to_csv(write_path)
 
                         # Calculate overall prediction error
                         error = df_joint.xs("rmse", level="metrics", axis=1)
-                        mask = df_joint.xs("conf", level="metrics", axis=1) >= cfg["pcutoff"]
+                        mask = (
+                            df_joint.xs("conf", level="metrics", axis=1)
+                            >= cfg["pcutoff"]
+                        )
                         error_masked = error[mask]
                         error_train = np.nanmean(error.iloc[trainIndices])
                         error_train_cut = np.nanmean(error_masked.iloc[trainIndices])
@@ -452,29 +466,51 @@ def evaluate_multianimal_full(
                         # For OKS/PCK, compute the standard deviation error across all frames
                         sd = df_dist.groupby("bodyparts", axis=1).mean().std(axis=0)
                         sd["distnorm"] = np.sqrt(np.nanmax(distnorm))
-                        sd.to_csv(write_path.replace("dist.csv", "sd.csv"))
+                        sd.to_csv(write_path.replace("dist_", "sd_"))
 
                         if show_errors:
-                            string = "Results for {} training iterations: {}, shuffle {}:\n" \
-                                     "Train error: {} pixels. Test error: {} pixels.\n" \
-                                     "With pcutoff of {}:\n" \
-                                     "Train error: {} pixels. Test error: {} pixels."
+                            string = (
+                                "Results for {} training iterations: {}, shuffle {}:\n"
+                                "Train error: {} pixels. Test error: {} pixels.\n"
+                                "With pcutoff of {}:\n"
+                                "Train error: {} pixels. Test error: {} pixels."
+                            )
                             print(string.format(*results))
 
                             print("##########################################")
-                            print("Average Euclidean distance to GT per individual (in pixels)")
-                            print(error_masked.groupby('individuals', axis=1).mean().mean().to_string())
-                            print("Average Euclidean distance to GT per bodypart (in pixels)")
-                            print(error_masked.groupby('bodyparts', axis=1).mean().mean().to_string())
+                            print(
+                                "Average Euclidean distance to GT per individual (in pixels)"
+                            )
+                            print(
+                                error_masked.groupby("individuals", axis=1)
+                                .mean()
+                                .mean()
+                                .to_string()
+                            )
+                            print(
+                                "Average Euclidean distance to GT per bodypart (in pixels)"
+                            )
+                            print(
+                                error_masked.groupby("bodyparts", axis=1)
+                                .mean()
+                                .mean()
+                                .to_string()
+                            )
 
                         PredicteData["metadata"] = {
-                            "nms radius": dlc_cfg['nmsradius'],
-                            "minimal confidence": dlc_cfg['minconfidence'],
-                            "PAFgraph": dlc_cfg['partaffinityfield_graph'],
-                            "all_joints": [[i] for i in range(len(dlc_cfg['all_joints']))],
+                            "nms radius": dlc_cfg["nmsradius"],
+                            "minimal confidence": dlc_cfg["minconfidence"],
+                            "PAFgraph": dlc_cfg["partaffinityfield_graph"],
+                            "PAFinds": dlc_cfg.get(
+                                "paf_best",
+                                np.arange(len(dlc_cfg["partaffinityfield_graph"])),
+                            ),
+                            "all_joints": [
+                                [i] for i in range(len(dlc_cfg["all_joints"]))
+                            ],
                             "all_joints_names": [
-                                dlc_cfg['all_joints_names'][i]
-                                for i in range(len(dlc_cfg['all_joints']))
+                                dlc_cfg["all_joints_names"][i]
+                                for i in range(len(dlc_cfg["all_joints"]))
                             ],
                             "stride": dlc_cfg.get("stride", 8),
                         }
@@ -491,311 +527,28 @@ def evaluate_multianimal_full(
                             "trainFraction": trainFraction,
                         }
                         metadata = {"data": dictionary}
-                        auxfun_multianimal.SaveFullMultiAnimalData(
+                        _ = auxfun_multianimal.SaveFullMultiAnimalData(
                             PredicteData, metadata, resultsfilename
                         )
 
                         tf.reset_default_graph()
+
+                    # Data-driven skeleton selection
+                    uncropped_data_path = data_path.replace(
+                        ".pickle", "_uncropped.pickle"
+                    )
+                    if not os.path.isfile(uncropped_data_path):
+                        print("Selecting best skeleton...")
+                        crossvalutils._rebuild_uncropped_in(evaluationfolder)
+                        crossvalutils.cross_validate_paf_graphs(
+                            config,
+                            str(path_test_config).replace("pose_", "inference_"),
+                            uncropped_data_path,
+                            uncropped_data_path.replace("_full_", "_meta_"),
+                        )
 
                 if len(final_result) > 0:  # Only append if results were calculated
                     make_results_file(final_result, evaluationfolder, DLCscorer)
 
     # returning to intial folder
     os.chdir(str(start_path))
-
-
-def evaluate_multianimal_crossvalidate(
-    config,
-    Shuffles=[1],
-    trainingsetindex=0,
-    pbounds=None,
-    edgewisecondition=True,
-    target="rpck_train",
-    inferencecfg=None,
-    init_points=20,
-    n_iter=50,
-    log_file=None,
-    dcorr=10.0,
-    leastbpts=1,
-    printingintermediatevalues=True,
-    modelprefix="",
-    plotting=False,
-):
-    """
-    Cross-validate inference parameters on evaluation data; optimal parameters will be stored in "inference_cfg.yaml".
-
-    They will then be then used for inference (for analysis of videos). Performs Bayesian Optimization with https://github.com/fmfn/BayesianOptimization
-
-    This is a crucial step. The most important variable (in inferencecfg) to cross-validate is minimalnumberofconnections.
-    Pass a reasonable range to optimize (e.g. if you have 5 edges from 1 to 5. If you have 4 bpts and 11 connections from 3 to 9).
-
-    config: string
-        Full path of the config.yaml file as a string.
-
-    shuffle: int, optional
-        An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.
-
-    trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
-
-    pbounds: dictionary of variables with ranges to crossvalidate.
-        By default: pbounds = {
-                        'pafthreshold': (0.05, 0.7),
-                        'detectionthresholdsquare': (0, 0.9),
-                        'minimalnumberofconnections': (1, # connections in your skeleton),
-                    }
-
-    inferencecfg: dict, OPTIONAL
-        For the variables that are *not* crossvalidated the parameters from inference_cfg.yaml are used, or
-        you can overwrite them by passing a dictinary with your preferred parameters.
-
-    edgewisecondition: bool, default True
-        Estimates Euclidean distances for each skeleton edge and uses those distance for excluding possible connections.
-        If false, uses only one distance for all bodyparts (which is obviously suboptimal).
-
-    target: string, default='rpck_train'
-        What metric to optimize. Options are pck/rpck/rmse on train/test set.
-
-    init_points: int, optional (default=10)
-        Number of random initial explorations. Probing random regions helps diversify the exploration space.
-        Parameter from BayesianOptimization.
-
-    n_iter: int, optional (default=20)
-        Number of iterations of Bayesian optimization to perform.
-        The larger it is, the higher the likelihood of finding a good extremum.
-        Parameter from BayesianOptimization.
-
-    log_file: str, optional (default=None)
-        Path to a JSON file containing the progress of a previous Bayesian optimization run.
-        Note that previously probed points will not be evaluated again.
-
-    dcorr: float,
-        Distance thereshold for percent correct keypoints / relative percent correct keypoints (see paper).
-
-    leastbpts: integer (should be a small number)
-        If an animals has less or equal as many body parts in an image it will not be used
-        for cross validation. Imagine e.g. if only a single bodypart is present, then
-        if animals need a certain minimal number of bodyparts for assembly (minimalnumberofconnections),
-        this might not be predictable.
-
-    printingintermediatevalues: bool, default True
-        If intermediate metrics RMSE/hits/.. per sample should be printed.
-
-
-    Examples
-    --------
-
-    first run evalute:
-
-    deeplabcut.evaluate_network(path_config_file,Shuffles=[shuffle],plotting=True)
-
-    Then e.g. for finding inference parameters to minimize rmse on test set:
-
-    deeplabcut.evaluate_multianimal_crossvalidate(path_config_file,Shuffles=[shuffle],target='rmse_test')
-    """
-    from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
-    from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
-
-    cfg = auxiliaryfunctions.read_config(config)
-    trainFraction = cfg["TrainingFraction"][trainingsetindex]
-    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
-    Data = pd.read_hdf(
-        os.path.join(
-            cfg["project_path"],
-            str(trainingsetfolder),
-            "CollectedData_" + cfg["scorer"] + ".h5",
-        ),
-    )
-    comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
-        cfg, "all"
-    )
-    colors = visualization.get_cmap(len(comparisonbodyparts), name=cfg["colormap"])
-
-    # wild guesses for a wide range:
-    maxconnections = len(cfg["skeleton"])
-    minconnections = 1  # len(cfg['multianimalbodyparts'])-1
-
-    _pbounds = {
-        "pafthreshold": (0.05, 0.7),
-        "detectionthresholdsquare": (
-            0.0,
-            0.9,
-        ),  # TODO: set to minimum (from pose_cfg.yaml)
-        "minimalnumberofconnections": (minconnections, maxconnections),
-    }
-    if pbounds is not None:
-        _pbounds.update(pbounds)
-
-    if "rpck" in target or "pck" in target:
-        maximize = True
-
-    if "rmse" in target:
-        maximize = False  # i.e. minimize
-
-    for shuffle in Shuffles:
-        evaluationfolder = os.path.join(
-            cfg["project_path"],
-            str(
-                auxiliaryfunctions.GetEvaluationFolder(
-                    trainFraction, shuffle, cfg, modelprefix=modelprefix
-                )
-            ),
-        )
-        auxiliaryfunctions.attempttomakefolder(evaluationfolder, recursive=True)
-
-        datafn, metadatafn = auxiliaryfunctions.GetDataandMetaDataFilenames(
-            trainingsetfolder, trainFraction, shuffle, cfg
-        )
-        _, trainIndices, testIndices, _ = auxiliaryfunctions.LoadMetadata(
-            os.path.join(cfg["project_path"], metadatafn)
-        )
-        modelfolder = os.path.join(
-            cfg["project_path"],
-            str(
-                auxiliaryfunctions.GetModelFolder(
-                    trainFraction, shuffle, cfg, modelprefix=modelprefix
-                )
-            ),
-        )
-        path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
-        try:
-            dlc_cfg = load_config(str(path_test_config))
-        except FileNotFoundError:
-            raise FileNotFoundError(
-                "It seems the model for shuffle %s and trainFraction %s does not exist."
-                % (shuffle, trainFraction)
-            )
-
-        # Check which snapshots are available and sort them by # iterations
-        Snapshots = np.array(
-            [
-                fn.split(".")[0]
-                for fn in os.listdir(os.path.join(str(modelfolder), "train"))
-                if "index" in fn
-            ]
-        )
-        snapindex = -1
-        dlc_cfg["init_weights"] = os.path.join(
-            str(modelfolder), "train", Snapshots[snapindex]
-        )  # setting weights to corresponding snapshot.
-        trainingsiterations = (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[
-            -1
-        ]  # read how many training siterations that corresponds to.
-
-        DLCscorer, _ = auxiliaryfunctions.GetScorerName(
-            cfg, shuffle, trainFraction, trainingsiterations, modelprefix=modelprefix
-        )
-
-        path_inference_config = Path(modelfolder) / "test" / "inference_cfg.yaml"
-        if inferencecfg is None:  # then load or initialize
-            inferencecfg = auxfun_multianimal.read_inferencecfg(
-                path_inference_config, cfg
-            )
-        else:
-            auxfun_multianimal.check_inferencecfg_sanity(cfg, inferencecfg)
-
-        # Pick distance threshold for (r)PCK from the statistics computed during evaluation
-        stats_file = os.path.join(evaluationfolder, "sd.csv")
-        if os.path.isfile(stats_file):
-            stats = pd.read_csv(stats_file, header=None, index_col=0)
-            inferencecfg['distnormalization'] = np.round(
-                stats.loc["distnorm", 1], 2
-            ).item()
-            stats = stats.drop("distnorm")
-            dcorr = (
-                2 * stats.mean().squeeze()
-            )  # Taken as 2*SD error between predictions and ground truth
-        else:
-            dcorr = 10
-        inferencecfg['topktoretain'] = np.inf
-        inferencecfg, opt = crossvalutils.bayesian_search(
-            config,
-            inferencecfg,
-            _pbounds,
-            edgewisecondition=edgewisecondition,
-            shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
-            target=target,
-            maximize=maximize,
-            init_points=init_points,
-            n_iter=n_iter,
-            acq="ei",
-            log_file=log_file,
-            dcorr=dcorr,
-            leastbpts=leastbpts,
-            modelprefix=modelprefix,
-            printingintermediatevalues=printingintermediatevalues,
-        )
-
-        # update number of individuals to retain.
-        inferencecfg['topktoretain'] = len(cfg["individuals"]) + 1 * (
-            len(cfg["uniquebodyparts"]) > 0
-        )
-
-        # calculating result at best best solution
-        DataOptParams, poses_gt, poses = crossvalutils.compute_crossval_metrics(
-            config, inferencecfg, shuffle, trainingsetindex, modelprefix
-        )
-
-        path_inference_config = str(path_inference_config)
-        # print("Quantification:", DataOptParams.head())
-        # DataOptParams.to_hdf(
-        #     path_inference_config.split(".yaml")[0] + ".h5",
-        #     "df_with_missing",
-        #     format="table",
-        #     mode="w",
-        # )
-        DataOptParams.to_csv(os.path.join(evaluationfolder, "results.csv"))
-        print("Saving optimal inference parameters...")
-        print(DataOptParams.to_string())
-        auxiliaryfunctions.write_plainconfig(path_inference_config, dict(inferencecfg))
-
-        # Store best predictions
-        max_indivs = max(pose.shape[0] for pose in poses)
-        bpts = dlc_cfg["all_joints_names"]
-        container = np.full((len(poses), max_indivs * len(bpts) * 3), np.nan)
-        for n, pose in enumerate(poses):
-            temp = pose.flatten()
-            container[n, : len(temp)] = temp
-
-        header = pd.MultiIndex.from_product(
-            [
-                [DLCscorer],
-                [f"individual{i}" for i in range(1, max_indivs + 1)],
-                bpts,
-                ["x", "y", "likelihood"],
-            ],
-            names=["scorer", "individuals", "bodyparts", "coords"],
-        )
-
-        df = pd.DataFrame(container, columns=header)
-        df.to_hdf(
-            os.path.join(evaluationfolder, f"{DLCscorer}.h5"), key="df_with_missing"
-        )
-
-        if plotting:
-            foldername = os.path.join(
-                str(evaluationfolder),
-                "LabeledImages_" + DLCscorer + "_" + Snapshots[snapindex],
-            )
-            auxiliaryfunctions.attempttomakefolder(foldername)
-            for imageindex, imagename in tqdm(enumerate(Data.index)):
-                image_path = os.path.join(cfg["project_path"], imagename)
-                image = io.imread(image_path)
-                frame = img_as_ubyte(skimage.color.gray2rgb(image))
-                groundtruthcoordinates = poses_gt[imageindex]
-                coords_pred = poses[imageindex][:, :, :2]
-                probs_pred = poses[imageindex][:, :, -1:]
-                fig = visualization.make_multianimal_labeled_image(
-                    frame,
-                    groundtruthcoordinates,
-                    coords_pred,
-                    probs_pred,
-                    colors,
-                    cfg["dotsize"],
-                    cfg["alphavalue"],
-                    cfg["pcutoff"],
-                )
-                visualization.save_labeled_frame(
-                    fig, image_path, foldername, imageindex in trainIndices
-                )

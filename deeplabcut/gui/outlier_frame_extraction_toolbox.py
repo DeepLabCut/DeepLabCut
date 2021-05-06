@@ -80,7 +80,7 @@ class MainFrame(BaseFrame):
         self, parent, config, video, shuffle, Dataframe, savelabeled, multianimal
     ):
         super(MainFrame, self).__init__(
-            "DeepLabCut2.0 - Manual Outlier Frame Extraction", parent,
+            "DeepLabCut2.0 - Manual Outlier Frame Extraction", parent
         )
 
         ###################################################################################################################################################

@@ -11,7 +11,6 @@ Licensed under GNU Lesser General Public License v3.0
 import os
 import pydoc
 import sys
-import platform
 import subprocess
 
 import wx
@@ -30,6 +29,7 @@ class Refine_tracklets(wx.Panel):
         """Constructor"""
         wx.Panel.__init__(self, parent=parent)
         self.config = cfg
+        self.cfg = auxiliaryfunctions.read_config(self.config)
         self.datafile = ""
         self.video = ""
         self.manager = None
@@ -37,7 +37,7 @@ class Refine_tracklets(wx.Panel):
         # design the panel
         sizer = wx.GridBagSizer(5, 5)
 
-        text = wx.StaticText(self, label="DeepLabCut - Tracklets: Extract and Refine")
+        text = wx.StaticText(self, label="DeepLabCut - Tracklets: Extract/Refine")
         sizer.Add(text, pos=(0, 0), flag=wx.TOP | wx.LEFT | wx.BOTTOM, border=15)
         # Add logo of DLC
         icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(LOGO_PATH))
@@ -72,56 +72,64 @@ class Refine_tracklets(wx.Panel):
         self.sel_config.SetPath(self.config)
         self.sel_config.Bind(wx.EVT_FILEPICKER_CHANGED, self.select_config)
 
-        self.video_text = wx.StaticText(self, label="Select the video")
-        sizer.Add(self.video_text, pos=(3, 0), flag=wx.TOP | wx.LEFT, border=5)
-        self.sel_video = wx.FilePickerCtrl(
-            self, path="", style=wx.FLP_USE_TEXTCTRL, message="Open video"
-        )
-        sizer.Add(
-            self.sel_video, pos=(3, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND, border=5
-        )
-        self.sel_video.Bind(wx.EVT_FILEPICKER_CHANGED, self.select_video)
-
-        self.data_text = wx.StaticText(self, label="Select the tracklet data")
-        sizer.Add(self.data_text, pos=(4, 0), flag=wx.TOP | wx.LEFT, border=5)
+        self.data_text = wx.StaticText(self, label="Select the tracklet pickle file")
+        sizer.Add(self.data_text, pos=(3, 0), flag=wx.TOP | wx.LEFT, border=5)
         self.sel_datafile = wx.FilePickerCtrl(
             self, path="", style=wx.FLP_USE_TEXTCTRL, message="Open tracklet data"
         )  # wildcard="Pickle files (*.pickle)|*.pickle")
         sizer.Add(
             self.sel_datafile,
-            pos=(4, 1),
+            pos=(3, 1),
             span=(1, 3),
             flag=wx.TOP | wx.EXPAND,
             border=5,
         )
         self.sel_datafile.Bind(wx.EVT_FILEPICKER_CHANGED, self.select_datafile)
 
+        self.ntracks_text = wx.StaticText(self, label="Number of animals")
+        sizer.Add(self.ntracks_text, pos=(4, 0), flag=wx.TOP | wx.LEFT, border=5)
+        self.ntracks = wx.SpinCtrl(
+            self, value=str(len(self.cfg["individuals"])), min=2, max=1000
+        )
+        sizer.Add(
+            self.ntracks, pos=(4, 1), span=(1, 3), flag=wx.EXPAND | wx.TOP, border=5
+        )
+
+        self.create_tracks_btn = wx.Button(self, label="Step1: Create tracks")
+        sizer.Add(self.create_tracks_btn, pos=(5, 1))
+        self.create_tracks_btn.Bind(wx.EVT_BUTTON, self.create_tracks)
+
+        line2 = wx.StaticLine(self)
+        sizer.Add(line2, pos=(6, 0), span=(1, 5), flag=wx.EXPAND | wx.BOTTOM, border=10)
+
+        self.video_text = wx.StaticText(self, label="Select the video")
+        sizer.Add(self.video_text, pos=(7, 0), flag=wx.TOP | wx.LEFT, border=5)
+        self.sel_video = wx.FilePickerCtrl(
+            self, path="", style=wx.FLP_USE_TEXTCTRL, message="Open video"
+        )
+        sizer.Add(
+            self.sel_video, pos=(7, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND, border=5
+        )
+        self.sel_video.Bind(wx.EVT_FILEPICKER_CHANGED, self.select_video)
+
         hbox = wx.BoxSizer(wx.HORIZONTAL)
 
-        slider_swap_text = wx.StaticBox(self, label="Specify the min swap fraction")
+        slider_swap_text = wx.StaticBox(
+            self, label="Specify the min swap length to highlight"
+        )
         slider_swap_sizer = wx.StaticBoxSizer(slider_swap_text, wx.VERTICAL)
         self.slider_swap = wx.SpinCtrl(self, value="2")
         slider_swap_sizer.Add(self.slider_swap, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
         hbox.Add(slider_swap_sizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
-        slider_track_text = wx.StaticBox(
-            self, label="Specify the min relative tracklet length"
-        )
-        slider_track_sizer = wx.StaticBoxSizer(slider_track_text, wx.VERTICAL)
-        self.slider_track = wx.SpinCtrl(self, value="2")
-        slider_track_sizer.Add(
-            self.slider_track, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
-        )
-        hbox.Add(slider_track_sizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-
         sizer.Add(
-            hbox, pos=(5, 0), flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, border=10
+            hbox, pos=(8, 0), flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, border=10
         )
 
         hbox_ = wx.BoxSizer(wx.HORIZONTAL)
+
         slider_gap_text = wx.StaticBox(
-            self,
-            label="Specify the max gap size to fill, in frames (used for the initial pickle file only!)",
+            self, label="Specify the max gap size of missing data to fill"
         )
         slider_gap_sizer = wx.StaticBoxSizer(slider_gap_text, wx.VERTICAL)
         self.slider_gap = wx.SpinCtrl(self, value="5")
@@ -135,10 +143,14 @@ class Refine_tracklets(wx.Panel):
         hbox_.Add(traillength_sizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         sizer.Add(
-            hbox_, pos=(6, 0), flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, border=10
+            hbox_, pos=(9, 0), flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, border=10
         )
 
-        # NEW ROW:
+        line3 = wx.StaticLine(self)
+        sizer.Add(
+            line3, pos=(10, 0), span=(1, 5), flag=wx.EXPAND | wx.BOTTOM, border=10
+        )
+
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
 
         videotype_text = wx.StaticBox(self, label="Specify the videotype")
@@ -182,32 +194,33 @@ class Refine_tracklets(wx.Panel):
         hbox2.Add(filter_sizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         hbox2.Add(filterlength_sizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         sizer.Add(
-            hbox2, pos=(7, 0), flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, border=10
+            hbox2, pos=(11, 0), flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, border=10
         )
 
-
         self.inf_cfg_text = wx.Button(self, label="Edit inference_config.yaml")
-        sizer.Add(self.inf_cfg_text, pos=(10, 1), flag=wx.BOTTOM | wx.RIGHT, border=10)
+        sizer.Add(self.inf_cfg_text, pos=(12, 2), flag=wx.BOTTOM | wx.RIGHT, border=10)
         self.inf_cfg_text.Bind(wx.EVT_BUTTON, self.edit_inf_config)
 
-        self.ok = wx.Button(self, label="Step1: Launch GUI")
-        sizer.Add(self.ok, pos=(6, 3))
+        self.ok = wx.Button(self, label="Optional: Refine tracks")
+        sizer.Add(self.ok, pos=(9, 1))
         self.ok.Bind(wx.EVT_BUTTON, self.refine_tracklets)
 
         self.help_button = wx.Button(self, label="Help")
-        sizer.Add(self.help_button, pos=(8, 0), flag=wx.LEFT, border=10)
+        sizer.Add(self.help_button, pos=(12, 0), flag=wx.LEFT, border=10)
         self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
 
         self.reset = wx.Button(self, label="Reset")
-        sizer.Add(self.reset, pos=(8, 1), flag=wx.BOTTOM | wx.RIGHT, border=10)
+        sizer.Add(self.reset, pos=(12, 1), flag=wx.BOTTOM | wx.RIGHT, border=10)
         self.reset.Bind(wx.EVT_BUTTON, self.reset_refine_tracklets)
 
-        self.filter = wx.Button(self, label=" Step2: Filter Tracks (then you also get a CSV file!)")
-        sizer.Add(self.filter, pos=(8, 3), flag=wx.BOTTOM | wx.RIGHT, border=10)
+        self.filter = wx.Button(
+            self, label=" Optional: Filter Tracks (then you also get a CSV file!)"
+        )
+        sizer.Add(self.filter, pos=(11, 1), flag=wx.BOTTOM | wx.RIGHT, border=10)
         self.filter.Bind(wx.EVT_BUTTON, self.filter_after_refinement)
 
         self.export = wx.Button(self, label="Optional: Merge refined data")
-        sizer.Add(self.export, pos=(10, 3), flag=wx.BOTTOM | wx.RIGHT, border=10)
+        sizer.Add(self.export, pos=(13, 1), flag=wx.BOTTOM | wx.RIGHT, border=10)
         self.export.Bind(wx.EVT_BUTTON, self.export_data)
         self.export.Disable()
 
@@ -218,13 +231,12 @@ class Refine_tracklets(wx.Panel):
 
     def edit_inf_config(self, event):
         # Read the infer config file
-        cfg = auxiliaryfunctions.read_config(self.config)
         trainingsetindex = self.trainingset.GetValue()
-        trainFraction = cfg["TrainingFraction"][trainingsetindex]
+        trainFraction = self.cfg["TrainingFraction"][trainingsetindex]
         self.inf_cfg_path = os.path.join(
-            cfg["project_path"],
+            self.cfg["project_path"],
             auxiliaryfunctions.GetModelFolder(
-                trainFraction, self.shuffle.GetValue(), cfg
+                trainFraction, self.shuffle.GetValue(), self.cfg
             ),
             "test",
             "inference_cfg.yaml",
@@ -234,6 +246,8 @@ class Refine_tracklets(wx.Panel):
             self.file_open_bool = subprocess.call(["open", self.inf_cfg_path])
             self.file_open_bool = True
         else:
+            import webbrowser
+
             self.file_open_bool = webbrowser.open(self.inf_cfg_path)
         if self.file_open_bool:
             self.inf_cfg = auxiliaryfunctions.read_config(self.inf_cfg_path)
@@ -297,15 +311,21 @@ class Refine_tracklets(wx.Panel):
         self.video = self.sel_video.GetPath()
         self.sel_video.SetPath(os.path.basename(self.video))
 
+    def create_tracks(self, event):
+        deeplabcut.stitch_tracklets(
+            self.datafile,
+            n_tracks=self.ntracks.GetValue(),
+            animal_names=self.cfg["individuals"],
+        )
+
     def refine_tracklets(self, event):
         self.manager, self.viz = deeplabcut.refine_tracklets(
             self.config,
-            self.datafile,
+            self.datafile.replace("pickle", "h5"),
             self.video,
             min_swap_len=self.slider_swap.GetValue(),
-            min_tracklet_len=self.slider_track.GetValue(),
-            max_gap=self.slider_gap.GetValue(),
             trail_len=self.length_track.GetValue(),
+            max_gap=self.slider_gap.GetValue(),
         )
         self.export.Enable()
 
@@ -320,7 +340,6 @@ class Refine_tracklets(wx.Panel):
         self.sel_datafile.SetPath("")
         self.sel_video.SetPath("")
         self.slider_swap.SetValue(2)
-        self.slider_track.SetValue(2)
-        self.slider_gap.SetValue(5)
         self.length_track.SetValue(25)
+        self.slider_gap.SetValue(5)
         # self.save.Enable(False)

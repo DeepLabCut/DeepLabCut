@@ -35,7 +35,7 @@ def test_net(visualise, cache_scoremaps):
     sess, inputs, outputs = setup_pose_prediction(cfg)
 
     if cache_scoremaps:
-        out_dir = cfg['scoremap_dir']
+        out_dir = cfg["scoremap_dir"]
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
 
@@ -51,10 +51,10 @@ def test_net(visualise, cache_scoremaps):
 
         scmap, locref = extract_cnn_output(outputs_np, cfg)
 
-        pose = argmax_pose_predict(scmap, locref, cfg['stride'])
+        pose = argmax_pose_predict(scmap, locref, cfg["stride"])
 
         pose_refscale = np.copy(pose)
-        pose_refscale[:, 0:2] /= cfg['global_scale']
+        pose_refscale[:, 0:2] /= cfg["global_scale"]
         predictions[k] = pose_refscale
 
         if visualise:
@@ -69,7 +69,7 @@ def test_net(visualise, cache_scoremaps):
             scipy.io.savemat(out_fn, mdict={"scoremaps": scmap.astype("float32")})
 
             out_fn = os.path.join(out_dir, raw_name + "_locreg" + ".mat")
-            if cfg['location_refinement']:
+            if cfg["location_refinement"]:
                 scipy.io.savemat(
                     out_fn, mdict={"locreg_pred": locref.astype("float32")}
                 )

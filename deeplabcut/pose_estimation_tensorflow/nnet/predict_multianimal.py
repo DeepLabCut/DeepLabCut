@@ -28,14 +28,14 @@ def extract_cnn_output(outputs_np, cfg):
     """ extract locref, scmap and partaffinityfield from network """
     scmap = outputs_np[0]
     scmap = np.squeeze(scmap)
-    if cfg['location_refinement']:
+    if cfg["location_refinement"]:
         locref = np.squeeze(outputs_np[1])
         shape = locref.shape
         locref = np.reshape(locref, (shape[0], shape[1], -1, 2))
-        locref *= cfg['locref_stdev']
+        locref *= cfg["locref_stdev"]
     else:
         locref = None
-    if cfg['partaffinityfield_predict'] and ("multi-animal" in cfg['dataset_type']):
+    if cfg["partaffinityfield_predict"] and ("multi-animal" in cfg["dataset_type"]):
         paf = np.squeeze(outputs_np[2])
     else:
         paf = None
@@ -51,8 +51,12 @@ def AssociationCosts(
     """ Association costs for detections based on PAFs """
     Distances = {}
     ny, nx, nlimbs = np.shape(partaffinitymaps)
-    for l in range(cfg['num_limbs']):
-        bp1, bp2 = cfg['partaffinityfield_graph'][l]  # [(0,1),(1,2)
+    graph = cfg["partaffinityfield_graph"]
+    limbs = cfg.get("paf_best", np.arange(len(graph)))
+    if len(graph) != len(limbs):
+        limbs = np.arange(len(graph))
+
+    for l, (bp1, bp2) in zip(limbs, graph):
         # get coordinates for bp1 and bp2
         C1 = coordinates[bp1]
         C2 = coordinates[bp2]
@@ -135,9 +139,9 @@ def extract_detections(cfg, scmap, locref, pafs, nms_radius, det_min_score):
     from nms_grid import nms_grid  # this needs to be installed (C-code)
 
     Detections = {}
-    stride = cfg['stride']
+    stride = cfg["stride"]
     halfstride = stride * 0.5
-    num_joints = cfg['num_joints']
+    num_joints = cfg["num_joints"]
     dist_grid = make_nms_grid(nms_radius)
     unProb = [None] * num_joints
     unPos = [None] * num_joints
@@ -174,10 +178,7 @@ def extract_detections(cfg, scmap, locref, pafs, nms_radius, det_min_score):
 
 def find_local_maxima(scmap, radius, threshold):
     peak_idx = peak_local_max(
-        scmap,
-        min_distance=radius,
-        threshold_abs=threshold,
-        exclude_border=False,
+        scmap, min_distance=radius, threshold_abs=threshold, exclude_border=False
     )
     grid = np.zeros_like(scmap, dtype=bool)
     grid[tuple(peak_idx.T)] = True
@@ -188,9 +189,9 @@ def find_local_maxima(scmap, radius, threshold):
 
 def extract_detections_python(cfg, scmap, locref, pafs, radius, threshold):
     Detections = {}
-    stride = cfg['stride']
+    stride = cfg["stride"]
     halfstride = stride * 0.5
-    num_joints = cfg['num_joints']
+    num_joints = cfg["num_joints"]
     unProb = [None] * num_joints
     unPos = [None] * num_joints
 
@@ -253,9 +254,9 @@ def extract_detection_withgroundtruth(
 
     Detections = {}
     num_idchannel = cfg.get("num_idchannel", 0)
-    stride = cfg['stride']
+    stride = cfg["stride"]
     halfstride = stride * 0.5
-    num_joints = cfg['num_joints']
+    num_joints = cfg["num_joints"]
     # get dist_grid
     dist_grid = make_nms_grid(nms_radius)
     unProb = [None] * num_joints
@@ -308,9 +309,9 @@ def extract_detection_withgroundtruth_python(
     cfg, groundtruthcoordinates, scmap, locref, pafs, radius, threshold
 ):
     Detections = {}
-    stride = cfg['stride']
+    stride = cfg["stride"]
     halfstride = stride * 0.5
-    num_joints = cfg['num_joints']
+    num_joints = cfg["num_joints"]
     num_idchannel = cfg.get("num_idchannel", 0)
     unProb = [None] * num_joints
     unPos = [None] * num_joints
@@ -391,14 +392,14 @@ def extract_cnn_outputmulti(outputs_np, cfg):
     """ extract locref + scmap from network
     Dimensions: image batch x imagedim1 x imagedim2 x bodypart"""
     scmap = outputs_np[0]
-    if cfg['location_refinement']:
+    if cfg["location_refinement"]:
         locref = outputs_np[1]
         shape = locref.shape
         locref = np.reshape(locref, (shape[0], shape[1], shape[2], -1, 2))
-        locref *= cfg['locref_stdev']
+        locref *= cfg["locref_stdev"]
     else:
         locref = None
-    if cfg['partaffinityfield_predict'] and ("multi-animal" in cfg['dataset_type']):
+    if cfg["partaffinityfield_predict"] and ("multi-animal" in cfg["dataset_type"]):
         paf = outputs_np[2]
     else:
         paf = None
@@ -467,9 +468,9 @@ def extract_batchdetections(
 
 def extract_batchdetections_python(cfg, scmap, locref, pafs, radius, threshold):
     Detections = {}
-    stride = cfg['stride']
+    stride = cfg["stride"]
     halfstride = stride * 0.5
-    num_joints = cfg['num_joints']
+    num_joints = cfg["num_joints"]
     num_idchannel = cfg.get("num_idchannel", 0)
     unProb = [None] * num_joints
     unPos = [None] * num_joints

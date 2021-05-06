@@ -24,6 +24,7 @@ TODO: change to frozen backbone!
 
 
 import os
+
 os.environ["CUDA_VISIBLE_DEVICES"] = str(0)
 import deeplabcut
 import numpy as np

@@ -18,7 +18,7 @@ import wx
 import deeplabcut
 
 from deeplabcut.gui import LOGO_PATH
-from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils import auxiliaryfunctions, skeleton
 
 
 class Create_Labeled_Videos(wx.Panel):
@@ -228,6 +228,11 @@ class Create_Labeled_Videos(wx.Panel):
         boxsizer.Add(hbox3, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
         boxsizer.Add(hbox4, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
+        self.build = wx.Button(self, label="Build skeleton")
+        self.sizer.Add(self.build, pos=(5, 3), flag=wx.BOTTOM | wx.RIGHT, border=10)
+        self.build.Bind(wx.EVT_BUTTON, self.build_skeleton)
+        self.build.Enable(True)
+
         self.help_button = wx.Button(self, label="Help")
         self.sizer.Add(self.help_button, pos=(5, 0), flag=wx.LEFT, border=10)
         self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
@@ -246,6 +251,9 @@ class Create_Labeled_Videos(wx.Panel):
 
         self.SetSizer(self.sizer)
         self.sizer.Fit(self)
+
+    def build_skeleton(self, event):
+        skeleton.SkeletonBuilder(self.config)
 
     def select_config(self, event):
         """
