@@ -432,8 +432,8 @@ class TrackletStitcher:
         split_tracklets=True,
         prestitch_residuals=True,
     ):
-        if n_tracks < 2:
-            raise ValueError("There must at least be two tracks to reconstruct.")
+        if n_tracks < 1:
+            raise ValueError("There must at least be one track to reconstruct.")
 
         if min_length < 3:
             raise ValueError("A tracklet must have a minimal length of 3.")
@@ -1000,6 +1000,8 @@ def stitch_tracklets(
     -------
     A TrackletStitcher object
     """
+    if n_tracks == 1:
+        split_tracklets = False
     stitcher = TrackletStitcher.from_pickle(
         pickle_file, n_tracks, min_length, split_tracklets, prestitch_residuals
     )

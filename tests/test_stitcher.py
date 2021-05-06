@@ -102,8 +102,6 @@ def test_stitcher_wrong_inputs(fake_tracklet):
     with pytest.raises(IOError):
         _ = TrackletStitcher([], n_tracks=2)
     with pytest.raises(ValueError):
-        _ = TrackletStitcher([fake_tracklet], n_tracks=1)
-    with pytest.raises(ValueError):
         _ = TrackletStitcher([fake_tracklet], n_tracks=2, min_length=2)
 
 
