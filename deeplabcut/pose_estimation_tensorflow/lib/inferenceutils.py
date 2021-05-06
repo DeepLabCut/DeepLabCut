@@ -878,6 +878,14 @@ def evaluate_assembly(
         matched, unmatched = match_assemblies(ass_pred, ass_true, oks_sigma)
         all_matched.extend(matched)
         all_unmatched.extend(unmatched)
+    if not all_matched:
+        return {
+            "precisions": np.array([]),
+            "recalls": np.array([]),
+            "mAP": 0.0,
+            "mAR": 0.0,
+        }
+
     oks = np.asarray([match[2] for match in all_matched])
     ntot = len(all_matched) + len(all_unmatched)
     recall_thresholds = np.linspace(0, 1, 101)
