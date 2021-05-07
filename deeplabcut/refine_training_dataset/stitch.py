@@ -825,6 +825,7 @@ class TrackletStitcher:
         )
         inds = range(self._first_frame, self._last_frame + 1)
         df = pd.DataFrame(data, columns=columns, index=inds)
+        df = df.reindex(range(self._last_frame + 1))
         if self.single is not None:
             columns = pd.MultiIndex.from_product(
                 [scorer, ["single"], bpts[-n_unique_bpts:], coords],
