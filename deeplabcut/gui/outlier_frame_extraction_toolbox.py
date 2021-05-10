@@ -101,7 +101,7 @@ class MainFrame(BaseFrame):
         topSplitter = wx.SplitterWindow(self)
         vSplitter = wx.SplitterWindow(topSplitter)
 
-        self.image_panel = ImagePanel(vSplitter, self.gui_size)
+        self.image_panel = ImagePanel(vSplitter, config, self.gui_size)
         self.choice_panel = ScrollPanel(vSplitter)
 
         vSplitter.SplitVertically(
