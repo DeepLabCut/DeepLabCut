@@ -454,6 +454,14 @@ min_hits: 3
 deeplabcut.stitch_tracklets(pickle_file, n_tracks=n)
 ```
 
+Note that for improved flexibility the stitching procedure does not rely on a configuration file;
+file columns will by default be filled with dummy animal names (ind1, ind2, etc.). Other names (e.g., those defined
+in the main config.yaml file) can be easily passed in as follows:
+```python
+cfg = deeplabcut.utils.read_config('config_path')
+deeplabcut.stitch_tracklets(..., animal_names=cfg['individuals'])
+```
+
 ### Refine Tracklets:
 
 You can also optionally **refine the tracklets**. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc!
