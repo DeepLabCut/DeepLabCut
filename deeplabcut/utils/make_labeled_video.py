@@ -214,7 +214,7 @@ def CreateVideoSlow(
 
     fps = clip.fps()
     if outputframerate is None:  # by def. same as input rate.
-        outputframerate = clip.fps()
+        outputframerate = fps
 
     nframes = clip.nframes
     duration = nframes / fps
@@ -280,7 +280,7 @@ def CreateVideoSlow(
     fig = plt.figure(frameon=False, figsize=(nx / dpi, ny / dpi))
     ax = fig.add_subplot(111)
 
-    writer = FFMpegWriter(fps=fps, codec="h264")
+    writer = FFMpegWriter(fps=outputframerate, codec="h264")
     with writer.saving(fig, videooutname, dpi=dpi), np.errstate(invalid="ignore"):
         for index in trange(min(nframes, len(Dataframe))):
             imagename = tmpfolder + "/file" + str(index).zfill(nframes_digits) + ".png"
@@ -648,9 +648,10 @@ def proc_video(
                         codec=codec,
                         sw=x2 - x1,
                         sh=y2 - y1,
+                        fps=outputframerate,
                     )
                 else:  # then the full video + the (perhaps in cropped mode analyzed labels) are depicted
-                    clip = vp(fname=video, sname=videooutname, codec=codec)
+                    clip = vp(fname=video, sname=videooutname, codec=codec, fps=outputframerate)
                 CreateVideo(
                     clip,
                     df,
