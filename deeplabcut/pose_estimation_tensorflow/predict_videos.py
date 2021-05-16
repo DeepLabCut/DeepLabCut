@@ -54,6 +54,7 @@ def analyze_videos(
     modelprefix="",
     c_engine=False,
     robust_nframes=False,
+    allow_growth=False
 ):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
@@ -119,6 +120,10 @@ def analyze_videos(
         Evaluate a video's number of frames in a robust manner.
         This option is slower (as the whole video is read frame-by-frame),
         but does not rely on metadata, hence its robustness against file corruption.
+
+    allow_growth: bool, default false.
+        For some smaller GPUs the memory issues happen. If true, the memory allocator does not pre-allocate the entire specified
+        GPU memory region, instead starting small and growing as needed. See issue: https://forum.image.sc/t/how-to-stop-running-out-of-vram/30551/2
 
     Examples
     --------
@@ -266,11 +271,10 @@ def analyze_videos(
     else:
         xyz_labs = ["x", "y", "likelihood"]
 
-    # sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
     if TFGPUinference:
-        sess, inputs, outputs = predict.setup_GPUpose_prediction(dlc_cfg)
+        sess, inputs, outputs = predict.setup_GPUpose_prediction(dlc_cfg,allow_growth=allow_growth)
     else:
-        sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
+        sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg,allow_growth=allow_growth)
 
     pdindex = pd.MultiIndex.from_product(
         [[DLCscorer], dlc_cfg["all_joints_names"], xyz_labs],

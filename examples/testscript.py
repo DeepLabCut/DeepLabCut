@@ -315,6 +315,7 @@ if __name__ == "__main__":
         save_as_csv=True,
         destfolder=dfolder,
         cropping=[0, 50, 0, 50],
+        allow_growth=True
     )
 
     print("Extracting skeleton distances, filter and plot filtered output")

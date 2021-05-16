@@ -122,7 +122,8 @@ if __name__ == "__main__":
     )
 
     print("Analyzing video...")
-    deeplabcut.analyze_videos(config_path, [new_video_path], "mp4", robust_nframes=True)
+    deeplabcut.analyze_videos(config_path, [new_video_path], "mp4", robust_nframes=True,allow_growth=True)
+    
     print("Video analyzed.")
 
     print("Create video with all detections...")
