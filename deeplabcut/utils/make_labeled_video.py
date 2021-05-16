@@ -757,7 +757,13 @@ def create_video_with_keypoints_only(
 
 
 def create_video_with_all_detections(
-    config, videos, DLCscorername, displayedbodyparts="all", destfolder=None
+    config,
+    videos,
+    shuffle=1,
+    trainingsetindex=0,
+    displayedbodyparts="all",
+    destfolder=None,
+    modelprefix="",
 ):
     """
     Create a video labeled with all the detections stored in a '*_full.pickle' file.
@@ -771,8 +777,11 @@ def create_video_with_all_detections(
         A list of strings containing the full paths to videos for analysis or a path to the directory,
         where all the videos with same extension are stored.
 
-    DLCscorername: str
-        Name of network. E.g. 'DLC_resnet50_project_userMar23shuffle1_50000
+    shuffle : int, optional
+        Number of shuffles of training dataset. Default is set to 1.
+
+    trainingsetindex: int, optional
+        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
 
     displayedbodyparts: list of strings, optional
         This selects the body parts that are plotted in the video. Either ``all``, then all body parts
@@ -787,6 +796,10 @@ def create_video_with_all_detections(
     import pickle, re
 
     cfg = auxiliaryfunctions.read_config(config)
+    trainFraction = cfg["TrainingFraction"][trainingsetindex]
+    DLCscorername, _ = auxiliaryfunctions.GetScorerName(
+        cfg, shuffle, trainFraction, modelprefix=modelprefix
+    )
 
     for video in videos:
         videofolder = os.path.splitext(video)[0]
