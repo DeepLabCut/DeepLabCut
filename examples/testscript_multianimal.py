@@ -145,9 +145,8 @@ if __name__ == "__main__":
         os.path.dirname(basepath), "tests", "data", "trimouse_tracklets.pickle"
     )
     deeplabcut.stitch_tracklets(
+        config_path,
         pickle_file,
-        n_tracks=3,
-        animal_names=cfg["individuals"],
         output_name=os.path.splitext(new_video_path)[0] + scorer + "_el.h5",
     )
 

@@ -313,9 +313,9 @@ class Refine_tracklets(wx.Panel):
 
     def create_tracks(self, event):
         deeplabcut.stitch_tracklets(
+            self.config,
             self.datafile,
             n_tracks=self.ntracks.GetValue(),
-            animal_names=self.cfg["individuals"],
         )
 
     def refine_tracklets(self, event):
