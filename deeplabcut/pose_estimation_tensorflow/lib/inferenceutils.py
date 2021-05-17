@@ -224,12 +224,12 @@ class Assembler:
         self.min_affinity = min_affinity
         self.min_n_links = min_n_links
         self.max_overlap = max_overlap
-        has_identity = "identity" in self[0]
-        if identity_only and not has_identity:
+        self._has_identity = "identity" in self[0]
+        if identity_only and not self._has_identity:
             warnings.warn(
                 "The network was not trained with identity; setting `identity_only` to False."
             )
-        self.identity_only = identity_only & has_identity
+        self.identity_only = identity_only & self._has_identity
         self.nan_policy = nan_policy
         self.force_fusion = force_fusion
         self.add_discarded = add_discarded
