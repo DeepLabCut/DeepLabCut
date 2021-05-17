@@ -1493,7 +1493,7 @@ def convert_detections2tracklets(
                     assemblies = ass.assemblies.get(index)
                     if assemblies is None:
                         continue
-                    animals = np.stack([ass.data[:, :3] for ass in assemblies])
+                    animals = np.stack([ass.data for ass in assemblies])
                     if track_method == "box":
                         bboxes = trackingutils.calc_bboxes_from_keypoints(
                             animals, inferencecfg["boundingboxslack"], offset=0

@@ -834,7 +834,7 @@ def _parse_ground_truth_data(data):
             if np.isnan(row[:, :2]).all():
                 continue
             ass = Assembly(row.shape[0])
-            ass.data[:, :3] = row
+            ass.data[:, :row.shape[1]] = row
             temp.append(ass)
         if not temp:
             continue
