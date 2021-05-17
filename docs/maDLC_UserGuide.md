@@ -404,7 +404,7 @@ Please run:
 
 ```python
 scorername = deeplabcut.analyze_videos(config_path,['/fullpath/project/videos/testVideo.mp4'], videotype='.mp4')
-deeplabcut.create_video_with_all_detections(config_path, ['/fullpath/project/videos/testVideo.mp4'], scorername)
+deeplabcut.create_video_with_all_detections(config_path, ['/fullpath/project/videos/testVideo.mp4'])
 ```
 Please note that you do **not** get the .h5/csv file you might be used to getting (this comes after tracking). You will get a `pickle` file that is used in `create_video_with_all_detections`. IF you have good clean out video, ending in `....full.mp4` (and the evaluation metrics look good, scoremaps look good, plotted evaluation images), then go forward!!! 
 
