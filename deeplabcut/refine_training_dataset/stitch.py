@@ -7,6 +7,7 @@ import re
 import scipy.linalg.interpolative as sli
 import warnings
 from collections import defaultdict
+from deeplabcut.utils import read_config
 from itertools import combinations, cycle
 from networkx.algorithms.flow import preflow_push
 from scipy.linalg import hankel
@@ -933,13 +934,13 @@ class TrackletStitcher:
 
 
 def stitch_tracklets(
+    config_path,
     pickle_file,
-    n_tracks,
+    n_tracks=None,
     min_length=10,
     split_tracklets=True,
     prestitch_residuals=True,
     weight_func=None,
-    animal_names=None,
     output_name="",
 ):
     """
@@ -948,14 +949,19 @@ def stitch_tracklets(
 
     Parameters
     ----------
+    config_path : str
+        Path to the main project config.yaml file.
+
     pickle_file : str
         Path to the pickle file containing the tracklets.
         It is obtained after deeplabcut.convert_detections2tracklets()
         and typically ends with _bx or _sk.pickle.
 
-    n_tracks : int
-        Number of tracks to reconstruct.
-        This is equivalent to the number of animals in the scene.
+    n_tracks : int, optional
+        Number of tracks to reconstruct. By default, taken as the number
+        of individuals defined in the config.yaml. Another number can be
+        passed if the number of animals in the video is different from
+        the number of animals the model was trained on.
 
     min_length : int, optional
         Tracklets less than `min_length` frames of length
@@ -988,10 +994,6 @@ def stitch_tracklets(
         belong to the same track; i.e., the higher the confidence that the
         tracklets should be stitched together, the lower the returned value.
 
-    animal_names : list, optional
-        List of animal names to populate the output file header.
-        By default, columns are named "ind_i" for i in range(1, n_animals + 1).
-
     output_name : str, optional
         Name of the output h5 file.
         By default, tracks are automatically stored into the same directory
@@ -1001,6 +1003,10 @@ def stitch_tracklets(
     -------
     A TrackletStitcher object
     """
+    cfg = read_config(config_path)
+    animal_names = cfg["individuals"]
+    if n_tracks is None:
+        n_tracks = len(animal_names)
     if n_tracks == 1:
         split_tracklets = False
     stitcher = TrackletStitcher.from_pickle(

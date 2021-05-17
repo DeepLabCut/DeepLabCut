@@ -448,11 +448,19 @@ min_hits: 3
 
 **Animal assembly and tracking quality** can be assessed via `deeplabcut.utils.make_labeled_video.create_video_from_pickled_tracks`. This function provides an additional diagnostic tool before moving on to refining tracklets.
 
-**Next, tracklets are stitched to form *n* complete tracks with:
+**Next, tracklets are stitched to form complete tracks with:
 
 ```python
-deeplabcut.stitch_tracklets(pickle_file, n_tracks=n)
+deeplabcut.stitch_tracklets(config_path, pickle_file)
 ```
+
+If the number of tracks to reconstruct is different from the number of individuals
+originally defined in the config.yaml, `n_tracks` can be directly specified as follows:
+
+```python
+deeplabcut.stitch_tracklets(config_path, pickle_file, n_tracks=n)
+```
+In such cases, file columns will default to dummy animal names (ind1, ind2, ..., up to indn).
 
 ### Refine Tracklets:
 
