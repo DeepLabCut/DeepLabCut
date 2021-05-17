@@ -1254,6 +1254,7 @@ def convert_detections2tracklets(
     greedy=False,
     calibrate=False,
     window_size=0,
+    identity_only=False,
 ):
     """
     This should be called at the end of deeplabcut.analyze_videos for multianimal projects!
@@ -1305,6 +1306,10 @@ def convert_detections2tracklets(
         Recurrent connections in the past `window_size` frames are
         prioritized during assembly. By default, no temporal coherence cost
         is added, and assembly is driven mainly by part affinity costs.
+
+    identity_only: bool, optional (default=False)
+        If True and animal identity was learned by the model, assembly rely
+        exclusively on identity prediction to group keypoints into animals.
 
     Examples
     --------
@@ -1471,6 +1476,7 @@ def convert_detections2tracklets(
                     pcutoff=inferencecfg.get("pcutoff", 0.1),
                     min_affinity=inferencecfg.get("pafthreshold", 0.1),
                     window_size=window_size,
+                    identity_only=identity_only,
                 )
                 if calibrate:
                     trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
