@@ -23,6 +23,7 @@ from multiprocessing import Pool
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial import cKDTree
 from scipy.spatial.distance import pdist, cdist
+from scipy.special import softmax
 from scipy.stats import gaussian_kde, chi2
 from tqdm import tqdm
 from typing import Tuple
@@ -124,6 +125,14 @@ class Assembly:
     @property
     def confidence(self):
         return np.nanmean(self.data[:, 2])
+
+    @property
+    def soft_identity(self):
+        data = self.data[~np.isnan(self.data).any(axis=1)]
+        unq, idx, cnt = np.unique(data[:, 3], return_inverse=True, return_counts=True)
+        avg = np.bincount(idx, weights=data[:, 2]) / cnt
+        soft = softmax(avg)
+        return dict(zip(unq.astype(int), soft))
 
     @property
     def affinity(self):

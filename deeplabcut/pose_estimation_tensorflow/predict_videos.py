@@ -23,6 +23,7 @@ import cv2
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+from scipy.optimize import linear_sum_assignment
 from skimage.util import img_as_ubyte
 from tqdm import tqdm
 
@@ -1500,14 +1501,23 @@ def convert_detections2tracklets(
                     if assemblies is None:
                         continue
                     animals = np.stack([ass.data for ass in assemblies])
-                    if track_method == "box":
-                        bboxes = trackingutils.calc_bboxes_from_keypoints(
-                            animals, inferencecfg["boundingboxslack"], offset=0
-                        )  # TODO: get cropping parameters and utilize!
-                        trackers = mot_tracker.update(bboxes)
+                    if not identity_only:
+                        if track_method == "box":
+                            bboxes = trackingutils.calc_bboxes_from_keypoints(
+                                animals, inferencecfg["boundingboxslack"], offset=0
+                            )  # TODO: get cropping parameters and utilize!
+                            trackers = mot_tracker.update(bboxes)
+                        else:
+                            xy = animals[..., :2]
+                            trackers = mot_tracker.track(xy)
                     else:
-                        xy = animals[..., :2]
-                        trackers = mot_tracker.track(xy)
+                        # Optimal identity assignment based on soft voting
+                        mat = np.zeros((len(assemblies), inferencecfg["topktoretain"]))
+                        for nrow, assembly in enumerate(assemblies):
+                            for k, v in assembly.soft_identity.items():
+                                mat[nrow, k] = v
+                        inds = linear_sum_assignment(mat, maximize=True)
+                        trackers = np.c_[inds][:, ::-1]
                     trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
 
                 tracklets["header"] = pdindex
