@@ -1309,8 +1309,8 @@ def convert_detections2tracklets(
         is added, and assembly is driven mainly by part affinity costs.
 
     identity_only: bool, optional (default=False)
-        If True and animal identity was learned by the model, assembly rely
-        exclusively on identity prediction to group keypoints into animals.
+        If True and animal identity was learned by the model,
+        assembly and tracking rely exclusively on identity prediction.
 
     Examples
     --------
