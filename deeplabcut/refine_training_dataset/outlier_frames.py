@@ -255,7 +255,7 @@ def extract_outlier_frames(
     opencv: bool, default: True
         Uses openCV for loading & extractiong (otherwise moviepy (legacy))
 
-    savelabeled: bool, default: True
+    savelabeled: bool, default: False
         If true also saves frame with predicted labels in each folder.
 
     destfolder: string, optional
