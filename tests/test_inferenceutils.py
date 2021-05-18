@@ -205,10 +205,10 @@ def test_assembler_with_identity(tmpdir_factory, real_assemblies):
     ass.assemble()
     eq = []
     for a in ass.assemblies.values():
-        for i, _ in enumerate(a):
+        for _ in a:
             ids = _.data[:, -1]
             ids = ids[~np.isnan(ids)]
-            eq.append(np.all(ids == i))
+            eq.append(np.all(ids == ids[0]))
     assert all(eq)
 
     output_name = tmpdir_factory.mktemp("data").join("fake.h5")
