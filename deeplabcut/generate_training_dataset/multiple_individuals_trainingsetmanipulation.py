@@ -14,10 +14,10 @@ from itertools import combinations
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 from tqdm import tqdm
 
 from deeplabcut.generate_training_dataset import trainingsetmanipulation
+from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
 from deeplabcut.utils import auxiliaryfunctions, auxfun_models, auxfun_multianimal
 
 
@@ -28,6 +28,7 @@ def create_multianimaltraining_dataset(
     windows2linux=False,
     net_type=None,
     numdigits=2,
+    paf_graph=None,
 ):
     """
     Creates a training dataset for multi-animal datasets. Labels from all the extracted frames are merged into a single .h5 file.\n
@@ -57,6 +58,10 @@ def create_multianimaltraining_dataset(
 
     numdigits: int, optional
 
+    paf_graph: list of lists, optional (default=None)
+        If not None, overwrite the default complete graph. This is useful for advanced users who
+        already know a good graph, or simply want to use a specific one. Note that, in that case,
+        the data-driven selection procedure upon model evaluation will be skipped.
 
     Example
     --------
@@ -111,10 +116,21 @@ def create_multianimaltraining_dataset(
         uniquebodyparts,
         multianimalbodyparts,
     ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
-    # Automatically form a complete PAF graph
-    partaffinityfield_graph = [
-        list(edge) for edge in combinations(range(len(multianimalbodyparts)), 2)
+
+    if paf_graph is None:  # Automatically form a complete PAF graph
+        partaffinityfield_graph = [
+            list(edge) for edge in combinations(range(len(multianimalbodyparts)), 2)
     ]
+    else:
+        # Ignore possible connections between 'multi' and 'unique' body parts;
+        # one can never be too careful...
+        to_ignore = crossvalutils._filter_unwanted_paf_connections(
+            config, paf_graph
+        )
+        partaffinityfield_graph = [
+            edge for i, edge in enumerate(paf_graph) if i not in to_ignore
+        ]
+
     print("Utilizing the following graph:", partaffinityfield_graph)
     num_limbs = len(partaffinityfield_graph)
     partaffinityfield_predict = True
