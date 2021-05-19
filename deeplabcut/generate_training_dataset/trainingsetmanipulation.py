@@ -10,10 +10,10 @@ Licensed under GNU Lesser General Public License v3.0
 import logging
 import os
 import os.path
-import shutil
 
 from functools import lru_cache
 from pathlib import Path
+from PIL import Image
 
 import numpy as np
 import pandas as pd
@@ -754,8 +754,11 @@ def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
 
 
 @lru_cache(maxsize=None)
-def _read_image_shape_fast(path):
-    return io.imread(path).shape
+def read_image_shape_fast(path):
+    # Blazing fast and does not load the image into memory
+    with Image.open(path) as img:
+        width, height = img.size
+        return len(img.getbands()), height, width
 
 
 def format_training_data(df, train_inds, nbodyparts, project_path):
@@ -771,18 +774,15 @@ def format_training_data(df, train_inds, nbodyparts, project_path):
         data = dict()
         filename = df.index[i]
         data["image"] = filename
-        img_shape = _read_image_shape_fast(os.path.join(project_path, filename))
-        try:
-            data["size"] = img_shape[2], img_shape[0], img_shape[1]
-        except IndexError:
-            data["size"] = 1, img_shape[0], img_shape[1]
+        img_shape = read_image_shape_fast(os.path.join(project_path, filename))
+        data["size"] = img_shape
         temp = df.iloc[i].values.reshape(-1, 2)
         joints = np.c_[range(nbodyparts), temp]
         joints = joints[~np.isnan(joints).any(axis=1)].astype(int)
         # Check that points lie within the image
         inside = np.logical_and(
-            np.logical_and(joints[:, 1] < img_shape[1], joints[:, 1] > 0),
-            np.logical_and(joints[:, 2] < img_shape[0], joints[:, 2] > 0),
+            np.logical_and(joints[:, 1] < img_shape[2], joints[:, 1] > 0),
+            np.logical_and(joints[:, 2] < img_shape[1], joints[:, 2] > 0),
         )
         if not all(inside):
             joints = joints[inside]
