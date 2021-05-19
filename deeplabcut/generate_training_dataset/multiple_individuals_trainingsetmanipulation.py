@@ -14,11 +14,169 @@ from itertools import combinations
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
+from skimage import io
 from tqdm import tqdm
 
-from deeplabcut.generate_training_dataset import trainingsetmanipulation
+from deeplabcut.generate_training_dataset import (
+    merge_annotateddatasets,
+    read_image_shape_fast,
+    SplitTrials,
+    MakeTrain_pose_yaml,
+    MakeTest_pose_yaml,
+    MakeInference_yaml,
+)
 from deeplabcut.utils import auxiliaryfunctions, auxfun_models, auxfun_multianimal
+
+
+def format_multianimal_training_data(df, train_inds, project_path):
+    train_data = []
+    nrows = df.shape[0]
+    filenames = df.index.to_list()
+    n_bodyparts = df.columns.get_level_values("bodyparts").unique().size
+    individuals = df.columns.get_level_values('individuals')
+    n_individuals = individuals.unique().size
+    mask_single = individuals.str.contains("single")
+    n_animals = n_individuals - 1 if np.any(mask_single) else n_individuals
+    array = np.full(
+        (nrows, n_individuals, n_bodyparts, 3),
+        fill_value=np.nan,
+        dtype=np.float32
+    )
+    array[..., 0] = np.arange(n_bodyparts)
+    temp = df.to_numpy()
+    temp_multi = temp[:, ~mask_single].reshape((nrows, n_animals, -1, 2))
+    n_multibodyparts = temp_multi.shape[2]
+    array[:, :n_animals, :n_multibodyparts, 1:] = temp_multi
+    if n_animals != n_individuals:  # There is a unique individual
+        n_uniquebodyparts = n_bodyparts - n_multibodyparts
+        temp_single = np.reshape(
+            temp[:, mask_single], (nrows, 1, n_uniquebodyparts, 2)
+        )
+        array[:, -1:, -n_uniquebodyparts:, 1:] = temp_single
+
+    for i in tqdm(train_inds):
+        data = dict()
+        filename = filenames[i]
+        data["image"] = filename
+        img_shape = read_image_shape_fast(os.path.join(project_path, filename))
+        data["size"] = img_shape
+
+        joints = dict()
+        has_data = False
+        for n, xy in enumerate(array[i]):
+            # Drop missing body parts
+            xy = xy[~np.isnan(xy).any(axis=1)]
+            # Drop points lying outside the image
+            inside = np.logical_and.reduce(
+                (
+                    xy[:, 1] < img_shape[2],
+                    xy[:, 1] > 0,
+                    xy[:, 2] < img_shape[1],
+                    xy[:, 2] > 0,
+                )
+            )
+            xy = xy[inside]
+            if xy.size:
+                has_data = True
+                joints[n] = xy
+        data["joints"] = joints
+        if has_data:
+            train_data.append(data)
+
+    return train_data
+
+
+def format_multianimal_training_data_old(
+    Data,
+    trainIndices,
+    project_path,
+    individuals,
+    multianimalbodyparts,
+    uniquebodyparts,
+    numdigits=2
+):
+    data = []
+    print("This can take some time...")
+    for jj in tqdm(trainIndices):
+        jointsannotated = False
+        H = {}
+        # load image to get dimensions:
+        filename = Data.index[jj]
+        im = io.imread(os.path.join(project_path, filename))
+        H["image"] = filename
+
+        try:
+            H["size"] = np.array(
+                [np.shape(im)[2], np.shape(im)[0], np.shape(im)[1]]
+            )
+        except:
+            # print "Grayscale!"
+            H["size"] = np.array([1, np.shape(im)[0], np.shape(im)[1]])
+
+        Joints = {}
+        for prfxindex, prefix in enumerate(individuals):
+            joints = (
+                    np.zeros((len(uniquebodyparts) + len(multianimalbodyparts), 3))
+                    * np.nan
+            )
+            if prefix != "single":  # first ones are multianimalparts!
+                indexjoints = 0
+                for bpindex, bodypart in enumerate(multianimalbodyparts):
+                    socialbdpt = bodypart  # prefix+bodypart #build names!
+                    # if socialbdpt in actualbpts:
+                    try:
+                        x, y = (
+                            Data[prefix][socialbdpt]["x"][jj],
+                            Data[prefix][socialbdpt]["y"][jj],
+                        )
+                        joints[indexjoints, 0] = int(bpindex)
+                        joints[indexjoints, 1] = round(x, numdigits)
+                        joints[indexjoints, 2] = round(y, numdigits)
+                        indexjoints += 1
+                    except:
+                        pass
+            else:
+                indexjoints = len(multianimalbodyparts)
+                for bpindex, bodypart in enumerate(uniquebodyparts):
+                    socialbdpt = bodypart  # prefix+bodypart #build names!
+                    # if socialbdpt in actualbpts:
+                    try:
+                        x, y = (
+                            Data[prefix][socialbdpt]["x"][jj],
+                            Data[prefix][socialbdpt]["y"][jj],
+                        )
+                        joints[indexjoints, 0] = len(
+                            multianimalbodyparts
+                        ) + int(bpindex)
+                        joints[indexjoints, 1] = round(x, 2)
+                        joints[indexjoints, 2] = round(y, 2)
+                        indexjoints += 1
+                    except:
+                        pass
+
+            # Drop missing body parts
+            joints = joints[~np.isnan(joints).any(axis=1)]
+            # Drop points lying outside the image
+            inside = np.logical_and.reduce(
+                (
+                    joints[:, 1] < im.shape[1],
+                    joints[:, 1] > 0,
+                    joints[:, 2] < im.shape[0],
+                    joints[:, 2] > 0,
+                )
+            )
+            joints = joints[inside]
+
+            if np.size(joints) > 0:  # exclude images without labels
+                jointsannotated = True
+
+            Joints[prfxindex] = joints  # np.array(joints, dtype=int)
+
+        H["joints"] = Joints
+        if jointsannotated:  # exclude images without labels
+            data.append(H)
+
+    return data
 
 
 def create_multianimaltraining_dataset(
@@ -77,9 +235,7 @@ def create_multianimaltraining_dataset(
     full_training_path = Path(project_path, trainingsetfolder)
     auxiliaryfunctions.attempttomakefolder(full_training_path, recursive=True)
 
-    Data = trainingsetmanipulation.merge_annotateddatasets(
-        cfg, full_training_path, windows2linux
-    )
+    Data = merge_annotateddatasets(cfg, full_training_path, windows2linux)
     if Data is None:
         return
     Data = Data[scorer]  # extract labeled data
@@ -136,7 +292,7 @@ def create_multianimaltraining_dataset(
     TrainingFraction = cfg["TrainingFraction"]
     for shuffle in Shuffles:  # Creating shuffles starting from 1
         for trainFraction in TrainingFraction:
-            train_inds_temp, test_inds_temp = trainingsetmanipulation.SplitTrials(
+            train_inds_temp, test_inds_temp = SplitTrials(
                 range(len(img_names)), trainFraction
             )
             # Map back to the original indices.
@@ -148,94 +304,23 @@ def create_multianimaltraining_dataset(
             ####################################################
             # Generating data structure with labeled information & frame metadata (for deep cut)
             ####################################################
-
-            # Make training file!
-            data = []
             print(
                 "Creating training data for: Shuffle:",
                 shuffle,
                 "TrainFraction: ",
                 trainFraction,
             )
-            print("This can take some time...")
-            for jj in tqdm(trainIndices):
-                jointsannotated = False
-                H = {}
-                # load image to get dimensions:
-                filename = Data.index[jj]
-                im = io.imread(os.path.join(cfg["project_path"], filename))
-                H["image"] = filename
 
-                try:
-                    H["size"] = np.array(
-                        [np.shape(im)[2], np.shape(im)[0], np.shape(im)[1]]
-                    )
-                except:
-                    # print "Grayscale!"
-                    H["size"] = np.array([1, np.shape(im)[0], np.shape(im)[1]])
-
-                Joints = {}
-                for prfxindex, prefix in enumerate(individuals):
-                    joints = (
-                        np.zeros((len(uniquebodyparts) + len(multianimalbodyparts), 3))
-                        * np.nan
-                    )
-                    if prefix != "single":  # first ones are multianimalparts!
-                        indexjoints = 0
-                        for bpindex, bodypart in enumerate(multianimalbodyparts):
-                            socialbdpt = bodypart  # prefix+bodypart #build names!
-                            # if socialbdpt in actualbpts:
-                            try:
-                                x, y = (
-                                    Data[prefix][socialbdpt]["x"][jj],
-                                    Data[prefix][socialbdpt]["y"][jj],
-                                )
-                                joints[indexjoints, 0] = int(bpindex)
-                                joints[indexjoints, 1] = round(x, numdigits)
-                                joints[indexjoints, 2] = round(y, numdigits)
-                                indexjoints += 1
-                            except:
-                                pass
-                    else:
-                        indexjoints = len(multianimalbodyparts)
-                        for bpindex, bodypart in enumerate(uniquebodyparts):
-                            socialbdpt = bodypart  # prefix+bodypart #build names!
-                            # if socialbdpt in actualbpts:
-                            try:
-                                x, y = (
-                                    Data[prefix][socialbdpt]["x"][jj],
-                                    Data[prefix][socialbdpt]["y"][jj],
-                                )
-                                joints[indexjoints, 0] = len(
-                                    multianimalbodyparts
-                                ) + int(bpindex)
-                                joints[indexjoints, 1] = round(x, 2)
-                                joints[indexjoints, 2] = round(y, 2)
-                                indexjoints += 1
-                            except:
-                                pass
-
-                    # Drop missing body parts
-                    joints = joints[~np.isnan(joints).any(axis=1)]
-                    # Drop points lying outside the image
-                    inside = np.logical_and.reduce(
-                        (
-                            joints[:, 1] < im.shape[1],
-                            joints[:, 1] > 0,
-                            joints[:, 2] < im.shape[0],
-                            joints[:, 2] > 0,
-                        )
-                    )
-                    joints = joints[inside]
-
-                    if np.size(joints) > 0:  # exclude images without labels
-                        jointsannotated = True
-
-                    Joints[prfxindex] = joints  # np.array(joints, dtype=int)
-
-                H["joints"] = Joints
-                if jointsannotated:  # exclude images without labels
-                    data.append(H)
+            # Make training file!
+            data = format_multianimal_training_data_old(
+                Data,
+                trainIndices,
+                cfg["project_path"],
+                individuals,
+                multianimalbodyparts,
+                uniquebodyparts,
+                numdigits,
+            )
 
             if len(trainIndices) > 0:
                 (
@@ -338,7 +423,7 @@ def create_multianimaltraining_dataset(
                     else 0,
                 }
 
-                trainingdata = trainingsetmanipulation.MakeTrain_pose_yaml(
+                trainingdata = MakeTrain_pose_yaml(
                     items2change, path_train_config, defaultconfigfile
                 )
                 keys2save = [
@@ -361,7 +446,7 @@ def create_multianimaltraining_dataset(
                     "num_idchannel",
                 ]
 
-                trainingsetmanipulation.MakeTest_pose_yaml(
+                MakeTest_pose_yaml(
                     trainingdata,
                     keys2save,
                     path_test_config,
@@ -381,7 +466,7 @@ def create_multianimaltraining_dataset(
                     + 1 * (len(cfg["uniquebodyparts"]) > 0),
                     "withid": cfg.get("identity", False),
                 }
-                trainingsetmanipulation.MakeInference_yaml(
+                MakeInference_yaml(
                     items2change, path_inference_config, defaultinference_configfile
                 )
 
