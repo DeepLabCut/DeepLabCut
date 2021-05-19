@@ -14,7 +14,6 @@ from itertools import combinations
 from pathlib import Path
 
 import numpy as np
-from skimage import io
 from tqdm import tqdm
 
 from deeplabcut.generate_training_dataset import (
@@ -137,7 +136,6 @@ def create_multianimaltraining_dataset(
     >>> deeplabcut.create_multianimaltraining_dataset(r'C:\\Users\\Ulf\\looming-task\\config.yaml',Shuffles=[3,17,5])
     --------
     """
-    from skimage import io
 
     # Loading metadata from config file:
     cfg = auxiliaryfunctions.read_config(config)
@@ -151,8 +149,7 @@ def create_multianimaltraining_dataset(
     Data = merge_annotateddatasets(cfg, full_training_path, windows2linux)
     if Data is None:
         return
-    Data = Data[scorer]  # extract labeled data
-    # actualbpts=set(Data.columns.get_level_values(0))
+    Data = Data[scorer]
 
     def strip_cropped_image_name(path):
         # utility function to split different crops from same image into either train or test!
@@ -163,8 +160,6 @@ def create_multianimaltraining_dataset(
 
     img_names = Data.index.map(strip_cropped_image_name).unique()
 
-    # loading & linking pretrained models
-    # CURRENTLY ONLY ResNet supported!
     if net_type is None:  # loading & linking pretrained models
         net_type = cfg.get("default_net_type", "dlcrnet_ms5")
     elif not any(net in net_type for net in ("resnet", "eff", "dlc")):
@@ -175,7 +170,6 @@ def create_multianimaltraining_dataset(
         net_type = "resnet_50"
         multi_stage = True
 
-    # multianimal case:
     dataset_type = "multi-animal-imgaug"
     (
         individuals,
@@ -187,7 +181,6 @@ def create_multianimaltraining_dataset(
         list(edge) for edge in combinations(range(len(multianimalbodyparts)), 2)
     ]
     print("Utilizing the following graph:", partaffinityfield_graph)
-    num_limbs = len(partaffinityfield_graph)
     partaffinityfield_predict = True
 
     # Loading the encoder (if necessary downloading from TF)
