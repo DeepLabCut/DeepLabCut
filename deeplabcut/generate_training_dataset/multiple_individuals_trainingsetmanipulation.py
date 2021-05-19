@@ -17,7 +17,6 @@ import numpy as np
 from tqdm import tqdm
 
 from deeplabcut.generate_training_dataset import trainingsetmanipulation
-from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
 from deeplabcut.utils import auxiliaryfunctions, auxfun_models, auxfun_multianimal
 
 
@@ -124,12 +123,14 @@ def create_multianimaltraining_dataset(
     else:
         # Ignore possible connections between 'multi' and 'unique' body parts;
         # one can never be too careful...
-        to_ignore = crossvalutils._filter_unwanted_paf_connections(
-            config, paf_graph
+        to_ignore = auxfun_multianimal.filter_unwanted_paf_connections(
+            cfg, paf_graph
         )
         partaffinityfield_graph = [
             edge for i, edge in enumerate(paf_graph) if i not in to_ignore
         ]
+        auxfun_multianimal.validate_paf_graph(cfg, paf_graph)
+
 
     print("Utilizing the following graph:", partaffinityfield_graph)
     num_limbs = len(partaffinityfield_graph)

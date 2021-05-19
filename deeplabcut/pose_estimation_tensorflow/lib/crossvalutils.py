@@ -514,16 +514,6 @@ def _get_n_best_paf_graphs(
     return paf_inds, dict(zip(existing_edges, scores))
 
 
-def _filter_unwanted_paf_connections(config, paf_graph):
-    """Get rid of skeleton connections between multi and unique body parts."""
-    from itertools import combinations
-
-    cfg = auxiliaryfunctions.read_config(config)
-    multi = auxfun_multianimal.extractindividualsandbodyparts(cfg)[2]
-    desired = list(combinations(range(len(multi)), 2))
-    return [i for i, edge in enumerate(paf_graph) if tuple(edge) not in desired]
-
-
 def cross_validate_paf_graphs(
     config,
     inference_config,
@@ -547,7 +537,9 @@ def cross_validate_paf_graphs(
         metadata = pickle.load(file)
 
     params = _set_up_evaluation(data)
-    to_ignore = _filter_unwanted_paf_connections(config, params["paf_graph"])
+    to_ignore = auxfun_multianimal.filter_unwanted_paf_connections(
+        config, params["paf_graph"]
+    )
     paf_inds, paf_scores = _get_n_best_paf_graphs(
         data, metadata, params["paf_graph"], ignore_inds=to_ignore
     )
