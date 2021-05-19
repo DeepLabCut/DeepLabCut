@@ -538,7 +538,7 @@ def cross_validate_paf_graphs(
 
     params = _set_up_evaluation(data)
     to_ignore = auxfun_multianimal.filter_unwanted_paf_connections(
-        config, params["paf_graph"]
+        cfg, params["paf_graph"]
     )
     paf_inds, paf_scores = _get_n_best_paf_graphs(
         data, metadata, params["paf_graph"], ignore_inds=to_ignore

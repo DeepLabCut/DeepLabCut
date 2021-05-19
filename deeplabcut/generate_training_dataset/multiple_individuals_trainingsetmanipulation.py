@@ -129,7 +129,7 @@ def create_multianimaltraining_dataset(
         partaffinityfield_graph = [
             edge for i, edge in enumerate(paf_graph) if i not in to_ignore
         ]
-        auxfun_multianimal.validate_paf_graph(cfg, paf_graph)
+        auxfun_multianimal.validate_paf_graph(cfg, partaffinityfield_graph)
 
 
     print("Utilizing the following graph:", partaffinityfield_graph)
