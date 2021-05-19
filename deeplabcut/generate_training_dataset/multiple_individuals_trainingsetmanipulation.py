@@ -10,6 +10,7 @@ Licensed under GNU Lesser General Public License v3.0
 
 import os
 import os.path
+import re
 from itertools import combinations
 from pathlib import Path
 
@@ -202,7 +203,8 @@ def create_multianimaltraining_dataset(
                 range(len(img_names)), trainFraction
             )
             # Map back to the original indices.
-            temp = [name for i, name in enumerate(img_names) if i in test_inds_temp]
+            temp = [re.escape(name) for i, name in enumerate(img_names)
+                    if i in test_inds_temp]
             mask = Data.index.str.contains("|".join(temp))
             testIndices = np.flatnonzero(mask)
             trainIndices = np.flatnonzero(~mask)
