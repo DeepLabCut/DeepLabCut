@@ -448,12 +448,13 @@ min_hits: 3
 
 **IMPORTANT POINT**
 
-If the network has been trained to learn the animals' identities,
+If the network has been trained to learn the animals' identities (i.e., you set `identity=True` in config.yaml before training)
 this information can be leveraged both during: (i) animal assembly, where body parts
 are grouped based on the animal they are predicted to belong to (affinity between pairs of keypoints
 is no longer considered in that case); and (ii) animal tracking, where identity only can be 
 utilized in place of motion trackers to form tracklets.
-It then suffices to pass:
+
+To use this ID information, simply pass:
 ```python
 deeplabcut.convert_detections2tracklets(..., identity_only=True)
 ```
@@ -466,6 +467,7 @@ deeplabcut.convert_detections2tracklets(..., identity_only=True)
 ```python
 deeplabcut.stitch_tracklets(pickle_file, n_tracks=n)
 ```
+Here, `n_tracks` represents the number of animals you have in your video.
 
 ### Refine Tracklets:
 
