@@ -909,16 +909,13 @@ def create_training_dataset(
                 # updating variable if null/None! #backwardscompatability
                 auxiliaryfunctions.edit_config(config, {"default_augmenter": "imgaug"})
                 augmenter_type = "imgaug"
-        else:
-            if augmenter_type in [
+        elif augmenter_type not in [
                 "default",
                 "scalecrop",
                 "imgaug",
                 "tensorpack",
                 "deterministic",
             ]:
-                pass
-            else:
                 raise ValueError("Invalid augmenter type:", augmenter_type)
 
         # Loading the encoder (if necessary downloading from TF)

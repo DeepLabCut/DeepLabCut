@@ -87,15 +87,17 @@ def create_multianimaltraining_dataset(
 
     def strip_cropped_image_name(path):
         # utility function to split different crops from same image into either train or test!
-        filename = os.path.split(path)[1]
-        return filename.split("c")[0] if cfg["croppedtraining"] else filename
+        head, filename = os.path.split(path)
+        if cfg["croppedtraining"]:
+            filename = filename.split("c")[0]
+        return os.path.join(head, filename)
 
     img_names = Data.index.map(strip_cropped_image_name).unique()
 
     # loading & linking pretrained models
     # CURRENTLY ONLY ResNet supported!
     if net_type is None:  # loading & linking pretrained models
-        net_type = cfg.get("default_net_type", "resnet_50")
+        net_type = cfg.get("default_net_type", "dlcrnet_ms5")
     elif not any(net in net_type for net in ("resnet", "eff", "dlc")):
         raise ValueError(f"Unsupported network {net_type}.")
 
@@ -126,7 +128,7 @@ def create_multianimaltraining_dataset(
         net_type, Path(dlcparent_path), num_shuffles
     )
 
-    if Shuffles == None:
+    if Shuffles is None:
         Shuffles = range(1, num_shuffles + 1, 1)
     else:
         Shuffles = [i for i in Shuffles if isinstance(i, int)]
@@ -336,7 +338,6 @@ def create_multianimaltraining_dataset(
                     else 0,
                 }
 
-                defaultconfigfile = os.path.join(dlcparent_path, "pose_cfg.yaml")
                 trainingdata = trainingsetmanipulation.MakeTrain_pose_yaml(
                     items2change, path_train_config, defaultconfigfile
                 )
