@@ -83,7 +83,7 @@ def format_multianimal_training_data(
         if has_data:
             data = {
                 "image": filename,
-                "size": img_shape,
+                "size": np.asarray(img_shape),
                 "joints": joints,
             }
             train_data.append(data)
