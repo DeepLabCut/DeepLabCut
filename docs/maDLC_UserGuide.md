@@ -229,8 +229,6 @@ deeplabcut.cropimagesandlabels(path_config_file, userfeedback=False)
 
 Ideally for training DNNs, one uses large batch sizes. Thus, for mutli-animal training batch processing is preferred. This means that we'd like the images to be similarly sized. You can of course have differing size of images you label (but we suggest cropping out useless pixels!). So, we have a new function that can pre-process your data to be compatible with batch training. As noted above, please run this function before you `create_multianmialtraining_dataset`. This function assures that each crop is "small", by default 400 x 400, which allows larger batchsizes and that there are multiple crops so that different parts of larger images are covered. 
 
-At this point you also select your neural network type. Please see Lauer et al. 2021 for options.
-
 You **should also first run** `deeplabcut.cropimagesandlabels(config_path)` before creating a training set, as we use batch processing and many users have smaller GPUs that cannot accommodate larger images + larger batchsizes. This is also a type of data augmentation.
 
 NOTE: you can edit the crop size. If your images are very large (2k, 4k pixels), consider increasing this size, but be aware unless you have a lagre GPU (24 GB or more), you will hit memory errors. _You can lower the batchsize, but this may affect performance._
@@ -238,7 +236,8 @@ NOTE: you can edit the crop size. If your images are very large (2k, 4k pixels),
 ```python
 deeplabcut.cropimagesandlabels(path_config_file, size=(400, 400), userfeedback=False)
 ```
-Then run:
+At this point you also select your neural network type. Please see Lauer et al. 2021 for options. For **create_multianimaltraining_dataset** we already changed this such that by default you will use imgaug, ADAM optimization, our new DLCRNet, and batch training. We suggest these defaults at this time. Then run:
+
 ```python
 deeplabcut.create_multianimaltraining_dataset(path_config_file)
 ```
@@ -260,14 +259,12 @@ are listed in Box 2.
 
 - At this step, the ImageNet pre-trained networks (i.e. ResNet-50) weights will be downloaded. If they do not download (you will see this downloading in the terminal, then you may not have permission to do so (something we have seen with some Windows users - see the **[WIKI troubleshooting for more help!](https://github.com/AlexEMG/DeepLabCut/wiki/Troubleshooting-Tips)**).
 
-**CRITICAL POINTS:**
+**OPTIONAL POINTS:**
 
-For **create_multianimaltraining_dataset** we already change this such that you will use imgaug, ADAM optimization, and batch training. We suggest these defaults at this time.
-
-Furthermore, with the data-driven skeleton selection introduced in 2.2rc1, DLC networks are trained by default
-on complete skeletons (i.e., they learn all possible redundant connections), before being pruned
+With the data-driven skeleton selection introduced in 2.2rc1, DLC networks are trained by default
+on complete skeletons (i.e., they learn all possible redundant connections), before being optimially pruned
 at model evaluation. Although this procedure is by far superior to manually defining a graph,
-we leave it as an option for the advanced user:
+we leave manually-defining a skeleton as an option for the advanced user:
 
 ```python
 my_better_graph = [[0, 1], [1, 2], [2, 3]]  # These are indices in the list of multianimalbodyparts
