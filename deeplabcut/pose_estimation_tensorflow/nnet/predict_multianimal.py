@@ -174,13 +174,13 @@ def compute_edge_costs(
     )
 
 
-# TODO Add identity indexing
 def compute_peaks_and_costs(
     scmaps,
     locrefs,
     pafs,
     graph,
     paf_inds,
+    n_id_channels,
     nms_radius=5,
     min_confidence=0.01,
     stride=8,
@@ -188,33 +188,42 @@ def compute_peaks_and_costs(
     n_decimals=3,
     session=None,
 ):
-    peak_inds_in_batch = find_local_peak_indices(scmaps, nms_radius, min_confidence)
+    n_samples, _, _, n_channels = np.shape(scmaps)
+    n_bodyparts = n_channels - n_id_channels
+    peak_inds_in_batch = find_local_peak_indices(
+        scmaps[..., :n_bodyparts], nms_radius, min_confidence,
+    )
     if session is None:
         with tf.Session() as session:
             peak_inds_in_batch = session.run(peak_inds_in_batch)
     else:
         peak_inds_in_batch = session.run(peak_inds_in_batch)
     pos = calc_peak_locations(locrefs, peak_inds_in_batch, stride, n_decimals)
-    prob = calc_peak_probabilities(scmaps, peak_inds_in_batch, n_decimals)
     costs = compute_edge_costs(
-        pafs, peak_inds_in_batch, graph, n_points, n_decimals
+        pafs, peak_inds_in_batch, graph, n_points, n_decimals,
     )
+    s, r, c, b = peak_inds_in_batch.T
+    prob = np.round(scmaps[s, r, c, b], n_decimals).reshape((-1, 1))
+    if n_id_channels:
+        ids = np.round(scmaps[s, r, c, -n_id_channels:], n_decimals)
 
     # Reshape to nested arrays and cost matrices
     peaks_and_costs = []
     affinities, lengths, all_edges, sample_inds, edge_inds = costs
-    n_samples, _, _, n_bodyparts = np.shape(scmaps)
     n_graph_edges = len(graph)
     for i in range(n_samples):
         # Form nested arrays
         xy = []
         p = []
+        id_ = []
         samples_i_mask = peak_inds_in_batch[:, 0] == i
         for j in range(n_bodyparts):
             bpts_j_mask = peak_inds_in_batch[:, 3] == j
             idx = np.flatnonzero(samples_i_mask & bpts_j_mask)
             xy.append(pos[idx])
             p.append(prob[idx])
+            if n_id_channels:
+                id_.append(ids[idx])
 
         # Form cost matrices
         samples_i_mask2 = sample_inds == i
@@ -230,6 +239,8 @@ def compute_peaks_and_costs(
             costs[paf_ind]["distance"] = lengths[idx].reshape((n_source_peaks, n_target_peaks))
 
         dict_ = {"coordinates": (xy,), "confidence": p, "costs": costs}
+        if n_id_channels:
+            dict_["identity"] = id_
         peaks_and_costs.append(dict_)
 
     return peaks_and_costs
@@ -241,6 +252,7 @@ def predict_batched_peaks_and_costs(
     sess,
     inputs,
     outputs,
+    n_decimals=3,
 ):
     scmaps, locrefs, pafs = sess.run(outputs, feed_dict={inputs: images_batch})
     locrefs = np.reshape(locrefs, (*locrefs.shape[:3], -1, 2))
@@ -256,9 +268,11 @@ def predict_batched_peaks_and_costs(
         pafs,
         graph,
         limbs,
+        pose_cfg.get("num_idchannel", 0),
         int(pose_cfg.get("nmsradius", 5)),
         pose_cfg.get("minconfidence", 0.01),
         pose_cfg["stride"],
+        n_decimals,
         session=sess,
     )
     return preds
@@ -291,16 +305,6 @@ def calc_peak_locations(
     off = locrefs[s, r, c, b]
     loc = stride * peak_inds_in_batch[:, [2, 1]] + stride // 2 + off
     return np.round(loc, decimals=n_decimals)
-
-
-def calc_peak_probabilities(
-    scmaps,
-    peak_inds_in_batch,
-    n_decimals=3,
-):
-    s, r, c, b = peak_inds_in_batch.T
-    prob = scmaps[s, r, c, b]
-    return np.round(prob, decimals=n_decimals).reshape((-1, 1))
 
 
 def extract_detections_python(cfg, scmap, locref, pafs, radius, threshold):
