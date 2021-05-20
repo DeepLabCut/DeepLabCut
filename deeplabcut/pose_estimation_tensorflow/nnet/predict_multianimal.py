@@ -264,64 +264,6 @@ def predict_batched_peaks_and_costs(
     return preds
 
 
-# TODO: compute all the grids etc. once for the video analysis method
-# (and then just pass on the variables)
-def pos_from_grid_raw(gridpos, stride, halfstride):
-    return gridpos * stride + halfstride
-
-
-def make_nms_grid(nms_radius):
-    nms_radius = int(np.ceil(nms_radius))
-    size = np.arange(2 * nms_radius + 1)
-    xx, yy = np.meshgrid(size, size)
-    dist_grid = np.where(
-        (xx - nms_radius) ** 2 + (yy - nms_radius) ** 2 <= nms_radius ** 2, 1, 0
-    )
-    return np.array(dist_grid, dtype=np.uint8)
-
-
-def extract_detections(cfg, scmap, locref, pafs, nms_radius, det_min_score):
-    """ Extract detections correcting by locref and estimating association costs based on PAFs """
-    from nms_grid import nms_grid  # this needs to be installed (C-code)
-
-    Detections = {}
-    stride = cfg["stride"]
-    halfstride = stride * 0.5
-    num_joints = cfg["num_joints"]
-    dist_grid = make_nms_grid(nms_radius)
-    unProb = [None] * num_joints
-    unPos = [None] * num_joints
-
-    # apply nms
-    for p_idx in range(num_joints):
-        # IMPORTANT, as C++ function expects row-major
-        prob_map = np.ascontiguousarray(scmap[:, :, p_idx])
-        dets = nms_grid(prob_map, dist_grid, det_min_score)
-        cur_prob = np.zeros([len(dets), 1], dtype=np.float64)
-        cur_pos = np.zeros([len(dets), 2], dtype=np.float64)
-
-        for idx, didx in enumerate(dets):
-            ix = didx % scmap.shape[1]
-            iy = didx // scmap.shape[1]
-            cur_prob[idx, 0] = scmap[iy, ix, p_idx]  # prob
-            cur_pos[idx, :] = (
-                pos_from_grid_raw(np.array([ix, iy]), stride, halfstride)
-                + locref[iy, ix, p_idx, :]
-            )  # scmap + locrefinment!
-
-        unProb[p_idx] = np.round(cur_prob, 5)
-        unPos[p_idx] = np.round(cur_pos, 3)
-
-    Detections["coordinates"] = (unPos,)
-    Detections["confidence"] = unProb
-    if pafs is not None:
-        Detections["costs"] = AssociationCosts(cfg, unPos, pafs, stride, halfstride)
-    else:
-        Detections["costs"] = {}
-
-    return Detections
-
-
 def find_local_maxima(scmap, radius, threshold):
     peak_idx = peak_local_max(
         scmap, min_distance=radius, threshold_abs=threshold, exclude_border=False
@@ -397,86 +339,19 @@ def get_detectionswithcosts(
     outall=False,
     nms_radius=5.0,
     det_min_score=0.1,
-    c_engine=False,
 ):
     """ Extract pose and association costs from PAFs """
     im = np.expand_dims(image, axis=0).astype(float)
 
     outputs_np = sess.run(outputs, feed_dict={inputs: im})
     scmap, locref, paf = extract_cnn_output(outputs_np, cfg)
-
-    if c_engine:
-        detections = extract_detections(
-            cfg, scmap, locref, paf, nms_radius=nms_radius, det_min_score=det_min_score
-        )
-    else:
-        detections = extract_detections_python(
-            cfg, scmap, locref, paf, int(nms_radius), det_min_score
-        )
+    detections = extract_detections_python(
+        cfg, scmap, locref, paf, int(nms_radius), det_min_score
+    )
     if outall:
         return scmap, locref, paf, detections
     else:
         return detections
-
-
-# These two functions are for evaluation specifically (one also calculates integral between gt points)
-def extract_detection_withgroundtruth(
-    cfg, groundtruthcoordinates, scmap, locref, pafs, nms_radius, det_min_score
-):
-    """ Extract detections correcting by locref and estimating association costs based on PAFs """
-    from nms_grid import nms_grid  # this needs to be installed (C-code)
-
-    Detections = {}
-    num_idchannel = cfg.get("num_idchannel", 0)
-    stride = cfg["stride"]
-    halfstride = stride * 0.5
-    num_joints = cfg["num_joints"]
-    # get dist_grid
-    dist_grid = make_nms_grid(nms_radius)
-    unProb = [None] * num_joints
-    unPos = [None] * num_joints
-    unID = [None] * num_joints
-    # apply nms
-    for p_idx in range(num_joints):
-        # IMPORTANT, as C++ function expects row-major
-        prob_map = np.ascontiguousarray(scmap[:, :, p_idx])
-        dets = nms_grid(prob_map, dist_grid, det_min_score)
-        cur_prob = np.zeros([len(dets), 1], dtype=np.float64)
-        cur_pos = np.zeros([len(dets), 2], dtype=np.float64)
-        if num_idchannel > 0:
-            cur_id = np.zeros([len(dets), num_idchannel], dtype=np.float64)
-
-        for idx, didx in enumerate(dets):
-            ix = didx % scmap.shape[1]
-            iy = didx // scmap.shape[1]
-            cur_prob[idx, 0] = scmap[iy, ix, p_idx]  # prob
-            cur_pos[idx, :] = (
-                pos_from_grid_raw(np.array([ix, iy]), stride, halfstride)
-                + locref[iy, ix, p_idx, :]
-            )  # scmap + locrefinment!
-            for id in range(num_idchannel):
-                cur_id[idx, id] = np.amax(scmap[iy, ix, num_joints + id])
-
-        if num_idchannel > 0:
-            unID[p_idx] = np.round(cur_id, 5)
-        unProb[p_idx] = np.round(cur_prob, 5)
-        unPos[p_idx] = np.round(cur_pos, 3)
-
-    Detections["coordinates"] = (unPos,)
-    Detections["confidence"] = unProb
-    if num_idchannel > 0:
-        Detections["identity"] = unID
-
-    if pafs is not None:
-        Detections["costs"] = AssociationCosts(cfg, unPos, pafs, stride, halfstride)
-        Detections["groundtruth_costs"] = AssociationCosts(
-            cfg, groundtruthcoordinates, pafs, stride, halfstride
-        )
-    else:
-        Detections["costs"] = {}
-        Detections["groundtruth_costs"] = {}
-
-    return Detections
 
 
 def extract_detection_withgroundtruth_python(
@@ -529,7 +404,6 @@ def get_detectionswithcostsandGT(
     outall=False,
     nms_radius=5.0,
     det_min_score=0.1,
-    c_engine=False,
 ):
     """ Extract pose and association costs from PAFs """
     im = np.expand_dims(image, axis=0).astype(float)
@@ -540,21 +414,15 @@ def get_detectionswithcostsandGT(
 
     outputs_np = sess.run(outputs, feed_dict={inputs: im})
     scmap, locref, paf = extract_cnn_output(outputs_np, cfg)
-
-    if c_engine:
-        detections = extract_detection_withgroundtruth(
-            cfg, groundtruthcoordinates, scmap, locref, paf, nms_radius, det_min_score
-        )
-    else:
-        detections = extract_detection_withgroundtruth_python(
-            cfg,
-            groundtruthcoordinates,
-            scmap,
-            locref,
-            paf,
-            int(nms_radius),
-            det_min_score,
-        )
+    detections = extract_detection_withgroundtruth_python(
+        cfg,
+        groundtruthcoordinates,
+        scmap,
+        locref,
+        paf,
+        int(nms_radius),
+        det_min_score,
+    )
     if outall:
         return scmap, locref, paf, detections
     else:
@@ -583,66 +451,10 @@ def extract_cnn_outputmulti(outputs_np, cfg):
     return scmap, locref, paf
 
 
-def extract_batchdetections(
-    scmap,
-    locref,
-    pafs,
-    cfg,
-    dist_grid,
-    num_joints,
-    num_idchannel,
-    stride,
-    halfstride,
-    det_min_score,
-):
-    """ Extract detections correcting by locref and estimating association costs based on PAFs """
-    from nms_grid import nms_grid  # this needs to be installed (C-code)
-
-    Detections = {}
-    # get dist_grid
-    unProb = [None] * num_joints
-    unPos = [None] * num_joints
-    unID = [None] * num_joints
-    # apply nms
-    for p_idx in range(num_joints):
-        # IMPORTANT, as C++ function expects row-major
-        prob_map = np.ascontiguousarray(scmap[:, :, p_idx])
-        dets = nms_grid(prob_map, dist_grid, det_min_score)
-        cur_prob = np.zeros([len(dets), 1], dtype=np.float64)
-        cur_pos = np.zeros([len(dets), 2], dtype=np.float64)
-        if num_idchannel > 0:
-            cur_id = np.zeros([len(dets), num_idchannel], dtype=np.float64)
-
-        for idx, didx in enumerate(dets):
-            ix = didx % scmap.shape[1]
-            iy = didx // scmap.shape[1]
-            cur_prob[idx, 0] = scmap[iy, ix, p_idx]  # prob
-            cur_pos[idx, :] = (
-                pos_from_grid_raw(np.array([ix, iy]), stride, halfstride)
-                + locref[iy, ix, p_idx, :]
-            )  # scmap + locrefinment!
-            for id in range(num_idchannel):
-                cur_id[idx, id] = np.amax(scmap[iy, ix, num_joints + id])
-
-        if num_idchannel > 0:
-            unID[p_idx] = np.round(cur_id, 5)
-        unProb[p_idx] = np.round(cur_prob, 5)
-        unPos[p_idx] = np.round(cur_pos, 3)
-
-    Detections["coordinates"] = (unPos,)
-    Detections["confidence"] = unProb
-    if num_idchannel > 0:
-        Detections["identity"] = unID
-    if pafs is not None:
-        Detections["costs"] = AssociationCosts(cfg, unPos, pafs, stride, halfstride)
-    else:
-        Detections["costs"] = {}
-    return Detections
-
-
-def extract_batchdetections_python(cfg, scmap, locref, pafs, radius, threshold):
+def extract_batchdetections_python(cfg, scmap, locref, pafs, threshold):
     Detections = {}
     stride = cfg["stride"]
+    radius = int(cfg["nmsradius"])
     halfstride = stride * 0.5
     num_joints = cfg["num_joints"]
     num_idchannel = cfg.get("num_idchannel", 0)
@@ -676,49 +488,26 @@ def extract_batchdetections_python(cfg, scmap, locref, pafs, radius, threshold):
 def get_batchdetectionswithcosts(
     image,
     dlc_cfg,
-    dist_grid,
     batchsize,
-    num_joints,
-    num_idchannel,
-    stride,
-    halfstride,
     det_min_score,
     sess,
     inputs,
     outputs,
     outall=False,
-    c_engine=False,
 ):
-
     outputs_np = sess.run(outputs, feed_dict={inputs: image})
     scmap, locref, pafs = extract_cnn_outputmulti(
         outputs_np, dlc_cfg
-    )  # processes image batch.
-    # batchsize,ny,nx,num_joints = scmap.shape
+    )
     detections = []
     for l in range(batchsize):
         if pafs is None:
             paf = None
         else:
             paf = pafs[l]
-        if c_engine:
-            dets = extract_batchdetections(
-                scmap[l],
-                locref[l],
-                paf,
-                dlc_cfg,
-                dist_grid,
-                num_joints,
-                num_idchannel,
-                stride,
-                halfstride,
-                det_min_score,
-            )
-        else:
-            radius = len(dist_grid - 1) // 2
-            dets = extract_batchdetections_python(
-                dlc_cfg, scmap[l], locref[l], paf, radius, det_min_score
-            )
+        dets = extract_batchdetections_python(
+            dlc_cfg, scmap[l], locref[l], paf, det_min_score
+        )
         detections.append(dets)
 
     if outall:

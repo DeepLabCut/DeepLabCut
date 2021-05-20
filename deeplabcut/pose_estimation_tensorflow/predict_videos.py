@@ -52,7 +52,6 @@ def analyze_videos(
     TFGPUinference=True,
     dynamic=(False, 0.5, 10),
     modelprefix="",
-    c_engine=False,
     robust_nframes=False,
 ):
     """
@@ -109,11 +108,6 @@ def analyze_videos(
         expanded by the margin and from then on only the posture within this crop is analyzed (until the object is lost, i.e. <detectiontreshold). The
         current position is utilized for updating the crop window for the next frame (this is why the margin is important and should be set large
         enough given the movement of the animal).
-
-    c_engine: bool, optional (default=False)
-        If True, uses C code to detect 2D local maxima for multianimal inference.
-        Pure-Python functions are used by default, which, although slower, do not require the user
-        to install Cython and compile external code.
 
     robust_nframes: bool, optional (default=False)
         Evaluate a video's number of frames in a robust manner.
@@ -311,7 +305,6 @@ def analyze_videos(
                     pdindex,
                     save_as_csv,
                     destfolder,
-                    c_engine=c_engine,
                     robust_nframes=robust_nframes,
                 )
         else:

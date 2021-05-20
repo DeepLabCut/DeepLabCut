@@ -33,7 +33,6 @@ def AnalyzeMultiAnimalVideo(
     pdindex,
     save_as_csv,
     destfolder=None,
-    c_engine=False,
     robust_nframes=False,
 ):
     """ Helper function for analyzing a video with multiple individuals """
@@ -88,11 +87,10 @@ def AnalyzeMultiAnimalVideo(
                 vid,
                 nframes,
                 int(dlc_cfg["batch_size"]),
-                c_engine=c_engine,
             )
         else:
             PredicteData, nframes = GetPoseandCostsS(
-                cfg, dlc_cfg, sess, inputs, outputs, vid, nframes, c_engine=c_engine
+                cfg, dlc_cfg, sess, inputs, outputs, vid, nframes,
             )
 
         stop = time.time()
@@ -124,7 +122,7 @@ def AnalyzeMultiAnimalVideo(
 
 
 def GetPoseandCostsF(
-    cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, c_engine
+    cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize,
 ):
     """ Batchwise prediction of pose """
     strwidth = int(np.ceil(np.log10(nframes)))  # width for strings
@@ -144,7 +142,6 @@ def GetPoseandCostsF(
 
     PredicteData = {}
     # initializing constants
-    dist_grid = predict.make_nms_grid(dlc_cfg["nmsradius"])
     stride = dlc_cfg["stride"]
     halfstride = stride * 0.5
     num_joints = dlc_cfg["num_joints"]
@@ -163,12 +160,7 @@ def GetPoseandCostsF(
                 D = predict.get_batchdetectionswithcosts(
                     frames,
                     dlc_cfg,
-                    dist_grid,
                     batchsize,
-                    num_joints,
-                    num_idchannel,
-                    stride,
-                    halfstride,
                     det_min_score,
                     sess,
                     inputs,
@@ -188,17 +180,11 @@ def GetPoseandCostsF(
                 D = predict.get_batchdetectionswithcosts(
                     frames,
                     dlc_cfg,
-                    dist_grid,
                     batchsize,
-                    num_joints,
-                    num_idchannel,
-                    stride,
-                    halfstride,
                     det_min_score,
                     sess,
                     inputs,
                     outputs,
-                    c_engine=c_engine,
                 )
                 for ind, data in zip(inds, D):
                     PredicteData["frame" + str(ind).zfill(strwidth)] = data
@@ -219,12 +205,11 @@ def GetPoseandCostsF(
             dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))
         ],
         "nframes": nframes,
-        "c_engine": c_engine,
     }
     return PredicteData, nframes
 
 
-def GetPoseandCostsS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, c_engine):
+def GetPoseandCostsS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
     """ Non batch wise pose estimation for video cap."""
     strwidth = int(np.ceil(np.log10(nframes)))  # width for strings
     if cfg["cropping"]:
@@ -251,7 +236,6 @@ def GetPoseandCostsS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, c_engine
                 outall=False,
                 nms_radius=dlc_cfg["nmsradius"],
                 det_min_score=dlc_cfg["minconfidence"],
-                c_engine=c_engine,
             )
         elif counter >= nframes:
             break

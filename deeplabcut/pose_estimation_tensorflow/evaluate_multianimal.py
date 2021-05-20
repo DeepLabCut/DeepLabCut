@@ -110,7 +110,6 @@ def evaluate_multianimal_full(
     comparisonbodyparts="all",
     gputouse=None,
     modelprefix="",
-    c_engine=False,
 ):
     from deeplabcut.pose_estimation_tensorflow.nnet import predict
     from deeplabcut.pose_estimation_tensorflow.nnet import (
@@ -359,7 +358,6 @@ def evaluate_multianimal_full(
                                 outall=False,
                                 nms_radius=dlc_cfg["nmsradius"],
                                 det_min_score=dlc_cfg["minconfidence"],
-                                c_engine=c_engine,
                             )
                             PredicteData[imagename]["prediction"] = pred
                             PredicteData[imagename]["groundtruth"] = [

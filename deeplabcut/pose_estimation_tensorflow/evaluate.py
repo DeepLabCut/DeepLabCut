@@ -503,7 +503,6 @@ def evaluate_network(
     gputouse=None,
     rescale=False,
     modelprefix="",
-    c_engine=False,
 ):
     """
 
@@ -571,7 +570,6 @@ def evaluate_network(
             comparisonbodyparts=comparisonbodyparts,
             gputouse=gputouse,
             modelprefix=modelprefix,
-            c_engine=c_engine,
         )
     else:
         from deeplabcut.utils.auxfun_videos import imread, imresize
