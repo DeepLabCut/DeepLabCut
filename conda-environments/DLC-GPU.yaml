@@ -21,6 +21,7 @@ dependencies:
   - python=3.7
   - pip
   - cudnn=7
+  - cudatoolkit=10.0
   - jupyter
   - nb_conda
   - Shapely
