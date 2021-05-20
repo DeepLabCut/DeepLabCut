@@ -96,7 +96,7 @@ def compute_edge_costs(
             edge_inds.extend([k] * len(inds_s) * len(inds_t))
         sample_inds.extend([i] * len(edges))
         all_edges.extend(edges)
-        all_peaks.append(peaks[edges])
+        all_peaks.append(peaks[np.asarray(edges)])
     sample_inds = np.asarray(sample_inds, dtype=np.int32)
     edge_inds = np.asarray(edge_inds, dtype=np.int32)
     all_edges = np.asarray(all_edges, dtype=np.int32)
