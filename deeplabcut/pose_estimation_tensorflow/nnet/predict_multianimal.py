@@ -118,6 +118,142 @@ def AssociationCosts(
     return Distances
 
 
+def compute_edge_costs(
+    pafs,
+    peak_inds_in_batch,
+    graph,
+    n_points=10,
+):
+    n_samples = pafs.shape[0]
+    n_bodyparts = np.max(peak_inds_in_batch[:, 3]) + 1
+    sample_inds = []
+    edge_inds = []
+    all_edges = []
+    all_peaks = []
+    for i in range(n_samples):
+        samples_i = peak_inds_in_batch[:, 0] == i
+        peak_inds = peak_inds_in_batch[samples_i, 1:]
+        peaks = peak_inds[:, :2]
+        bpt_inds = peak_inds[:, 2]
+        idx = np.arange(peaks.shape[0])
+        idx_per_bpt = {j: idx[bpt_inds == j].tolist() for j in range(n_bodyparts)}
+        edges = []
+        for k, (s, t) in enumerate(graph):
+            inds_s = idx_per_bpt[s]
+            inds_t = idx_per_bpt[t]
+            candidate_edges = ((i, j) for i in inds_s for j in inds_t)
+            edges.extend(candidate_edges)
+            edge_inds.extend([k] * len(inds_s) * len(inds_t))
+        sample_inds.extend([i] * len(edges))
+        all_edges.extend(edges)
+        all_peaks.append(peaks[edges])
+    sample_inds = np.asarray(sample_inds, dtype=np.int32)
+    edge_inds = np.asarray(edge_inds, dtype=np.int32)
+    all_peaks = np.concatenate(all_peaks)
+    vecs_s = all_peaks[:, 0]
+    vecs_t = all_peaks[:, 1]
+    vecs = vecs_t - vecs_s
+    lengths = np.linalg.norm(vecs, axis=1)
+    xy = np.linspace(vecs_s, vecs_t, n_points, axis=1, dtype=np.int32)
+    y = pafs[
+        sample_inds.reshape((-1, 1)),
+        xy[..., 0],
+        xy[..., 1],
+        edge_inds.reshape((-1, 1)),
+    ]
+    integ = np.trapz(y, xy[..., ::-1], axis=1)
+    aff = np.linalg.norm(integ, axis=1) / lengths
+    return aff, lengths, all_edges, sample_inds, edge_inds
+
+
+# TODO Add identity indexing
+def compute_peaks_and_costs(
+    scmaps,
+    locrefs,
+    pafs,
+    graph,
+    paf_inds,
+    nms_radius=5,
+    min_confidence=0.01,
+    stride=8,
+    n_points=10,
+    session=None,
+):
+    peak_inds_in_batch = find_local_peak_indices(scmaps, nms_radius, min_confidence)
+    if session is None:
+        with tf.Session() as session:
+            peak_inds_in_batch = session.run(peak_inds_in_batch)
+    else:
+        peak_inds_in_batch = session.run(peak_inds_in_batch)
+    pos = calc_peak_locations(locrefs, peak_inds_in_batch, stride)
+    prob = calc_peak_probabilities(scmaps, peak_inds_in_batch)
+    costs = compute_edge_costs(pafs, peak_inds_in_batch, graph, n_points)
+
+    # Reshape to nested arrays and cost matrices
+    peaks_and_costs = []
+    affinities, lengths, all_edges, sample_inds, edge_inds = costs
+    n_samples, _, _, n_bodyparts = np.shape(scmaps)
+    n_graph_edges = len(graph)
+    for i in range(n_samples):
+        # Form nested arrays
+        xy = []
+        p = []
+        samples_i_mask = peak_inds_in_batch[:, 0] == i
+        for j in range(n_bodyparts):
+            bpts_j_mask = peak_inds_in_batch[:, 3] == j
+            idx = np.flatnonzero(samples_i_mask & bpts_j_mask)
+            xy.append(pos[idx])
+            p.append(prob[idx])
+
+        # Form cost matrices
+        samples_i_mask2 = sample_inds == i
+        costs = dict()
+        for paf_ind, k in zip(paf_inds, range(n_graph_edges)):
+            edges_k_mask = edge_inds == k
+            idx = np.flatnonzero(samples_i_mask2 & edges_k_mask)
+            edges = all_edges[idx]
+            n_source_peaks = np.unique(edges[:, 0]).size
+            n_target_peaks = np.unique(edges[:, 1]).size
+            costs[paf_ind] = dict()
+            costs[paf_ind]["m1"] = affinities[idx].reshape((n_source_peaks, n_target_peaks))
+            costs[paf_ind]["distance"] = lengths[idx].reshape((n_source_peaks, n_target_peaks))
+
+        dict_ = {"coordinates": (xy,), "confidence": p, "costs": costs}
+        peaks_and_costs.append(dict_)
+
+    return peaks_and_costs
+
+
+def predict_batched_peaks_and_costs(
+    pose_cfg,
+    images_batch,
+    sess,
+    inputs,
+    outputs,
+):
+    scmaps, locrefs, pafs = sess.run(outputs, feed_dict={inputs: images_batch})
+    locrefs = np.reshape(locrefs, (*locrefs.shape[:3], -1, 2))
+    locrefs *= pose_cfg["locref_stdev"]
+    pafs = np.reshape(pafs, (*pafs.shape[:3], -1, 2))
+    scmaps = tf.convert_to_tensor(scmaps, dtype=tf.float32)
+    graph = pose_cfg["partaffinityfield_graph"]
+    limbs = pose_cfg.get("paf_best", np.arange(len(graph)))
+    if len(graph) != len(limbs):
+        limbs = np.arange(len(graph))
+    preds = compute_peaks_and_costs(
+        scmaps,
+        locrefs,
+        pafs,
+        graph,
+        limbs,
+        int(pose_cfg.get("nmsradius", 5)),
+        pose_cfg.get("minconfidence", 0.01),
+        pose_cfg["stride"],
+        session=sess,
+    )
+    return preds
+
+
 # TODO: compute all the grids etc. once for the video analysis method
 # (and then just pass on the variables)
 def pos_from_grid_raw(gridpos, stride, halfstride):
@@ -185,6 +321,23 @@ def find_local_maxima(scmap, radius, threshold):
     labels = measurements.label(grid)[0]
     xy = measurements.center_of_mass(grid, labels, range(1, np.max(labels) + 1))
     return np.asarray(xy, dtype=np.int).reshape((-1, 2))
+
+
+def find_local_peak_indices(scmaps, radius, threshold):
+    pooled = TF.nn.max_pool2d(scmaps, [radius, radius], strides=1, padding='SAME')
+    mask = TF.logical_and(tf.equal(scmaps, pooled), scmaps >= threshold)
+    return TF.cast(TF.where(mask), TF.int32)
+
+
+def calc_peak_locations(locrefs, peak_inds_in_batch, stride):
+    s, r, c, b = peak_inds_in_batch.T
+    off = locrefs[s, r, c, b]
+    return stride * peak_inds_in_batch[:, [2, 1]] + stride // 2 + off
+
+
+def calc_peak_probabilities(scmaps, peak_inds_in_batch):
+    s, r, c, b = peak_inds_in_batch.T
+    return scmaps[s, r, c, b]
 
 
 def extract_detections_python(cfg, scmap, locref, pafs, radius, threshold):
