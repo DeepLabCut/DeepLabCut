@@ -13,7 +13,6 @@ from deeplabcut.pose_estimation_tensorflow.dataset import *
 from deeplabcut.pose_estimation_tensorflow.default_config import *
 from deeplabcut.pose_estimation_tensorflow.evaluate import *
 from deeplabcut.pose_estimation_tensorflow.export import export_model
-from deeplabcut.pose_estimation_tensorflow.lib.nms_cython import *
 from deeplabcut.pose_estimation_tensorflow.models import *
 from deeplabcut.pose_estimation_tensorflow.nnet import *
 from deeplabcut.pose_estimation_tensorflow.predict_videos import *

@@ -32,7 +32,6 @@ setuptools.setup(
         "certifi",
         "chardet",
         "click",
-        "cython",
         "filterpy",
         "h5py",
         "ruamel.yaml>=0.15.0",
