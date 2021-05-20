@@ -123,6 +123,7 @@ def compute_edge_costs(
     peak_inds_in_batch,
     graph,
     n_points=10,
+    n_decimals=3,
 ):
     n_samples = pafs.shape[0]
     n_bodyparts = np.max(peak_inds_in_batch[:, 3]) + 1
@@ -149,6 +150,7 @@ def compute_edge_costs(
         all_peaks.append(peaks[edges])
     sample_inds = np.asarray(sample_inds, dtype=np.int32)
     edge_inds = np.asarray(edge_inds, dtype=np.int32)
+    all_edges = np.asarray(all_edges, dtype=np.int32)
     all_peaks = np.concatenate(all_peaks)
     vecs_s = all_peaks[:, 0]
     vecs_t = all_peaks[:, 1]
@@ -163,7 +165,13 @@ def compute_edge_costs(
     ]
     integ = np.trapz(y, xy[..., ::-1], axis=1)
     aff = np.linalg.norm(integ, axis=1) / lengths
-    return aff, lengths, all_edges, sample_inds, edge_inds
+    return (
+        np.round(aff, decimals=n_decimals),
+        np.round(lengths, decimals=n_decimals),
+        all_edges,
+        sample_inds,
+        edge_inds,
+    )
 
 
 # TODO Add identity indexing
@@ -177,6 +185,7 @@ def compute_peaks_and_costs(
     min_confidence=0.01,
     stride=8,
     n_points=10,
+    n_decimals=3,
     session=None,
 ):
     peak_inds_in_batch = find_local_peak_indices(scmaps, nms_radius, min_confidence)
@@ -185,9 +194,11 @@ def compute_peaks_and_costs(
             peak_inds_in_batch = session.run(peak_inds_in_batch)
     else:
         peak_inds_in_batch = session.run(peak_inds_in_batch)
-    pos = calc_peak_locations(locrefs, peak_inds_in_batch, stride)
-    prob = calc_peak_probabilities(scmaps, peak_inds_in_batch)
-    costs = compute_edge_costs(pafs, peak_inds_in_batch, graph, n_points)
+    pos = calc_peak_locations(locrefs, peak_inds_in_batch, stride, n_decimals)
+    prob = calc_peak_probabilities(scmaps, peak_inds_in_batch, n_decimals)
+    costs = compute_edge_costs(
+        pafs, peak_inds_in_batch, graph, n_points, n_decimals
+    )
 
     # Reshape to nested arrays and cost matrices
     peaks_and_costs = []
@@ -211,9 +222,9 @@ def compute_peaks_and_costs(
         for paf_ind, k in zip(paf_inds, range(n_graph_edges)):
             edges_k_mask = edge_inds == k
             idx = np.flatnonzero(samples_i_mask2 & edges_k_mask)
-            edges = all_edges[idx]
-            n_source_peaks = np.unique(edges[:, 0]).size
-            n_target_peaks = np.unique(edges[:, 1]).size
+            s, t = all_edges[idx].T
+            n_source_peaks = np.unique(s).size
+            n_target_peaks = np.unique(t).size
             costs[paf_ind] = dict()
             costs[paf_ind]["m1"] = affinities[idx].reshape((n_source_peaks, n_target_peaks))
             costs[paf_ind]["distance"] = lengths[idx].reshape((n_source_peaks, n_target_peaks))
@@ -235,7 +246,6 @@ def predict_batched_peaks_and_costs(
     locrefs = np.reshape(locrefs, (*locrefs.shape[:3], -1, 2))
     locrefs *= pose_cfg["locref_stdev"]
     pafs = np.reshape(pafs, (*pafs.shape[:3], -1, 2))
-    scmaps = tf.convert_to_tensor(scmaps, dtype=tf.float32)
     graph = pose_cfg["partaffinityfield_graph"]
     limbs = pose_cfg.get("paf_best", np.arange(len(graph)))
     if len(graph) != len(limbs):
@@ -329,15 +339,26 @@ def find_local_peak_indices(scmaps, radius, threshold):
     return TF.cast(TF.where(mask), TF.int32)
 
 
-def calc_peak_locations(locrefs, peak_inds_in_batch, stride):
+def calc_peak_locations(
+    locrefs,
+    peak_inds_in_batch,
+    stride,
+    n_decimals=3,
+):
     s, r, c, b = peak_inds_in_batch.T
     off = locrefs[s, r, c, b]
-    return stride * peak_inds_in_batch[:, [2, 1]] + stride // 2 + off
+    loc = stride * peak_inds_in_batch[:, [2, 1]] + stride // 2 + off
+    return np.round(loc, decimals=n_decimals)
 
 
-def calc_peak_probabilities(scmaps, peak_inds_in_batch):
+def calc_peak_probabilities(
+    scmaps,
+    peak_inds_in_batch,
+    n_decimals=3,
+):
     s, r, c, b = peak_inds_in_batch.T
-    return scmaps[s, r, c, b]
+    prob = scmaps[s, r, c, b]
+    return np.round(prob, decimals=n_decimals).reshape((-1, 1))
 
 
 def extract_detections_python(cfg, scmap, locref, pafs, radius, threshold):
