@@ -302,8 +302,6 @@ def analyze_videos(
                     sess,
                     inputs,
                     outputs,
-                    pdindex,
-                    save_as_csv,
                     destfolder,
                     robust_nframes=robust_nframes,
                 )

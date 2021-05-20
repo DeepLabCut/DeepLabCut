@@ -30,8 +30,6 @@ def AnalyzeMultiAnimalVideo(
     sess,
     inputs,
     outputs,
-    pdindex,
-    save_as_csv,
     destfolder=None,
     robust_nframes=False,
 ):
@@ -141,13 +139,6 @@ def GetPoseandCostsF(
     inds = []
 
     PredicteData = {}
-    # initializing constants
-    stride = dlc_cfg["stride"]
-    halfstride = stride * 0.5
-    num_joints = dlc_cfg["num_joints"]
-    det_min_score = dlc_cfg["minconfidence"]
-
-    num_idchannel = dlc_cfg.get("num_idchannel", 0)
     while cap.video.isOpened():
         if counter % step == 0:
             pbar.update(step)
@@ -156,15 +147,8 @@ def GetPoseandCostsF(
             frames[batch_ind] = img_as_ubyte(frame)
             inds.append(counter)
             if batch_ind == batchsize - 1:
-                # PredicteData['frame'+str(counter)]=predict.get_detectionswithcosts(frame, dlc_cfg, sess, inputs, outputs, outall=False,nms_radius=dlc_cfg.nmsradius,det_min_score=dlc_cfg.minconfidence)
-                D = predict.get_batchdetectionswithcosts(
-                    frames,
-                    dlc_cfg,
-                    batchsize,
-                    det_min_score,
-                    sess,
-                    inputs,
-                    outputs,
+                D = predict.predict_batched_peaks_and_costs(
+                    dlc_cfg, frames, sess, inputs, outputs,
                 )
                 for ind, data in zip(inds, D):
                     PredicteData["frame" + str(ind).zfill(strwidth)] = data
@@ -175,16 +159,8 @@ def GetPoseandCostsF(
                 batch_ind += 1
         elif counter >= nframes:
             if batch_ind > 0:
-                # pose = predict.getposeNP(frames, dlc_cfg, sess, inputs, outputs) #process the whole batch (some frames might be from previous batch!)
-                # PredicteData[batch_num*batchsize:batch_num*batchsize+batch_ind, :] = pose[:batch_ind,:]
-                D = predict.get_batchdetectionswithcosts(
-                    frames,
-                    dlc_cfg,
-                    batchsize,
-                    det_min_score,
-                    sess,
-                    inputs,
-                    outputs,
+                D = predict.predict_batched_peaks_and_costs(
+                    dlc_cfg, frames, sess, inputs, outputs,
                 )
                 for ind, data in zip(inds, D):
                     PredicteData["frame" + str(ind).zfill(strwidth)] = data
@@ -225,18 +201,10 @@ def GetPoseandCostsS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
         frame = cap.read_frame(crop=cfg["cropping"])
         if frame is not None:
             frame = img_as_ubyte(frame)
-            PredicteData[
-                "frame" + str(counter).zfill(strwidth)
-            ] = predict.get_detectionswithcosts(
-                frame,
-                dlc_cfg,
-                sess,
-                inputs,
-                outputs,
-                outall=False,
-                nms_radius=dlc_cfg["nmsradius"],
-                det_min_score=dlc_cfg["minconfidence"],
+            dets = predict.predict_batched_peaks_and_costs(
+                dlc_cfg, np.expand_dims(frame, axis=0), sess, inputs, outputs,
             )
+            PredicteData["frame" + str(counter).zfill(strwidth)] = dets[0]
         elif counter >= nframes:
             break
         counter += 1

@@ -45,83 +45,32 @@ def extract_cnn_output(outputs_np, cfg):
     return scmap, locref, paf
 
 
-def AssociationCosts(
-    cfg, coordinates, partaffinitymaps, stride, half_stride, numsteps=50
-):
-    """ Association costs for detections based on PAFs """
-    Distances = {}
-    ny, nx, nlimbs = np.shape(partaffinitymaps)
-    graph = cfg["partaffinityfield_graph"]
-    limbs = cfg.get("paf_best", np.arange(len(graph)))
-    if len(graph) != len(limbs):
-        limbs = np.arange(len(graph))
+def extract_cnn_outputmulti(outputs_np, cfg):
+    """ extract locref + scmap from network
+    Dimensions: image batch x imagedim1 x imagedim2 x bodypart"""
+    scmap = outputs_np[0]
+    if cfg["location_refinement"]:
+        locref = outputs_np[1]
+        shape = locref.shape
+        locref = np.reshape(locref, (shape[0], shape[1], shape[2], -1, 2))
+        locref *= cfg["locref_stdev"]
+    else:
+        locref = None
+    if cfg["partaffinityfield_predict"] and ("multi-animal" in cfg["dataset_type"]):
+        paf = outputs_np[2]
+    else:
+        paf = None
 
-    for l, (bp1, bp2) in zip(limbs, graph):
-        # get coordinates for bp1 and bp2
-        C1 = coordinates[bp1]
-        C2 = coordinates[bp2]
-
-        dist = np.zeros((len(C1), len(C2))) * np.nan
-        L2distance = np.zeros((len(C1), len(C2))) * np.nan
-        # 'm2'
-        # distscalarproduct=np.zeros((len(C1),len(C2)))*np.nan
-        for c1i, c1 in enumerate(C1):
-            for c2i, c2 in enumerate(C2):
-                if np.prod(np.isfinite(c1)) * np.prod(np.isfinite(c2)):
-                    c1s = (c1 - half_stride) / stride
-                    c2s = (c2 - half_stride) / stride
-
-                    c1s[0] = np.clip(int(c1s[0]), 0, nx - 1)
-                    c1s[1] = np.clip(int(c1s[1]), 0, ny - 1)
-                    c2s[0] = np.clip(int(c2s[0]), 0, nx - 1)
-                    c2s[1] = np.clip(int(c2s[1]), 0, ny - 1)
-
-                    Lx = np.array(np.linspace(c1s[0], c2s[0], numsteps), dtype=int)
-                    Ly = np.array(np.linspace(c1s[1], c2s[1], numsteps), dtype=int)
-
-                    length = np.sqrt(np.sum((c1s - c2s) ** 2))
-
-                    L2distance[c1i, c2i] = length  # storing length (used in inference)
-                    if length > 0:
-                        v = (c1s - c2s) * 1.0 / length
-
-                        if c1s[0] != c2s[0]:
-                            dx = np.trapz(
-                                [
-                                    partaffinitymaps[Ly[i], Lx[i], 2 * l]
-                                    for i in range(numsteps)
-                                ],
-                                dx=(c1s[0] - c2s[0]) * 1.0 / (length * numsteps),
-                            )
-                        else:
-                            dx = 0
-
-                        if c1s[1] != c2s[1]:
-                            dy = np.trapz(
-                                [
-                                    partaffinitymaps[Ly[i], Lx[i], 2 * l + 1]
-                                    for i in range(numsteps)
-                                ],
-                                dx=(c1s[1] - c2s[1]) * 1.0 / (length * numsteps),
-                            )
-                        else:
-                            dy = 0
-
-                        # distscalarproduct[c1i,c2i]=dy*v[1]+dx*v[0] #scalar product [v unit vector dx,dy in pixel coordinats from partaffinitymap]
-                        dist[c1i, c2i] = np.sqrt(dy ** 2 + dx ** 2)
-
-            Distances[l] = {}
-            Distances[l]["m1"] = dist
-            # Distances[l]['m2'] = distscalarproduct
-            Distances[l]["distance"] = L2distance
-
-    return Distances
+    if len(scmap.shape) == 2:  # for single body part!
+        scmap = np.expand_dims(scmap, axis=2)
+    return scmap, locref, paf
 
 
 def compute_edge_costs(
     pafs,
     peak_inds_in_batch,
     graph,
+    paf_inds,
     n_points=10,
     n_decimals=3,
 ):
@@ -164,14 +113,27 @@ def compute_edge_costs(
         edge_inds.reshape((-1, 1)),
     ]
     integ = np.trapz(y, xy[..., ::-1], axis=1)
-    aff = np.linalg.norm(integ, axis=1) / lengths
-    return (
-        np.round(aff, decimals=n_decimals),
-        np.round(lengths, decimals=n_decimals),
-        all_edges,
-        sample_inds,
-        edge_inds,
-    )
+    affinities = np.linalg.norm(integ, axis=1) / lengths
+    np.round(affinities, decimals=n_decimals, out=affinities)
+    np.round(lengths, decimals=n_decimals, out=lengths)
+
+    # Form cost matrices
+    all_costs = []
+    for i in range(n_samples):
+        samples_i_mask = sample_inds == i
+        costs = dict()
+        for paf_ind, k in zip(paf_inds, range(len(graph))):
+            edges_k_mask = edge_inds == k
+            idx = np.flatnonzero(samples_i_mask & edges_k_mask)
+            s, t = all_edges[idx].T
+            n_sources = np.unique(s).size
+            n_targets = np.unique(t).size
+            costs[paf_ind] = dict()
+            costs[paf_ind]["m1"] = affinities[idx].reshape((n_sources, n_targets))
+            costs[paf_ind]["distance"] = lengths[idx].reshape((n_sources, n_targets))
+        all_costs.append(costs)
+
+    return all_costs
 
 
 def compute_peaks_and_costs(
@@ -180,10 +142,10 @@ def compute_peaks_and_costs(
     pafs,
     graph,
     paf_inds,
+    stride,
     n_id_channels,
     nms_radius=5,
     min_confidence=0.01,
-    stride=8,
     n_points=10,
     n_decimals=3,
     session=None,
@@ -200,19 +162,15 @@ def compute_peaks_and_costs(
         peak_inds_in_batch = session.run(peak_inds_in_batch)
     pos = calc_peak_locations(locrefs, peak_inds_in_batch, stride, n_decimals)
     costs = compute_edge_costs(
-        pafs, peak_inds_in_batch, graph, n_points, n_decimals,
+        pafs, peak_inds_in_batch, graph, paf_inds, n_points, n_decimals,
     )
     s, r, c, b = peak_inds_in_batch.T
     prob = np.round(scmaps[s, r, c, b], n_decimals).reshape((-1, 1))
     if n_id_channels:
         ids = np.round(scmaps[s, r, c, -n_id_channels:], n_decimals)
 
-    # Reshape to nested arrays and cost matrices
     peaks_and_costs = []
-    affinities, lengths, all_edges, sample_inds, edge_inds = costs
-    n_graph_edges = len(graph)
     for i in range(n_samples):
-        # Form nested arrays
         xy = []
         p = []
         id_ = []
@@ -224,21 +182,7 @@ def compute_peaks_and_costs(
             p.append(prob[idx])
             if n_id_channels:
                 id_.append(ids[idx])
-
-        # Form cost matrices
-        samples_i_mask2 = sample_inds == i
-        costs = dict()
-        for paf_ind, k in zip(paf_inds, range(n_graph_edges)):
-            edges_k_mask = edge_inds == k
-            idx = np.flatnonzero(samples_i_mask2 & edges_k_mask)
-            s, t = all_edges[idx].T
-            n_source_peaks = np.unique(s).size
-            n_target_peaks = np.unique(t).size
-            costs[paf_ind] = dict()
-            costs[paf_ind]["m1"] = affinities[idx].reshape((n_source_peaks, n_target_peaks))
-            costs[paf_ind]["distance"] = lengths[idx].reshape((n_source_peaks, n_target_peaks))
-
-        dict_ = {"coordinates": (xy,), "confidence": p, "costs": costs}
+        dict_ = {"coordinates": (xy,), "confidence": p, "costs": costs[i]}
         if n_id_channels:
             dict_["identity"] = id_
         peaks_and_costs.append(dict_)
@@ -252,6 +196,8 @@ def predict_batched_peaks_and_costs(
     sess,
     inputs,
     outputs,
+    peaks_gt=None,
+    n_points=10,
     n_decimals=3,
 ):
     scmaps, locrefs, pafs = sess.run(outputs, feed_dict={inputs: images_batch})
@@ -268,13 +214,21 @@ def predict_batched_peaks_and_costs(
         pafs,
         graph,
         limbs,
+        pose_cfg["stride"],
         pose_cfg.get("num_idchannel", 0),
         int(pose_cfg.get("nmsradius", 5)),
         pose_cfg.get("minconfidence", 0.01),
-        pose_cfg["stride"],
+        n_points,
         n_decimals,
         session=sess,
     )
+    if peaks_gt is not None:
+        costs_gt = compute_edge_costs(
+            pafs, peaks_gt, graph, limbs, n_points, n_decimals,
+        )
+        for i, costs in enumerate(costs_gt):
+            preds[i]["groundtruth_costs"] = costs
+
     return preds
 
 
@@ -305,216 +259,3 @@ def calc_peak_locations(
     off = locrefs[s, r, c, b]
     loc = stride * peak_inds_in_batch[:, [2, 1]] + stride // 2 + off
     return np.round(loc, decimals=n_decimals)
-
-
-def extract_detections_python(cfg, scmap, locref, pafs, radius, threshold):
-    Detections = {}
-    stride = cfg["stride"]
-    halfstride = stride * 0.5
-    num_joints = cfg["num_joints"]
-    unProb = [None] * num_joints
-    unPos = [None] * num_joints
-
-    for p_idx in range(num_joints):
-        map_ = scmap[:, :, p_idx]
-        xy = find_local_maxima(map_, radius, threshold)
-        prob = map_[xy[:, 0], xy[:, 1]][:, np.newaxis]
-        pos = xy[:, ::-1] * stride + halfstride + locref[xy[:, 0], xy[:, 1], p_idx]
-        unProb[p_idx] = np.round(prob, 5)
-        unPos[p_idx] = np.round(pos, 3)
-
-    Detections["coordinates"] = (unPos,)
-    Detections["confidence"] = unProb
-
-    if pafs is not None:
-        Detections["costs"] = AssociationCosts(cfg, unPos, pafs, stride, halfstride)
-    else:
-        Detections["costs"] = {}
-
-    return Detections
-
-
-def get_detectionswithcosts(
-    image,
-    cfg,
-    sess,
-    inputs,
-    outputs,
-    outall=False,
-    nms_radius=5.0,
-    det_min_score=0.1,
-):
-    """ Extract pose and association costs from PAFs """
-    im = np.expand_dims(image, axis=0).astype(float)
-
-    outputs_np = sess.run(outputs, feed_dict={inputs: im})
-    scmap, locref, paf = extract_cnn_output(outputs_np, cfg)
-    detections = extract_detections_python(
-        cfg, scmap, locref, paf, int(nms_radius), det_min_score
-    )
-    if outall:
-        return scmap, locref, paf, detections
-    else:
-        return detections
-
-
-def extract_detection_withgroundtruth_python(
-    cfg, groundtruthcoordinates, scmap, locref, pafs, radius, threshold
-):
-    Detections = {}
-    stride = cfg["stride"]
-    halfstride = stride * 0.5
-    num_joints = cfg["num_joints"]
-    num_idchannel = cfg.get("num_idchannel", 0)
-    unProb = [None] * num_joints
-    unPos = [None] * num_joints
-    unID = [None] * num_joints
-
-    for p_idx in range(num_joints):
-        map_ = scmap[:, :, p_idx]
-        xy = find_local_maxima(map_, radius, threshold)
-        prob = map_[xy[:, 0], xy[:, 1]][:, np.newaxis]
-        pos = xy[:, ::-1] * stride + halfstride + locref[xy[:, 0], xy[:, 1], p_idx]
-        unProb[p_idx] = np.round(prob, 5)
-        unPos[p_idx] = np.round(pos, 3)
-        if num_idchannel > 0:
-            inds = [num_joints + id for id in range(num_idchannel)]
-            cur_id = scmap[xy[:, 0], xy[:, 1]][:, inds]
-            unID[p_idx] = np.round(cur_id, 5)
-
-    Detections["coordinates"] = (unPos,)
-    Detections["confidence"] = unProb
-    if num_idchannel > 0:
-        Detections["identity"] = unID
-
-    if pafs is not None:
-        Detections["costs"] = AssociationCosts(cfg, unPos, pafs, stride, halfstride)
-        Detections["groundtruth_costs"] = AssociationCosts(
-            cfg, groundtruthcoordinates, pafs, stride, halfstride
-        )
-    else:
-        Detections["costs"] = {}
-        Detections["groundtruth_costs"] = {}
-    return Detections
-
-
-def get_detectionswithcostsandGT(
-    image,
-    groundtruthcoordinates,
-    cfg,
-    sess,
-    inputs,
-    outputs,
-    outall=False,
-    nms_radius=5.0,
-    det_min_score=0.1,
-):
-    """ Extract pose and association costs from PAFs """
-    im = np.expand_dims(image, axis=0).astype(float)
-
-    # if 'eval_scale' in cfg.keys():
-    #     import imgaug.augmenters as iaa
-    #     im = iaa.Resize(float(cfg['eval_scale']))(images=im)
-
-    outputs_np = sess.run(outputs, feed_dict={inputs: im})
-    scmap, locref, paf = extract_cnn_output(outputs_np, cfg)
-    detections = extract_detection_withgroundtruth_python(
-        cfg,
-        groundtruthcoordinates,
-        scmap,
-        locref,
-        paf,
-        int(nms_radius),
-        det_min_score,
-    )
-    if outall:
-        return scmap, locref, paf, detections
-    else:
-        return detections
-
-
-## Functions below implement are for batch sizes > 1:
-def extract_cnn_outputmulti(outputs_np, cfg):
-    """ extract locref + scmap from network
-    Dimensions: image batch x imagedim1 x imagedim2 x bodypart"""
-    scmap = outputs_np[0]
-    if cfg["location_refinement"]:
-        locref = outputs_np[1]
-        shape = locref.shape
-        locref = np.reshape(locref, (shape[0], shape[1], shape[2], -1, 2))
-        locref *= cfg["locref_stdev"]
-    else:
-        locref = None
-    if cfg["partaffinityfield_predict"] and ("multi-animal" in cfg["dataset_type"]):
-        paf = outputs_np[2]
-    else:
-        paf = None
-
-    if len(scmap.shape) == 2:  # for single body part!
-        scmap = np.expand_dims(scmap, axis=2)
-    return scmap, locref, paf
-
-
-def extract_batchdetections_python(cfg, scmap, locref, pafs, threshold):
-    Detections = {}
-    stride = cfg["stride"]
-    radius = int(cfg["nmsradius"])
-    halfstride = stride * 0.5
-    num_joints = cfg["num_joints"]
-    num_idchannel = cfg.get("num_idchannel", 0)
-    unProb = [None] * num_joints
-    unPos = [None] * num_joints
-    unID = [None] * num_joints
-
-    for p_idx in range(num_joints):
-        map_ = scmap[:, :, p_idx]
-        xy = find_local_maxima(map_, radius, threshold)
-        prob = map_[xy[:, 0], xy[:, 1]][:, np.newaxis]
-        pos = xy[:, ::-1] * stride + halfstride + locref[xy[:, 0], xy[:, 1], p_idx]
-        unProb[p_idx] = np.round(prob, 5)
-        unPos[p_idx] = np.round(pos, 3)
-        if num_idchannel > 0:
-            inds = [num_joints + id for id in range(num_idchannel)]
-            cur_id = scmap[xy[:, 0], xy[:, 1]][:, inds]
-            unID[p_idx] = np.round(cur_id, 5)
-
-    Detections["coordinates"] = (unPos,)
-    Detections["confidence"] = unProb
-    if num_idchannel > 0:
-        Detections["identity"] = unID
-    if pafs is not None:
-        Detections["costs"] = AssociationCosts(cfg, unPos, pafs, stride, halfstride)
-    else:
-        Detections["costs"] = {}
-    return Detections
-
-
-def get_batchdetectionswithcosts(
-    image,
-    dlc_cfg,
-    batchsize,
-    det_min_score,
-    sess,
-    inputs,
-    outputs,
-    outall=False,
-):
-    outputs_np = sess.run(outputs, feed_dict={inputs: image})
-    scmap, locref, pafs = extract_cnn_outputmulti(
-        outputs_np, dlc_cfg
-    )
-    detections = []
-    for l in range(batchsize):
-        if pafs is None:
-            paf = None
-        else:
-            paf = pafs[l]
-        dets = extract_batchdetections_python(
-            dlc_cfg, scmap[l], locref[l], paf, det_min_score
-        )
-        detections.append(dets)
-
-    if outall:
-        return scmap, locref, pafs, detections
-    else:
-        return detections
