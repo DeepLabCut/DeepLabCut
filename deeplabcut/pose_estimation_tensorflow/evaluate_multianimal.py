@@ -202,6 +202,7 @@ def evaluate_multianimal_full(
             # TODO: IMPLEMENT for different batch sizes?
             dlc_cfg["batch_size"] = 1  # due to differently sized images!!!
 
+            stride = dlc_cfg["stride"]
             joints = dlc_cfg["all_joints_names"]
 
             # Create folder structure to store results.
@@ -348,17 +349,24 @@ def evaluate_multianimal_full(
                             PredicteData[imagename] = {}
                             PredicteData[imagename]["index"] = imageindex
 
-                            pred = predictma.get_detectionswithcostsandGT(
-                                frame,
-                                groundtruthcoordinates,
+                            # Form 2D array of shape (n_rows, 4) where the last dimension
+                            # is (sample_index, peak_y, peak_x, bpt_index) to slice the PAFs.
+                            temp = df.reset_index(level="bodyparts").dropna()
+                            temp["bodyparts"].replace(
+                                dict(zip(joints, range(len(joints)))),
+                                inplace=True,
+                            )
+                            temp["sample"] = 0
+                            peaks_gt = temp.loc[:, ["sample", "y", "x", "bodyparts"]].to_numpy()
+                            peaks_gt[:, 1:3] = (peaks_gt[:, 1:3] - stride // 2) / stride
+                            pred = predictma.predict_batched_peaks_and_costs(
                                 dlc_cfg,
+                                np.expand_dims(frame, axis=0),
                                 sess,
                                 inputs,
                                 outputs,
-                                outall=False,
-                                nms_radius=dlc_cfg["nmsradius"],
-                                det_min_score=dlc_cfg["minconfidence"],
-                            )
+                                peaks_gt.astype(int),
+                            )[0]
                             PredicteData[imagename]["prediction"] = pred
                             PredicteData[imagename]["groundtruth"] = [
                                 groundtruthidentity,
