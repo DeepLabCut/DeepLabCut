@@ -20,7 +20,7 @@ import tensorflow.contrib.slim as slim
 from tensorflow.contrib.slim.nets import resnet_v1
 
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import Batch
-from deeplabcut.pose_estimation_tensorflow.nnet import losses
+from deeplabcut.pose_estimation_tensorflow.nnet import losses, predict_multianimal
 
 vers = (tf.__version__).split(".")
 if int(vers[0]) == 1 and int(vers[1]) > 12:
@@ -271,7 +271,12 @@ class PoseNet:
     def add_inference_layers(self, heads):
         """ initialized during inference """
         prob = tf.sigmoid(heads["part_pred"])
-        outputs = {"part_prob": prob}
+        peak_inds = predict_multianimal.find_local_peak_indices(
+            tf.gather(prob, tf.range(self.cfg["num_joints"]), axis=3),
+            int(self.cfg.get("nmsradius", 5)),
+            self.cfg.get("minconfidence", 0.01),
+        )
+        outputs = {"part_prob": prob, "peak_inds": peak_inds}
         if self.cfg["location_refinement"]:
             outputs["locref"] = heads["locref"]
         if self.cfg["pairwise_predict"] or self.cfg["partaffinityfield_predict"]:

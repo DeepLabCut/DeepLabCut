@@ -32,14 +32,18 @@ def test_extract_detections(model_outputs, ground_truth_detections):
 
 def test_association_costs(model_outputs, ground_truth_detections):
     costs_gt = ground_truth_detections[0]["costs"]
+    peak_inds = predict_multianimal.find_local_peak_indices(
+        model_outputs[0], RADIUS, THRESHOLD
+    )
+    with tf.Session() as sess:
+        peak_inds = sess.run(peak_inds)
     graph = [[i, j] for i in range(12) for j in range(i + 1, 12)]
     preds = predict_multianimal.compute_peaks_and_costs(
         *model_outputs,
+        peak_inds,
         graph=graph,
         paf_inds=np.arange(len(graph)),
         n_id_channels=0,
-        nms_radius=RADIUS,
-        min_confidence=THRESHOLD,
         stride=STRIDE,
     )[0]
     assert all(k in preds for k in ("coordinates", "confidence", "costs"))

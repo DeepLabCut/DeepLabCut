@@ -140,28 +140,16 @@ def compute_peaks_and_costs(
     scmaps,
     locrefs,
     pafs,
+    peak_inds_in_batch,
     graph,
     paf_inds,
     stride,
     n_id_channels,
-    nms_radius=5,
-    min_confidence=0.01,
     n_points=10,
     n_decimals=3,
-    session=None,
 ):
     n_samples, _, _, n_channels = np.shape(scmaps)
     n_bodyparts = n_channels - n_id_channels
-    peak_inds_in_batch = find_local_peak_indices(
-        tf.convert_to_tensor(scmaps[..., :n_bodyparts], dtype=tf.float32),
-        nms_radius,
-        min_confidence,
-    )
-    if session is None:
-        with tf.Session() as session:
-            peak_inds_in_batch = session.run(peak_inds_in_batch)
-    else:
-        peak_inds_in_batch = session.run(peak_inds_in_batch)
     pos = calc_peak_locations(locrefs, peak_inds_in_batch, stride, n_decimals)
     costs = compute_edge_costs(
         pafs, peak_inds_in_batch, graph, paf_inds, n_points, n_decimals,
@@ -202,7 +190,9 @@ def predict_batched_peaks_and_costs(
     n_points=10,
     n_decimals=3,
 ):
-    scmaps, locrefs, pafs = sess.run(outputs, feed_dict={inputs: images_batch})
+    scmaps, locrefs, pafs, peaks = sess.run(
+        outputs, feed_dict={inputs: images_batch}
+    )
     locrefs = np.reshape(locrefs, (*locrefs.shape[:3], -1, 2))
     locrefs *= pose_cfg["locref_stdev"]
     pafs = np.reshape(pafs, (*pafs.shape[:3], -1, 2))
@@ -214,15 +204,13 @@ def predict_batched_peaks_and_costs(
         scmaps,
         locrefs,
         pafs,
+        peaks,
         graph,
         limbs,
         pose_cfg["stride"],
         pose_cfg.get("num_idchannel", 0),
-        int(pose_cfg.get("nmsradius", 5)),
-        pose_cfg.get("minconfidence", 0.01),
         n_points,
         n_decimals,
-        session=sess,
     )
     if peaks_gt is not None:
         costs_gt = compute_edge_costs(
@@ -247,8 +235,8 @@ def find_local_maxima(scmap, radius, threshold):
 
 def find_local_peak_indices(scmaps, radius, threshold):
     pooled = TF.nn.max_pool2d(scmaps, [radius, radius], strides=1, padding='SAME')
-    mask = TF.logical_and(tf.equal(scmaps, pooled), scmaps >= threshold)
-    return TF.cast(TF.where(mask), TF.int32)
+    maxima = scmaps * TF.cast(TF.equal(scmaps, pooled), TF.float32)
+    return TF.cast(TF.where(maxima >= threshold), TF.int32)
 
 
 def calc_peak_locations(

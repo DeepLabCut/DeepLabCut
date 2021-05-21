@@ -45,6 +45,8 @@ def setup_pose_prediction(cfg):
         print("Activating extracting of PAFs")
         outputs.append(net_heads["pairwise_pred"])
 
+    outputs.append(net_heads["peak_inds"])
+
     restorer = TF.train.Saver()
     sess = TF.Session()
     sess.run(TF.global_variables_initializer())
