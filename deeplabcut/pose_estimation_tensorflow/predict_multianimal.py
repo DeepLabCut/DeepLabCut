@@ -135,13 +135,10 @@ def GetPoseandCostsF(
     )  # this keeps all frames in a batch
     pbar = tqdm(total=nframes)
     counter = 0
-    step = max(10, int(nframes / 100))
     inds = []
 
     PredicteData = {}
     while cap.video.isOpened():
-        if counter % step == 0:
-            pbar.update(step)
         frame = cap.read_frame(crop=cfg["cropping"])
         if frame is not None:
             frames[batch_ind] = img_as_ubyte(frame)
@@ -166,6 +163,7 @@ def GetPoseandCostsF(
                     PredicteData["frame" + str(ind).zfill(strwidth)] = data
             break
         counter += 1
+        pbar.update(1)
 
     cap.close()
     pbar.close()
@@ -194,10 +192,7 @@ def GetPoseandCostsS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
     PredicteData = {}  # np.zeros((nframes, 3 * len(dlc_cfg['all_joints_names'])))
     pbar = tqdm(total=nframes)
     counter = 0
-    step = max(10, int(nframes / 100))
     while cap.video.isOpened():
-        if counter % step == 0:
-            pbar.update(step)
         frame = cap.read_frame(crop=cfg["cropping"])
         if frame is not None:
             frame = img_as_ubyte(frame)
@@ -208,6 +203,7 @@ def GetPoseandCostsS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
         elif counter >= nframes:
             break
         counter += 1
+        pbar.update(1)
 
     pbar.close()
     PredicteData["metadata"] = {
