@@ -13,6 +13,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from deeplabcut.generate_training_dataset import trainingsetmanipulation
 from deeplabcut.utils import auxiliaryfunctions
 import warnings
 
@@ -40,7 +41,7 @@ def convertannotationdata_fromwindows2unixstyle(
     """
     cfg = auxiliaryfunctions.read_config(config)
     folders = [
-        Path(config).parent / "labeled-data" / Path(vid).stem
+        Path(config).parent / "labeled-data" / trainingsetmanipulation._robust_path_split(vid)[1]
         for vid in cfg["video_sets"]
     ]
 
