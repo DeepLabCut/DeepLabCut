@@ -104,7 +104,7 @@ def compute_edge_costs(
     vecs_s = all_peaks[:, 0]
     vecs_t = all_peaks[:, 1]
     vecs = vecs_t - vecs_s
-    lengths = np.linalg.norm(vecs, axis=1)
+    lengths = np.linalg.norm(vecs, axis=1) + np.spacing(1)
     xy = np.linspace(vecs_s, vecs_t, n_points, axis=1, dtype=np.int32)
     y = pafs[
         sample_inds.reshape((-1, 1)),
