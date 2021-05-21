@@ -438,7 +438,6 @@ def CropVideo(
 
     Crops the video to a width of 220 and height of 320 starting at the origin (top left) and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1cropped.avi
     """
-#    import pdb; pdb.set_trace()
     writer = VideoWriter(vname)
 
     if useGUI:
