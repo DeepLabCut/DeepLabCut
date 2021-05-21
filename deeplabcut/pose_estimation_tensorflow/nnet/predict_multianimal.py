@@ -153,7 +153,9 @@ def compute_peaks_and_costs(
     n_samples, _, _, n_channels = np.shape(scmaps)
     n_bodyparts = n_channels - n_id_channels
     peak_inds_in_batch = find_local_peak_indices(
-        scmaps[..., :n_bodyparts], nms_radius, min_confidence,
+        tf.convert_to_tensor(scmaps[..., :n_bodyparts], dtype=tf.float32),
+        nms_radius,
+        min_confidence,
     )
     if session is None:
         with tf.Session() as session:
