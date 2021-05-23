@@ -83,6 +83,8 @@ def compute_edge_costs(
     for i in range(n_samples):
         samples_i = peak_inds_in_batch[:, 0] == i
         peak_inds = peak_inds_in_batch[samples_i, 1:]
+        if not np.any(peak_inds):
+            continue
         peaks = peak_inds[:, :2]
         bpt_inds = peak_inds[:, 2]
         idx = np.arange(peaks.shape[0])
@@ -104,7 +106,8 @@ def compute_edge_costs(
     vecs_s = all_peaks[:, 0]
     vecs_t = all_peaks[:, 1]
     vecs = vecs_t - vecs_s
-    lengths = np.linalg.norm(vecs, axis=1) + np.spacing(1)
+    lengths = np.linalg.norm(vecs, axis=1).astype(np.float32)
+    lengths += np.spacing(1, dtype=np.float32)
     xy = np.linspace(vecs_s, vecs_t, n_points, axis=1, dtype=np.int32)
     y = pafs[
         sample_inds.reshape((-1, 1)),
@@ -113,7 +116,8 @@ def compute_edge_costs(
         edge_inds.reshape((-1, 1)),
     ]
     integ = np.trapz(y, xy[..., ::-1], axis=1)
-    affinities = np.linalg.norm(integ, axis=1) / lengths
+    affinities = np.linalg.norm(integ, axis=1).astype(np.float32)
+    affinities /= lengths
     np.round(affinities, decimals=n_decimals, out=affinities)
     np.round(lengths, decimals=n_decimals, out=lengths)
 
