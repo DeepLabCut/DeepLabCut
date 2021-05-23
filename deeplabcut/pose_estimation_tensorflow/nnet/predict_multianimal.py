@@ -71,11 +71,11 @@ def compute_edge_costs(
     peak_inds_in_batch,
     graph,
     paf_inds,
+    n_bodyparts,
     n_points=10,
     n_decimals=3,
 ):
     n_samples = pafs.shape[0]
-    n_bodyparts = np.max(peak_inds_in_batch[:, 3]) + 1
     sample_inds = []
     edge_inds = []
     all_edges = []
@@ -93,6 +93,8 @@ def compute_edge_costs(
         for k, (s, t) in enumerate(graph):
             inds_s = idx_per_bpt[s]
             inds_t = idx_per_bpt[t]
+            if not (inds_s and inds_t):
+                continue
             candidate_edges = ((i, j) for i in inds_s for j in inds_t)
             edges.extend(candidate_edges)
             edge_inds.extend([k] * len(inds_s) * len(inds_t))
@@ -156,7 +158,13 @@ def compute_peaks_and_costs(
     n_bodyparts = n_channels - n_id_channels
     pos = calc_peak_locations(locrefs, peak_inds_in_batch, stride, n_decimals)
     costs = compute_edge_costs(
-        pafs, peak_inds_in_batch, graph, paf_inds, n_points, n_decimals,
+        pafs,
+        peak_inds_in_batch,
+        graph,
+        paf_inds,
+        n_bodyparts,
+        n_points,
+        n_decimals,
     )
     s, r, c, b = peak_inds_in_batch.T
     prob = np.round(scmaps[s, r, c, b], n_decimals).reshape((-1, 1))
@@ -218,7 +226,13 @@ def predict_batched_peaks_and_costs(
     )
     if peaks_gt is not None:
         costs_gt = compute_edge_costs(
-            pafs, peaks_gt, graph, limbs, n_points, n_decimals,
+            pafs,
+            peaks_gt,
+            graph,
+            limbs,
+            pose_cfg["num_joints"],
+            n_points,
+            n_decimals,
         )
         for i, costs in enumerate(costs_gt):
             preds[i]["groundtruth_costs"] = costs
