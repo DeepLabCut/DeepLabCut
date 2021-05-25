@@ -23,6 +23,7 @@ from multiprocessing import Pool
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial import cKDTree
 from scipy.spatial.distance import pdist, cdist
+from scipy.special import softmax
 from scipy.stats import gaussian_kde, chi2
 from tqdm import tqdm
 from typing import Tuple
@@ -126,6 +127,14 @@ class Assembly:
         return np.nanmean(self.data[:, 2])
 
     @property
+    def soft_identity(self):
+        data = self.data[~np.isnan(self.data).any(axis=1)]
+        unq, idx, cnt = np.unique(data[:, 3], return_inverse=True, return_counts=True)
+        avg = np.bincount(idx, weights=data[:, 2]) / cnt
+        soft = softmax(avg)
+        return dict(zip(unq.astype(int), soft))
+
+    @property
     def affinity(self):
         return self._affinity / self.n_links
 
@@ -224,12 +233,12 @@ class Assembler:
         self.min_affinity = min_affinity
         self.min_n_links = min_n_links
         self.max_overlap = max_overlap
-        has_identity = "identity" in self[0]
-        if identity_only and not has_identity:
+        self._has_identity = "identity" in self[0]
+        if identity_only and not self._has_identity:
             warnings.warn(
                 "The network was not trained with identity; setting `identity_only` to False."
             )
-        self.identity_only = identity_only & has_identity
+        self.identity_only = identity_only & self._has_identity
         self.nan_policy = nan_policy
         self.force_fusion = force_fusion
         self.add_discarded = add_discarded
@@ -834,7 +843,7 @@ def _parse_ground_truth_data(data):
             if np.isnan(row[:, :2]).all():
                 continue
             ass = Assembly(row.shape[0])
-            ass.data[:, :3] = row
+            ass.data[:, :row.shape[1]] = row
             temp.append(ass)
         if not temp:
             continue
