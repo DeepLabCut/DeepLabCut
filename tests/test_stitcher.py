@@ -117,7 +117,7 @@ def test_purify_tracklets(fake_tracklet):
 def test_stitcher(tmpdir_factory, fake_stitcher):
     assert len(fake_stitcher) == N_TRACKLETS
     assert fake_stitcher.n_frames == TRACKLET_LEN
-    assert fake_stitcher.compute_max_gap() == 1
+    assert fake_stitcher.compute_max_gap(fake_stitcher.tracklets) == 1
     fake_stitcher.build_graph(max_gap=1)
     fake_stitcher.stitch(add_back_residuals=True)
     output_name = tmpdir_factory.mktemp("data").join("fake.h5")
@@ -158,7 +158,7 @@ def test_stitcher_real(tmpdir_factory, real_tracklets):
     assert len(stitcher) == 3
     assert all(tracklet.is_continuous for tracklet in stitcher.tracklets)
     assert not stitcher.residuals
-    assert stitcher.compute_max_gap() == 0
+    assert stitcher.compute_max_gap(stitcher.tracklets) == 0
 
     stitcher.build_graph()
     assert stitcher.G.number_of_edges() == 9
