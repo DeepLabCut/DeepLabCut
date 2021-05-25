@@ -940,6 +940,7 @@ def stitch_tracklets(
     min_length=10,
     split_tracklets=True,
     prestitch_residuals=True,
+    max_gap=None,
     weight_func=None,
     output_name="",
 ):
@@ -988,6 +989,10 @@ def stitch_tracklets(
         temporal proximity prior to being added back to the tracks.
         This is done to improve robustness and simultaneously reduce complexity.
 
+    max_gap : int, optional
+        Maximal temporal gap to allow between a pair of tracklets.
+        This is automatically determined by the TrackletStitcher by default.
+
     weight_func : callable, optional
         Function accepting two tracklets as arguments and returning a scalar
         that must be inversely proportional to the likelihood that the tracklets
@@ -1012,7 +1017,7 @@ def stitch_tracklets(
     stitcher = TrackletStitcher.from_pickle(
         pickle_file, n_tracks, min_length, split_tracklets, prestitch_residuals
     )
-    stitcher.build_graph(weight_func=weight_func)
+    stitcher.build_graph(max_gap=max_gap, weight_func=weight_func)
     stitcher.stitch()
     stitcher.write_tracks(output_name, animal_names)
     return stitcher
