@@ -757,7 +757,8 @@ class MainFrame(BaseFrame):
             self.Close(True)
 
         self.uniquebodyparts = uniquebodyparts
-        self.individual_names = individuals
+        self.individual_names_ = individuals
+        self.individual_names = self.individual_names_.copy()
 
         self.videos = self.cfg["video_sets"].keys()
         self.markerSize = self.cfg["dotsize"]
@@ -859,9 +860,30 @@ class MainFrame(BaseFrame):
             missing_frames = set(old_imgs).difference(self.relativeimagenames)
             self.dataFrame.drop(missing_frames, inplace=True)
 
-        # Check whether new labels were added
+        # Check whether new individuals or body parts were added
+        old_animals = self.dataFrame.columns.get_level_values("individuals").unique()
+        self.new_animals = [x for x in self.individual_names if x not in old_animals]
         self.new_multi = [x for x in self.multibodyparts if x not in self._old_multi]
         self.new_unique = [x for x in self.uniquebodyparts if x not in self._old_unique]
+
+        if self.new_animals:
+            dlg = wx.MessageDialog(
+                None,
+                "New individual found in the config file. Do you want to see all the other ones?",
+                "New individual found",
+                wx.YES_NO | wx.ICON_WARNING,
+            )
+            result = dlg.ShowModal()
+            if result == wx.ID_NO:
+                self.individual_names = self.new_animals
+            self.dataFrame = MainFrame.create_dataframe(
+                self,
+                self.dataFrame,
+                self.relativeimagenames,
+                self.new_animals,
+                self.uniquebodyparts,
+                self.multibodyparts,
+            )
 
         # Checking if user added a new label
         if not any([self.new_multi, self.new_unique]):  # i.e. no new labels
@@ -1285,7 +1307,7 @@ class MainFrame(BaseFrame):
         self.dataFrame = self.dataFrame.loc[:, valid]
         # Re-organize the dataframe so the CSV looks consistent with the config
         self.dataFrame = self.dataFrame.reindex(
-            columns=self.individual_names, level="individuals"
+            columns=self.individual_names_, level="individuals"
         ).reindex(columns=config_bpts, level="bodyparts")
         self.dataFrame.to_csv(
             os.path.join(self.dir, "CollectedData_" + self.scorer + ".csv")
