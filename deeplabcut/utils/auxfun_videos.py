@@ -286,9 +286,9 @@ class VideoWriter(VideoReader):
         x1, _, y1, _ = self.get_bbox()
         output_path = self.make_output_path(suffix, dest_folder)
         command = (
-            f"ffmpeg -n -i {self.video_path} "
+            f"ffmpeg -n -i \"{self.video_path}\" "
             f"-filter:v crop={self.width}:{self.height}:{x1}:{y1} "
-            f"-c:a copy {output_path}"
+            f"-c:a copy \"{output_path}\""
         )
         subprocess.call(command, shell=True)
         return output_path

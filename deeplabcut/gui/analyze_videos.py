@@ -490,15 +490,9 @@ class Analyze_videos(wx.Panel):
                 robust_nframes=robust,
             )
             if self.create_video_with_all_detections.GetStringSelection() == "Yes":
-                trainFrac = self.cfg["TrainingFraction"][trainingsetindex]
-                scorername, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
-                    self.cfg, shuffle, trainFraction=trainFrac
-                )
-                print(scorername)
                 deeplabcut.create_video_with_all_detections(
-                    self.config, self.filelist, DLCscorername=scorername
+                    self.config, self.filelist, shuffle, trainingsetindex
                 )
-
         else:
             scorername = deeplabcut.analyze_videos(
                 self.config,

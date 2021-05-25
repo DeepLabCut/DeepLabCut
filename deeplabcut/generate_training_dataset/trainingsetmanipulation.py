@@ -559,7 +559,14 @@ def MakeInference_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
 
 def _robust_path_split(path):
     sep = "\\" if "\\" in path else "/"
-    parent, file = path.rsplit(sep, 1)
+    splits = path.rsplit(sep, 1)
+    if len(splits) == 1:
+        parent = '.'
+        file = splits[0]
+    elif len(splits) == 2:
+        parent, file = splits
+    else:
+        raise('Unknown filepath split for path {}'.format(path))
     filename, ext = os.path.splitext(file)
     return parent, filename, ext
 

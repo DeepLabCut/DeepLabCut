@@ -192,12 +192,14 @@ def create_new_project(
             ["bodypart1", "bodypart3"],
         ]
         cfg_file["default_augmenter"] = "multi-animal-imgaug"
+        cfg_file["default_net_type"] = "dlcrnet_ms5"
     else:
         cfg_file, ruamelFile = auxiliaryfunctions.create_config_template()
         cfg_file["multianimalproject"] = False
         cfg_file["bodyparts"] = ["bodypart1", "bodypart2", "bodypart3", "objectA"]
         cfg_file["skeleton"] = [["bodypart1", "bodypart2"], ["objectA", "bodypart3"]]
         cfg_file["default_augmenter"] = "default"
+        cfg_file["default_net_type"] = "resnet_50"
     cfg_file["croppedtraining"] = False
 
     # common parameters:
@@ -212,7 +214,6 @@ def create_new_project(
     cfg_file["numframes2pick"] = 20
     cfg_file["TrainingFraction"] = [0.95]
     cfg_file["iteration"] = 0
-    cfg_file["default_net_type"] = "resnet_50"
     cfg_file["snapshotindex"] = -1
     cfg_file["x1"] = 0
     cfg_file["x2"] = 640
