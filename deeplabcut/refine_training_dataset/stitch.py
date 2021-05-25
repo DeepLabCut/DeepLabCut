@@ -476,8 +476,8 @@ class TrackletStitcher:
 
         # Note that if tracklets are very short, some may actually be part of the same track
         # and thus incorrectly reflect separate track endpoints...
-        self._first_tracklets = sorted(self, key=lambda t: t.start)[: self.n_tracks]
-        self._last_tracklets = sorted(self, key=lambda t: t.end)[-self.n_tracks :]
+        self._first_tracklets = sorted(self, key=lambda t: t.start)[:self.n_tracks]
+        self._last_tracklets = sorted(self, key=lambda t: t.end)[-self.n_tracks:]
 
         # Map each Tracklet to an entry and output nodes and vice versa,
         # which is convenient once the tracklets are stitched.
@@ -570,9 +570,10 @@ class TrackletStitcher:
         return self._last_frame - self._first_frame + 1
 
     # TODO Avoid looping over all pairs of tracklets
-    def compute_max_gap(self):
+    @staticmethod
+    def compute_max_gap(tracklets):
         gap = defaultdict(list)
-        for tracklet1, tracklet2 in combinations(self, 2):
+        for tracklet1, tracklet2 in combinations(tracklets, 2):
             gap[tracklet1].append(tracklet1.time_gap_to(tracklet2))
         max_gap = 0
         for vals in gap.values():
@@ -583,34 +584,48 @@ class TrackletStitcher:
                     break
         return max_gap
 
-    def build_graph(self, max_gap=None, weight_func=None):
+    def build_graph(
+        self,
+        nodes=None,
+        max_gap=None,
+        weight_func=None,
+    ):
+        if nodes is None:
+            nodes = self.tracklets
+        nodes = sorted(nodes, key=lambda t: t.start)
+        n_nodes = len(nodes)
+
         if not max_gap:
-            max_gap = int(1.5 * self.compute_max_gap())
+            max_gap = int(1.5 * self.compute_max_gap(nodes))
 
         self.G = nx.DiGraph()
         self.G.add_node("source", demand=-self.n_tracks)
         self.G.add_node("sink", demand=self.n_tracks)
-        nodes_in, nodes_out = zip(*[v.values() for v in self._mapping.values()])
+        nodes_in, nodes_out = zip(
+            *[v.values() for k, v in self._mapping.items() if k in nodes]
+        )
         self.G.add_nodes_from(nodes_in, demand=1)
         self.G.add_nodes_from(nodes_out, demand=-1)
         self.G.add_edges_from(zip(nodes_in, nodes_out), capacity=1)
-        self.G.add_edges_from(zip(["source"] * len(self), nodes_in), capacity=1)
-        self.G.add_edges_from(zip(nodes_out, ["sink"] * len(self)), capacity=1)
+        self.G.add_edges_from(zip(["source"] * n_nodes, nodes_in), capacity=1)
+        self.G.add_edges_from(zip(nodes_out, ["sink"] * n_nodes), capacity=1)
         if weight_func is None:
             weight_func = self.calculate_edge_weight
-        for i in trange(len(self)):
-            e = self[i].end
-            for j in range(i + 1, len(self)):
-                s = self[j].start
-                gap = s - e
+        for i in trange(n_nodes):
+            node_i = nodes[i]
+            end = node_i.end
+            for j in range(i + 1, n_nodes):
+                node_j = nodes[j]
+                start = node_j.start
+                gap = start - end
                 if gap > max_gap:
                     break
                 elif gap > 0:
                     # The algorithm works better with integer weights
-                    w = int(100 * weight_func(self[i], self[j]))
+                    w = int(100 * weight_func(node_i, node_j))
                     self.G.add_edge(
-                        self._mapping[self[i]]["out"],
-                        self._mapping[self[j]]["in"],
+                        self._mapping[node_i]["out"],
+                        self._mapping[node_j]["in"],
                         weight=w,
                         capacity=1,
                     )
@@ -663,24 +678,24 @@ class TrackletStitcher:
                     temp.add(self._mapping_inv[node])
                 paths.append(list(temp))
             incomplete_tracks = self.n_tracks - len(paths)
+            remaining_nodes = set(
+                self._mapping_inv[node]
+                for node in self.G
+                if node not in ("source", "sink")
+            )
             if (
                 incomplete_tracks == 1
             ):  # All remaining nodes must belong to the same track
-                nodes = set(
-                    self._mapping_inv[node]
-                    for node in self.G
-                    if node not in ("source", "sink")
-                )
                 # Verify whether there are overlapping tracklets
-                for t1, t2 in combinations(nodes, 2):
+                for t1, t2 in combinations(remaining_nodes, 2):
                     if t1 in t2:
                         # Pick the segment that minimizes "smoothness", computed here
                         # with the coefficient of variation of the differences.
-                        if t1 in nodes:
-                            nodes.remove(t1)
-                        if t2 in nodes:
-                            nodes.remove(t2)
-                        track = sum(nodes)
+                        if t1 in remaining_nodes:
+                            remaining_nodes.remove(t1)
+                        if t2 in remaining_nodes:
+                            remaining_nodes.remove(t2)
+                        track = sum(remaining_nodes)
                         hyp1 = track + t1
                         hyp2 = track + t2
                         dx1 = np.diff(hyp1.centroid, axis=0)
@@ -688,15 +703,24 @@ class TrackletStitcher:
                         dx2 = np.diff(hyp2.centroid, axis=0)
                         cv2 = dx2.std() / np.abs(dx2).mean()
                         if cv1 < cv2:
-                            nodes.add(t1)
+                            remaining_nodes.add(t1)
                             self.residuals.append(t2)
                         else:
-                            nodes.add(t2)
+                            remaining_nodes.add(t2)
                             self.residuals.append(t1)
-                paths.append(list(nodes))
+                paths.append(list(remaining_nodes))
             elif incomplete_tracks > 1:
-                raise NotImplementedError
+                # Rebuild a full graph from the remaining nodes without
+                # temporal constraint on what tracklets can be stitched together.
+                self.build_graph(list(remaining_nodes), max_gap=np.inf)
+                self.G.nodes["source"]["demand"] = -incomplete_tracks
+                self.G.nodes["sink"]["demand"] = incomplete_tracks
+                _, self.flow = nx.capacity_scaling(self.G)
+                paths += self.reconstruct_paths()
             self.paths = paths
+            if len(self.paths) != self.n_tracks:
+                warnings.warn(f"Only {len(self.paths)} tracks could be reconstructed.")
+
         finally:
             if self.paths is None:
                 raise ValueError(
