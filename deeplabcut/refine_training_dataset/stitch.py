@@ -1041,6 +1041,12 @@ def stitch_tracklets(
     stitcher = TrackletStitcher.from_pickle(
         pickle_file, n_tracks, min_length, split_tracklets, prestitch_residuals
     )
+    with_id = any(tracklet.identity != -1 for tracklet in stitcher)
+    if with_id and weight_func is None:
+        # Add in identity weighing before building the graph
+        def weight_func(t1, t2):
+            w = 0.01 if t1.identity == t2.identity else 1
+            return w * stitcher.calculate_edge_weight(t1, t2)
     stitcher.build_graph(max_gap=max_gap, weight_func=weight_func)
     stitcher.stitch()
     stitcher.write_tracks(output_name, animal_names)

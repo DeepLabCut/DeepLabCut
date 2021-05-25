@@ -185,6 +185,16 @@ class Analyze_videos(wx.Panel):
             self.calibrate.SetSelection(1)
             self.hbox4.Add(self.calibrate, 1, 1)
 
+            self.identity_toggle = wx.RadioBox(
+                self,
+                label="Assemble with identity only?",
+                choices=["Yes", "No"],
+                majorDimension=1,
+                style=wx.RA_SPECIFY_COLS,
+            )
+            self.identity_toggle.SetSelection(1)
+            self.hbox4.Add(self.identity_toggle, 1, 1)
+
             winsize_text = wx.StaticBox(self, label="Prioritize past connections over a window of size:")
             winsize_sizer = wx.StaticBoxSizer(winsize_text, wx.VERTICAL)
             self.winsize = wx.SpinCtrl(self, value="0")
@@ -411,6 +421,7 @@ class Analyze_videos(wx.Panel):
             track_method=self.trackertypes.GetValue(),
             calibrate=self.calibrate.GetStringSelection() == "Yes",
             window_size=self.winsize.GetValue(),
+            identity_only=self.identity_toggle.GetStringSelection() == "Yes",
         )
 
     # def video_tracklets(self,event):

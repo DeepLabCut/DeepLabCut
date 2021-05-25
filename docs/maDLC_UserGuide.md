@@ -461,6 +461,20 @@ max_age: 100
 min_hits: 3
 ```
 
+**IMPORTANT POINT**
+
+If the network has been trained to learn the animals' identities (i.e., you set `identity=True` in config.yaml before training)
+this information can be leveraged both during: (i) animal assembly, where body parts
+are grouped based on the animal they are predicted to belong to (affinity between pairs of keypoints
+is no longer considered in that case); and (ii) animal tracking, where identity only can be 
+utilized in place of motion trackers to form tracklets.
+
+To use this ID information, simply pass:
+```python
+deeplabcut.convert_detections2tracklets(..., identity_only=True)
+```
+
+
 **Animal assembly and tracking quality** can be assessed via `deeplabcut.utils.make_labeled_video.create_video_from_pickled_tracks`. This function provides an additional diagnostic tool before moving on to refining tracklets.
 
 **Next, tracklets are stitched to form complete tracks with:
@@ -470,12 +484,14 @@ deeplabcut.stitch_tracklets(config_path, pickle_file)
 ```
 
 If the number of tracks to reconstruct is different from the number of individuals
-originally defined in the config.yaml, `n_tracks` can be directly specified as follows:
+originally defined in the config.yaml, `n_tracks` (i.e., the number of animals you have in your video)
+can be directly specified as follows:
 
 ```python
 deeplabcut.stitch_tracklets(config_path, pickle_file, n_tracks=n)
 ```
 In such cases, file columns will default to dummy animal names (ind1, ind2, ..., up to indn).
+
 
 ### Refine Tracklets:
 

@@ -13,7 +13,7 @@ def real_assemblies():
     with open(os.path.join(TEST_DATA_DIR, "trimouse_assemblies.pickle"), "rb") as file:
         temp = pickle.load(file)
     data = np.stack(list(temp.values()))
-    return inferenceutils._parse_ground_truth_data(data[..., :3])
+    return inferenceutils._parse_ground_truth_data(data)
 
 
 @pytest.fixture(scope="session")
