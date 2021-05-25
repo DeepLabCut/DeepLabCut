@@ -1281,12 +1281,14 @@ class MainFrame(BaseFrame):
         """
 
         for idx, bp in enumerate(self.updatedCoords):
-            self.dataFrame.loc[self.relativeimagenames[self.iter]][
-                self.scorer, bp[-1][2], bp[0][-1], "x"
-            ] = bp[-1][0]
-            self.dataFrame.loc[self.relativeimagenames[self.iter]][
-                self.scorer, bp[-1][2], bp[0][-1], "y"
-            ] = bp[-1][1]
+            x, y, ind = bp[-1][:3]
+            bpt = bp[0][-1]
+            self.dataFrame.loc[
+                self.relativeimagenames[self.iter], (self.scorer, ind, bpt, "x")
+            ] = x
+            self.dataFrame.loc[
+                self.relativeimagenames[self.iter], (self.scorer, ind, bpt, "y")
+            ] = y
 
     def saveDataSet(self, event):
         """
