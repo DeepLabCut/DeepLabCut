@@ -1177,6 +1177,8 @@ class MainFrame(BaseFrame):
         self.updatedCoords = []
         for j, ind in enumerate(self.individual_names):
             idcolor = self.idmap(j)
+            if ind not in self.dataFrame.columns.get_level_values(1):
+                continue
             if ind == "single":
                 for c, bp in enumerate(self.uniquebodyparts):
                     image_points = [
@@ -1259,11 +1261,11 @@ class MainFrame(BaseFrame):
         """
 
         for idx, bp in enumerate(self.updatedCoords):
-            self.dataFrame.loc[self.relativeimagenames[self.iter]][
-                self.scorer, bp[-1][2], bp[0][-1], "x"
+            self.dataFrame.loc[self.relativeimagenames[self.iter],
+                (self.scorer, bp[-1][2], bp[0][-1], "x")
             ] = bp[-1][0]
-            self.dataFrame.loc[self.relativeimagenames[self.iter]][
-                self.scorer, bp[-1][2], bp[0][-1], "y"
+            self.dataFrame.loc[self.relativeimagenames[self.iter],
+                (self.scorer, bp[-1][2], bp[0][-1], "y")
             ] = bp[-1][1]
 
     def saveDataSet(self, event):
