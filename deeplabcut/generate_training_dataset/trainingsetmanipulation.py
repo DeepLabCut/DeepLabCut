@@ -288,15 +288,15 @@ def cropimagesandlabels(
     indexlength = int(np.ceil(np.log10(numcrops)))
     project_path = os.path.dirname(config)
     cfg = auxiliaryfunctions.read_config(config)
-    videos = cfg.get("video_sets_original")
-    if videos is None:
-        videos = cfg["video_sets"]
+    videos = list(cfg.get("video_sets_original", []))
+    if not videos:
+        videos = list(cfg["video_sets"])
     elif excludealreadycropped:
-        for video in list(videos):
+        for video in videos:
             _, ext = os.path.splitext(video)
             s = video.replace(ext, f"_cropped{ext}")
             if s in cfg["video_sets"]:
-                videos.pop(video)
+                videos.remove(video)
     if not videos:
         return
 
@@ -305,7 +305,7 @@ def cropimagesandlabels(
     ):  # this dict is kept for storing links to original full-sized videos
         cfg["video_sets_original"] = {}
 
-    for video in list(videos):
+    for video in videos:
         vidpath, vidname, videotype = _robust_path_split(video)
         folder = os.path.join(project_path, "labeled-data", vidname)
         if userfeedback:
