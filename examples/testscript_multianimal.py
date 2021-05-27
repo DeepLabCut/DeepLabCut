@@ -11,7 +11,10 @@ if __name__ == "__main__":
     NUM_FRAMES = 5
     TRAIN_SIZE = 0.8
     NET = "dlcrnet_ms5"
-    # NET = "efficientnet-b0"
+    #NET = "resnet_152"
+    #NET = "efficientnet-b0"
+    #NET = "mobilenet_v2_0.35" # should be fixed
+
     N_ITER = 5
 
     basepath = os.path.dirname(os.path.realpath(__file__))
@@ -123,7 +126,7 @@ if __name__ == "__main__":
 
     print("Analyzing video...")
     deeplabcut.analyze_videos(config_path, [new_video_path], "mp4", robust_nframes=True,allow_growth=True)
-    
+
     print("Video analyzed.")
 
     print("Create video with all detections...")

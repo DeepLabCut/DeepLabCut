@@ -42,9 +42,9 @@ if __name__ == "__main__":
     dfolder = basepath
 
     dfolder = None
-    net_type = "resnet_50"  #'mobilenet_v2_0.35' #'resnet_50'
-    # net_type = "mobilenet_v2_0.35"
-    # net_type = "efficientnet-b0"  # to -b6
+    net_type = "resnet_50"  
+    #net_type = "mobilenet_v2_0.35"
+    #net_type = "efficientnet-b0"  # to -b6
 
     augmenter_type = "default"  # = imgaug!!
     augmenter_type2 = "scalecrop"

@@ -125,7 +125,9 @@ def create_multianimaltraining_dataset(
         but train & evaluate on a unix system (e.g. ubunt, colab, Mac) set this variable to True to convert the paths.
 
     net_type: string
-        Type of networks. Currently resnet_50, resnet_101, and resnet_152 are supported (not the MobileNets!)
+        Type of networks. Currently resnet_50, resnet_101, and resnet_152, efficientnet-b0, efficientnet-b1, efficientnet-b2, efficientnet-b3,
+        efficientnet-b4, efficientnet-b5, and efficientnet-b6 as well as dlcrnet_ms5 are supported (not the MobileNets!).
+        See Lauer et al. 2021 https://www.biorxiv.org/content/10.1101/2021.04.30.442096v1
 
     numdigits: int, optional
 
