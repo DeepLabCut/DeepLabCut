@@ -881,8 +881,8 @@ class MainFrame(BaseFrame):
                 self.dataFrame,
                 self.relativeimagenames,
                 self.new_animals,
-                self.uniquebodyparts,
-                self.multibodyparts,
+                self._old_unique,
+                self._old_multi,
             )
 
         # Checking if user added a new label
@@ -921,7 +921,7 @@ class MainFrame(BaseFrame):
                 self,
                 self.dataFrame,
                 self.relativeimagenames,
-                self.individual_names,
+                self.dataFrame.columns.get_level_values("individuals").unique(),
                 self.new_unique,
                 self.new_multi,
             )
