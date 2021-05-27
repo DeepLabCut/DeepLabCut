@@ -139,11 +139,16 @@ def create_new_project(
                 src = str(src)
                 dst = str(dst)
                 os.symlink(src, dst)
+                print("Created the symlink of {} to {}".format(src, dst))
             except OSError:
-                import subprocess
-
-                subprocess.check_call("mklink %s %s" % (dst, src), shell=True)
-            print("Created the symlink of {} to {}".format(src, dst))
+                try:
+                    import subprocess
+                    subprocess.check_call("mklink %s %s" % (dst, src), shell=True)
+                except OSError:
+                    print("Symlink creation impossible (exFat architecture?): "
+                          "cutting/pasting the video instead.")
+                    shutil.move(os.fspath(src), os.fspath(dst))
+                    print("{} moved to {}".format(src, dst))
             videos = destinations
 
     if copy_videos == True:
