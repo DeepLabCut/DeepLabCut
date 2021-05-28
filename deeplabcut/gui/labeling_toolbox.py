@@ -180,7 +180,7 @@ class ImagePanel(BasePanel):
         cbar = self.figure.colorbar(
             ax, cax=cax, spacing="proportional", ticks=colorIndex
         )
-        cbar.set_ticklabels(bodyparts[::-1])
+        cbar.set_ticklabels(bodyparts)
         self.axes.set_title(str(str(itr) + "/" + str(len(index) - 1) + " " + img_name))
         if keep_view:
             self.axes.set_xlim(xlim)
