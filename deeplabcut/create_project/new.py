@@ -62,7 +62,9 @@ def create_new_project(
     """
     from datetime import datetime as dt
     from deeplabcut.utils import auxiliaryfunctions
+    import locale
 
+    locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
     date = dt.today()
     month = date.strftime("%B")
     day = date.day
