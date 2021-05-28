@@ -67,6 +67,7 @@ def extract_frames(
     algo="kmeans",
     crop=False,
     userfeedback=True,
+    skip_extracted_videos=False,
     cluster_step=1,
     cluster_resizewidth=30,
     cluster_color=False,
@@ -116,6 +117,11 @@ def extract_frames(
         If this is set to false during automatic mode then frames for all videos are extracted. The user can set this to true, which will result in a dialog,
         where the user is asked for each video if (additional/any) frames from this video should be extracted. Use this, e.g. if you have already labeled
         some folders and want to extract data for new videos.
+
+    skip_extracted_videos: bool, optional
+        If :userfeedback==False: and :skip_extracted_videos==True:, then videos with already extracted frames will be skipped
+        If :userfeedback==False: and :skip_extracted_videos==False:, then videos with already extracted frames will be processed
+        If :userfeedback==True:, then :skip_extracted_videos: is ignored
 
     cluster_resizewidth: number, default: 30
         For k-means one can change the width to which the images are downsampled (aspect ratio is fixed).
@@ -257,13 +263,19 @@ def extract_frames(
                             askuser = input(
                                 "The directory already contains some frames. Do you want to add to it?(yes/no): "
                             )
-                        if not (
-                            askuser == "y"
-                            or askuser == "yes"
-                            or askuser == "Y"
-                            or askuser == "Yes"
-                        ):
-                            sys.exit("Delete the frames and try again later!")
+                            if not (
+                                askuser == "y"
+                                or askuser == "yes"
+                                or askuser == "Y"
+                                or askuser == "Yes"
+                            ):
+                                sys.exit("Delete the frames and try again later!")
+                        else:
+                            if skip_extracted_videos:
+                                print(f"Video {video} already processed. Skipping...")
+                                continue
+                            else:
+                                pass
 
                 if crop == "GUI":
                     cfg = select_cropping_area(config, [video])
