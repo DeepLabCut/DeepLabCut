@@ -16,8 +16,8 @@ Implements ResNet 50 - 152 with 1 deconv. layer and overall stride 8 for single 
 import re
 
 import tensorflow as tf
-import tensorflow.contrib.slim as slim
-from tensorflow.contrib.slim.nets import resnet_v1
+import tf_slim as slim
+from tf_slim.nets import resnet_v1
 
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import Batch
 from deeplabcut.pose_estimation_tensorflow.nnet import losses
