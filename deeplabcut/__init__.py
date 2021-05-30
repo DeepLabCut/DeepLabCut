@@ -19,7 +19,7 @@ if int(vers[0]) == 1 and int(vers[1]) > 12:
 else:
     TF = tf
 
-TF.logging.set_verbosity(TF.logging.ERROR)
+
 DEBUG = True and "DEBUG" in os.environ and os.environ["DEBUG"]
 from deeplabcut import DEBUG
 
