@@ -24,7 +24,7 @@ if int(vers[0]) == 1 and int(vers[1]) > 12:
     TF = tf.compat.v1
 else:
     TF = tf
-import tensorflow.contrib.slim as slim
+import tf_slim as slim
 
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import Batch
