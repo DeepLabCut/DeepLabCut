@@ -213,8 +213,8 @@ def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
 
 ### Code for TF inference on GPU
 def setup_GPUpose_prediction(cfg,allow_growth=False):
-    tf.reset_default_graph()
-    inputs = tf.placeholder(tf.float32, shape=[cfg["batch_size"], None, None, 3])
+    TF.reset_default_graph()
+    inputs = TF.placeholder(tf.float32, shape=[cfg["batch_size"], None, None, 3])
     net_heads = pose_net(cfg).inference(inputs)
     outputs = [net_heads["pose"]]
 
