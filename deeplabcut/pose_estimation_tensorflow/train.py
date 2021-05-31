@@ -75,7 +75,7 @@ def setup_preloading(batch_spec):
 
     QUEUE_SIZE = 20
     vers = (tf.__version__).split(".")
-    
+
     if int(vers[0]) == 2:
         q = tf.queue.FIFOQueue(QUEUE_SIZE, [tf.float32] * len(batch_spec))
     elif int(vers[0]) == 1 and int(vers[1]) > 12:
@@ -111,7 +111,7 @@ def start_preloading(sess, enqueue_op, dataset, placeholders):
 
 
 def get_optimizer(loss_op, cfg):
-    tstep = tf.placeholder(tf.int32, shape=[], name="tstep")
+    tstep = TF.placeholder(tf.int32, shape=[], name="tstep")
     if "efficientnet" in cfg["net_type"]:
         print("Switching to cosine decay schedule with adam!")
         cfg["optimizer"] = "adam"
