@@ -218,17 +218,17 @@ def setup_GPUpose_prediction(cfg,allow_growth=False):
     net_heads = pose_net(cfg).inference(inputs)
     outputs = [net_heads["pose"]]
 
-    restorer = tf.train.Saver()
+    restorer = TF.train.Saver()
 
     if allow_growth == True:
-        config = tf.ConfigProto()
+        config = TF.ConfigProto()
         config.gpu_options.allow_growth = True
         sess = TF.Session(config=config)
     else:
         sess = TF.Session()
 
-    sess.run(tf.global_variables_initializer())
-    sess.run(tf.local_variables_initializer())
+    sess.run(TF.global_variables_initializer())
+    sess.run(TF.local_variables_initializer())
 
     # Restore variables from disk.
     restorer.restore(sess, cfg["init_weights"])
