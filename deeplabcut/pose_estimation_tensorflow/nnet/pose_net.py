@@ -127,7 +127,7 @@ class PoseNet:
         )  # Updated based on https://github.com/AlexEMG/DeepLabCut/issues/44
         
         if int(vers[0]) == 2:
-            with slim.arg_scope(resnet_v1.resnet_arg_scope(False)):
+            with slim.arg_scope(resnet_v1.resnet_arg_scope()):
                 net, end_points = net_fun(
                     im_centered, global_pool=False, output_stride=16
                 )
