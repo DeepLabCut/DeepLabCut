@@ -119,7 +119,7 @@ def get_optimizer(loss_op, cfg):
             cfg["lr_init"], tstep, cfg["decay_steps"], alpha=cfg["alpha_r"]
         )
     else:
-        learning_rate = tf.placeholder(tf.float32, shape=[])
+        learning_rate = TF.placeholder(tf.float32, shape=[])
 
     if cfg["optimizer"] == "sgd":
         optimizer = TF.train.MomentumOptimizer(
