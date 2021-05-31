@@ -15,8 +15,12 @@ import numpy as np
 import tensorflow as tf
 
 vers = (tf.__version__).split(".")
-if int(vers[0]) == 1 and int(vers[1]) > 12:
-    TF = tf.compat.v1
+
+
+if int(vers[0]) == 2:
+    TF = tf.compat.v1  # behaves differently before 1.13
+elif int(vers[0]) == 1 and int(vers[1]) > 12:
+    TF = tf.compat.v1  # behaves differently before 1.13
 else:
     TF = tf
 
