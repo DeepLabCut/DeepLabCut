@@ -75,7 +75,10 @@ def setup_preloading(batch_spec):
 
     QUEUE_SIZE = 20
     vers = (tf.__version__).split(".")
+<<<<<<< HEAD
 
+=======
+>>>>>>> master
     if int(vers[0]) == 2:
         q = tf.queue.FIFOQueue(QUEUE_SIZE, [tf.float32] * len(batch_spec))
     elif int(vers[0]) == 1 and int(vers[1]) > 12:
