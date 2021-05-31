@@ -46,7 +46,7 @@ def prediction_layer(cfg, input, name, num_outputs):
         normalizer_fn=None,
         weights_regularizer=slim.l2_regularizer(cfg["weight_decay"]),
     ):
-        with tf.variable_scope(name):
+        with TF.variable_scope(name):
             pred = slim.conv2d_transpose(
                 input, num_outputs, kernel_size=[3, 3], stride=2, scope="block4"
             )
