@@ -12,6 +12,7 @@ import itertools
 import networkx as nx
 import numpy as np
 import operator
+import os
 import pandas as pd
 import pickle
 import warnings
@@ -22,6 +23,7 @@ from multiprocessing import Pool
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial import cKDTree
 from scipy.spatial.distance import pdist, cdist
+from scipy.special import softmax
 from scipy.stats import gaussian_kde, chi2
 from tqdm import tqdm
 from typing import Tuple
@@ -29,7 +31,7 @@ from typing import Tuple
 
 def _conv_square_to_condensed_indices(ind_row, ind_col, n):
     if ind_row == ind_col:
-        raise ValueError('There are no diagonal elements in condensed matrices.')
+        raise ValueError("There are no diagonal elements in condensed matrices.")
 
     if ind_row < ind_col:
         ind_row, ind_col = ind_col, ind_row
@@ -42,7 +44,7 @@ Position = Tuple[float, float]
 @dataclass(frozen=True)
 class Joint:
     pos: Position
-    confidence: float = 1.
+    confidence: float = 1.0
     label: int = None
     idx: int = None
     group: int = -1
@@ -53,11 +55,12 @@ class Link:
         self.j1 = j1
         self.j2 = j2
         self.affinity = affinity
-        self._length = sqrt((j1.pos[0] - j2.pos[0]) ** 2
-                            + (j1.pos[1] - j2.pos[1]) ** 2)
+        self._length = sqrt((j1.pos[0] - j2.pos[0]) ** 2 + (j1.pos[1] - j2.pos[1]) ** 2)
 
     def __repr__(self):
-        return f'Link {self.idx}, affinity={self.affinity:.2f}, length={self.length:.2f}'
+        return (
+            f"Link {self.idx}, affinity={self.affinity:.2f}, length={self.length:.2f}"
+        )
 
     @property
     def confidence(self):
@@ -96,7 +99,7 @@ class Assembly:
 
     def __add__(self, other):
         if other in self:
-            raise ValueError('Assemblies contain shared joints.')
+            raise ValueError("Assemblies contain shared joints.")
 
         assembly = Assembly(self.data.shape[0])
         for link in self._links + other._links:
@@ -122,6 +125,14 @@ class Assembly:
     @property
     def confidence(self):
         return np.nanmean(self.data[:, 2])
+
+    @property
+    def soft_identity(self):
+        data = self.data[~np.isnan(self.data).any(axis=1)]
+        unq, idx, cnt = np.unique(data[:, 3], return_inverse=True, return_counts=True)
+        avg = np.bincount(idx, weights=data[:, 2]) / cnt
+        soft = softmax(avg)
+        return dict(zip(unq.astype(int), soft))
 
     @property
     def affinity(self):
@@ -168,11 +179,11 @@ class Assembly:
         if store_dict:
             # Selective copy; deepcopy is >5x slower
             self._dict = {
-                'data': self.data.copy(),
-                '_affinity': self._affinity,
-                '_links': self._links.copy(),
-                '_visible': self._visible.copy(),
-                '_idx': self._idx.copy(),
+                "data": self.data.copy(),
+                "_affinity": self._affinity,
+                "_links": self._links.copy(),
+                "_visible": self._visible.copy(),
+                "_idx": self._idx.copy(),
             }
         i1, i2 = link.idx
         if i1 in self._idx and i2 in self._idx:
@@ -188,7 +199,7 @@ class Assembly:
         return True
 
     def calc_pairwise_distances(self):
-        return pdist(self.xy, metric='sqeuclidean')
+        return pdist(self.xy, metric="sqeuclidean")
 
 
 class Assembler:
@@ -206,11 +217,11 @@ class Assembler:
         min_n_links=2,
         max_overlap=0.8,
         identity_only=False,
-        nan_policy='little',
+        nan_policy="little",
         force_fusion=False,
         add_discarded=False,
         window_size=0,
-        method='m1',
+        method="m1",
     ):
         self.data = data
         self.metadata = self.parse_metadata(self.data)
@@ -222,17 +233,19 @@ class Assembler:
         self.min_affinity = min_affinity
         self.min_n_links = min_n_links
         self.max_overlap = max_overlap
-        has_identity = 'identity' in self[0]
-        if identity_only and not has_identity:
-            warnings.warn('The network was not trained with identity; setting `identity_only` to False.')
-        self.identity_only = identity_only & has_identity
+        self._has_identity = "identity" in self[0]
+        if identity_only and not self._has_identity:
+            warnings.warn(
+                "The network was not trained with identity; setting `identity_only` to False."
+            )
+        self.identity_only = identity_only & self._has_identity
         self.nan_policy = nan_policy
         self.force_fusion = force_fusion
         self.add_discarded = add_discarded
         self.window_size = window_size
         self.method = method
-        self.graph = graph or self.metadata['paf_graph']
-        self.paf_inds = paf_inds or self.metadata['paf']
+        self.graph = graph or self.metadata["paf_graph"]
+        self.paf_inds = paf_inds or self.metadata["paf"]
         self._gamma = 0.01
         self._trees = dict()
         self.safe_edge = False
@@ -241,26 +254,26 @@ class Assembler:
         self.unique = dict()
 
     def __getitem__(self, item):
-        return self.data[self.metadata['imnames'][item]]
+        return self.data[self.metadata["imnames"][item]]
 
     @property
     def n_keypoints(self):
-        return self.metadata['num_joints']
+        return self.metadata["num_joints"]
 
     def calibrate(self, train_data_file):
         df = pd.read_hdf(train_data_file)
         try:
-            df.drop('single', level='individuals', axis=1, inplace=True)
+            df.drop("single", level="individuals", axis=1, inplace=True)
         except KeyError:
             pass
-        n_bpts = len(df.columns.get_level_values('bodyparts').unique())
+        n_bpts = len(df.columns.get_level_values("bodyparts").unique())
         xy = df.to_numpy().reshape((-1, n_bpts, 2))
         frac_valid = np.mean(~np.isnan(xy), axis=(1, 2))
         # Only keeps skeletons that are more than 90% complete
         xy = xy[frac_valid >= 0.9]
         # TODO Normalize dists by longest length?
         # TODO Smarter imputation technique (Bayesian? Grassmann averages?)
-        dists = np.vstack([pdist(data, 'sqeuclidean') for data in xy])
+        dists = np.vstack([pdist(data, "sqeuclidean") for data in xy])
         mu = np.nanmean(dists, axis=0)
         missing = np.isnan(dists)
         dists = np.where(missing, mu, dists)
@@ -270,17 +283,14 @@ class Assembler:
         self.safe_edge = True
 
     def calc_assembly_mahalanobis_dist(
-        self,
-        assembly,
-        return_proba=False,
-        nan_policy='little',
+        self, assembly, return_proba=False, nan_policy="little"
     ):
         if self._kde is None:
-            raise ValueError('Assembler should be calibrated first with training data.')
+            raise ValueError("Assembler should be calibrated first with training data.")
 
         dists = assembly.calc_pairwise_distances() - self._kde.mean
         mask = np.isnan(dists)
-        if mask.any() and nan_policy == 'little':
+        if mask.any() and nan_policy == "little":
             inds = np.flatnonzero(~mask)
             dists = dists[inds]
             inv_cov = self._kde.inv_cov[np.ix_(inds, inds)]
@@ -300,12 +310,9 @@ class Assembler:
             return mahal, proba
         return mahal
 
-    def calc_link_probability(
-        self,
-        link,
-    ):
+    def calc_link_probability(self, link):
         if self._kde is None:
-            raise ValueError('Assembler should be calibrated first with training data.')
+            raise ValueError("Assembler should be calibrated first with training data.")
 
         i = link.j1.label
         j = link.j2.label
@@ -318,9 +325,9 @@ class Assembler:
     @staticmethod
     def _flatten_detections(data_dict):
         ind = 0
-        coordinates = data_dict['coordinates'][0]
-        confidence = data_dict['confidence']
-        ids = data_dict.get('identity', None)
+        coordinates = data_dict["coordinates"][0]
+        confidence = data_dict["confidence"]
+        ids = data_dict.get("identity", None)
         if ids is None:
             ids = [np.ones(len(arr), dtype=int) * -1 for arr in confidence]
         else:
@@ -333,19 +340,14 @@ class Assembler:
                 ind += 1
                 yield joint
 
-    def extract_best_links(
-        self,
-        joints_dict,
-        costs,
-        trees=None,
-    ):
+    def extract_best_links(self, joints_dict, costs, trees=None):
         links = []
         for (s, t), ind in zip(self.graph, self.paf_inds):
             dets_s = joints_dict.get(s, None)
             dets_t = joints_dict.get(t, None)
             if dets_s is None or dets_t is None:
                 continue
-            lengths = costs[ind]['distance']
+            lengths = costs[ind]["distance"]
             if np.isinf(lengths).all():
                 continue
             aff = costs[ind][self.method].copy()
@@ -363,16 +365,19 @@ class Assembler:
                 aff *= w.reshape(aff.shape)
 
             if self.greedy:
-                conf = np.asarray([
-                    [det_s.confidence * det_t.confidence for det_t in dets_t] for det_s in dets_s]
+                conf = np.asarray(
+                    [
+                        [det_s.confidence * det_t.confidence for det_t in dets_t]
+                        for det_s in dets_s
+                    ]
                 )
                 rows, cols = np.where(
-                    (conf >= self.pcutoff * self.pcutoff)
-                    & (aff >= self.min_affinity)
+                    (conf >= self.pcutoff * self.pcutoff) & (aff >= self.min_affinity)
                 )
                 candidates = sorted(
                     zip(rows, cols, aff[rows, cols], lengths[rows, cols]),
-                    key=lambda x: x[2], reverse=True,
+                    key=lambda x: x[2],
+                    reverse=True,
                 )
                 i_seen = set()
                 j_seen = set()
@@ -384,14 +389,18 @@ class Assembler:
                         if len(i_seen) == self.max_n_individuals:
                             break
             else:  # Optimal keypoint pairing
-                inds_s = sorted(range(len(dets_s)),
-                                key=lambda x: dets_s[x].confidence,
-                                reverse=True)[:self.max_n_individuals]
-                inds_t = sorted(range(len(dets_t)),
-                                key=lambda x: dets_t[x].confidence,
-                                reverse=True)[:self.max_n_individuals]
-                keep_s = [ind for ind in inds_s if dets_s[ind].confidence >= self.pcutoff]
-                keep_t = [ind for ind in inds_t if dets_t[ind].confidence >= self.pcutoff]
+                inds_s = sorted(
+                    range(len(dets_s)), key=lambda x: dets_s[x].confidence, reverse=True
+                )[: self.max_n_individuals]
+                inds_t = sorted(
+                    range(len(dets_t)), key=lambda x: dets_t[x].confidence, reverse=True
+                )[: self.max_n_individuals]
+                keep_s = [
+                    ind for ind in inds_s if dets_s[ind].confidence >= self.pcutoff
+                ]
+                keep_t = [
+                    ind for ind in inds_t if dets_t[ind].confidence >= self.pcutoff
+                ]
                 aff = aff[np.ix_(keep_s, keep_t)]
                 rows, cols = linear_sum_assignment(aff, maximize=True)
                 for row, col in zip(rows, cols):
@@ -400,14 +409,7 @@ class Assembler:
                         links.append(Link(dets_s[keep_s[row]], dets_t[keep_t[col]], w))
         return links
 
-    def _fill_assembly(
-        self,
-        assembly,
-        lookup,
-        assembled,
-        safe_edge,
-        nan_policy,
-    ):
+    def _fill_assembly(self, assembly, lookup, assembled, safe_edge, nan_policy):
         stack = []
         visited = set()
         tabu = []
@@ -437,7 +439,9 @@ class Assembler:
             if new_ind in assembled:
                 continue
             if safe_edge:
-                d_old = self.calc_assembly_mahalanobis_dist(assembly, nan_policy=nan_policy)
+                d_old = self.calc_assembly_mahalanobis_dist(
+                    assembly, nan_policy=nan_policy
+                )
                 success = assembly.add_link(best, store_dict=True)
                 if not success:
                     assembly._dict = dict()
@@ -458,10 +462,7 @@ class Assembler:
                 assembly.add_link(best)
                 push_to_stack(new_ind)
 
-    def build_assemblies(
-        self,
-        links,
-    ):
+    def build_assemblies(self, links):
         lookup = defaultdict(dict)
         for link in links:
             i, j = link.idx
@@ -496,7 +497,7 @@ class Assembler:
             assembly = Assembly(self.n_multibodyparts)
             assembly.add_link(link)
             self._fill_assembly(
-                assembly, lookup, assembled, self.safe_edge, self.nan_policy,
+                assembly, lookup, assembled, self.safe_edge, self.nan_policy
             )
             for link in assembly._links:
                 i, j = link.idx
@@ -509,8 +510,10 @@ class Assembler:
         n_extra = len(assemblies) - self.max_n_individuals
         if n_extra > 0:
             if self.safe_edge:
-                ds_old = [self.calc_assembly_mahalanobis_dist(assembly)
-                          for assembly in assemblies]
+                ds_old = [
+                    self.calc_assembly_mahalanobis_dist(assembly)
+                    for assembly in assemblies
+                ]
                 while len(assemblies) > self.max_n_individuals:
                     ds = []
                     for i, j in itertools.combinations(range(len(assemblies)), 2):
@@ -570,16 +573,12 @@ class Assembler:
         # Second pass without edge safety
         for assembly in assemblies:
             if len(assembly) != self.n_multibodyparts:
-                self._fill_assembly(assembly, lookup, assembled, False, '')
+                self._fill_assembly(assembly, lookup, assembled, False, "")
                 assembled.update(assembly._idx)
 
         return assemblies, assembled
 
-    def _assemble(
-        self,
-        data_dict,
-        ind_frame,
-    ):
+    def _assemble(self, data_dict, ind_frame):
         joints = list(self._flatten_detections(data_dict))
         if not joints:
             return None, None
@@ -610,8 +609,11 @@ class Assembler:
         if self.identity_only:
             assemblies = []
             assembled = set()
-            get_attr = operator.attrgetter('group')
-            temp = sorted((joint for joint in joints if np.isfinite(joint.confidence)), key=get_attr)
+            get_attr = operator.attrgetter("group")
+            temp = sorted(
+                (joint for joint in joints if np.isfinite(joint.confidence)),
+                key=get_attr,
+            )
             groups = itertools.groupby(temp, get_attr)
             for _, group in groups:
                 ass = Assembly(self.n_multibodyparts)
@@ -628,11 +630,7 @@ class Assembler:
                 if tree is not None:
                     trees.append(tree)
 
-            links = self.extract_best_links(
-                bag,
-                data_dict["costs"],
-                trees,
-            )
+            links = self.extract_best_links(bag, data_dict["costs"], trees)
             if self._kde:
                 for link in links[::-1]:
                     p = max(self.calc_link_probability(link), 0.001)
@@ -648,9 +646,11 @@ class Assembler:
             assemblies, assembled = self.build_assemblies(links)
 
         # Remove invalid assemblies
-        discarded = set(joint for joint in joints
-                        if joint.idx not in assembled
-                        and np.isfinite(joint.confidence))
+        discarded = set(
+            joint
+            for joint in joints
+            if joint.idx not in assembled and np.isfinite(joint.confidence)
+        )
         for assembly in assemblies[::-1]:
             if 0 < assembly.n_links < self.min_n_links:
                 for link in assembly._links:
@@ -658,8 +658,9 @@ class Assembler:
                 assemblies.remove(assembly)
         if 0 < self.max_overlap < 1:  # Non-maximum pose suppression
             if self._kde is not None:
-                scores = [-self.calc_assembly_mahalanobis_dist(ass)
-                          for ass in assemblies]
+                scores = [
+                    -self.calc_assembly_mahalanobis_dist(ass) for ass in assemblies
+                ]
             else:
                 scores = [ass._affinity for ass in assemblies]
             lst = list(zip(scores, assemblies))
@@ -673,10 +674,10 @@ class Assembler:
                         lst.remove(pair)
         if len(assemblies) > self.max_n_individuals:
             assemblies = sorted(assemblies, key=len, reverse=True)
-            for assembly in assemblies[self.max_n_individuals:]:
+            for assembly in assemblies[self.max_n_individuals :]:
                 for link in assembly._links:
                     discarded.update((link.j1, link.j2))
-            assemblies = assemblies[:self.max_n_individuals]
+            assemblies = assemblies[: self.max_n_individuals]
 
         if self.add_discarded and discarded:
             # Fill assemblies with unconnected body parts
@@ -706,14 +707,10 @@ class Assembler:
 
         return assemblies, unique
 
-    def assemble(
-        self,
-        chunk_size=1,
-        n_processes=None,
-    ):
+    def assemble(self, chunk_size=1, n_processes=None):
         self.assemblies = dict()
         self.unique = dict()
-        if chunk_size == 0:
+        if chunk_size == 0 or os.name == "nt":  # Avoid multiprocessing on Windows
             for i, data_dict in enumerate(tqdm(self)):
                 assemblies, unique = self._assemble(data_dict, i)
                 if assemblies:
@@ -726,13 +723,11 @@ class Assembler:
             def wrapped(i):
                 return i, self._assemble(self[i], i)
 
-            n_frames = len(self.metadata['imnames'])
+            n_frames = len(self.metadata["imnames"])
             with Pool(n_processes) as p:
                 with tqdm(total=n_frames) as pbar:
                     for i, (assemblies, unique) in p.imap_unordered(
-                            wrapped,
-                            range(n_frames),
-                            chunksize=chunk_size
+                        wrapped, range(n_frames), chunksize=chunk_size
                     ):
                         if assemblies:
                             self.assemblies[i] = assemblies
@@ -746,16 +741,21 @@ class Assembler:
         params["joint_names"] = data["metadata"]["all_joints_names"]
         params["num_joints"] = len(params["joint_names"])
         params["paf_graph"] = data["metadata"]["PAFgraph"]
-        params["paf"] = data["metadata"].get("PAFinds", np.arange(len(params["joint_names"])))
+        params["paf"] = data["metadata"].get(
+            "PAFinds", np.arange(len(params["joint_names"]))
+        )
         params["bpts"] = params["ibpts"] = range(params["num_joints"])
         params["imnames"] = [fn for fn in list(data) if fn != "metadata"]
         return params
 
     def to_h5(self, output_name):
         data = np.full(
-            (len(self.metadata['imnames']),
-             self.max_n_individuals,
-             self.n_multibodyparts, 4),
+            (
+                len(self.metadata["imnames"]),
+                self.max_n_individuals,
+                self.n_multibodyparts,
+                4,
+            ),
             fill_value=np.nan,
         )
         for ind, assemblies in self.assemblies.items():
@@ -763,24 +763,24 @@ class Assembler:
                 data[ind, n] = assembly.data
         index = pd.MultiIndex.from_product(
             [
-                ['scorer'],
+                ["scorer"],
                 map(str, range(self.max_n_individuals)),
                 map(str, range(self.n_multibodyparts)),
-                ['x', 'y', 'likelihood']
+                ["x", "y", "likelihood"],
             ],
-            names=['scorer', 'individuals', 'bodyparts', 'coords']
+            names=["scorer", "individuals", "bodyparts", "coords"],
         )
         temp = data[..., :3].reshape((data.shape[0], -1))
         df = pd.DataFrame(temp, columns=index)
-        df.to_hdf(output_name, key='ass')
+        df.to_hdf(output_name, key="ass")
 
     def to_pickle(self, output_name):
         data = dict()
         for ind, assemblies in self.assemblies.items():
             data[ind] = [ass.data for ass in assemblies]
         if self.unique:
-            data['single'] = self.unique
-        with open(output_name, 'wb') as file:
+            data["single"] = self.unique
+        with open(output_name, "wb") as file:
             pickle.dump(data, file, pickle.HIGHEST_PROTOCOL)
 
 
@@ -802,8 +802,9 @@ def calc_object_keypoint_similarity(xy_pred, xy_true, sigma):
 
 def match_assemblies(ass_pred, ass_true, sigma):
     inds_true = list(range(len(ass_true)))
-    inds_pred = np.argsort([ins.affinity if ins.n_links else ins.confidence
-                            for ins in ass_pred])[::-1]
+    inds_pred = np.argsort(
+        [ins.affinity if ins.n_links else ins.confidence for ins in ass_pred]
+    )[::-1]
     matched = []
     for ind_pred in inds_pred:
         xy_pred = ass_pred[ind_pred].xy
@@ -842,7 +843,7 @@ def _parse_ground_truth_data(data):
             if np.isnan(row[:, :2]).all():
                 continue
             ass = Assembly(row.shape[0])
-            ass.data[:, :3] = row
+            ass.data[:, :row.shape[1]] = row
             temp.append(ass)
         if not temp:
             continue
@@ -850,16 +851,14 @@ def _parse_ground_truth_data(data):
     return gt
 
 
-def find_outlier_assemblies(
-    dict_of_assemblies,
-    criterion="area",
-    qs=(5, 95),
-):
+def find_outlier_assemblies(dict_of_assemblies, criterion="area", qs=(5, 95)):
     if not hasattr(Assembly, criterion):
         raise ValueError(f"Invalid criterion {criterion}.")
 
     if len(qs) != 2:
-        raise ValueError("Two percentiles (for lower and upper bounds) should be given.")
+        raise ValueError(
+            "Two percentiles (for lower and upper bounds) should be given."
+        )
 
     tuples = []
     for frame_ind, assemblies in dict_of_assemblies.items():
@@ -888,6 +887,14 @@ def evaluate_assembly(
         matched, unmatched = match_assemblies(ass_pred, ass_true, oks_sigma)
         all_matched.extend(matched)
         all_unmatched.extend(unmatched)
+    if not all_matched:
+        return {
+            "precisions": np.array([]),
+            "recalls": np.array([]),
+            "mAP": 0.0,
+            "mAR": 0.0,
+        }
+
     oks = np.asarray([match[2] for match in all_matched])
     ntot = len(all_matched) + len(all_unmatched)
     recall_thresholds = np.linspace(0, 1, 101)

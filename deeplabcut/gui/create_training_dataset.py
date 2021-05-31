@@ -86,6 +86,7 @@ class Create_training_dataset(wx.Panel):
         netboxsizer = wx.StaticBoxSizer(net_text, wx.VERTICAL)
         self.net_choice = wx.ComboBox(self, style=wx.CB_READONLY)
         options = [
+            "dlcrnet_ms5",
             "resnet_50",
             "resnet_101",
             "resnet_152",
@@ -96,10 +97,9 @@ class Create_training_dataset(wx.Panel):
             "efficientnet-b0",
             "efficientnet-b3",
             "efficientnet-b6",
-            "dlcrnet_ms5",
         ]
         self.net_choice.Set(options)
-        self.net_choice.SetValue("dlcrnet_ms5")
+        self.net_choice.SetValue("resnet_50")
         netboxsizer.Add(self.net_choice, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
         aug_text = wx.StaticBox(self, label="Select the augmentation method")
@@ -176,6 +176,7 @@ class Create_training_dataset(wx.Panel):
         if config_file.get("multianimalproject", False):
 
             self.model_comparison_choice = "No"
+            print("currently DLCRNet is only supported in multi-animal mode")
         else:
             self.model_comparison_choice = wx.RadioBox(
                 self,
@@ -199,7 +200,6 @@ class Create_training_dataset(wx.Panel):
             )
 
             networks = [
-                "dlcrnet_ms5",
                 "resnet_50",
                 "resnet_101",
                 "resnet_152",
@@ -209,7 +209,7 @@ class Create_training_dataset(wx.Panel):
                 "mobilenet_v2_0.35",
                 "efficientnet-b0",
                 "efficientnet-b3",
-                "efficientnet-b6"
+                "efficientnet-b6",
             ]
             augmentation_methods = ["default", "tensorpack", "imgaug"]
             self.network_box = wx.StaticBox(self, label="Select the networks")

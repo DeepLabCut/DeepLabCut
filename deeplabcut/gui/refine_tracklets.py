@@ -88,7 +88,9 @@ class Refine_tracklets(wx.Panel):
 
         self.ntracks_text = wx.StaticText(self, label="Number of animals")
         sizer.Add(self.ntracks_text, pos=(4, 0), flag=wx.TOP | wx.LEFT, border=5)
-        self.ntracks = wx.SpinCtrl(self, value=str(len(self.cfg["individuals"])), min=2, max=1000)
+        self.ntracks = wx.SpinCtrl(
+            self, value=str(len(self.cfg["individuals"])), min=2, max=1000
+        )
         sizer.Add(
             self.ntracks, pos=(4, 1), span=(1, 3), flag=wx.EXPAND | wx.TOP, border=5
         )
@@ -112,7 +114,9 @@ class Refine_tracklets(wx.Panel):
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
 
-        slider_swap_text = wx.StaticBox(self, label="Specify the min swap length to highlight")
+        slider_swap_text = wx.StaticBox(
+            self, label="Specify the min swap length to highlight"
+        )
         slider_swap_sizer = wx.StaticBoxSizer(slider_swap_text, wx.VERTICAL)
         self.slider_swap = wx.SpinCtrl(self, value="2")
         slider_swap_sizer.Add(self.slider_swap, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
@@ -125,8 +129,7 @@ class Refine_tracklets(wx.Panel):
         hbox_ = wx.BoxSizer(wx.HORIZONTAL)
 
         slider_gap_text = wx.StaticBox(
-            self,
-            label="Specify the max gap size of missing data to fill",
+            self, label="Specify the max gap size of missing data to fill"
         )
         slider_gap_sizer = wx.StaticBoxSizer(slider_gap_text, wx.VERTICAL)
         self.slider_gap = wx.SpinCtrl(self, value="5")
@@ -144,7 +147,9 @@ class Refine_tracklets(wx.Panel):
         )
 
         line3 = wx.StaticLine(self)
-        sizer.Add(line3, pos=(10, 0), span=(1, 5), flag=wx.EXPAND | wx.BOTTOM, border=10)
+        sizer.Add(
+            line3, pos=(10, 0), span=(1, 5), flag=wx.EXPAND | wx.BOTTOM, border=10
+        )
 
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -208,7 +213,9 @@ class Refine_tracklets(wx.Panel):
         sizer.Add(self.reset, pos=(12, 1), flag=wx.BOTTOM | wx.RIGHT, border=10)
         self.reset.Bind(wx.EVT_BUTTON, self.reset_refine_tracklets)
 
-        self.filter = wx.Button(self, label=" Optional: Filter Tracks (then you also get a CSV file!)")
+        self.filter = wx.Button(
+            self, label=" Optional: Filter Tracks (then you also get a CSV file!)"
+        )
         sizer.Add(self.filter, pos=(11, 1), flag=wx.BOTTOM | wx.RIGHT, border=10)
         self.filter.Bind(wx.EVT_BUTTON, self.filter_after_refinement)
 
@@ -240,6 +247,7 @@ class Refine_tracklets(wx.Panel):
             self.file_open_bool = True
         else:
             import webbrowser
+
             self.file_open_bool = webbrowser.open(self.inf_cfg_path)
         if self.file_open_bool:
             self.inf_cfg = auxiliaryfunctions.read_config(self.inf_cfg_path)
@@ -305,9 +313,9 @@ class Refine_tracklets(wx.Panel):
 
     def create_tracks(self, event):
         deeplabcut.stitch_tracklets(
+            self.config,
             self.datafile,
             n_tracks=self.ntracks.GetValue(),
-            animal_names=self.cfg["individuals"],
         )
 
     def refine_tracklets(self, event):

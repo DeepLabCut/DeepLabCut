@@ -174,7 +174,11 @@ class Evaluate_network(wx.Panel):
             self.inf_cfg_text = wx.Button(self, label="Edit the inference_config.yaml")
             self.inf_cfg_text.Bind(wx.EVT_BUTTON, self.edit_inf_config)
             self.sizer.Add(
-                self.inf_cfg_text, pos=(4, 2), span=(1, 1), flag=wx.BOTTOM | wx.RIGHT, border=10
+                self.inf_cfg_text,
+                pos=(4, 2),
+                span=(1, 1),
+                flag=wx.BOTTOM | wx.RIGHT,
+                border=10,
             )
 
         self.sizer.AddGrowableCol(2)

@@ -57,16 +57,10 @@ def _unsorted_unique(array):
     return np.asarray(array)[np.sort(inds)]
 
 
-def _rebuild_uncropped_metadata(
-    metadata,
-    image_paths,
-    output_name="",
-):
+def _rebuild_uncropped_metadata(metadata, image_paths, output_name=""):
     train_inds_orig = set(metadata["data"]["trainIndices"])
     train_inds, test_inds = [], []
-    for k, (_, group) in tqdm(
-        enumerate(groupby(image_paths, _form_original_path))
-    ):
+    for k, (_, group) in tqdm(enumerate(groupby(image_paths, _form_original_path))):
         if image_paths.index(next(group)) in train_inds_orig:
             train_inds.append(k)
         else:
@@ -82,11 +76,7 @@ def _rebuild_uncropped_metadata(
     return meta_new
 
 
-def _rebuild_uncropped_data(
-    data,
-    params,
-    output_name="",
-):
+def _rebuild_uncropped_data(data, params, output_name=""):
     """
     Reconstruct predicted data as if they had been obtained on full size images.
     This is required to evaluate part affinity fields and cross-validate
@@ -176,10 +166,7 @@ def _rebuild_uncropped_data(
             costs = dict()
             shape = n_individuals, n_individuals
             for ind in params["paf"]:
-                costs[ind] = {
-                    "m1": np.zeros(shape),
-                    "distance": np.full(shape, np.inf),
-                }
+                costs[ind] = {"m1": np.zeros(shape), "distance": np.full(shape, np.inf)}
             if not np.isnan(temp.to_numpy()).all():
                 ref_gt_ = dict()
                 for bpt, df_ in temp.groupby("bodyparts"):
@@ -262,9 +249,7 @@ def _rebuild_uncropped_data(
     return data_new, image_paths
 
 
-def _rebuild_uncropped_in(
-    base_folder,
-):
+def _rebuild_uncropped_in(base_folder,):
     for dirpath, dirnames, filenames in os.walk(base_folder):
         for file in filenames:
             if file.endswith("_full.pickle"):
@@ -304,11 +289,7 @@ def _find_closest_neighbors(query, ref, k=3):
 
 
 def _calc_separability(
-    vals_left,
-    vals_right,
-    n_bins=101,
-    metric="jeffries",
-    max_sensitivity=False,
+    vals_left, vals_right, n_bins=101, metric="jeffries", max_sensitivity=False
 ):
     if metric not in ("jeffries", "auc"):
         raise ValueError("`metric` should be either 'jeffries' or 'auc'.")
@@ -332,12 +313,7 @@ def _calc_separability(
     return sep, threshold
 
 
-def _calc_within_between_pafs(
-    data,
-    metadata,
-    per_bodypart=True,
-    train_set_only=True,
-):
+def _calc_within_between_pafs(data, metadata, per_bodypart=True, train_set_only=True):
     train_inds = set(metadata["data"]["trainIndices"])
     within_train = defaultdict(list)
     within_test = defaultdict(list)
@@ -477,11 +453,7 @@ def _benchmark_paf_graphs(
         dfs.append(df)
     big_df = pd.concat(dfs)
     group = big_df.groupby("ngraph")
-    return (
-        all_scores,
-        group.agg(["mean", "std"]).T,
-        all_metrics,
-    )
+    return (all_scores, group.agg(["mean", "std"]).T, all_metrics)
 
 
 def _get_n_best_paf_graphs(
@@ -542,19 +514,6 @@ def _get_n_best_paf_graphs(
     return paf_inds, dict(zip(existing_edges, scores))
 
 
-def _filter_unwanted_paf_connections(
-    config,
-    paf_graph,
-):
-    """Get rid of skeleton connections between multi and unique body parts."""
-    from itertools import combinations
-
-    cfg = auxiliaryfunctions.read_config(config)
-    multi = auxfun_multianimal.extractindividualsandbodyparts(cfg)[2]
-    desired = list(combinations(range(len(multi)), 2))
-    return [i for i, edge in enumerate(paf_graph) if tuple(edge) not in desired]
-
-
 def cross_validate_paf_graphs(
     config,
     inference_config,
@@ -578,12 +537,11 @@ def cross_validate_paf_graphs(
         metadata = pickle.load(file)
 
     params = _set_up_evaluation(data)
-    to_ignore = _filter_unwanted_paf_connections(config, params["paf_graph"])
+    to_ignore = auxfun_multianimal.filter_unwanted_paf_connections(
+        cfg, params["paf_graph"]
+    )
     paf_inds, paf_scores = _get_n_best_paf_graphs(
-        data,
-        metadata,
-        params["paf_graph"],
-        ignore_inds=to_ignore,
+        data, metadata, params["paf_graph"], ignore_inds=to_ignore
     )
 
     if calibrate:

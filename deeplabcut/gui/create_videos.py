@@ -228,7 +228,6 @@ class Create_Labeled_Videos(wx.Panel):
         boxsizer.Add(hbox3, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
         boxsizer.Add(hbox4, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
-
         self.build = wx.Button(self, label="Build skeleton")
         self.sizer.Add(self.build, pos=(5, 3), flag=wx.BOTTOM | wx.RIGHT, border=10)
         self.build.Bind(wx.EVT_BUTTON, self.build_skeleton)

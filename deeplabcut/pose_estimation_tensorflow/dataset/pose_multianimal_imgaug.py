@@ -177,7 +177,7 @@ class MAPoseDataset:
             int
         ) * self.cfg.get("smfactor", 2)
 
-        if stride==2:
+        if stride == 2:
             sm_size = np.ceil(target_size / 16).astype(int)
             sm_size *= 8
 
@@ -389,7 +389,7 @@ class MAPoseDataset:
 
         if num_idchannel > 0:
             coordinateoffset = 0
-            for person_id in range(len(joint_id)):
+            for person_id in range(num_idchannel):
                 joint_ids = joint_id[person_id].copy()
                 # print(person_id,joint_ids,data_item.im_path.split('/')[-1])
                 if len(joint_ids) > 1:

@@ -19,9 +19,9 @@ You first **need to decide if you want to use a CPU or GPU for your models**: (N
 
    - **CPU?** Great, jump to the next section below!
 
-  - **GPU?**  If you want to use your own GPU (i.e., a GPU is in your workstation), then you need to be sure you have a CUDA compatable GPU and CUDA installed. PLease note, which CUDA you install depends on what version of tensorflow you want to use. So, please check "GPU Support" below carefully. Then, please use the GPU conda file.
+  - **GPU?**  If you want to use your own GPU (i.e., a GPU is in your workstation), then you need to be sure you have a CUDA compatible GPU and CUDA installed. Please note, which CUDA you install depends on what version of tensorflow you want to use. So, please check "GPU Support" below carefully. Then, use the GPU conda file.
 
-  - **DIY:** For the experts, it's also on pypi, simply `pip install deeplabcut[gui]` (and have tensorflow 1.x and wxPython also installed) for DeepLabCut + gui_size.  Deeplabcut without the GUIs can be installed with `pip install deeplabcut`. The only other requirement is having TensorFlow 1.x installed. See more at the bottom as well.
+  - **DIY:** For the experts, it's also on pypi, simply `pip install 'deeplabcut[gui]'` (and have tensorflow 1.x and wxPython also installed) for DeepLabCut + GUI.  Deeplabcut without the GUIs can be installed with `pip install deeplabcut`. The only other requirement is having TensorFlow 1.x installed. See more at the bottom as well.
 
 ### CPU or GPU:
 
@@ -59,11 +59,11 @@ If you want to test your installation in an automatic way, see: :video_camera: [
 
 ### Pro Tips:
 
-If you ever want to update your DLC, just run `pip install --upgrade deeplabcut` once you are inside your env. If you want to use a specific release, then you need to specify the specific version you want, such as `pip install deeplabcut==2.2`. Once installed, you can check the version by running `import deeplabcut` `deeplabcut.__version__`. Don't be afraid to update, DLC is backwards compatible with your 2.0+ projects and performance continues to get better and new features are added nearly monthly.
+If you ever want to update your DLC, just run `pip install --upgrade deeplabcut` once you are inside your env. If you want to use a specific release, then you need to specify the version you want, such as `pip install deeplabcut==2.2`. Once installed, you can check the version by running `import deeplabcut` `deeplabcut.__version__`. Don't be afraid to update, DLC is backwards compatible with your 2.0+ projects and performance continues to get better and new features are added nearly monthly.
 
 Here are some conda environment management tips: https://kapeli.com/cheat_sheets/Conda.docset/Contents/Resources/Documents/index
 
-**Pro Tip:** A great way to test your installation is to use our provided testscripts. This would mean you need to be up-to-date with the lastest code though! Please see [here](https://github.com/DeepLabCut/DeepLabCut/wiki/How-to-use-the-latest-GitHub-code) on how to get the latest GitHub code, and how to test your installation by following this video: https://www.youtube.com/watch?v=IOWtKn3l33s
+**Pro Tip:** A great way to test your installation is to use our provided testscripts. This would mean you need to be up-to-date with the latest code though! Please see [here](https://github.com/DeepLabCut/DeepLabCut/wiki/How-to-use-the-latest-GitHub-code) on how to get the latest GitHub code, and how to test your installation by following this video: https://www.youtube.com/watch?v=IOWtKn3l33s
 
 
 ### Creating your own customized conda env (recommended route for Linux: Ubuntu, CentOS, Mint, etc.)
@@ -85,7 +85,7 @@ For Windows and MacOS, you just run `pip install -U wxPython<4.1.0` but for linu
 
 ### **GPU Support:** 
 
-The ONLY thing you need to do **first** if you have an NVIDIA GPU, NVIDIA driver installed, and CUDA <=10 (currently, TensorFlow 1.15 is installed inside the env, so you can install up to CUDA 10 and an appropriate driver). Please note that only NVIDA GPUs are supported.
+The ONLY thing you need to do **first** if you have an NVIDIA GPU, NVIDIA driver installed, and CUDA <=10 (currently, TensorFlow 1.15 is installed inside the env, so you can install _up to_ CUDA 10.0 and an appropriate driver). Please note that only NVIDA GPUs are supported.
 - DRIVERS: https://www.nvidia.com/Download/index.aspx
 - CUDA: https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html#verify-you-have-cuda-enabled-system
 
@@ -131,11 +131,7 @@ Here are some additional resources users have found helpful (posted without endo
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3e46ca1ae6cfbb5c5d1ee0/1547585235033/cuda_driver.png?format=750w" width="50%">
 </p>
 
-- https://stackoverflow.com/questions/50622525/which-tensorflow-and-cuda-version-combinations-are-compatible
-
-<p align="center">
-<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3e4a53c2241b2d3e3f3c04/1547586322898/tensorflow_cuda_cudnn_version_chart.png?format=500w" width="50%">
-</p>
+- https://www.tensorflow.org/install/source#gpu
 
 - http://blog.nitishmutha.com/tensorflow/2017/01/22/TensorFlow-with-gpu-for-windows.html
 

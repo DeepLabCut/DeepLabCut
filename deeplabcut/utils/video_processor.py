@@ -23,7 +23,7 @@ class VideoProcessor(object):
     """
 
     def __init__(
-        self, fname="", sname="", nframes=-1, fps=30, codec="X264", sh="", sw=""
+        self, fname="", sname="", nframes=-1, fps=None, codec="X264", sh="", sw=""
     ):
         self.fname = fname
         self.sname = sname
@@ -31,7 +31,6 @@ class VideoProcessor(object):
         self.codec = codec
         self.h = 0
         self.w = 0
-        self.FPS = fps
         self.nc = 3
         self.i = 0
 
@@ -52,6 +51,9 @@ class VideoProcessor(object):
 
         except Exception as ex:
             print("Error: %s", ex)
+
+        if fps is not None:  # Overwrite the video's FPS
+            self.FPS = fps
 
     def load_frame(self):
         try:
