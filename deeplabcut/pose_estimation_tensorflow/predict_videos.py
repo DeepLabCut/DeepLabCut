@@ -22,7 +22,6 @@ from pathlib import Path
 import cv2
 import numpy as np
 import pandas as pd
-import tensorflow as tf
 from scipy.optimize import linear_sum_assignment
 from skimage.util import img_as_ubyte
 from tqdm import tqdm
@@ -32,6 +31,17 @@ from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingut
 from deeplabcut.pose_estimation_tensorflow.nnet import predict
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
+
+import tensorflow as tf
+vers = (tf.__version__).split(".")
+
+if int(vers[0]) == 2:
+    TF = tf.compat.v1
+    TF.disable_v2_behavior()
+elif int(vers[0]) == 1 and int(vers[1]) > 12:
+    TF = tf.compat.v1
+else:
+    TF = tf
 
 ####################################################
 # Loading data, and defining model folder
@@ -160,7 +170,7 @@ def analyze_videos(
     if gputouse is not None:  # gpu selection
         os.environ["CUDA_VISIBLE_DEVICES"] = str(gputouse)
 
-    tf.reset_default_graph()
+    TF.reset_default_graph()
     start_path = os.getcwd()  # record cwd to return to this directory in the end
 
     cfg = auxiliaryfunctions.read_config(config)
