@@ -95,7 +95,7 @@ def start_preloading(sess, enqueue_op, dataset, placeholders):
 
 
 def get_optimizer(loss_op, cfg):
-    tstep = tf.placeholder(tf.int32, shape=[], name="tstep")
+    tstep = TF.placeholder(tf.int32, shape=[], name="tstep")
     if "efficientnet" in cfg["net_type"]:
         print("Switching to cosine decay schedule with adam!")
         cfg["optimizer"] == "adam"
@@ -103,7 +103,7 @@ def get_optimizer(loss_op, cfg):
             cfg["lr_init"], tstep, cfg["decay_steps"], alpha=cfg["alpha_r"]
         )
     else:
-        learning_rate = tf.placeholder(tf.float32, shape=[])
+        learning_rate = TF.placeholder(tf.float32, shape=[])
 
     if cfg["optimizer"] == "sgd":
         optimizer = TF.train.MomentumOptimizer(
@@ -190,7 +190,7 @@ def train(
     )  # selects how many snapshots are stored, see https://github.com/AlexEMG/DeepLabCut/issues/8#issuecomment-387404835
 
     if allow_growth:
-        config = tf.ConfigProto()
+        config = TF.ConfigProto()
         config.gpu_options.allow_growth = True
         sess = TF.Session(config=config)
     else:

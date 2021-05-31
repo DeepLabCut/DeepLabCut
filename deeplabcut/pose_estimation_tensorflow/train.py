@@ -115,7 +115,7 @@ def get_optimizer(loss_op, cfg):
     if "efficientnet" in cfg["net_type"]:
         print("Switching to cosine decay schedule with adam!")
         cfg["optimizer"] = "adam"
-        learning_rate = tf.train.cosine_decay(
+        learning_rate = TF.train.cosine_decay(
             cfg["lr_init"], tstep, cfg["decay_steps"], alpha=cfg["alpha_r"]
         )
     else:
@@ -220,7 +220,7 @@ def train(
     )  # selects how many snapshots are stored, see https://github.com/AlexEMG/DeepLabCut/issues/8#issuecomment-387404835
 
     if allow_growth == True:
-        config = tf.ConfigProto()
+        config = TF.ConfigProto()
         config.gpu_options.allow_growth = True
         sess = TF.Session(config=config)
     else:
