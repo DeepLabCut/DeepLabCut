@@ -11,11 +11,11 @@ h5py
 ruamel.yaml>=0.15.0
 intel-openmp
 imgaug
-numba==0.51.1
+numba==0.50.1
 matplotlib==3.1.3
 networkx
 numpy~=1.17.3
-opencv-python-headless~=3.4.9.33
+opencv-contrib-python==3.4.14.51
 pandas>=1.0.1
 patsy
 pyyaml
