@@ -18,11 +18,13 @@ from pathlib import Path
 
 import tensorflow as tf
 
-vers = (tf.__version__).split(".")
-if int(vers[0]) == 1 and int(vers[1]) > 12:
+if int(vers[0]) == 2:
+    TF = tf.compat.v1
+elif int(vers[0]) == 1 and int(vers[1]) > 12:
     TF = tf.compat.v1
 else:
     TF = tf
+
 import tensorflow.contrib.slim as slim
 
 from deeplabcut.pose_estimation_tensorflow.config import load_config
@@ -57,10 +59,14 @@ def setup_preloading(batch_spec):
 
     QUEUE_SIZE = 20
     vers = (tf.__version__).split(".")
-    if int(vers[0]) == 1 and int(vers[1]) > 12:
+
+    if int(vers[0]) == 2:
+        q = tf.queue.FIFOQueue(QUEUE_SIZE, [tf.float32] * len(batch_spec))
+    elif int(vers[0]) == 1 and int(vers[1]) > 12:
         q = tf.queue.FIFOQueue(QUEUE_SIZE, [tf.float32] * len(batch_spec))
     else:
         q = tf.FIFOQueue(QUEUE_SIZE, [tf.float32] * len(batch_spec))
+    
     enqueue_op = q.enqueue(placeholders_list)
     batch_list = q.dequeue()
 
