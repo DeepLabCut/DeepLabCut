@@ -15,7 +15,7 @@ numba==0.51.1
 matplotlib==3.1.3
 networkx
 numpy~=1.17.3
-opencv-python-headless~=3.4.9.33
+opencv-python-headless
 pandas>=1.0.1
 patsy
 pyyaml
@@ -26,7 +26,7 @@ scipy>=1.4
 six
 statsmodels>=0.11
 tables
-tensorpack==0.9.8
+tensorpack
 tqdm
 moviepy<=1.0.1
 Pillow>=7.1
