@@ -389,9 +389,11 @@ class MAPoseDataset:
 
         if num_idchannel > 0:
             coordinateoffset = 0
-            for person_id in range(num_idchannel):
+            # Find indices of individuals in joint_id
+            idx = [i for i, id_ in enumerate(data_item.joints)
+                   if id_ < num_idchannel]
+            for person_id in idx:
                 joint_ids = joint_id[person_id].copy()
-                # print(person_id,joint_ids,data_item.im_path.split('/')[-1])
                 if len(joint_ids) > 1:
                     for k, j_id in enumerate(joint_ids):
                         joint_pt = coords[0][k + coordinateoffset, :]
@@ -472,17 +474,6 @@ class MAPoseDataset:
                                 * scale
                             )
 
-                            """
-                                import matplotlib.pyplot as plt
-                                plt.figure()
-                                plt.imshow(distance_along)
-                                #plt.savefig("along"+str(data_item.im_path.split('/')[-1]))
-                                plt.savefig(str(data_item.im_path.split('/')[-1]).split('png')[0]+"maps.png")
-                                plt.figure()
-                                plt.imshow(abs(distance_across))
-                                plt.savefig("across"+str(data_item.im_path.split('/')[-1]))
-                                """
-
                             mask1 = (distance_along >= d1lowerboundary) & (
                                 distance_along <= d1upperboundary
                             )
@@ -503,52 +494,6 @@ class MAPoseDataset:
 
             coordinateoffset += len(joint_ids)  # keeping track of the blocks
 
-        #        print(person_id,k, j_id, coords[0])
-        # assert(0==1)
-
-        """
-        import matplotlib.pyplot as plt
-        print('shape',np.shape(scmap))
-        A=np.zeros((height,width,3))
-        for cc,j in enumerate(np.arange(15)):
-            A[:,:,int(cc/5)]+=scmap[:,:,j]
-
-        #A[:,:,2]=partaffinityfield_map[:,:,j]*0
-        print(np.amax(A),np.amin(A))
-        plt.figure()
-        plt.imshow(A)
-        plt.savefig(str(data_item.im_path.split('/')[-1]).split('png')[0]+"maps.png")
-
-        plt.figure()
-        plt.imshow(scmap[:,:,-2])
-        plt.savefig(str(data_item.im_path.split('/')[-1]).split('png')[0]+"id1.png")
-
-        plt.figure()
-        plt.imshow(scmap[:,:,-1])
-        plt.savefig(str(data_item.im_path.split('/')[-1]).split('png')[0]+"id2.png")
-
-
-        pafid=1 #
-        bp1,bp2=self.cfg.partaffinityfield_graph[pafid] #- for pups!
-
-        A=np.zeros((height,width,3))
-
-        print("plotting",bp1,bp2)
-        for cc,j in enumerate([bp1,bp2]):
-            A[:,:,cc]=scmap[:,:,j]
-        #A[:,:,2]=partaffinityfield_map[:,:,j]*0
-
-        plt.figure()
-        plt.imshow(A)
-        plt.savefig("SomeSCMAPS"+str(data_item.im_path.split('/')[-1]))
-
-        for j in range(2): #plotting x and y
-            plt.figure()
-            plt.imshow(partaffinityfield_map[:,:,pafid*2+j]*255)
-        plt.colorbar()
-        #plt.savefig("SomePafs"+str(data_item.im_path.split('/')[-1]))
-        plt.savefig(str(data_item.im_path.split('/')[-1]).split('png')[0]+"pafs.png")
-        """
         weights = self.compute_scmap_weights(scmap.shape, joint_id, data_item)
         return (
             scmap,
