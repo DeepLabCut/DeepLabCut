@@ -127,7 +127,7 @@ class MAPoseDataset:
         if height is not None and width is not None:
             pipeline.add(
                 iaa.Sometimes(
-                    cfg["cropratio"],
+                    cfg.get("cropratio", 0.4),
                     iaa.CropAndPad(percent=(-0.3, 0.1), keep_size=False),
                 )
             )
