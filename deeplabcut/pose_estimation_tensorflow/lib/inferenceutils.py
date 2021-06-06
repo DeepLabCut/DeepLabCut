@@ -277,10 +277,16 @@ class Assembler:
         mu = np.nanmean(dists, axis=0)
         missing = np.isnan(dists)
         dists = np.where(missing, mu, dists)
-        kde = gaussian_kde(dists.T)
-        kde.mean = mu
-        self._kde = kde
-        self.safe_edge = True
+        try:
+            kde = gaussian_kde(dists.T)
+            kde.mean = mu
+            self._kde = kde
+            self.safe_edge = True
+        except np.linalg.LinAlgError:
+            # Covariance matrix estimation fails due to numerical singularities
+            warnings.warn(
+                "The assembler could not be robustly calibrated. Continuing without it..."
+            )
 
     def calc_assembly_mahalanobis_dist(
         self, assembly, return_proba=False, nan_policy="little"
