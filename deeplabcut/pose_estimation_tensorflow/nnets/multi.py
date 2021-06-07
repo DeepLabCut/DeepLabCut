@@ -21,7 +21,7 @@ from deeplabcut.pose_estimation_tensorflow.nnets import conv_blocks
 from deeplabcut.pose_estimation_tensorflow.backbones import mobilenet_v2, mobilenet
 from .base import BasePoseNet
 from .factory import PoseNetFactory
-from .layers import prediction_layer, prediction_layer_stage
+from .layers import prediction_layer_stage
 from .utils import wrapper
 
 
@@ -85,6 +85,21 @@ parallel_layers = {
     "b6": "14",
     "b7": "17"
     }
+
+
+def prediction_layer(cfg, input, name, num_outputs):
+    with slim.arg_scope(
+        [slim.conv2d, slim.conv2d_transpose],
+        padding="SAME",
+        activation_fn=None,
+        normalizer_fn=None,
+        weights_regularizer=slim.l2_regularizer(cfg["weight_decay"]),
+    ):
+        with tf.compat.v1.variable_scope(name):
+            pred = slim.conv2d_transpose(
+                input, num_outputs, kernel_size=[3, 3], stride=2,
+            )
+            return pred
 
 
 @PoseNetFactory.register("multi")
