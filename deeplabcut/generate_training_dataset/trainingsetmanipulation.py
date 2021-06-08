@@ -681,9 +681,9 @@ def SplitTrials(
         if enforce_train_fraction and not train_size.is_integer():
             # Determine the index length required to guarantee
             # the train–test ratio is exactly the desired one.
-            min_length_req = int(100 / math.gcd(100, int(100 * train_fraction)))
+            min_length_req = int(100 / math.gcd(100, int(round(100 * train_fraction))))
             length_req = math.ceil(index_len / min_length_req) * min_length_req
-            n_train = int(length_req * train_fraction)
+            n_train = int(round(length_req * train_fraction))
             n_test = length_req - n_train
             # Pad indices so lengths agree
             train_indices = np.append(train_indices, [-1] * (n_train - len(train_indices)))
