@@ -540,7 +540,7 @@ def evaluate_multianimal_full(
                     if not os.path.isfile(uncropped_data_path):
                         print("Selecting best skeleton...")
                         crossvalutils._rebuild_uncropped_in(evaluationfolder)
-                        crossvalutils.cross_validate_paf_graphs(
+                        _ = crossvalutils.cross_validate_paf_graphs(
                             config,
                             str(path_test_config).replace("pose_", "inference_"),
                             uncropped_data_path,
