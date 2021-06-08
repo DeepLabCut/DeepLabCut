@@ -23,7 +23,6 @@ dependencies:
   - cudnn=7
   - jupyter
   - nb_conda
-  - Shapely
   - pip:
     - tensorflow-gpu==1.15.5
     - deeplabcut
