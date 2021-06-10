@@ -353,26 +353,31 @@ def cropimagesandlabels(
                 cropindex = 0
                 attempts = -1
                 while cropindex < numcrops:
+                    
                     dd = np.array(data[ind].copy(), dtype=float)
 
-                    #print ('frame shape {}'.format(frame.shape))
-                    #print ('crop size {},{}'.format(temp_size[0],temp_size[1]))
                     if temp_size[0] >= h or temp_size[1] >= w:
+                        # initialize a all zero image with crop size
 
                         padded_img = np.zeros((temp_size[0],temp_size[1],3),dtype=np.uint8)
+
+                        # new bottom left                        
                         y0, x0 = (
                             np.random.randint(temp_size[0]-h),
                             np.random.randint(temp_size[1]-w),
                         )
-
+                        # new bottom right
                         y1 = y0 + h
                         x1 = x0 + w
-                        
+
+                        # fill original image to the container image
                         padded_img[y0:y1,x0:x1,:] = frame
 
-
+                        # all keypoints are shifted by +x0 and +y0
                         dd += [x0,y0]
 
+                        # no need to check valid keypoints as they are all valid
+                        
                         newimname = str(
                                 Path(imagename).stem
                                 + "c"
@@ -380,6 +385,7 @@ def cropimagesandlabels(
                                 + ".png"
                                 )
                         cropppedimgname = os.path.join(new_folder, newimname)
+                        # save the padded img
                         io.imsave(cropppedimgname, padded_img)
                         cropindex += 1
                         pd_index.append(
