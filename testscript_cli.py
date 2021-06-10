@@ -19,7 +19,7 @@ def install(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 
 
-install("tensorflow==1.13.1")
+install("tensorflow==1.15.5")
 
 import deeplabcut as dlc
 
