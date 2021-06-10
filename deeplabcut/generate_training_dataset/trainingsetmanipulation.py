@@ -361,7 +361,7 @@ def cropimagesandlabels(
 
                         padded_img = np.zeros((temp_size[0],temp_size[1],3),dtype=np.uint8)
 
-                        # new bottom left                        
+                        # new upper left                        
                         y0, x0 = (
                             np.random.randint(temp_size[0]-h),
                             np.random.randint(temp_size[1]-w),
