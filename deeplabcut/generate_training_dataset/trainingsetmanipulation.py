@@ -357,41 +357,53 @@ def cropimagesandlabels(
                     dd = np.array(data[ind].copy(), dtype=float)
 
                     if temp_size[0] >= h or temp_size[1] >= w:
-                        # initialize a all zero image with crop size
+                        # initialize a all zero image container with target crop size
 
                         padded_img = np.zeros((temp_size[0],temp_size[1],3),dtype=np.uint8)
 
-                        # new upper left                        
+                        # new upper left, border protection
+                        # be careful crop side can be smaller than one side of the image
+                        
                         y0, x0 = (
-                            np.random.randint(temp_size[0]-h),
-                            np.random.randint(temp_size[1]-w),
+                            np.random.randint(max(temp_size[0]-h,1)),
+                            np.random.randint(max(temp_size[1]-w,1)),
                         )
-                        # new bottom right
-                        y1 = y0 + h
-                        x1 = x0 + w
+                        # new bottom right, border protection
+                        # avoid to exceed the container's border
+                        
+                        y1 = min(y0 + h, temp_size[0])
+                        x1 = min(x0 + w, temp_size[1])
 
                         # fill original image to the container image
-                        padded_img[y0:y1,x0:x1,:] = frame
+                        # use safe upper left and bottom right to crop original image and fill it to the container
+                        padded_img[y0:y1,x0:x1,:] = frame[:y1-y0,:x1-x0,:3]
 
                         # all keypoints are shifted by +x0 and +y0
+                        # possibly out of border again
                         dd += [x0,y0]
 
-                        # no need to check valid keypoints as they are all valid
-                        
-                        newimname = str(
-                                Path(imagename).stem
-                                + "c"
-                                + str(cropindex).zfill(indexlength)
-                                + ".png"
-                                )
-                        cropppedimgname = os.path.join(new_folder, newimname)
-                        # save the padded img
-                        io.imsave(cropppedimgname, padded_img)
-                        cropindex += 1
-                        pd_index.append(
-                            os.path.join("labeled-data", new_vidname, newimname)
-                        )
-                        AnnotationData.append(dd.flatten())
+                        # some keypoints are out of the borders
+                        with np.errstate(invalid="ignore"):
+                            within = np.all((dd >= [x0, y0]) & (dd < [x1, y1]), axis=1)
+
+                        if cropdata:
+                            dd[~within] = np.nan                        
+                        attempts += 1
+                        if within.any() or attempts > 10:                        
+                            newimname = str(
+                                    Path(imagename).stem
+                                    + "c"
+                                    + str(cropindex).zfill(indexlength)
+                                    + ".png"
+                                    )
+                            cropppedimgname = os.path.join(new_folder, newimname)
+                            # save the padded img
+                            io.imsave(cropppedimgname, padded_img)
+                            cropindex += 1
+                            pd_index.append(
+                                os.path.join("labeled-data", new_vidname, newimname)
+                            )
+                            AnnotationData.append(dd.flatten())
 
                         
                     else:
