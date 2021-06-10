@@ -259,10 +259,48 @@ def find_local_maxima(scmap, radius, threshold):
     return np.asarray(xy, dtype=np.int).reshape((-1, 2))
 
 
-def find_local_peak_indices(scmaps, radius, threshold):
+def find_local_peak_indices_maxpool_nms(scmaps, radius, threshold):
     pooled = TF.nn.max_pool2d(scmaps, [radius, radius], strides=1, padding='SAME')
     maxima = scmaps * TF.cast(TF.equal(scmaps, pooled), TF.float32)
     return TF.cast(TF.where(maxima >= threshold), TF.int32)
+
+
+def find_local_peak_indices_dilation(scmaps, radius, threshold):
+    kernel = np.zeros((radius, radius, 1))
+    mid = (radius - 1) // 2
+    kernel[mid, mid] = -1
+    kernel = TF.convert_to_tensor(kernel, dtype=TF.float32)
+
+    height = TF.shape(scmaps)[1]
+    width = TF.shape(scmaps)[2]
+    depth = TF.shape(scmaps)[3]
+    scmaps_flat = TF.reshape(
+        TF.transpose(scmaps, [0, 3, 1, 2]), [-1, height, width, 1],
+    )
+    scmaps_dil = TF.nn.dilation2d(
+        scmaps_flat,
+        kernel,
+        strides=[1, 1, 1, 1],
+        rates=[1, 1, 1, 1],
+        padding="SAME",
+    )
+    scmaps_dil = TF.transpose(
+        TF.reshape(scmaps_dil, [-1, depth, height, width]), [0, 2, 3, 1],
+    )
+    argmax_and_thresh_img = (scmaps > scmaps_dil) & (scmaps > threshold)
+    return TF.cast(TF.where(argmax_and_thresh_img), TF.int32)
+
+
+def find_local_peak_indices_skimage(scmaps, radius, threshold):
+    inds_gt = []
+    for i in range(scmaps.shape[0]):
+        for j in range(scmaps.shape[3]):
+            scmap = scmaps[i, ..., j]
+            peaks = find_local_maxima(scmap, radius, threshold)
+            samples_i = np.ones(len(peaks), dtype=np.int).reshape((-1, 1)) * i
+            bpts_j = np.ones_like(samples_i) * j
+            inds_gt.append(np.c_[samples_i, peaks, bpts_j])
+    return np.concatenate(inds_gt)
 
 
 def calc_peak_locations(
