@@ -98,9 +98,14 @@ def compute_edge_costs(
             candidate_edges = ((i, j) for i in inds_s for j in inds_t)
             edges.extend(candidate_edges)
             edge_inds.extend([k] * len(inds_s) * len(inds_t))
+        if not edges:
+            continue
         sample_inds.extend([i] * len(edges))
         all_edges.extend(edges)
         all_peaks.append(peaks[np.asarray(edges)])
+    if not all_peaks:
+        return [dict() for _ in range(n_samples)]
+
     sample_inds = np.asarray(sample_inds, dtype=np.int32)
     edge_inds = np.asarray(edge_inds, dtype=np.int32)
     all_edges = np.asarray(all_edges, dtype=np.int32)
@@ -205,6 +210,9 @@ def predict_batched_peaks_and_costs(
     scmaps, locrefs, pafs, peaks = sess.run(
         outputs, feed_dict={inputs: images_batch}
     )
+    if ~np.any(peaks):
+        return []
+
     locrefs = np.reshape(locrefs, (*locrefs.shape[:3], -1, 2))
     locrefs *= pose_cfg["locref_stdev"]
     pafs = np.reshape(pafs, (*pafs.shape[:3], -1, 2))

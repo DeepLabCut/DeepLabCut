@@ -318,6 +318,8 @@ def evaluate_multianimal_full(
                             frame = img_as_ubyte(image)
 
                             GT = Data.iloc[imageindex]
+                            if not GT.any():
+                                continue
                             df = GT.unstack("coords").reindex(joints, level="bodyparts")
 
                             # Evaluate PAF edge lengths to calibrate `distnorm`
@@ -346,9 +348,6 @@ def evaluate_multianimal_full(
                                     )
                                     groundtruthidentity[i] = np.array([], dtype=str)
 
-                            PredicteData[imagename] = {}
-                            PredicteData[imagename]["index"] = imageindex
-
                             # Form 2D array of shape (n_rows, 4) where the last dimension
                             # is (sample_index, peak_y, peak_x, bpt_index) to slice the PAFs.
                             temp = df.reset_index(level="bodyparts").dropna()
@@ -366,7 +365,14 @@ def evaluate_multianimal_full(
                                 inputs,
                                 outputs,
                                 peaks_gt.astype(int),
-                            )[0]
+                            )
+                            if not pred:
+                                continue
+                            else:
+                                pred = pred[0]
+
+                            PredicteData[imagename] = {}
+                            PredicteData[imagename]["index"] = imageindex
                             PredicteData[imagename]["prediction"] = pred
                             PredicteData[imagename]["groundtruth"] = [
                                 groundtruthidentity,
