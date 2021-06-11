@@ -11,14 +11,12 @@ def ellipse():
 
 def test_ellipse(ellipse):
     assert ellipse.aspect_ratio == 2
-    assert ellipse.geometry is not None
     np.testing.assert_equal(
         ellipse.contains_points(np.asarray([[0, 0], [10, 10]])), [True, False]
     )
 
 
 def test_ellipse_similarity(ellipse):
-    assert ellipse.calc_iou_with(ellipse) == 1
     assert ellipse.calc_similarity_with(ellipse) == 1
 
 
