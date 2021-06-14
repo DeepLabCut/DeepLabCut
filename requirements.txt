@@ -1,11 +1,4 @@
-python-dateutil
 ipython
-ipython-genutils
-wheel
-certifi
-chardet
-click
-cython
 filterpy
 h5py
 ruamel.yaml>=0.15.0
@@ -14,7 +7,7 @@ imgaug
 numba==0.51.1
 matplotlib==3.1.3
 networkx
-numpy~=1.17.3
+numpy
 opencv-python-headless
 pandas>=1.0.1
 patsy
@@ -26,7 +19,9 @@ scipy>=1.4
 six
 statsmodels>=0.11
 tables
+tensorflow>=2, <2.4
 tensorpack
+tf_slim
 tqdm
-moviepy<=1.0.1
+moviepy
 Pillow>=7.1

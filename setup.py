@@ -44,7 +44,7 @@ setuptools.setup(
         "tensorpack",
         "tf_slim",
         "tqdm",
-        "moviepy<=1.0.1",
+        "moviepy",
         "pyyaml",
         "Pillow>=7.1",
     ],
