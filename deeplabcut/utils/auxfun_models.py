@@ -59,7 +59,6 @@ def Check4weights(modeltype, parent_path, num_shuffles):
         if "efficientnet" in modeltype:
             if not os.path.isdir(model_path):
                 Downloadweights(modeltype, model_path)
-            model_path = os.path.join(model_path, "model.ckpt")
         else:
             if not model_path.is_file():
                 Downloadweights(modeltype, model_path)
