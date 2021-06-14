@@ -11,7 +11,10 @@ if __name__ == "__main__":
     NUM_FRAMES = 5
     TRAIN_SIZE = 0.8
     NET = "dlcrnet_ms5"
-    # NET = "efficientnet-b0"
+    #NET = "resnet_152"
+    #NET = "efficientnet-b0"
+    #NET = "mobilenet_v2_0.35" # should be fixed
+
     N_ITER = 5
 
     basepath = os.path.dirname(os.path.realpath(__file__))
@@ -122,13 +125,14 @@ if __name__ == "__main__":
     )
 
     print("Analyzing video...")
-    deeplabcut.analyze_videos(config_path, [new_video_path], "mp4", robust_nframes=True)
+    deeplabcut.analyze_videos(config_path, [new_video_path], "mp4", robust_nframes=True,allow_growth=True)
+
     print("Video analyzed.")
 
     print("Create video with all detections...")
     scorer, _ = auxiliaryfunctions.GetScorerName(cfg, 1, TRAIN_SIZE)
     deeplabcut.create_video_with_all_detections(
-        config_path, [new_video_path], scorer, displayedbodyparts=["bodypart1"]
+        config_path, [new_video_path], shuffle=1, displayedbodyparts=["bodypart1"]
     )
     print("Video created.")
 
@@ -145,9 +149,8 @@ if __name__ == "__main__":
         os.path.dirname(basepath), "tests", "data", "trimouse_tracklets.pickle"
     )
     deeplabcut.stitch_tracklets(
+        config_path,
         pickle_file,
-        n_tracks=3,
-        animal_names=cfg["individuals"],
         output_name=os.path.splitext(new_video_path)[0] + scorer + "_el.h5",
     )
 

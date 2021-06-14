@@ -150,6 +150,72 @@ def test_assembler(tmpdir_factory, real_assemblies):
     ass.to_pickle(str(output_name).replace("h5", "pickle"))
 
 
+def test_assembler_with_identity(tmpdir_factory, real_assemblies):
+    with open(os.path.join(TEST_DATA_DIR, "trimouse_full.pickle"), "rb") as file:
+        data = pickle.load(file)
+
+    # Generate fake identity predictions
+    for k, v in data.items():
+        if k != "metadata":
+            conf = v["confidence"]
+            ids = [np.random.rand(c.shape[0], 3) for c in conf]
+            v["identity"] = ids
+
+    ass = inferenceutils.Assembler(
+        data,
+        max_n_individuals=3,
+        n_multibodyparts=12,
+    )
+    assert ass._has_identity
+    assert len(ass.metadata["imnames"]) == 50
+    assert ass.n_keypoints == 12
+    assert len(ass.graph) == len(ass.paf_inds) == 66
+    # Assemble based on the smallest graph to speed up testing
+    naive_graph = [
+        [0, 1],
+        [7, 8],
+        [6, 7],
+        [10, 11],
+        [4, 5],
+        [5, 6],
+        [8, 9],
+        [9, 10],
+        [0, 3],
+        [3, 4],
+        [0, 2],
+    ]
+    paf_inds = [ass.graph.index(edge) for edge in naive_graph]
+    ass.graph = naive_graph
+    ass.paf_inds = paf_inds
+    ass.assemble()
+    assert not ass.unique
+    assert len(ass.assemblies) == len(real_assemblies)
+    assert sum(1 for a in ass.assemblies.values() for _ in a) == sum(
+        1 for a in real_assemblies.values() for _ in a
+    )
+    assert all(
+        np.all(_.data[:, -1] != -1)
+        for a in ass.assemblies.values()
+        for _ in a
+    )
+
+    # Test now with identity only and ensure assemblies
+    # contain only parts of a single group ID.
+    ass.identity_only = True
+    ass.assemble()
+    eq = []
+    for a in ass.assemblies.values():
+        for _ in a:
+            ids = _.data[:, -1]
+            ids = ids[~np.isnan(ids)]
+            eq.append(np.all(ids == ids[0]))
+    assert all(eq)
+
+    output_name = tmpdir_factory.mktemp("data").join("fake.h5")
+    ass.to_h5(output_name)
+    ass.to_pickle(str(output_name).replace("h5", "pickle"))
+
+
 def test_assembler_calibration(real_assemblies):
     with open(os.path.join(TEST_DATA_DIR, "trimouse_full.pickle"), "rb") as file:
         data = pickle.load(file)

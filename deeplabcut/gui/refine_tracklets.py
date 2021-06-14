@@ -89,7 +89,7 @@ class Refine_tracklets(wx.Panel):
         self.ntracks_text = wx.StaticText(self, label="Number of animals")
         sizer.Add(self.ntracks_text, pos=(4, 0), flag=wx.TOP | wx.LEFT, border=5)
         self.ntracks = wx.SpinCtrl(
-            self, value=str(len(self.cfg["individuals"])), min=2, max=1000
+            self, value=str(len(self.cfg["individuals"])), min=1, max=1000
         )
         sizer.Add(
             self.ntracks, pos=(4, 1), span=(1, 3), flag=wx.EXPAND | wx.TOP, border=5
@@ -313,9 +313,9 @@ class Refine_tracklets(wx.Panel):
 
     def create_tracks(self, event):
         deeplabcut.stitch_tracklets(
+            self.config,
             self.datafile,
             n_tracks=self.ntracks.GetValue(),
-            animal_names=self.cfg["individuals"],
         )
 
     def refine_tracklets(self, event):

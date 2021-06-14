@@ -229,8 +229,6 @@ deeplabcut.cropimagesandlabels(path_config_file, userfeedback=False)
 
 Ideally for training DNNs, one uses large batch sizes. Thus, for mutli-animal training batch processing is preferred. This means that we'd like the images to be similarly sized. You can of course have differing size of images you label (but we suggest cropping out useless pixels!). So, we have a new function that can pre-process your data to be compatible with batch training. As noted above, please run this function before you `create_multianmialtraining_dataset`. This function assures that each crop is "small", by default 400 x 400, which allows larger batchsizes and that there are multiple crops so that different parts of larger images are covered. 
 
-At this point you also select your neural network type. Please see Lauer et al. 2021 for options.
-
 You **should also first run** `deeplabcut.cropimagesandlabels(config_path)` before creating a training set, as we use batch processing and many users have smaller GPUs that cannot accommodate larger images + larger batchsizes. This is also a type of data augmentation.
 
 NOTE: you can edit the crop size. If your images are very large (2k, 4k pixels), consider increasing this size, but be aware unless you have a lagre GPU (24 GB or more), you will hit memory errors. _You can lower the batchsize, but this may affect performance._
@@ -238,7 +236,8 @@ NOTE: you can edit the crop size. If your images are very large (2k, 4k pixels),
 ```python
 deeplabcut.cropimagesandlabels(path_config_file, size=(400, 400), userfeedback=False)
 ```
-Then run:
+At this point you also select your neural network type. Please see Lauer et al. 2021 for options. For **create_multianimaltraining_dataset** we already changed this such that by default you will use imgaug, ADAM optimization, our new DLCRNet, and batch training. We suggest these defaults at this time. Then run:
+
 ```python
 deeplabcut.create_multianimaltraining_dataset(path_config_file)
 ```
@@ -260,7 +259,18 @@ are listed in Box 2.
 
 - At this step, the ImageNet pre-trained networks (i.e. ResNet-50) weights will be downloaded. If they do not download (you will see this downloading in the terminal, then you may not have permission to do so (something we have seen with some Windows users - see the **[WIKI troubleshooting for more help!](https://github.com/AlexEMG/DeepLabCut/wiki/Troubleshooting-Tips)**).
 
-**CRITICAL POINT:** For **create_multianimaltraining_dataset** we already change this such that you will use imgaug, ADAM optimization, and batch training. We suggest these defaults at this time.
+**OPTIONAL POINTS:**
+
+With the data-driven skeleton selection introduced in 2.2rc1, DLC networks are trained by default
+on complete skeletons (i.e., they learn all possible redundant connections), before being optimially pruned
+at model evaluation. Although this procedure is by far superior to manually defining a graph,
+we leave manually-defining a skeleton as an option for the advanced user:
+
+```python
+my_better_graph = [[0, 1], [1, 2], [2, 3]]  # These are indices in the list of multianimalbodyparts
+deeplabcut.create_multianimaltraining_dataset(path_config_file, paf_graph=my_better_graph)
+```
+Importantly, a user-defined graph is still required to cover all multianimalbodyparts at least once. 
 
 **DATA AUGMENTATION:** At this stage you can also decide what type of augmentation to use. The default loaders work well for most all tasks (as shown on www.deeplabcut.org), but there are many options, more data augmentation, intermediate supervision, etc. Please look at the [**pose_cfg.yaml**](https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml) file for a full list of parameters **you might want to change before running this step.** There are several data loaders that can be used. For example, you can use the default loader (introduced and described in the Nature Protocols paper), [TensorPack](https://github.com/tensorpack/tensorpack) for data augmentation (currently this is easiest on Linux only), or [imgaug](https://imgaug.readthedocs.io/en/latest/). We recommend `imgaug` (which is default now!). You can set this by passing:``` deeplabcut.create_training_dataset(config_path, augmenter_type='imgaug')  ```
 
@@ -388,6 +398,11 @@ labeled accurately
 
 **maDeepLabCut: (or on normal projects!)**
 
+In multi-animal projects, model evaluation is crucial as this is when
+the data-driven selection of the optimal skeleton is carried out. Skipping that step
+causes video analysis to use the redundant skeleton by default, which is not only slow
+but does not guarantee best performance.
+
 You should also plot the scoremaps, locref layers, and PAFs to assess performance:
 
 ```python
@@ -404,7 +419,7 @@ Please run:
 
 ```python
 scorername = deeplabcut.analyze_videos(config_path,['/fullpath/project/videos/testVideo.mp4'], videotype='.mp4')
-deeplabcut.create_video_with_all_detections(config_path, ['/fullpath/project/videos/testVideo.mp4'], scorername)
+deeplabcut.create_video_with_all_detections(config_path, ['/fullpath/project/videos/testVideo.mp4'])
 ```
 Please note that you do **not** get the .h5/csv file you might be used to getting (this comes after tracking). You will get a `pickle` file that is used in `create_video_with_all_detections`. IF you have good clean out video, ending in `....full.mp4` (and the evaluation metrics look good, scoremaps look good, plotted evaluation images), then go forward!!! 
 
@@ -446,13 +461,37 @@ max_age: 100
 min_hits: 3
 ```
 
+**IMPORTANT POINT**
+
+If the network has been trained to learn the animals' identities (i.e., you set `identity=True` in config.yaml before training)
+this information can be leveraged both during: (i) animal assembly, where body parts
+are grouped based on the animal they are predicted to belong to (affinity between pairs of keypoints
+is no longer considered in that case); and (ii) animal tracking, where identity only can be 
+utilized in place of motion trackers to form tracklets.
+
+To use this ID information, simply pass:
+```python
+deeplabcut.convert_detections2tracklets(..., identity_only=True)
+```
+
+
 **Animal assembly and tracking quality** can be assessed via `deeplabcut.utils.make_labeled_video.create_video_from_pickled_tracks`. This function provides an additional diagnostic tool before moving on to refining tracklets.
 
-**Next, tracklets are stitched to form *n* complete tracks with:
+**Next, tracklets are stitched to form complete tracks with:
 
 ```python
-deeplabcut.stitch_tracklets(pickle_file, n_tracks=n)
+deeplabcut.stitch_tracklets(config_path, pickle_file)
 ```
+
+If the number of tracks to reconstruct is different from the number of individuals
+originally defined in the config.yaml, `n_tracks` (i.e., the number of animals you have in your video)
+can be directly specified as follows:
+
+```python
+deeplabcut.stitch_tracklets(config_path, pickle_file, n_tracks=n)
+```
+In such cases, file columns will default to dummy animal names (ind1, ind2, ..., up to indn).
+
 
 ### Refine Tracklets:
 

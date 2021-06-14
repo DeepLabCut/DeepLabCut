@@ -10,6 +10,7 @@ Licensed under GNU Lesser General Public License v3.0
 
 import os
 import pickle
+from itertools import combinations
 from pathlib import Path
 
 import numpy as np
@@ -34,6 +35,28 @@ def IntersectionofIndividualsandOnesGivenbyUser(cfg, individuals):
         return all_indivs
     else:  # take only items in list that are actually bodyparts...
         return [ind for ind in individuals if ind in all_indivs]
+
+
+def filter_unwanted_paf_connections(cfg, paf_graph):
+    """Get rid of skeleton connections between multi and unique body parts."""
+    multi = extractindividualsandbodyparts(cfg)[2]
+    desired = list(combinations(range(len(multi)), 2))
+    return [i for i, edge in enumerate(paf_graph) if tuple(edge) not in desired]
+
+
+def validate_paf_graph(cfg, paf_graph):
+    multianimalbodyparts = extractindividualsandbodyparts(cfg)[2]
+    connected = set()
+    for bpt1, bpt2 in paf_graph:
+        connected.add(bpt1)
+        connected.add(bpt2)
+    unconnected = set(range(len(multianimalbodyparts))).difference(connected)
+    if unconnected and len(multianimalbodyparts) > 1:  # for single bpt not important!
+        raise ValueError(
+            f'Unconnected {", ".join(multianimalbodyparts[i] for i in unconnected)}. '
+            f"For multi-animal projects, all multianimalbodyparts should be connected. "
+            f"Ideally there should be at least one (multinode) path from each multianimalbodyparts to each other multianimalbodyparts. "
+        )
 
 
 def getpafgraph(cfg, printnames=True):
@@ -64,15 +87,6 @@ def getpafgraph(cfg, printnames=True):
             partaffinityfield_graph.append([bp1, bp2])
         else:
             print("Attention, parts do not exist!", link)
-
-    unconnected = set(range(len(multianimalbodyparts))).difference(connected)
-    if unconnected and len(multianimalbodyparts) > 1:  # for single bpt not important!
-        raise ValueError(
-            f'Unconnected {", ".join(multianimalbodyparts[i] for i  in unconnected)}. '
-            f"For multi-animal projects, all multianimalbodyparts should be connected. "
-            f"Ideally there should be at least one (multinode) path from each multianimalbodyparts to each other multianimalbodyparts. "
-            f"Please verify the skeleton in the config.yaml."
-        )
 
     if printnames:
         graph2names(cfg, partaffinityfield_graph)

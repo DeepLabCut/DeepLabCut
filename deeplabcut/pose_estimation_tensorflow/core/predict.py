@@ -27,7 +27,7 @@ import tensorflow as tf
 from deeplabcut.pose_estimation_tensorflow.nnets.factory import PoseNetFactory
 
 
-def setup_pose_prediction(cfg):
+def setup_pose_prediction(cfg, allow_growth=False):
     tf.compat.v1.reset_default_graph()
     inputs = tf.compat.v1.placeholder(tf.float32, shape=[cfg['batch_size'], None, None, 3])
     net_heads = PoseNetFactory.create(cfg).test(inputs)
@@ -40,7 +40,13 @@ def setup_pose_prediction(cfg):
         outputs.append(net_heads["pairwise_pred"])
 
     restorer = tf.compat.v1.train.Saver()
-    sess = tf.compat.v1.Session()
+
+    if allow_growth:
+        config = tf.compat.v1.ConfigProto()
+        config.gpu_options.allow_growth = True
+        sess = tf.compat.v1.Session(config=config)
+    else:
+        sess = tf.compat.v1.Session()
     sess.run(tf.compat.v1.global_variables_initializer())
     sess.run(tf.compat.v1.local_variables_initializer())
 
@@ -196,14 +202,20 @@ def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
 
 
 ### Code for TF inference on GPU
-def setup_GPUpose_prediction(cfg):
+def setup_GPUpose_prediction(cfg, allow_growth=False):
     tf.compat.v1.reset_default_graph()
     inputs = tf.compat.v1.placeholder(tf.float32, shape=[cfg['batch_size'], None, None, 3])
     net_heads = PoseNetFactory.create(cfg).inference(inputs)
     outputs = [net_heads["pose"]]
 
     restorer = tf.compat.v1.train.Saver()
-    sess = tf.compat.v1.Session()
+
+    if allow_growth:
+        config = tf.compat.v1.ConfigProto()
+        config.gpu_options.allow_growth = True
+        sess = tf.compat.v1.Session(config=config)
+    else:
+        sess = tf.compat.v1.Session()
 
     sess.run(tf.compat.v1.global_variables_initializer())
     sess.run(tf.compat.v1.local_variables_initializer())

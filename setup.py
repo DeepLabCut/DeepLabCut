@@ -17,7 +17,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="deeplabcut",
-    version="2.2rc1",
+    version="2.2rc2",
     author="A. & M. Mathis Labs",
     author_email="alexander@deeplabcut.org",
     description="Markerless pose-estimation of user-defined features with deep learning",
@@ -44,7 +44,7 @@ setuptools.setup(
         "tensorpack",
         "tf_slim",
         "tqdm",
-        "moviepy",
+        "moviepy<=1.0.1",
         "pyyaml",
         "Pillow>=7.1",
     ],
