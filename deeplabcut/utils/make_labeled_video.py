@@ -727,7 +727,7 @@ def create_video_with_keypoints_only(
     scat.set_offsets(coords)
     colors = cmap(map_)
     scat.set_color(colors)
-    segs = coords[tuple(zip(*tuple([ind_links])))].swapaxes(0, 1) if ind_links else []
+    segs = coords[tuple(zip(*tuple(ind_links))), :].swapaxes(0, 1) if ind_links else []
     coll = LineCollection(segs, colors=skeleton_color, alpha=alpha)
     ax.add_collection(coll)
     ax.set_xlim(0, nx)
@@ -749,7 +749,7 @@ def create_video_with_keypoints_only(
             coords[xyp[index, :, 2] < pcutoff] = np.nan
             scat.set_offsets(coords)
             if ind_links:
-                segs = coords[tuple(zip(*tuple([ind_links])))].swapaxes(0, 1)
+                segs = coords[tuple(zip(*tuple(ind_links))), :].swapaxes(0, 1)
             coll.set_segments(segs)
             writer.grab_frame()
     plt.close(fig)
