@@ -1,6 +1,5 @@
 import numpy as np
 from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
-from test_inferenceutils import skip_spawn
 
 
 BEST_GRAPH = [2, 56, 7, 31, 38, 63, 65, 60, 54, 1, 13]
@@ -20,7 +19,6 @@ def test_get_n_best_paf_graphs(uncropped_data_and_metadata):
     assert len(paf_inds[-1]) == len(params["paf_graph"])
 
 
-@skip_spawn
 def test_benchmark_paf_graphs(uncropped_data_and_metadata):
     data, _ = uncropped_data_and_metadata
     cfg = {
