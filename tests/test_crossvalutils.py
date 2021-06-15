@@ -1,7 +1,6 @@
-import multiprocessing
 import numpy as np
-import pytest
 from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
+from test_inferenceutils import skip_spawn
 
 
 BEST_GRAPH = [2, 56, 7, 31, 38, 63, 65, 60, 54, 1, 13]
@@ -21,9 +20,7 @@ def test_get_n_best_paf_graphs(uncropped_data_and_metadata):
     assert len(paf_inds[-1]) == len(params["paf_graph"])
 
 
-@pytest.mark.skipif(multiprocessing.get_start_method() != 'fork',
-                    reason=('multiprocessing with spawn start method '
-                            'is not compatible with pytest.'))
+@skip_spawn
 def test_benchmark_paf_graphs(uncropped_data_and_metadata):
     data, _ = uncropped_data_and_metadata
     cfg = {

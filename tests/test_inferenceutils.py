@@ -1,3 +1,4 @@
+import multiprocessing
 import numpy as np
 import os
 import pickle
@@ -7,6 +8,13 @@ from scipy.spatial.distance import squareform
 
 
 TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
+
+
+skip_spawn = pytest.mark.skipif(
+    multiprocessing.get_start_method() != 'fork',
+    reason=('multiprocessing with spawn start method '
+            'is not compatible with pytest.')
+)
 
 
 def test_conv_square_to_condensed_indices():
@@ -108,6 +116,7 @@ def test_assembly():
     assert len(ass3) == 2
 
 
+@skip_spawn
 def test_assembler(tmpdir_factory, real_assemblies):
     with open(os.path.join(TEST_DATA_DIR, "trimouse_full.pickle"), "rb") as file:
         data = pickle.load(file)
@@ -150,6 +159,7 @@ def test_assembler(tmpdir_factory, real_assemblies):
     ass.to_pickle(str(output_name).replace("h5", "pickle"))
 
 
+@skip_spawn
 def test_assembler_with_identity(tmpdir_factory, real_assemblies):
     with open(os.path.join(TEST_DATA_DIR, "trimouse_full.pickle"), "rb") as file:
         data = pickle.load(file)
