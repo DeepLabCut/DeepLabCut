@@ -1,4 +1,6 @@
+import multiprocessing
 import numpy as np
+import pytest
 from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
 
 
@@ -19,6 +21,9 @@ def test_get_n_best_paf_graphs(uncropped_data_and_metadata):
     assert len(paf_inds[-1]) == len(params["paf_graph"])
 
 
+@pytest.mark.skipif(multiprocessing.get_start_method() != 'fork',
+                    reason=('multiprocessing with spawn start method '
+                            'is not compatible with pytest.'))
 def test_benchmark_paf_graphs(uncropped_data_and_metadata):
     data, _ = uncropped_data_and_metadata
     cfg = {
