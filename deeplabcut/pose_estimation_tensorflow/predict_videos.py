@@ -49,7 +49,6 @@ def analyze_videos(
     destfolder=None,
     batchsize=None,
     cropping=None,
-    get_nframesfrommetadata=True,
     TFGPUinference=True,
     dynamic=(False, 0.5, 10),
     modelprefix="",
