@@ -45,6 +45,8 @@ class KeypointAwareCropToFixedSize(iaa.CropToFixedSize):
             # in order to augment crowded regions.
             radius = 0.1 * min(h, w)
             n_neighbors = self.calc_n_neighbors(kpts, radius)
+            # Include keypoints in the count to avoid null probabilities
+            n_neighbors += 1
             p = n_neighbors / n_neighbors.sum()
             center = kpts[random_state.choice(inds, p=p)]
             # Shift the crop center in both dimensions by random amounts
