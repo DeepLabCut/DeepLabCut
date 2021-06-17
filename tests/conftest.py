@@ -3,9 +3,22 @@ import os
 import pickle
 import pytest
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, crossvalutils
+from PIL import Image
 
 
 TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
+
+
+@pytest.fixture(scope="session")
+def sample_image():
+    return np.asarray(Image.open(os.path.join(TEST_DATA_DIR, "image.png")))
+
+
+@pytest.fixture(scope="session")
+def sample_keypoints():
+    with open(os.path.join(TEST_DATA_DIR, "trimouse_assemblies.pickle"), "rb") as file:
+        temp = pickle.load(file)
+    return np.concatenate(temp[0])[:, :2]
 
 
 @pytest.fixture(scope="session")
