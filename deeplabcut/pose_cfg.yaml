@@ -26,6 +26,10 @@ global_scale: 0.8
 dataset_type: imgaug
 batch_size: 1
 
+# Smart, on-the-fly image cropping, replacing deeplabcut.cropimagesandlabels
+crop_size: 400, 400
+n_crops: 10
+
 #Data loaders, i.e. with additional data augmentation options (as of 2.0.9+):
 #default with be with no extra dataloaders. Other options: 'tensorpack, deterministic'
 #types of datasets, see factory: deeplabcut/pose_estimation_tensorflow/dataset/factory.py

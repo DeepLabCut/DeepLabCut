@@ -20,6 +20,7 @@ from imgaug.augmentables import Keypoint, KeypointsOnImage
 from numpy import array as arr
 from numpy import concatenate as cat
 
+from deeplabcut.pose_estimation_tensorflow.dataset import augmentation
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import (
     Batch,
     DataItem,
@@ -76,9 +77,20 @@ class MAPoseDataset:
         return data
 
     def build_augmentation_pipeline(self, height=None, width=None, apply_prob=0.5):
-        sometimes = lambda aug: iaa.Sometimes(apply_prob, aug)
-        pipeline = iaa.Sequential(random_order=False)
         cfg = self.cfg
+
+        sometimes = lambda aug: iaa.Sometimes(apply_prob, aug)
+        pipeline = augmentation.Sequential(random_order=False)
+
+        # Add smart, keypoint-aware image cropping
+        w, h = cfg.get("crop_size", (400, 400))
+        pipeline.add(iaa.PadToFixedSize(w, h))
+        pipeline.add(
+            augmentation.KeypointAwareCropsToFixedSize(
+                w, h, cfg.get('n_crops', 10),
+            ),
+        )
+
         if cfg.get("fliplr", False):
             opt = cfg.get("fliplr", False)
             if type(opt) == int:
