@@ -68,7 +68,7 @@ if __name__ == "__main__":
         for image in auxiliaryfunctions.grab_files_in_folder(image_folder, "png")
     ]
     fake_data = np.tile(
-        np.repeat(50 * np.arange(len(animals_id)) + 100, 2), (len(index), 1)
+        np.repeat(50 * np.arange(len(animals_id)) + 50, 2), (len(index), 1)
     )
     df = pd.DataFrame(fake_data, index=index, columns=columns)
     output_path = os.path.join(image_folder, f"CollectedData_{SCORER}.csv")
@@ -90,12 +90,14 @@ if __name__ == "__main__":
     model_folder = auxiliaryfunctions.GetModelFolder(
         TRAIN_SIZE, 1, cfg, cfg["project_path"]
     )
-    pose_config_path = os.path.join(model_folder, "train/pose_cfg.yaml")
+    pose_config_path = os.path.join(model_folder, "train", "pose_cfg.yaml")
     edits = {
         "global_scale": 0.5,
         "batch_size": 1,
         "save_iters": N_ITER,
         "display_iters": N_ITER // 2,
+        "n_crops": 2,
+        "crop_size": [200, 200],
         # "multi_step": [[0.001, N_ITER]],
     }
     deeplabcut.auxiliaryfunctions.edit_config(pose_config_path, edits)

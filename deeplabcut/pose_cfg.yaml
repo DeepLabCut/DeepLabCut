@@ -27,7 +27,7 @@ dataset_type: imgaug
 batch_size: 1
 
 # Smart, on-the-fly image cropping, replacing deeplabcut.cropimagesandlabels
-crop_size: 400, 400
+crop_size: [400, 400]
 n_crops: 10
 
 #Data loaders, i.e. with additional data augmentation options (as of 2.0.9+):

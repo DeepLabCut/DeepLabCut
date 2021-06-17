@@ -159,15 +159,6 @@ def create_multianimaltraining_dataset(
         return
     Data = Data[scorer]
 
-    def strip_cropped_image_name(path):
-        # utility function to split different crops from same image into either train or test!
-        head, filename = os.path.split(path)
-        if cfg["croppedtraining"]:
-            filename = filename.split("c")[0]
-        return os.path.join(head, filename)
-
-    img_names = Data.index.map(strip_cropped_image_name).unique()
-
     if net_type is None:  # loading & linking pretrained models
         net_type = cfg.get("default_net_type", "dlcrnet_ms5")
     elif not any(net in net_type for net in ("resnet", "eff", "dlc")):
@@ -219,15 +210,9 @@ def create_multianimaltraining_dataset(
     TrainingFraction = cfg["TrainingFraction"]
     for shuffle in Shuffles:  # Creating shuffles starting from 1
         for trainFraction in TrainingFraction:
-            train_inds_temp, test_inds_temp = SplitTrials(
-                range(len(img_names)), trainFraction
+            train_inds, test_inds = SplitTrials(
+                range(len(Data)), trainFraction
             )
-            # Map back to the original indices.
-            temp = [re.escape(name) for i, name in enumerate(img_names)
-                    if i in test_inds_temp]
-            mask = Data.index.str.contains("|".join(temp))
-            testIndices = np.flatnonzero(mask)
-            trainIndices = np.flatnonzero(~mask)
 
             ####################################################
             # Generating data structure with labeled information & frame metadata (for deep cut)
@@ -242,12 +227,12 @@ def create_multianimaltraining_dataset(
             # Make training file!
             data = format_multianimal_training_data(
                 Data,
-                trainIndices,
+                train_inds,
                 cfg["project_path"],
                 numdigits,
             )
 
-            if len(trainIndices) > 0:
+            if len(train_inds) > 0:
                 (
                     datafilename,
                     metadatafilename,
@@ -260,8 +245,8 @@ def create_multianimaltraining_dataset(
                 auxiliaryfunctions.SaveMetadata(
                     os.path.join(project_path, metadatafilename),
                     data,
-                    trainIndices,
-                    testIndices,
+                    train_inds,
+                    test_inds,
                     trainFraction,
                 )
 

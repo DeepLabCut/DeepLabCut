@@ -58,6 +58,8 @@ class KeypointAwareCropsToFixedSize(iaa.CropToFixedSize):
             # to favor the augmentation of denser (harder) scene regions.
             radius = 0.1 * min(h, w)
             n_neighbors = self.calc_n_neighbors(kpts, radius)
+            # Include keypoints in the count to avoid null probabilities
+            n_neighbors += 1
             p = n_neighbors / n_neighbors.sum()
             centers = kpts[random_state.choice(inds, self.n_crops, p=p)]
             centers[:, 0] += max_shift_x * rngs[0].uniform(-1, 1, self.n_crops)

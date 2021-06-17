@@ -220,7 +220,6 @@ def create_new_project(
         cfg_file["skeleton"] = [["bodypart1", "bodypart2"], ["objectA", "bodypart3"]]
         cfg_file["default_augmenter"] = "default"
         cfg_file["default_net_type"] = "resnet_50"
-    cfg_file["croppedtraining"] = False
 
     # common parameters:
     cfg_file["Task"] = project
