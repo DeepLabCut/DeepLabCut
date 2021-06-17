@@ -78,9 +78,6 @@ if __name__ == "__main__":
     )
     print("Artificial data created.")
 
-    print("Cropping and exchanging")
-    deeplabcut.cropimagesandlabels(config_path, userfeedback=False)
-
     print("Checking labels...")
     deeplabcut.check_labels(config_path, draw_skeleton=False)
     print("Labels checked.")
