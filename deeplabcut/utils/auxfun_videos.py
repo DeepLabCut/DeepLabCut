@@ -42,6 +42,15 @@ class VideoReader:
         if os.path.getsize(dest) != 0:
             warnings.warn(f'Video contains errors. See "{dest}" for a detailed report.')
 
+    def check_integrity_robust(self):
+        numframes = self.video.get(cv2.CAP_PROP_FRAME_COUNT)
+        fr = 0
+        while fr < numframes:
+            success, img = self.video.read()
+            if success == False:
+                warnings.warn(f'Opencv failed to load frame {fr}. Use ffmpeg to re-encode video file')
+            fr += 1
+
     @property
     def name(self):
         return os.path.splitext(os.path.split(self.video_path)[1])[0]
