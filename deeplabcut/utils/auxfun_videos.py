@@ -43,11 +43,10 @@ class VideoReader:
             warnings.warn(f'Video contains errors. See "{dest}" for a detailed report.')
 
     def check_integrity_robust(self):
-        numframes = self.video.get(cv2.CAP_PROP_FRAME_COUNT)
         fr = 0
-        while fr < numframes:
-            success, img = self.video.read()
-            if success == False:
+        while self.video.isOpened():
+            success, _ = self.video.read()
+            if not success:
                 warnings.warn(f'Opencv failed to load frame {fr}. Use ffmpeg to re-encode video file')
             fr += 1
 
