@@ -45,7 +45,7 @@ class VideoReader:
     def check_integrity_robust(self):
         numframes = self.video.get(cv2.CAP_PROP_FRAME_COUNT)
         fr = 0
-        while fr < numframes:
+        while self.video.isOpened():
             success, img = self.video.read()
             if success == False:
                 warnings.warn(f'Opencv failed to load frame {fr}. Use ffmpeg to re-encode video file')
@@ -337,6 +337,11 @@ class VideoWriter(VideoReader):
             dest_folder = self.directory
         return os.path.join(dest_folder, f"{self.name}{suffix}{self.format}")
 
+def check_video_integrity(path):
+    from deeplabcut.utils.auxfun_videos import VideoReader
+    vid = VideoReader(path)
+    vid.check_integrity()
+    vid.check_integrity_robust()
 
 # Historically DLC used: from scipy.misc import imread, imresize >> deprecated functions
 def imread(path, mode=None):
