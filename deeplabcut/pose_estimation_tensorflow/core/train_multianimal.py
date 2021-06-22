@@ -113,13 +113,7 @@ def train(
     sess.run(tf.compat.v1.global_variables_initializer())
     sess.run(tf.compat.v1.local_variables_initializer())
 
-    # Restore variables from disk.
-    if "efficientnet" in net_type:
-        init_weights = os.path.join(cfg["init_weights"], "model.ckpt")
-    else:
-        init_weights = cfg["init_weights"]
-
-    restorer.restore(sess, init_weights)
+    restorer.restore(sess, cfg["init_weights"])
     if maxiters is None:
         max_iter = int(cfg["multi_step"][-1][1])
     else:
