@@ -337,12 +337,13 @@ class VideoWriter(VideoReader):
             dest_folder = self.directory
         return os.path.join(dest_folder, f"{self.name}{suffix}{self.format}")
 
-def check_video_integrity(path):
-    from deeplabcut.utils.auxfun_videos import VideoReader
-    vid = VideoReader(path)
+    
+def check_video_integrity(video_path):
+    vid = VideoReader(video_path)
     vid.check_integrity()
     vid.check_integrity_robust()
 
+    
 # Historically DLC used: from scipy.misc import imread, imresize >> deprecated functions
 def imread(path, mode=None):
     return cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
