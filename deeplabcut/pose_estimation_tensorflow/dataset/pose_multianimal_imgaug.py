@@ -80,15 +80,13 @@ class MAPoseDataset:
         cfg = self.cfg
 
         sometimes = lambda aug: iaa.Sometimes(apply_prob, aug)
-        pipeline = augmentation.Sequential(random_order=False)
+        pipeline = iaa.Sequential(random_order=False)
 
         # Add smart, keypoint-aware image cropping
         w, h = cfg.get("crop_size", (400, 400))
         pipeline.add(iaa.PadToFixedSize(w, h))
         pipeline.add(
-            augmentation.KeypointAwareCropsToFixedSize(
-                w, h, cfg.get('n_crops', 10),
-            ),
+            augmentation.KeypointAwareCropToFixedSize(w, h, cfg.get('max_shift', 0.4))
         )
 
         if cfg.get("fliplr", False):

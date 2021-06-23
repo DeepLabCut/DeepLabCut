@@ -28,7 +28,7 @@ batch_size: 1
 
 # Smart, on-the-fly image cropping, replacing deeplabcut.cropimagesandlabels
 crop_size: [400, 400]
-n_crops: 10
+max_shift: 0.4  # Maximum relative shift of the position of the crop center
 
 #Data loaders, i.e. with additional data augmentation options (as of 2.0.9+):
 #default with be with no extra dataloaders. Other options: 'tensorpack, deterministic'
