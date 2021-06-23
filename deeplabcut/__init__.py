@@ -86,8 +86,12 @@ from deeplabcut.utils import (
     auxfun_videos,
 )
 
-from deeplabcut.utils.auxfun_videos import ShortenVideo, DownSampleVideo, CropVideo
-
+from deeplabcut.utils.auxfun_videos import (
+    ShortenVideo,
+    DownSampleVideo,
+    CropVideo,
+    check_video_integrity,
+)
 
 # Train, evaluate & predict functions / all require TF
 from deeplabcut.pose_estimation_tensorflow import (
