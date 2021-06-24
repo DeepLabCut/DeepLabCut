@@ -40,6 +40,7 @@ jobs:
       - name: Install ffmpeg
         run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt-get update
             sudo apt-get install ffmpeg
           elif [ "$RUNNER_OS" == "macOS" ]; then
             brew install ffmpeg
