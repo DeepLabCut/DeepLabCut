@@ -1288,8 +1288,9 @@ def convert_detections2tracklets(
         By default, a constant velocity Kalman filter is used to track
         covariance error ellipses fitted to an individual's body parts.
 
-    ignore_bodyparts: Default is None: all body parts are used.
-        Pass list of indices if certain body parts should be ignored during tracking (advanced).
+    ignore_bodyparts: optional
+        List of body part names that should be ignored during tracking (advanced).
+        By default, all the body parts are used.
 
     inferencecfg: Default is None.
         Configuaration file for inference (assembly of individuals). Ideally
@@ -1462,15 +1463,14 @@ def convert_detections2tracklets(
                         inferencecfg.get("iou_threshold", 0.6),
                     )
                 tracklets = {}
-
-                n_multibpts = len(cfg["multianimalbodyparts"])
+                multi_bpts = cfg["multianimalbodyparts"]
                 ass = inferenceutils.Assembler(
                     data,
                     max_n_individuals=inferencecfg["topktoretain"],
-                    n_multibodyparts=n_multibpts,
+                    n_multibodyparts=len(multi_bpts),
                     greedy=greedy,
                     pcutoff=inferencecfg.get("pcutoff", 0.1),
-                    min_affinity=inferencecfg.get("pafthreshold", 0.1),
+                    min_affinity=inferencecfg.get("pafthreshold", 0.05),
                     window_size=window_size,
                     identity_only=identity_only,
                 )
@@ -1491,7 +1491,8 @@ def convert_detections2tracklets(
                     tracklets["single"] = {}
                     tracklets["single"].update(ass.unique)
 
-                keep = sorted(set(range(n_multibpts)).difference(ignore_bodyparts or []))
+                keep = set(multi_bpts).difference(ignore_bodyparts or [])
+                keep_inds = sorted(multi_bpts.index(bpt) for bpt in keep)
                 for index, imname in tqdm(enumerate(imnames)):
                     assemblies = ass.assemblies.get(index)
                     if assemblies is None:
@@ -1500,11 +1501,11 @@ def convert_detections2tracklets(
                     if not identity_only:
                         if track_method == "box":
                             bboxes = trackingutils.calc_bboxes_from_keypoints(
-                                animals[:, keep], inferencecfg["boundingboxslack"], offset=0
+                                animals[:, keep_inds], inferencecfg["boundingboxslack"], offset=0
                             )  # TODO: get cropping parameters and utilize!
                             trackers = mot_tracker.update(bboxes)
                         else:
-                            xy = animals[:, keep, :2]
+                            xy = animals[:, keep_inds, :2]
                             trackers = mot_tracker.track(xy)
                     else:
                         # Optimal identity assignment based on soft voting
