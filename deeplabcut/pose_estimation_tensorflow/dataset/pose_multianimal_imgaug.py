@@ -36,6 +36,13 @@ class MAPoseDataset:
         self.num_images = len(self.data)
         self.batch_size = cfg["batch_size"]
         print("Batch Size is %d" % self.batch_size)
+        self.pipeline = self.build_augmentation_pipeline(
+            apply_prob=cfg.get('apply_prob', 0.5),
+        )
+
+    @property
+    def default_crop_size(self):
+        return self.cfg.get("crop_size", (400, 400))  # width, height
 
     def load_dataset(self):
         cfg = self.cfg
@@ -83,10 +90,12 @@ class MAPoseDataset:
         pipeline = iaa.Sequential(random_order=False)
 
         # Add smart, keypoint-aware image cropping
-        w, h = cfg.get("crop_size", (400, 400))
+        w, h = self.default_crop_size
         pipeline.add(iaa.PadToFixedSize(w, h))
         pipeline.add(
-            augmentation.KeypointAwareCropToFixedSize(w, h, cfg.get('max_shift', 0.4))
+            augmentation.KeypointAwareCropToFixedSize(
+                w, h, cfg.get('max_shift', 0.4),
+            )
         )
 
         if cfg.get("fliplr", False):
@@ -150,18 +159,6 @@ class MAPoseDataset:
         batch_joints = []
         joint_ids = []
         data_items = []
-
-        # Scale is sampled only once (per batch) to transform all of the images into same size.
-        scale = self.get_scale()
-        while True:
-            idx = np.random.choice(self.num_images)
-            scale = self.get_scale()
-            size = self.data[idx].im_size
-            target_size = np.ceil(size[1:3] * scale).astype(int)
-            if self.is_valid_size(target_size):
-                break
-
-        stride = self.cfg["stride"]
         for i in range(self.batch_size):
             data_item = self.data[img_idx[i]]
 
@@ -182,17 +179,7 @@ class MAPoseDataset:
                 batch_joints.append(arr(joint_points))
 
             batch_images.append(image)
-
-        sm_size = np.ceil(target_size / (stride * self.cfg.get("smfactor", 2))).astype(
-            int
-        ) * self.cfg.get("smfactor", 2)
-
-        if stride == 2:
-            sm_size = np.ceil(target_size / 16).astype(int)
-            sm_size *= 8
-
-        # assert len(batch_images) == self.batch_size
-        return batch_images, joint_ids, batch_joints, data_items, sm_size, target_size
+        return batch_images, joint_ids, batch_joints, data_items
 
     def get_targetmaps_update(
         self, joint_ids, joints, data_items, sm_size, target_size
@@ -255,17 +242,23 @@ class MAPoseDataset:
                 joint_ids,
                 batch_joints,
                 data_items,
-                sm_size,
-                target_size,
             ) = self.get_batch()
 
-            pipeline = self.build_augmentation_pipeline(
-                height=target_size[0], width=target_size[1], apply_prob=0.5
-            )
-
-            batch_images, batch_joints = pipeline(
+            # Scale is sampled only once (per batch) to transform all of the images into same size.
+            target_size = np.asarray(self.default_crop_size) * self.get_scale()
+            target_size = np.ceil(target_size).astype(int)
+            augmentation.update_crop_size(self.pipeline, *target_size)
+            batch_images, batch_joints = self.pipeline(
                 images=batch_images, keypoints=batch_joints
             )
+
+            stride = self.cfg["stride"]
+            sm_size = np.ceil(target_size / (stride * self.cfg.get("smfactor", 2))).astype(
+                int
+            ) * self.cfg.get("smfactor", 2)
+            if stride == 2:
+                sm_size = np.ceil(target_size / 16).astype(int)
+                sm_size *= 8
 
             # If you would like to check the augmented images, script for saving
             # the images with joints on:

@@ -26,8 +26,11 @@ global_scale: 0.8
 dataset_type: imgaug
 batch_size: 1
 
+# Probability with which the augmenters will be applied to input images
+apply_prob: 0.5
+
 # Smart, on-the-fly image cropping, replacing deeplabcut.cropimagesandlabels
-crop_size: [400, 400]
+crop_size: [400, 400]  # width, height
 max_shift: 0.4  # Maximum relative shift of the position of the crop center
 
 #Data loaders, i.e. with additional data augmentation options (as of 2.0.9+):

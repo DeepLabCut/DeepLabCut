@@ -18,7 +18,9 @@ class KeypointAwareCropToFixedSize(iaa.CropToFixedSize):
             Maximum allowed shift of the cropping center position
             as a fraction of the crop size.
         """
-        super(KeypointAwareCropToFixedSize, self).__init__(width, height)
+        super(KeypointAwareCropToFixedSize, self).__init__(
+            width, height, name="kptscrop",
+        )
         # Clamp to 40% of crop size to ensure that at least
         # the center keypoint remains visible after the offset is applied.
         self.max_shift = max(0., min(max_shift, 0.4))
@@ -54,3 +56,8 @@ class KeypointAwareCropToFixedSize(iaa.CropToFixedSize):
             offsets[n] = center
         offsets = np.clip(offsets, 0, 1)
         return [self.size] * n_samples, offsets[:, 0], offsets[:, 1]
+
+
+def update_crop_size(pipeline, width, height):
+    aug = pipeline.find_augmenters_by_name("kptscrop")[0]
+    aug.size = width, height
