@@ -18,9 +18,9 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.8
+  - python=3.9
   - pip
-  - cudnn=7
+  - cudnn=8
   - jupyter
   - nb_conda
   - pip:

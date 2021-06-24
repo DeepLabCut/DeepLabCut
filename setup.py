@@ -40,7 +40,7 @@ setuptools.setup(
         "scipy>=1.4",
         "statsmodels>=0.11",
         "tables",
-        "tensorflow>=2, <2.4",
+        "tensorflow>=2.5",
         "tensorpack",
         "tf_slim",
         "tqdm",
