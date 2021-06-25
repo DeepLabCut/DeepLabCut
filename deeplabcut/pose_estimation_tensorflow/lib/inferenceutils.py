@@ -624,7 +624,7 @@ class Assembler:
             for _, group in groups:
                 ass = Assembly(self.n_multibodyparts)
                 for joint in sorted(group, key=lambda x: x.confidence, reverse=True):
-                    if joint.confidence >= self.pcutoff:
+                    if joint.confidence >= self.pcutoff and joint.label < self.n_multibodyparts::
                         ass.add_joint(joint)
                 if len(ass):
                     assemblies.append(ass)
