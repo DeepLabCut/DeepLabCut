@@ -39,7 +39,7 @@ from numba.core.errors import NumbaPerformanceWarning
 from scipy.optimize import linear_sum_assignment
 from scipy.stats import mode
 from tqdm import tqdm
-# from shapely.geometry import Polygon
+from shapely.geometry import Polygon
 
 
 warnings.simplefilter("ignore", category=NumbaPerformanceWarning)
@@ -197,17 +197,16 @@ class Ellipse:
 
     @property
     def geometry(self):
-        # if self._geometry is None:
-        #     t = np.linspace(0, 2 * np.pi, 40)
-        #     ca = math.cos(self.theta)
-        #     sa = math.sin(self.theta)
-        #     at = 0.5 * self.width * np.cos(t)
-        #     bt = 0.5 * self.height * np.sin(t)
-        #     xx = at * ca - bt * sa + self.x
-        #     yy = at * sa + bt * ca + self.y
-        #     self._geometry = Polygon(list(zip(xx, yy)))
-        # return self._geometry
-        print('Jon Matthis - removed the Shapely module for compatibility reasons, so def geometry in trackingutils.py wont work' )
+        if self._geometry is None:
+            t = np.linspace(0, 2 * np.pi, 40)
+            ca = math.cos(self.theta)
+            sa = math.sin(self.theta)
+            at = 0.5 * self.width * np.cos(t)
+            bt = 0.5 * self.height * np.sin(t)
+            xx = at * ca - bt * sa + self.x
+            yy = at * sa + bt * ca + self.y
+            self._geometry = Polygon(list(zip(xx, yy)))
+        return self._geometry
         return
 
     def calc_iou_with(self, other_ellipse):
