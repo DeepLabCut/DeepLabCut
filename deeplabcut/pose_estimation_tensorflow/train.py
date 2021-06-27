@@ -77,11 +77,11 @@ def setup_preloading(batch_spec):
     vers = (tf.__version__).split(".")
 
     if int(vers[0]) == 2:
-        q = tf.queue.FIFOQueue(QUEUE_SIZE, [tf.float32] * len(batch_spec))
+        q = TF.queue.FIFOQueue(QUEUE_SIZE, [tf.float32] * len(batch_spec))
     elif int(vers[0]) == 1 and int(vers[1]) > 12:
-        q = tf.queue.FIFOQueue(QUEUE_SIZE, [tf.float32] * len(batch_spec))
+        q = TF.queue.FIFOQueue(QUEUE_SIZE, [tf.float32] * len(batch_spec))
     else:
-        q = tf.FIFOQueue(QUEUE_SIZE, [tf.float32] * len(batch_spec))
+        q = TF.FIFOQueue(QUEUE_SIZE, [tf.float32] * len(batch_spec))
     enqueue_op = q.enqueue(placeholders_list)
     batch_list = q.dequeue()
 
@@ -147,7 +147,7 @@ def get_optimizer_with_freeze(loss_op, cfg):
         raise ValueError("unknown optimizer {}".format(cfg["optimizer"]))
 
     train_unfrozen_op = slim.learning.create_train_op(loss_op, optimizer)
-    variables_unfrozen = TF.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, "pose")
+    variables_unfrozen = TF.get_collection(TF.GraphKeys.TRAINABLE_VARIABLES, "pose")
 
     train_frozen_op = slim.learning.create_train_op(
         loss_op, optimizer, variables_to_train=variables_unfrozen
