@@ -124,7 +124,7 @@ def evaluate_multianimal_full(
     
     if int(vers[0]) == 2:
         TF = tf.compat.v1
-        TF.disable_v2_behavior()
+        # TF.disable_v2_behavior()
     elif int(vers[0]) == 1 and int(vers[1]) > 12:
         TF = tf.compat.v1
     else:
@@ -541,7 +541,7 @@ def evaluate_multianimal_full(
                             PredicteData, metadata, resultsfilename
                         )
 
-                        tf.reset_default_graph()
+                        TF.reset_default_graph()
 
                     # Skip data-driven skeleton selection unless
                     # the model was trained on the full graph.

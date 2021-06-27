@@ -587,7 +587,7 @@ def evaluate_network(
         
         if int(vers[0]) == 2:
             TF = tf.compat.v1
-            TF.disable_v2_behavior()
+            # TF.disable_v2_behavior()
         elif int(vers[0]) == 1 and int(vers[1]) > 12:
             TF = tf.compat.v1
         else:

@@ -194,7 +194,7 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True, modelpre
         else:
             output = ["Sigmoid", "pose/part_pred/block4/BiasAdd"]
 
-    input = tf.get_default_graph().get_operations()[0].name
+    input = TF.get_default_graph().get_operations()[0].name
 
     return sess, input, output, dlc_cfg
 
