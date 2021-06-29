@@ -247,6 +247,8 @@ class MAPoseDataset:
             # Scale is sampled only once (per batch) to transform all of the images into same size.
             target_size = np.asarray(self.default_crop_size) * self.get_scale()
             target_size = np.ceil(target_size).astype(int)
+            if not self.is_valid_size(target_size):
+                target_size = self.default_crop_size
             augmentation.update_crop_size(self.pipeline, *target_size)
             batch_images, batch_joints = self.pipeline(
                 images=batch_images, keypoints=batch_joints
@@ -308,9 +310,8 @@ class MAPoseDataset:
         return scale
 
     def is_valid_size(self, target_size):
-        im_width = target_size[1]
-        im_height = target_size[0]
-        min_input_size = 100
+        im_width, im_height = target_size
+        min_input_size = self.cfg.get("min_input_size", 100)
         if im_height < min_input_size or im_width < min_input_size:
             return False
         if hasattr(self.cfg, "max_input_size"):
