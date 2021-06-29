@@ -29,7 +29,7 @@ setuptools.setup(
         "filterpy",
         "ruamel.yaml>=0.15.0",
         "imgaug",
-        "numba==0.51.1",
+        "numba",
         "matplotlib==3.1.3",
         "networkx",
         "numpy",
