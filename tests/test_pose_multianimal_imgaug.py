@@ -53,8 +53,6 @@ def test_get_batch(
         joint_ids,
         batch_joints,
         data_items,
-        sm_size,
-        target_size,
     ) = ma_dataset.get_batch()
     assert len(batch_images) == len(joint_ids) == len(batch_joints) \
            == len(data_items) == batch_size
@@ -62,8 +60,6 @@ def test_get_batch(
         assert len(data_item.joints) == len(joint_id)
         for joints, id_ in zip(data_item.joints.values(), joint_id):
             np.testing.assert_equal(joints[:, 0], id_)
-    np.testing.assert_equal(np.asarray([400, 400]) * scale, target_size)
-    np.testing.assert_equal(target_size / stride, sm_size)
 
 
 @pytest.mark.parametrize(
