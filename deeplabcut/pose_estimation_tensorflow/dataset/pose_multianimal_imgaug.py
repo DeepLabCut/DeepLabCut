@@ -366,9 +366,9 @@ class MAPoseDataset:
         # so let's just loop over all bpts.
         for k, j_id in enumerate(np.concatenate(joint_id)):
             joint_pt = coords[0][k, :]
-            j_x = np.asscalar(joint_pt[0])
+            j_x = joint_pt[0].item()
             j_x_sm = round((j_x - half_stride) / stride)
-            j_y = np.asscalar(joint_pt[1])
+            j_y = joint_pt[1].item()
             j_y_sm = round((j_y - half_stride) / stride)
 
             min_x = round(max(j_x_sm - dist_thresh - 1, 0))
@@ -401,9 +401,9 @@ class MAPoseDataset:
                 if len(joint_ids) > 1:
                     for k, j_id in enumerate(joint_ids):
                         joint_pt = coords[0][k + coordinateoffset, :]
-                        j_x = np.asscalar(joint_pt[0])
+                        j_x = joint_pt[0].item()
                         j_x_sm = round((j_x - half_stride) / stride)
-                        j_y = np.asscalar(joint_pt[1])
+                        j_y = joint_pt[1].item()
                         j_y_sm = round((j_y - half_stride) / stride)
 
                         min_x = round(max(j_x_sm - dist_thresh - 1, 0))
@@ -439,13 +439,13 @@ class MAPoseDataset:
                     I1 = np.where(np.array(joint_ids) == bp1)[0]
                     I2 = np.where(np.array(joint_ids) == bp2)[0]
                     if (len(I1) > 0) * (len(I2) > 0):
-                        indbp1 = np.asscalar(I1[0])
-                        indbp2 = np.asscalar(I2[0])
-                        j_x = np.asscalar(coords[0][indbp1 + coordinateoffset, 0])
-                        j_y = np.asscalar(coords[0][indbp1 + coordinateoffset, 1])
+                        indbp1 = I1[0].item()
+                        indbp2 = I2[0].item()
+                        j_x = (coords[0][indbp1 + coordinateoffset, 0]).item()
+                        j_y = (coords[0][indbp1 + coordinateoffset, 1]).item()
 
-                        linkedj_x = np.asscalar(coords[0][indbp2 + coordinateoffset, 0])
-                        linkedj_y = np.asscalar(coords[0][indbp2 + coordinateoffset, 1])
+                        linkedj_x = (coords[0][indbp2 + coordinateoffset, 0]).item()
+                        linkedj_y = (coords[0][indbp2 + coordinateoffset, 1]).item()
 
                         dist = np.sqrt((linkedj_x - j_x) ** 2 + (linkedj_y - j_y) ** 2)
                         if dist > 0:
@@ -453,14 +453,12 @@ class MAPoseDataset:
                             Dy = (linkedj_y - j_y) * 1.0 / dist
 
                             d1 = [
-                                np.asscalar(Dx * j_x + Dy * j_y),
-                                np.asscalar(Dx * linkedj_x + Dy * linkedj_y),
+                                Dx * j_x + Dy * j_y,
+                                Dx * linkedj_x + Dy * linkedj_y,
                             ]  # in-line with direct axis
                             d1lowerboundary = min(d1)
                             d1upperboundary = max(d1)
-                            d2mid = np.asscalar(
-                                j_y * Dx - j_x * Dy
-                            )  # orthogonal direction
+                            d2mid = j_y * Dx - j_x * Dy  # orthogonal direction
 
                             distance_along = Dx * (x * stride + half_stride) + Dy * (
                                 y * stride + half_stride
@@ -544,9 +542,9 @@ class MAPoseDataset:
         # so let's just loop over all bpts.
         for k, j_id in enumerate(np.concatenate(joint_id)):
             joint_pt = coords[0][k, :]
-            j_x = np.asscalar(joint_pt[0])
+            j_x = joint_pt[0].item()
             j_x_sm = round((j_x - half_stride) / stride)
-            j_y = np.asscalar(joint_pt[1])
+            j_y = joint_pt[1].item()
             j_y_sm = round((j_y - half_stride) / stride)
 
             map_j = grid.copy()
@@ -576,13 +574,13 @@ class MAPoseDataset:
                     I1 = np.where(np.array(joint_ids) == bp1)[0]
                     I2 = np.where(np.array(joint_ids) == bp2)[0]
                     if (len(I1) > 0) * (len(I2) > 0):
-                        indbp1 = np.asscalar(I1[0])
-                        indbp2 = np.asscalar(I2[0])
-                        j_x = np.asscalar(coords[0][indbp1 + coordinateoffset, 0])
-                        j_y = np.asscalar(coords[0][indbp1 + coordinateoffset, 1])
+                        indbp1 = I1[0].item()
+                        indbp2 = I2[0].item()
+                        j_x = (coords[0][indbp1 + coordinateoffset, 0]).item()
+                        j_y = (coords[0][indbp1 + coordinateoffset, 1]).item()
 
-                        linkedj_x = np.asscalar(coords[0][indbp2 + coordinateoffset, 0])
-                        linkedj_y = np.asscalar(coords[0][indbp2 + coordinateoffset, 1])
+                        linkedj_x = (coords[0][indbp2 + coordinateoffset, 0]).item()
+                        linkedj_y = (coords[0][indbp2 + coordinateoffset, 1]).item()
 
                         dist = np.sqrt((linkedj_x - j_x) ** 2 + (linkedj_y - j_y) ** 2)
                         if dist > 0:
@@ -590,14 +588,12 @@ class MAPoseDataset:
                             Dy = (linkedj_y - j_y) * 1.0 / dist
 
                             d1 = [
-                                np.asscalar(Dx * j_x + Dy * j_y),
-                                np.asscalar(Dx * linkedj_x + Dy * linkedj_y),
+                                Dx * j_x + Dy * j_y,
+                                Dx * linkedj_x + Dy * linkedj_y,
                             ]  # in-line with direct axis
                             d1lowerboundary = min(d1)
                             d1upperboundary = max(d1)
-                            d2mid = np.asscalar(
-                                j_y * Dx - j_x * Dy
-                            )  # orthogonal direction
+                            d2mid = j_y * Dx - j_x * Dy  # orthogonal direction
 
                             distance_along = Dx * (x * stride + half_stride) + Dy * (
                                 y * stride + half_stride
