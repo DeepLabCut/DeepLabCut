@@ -235,6 +235,20 @@ class MAPoseDataset:
             Batch.pairwise_mask: partaffinityfield_masks,
         }
 
+    def calc_target_and_scoremap_sizes(self):
+        target_size = np.asarray(self.default_crop_size) * self.get_scale()
+        target_size = np.ceil(target_size).astype(int)
+        if not self.is_valid_size(target_size):
+            target_size = self.default_crop_size
+        stride = self.cfg["stride"]
+        sm_size = np.ceil(target_size / (stride * self.cfg.get("smfactor", 2))).astype(
+            int
+        ) * self.cfg.get("smfactor", 2)
+        if stride == 2:
+            sm_size = np.ceil(target_size / 16).astype(int)
+            sm_size *= 8
+        return target_size, sm_size
+
     def next_batch(self, plotting=False):
         while True:
             (
@@ -245,22 +259,11 @@ class MAPoseDataset:
             ) = self.get_batch()
 
             # Scale is sampled only once (per batch) to transform all of the images into same size.
-            target_size = np.asarray(self.default_crop_size) * self.get_scale()
-            target_size = np.ceil(target_size).astype(int)
-            if not self.is_valid_size(target_size):
-                target_size = self.default_crop_size
+            target_size, sm_size = self.calc_target_and_scoremap_sizes()
             augmentation.update_crop_size(self.pipeline, *target_size)
             batch_images, batch_joints = self.pipeline(
                 images=batch_images, keypoints=batch_joints
             )
-
-            stride = self.cfg["stride"]
-            sm_size = np.ceil(target_size / (stride * self.cfg.get("smfactor", 2))).astype(
-                int
-            ) * self.cfg.get("smfactor", 2)
-            if stride == 2:
-                sm_size = np.ceil(target_size / 16).astype(int)
-                sm_size *= 8
 
             # If you would like to check the augmented images, script for saving
             # the images with joints on:
