@@ -1405,7 +1405,7 @@ def convert_detections2tracklets(
                 destfolder = videofolder
             auxiliaryfunctions.attempttomakefolder(destfolder)
             vname = Path(video).stem
-            dataname = os.path.join(videofolder, vname + DLCscorer + ".h5")
+            dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
             data, metadata = auxfun_multianimal.LoadFullMultiAnimalData(dataname)
             if track_method == "ellipse":
                 method = "el"
@@ -1414,7 +1414,8 @@ def convert_detections2tracklets(
             else:
                 method = "sk"
             trackname = dataname.split(".h5")[0] + f"_{method}.pickle"
-            trackname = trackname.replace(videofolder, destfolder)
+            # NOTE: If dataname line above is changed then line below is obsolete?
+            # trackname = trackname.replace(videofolder, destfolder)
             if (
                 os.path.isfile(trackname) and not overwrite
             ):  # TODO: check if metadata are identical (same parameters!)
