@@ -28,8 +28,8 @@ from skimage.util import img_as_ubyte
 from tqdm import tqdm
 
 from deeplabcut.pose_estimation_tensorflow.config import load_config
+from deeplabcut.pose_estimation_tensorflow.core import predict
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingutils
-from deeplabcut.pose_estimation_tensorflow.nnet import predict
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
 
@@ -159,7 +159,7 @@ def analyze_videos(
     if gputouse is not None:  # gpu selection
         os.environ["CUDA_VISIBLE_DEVICES"] = str(gputouse)
 
-    tf.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
     start_path = os.getcwd()  # record cwd to return to this directory in the end
 
     cfg = auxiliaryfunctions.read_config(config)
@@ -352,9 +352,7 @@ def analyze_videos(
             print(
                 "If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames."
             )
-        return (
-            DLCscorer
-        )  # note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
+        return DLCscorer  # note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
     else:
         print("No video(s) were found. Please check your paths and/or 'video_type'.")
         return DLCscorer
@@ -981,13 +979,7 @@ def analyze_time_lapse_frames(
     if gputouse is not None:  # gpu selection
         os.environ["CUDA_VISIBLE_DEVICES"] = str(gputouse)
 
-    vers = (tf.__version__).split(".")
-    if int(vers[0]) == 1 and int(vers[1]) > 12:
-        TF = tf.compat.v1
-    else:
-        TF = tf
-
-    TF.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
     start_path = os.getcwd()  # record cwd to return to this directory in the end
 
     cfg = auxiliaryfunctions.read_config(config)

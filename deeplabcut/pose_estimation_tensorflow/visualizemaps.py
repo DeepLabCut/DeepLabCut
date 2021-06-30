@@ -54,27 +54,21 @@ def extract_maps(
 
     """
     from deeplabcut.utils.auxfun_videos import imread, imresize
-    from deeplabcut.pose_estimation_tensorflow.nnet import predict
-    from deeplabcut.pose_estimation_tensorflow.nnet import (
+    from deeplabcut.pose_estimation_tensorflow.core import (
+        predict,
         predict_multianimal as predictma,
     )
     from deeplabcut.pose_estimation_tensorflow.config import load_config
-    from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import data_to_input
+    from deeplabcut.pose_estimation_tensorflow.datasets.utils import data_to_input
     from deeplabcut.utils import auxiliaryfunctions
     from tqdm import tqdm
     import tensorflow as tf
-
-    vers = (tf.__version__).split(".")
-    if int(vers[0]) == 1 and int(vers[1]) > 12:
-        TF = tf.compat.v1
-    else:
-        TF = tf
 
     import pandas as pd
     from pathlib import Path
     import numpy as np
 
-    TF.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  #
     #    tf.logging.set_verbosity(tf.logging.WARN)
 
