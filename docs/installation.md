@@ -7,7 +7,7 @@ The installation process is as easy as this figure :arrow_right:
  Please note, there are several modes of installation, and the user should decide to either use a **system-wide** (see [note below](/docs/installation.md#system-wide-considerations)), **Anaconda environment** based installation (**recommended**), or the supplied **Docker container** (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but **Anaconda is the easiest route.**
 
 
- ## Step 1: You need to have Python 3 installed, and we highly recommend using Anaconda to do so.
+ ## Step 1: You need to have Python >3.7 installed, and we highly recommend using Anaconda to do so.
 
  ### Simply download the appropriate files here: https://www.anaconda.com/distribution/
 
@@ -17,38 +17,35 @@ The installation process is as easy as this figure :arrow_right:
 
 You first **need to decide if you want to use a CPU or GPU for your models**: (Note, you can also use the CPU-only for project management and labeling the data! Then, for example, use Google Colaboratory GPUs for free (read more [here](https://github.com/DeepLabCut/DeepLabCut/tree/master/examples#demo-4-deeplabcut-training-and-analysis-on-google-colaboratory-with-googles-gpus) and there are a lot of helper videos on [our YouTube channel!](https://www.youtube.com/playlist?list=PLjpMSEOb9vRFwwgIkLLN1NmJxFprkO_zi)).
 
-   - **CPU?** Great, jump to the next section below!
+  - **CPU?** Great, jump to the next section below!
 
-  - **GPU?**  If you want to use your own GPU (i.e., a GPU is in your workstation), then you need to be sure you have a CUDA compatible GPU and CUDA installed. Please note, which CUDA you install depends on what version of tensorflow you want to use. So, please check "GPU Support" below carefully. Then, use the GPU conda file.
+  - **GPU?**  If you want to use your own GPU (i.e., a GPU is in your workstation), then you need to be sure you have a CUDA compatible GPU, CUDA, and cuDNN installed. Please note, which CUDA you install depends on what version of tensorflow you want to use. So, please check "GPU Support" below carefully. Note, DeepLabCut is up to date with the latest CUDA and tensorflow versions!
 
-  - **DIY:** For the experts, it's also on pypi, simply `pip install 'deeplabcut[gui]'` (and have tensorflow 1.x and wxPython also installed) for DeepLabCut + GUI.  Deeplabcut without the GUIs can be installed with `pip install deeplabcut`. The only other requirement is having TensorFlow 1.x installed. See more at the bottom as well.
+  - **DIY:** For the experts that want DLC in a different custom environment, it's also on pypi, simply `pip install 'deeplabcut[gui]'` (and have Tensorflow and wxPython also installed) for DeepLabCut + GUI.  Deeplabcut without the GUIs can be installed with `pip install deeplabcut`. See more Tips at the bottom as well.
 
 ### CPU or GPU:
 
 (A) Download/git clone this repo (in the terminal/cmd program, while **in a folder** you wish to place DeepLabCut
-To git clone type: ``git clone https://github.com/DeepLabCut/DeepLabCut.git``). Note, this can be anywhere, even downloads is fine. 
+To git clone type: ``git clone https://github.com/DeepLabCut/DeepLabCut.git``). Note, this can be anywhere, even downloads is fine OR just click [HERE](http://www.mackenziemathislab.org/s/DEEPLABCUT.yaml) to download the conda file.
 
-(B) Now, in Terminal (or Anaconda Command Prompt for windows users), go to the folder named ``conda-environments`` using the command "`cd`" (which stands for change directory). 
-For example, if you downloaded or cloned the repo onto your Desktop, the command may look like:
+(B) Now, in Terminal (or Anaconda Command Prompt for windows users), go to the folder named ``conda-environments`` using the command "`cd`" (which stands for change directory).
+For example, if you cloned the repo onto your Desktop, the command may look like:
 
-``cd C:\Users\YourUserName\Desktop\DeepLabCut\conda-environments``
+``cd C:\Users\YourUserName\Desktop\DeepLabCut\conda-environments`` or downloaded it from deeplabcut.org: ``cd C:\Users\YourUserName\Downloads``
 
 To get the location right, a cool trick is to drag the folder and drop it into Terminal. Alternatively, you can (on Windows) hold SHIFT and right-click > Copy as path, or (on Mac) right-click and while in the menu press the OPTION key to reveal Copy as Pathname.
 
-(C) Now, depending on which file you want to use type:
+(C) Now, in the terminal run:
 
-``conda env create -f DLC-CPU.yaml``
+``conda env create -f DEEPLABCUT.yaml``
 
-or if **with GPUs**, see "GPU Support" with items you need to do first, then:
-
-``conda env create -f DLC-GPU.yaml``
 
 (D) You can now use this environment from anywhere on your comptuer (i.e. no need to go back into the conda- folder). Just enter your environment by running:
 
-- Ubuntu/MacOS: ``source/conda activate nameoftheenv`` (i.e. on your Mac: ``conda activate DLC-CPU``)
-- Windows: ``activate nameoftheenv`` (i.e. ``activate DLC-GPU``)
+- Ubuntu/MacOS: ``source/conda activate nameoftheenv`` (i.e. on your Mac: ``conda activate DEEPLABCUT``)
+- Windows: ``activate nameoftheenv`` (i.e. ``activate DEEPLABCUT``)
 
-Now you should see (`nameofenv`) on the left of your teminal screen, i.e. ``(dlc-macOS-CPU) YourName-MacBook...``
+Now you should see (`nameofenv`) on the left of your teminal screen, i.e. ``(DEEPLABCUT) YourName-MacBook...``
 NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)
 
 **Great, that's it! DeepLabCut is installed!**
@@ -74,20 +71,19 @@ Some users might want to create their own customize env. -  Here is an example.
 
 In the terminal type:
 
-`conda create -n DLC python=3.7 tensorflow=1.13.1` 
+`conda create -n DLC python=3.8 tensorflow`
 
-(this would be for CPU-based tensorflow; for GPU support use `tensorflow-gpu=1.13.1`).
 
 The only thing you then need to add to the env is deeplabcut (`pip install deeplabcut`) and wxPython, which is OS dependent.  
 For Windows and MacOS, you just run `pip install -U wxPython<4.1.0` but for linux you need the specific wheel (https://wxpython.org/pages/downloads/index.html).
 
+We have some tips for linux users here: https://github.com/DeepLabCut/Docker4DeepLabCut2.0/wiki
 
+### **GPU Support:**
 
-### **GPU Support:** 
-
-The ONLY thing you need to do **first** if you have an NVIDIA GPU, NVIDIA driver installed, and CUDA <=10 (currently, TensorFlow 1.15 is installed inside the env, so you can install _up to_ CUDA 10.0 and an appropriate driver). Please note that only NVIDA GPUs are supported.
+The ONLY thing you need to do **first** if you have an NVIDIA GPU, NVIDIA driver installed, and CUDA plus cuDNN (once in your conda env just run: `conda install -c conda-forge cudnn`). Please note that only NVIDA GPUs are supported.
 - DRIVERS: https://www.nvidia.com/Download/index.aspx
-- CUDA: https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html#verify-you-have-cuda-enabled-system
+- CUDA: https://developer.nvidia.com/cuda-downloads (just follow the prompts here!)
 
 #### The most common "new user" hurdle is installing and using your GPU, so don't get discouraged!
 
@@ -170,7 +166,7 @@ If you perform the system-wide installation, and the computer has other Python p
      - Anaconda/Python3: Anaconda: a free and open source distribution of the Python programming language (download from https://www.anaconda.com/). DeepLabCut is written in Python 3 (https://www.python.org/) and not compatible with Python 2.
      - `pip install deeplabcut`
      - TensorFlow
-       - You will need [TensorFlow](https://www.tensorflow.org/) (we used version 1.0 in the paper, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.14**) for Python 3 with GPU support.
+       - You will need [TensorFlow](https://www.tensorflow.org/) (we used version 1.0 in the paper, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.15, and 2.0 to 2.5**; we rcommend TF2.5 now) for Python 3.7, 3.8, or 3.9 with GPU support.
         - To note, is it possible to run DeepLabCut on your CPU, but it will be VERY slow (see: [Mathis & Warren](https://www.biorxiv.org/content/early/2018/10/30/457242)). However, this is the preferred path if you want to test DeepLabCut on your own computer/data before purchasing a GPU, with the added benefit of a straightforward installation! Otherwise, use our COLAB notebooks for GPU access for testing.
      - Docker: We highly recommend advaced users use the supplied [Docker container](https://github.com/MMathisLab/Docker4DeepLabCut2.0).
      NOTE: [this container does not work on windows hosts!](https://github.com/NVIDIA/nvidia-docker/issues/43)
