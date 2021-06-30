@@ -1,10 +1,10 @@
 import numpy as np
 import os
 import pytest
-from deeplabcut.pose_estimation_tensorflow.dataset import (
+from deeplabcut.pose_estimation_tensorflow.datasets import (
     Batch,
     pose_multianimal_imgaug,
-    create,
+    PoseDatasetFactory,
 )
 from deeplabcut.utils import read_plainconfig
 
@@ -23,7 +23,7 @@ def ma_dataset():
     cfg = read_plainconfig(os.path.join(TEST_DATA_DIR, "pose_cfg.yaml"))
     cfg["project_path"] = TEST_DATA_DIR
     cfg["dataset"] = "trimouse_train_data.pickle"
-    return create(cfg)
+    return PoseDatasetFactory.create(cfg)
 
 
 @pytest.mark.parametrize(
