@@ -1,0 +1,960 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DeepLabCut User Guide (for single animal projects) &#8212; DeepLabCut</title>
+    
+  <link href="_static/css/theme.css" rel="stylesheet" />
+  <link href="_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/sphinx-book-theme.acff12b8f9c144ce68a297486a2fa670.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="_static/js/index.1c5a1a01449ed65a7b51.js">
+
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/togglebutton.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
+    <script async="async" src="https://unpkg.com/thebelab@latest/lib/index.js"></script>
+    <script >
+        const thebe_selector = ".thebe"
+        const thebe_selector_input = "pre"
+        const thebe_selector_output = ".output"
+    </script>
+    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="DeepLabCut for Multi-Animal Projects" href="maDLC_UserGuide.html" />
+    <link rel="prev" title="How To Install DeepLabCut" href="installation.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="index.html">
+      
+      <img src="_static/logo.png" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">DeepLabCut</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="intro.html">
+   Welcome!
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Main Documentation
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="README.html">
+   Welcome to Our Documentation Hub!
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="installation.html">
+   How To Install DeepLabCut
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   DeepLabCut User Guide (for single animal projects)
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="maDLC_UserGuide.html">
+   DeepLabCut for Multi-Animal Projects
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="PROJECT_GUI.html">
+   Interactive Project Manager GUI
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="Overviewof3D.html">
+   3D DeepLabCut
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Tutorials
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="tutorial.html">
+   Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="convert_maDLC.html">
+   How to convert a pre-2.2 project for use with DeepLabCut 2.2
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="HelperFunctions.html">
+   Helper &amp; Advanced Optional Function Documentation
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Recipes
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="recipes/installTips.html">
+   Installation Tips
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="recipes/io.html">
+   Input/output manipulations with DeepLabCut
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="recipes/nn.html">
+   Model training tips &amp; tricks
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="recipes/post.html">
+   Some data processing recipes!
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="recipes/BatchProcessing.html">
+   Automate your training and analysis: Batch Processing
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Mission &amp; Contribute
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="MISSION_AND_VALUES.html">
+   Mission and Values of DeepLabCut
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="roadmap.html">
+   A development roadmap for DeepLabCut
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="Governance.html">
+   Governance Model of DeepLabCut
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="_sources/standardDeepLabCut_UserGuide.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
+    <div class="dropdown-buttons sourcebuttons">
+        <a class="repository-button"
+            href="https://github.com/DeepLabCut/DeepLabCut/tree/master/examples"><button type="button" class="btn btn-secondary topbarbtn"
+                data-toggle="tooltip" data-placement="left" title="Source repository"><i
+                    class="fab fa-github"></i>repository</button></a>
+        <a class="issues-button"
+            href="https://github.com/DeepLabCut/DeepLabCut/tree/master/examples/issues/new?title=Issue%20on%20page%20%2FstandardDeepLabCut_UserGuide.html&body=Your%20issue%20content%20here."><button
+                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
+                title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
+        
+    </div>
+</div>
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show">
+            
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#deeplabcut-project-manager-gui-recommended-for-beginners">
+   DeepLabCut Project Manager GUI (recommended for beginners)
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#deeplabcut-in-the-terminal">
+   DeepLabCut in the Terminal:
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#a-create-a-new-project">
+     (A) Create a New Project
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#important-path-formating-note">
+       Important path formating note:
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#b-configure-the-project">
+     (B) Configure the Project
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#c-data-selection-extract-frames">
+     (C) Data Selection (extract frames)
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#d-label-frames">
+     (D) Label Frames
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#e-check-annotated-frames">
+     (E) Check Annotated Frames
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#f-create-training-dataset-s">
+     (F) Create Training Dataset(s)
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#g-train-the-network">
+     (G) Train The Network
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#h-evaluate-the-trained-network">
+     (H) Evaluate the Trained Network
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#i-novel-video-analysis">
+     (I) Novel Video Analysis:
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#i-novel-video-analysis-extra-features">
+     (I) Novel Video Analysis: extra features
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#dynamic-cropping-of-videos">
+       Dynamic-cropping of videos:
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#filter-data-recommended">
+       Filter data (RECOMMENDED!):
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#plot-trajectories">
+       Plot Trajectories:
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#create-labeled-videos">
+       Create Labeled Videos:
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#extract-skeleton-features">
+     Extract “Skeleton” Features:
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#j-optional-active-learning-network-refinement-extract-outlier-frames">
+     (J) Optional Active Learning -&gt; Network Refinement: Extract Outlier Frames
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#k-refine-labels-augmentation-of-the-training-dataset">
+     (K) Refine Labels: Augmentation of the Training Dataset
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#jupyter-notebooks-for-demonstration-of-the-deeplabcut-workflow">
+     Jupyter Notebooks for Demonstration of the DeepLabCut Workflow
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#d-toolbox">
+   3D Toolbox
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#other-functions-some-are-yet-to-be-documented">
+   Other functions, some are yet-to-be-documented:
+  </a>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+        
+              <div>
+                
+  <div class="section" id="deeplabcut-user-guide-for-single-animal-projects">
+<h1>DeepLabCut User Guide (for single animal projects)<a class="headerlink" href="#deeplabcut-user-guide-for-single-animal-projects" title="Permalink to this headline">¶</a></h1>
+<p>This document covers single/standard DeepLabCut use. If you have a complicated multi-animal scenario (i.e., they look the same), then please see our [maDLC user guide]((<a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master//docs/maDLC_UserGuide.md">https://github.com/DeepLabCut/DeepLabCut/blob/master//docs/maDLC_UserGuide.md</a>).</p>
+<p>To get started, you can use the GUI, or the terminal. See below.</p>
+<div class="section" id="deeplabcut-project-manager-gui-recommended-for-beginners">
+<h2>DeepLabCut Project Manager GUI (recommended for beginners)<a class="headerlink" href="#deeplabcut-project-manager-gui-recommended-for-beginners" title="Permalink to this headline">¶</a></h2>
+<p><strong>GUI:</strong>
+Simply <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code> or MacOS: <code class="docutils literal notranslate"><span class="pre">pythonw</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code>. The below functions are available to you in an easy-to-use graphical user interface. While most functionality is available, advanced users might want the additional flexibility that command line interface offers. Read more [here]((<a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master//docs/PROJECT_GUI.md">https://github.com/DeepLabCut/DeepLabCut/blob/master//docs/PROJECT_GUI.md</a>).</p>
+<p align="center">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572824438905-QY9XQKZ8LAJZG6BLPWOQ/ke17ZwdGBToddI8pDm48kIIa76w436aRzIF_cdFnEbEUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcLthF_aOEGVRewCT7qiippiAuU5PSJ9SSYal26FEts0MmqyMIhpMOn8vJAUvOV4MI/guilaunch.jpg?format=1000w" width="60%">
+</p>
+<p>As a reminder, the core functions are described in our <a class="reference external" href="https://www.nature.com/articles/s41596-019-0176-0">Nature Protocols</a> paper (published at the time of 2.0.6). Additional functions and features are continually added to the package. Thus, we recommend you read over the protocol and then please look at the following documentation and the doctrings. Thanks for using DeepLabCut!</p>
+</div>
+<div class="section" id="deeplabcut-in-the-terminal">
+<h2>DeepLabCut in the Terminal:<a class="headerlink" href="#deeplabcut-in-the-terminal" title="Permalink to this headline">¶</a></h2>
+<p>To begin, navigate to anaconda prompt and right-click to “open as admin “(windows), or simply launch “terminal” (unix/MacOS) on your computer. We assume you have DeepLabCut installed (if not, go here). Next, launch your conda env (i.e., for example <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">DLC-CPU</span></code>) and then type (windows/unix) <code class="docutils literal notranslate"><span class="pre">ipython</span></code> or  (macOS) <code class="docutils literal notranslate"><span class="pre">pythonw</span></code>. Then type <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">deeplabcut</span></code>.</p>
+<div class="section" id="a-create-a-new-project">
+<h3>(A) Create a New Project<a class="headerlink" href="#a-create-a-new-project" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#create_new_project">DOCSTRING</a></p>
+<p>The function <strong>create_new_project</strong> creates a new project directory, required subdirectories, and a basic project configuration file. Each project is identified by the name of the project (e.g. Reaching), name of the experimenter (e.g. YourName), as well as the date at creation.</p>
+<p>Thus, this function requires the user to input the name of the project, the name of the experimenter, and the full path of the videos that are (initially) used to create the training dataset.</p>
+<p>Optional arguments specify the working directory, where the project directory will be created, and if the user wants to copy the videos (to the project directory). If the optional argument working_directory is unspecified, the project directory is created in the current working directory, and if copy_videos is unspecified symbolic links for the videos are created in the videos directory. Each symbolic link creates a reference to a video and thus eliminates the need to copy the entire video to the video directory (if the videos remain at the original location).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project</span><span class="p">(</span><span class="s1">&#39;Name of the project&#39;</span><span class="p">,</span> <span class="s1">&#39;Name of the experimenter&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;Full path of video 1&#39;</span><span class="p">,</span> <span class="s1">&#39;Full path of video2&#39;</span><span class="p">,</span> <span class="s1">&#39;Full path of video3&#39;</span><span class="p">],</span> <span class="n">working_directory</span><span class="o">=</span><span class="s1">&#39;Full path of the working directory&#39;</span><span class="p">,</span> <span class="n">copy_videos</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">,</span> <span class="n">multianimal</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="important-path-formating-note">
+<h4>Important path formating note:<a class="headerlink" href="#important-path-formating-note" title="Permalink to this headline">¶</a></h4>
+<p>Windows users, you must input paths as: <code class="docutils literal notranslate"><span class="pre">r'C:\Users\computername\Videos\reachingvideo1.avi'</span> </code> or</p>
+<p><code class="docutils literal notranslate"> <span class="pre">'C:\\Users\\computername\\Videos\\reachingvideo1.avi'</span></code></p>
+<p>(TIP: you can also place <code class="docutils literal notranslate"><span class="pre">config_path</span></code> in front of <code class="docutils literal notranslate"><span class="pre">deeplabcut.create_new_project</span></code> to create a variable that holds the path to the config.yaml file, i.e. <code class="docutils literal notranslate"><span class="pre">config_path=deeplabcut.create_new_project(...)</span></code>)</p>
+<p>This set of arguments will create a project directory with the name <strong>Name of the project+name of the experimenter+date of creation of the project</strong> in the <strong>Working directory</strong> and creates the symbolic links to videos in the <strong>videos</strong> directory. The project directory will have subdirectories: <strong>dlc-models</strong>, <strong>labeled-data</strong>, <strong>training-datasets</strong>, and <strong>videos</strong>.  All the outputs generated during the course of a project will be stored in one of these subdirectories, thus allowing each project to be curated in separation from other projects. The purpose of the subdirectories is as follows:</p>
+<p><strong>dlc-models:</strong> This directory contains the subdirectories <em>test</em> and <em>train</em>, each of which holds the meta information with regard to the parameters of the feature detectors in configuration files. The configuration files are YAML files, a common human-readable data serialization language. These files can be opened and edited with standard text editors. The subdirectory <em>train</em> will store checkpoints (called snapshots in TensorFlow) during training of the model. These snapshots allow the user to reload the trained model without re-training it, or to pick-up training from a particular saved checkpoint, in case the training was interrupted.</p>
+<p><strong>labeled-data:</strong> This directory will store the frames used to create the training dataset. Frames from different videos are stored in separate subdirectories. Each frame has a filename related to the temporal index within the corresponding video, which allows the user to trace every frame back to its origin.</p>
+<p><strong>training-datasets:</strong>  This directory will contain the training dataset used to train the network and metadata, which contains information about how the training dataset was created.</p>
+<p><strong>videos:</strong> Directory of video links or videos. When <strong>copy_videos</strong> is set to <code class="docutils literal notranslate"><span class="pre">False</span></code>, this directory contains symbolic links to the videos. If it is set to <code class="docutils literal notranslate"><span class="pre">True</span></code> then the videos will be copied to this directory. The default is <code class="docutils literal notranslate"><span class="pre">False</span></code>. Additionally, if the user wants to add new videos to the project at any stage, the function <strong>add_new_videos</strong> can be used. This will update the list of videos in the project’s configuration file.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">add_new_videos</span><span class="p">(</span><span class="s1">&#39;Full path of the project configuration file*&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;full path of video 4&#39;</span><span class="p">,</span> <span class="s1">&#39;full path of video 5&#39;</span><span class="p">],</span> <span class="n">copy_videos</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>*Please note, <em>Full path of the project configuration file</em> will be referenced as <code class="docutils literal notranslate"><span class="pre">config_path</span></code> throughout this protocol.</p>
+<p>The project directory also contains the main configuration file called <em>config.yaml</em>. The <em>config.yaml</em> file contains many important parameters of the project. A complete list of parameters including their description can be found in Box1.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">create_new_project</span></code> step writes the following parameters to the configuration file: <em>Task</em>, <em>scorer</em>, <em>date</em>, <em>project_path</em> as well as a list of videos <em>video_sets</em>. The first three parameters should <strong>not</strong> be changed. The list of videos can be changed by adding new videos or manually removing videos.</p>
+<p align="center">
+<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c40f4124d7a9c0b2ce651c1/1547760716298/Box1-01.png?format=1000w" width="90%">
+</p>
+</div>
+</div>
+<div class="section" id="b-configure-the-project">
+<h3>(B) Configure the Project<a class="headerlink" href="#b-configure-the-project" title="Permalink to this headline">¶</a></h3>
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588892210304-EW7WD46PYAU43WWZS4QZ/ke17ZwdGBToddI8pDm48kAXtGtTuS2U1SVcl-tYMBOAUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8PaoYXhp6HxIwZIk7-Mi3Tsic-L2IOPH3Dwrhl-Ne3Z2YjE9w60pqfeJxDohDRZk1jXSVCSSfcEA7WmgMAGpjTehHAH51QaxKq4KdVMVBxpG/1nktc1kdgq2.jpg?format=1000w" width="175" title="colormaps" alt="DLC Utils" align="right" vspace = "50">
+<p>Next, open the <strong>config.yaml</strong> file, which was created during  <strong>create_new_project</strong>. You can edit this file in any text editor.  Familiarize yourself with the meaning of the parameters (Box 1). You can edit various parameters, in particular you <strong>must add the list of <em>bodyparts</em> (or points of interest)</strong> that you want to track. You can also set the <em>colormap</em> here that is used for all downstream steps (can also be edited at anytime), like labeling GUIs, videos, etc. Here any <a class="reference external" href="https://matplotlib.org/tutorials/colors/colormaps.html">matplotlib colormaps</a> will do!
+Please DO NOT have spaces in the names of bodyparts.</p>
+<p><strong>bodyparts:</strong> are the bodyparts of each individual (in the above list).</p>
+</div>
+<div class="section" id="c-data-selection-extract-frames">
+<h3>(C) Data Selection (extract frames)<a class="headerlink" href="#c-data-selection-extract-frames" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#extract_frames">DOCSTRING</a></p>
+<p><strong>CRITICAL:</strong> A good training dataset should consist of a sufficient number of frames that capture the breadth of the behavior. This ideally implies to select the frames from different (behavioral) sessions, different lighting and different animals, if those vary substantially (to train an invariant, robust feature detector). Thus for creating a robust network that you can reuse in the laboratory, a good training dataset should reflect the diversity of the behavior with respect to postures, luminance conditions, background conditions, animal identities,etc. of the data that will be analyzed. For the simple lab behaviors comprising mouse reaching, open-field behavior and fly behavior, 100−200 frames gave good results <a class="reference external" href="https://www.nature.com/articles/s41593-018-0209-y">Mathis et al, 2018</a>. However, depending on the required accuracy, the nature of behavior, the video quality (e.g. motion blur, bad lighting) and the context, more or less frames might be necessary to create a good network. Ultimately, in order to scale up the analysis to large collections of videos with perhaps unexpected conditions, one can also refine the data set in an adaptive way (see refinement below).</p>
+<p>The function <code class="docutils literal notranslate"><span class="pre">extract_frames</span></code> extracts frames from all the videos in the project configuration file in order to create a training dataset. The extracted frames from all the videos are stored in a separate subdirectory named after the video file’s name under the ‘labeled-data’. This function also has various parameters that might be useful based on the user’s need.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;automatic/manual&#39;</span><span class="p">,</span> <span class="n">algo</span><span class="o">=</span><span class="s1">&#39;uniform/kmeans&#39;</span><span class="p">,</span> <span class="n">userfeedback</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">crop</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>CRITICAL POINT:</strong> It is advisable to keep the frame size small, as large frames increase the training and
+inference time. The cropping parameters for each video can be provided in the config.yaml file (and see below).
+When running the function extract_frames, if the parameter crop=True, then you will be asked to draw a box within the GUI (and this is written to the config.yaml file).</p>
+<p><code class="docutils literal notranslate"><span class="pre">userfeedback</span></code> allows the user to check which videos they wish to extract frames from. In this way, if you added more videos to the config.yaml file it does not, by default, extract frames (again) from every video. If you wish to disable this question, set <code class="docutils literal notranslate"><span class="pre">userfeedback</span> <span class="pre">=</span> <span class="pre">True</span></code>.</p>
+<p>The provided function either selects frames from the videos that are randomly sampled from a uniform distribution (uniform), by clustering based on visual appearance (k-means), or by manual selection. Random
+selection of frames works best for behaviors where the postures vary across the whole video. However, some behaviors
+might be sparse, as in the case of reaching where the reach and pull are very fast and the mouse is not moving much
+between trials (thus, we have the default set to True, as this is best for most use-cases we encounter). In such a case, the function that allows selecting frames based on k-means derived quantization would
+be useful. If the user chooses to use k-means as a method to cluster the frames, then this function downsamples the
+video and clusters the frames using k-means, where each frame is treated as a vector. Frames from different clusters
+are then selected. This procedure makes sure that the frames look different. However, on large and long videos, this
+code is slow due to computational complexity.</p>
+<p><strong>CRITICAL POINT:</strong> It is advisable to extract frames from a period of the video that contains interesting
+behaviors, and not extract the frames across the whole video. This can be achieved by using the start and stop
+parameters in the config.yaml file. Also, the user can change the number of frames to extract from each video using
+the numframes2extract in the config.yaml file.</p>
+<p>However, picking frames is highly dependent on the data and the behavior being studied. Therefore, it is hard to
+provide all purpose code that extracts frames to create a good training dataset for every behavior and animal. If the user feels specific frames are lacking, they can extract hand selected frames of interest using the interactive GUI
+provided along with the toolbox. This can be launched by using:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="s1">&#39;manual&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The user can use the <em>Load Video</em> button to load one of the videos in the project configuration file, use the scroll
+bar to navigate across the video and <em>Grab a Frame</em> (or a range of frames, as of version 2.0.5) to extract the frame(s). The user can also look at the extracted frames and e.g. delete frames (from the directory) that are too similar before reloading the set and then manually annotating them.</p>
+<p align="center">
+<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c71bfbc71c10b4a23d20567/1550958540700/cropMANUAL.gif?format=750w" width="70%">
+</p>
+</div>
+<div class="section" id="d-label-frames">
+<h3>(D) Label Frames<a class="headerlink" href="#d-label-frames" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#label_frames">DOCSTRING</a></p>
+<p>The toolbox provides a function <strong>label_frames</strong> which helps the user to easily label all the extracted frames using
+an interactive graphical user interface (GUI). The user should have already named the body parts to label (points of
+interest) in the project’s configuration file by providing a list. The following command invokes the labeling toolbox.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">label_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The user needs to use the <em>Load Frames</em> button to select the directory which stores the extracted frames from one of
+the videos. Subsequently, the user can use one of the radio buttons (top right) to select a body part to label. RIGHT click to add the label. Left click to drag the label, if needed. If you label a part accidentally, you can use the middle button on your mouse to delete! If you cannot see a body part in the frame, skip over the label! Please see the <code class="docutils literal notranslate"><span class="pre">HELP</span></code> button for more user instructions. This auto-advances once you labeled the first body part. You can also advance to the next frame by clicking on the RIGHT arrow on your keyboard (and go to a previous frame with LEFT arrow).
+Each label will be plotted as a dot in a unique color.</p>
+<p>The user is free to move around the body part and once satisfied with its position, can select another radio button
+(in the top right) to switch to the respective body part (it otherwise auto-advances). The user can skip a body part if it is not visible. Once all the visible body parts are labeled, then the user can use ‘Next Frame’ to load the following frame. The user needs to save the labels after all the frames from one of the videos are labeled by clicking the save button at the bottom right. Saving the labels will create a labeled dataset for each video in a hierarchical data file format (HDF) in the
+subdirectory corresponding to the particular video in <strong>labeled-data</strong>. You can save at any intermediate step (even without closing the GUI, just hit save) and you return to labeling a dataset by reloading it!</p>
+<p><strong>CRITICAL POINT:</strong> It is advisable to <strong>consistently label similar spots</strong> (e.g., on a wrist that is very large, try
+to label the same location). In general, invisible or occluded points should not be labeled by the user. They can
+simply be skipped by not applying the label anywhere on the frame.</p>
+<p>OPTIONAL: In the event of adding more labels to the existing labeled dataset, the user need to append the new
+labels to the bodyparts in the config.yaml file. Thereafter, the user can call the function <strong>label_frames</strong>. As of 2.0.5+: then a box will pop up and ask the user if they wish to display all parts, or only add in the new labels. Saving the labels after all the images are labelled will append the new labels to the existing labeled dataset.</p>
+<p>HOT KEYS IN THE Labeling GUI (also see “help” in GUI):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Ctrl</span> <span class="o">+</span> <span class="n">C</span><span class="p">:</span> <span class="n">Copy</span> <span class="n">labels</span> <span class="kn">from</span> <span class="nn">previous</span> <span class="n">frame</span><span class="o">.</span> <span class="n">With</span> <span class="n">multi</span><span class="o">-</span><span class="n">animal</span> <span class="n">DLC</span><span class="p">,</span> <span class="n">only</span> <span class="n">the</span> <span class="n">keypoints</span> <span class="n">of</span> <span class="n">the</span> <span class="n">animal</span> <span class="n">currently</span> <span class="n">selected</span> <span class="n">are</span> <span class="n">duplicated</span><span class="o">.</span>
+<span class="n">Keyboard</span> <span class="n">arrows</span><span class="p">:</span> <span class="n">advance</span> <span class="n">frames</span>
+<span class="n">delete</span> <span class="n">key</span><span class="p">:</span> <span class="n">delete</span> <span class="n">label</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="e-check-annotated-frames">
+<h3>(E) Check Annotated Frames<a class="headerlink" href="#e-check-annotated-frames" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#check_labels">DOCSTRING</a></p>
+<p>OPTIONAL: Checking if the labels were created and stored correctly is beneficial for training, since labeling
+is one of the most critical parts for creating the training dataset. The DeepLabCut toolbox provides a function
+‘check_labels’ to do so. It is used as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">check_labels</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">visualizeindividuals</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For each video directory in labeled-data this function creates a subdirectory with <strong>labeled</strong> as a suffix. Those directories contain the frames plotted with the annotated body parts. The user can double check if the body parts are labeled correctly. If they are not correct, the user can reload the frames (i.e. <code class="docutils literal notranslate"><span class="pre">deeplabcut.label_frames</span></code>), move them around, and click save again.</p>
+</div>
+<div class="section" id="f-create-training-dataset-s">
+<h3>(F) Create Training Dataset(s)<a class="headerlink" href="#f-create-training-dataset-s" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#create_training_dataset">DOCSTRING</a></p>
+<p><strong>CRITICAL POINT:</strong> Only run this step <strong>where</strong> you are going to train the network. If you label on your laptop but move your project folder to Google Colab or AWS, lab server, etc, then run the step below on that platform! If you labeled on a Windows machine but train on Linux, this is fine as of 2.0.4 onwards it will be done automatically (it saves file sets as both Linux and Windows for you).</p>
+<ul class="simple">
+<li><p>If you move your project folder, you must <strong>only</strong> change the <code class="docutils literal notranslate"><span class="pre">project_path</span></code> in the main config.yaml file - that’s it - no need to change the video paths, etc! Your project is fully portable.</p></li>
+<li><p>If you run this on the cloud, before importing <code class="docutils literal notranslate"><span class="pre">deeplabcut</span></code> you need to suppress GUIs. As you can see in our [demo notebooks]((<a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/COLAB_DEMO_mouse_openfield.ipynb">https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/COLAB_DEMO_mouse_openfield.ipynb</a>) for running DLC training, evaluation, and novel video analysis on the Cloud, you must first suppress GUIs - server computers don’t have a screen you can interact with. So, before you launch ipython, run <code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">DLClight=True</span></code> (see more tips in the full PDF user-guide).</p></li>
+</ul>
+<p><strong>OVERVIEW:</strong> This function combines the labeled datasets from all the videos and splits them to create train and test datasets. The training data will be used to train the network, while the test data set will be used for evaluating the network. The function <strong>create_training_dataset</strong> performs those steps.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">augmenter_type</span><span class="o">=</span><span class="s1">&#39;imgaug&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>OPTIONAL: If the user wishes to benchmark the performance of the DeepLabCut, they can create multiple
+training datasets by specifying an integer value to the <code class="docutils literal notranslate"><span class="pre">num_shuffles</span></code>; see the docstring for more details.</p></li>
+<li><p>Each iteration of the creation of a training dataset will create a <code class="docutils literal notranslate"><span class="pre">.mat</span></code> file, which is used by the feature detectors,
+and a <code class="docutils literal notranslate"><span class="pre">.pickle</span></code> file that contains the meta information about the training dataset. This also creates two subdirectories
+within <strong>dlc-models</strong> called <code class="docutils literal notranslate"><span class="pre">test</span></code> and <code class="docutils literal notranslate"><span class="pre">train</span></code>, and these each have a configuration file called pose_cfg.yaml.
+Specifically, the user can edit the <strong>pose_cfg.yaml</strong> within the <strong>train</strong> subdirectory before starting the training. These
+configuration files contain meta information with regard to the parameters of the feature detectors. Key parameters
+are listed in Box 2.</p></li>
+<li><p>At this step, the ImageNet pre-trained networks (i.e. ResNet-50, ResNet-101 and ResNet-152, etc) weights will be downloaded. If they do not download (you will see this downloading in the terminal, then you may not have permission to do so (something we have seen with some Windows users - see the <strong><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/Troubleshooting-Tips">WIKI troubleshooting for more help!</a></strong>).</p></li>
+</ul>
+<p><strong>CRITICAL POINT:</strong> At this step, for <strong>create_training_dataset</strong> you select the network you want to use, and any additional data augmentation (beyond our defaults). You can set <code class="docutils literal notranslate"><span class="pre">net_type</span></code> and <code class="docutils literal notranslate"><span class="pre">augmenter_type</span></code> when you call the function.</p>
+<p><strong>DATA AUGMENTATION:</strong> At this stage you can also decide what type of augmentation to use. The default loaders work well for most all tasks (as shown on <a class="reference external" href="http://www.deeplabcut.org">www.deeplabcut.org</a>), but there are many options, more data augmentation, intermediate supervision, etc. Please look at the <a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml"><strong>pose_cfg.yaml</strong></a> file for a full list of parameters <strong>you might want to change before running this step.</strong> There are several data loaders that can be used. For example, you can use the default loader (introduced and described in the Nature Protocols paper), <a class="reference external" href="https://github.com/tensorpack/tensorpack">TensorPack</a> for data augmentation (currently this is easiest on Linux only), or <a class="reference external" href="https://imgaug.readthedocs.io/en/latest/">imgaug</a>. We recommend <code class="docutils literal notranslate"><span class="pre">imgaug</span></code>. You can set this by passing:<code class="docutils literal notranslate"><span class="pre">deeplabcut.create_training_dataset(config_path,</span> <span class="pre">augmenter_type='imgaug')</span> </code></p>
+<p>The differences of the loaders are as follows:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">imgaug</span></code>: a lot of augmentation possibilities, efficient code for target map creation &amp; batch sizes &gt;1 supported. You can set the parameters such as the <code class="docutils literal notranslate"><span class="pre">batch_size</span></code> in the <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> file for the model you are training. This is the recommended DEFAULT!</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">crop_scale</span></code>: our standard DLC 2.0 introduced in Nature Protocols variant (scaling, auto-crop augmentation)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tensorpack</span></code>: a lot of augmentation possibilities, multi CPU support for fast processing, target maps are created less efficiently than in imgaug, does not allow batch size&gt;1</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">deterministic</span></code>: only useful for testing, freezes numpy seed; otherwise like default.</p></li>
+</ul>
+<p>Alternatively, you can set the loader (as well as other training parameters) in the <strong>pose_cfg.yaml</strong> file of the model that you want to train. Note, to get details on the options, look at the default file: <a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml"><strong>pose_cfg.yaml</strong></a>.</p>
+<p><strong>MODEL COMPARISION:</strong> You can also test several models by creating the same test/train split for different networks. You can easily do this in the Project Manager GUI, or use the function <code class="docutils literal notranslate"><span class="pre">deeplabcut.create_training_model_comparison(</span></code> (<a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#or-use-create_training_model_comparison">check the docstring for more details!</a>).</p>
+<p>Please also see our helper WIKI on selecting models: <a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/What-neural-network-should-I-use%3F">https://github.com/AlexEMG/DeepLabCut/wiki/What-neural-network-should-I-use?</a></p>
+<p>See Box 2 on how to specify <strong>which network is loaded for training (including your own network, etc):</strong></p>
+<p align="center">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1570325287859-NHCTKWOFWPVWLH8B79PS/ke17ZwdGBToddI8pDm48kApwhYXjNb7J-ZG10ZuuPUJ7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z4YTzHvnKhyp6Da-NYroOW3ZGjoBKy3azqku80C789l0uRNgJXBmK_J7vOfsoUyYccR03UZyExumRKzyR7hPRvjPGikK2uEIM-3GOD5thTJoQ/Box2-01.png?format=1000w" width="90%">
+</p>
+</div>
+<div class="section" id="g-train-the-network">
+<h3>(G) Train The Network<a class="headerlink" href="#g-train-the-network" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#train_network">DOCSTRING</a></p>
+<p>The function ‘train_network’ helps the user in training the network. It is used as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The set of arguments in the function starts training the network for the dataset created for one specific shuffle. Note that you can change the loader (imgaug/default/etc) as well as other training parameters in the <strong>pose_cfg.yaml</strong> file of the model that you want to train (before you start training).</p>
+<p>Example parameters that one can call:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">trainingsetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">gputouse</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_snapshots_to_keep</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">autotune</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">displayiters</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">saveiters</span><span class="o">=</span><span class="mi">15000</span><span class="p">,</span> <span class="n">maxiters</span><span class="o">=</span><span class="mi">30000</span><span class="p">,</span> <span class="n">allow_growth</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>By default, the pretrained networks are not in the DeepLabCut toolbox (as they are around 100MB each), but they get downloaded before you train. However, if not previously downloaded from the TensorFlow model weights, it will be downloaded and stored in a subdirectory <em>pre-trained</em> under the subdirectory <em>models</em> in <em>Pose_Estimation_Tensorflow</em>.
+At user specified iterations during training checkpoints are stored in the subdirectory <em>train</em> under the respective iteration directory.</p>
+<p>If the user wishes to restart the training at a specific checkpoint they can specify the full path of the checkpoint to
+the variable <code class="docutils literal notranslate"><span class="pre">init_weights</span></code> in the <strong>pose_cfg.yaml</strong> file under the <em>train</em> subdirectory (see Box 2).</p>
+<p><strong>CRITICAL POINT:</strong> It is recommended to train the ResNets or MobileNets for thousands of iterations until the loss plateaus (typically around <strong>500,000</strong>) if you use batch size 1. If you want to batch train, we recommend using Adam, see more here: <a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/Data-Augmentation">https://github.com/AlexEMG/DeepLabCut/wiki/Data-Augmentation</a>.</p>
+<p>The variables <code class="docutils literal notranslate"><span class="pre">display_iters</span></code> and <code class="docutils literal notranslate"><span class="pre">save_iters</span></code> in the <strong>pose_cfg.yaml</strong> file allows the user to alter how often the loss is displayed and how often the weights are stored.</p>
+<p><strong>maDeepLabCut CRITICAL POINT:</strong> For multi-animal projects we are using not only different and new output layers, but also new data augmentation, optimization, learning rates, and batch training defaults. Thus, please use a lower <code class="docutils literal notranslate"><span class="pre">save_iters</span></code> and <code class="docutils literal notranslate"><span class="pre">maxiters</span></code>. I.e. we suggest saving every 10K-15K iterations, and only training until 50K-100K iterations. We recommend you look closely at the loss to not overfit on your data. The bonus, training time is much less!!!</p>
+<p><strong>Parameters:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>config : string
+    Full path of the config.yaml file as a string.
+
+shuffle: int, optional
+    Integer value specifying the shuffle index to select for training. Default is set to 1
+
+trainingsetindex: int, optional
+    Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+
+gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU, put None.
+See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+
+max_snapshots_to_keep: int, or None. Sets how many snapshots are kept, i.e. states of the trained network. For every saving interation a snapshot is stored, however, only the last max_snapshots_to_keep many are kept! If you change this to None, then all are kept.
+See: https://github.com/AlexEMG/DeepLabCut/issues/8#issuecomment-387404835
+
+autotune: property of TensorFlow, somehow faster if &#39;false&#39; (as Eldar found out, see https://github.com/tensorflow/tensorflow/issues/13317). Default: False
+
+displayiters: this variable is actually set in pose_config.yaml. However, you can overwrite it with this hack. Don&#39;t use this regularly, just if you are too lazy to dig out
+the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
+
+saveiters: this variable is actually set in pose_config.yaml. However, you can overwrite it with this hack. Don&#39;t use this regularly, just if you are too lazy to dig out
+the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
+
+maxiters: This sets how many iterations to train. This variable is set in pose_config.yaml. However, you can overwrite it with this. If None, the value from there is used, otherwise it is overwritten! Default: None
+</pre></div>
+</div>
+</div>
+<div class="section" id="h-evaluate-the-trained-network">
+<h3>(H) Evaluate the Trained Network<a class="headerlink" href="#h-evaluate-the-trained-network" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#evaluate_network">DOCSTRING</a></p>
+<p>It is important to evaluate the performance of the trained network. This performance is measured by computing
+the mean average Euclidean error (MAE; which is proportional to the average root mean square error) between the
+manual labels and the ones predicted by DeepLabCut. The MAE is saved as a comma separated file and displayed
+for all pairs and only likely pairs (&gt;p-cutoff). This helps to exclude, for example, occluded body parts. One of the
+strengths of DeepLabCut is that due to the probabilistic output of the scoremap, it can, if sufficiently trained, also
+reliably report if a body part is visible in a given frame. (see discussions of finger tips in reaching and the Drosophila
+legs during 3D behavior in [Mathis et al, 2018]). The evaluation results are computed by typing:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">evaluate_network</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span><span class="n">Shuffles</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">plotting</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Setting <code class="docutils literal notranslate"><span class="pre">plotting</span></code> to true plots all the testing and training frames with the manual and predicted labels. The user
+should visually check the labeled test (and training) images that are created in the ‘evaluation-results’ directory.
+Ideally, DeepLabCut labeled unseen (test images) according to the user’s required accuracy, and the average train
+and test errors are comparable (good generalization). What (numerically) comprises an acceptable MAE depends on
+many factors (including the size of the tracked body parts, the labeling variability, etc.). Note that the test error can
+also be larger than the training error due to human variability (in labeling, see Figure 2 in Mathis et al, Nature Neuroscience 2018).</p>
+<p><strong>Optional parameters:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>  Shuffles: list, optional -List of integers specifying the shuffle indices of the training dataset. The default is [1]
+
+  plotting: bool, optional -Plots the predictions on the train and test images. The default is `False`; if provided it must be either `True` or `False`
+
+  show_errors: bool, optional -Display train and test errors. The default is `True`
+
+  comparisonbodyparts: list of bodyparts, Default is all -The average error will be computed for those body parts only (Has to be a subset of the body parts).
+
+  gputouse: int, optional -Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU, put None. See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+</pre></div>
+</div>
+<p>The plots can be customized by editing the <strong>config.yaml</strong> file (i.e., the colormap, scale, marker size (dotsize), and
+transparency of labels (alphavalue) can be modified). By default each body part is plotted in a different color
+(governed by the colormap) and the plot labels indicate their source. Note that by default the human labels are
+plotted as plus (‘+’), DeepLabCut’s predictions either as ‘.’ (for confident predictions with likelihood &gt; p-cutoff) and
+’x’ for (likelihood &lt;= <code class="docutils literal notranslate"><span class="pre">pcutoff</span></code>).</p>
+<p>The evaluation results for each shuffle of the training dataset are stored in a unique subdirectory in a newly created
+directory ‘evaluation-results’ in the project directory. The user can visually inspect if the distance between the labeled
+and the predicted body parts are acceptable. In the event of benchmarking with different shuffles of same training
+dataset, the user can provide multiple shuffle indices to evaluate the corresponding network.
+Note that with multi-animal projects additional distance statistics aggregated over animals or bodyparts are also stored
+in that directory. This aims at providing a finer quantitative evaluation of multi-animal prediction performance
+before animal tracking. If the generalization is not sufficient, the user might want to:</p>
+<p>• check if the labels were imported correctly; i.e., invisible points are not labeled and the points of interest are
+labeled accurately</p>
+<p>• make sure that the loss has already converged</p>
+<p>• consider labeling additional images and make another iteration of the training data set</p>
+<p><strong>OPTIONAL:</strong> You can also plot the scoremaps, locref layers, and PAFs:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_save_all_maps</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="n">shuffle</span><span class="p">,</span> <span class="n">Indices</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>you can drop “Indices” to run this on all training/testing images (this is slow!)</p>
+</div>
+<div class="section" id="i-novel-video-analysis">
+<h3>(I) Novel Video Analysis:<a class="headerlink" href="#i-novel-video-analysis" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#analyze_videos">DOCSTRING</a></p>
+<p>The trained network can be used to analyze new videos. The user needs to first choose a checkpoint with the best
+evaluation results for analyzing the videos. In this case, the user can enter the corresponding index of the checkpoint
+to the variable snapshotindex in the config.yaml file. By default, the most recent checkpoint (i.e. last) is used for
+analyzing the video. Novel/new videos <strong>DO NOT have to be in the config file!</strong> You can analyze new videos anytime by simply using the following line of code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;fullpath/analysis/project/videos/reachingvideo1.avi&#39;</span><span class="p">],</span> <span class="n">save_as_csv</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>There are several other optional inputs, such as:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">videos</span><span class="p">,</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;avi&#39;</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">trainingsetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">gputouse</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">save_as_csv</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">destfolder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dynamic</span><span class="o">=</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The labels are stored in a <a class="reference external" href="http://pandas.pydata.org">MultiIndex Pandas Array</a>, which contains the name of the network, body part name, (x, y) label position in pixels, and the likelihood for each frame per body part. These
+arrays are stored in an efficient Hierarchical Data Format (HDF) in the same directory, where the video is stored.
+However, if the flag <code class="docutils literal notranslate"><span class="pre">save_as_csv</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, the data can also be exported in comma-separated values format
+(.csv), which in turn can be imported in many programs, such as MATLAB, R, Prism, etc.; This flag is set to <code class="docutils literal notranslate"><span class="pre">False</span></code>
+by default. You can also set a destination folder (<code class="docutils literal notranslate"><span class="pre">destfolder</span></code>) for the output files by passing a path of the folder you wish to write to.</p>
+</div>
+<div class="section" id="i-novel-video-analysis-extra-features">
+<h3>(I) Novel Video Analysis: extra features<a class="headerlink" href="#i-novel-video-analysis-extra-features" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="dynamic-cropping-of-videos">
+<h4>Dynamic-cropping of videos:<a class="headerlink" href="#dynamic-cropping-of-videos" title="Permalink to this headline">¶</a></h4>
+<p>As of 2.1+ we have a dynamic cropping option. Namely, if you have large frames and the animal/object occupies a smaller fraction, you can crop around your animal/object to make processing speeds faster. For example, if you have a large open field experiment but only track the mouse, this will speed up your analysis (also helpful for real-time applications). To use this simply add <code class="docutils literal notranslate"><span class="pre">dynamic=(True,.5,10)</span></code> when you call <code class="docutils literal notranslate"><span class="pre">analyze_videos</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dynamic</span><span class="p">:</span> <span class="n">triple</span> <span class="n">containing</span> <span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">detectiontreshold</span><span class="p">,</span> <span class="n">margin</span><span class="p">)</span>
+
+        <span class="n">If</span> <span class="n">the</span> <span class="n">state</span> <span class="ow">is</span> <span class="n">true</span><span class="p">,</span> <span class="n">then</span> <span class="n">dynamic</span> <span class="n">cropping</span> <span class="n">will</span> <span class="n">be</span> <span class="n">performed</span><span class="o">.</span> <span class="n">That</span> <span class="n">means</span> <span class="n">that</span> <span class="k">if</span> <span class="n">an</span> <span class="nb">object</span> <span class="ow">is</span> <span class="n">detected</span> <span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">e</span><span class="o">.</span><span class="p">,</span> <span class="nb">any</span> <span class="n">body</span> <span class="n">part</span> <span class="o">&gt;</span> <span class="n">detectiontreshold</span><span class="p">),</span> <span class="n">then</span> <span class="nb">object</span> <span class="n">boundaries</span> <span class="n">are</span> <span class="n">computed</span> <span class="n">according</span> <span class="n">to</span> <span class="n">the</span> <span class="n">smallest</span><span class="o">/</span><span class="n">largest</span> <span class="n">x</span> <span class="n">position</span> <span class="ow">and</span> <span class="n">smallest</span><span class="o">/</span><span class="n">largest</span> <span class="n">y</span> <span class="n">position</span> <span class="n">of</span> <span class="nb">all</span> <span class="n">body</span> <span class="n">parts</span><span class="o">.</span> <span class="n">This</span> <span class="n">window</span> <span class="ow">is</span> <span class="n">expanded</span> <span class="n">by</span> <span class="n">the</span> <span class="n">margin</span> <span class="ow">and</span> <span class="kn">from</span> <span class="nn">then</span> <span class="n">on</span> <span class="n">only</span> <span class="n">the</span> <span class="n">posture</span> <span class="n">within</span> <span class="n">this</span> <span class="n">crop</span> <span class="ow">is</span> <span class="n">analyzed</span> <span class="p">(</span><span class="n">until</span> <span class="n">the</span> <span class="nb">object</span> <span class="ow">is</span> <span class="n">lost</span><span class="p">;</span> <span class="n">i</span><span class="o">.</span><span class="n">e</span><span class="o">.</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">detectiontreshold</span><span class="p">)</span><span class="o">.</span> <span class="n">The</span> <span class="n">current</span> <span class="n">position</span> <span class="ow">is</span> <span class="n">utilized</span> <span class="k">for</span> <span class="n">updating</span> <span class="n">the</span> <span class="n">crop</span> <span class="n">window</span> <span class="k">for</span> <span class="n">the</span> <span class="nb">next</span> <span class="n">frame</span> <span class="p">(</span><span class="n">this</span> <span class="ow">is</span> <span class="n">why</span> <span class="n">the</span> <span class="n">margin</span> <span class="ow">is</span> <span class="n">important</span> <span class="ow">and</span> <span class="n">should</span> <span class="n">be</span> <span class="nb">set</span> <span class="n">large</span> <span class="n">enough</span> <span class="n">given</span> <span class="n">the</span> <span class="n">movement</span> <span class="n">of</span> <span class="n">the</span> <span class="n">animal</span><span class="p">)</span><span class="o">.</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="filter-data-recommended">
+<h4>Filter data (RECOMMENDED!):<a class="headerlink" href="#filter-data-recommended" title="Permalink to this headline">¶</a></h4>
+<p><a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#filterpredictions">DOCSTRING</a></p>
+<p>You can also filter the predictions with a median filter (default) or with a <a class="reference external" href="https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html">SARIMAX model</a>, if you wish. This creates a new .h5 file with the ending <em>_filtered</em> that you can use in create_labeled_data and/or plot trajectories.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">filterpredictions</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;fullpath/analysis/project/videos/reachingvideo1.avi&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>An example call:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">filterpredictions</span><span class="p">(</span><span class="n">config_path</span><span class="p">,[</span><span class="s1">&#39;fullpath/analysis/project/videos&#39;</span><span class="p">],</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;.mp4&#39;</span><span class="p">,</span><span class="n">filtertype</span><span class="o">=</span> <span class="s1">&#39;arima&#39;</span><span class="p">,</span><span class="n">ARdegree</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">MAdegree</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here are parameters you can modify and pass:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">filterpredictions</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;fullpath/analysis/project/videos/reachingvideo1.avi&#39;</span><span class="p">],</span> <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">trainingsetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">comparisonbodyparts</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">filtertype</span><span class="o">=</span><span class="s1">&#39;arima&#39;</span><span class="p">,</span> <span class="n">p_bound</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">ARdegree</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">MAdegree</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here is an example of how this can be applied to a video:</p>
+ <p align="center">
+<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc8b8ae6e8df000100a995/1556908943893/filter_example-01.png?format=1000w" width="70%">
+</p>
+</div>
+<div class="section" id="plot-trajectories">
+<h4>Plot Trajectories:<a class="headerlink" href="#plot-trajectories" title="Permalink to this headline">¶</a></h4>
+<p><a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#plot_trajectories">DOCSTRING</a></p>
+<p>The plotting components of this toolbox utilizes matplotlib. Therefore, these plots can easily be customized by
+the end user. We also provide a function to plot the trajectory of the extracted poses across the analyzed video, which
+can be called by typing:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>deeplabcut.plot_trajectories(config_path, [‘fullpath/analysis/project/videos/reachingvideo1.avi’])
+</pre></div>
+</div>
+<p>It creates a folder called <code class="docutils literal notranslate"><span class="pre">plot-poses</span></code> (in the directory of the video). The plots display the coordinates of body parts vs. time, likelihoods vs time, the x- vs. y- coordinate of the body parts, as well as histograms of consecutive coordinate differences. These plots help the user to quickly assess the tracking performance for a video. Ideally, the likelihood stays high and the histogram of consecutive coordinate differences has values close to zero (i.e. no jumps in body part detections across frames). Here are example plot outputs on a demo video (left):</p>
+<p align="center">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559946148685-WHDO5IG9MMCHU0T7RC62/ke17ZwdGBToddI8pDm48kEOb1vFO6oRDmR8SXh4iL21Zw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVG1gXK66ltnjKh4U2immgm7AVAdfOWODmXNLQLqbLRZ2DqWIIaSPh2v08GbKqpiV54/file0289.png?format=500w" height="240">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559939762886-CCB0R107I2HXAHZLHECP/ke17ZwdGBToddI8pDm48kNeA8e5AnyMqj80u4_mB0hV7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UcpboONgOQYHLzaUWEI1Ir9fXt7Ehyn7DSgU3GCReAA-ZDqXZYzu2fuaodM4POSZ4w/plot_poses-01.png?format=1000w" height="250">
+</p>
+</div>
+<div class="section" id="create-labeled-videos">
+<h4>Create Labeled Videos:<a class="headerlink" href="#create-labeled-videos" title="Permalink to this headline">¶</a></h4>
+<p><a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#create_labeled_video">DOCSTRING</a></p>
+<p>Additionally, the toolbox provides a function to create labeled videos based on the extracted poses by plotting the
+labels on top of the frame and creating a video. There are two modes to create videos: FAST and SLOW (but higher quality!). If you want to create high-quality videos, please add <code class="docutils literal notranslate"><span class="pre">save_frames=True</span></code>. One can use the command as follows to create multiple labeled videos:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span><span class="n">config_path</span><span class="p">[</span><span class="s1">&#39;fullpath/analysis/project/videos/reachingvideo1.avi&#39;</span><span class="p">,</span><span class="s1">&#39;fullpath/analysis/project/videos/reachingvideo2.avi&#39;</span><span class="p">],</span> <span class="n">save_frames</span> <span class="o">=</span> <span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Optionally, if you want to use the filtered data for a video or directory of filtered videos pass <code class="docutils literal notranslate"><span class="pre">filtered=True</span></code>, i.e.:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;fullpath/afolderofvideos&#39;</span><span class="p">],</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;.mp4&#39;</span><span class="p">,</span> <span class="n">filtered</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can also optionally add a skeleton to connect points and/or add a history of points for visualization. To set the “trailing points” you need to pass <code class="docutils literal notranslate"><span class="pre">trailpoints</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;fullpath/afolderofvideos&#39;</span><span class="p">],</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;.mp4&#39;</span><span class="p">,</span> <span class="n">trailpoints</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To draw a skeleton, you need to first define the pairs of connected nodes (in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file) and set the skeleton color (in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file). There is also a GUI to help you do this, use by calling <code class="docutils literal notranslate"><span class="pre">deeplabcut.SkeletonBuilder(config+path)</span></code>!</p>
+<p>Here is how the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> additions/edits should look (for example, on the Openfield demo data we provide):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Plotting configuration</span>
+<span class="n">skeleton</span><span class="p">:</span> <span class="p">[[</span><span class="s1">&#39;snout&#39;</span><span class="p">,</span> <span class="s1">&#39;leftear&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;snout&#39;</span><span class="p">,</span> <span class="s1">&#39;rightear&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;leftear&#39;</span><span class="p">,</span> <span class="s1">&#39;tailbase&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;leftear&#39;</span><span class="p">,</span> <span class="s1">&#39;rightear&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;rightear&#39;</span><span class="p">,</span><span class="s1">&#39;tailbase&#39;</span><span class="p">]]</span>
+<span class="n">skeleton_color</span><span class="p">:</span> <span class="n">white</span>
+<span class="n">pcutoff</span><span class="p">:</span> <span class="mf">0.4</span>
+<span class="n">dotsize</span><span class="p">:</span> <span class="mi">4</span>
+<span class="n">alphavalue</span><span class="p">:</span> <span class="mf">0.5</span>
+<span class="n">colormap</span><span class="p">:</span> <span class="n">jet</span>
+</pre></div>
+</div>
+<p>Then pass <code class="docutils literal notranslate"><span class="pre">draw_skeleton=True</span></code> with the command:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span><span class="n">config_path</span><span class="p">,[</span><span class="s1">&#39;fullpath/afolderofvideos&#39;</span><span class="p">],</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;.mp4&#39;</span><span class="p">,</span> <span class="n">draw_skeleton</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>NEW</strong> as of 2.2b8: You can create a video with only the “dots” plotted, i.e., in the <a class="reference external" href="https://link.springer.com/article/10.1007/BF00309043">style of Johansson</a>, by passing <code class="docutils literal notranslate"><span class="pre">keypoints_only=True</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span><span class="n">config_path</span><span class="p">,[</span><span class="s1">&#39;fullpath/afolderofvideos&#39;</span><span class="p">],</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;.mp4&#39;</span><span class="p">,</span> <span class="n">keypoints_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>PRO TIP:</strong> that the <strong>best quality videos</strong> are created when <code class="docutils literal notranslate"><span class="pre">save_frames=True</span></code> is passed. Therefore, when <code class="docutils literal notranslate"><span class="pre">trailpoints</span></code> and <code class="docutils literal notranslate"><span class="pre">draw_skeleton</span></code> are used, we <strong>highly</strong> recommend you also pass <code class="docutils literal notranslate"><span class="pre">save_frames=True</span></code>!</p>
+ <p align="center">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559935526258-KFYZC8BDHK01ZIDPNVIX/ke17ZwdGBToddI8pDm48kJbosy0LGK_KqcAZRQ_Qph1Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpzkC6kmM1CbNgeHQVxASNv0wiXikHv274BIFe4LR7nd1rKmAka4uxYMJ9FupazBoaU/mouse_skel_trail.gif?format=750w" width="40%">
+</p>
+<p><strong>Other optional Parameters:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>videotype: string, optional. Checks for the extension of the video in case the input is a directory. Only videos with this extension are analyzed. The default is ``.avi``
+
+save_frames: bool (i.e. True or False). If true creates each frame individually and then combines into a video. This variant is relatively slow as it stores all individual frames. However, it uses matplotlib to create the frames and is therefore much more flexible (one can set transparency of markers, crop, and easily customize).
+
+delete: bool (i.e. True or False). If true then the individual frames created during the video generation will be deleted.
+
+displayedbodyparts: list of strings, optional. This selects the body parts that are plotted in the video. Either `all`, then all body parts from config.yaml are used or a list of strings that are a subset of the full list. E.g. [&#39;Hand&#39;,&#39;Joystick&#39;] for the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these two body parts.
+
+displaycropped: If =True then the video will be cropped (to the size in  the config.yaml file) and points plotted.
+</pre></div>
+</div>
+<p>This function has various other parameters, in particular the user can set the <code class="docutils literal notranslate"><span class="pre">colormap</span></code>, the <code class="docutils literal notranslate"><span class="pre">dotsize</span></code>, and <code class="docutils literal notranslate"><span class="pre">alphavalue</span></code> of the labels in <strong>config.yaml</strong> file.</p>
+</div>
+</div>
+<div class="section" id="extract-skeleton-features">
+<h3>Extract “Skeleton” Features:<a class="headerlink" href="#extract-skeleton-features" title="Permalink to this headline">¶</a></h3>
+<p>NEW, as of 2.0.7+: You can save the “skeleton” that was applied in <code class="docutils literal notranslate"><span class="pre">create_labeled_videos</span></code> for more computations. Namely,  it extracts length and orientation of each “bone” of the skeleton as defined in the <strong>config.yaml</strong> file. You can use the function by:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyzeskeleton</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">video</span><span class="p">,</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;avi&#39;</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">trainingsetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">save_as_csv</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">destfolder</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>See more details here: <a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/post_processing/analyze_skeleton.py">https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/post_processing/analyze_skeleton.py</a></p>
+</div>
+<div class="section" id="j-optional-active-learning-network-refinement-extract-outlier-frames">
+<h3>(J) Optional Active Learning -&gt; Network Refinement: Extract Outlier Frames<a class="headerlink" href="#j-optional-active-learning-network-refinement-extract-outlier-frames" title="Permalink to this headline">¶</a></h3>
+<p>While DeepLabCut typically generalizes well across datasets, one might want to optimize its performance in various,
+perhaps unexpected, situations. For generalization to large data sets, images with insufficient labeling performance
+can be extracted, manually corrected by adjusting the labels to increase the training set and iteratively improve the
+feature detectors. Such an active learning framework can be used to achieve a predefined level of confidence for all
+images with minimal labeling cost (discussed in Mathis et al 2018). Then, due to the large capacity of the neural network that underlies the feature detectors, one can continue training the network with these additional examples. One does not
+necessarily need to correct all errors as common errors could be eliminated by relabeling a few examples and then
+re-training. A priori, given that there is no ground truth data for analyzed videos, it is challenging to find putative
+“outlier frames”. However, one can use heuristics such as the continuity of body part trajectories, to identify images
+where the decoder might make large errors.</p>
+<p>All this can be done for a specific video by typing (see other optional inputs below):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_outlier_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;videofile_path&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>We provide various frame-selection methods for this purpose. In particular
+the user can set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>outlieralgorithm: &#39;fitting&#39;, &#39;jump&#39;, or &#39;uncertain&#39;``
+</pre></div>
+</div>
+<p>• select frames if the likelihood of a particular or all body parts lies below <em>pbound</em> (note this could also be due to
+occlusions rather than errors); (<code class="docutils literal notranslate"><span class="pre">outlieralgorithm='uncertain'</span></code>), but also set <code class="docutils literal notranslate"><span class="pre">p_bound</span></code>.</p>
+<p>• select frames where a particular body part or all body parts jumped more than <em>\uf</em> pixels from the last frame (<code class="docutils literal notranslate"><span class="pre">outlieralgorithm='jump'</span></code>).</p>
+<p>• select frames if the predicted body part location deviates from a state-space model fit to the time series
+of individual body parts. Specifically, this method fits an Auto Regressive Integrated Moving Average (ARIMA)
+model to the time series for each body part. Thereby each body part detection with a likelihood smaller than
+pbound is treated as missing data.  Putative outlier frames are then identified as time points, where the average body part estimates are at least <em>\uf</em> pixel away from the fits. The parameters of this method are <em>\uf</em>, <em>pbound</em>, the ARIMA parameters as well as the list of body parts to average over (can also be <code class="docutils literal notranslate"><span class="pre">all</span></code>).</p>
+<p>• manually select outlier frames based on visual inspection from the user (<code class="docutils literal notranslate"><span class="pre">outlieralgorithm='manual'</span></code>).</p>
+<p>As an example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_outlier_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;videofile_path&#39;</span><span class="p">],</span> <span class="n">outlieralgorithm</span><span class="o">=</span><span class="s1">&#39;manual&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In general, depending on the parameters, these methods might return much more frames than the user wants to
+extract (<code class="docutils literal notranslate"><span class="pre">numframes2pick</span></code>). Thus, this list is then used to select outlier frames either by randomly sampling from this
+list (<code class="docutils literal notranslate"><span class="pre">extractionalgorithm='uniform'</span></code>), by performing <code class="docutils literal notranslate"><span class="pre">extractionalgorithm='k-means'</span></code> clustering on the corresponding frames.</p>
+<p>In the automatic configuration, before the frame selection happens, the user is informed about the amount of frames satisfying the criteria and asked if the selection should proceed. This step allows the user to perhaps change the parameters of the frame-selection heuristics first (i.e. to make sure that not too many frames are qualified). The user can run the extract_outlier_frames iteratively, and (even) extract additional frames from the same video. Once enough outlier frames are extracted the refinement GUI can be used to adjust the labels based on user feedback (see below).</p>
+</div>
+<div class="section" id="k-refine-labels-augmentation-of-the-training-dataset">
+<h3>(K) Refine Labels: Augmentation of the Training Dataset<a class="headerlink" href="#k-refine-labels-augmentation-of-the-training-dataset" title="Permalink to this headline">¶</a></h3>
+<p>Based on the performance of DeepLabCut, four scenarios are possible:</p>
+<p>(A) Visible body part with accurate DeepLabCut prediction. These labels do not need any modifications.</p>
+<p>(B) Visible body part but wrong DeepLabCut prediction. Move the label’s location to the actual position of the
+body part.</p>
+<p>(C) Invisible, occluded body part. Remove the predicted label by DeepLabCut with a right click. Every predicted
+label is shown, even when DeepLabCut is uncertain. This is necessary, so that the user can potentially move
+the predicted label. However, to help the user to remove all invisible body parts the low-likelihood predictions
+are shown as open circles (rather than disks).</p>
+<p>(D) Invalid images: In the unlikely event that there are any invalid images, the user should remove such an image
+and their corresponding predictions, if any. Here, the GUI will prompt the user to remove an image identified
+as invalid.</p>
+<p>The labels for extracted putative outlier frames can be refined by opening the GUI:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">refine_labels</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This will launch a GUI where the user can refine the labels.</p>
+<p>Use the ‘Load Labels’ button to select one of the subdirectories, where the extracted frames are stored. Every label will be identified by a unique color. For better chances to identify the low-confidence labels, specify the threshold of the likelihood. This changes the body parts with likelihood below this threshold to appear as circles and the ones above as solid disks while retaining the same color scheme. Next, to adjust the position of the label, hover the mouse over the labels to identify the specific body part, left click and drag it to a different location. To delete a specific label, right click on the label (once a label is deleted, it cannot be retrieved).</p>
+<p>After correcting the labels for all the frames in each of the subdirectories, the users should merge the data set to
+create a new dataset. In this step the iteration parameter in the config.yaml file is automatically updated.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">merge_datasets</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Once the dataset is merged, the user can test if the merging process was successful by plotting all the labels (Step E).
+Next, with this expanded training set the user can now create a novel training set and train the network as described
+in Steps F and G. The training dataset will be stored in the same place as before but under a different <code class="docutils literal notranslate"><span class="pre">iteration</span> <span class="pre">#</span></code>
+subdirectory, where the <code class="docutils literal notranslate"><span class="pre">#</span></code> is the new value of <code class="docutils literal notranslate"><span class="pre">iteration</span></code> variable stored in the project’s configuration file (this is
+automatically done).</p>
+<p>Now you can run <code class="docutils literal notranslate"><span class="pre">create_training_dataset</span></code>, then <code class="docutils literal notranslate"><span class="pre">train_network</span></code>, etc. If your original labels were adjusted at all, start from fresh weights (the typically recommended path anyhow), otherwise consider using your already trained network weights (see Box 2).</p>
+<p>If after training the network generalizes well to the data, proceed to analyze new videos. Otherwise, consider labeling more data.</p>
+</div>
+<div class="section" id="jupyter-notebooks-for-demonstration-of-the-deeplabcut-workflow">
+<h3>Jupyter Notebooks for Demonstration of the DeepLabCut Workflow<a class="headerlink" href="#jupyter-notebooks-for-demonstration-of-the-deeplabcut-workflow" title="Permalink to this headline">¶</a></h3>
+<p>We also provide two Jupyter notebooks for using DeepLabCut on both a pre-labeled dataset, and on the end user’s
+own dataset. Firstly, we prepared an interactive Jupyter notebook called run_yourowndata.ipynb that can serve as a
+template for the user to develop a project. Furthermore, we provide a notebook for an already started project with
+labeled data. The example project, named as Reaching-Mackenzie-2018-08-30 consists of a project configuration file
+with default parameters and 20 images, which are cropped around the region of interest as an example dataset. These
+images are extracted from a video, which was recorded in a study of skilled motor control in mice. Some example
+labels for these images are also provided. See more details [here]((<a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/examples">https://github.com/DeepLabCut/DeepLabCut/blob/master/examples</a>).</p>
+</div>
+</div>
+<div class="section" id="d-toolbox">
+<h2>3D Toolbox<a class="headerlink" href="#d-toolbox" title="Permalink to this headline">¶</a></h2>
+<p>Please find all the information on using the 3D toolbox of DeepLabCut (as of 2.0.7+) here: <a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/blob/master/docs/Overviewof3D.md">https://github.com/AlexEMG/DeepLabCut/blob/master/docs/Overviewof3D.md</a></p>
+</div>
+<div class="section" id="other-functions-some-are-yet-to-be-documented">
+<h2>Other functions, some are yet-to-be-documented:<a class="headerlink" href="#other-functions-some-are-yet-to-be-documented" title="Permalink to this headline">¶</a></h2>
+<p>We suggest you [check out these additional helper functions]((<a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/HelperFunctions.md">https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/HelperFunctions.md</a>), that could be useful (they are all optional).</p>
+</div>
+</div>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+        
+        <div class='prev-next-bottom'>
+            
+    <a class='left-prev' id="prev-link" href="installation.html" title="previous page">How To Install DeepLabCut</a>
+    <a class='right-next' id="next-link" href="maDLC_UserGuide.html" title="next page">DeepLabCut for Multi-Animal Projects</a>
+
+        </div>
+        
+        </div>
+    </div>
+    <footer class="footer mt-5 mt-md-0">
+    <div class="container">
+      <p>
+        
+          By The DeepLabCut Team<br/>
+        
+            &copy; Copyright 2021.<br/>
+          <div class="extra_footer">
+            <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+
+          </div>
+      </p>
+    </div>
+  </footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="_static/js/index.1c5a1a01449ed65a7b51.js"></script>
+
+  
+  </body>
+</html>

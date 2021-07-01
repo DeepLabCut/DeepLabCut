@@ -1,0 +1,497 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Automate your training and analysis: Batch Processing &#8212; DeepLabCut</title>
+    
+  <link href="../_static/css/theme.css" rel="stylesheet" />
+  <link href="../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/sphinx-book-theme.acff12b8f9c144ce68a297486a2fa670.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="../_static/js/index.1c5a1a01449ed65a7b51.js">
+
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/togglebutton.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
+    <script async="async" src="https://unpkg.com/thebelab@latest/lib/index.js"></script>
+    <script >
+        const thebe_selector = ".thebe"
+        const thebe_selector_input = "pre"
+        const thebe_selector_output = ".output"
+    </script>
+    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Mission and Values of DeepLabCut" href="../MISSION_AND_VALUES.html" />
+    <link rel="prev" title="Some data processing recipes!" href="post.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../index.html">
+      
+      <img src="../_static/logo.png" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">DeepLabCut</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../intro.html">
+   Welcome!
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Main Documentation
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../README.html">
+   Welcome to Our Documentation Hub!
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../installation.html">
+   How To Install DeepLabCut
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../standardDeepLabCut_UserGuide.html">
+   DeepLabCut User Guide (for single animal projects)
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../maDLC_UserGuide.html">
+   DeepLabCut for Multi-Animal Projects
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../PROJECT_GUI.html">
+   Interactive Project Manager GUI
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../Overviewof3D.html">
+   3D DeepLabCut
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Tutorials
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../tutorial.html">
+   Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../convert_maDLC.html">
+   How to convert a pre-2.2 project for use with DeepLabCut 2.2
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../HelperFunctions.html">
+   Helper &amp; Advanced Optional Function Documentation
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Recipes
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="installTips.html">
+   Installation Tips
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="io.html">
+   Input/output manipulations with DeepLabCut
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="nn.html">
+   Model training tips &amp; tricks
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="post.html">
+   Some data processing recipes!
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Automate your training and analysis: Batch Processing
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Mission &amp; Contribute
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../MISSION_AND_VALUES.html">
+   Mission and Values of DeepLabCut
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../roadmap.html">
+   A development roadmap for DeepLabCut
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../Governance.html">
+   Governance Model of DeepLabCut
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="../_sources/recipes/BatchProcessing.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
+    <div class="dropdown-buttons sourcebuttons">
+        <a class="repository-button"
+            href="https://github.com/DeepLabCut/DeepLabCut/tree/master/examples"><button type="button" class="btn btn-secondary topbarbtn"
+                data-toggle="tooltip" data-placement="left" title="Source repository"><i
+                    class="fab fa-github"></i>repository</button></a>
+        <a class="issues-button"
+            href="https://github.com/DeepLabCut/DeepLabCut/tree/master/examples/issues/new?title=Issue%20on%20page%20%2Frecipes/BatchProcessing.html&body=Your%20issue%20content%20here."><button
+                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
+                title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
+        
+    </div>
+</div>
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show">
+            
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#tips-for-working-with-dlc-networks">
+   Tips for working with DLC networks:
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#now-what-about-training-over-multiple-projects">
+   Now, what about training over multiple Projects
+  </a>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+        
+              <div>
+                
+  <div class="section" id="automate-your-training-and-analysis-batch-processing">
+<h1>Automate your training and analysis: Batch Processing<a class="headerlink" href="#automate-your-training-and-analysis-batch-processing" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="tips-for-working-with-dlc-networks">
+<h2>Tips for working with DLC networks:<a class="headerlink" href="#tips-for-working-with-dlc-networks" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Now you have a DLC network you are happy with and want to run it on all your videos. You simply need to run a script that runs over all your video folders with the correct network. Your “key” to this network is your config.yaml file.</p></li>
+</ul>
+<p><img alt="" src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc5abe0d9297405a428522/1556896461304/howtouseDLC-01.png?format=1000w" /></p>
+<p>Here is a script that you can use to run video analysis over all the folders.</p>
+<p><a class="reference external" href="https://github.com/DeepLabCut/DLCutils/tree/master/SCALE_YOUR_ANALYSIS">https://github.com/DeepLabCut/DLCutils/tree/master/SCALE_YOUR_ANALYSIS</a> (see below as well)</p>
+<p>Note, if a video is analyzed already, it will not be analyzed again! Alternatively, you can push the outputs elsewhere with the flag <code class="docutils literal notranslate"><span class="pre">destfolder</span></code>. See your options by typing: <code class="docutils literal notranslate"><span class="pre">deeplabcut.analyze_videos?</span></code></p>
+<p>Here is an example script. You can copy/paste into a file and end with “.py” to make it a python script.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Sun Feb 10 16:04:37 2019</span>
+
+<span class="sd">@author: alex</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">deeplabcut</span>
+
+<span class="k">def</span> <span class="nf">getsubfolders</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; returns list of subfolders &#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span><span class="n">p</span><span class="p">))]</span>
+
+<span class="n">project</span><span class="o">=</span><span class="s1">&#39;ComplexWheelD3-12-Fumi-2019-01-28&#39;</span>
+
+<span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span>
+
+<span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;/home/alex/DLC-workshopRowland&#39;</span>
+
+<span class="n">projectpath</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span><span class="n">project</span><span class="p">)</span>
+<span class="n">config</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">projectpath</span><span class="p">,</span><span class="s1">&#39;config.yaml&#39;</span><span class="p">)</span>
+
+<span class="n">basepath</span><span class="o">=</span><span class="s1">&#39;/home/alex/BenchmarkingExperimentsJan2019&#39;</span> <span class="c1">#data&#39;</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="sd">Imagine that the data (here: videos of 3 different types) are in subfolders:</span>
+<span class="sd">    /January/January29 ..</span>
+<span class="sd">    /February/February1</span>
+<span class="sd">    /February/February2</span>
+
+<span class="sd">    etc.</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="n">subfolders</span><span class="o">=</span><span class="n">getsubfolders</span><span class="p">(</span><span class="n">basepath</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">subfolder</span> <span class="ow">in</span> <span class="n">subfolders</span><span class="p">:</span> <span class="c1">#this would be January, February etc. in the upper example</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Starting analyze data in:&quot;</span><span class="p">,</span> <span class="n">subfolder</span><span class="p">)</span>
+    <span class="n">subsubfolders</span><span class="o">=</span><span class="n">getsubfolders</span><span class="p">(</span><span class="n">subfolder</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">subsubfolder</span> <span class="ow">in</span> <span class="n">subsubfolders</span><span class="p">:</span> <span class="c1">#this would be Febuary1, etc. in the upper example...</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Starting analyze data in:&quot;</span><span class="p">,</span> <span class="n">subsubfolder</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">vtype</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;.mp4&#39;</span><span class="p">,</span><span class="s1">&#39;.m4v&#39;</span><span class="p">,</span><span class="s1">&#39;.mpg&#39;</span><span class="p">]:</span>
+            <span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span><span class="n">config</span><span class="p">,[</span><span class="n">subsubfolder</span><span class="p">],</span><span class="n">shuffle</span><span class="o">=</span><span class="n">shuffle</span><span class="p">,</span><span class="n">videotype</span><span class="o">=</span><span class="n">vtype</span><span class="p">,</span><span class="n">save_as_csv</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+</pre></div>
+</div>
+</div>
+<div class="section" id="now-what-about-training-over-multiple-projects">
+<h2>Now, what about training over multiple Projects<a class="headerlink" href="#now-what-about-training-over-multiple-projects" title="Permalink to this headline">¶</a></h2>
+<p>Make your labmates happy by helping run everyone’s projects! We use this for workshops, but can easily be adapted for your needs. Here is an example script. You can copy/paste into a file and end with “.py” to make it a python script.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+&quot;&quot;&quot;
+Created on Sat Nov 17 14:12:43 2018
+
+An example script to automate analysis on 3 different GPUs for different projects. Feel free to adapt this to your needs!
+
+@author: alex mathis
+
+&quot;&quot;&quot;
+
+import subprocess, sys
+import numpy as np
+import itertools
+import os
+
+import deeplabcut
+
+Maxiter=int(1.5*10**5)
+
+model=int(sys.argv[1])
+
+Projects=[[&#39;project1-phoenix-2019-01-28&#39;],[&#39;ComplexWheelD3-12-Fumi-2019-01-28&#39;, &#39;maze-ariel-2019-01-28&#39;], [&#39;TBI-BvA-2019-01-28&#39;,&#39;group-eli-2019-01-28&#39;]]
+
+shuffle=1
+
+prefix=&#39;/home/alex/DLC-workshopRowland&#39;
+
+for project in Projects[model]:
+    projectpath=os.path.join(prefix,project)
+    config=os.path.join(projectpath,&#39;config.yaml&#39;)
+
+    cfg=deeplabcut.auxiliaryfunctions.read_config(config)
+    previous_path=cfg[&#39;project_path&#39;]
+
+    cfg[&#39;project_path&#39;]=projectpath
+    deeplabcut.auxiliaryfunctions.write_config(config,cfg)
+
+    print(&quot;This is the name of the script: &quot;, sys.argv[0])
+    print(&quot;Shuffle: &quot;, shuffle)
+    print(&quot;config: &quot;, config)
+
+    deeplabcut.create_training_dataset(config, Shuffles=[shuffle],windows2linux=True)
+
+    deeplabcut.train_network(config, shuffle=shuffle, max_snapshots_to_keep=5, maxiters=Maxiter)
+    print(&quot;Evaluating...&quot;)
+    deeplabcut.evaluate_network(config, Shuffles=[shuffle],plotting=True)
+
+    print(&quot;Analyzing videos..., switching to last snapshot...&quot;)
+    #cfg=deeplabcut.auxiliaryfunctions.read_config(config)
+    #cfg[&#39;snapshotindex&#39;]=-1
+    #deeplabcut.auxiliaryfunctions.write_config(config,cfg)
+
+    for vtype in [&#39;.mp4&#39;,&#39;.m4v&#39;,&#39;.mpg&#39;]:
+        try:
+            deeplabcut.analyze_videos(config,[str(os.path.join(projectpath,&#39;videos&#39;))],shuffle=shuffle,videotype=vtype,save_as_csv=True)
+        except:
+            pass
+
+    print(&quot;DONE WITH &quot;, project,&quot; resetting to original path&quot;)
+    cfg[&#39;project_path&#39;]=previous_path
+    deeplabcut.auxiliaryfunctions.write_config(config,cfg)
+    ```
+</pre></div>
+</div>
+</div>
+</div>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./recipes"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+        
+        <div class='prev-next-bottom'>
+            
+    <a class='left-prev' id="prev-link" href="post.html" title="previous page">Some data processing recipes!</a>
+    <a class='right-next' id="next-link" href="../MISSION_AND_VALUES.html" title="next page">Mission and Values of DeepLabCut</a>
+
+        </div>
+        
+        </div>
+    </div>
+    <footer class="footer mt-5 mt-md-0">
+    <div class="container">
+      <p>
+        
+          By The DeepLabCut Team<br/>
+        
+            &copy; Copyright 2021.<br/>
+          <div class="extra_footer">
+            <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+
+          </div>
+      </p>
+    </div>
+  </footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="../_static/js/index.1c5a1a01449ed65a7b51.js"></script>
+
+  
+  </body>
+</html>

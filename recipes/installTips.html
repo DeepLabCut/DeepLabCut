@@ -1,0 +1,643 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Installation Tips &#8212; DeepLabCut</title>
+    
+  <link href="../_static/css/theme.css" rel="stylesheet" />
+  <link href="../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/sphinx-book-theme.acff12b8f9c144ce68a297486a2fa670.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="../_static/js/index.1c5a1a01449ed65a7b51.js">
+
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/togglebutton.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
+    <script async="async" src="https://unpkg.com/thebelab@latest/lib/index.js"></script>
+    <script >
+        const thebe_selector = ".thebe"
+        const thebe_selector_input = "pre"
+        const thebe_selector_output = ".output"
+    </script>
+    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Input/output manipulations with DeepLabCut" href="io.html" />
+    <link rel="prev" title="Helper &amp; Advanced Optional Function Documentation" href="../HelperFunctions.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../index.html">
+      
+      <img src="../_static/logo.png" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">DeepLabCut</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../intro.html">
+   Welcome!
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Main Documentation
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../README.html">
+   Welcome to Our Documentation Hub!
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../installation.html">
+   How To Install DeepLabCut
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../standardDeepLabCut_UserGuide.html">
+   DeepLabCut User Guide (for single animal projects)
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../maDLC_UserGuide.html">
+   DeepLabCut for Multi-Animal Projects
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../PROJECT_GUI.html">
+   Interactive Project Manager GUI
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../Overviewof3D.html">
+   3D DeepLabCut
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Tutorials
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../tutorial.html">
+   Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../convert_maDLC.html">
+   How to convert a pre-2.2 project for use with DeepLabCut 2.2
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../HelperFunctions.html">
+   Helper &amp; Advanced Optional Function Documentation
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Recipes
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Installation Tips
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="io.html">
+   Input/output manipulations with DeepLabCut
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="nn.html">
+   Model training tips &amp; tricks
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="post.html">
+   Some data processing recipes!
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="BatchProcessing.html">
+   Automate your training and analysis: Batch Processing
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Mission &amp; Contribute
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../MISSION_AND_VALUES.html">
+   Mission and Values of DeepLabCut
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../roadmap.html">
+   A development roadmap for DeepLabCut
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../Governance.html">
+   Governance Model of DeepLabCut
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="../_sources/recipes/installTips.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
+    <div class="dropdown-buttons sourcebuttons">
+        <a class="repository-button"
+            href="https://github.com/DeepLabCut/DeepLabCut/tree/master/examples"><button type="button" class="btn btn-secondary topbarbtn"
+                data-toggle="tooltip" data-placement="left" title="Source repository"><i
+                    class="fab fa-github"></i>repository</button></a>
+        <a class="issues-button"
+            href="https://github.com/DeepLabCut/DeepLabCut/tree/master/examples/issues/new?title=Issue%20on%20page%20%2Frecipes/installTips.html&body=Your%20issue%20content%20here."><button
+                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
+                title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
+        
+    </div>
+</div>
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show">
+            
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#how-to-use-the-latest-updates-directly-from-github">
+   How to use the latest updates directly from GitHub
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#installation-on-ubuntu-18-04-lts">
+   Installation on Ubuntu 18.04 LTS
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#here-are-our-tips-for-an-easy-installation-this-is-done-on-a-fresh-computer-installation-ubuntu-18-04-lts">
+     Here are our tips for an easy installation. This is done on a fresh computer installation (Ubuntu 18.04 LTS)
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#installation-on-ubuntu-20-04-lts">
+   Installation on Ubuntu 20.04 LTS
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#let-s-start-with-cuda-support-for-your-gpu">
+     Let’s start with CUDA support for your GPU:
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#next-docker">
+     Next, Docker!
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#next-anaconda">
+     Next, Anaconda!
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#next-deeplabcut">
+     Next, DeepLabCut!
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#troubleshooting-note-if-you-get-a-failed-build-due-to-wxpython-i-e">
+     Troubleshooting: Note, if you get a failed build due to wxPython, i.e.:
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+        
+              <div>
+                
+  <div class="section" id="installation-tips">
+<h1>Installation Tips<a class="headerlink" href="#installation-tips" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="how-to-use-the-latest-updates-directly-from-github">
+<h2>How to use the latest updates directly from GitHub<a class="headerlink" href="#how-to-use-the-latest-updates-directly-from-github" title="Permalink to this headline">¶</a></h2>
+<p>We often update the master deeplabcut code base on github, and then ~1 a month we push out a stable release on pypi. This is what most users turn to on a daily basis (i.e. pypi is where you get your <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut</span></code> code from!</p>
+<p>But, sometimes we add things to the repo that are not yet integrated, or you might want to edit the code yourself. Here, we show you how to do this.</p>
+<p><strong>Step 1:</strong></p>
+<ul class="simple">
+<li><p>git clone the repo into a folder on your computer:</p></li>
+<li><p>click on this green button and copy the link:</p></li>
+</ul>
+<p><img alt="" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1581984907363-G8AFGX4V20Y1XD1PSZAK/ke17ZwdGBToddI8pDm48kGJBV0_F4LE4_UtCip_K_3lZw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVE0ejQCe16973Pm-pux3j5_Oqt57D2H0YbaJ3tl8vn_eR926scO3xePJoa6uVJa9B4/gitclone.png?format=500w" /></p>
+<ul class="simple">
+<li><p>then in the terminal type: <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/DeepLabCut/DeepLabCut.git</span></code></p></li>
+</ul>
+<p><strong>Step 2:</strong></p>
+<ul class="simple">
+<li><p>Now you will work from the terminal inside this cloned folder:</p></li>
+</ul>
+<p><img alt="" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1581985288123-V8XUAY0C0ZDNJ5WBHB7Y/ke17ZwdGBToddI8pDm48kIsGBOdR9tS_SxF6KQXIcDtZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpz3c8X74DzCy4P3pv-ZANOdh-3ZL9iVkcryTbbTskaGvEc42UcRKU-PHxLXKM6ZekE/terminal.png?format=750w" /></p>
+<ul class="simple">
+<li><p>Now, when you start <code class="docutils literal notranslate"><span class="pre">ipython</span></code> or <code class="docutils literal notranslate"><span class="pre">pythonw</span></code> (mac users), and <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">deeplabcut</span></code> you are importing the folder “deeplabcut” - so any changes you make, or any changes we made before adding it to the pip package, are here.</p></li>
+<li><p>You can also check which deeplabcut you are importing by running: <code class="docutils literal notranslate"><span class="pre">deeplabcut.__file__</span></code></p></li>
+</ul>
+<p><img alt="" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1581985466026-94OCSZJ5TL8U52JLB5VU/ke17ZwdGBToddI8pDm48kNdOD5iqmBzHwUaWGKS6qHBZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpyQPoegsR7K4odW9xcCi1MIHmvHh95_BFXYdKinJaRhV61R4G3qaUq94yWmtQgdj1A/importlocal.png?format=750w" /></p>
+<p>If you make changes to the code/first use the code, be sure you run <code class="docutils literal notranslate"><span class="pre">./resinstall.sh</span></code>, which you find in the main DeepLabCut folder:</p>
+<p><img alt="" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1609353210708-FRNREI7HUNS4GLDSJ00G/ke17ZwdGBToddI8pDm48kAya1IcSd32bok4WHvykeicUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYy7Mythp_T-mtop-vrsUOmeInPi9iDjx9w8K4ZfjXt2dq18t0tDkB2HMfL2JGcLHN27k5rSOPIU8nEAZT0p1MiSCjLISwBs8eEdxAxTptZAUg/Screen+Shot+2020-12-30+at+7.33.16+PM.png?format=2500w" /></p>
+<p>Then, you can see what version you have with <code class="docutils literal notranslate"><span class="pre">deeplabcut.__version__</span></code></p>
+</div>
+<div class="section" id="installation-on-ubuntu-18-04-lts">
+<h2>Installation on Ubuntu 18.04 LTS<a class="headerlink" href="#installation-on-ubuntu-18-04-lts" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="here-are-our-tips-for-an-easy-installation-this-is-done-on-a-fresh-computer-installation-ubuntu-18-04-lts">
+<h3>Here are our tips for an easy installation. This is done on a fresh computer installation (Ubuntu 18.04 LTS)<a class="headerlink" href="#here-are-our-tips-for-an-easy-installation-this-is-done-on-a-fresh-computer-installation-ubuntu-18-04-lts" title="Permalink to this headline">¶</a></h3>
+<p>install gcc:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">gcc</span>
+</pre></div>
+</div>
+<p>then, download CUDA 10 from here: <a class="reference external" href="https://developer.nvidia.com/cuda-downloads">https://developer.nvidia.com/cuda-downloads</a> and follow the instructions… ie:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">developer</span><span class="o">.</span><span class="n">download</span><span class="o">.</span><span class="n">nvidia</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">compute</span><span class="o">/</span><span class="n">cuda</span><span class="o">/</span><span class="mf">10.1</span><span class="o">/</span><span class="n">Prod</span><span class="o">/</span><span class="n">local_installers</span><span class="o">/</span><span class="n">cuda_10</span><span class="o">.</span><span class="mf">1.243_418</span><span class="o">.</span><span class="mf">87.00</span><span class="n">_linux</span><span class="o">.</span><span class="n">run</span>
+<span class="n">sudo</span> <span class="n">sh</span> <span class="n">cuda_10</span><span class="o">.</span><span class="mf">1.243_418</span><span class="o">.</span><span class="mf">87.00</span><span class="n">_linux</span><span class="o">.</span><span class="n">run</span>
+</pre></div>
+</div>
+<p>with the exception that I also (afterwards):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">add</span><span class="o">-</span><span class="n">apt</span><span class="o">-</span><span class="n">repository</span> <span class="n">ppa</span><span class="p">:</span><span class="n">graphics</span><span class="o">-</span><span class="n">drivers</span><span class="o">/</span><span class="n">ppa</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">update</span>
+<span class="n">sudo</span> <span class="n">ubuntu</span><span class="o">-</span><span class="n">drivers</span> <span class="n">autoinstall</span>
+</pre></div>
+</div>
+<p><strong>then reboot</strong></p>
+<p>Check gcc -version:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gcc</span> <span class="o">--</span><span class="n">version</span>
+</pre></div>
+</div>
+<p>output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gcc</span> <span class="p">(</span><span class="n">Ubuntu</span> <span class="mf">7.3</span><span class="o">.</span><span class="mi">0</span><span class="o">-</span><span class="mi">27</span><span class="n">ubuntu1</span><span class="o">~</span><span class="mf">18.04</span><span class="p">)</span> <span class="mf">7.3</span><span class="o">.</span><span class="mi">0</span>
+<span class="n">Copyright</span> <span class="p">(</span><span class="n">C</span><span class="p">)</span> <span class="mi">2017</span> <span class="n">Free</span> <span class="n">Software</span> <span class="n">Foundation</span><span class="p">,</span> <span class="n">Inc</span><span class="o">.</span>
+<span class="n">This</span> <span class="ow">is</span> <span class="n">free</span> <span class="n">software</span><span class="p">;</span> <span class="n">see</span> <span class="n">the</span> <span class="n">source</span> <span class="k">for</span> <span class="n">copying</span> <span class="n">conditions</span><span class="o">.</span>  <span class="n">There</span> <span class="ow">is</span> <span class="n">NO</span>
+<span class="n">warranty</span><span class="p">;</span> <span class="ow">not</span> <span class="n">even</span> <span class="k">for</span> <span class="n">MERCHANTABILITY</span> <span class="ow">or</span> <span class="n">FITNESS</span> <span class="n">FOR</span> <span class="n">A</span> <span class="n">PARTICULAR</span> <span class="n">PURPOSE</span>
+</pre></div>
+</div>
+<p>Then:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">nvidia</span><span class="o">-</span><span class="n">cuda</span><span class="o">-</span><span class="n">toolkit</span> <span class="n">gcc</span><span class="o">-</span><span class="mi">7</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nvcc</span> <span class="o">--</span><span class="n">version</span>
+</pre></div>
+</div>
+<p>then you can check:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nvidia</span><span class="o">-</span><span class="n">smi</span>
+</pre></div>
+</div>
+<p>and you’ll see driver version, CUDA version, status of graphics card(s).</p>
+</div>
+</div>
+<div class="section" id="installation-on-ubuntu-20-04-lts">
+<h2>Installation on Ubuntu 20.04 LTS<a class="headerlink" href="#installation-on-ubuntu-20-04-lts" title="Permalink to this headline">¶</a></h2>
+<p>Hello! Another cookbook entry on how to install your freshly installed 20.04 LTS system for DLC use. Namely, CUDA, drivers, Docker, and anaconda!</p>
+<div class="section" id="let-s-start-with-cuda-support-for-your-gpu">
+<h3>Let’s start with CUDA support for your GPU:<a class="headerlink" href="#let-s-start-with-cuda-support-for-your-gpu" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt</span> <span class="pre">install</span> <span class="pre">gcc</span></code></p>
+<p>then:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+<span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">developer</span><span class="o">.</span><span class="n">download</span><span class="o">.</span><span class="n">nvidia</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">compute</span><span class="o">/</span><span class="n">cuda</span><span class="o">/</span><span class="n">repos</span><span class="o">/</span><span class="n">ubuntu2004</span><span class="o">/</span><span class="n">x86_64</span><span class="o">/</span><span class="n">cuda</span><span class="o">-</span><span class="n">ubuntu2004</span><span class="o">.</span><span class="n">pin</span>
+<span class="n">sudo</span> <span class="n">mv</span> <span class="n">cuda</span><span class="o">-</span><span class="n">ubuntu2004</span><span class="o">.</span><span class="n">pin</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">apt</span><span class="o">/</span><span class="n">preferences</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">cuda</span><span class="o">-</span><span class="n">repository</span><span class="o">-</span><span class="n">pin</span><span class="o">-</span><span class="mi">600</span>
+<span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">developer</span><span class="o">.</span><span class="n">download</span><span class="o">.</span><span class="n">nvidia</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">compute</span><span class="o">/</span><span class="n">cuda</span><span class="o">/</span><span class="mf">11.3</span><span class="o">.</span><span class="mi">1</span><span class="o">/</span><span class="n">local_installers</span><span class="o">/</span><span class="n">cuda</span><span class="o">-</span><span class="n">repo</span><span class="o">-</span><span class="n">ubuntu2004</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">3</span><span class="o">-</span><span class="n">local_11</span><span class="o">.</span><span class="mf">3.1</span><span class="o">-</span><span class="mf">465.19</span><span class="o">.</span><span class="mi">01</span><span class="o">-</span><span class="mi">1</span><span class="n">_amd64</span><span class="o">.</span><span class="n">deb</span>
+<span class="n">sudo</span> <span class="n">dpkg</span> <span class="o">-</span><span class="n">i</span> <span class="n">cuda</span><span class="o">-</span><span class="n">repo</span><span class="o">-</span><span class="n">ubuntu2004</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">3</span><span class="o">-</span><span class="n">local_11</span><span class="o">.</span><span class="mf">3.1</span><span class="o">-</span><span class="mf">465.19</span><span class="o">.</span><span class="mi">01</span><span class="o">-</span><span class="mi">1</span><span class="n">_amd64</span><span class="o">.</span><span class="n">deb</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">key</span> <span class="n">add</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">cuda</span><span class="o">-</span><span class="n">repo</span><span class="o">-</span><span class="n">ubuntu2004</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">3</span><span class="o">-</span><span class="n">local</span><span class="o">/</span><span class="mi">7</span><span class="n">fa2af80</span><span class="o">.</span><span class="n">pub</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="o">-</span><span class="n">y</span> <span class="n">install</span> <span class="n">cuda</span>
+
+</pre></div>
+</div>
+<p>Then:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">add</span><span class="o">-</span><span class="n">apt</span><span class="o">-</span><span class="n">repository</span> <span class="n">ppa</span><span class="p">:</span><span class="n">graphics</span><span class="o">-</span><span class="n">drivers</span><span class="o">/</span><span class="n">ppa</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">update</span>
+<span class="n">sudo</span> <span class="n">ubuntu</span><span class="o">-</span><span class="n">drivers</span> <span class="n">autoinstall</span>
+</pre></div>
+</div>
+<p>then:</p>
+<p><code class="docutils literal notranslate"><span class="pre">reboot</span></code></p>
+<p>re-open terminal and check gcc version:</p>
+<p><code class="docutils literal notranslate"><span class="pre">gcc</span> <span class="pre">--version</span></code></p>
+<p>output:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">gcc</span> <span class="o">--</span><span class="n">version</span>
+<span class="n">gcc</span> <span class="p">(</span><span class="n">Ubuntu</span> <span class="mf">9.3</span><span class="o">.</span><span class="mi">0</span><span class="o">-</span><span class="mi">17</span><span class="n">ubuntu1</span><span class="o">~</span><span class="mf">20.04</span><span class="p">)</span> <span class="mf">9.3</span><span class="o">.</span><span class="mi">0</span>
+<span class="n">Copyright</span> <span class="p">(</span><span class="n">C</span><span class="p">)</span> <span class="mi">2019</span> <span class="n">Free</span> <span class="n">Software</span> <span class="n">Foundation</span><span class="p">,</span> <span class="n">Inc</span><span class="o">.</span>
+<span class="n">This</span> <span class="ow">is</span> <span class="n">free</span> <span class="n">software</span><span class="p">;</span> <span class="n">see</span> <span class="n">the</span> <span class="n">source</span> <span class="k">for</span> <span class="n">copying</span> <span class="n">conditions</span><span class="o">.</span>  <span class="n">There</span> <span class="ow">is</span> <span class="n">NO</span>
+<span class="n">warranty</span><span class="p">;</span> <span class="ow">not</span> <span class="n">even</span> <span class="k">for</span> <span class="n">MERCHANTABILITY</span> <span class="ow">or</span> <span class="n">FITNESS</span> <span class="n">FOR</span> <span class="n">A</span> <span class="n">PARTICULAR</span> <span class="n">PURPOSE</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>Then finish installation:</p>
+<p><code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt</span> <span class="pre">install</span> <span class="pre">nvidia-cuda-toolkit</span> <span class="pre">gcc-9</span></code></p>
+<p>Then check:</p>
+<p><code class="docutils literal notranslate"><span class="pre">nvcc</span> <span class="pre">--version</span></code></p>
+<p>All set! If error messages, read them carefully as they often tell you how to fix it, or what to google :D</p>
+<p>Now you can see CUDA, DRIVER, GPU(s):</p>
+<p><code class="docutils literal notranslate"><span class="pre">nvidia-smi</span></code></p>
+<p>output:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">nvidia</span><span class="o">-</span><span class="n">smi</span>
+<span class="n">Tue</span> <span class="n">Jun</span> <span class="mi">22</span> <span class="mi">18</span><span class="p">:</span><span class="mi">46</span><span class="p">:</span><span class="mi">26</span> <span class="mi">2021</span>
+<span class="o">+-----------------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">NVIDIA</span><span class="o">-</span><span class="n">SMI</span> <span class="mf">465.19</span><span class="o">.</span><span class="mi">01</span>    <span class="n">Driver</span> <span class="n">Version</span><span class="p">:</span> <span class="mf">465.19</span><span class="o">.</span><span class="mi">01</span>    <span class="n">CUDA</span> <span class="n">Version</span><span class="p">:</span> <span class="mf">11.3</span>     <span class="o">|</span>
+<span class="o">|-------------------------------+----------------------+----------------------+</span>
+<span class="o">|</span> <span class="n">GPU</span>  <span class="n">Name</span>        <span class="n">Persistence</span><span class="o">-</span><span class="n">M</span><span class="o">|</span> <span class="n">Bus</span><span class="o">-</span><span class="n">Id</span>        <span class="n">Disp</span><span class="o">.</span><span class="n">A</span> <span class="o">|</span> <span class="n">Volatile</span> <span class="n">Uncorr</span><span class="o">.</span> <span class="n">ECC</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Fan</span>  <span class="n">Temp</span>  <span class="n">Perf</span>  <span class="n">Pwr</span><span class="p">:</span><span class="n">Usage</span><span class="o">/</span><span class="n">Cap</span><span class="o">|</span>         <span class="n">Memory</span><span class="o">-</span><span class="n">Usage</span> <span class="o">|</span> <span class="n">GPU</span><span class="o">-</span><span class="n">Util</span>  <span class="n">Compute</span> <span class="n">M</span><span class="o">.</span> <span class="o">|</span>
+<span class="o">|</span>                               <span class="o">|</span>                      <span class="o">|</span>               <span class="n">MIG</span> <span class="n">M</span><span class="o">.</span> <span class="o">|</span>
+<span class="o">|===============================+======================+======================|</span>
+<span class="o">|</span>   <span class="mi">0</span>  <span class="n">NVIDIA</span> <span class="n">GeForce</span> <span class="o">...</span>  <span class="n">On</span>   <span class="o">|</span> <span class="mi">00000000</span><span class="p">:</span><span class="mi">0</span><span class="n">B</span><span class="p">:</span><span class="mf">00.0</span>  <span class="n">On</span> <span class="o">|</span>                  <span class="n">N</span><span class="o">/</span><span class="n">A</span> <span class="o">|</span>
+<span class="o">|</span>  <span class="mi">0</span><span class="o">%</span>   <span class="mi">46</span><span class="n">C</span>    <span class="n">P8</span>    <span class="mi">11</span><span class="n">W</span> <span class="o">/</span> <span class="mi">200</span><span class="n">W</span> <span class="o">|</span>    <span class="mi">252</span><span class="n">MiB</span> <span class="o">/</span>  <span class="mi">8116</span><span class="n">MiB</span> <span class="o">|</span>      <span class="mi">5</span><span class="o">%</span>      <span class="n">Default</span> <span class="o">|</span>
+<span class="o">|</span>                               <span class="o">|</span>                      <span class="o">|</span>                  <span class="n">N</span><span class="o">/</span><span class="n">A</span> <span class="o">|</span>
+<span class="o">+-------------------------------+----------------------+----------------------+</span>
+
+</pre></div>
+</div>
+</div>
+<div class="section" id="next-docker">
+<h3>Next, Docker!<a class="headerlink" href="#next-docker" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> \
+    <span class="n">apt</span><span class="o">-</span><span class="n">transport</span><span class="o">-</span><span class="n">https</span> \
+    <span class="n">ca</span><span class="o">-</span><span class="n">certificates</span> \
+    <span class="n">curl</span> \
+    <span class="n">gnupg</span> \
+    <span class="n">lsb</span><span class="o">-</span><span class="n">release</span>
+</pre></div>
+</div>
+<p>add key: <code class="docutils literal notranslate"><span class="pre">curl</span> <span class="pre">-fsSL</span> <span class="pre">https://download.docker.com/linux/ubuntu/gpg</span> <span class="pre">|</span> <span class="pre">sudo</span> <span class="pre">gpg</span> <span class="pre">--dearmor</span> <span class="pre">-o</span> <span class="pre">/usr/share/keyrings/docker-archive-keyring.gpg</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">echo</span> \
+  <span class="s2">&quot;deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu </span><span class="se">\</span>
+<span class="s2">  $(lsb_release -cs) stable&quot;</span> <span class="o">|</span> <span class="n">sudo</span> <span class="n">tee</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">apt</span><span class="o">/</span><span class="n">sources</span><span class="o">.</span><span class="n">list</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">docker</span><span class="o">.</span><span class="n">list</span> <span class="o">&gt;</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">null</span>
+</pre></div>
+</div>
+<p>Then:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">docker</span><span class="o">-</span><span class="n">ce</span> <span class="n">docker</span><span class="o">-</span><span class="n">ce</span><span class="o">-</span><span class="n">cli</span> <span class="n">containerd</span><span class="o">.</span><span class="n">io</span>
+</pre></div>
+</div>
+<p>some clean up:
+<code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt</span> <span class="pre">autoremove</span></code></p>
+<p>now you can run <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">docker</span> <span class="pre">run</span> <span class="pre">hello-world</span></code></p>
+<p>and get:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Hello from Docker!
+This message shows that your installation appears to be working correctly.
+
+To generate this message, Docker took the following steps:
+ 1. The Docker client contacted the Docker daemon.
+ 2. The Docker daemon pulled the &quot;hello-world&quot; image from the Docker Hub.
+    (amd64)
+ 3. The Docker daemon created a new container from that image which runs the
+    executable that produces the output you are currently reading.
+ 4. The Docker daemon streamed that output to the Docker client, which sent it
+    to your terminal.
+
+To try something more ambitious, you can run an Ubuntu container with:
+ $ docker run -it ubuntu bash
+
+Share images, automate workflows, and more with a free Docker ID:
+ https://hub.docker.com/
+
+For more examples and ideas, visit:
+ https://docs.docker.com/get-started/
+</pre></div>
+</div>
+</div>
+<div class="section" id="next-anaconda">
+<h3>Next, Anaconda!<a class="headerlink" href="#next-anaconda" title="Permalink to this headline">¶</a></h3>
+<p>Click here to get the ubuntu/linux package: <a class="reference external" href="https://www.anaconda.com/products/individual#linux">https://www.anaconda.com/products/individual#linux</a></p>
+<p>this downloads a file, save it (I save into downloads)</p>
+<p>then <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">Downloads</span></code>:</p>
+<p>and run:</p>
+<p><code class="docutils literal notranslate"><span class="pre">bash</span> <span class="pre">Anaconda3-2021.05-Linux-x86_64.sh</span></code></p>
+<p>and you get:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Welcome</span> <span class="n">to</span> <span class="n">Anaconda3</span> <span class="mf">2021.05</span>
+
+<span class="n">In</span> <span class="n">order</span> <span class="n">to</span> <span class="k">continue</span> <span class="n">the</span> <span class="n">installation</span> <span class="n">process</span><span class="p">,</span> <span class="n">please</span> <span class="n">review</span> <span class="n">the</span> <span class="n">license</span>
+<span class="n">agreement</span><span class="o">.</span>
+<span class="n">Please</span><span class="p">,</span> <span class="n">press</span> <span class="n">ENTER</span> <span class="n">to</span> <span class="k">continue</span>
+<span class="o">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<p>Follow prompts!</p>
+</div>
+<div class="section" id="next-deeplabcut">
+<h3>Next, DeepLabCut!<a class="headerlink" href="#next-deeplabcut" title="Permalink to this headline">¶</a></h3>
+<p>Given this is a totally fresh install, here are a few things that I also needed: <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt</span> <span class="pre">install</span> <span class="pre">libcanberra-gtk-module</span> <span class="pre">libcanberra-gtk3-module</span></code> Then I proceeded below:</p>
+<p>I grab the conda file from the website at <a class="reference external" href="http://www.deeplabcut.org">www.deeplabcut.org</a>. Simply click to download (DLC-GPU). For me, this goes into Downloads.</p>
+<p>So, I open a terminal, <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">Downloads</span></code>, and then run: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">-f</span> <span class="pre">DLC-GPU.yaml</span></code></p>
+<p>Follow prompts!</p>
+</div>
+<div class="section" id="troubleshooting-note-if-you-get-a-failed-build-due-to-wxpython-i-e">
+<h3>Troubleshooting: Note, if you get a failed build due to wxPython, i.e.:<a class="headerlink" href="#troubleshooting-note-if-you-get-a-failed-build-due-to-wxpython-i-e" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ERROR</span><span class="p">:</span> <span class="n">Command</span> <span class="n">errored</span> <span class="n">out</span> <span class="k">with</span> <span class="n">exit</span> <span class="n">status</span> <span class="mi">1</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">mackenzie</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">DLC</span><span class="o">-</span><span class="n">GPU</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">python</span> <span class="o">-</span><span class="n">u</span> <span class="o">-</span><span class="n">c</span> <span class="s1">&#39;import io, os, sys, setuptools, tokenize; sys.argv[0] = &#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;/tmp/pip-install-0jsmkrr1/wxpython_aeff462b2060421a9cf65df55f63a126/setup.py&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;; __file__=&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;/tmp/pip-install-0jsmkrr1/wxpython_aeff462b2060421a9cf65df55f63a126/setup.py&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;;f = getattr(tokenize, &#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;open&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;, open)(__file__) if os.path.exists(__file__) else io.StringIO(&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;from setuptools import setup; setup()&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;);code = f.read().replace(&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;</span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;, &#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;);f.close();exec(compile(code, __file__, &#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;exec&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;))&#39;</span> <span class="n">install</span> <span class="o">--</span><span class="n">record</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">pip</span><span class="o">-</span><span class="n">record</span><span class="o">-</span><span class="n">pzy9q5u2</span><span class="o">/</span><span class="n">install</span><span class="o">-</span><span class="n">record</span><span class="o">.</span><span class="n">txt</span> <span class="o">--</span><span class="n">single</span><span class="o">-</span><span class="n">version</span><span class="o">-</span><span class="n">externally</span><span class="o">-</span><span class="n">managed</span> <span class="o">--</span><span class="nb">compile</span> <span class="o">--</span><span class="n">install</span><span class="o">-</span><span class="n">headers</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">mackenzie</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">DLC</span><span class="o">-</span><span class="n">GPU</span><span class="o">/</span><span class="n">include</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">7</span><span class="n">m</span><span class="o">/</span><span class="n">wxpython</span> <span class="n">Check</span> <span class="n">the</span> <span class="n">logs</span> <span class="k">for</span> <span class="n">full</span> <span class="n">command</span> <span class="n">output</span><span class="o">.</span>
+
+<span class="n">failed</span>
+
+<span class="n">CondaEnvException</span><span class="p">:</span> <span class="n">Pip</span> <span class="n">failed</span>
+</pre></div>
+</div>
+<p>remove conda env: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">remove</span> <span class="pre">--name</span> <span class="pre">DLC-GPU</span> <span class="pre">--all</span></code>, open the DLC-GPU.yaml file (any text editor!) and change <code class="docutils literal notranslate"><span class="pre">deeplabcut[gui]</span></code> to <code class="docutils literal notranslate"><span class="pre">deeplabcut</span></code>. Then run: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">-f</span> <span class="pre">DLC-GPU.yaml</span></code> again…</p>
+<p>then you will get:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+ <span class="n">Successfully</span> <span class="n">uninstalled</span> <span class="n">decorator</span><span class="o">-</span><span class="mf">5.0</span><span class="o">.</span><span class="mi">9</span>
+<span class="n">Successfully</span> <span class="n">installed</span> <span class="n">PyWavelets</span><span class="o">-</span><span class="mf">1.1</span><span class="o">.</span><span class="mi">1</span> <span class="n">absl</span><span class="o">-</span><span class="n">py</span><span class="o">-</span><span class="mf">0.13</span><span class="o">.</span><span class="mi">0</span> <span class="n">astor</span><span class="o">-</span><span class="mf">0.8</span><span class="o">.</span><span class="mi">1</span> <span class="n">bayesian</span><span class="o">-</span><span class="n">optimization</span><span class="o">-</span><span class="mf">1.2</span><span class="o">.</span><span class="mi">0</span> <span class="n">chardet</span><span class="o">-</span><span class="mf">4.0</span><span class="o">.</span><span class="mi">0</span> <span class="n">click</span><span class="o">-</span><span class="mf">8.0</span><span class="o">.</span><span class="mi">1</span> <span class="n">cycler</span><span class="o">-</span><span class="mf">0.10</span><span class="o">.</span><span class="mi">0</span> <span class="n">cython</span><span class="o">-</span><span class="mf">0.29</span><span class="o">.</span><span class="mi">23</span> <span class="n">decorator</span><span class="o">-</span><span class="mf">4.4</span><span class="o">.</span><span class="mi">2</span> <span class="n">deeplabcut</span><span class="o">-</span><span class="mf">2.1</span><span class="o">.</span><span class="mf">10.4</span> <span class="n">filterpy</span><span class="o">-</span><span class="mf">1.4</span><span class="o">.</span><span class="mi">5</span> <span class="n">gast</span><span class="o">-</span><span class="mf">0.2</span><span class="o">.</span><span class="mi">2</span> <span class="n">google</span><span class="o">-</span><span class="n">pasta</span><span class="o">-</span><span class="mf">0.2</span><span class="o">.</span><span class="mi">0</span> <span class="n">grpcio</span><span class="o">-</span><span class="mf">1.38</span><span class="o">.</span><span class="mi">1</span> <span class="n">h5py</span><span class="o">-</span><span class="mf">2.10</span><span class="o">.</span><span class="mi">0</span> <span class="n">idna</span><span class="o">-</span><span class="mf">2.10</span> <span class="n">imageio</span><span class="o">-</span><span class="mf">2.9</span><span class="o">.</span><span class="mi">0</span> <span class="n">imageio</span><span class="o">-</span><span class="n">ffmpeg</span><span class="o">-</span><span class="mf">0.4</span><span class="o">.</span><span class="mi">4</span> <span class="n">imgaug</span><span class="o">-</span><span class="mf">0.4</span><span class="o">.</span><span class="mi">0</span> <span class="n">intel</span><span class="o">-</span><span class="n">openmp</span><span class="o">-</span><span class="mf">2021.2</span><span class="o">.</span><span class="mi">0</span> <span class="n">joblib</span><span class="o">-</span><span class="mf">1.0</span><span class="o">.</span><span class="mi">1</span> <span class="n">keras</span><span class="o">-</span><span class="n">applications</span><span class="o">-</span><span class="mf">1.0</span><span class="o">.</span><span class="mi">8</span> <span class="n">keras</span><span class="o">-</span><span class="n">preprocessing</span><span class="o">-</span><span class="mf">1.1</span><span class="o">.</span><span class="mi">2</span> <span class="n">kiwisolver</span><span class="o">-</span><span class="mf">1.3</span><span class="o">.</span><span class="mi">1</span> <span class="n">llvmlite</span><span class="o">-</span><span class="mf">0.34</span><span class="o">.</span><span class="mi">0</span> <span class="n">markdown</span><span class="o">-</span><span class="mf">3.3</span><span class="o">.</span><span class="mi">4</span> <span class="n">matplotlib</span><span class="o">-</span><span class="mf">3.1</span><span class="o">.</span><span class="mi">3</span> <span class="n">moviepy</span><span class="o">-</span><span class="mf">1.0</span><span class="o">.</span><span class="mi">1</span> <span class="n">msgpack</span><span class="o">-</span><span class="mf">1.0</span><span class="o">.</span><span class="mi">2</span> <span class="n">msgpack</span><span class="o">-</span><span class="n">numpy</span><span class="o">-</span><span class="mf">0.4</span><span class="o">.</span><span class="mf">7.1</span> <span class="n">networkx</span><span class="o">-</span><span class="mf">2.5</span><span class="o">.</span><span class="mi">1</span> <span class="n">numba</span><span class="o">-</span><span class="mf">0.51</span><span class="o">.</span><span class="mi">1</span> <span class="n">numexpr</span><span class="o">-</span><span class="mf">2.7</span><span class="o">.</span><span class="mi">3</span> <span class="n">numpy</span><span class="o">-</span><span class="mf">1.17</span><span class="o">.</span><span class="mi">5</span> <span class="n">opencv</span><span class="o">-</span><span class="n">python</span><span class="o">-</span><span class="mf">4.5</span><span class="o">.</span><span class="mf">2.54</span> <span class="n">opencv</span><span class="o">-</span><span class="n">python</span><span class="o">-</span><span class="n">headless</span><span class="o">-</span><span class="mf">3.4</span><span class="o">.</span><span class="mf">9.33</span> <span class="n">opt</span><span class="o">-</span><span class="n">einsum</span><span class="o">-</span><span class="mf">3.3</span><span class="o">.</span><span class="mi">0</span> <span class="n">pandas</span><span class="o">-</span><span class="mf">1.2</span><span class="o">.</span><span class="mi">5</span> <span class="n">patsy</span><span class="o">-</span><span class="mf">0.5</span><span class="o">.</span><span class="mi">1</span> <span class="n">pillow</span><span class="o">-</span><span class="mf">8.2</span><span class="o">.</span><span class="mi">0</span> <span class="n">proglog</span><span class="o">-</span><span class="mf">0.1</span><span class="o">.</span><span class="mi">9</span> <span class="n">protobuf</span><span class="o">-</span><span class="mf">3.17</span><span class="o">.</span><span class="mi">3</span> <span class="n">psutil</span><span class="o">-</span><span class="mf">5.8</span><span class="o">.</span><span class="mi">0</span> <span class="n">pytz</span><span class="o">-</span><span class="mf">2021.1</span> <span class="n">pyyaml</span><span class="o">-</span><span class="mf">5.4</span><span class="o">.</span><span class="mi">1</span> <span class="n">requests</span><span class="o">-</span><span class="mf">2.25</span><span class="o">.</span><span class="mi">1</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">-</span><span class="mf">0.17</span><span class="o">.</span><span class="mi">9</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">clib</span><span class="o">-</span><span class="mf">0.2</span><span class="o">.</span><span class="mi">2</span> <span class="n">scikit</span><span class="o">-</span><span class="n">image</span><span class="o">-</span><span class="mf">0.18</span><span class="o">.</span><span class="mi">1</span> <span class="n">scikit</span><span class="o">-</span><span class="n">learn</span><span class="o">-</span><span class="mf">0.24</span><span class="o">.</span><span class="mi">2</span> <span class="n">scipy</span><span class="o">-</span><span class="mf">1.7</span><span class="o">.</span><span class="mi">0</span> <span class="n">statsmodels</span><span class="o">-</span><span class="mf">0.12</span><span class="o">.</span><span class="mi">2</span> <span class="n">tables</span><span class="o">-</span><span class="mf">3.6</span><span class="o">.</span><span class="mi">1</span> <span class="n">tabulate</span><span class="o">-</span><span class="mf">0.8</span><span class="o">.</span><span class="mi">9</span> <span class="n">tensorboard</span><span class="o">-</span><span class="mf">1.15</span><span class="o">.</span><span class="mi">0</span> <span class="n">tensorflow</span><span class="o">-</span><span class="n">estimator</span><span class="o">-</span><span class="mf">1.15</span><span class="o">.</span><span class="mi">1</span> <span class="n">tensorflow</span><span class="o">-</span><span class="n">gpu</span><span class="o">-</span><span class="mf">1.15</span><span class="o">.</span><span class="mi">5</span> <span class="n">tensorpack</span><span class="o">-</span><span class="mf">0.9</span><span class="o">.</span><span class="mi">8</span> <span class="n">termcolor</span><span class="o">-</span><span class="mf">1.1</span><span class="o">.</span><span class="mi">0</span> <span class="n">threadpoolctl</span><span class="o">-</span><span class="mf">2.1</span><span class="o">.</span><span class="mi">0</span> <span class="n">tifffile</span><span class="o">-</span><span class="mf">2021.6</span><span class="o">.</span><span class="mi">14</span> <span class="n">tqdm</span><span class="o">-</span><span class="mf">4.61</span><span class="o">.</span><span class="mi">1</span> <span class="n">urllib3</span><span class="o">-</span><span class="mf">1.26</span><span class="o">.</span><span class="mi">5</span> <span class="n">werkzeug</span><span class="o">-</span><span class="mf">2.0</span><span class="o">.</span><span class="mi">1</span> <span class="n">wrapt</span><span class="o">-</span><span class="mf">1.12</span><span class="o">.</span><span class="mi">1</span>
+
+<span class="n">done</span>
+<span class="c1">#</span>
+<span class="c1"># To activate this environment, use</span>
+<span class="c1">#</span>
+<span class="c1">#     $ conda activate DLC-GPU</span>
+<span class="c1">#</span>
+<span class="c1"># To deactivate an active environment, use</span>
+<span class="c1">#</span>
+<span class="c1">#     $ conda deactivate</span>
+</pre></div>
+</div>
+<p>Activate! <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">DLC-GPU</span></code> and then run: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">conda-forge</span> <span class="pre">wxpython</span></code> … after this finishes, run: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut[gui]</span></code></p>
+<p>Now you might get some warnings, but for me it was then totally fine to run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code> which launches the DLC GUI!</p>
+</div>
+</div>
+</div>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./recipes"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+        
+        <div class='prev-next-bottom'>
+            
+    <a class='left-prev' id="prev-link" href="../HelperFunctions.html" title="previous page">Helper &amp; Advanced Optional Function Documentation</a>
+    <a class='right-next' id="next-link" href="io.html" title="next page">Input/output manipulations with DeepLabCut</a>
+
+        </div>
+        
+        </div>
+    </div>
+    <footer class="footer mt-5 mt-md-0">
+    <div class="container">
+      <p>
+        
+          By The DeepLabCut Team<br/>
+        
+            &copy; Copyright 2021.<br/>
+          <div class="extra_footer">
+            <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+
+          </div>
+      </p>
+    </div>
+  </footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="../_static/js/index.1c5a1a01449ed65a7b51.js"></script>
+
+  
+  </body>
+</html>
