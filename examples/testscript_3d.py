@@ -19,13 +19,14 @@ num_cameras = 2  # Enter the number of cameras
 import os, deeplabcut
 import zipfile, urllib.request, shutil
 from datetime import datetime as dt
+from deeplabcut.utils import benchmark
 import glob
 from pathlib import Path
 import subprocess
 
 print("Imported DLC!")
 
-basepath = os.path.dirname(os.path.abspath("testscript_3d.py"))
+basepath = benchmark.get_example_datasets()
 videoname = "reachingvideo1"
 
 video = [

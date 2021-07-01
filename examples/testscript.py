@@ -15,7 +15,7 @@ It produces nothing of interest scientifically.
 import os
 import deeplabcut
 import platform
-import subprocess
+from deeplabcut.utils import benchmark
 from pathlib import Path
 
 import numpy as np
@@ -27,7 +27,7 @@ if __name__ == "__main__":
     scorer = "Alex"  # Enter the name of the experimenter/labeler
 
     print("Imported DLC!")
-    basepath = os.path.dirname(os.path.realpath(__file__))
+    basepath = benchmark.get_example_datasets()
     videoname = "reachingvideo1"
     video = [
         os.path.join(

@@ -21,12 +21,14 @@ The analysis of the video takes 41 seconds (batch size 32) and creating the fram
 """
 import deeplabcut
 import os
+from deeplabcut.utils import benchmark
 
 
 if __name__ == "__main__":
     # Loading example data set
+    basepath = benchmark.get_example_datasets()
     path_config_file = os.path.join(
-        os.getcwd(), "openfield-Pranav-2018-10-30/config.yaml"
+        basepath, "openfield-Pranav-2018-10-30", "config.yaml"
     )
     deeplabcut.load_demo_data(path_config_file)
     shuffle = 13

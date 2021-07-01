@@ -2,7 +2,11 @@ import os
 import deeplabcut
 import numpy as np
 import pandas as pd
-from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
+from deeplabcut.utils import (
+    auxfun_multianimal,
+    auxiliaryfunctions,
+    benchmark,
+)
 
 
 if __name__ == "__main__":
@@ -17,7 +21,7 @@ if __name__ == "__main__":
 
     N_ITER = 5
 
-    basepath = os.path.dirname(os.path.realpath(__file__))
+    basepath = benchmark.get_example_datasets()
     video = "m3v1mp4"
     video_path = os.path.join(
         basepath, "openfield-Pranav-2018-10-30", "videos", video + ".mp4"

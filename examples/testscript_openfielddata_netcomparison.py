@@ -28,9 +28,13 @@ import os
 os.environ["CUDA_VISIBLE_DEVICES"] = str(0)
 import deeplabcut
 import numpy as np
+from deeplabcut.utils import benchmark
 
 # Loading example data set
-path_config_file = os.path.join(os.getcwd(), "openfield-Pranav-2018-10-30/config.yaml")
+basepath = benchmark.get_example_datasets()
+path_config_file = os.path.join(
+    basepath, "openfield-Pranav-2018-10-30", "config.yaml"
+)
 cfg = deeplabcut.auxiliaryfunctions.read_config(path_config_file)
 maxiters = 10000
 

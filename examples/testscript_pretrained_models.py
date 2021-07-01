@@ -6,11 +6,12 @@ import os, subprocess, deeplabcut
 from pathlib import Path
 import pandas as pd
 import numpy as np
+from deeplabcut.utils import benchmark
 
 Task = "human_dancing"
 YourName = "teamDLC"
 
-basepath = os.path.dirname(os.path.abspath("testscript.py"))
+basepath = benchmark.get_example_datasets()
 videoname = "reachingvideo1"
 video = [
     os.path.join(

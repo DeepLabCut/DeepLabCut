@@ -33,12 +33,13 @@ scorer = "Alex"  # Enter the name of the experimenter/labeler
 
 
 import os, subprocess, deeplabcut
+from deeplabcut.utils import benchmark
 from pathlib import Path
 import pandas as pd
 import numpy as np
 
 print("Imported DLC!")
-basepath = os.path.dirname(os.path.abspath("testscript.py"))
+basepath = benchmark.get_example_datasets()
 videoname = "reachingvideo1"
 video = [
     os.path.join(

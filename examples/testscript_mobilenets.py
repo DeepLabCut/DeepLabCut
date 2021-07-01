@@ -13,8 +13,8 @@ It should take about 4:15 minutes to run this in a CPU. (incl. downloading the R
 It produces nothing of interest scientifically.
 """
 import os
-os.environ["DLClight"] = "True"
 import deeplabcut
+from deeplabcut.utils import benchmark
 from pathlib import Path
 import pandas as pd
 import numpy as np
@@ -69,7 +69,7 @@ if __name__ == "__main__":
     task = "TEST-multipleNets"  # Enter the name of your experiment Task
     scorer = "Alex"  # Enter the name of the experimenter/labeler
     print("Imported DLC!")
-    basepath = os.path.dirname(os.path.realpath(__file__))
+    basepath = benchmark.get_example_datasets()
     videoname = "reachingvideo1"
     video = [
         os.path.join(
