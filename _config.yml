@@ -18,11 +18,5 @@ repository:
   path_to_book: docs
   branch: master
 
-# Information about where the book exists on the web
-repository:
-  url                       : https://github.com/DeepLabCut/DeepLabCut/tree/master/examples  # Online location of your book
-  path_to_book              : COLAB_YOURDATA_TrainNetwork_VideoAnalysis.ipynb  # Optional path to your book, relative to the repository root
-  branch                    : master  # Which branch of the repository should be used when creating links (optional)
-
 launch_buttons:
   colab_url: "https://colab.research.google.com/github/AlexEMG/DeepLabCut/blob/master/examples/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.ipynb"
