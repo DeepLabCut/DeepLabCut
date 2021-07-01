@@ -102,7 +102,7 @@ The ONLY thing you need to do **first** if you have an NVIDIA GPU, NVIDIA driver
 
 ##### Notes:
 
- - **All of the TensorFlow 2.x versions work with DeepLabCut**. But, please be mindful different versions of TensorFlow require different CUDA versions.
+ - **All of the TensorFlow versions work with DeepLabCut**. But, please be mindful different versions of TensorFlow require different CUDA versions.
  - As the combination of TensorFlow and CUDA matters, we strongly encourage you to **check your driver/cuDNN/CUDA/TensorFlow versions** [on this StackOverflow post](https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-304-125/30820690#30820690).
  - To check your GPU is working, in the terminal, run:
 
