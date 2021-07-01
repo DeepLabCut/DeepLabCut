@@ -1,0 +1,28 @@
+format: jb-book
+root: intro
+parts:
+- caption: Main Documentation
+  chapters:
+  - file: README
+  - file: installation
+  - file: standardDeepLabCut_UserGuide
+  - file: maDLC_UserGuide
+  - file: PROJECT_GUI
+  - file: Overviewof3D
+- caption: Tutorials
+  chapters:
+  - file: tutorial
+  - file: convert_maDLC
+  - file: HelperFunctions
+- caption: Recipes
+  chapters:
+  - file: recipes/installTips
+  - file: recipes/io
+  - file: recipes/nn
+  - file: recipes/post
+  - file: recipes/BatchProcessing
+- caption: Mission & Contribute
+  chapters:
+  - file: MISSION_AND_VALUES
+  - file: roadmap
+  - file: Governance
