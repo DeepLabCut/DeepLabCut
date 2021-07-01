@@ -4,6 +4,7 @@ h5py
 ruamel.yaml>=0.15.0
 intel-openmp
 imgaug
+jupyter-book>=0.7.0b
 numba
 matplotlib
 networkx
