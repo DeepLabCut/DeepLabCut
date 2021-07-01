@@ -76,10 +76,9 @@ In the terminal type:
 `conda create -n DLC python=3.8`
 
 
-The only thing you then need to add to the env is deeplabcut (`pip install deeplabcut`) and wxPython, which is OS dependent.  
-For Windows and MacOS, you just run `pip install -U wxPython<4.1.0` but for linux you need the specific wheel (https://wxpython.org/pages/downloads/index.html).
+The only thing you then need to add to the env is deeplabcut (`pip install deeplabcut`) or `pip install 'deeplabcut[gui]'` which has wxPython for GUI support. For Windows and MacOS, you just run `pip install -U wxPython<4.1.0` but for linux you might need the specific wheel (https://wxpython.org/pages/downloads/index.html).
 
-We have some tips for linux users here: https://github.com/DeepLabCut/Docker4DeepLabCut2.0/wiki
+We have some tips for linux users here: https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html
 
 ### **GPU Support:**
 
