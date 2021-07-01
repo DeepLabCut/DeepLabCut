@@ -1,13 +1,13 @@
 # DeepLabCut User Guide (for single animal projects)
 
-This document covers single/standard DeepLabCut use. If you have a complicated multi-animal scenario (i.e., they look the same), then please see our [maDLC user guide](/docs/maDLC_UserGuide.md).
+This document covers single/standard DeepLabCut use. If you have a complicated multi-animal scenario (i.e., they look the same), then please see our [maDLC user guide]((https://github.com/DeepLabCut/DeepLabCut/blob/master//docs/maDLC_UserGuide.md).
 
 To get started, you can use the GUI, or the terminal. See below.
 
 ### DeepLabCut Project Manager GUI (recommended for beginners)
 
 **GUI:**
-Simply ``python -m deeplabcut`` or MacOS: ``pythonw -m deeplabcut``. The below functions are available to you in an easy-to-use graphical user interface. While most functionality is available, advanced users might want the additional flexibility that command line interface offers. Read more [here](/docs/PROJECT_GUI.md).
+Simply ``python -m deeplabcut`` or MacOS: ``pythonw -m deeplabcut``. The below functions are available to you in an easy-to-use graphical user interface. While most functionality is available, advanced users might want the additional flexibility that command line interface offers. Read more [here]((https://github.com/DeepLabCut/DeepLabCut/blob/master//docs/PROJECT_GUI.md).
 
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572824438905-QY9XQKZ8LAJZG6BLPWOQ/ke17ZwdGBToddI8pDm48kIIa76w436aRzIF_cdFnEbEUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcLthF_aOEGVRewCT7qiippiAuU5PSJ9SSYal26FEts0MmqyMIhpMOn8vJAUvOV4MI/guilaunch.jpg?format=1000w" width="60%">
@@ -564,8 +564,4 @@ Please find all the information on using the 3D toolbox of DeepLabCut (as of 2.0
 
 ## Other functions, some are yet-to-be-documented:
 
-We suggest you [check out these additional helper functions](/docs/HelperFunctions.md), that could be useful (they are all optional).
-
-Return to [User guide overview](UseOverviewGuide.md).
-
-Return to [readme](../README.md).
+We suggest you [check out these additional helper functions]((https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/HelperFunctions.md), that could be useful (they are all optional).
