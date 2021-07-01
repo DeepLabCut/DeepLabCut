@@ -25,7 +25,7 @@ config_path = deeplabcut.create_new_project(
 
 > Next, you can set a variable for the config_path: 'Full path of the project configuration file*'
 
-**Edit the config.ymal file to set up your project~**
+**Edit the config.ymal file to set up your project**
 
 **Extract video frames to annotate**
 ```python

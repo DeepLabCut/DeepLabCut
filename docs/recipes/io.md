@@ -1,7 +1,5 @@
 # Input/output manipulations with DeepLabCut
 
-This page exemplifies:
-
 ## Analyzing very large videos in chunks
 Analyzing hour-long videos may take a while, but the task can be
 conveniently broken down into the analysis of smaller video clips:
@@ -16,11 +14,3 @@ vid = VideoWriter(video_path)
 clips = vid.split(n_splits=10)
 deeplabcut.analyze_videos(config_path, clips, ext)
 ```
-
-## Rename scorer/bodyparts
-
-
-## Delete frames after labeling
-
-
-## Add already extracted frames to a project

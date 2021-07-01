@@ -57,10 +57,6 @@ deeplabcut.auxiliaryfunctions.edit_config(
 )
 ```
 
-## When to stop training
-
-WIP!
-
 ## Evaluating intermediate (and all) snapshots
 
 The latest snapshot stored during training may not necessarily be the one that yields the highest performance. Therefore, you should analyze ALL snapshots, and select the best. Put 'all' in the snapshots section of the config.yaml to do this.
