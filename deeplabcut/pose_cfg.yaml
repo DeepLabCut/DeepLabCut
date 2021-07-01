@@ -29,6 +29,9 @@ batch_size: 1
 # Probability with which the augmenters will be applied to input images
 apply_prob: 0.5
 
+# Resize images prior to augmentation
+pre_resize: []  # Specify [width, height] if pre-resizing is desired
+
 # Smart, on-the-fly image cropping, replacing deeplabcut.cropimagesandlabels
 crop_size: [400, 400]  # width, height
 max_shift: 0.4  # Maximum relative shift of the position of the crop center

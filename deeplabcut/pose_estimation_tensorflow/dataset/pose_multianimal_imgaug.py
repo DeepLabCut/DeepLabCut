@@ -83,11 +83,16 @@ class MAPoseDataset:
         self.has_gt = has_gt
         return data
 
-    def build_augmentation_pipeline(self, height=None, width=None, apply_prob=0.5):
+    def build_augmentation_pipeline(self, apply_prob=0.5):
         cfg = self.cfg
 
         sometimes = lambda aug: iaa.Sometimes(apply_prob, aug)
         pipeline = iaa.Sequential(random_order=False)
+
+        pre_resize = cfg.get("pre_resize")
+        if pre_resize:
+            width, height = pre_resize
+            pipeline.add(iaa.Resize({"height": height, "width": width}))
 
         # Add smart, keypoint-aware image cropping
         w, h = self.default_crop_size
@@ -143,14 +148,6 @@ class MAPoseDataset:
                         )
                     )
                 )
-        if height is not None and width is not None:
-            pipeline.add(
-                iaa.Sometimes(
-                    cfg.get("cropratio", 0.4),
-                    iaa.CropAndPad(percent=(-0.3, 0.1), keep_size=False),
-                )
-            )
-            pipeline.add(iaa.Resize({"height": height, "width": width}))
         return pipeline
 
     def get_batch(self):
@@ -323,7 +320,7 @@ class MAPoseDataset:
                 return False
         return True
 
-    def compute_scmap_weights(self, scmap_shape, joint_id, data_item):
+    def compute_scmap_weights(self, scmap_shape, joint_id):
         cfg = self.cfg
         if cfg["weigh_only_present_joints"]:
             weights = np.zeros(scmap_shape)
@@ -499,7 +496,7 @@ class MAPoseDataset:
 
             coordinateoffset += len(joint_ids)  # keeping track of the blocks
 
-        weights = self.compute_scmap_weights(scmap.shape, joint_id, data_item)
+        weights = self.compute_scmap_weights(scmap.shape, joint_id)
         return (
             scmap,
             weights,
@@ -633,5 +630,5 @@ class MAPoseDataset:
 
             coordinateoffset += len(joint_ids)  # keeping track of the blocks
 
-        weights = self.compute_scmap_weights(scmap.shape, joint_id, data_item)
+        weights = self.compute_scmap_weights(scmap.shape, joint_id)
         return scmap, weights, locref_map, locref_mask
