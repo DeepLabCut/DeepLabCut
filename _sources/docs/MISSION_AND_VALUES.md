@@ -4,11 +4,11 @@ This document is meant to help guide decisions about the future of `DeepLabCut`,
 whether to accept new functionality, changes to the styling of the code or graphical user interfaces (GUI),
 or whether to take on new dependencies, when to break into other repos, among other things. It serves as a point of reference for core developers actively working on the project, and an introduction for
 newcomers who want to learn a little more about where the project is going and what the team's
-values are. You can also learn more about how the project is managed by looking at our [governance model](/Governance.md).
+values are. You can also learn more about how the project is managed by looking at our [governance model](https://github.com/DeepLabCut/DeepLabCut/docs/Governance.md).
 
 ## Our founding principles
 
-The founding DeepLabCut team came together around a shared vision for building the first open-source animal pose estimation framework 
+The founding DeepLabCut team came together around a shared vision for building the first open-source animal pose estimation framework
 that is:
 
 - user defined pose estimation - i.e. species or object agnostic.
@@ -38,7 +38,7 @@ We hope to accomplish this by:
 
 ## Our values
 
-- We are **inclusive**. We welcome newcomers who are making their first contribution and strive to grow our most dedicated contributors into [core developers](https://github.com/orgs/DeepLabCut/teams/core-developers). We have a [Code of Conduct](CODE_OF_CONDUCT.md) to make DeepLabCut
+- We are **inclusive**. We welcome newcomers who are making their first contribution and strive to grow our most dedicated contributors into [core developers](https://github.com/orgs/DeepLabCut/teams/core-developers). We have a [Code of Conduct](https://github.com/DeepLabCut/DeepLabCut/CODE_OF_CONDUCT.md) to make DeepLabCut
 a welcoming place for all.
 
 - We are **community-engaged**. We respond to feature requests and proposals on our [issue tracker](https://github.com/DeepLabCut/DeepLabCut/issues).

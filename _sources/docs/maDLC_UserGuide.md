@@ -8,10 +8,10 @@ Note, we strongly encourage you to use the [Project Manager GUI](https://github.
 
 ## How to think about using maDLC:
 
-Firstly, you should think of maDLC being **four** parts.
-- (1) curate data that allows you to track the objects/animals of interest.
+You should think of maDLC being **four** parts.
+- (1) Curate annotation data that allows you to learn a model to track the objects/animals of interest.
 - (2) Create a high-quality pose estimation model.
-- (3) Then, to track in time (i.e., propagate identity), you need to perform assembly and tracking.
+- (3) Track in space and time, i.e., assemble bodyparts to detected objects/animals and link across time. This step performs assembly and tracking (comprising first local tracking and then tracklet stitching by global reasoning). 
 - (4) Any and all post-processing you wish to do with the output data, either within DLC or outside of it.
 
 Thus, you should always label, train, and evaluate the pose estimation performance first. If and when that performance is high, then you should go advance to the tracking step (and video analysis). There is a natural break point for this, as you will see below.

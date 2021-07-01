@@ -5,52 +5,52 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Automate your training and analysis: Batch Processing &#8212; DeepLabCut</title>
+    <title>Automate training and video analysis: Batch Processing &#8212; DeepLabCut</title>
     
-  <link href="../_static/css/theme.css" rel="stylesheet" />
-  <link href="../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
+  <link href="../../_static/css/theme.css" rel="stylesheet" />
+  <link href="../../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
 
     
   <link rel="stylesheet"
-    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
   <link rel="preload" as="font" type="font/woff2" crossorigin
-    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
   <link rel="preload" as="font" type="font/woff2" crossorigin
-    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
 
     
       
 
     
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/sphinx-book-theme.acff12b8f9c144ce68a297486a2fa670.css" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/sphinx-book-theme.acff12b8f9c144ce68a297486a2fa670.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
     
-  <link rel="preload" as="script" href="../_static/js/index.1c5a1a01449ed65a7b51.js">
+  <link rel="preload" as="script" href="../../_static/js/index.1c5a1a01449ed65a7b51.js">
 
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/togglebutton.js"></script>
-    <script src="../_static/clipboard.min.js"></script>
-    <script src="../_static/copybutton.js"></script>
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
     <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
-    <script src="../_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
+    <script src="../../_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
     <script async="async" src="https://unpkg.com/thebelab@latest/lib/index.js"></script>
     <script >
         const thebe_selector = ".thebe"
         const thebe_selector_input = "pre"
         const thebe_selector_output = ".output"
     </script>
-    <script async="async" src="../_static/sphinx-thebe.js"></script>
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
+    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Mission and Values of DeepLabCut" href="../MISSION_AND_VALUES.html" />
     <link rel="prev" title="Some data processing recipes!" href="post.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -69,15 +69,15 @@
 <div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
     
         <div class="navbar-brand-box">
-    <a class="navbar-brand text-wrap" href="../index.html">
+    <a class="navbar-brand text-wrap" href="../../index.html">
       
-      <img src="../_static/logo.png" class="logo" alt="logo">
+      <img src="../../_static/logo.png" class="logo" alt="logo">
       
       
       <h1 class="site-logo" id="site-title">DeepLabCut</h1>
       
     </a>
-</div><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+</div><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
   <i class="icon fas fa-search"></i>
   <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
 </form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
@@ -176,7 +176,7 @@
  </li>
  <li class="toctree-l1 current active">
   <a class="current reference internal" href="#">
-   Automate your training and analysis: Batch Processing
+   Automate training and video analysis: Batch Processing
   </a>
  </li>
 </ul>
@@ -238,7 +238,7 @@
         <!-- ipynb file if we had a myst markdown file -->
         
         <!-- Download raw file -->
-        <a class="dropdown-buttons" href="../_sources/recipes/BatchProcessing.md"><button type="button"
+        <a class="dropdown-buttons" href="../../_sources/docs/recipes/BatchProcessing.md"><button type="button"
                 class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
                 data-placement="left">.md</button></a>
         <!-- Download PDF via print -->
@@ -258,7 +258,7 @@
                 data-toggle="tooltip" data-placement="left" title="Source repository"><i
                     class="fab fa-github"></i>repository</button></a>
         <a class="issues-button"
-            href="https://github.com/DeepLabCut/DeepLabCut/tree/master/examples/issues/new?title=Issue%20on%20page%20%2Frecipes/BatchProcessing.html&body=Your%20issue%20content%20here."><button
+            href="https://github.com/DeepLabCut/DeepLabCut/tree/master/examples/issues/new?title=Issue%20on%20page%20%2Fdocs/recipes/BatchProcessing.html&body=Your%20issue%20content%20here."><button
                 type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
                 title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
         
@@ -305,13 +305,14 @@
         
               <div>
                 
-  <div class="section" id="automate-your-training-and-analysis-batch-processing">
-<h1>Automate your training and analysis: Batch Processing<a class="headerlink" href="#automate-your-training-and-analysis-batch-processing" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="automate-training-and-video-analysis-batch-processing">
+<h1>Automate training and video analysis: Batch Processing<a class="headerlink" href="#automate-training-and-video-analysis-batch-processing" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="tips-for-working-with-dlc-networks">
 <h2>Tips for working with DLC networks:<a class="headerlink" href="#tips-for-working-with-dlc-networks" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li><p>Now you have a DLC network you are happy with and want to run it on all your videos. You simply need to run a script that runs over all your video folders with the correct network. Your “key” to this network is your config.yaml file.</p></li>
+<li><p>Now you have a DLC network and are happy with the performance on selected videos, you may want to run it on all your videos without hassle. If all your videos are in one folder this is easy, simply pass the foldername to <code class="docutils literal notranslate"><span class="pre">deeplabcut.analyze_videos(config,[folder])</span></code> and you are fine. What if the videos are scattered?</p></li>
 </ul>
+<p>You could create a simply script that runs over all your video folders with the network of choice. Your “key” to this network is your config.yaml file.</p>
 <p><img alt="" src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc5abe0d9297405a428522/1556896461304/howtouseDLC-01.png?format=1000w" /></p>
 <p>Here is a script that you can use to run video analysis over all the folders.</p>
 <p><a class="reference external" href="https://github.com/DeepLabCut/DLCutils/tree/master/SCALE_YOUR_ANALYSIS">https://github.com/DeepLabCut/DLCutils/tree/master/SCALE_YOUR_ANALYSIS</a> (see below as well)</p>
@@ -451,7 +452,7 @@ for project in Projects[model]:
         },
         kernelOptions: {
             kernelName: "python3",
-            path: "./recipes"
+            path: "./docs/recipes"
         },
         predefinedOutput: true
     }
@@ -490,7 +491,7 @@ for project in Projects[model]:
       </div>
     </div>
   
-  <script src="../_static/js/index.1c5a1a01449ed65a7b51.js"></script>
+  <script src="../../_static/js/index.1c5a1a01449ed65a7b51.js"></script>
 
   
   </body>

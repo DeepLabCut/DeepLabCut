@@ -1,9 +1,12 @@
 
-# Automate your training and analysis: Batch Processing
+# Automate training and video analysis: Batch Processing
 
 ## Tips for working with DLC networks:
 
-- Now you have a DLC network you are happy with and want to run it on all your videos. You simply need to run a script that runs over all your video folders with the correct network. Your "key" to this network is your config.yaml file.
+- Now you have a DLC network and are happy with the performance on selected videos, you may want to run it on all your videos without hassle. If all your videos are in one folder this is easy, simply pass the foldername to `deeplabcut.analyze_videos(config,[folder])` and you are fine. What if the videos are scattered?
+
+
+You could create a simply script that runs over all your video folders with the network of choice. Your "key" to this network is your config.yaml file.
 
 ![](https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc5abe0d9297405a428522/1556896461304/howtouseDLC-01.png?format=1000w)
 

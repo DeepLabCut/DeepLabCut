@@ -25,7 +25,7 @@ config_path = deeplabcut.create_new_project(
 
 > Next, you can set a variable for the config_path: 'Full path of the project configuration file*'
 
-**Edit the config.ymal file to set up your project~**
+**Edit the config.ymal file to set up your project**
 
 **Extract video frames to annotate**
 ```python
@@ -53,7 +53,7 @@ deeplabcut.cropimagesandlabels(
 ```
 
 
-**Visually check all annotated frames**
+**Visually check annotated frames**
 ```python
 deeplabcut.check_labels(
     config_path,
@@ -90,7 +90,7 @@ deeplabcut.evaluate_network(
 )
 ```
 
-**Analyze a video**
+**Analyze a video (extracts detections and association costs) **
 ```python
 deeplabcut.analyze_videos(
     config_path,
@@ -100,7 +100,7 @@ deeplabcut.analyze_videos(
 ```
 
 
-**Track body part detections frame by frame**
+**Spatial and (locally) temporal grouping: Track body part assemblies frame-by-frame**
 ```python
 deeplabcut.convert_detections2tracklets(
     config_path,
@@ -110,7 +110,7 @@ deeplabcut.convert_detections2tracklets(
 ```
 
 
-**Reconstruct full animal trajectories**
+**Reconstruct full animal trajectories (tracks from tracklets)**
 ```python
 deeplabcut.stitch_tracklets(
     config_path,

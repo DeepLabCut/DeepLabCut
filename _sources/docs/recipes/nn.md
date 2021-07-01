@@ -57,10 +57,6 @@ deeplabcut.auxiliaryfunctions.edit_config(
 )
 ```
 
-## When to stop training
-
-WIP!
-
 ## Evaluating intermediate (and all) snapshots
 
 The latest snapshot stored during training may not necessarily be the one that yields the highest performance. Therefore, you should analyze ALL snapshots, and select the best. Put 'all' in the snapshots section of the config.yaml to do this.
@@ -120,7 +116,7 @@ read more here: https://arxiv.org/abs/1909.11229
 
 ## When should I use an EfficientNet?
 
-The latest networks to be added into DLC are EfficientNets; built from MobileNets, but more powerful than ResNets, they are an excellent choice if you want speed and performance. They do require more careful handling though! Especially for small datasets, you will need to tune the batch size and learning rates. So, we suggest these for more advanced users, or those willing to run experiments to find the best settings. Here is the speed comparison, and for performance see our latest work at: http://horse10.deeplabcut.org
+Built with inverse residual blocks like MobileNets, but more powerful than ResNets, due to optimal depth/width/resolution scaling, [EfficientNet](https://arxiv.org/abs/1905.11946) are an excellent choice if you want speed and performance. They do require more careful handling though! Especially for small datasets, you will need to tune the batch size and learning rates. So, we suggest these for more advanced users, or those willing to run experiments to find the best settings. Here is the speed comparison, and for performance see our latest work at: http://horse10.deeplabcut.org
 
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1615891029784-87JAZJN1C5S4HS62F752/ke17ZwdGBToddI8pDm48kLId9V2zDiOqQ5EIZz4b_S0UqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKctCpCjeabgTq1Hv_G9BIks_zjAnmEpAaVGioFPvsrieXDegXGHA0z-h8QeHOQDokM/speedTest.png?format=1000w" width="100%">
