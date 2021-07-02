@@ -6,7 +6,7 @@ As of DeepLabCut 2.1+ now provide a full front-end user experience for DeepLabCu
 
 (1) Install DeepLabCut using the simple-install with Anaconda found [here!](https://github.com/AlexEMG/DeepLabCut/blob/master/docs/installation.md)
 
-or 
+or
 
 if you already have deeplabcut installed, just go into your env then run `` pip install --upgrade deeplabcut``
 
@@ -22,7 +22,7 @@ Now, keep the terminal visible (as well as the GUI) so you can see the ongoing p
 
 ## VIDEO DEMOS: How to launch and run the Project Manager GUI:
 
-**Click on the images!** :arrow_down:
+**Click on the images!**
 
 [![Watch the video](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572824438905-QY9XQKZ8LAJZG6BLPWOQ/ke17ZwdGBToddI8pDm48kIIa76w436aRzIF_cdFnEbEUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcLthF_aOEGVRewCT7qiippiAuU5PSJ9SSYal26FEts0MmqyMIhpMOn8vJAUvOV4MI/guilaunch.jpg?format=1000w)](https://youtu.be/KcXogR-p5Ak)
 
@@ -30,16 +30,14 @@ Now, keep the terminal visible (as well as the GUI) so you can see the ongoing p
 
 [![Watch the video](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589046800303-OV1CCNZINWDMF1PZWCWE/ke17ZwdGBToddI8pDm48kB4PVlRPKDmSlQNbUD3wvXgUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcaja1QZ1SznGf7WzFOi-J6zLusnaF2VdeZcKivwxvFiDfGDqVYuwbAlftad9hfoui/dlc_gui_22.png?format=1000w)](https://www.youtube.com/watch?v=JDsa8R5J0nQ)
 
-[READ MORE HERE](docs/UseOverviewGuide.md#important-information-on-using-deeplabcut)
+[READ MORE HERE](https://github.com/AlexEMG/DeepLabCut/blob/master/docs/UseOverviewGuide.md#important-information-on-using-deeplabcut)
 
-### Using the Project Manager GUI with the latest DLC code (multiple identical-looking animals, plus objects): :arrow_down:
+### Using the Project Manager GUI with the latest DLC code (multiple identical-looking animals, plus objects):
 
 [![Watch the video](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589047147498-G1KTFA5BXR4PVHOOR7OG/ke17ZwdGBToddI8pDm48kJDij24pM2COisBTLIGjR1pZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIel60EThn7SDFlTiSprUhmjQQHn9bhdY9dnQSKs8bCCo/Untitled.png?format=1000w)](https://www.youtube.com/watch?v=Kp-stcTm77g)
 
-[READ MORE HERE](docs/UseOverviewGuide.md#important-information-on-using-deeplabcut) 
+[READ MORE HERE](https://github.com/AlexEMG/DeepLabCut/blob/master/docs/UseOverviewGuide.md#important-information-on-using-deeplabcut)
 
-## VIDEO DEMO: How to benchmark your data with the new networks and data augmentation pipelines: :arrow_down:
+## VIDEO DEMO: How to benchmark your data with the new networks and data augmentation pipelines:
 
-**Click on the image!**
-
-[![Watch the video](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1570056469743-SEGFUXMVS8YOZI7L37OS/ke17ZwdGBToddI8pDm48kLsntQCY1QWijXyGg3dq7owUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcBr4CcH-KF-rhlMRpAfkoGxF8gTXG9pG_BYoXmRkWRtNidc9E4L1Ctx8AFqW8So1U/lauch_dlc.png?format=1000w)](https://youtu.be/WXCVr6xAcCA)
+[Watch the video](https://youtu.be/WXCVr6xAcCA)

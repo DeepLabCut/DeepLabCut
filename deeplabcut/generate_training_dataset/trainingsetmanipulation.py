@@ -7,6 +7,7 @@ Please see AUTHORS for contributors.
 https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
+import math
 import logging
 import os
 import os.path
@@ -469,9 +470,16 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
     return AnnotationData
 
 
-def SplitTrials(trialindex, trainFraction=0.8):
+def SplitTrials(
+    trialindex,
+    trainFraction=0.8,
+    enforce_train_fraction=False,
+):
     """ Split a trial index into train and test sets. Also checks that the trainFraction is a two digit number between 0 an 1. The reason
-    is that the folders contain the trainfraction as int(100*trainFraction). """
+    is that the folders contain the trainfraction as int(100*trainFraction).
+    If enforce_train_fraction is True, train and test indices are padded with -1
+    such that the ratio of their lengths is exactly the desired train fraction.
+    """
     if trainFraction > 1 or trainFraction < 0:
         print(
             "The training fraction should be a two digit number between 0 and 1; i.e. 0.95. Please change accordingly."
@@ -484,12 +492,23 @@ def SplitTrials(trialindex, trainFraction=0.8):
         )
         return ([], [])
     else:
-        trainsetsize = int(len(trialindex) * round(trainFraction, 2))
+        index_len = len(trialindex)
+        train_fraction = round(trainFraction, 2)
+        train_size = index_len * train_fraction
         shuffle = np.random.permutation(trialindex)
-        testIndices = shuffle[trainsetsize:]
-        trainIndices = shuffle[:trainsetsize]
-
-        return (trainIndices, testIndices)
+        test_indices = shuffle[int(train_size):]
+        train_indices = shuffle[:int(train_size)]
+        if enforce_train_fraction and not train_size.is_integer():
+            # Determine the index length required to guarantee
+            # the train–test ratio is exactly the desired one.
+            min_length_req = int(100 / math.gcd(100, int(round(100 * train_fraction))))
+            length_req = math.ceil(index_len / min_length_req) * min_length_req
+            n_train = int(round(length_req * train_fraction))
+            n_test = length_req - n_train
+            # Pad indices so lengths agree
+            train_indices = np.append(train_indices, [-1] * (n_train - len(train_indices)))
+            test_indices = np.append(test_indices, [-1] * (n_test - len(test_indices)))
+        return train_indices, test_indices
 
 
 def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
@@ -563,7 +582,9 @@ def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
     if uniform == True:
         TrainingFraction = cfg["TrainingFraction"]
         trainFraction = TrainingFraction[trainindex]
-        trainIndices, testIndices = SplitTrials(range(len(Data.index)), trainFraction)
+        trainIndices, testIndices = SplitTrials(
+            range(len(Data.index)), trainFraction, True,
+        )
     else:  # leave one folder out split
         videos = cfg["video_sets"].keys()
         test_video_name = [Path(i).stem for i in videos][trainindex]
@@ -783,6 +804,12 @@ def create_training_dataset(
                 print(
                     f"You passed a split with the following fraction: {int(100 * trainFraction)}%"
                 )
+                # Now that the training fraction is guaranteed to be correct,
+                # the values added to pad the indices are removed.
+                train_inds = np.asarray(train_inds)
+                train_inds = train_inds[train_inds != -1]
+                test_inds = np.asarray(test_inds)
+                test_inds = test_inds[test_inds != -1]
                 splits.append(
                     (trainFraction, Shuffles[shuffle], (train_inds, test_inds))
                 )

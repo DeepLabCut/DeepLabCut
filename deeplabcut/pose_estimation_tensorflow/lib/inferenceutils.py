@@ -9,17 +9,16 @@ Licensed under GNU Lesser General Public License v3.0
 """
 import heapq
 import itertools
+import multiprocessing
 import networkx as nx
 import numpy as np
 import operator
-import os
 import pandas as pd
 import pickle
 import warnings
 from collections import defaultdict
 from dataclasses import dataclass
 from math import sqrt, erf
-from multiprocessing import Pool
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial import cKDTree
 from scipy.spatial.distance import pdist, cdist
@@ -624,7 +623,7 @@ class Assembler:
             for _, group in groups:
                 ass = Assembly(self.n_multibodyparts)
                 for joint in sorted(group, key=lambda x: x.confidence, reverse=True):
-                    if joint.confidence >= self.pcutoff:
+                    if joint.confidence >= self.pcutoff and joint.label < self.n_multibodyparts:
                         ass.add_joint(joint)
                 if len(ass):
                     assemblies.append(ass)
@@ -716,7 +715,10 @@ class Assembler:
     def assemble(self, chunk_size=1, n_processes=None):
         self.assemblies = dict()
         self.unique = dict()
-        if chunk_size == 0 or os.name == "nt":  # Avoid multiprocessing on Windows
+        # Spawning (rather than forking) multiple processes does not
+        # work nicely with the GUI or interactive sessions.
+        # In that case, we fall back to the serial assembly.
+        if chunk_size == 0 or multiprocessing.get_start_method() == "spawn":
             for i, data_dict in enumerate(tqdm(self)):
                 assemblies, unique = self._assemble(data_dict, i)
                 if assemblies:
@@ -730,7 +732,7 @@ class Assembler:
                 return i, self._assemble(self[i], i)
 
             n_frames = len(self.metadata["imnames"])
-            with Pool(n_processes) as p:
+            with multiprocessing.Pool(n_processes) as p:
                 with tqdm(total=n_frames) as pbar:
                     for i, (assemblies, unique) in p.imap_unordered(
                         wrapped, range(n_frames), chunksize=chunk_size

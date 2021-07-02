@@ -42,6 +42,15 @@ class VideoReader:
         if os.path.getsize(dest) != 0:
             warnings.warn(f'Video contains errors. See "{dest}" for a detailed report.')
 
+    def check_integrity_robust(self):
+        numframes = self.video.get(cv2.CAP_PROP_FRAME_COUNT)
+        fr = 0
+        while fr < numframes:
+            success, frame = self.video.read()
+            if not success or frame is None:
+                warnings.warn(f'Opencv failed to load frame {fr}. Use ffmpeg to re-encode video file')
+            fr += 1
+
     @property
     def name(self):
         return os.path.splitext(os.path.split(self.video_path)[1])[0]
@@ -328,7 +337,13 @@ class VideoWriter(VideoReader):
             dest_folder = self.directory
         return os.path.join(dest_folder, f"{self.name}{suffix}{self.format}")
 
+    
+def check_video_integrity(video_path):
+    vid = VideoReader(video_path)
+    vid.check_integrity()
+    vid.check_integrity_robust()
 
+    
 # Historically DLC used: from scipy.misc import imread, imresize >> deprecated functions
 def imread(path, mode=None):
     return cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
