@@ -41,9 +41,11 @@ DeepLabCut is a toolbox for markerless pose estimation of animals performing var
 # [Installation: how to install DeepLabCut](docs/installation.md)
 
 Very quick start: `pip install 'deeplabcut[gui]'` that includes all GUI functions, or `pip install deeplabcut` (headless version)
-* you also need TensorFlow (1.x currently), therefore we recommend using our conda files, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/master/conda-environments/README.md)
+* We recommend using our conda file, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/master/conda-environments/README.md)
 
-# [Documentation: The DeepLabCut Process](docs/README.md)
+# [Documentation: The DeepLabCut Process](https://deeplabcut.github.io/DeepLabCut)
+
+*New: check out the docs in JupyterBook! https://deeplabcut.github.io/DeepLabCut (or on [github](docs/README.md)).
 
 An overview of the pipeline and workflow for project management. For a step-by-step user guide, please also read the [Nature Protocols paper](https://doi.org/10.1038/s41596-019-0176-0)!
 
@@ -186,6 +188,8 @@ This package includes graphical user interfaces to label your data, and take you
 VERSION 1.0: The initial, Nature Neuroscience version of [DeepLabCut](https://www.nature.com/articles/s41593-018-0209-y) can be found in the history of git, or here: https://github.com/AlexEMG/DeepLabCut/releases/tag/1.11
 
 ## News (and in the news):
+
+- July 2021: Docs are now at https://deeplabcut.github.io/DeepLabCut and we now include TensorFlow 2 support!
 
 - May 2021: DeepLabCut hit 200,000 downloads! Also, Our preprint on 2.2, multi-animal DeepLabCut is released!
 
