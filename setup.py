@@ -41,8 +41,12 @@ setuptools.setup(
         "numba==0.51.1",
         "matplotlib==3.1.3",
         "networkx",
+<<<<<<< Updated upstream
         "numpy~=1.17.3",
         "opencv-contrib-python==3.4.14.51",
+=======
+        "numpy",
+>>>>>>> Stashed changes
         "pandas>=1.0.1",
         "patsy",
         "pyyaml",
