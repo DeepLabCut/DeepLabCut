@@ -17,6 +17,7 @@ import imageio
 import imgaug.augmenters as iaa
 import numpy as np
 from imgaug.augmentables import Keypoint, KeypointsOnImage
+from . import augmentation
 from .factory import PoseDatasetFactory
 from .pose_base import BasePoseDataset
 from .utils import DataItem, Batch
