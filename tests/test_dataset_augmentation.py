@@ -1,6 +1,6 @@
 import imgaug.augmenters as iaa
 import pytest
-from deeplabcut.pose_estimation_tensorflow.dataset import augmentation
+from deeplabcut.pose_estimation_tensorflow.datasets import augmentation
 
 
 @pytest.mark.parametrize(

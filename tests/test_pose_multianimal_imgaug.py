@@ -68,15 +68,9 @@ def test_get_batch(ma_dataset):
                 np.testing.assert_equal(joints[:, 0], id_)
 
 
-@pytest.mark.parametrize(
-    "height, width, prob",
-    [
-        (None, None, 0.5),
-        (200, 250, 0.3),
-    ]
-)
-def test_build_augmentation_pipeline(ma_dataset, height, width, prob):
-    _ = ma_dataset.build_augmentation_pipeline(height, width, prob)
+def test_build_augmentation_pipeline(ma_dataset):
+    for prob in (0.3, 0.5):
+        _ = ma_dataset.build_augmentation_pipeline(prob)
 
 
 @pytest.mark.parametrize("num_idchannel", range(4))

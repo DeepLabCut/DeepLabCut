@@ -386,11 +386,12 @@ class MAImgaugPoseDataset(BasePoseDataset):
                    if id_ < num_idchannel]
             for person_id in idx:
                 joint_ids = joint_id[person_id]
-                if joint_ids.size > 1:  # FIXME Why > 1??
-                    inds = joint_ids + coordinateoffset
+                n_joints = joint_ids.size
+                if n_joints:
+                    inds = np.arange(n_joints) + coordinateoffset
                     mask_ = mask[..., inds].sum(axis=2)
                     scmap[mask_, person_id + num_joints] = 1
-                coordinateoffset += len(joint_ids)
+                coordinateoffset += n_joints
 
         coordinateoffset = 0  # the offset based on
         y, x = np.rollaxis(grid * stride + half_stride, 2)
