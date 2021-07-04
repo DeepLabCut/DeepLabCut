@@ -1036,8 +1036,6 @@ def stitch_tracklets(
     animal_names = cfg["individuals"]
     if n_tracks is None:
         n_tracks = len(animal_names)
-    if n_tracks == 1:
-        split_tracklets = False
     stitcher = TrackletStitcher.from_pickle(
         pickle_file, n_tracks, min_length, split_tracklets, prestitch_residuals
     )

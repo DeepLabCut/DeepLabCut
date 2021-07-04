@@ -1,8 +1,10 @@
-# *3*DeepLabCut <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589578632599-HQENUYUIBI9KYTZA2WXV/ke17ZwdGBToddI8pDm48kBgERiRoVg6XJpnbAnG076FZw-zPPgdn4jUwVcJE1ZvWhcwhEtWJXoshNdA9f1qD7Y5_KuY_fkOEvGrDVB8aRb13EC_7Ld97nVeJG4MMJk1tqSdWG3KOMGCA68a4XjyT5g/3D.png?format=300w" width="350" title="DLC-3D" alt="DLC 3D" align="right" vspace = "50">
+# 3D DeepLabCut
 
 We support 2-camera based 3D pose estimation
 
-:movie_camera: Watch a [DEMO VIDEO](https://youtu.be/Eh6oIGE4dwI) on how to use this code! 
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589578632599-HQENUYUIBI9KYTZA2WXV/ke17ZwdGBToddI8pDm48kBgERiRoVg6XJpnbAnG076FZw-zPPgdn4jUwVcJE1ZvWhcwhEtWJXoshNdA9f1qD7Y5_KuY_fkOEvGrDVB8aRb13EC_7Ld97nVeJG4MMJk1tqSdWG3KOMGCA68a4XjyT5g/3D.png?format=300w" width="350" title="DLC-3D" alt="DLC 3D" align="right" vspace = "50">
+
+- Watch a [DEMO VIDEO](https://youtu.be/Eh6oIGE4dwI) on how to use this code!
 
 **Our code base assumes you:**
 
@@ -19,13 +21,13 @@ C. You have calibration images taken (see details below!).
 
 
 ***If you need more than 2 camera support:**
-Due to the excellent work of others, we will not have >2 cameras (via calibration) support at this time. We also opt not to have them in DLC, as we want users to have the most flexibility in their systems. Here are other excellent options for you to use: 
- 
+Due to the excellent work of others, we will not have >2 cameras (via calibration) support at this time. We also opt not to have them in DLC, as we want users to have the most flexibility in their systems. Here are other excellent options for you to use:
+
 - **[anipose.org](https://anipose.readthedocs.io/en/latest/)**; a wrapper for 3D deeplabcut https://github.com/lambdaloop/anipose
   - it provides >3 camera support and is built to work directly with DeepLabCut. You can `pip install anipose` into your DLC conda environment.
-  
+
 - using Argus, easywand or DLTdv w/deeplabcut https://github.com/haliaetus13/DLCconverterDLT
-   - this can be used with the the highly popular Argus or DLTdv tools for wand calibration. 
+   - this can be used with the the highly popular Argus or DLTdv tools for wand calibration.
 
 
 ### (1) Create a New 3D Project:
@@ -136,9 +138,9 @@ Each calibration image is undistorted and saved under the directory ``undistorti
 
 If there are no errors in the undistortion, then the pose from the 2 cameras can be triangulated to get the 3D DeepLabCut coordinates!
 
- (**CRITICAL!**) Name the video files in such a way that the file name **contains the name of the cameras** as specified in the ``config file``. e.g. if the cameras as named as ``camera-1`` and ``camera-2`` (or ``cam-1``, ``cam-2`` etc.) then the video filename must contain this naming, i.e. this could be named as ``rig-1-mouse-day1-camera-1.avi`` and ``rig-1-mouse-day1-camera-2.avi`` or could be ``rig-1-mouse-day1-camera-1-date.avi`` and ``rig-1-mouse-day1-camera-2-date.avi``. 
- 
-- **Note** that to correctly pair the videos, the file names otherwise need to be the same! 
+ (**CRITICAL!**) Name the video files in such a way that the file name **contains the name of the cameras** as specified in the ``config file``. e.g. if the cameras as named as ``camera-1`` and ``camera-2`` (or ``cam-1``, ``cam-2`` etc.) then the video filename must contain this naming, i.e. this could be named as ``rig-1-mouse-day1-camera-1.avi`` and ``rig-1-mouse-day1-camera-2.avi`` or could be ``rig-1-mouse-day1-camera-1-date.avi`` and ``rig-1-mouse-day1-camera-2-date.avi``.
+
+- **Note** that to correctly pair the videos, the file names otherwise need to be the same!
 - If helpful, [here is the software we use to record videos](https://github.com/AdaptiveMotorControlLab/Camera_Control).  
 - **Note** that the videos do not need to be the same pixel size, but be sure they are similar in size to the calibration images (and they must be the same cameras used for calibration).
 

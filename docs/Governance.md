@@ -42,7 +42,7 @@ among other possibilities. Any community member can become a contributor, and
 all are encouraged to do so. By contributing to the project, community members
 can directly help to shape its future.
 
-Contributors are encouraged to read the [contributing guide](CONTRIBUTING.md).
+Contributors are encouraged to read the [contributing guide](https://github.com/DeepLabCut/DeepLabCut/CONTRIBUTING.md).
 
 ### Core developers
 
@@ -56,7 +56,7 @@ activities. Core developers appear as organization members on the `DeepLabCut`
 [GitHub organization](https://github.com/orgs/DeepLabCut/people) and are on our
 [@deeplabcut/core-developers](https://github.com/orgs/DeepLabCut/teams/core-developers) GitHub team. Core
 developers are expected to review code contributions while adhering to the
-[core developer guide](CORE_DEV_GUIDE.md). New core developers can be nominated by any existing core developer, 
+core developer guide. New core developers can be nominated by any existing core developer,
 and for details on that process see our core developer guide.
 
 ### Steering Council
@@ -84,7 +84,7 @@ The current steering council of DeepLabCut consists of the original developers:
 The SC membership is revisited every January. SC members who do
 not actively engage with the SC duties are expected to resign. New members are
 added by nomination by a core developer. Nominees should have demonstrated
-long-term, continued commitment to the project and its [mission and values](MISSION_AND_VALUES.md). A
+long-term, continued commitment to the project and its [mission and values](https://github.com/DeepLabCut/DeepLabCut/docs/MISSION_AND_VALUES.md). A
 nomination will result in discussion that cannot take more than a month and
 then admission to the SC by consensus. During that time deadlocked votes of the SC will
 be postponed until the new member has joined and another vote can be held.
@@ -98,7 +98,7 @@ members of the community. All non-sensitive project management discussion takes
 place on the [issue tracker](https://github.com/deeplabcut/deeplabcut/issues). Occasionally,
 sensitive discussions may occur on a private core developer medium.
 
-Decisions should be made in accordance with the [mission and values](MISSION_AND_VALUES.md)
+Decisions should be made in accordance with the [mission and values](https://github.com/DeepLabCut/DeepLabCut/docs/MISSION_AND_VALUES.md)
 of the DeepLabCut project.
 
 DeepLabCut uses a “consensus seeking” process for making decisions. The group

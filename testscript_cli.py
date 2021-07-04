@@ -15,11 +15,9 @@ scorer = "Mackenzie"  # Enter the name of the experimenter/labeler
 import os, subprocess, sys
 
 
-def install(package):
-    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-
-
-install("tensorflow==1.13.1")
+#def install(package):
+#    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+#install("tensorflow==1.13.1")
 
 import deeplabcut as dlc
 

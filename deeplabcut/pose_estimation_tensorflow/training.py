@@ -116,12 +116,6 @@ def train_network(
     """
     import tensorflow as tf
 
-    vers = (tf.__version__).split(".")
-    if int(vers[0]) == 1 and int(vers[1]) > 12:
-        TF = tf.compat.v1
-    else:
-        TF = tf
-
     # reload logger.
     import importlib
     import logging
@@ -131,7 +125,7 @@ def train_network(
 
     from deeplabcut.utils import auxiliaryfunctions
 
-    TF.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
     start_path = os.getcwd()
 
     # Read file path for pose_config file. >> pass it on
@@ -163,7 +157,7 @@ def train_network(
     try:
         cfg_dlc = auxiliaryfunctions.read_plainconfig(poseconfigfile)
         if "multi-animal" in cfg_dlc["dataset_type"]:
-            from deeplabcut.pose_estimation_tensorflow.train_multianimal import train
+            from deeplabcut.pose_estimation_tensorflow.core.train_multianimal import train
 
             print("Selecting multi-animal trainer")
             train(
@@ -176,7 +170,7 @@ def train_network(
                 allow_growth=allow_growth,
             )  # pass on path and file name for pose_cfg.yaml!
         else:
-            from deeplabcut.pose_estimation_tensorflow.train import train
+            from deeplabcut.pose_estimation_tensorflow.core.train import train
 
             print("Selecting single-animal trainer")
             train(

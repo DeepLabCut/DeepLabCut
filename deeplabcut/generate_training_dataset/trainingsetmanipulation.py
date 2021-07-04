@@ -7,6 +7,7 @@ Please see AUTHORS for contributors.
 https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
+import math
 import logging
 import os
 import os.path
@@ -345,42 +346,95 @@ def cropimagesandlabels(
             ic = io.imread_collection(imnames)
             for i in trange(len(ic)):
                 frame = ic[i]
-                h, w = np.shape(frame)[:2]
-                if temp_size[0] >= h or temp_size[1] >= w:
-                    raise ValueError("Crop dimensions are larger than image size")
+                h, w = np.shape(frame)[:2]                
+                                
 
                 imagename = os.path.relpath(ic.files[i], project_path)
                 ind = np.flatnonzero(df.index == imagename)[0]
                 cropindex = 0
                 attempts = -1
                 while cropindex < numcrops:
+                    
                     dd = np.array(data[ind].copy(), dtype=float)
-                    y0, x0 = (
-                        np.random.randint(h - temp_size[0]),
-                        np.random.randint(w - temp_size[1]),
-                    )
-                    y1 = y0 + temp_size[0]
-                    x1 = x0 + temp_size[1]
-                    with np.errstate(invalid="ignore"):
-                        within = np.all((dd >= [x0, y0]) & (dd < [x1, y1]), axis=1)
-                    if cropdata:
-                        dd[within] -= [x0, y0]
-                        dd[~within] = np.nan
-                    attempts += 1
-                    if within.any() or attempts > 10:
-                        newimname = str(
-                            Path(imagename).stem
-                            + "c"
-                            + str(cropindex).zfill(indexlength)
-                            + ".png"
+
+                    if temp_size[0] >= h or temp_size[1] >= w:
+                        # initialize a all zero image container with target crop size
+
+                        padded_img = np.zeros((temp_size[0],temp_size[1],3),dtype=np.uint8)
+
+                        # new upper left, border protection
+                        # be careful crop side can be smaller than one side of the image
+                        
+                        y0, x0 = (
+                            np.random.randint(max(temp_size[0]-h,1)),
+                            np.random.randint(max(temp_size[1]-w,1)),
                         )
-                        cropppedimgname = os.path.join(new_folder, newimname)
-                        io.imsave(cropppedimgname, frame[y0:y1, x0:x1])
-                        cropindex += 1
-                        pd_index.append(
-                            os.path.join("labeled-data", new_vidname, newimname)
+                        # new bottom right, border protection
+                        # avoid to exceed the container's border
+                        
+                        y1 = min(y0 + h, temp_size[0])
+                        x1 = min(x0 + w, temp_size[1])
+
+                        # fill original image to the container image
+                        # use safe upper left and bottom right to crop original image and fill it to the container
+                        padded_img[y0:y1,x0:x1,:] = frame[:y1-y0,:x1-x0,:3]
+
+                        # all keypoints are shifted by +x0 and +y0
+                        # possibly out of border again
+                        dd += [x0,y0]
+
+                        # some keypoints are out of the borders
+                        with np.errstate(invalid="ignore"):
+                            within = np.all((dd >= [x0, y0]) & (dd < [x1, y1]), axis=1)
+
+                        if cropdata:
+                            dd[~within] = np.nan                        
+                        attempts += 1
+                        if within.any() or attempts > 10:                        
+                            newimname = str(
+                                    Path(imagename).stem
+                                    + "c"
+                                    + str(cropindex).zfill(indexlength)
+                                    + ".png"
+                                    )
+                            cropppedimgname = os.path.join(new_folder, newimname)
+                            # save the padded img
+                            io.imsave(cropppedimgname, padded_img)
+                            cropindex += 1
+                            pd_index.append(
+                                os.path.join("labeled-data", new_vidname, newimname)
+                            )
+                            AnnotationData.append(dd.flatten())
+
+                        
+                    else:
+                        y0, x0 = (
+                            np.random.randint(h - temp_size[0]),
+                            np.random.randint(w - temp_size[1]),
                         )
-                        AnnotationData.append(dd.flatten())
+                        y1 = y0 + temp_size[0]
+                        x1 = x0 + temp_size[1]
+                        
+                        with np.errstate(invalid="ignore"):
+                            within = np.all((dd >= [x0, y0]) & (dd < [x1, y1]), axis=1)
+                        if cropdata:
+                            dd[within] -= [x0, y0]
+                            dd[~within] = np.nan
+                        attempts += 1
+                        if within.any() or attempts > 10:
+                            newimname = str(
+                                Path(imagename).stem
+                                + "c"
+                                + str(cropindex).zfill(indexlength)
+                                + ".png"
+                                )
+                            cropppedimgname = os.path.join(new_folder, newimname)
+                            io.imsave(cropppedimgname, frame[y0:y1, x0:x1])
+                            cropindex += 1
+                            pd_index.append(
+                                os.path.join("labeled-data", new_vidname, newimname)
+                            )
+                            AnnotationData.append(dd.flatten())
 
             if cropdata:
                 df = pd.DataFrame(AnnotationData, index=pd_index, columns=df.columns)
@@ -649,9 +703,16 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
     return AnnotationData
 
 
-def SplitTrials(trialindex, trainFraction=0.8):
+def SplitTrials(
+    trialindex,
+    trainFraction=0.8,
+    enforce_train_fraction=False,
+):
     """ Split a trial index into train and test sets. Also checks that the trainFraction is a two digit number between 0 an 1. The reason
-    is that the folders contain the trainfraction as int(100*trainFraction). """
+    is that the folders contain the trainfraction as int(100*trainFraction).
+    If enforce_train_fraction is True, train and test indices are padded with -1
+    such that the ratio of their lengths is exactly the desired train fraction.
+    """
     if trainFraction > 1 or trainFraction < 0:
         print(
             "The training fraction should be a two digit number between 0 and 1; i.e. 0.95. Please change accordingly."
@@ -664,12 +725,23 @@ def SplitTrials(trialindex, trainFraction=0.8):
         )
         return ([], [])
     else:
-        trainsetsize = int(len(trialindex) * round(trainFraction, 2))
+        index_len = len(trialindex)
+        train_fraction = round(trainFraction, 2)
+        train_size = index_len * train_fraction
         shuffle = np.random.permutation(trialindex)
-        testIndices = shuffle[trainsetsize:]
-        trainIndices = shuffle[:trainsetsize]
-
-        return (trainIndices, testIndices)
+        test_indices = shuffle[int(train_size):]
+        train_indices = shuffle[:int(train_size)]
+        if enforce_train_fraction and not train_size.is_integer():
+            # Determine the index length required to guarantee
+            # the train–test ratio is exactly the desired one.
+            min_length_req = int(100 / math.gcd(100, int(round(100 * train_fraction))))
+            length_req = math.ceil(index_len / min_length_req) * min_length_req
+            n_train = int(round(length_req * train_fraction))
+            n_test = length_req - n_train
+            # Pad indices so lengths agree
+            train_indices = np.append(train_indices, [-1] * (n_train - len(train_indices)))
+            test_indices = np.append(test_indices, [-1] * (n_test - len(test_indices)))
+        return train_indices, test_indices
 
 
 def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
@@ -743,7 +815,9 @@ def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
     if uniform == True:
         TrainingFraction = cfg["TrainingFraction"]
         trainFraction = TrainingFraction[trainindex]
-        trainIndices, testIndices = SplitTrials(range(len(Data.index)), trainFraction)
+        trainIndices, testIndices = SplitTrials(
+            range(len(Data.index)), trainFraction, True,
+        )
     else:  # leave one folder out split
         videos = cfg["video_sets"].keys()
         test_video_name = [Path(i).stem for i in videos][trainindex]
@@ -963,6 +1037,12 @@ def create_training_dataset(
                 print(
                     f"You passed a split with the following fraction: {int(100 * trainFraction)}%"
                 )
+                # Now that the training fraction is guaranteed to be correct,
+                # the values added to pad the indices are removed.
+                train_inds = np.asarray(train_inds)
+                train_inds = train_inds[train_inds != -1]
+                test_inds = np.asarray(test_inds)
+                test_inds = test_inds[test_inds != -1]
                 splits.append(
                     (trainFraction, Shuffles[shuffle], (train_inds, test_inds))
                 )

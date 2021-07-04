@@ -1,13 +1,13 @@
-# standard (single animal) DeepLabCut UserGuide
+# DeepLabCut User Guide (for single animal projects)
 
-This document covers single/standard DeepLabCut use. If you have a complicated multi-animal scenario (i.e., they look the same), then please see our [maDLC user guide](/docs/maDLC_UserGuide.md).
+This document covers single/standard DeepLabCut use. If you have a complicated multi-animal scenario (i.e., they look the same), then please see our [maDLC user guide]((https://github.com/DeepLabCut/DeepLabCut/blob/master//docs/maDLC_UserGuide.md).
 
 To get started, you can use the GUI, or the terminal. See below.
 
-### DeepLabCut Project Manager GUI (recommended for beginners)
+## DeepLabCut Project Manager GUI (recommended for beginners)
 
 **GUI:**
-Simply ``python -m deeplabcut`` or MacOS: ``pythonw -m deeplabcut``. The below functions are available to you in an easy-to-use graphical user interface. While most functionality is available, advanced users might want the additional flexibility that command line interface offers. Read more [here](/docs/PROJECT_GUI.md).
+Simply ``python -m deeplabcut`` or MacOS: ``pythonw -m deeplabcut``. The below functions are available to you in an easy-to-use graphical user interface. While most functionality is available, advanced users might want the additional flexibility that command line interface offers. Read more [here]((https://github.com/DeepLabCut/DeepLabCut/blob/master//docs/PROJECT_GUI.md).
 
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572824438905-QY9XQKZ8LAJZG6BLPWOQ/ke17ZwdGBToddI8pDm48kIIa76w436aRzIF_cdFnEbEUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcLthF_aOEGVRewCT7qiippiAuU5PSJ9SSYal26FEts0MmqyMIhpMOn8vJAUvOV4MI/guilaunch.jpg?format=1000w" width="60%">
@@ -15,7 +15,7 @@ Simply ``python -m deeplabcut`` or MacOS: ``pythonw -m deeplabcut``. The below f
 
 As a reminder, the core functions are described in our [Nature Protocols](https://www.nature.com/articles/s41596-019-0176-0) paper (published at the time of 2.0.6). Additional functions and features are continually added to the package. Thus, we recommend you read over the protocol and then please look at the following documentation and the doctrings. Thanks for using DeepLabCut!
 
-### DeepLabCut in the Terminal:
+## DeepLabCut in the Terminal:
 
 To begin, navigate to anaconda prompt and right-click to "open as admin "(windows), or simply launch "terminal" (unix/MacOS) on your computer. We assume you have DeepLabCut installed (if not, go here). Next, launch your conda env (i.e., for example `conda activate DLC-CPU`) and then type (windows/unix) `ipython` or  (macOS) `pythonw`. Then type `import deeplabcut`.
 
@@ -30,9 +30,9 @@ Optional arguments specify the working directory, where the project directory wi
 
 ```python
 deeplabcut.create_new_project('Name of the project', 'Name of the experimenter', ['Full path of video 1', 'Full path of video2', 'Full path of video3'], working_directory='Full path of the working directory', copy_videos=True/False, multianimal=True/False)
-``` 
+```
 
-#### Important path formating note: 
+#### Important path formating note:
 
 Windows users, you must input paths as: ``r'C:\Users\computername\Videos\reachingvideo1.avi' `` or
 
@@ -65,7 +65,9 @@ The ``create_new_project`` step writes the following parameters to the configura
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c40f4124d7a9c0b2ce651c1/1547760716298/Box1-01.png?format=1000w" width="90%">
 </p>
 
-### (B) Configure the Project <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588892210304-EW7WD46PYAU43WWZS4QZ/ke17ZwdGBToddI8pDm48kAXtGtTuS2U1SVcl-tYMBOAUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8PaoYXhp6HxIwZIk7-Mi3Tsic-L2IOPH3Dwrhl-Ne3Z2YjE9w60pqfeJxDohDRZk1jXSVCSSfcEA7WmgMAGpjTehHAH51QaxKq4KdVMVBxpG/1nktc1kdgq2.jpg?format=1000w" width="175" title="colormaps" alt="DLC Utils" align="right" vspace = "50">
+### (B) Configure the Project
+
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588892210304-EW7WD46PYAU43WWZS4QZ/ke17ZwdGBToddI8pDm48kAXtGtTuS2U1SVcl-tYMBOAUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8PaoYXhp6HxIwZIk7-Mi3Tsic-L2IOPH3Dwrhl-Ne3Z2YjE9w60pqfeJxDohDRZk1jXSVCSSfcEA7WmgMAGpjTehHAH51QaxKq4KdVMVBxpG/1nktc1kdgq2.jpg?format=1000w" width="175" title="colormaps" alt="DLC Utils" align="right" vspace = "50">
 
 Next, open the **config.yaml** file, which was created during  **create\_new\_project**. You can edit this file in any text editor.  Familiarize yourself with the meaning of the parameters (Box 1). You can edit various parameters, in particular you **must add the list of *bodyparts* (or points of interest)** that you want to track. You can also set the *colormap* here that is used for all downstream steps (can also be edited at anytime), like labeling GUIs, videos, etc. Here any [matplotlib colormaps](https://matplotlib.org/tutorials/colors/colormaps.html) will do!
 Please DO NOT have spaces in the names of bodyparts.
@@ -165,7 +167,7 @@ For each video directory in labeled-data this function creates a subdirectory wi
 
 - If you move your project folder, you must **only** change the `project_path` in the main config.yaml file - that's it - no need to change the video paths, etc! Your project is fully portable.
 
-- If you run this on the cloud, before importing `deeplabcut` you need to suppress GUIs. As you can see in our [demo notebooks](/examples/COLAB_DEMO_mouse_openfield.ipynb) for running DLC training, evaluation, and novel video analysis on the Cloud, you must first suppress GUIs - server computers don't have a screen you can interact with. So, before you launch ipython, run `export DLClight=True` (see more tips in the full PDF user-guide).
+- If you run this on the cloud, before importing `deeplabcut` you need to suppress GUIs. As you can see in our [demo notebooks]((https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/COLAB_DEMO_mouse_openfield.ipynb) for running DLC training, evaluation, and novel video analysis on the Cloud, you must first suppress GUIs - server computers don't have a screen you can interact with. So, before you launch ipython, run `export DLClight=True` (see more tips in the full PDF user-guide).
 
 **OVERVIEW:** This function combines the labeled datasets from all the videos and splits them to create train and test datasets. The training data will be used to train the network, while the test data set will be used for evaluating the network. The function **create_training_dataset** performs those steps.
 
@@ -234,7 +236,7 @@ The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file
 **maDeepLabCut CRITICAL POINT:** For multi-animal projects we are using not only different and new output layers, but also new data augmentation, optimization, learning rates, and batch training defaults. Thus, please use a lower ``save_iters`` and ``maxiters``. I.e. we suggest saving every 10K-15K iterations, and only training until 50K-100K iterations. We recommend you look closely at the loss to not overfit on your data. The bonus, training time is much less!!!
 
 **Parameters:**
-```python
+```
 config : string
     Full path of the config.yaml file as a string.
 
@@ -282,7 +284,7 @@ many factors (including the size of the tracked body parts, the labeling variabi
 also be larger than the training error due to human variability (in labeling, see Figure 2 in Mathis et al, Nature Neuroscience 2018).
 
 **Optional parameters:**
-```python
+```
   Shuffles: list, optional -List of integers specifying the shuffle indices of the training dataset. The default is [1]
 
   plotting: bool, optional -Plots the predictions on the train and test images. The default is `False`; if provided it must be either `True` or `False`
@@ -380,7 +382,8 @@ deeplabcut.filterpredictions(config_path, ['fullpath/analysis/project/videos/rea
 The plotting components of this toolbox utilizes matplotlib. Therefore, these plots can easily be customized by
 the end user. We also provide a function to plot the trajectory of the extracted poses across the analyzed video, which
 can be called by typing:
-```python
+
+```
 deeplabcut.plot_trajectories(config_path, [‘fullpath/analysis/project/videos/reachingvideo1.avi’])
 ```
  It creates a folder called ``plot-poses`` (in the directory of the video). The plots display the coordinates of body parts vs. time, likelihoods vs time, the x- vs. y- coordinate of the body parts, as well as histograms of consecutive coordinate differences. These plots help the user to quickly assess the tracking performance for a video. Ideally, the likelihood stays high and the histogram of consecutive coordinate differences has values close to zero (i.e. no jumps in body part detections across frames). Here are example plot outputs on a demo video (left):
@@ -436,7 +439,7 @@ deeplabcut.create_labeled_video(config_path,['fullpath/afolderofvideos'], videot
 </p>
 
 **Other optional Parameters:**
-```python
+```
 videotype: string, optional. Checks for the extension of the video in case the input is a directory. Only videos with this extension are analyzed. The default is ``.avi``
 
 save_frames: bool (i.e. True or False). If true creates each frame individually and then combines into a video. This variant is relatively slow as it stores all individual frames. However, it uses matplotlib to create the frames and is therefore much more flexible (one can set transparency of markers, crop, and easily customize).
@@ -472,13 +475,15 @@ re-training. A priori, given that there is no ground truth data for analyzed vid
 where the decoder might make large errors.
 
 All this can be done for a specific video by typing (see other optional inputs below):
+
 ```python
 deeplabcut.extract_outlier_frames(config_path, ['videofile_path'])
 ```
 
 We provide various frame-selection methods for this purpose. In particular
 the user can set:
-```python
+
+```
 outlieralgorithm: 'fitting', 'jump', or 'uncertain'``
 ```
 • select frames if the likelihood of a particular or all body parts lies below *pbound* (note this could also be due to
@@ -553,7 +558,7 @@ template for the user to develop a project. Furthermore, we provide a notebook f
 labeled data. The example project, named as Reaching-Mackenzie-2018-08-30 consists of a project configuration file
 with default parameters and 20 images, which are cropped around the region of interest as an example dataset. These
 images are extracted from a video, which was recorded in a study of skilled motor control in mice. Some example
-labels for these images are also provided. See more details [here](/examples).
+labels for these images are also provided. See more details [here]((https://github.com/DeepLabCut/DeepLabCut/blob/master/examples).
 
 ## 3D Toolbox
 
@@ -562,8 +567,4 @@ Please find all the information on using the 3D toolbox of DeepLabCut (as of 2.0
 
 ## Other functions, some are yet-to-be-documented:
 
-We suggest you [check out these additional helper functions](/docs/HelperFunctions.md), that could be useful (they are all optional).
-
-Return to [User guide overview](UseOverviewGuide.md).
-
-Return to [readme](../README.md).
+We suggest you [check out these additional helper functions]((https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/HelperFunctions.md), that could be useful (they are all optional).

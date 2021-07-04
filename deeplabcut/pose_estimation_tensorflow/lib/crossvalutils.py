@@ -472,12 +472,19 @@ def _get_n_best_paf_graphs(
     (within_train, within_test), (between_train, _) = _calc_within_between_pafs(
         data, metadata, train_set_only=False
     )
-
     # Handle unlabeled bodyparts...
     existing_edges = set(k for k, v in within_test.items() if v)
     if ignore_inds is not None:
         existing_edges = existing_edges.difference(ignore_inds)
     existing_edges = list(existing_edges)
+
+    if not any(between_train.values()):
+        # Only 1 animal, let us return the full graph indices only
+        return (
+            [existing_edges],
+            dict(zip(existing_edges, [0] * len(existing_edges)))
+        )
+
     scores, thresholds = zip(
         *[
             _calc_separability(b_train, w_train, metric=metric)
@@ -576,3 +583,4 @@ def cross_validate_paf_graphs(
     if output_name:
         with open(output_name, "wb") as file:
             pickle.dump([results], file)
+    return results

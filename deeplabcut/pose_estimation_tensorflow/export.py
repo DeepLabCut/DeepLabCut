@@ -16,17 +16,11 @@ import tarfile
 import numpy as np
 import ruamel.yaml
 import tensorflow as tf
-
-vers = (tf.__version__).split(".")
-if int(vers[0]) == 1 and int(vers[1]) > 12:
-    TF = tf.compat.v1
-else:
-    TF = tf
 from tensorflow.python.tools import freeze_graph
 
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.pose_estimation_tensorflow.nnet import predict
+from deeplabcut.pose_estimation_tensorflow.core import predict
 
 
 def create_deploy_config_template():
@@ -192,7 +186,7 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True, modelpre
         else:
             output = ["Sigmoid", "pose/part_pred/block4/BiasAdd"]
 
-    input = tf.get_default_graph().get_operations()[0].name
+    input = tf.compat.v1.get_default_graph().get_operations()[0].name
 
     return sess, input, output, dlc_cfg
 
@@ -226,23 +220,15 @@ def tf_to_pb(sess, checkpoint, output, output_dir=None):
 
     # save graph to pbtxt file
     pbtxt_file = os.path.normpath(output_dir + "/" + ckpt_base + ".pbtxt")
-    tf.train.write_graph(sess.graph.as_graph_def(), "", pbtxt_file, as_text=True)
+    tf.io.write_graph(sess.graph.as_graph_def(), "", pbtxt_file, as_text=True)
 
     # create frozen graph from pbtxt file
     pb_file = os.path.normpath(output_dir + "/" + ckpt_base + ".pb")
-
-    freeze_graph.freeze_graph(
-        input_graph=pbtxt_file,
-        input_saver="",
-        input_binary=False,
-        input_checkpoint=checkpoint,
-        output_node_names=",".join(output),
-        restore_op_name="save/restore_all",
-        filename_tensor_name="save/Const:0",
-        output_graph=pb_file,
-        clear_devices=True,
-        initializer_nodes="",
+    frozen_graph_def = tf.compat.v1.graph_util.convert_variables_to_constants(
+        sess, sess.graph_def, output,
     )
+    with open(pb_file, "wb") as file:
+        file.write(frozen_graph_def.SerializeToString())
 
 
 def export_model(
