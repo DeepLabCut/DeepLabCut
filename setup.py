@@ -35,7 +35,7 @@ setuptools.setup(
         "numpy",
         "opencv-python-headless",
         "pandas>=1.0.1",
-        "scikit-image",
+        "scikit-image>=0.17",
         "scikit-learn",
         "scipy>=1.4",
         "statsmodels>=0.11",
