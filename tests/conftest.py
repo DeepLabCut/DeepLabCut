@@ -36,14 +36,11 @@ def real_tracklets():
 
 
 @pytest.fixture(scope="session")
-def uncropped_data_and_metadata():
+def evaluation_data_and_metadata():
     full_data_file = os.path.join(TEST_DATA_DIR, "trimouse_eval.pickle")
     metadata_file = full_data_file.replace("eval", "meta")
     with open(full_data_file, "rb") as file:
         data = pickle.load(file)
     with open(metadata_file, "rb") as file:
         metadata = pickle.load(file)
-    params = crossvalutils._set_up_evaluation(data)
-    data_unc, _ = crossvalutils._rebuild_uncropped_data(data, params)
-    meta_unc = crossvalutils._rebuild_uncropped_metadata(metadata, params["imnames"])
-    return data_unc, meta_unc
+    return data, metadata
