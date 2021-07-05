@@ -537,18 +537,16 @@ def evaluate_multianimal_full(
                     # the model was trained on the full graph.
                     max_n_edges = dlc_cfg["num_joints"] * (dlc_cfg["num_joints"] - 1) // 2
                     if len(dlc_cfg["partaffinityfield_graph"]) == max_n_edges:
-                        uncropped_data_path = data_path.replace(
-                            ".pickle", "_uncropped.pickle"
+                        print("Selecting best skeleton...")
+                        _ = crossvalutils.cross_validate_paf_graphs(
+                            config,
+                            str(path_test_config).replace("pose_", "inference_"),
+                            data_path,
+                            data_path.replace("_full", "_meta"),
                         )
-                        if not os.path.isfile(uncropped_data_path):
-                            print("Selecting best skeleton...")
-                            crossvalutils._rebuild_uncropped_in(evaluationfolder)
-                            _ = crossvalutils.cross_validate_paf_graphs(
-                                config,
-                                str(path_test_config).replace("pose_", "inference_"),
-                                uncropped_data_path,
-                                uncropped_data_path.replace("_full_", "_meta_"),
-                            )
+
+                    # Evaluate mAP and edge separability power
+
 
                 if len(final_result) > 0:  # Only append if results were calculated
                     make_results_file(final_result, evaluationfolder, DLCscorer)
