@@ -100,6 +100,8 @@ def create_multianimaltraining_dataset(
     net_type=None,
     numdigits=2,
     paf_graph=None,
+    trainIndices=None,
+    testIndices=None,
 ):
     """
     Creates a training dataset for multi-animal datasets. Labels from all the extracted frames are merged into a single .h5 file.\n
@@ -136,9 +138,18 @@ def create_multianimaltraining_dataset(
         already know a good graph, or simply want to use a specific one. Note that, in that case,
         the data-driven selection procedure upon model evaluation will be skipped.
 
+    trainIndices: list of lists, optional (default=None)
+        List of one or multiple lists containing train indexes.
+        A list containing two lists of training indexes will produce two splits.
+
+    testIndices: list of lists, optional (default=None)
+        List of one or multiple lists containing test indexes.
+
     Example
     --------
     >>> deeplabcut.create_multianimaltraining_dataset('/analysis/project/reaching-task/config.yaml',num_shuffles=1)
+
+    >>> deeplabcut.create_multianimaltraining_dataset('/analysis/project/reaching-task/config.yaml', Shuffles=[0,1,2], trainIndices=[trainInd1, trainInd2, trainInd3], testIndices=[testInd1, testInd2, testInd3])
 
     Windows:
     >>> deeplabcut.create_multianimaltraining_dataset(r'C:\\Users\\Ulf\\looming-task\\config.yaml',Shuffles=[3,17,5])
