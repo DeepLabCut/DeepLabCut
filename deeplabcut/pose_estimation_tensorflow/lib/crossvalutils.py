@@ -321,6 +321,8 @@ def cross_validate_paf_graphs(
     add_discarded=True,
     calibrate=False,
     overwrite_config=True,
+    n_graphs=10,
+    paf_inds=None,
 ):
     cfg = auxiliaryfunctions.read_config(config)
     inf_cfg = auxiliaryfunctions.read_plainconfig(inference_config)
@@ -336,9 +338,14 @@ def cross_validate_paf_graphs(
     to_ignore = auxfun_multianimal.filter_unwanted_paf_connections(
         cfg, params["paf_graph"]
     )
-    paf_inds, paf_scores = _get_n_best_paf_graphs(
-        data, metadata, params["paf_graph"], ignore_inds=to_ignore
+    best_graphs = _get_n_best_paf_graphs(
+        data, metadata, params["paf_graph"],
+        ignore_inds=to_ignore,
+        n_graphs=n_graphs,
     )
+    paf_scores = best_graphs[1]
+    if paf_inds is None:
+        paf_inds = best_graphs[0]
 
     if calibrate:
         trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
@@ -372,4 +379,4 @@ def cross_validate_paf_graphs(
     if output_name:
         with open(output_name, "wb") as file:
             pickle.dump([results], file)
-    return results
+    return results, paf_scores

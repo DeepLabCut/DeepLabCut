@@ -10,6 +10,7 @@ Licensed under GNU Lesser General Public License v3.0
 
 
 import os
+import pickle
 from pathlib import Path
 
 import numpy as np
@@ -536,20 +537,29 @@ def evaluate_multianimal_full(
                     # Skip data-driven skeleton selection unless
                     # the model was trained on the full graph.
                     max_n_edges = dlc_cfg["num_joints"] * (dlc_cfg["num_joints"] - 1) // 2
-                    if len(dlc_cfg["partaffinityfield_graph"]) == max_n_edges:
+                    n_edges = len(dlc_cfg["partaffinityfield_graph"])
+                    if n_edges == max_n_edges:
                         print("Selecting best skeleton...")
-                        _ = crossvalutils.cross_validate_paf_graphs(
-                            config,
-                            str(path_test_config).replace("pose_", "inference_"),
-                            data_path,
-                            data_path.replace("_full", "_meta"),
-                        )
-
-                    # Evaluate mAP and edge separability power
-
+                        n_graphs = 10
+                        paf_inds = None
+                    else:
+                        n_graphs = 1
+                        paf_inds = [list(range(n_edges))]
+                    results, paf_scores = crossvalutils.cross_validate_paf_graphs(
+                        config,
+                        str(path_test_config).replace("pose_", "inference_"),
+                        data_path,
+                        data_path.replace("_full", "_meta"),
+                        n_graphs=n_graphs,
+                        paf_inds=paf_inds,
+                    )
+                    df = results[1].copy()
+                    df.loc(axis=0)[('mAP', 'mean')] = [d['mAP'] for d in results[2]]
+                    df.loc(axis=0)[('mAR', 'mean')] = [d['mAR'] for d in results[2]]
+                    with open(data_path.replace("_full", ), "wb") as file:
+                        pickle.dump((df, paf_scores), file)
 
                 if len(final_result) > 0:  # Only append if results were calculated
                     make_results_file(final_result, evaluationfolder, DLCscorer)
 
-    # returning to intial folder
     os.chdir(str(start_path))
