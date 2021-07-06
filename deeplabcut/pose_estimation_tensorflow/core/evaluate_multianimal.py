@@ -556,7 +556,7 @@ def evaluate_multianimal_full(
                     df = results[1].copy()
                     df.loc(axis=0)[('mAP', 'mean')] = [d['mAP'] for d in results[2]]
                     df.loc(axis=0)[('mAR', 'mean')] = [d['mAR'] for d in results[2]]
-                    with open(data_path.replace("_full", ), "wb") as file:
+                    with open(data_path.replace("_full", "_map"), "wb") as file:
                         pickle.dump((df, paf_scores), file)
 
                 if len(final_result) > 0:  # Only append if results were calculated
