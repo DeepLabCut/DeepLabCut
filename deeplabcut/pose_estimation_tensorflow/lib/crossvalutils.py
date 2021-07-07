@@ -141,6 +141,8 @@ def _calc_within_between_pafs(
             paf = v["m1"]
             mask_within = np.zeros(paf.shape, dtype=bool)
             s, t = graph[k]
+            if s not in lookup or t not in lookup:
+                continue
             lu_s = lookup[s]
             lu_t = lookup[t]
             common_id = set(lu_s).intersection(lu_t)
