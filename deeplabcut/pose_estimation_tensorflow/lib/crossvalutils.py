@@ -130,11 +130,12 @@ def _calc_within_between_pafs(
         # Get animal IDs and corresponding indices in the arrays of detections
         lookup = dict()
         for i, (coord, coord_gt) in enumerate(zip(coords, coords_gt)):
+            inds = np.flatnonzero(np.all(~np.isnan(coord), axis=1))
             inds_gt = np.flatnonzero(np.all(~np.isnan(coord_gt), axis=1))
-            if inds_gt.size and coord.size:
-                d = cdist(coord_gt[inds_gt], coord)
+            if inds.size and inds_gt.size:
+                d = cdist(coord_gt[inds_gt], coord[inds])
                 rows, cols = linear_sum_assignment(d)
-                lookup[i] = dict(zip(inds_gt[rows], cols))
+                lookup[i] = dict(zip(inds_gt[rows], inds[cols]))
 
         costs = dict_["prediction"]["costs"]
         for k, v in costs.items():
