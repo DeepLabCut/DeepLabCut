@@ -2,7 +2,7 @@ import numpy as np
 from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
 
 
-BEST_GRAPH = [14, 15, 16, 17, 11, 18, 22, 31, 61, 7, 59]
+BEST_GRAPH = [14, 15, 16, 17, 34, 35, 11, 22, 59, 3, 43]
 
 
 def test_get_n_best_paf_graphs(evaluation_data_and_metadata):
