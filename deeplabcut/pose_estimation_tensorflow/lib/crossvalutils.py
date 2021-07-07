@@ -18,6 +18,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 from scipy.spatial import cKDTree
+from scipy.spatial.distance import cdist
 from scipy.optimize import linear_sum_assignment
 from sklearn.metrics.cluster import contingency_matrix
 
@@ -100,10 +101,11 @@ def _calc_separability(
 def _calc_within_between_pafs(
     data,
     metadata,
-    per_bodypart=True,
+    per_edge=True,
     train_set_only=True,
 ):
     train_inds = set(metadata["data"]["trainIndices"])
+    graph = data["metadata"]["PAFgraph"]
     within_train = defaultdict(list)
     within_test = defaultdict(list)
     between_train = defaultdict(list)
@@ -111,16 +113,39 @@ def _calc_within_between_pafs(
     for i, (key, dict_) in enumerate(data.items()):
         if key == "metadata":
             continue
+
         is_train = i in train_inds
         if train_set_only and not is_train:
             continue
+
+        df = dict_["groundtruth"][2]
+        try:
+            df.drop("single", level="individuals", inplace=True)
+        except KeyError:
+            pass
+        coords_gt = (df.unstack(['individuals', 'coords'])
+                     .to_numpy()
+                     .reshape((len(data['metadata']['all_joints_names']), -1, 2)))
+        coords = dict_["prediction"]["coordinates"][0]
+        # Get animal IDs and corresponding indices in the arrays of detections
+        lookup = dict()
+        for i, (coord, coord_gt) in enumerate(zip(coords, coords_gt)):
+            inds_gt = np.flatnonzero(np.all(~np.isnan(coord_gt), axis=1))
+            if inds_gt.size and coord.size:
+                d = cdist(coord_gt[inds_gt], coord)
+                rows, cols = linear_sum_assignment(d)
+                lookup[i] = dict(zip(inds_gt[rows], cols))
+
         costs = dict_["prediction"]["costs"]
         for k, v in costs.items():
             paf = v["m1"]
-            paf[np.isnan(paf)] = 0
-            rows, cols = linear_sum_assignment(paf, maximize=True)
             mask_within = np.zeros(paf.shape, dtype=bool)
-            mask_within[rows, cols] = True
+            s, t = graph[k]
+            lu_s = lookup[s]
+            lu_t = lookup[t]
+            common_id = set(lu_s).intersection(lu_t)
+            for id_ in common_id:
+                mask_within[lu_s[id_], lu_t[id_]] = True
             within_vals = paf[mask_within]
             between_vals = paf[~mask_within]
             if is_train:
@@ -129,7 +154,7 @@ def _calc_within_between_pafs(
             else:
                 within_test[k].extend(within_vals)
                 between_test[k].extend(between_vals)
-    if not per_bodypart:
+    if not per_edge:
         within_train = np.concatenate([*within_train.values()])
         within_test = np.concatenate([*within_test.values()])
         between_train = np.concatenate([*between_train.values()])
