@@ -179,6 +179,11 @@
    Automate training and video analysis: Batch Processing
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="TechHardware.html">
+   Technical (Hardware) Considerations
+  </a>
+ </li>
 </ul>
 <p class="caption">
  <span class="caption-text">
@@ -548,8 +553,8 @@ For more examples and ideas, visit:
 <div class="section" id="next-deeplabcut">
 <h3>Next, DeepLabCut!<a class="headerlink" href="#next-deeplabcut" title="Permalink to this headline">¶</a></h3>
 <p>Given this is a totally fresh install, here are a few things that I also needed: <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt</span> <span class="pre">install</span> <span class="pre">libcanberra-gtk-module</span> <span class="pre">libcanberra-gtk3-module</span></code> Then I proceeded below:</p>
-<p>I grab the conda file from the website at <a class="reference external" href="http://www.deeplabcut.org">www.deeplabcut.org</a>. Simply click to download (DLC-GPU). For me, this goes into Downloads.</p>
-<p>So, I open a terminal, <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">Downloads</span></code>, and then run: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">-f</span> <span class="pre">DLC-GPU.yaml</span></code></p>
+<p>I grab the conda file from the website at <a class="reference external" href="http://www.deeplabcut.org">www.deeplabcut.org</a>. Simply click to download. For me, this goes into Downloads.</p>
+<p>So, I open a terminal, <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">Downloads</span></code>, and then run: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">-f</span> <span class="pre">DEEPLABCUT.yaml</span></code></p>
 <p>Follow prompts!</p>
 </div>
 <div class="section" id="troubleshooting-note-if-you-get-a-failed-build-due-to-wxpython-i-e">
@@ -561,7 +566,7 @@ For more examples and ideas, visit:
 <span class="n">CondaEnvException</span><span class="p">:</span> <span class="n">Pip</span> <span class="n">failed</span>
 </pre></div>
 </div>
-<p>remove conda env: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">remove</span> <span class="pre">--name</span> <span class="pre">DLC-GPU</span> <span class="pre">--all</span></code>, open the DLC-GPU.yaml file (any text editor!) and change <code class="docutils literal notranslate"><span class="pre">deeplabcut[gui]</span></code> to <code class="docutils literal notranslate"><span class="pre">deeplabcut</span></code>. Then run: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">-f</span> <span class="pre">DLC-GPU.yaml</span></code> again…</p>
+<p>remove conda env: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">remove</span> <span class="pre">--name</span> <span class="pre">DEEPLABCUT</span> <span class="pre">--all</span></code>, open the DLC-GPU.yaml file (any text editor!) and change <code class="docutils literal notranslate"><span class="pre">deeplabcut[gui]</span></code> to <code class="docutils literal notranslate"><span class="pre">deeplabcut</span></code>. Then run: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">-f</span> <span class="pre">DEEPLABCUT.yaml</span></code> again…</p>
 <p>then you will get:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
  <span class="n">Successfully</span> <span class="n">uninstalled</span> <span class="n">decorator</span><span class="o">-</span><span class="mf">5.0.9</span>
@@ -571,14 +576,14 @@ For more examples and ideas, visit:
 <span class="c1">#</span>
 <span class="c1"># To activate this environment, use</span>
 <span class="c1">#</span>
-<span class="c1">#     $ conda activate DLC-GPU</span>
+<span class="c1">#     $ conda activate DEEPLABCUT</span>
 <span class="c1">#</span>
 <span class="c1"># To deactivate an active environment, use</span>
 <span class="c1">#</span>
 <span class="c1">#     $ conda deactivate</span>
 </pre></div>
 </div>
-<p>Activate! <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">DLC-GPU</span></code> and then run: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">conda-forge</span> <span class="pre">wxpython</span></code> … after this finishes, run: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut[gui]</span></code></p>
+<p>Activate! <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">DEEPLABCUT</span></code> and then run: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">conda-forge</span> <span class="pre">wxpython</span></code> … after this finishes, run: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut[gui]</span></code></p>
 <p>Now you might get some warnings, but for me it was then totally fine to run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code> which launches the DLC GUI!</p>
 </div>
 </div>
