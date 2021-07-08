@@ -260,13 +260,24 @@ class MAImgaugPoseDataset(BasePoseDataset):
             )
             batch_images = np.asarray(batch_images)
             # Discard keypoints whose coordinates lie outside the cropped image
-            batch_joints = [j[~np.any(j < 0, axis=1)] for j in batch_joints]
+            batch_joints_valid = []
+            joint_ids_valid = []
+            for joints, ids in zip(batch_joints, joint_ids):
+                mask = ~np.any(joints < 0, axis=1)
+                batch_joints_valid.append(joints[mask])
+                temp = []
+                start = 0
+                for array in ids:
+                    end = start + array.size
+                    temp.append(array[mask[start:end]])
+                    start = end
+                joint_ids_valid.append(temp)
 
             # If you would like to check the augmented images, script for saving
             # the images with joints on:
             if plotting:
                 for i in range(self.batch_size):
-                    joints = batch_joints[i]
+                    joints = batch_joints_valid[i]
                     kps = KeypointsOnImage(
                         [Keypoint(x=joint[0], y=joint[1]) for joint in joints],
                         shape=batch_images[i].shape,
@@ -281,7 +292,11 @@ class MAImgaugPoseDataset(BasePoseDataset):
             batch = {Batch.inputs: batch_images.astype(np.float64)}
             if self.has_gt:
                 targetmaps = self.get_targetmaps_update(
-                    joint_ids, batch_joints, data_items, (sm_size[1], sm_size[0]), image_shape
+                    joint_ids_valid,
+                    batch_joints_valid,
+                    data_items,
+                    (sm_size[1], sm_size[0]),
+                    image_shape,
                 )
                 batch.update(targetmaps)
 
