@@ -249,9 +249,9 @@ Follow prompts!
 
 Given this is a totally fresh install, here are a few things that I also needed: `sudo apt install libcanberra-gtk-module libcanberra-gtk3-module` Then I proceeded below:
 
-I grab the conda file from the website at www.deeplabcut.org. Simply click to download (DLC-GPU). For me, this goes into Downloads.
+I grab the conda file from the website at www.deeplabcut.org. Simply click to download. For me, this goes into Downloads.
 
-So, I open a terminal, `cd Downloads`, and then run: `conda env create -f DLC-GPU.yaml`
+So, I open a terminal, `cd Downloads`, and then run: `conda env create -f DEEPLABCUT.yaml`
 
 Follow prompts!
 
@@ -265,7 +265,7 @@ failed
 CondaEnvException: Pip failed
 ```
 
-remove conda env: `conda remove --name DLC-GPU --all`, open the DLC-GPU.yaml file (any text editor!) and change `deeplabcut[gui]` to `deeplabcut`. Then run: `conda env create -f DLC-GPU.yaml` again...
+remove conda env: `conda remove --name DEEPLABCUT --all`, open the DLC-GPU.yaml file (any text editor!) and change `deeplabcut[gui]` to `deeplabcut`. Then run: `conda env create -f DEEPLABCUT.yaml` again...
 
 then you will get:
 ```python
@@ -277,13 +277,13 @@ done
 #
 # To activate this environment, use
 #
-#     $ conda activate DLC-GPU
+#     $ conda activate DEEPLABCUT
 #
 # To deactivate an active environment, use
 #
 #     $ conda deactivate
 ```
 
-Activate! `conda activate DLC-GPU` and then run: `conda install -c conda-forge wxpython` ... after this finishes, run: `pip install deeplabcut[gui]`
+Activate! `conda activate DEEPLABCUT` and then run: `conda install -c conda-forge wxpython` ... after this finishes, run: `pip install deeplabcut[gui]`
 
 Now you might get some warnings, but for me it was then totally fine to run `python -m deeplabcut` which launches the DLC GUI!
