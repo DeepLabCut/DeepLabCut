@@ -106,6 +106,7 @@ def _calc_within_between_pafs(
 ):
     train_inds = set(metadata["data"]["trainIndices"])
     graph = data["metadata"]["PAFgraph"]
+    bpts = data['metadata']['all_joints_names']
     within_train = defaultdict(list)
     within_test = defaultdict(list)
     between_train = defaultdict(list)
@@ -124,8 +125,9 @@ def _calc_within_between_pafs(
         except KeyError:
             pass
         coords_gt = (df.unstack(['individuals', 'coords'])
+                     .reindex(bpts, level="bodyparts")
                      .to_numpy()
-                     .reshape((len(data['metadata']['all_joints_names']), -1, 2)))
+                     .reshape((len(bpts), -1, 2)))
         coords = dict_["prediction"]["coordinates"][0]
         # Get animal IDs and corresponding indices in the arrays of detections
         lookup = dict()
@@ -315,7 +317,8 @@ def _get_n_best_paf_graphs(
     # Find minimal skeleton
     G = nx.Graph()
     for edge, score in zip(existing_edges, scores):
-        G.add_edge(*full_graph[edge], weight=score)
+        if np.isfinite(score):
+            G.add_edge(*full_graph[edge], weight=score)
     if which == "best":
         order = np.asarray(existing_edges)[np.argsort(scores)[::-1]]
         if root is None:
