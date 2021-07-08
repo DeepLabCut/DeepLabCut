@@ -258,6 +258,9 @@ class MAImgaugPoseDataset(BasePoseDataset):
             batch_images, batch_joints = self.pipeline(
                 images=batch_images, keypoints=batch_joints
             )
+            batch_images = np.asarray(batch_images)
+            # Discard keypoints whose coordinates lie outside the cropped image
+            batch_joints = [j[~np.any(j < 0, axis=1)] for j in batch_joints]
 
             # If you would like to check the augmented images, script for saving
             # the images with joints on:
@@ -274,15 +277,15 @@ class MAImgaugPoseDataset(BasePoseDataset):
                         os.path.join(self.cfg["project_path"], str(i) + ".png"), im
                     )
 
-            image_shape = np.array(batch_images).shape[1:3]
-            batch = {Batch.inputs: np.array(batch_images).astype(np.float64)}
+            image_shape = batch_images.shape[1:3]
+            batch = {Batch.inputs: batch_images.astype(np.float64)}
             if self.has_gt:
                 targetmaps = self.get_targetmaps_update(
                     joint_ids, batch_joints, data_items, (sm_size[1], sm_size[0]), image_shape
                 )
                 batch.update(targetmaps)
 
-            batch = {key: np.array(data) for (key, data) in batch.items()}
+            batch = {key: np.asarray(data) for (key, data) in batch.items()}
             batch[Batch.data_item] = data_items
             return batch
 
