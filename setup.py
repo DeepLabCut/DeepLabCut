@@ -17,7 +17,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="deeplabcut",
-    version="2.2rc2",
+    version="2.2rc3",
     author="A. & M. Mathis Labs",
     author_email="alexander@deeplabcut.org",
     description="Markerless pose-estimation of user-defined features with deep learning",
@@ -35,7 +35,7 @@ setuptools.setup(
         "numpy",
         "opencv-python-headless",
         "pandas>=1.0.1",
-        "scikit-image",
+        "scikit-image>=0.17",
         "scikit-learn",
         "scipy>=1.4",
         "statsmodels>=0.11",

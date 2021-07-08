@@ -7,9 +7,9 @@ Please see AUTHORS for contributors.
 
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 
-The code in this folder is based of Eldar's DeeperCut code: https://github.com/eldar/pose-tensorflow
+The code was built on Eldar's DeeperCut code: https://github.com/eldar/pose-tensorflow
 
-We adopted it to be integrated in the pip package of DeepLabCut, and among other things added additional networks (MobileNets), faster inference code, additional augmentation code.
+In mid 2018, we adapted it to be integrated in the pip package of DeepLabCut, and among other updates added additional networks (MobileNets, EfficientNets, MultiFusion backbones and multi stage decoders), faster inference code, additional augmentation code. See DLC release history for more details on the updates. In the spring of 2021 we refactored the code to updated the code to TensorFlow 2.
 
 Check out the following references for details:
 
@@ -29,6 +29,15 @@ Check out the following references for details:
     archivePrefix={arXiv},
     primaryClass={cs.CV}
 }
+
+@article{lauer2021multi,
+  title={Multi-animal pose estimation and tracking with DeepLabCut},
+  author={Lauer, Jessy and Zhou, Mu and Ye, Shaokai and Menegas, William and Nath, Tanmay and Rahman, Mohammed Mostafizur and Di Santo, Valentina and Soberanes, Daniel and Feng, Guoping and Murthy, Venkatesh N and others},
+  journal={bioRxiv},
+  year={2021},
+  publisher={Cold Spring Harbor Laboratory}
+}
+
 
 @article{insafutdinov2016deepercut,
     author = {Eldar Insafutdinov and Leonid Pishchulin and Bjoern Andres and Mykhaylo Andriluka and Bernt Schiele},
