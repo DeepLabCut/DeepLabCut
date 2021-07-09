@@ -73,9 +73,11 @@ def train(
     merged_summaries = tf.compat.v1.summary.merge_all()
     net_type = cfg["net_type"]
 
-    if "snapshot" in Path(cfg["init_weights"]).stem and keepdeconvweights:
+    stem = Path(cfg["init_weights"]).stem
+    if "snapshot" in stem and keepdeconvweights:
         print("Loading already trained DLC with backbone:", net_type)
         variables_to_restore = slim.get_variables_to_restore()
+        start_iter = int(stem.split("-")[1])
     else:
         print("Loading ImageNet-pretrained", net_type)
         # loading backbone from ResNet, MobileNet etc.
@@ -93,6 +95,7 @@ def train(
             }
         else:
             print("Wait for DLC 2.3.")
+        start_iter = 0
 
     restorer = tf.compat.v1.train.Saver(variables_to_restore)
     saver = tf.compat.v1.train.Saver(
@@ -142,7 +145,7 @@ def train(
     print("Training parameters:")
     print(cfg)
     print("Starting multi-animal training....")
-    for it in range(max_iter + 1):
+    for it in range(start_iter, max_iter + 1):
         if "efficientnet" in net_type:
             dict = {tstep: it}
             current_lr = sess.run(learning_rate, feed_dict=dict)
