@@ -259,17 +259,25 @@ class MAImgaugPoseDataset(BasePoseDataset):
                 images=batch_images, keypoints=batch_joints
             )
             batch_images = np.asarray(batch_images)
+            image_shape = batch_images.shape[1:3]
             # Discard keypoints whose coordinates lie outside the cropped image
             batch_joints_valid = []
             joint_ids_valid = []
             for joints, ids in zip(batch_joints, joint_ids):
-                mask = ~np.any(joints < 0, axis=1)
-                batch_joints_valid.append(joints[mask])
+                inside = np.logical_and.reduce(
+                    (
+                        joints[:, 0] < image_shape[1],
+                        joints[:, 0] > 0,
+                        joints[:, 1] < image_shape[0],
+                        joints[:, 1] > 0,
+                    )
+                )
+                batch_joints_valid.append(joints[inside])
                 temp = []
                 start = 0
                 for array in ids:
                     end = start + array.size
-                    temp.append(array[mask[start:end]])
+                    temp.append(array[inside[start:end]])
                     start = end
                 joint_ids_valid.append(temp)
 
@@ -288,7 +296,6 @@ class MAImgaugPoseDataset(BasePoseDataset):
                         os.path.join(self.cfg["project_path"], str(i) + ".png"), im
                     )
 
-            image_shape = batch_images.shape[1:3]
             batch = {Batch.inputs: batch_images.astype(np.float64)}
             if self.has_gt:
                 targetmaps = self.get_targetmaps_update(
