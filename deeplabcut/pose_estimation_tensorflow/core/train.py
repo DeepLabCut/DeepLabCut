@@ -277,7 +277,7 @@ def train(
         cum_loss += loss_val
         train_writer.add_summary(summary, it)
 
-        if it % display_iters == 0 and it > 0:
+        if it % display_iters == 0 and it > start_iter:
             average_loss = cum_loss / display_iters
             cum_loss = 0.0
             logging.info(
@@ -289,7 +289,7 @@ def train(
             lrf.flush()
 
         # Save snapshot
-        if (it % save_iters == 0 and it != 0) or it == max_iter:
+        if (it % save_iters == 0 and it != start_iter) or it == max_iter:
             model_name = cfg["snapshot_prefix"]
             saver.save(sess, model_name, global_step=it)
 

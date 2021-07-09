@@ -167,7 +167,7 @@ def train(
         cumloss += loss_val
         train_writer.add_summary(summary, it)
 
-        if it % display_iters == 0 and it > 0:
+        if it % display_iters == 0 and it > start_iter:
             logging.info(
                 "iteration: {} loss: {} scmap loss: {} locref loss: {} limb loss: {} lr: {}".format(
                     it,
@@ -194,7 +194,7 @@ def train(
             lrf.flush()
 
         # Save snapshot
-        if (it % save_iters == 0 and it != 0) or it == max_iter:
+        if (it % save_iters == 0 and it != start_iter) or it == max_iter:
             model_name = cfg["snapshot_prefix"]
             saver.save(sess, model_name, global_step=it)
 
