@@ -22,7 +22,6 @@ dependencies:
   - pip
   - jupyter
   - nb_conda
-  - pytables
   - ffmpeg
   - pip:
-    - deeplabcut[gui]
+    - 'deeplabcut[gui]'==2.2rc3
