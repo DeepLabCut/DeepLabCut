@@ -176,7 +176,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         return batch_images, joint_ids, batch_joints, data_items
 
     def get_targetmaps_update(
-        self, joint_ids, joints, data_items, sm_size, target_size
+        self, joint_ids, joints, data_items, sm_size, scale,
     ):
         part_score_targets = []
         part_score_weights = []
@@ -185,12 +185,6 @@ class MAImgaugPoseDataset(BasePoseDataset):
         partaffinityfield_targets = []
         partaffinityfield_masks = []
         for i in range(len(data_items)):
-            # Approximating the scale
-            # FIXME I feel scale calculation is wrong
-            scale = min(
-                target_size[0] / data_items[i].im_size[1],
-                target_size[1] / data_items[i].im_size[2],
-            )
             if self.cfg.get("scmap_type", None) == "gaussian":
                 assert 0 == 1  # not implemented for pafs!
                 (
@@ -254,6 +248,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
             # Scale is sampled only once (per batch) to transform all of the images into same size.
             target_size, sm_size = self.calc_target_and_scoremap_sizes()
+            scale = np.mean(target_size / self.default_crop_size)
             augmentation.update_crop_size(self.pipeline, *target_size)
             batch_images, batch_joints = self.pipeline(
                 images=batch_images, keypoints=batch_joints
@@ -303,7 +298,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
                     batch_joints_valid,
                     data_items,
                     (sm_size[1], sm_size[0]),
-                    image_shape,
+                    scale,
                 )
                 batch.update(targetmaps)
 
