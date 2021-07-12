@@ -28,6 +28,14 @@ from tensorflow.contrib.tpu.python.ops import tpu_ops
 from tensorflow.contrib.tpu.python.tpu import tpu_function
 
 
+def make_2d_gaussian_kernel(sigma, size):
+    sigma = tf.convert_to_tensor(sigma, dtype=tf.float32)
+    k = tf.range(-size // 2 + 1, size // 2 + 1)
+    k = tf.cast(k ** 2, sigma.dtype)
+    k = tf.nn.softmax(-k / (2 * (sigma ** 2)))
+    return tf.einsum('i,j->ij', k, k)
+
+
 def build_learning_rate(
     initial_lr,
     global_step,
