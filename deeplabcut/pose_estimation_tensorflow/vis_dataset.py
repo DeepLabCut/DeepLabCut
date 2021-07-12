@@ -9,10 +9,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.pose_estimation_tensorflow.dataset.factory import (
-    create as dataset_create,
+from deeplabcut.pose_estimation_tensorflow.datasets import (
+    Batch,
+    PoseDatasetFactory,
 )
-from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import Batch
 from deeplabcut.utils.auxfun_videos import imresize
 
 
@@ -20,7 +20,7 @@ def display_dataset():
     logging.basicConfig(level=logging.DEBUG)
 
     cfg = load_config()
-    dataset = dataset_create(cfg)
+    dataset = PoseDatasetFactory.create(cfg)
     dataset.set_shuffle(False)
 
     while True:

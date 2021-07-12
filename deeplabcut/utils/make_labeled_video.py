@@ -214,7 +214,7 @@ def CreateVideoSlow(
 
     fps = clip.fps()
     if outputframerate is None:  # by def. same as input rate.
-        outputframerate = clip.fps()
+        outputframerate = fps
 
     nframes = clip.nframes
     duration = nframes / fps
@@ -280,7 +280,7 @@ def CreateVideoSlow(
     fig = plt.figure(frameon=False, figsize=(nx / dpi, ny / dpi))
     ax = fig.add_subplot(111)
 
-    writer = FFMpegWriter(fps=fps, codec="h264")
+    writer = FFMpegWriter(fps=outputframerate, codec="h264")
     with writer.saving(fig, videooutname, dpi=dpi), np.errstate(invalid="ignore"):
         for index in trange(min(nframes, len(Dataframe))):
             imagename = tmpfolder + "/file" + str(index).zfill(nframes_digits) + ".png"
@@ -648,9 +648,10 @@ def proc_video(
                         codec=codec,
                         sw=x2 - x1,
                         sh=y2 - y1,
+                        fps=outputframerate,
                     )
                 else:  # then the full video + the (perhaps in cropped mode analyzed labels) are depicted
-                    clip = vp(fname=video, sname=videooutname, codec=codec)
+                    clip = vp(fname=video, sname=videooutname, codec=codec, fps=outputframerate)
                 CreateVideo(
                     clip,
                     df,
@@ -726,7 +727,7 @@ def create_video_with_keypoints_only(
     scat.set_offsets(coords)
     colors = cmap(map_)
     scat.set_color(colors)
-    segs = coords[tuple(zip(*tuple([ind_links])))].swapaxes(0, 1) if ind_links else []
+    segs = coords[tuple(zip(*tuple(ind_links))), :].swapaxes(0, 1) if ind_links else []
     coll = LineCollection(segs, colors=skeleton_color, alpha=alpha)
     ax.add_collection(coll)
     ax.set_xlim(0, nx)
@@ -748,7 +749,7 @@ def create_video_with_keypoints_only(
             coords[xyp[index, :, 2] < pcutoff] = np.nan
             scat.set_offsets(coords)
             if ind_links:
-                segs = coords[tuple(zip(*tuple([ind_links])))].swapaxes(0, 1)
+                segs = coords[tuple(zip(*tuple(ind_links))), :].swapaxes(0, 1)
             coll.set_segments(segs)
             writer.grab_frame()
     plt.close(fig)
@@ -756,7 +757,14 @@ def create_video_with_keypoints_only(
 
 
 def create_video_with_all_detections(
-    config, videos, DLCscorername, displayedbodyparts="all", destfolder=None
+    config,
+    videos,
+    videotype="avi",
+    shuffle=1,
+    trainingsetindex=0,
+    displayedbodyparts="all",
+    destfolder=None,
+    modelprefix="",
 ):
     """
     Create a video labeled with all the detections stored in a '*_full.pickle' file.
@@ -770,8 +778,14 @@ def create_video_with_all_detections(
         A list of strings containing the full paths to videos for analysis or a path to the directory,
         where all the videos with same extension are stored.
 
-    DLCscorername: str
-        Name of network. E.g. 'DLC_resnet50_project_userMar23shuffle1_50000
+    videotype: string, optional
+        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
+
+    shuffle : int, optional
+        Number of shuffles of training dataset. Default is set to 1.
+
+    trainingsetindex: int, optional
+        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
 
     displayedbodyparts: list of strings, optional
         This selects the body parts that are plotted in the video. Either ``all``, then all body parts
@@ -786,6 +800,15 @@ def create_video_with_all_detections(
     import pickle, re
 
     cfg = auxiliaryfunctions.read_config(config)
+    trainFraction = cfg["TrainingFraction"][trainingsetindex]
+    DLCscorername, _ = auxiliaryfunctions.GetScorerName(
+        cfg, shuffle, trainFraction, modelprefix=modelprefix
+    )
+
+    videos = auxiliaryfunctions.Getlistofvideos(videos, videotype)
+    if not videos:
+        print("No video(s) were found. Please check your paths and/or 'video_type'.")
+        return
 
     for video in videos:
         videofolder = os.path.splitext(video)[0]

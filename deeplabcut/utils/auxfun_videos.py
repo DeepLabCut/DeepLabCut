@@ -42,6 +42,15 @@ class VideoReader:
         if os.path.getsize(dest) != 0:
             warnings.warn(f'Video contains errors. See "{dest}" for a detailed report.')
 
+    def check_integrity_robust(self):
+        numframes = self.video.get(cv2.CAP_PROP_FRAME_COUNT)
+        fr = 0
+        while fr < numframes:
+            success, frame = self.video.read()
+            if not success or frame is None:
+                warnings.warn(f'Opencv failed to load frame {fr}. Use ffmpeg to re-encode video file')
+            fr += 1
+
     @property
     def name(self):
         return os.path.splitext(os.path.split(self.video_path)[1])[0]
@@ -286,9 +295,9 @@ class VideoWriter(VideoReader):
         x1, _, y1, _ = self.get_bbox()
         output_path = self.make_output_path(suffix, dest_folder)
         command = (
-            f"ffmpeg -n -i {self.video_path} "
+            f"ffmpeg -n -i \"{self.video_path}\" "
             f"-filter:v crop={self.width}:{self.height}:{x1}:{y1} "
-            f"-c:a copy {output_path}"
+            f"-c:a copy \"{output_path}\""
         )
         subprocess.call(command, shell=True)
         return output_path
@@ -297,7 +306,7 @@ class VideoWriter(VideoReader):
         self,
         width,
         height=-1,
-        rotateccw="No",
+        rotatecw="No",
         angle=0.0,
         suffix="rescale",
         dest_folder=None,
@@ -309,10 +318,10 @@ class VideoWriter(VideoReader):
         )
         # Rotate, see: https://stackoverflow.com/questions/3937387/rotating-videos-with-ffmpeg
         # interesting option to just update metadata.
-        if rotateccw == "Arbitrary":
+        if rotatecw == "Arbitrary":
             angle = np.deg2rad(angle)
             command = command.format(f", rotate={angle}")
-        elif rotateccw == "Yes":
+        elif rotatecw == "Yes":
             command = command.format(f", transpose=1")
         else:
             command = command.format("")
@@ -328,7 +337,13 @@ class VideoWriter(VideoReader):
             dest_folder = self.directory
         return os.path.join(dest_folder, f"{self.name}{suffix}{self.format}")
 
+    
+def check_video_integrity(video_path):
+    vid = VideoReader(video_path)
+    vid.check_integrity()
+    vid.check_integrity_robust()
 
+    
 # Historically DLC used: from scipy.misc import imread, imresize >> deprecated functions
 def imread(path, mode=None):
     return cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
@@ -462,7 +477,7 @@ def DownSampleVideo(
     height=200,
     outsuffix="downsampled",
     outpath=None,
-    rotateccw="No",
+    rotatecw="No",
     angle=0.0,
 ):
     """
@@ -489,7 +504,7 @@ def DownSampleVideo(
     outpath: str
         Output path for saving video to (by default will be the same folder as the video)
 
-    rotateccw: str
+    rotatecw: str
         Default "No", rotates clockwise if "Yes", "Arbitrary" for arbitrary rotation by specified angle.
         
     angle: float
@@ -509,7 +524,7 @@ def DownSampleVideo(
     Downsamples the video to a width of 220 and height of 320 and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1cropped.avi
     """
     writer = VideoWriter(vname)
-    return writer.rescale(width, height, rotateccw, angle, outsuffix, outpath)
+    return writer.rescale(width, height, rotatecw, angle, outsuffix, outpath)
 
 
 def draw_bbox(video):

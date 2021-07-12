@@ -16,7 +16,7 @@ Please provide the minimal required code to reproduce the error and the full out
  - OS: [e.g. Windows10, MacOS version, Linux version, etc.]
  - DeepLabCut Version [e.g. 22] (please check with ``import deeplabcut``, ``deeplabcut.__version__``)
  - DeepLabCut mode, i.e. single animal tracking, multi-animal tracking, 3D tracking.
- - Browser, if applicable [e.g. chrome, safari]
+ - GPU TYPE: (or CPU only)?
 
 **To Reproduce**
 Steps to reproduce the behavior, i.e.:
@@ -30,8 +30,10 @@ Steps to reproduce the behavior, i.e.:
 
 ```python
 
-^do not delete the above "<details><summary>TRACEBACK</summary><p>" or the ```python part!
+^do not delete the ```python
+ 
 PLACE YOUR CODE HERE!!!  
+ 
 do not delete below this line, leave the blank line and the ```
 
 ```

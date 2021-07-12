@@ -11,14 +11,12 @@ def ellipse():
 
 def test_ellipse(ellipse):
     assert ellipse.aspect_ratio == 2
-    assert ellipse.geometry is not None
     np.testing.assert_equal(
         ellipse.contains_points(np.asarray([[0, 0], [10, 10]])), [True, False]
     )
 
 
 def test_ellipse_similarity(ellipse):
-    assert ellipse.calc_iou_with(ellipse) == 1
     assert ellipse.calc_similarity_with(ellipse) == 1
 
 
@@ -53,6 +51,10 @@ def test_sort_ellipse():
     assert trackers.shape == (2, 7)
     trackingutils.fill_tracklets(tracklets, trackers, poses, imname=0)
     assert all(id_ in tracklets for id_ in trackers[:, -2])
+    assert all(
+        np.array_equal(tracklets[n][0], pose)
+        for n, pose in enumerate(poses)
+    )
 
 
 def test_tracking(real_assemblies, real_tracklets):
@@ -61,13 +63,18 @@ def test_tracking(real_assemblies, real_tracklets):
     tracklets = dict()
     mot_tracker = trackingutils.SORTEllipse(1, 1, 0.6)
     for ind, assemblies in real_assemblies.items():
-        animals = np.stack([ass.data[:, :3] for ass in assemblies])
+        animals = np.stack([ass.data for ass in assemblies])
         trackers = mot_tracker.track(animals[..., :2])
         trackingutils.fill_tracklets(tracklets, trackers, animals, ind)
     assert len(tracklets) == len(tracklets_ref)
     assert [len(tracklet) for tracklet in tracklets.values()] == [
         len(tracklet) for tracklet in tracklets_ref.values()
     ]
+    assert all(
+        t.shape[1] == 4
+        for tracklet in tracklets.values()
+        for t in tracklet.values()
+    )
 
 
 def test_calc_bboxes_from_keypoints():

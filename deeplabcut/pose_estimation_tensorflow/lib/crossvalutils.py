@@ -472,12 +472,19 @@ def _get_n_best_paf_graphs(
     (within_train, within_test), (between_train, _) = _calc_within_between_pafs(
         data, metadata, train_set_only=False
     )
-
     # Handle unlabeled bodyparts...
     existing_edges = set(k for k, v in within_test.items() if v)
     if ignore_inds is not None:
         existing_edges = existing_edges.difference(ignore_inds)
     existing_edges = list(existing_edges)
+
+    if not any(between_train.values()):
+        # Only 1 animal, let us return the full graph indices only
+        return (
+            [existing_edges],
+            dict(zip(existing_edges, [0] * len(existing_edges)))
+        )
+
     scores, thresholds = zip(
         *[
             _calc_separability(b_train, w_train, metric=metric)
@@ -514,16 +521,6 @@ def _get_n_best_paf_graphs(
     return paf_inds, dict(zip(existing_edges, scores))
 
 
-def _filter_unwanted_paf_connections(config, paf_graph):
-    """Get rid of skeleton connections between multi and unique body parts."""
-    from itertools import combinations
-
-    cfg = auxiliaryfunctions.read_config(config)
-    multi = auxfun_multianimal.extractindividualsandbodyparts(cfg)[2]
-    desired = list(combinations(range(len(multi)), 2))
-    return [i for i, edge in enumerate(paf_graph) if tuple(edge) not in desired]
-
-
 def cross_validate_paf_graphs(
     config,
     inference_config,
@@ -547,7 +544,9 @@ def cross_validate_paf_graphs(
         metadata = pickle.load(file)
 
     params = _set_up_evaluation(data)
-    to_ignore = _filter_unwanted_paf_connections(config, params["paf_graph"])
+    to_ignore = auxfun_multianimal.filter_unwanted_paf_connections(
+        cfg, params["paf_graph"]
+    )
     paf_inds, paf_scores = _get_n_best_paf_graphs(
         data, metadata, params["paf_graph"], ignore_inds=to_ignore
     )
@@ -584,3 +583,4 @@ def cross_validate_paf_graphs(
     if output_name:
         with open(output_name, "wb") as file:
             pickle.dump([results], file)
+    return results
