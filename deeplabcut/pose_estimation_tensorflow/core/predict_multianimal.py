@@ -12,6 +12,7 @@ https://github.com/eldar/pose-tensorflow
 """
 
 import numpy as np
+import tensorflow as tf
 from skimage.feature import peak_local_max
 from scipy.ndimage import measurements
 
@@ -252,35 +253,35 @@ def find_local_maxima(scmap, radius, threshold):
 
 
 def find_local_peak_indices_maxpool_nms(scmaps, radius, threshold):
-    pooled = TF.nn.max_pool2d(scmaps, [radius, radius], strides=1, padding='SAME')
-    maxima = scmaps * TF.cast(TF.equal(scmaps, pooled), TF.float32)
-    return TF.cast(TF.where(maxima >= threshold), TF.int32)
+    pooled = tf.nn.max_pool2d(scmaps, [radius, radius], strides=1, padding='SAME')
+    maxima = scmaps * tf.cast(tf.equal(scmaps, pooled), tf.float32)
+    return tf.cast(tf.where(maxima >= threshold), tf.int32)
 
 
 def find_local_peak_indices_dilation(scmaps, radius, threshold):
     kernel = np.zeros((radius, radius, 1))
     mid = (radius - 1) // 2
     kernel[mid, mid] = -1
-    kernel = TF.convert_to_tensor(kernel, dtype=TF.float32)
+    kernel = tf.convert_to_tensor(kernel, dtype=tf.float32)
 
-    height = TF.shape(scmaps)[1]
-    width = TF.shape(scmaps)[2]
-    depth = TF.shape(scmaps)[3]
-    scmaps_flat = TF.reshape(
-        TF.transpose(scmaps, [0, 3, 1, 2]), [-1, height, width, 1],
+    height = tf.shape(scmaps)[1]
+    width = tf.shape(scmaps)[2]
+    depth = tf.shape(scmaps)[3]
+    scmaps_flat = tf.reshape(
+        tf.transpose(scmaps, [0, 3, 1, 2]), [-1, height, width, 1],
     )
-    scmaps_dil = TF.nn.dilation2d(
+    scmaps_dil = tf.nn.dilation2d(
         scmaps_flat,
         kernel,
         strides=[1, 1, 1, 1],
         rates=[1, 1, 1, 1],
         padding="SAME",
     )
-    scmaps_dil = TF.transpose(
-        TF.reshape(scmaps_dil, [-1, depth, height, width]), [0, 2, 3, 1],
+    scmaps_dil = tf.transpose(
+        tf.reshape(scmaps_dil, [-1, depth, height, width]), [0, 2, 3, 1],
     )
     argmax_and_thresh_img = (scmaps > scmaps_dil) & (scmaps > threshold)
-    return TF.cast(TF.where(argmax_and_thresh_img), TF.int32)
+    return tf.cast(tf.where(argmax_and_thresh_img), tf.int32)
 
 
 def find_local_peak_indices_skimage(scmaps, radius, threshold):
