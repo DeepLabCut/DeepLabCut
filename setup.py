@@ -1,10 +1,10 @@
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 DeepLabCut2.0-2.2 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
 https://github.com/DeepLabCut/DeepLabCut
-
 Please see AUTHORS for contributors.
 https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
@@ -30,7 +30,7 @@ setuptools.setup(
         "ruamel.yaml>=0.15.0",
         "imgaug",
         "numba",
-        "matplotlib==3.1.3",
+        "matplotlib",
         "networkx",
         "numpy",
         "opencv-python-headless",
@@ -40,7 +40,7 @@ setuptools.setup(
         "scipy>=1.4",
         "statsmodels>=0.11",
         "tables",
-        "tensorflow>=2.5",
+        "tensorflow>=2.0",
         "tensorpack",
         "tf_slim",
         "tqdm",
