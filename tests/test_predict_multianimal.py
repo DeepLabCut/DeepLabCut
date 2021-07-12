@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-from deeplabcut.pose_estimation_tensorflow.nnet import predict_multianimal
+from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal
 
 
 RADIUS = 5
@@ -18,8 +18,10 @@ def test_extract_detections(model_outputs, ground_truth_detections):
     inds_gt = np.concatenate(inds_gt).astype(int)
     pos_gt = np.concatenate(ground_truth_detections[0]["coordinates"][0])
     prob_gt = np.concatenate(ground_truth_detections[0]["confidence"])
-    inds = predict_multianimal.find_local_peak_indices(scmaps, RADIUS, THRESHOLD)
-    with tf.Session() as sess:
+    inds = predict_multianimal.find_local_peak_indices_maxpool_nms(
+        scmaps, RADIUS, THRESHOLD,
+    )
+    with tf.compat.v1.Session() as sess:
         inds = sess.run(inds)
     pos = predict_multianimal.calc_peak_locations(locrefs, inds, STRIDE)
     s, r, c, b = inds.T
@@ -32,10 +34,10 @@ def test_extract_detections(model_outputs, ground_truth_detections):
 
 def test_association_costs(model_outputs, ground_truth_detections):
     costs_gt = ground_truth_detections[0]["costs"]
-    peak_inds = predict_multianimal.find_local_peak_indices(
-        model_outputs[0], RADIUS, THRESHOLD
+    peak_inds = predict_multianimal.find_local_peak_indices_maxpool_nms(
+        model_outputs[0], RADIUS, THRESHOLD,
     )
-    with tf.Session() as sess:
+    with tf.compat.v1.Session() as sess:
         peak_inds = sess.run(peak_inds)
     graph = [[i, j] for i in range(12) for j in range(i + 1, 12)]
     preds = predict_multianimal.compute_peaks_and_costs(
