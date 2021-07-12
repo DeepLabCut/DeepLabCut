@@ -182,4 +182,21 @@ if __name__ == "__main__":
     )
     print("Outlier frames extracted.")
     """
+
+    print("Export model...")
+    deeplabcut.export_model(config_path, shuffle=1, make_tar=False)
+
+    print("Merging datasets...")
+    trainIndices, testIndices = deeplabcut.mergeandsplit(
+        config_path, trainindex=0, uniform=True
+    )
+
+    print("Creating two identical splits...")
+    deeplabcut.create_multianimaltraining_dataset(
+        config_path,
+        Shuffles=[4, 5],
+        trainIndices=[trainIndices, trainIndices],
+        testIndices=[testIndices, testIndices],
+    )
+
     print("ALL DONE!!! - default multianimal cases are functional.")
