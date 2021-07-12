@@ -222,19 +222,12 @@ def create_multianimaltraining_dataset(
     if trainIndices is None and testIndices is None:
         splits = []
         for shuffle in Shuffles:  # Creating shuffles starting from 1
-            for trainFraction in cfg["TrainingFraction"]:
-                train_inds_temp, test_inds_temp = SplitTrials(
-                    range(len(Data)), trainFraction
+            for train_frac in cfg["TrainingFraction"]:
+                train_inds, test_inds = SplitTrials(
+                    range(len(Data)), train_frac
                 )
-                # Map back to the original indices.
-                temp = [re.escape(name) for i, name in enumerate(img_names)
-                        if i in test_inds_temp]
-                mask = Data.index.str.contains("|".join(temp))
-                testIndices = np.flatnonzero(mask)
-                trainIndices = np.flatnonzero(~mask)
-
                 splits.append(
-                    (trainFraction, shuffle, (trainIndices, testIndices))
+                    (train_frac, shuffle, (train_inds, test_inds))
                 )
     else:
         if len(trainIndices) != len(testIndices) != len(Shuffles):
