@@ -106,7 +106,6 @@ def _calc_within_between_pafs(
 ):
     train_inds = set(metadata["data"]["trainIndices"])
     graph = data["metadata"]["PAFgraph"]
-    bpts = data['metadata']['all_joints_names']
     within_train = defaultdict(list)
     within_test = defaultdict(list)
     between_train = defaultdict(list)
@@ -124,7 +123,8 @@ def _calc_within_between_pafs(
             df.drop("single", level="individuals", inplace=True)
         except KeyError:
             pass
-        coords_gt = (df.unstack(['individuals', 'coords'])
+        bpts = df.index.get_level_values("bodyparts").unique().to_list()
+        coords_gt = (df.unstack(["individuals", "coords"])
                      .reindex(bpts, level="bodyparts")
                      .to_numpy()
                      .reshape((len(bpts), -1, 2)))
