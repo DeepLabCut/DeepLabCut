@@ -536,7 +536,8 @@ def evaluate_multianimal_full(
 
                     # Skip data-driven skeleton selection unless
                     # the model was trained on the full graph.
-                    max_n_edges = dlc_cfg["num_joints"] * (dlc_cfg["num_joints"] - 1) // 2
+                    n_multibpts = len(cfg["multianimalbodyparts"])
+                    max_n_edges = n_multibpts * (n_multibpts - 1) // 2
                     n_edges = len(dlc_cfg["partaffinityfield_graph"])
                     if n_edges == max_n_edges:
                         print("Selecting best skeleton...")
