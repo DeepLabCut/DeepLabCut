@@ -334,6 +334,13 @@ Ubuntu users only need to copy the file and its path gets added to the clipboard
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">label_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
 </pre></div>
 </div>
+<p><strong>Visually check annotated frames</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">check_labels</span><span class="p">(</span>
+    <span class="n">config_path</span><span class="p">,</span>
+    <span class="n">draw_skeleton</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
 <p><strong>Crop frames to augment the dataset</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">cropimagesandlabels</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
@@ -343,19 +350,11 @@ Ubuntu users only need to copy the file and its path gets added to the clipboard
 <span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>Visually check annotated frames</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">check_labels</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="n">draw_skeleton</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
 <p><strong>Create the training dataset</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_multianimaltraining_dataset</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
     <span class="n">num_shuffles</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">net_type</span><span class="o">=</span><span class="s2">&quot;dlcrnet_ms5&quot;</span><span class="p">,</span>
-    <span class="n">augmenter_type</span><span class="o">=</span><span class="s2">&quot;imgaug&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -375,11 +374,10 @@ Ubuntu users only need to copy the file and its path gets added to the clipboard
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>**Analyze a video (extracts detections and association costs) **</p>
+<p><strong>Analyze a video (extracts detections and association costs)</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
     <span class="p">[</span><span class="n">video</span><span class="p">],</span>
-    <span class="n">save_as_csv</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -394,7 +392,8 @@ Ubuntu users only need to copy the file and its path gets added to the clipboard
 <p><strong>Reconstruct full animal trajectories (tracks from tracklets)</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">stitch_tracklets</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
-    <span class="n">pickle_file</span><span class="p">,</span>
+    <span class="p">[</span><span class="n">video</span><span class="p">],</span>
+    <span class="n">track_method</span><span class="o">=</span><span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
     <span class="n">min_length</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>

@@ -787,12 +787,12 @@ but does not guarantee best performance.</p>
 <ul class="simple">
 <li><p>Please note that <strong>novel videos DO NOT need to be added to the config.yaml file</strong>. You can simply have a folder elsewhere on your computer and pass the video folder (then it will analyze all videos of the specified type (i.e. <code class="docutils literal notranslate"><span class="pre">videotype='.mp4'</span></code>), or pass the path to the <strong>folder</strong> or exact video(s) you wish to analyze:</p></li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span><span class="n">config_path</span><span class="p">,[</span><span class="s1">&#39;/fullpath/project/videos/&#39;</span><span class="p">],</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;.mp4&#39;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;/fullpath/project/videos/&#39;</span><span class="p">],</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;.mp4&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Note: You do <strong>not</strong> get the .h5/csv file you might be used to getting in standard DLC (this comes next!).</p>
 <p>Now that you have detections (which are saved as a pickle file, not h5, btw), we need to assemble and track the animals. This step has several tracker types (<code class="docutils literal notranslate"><span class="pre">track_method</span></code>), and we recommend testing which one works best on your data (but typically we find ellipse is best).</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">convert_detections2tracklets</span><span class="p">(</span><span class="n">path_config_file</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;videofile_path&#39;</span><span class="p">],</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;mp4&#39;</span><span class="p">,</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">convert_detections2tracklets</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;videofile_path&#39;</span><span class="p">],</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;mp4&#39;</span><span class="p">,</span>
                                         <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">trainingsetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">track_method</span><span class="o">=</span><span class="s1">&#39;box/ellipse/skeleton&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -820,13 +820,15 @@ utilized in place of motion trackers to form tracklets.</p>
 </div>
 <p><strong>Animal assembly and tracking quality</strong> can be assessed via <code class="docutils literal notranslate"><span class="pre">deeplabcut.utils.make_labeled_video.create_video_from_pickled_tracks</span></code>. This function provides an additional diagnostic tool before moving on to refining tracklets.</p>
 <p>**Next, tracklets are stitched to form complete tracks with:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">stitch_tracklets</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">pickle_file</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">stitch_tracklets</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;videofile_path&#39;</span><span class="p">],</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;mp4&#39;</span><span class="p">,</span>
+                            <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">trainingsetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">track_method</span><span class="o">=</span><span class="s1">&#39;box/ellipse/skeleton&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>If the number of tracks to reconstruct is different from the number of individuals
+<p>Note that the base signature of the function is identical to <code class="docutils literal notranslate"><span class="pre">analyze_videos</span></code> and <code class="docutils literal notranslate"><span class="pre">convert_detections2tracklets</span></code>.
+If the number of tracks to reconstruct is different from the number of individuals
 originally defined in the config.yaml, <code class="docutils literal notranslate"><span class="pre">n_tracks</span></code> (i.e., the number of animals you have in your video)
 can be directly specified as follows:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">stitch_tracklets</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">pickle_file</span><span class="p">,</span> <span class="n">n_tracks</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">stitch_tracklets</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">n_tracks</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>In such cases, file columns will default to dummy animal names (ind1, ind2, …, up to indn).</p>

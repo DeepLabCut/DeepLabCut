@@ -290,11 +290,6 @@
             <nav id="bd-toc-nav">
                 <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#stitching-tracklets-in-batch">
-   Stitching tracklets in batch
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#flagging-frames-with-abnormal-bodypart-distances">
    Flagging frames with abnormal bodypart distances
   </a>
@@ -312,20 +307,6 @@
                 
   <div class="section" id="some-data-processing-recipes">
 <h1>Some data processing recipes!<a class="headerlink" href="#some-data-processing-recipes" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="stitching-tracklets-in-batch">
-<h2>Stitching tracklets in batch<a class="headerlink" href="#stitching-tracklets-in-batch" title="Permalink to this headline">¶</a></h2>
-<p>This ultimate step of the maDLC pipeline is not batched as the number of tracks to
-reconstruct may vary from a video to another. If that number is constant across videos though,
-stitching tracklets in batch could be done as follows:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">deeplabcut</span> <span class="kn">import</span> <span class="n">stitch_tracklets</span>
-<span class="kn">from</span> <span class="nn">deeplabcut.utils</span> <span class="kn">import</span> <span class="n">grab_files_in_folder</span>
-
-<span class="n">root_folder</span> <span class="o">=</span> <span class="s1">&#39;path_to_the_folder_containing_your_ellipse_pickles&#39;</span>
-<span class="k">for</span> <span class="n">pickle_file</span> <span class="ow">in</span> <span class="n">grab_files_in_folder</span><span class="p">(</span><span class="n">root_folder</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="s1">&#39;_el.pickle&#39;</span><span class="p">,</span> <span class="n">relative</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-   <span class="n">stitch_tracklets</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">pickle_file</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
 <div class="section" id="flagging-frames-with-abnormal-bodypart-distances">
 <h2>Flagging frames with abnormal bodypart distances<a class="headerlink" href="#flagging-frames-with-abnormal-bodypart-distances" title="Permalink to this headline">¶</a></h2>
 <p>Beyond <code class="docutils literal notranslate"><span class="pre">deeplabcut.check_labels</span></code>, you may want to automatically detect
