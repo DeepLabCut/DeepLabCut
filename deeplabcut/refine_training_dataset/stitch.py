@@ -968,6 +968,7 @@ def stitch_tracklets(
     videos,
     videotype="avi",
     shuffle=1,
+    trainingsetindex=0,
     n_tracks=None,
     min_length=10,
     split_tracklets=True,
@@ -996,6 +997,9 @@ def stitch_tracklets(
 
     shuffle: int, optional
         An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.
+
+    trainingsetindex: int, optional
+        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
 
     n_tracks : int, optional
         Number of tracks to reconstruct. By default, taken as the number
@@ -1067,7 +1071,7 @@ def stitch_tracklets(
     DLCscorer, _ = auxiliaryfunctions.GetScorerName(
         cfg,
         shuffle,
-        cfg["TrainingFraction"][0],
+        cfg["TrainingFraction"][trainingsetindex],
         modelprefix=modelprefix,
     )
 

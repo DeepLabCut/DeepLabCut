@@ -72,45 +72,57 @@ class Refine_tracklets(wx.Panel):
         self.sel_config.SetPath(self.config)
         self.sel_config.Bind(wx.EVT_FILEPICKER_CHANGED, self.select_config)
 
-        self.data_text = wx.StaticText(self, label="Select the tracklet pickle file")
-        sizer.Add(self.data_text, pos=(3, 0), flag=wx.TOP | wx.LEFT, border=5)
-        self.sel_datafile = wx.FilePickerCtrl(
-            self, path="", style=wx.FLP_USE_TEXTCTRL, message="Open tracklet data"
-        )  # wildcard="Pickle files (*.pickle)|*.pickle")
-        sizer.Add(
-            self.sel_datafile,
-            pos=(3, 1),
-            span=(1, 3),
-            flag=wx.TOP | wx.EXPAND,
-            border=5,
-        )
-        self.sel_datafile.Bind(wx.EVT_FILEPICKER_CHANGED, self.select_datafile)
-
         self.ntracks_text = wx.StaticText(self, label="Number of animals")
-        sizer.Add(self.ntracks_text, pos=(4, 0), flag=wx.TOP | wx.LEFT, border=5)
+        sizer.Add(self.ntracks_text, pos=(3, 0), flag=wx.TOP | wx.LEFT, border=5)
         self.ntracks = wx.SpinCtrl(
             self, value=str(len(self.cfg["individuals"])), min=1, max=1000
         )
         sizer.Add(
-            self.ntracks, pos=(4, 1), span=(1, 3), flag=wx.EXPAND | wx.TOP, border=5
+            self.ntracks, pos=(3, 1), span=(1, 3), flag=wx.EXPAND | wx.TOP, border=5
         )
 
-        self.create_tracks_btn = wx.Button(self, label="Step1: Create tracks")
-        sizer.Add(self.create_tracks_btn, pos=(5, 1))
-        self.create_tracks_btn.Bind(wx.EVT_BUTTON, self.create_tracks)
-
-        line2 = wx.StaticLine(self)
-        sizer.Add(line2, pos=(6, 0), span=(1, 5), flag=wx.EXPAND | wx.BOTTOM, border=10)
-
         self.video_text = wx.StaticText(self, label="Select the video")
-        sizer.Add(self.video_text, pos=(7, 0), flag=wx.TOP | wx.LEFT, border=5)
+        sizer.Add(self.video_text, pos=(4, 0), flag=wx.TOP | wx.LEFT, border=5)
         self.sel_video = wx.FilePickerCtrl(
             self, path="", style=wx.FLP_USE_TEXTCTRL, message="Open video"
         )
         sizer.Add(
-            self.sel_video, pos=(7, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND, border=5
+            self.sel_video, pos=(4, 1), span=(1, 3), flag=wx.TOP | wx.EXPAND, border=5
         )
         self.sel_video.Bind(wx.EVT_FILEPICKER_CHANGED, self.select_video)
+
+        hbox_ = wx.BoxSizer(wx.HORIZONTAL)
+        videotype_text = wx.StaticBox(self, label="Specify the videotype")
+        videotype_text_boxsizer = wx.StaticBoxSizer(videotype_text, wx.VERTICAL)
+        videotypes = [".avi", ".mp4", ".mov"]
+        self.videotype = wx.ComboBox(self, choices=videotypes, style=wx.CB_READONLY)
+        self.videotype.SetValue(".avi")
+        videotype_text_boxsizer.Add(
+            self.videotype, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
+        )
+
+        shuffle_text = wx.StaticBox(self, label="Specify the shuffle")
+        shuffle_boxsizer = wx.StaticBoxSizer(shuffle_text, wx.VERTICAL)
+        self.shuffle = wx.SpinCtrl(self, value="1", min=0, max=100)
+        shuffle_boxsizer.Add(self.shuffle, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+
+        trainingset = wx.StaticBox(self, label="Specify the trainingset index")
+        trainingset_boxsizer = wx.StaticBoxSizer(trainingset, wx.VERTICAL)
+        self.trainingset = wx.SpinCtrl(self, value="0", min=0, max=100)
+        trainingset_boxsizer.Add(
+            self.trainingset, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
+        )
+        hbox_.Add(videotype_text_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        hbox_.Add(shuffle_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        hbox_.Add(trainingset_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        sizer.Add(hbox_, pos=(5, 0))
+
+        self.create_tracks_btn = wx.Button(self, label="Step1: Create tracks")
+        sizer.Add(self.create_tracks_btn, pos=(6, 1))
+        self.create_tracks_btn.Bind(wx.EVT_BUTTON, self.create_tracks)
+
+        line2 = wx.StaticLine(self)
+        sizer.Add(line2, pos=(7, 0), span=(1, 5), flag=wx.EXPAND | wx.BOTTOM, border=10)
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -153,27 +165,6 @@ class Refine_tracklets(wx.Panel):
 
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
 
-        videotype_text = wx.StaticBox(self, label="Specify the videotype")
-        videotype_text_boxsizer = wx.StaticBoxSizer(videotype_text, wx.VERTICAL)
-        videotypes = [".avi", ".mp4", ".mov"]
-        self.videotype = wx.ComboBox(self, choices=videotypes, style=wx.CB_READONLY)
-        self.videotype.SetValue(".avi")
-        videotype_text_boxsizer.Add(
-            self.videotype, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
-        )
-
-        shuffle_text = wx.StaticBox(self, label="Specify the shuffle")
-        shuffle_boxsizer = wx.StaticBoxSizer(shuffle_text, wx.VERTICAL)
-        self.shuffle = wx.SpinCtrl(self, value="1", min=0, max=100)
-        shuffle_boxsizer.Add(self.shuffle, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-
-        trainingset = wx.StaticBox(self, label="Specify the trainingset index")
-        trainingset_boxsizer = wx.StaticBoxSizer(trainingset, wx.VERTICAL)
-        self.trainingset = wx.SpinCtrl(self, value="0", min=0, max=100)
-        trainingset_boxsizer.Add(
-            self.trainingset, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
-        )
-
         filter_text = wx.StaticBox(self, label="filter type")
         filter_sizer = wx.StaticBoxSizer(filter_text, wx.VERTICAL)
         filtertypes = ["median"]
@@ -188,9 +179,6 @@ class Refine_tracklets(wx.Panel):
             self.filterlength_track, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
         )
 
-        hbox2.Add(videotype_text_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-        hbox2.Add(shuffle_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-        hbox2.Add(trainingset_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         hbox2.Add(filter_sizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         hbox2.Add(filterlength_sizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         sizer.Add(
@@ -314,7 +302,10 @@ class Refine_tracklets(wx.Panel):
     def create_tracks(self, event):
         deeplabcut.stitch_tracklets(
             self.config,
-            self.datafile,
+            [self.video],
+            videotype=self.videotype.GetValue(),
+            shuffle=self.shuffle.GetValue(),
+            trainingsetindex=self.trainingset.GetValue(),
             n_tracks=self.ntracks.GetValue(),
         )
 
