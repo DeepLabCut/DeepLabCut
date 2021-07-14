@@ -1,15 +1,21 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
+import os
 import pandas as pd
 import pickle
 import re
 import scipy.linalg.interpolative as sli
 import warnings
 from collections import defaultdict
-from deeplabcut.utils import read_config
+from deeplabcut.utils import (
+    read_config,
+    auxiliaryfunctions,
+    auxfun_multianimal,
+)
 from itertools import combinations, cycle
 from networkx.algorithms.flow import preflow_push
+from pathlib import Path
 from scipy.linalg import hankel
 from scipy.spatial.distance import directed_hausdorff
 from scipy.stats import mode
@@ -959,13 +965,18 @@ class TrackletStitcher:
 
 def stitch_tracklets(
     config_path,
-    pickle_file,
+    videos,
+    videotype="avi",
+    shuffle=1,
     n_tracks=None,
     min_length=10,
     split_tracklets=True,
     prestitch_residuals=True,
     max_gap=None,
     weight_func=None,
+    track_method="ellipse",
+    destfolder=None,
+    modelprefix="",
     output_name="",
 ):
     """
@@ -977,10 +988,14 @@ def stitch_tracklets(
     config_path : str
         Path to the main project config.yaml file.
 
-    pickle_file : str
-        Path to the pickle file containing the tracklets.
-        It is obtained after deeplabcut.convert_detections2tracklets()
-        and typically ends with _bx or _sk.pickle.
+    videos : list
+        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
+
+    videotype: string, optional
+        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
+
+    shuffle: int, optional
+        An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.
 
     n_tracks : int, optional
         Number of tracks to reconstruct. By default, taken as the number
@@ -1023,6 +1038,13 @@ def stitch_tracklets(
         belong to the same track; i.e., the higher the confidence that the
         tracklets should be stitched together, the lower the returned value.
 
+    track_method: str, optional
+        Method used to track animals, either 'box', 'skeleton', or 'ellipse' (default).
+
+    destfolder: string, optional
+        Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this
+        folder also needs to be passed.
+
     output_name : str, optional
         Name of the output h5 file.
         By default, tracks are automatically stored into the same directory
@@ -1032,20 +1054,49 @@ def stitch_tracklets(
     -------
     A TrackletStitcher object
     """
+    vids = auxiliaryfunctions.Getlistofvideos(videos, videotype)
+    if not vids:
+        print("No video(s) found. Please check your path!")
+        return
+
     cfg = read_config(config_path)
     animal_names = cfg["individuals"]
     if n_tracks is None:
         n_tracks = len(animal_names)
-    stitcher = TrackletStitcher.from_pickle(
-        pickle_file, n_tracks, min_length, split_tracklets, prestitch_residuals
+
+    DLCscorer, _ = auxiliaryfunctions.GetScorerName(
+        cfg,
+        shuffle,
+        cfg["TrainingFraction"][0],
+        modelprefix=modelprefix,
     )
-    with_id = any(tracklet.identity != -1 for tracklet in stitcher)
-    if with_id and weight_func is None:
-        # Add in identity weighing before building the graph
-        def weight_func(t1, t2):
-            w = 0.01 if t1.identity == t2.identity else 1
-            return w * stitcher.calculate_edge_weight(t1, t2)
-    stitcher.build_graph(max_gap=max_gap, weight_func=weight_func)
-    stitcher.stitch()
-    stitcher.write_tracks(output_name, animal_names)
-    return stitcher
+
+    for video in vids:
+        print("Processing... ", video)
+        videofolder = str(Path(video).parents[0])
+        dest = destfolder or videofolder
+        auxiliaryfunctions.attempttomakefolder(dest)
+        vname = Path(video).stem
+        dataname = os.path.join(dest, vname + DLCscorer + ".h5")
+        if track_method == "ellipse":
+            method = "el"
+        elif track_method == "box":
+            method = "bx"
+        else:
+            method = "sk"
+        pickle_file = dataname.split(".h5")[0] + f"_{method}.pickle"
+        try:
+            stitcher = TrackletStitcher.from_pickle(
+                pickle_file, n_tracks, min_length, split_tracklets, prestitch_residuals
+            )
+            with_id = any(tracklet.identity != -1 for tracklet in stitcher)
+            if with_id and weight_func is None:
+                # Add in identity weighing before building the graph
+                def weight_func(t1, t2):
+                    w = 0.01 if t1.identity == t2.identity else 1
+                    return w * stitcher.calculate_edge_weight(t1, t2)
+            stitcher.build_graph(max_gap=max_gap, weight_func=weight_func)
+            stitcher.stitch()
+            stitcher.write_tracks(output_name, animal_names)
+        except FileNotFoundError as e:
+            print(e, "\nSkipping...")
