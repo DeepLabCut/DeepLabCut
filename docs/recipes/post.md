@@ -1,21 +1,5 @@
 # Some data processing recipes!
 
-## Stitching tracklets in batch
-
-This ultimate step of the maDLC pipeline is not batched as the number of tracks to
-reconstruct may vary from a video to another. If that number is constant across videos though,
-stitching tracklets in batch could be done as follows:
-
-```python
-from deeplabcut import stitch_tracklets
-from deeplabcut.utils import grab_files_in_folder
-
-root_folder = 'path_to_the_folder_containing_your_ellipse_pickles'
-for pickle_file in grab_files_in_folder(root_folder, ext='_el.pickle', relative=False):
-   stitch_tracklets(config_path, pickle_file)
-```
-
-
 ## Flagging frames with abnormal bodypart distances
 
 Beyond `deeplabcut.check_labels`, you may want to automatically detect
