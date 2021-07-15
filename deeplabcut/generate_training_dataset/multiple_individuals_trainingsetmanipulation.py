@@ -99,6 +99,7 @@ def create_multianimaltraining_dataset(
     windows2linux=False,
     net_type=None,
     numdigits=2,
+    crop_size=(400, 400),
     paf_graph=None,
     trainIndices=None,
     testIndices=None,
@@ -133,6 +134,10 @@ def create_multianimaltraining_dataset(
 
     numdigits: int, optional
 
+    crop_size: tuple of int, optional
+        Dimensions (width, height) of the crops for data augmentation.
+        Default is 400x400.
+
     paf_graph: list of lists, optional (default=None)
         If not None, overwrite the default complete graph. This is useful for advanced users who
         already know a good graph, or simply want to use a specific one. Note that, in that case,
@@ -155,6 +160,8 @@ def create_multianimaltraining_dataset(
     >>> deeplabcut.create_multianimaltraining_dataset(r'C:\\Users\\Ulf\\looming-task\\config.yaml',Shuffles=[3,17,5])
     --------
     """
+    if len(crop_size) != 2 or not all(isinstance(v, int) for v in crop_size):
+        raise ValueError("Crop size must be a tuple of two integers (width, height).")
 
     # Loading metadata from config file:
     cfg = auxiliaryfunctions.read_config(config)
@@ -366,6 +373,7 @@ def create_multianimaltraining_dataset(
                 "num_idchannel": len(cfg["individuals"])
                 if cfg.get("identity", False)
                 else 0,
+                "crop_size": crop_size,
             }
 
             trainingdata = MakeTrain_pose_yaml(
