@@ -417,56 +417,55 @@ class MAImgaugPoseDataset(BasePoseDataset):
         y, x = np.rollaxis(grid * stride + half_stride, 2)
         for person_id in range(len(joint_id)):
             joint_ids = joint_id[person_id].tolist()
-            if len(joint_ids) < 2:  # there is no possible edge
-                continue
-            for l, (bp1, bp2) in enumerate(self.cfg["partaffinityfield_graph"]):
-                try:
-                    ind1 = joint_ids.index(bp1)
-                except ValueError:
-                    continue
-                try:
-                    ind2 = joint_ids.index(bp2)
-                except ValueError:
-                    continue
-                j_x, j_y = coords[ind1 + coordinateoffset]
-                linkedj_x, linkedj_y = coords[ind2 + coordinateoffset]
-                dist = sqrt((linkedj_x - j_x) ** 2 + (linkedj_y - j_y) ** 2)
-                if dist > 0:
-                    Dx = (linkedj_x - j_x) / dist  # x-axis UNIT VECTOR
-                    Dy = (linkedj_y - j_y) / dist
-                    d1 = [
-                        Dx * j_x + Dy * j_y,
-                        Dx * linkedj_x + Dy * linkedj_y,
-                    ]  # in-line with direct axis
-                    d1lowerboundary = min(d1)
-                    d1upperboundary = max(d1)
-                    d2mid = j_y * Dx - j_x * Dy  # orthogonal direction
+            if len(joint_ids) >= 2:  # there is a possible edge
+                for l, (bp1, bp2) in enumerate(self.cfg["partaffinityfield_graph"]):
+                    try:
+                        ind1 = joint_ids.index(bp1)
+                    except ValueError:
+                        continue
+                    try:
+                        ind2 = joint_ids.index(bp2)
+                    except ValueError:
+                        continue
+                    j_x, j_y = coords[ind1 + coordinateoffset]
+                    linkedj_x, linkedj_y = coords[ind2 + coordinateoffset]
+                    dist = sqrt((linkedj_x - j_x) ** 2 + (linkedj_y - j_y) ** 2)
+                    if dist > 0:
+                        Dx = (linkedj_x - j_x) / dist  # x-axis UNIT VECTOR
+                        Dy = (linkedj_y - j_y) / dist
+                        d1 = [
+                            Dx * j_x + Dy * j_y,
+                            Dx * linkedj_x + Dy * linkedj_y,
+                        ]  # in-line with direct axis
+                        d1lowerboundary = min(d1)
+                        d1upperboundary = max(d1)
+                        d2mid = j_y * Dx - j_x * Dy  # orthogonal direction
 
-                    distance_along = Dx * x + Dy * y
-                    distance_across = (
-                        (
+                        distance_along = Dx * x + Dy * y
+                        distance_across = (
                             (
-                                y * Dx
-                                - x * Dy
+                                (
+                                    y * Dx
+                                    - x * Dy
+                                )
+                                - d2mid
                             )
-                            - d2mid
+                            * 1.0
+                            / self.cfg["pafwidth"]
+                            * scale
                         )
-                        * 1.0
-                        / self.cfg["pafwidth"]
-                        * scale
-                    )
 
-                    mask1 = (distance_along >= d1lowerboundary) & (
-                        distance_along <= d1upperboundary
-                    )
-                    distance_across_abs = np.abs(distance_across)
-                    mask2 = distance_across_abs <= 1
-                    mask = mask1 & mask2
-                    temp = 1 - distance_across_abs[mask]
-                    if self.cfg["weigh_only_present_joints"]:
-                        partaffinityfield_mask[mask, [l * 2 + 0, l * 2 + 1]] = 1.0
-                    partaffinityfield_map[mask, l * 2 + 0] = Dx * temp
-                    partaffinityfield_map[mask, l * 2 + 1] = Dy * temp
+                        mask1 = (distance_along >= d1lowerboundary) & (
+                            distance_along <= d1upperboundary
+                        )
+                        distance_across_abs = np.abs(distance_across)
+                        mask2 = distance_across_abs <= 1
+                        mask = mask1 & mask2
+                        temp = 1 - distance_across_abs[mask]
+                        if self.cfg["weigh_only_present_joints"]:
+                            partaffinityfield_mask[mask, [l * 2 + 0, l * 2 + 1]] = 1.0
+                        partaffinityfield_map[mask, l * 2 + 0] = Dx * temp
+                        partaffinityfield_map[mask, l * 2 + 1] = Dy * temp
 
             coordinateoffset += len(joint_ids)  # keeping track of the blocks
 
