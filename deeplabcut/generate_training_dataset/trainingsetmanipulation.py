@@ -499,16 +499,34 @@ def SplitTrials(
         test_indices = shuffle[int(train_size):]
         train_indices = shuffle[:int(train_size)]
         if enforce_train_fraction and not train_size.is_integer():
-            # Determine the index length required to guarantee
-            # the train–test ratio is exactly the desired one.
-            min_length_req = int(100 / math.gcd(100, int(round(100 * train_fraction))))
-            length_req = math.ceil(index_len / min_length_req) * min_length_req
-            n_train = int(round(length_req * train_fraction))
-            n_test = length_req - n_train
-            # Pad indices so lengths agree
-            train_indices = np.append(train_indices, [-1] * (n_train - len(train_indices)))
-            test_indices = np.append(test_indices, [-1] * (n_test - len(test_indices)))
+            train_indices, test_indices = pad_train_test_indices(
+                train_indices, test_indices, train_fraction,
+            )
         return train_indices, test_indices
+
+
+def pad_train_test_indices(train_inds, test_inds, train_fraction):
+    n_train_inds = len(train_inds)
+    n_test_inds = len(test_inds)
+    index_len = n_train_inds + n_test_inds
+    if n_train_inds / index_len == train_fraction:
+        return
+
+    # Determine the index length required to guarantee
+    # the train–test ratio is exactly the desired one.
+    min_length_req = int(100 / math.gcd(100, int(round(100 * train_fraction))))
+    min_n_train = int(round(min_length_req * train_fraction))
+    min_n_test = min_length_req - min_n_train
+    mult = max(
+        math.ceil(n_train_inds / min_n_train),
+        math.ceil(n_test_inds / min_n_test),
+    )
+    n_train = mult * min_n_train
+    n_test = mult * min_n_test
+    # Pad indices so lengths agree
+    train_inds = np.append(train_inds, [-1] * (n_train - n_train_inds))
+    test_inds = np.append(test_inds, [-1] * (n_test - n_test_inds))
+    return train_inds, test_inds
 
 
 def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):

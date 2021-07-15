@@ -10,7 +10,6 @@ Licensed under GNU Lesser General Public License v3.0
 
 import os
 import os.path
-import re
 from itertools import combinations
 from pathlib import Path
 
@@ -24,6 +23,7 @@ from deeplabcut.generate_training_dataset import (
     MakeTrain_pose_yaml,
     MakeTest_pose_yaml,
     MakeInference_yaml,
+    pad_train_test_indices,
 )
 from deeplabcut.utils import auxiliaryfunctions, auxfun_models, auxfun_multianimal
 
@@ -251,6 +251,12 @@ def create_multianimaltraining_dataset(
             print(
                 f"You passed a split with the following fraction: {int(100 * trainFraction)}%"
             )
+            # Now that the training fraction is guaranteed to be correct,
+            # the values added to pad the indices are removed.
+            train_inds = np.asarray(train_inds)
+            train_inds = train_inds[train_inds != -1]
+            test_inds = np.asarray(test_inds)
+            test_inds = test_inds[test_inds != -1]
             splits.append(
                 (trainFraction, Shuffles[shuffle], (train_inds, test_inds))
             )
@@ -428,3 +434,97 @@ def create_multianimaltraining_dataset(
             )
         else:
             pass
+
+
+def convert_cropped_to_standard_dataset(
+    config_path,
+    delete_crops=False,
+    recreate_datasets=True,
+):
+    import pandas as pd
+    import pickle
+    import shutil
+    from deeplabcut.generate_training_dataset import trainingsetmanipulation
+    from deeplabcut.utils import read_plainconfig, write_config
+
+    cfg = auxiliaryfunctions.read_config(config_path)
+    if delete_crops:
+        data_path = os.path.join(cfg["project_path"], "labeled-data")
+        for video in cfg["video_sets"]:
+            _, filename, _ = trainingsetmanipulation._robust_path_split(video)
+            if "_cropped" in video:  # One can never be too safe...
+                shutil.rmtree(os.path.join(data_path, filename), ignore_errors=True)
+
+    videos_orig = cfg.pop("video_sets_original")
+    is_cropped = cfg.pop("croppedtraining")
+    if videos_orig is None or not is_cropped:
+        print("Labeled data do not appear to be cropped. Nothing was changed...")
+        return
+
+    cfg["video_sets"] = videos_orig
+    write_config(config_path, cfg)
+
+    if not recreate_datasets:
+        return
+
+    datasets_folder = os.path.join(
+        cfg["project_path"], auxiliaryfunctions.GetTrainingSetFolder(cfg),
+    )
+    df_old = pd.read_hdf(
+        os.path.join(datasets_folder, "CollectedData_" + cfg["scorer"] + ".h5"),
+    )
+
+    def strip_cropped_image_name(path):
+        head, filename = os.path.split(path)
+        head = head.replace("_cropped", "")
+        file, ext = filename.split(".")
+        file = file.split("c")[0]
+        return os.path.join(head, file + "." + ext)
+
+    img_names_old = np.asarray(
+        [strip_cropped_image_name(img) for img in df_old.index.to_list()]
+    )
+    df = merge_annotateddatasets(cfg, datasets_folder, False)
+    img_names = df.index.to_numpy()
+    train_idx = []
+    test_idx = []
+    for dirpath, dirnames, filenames in os.walk(datasets_folder):
+        for filename in filenames:
+            if filename.startswith("Docu") and filename.endswith("pickle"):
+                pickle_file = os.path.join(datasets_folder, filename)
+                with open(pickle_file, "rb") as f:
+                    _, train_inds, test_inds, train_frac = pickle.load(f)
+                    train_inds_temp = np.flatnonzero(
+                        np.isin(img_names, img_names_old[train_inds])
+                    )
+                    test_inds_temp = np.flatnonzero(
+                        np.isin(img_names, img_names_old[test_inds])
+                    )
+                    train_inds, test_inds = pad_train_test_indices(
+                        train_inds_temp, test_inds_temp, train_frac
+                    )
+                    train_idx.append(train_inds)
+                    test_idx.append(test_inds)
+
+    # Search a pose_config.yaml file to parse missing information
+    pose_config_path = ""
+    for dirpath, dirnames, filenames in os.walk(
+            os.path.join(cfg["project_path"], "dlc-models")
+    ):
+        for file in filenames:
+            if file.endswith("pose_cfg.yaml"):
+                pose_config_path = os.path.join(dirpath, file)
+                break
+    pose_cfg = read_plainconfig(pose_config_path)
+    net_type = pose_cfg["net_type"]
+    if net_type == "resnet_50" and pose_cfg.cfg("multi_stage", False):
+        net_type = "dlcrnet_ms5"
+
+    create_multianimaltraining_dataset(
+        config_path,
+        trainIndices=train_idx,
+        testIndices=test_idx,
+        net_type=net_type,
+        paf_graph=pose_cfg["partaffinityfield_graph"],
+        crop_size=pose_cfg.get("crop_size", (400, 400))
+    )
