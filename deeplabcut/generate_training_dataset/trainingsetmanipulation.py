@@ -1003,11 +1003,6 @@ def create_training_dataset(
             else:
                 raise ValueError("Invalid network type:", net_type)
 
-        if net_type != prior_cfg["net_type"]:
-            print(
-                "WARNING: Specified net_type does not match net_type from posecfg_template path entered. Proceed with caution."
-            )
-
         if augmenter_type is None:
             augmenter_type = cfg.get("default_augmenter", "imgaug")
             if augmenter_type is None:  # this could be in config.yaml for old projects!
@@ -1022,12 +1017,17 @@ def create_training_dataset(
             "deterministic",
         ]:
             raise ValueError("Invalid augmenter type:", augmenter_type)
-
-        if augmenter_type != prior_cfg["dataset_type"]:
-            print(
-                "WARNING: Specified augmenter_type does not match dataset_type from posecfg_template path entered. Proceed with caution."
-            )
-
+        
+        if posecfg_template:
+            if net_type != prior_cfg["net_type"]:
+                print(
+                    "WARNING: Specified net_type does not match net_type from posecfg_template path entered. Proceed with caution."
+                )
+            if augmenter_type != prior_cfg["dataset_type"]:
+                print(
+                    "WARNING: Specified augmenter_type does not match dataset_type from posecfg_template path entered. Proceed with caution."
+                )
+            
         # Loading the encoder (if necessary downloading from TF)
         dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
         if not posecfg_template:
