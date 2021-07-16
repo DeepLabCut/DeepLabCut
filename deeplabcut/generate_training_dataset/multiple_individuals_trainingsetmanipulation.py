@@ -438,8 +438,9 @@ def create_multianimaltraining_dataset(
 
 def convert_cropped_to_standard_dataset(
     config_path,
-    delete_crops=False,
     recreate_datasets=True,
+    delete_crops=True,
+    back_up=True,
 ):
     import pandas as pd
     import pickle
@@ -448,18 +449,24 @@ def convert_cropped_to_standard_dataset(
     from deeplabcut.utils import read_plainconfig, write_config
 
     cfg = auxiliaryfunctions.read_config(config_path)
+    videos_orig = cfg.pop("video_sets_original")
+    is_cropped = cfg.pop("croppedtraining")
+    if videos_orig is None or not is_cropped:
+        print("Labeled data do not appear to be cropped. "
+              "Project will remain unchanged...")
+        return
+
+    project_path = cfg["project_path"]
+
+    if back_up:
+        shutil.copytree(project_path, project_path + "_bak", symlinks=True)
+
     if delete_crops:
-        data_path = os.path.join(cfg["project_path"], "labeled-data")
+        data_path = os.path.join(project_path, "labeled-data")
         for video in cfg["video_sets"]:
             _, filename, _ = trainingsetmanipulation._robust_path_split(video)
             if "_cropped" in video:  # One can never be too safe...
                 shutil.rmtree(os.path.join(data_path, filename), ignore_errors=True)
-
-    videos_orig = cfg.pop("video_sets_original")
-    is_cropped = cfg.pop("croppedtraining")
-    if videos_orig is None or not is_cropped:
-        print("Labeled data do not appear to be cropped. Nothing was changed...")
-        return
 
     cfg["video_sets"] = videos_orig
     write_config(config_path, cfg)
@@ -468,7 +475,7 @@ def convert_cropped_to_standard_dataset(
         return
 
     datasets_folder = os.path.join(
-        cfg["project_path"], auxiliaryfunctions.GetTrainingSetFolder(cfg),
+        project_path, auxiliaryfunctions.GetTrainingSetFolder(cfg),
     )
     df_old = pd.read_hdf(
         os.path.join(datasets_folder, "CollectedData_" + cfg["scorer"] + ".h5"),
@@ -509,7 +516,7 @@ def convert_cropped_to_standard_dataset(
     # Search a pose_config.yaml file to parse missing information
     pose_config_path = ""
     for dirpath, dirnames, filenames in os.walk(
-            os.path.join(cfg["project_path"], "dlc-models")
+            os.path.join(project_path, "dlc-models")
     ):
         for file in filenames:
             if file.endswith("pose_cfg.yaml"):
