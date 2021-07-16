@@ -956,8 +956,8 @@ def create_training_dataset(
     cfg = auxiliaryfunctions.read_config(config)
     if posecfg_template:
         if not posecfg_template.endswith("pose_cfg.yaml"):
-            raise NameError(
-                "prior_posecfg argument must contain path to a pose_cfg.yaml file"
+            raise ValueError(
+                "posecfg_template argument must contain path to a pose_cfg.yaml file"
             )
         else:
             print("Reloading pose_cfg parameters from " + posecfg_template +'\n')
