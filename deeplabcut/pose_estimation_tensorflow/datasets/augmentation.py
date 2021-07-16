@@ -4,7 +4,13 @@ from scipy.spatial.distance import pdist, squareform
 
 
 class KeypointAwareCropToFixedSize(iaa.CropToFixedSize):
-    def __init__(self, width, height, max_shift=0.4):
+    def __init__(
+        self,
+        width,
+        height,
+        max_shift=0.4,
+        weighted_sampling=True,
+    ):
         """
         Parameters
         ----------
@@ -17,6 +23,10 @@ class KeypointAwareCropToFixedSize(iaa.CropToFixedSize):
         max_shift : float, optional (default=0.25)
             Maximum allowed shift of the cropping center position
             as a fraction of the crop size.
+
+        weighted_sampling : bool, optional (default=True)
+            Whether to weigh crop centers sampling based on
+            keypoint neighbor density.
         """
         super(KeypointAwareCropToFixedSize, self).__init__(
             width, height, name="kptscrop",
@@ -24,10 +34,11 @@ class KeypointAwareCropToFixedSize(iaa.CropToFixedSize):
         # Clamp to 40% of crop size to ensure that at least
         # the center keypoint remains visible after the offset is applied.
         self.max_shift = max(0., min(max_shift, 0.4))
+        self.weighted_sampling = weighted_sampling
 
     @staticmethod
     def calc_n_neighbors(xy, radius):
-        d = pdist(xy, 'sqeuclidean')
+        d = pdist(xy, "sqeuclidean")
         mat = squareform(d <= radius * radius, checks=False)
         return np.sum(mat, axis=0)
 
@@ -40,14 +51,18 @@ class KeypointAwareCropToFixedSize(iaa.CropToFixedSize):
         for n in range(batch.nb_rows):
             h, w = batch.images[n].shape[:2]
             kpts = batch.keypoints[n].to_xy_array()
-            inds = np.arange(kpts.shape[0])
-            # Points located close to one another are sampled preferentially
-            # in order to augment crowded regions.
-            radius = 0.1 * min(h, w)
-            n_neighbors = self.calc_n_neighbors(kpts, radius)
-            # Include keypoints in the count to avoid null probabilities
-            n_neighbors += 1
-            p = n_neighbors / n_neighbors.sum()
+            n_kpts = kpts.shape[0]
+            inds = np.arange(n_kpts)
+            if self.weighted_sampling:
+                # Points located close to one another are sampled preferentially
+                # in order to augment crowded regions.
+                radius = 0.1 * min(h, w)
+                n_neighbors = self.calc_n_neighbors(kpts, radius)
+                # Include keypoints in the count to avoid null probabilities
+                n_neighbors += 1
+                p = n_neighbors / n_neighbors.sum()
+            else:
+                p = np.ones_like(inds) / n_kpts
             center = kpts[random_state.choice(inds, p=p)]
             # Shift the crop center in both dimensions by random amounts
             # and normalize to the original image dimensions.
