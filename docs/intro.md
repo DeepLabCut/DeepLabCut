@@ -23,7 +23,7 @@ We have a real-time package available! http://DLClive.deeplabcut.org
 # [Installation: how to install DeepLabCut](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/installation.md)
 
 Very quick start: `pip install 'deeplabcut[gui]'` that includes all GUI functions, or `pip install deeplabcut` (headless version)
-* you also need TensorFlow (1.x currently), therefore we recommend using our conda files, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/master/conda-environments/README.md)
+* you also need TensorFlow, therefore we recommend using our conda file, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/master/conda-environments/README.md)
 
 # [Documentation: The DeepLabCut Process](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/README.md)
 

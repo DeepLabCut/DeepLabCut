@@ -422,7 +422,7 @@ Please run:
 
 ```python
 scorername = deeplabcut.analyze_videos(config_path,['/fullpath/project/videos/testVideo.mp4'], videotype='.mp4')
-deeplabcut.create_video_with_all_detections(config_path, ['/fullpath/project/videos/testVideo.mp4'])
+deeplabcut.create_video_with_all_detections(config_path, ['/fullpath/project/videos/testVideo.mp4'], videotype='.mp4')
 ```
 Please note that you do **not** get the .h5/csv file you might be used to getting (this comes after tracking). You will get a `pickle` file that is used in `create_video_with_all_detections`. IF you have good clean out video, ending in `....full.mp4` (and the evaluation metrics look good, scoremaps look good, plotted evaluation images), then go forward!!!
 
@@ -440,14 +440,14 @@ After pose estimation, now you perform assembly and tracking. *NEW* in 2.2 is a 
 - Please note that **novel videos DO NOT need to be added to the config.yaml file**. You can simply have a folder elsewhere on your computer and pass the video folder (then it will analyze all videos of the specified type (i.e. ``videotype='.mp4'``), or pass the path to the **folder** or exact video(s) you wish to analyze:
 
 ```python
-deeplabcut.analyze_videos(config_path,['/fullpath/project/videos/'], videotype='.mp4')
+deeplabcut.analyze_videos(config_path, ['/fullpath/project/videos/'], videotype='.mp4')
 ```
 Note: You do **not** get the .h5/csv file you might be used to getting in standard DLC (this comes next!).
 
 Now that you have detections (which are saved as a pickle file, not h5, btw), we need to assemble and track the animals. This step has several tracker types (`track_method`), and we recommend testing which one works best on your data (but typically we find ellipse is best).
 
 ```python
-deeplabcut.convert_detections2tracklets(path_config_file, ['videofile_path'], videotype='mp4',
+deeplabcut.convert_detections2tracklets(config_path, ['videofile_path'], videotype='mp4',
                                         shuffle=1, trainingsetindex=0, track_method='box/ellipse/skeleton')
 ```
 You can validate the tracking parameters. Namely, you can iteratively change the parameters, run `convert_detections2tracklets` then load them in the GUI (`refine_tracklets`) if you want to look at the performance. If you want to edit these, you will need to open the `inference_cfg.yaml` file (or click button in GUI). The options are:
@@ -483,15 +483,17 @@ deeplabcut.convert_detections2tracklets(..., identity_only=True)
 **Next, tracklets are stitched to form complete tracks with:
 
 ```python
-deeplabcut.stitch_tracklets(config_path, pickle_file)
+deeplabcut.stitch_tracklets(config_path, ['videofile_path'], videotype='mp4',
+                            shuffle=1, trainingsetindex=0, track_method='box/ellipse/skeleton')
 ```
 
+Note that the base signature of the function is identical to `analyze_videos` and `convert_detections2tracklets`.
 If the number of tracks to reconstruct is different from the number of individuals
 originally defined in the config.yaml, `n_tracks` (i.e., the number of animals you have in your video)
 can be directly specified as follows:
 
 ```python
-deeplabcut.stitch_tracklets(config_path, pickle_file, n_tracks=n)
+deeplabcut.stitch_tracklets(..., n_tracks=n)
 ```
 In such cases, file columns will default to dummy animal names (ind1, ind2, ..., up to indn).
 
