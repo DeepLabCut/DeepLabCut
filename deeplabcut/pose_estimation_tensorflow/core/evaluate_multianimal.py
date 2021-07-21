@@ -512,6 +512,7 @@ def evaluate_multianimal_full(
                         PredicteData["metadata"] = {
                             "nms radius": dlc_cfg["nmsradius"],
                             "minimal confidence": dlc_cfg["minconfidence"],
+                            "sigma": dlc_cfg["sigma"],
                             "PAFgraph": dlc_cfg["partaffinityfield_graph"],
                             "PAFinds": dlc_cfg.get(
                                 "paf_best",

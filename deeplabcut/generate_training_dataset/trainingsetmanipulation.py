@@ -584,7 +584,12 @@ def MakeTrain_pose_yaml(
 
 
 def MakeTest_pose_yaml(
-    dictionary, keys2save, saveasfile, nmsradius=None, minconfidence=None
+    dictionary,
+    keys2save,
+    saveasfile,
+    nmsradius=None,
+    minconfidence=None,
+    sigma=None,
 ):
     dict_test = {}
     for key in keys2save:
@@ -595,6 +600,8 @@ def MakeTest_pose_yaml(
         dict_test["nmsradius"] = nmsradius
     if minconfidence is not None:
         dict_test["minconfidence"] = minconfidence
+    if sigma is not None:
+        dict_test["sigma"] = sigma
 
     dict_test["scoremap_dir"] = "test"
     with open(saveasfile, "w") as f:

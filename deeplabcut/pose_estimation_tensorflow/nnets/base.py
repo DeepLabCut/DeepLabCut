@@ -179,7 +179,9 @@ class BasePoseNet(metaclass=abc.ABCMeta):
         # Filter predicted heatmaps with a 2D Gaussian kernel as in:
         # https://openaccess.thecvf.com/content_CVPR_2020/papers/Huang_The_Devil_Is_in_the_Details_Delving_Into_Unbiased_Data_CVPR_2020_paper.pdf
         scmaps = tf.gather(prob, tf.range(self.cfg["num_joints"]), axis=3)
-        kernel = make_2d_gaussian_kernel(sigma=2, size=nms_radius * 2 + 1)
+        kernel = make_2d_gaussian_kernel(
+            sigma=self.cfg.get("sigma", 2), size=nms_radius * 2 + 1,
+        )
         kernel = kernel[:, :, tf.newaxis, tf.newaxis]
         kernel = tf.tile(kernel, [1, 1, tf.shape(scmaps)[3], 1])
         scmaps = tf.nn.depthwise_conv2d(

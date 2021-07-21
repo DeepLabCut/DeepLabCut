@@ -413,6 +413,7 @@ def create_multianimaltraining_dataset(
                 path_test_config,
                 nmsradius=5.0,
                 minconfidence=0.01,
+                sigma=2,
             )  # setting important def. values for inference
 
             # Setting inference cfg file:
