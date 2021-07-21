@@ -68,6 +68,11 @@ def compute_edge_costs(
     n_points=10,
     n_decimals=3,
 ):
+    # Clip peak locations to PAFs dimensions
+    h, w = pafs.shape[1:3]
+    peak_inds_in_batch[:, 1] = np.clip(peak_inds_in_batch[:, 1], 0, w)
+    peak_inds_in_batch[:, 2] = np.clip(peak_inds_in_batch[:, 2], 0, h)
+
     n_samples = pafs.shape[0]
     sample_inds = []
     edge_inds = []
