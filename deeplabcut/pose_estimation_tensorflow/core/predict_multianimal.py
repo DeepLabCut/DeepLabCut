@@ -122,7 +122,9 @@ def compute_edge_costs(
     ]
     integ = np.trapz(y, xy[..., ::-1], axis=1)
     affinities = np.linalg.norm(integ, axis=1).astype(np.float32)
-    affinities /= lengths
+    # unit_vecs = vecs / lengths[:, np.newaxis]
+    # affinities = np.squeeze(y @ np.expand_dims(unit_vecs, axis=2)).sum(axis=1)
+    # affinities /= lengths
     np.round(affinities, decimals=n_decimals, out=affinities)
     np.round(lengths, decimals=n_decimals, out=lengths)
 
