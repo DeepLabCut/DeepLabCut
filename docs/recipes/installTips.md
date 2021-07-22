@@ -287,3 +287,34 @@ done
 Activate! `conda activate DEEPLABCUT` and then run: `conda install -c conda-forge wxpython` ... after this finishes, run: `pip install deeplabcut[gui]`
 
 Now you might get some warnings, but for me it was then totally fine to run `python -m deeplabcut` which launches the DLC GUI!
+
+
+
+## DeepLabCut M1 chip installation environment instructions:
+
+This only assumes you have anaconda installed!
+
+Use the `DEEPLABCUT_M1.yaml` conda file if you have an Macbok with an M1 chip, and follow these steps:
+
+(1) git clone the deeplabcut cut repo:
+
+`git clone https://github.com/DeepLabCut/DeepLabCut.git`
+
+(2) in the program terminal, `cd DeepLabCut/conda-environments`
+
+(3) Click here to download the Rosetta wheel for TensorFlow 2.4.1:
+https://drive.google.com/file/d/17pSwfoNuyf3YR8vCaVggHeI-pMQ3xL7l/view?usp=sharing
+
+(4) Then, run:
+
+`conda env create -f DEEPLABCUT_M1.yaml`
+
+(5) Next, **activate the environment,** and in the terminal `cd` to  Downloads, and then run:
+
+`pip install tensorflow-2.4.1-py3-none-any.whl --no-dependencies --force-reinstall`
+
+(6) Next, launch DLC with `pythonw -m deeplabcut`
+
+GUI will open!
+
+Note: Based on issue #1380 thanks!
