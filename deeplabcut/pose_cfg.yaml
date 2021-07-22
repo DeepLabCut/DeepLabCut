@@ -112,6 +112,7 @@ location_refinement: true
 locref_huber_loss: true
 locref_loss_weight: 0.05
 locref_stdev: 7.2801
+locref_smooth: false
 
 # Enabling this adds additional loss layer in the middle of the ConvNet,
 # which helps accuracy (you should set to true for ResNet-101, or 152!).

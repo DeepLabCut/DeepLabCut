@@ -183,11 +183,11 @@ class BasePoseNet(metaclass=abc.ABCMeta):
             sigma=self.cfg.get("sigma", 1), size=nms_radius * 2 + 1,
         )
         kernel = kernel[:, :, tf.newaxis, tf.newaxis]
-        kernel = tf.tile(kernel, [1, 1, tf.shape(scmaps)[3], 1])
-        scmaps = tf.nn.depthwise_conv2d(
-            scmaps, kernel, strides=[1, 1, 1, 1], padding="SAME",
-        )
 
+        kernel_sc = tf.tile(kernel, [1, 1, tf.shape(scmaps)[3], 1])
+        scmaps = tf.nn.depthwise_conv2d(
+            scmaps, kernel_sc, strides=[1, 1, 1, 1], padding="SAME",
+        )
         peak_inds = predict_multianimal.find_local_peak_indices_maxpool_nms(
             scmaps,
             nms_radius,
@@ -195,7 +195,14 @@ class BasePoseNet(metaclass=abc.ABCMeta):
         )
         outputs = {"part_prob": prob, "peak_inds": peak_inds}
         if self.cfg['location_refinement']:
-            outputs["locref"] = heads["locref"]
+            locref = heads["locref"]
+            if self.cfg.get('locref_smooth', False):
+                kernel_loc = tf.tile(kernel, [1, 1, tf.shape(locref)[3], 1])
+                locref = tf.nn.depthwise_conv2d(
+                    locref, kernel_loc, strides=[1, 1, 1, 1], padding="SAME",
+                )
+            outputs["locref"] = locref
+
         if self.cfg['pairwise_predict'] or self.cfg['partaffinityfield_predict']:
             outputs["pairwise_pred"] = heads["pairwise_pred"]
         return outputs
