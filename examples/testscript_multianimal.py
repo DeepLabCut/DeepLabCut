@@ -2,6 +2,7 @@ import os
 import deeplabcut
 import numpy as np
 import pandas as pd
+import shutil
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
 
@@ -145,12 +146,18 @@ if __name__ == "__main__":
     )
     print("Tracklets created...")
 
+    # Copy over meaningful tracklets to test stitching
     pickle_file = os.path.join(
         os.path.dirname(basepath), "tests", "data", "trimouse_tracklets.pickle"
     )
+    shutil.copy(
+        pickle_file,
+        os.path.splitext(new_video_path)[0] + scorer + "_el.pickle",
+    )
     deeplabcut.stitch_tracklets(
         config_path,
-        pickle_file,
+        [new_video_path],
+        "mp4",
         output_name=os.path.splitext(new_video_path)[0] + scorer + "_el.h5",
     )
 
