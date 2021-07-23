@@ -1267,7 +1267,7 @@ def convert_detections2tracklets(
         folder also needs to be passed.
 
     track_method: str, optional
-        Method uses to track animals, either 'box', 'skeleton', or 'ellipse'.
+        Method used to track animals, either 'box', 'skeleton', or 'ellipse'.
         By default, a constant velocity Kalman filter is used to track
         covariance error ellipses fitted to an individual's body parts.
 

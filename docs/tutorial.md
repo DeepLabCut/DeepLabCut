@@ -42,6 +42,16 @@ deeplabcut.extract_frames(
 deeplabcut.label_frames(config_path)
 ```
 
+
+**Visually check annotated frames**
+```python
+deeplabcut.check_labels(
+    config_path,
+    draw_skeleton=False,
+)
+```
+
+
 **Crop frames to augment the dataset**
 ```python
 deeplabcut.cropimagesandlabels(
@@ -53,22 +63,12 @@ deeplabcut.cropimagesandlabels(
 ```
 
 
-**Visually check annotated frames**
-```python
-deeplabcut.check_labels(
-    config_path,
-    draw_skeleton=False,
-)
-```
-
-
 **Create the training dataset**
 ```python
 deeplabcut.create_multianimaltraining_dataset(
     config_path,
     num_shuffles=1,
     net_type="dlcrnet_ms5",
-    augmenter_type="imgaug",
 )
 ```
 
@@ -90,12 +90,11 @@ deeplabcut.evaluate_network(
 )
 ```
 
-**Analyze a video (extracts detections and association costs) **
+**Analyze a video (extracts detections and association costs)**
 ```python
 deeplabcut.analyze_videos(
     config_path,
     [video],
-    save_as_csv=True,
 )
 ```
 
@@ -114,7 +113,8 @@ deeplabcut.convert_detections2tracklets(
 ```python
 deeplabcut.stitch_tracklets(
     config_path,
-    pickle_file,
+    [video],
+    track_method="ellipse",
     min_length=5,
 )
 ```
