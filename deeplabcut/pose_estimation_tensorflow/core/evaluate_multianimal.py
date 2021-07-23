@@ -308,7 +308,6 @@ def evaluate_multianimal_full(
                         PredicteData = {}
                         dist = np.full((len(Data), len(all_bpts)), np.nan)
                         conf = np.full_like(dist, np.nan)
-                        distnorm = np.full(len(Data), np.nan)
                         print("Analyzing data...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
                             image_path = os.path.join(cfg["project_path"], imagename)
@@ -321,18 +320,6 @@ def evaluate_multianimal_full(
                             if not GT.any():
                                 continue
                             df = GT.unstack("coords").reindex(joints, level="bodyparts")
-
-                            # Evaluate PAF edge lengths to calibrate `distnorm`
-                            temp_xy = GT.unstack("bodyparts")[joints]
-                            xy = temp_xy.values.reshape(
-                                (-1, 2, temp_xy.shape[1])
-                            ).swapaxes(1, 2)
-                            if dlc_cfg["partaffinityfield_predict"]:
-                                edges = xy[:, dlc_cfg["partaffinityfield_graph"]]
-                                lengths = np.sum(
-                                    (edges[:, :, 0] - edges[:, :, 1]) ** 2, axis=2
-                                )
-                                distnorm[imageindex] = np.nanmax(lengths)
 
                             # FIXME Is having an empty array vs nan really that necessary?!
                             groundtruthidentity = list(
@@ -400,7 +387,8 @@ def evaluate_multianimal_full(
                                     conf[sl] = probs_pred[n_joint][cols].squeeze()
 
                             if plotting:
-                                gt = temp_xy.values.reshape(
+                                temp_xy = GT.unstack("bodyparts")[joints].values
+                                gt = temp_xy.reshape(
                                     (-1, 2, temp_xy.shape[1])
                                 ).T.swapaxes(1, 2)
                                 h, w, _ = np.shape(frame)
@@ -474,11 +462,6 @@ def evaluate_multianimal_full(
                             np.round(error_test_cut, 2),
                         ]
                         final_result.append(results)
-
-                        # For OKS/PCK, compute the standard deviation error across all frames
-                        sd = df_dist.groupby("bodyparts", axis=1).mean().std(axis=0)
-                        sd["distnorm"] = np.sqrt(np.nanmax(distnorm))
-                        sd.to_csv(write_path.replace("dist_", "sd_"))
 
                         if show_errors:
                             string = (
