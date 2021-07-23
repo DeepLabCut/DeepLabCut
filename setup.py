@@ -60,10 +60,6 @@ setuptools.setup(
                 "deeplabcut/pose_estimation_tensorflow/models/pretrained/pretrained_model_urls.yaml",
                 "deeplabcut/gui/media/logo.png",
                 "deeplabcut/gui/media/dlc_1-01.png",
-                "deeplabcut/pose_estimation_tensorflow/lib/nms_cython/nms_grid.pyx",
-                "deeplabcut/pose_estimation_tensorflow/lib/nms_cython/nms_grid.cpp",
-                "deeplabcut/pose_estimation_tensorflow/lib/nms_cython/include/nms_scoremap.hxx",
-                "deeplabcut/pose_estimation_tensorflow/lib/nms_cython/include/andres/marray.hxx",
             ],
         )
     ],
