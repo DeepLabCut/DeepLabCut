@@ -379,7 +379,7 @@ def create_multianimaltraining_dataset(
                 "num_idchannel": len(cfg["individuals"])
                 if cfg.get("identity", False)
                 else 0,
-                "crop_size": crop_size,
+                "crop_size": list(crop_size),
             }
 
             trainingdata = MakeTrain_pose_yaml(
