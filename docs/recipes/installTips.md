@@ -302,8 +302,11 @@ Use the `DEEPLABCUT_M1.yaml` conda file if you have an Macbok with an M1 chip, a
 
 (2) in the program terminal, `cd DeepLabCut/conda-environments`
 
-(3) Click here to download the Rosetta wheel for TensorFlow 2.4.1:
+(3) Click here to download the Rosetta wheel for TensorFlow.
+
+For instance, for 2.4.1:
 https://drive.google.com/file/d/17pSwfoNuyf3YR8vCaVggHeI-pMQ3xL7l/view?usp=sharing
+(for different versions see here: https://github.com/tensorflow/tensorflow/issues/46044)
 
 (4) Then, run:
 
