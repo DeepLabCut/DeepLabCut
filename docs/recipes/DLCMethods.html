@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Technical (Hardware) Considerations &#8212; DeepLabCut</title>
+    <title>How to write a DLC Methods Section &#8212; DeepLabCut</title>
     
   <link href="../../_static/css/theme.css" rel="stylesheet" />
   <link href="../../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
@@ -51,8 +51,8 @@
     <script async="async" src="../../_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="How to write a DLC Methods Section" href="DLCMethods.html" />
-    <link rel="prev" title="Automate training and video analysis: Batch Processing" href="BatchProcessing.html" />
+    <link rel="next" title="Mission and Values of DeepLabCut" href="../MISSION_AND_VALUES.html" />
+    <link rel="prev" title="Technical (Hardware) Considerations" href="TechHardware.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en" />
     
@@ -179,13 +179,13 @@
    Automate training and video analysis: Batch Processing
   </a>
  </li>
- <li class="toctree-l1 current active">
-  <a class="current reference internal" href="#">
+ <li class="toctree-l1">
+  <a class="reference internal" href="TechHardware.html">
    Technical (Hardware) Considerations
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="DLCMethods.html">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
    How to write a DLC Methods Section
   </a>
  </li>
@@ -248,7 +248,7 @@
         <!-- ipynb file if we had a myst markdown file -->
         
         <!-- Download raw file -->
-        <a class="dropdown-buttons" href="../../_sources/docs/recipes/TechHardware.md"><button type="button"
+        <a class="dropdown-buttons" href="../../_sources/docs/recipes/DLCMethods.md"><button type="button"
                 class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
                 data-placement="left">.md</button></a>
         <!-- Download PDF via print -->
@@ -268,7 +268,7 @@
                 data-toggle="tooltip" data-placement="left" title="Source repository"><i
                     class="fab fa-github"></i>repository</button></a>
         <a class="issues-button"
-            href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/recipes/TechHardware.html&body=Your%20issue%20content%20here."><button
+            href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/recipes/DLCMethods.html&body=Your%20issue%20content%20here."><button
                 type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
                 title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
         
@@ -289,41 +289,6 @@
         <!-- Table of contents -->
         <div class="d-none d-md-block col-md-2 bd-toc show">
             
-            <div class="tocsection onthispage pt-5 pb-3">
-                <i class="fas fa-list"></i> Contents
-            </div>
-            <nav id="bd-toc-nav">
-                <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#quick-summary">
-   Quick summary:
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#computer">
-     Computer:
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#computer-hardware">
-     Computer Hardware:
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#camera-hardware">
-     Camera Hardware:
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#software">
-     Software:
-    </a>
-   </li>
-  </ul>
- </li>
-</ul>
-
-            </nav>
         </div>
     </div>
 </div>
@@ -332,35 +297,56 @@
         
               <div>
                 
-  <div class="section" id="technical-hardware-considerations">
-<h1>Technical (Hardware) Considerations<a class="headerlink" href="#technical-hardware-considerations" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="quick-summary">
-<h2>Quick summary:<a class="headerlink" href="#quick-summary" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/installation.md#technical-considerations">On our install page</a>
-we highlight that for GPU computing you need a NVIDIA GPU, with at least 8 GB of memory.
-Note, some info is repeated here, and will be updated as systems and hardware changes.</p>
-<div class="section" id="computer">
-<h3>Computer:<a class="headerlink" href="#computer" title="Permalink to this headline">¶</a></h3>
-<p>For reference, we use e.g. Dell workstations (79xx series) with <strong>Ubuntu 16.04 LTS, 18.04 LTS, or 20.04 LTS</strong> and run a Docker container that has TensorFlow, etc. installed (<a class="reference external" href="https://github.com/DeepLabCut/Docker4DeepLabCut2.0">https://github.com/DeepLabCut/Docker4DeepLabCut2.0</a>).</p>
-</div>
-<div class="section" id="computer-hardware">
-<h3>Computer Hardware:<a class="headerlink" href="#computer-hardware" title="Permalink to this headline">¶</a></h3>
-<p>Ideally, you will use a strong GPU with <em>at least</em> 8GB memory such as the <a class="reference external" href="https://www.nvidia.com/en-us/shop/geforce/?page=1&amp;limit=9&amp;locale=en-us">NVIDIA GeForce 1080 Ti,  2080 Ti, or 3090</a>.  A GPU is not strictly necessary, but on a CPU the (training and evaluation) code is considerably slower (10x) for ResNets, but MobileNets and EfficientNets are slightly faster. Still, a GPU will give you a massive speed boost. You might also consider using cloud computing services like <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/issues/47">Google cloud/amazon web services</a> or Google Colaboratory.</p>
-</div>
-<div class="section" id="camera-hardware">
-<h3>Camera Hardware:<a class="headerlink" href="#camera-hardware" title="Permalink to this headline">¶</a></h3>
-<p>The software is very robust to track data from any camera (cell phone cameras, grayscale, color; captured under infrared light, different manufacturers, etc.). See demos on our <a class="reference external" href="https://www.mousemotorlab.org/deeplabcut/">website</a>.</p>
-</div>
-<div class="section" id="software">
-<h3>Software:<a class="headerlink" href="#software" title="Permalink to this headline">¶</a></h3>
-<p><strong>Operating System:</strong> Linux (Ubuntu), MacOS* (Mojave), or Windows 10. However, the authors strongly recommend Ubuntu! *MacOS does not support NVIDIA GPUs (easily), so we only suggest this option for CPU use or a case where the user wants to label data, refine data, etc and then push the project to a cloud resource for GPU computing steps, or use MobileNets.</p>
-<p><strong>Anaconda/Python3:</strong> Anaconda: a free and open source distribution of the Python programming language (download from <a class="reference external" href="https://www.anaconda.com/">https://www.anaconda.com/</a>). DeepLabCut is written in Python 3 (<a class="reference external" href="https://www.python.org/">https://www.python.org/</a>) and not compatible with Python 2.</p>
-<p><strong>TensorFlow</strong> You will need <a class="reference external" href="https://www.tensorflow.org/">TensorFlow</a> (we used version 1.0 in the paper, later versions also work with the provided code (we tested <strong>TensorFlow versions 1.0 to 1.15, and 2.0 to 2.5</strong>; we recommend TF2.5 now) for Python 3.7, 3.8, or 3.9 with GPU support.</p>
-<p>To note, is it possible to run DeepLabCut on your CPU, but it will be VERY slow (see: <a class="reference external" href="https://www.biorxiv.org/content/early/2018/10/30/457242">Mathis &amp; Warren</a>). However, this is the preferred path if you want to test DeepLabCut on your own computer/data before purchasing a GPU, with the added benefit of a straightforward installation! Otherwise, use our COLAB notebooks for GPU access for testing.</p>
-<p>Docker: We highly recommend advaced users use the supplied <a class="reference external" href="https://github.com/MMathisLab/Docker4DeepLabCut2.0">Docker container</a>.
-NOTE: <a class="reference external" href="https://github.com/NVIDIA/nvidia-docker/issues/43">this container does not work on windows hosts!</a></p>
-</div>
-</div>
+  <div class="section" id="how-to-write-a-dlc-methods-section">
+<h1>How to write a DLC Methods Section<a class="headerlink" href="#how-to-write-a-dlc-methods-section" title="Permalink to this headline">¶</a></h1>
+<p><strong>Pose estimation using DeepLabCut</strong></p>
+<p>For body part tracking we used DeepLabCut (version 2.X.X) [Mathis et al, 2018, Nath et al, 2019]. Specifically, we labeled X number of frames taken from X videos/animals (then X% was used for training (default is 95%). We used a X-based neural network (i.e., X = ResNet-50, ResNet-101, MobileNetV2-0.35, MobileNetV2-0.5, MobileNetV2-0.75, MobileNetV2-1, EfficientNet ..X, dlcrnet_ms5, etc.)*** with default parameters* for X number of training iterations. We validated with X number of shuffles, and found the test error was: X pixels, train: X pixels (image size was X by X). We then used a p-cutoff of X (i.e. 0.9) to condition the X,Y coordinates for future analysis. This network was then used to analyze videos from similar experimental settings.</p>
+<p>*If any defaults were changed in <em><code class="docutils literal notranslate"><span class="pre">pose_config.yaml</span></code></em>, mention them.</p>
+<p>i.e. common things one might change:</p>
+<ul class="simple">
+<li><p>the loader (options are <code class="docutils literal notranslate"><span class="pre">default</span></code>, <code class="docutils literal notranslate"><span class="pre">imgaug</span></code>, <code class="docutils literal notranslate"><span class="pre">tensorpack</span></code>, <code class="docutils literal notranslate"><span class="pre">deterministic</span></code>).</p></li>
+<li><p>the <code class="docutils literal notranslate"><span class="pre">post_dist_threshold</span></code> (default is 17 and determines training resolution).</p></li>
+<li><p>optimizer: do you use the default <code class="docutils literal notranslate"><span class="pre">SGD</span></code> or <code class="docutils literal notranslate"><span class="pre">ADAM</span></code>?</p></li>
+</ul>
+<p>*** here, you could add additional citations.
+If you use ResNets, consider citing Insafutdinov et al 2016 &amp; He et al 2016. If you use the MobileNetV2s consider citing Mathis et al 2021, and Sandler et al, 2018. If you use DLCRNet, please cite Lauer et al, 2021.</p>
+<blockquote>
+<div><p>Mathis, A. et al. Deeplabcut: markerless pose estimation
+of user-defined body parts with deep learning. Nature
+Neuroscience 21, 1281–1289 (2018).</p>
+</div></blockquote>
+<blockquote>
+<div><p>Nath, T. et al. Using deeplabcut for 3d markerless pose
+estimation across species and behaviors. Nature Protocols
+14, 2152–2176 (2019).</p>
+</div></blockquote>
+<blockquote>
+<div><p>Mathis, A. Biasi, T. et al. Pretraining boosts out-of-domain robustness for pose estimation. WACV (2021).</p>
+</div></blockquote>
+<blockquote>
+<div><p>Lauer et al. Multi-animal pose estimation and tracking with DeepLabCut. BioRxiv (2021).</p>
+</div></blockquote>
+<blockquote>
+<div><p>Insafutdinov, E., Pishchulin, L., Andres, B., Andriluka,
+M. &amp; Schiele, B. DeeperCut: A deeper, stronger, and
+faster multi-person pose estimation model. In European
+Conference on Computer Vision, 34–50 (Springer, 2016).</p>
+</div></blockquote>
+<blockquote>
+<div><p>Sandler, M., Howard, A., Zhu, M., Zhmoginov, A. &amp;
+Chen, L.-C. Mobilenetv2: Inverted residuals and linear
+bottlenecks. In Proceedings of the IEEE Conference
+on Computer Vision and Pattern Recognition, 4510–4520
+(2018).</p>
+</div></blockquote>
+<blockquote>
+<div><p>He, K., Zhang, X., Ren, S. &amp; Sun, J. Deep residual
+learning for image recognition. In Proceedings of the
+IEEE conference on computer vision and pattern recognition,
+770–778 (2016). URL <a class="reference external" href="https://arxiv.org/abs/">https://arxiv.org/abs/</a>
+1512.03385.</p>
+</div></blockquote>
+<p>We also have the network graphic freely available on <a class="reference external" href="http://SciDraw.io">SciDraw.io</a> if you’d like to use it! <a class="reference external" href="https://scidraw.io/drawing/290">https://scidraw.io/drawing/290</a>. If you use our DLC logo, please include the TM symbol, thank you!</p>
 </div>
 
     <script type="text/x-thebe-config">
@@ -388,8 +374,8 @@ NOTE: <a class="reference external" href="https://github.com/NVIDIA/nvidia-docke
         
         <div class='prev-next-bottom'>
             
-    <a class='left-prev' id="prev-link" href="BatchProcessing.html" title="previous page">Automate training and video analysis: Batch Processing</a>
-    <a class='right-next' id="next-link" href="DLCMethods.html" title="next page">How to write a DLC Methods Section</a>
+    <a class='left-prev' id="prev-link" href="TechHardware.html" title="previous page">Technical (Hardware) Considerations</a>
+    <a class='right-next' id="next-link" href="../MISSION_AND_VALUES.html" title="next page">Mission and Values of DeepLabCut</a>
 
         </div>
         
