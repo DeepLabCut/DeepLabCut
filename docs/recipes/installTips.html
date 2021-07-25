@@ -343,6 +343,11 @@
    </li>
   </ul>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#deeplabcut-m1-chip-installation-environment-instructions">
+   DeepLabCut M1 chip installation environment instructions:
+  </a>
+ </li>
 </ul>
 
             </nav>
@@ -591,6 +596,25 @@ For more examples and ideas, visit:
 <p>Activate! <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">DEEPLABCUT</span></code> and then run: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">conda-forge</span> <span class="pre">wxpython</span></code> … after this finishes, run: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut[gui]</span></code></p>
 <p>Now you might get some warnings, but for me it was then totally fine to run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code> which launches the DLC GUI!</p>
 </div>
+</div>
+<div class="section" id="deeplabcut-m1-chip-installation-environment-instructions">
+<h2>DeepLabCut M1 chip installation environment instructions:<a class="headerlink" href="#deeplabcut-m1-chip-installation-environment-instructions" title="Permalink to this headline">¶</a></h2>
+<p>This only assumes you have anaconda installed!</p>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">DEEPLABCUT_M1.yaml</span></code> conda file if you have an Macbok with an M1 chip, and follow these steps:</p>
+<p>(1) git clone the deeplabcut cut repo:</p>
+<p><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/DeepLabCut/DeepLabCut.git</span></code></p>
+<p>(2) in the program terminal, <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">DeepLabCut/conda-environments</span></code></p>
+<p>(3) Click here to download the Rosetta wheel for TensorFlow.</p>
+<p>For instance, for 2.4.1:
+<a class="reference external" href="https://drive.google.com/file/d/17pSwfoNuyf3YR8vCaVggHeI-pMQ3xL7l/view?usp=sharing">https://drive.google.com/file/d/17pSwfoNuyf3YR8vCaVggHeI-pMQ3xL7l/view?usp=sharing</a>
+(for different versions see here: <a class="reference external" href="https://github.com/tensorflow/tensorflow/issues/46044">https://github.com/tensorflow/tensorflow/issues/46044</a>)</p>
+<p>(4) Then, run:</p>
+<p><code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">-f</span> <span class="pre">DEEPLABCUT_M1.yaml</span></code></p>
+<p>(5) Next, <strong>activate the environment,</strong> and in the terminal <code class="docutils literal notranslate"><span class="pre">cd</span></code> to  Downloads, and then run:</p>
+<p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">tensorflow-2.4.1-py3-none-any.whl</span> <span class="pre">--no-dependencies</span> <span class="pre">--force-reinstall</span></code></p>
+<p>(6) Next, launch DLC with <code class="docutils literal notranslate"><span class="pre">pythonw</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code></p>
+<p>GUI will open!</p>
+<p>Note: Based on issue #1380 thanks!</p>
 </div>
 </div>
 
