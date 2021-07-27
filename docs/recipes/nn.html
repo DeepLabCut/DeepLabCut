@@ -385,7 +385,7 @@ can be readily overwritten prior to training.</p>
 </pre></div>
 </div>
 <p>When you do this (i.e. pass <code class="docutils literal notranslate"><span class="pre">augmenter_type</span></code>) what underlying files you are calling are these:
-<a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/tree/master/deeplabcut/pose_estimation_tensorflow/dataset">https://github.com/AlexEMG/DeepLabCut/tree/master/deeplabcut/pose_estimation_tensorflow/dataset</a>
+<a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/tree/master/deeplabcut/pose_estimation_tensorflow/datasets">https://github.com/DeepLabCut/DeepLabCut/tree/master/deeplabcut/pose_estimation_tensorflow/datasets</a>
 You can look at what types of augmentation are available to you (or edit those files to add more). Moreover, you can add more options to the pose_cfg.yaml file. Here is a simple script you can modify and run to automatically edit the correct pose_cfg.yaml to add more augmentation to the <code class="docutils literal notranslate"><span class="pre">imgaug</span></code> loader (or open it and edit yourself).</p>
 <p>But, you can add more:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">deeplabcut</span>
