@@ -10,6 +10,7 @@ Licensed under GNU Lesser General Public License v3.0
 
 import os
 import os.path
+import re
 from itertools import combinations
 from pathlib import Path
 
@@ -459,7 +460,7 @@ def convert_cropped_to_standard_dataset(
     project_path = cfg["project_path"]
 
     if back_up:
-        print("Backing up original project...")
+        print("Backing up project...")
         shutil.copytree(project_path, project_path + "_bak", symlinks=True)
 
     if delete_crops:
@@ -497,10 +498,12 @@ def convert_cropped_to_standard_dataset(
     img_names = df.index.to_numpy()
     train_idx = []
     test_idx = []
-    for dirpath, dirnames, filenames in os.walk(datasets_folder):
-        for filename in filenames:
-            if filename.startswith("Docu") and filename.endswith("pickle"):
-                pickle_file = os.path.join(datasets_folder, filename)
+    pickle_files = []
+    for filename in os.listdir(datasets_folder):
+        if filename.endswith("pickle"):
+            pickle_file = os.path.join(datasets_folder, filename)
+            pickle_files.append(pickle_file)
+            if filename.startswith("Docu"):
                 with open(pickle_file, "rb") as f:
                     _, train_inds, test_inds, train_frac = pickle.load(f)
                     train_inds_temp = np.flatnonzero(
@@ -529,11 +532,16 @@ def convert_cropped_to_standard_dataset(
     if net_type == "resnet_50" and pose_cfg.get("multi_stage", False):
         net_type = "dlcrnet_ms5"
 
+    # Clean the training-datasets folder prior to recreating the data pickles
+    shuffle_inds = set()
+    for file in pickle_files:
+        os.remove(file)
+        shuffle_inds.add(int(re.findall(r"shuffle(\d+)", file)[0]))
     create_multianimaltraining_dataset(
         config_path,
         trainIndices=train_idx,
         testIndices=test_idx,
-        num_shuffles=len(train_idx),
+        Shuffles=sorted(shuffle_inds),
         net_type=net_type,
         paf_graph=pose_cfg["partaffinityfield_graph"],
         crop_size=pose_cfg.get("crop_size", [400, 400])
