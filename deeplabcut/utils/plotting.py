@@ -268,7 +268,10 @@ def plot_trajectories(
             ]
             # Either display the animals defined in the config if they are found
             # in the dataframe, or all the trajectories regardless of their names
-            animals = set(df.columns.get_level_values("individuals"))
+            try:
+                animals = set(df.columns.get_level_values("individuals"))
+            except KeyError:
+                animals = {""}
             for animal in animals.intersection(individuals) or animals:
                 PlottingResults(
                     tmpfolder,
