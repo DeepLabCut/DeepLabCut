@@ -185,10 +185,15 @@ def create_multianimaltraining_dataset(
         raise ValueError(f"Unsupported network {net_type}.")
 
     multi_stage = False
-    if net_type == "dlcrnet_ms5":
-        net_type = "resnet_50"
+    ### dlcnet_ms5: backbone resnet50 + multi-fusion & multi-stage module
+    ### dlcr101_ms5/dlcr152_ms5: backbone resnet101/152 + multi-fusion & multi-stage module
+    if all(net in net_type for net in ("dlcr", "_ms5")):
+        num_layers = re.findall("dlcr([0-9]*)", net_type)[0]
+        if num_layers == '':
+            num_layers = 50
+        net_type = "resnet_{}".format(num_layers)
         multi_stage = True
-
+        
     dataset_type = "multi-animal-imgaug"
     (
         individuals,
