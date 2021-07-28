@@ -26,13 +26,7 @@ try:
     mpl.use("WxAgg")
     from deeplabcut import generate_training_dataset
     from deeplabcut import refine_training_dataset
-    from deeplabcut.generate_training_dataset import (
-        dropannotationfileentriesduetodeletedimages,
-        comparevideolistsanddatafolders,
-        dropimagesduetolackofannotation,
-        adddatasetstovideolistandviceversa,
-        dropduplicatesinannotatinfiles,
-    )
+    
     from deeplabcut.gui import select_crop_parameters
     from deeplabcut.gui.launch_script import launch_dlc
     from deeplabcut.gui.label_frames import label_frames
@@ -66,6 +60,13 @@ from deeplabcut.generate_training_dataset import (
 from deeplabcut.generate_training_dataset import (
     create_training_model_comparison,
     create_multianimaltraining_dataset,
+)
+from deeplabcut.generate_training_dataset import (
+    dropannotationfileentriesduetodeletedimages,
+    comparevideolistsanddatafolders,
+    dropimagesduetolackofannotation,
+    adddatasetstovideolistandviceversa,
+    dropduplicatesinannotatinfiles,
 )
 from deeplabcut.utils import (
     create_labeled_video,

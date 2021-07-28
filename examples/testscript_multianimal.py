@@ -2,6 +2,7 @@ import os
 import deeplabcut
 import numpy as np
 import pandas as pd
+import shutil
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
 
@@ -10,7 +11,8 @@ if __name__ == "__main__":
     SCORER = "dlc_team"
     NUM_FRAMES = 5
     TRAIN_SIZE = 0.8
-    NET = "dlcrnet_ms5"
+    NET = "dlcr101_ms5"
+    #NET = "dlcrnet_ms5"
     #NET = "resnet_152"
     #NET = "efficientnet-b0"
     #NET = "mobilenet_v2_0.35" # should be fixed
@@ -144,12 +146,18 @@ if __name__ == "__main__":
     )
     print("Tracklets created...")
 
+    # Copy over meaningful tracklets to test stitching
     pickle_file = os.path.join(
         os.path.dirname(basepath), "tests", "data", "trimouse_tracklets.pickle"
     )
+    shutil.copy(
+        pickle_file,
+        os.path.splitext(new_video_path)[0] + scorer + "_el.pickle",
+    )
     deeplabcut.stitch_tracklets(
         config_path,
-        pickle_file,
+        [new_video_path],
+        "mp4",
         output_name=os.path.splitext(new_video_path)[0] + scorer + "_el.h5",
     )
 

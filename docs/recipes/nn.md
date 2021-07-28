@@ -35,7 +35,7 @@ deeplabcut.create_training_dataset(configpath, augmenter_type='imgaug')
 ```
 
 When you do this (i.e. pass `augmenter_type`) what underlying files you are calling are these:
-https://github.com/AlexEMG/DeepLabCut/tree/master/deeplabcut/pose_estimation_tensorflow/dataset
+https://github.com/DeepLabCut/DeepLabCut/tree/master/deeplabcut/pose_estimation_tensorflow/datasets
 You can look at what types of augmentation are available to you (or edit those files to add more). Moreover, you can add more options to the pose_cfg.yaml file. Here is a simple script you can modify and run to automatically edit the correct pose_cfg.yaml to add more augmentation to the `imgaug` loader (or open it and edit yourself).
 
 But, you can add more:

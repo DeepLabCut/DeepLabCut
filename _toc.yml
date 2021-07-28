@@ -5,6 +5,7 @@ parts:
   chapters:
   - file: docs/README
   - file: docs/installation
+  - file: docs/UseOverViewGuide
   - file: docs/standardDeepLabCut_UserGuide
   - file: docs/maDLC_UserGuide
   - file: docs/PROJECT_GUI
@@ -22,6 +23,7 @@ parts:
   - file: docs/recipes/post
   - file: docs/recipes/BatchProcessing
   - file: docs/recipes/TechHardware
+  - file: docs/recipes/DLCMethods
 - caption: Mission & Contribute
   chapters:
   - file: docs/MISSION_AND_VALUES
