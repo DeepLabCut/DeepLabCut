@@ -1,0 +1,95 @@
+name: Bug Report
+description: File a bug report to help us improve
+assignees:
+  - jeylau
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for opening this issue, and thanks for using DeepLabCut (we hope you are enjoying it ☺️)
+  - type: checkboxes
+    attributes:
+      label: Is there an existing issue for this?
+      description: Please search to see if an issue already exists for the bug you encountered. Remove `is:open` from the search field to search closed (solved) issues.
+      options:
+        - label: I have searched the existing issues
+          required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Bug description
+      description: Also tell us concisely what you expected to happen
+      placeholder: What happened?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Operating System
+      description: What operating system are you using?
+      placeholder: macOS Big Sur
+      value: operating system
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: DeepLabCut version
+      description: What version of DLC are you using? Please check with `import deeplabcut`, `deeplabcut.__version__`
+      placeholder: 2.2rc3
+      value: dlc version
+    validations:
+      required: true
+  - type: dropdown
+    id: dlcmode
+    attributes:
+      label: DeepLabCut mode
+      options:
+        - single animal
+        - multi animal
+        - 3d
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Device type
+      description: What GPU/CPU are you using?
+      placeholder: GeForce 2080 RTX
+      value: gpu
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Steps To Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. In this environment...
+        2. With this config...
+        3. Run '...'
+        4. See error...
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
+  - type: textarea
+    attributes:
+      label: Anything else?
+      description: |
+        Links? References? Anything that will give us more context about the issue you are encountering!
+
+        Tip: You can attach images and other files by clicking this area to highlight it and then dragging files in.
+    validations:
+      required: false
+  - type: checkboxes
+    attributes:
+      label: Code of Conduct
+      description: The Code of Conduct helps create a safe space for everyone. We require
+        that everyone agrees to it.
+      options:
+        - label: I agree to follow this project's [Code of Conduct](https://github.com/DeepLabCut/DeepLabCut/blob/master/CODE_OF_CONDUCT.md)
+          required: true
+  - type: markdown
+    attributes:
+      value: "Thanks for completing our bug report!"
