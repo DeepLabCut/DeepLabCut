@@ -74,6 +74,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
     def build_augmentation_pipeline(self, height=None, width=None, apply_prob=0.5):
         sometimes = lambda aug: iaa.Sometimes(apply_prob, aug)
         pipeline = iaa.Sequential(random_order=False)
+        
         cfg = self.cfg
         if cfg.get("fliplr", False):
             opt = cfg.get("fliplr", False)
@@ -120,6 +121,80 @@ class MAImgaugPoseDataset(BasePoseDataset):
                         )
                     )
                 )
+        if cfg.get("grayscale", False):
+            pipeline.add(sometimes(iaa.Grayscale(alpha=(0.5, 1.0))))
+
+        def get_aug_param(cfg_value):
+            if isinstance(cfg_value, dict):
+                opt = cfg_value
+            else:
+                opt = {}
+            return opt
+
+        cfg_cnt = cfg.get("contrast", {})
+        cfg_cnv = cfg.get("convolution", {})
+
+        contrast_aug = ["histeq", "clahe", "gamma", "sigmoid", "log", "linear"]
+        for aug in contrast_aug:
+            aug_val = cfg_cnt.get(aug, False)
+            cfg_cnt[aug] = aug_val
+            if aug_val:
+                cfg_cnt[aug + "ratio"] = cfg_cnt.get(aug + "ratio", 0.1)
+
+        convolution_aug = ["sharpen", "emboss", "edge"]
+        for aug in convolution_aug:
+            aug_val = cfg_cnv.get(aug, False)
+            cfg_cnv[aug] = aug_val
+            if aug_val:
+                cfg_cnv[aug + "ratio"] = cfg_cnv.get(aug + "ratio", 0.1)
+
+        if cfg_cnt["histeq"]:
+            opt = get_aug_param(cfg_cnt["histeq"])
+            pipeline.add(
+                iaa.Sometimes(
+                    cfg_cnt["histeqratio"], iaa.AllChannelsHistogramEqualization(**opt)
+                )
+            )
+
+        if cfg_cnt["clahe"]:
+            opt = get_aug_param(cfg_cnt["clahe"])
+            pipeline.add(
+                iaa.Sometimes(cfg_cnt["claheratio"], iaa.AllChannelsCLAHE(**opt))
+            )
+
+        if cfg_cnt["log"]:
+            opt = get_aug_param(cfg_cnt["log"])
+            pipeline.add(iaa.Sometimes(cfg_cnt["logratio"], iaa.LogContrast(**opt)))
+
+        if cfg_cnt["linear"]:
+            opt = get_aug_param(cfg_cnt["linear"])
+            pipeline.add(
+                iaa.Sometimes(cfg_cnt["linearratio"], iaa.LinearContrast(**opt))
+            )
+
+        if cfg_cnt["sigmoid"]:
+            opt = get_aug_param(cfg_cnt["sigmoid"])
+            pipeline.add(
+                iaa.Sometimes(cfg_cnt["sigmoidratio"], iaa.SigmoidContrast(**opt))
+            )
+
+        if cfg_cnt["gamma"]:
+            opt = get_aug_param(cfg_cnt["gamma"])
+            pipeline.add(iaa.Sometimes(cfg_cnt["gammaratio"], iaa.GammaContrast(**opt)))
+
+        if cfg_cnv["sharpen"]:
+            opt = get_aug_param(cfg_cnv["sharpen"])
+            pipeline.add(iaa.Sometimes(cfg_cnv["sharpenratio"], iaa.Sharpen(**opt)))
+
+        if cfg_cnv["emboss"]:
+            opt = get_aug_param(cfg_cnv["emboss"])
+            pipeline.add(iaa.Sometimes(cfg_cnv["embossratio"], iaa.Emboss(**opt)))
+
+        if cfg_cnv["edge"]:
+            opt = get_aug_param(cfg_cnv["edge"])
+            pipeline.add(iaa.Sometimes(cfg_cnv["edgeratio"], iaa.EdgeDetect(**opt)))
+
+        
         if height is not None and width is not None:
             pipeline.add(
                 iaa.Sometimes(
