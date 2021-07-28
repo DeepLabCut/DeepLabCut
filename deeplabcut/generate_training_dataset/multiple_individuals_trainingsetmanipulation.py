@@ -459,9 +459,11 @@ def convert_cropped_to_standard_dataset(
     project_path = cfg["project_path"]
 
     if back_up:
+        print("Backing up original project...")
         shutil.copytree(project_path, project_path + "_bak", symlinks=True)
 
     if delete_crops:
+        print("Deleting crops...")
         data_path = os.path.join(project_path, "labeled-data")
         for video in cfg["video_sets"]:
             _, filename, _ = trainingsetmanipulation._robust_path_split(video)
@@ -524,14 +526,15 @@ def convert_cropped_to_standard_dataset(
                 break
     pose_cfg = read_plainconfig(pose_config_path)
     net_type = pose_cfg["net_type"]
-    if net_type == "resnet_50" and pose_cfg.cfg("multi_stage", False):
+    if net_type == "resnet_50" and pose_cfg.get("multi_stage", False):
         net_type = "dlcrnet_ms5"
 
     create_multianimaltraining_dataset(
         config_path,
         trainIndices=train_idx,
         testIndices=test_idx,
+        num_shuffles=len(train_idx),
         net_type=net_type,
         paf_graph=pose_cfg["partaffinityfield_graph"],
-        crop_size=pose_cfg.get("crop_size", (400, 400))
+        crop_size=pose_cfg.get("crop_size", [400, 400])
     )
