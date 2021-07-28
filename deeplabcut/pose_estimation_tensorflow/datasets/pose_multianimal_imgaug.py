@@ -74,7 +74,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
     def build_augmentation_pipeline(self, height=None, width=None, apply_prob=0.5):
         sometimes = lambda aug: iaa.Sometimes(apply_prob, aug)
         pipeline = iaa.Sequential(random_order=False)
-        
+
         cfg = self.cfg
         if cfg.get("fliplr", False):
             opt = cfg.get("fliplr", False)
@@ -135,18 +135,13 @@ class MAImgaugPoseDataset(BasePoseDataset):
         cfg_cnv = cfg.get("convolution", {})
 
         contrast_aug = ["histeq", "clahe", "gamma", "sigmoid", "log", "linear"]
-        for aug in contrast_aug:
+        convolution_aug = ["sharpen", "emboss", "edge"]
+
+        for aug in contrast_aug + convolution_aug:
             aug_val = cfg_cnt.get(aug, False)
             cfg_cnt[aug] = aug_val
             if aug_val:
                 cfg_cnt[aug + "ratio"] = cfg_cnt.get(aug + "ratio", 0.1)
-
-        convolution_aug = ["sharpen", "emboss", "edge"]
-        for aug in convolution_aug:
-            aug_val = cfg_cnv.get(aug, False)
-            cfg_cnv[aug] = aug_val
-            if aug_val:
-                cfg_cnv[aug + "ratio"] = cfg_cnv.get(aug + "ratio", 0.1)
 
         if cfg_cnt["histeq"]:
             opt = get_aug_param(cfg_cnt["histeq"])
@@ -194,7 +189,6 @@ class MAImgaugPoseDataset(BasePoseDataset):
             opt = get_aug_param(cfg_cnv["edge"])
             pipeline.add(iaa.Sometimes(cfg_cnv["edgeratio"], iaa.EdgeDetect(**opt)))
 
-        
         if height is not None and width is not None:
             pipeline.add(
                 iaa.Sometimes(
@@ -416,7 +410,9 @@ class MAImgaugPoseDataset(BasePoseDataset):
         locref_scale = 1.0 / self.cfg["locref_stdev"]
         dist_thresh_sq = dist_thresh ** 2
 
-        partaffinityfield_shape = np.concatenate([size, np.array([self.cfg["num_limbs"] * 2])])
+        partaffinityfield_shape = np.concatenate(
+            [size, np.array([self.cfg["num_limbs"] * 2])]
+        )
         partaffinityfield_map = np.zeros(partaffinityfield_shape)
         if self.cfg["weigh_only_present_joints"]:
             partaffinityfield_mask = np.zeros(partaffinityfield_shape)
@@ -461,8 +457,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         if num_idchannel > 0:
             coordinateoffset = 0
             # Find indices of individuals in joint_id
-            idx = [i for i, id_ in enumerate(data_item.joints)
-                   if id_ < num_idchannel]
+            idx = [i for i, id_ in enumerate(data_item.joints) if id_ < num_idchannel]
             for person_id in idx:
                 joint_ids = joint_id[person_id].copy()
                 if len(joint_ids) > 1:
@@ -591,7 +586,9 @@ class MAImgaugPoseDataset(BasePoseDataset):
         locref_scale = 1.0 / self.cfg["locref_stdev"]
         dist_thresh_sq = dist_thresh ** 2
 
-        partaffinityfield_shape = np.concatenate([size, np.array([self.cfg["num_limbs"] * 2])])
+        partaffinityfield_shape = np.concatenate(
+            [size, np.array([self.cfg["num_limbs"] * 2])]
+        )
         partaffinityfield_map = np.zeros(partaffinityfield_shape)
         if self.cfg["weigh_only_present_joints"]:
             partaffinityfield_mask = np.zeros(partaffinityfield_shape)
