@@ -11,7 +11,8 @@ if __name__ == "__main__":
     SCORER = "dlc_team"
     NUM_FRAMES = 5
     TRAIN_SIZE = 0.8
-    NET = "dlcrnet_ms5"
+    NET = "dlcr101_ms5"
+    #NET = "dlcrnet_ms5"
     #NET = "resnet_152"
     #NET = "efficientnet-b0"
     #NET = "mobilenet_v2_0.35" # should be fixed
