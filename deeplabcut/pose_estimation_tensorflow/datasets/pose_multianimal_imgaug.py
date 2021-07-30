@@ -96,7 +96,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         pipeline.add(iaa.PadToFixedSize(w, h))
         pipeline.add(
             augmentation.KeypointAwareCropToFixedSize(
-                w, h, cfg.get("max_shift", 0.4), cfg.get("weighted_sampling", True)
+                w, h, cfg.get("max_shift", 0.4), cfg.get("crop_sampling", "density")
             )
         )
 

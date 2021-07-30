@@ -35,7 +35,7 @@ pre_resize: []  # Specify [width, height] if pre-resizing is desired
 # Smart, on-the-fly image cropping, replacing deeplabcut.cropimagesandlabels
 crop_size: [400, 400]  # width, height
 max_shift: 0.4  # Maximum relative shift of the position of the crop center
-weighted_sampling: true  # Weigh crop centers by keypoint neighbor density
+crop_sampling: density  # Weigh crop centers by keypoint neighbor density
 
 #Data loaders, i.e. with additional data augmentation options (as of 2.0.9+):
 #default with be with no extra dataloaders. Other options: 'tensorpack, deterministic'
