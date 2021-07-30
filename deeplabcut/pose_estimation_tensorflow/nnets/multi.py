@@ -93,7 +93,7 @@ def prediction_layer(cfg, input, name, num_outputs):
         padding="SAME",
         activation_fn=None,
         normalizer_fn=None,
-        weights_regularizer=slim.l2_regularizer(cfg["weight_decay"]),
+        weights_regularizer=tf.keras.regularizers.l2(0.5 * (cfg["weight_decay"])),
     ):
         with tf.compat.v1.variable_scope(name):
             pred = slim.conv2d_transpose(
@@ -158,7 +158,7 @@ class PoseMultiNet(BasePoseNet):
             mid_pt_block1 = layer_name.format(1, 3)
             mid_pt_block2 = layer_name.format(2, 3)
 
-            final_dims = tf.math.ceil(tf.divide(input_shape[1:3], tf.convert_to_tensor(16)))
+            final_dims = tf.math.ceil(tf.divide(input_shape[1:3], tf.convert_to_tensor(value=16)))
 
             interim_dims_s8 = tf.scalar_mul(2, final_dims)
             interim_dims_s8 = tf.cast(interim_dims_s8, tf.int32)
@@ -176,7 +176,7 @@ class PoseMultiNet(BasePoseNet):
                 padding="SAME",
                 normalizer_fn=slim.layers.batch_norm,
                 activation_fn=tf.nn.relu,
-                weights_regularizer=slim.l2_regularizer(self.cfg["weight_decay"]),
+                weights_regularizer=tf.keras.regularizers.l2(0.5 * (self.cfg["weight_decay"])),
             ):
                 with tf.compat.v1.variable_scope("decoder_filters"):
                     bank_2_s16 = slim.conv2d(
@@ -220,7 +220,7 @@ class PoseMultiNet(BasePoseNet):
                 [slim.conv2d_transpose],
                 padding="SAME",
                 normalizer_fn=None,
-                weights_regularizer=slim.l2_regularizer(self.cfg["weight_decay"]),
+                weights_regularizer=tf.keras.regularizers.l2(0.5 * (self.cfg["weight_decay"])),
             ):
                 with tf.compat.v1.variable_scope("upsampled_features"):
 
