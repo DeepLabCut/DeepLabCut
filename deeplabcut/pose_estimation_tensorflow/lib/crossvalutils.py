@@ -288,11 +288,11 @@ def _get_n_best_paf_graphs(
     if which not in ("best", "worst"):
         raise ValueError('`which` must be either "best" or "worst"')
 
-    (within_train, within_test), (between_train, _) = _calc_within_between_pafs(
-        data, metadata, train_set_only=False
+    (within_train, _), (between_train, _) = _calc_within_between_pafs(
+        data, metadata, train_set_only=True,
     )
     # Handle unlabeled bodyparts...
-    existing_edges = set(k for k, v in within_test.items() if v)
+    existing_edges = set(k for k, v in within_train.items() if v)
     if ignore_inds is not None:
         existing_edges = existing_edges.difference(ignore_inds)
     existing_edges = list(existing_edges)
@@ -306,11 +306,8 @@ def _get_n_best_paf_graphs(
 
     scores, _ = zip(
         *[
-            _calc_separability(b_train, w_train, metric=metric)
-            for n, (w_train, b_train) in enumerate(
-                zip(within_train.values(), between_train.values())
-            )
-            if n in existing_edges
+            _calc_separability(between_train[n], within_train[n], metric=metric)
+            for n in existing_edges
         ]
     )
 
@@ -324,7 +321,7 @@ def _get_n_best_paf_graphs(
         if root is None:
             root = []
             for edge in nx.maximum_spanning_edges(G, data=False):
-                root.append(full_graph.index(list(edge)))
+                root.append(full_graph.index(sorted(edge)))
     else:
         order = np.asarray(existing_edges)[np.argsort(scores)]
         if root is None:
