@@ -135,9 +135,9 @@ def _calc_within_between_pafs(
             inds = np.flatnonzero(np.all(~np.isnan(coord), axis=1))
             inds_gt = np.flatnonzero(np.all(~np.isnan(coord_gt), axis=1))
             if inds.size and inds_gt.size:
-                d = cdist(coord_gt[inds_gt], coord[inds])
-                rows, cols = linear_sum_assignment(d)
-                lookup[i] = dict(zip(inds_gt[rows], inds[cols]))
+                neighbors = _find_closest_neighbors(coord_gt[inds_gt], coord[inds], k=3)
+                found = neighbors != -1
+                lookup[i] = dict(zip(inds_gt[found], inds[neighbors[found]]))
 
         costs = dict_["prediction"]["costs"]
         for k, v in costs.items():
