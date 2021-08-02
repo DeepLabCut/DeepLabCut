@@ -380,13 +380,16 @@ def evaluate_multianimal_full(
                                 if inds_gt.size and xy.size:
                                     # Pick the predictions closest to ground truth,
                                     # rather than the ones the model has most confident in
-                                    d = cdist(xy_gt.iloc[inds_gt], xy)
-                                    rows, cols = linear_sum_assignment(d)
-                                    min_dists = d[rows, cols]
+                                    xy_gt_values = xy_gt.iloc[inds_gt].values
+                                    neighbors = _find_closest_neighbors(xy_gt_values, xy, k=3)
+                                    found = neighbors != -1
+                                    min_dists = np.linalg.norm(
+                                        xy_gt_values[found] - xy[neighbors[found]], axis=1,
+                                    )
                                     inds = np.flatnonzero(all_bpts == bpt)
-                                    sl = imageindex, inds[inds_gt[rows]]
+                                    sl = imageindex, inds[inds_gt[found]]
                                     dist[sl] = min_dists
-                                    conf[sl] = probs_pred[n_joint][cols].squeeze()
+                                    conf[sl] = probs_pred[n_joint][neighbors[found]].squeeze()
 
                             if plotting:
                                 gt = temp_xy.values.reshape(
