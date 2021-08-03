@@ -231,7 +231,6 @@ def _benchmark_paf_graphs(
         print(f"Graph {j}|{n_graphs}")
         graph = [paf_graph[i] for i in paf]
         ass.paf_inds = paf
-        ass.graph = graph
         ass.assemble()
         oks = evaluate_assembly(ass.assemblies, ass_true_dict, oks_sigma)
         all_metrics.append(oks)

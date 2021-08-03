@@ -347,7 +347,8 @@ class Assembler:
 
     def extract_best_links(self, joints_dict, costs, trees=None):
         links = []
-        for (s, t), ind in zip(self.graph, self.paf_inds):
+        for ind in self.paf_inds:
+            s, t = self.graph[ind]
             dets_s = joints_dict.get(s, None)
             dets_t = joints_dict.get(t, None)
             if dets_s is None or dets_t is None:

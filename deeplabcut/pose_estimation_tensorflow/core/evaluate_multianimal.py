@@ -203,7 +203,8 @@ def evaluate_multianimal_full(
 
             # TODO: IMPLEMENT for different batch sizes?
             dlc_cfg["batch_size"] = 1  # due to differently sized images!!!
-
+            # Ignore best edges possibly defined during a prior evaluation
+            _ = dlc_cfg.pop("paf_best", None)
             joints = dlc_cfg["all_joints_names"]
 
             # Create folder structure to store results.
@@ -505,9 +506,7 @@ def evaluate_multianimal_full(
                             "nms radius": dlc_cfg["nmsradius"],
                             "minimal confidence": dlc_cfg["minconfidence"],
                             "PAFgraph": dlc_cfg["partaffinityfield_graph"],
-                            "PAFinds": dlc_cfg.get(
-                                "paf_best",
-                                np.arange(len(dlc_cfg["partaffinityfield_graph"])),
+                            "PAFinds": np.arange(len(dlc_cfg["partaffinityfield_graph"]),
                             ),
                             "all_joints": [
                                 [i] for i in range(len(dlc_cfg["all_joints"]))
