@@ -9,7 +9,7 @@ class KeypointAwareCropToFixedSize(iaa.CropToFixedSize):
         width,
         height,
         max_shift=0.4,
-        crop_sampling="density",
+        crop_sampling="hybrid",
     ):
         """
         Parameters
@@ -24,12 +24,12 @@ class KeypointAwareCropToFixedSize(iaa.CropToFixedSize):
             Maximum allowed shift of the cropping center position
             as a fraction of the crop size.
 
-        crop_sampling : str, optional (default="dense')
+        crop_sampling : str, optional (default="hybrid")
             Crop centers sampling method. Must be either:
             "uniform" (randomly over the image),
             "keypoints" (randomly over the annotated keypoints),
-            or "density" (weighing preferentially dense regions of keypoints).
-            keypoint neighbor density.
+            "density" (weighing preferentially dense regions of keypoints),
+            or "hybrid" (alternating randomly between "uniform" and "density").
         """
         super(KeypointAwareCropToFixedSize, self).__init__(
             width, height, name="kptscrop",
@@ -37,9 +37,9 @@ class KeypointAwareCropToFixedSize(iaa.CropToFixedSize):
         # Clamp to 40% of crop size to ensure that at least
         # the center keypoint remains visible after the offset is applied.
         self.max_shift = max(0., min(max_shift, 0.4))
-        if crop_sampling not in ("uniform", "keypoints", "density"):
+        if crop_sampling not in ("uniform", "keypoints", "density", "hybrid"):
             raise ValueError(f"Invalid sampling {crop_sampling}. Must be "
-                             f"either 'uniform', 'keypoints', or 'density'.")
+                             f"either 'uniform', 'keypoints', 'density', or 'hybrid.")
         self.crop_sampling = crop_sampling
 
     @staticmethod
@@ -54,15 +54,18 @@ class KeypointAwareCropToFixedSize(iaa.CropToFixedSize):
         rngs = random_state.duplicate(2)
         shift_x = self.max_shift * self.size[0] * rngs[0].uniform(-1, 1, n_samples)
         shift_y = self.max_shift * self.size[1] * rngs[1].uniform(-1, 1, n_samples)
+        sampling = self.crop_sampling
         for n in range(batch.nb_rows):
-            if self.crop_sampling == "uniform":
+            if self.crop_sampling == "hybrid":
+                sampling = random_state.choice(["uniform", "density"])
+            if sampling == "uniform":
                 center = random_state.uniform(size=2)
             else:
                 h, w = batch.images[n].shape[:2]
                 kpts = batch.keypoints[n].to_xy_array()
                 n_kpts = kpts.shape[0]
                 inds = np.arange(n_kpts)
-                if self.crop_sampling == "density":
+                if sampling == "density":
                     # Points located close to one another are sampled preferentially
                     # in order to augment crowded regions.
                     radius = 0.1 * min(h, w)
