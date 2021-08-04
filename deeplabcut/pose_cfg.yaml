@@ -27,6 +27,7 @@ dataset_type: imgaug
 batch_size: 1
 
 # Probability with which the augmenters will be applied to input images
+# Note some augmentations have their own probability (e.g. claheratio/rotratio/...)
 apply_prob: 0.5
 
 # Resize images prior to augmentation
@@ -43,7 +44,7 @@ crop_sampling: density  # Weigh crop centers by keypoint neighbor density
 #For deterministic, see https://github.com/AlexEMG/DeepLabCut/pull/324
 #For tensorpack, see https://github.com/AlexEMG/DeepLabCut/pull/409
 
-#what is the fraction of training samples with cropping? (used for scalecrop, )
+#what is the fraction of training samples with cropping? (used for scalecrop)
 cropratio: 0.4
 # see below for cropping variables for tensorpack and scalecrop (these need to be set in pose_cfg.yaml per model)
 # for imagaug strengh is modulated by crop_by
