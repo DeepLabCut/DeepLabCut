@@ -38,6 +38,13 @@ crop_size: [400, 400]  # width, height
 max_shift: 0.4  # Maximum relative shift of the position of the crop center
 crop_sampling: hybrid  # Sample crop centers either uniformly over the image or based on keypoint neighbor density, at random
 
+# Other crop_sampling variants:
+#- uniform -- spatially uniform sampling of crops (over the image)
+#- keypoints -- keypoint based sampling of crops (over the image)
+#- density -- keypoint based sampling of crops biasing towards regions with more keypoints (over the image)
+#- hybrid -- 50% density and 50% uniform
+
+
 #Data loaders, i.e. with additional data augmentation options (as of 2.0.9+):
 #default with be with no extra dataloaders. Other options: 'tensorpack, deterministic'
 #types of datasets, see factory: deeplabcut/pose_estimation_tensorflow/dataset/factory.py
