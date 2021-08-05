@@ -608,19 +608,9 @@ is one of the most critical parts for creating the training dataset. The DeepLab
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1586203062876-D9ZL5Q7NZ464FUQN95NA/ke17ZwdGBToddI8pDm48kKmw982fUOZVIQXHUCR1F55Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpx7krGdD6VO1HGZR3BdeCbrijc_yIxzfnirMo-szZRSL5-VIQGAVcQr6HuuQP1evvE/img1068_individuals.png?format=750w" width="50%">
 </p>
 <p>For each video directory in labeled-data this function creates a subdirectory with <strong>labeled</strong> as a suffix. Those directories contain the frames plotted with the annotated body parts. The user can double check if the body parts are labeled correctly. If they are not correct, the user can reload the frames (i.e. <code class="docutils literal notranslate"><span class="pre">deeplabcut.label_frames</span></code>), move them around, and click save again.</p>
-<p><strong>CROP+LABEL:</strong> When you are done checking the label quality and adjusting if needed, please then use this new function to crop frames /labels for more efficient training. PLEASE call this before you create a training dataset by running:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">cropimagesandlabels</span><span class="p">(</span><span class="n">path_config_file</span><span class="p">,</span> <span class="n">userfeedback</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</pre></div>
-</div>
 </div>
 <div class="section" id="create-training-dataset">
 <h3>Create Training Dataset:<a class="headerlink" href="#create-training-dataset" title="Permalink to this headline">¶</a></h3>
-<p>Ideally for training DNNs, one uses large batch sizes. Thus, for mutli-animal training batch processing is preferred. This means that we’d like the images to be similarly sized. You can of course have differing size of images you label (but we suggest cropping out useless pixels!). So, we have a new function that can pre-process your data to be compatible with batch training. As noted above, please run this function before you <code class="docutils literal notranslate"><span class="pre">create_multianmialtraining_dataset</span></code>. This function assures that each crop is “small”, by default 400 x 400, which allows larger batchsizes and that there are multiple crops so that different parts of larger images are covered.</p>
-<p>You <strong>should also first run</strong> <code class="docutils literal notranslate"><span class="pre">deeplabcut.cropimagesandlabels(config_path)</span></code> before creating a training set, as we use batch processing and many users have smaller GPUs that cannot accommodate larger images + larger batchsizes. This is also a type of data augmentation.</p>
-<p>NOTE: you can edit the crop size. If your images are very large (2k, 4k pixels), consider increasing this size, but be aware unless you have a lagre GPU (24 GB or more), you will hit memory errors. <em>You can lower the batchsize, but this may affect performance.</em></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">cropimagesandlabels</span><span class="p">(</span><span class="n">path_config_file</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">400</span><span class="p">),</span> <span class="n">userfeedback</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</pre></div>
-</div>
 <p>At this point you also select your neural network type. Please see Lauer et al. 2021 for options. For <strong>create_multianimaltraining_dataset</strong> we already changed this such that by default you will use imgaug, ADAM optimization, our new DLCRNet, and batch training. We suggest these defaults at this time. Then run:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_multianimaltraining_dataset</span><span class="p">(</span><span class="n">path_config_file</span><span class="p">)</span>
 </pre></div>
@@ -642,7 +632,7 @@ are listed in Box 2.</p></li>
 </ul>
 <p><strong>OPTIONAL POINTS:</strong></p>
 <p>With the data-driven skeleton selection introduced in 2.2rc1, DLC networks are trained by default
-on complete skeletons (i.e., they learn all possible redundant connections), before being optimially pruned
+on complete skeletons (i.e., they learn all possible redundant connections), before being optimally pruned
 at model evaluation. Although this procedure is by far superior to manually defining a graph,
 we leave manually-defining a skeleton as an option for the advanced user:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_better_graph</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]]</span>  <span class="c1"># These are indices in the list of multianimalbodyparts</span>
@@ -660,6 +650,12 @@ we leave manually-defining a skeleton as an option for the advanced user:</p>
 </ul>
 <p>Our recent <a class="reference external" href="https://www.cell.com/neuron/pdf/S0896-6273(20)30717-0.pdf">A Primer on Motion Capture with Deep Learning: Principles, Pitfalls, and Perspectives</a>, details the advantage of augmentation for a worked example (see Fig 7). TL;DR: use imgaug and use the symmetries of your data!</p>
 <p>Alternatively, you can set the loader (as well as other training parameters) in the <strong>pose_cfg.yaml</strong> file of the model that you want to train. Note, to get details on the options, look at the default file: <a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml"><strong>pose_cfg.yaml</strong></a>.</p>
+<p>Importantly, image cropping as previously done with <code class="docutils literal notranslate"><span class="pre">deeplabcut.cropimagesandlabels</span></code> in multi-animal projects
+is now part of the augmentation pipeline. In other words, image crops are no longer stored in labeled-data/…_cropped
+folders. Crop size still defaults to (400, 400); if your images are very large (e.g. 2k, 4k pixels), consider increasing the crop size, but be aware unless you have a strong GPU (24 GB memory or more), you will hit memory errors. You can lower the batch size, but this may affect performance.</p>
+<p>In addition, one can specify a crop sampling strategy: crop centers can either be taken at random over the image (<code class="docutils literal notranslate"><span class="pre">uniform</span></code>) or the annotated keypoints (<code class="docutils literal notranslate"><span class="pre">keypoints</span></code>); with a focus on regions of the scene with high body part density (<code class="docutils literal notranslate"><span class="pre">density</span></code>); last, combining <code class="docutils literal notranslate"><span class="pre">uniform</span></code> and <code class="docutils literal notranslate"><span class="pre">density</span></code> for a <code class="docutils literal notranslate"><span class="pre">hybrid</span></code> balanced strategy (this is the default strategy). Note that both parameters can be easily edited prior to training in the <strong>pose_cfg.yaml</strong> configuration file.
+As a reminder, cropping images into smaller patches is a form of data augmentation that simultaneously
+allows the use of batch processing even on small GPUs that could not otherwise accommodate larger images + larger batchsizes (this usually increases performance and decreasing training time).</p>
 </div>
 <div class="section" id="train-the-network">
 <h3>Train The Network:<a class="headerlink" href="#train-the-network" title="Permalink to this headline">¶</a></h3>

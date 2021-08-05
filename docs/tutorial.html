@@ -346,15 +346,6 @@ Ubuntu users only need to copy the file and its path gets added to the clipboard
 <span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>Crop frames to augment the dataset</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">cropimagesandlabels</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="n">numcrops</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-    <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">400</span><span class="p">),</span>
-    <span class="n">userfeedback</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
 <p><strong>Create the training dataset</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_multianimaltraining_dataset</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
