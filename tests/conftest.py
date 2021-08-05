@@ -3,6 +3,7 @@ import os
 import pickle
 import pytest
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, crossvalutils
+from PIL import Image
 
 
 TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
@@ -22,6 +23,15 @@ def model_outputs():
     locrefs *= 7.2801
     pafs = np.reshape(pafs, (*pafs.shape[:3], -1, 2))
     return scmaps, locrefs, pafs
+def sample_image():
+    return np.asarray(Image.open(os.path.join(TEST_DATA_DIR, "image.png")))
+
+
+@pytest.fixture(scope="session")
+def sample_keypoints():
+    with open(os.path.join(TEST_DATA_DIR, "trimouse_assemblies.pickle"), "rb") as file:
+        temp = pickle.load(file)
+    return np.concatenate(temp[0])[:, :2]
 
 
 @pytest.fixture(scope="session")
@@ -39,14 +49,11 @@ def real_tracklets():
 
 
 @pytest.fixture(scope="session")
-def uncropped_data_and_metadata():
+def evaluation_data_and_metadata():
     full_data_file = os.path.join(TEST_DATA_DIR, "trimouse_eval.pickle")
     metadata_file = full_data_file.replace("eval", "meta")
     with open(full_data_file, "rb") as file:
         data = pickle.load(file)
     with open(metadata_file, "rb") as file:
         metadata = pickle.load(file)
-    params = crossvalutils._set_up_evaluation(data)
-    data_unc, _ = crossvalutils._rebuild_uncropped_data(data, params)
-    meta_unc = crossvalutils._rebuild_uncropped_metadata(metadata, params["imnames"])
-    return data_unc, meta_unc
+    return data, metadata

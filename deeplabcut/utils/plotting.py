@@ -266,7 +266,13 @@ def plot_trajectories(
                 for bp in df.columns.get_level_values("bodyparts").unique()
                 if bp in bodyparts
             ]
-            for animal in individuals:
+            # Either display the animals defined in the config if they are found
+            # in the dataframe, or all the trajectories regardless of their names
+            try:
+                animals = set(df.columns.get_level_values("individuals"))
+            except KeyError:
+                animals = {""}
+            for animal in animals.intersection(individuals) or animals:
                 PlottingResults(
                     tmpfolder,
                     df,

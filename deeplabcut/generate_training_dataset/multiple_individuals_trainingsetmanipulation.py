@@ -24,6 +24,7 @@ from deeplabcut.generate_training_dataset import (
     MakeTrain_pose_yaml,
     MakeTest_pose_yaml,
     MakeInference_yaml,
+    pad_train_test_indices,
 )
 from deeplabcut.utils import auxiliaryfunctions, auxfun_models, auxfun_multianimal
 
@@ -99,6 +100,8 @@ def create_multianimaltraining_dataset(
     windows2linux=False,
     net_type=None,
     numdigits=2,
+    crop_size=(400, 400),
+    crop_sampling="hybrid",
     paf_graph=None,
     trainIndices=None,
     testIndices=None,
@@ -133,6 +136,18 @@ def create_multianimaltraining_dataset(
 
     numdigits: int, optional
 
+    crop_size: tuple of int, optional
+        Dimensions (width, height) of the crops for data augmentation.
+        Default is 400x400.
+
+    crop_sampling: str, optional
+        Crop centers sampling method. Must be either:
+        "uniform" (randomly over the image),
+        "keypoints" (randomly over the annotated keypoints),
+        "density" (weighing preferentially dense regions of keypoints),
+        or "hybrid" (alternating randomly between "uniform" and "density").
+        Default is "hybrid".
+
     paf_graph: list of lists, optional (default=None)
         If not None, overwrite the default complete graph. This is useful for advanced users who
         already know a good graph, or simply want to use a specific one. Note that, in that case,
@@ -155,6 +170,12 @@ def create_multianimaltraining_dataset(
     >>> deeplabcut.create_multianimaltraining_dataset(r'C:\\Users\\Ulf\\looming-task\\config.yaml',Shuffles=[3,17,5])
     --------
     """
+    if len(crop_size) != 2 or not all(isinstance(v, int) for v in crop_size):
+        raise ValueError("Crop size must be a tuple of two integers (width, height).")
+
+    if crop_sampling not in ("uniform", "keypoints", "density", "hybrid"):
+            raise ValueError(f"Invalid sampling {crop_sampling}. Must be "
+                             f"either 'uniform', 'keypoints', 'density', or 'hybrid.")
 
     # Loading metadata from config file:
     cfg = auxiliaryfunctions.read_config(config)
@@ -170,25 +191,21 @@ def create_multianimaltraining_dataset(
         return
     Data = Data[scorer]
 
-    def strip_cropped_image_name(path):
-        # utility function to split different crops from same image into either train or test!
-        head, filename = os.path.split(path)
-        if cfg["croppedtraining"]:
-            filename = filename.split("c")[0]
-        return os.path.join(head, filename)
-
-    img_names = Data.index.map(strip_cropped_image_name).unique()
-
     if net_type is None:  # loading & linking pretrained models
         net_type = cfg.get("default_net_type", "dlcrnet_ms5")
     elif not any(net in net_type for net in ("resnet", "eff", "dlc", "mob")):
         raise ValueError(f"Unsupported network {net_type}.")
 
     multi_stage = False
-    if net_type == "dlcrnet_ms5":
-        net_type = "resnet_50"
+    ### dlcnet_ms5: backbone resnet50 + multi-fusion & multi-stage module
+    ### dlcr101_ms5/dlcr152_ms5: backbone resnet101/152 + multi-fusion & multi-stage module
+    if all(net in net_type for net in ("dlcr", "_ms5")):
+        num_layers = re.findall("dlcr([0-9]*)", net_type)[0]
+        if num_layers == '':
+            num_layers = 50
+        net_type = "resnet_{}".format(num_layers)
         multi_stage = True
-
+        
     dataset_type = "multi-animal-imgaug"
     (
         individuals,
@@ -231,19 +248,12 @@ def create_multianimaltraining_dataset(
     if trainIndices is None and testIndices is None:
         splits = []
         for shuffle in Shuffles:  # Creating shuffles starting from 1
-            for trainFraction in cfg["TrainingFraction"]:
-                train_inds_temp, test_inds_temp = SplitTrials(
-                    range(len(img_names)), trainFraction
+            for train_frac in cfg["TrainingFraction"]:
+                train_inds, test_inds = SplitTrials(
+                    range(len(Data)), train_frac
                 )
-                # Map back to the original indices.
-                temp = [re.escape(name) for i, name in enumerate(img_names)
-                        if i in test_inds_temp]
-                mask = Data.index.str.contains("|".join(temp))
-                testIndices = np.flatnonzero(mask)
-                trainIndices = np.flatnonzero(~mask)
-
                 splits.append(
-                    (trainFraction, shuffle, (trainIndices, testIndices))
+                    (train_frac, shuffle, (train_inds, test_inds))
                 )
     else:
         if len(trainIndices) != len(testIndices) != len(Shuffles):
@@ -260,6 +270,12 @@ def create_multianimaltraining_dataset(
             print(
                 f"You passed a split with the following fraction: {int(100 * trainFraction)}%"
             )
+            # Now that the training fraction is guaranteed to be correct,
+            # the values added to pad the indices are removed.
+            train_inds = np.asarray(train_inds)
+            train_inds = train_inds[train_inds != -1]
+            test_inds = np.asarray(test_inds)
+            test_inds = test_inds[test_inds != -1]
             splits.append(
                 (trainFraction, Shuffles[shuffle], (train_inds, test_inds))
             )
@@ -382,6 +398,8 @@ def create_multianimaltraining_dataset(
                 "num_idchannel": len(cfg["individuals"])
                 if cfg.get("identity", False)
                 else 0,
+                "crop_size": list(crop_size),
+                "crop_sampling": crop_sampling,
             }
 
             trainingdata = MakeTrain_pose_yaml(
@@ -437,3 +455,115 @@ def create_multianimaltraining_dataset(
             )
         else:
             pass
+
+
+def convert_cropped_to_standard_dataset(
+    config_path,
+    recreate_datasets=True,
+    delete_crops=True,
+    back_up=True,
+):
+    import pandas as pd
+    import pickle
+    import shutil
+    from deeplabcut.generate_training_dataset import trainingsetmanipulation
+    from deeplabcut.utils import read_plainconfig, write_config
+
+    cfg = auxiliaryfunctions.read_config(config_path)
+    videos_orig = cfg.pop("video_sets_original")
+    is_cropped = cfg.pop("croppedtraining")
+    if videos_orig is None or not is_cropped:
+        print("Labeled data do not appear to be cropped. "
+              "Project will remain unchanged...")
+        return
+
+    project_path = cfg["project_path"]
+
+    if back_up:
+        print("Backing up project...")
+        shutil.copytree(project_path, project_path + "_bak", symlinks=True)
+
+    if delete_crops:
+        print("Deleting crops...")
+        data_path = os.path.join(project_path, "labeled-data")
+        for video in cfg["video_sets"]:
+            _, filename, _ = trainingsetmanipulation._robust_path_split(video)
+            if "_cropped" in video:  # One can never be too safe...
+                shutil.rmtree(os.path.join(data_path, filename), ignore_errors=True)
+
+    cfg["video_sets"] = videos_orig
+    write_config(config_path, cfg)
+
+    if not recreate_datasets:
+        return
+
+    datasets_folder = os.path.join(
+        project_path, auxiliaryfunctions.GetTrainingSetFolder(cfg),
+    )
+    df_old = pd.read_hdf(
+        os.path.join(datasets_folder, "CollectedData_" + cfg["scorer"] + ".h5"),
+    )
+
+    def strip_cropped_image_name(path):
+        head, filename = os.path.split(path)
+        head = head.replace("_cropped", "")
+        file, ext = filename.split(".")
+        file = file.split("c")[0]
+        return os.path.join(head, file + "." + ext)
+
+    img_names_old = np.asarray(
+        [strip_cropped_image_name(img) for img in df_old.index.to_list()]
+    )
+    df = merge_annotateddatasets(cfg, datasets_folder, False)
+    img_names = df.index.to_numpy()
+    train_idx = []
+    test_idx = []
+    pickle_files = []
+    for filename in os.listdir(datasets_folder):
+        if filename.endswith("pickle"):
+            pickle_file = os.path.join(datasets_folder, filename)
+            pickle_files.append(pickle_file)
+            if filename.startswith("Docu"):
+                with open(pickle_file, "rb") as f:
+                    _, train_inds, test_inds, train_frac = pickle.load(f)
+                    train_inds_temp = np.flatnonzero(
+                        np.isin(img_names, img_names_old[train_inds])
+                    )
+                    test_inds_temp = np.flatnonzero(
+                        np.isin(img_names, img_names_old[test_inds])
+                    )
+                    train_inds, test_inds = pad_train_test_indices(
+                        train_inds_temp, test_inds_temp, train_frac
+                    )
+                    train_idx.append(train_inds)
+                    test_idx.append(test_inds)
+
+    # Search a pose_config.yaml file to parse missing information
+    pose_config_path = ""
+    for dirpath, dirnames, filenames in os.walk(
+            os.path.join(project_path, "dlc-models")
+    ):
+        for file in filenames:
+            if file.endswith("pose_cfg.yaml"):
+                pose_config_path = os.path.join(dirpath, file)
+                break
+    pose_cfg = read_plainconfig(pose_config_path)
+    net_type = pose_cfg["net_type"]
+    if net_type == "resnet_50" and pose_cfg.get("multi_stage", False):
+        net_type = "dlcrnet_ms5"
+
+    # Clean the training-datasets folder prior to recreating the data pickles
+    shuffle_inds = set()
+    for file in pickle_files:
+        os.remove(file)
+        shuffle_inds.add(int(re.findall(r"shuffle(\d+)", file)[0]))
+    create_multianimaltraining_dataset(
+        config_path,
+        trainIndices=train_idx,
+        testIndices=test_idx,
+        Shuffles=sorted(shuffle_inds),
+        net_type=net_type,
+        paf_graph=pose_cfg["partaffinityfield_graph"],
+        crop_size=pose_cfg.get("crop_size", [400, 400]),
+        crop_sampling=pose_cfg.get("crop_sampling", "hybrid"),
+    )

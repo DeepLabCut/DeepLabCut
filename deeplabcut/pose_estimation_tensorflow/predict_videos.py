@@ -284,18 +284,6 @@ def analyze_videos(
             from deeplabcut.pose_estimation_tensorflow.predict_multianimal import (
                 AnalyzeMultiAnimalVideo,
             )
-
-            # Re-use data-driven PAF graph for video analysis. Note that this must
-            # happen after setting up the TF session to avoid graph mismatch.
-            best_edges = dlc_cfg.get("paf_best")
-            if best_edges is not None:
-                best_graph = [dlc_cfg["partaffinityfield_graph"][i] for i in best_edges]
-            else:
-                best_graph = dlc_cfg["partaffinityfield_graph"]
-
-            dlc_cfg["partaffinityfield_graph"] = best_graph
-            dlc_cfg["num_limbs"] = len(best_graph)
-
             for video in Videos:
                 AnalyzeMultiAnimalVideo(
                     video,
