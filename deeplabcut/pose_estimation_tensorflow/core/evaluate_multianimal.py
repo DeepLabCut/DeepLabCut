@@ -10,6 +10,7 @@ Licensed under GNU Lesser General Public License v3.0
 
 
 import os
+import pickle
 from pathlib import Path
 
 import numpy as np
@@ -202,7 +203,8 @@ def evaluate_multianimal_full(
 
             # TODO: IMPLEMENT for different batch sizes?
             dlc_cfg["batch_size"] = 1  # due to differently sized images!!!
-
+            # Ignore best edges possibly defined during a prior evaluation
+            _ = dlc_cfg.pop("paf_best", None)
             joints = dlc_cfg["all_joints_names"]
 
             # Create folder structure to store results.
@@ -379,13 +381,16 @@ def evaluate_multianimal_full(
                                 if inds_gt.size and xy.size:
                                     # Pick the predictions closest to ground truth,
                                     # rather than the ones the model has most confident in
-                                    d = cdist(xy_gt.iloc[inds_gt], xy)
-                                    rows, cols = linear_sum_assignment(d)
-                                    min_dists = d[rows, cols]
+                                    xy_gt_values = xy_gt.iloc[inds_gt].values
+                                    neighbors = _find_closest_neighbors(xy_gt_values, xy, k=3)
+                                    found = neighbors != -1
+                                    min_dists = np.linalg.norm(
+                                        xy_gt_values[found] - xy[neighbors[found]], axis=1,
+                                    )
                                     inds = np.flatnonzero(all_bpts == bpt)
-                                    sl = imageindex, inds[inds_gt[rows]]
+                                    sl = imageindex, inds[inds_gt[found]]
                                     dist[sl] = min_dists
-                                    conf[sl] = probs_pred[n_joint][cols].squeeze()
+                                    conf[sl] = probs_pred[n_joint][neighbors[found]].squeeze()
 
                             if plotting:
                                 gt = temp_xy.values.reshape(
@@ -501,9 +506,7 @@ def evaluate_multianimal_full(
                             "nms radius": dlc_cfg["nmsradius"],
                             "minimal confidence": dlc_cfg["minconfidence"],
                             "PAFgraph": dlc_cfg["partaffinityfield_graph"],
-                            "PAFinds": dlc_cfg.get(
-                                "paf_best",
-                                np.arange(len(dlc_cfg["partaffinityfield_graph"])),
+                            "PAFinds": np.arange(len(dlc_cfg["partaffinityfield_graph"]),
                             ),
                             "all_joints": [
                                 [i] for i in range(len(dlc_cfg["all_joints"]))
@@ -535,23 +538,31 @@ def evaluate_multianimal_full(
 
                     # Skip data-driven skeleton selection unless
                     # the model was trained on the full graph.
-                    max_n_edges = dlc_cfg["num_joints"] * (dlc_cfg["num_joints"] - 1) // 2
-                    if len(dlc_cfg["partaffinityfield_graph"]) == max_n_edges:
-                        uncropped_data_path = data_path.replace(
-                            ".pickle", "_uncropped.pickle"
-                        )
-                        if not os.path.isfile(uncropped_data_path):
-                            print("Selecting best skeleton...")
-                            crossvalutils._rebuild_uncropped_in(evaluationfolder)
-                            _ = crossvalutils.cross_validate_paf_graphs(
-                                config,
-                                str(path_test_config).replace("pose_", "inference_"),
-                                uncropped_data_path,
-                                uncropped_data_path.replace("_full_", "_meta_"),
-                            )
+                    n_multibpts = len(cfg["multianimalbodyparts"])
+                    max_n_edges = n_multibpts * (n_multibpts - 1) // 2
+                    n_edges = len(dlc_cfg["partaffinityfield_graph"])
+                    if n_edges == max_n_edges:
+                        print("Selecting best skeleton...")
+                        n_graphs = 10
+                        paf_inds = None
+                    else:
+                        n_graphs = 1
+                        paf_inds = [list(range(n_edges))]
+                    results, paf_scores = crossvalutils.cross_validate_paf_graphs(
+                        config,
+                        str(path_test_config).replace("pose_", "inference_"),
+                        data_path,
+                        data_path.replace("_full.", "_meta."),
+                        n_graphs=n_graphs,
+                        paf_inds=paf_inds,
+                    )
+                    df = results[1].copy()
+                    df.loc(axis=0)[('mAP', 'mean')] = [d['mAP'] for d in results[2]]
+                    df.loc(axis=0)[('mAR', 'mean')] = [d['mAR'] for d in results[2]]
+                    with open(data_path.replace("_full.", "_map."), "wb") as file:
+                        pickle.dump((df, paf_scores), file)
 
                 if len(final_result) > 0:  # Only append if results were calculated
                     make_results_file(final_result, evaluationfolder, DLCscorer)
 
-    # returning to intial folder
     os.chdir(str(start_path))

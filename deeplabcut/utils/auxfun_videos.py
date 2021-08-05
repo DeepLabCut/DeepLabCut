@@ -346,7 +346,7 @@ def check_video_integrity(video_path):
     
 # Historically DLC used: from scipy.misc import imread, imresize >> deprecated functions
 def imread(path, mode=None):
-    return cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
+    return cv2.imread(path)[..., ::-1]  # ~10% faster than using cv2.cvtColor
 
 
 # https://docs.opencv.org/3.4.0/da/d54/group__imgproc__transform.html#ga5bb5a1fea74ea38e1a5445ca803ff121

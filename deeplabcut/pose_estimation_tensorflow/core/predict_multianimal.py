@@ -45,9 +45,7 @@ def AssociationCosts(
     ny, nx, nlimbs = np.shape(partaffinitymaps)
     graph = cfg["partaffinityfield_graph"]
     limbs = cfg.get("paf_best", np.arange(len(graph)))
-    if len(graph) != len(limbs):
-        limbs = np.arange(len(graph))
-
+    graph = [graph[l] for l in limbs]
     for l, (bp1, bp2) in zip(limbs, graph):
         # get coordinates for bp1 and bp2
         C1 = coordinates[bp1]

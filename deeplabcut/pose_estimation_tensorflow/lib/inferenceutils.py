@@ -347,7 +347,8 @@ class Assembler:
 
     def extract_best_links(self, joints_dict, costs, trees=None):
         links = []
-        for (s, t), ind in zip(self.graph, self.paf_inds):
+        for ind in self.paf_inds:
+            s, t = self.graph[ind]
             dets_s = joints_dict.get(s, None)
             dets_t = joints_dict.get(t, None)
             if dets_s is None or dets_t is None:
@@ -592,6 +593,8 @@ class Assembler:
         for joint in joints:
             bag[joint.label].append(joint)
 
+        assembled = set()
+
         if self.n_uniquebodyparts:
             unique = np.full((self.n_uniquebodyparts, 3), np.nan)
             for n, ind in enumerate(range(self.n_multibodyparts, self.n_keypoints)):
@@ -602,6 +605,11 @@ class Assembler:
                     det = max(dets, key=lambda x: x.confidence)
                 else:
                     det = dets[0]
+                # Mark the unique body parts as assembled anyway so
+                # they are not used later on to fill assemblies.
+                assembled.update(d.idx for d in dets)
+                if det.confidence <= self.pcutoff and not self.add_discarded:
+                    continue
                 unique[n] = *det.pos, det.confidence
             if np.isnan(unique).all():
                 unique = None
@@ -613,7 +621,6 @@ class Assembler:
 
         if self.identity_only:
             assemblies = []
-            assembled = set()
             get_attr = operator.attrgetter("group")
             temp = sorted(
                 (joint for joint in joints if np.isfinite(joint.confidence)),
@@ -648,7 +655,8 @@ class Assembler:
                 vecs = np.vstack([link.to_vector() for link in links])
                 self._trees[ind_frame] = cKDTree(vecs)
 
-            assemblies, assembled = self.build_assemblies(links)
+            assemblies, assembled_ = self.build_assemblies(links)
+            assembled.update(assembled_)
 
         # Remove invalid assemblies
         discarded = set(
