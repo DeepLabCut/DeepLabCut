@@ -358,6 +358,7 @@ def MakeTest_pose_yaml(
     nmsradius=None,
     minconfidence=None,
     sigma=None,
+    locref_smooth=None,
 ):
     dict_test = {}
     for key in keys2save:
@@ -370,6 +371,8 @@ def MakeTest_pose_yaml(
         dict_test["minconfidence"] = minconfidence
     if sigma is not None:
         dict_test["sigma"] = sigma
+    if locref_smooth is not None:
+        dict_test["locref_smooth"] = locref_smooth
 
     dict_test["scoremap_dir"] = "test"
     with open(saveasfile, "w") as f:

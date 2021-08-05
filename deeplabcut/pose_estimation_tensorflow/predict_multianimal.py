@@ -170,7 +170,7 @@ def GetPoseandCostsF(
     PredicteData["metadata"] = {
         "nms radius": dlc_cfg["nmsradius"],
         "minimal confidence": dlc_cfg["minconfidence"],
-        "sigma": dlc_cfg["sigma"],
+        "sigma": dlc_cfg.get("sigma", 1),
         "PAFgraph": dlc_cfg["partaffinityfield_graph"],
         "PAFinds": dlc_cfg.get(
             "paf_best", np.arange(len(dlc_cfg["partaffinityfield_graph"]))
@@ -210,6 +210,7 @@ def GetPoseandCostsS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
     PredicteData["metadata"] = {
         "nms radius": dlc_cfg["nmsradius"],
         "minimal confidence": dlc_cfg["minconfidence"],
+        "sigma": dlc_cfg.get("sigma", 1),
         "PAFgraph": dlc_cfg["partaffinityfield_graph"],
         "PAFinds": dlc_cfg.get(
             "paf_best", np.arange(len(dlc_cfg["partaffinityfield_graph"]))
