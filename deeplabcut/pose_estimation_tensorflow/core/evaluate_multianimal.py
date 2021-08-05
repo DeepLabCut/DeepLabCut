@@ -16,9 +16,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import skimage.color
-from scipy.optimize import linear_sum_assignment
 from scipy.spatial import cKDTree
-from scipy.spatial.distance import cdist
 from skimage import io
 from skimage.util import img_as_ubyte
 from tqdm import tqdm
@@ -111,7 +109,6 @@ def evaluate_multianimal_full(
     comparisonbodyparts="all",
     gputouse=None,
     modelprefix="",
-    c_engine=False,
 ):
     from deeplabcut.pose_estimation_tensorflow.core import (
         predict,
@@ -203,6 +200,8 @@ def evaluate_multianimal_full(
 
             # TODO: IMPLEMENT for different batch sizes?
             dlc_cfg["batch_size"] = 1  # due to differently sized images!!!
+
+            stride = dlc_cfg["stride"]
             # Ignore best edges possibly defined during a prior evaluation
             _ = dlc_cfg.pop("paf_best", None)
             joints = dlc_cfg["all_joints_names"]
@@ -303,14 +302,11 @@ def evaluate_multianimal_full(
                             auxiliaryfunctions.attempttomakefolder(foldername)
                             fig, ax = visualization.create_minimal_figure()
 
-                        # print(dlc_cfg)
-                        # Specifying state of model (snapshot / training state)
                         sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
 
                         PredicteData = {}
                         dist = np.full((len(Data), len(all_bpts)), np.nan)
                         conf = np.full_like(dist, np.nan)
-                        distnorm = np.full(len(Data), np.nan)
                         print("Analyzing data...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
                             image_path = os.path.join(cfg["project_path"], imagename)
@@ -320,19 +316,9 @@ def evaluate_multianimal_full(
                             frame = img_as_ubyte(image)
 
                             GT = Data.iloc[imageindex]
+                            if not GT.any():
+                                continue
                             df = GT.unstack("coords").reindex(joints, level="bodyparts")
-
-                            # Evaluate PAF edge lengths to calibrate `distnorm`
-                            temp_xy = GT.unstack("bodyparts")[joints]
-                            xy = temp_xy.values.reshape(
-                                (-1, 2, temp_xy.shape[1])
-                            ).swapaxes(1, 2)
-                            if dlc_cfg["partaffinityfield_predict"]:
-                                edges = xy[:, dlc_cfg["partaffinityfield_graph"]]
-                                lengths = np.sum(
-                                    (edges[:, :, 0] - edges[:, :, 1]) ** 2, axis=2
-                                )
-                                distnorm[imageindex] = np.nanmax(lengths)
 
                             # FIXME Is having an empty array vs nan really that necessary?!
                             groundtruthidentity = list(
@@ -348,21 +334,31 @@ def evaluate_multianimal_full(
                                     )
                                     groundtruthidentity[i] = np.array([], dtype=str)
 
-                            PredicteData[imagename] = {}
-                            PredicteData[imagename]["index"] = imageindex
-
-                            pred = predictma.get_detectionswithcostsandGT(
-                                frame,
-                                groundtruthcoordinates,
+                            # Form 2D array of shape (n_rows, 4) where the last dimension
+                            # is (sample_index, peak_y, peak_x, bpt_index) to slice the PAFs.
+                            temp = df.reset_index(level="bodyparts").dropna()
+                            temp["bodyparts"].replace(
+                                dict(zip(joints, range(len(joints)))),
+                                inplace=True,
+                            )
+                            temp["sample"] = 0
+                            peaks_gt = temp.loc[:, ["sample", "y", "x", "bodyparts"]].to_numpy()
+                            peaks_gt[:, 1:3] = (peaks_gt[:, 1:3] - stride // 2) / stride
+                            pred = predictma.predict_batched_peaks_and_costs(
                                 dlc_cfg,
+                                np.expand_dims(frame, axis=0),
                                 sess,
                                 inputs,
                                 outputs,
-                                outall=False,
-                                nms_radius=dlc_cfg["nmsradius"],
-                                det_min_score=dlc_cfg["minconfidence"],
-                                c_engine=c_engine,
+                                peaks_gt.astype(int),
                             )
+                            if not pred:
+                                continue
+                            else:
+                                pred = pred[0]
+
+                            PredicteData[imagename] = {}
+                            PredicteData[imagename]["index"] = imageindex
                             PredicteData[imagename]["prediction"] = pred
                             PredicteData[imagename]["groundtruth"] = [
                                 groundtruthidentity,
@@ -393,7 +389,8 @@ def evaluate_multianimal_full(
                                     conf[sl] = probs_pred[n_joint][neighbors[found]].squeeze()
 
                             if plotting:
-                                gt = temp_xy.values.reshape(
+                                temp_xy = GT.unstack("bodyparts")[joints].values
+                                gt = temp_xy.reshape(
                                     (-1, 2, temp_xy.shape[1])
                                 ).T.swapaxes(1, 2)
                                 h, w, _ = np.shape(frame)
@@ -468,11 +465,6 @@ def evaluate_multianimal_full(
                         ]
                         final_result.append(results)
 
-                        # For OKS/PCK, compute the standard deviation error across all frames
-                        sd = df_dist.groupby("bodyparts", axis=1).mean().std(axis=0)
-                        sd["distnorm"] = np.sqrt(np.nanmax(distnorm))
-                        sd.to_csv(write_path.replace("dist_", "sd_"))
-
                         if show_errors:
                             string = (
                                 "Results for {} training iterations: {}, shuffle {}:\n"
@@ -505,9 +497,9 @@ def evaluate_multianimal_full(
                         PredicteData["metadata"] = {
                             "nms radius": dlc_cfg["nmsradius"],
                             "minimal confidence": dlc_cfg["minconfidence"],
+                            "sigma": dlc_cfg.get("sigma", 1),
                             "PAFgraph": dlc_cfg["partaffinityfield_graph"],
-                            "PAFinds": np.arange(len(dlc_cfg["partaffinityfield_graph"]),
-                            ),
+                            "PAFinds": np.arange(len(dlc_cfg["partaffinityfield_graph"])),
                             "all_joints": [
                                 [i] for i in range(len(dlc_cfg["all_joints"]))
                             ],

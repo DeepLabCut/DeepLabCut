@@ -431,6 +431,8 @@ def create_multianimaltraining_dataset(
                 path_test_config,
                 nmsradius=5.0,
                 minconfidence=0.01,
+                sigma=1,
+                locref_smooth=False,
             )  # setting important def. values for inference
 
             # Setting inference cfg file:
@@ -539,7 +541,7 @@ def convert_cropped_to_standard_dataset(
 
     # Search a pose_config.yaml file to parse missing information
     pose_config_path = ""
-    for dirpath, dirnames, filenames in os.walk(
+    for dirpath, _, filenames in os.walk(
             os.path.join(project_path, "dlc-models")
     ):
         for file in filenames:

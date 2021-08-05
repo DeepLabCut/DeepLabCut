@@ -229,7 +229,6 @@ def _benchmark_paf_graphs(
     all_metrics = []
     for j, paf in enumerate(paf_inds, start=1):
         print(f"Graph {j}|{n_graphs}")
-        graph = [paf_graph[i] for i in paf]
         ass.paf_inds = paf
         ass.assemble()
         oks = evaluate_assembly(ass.assemblies, ass_true_dict, oks_sigma)
@@ -326,7 +325,7 @@ def _get_n_best_paf_graphs(
         if root is None:
             root = []
             for edge in nx.minimum_spanning_edges(G, data=False):
-                root.append(full_graph.index(list(edge)))
+                root.append(full_graph.index(sorted(edge)))
 
     n_edges = len(existing_edges) - len(root)
     lengths = np.linspace(0, n_edges, min(n_graphs, n_edges + 1), dtype=int)[1:]

@@ -1,10 +1,10 @@
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 DeepLabCut2.0-2.2 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
 https://github.com/DeepLabCut/DeepLabCut
-
 Please see AUTHORS for contributors.
 https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
@@ -60,10 +60,6 @@ setuptools.setup(
                 "deeplabcut/pose_estimation_tensorflow/models/pretrained/pretrained_model_urls.yaml",
                 "deeplabcut/gui/media/logo.png",
                 "deeplabcut/gui/media/dlc_1-01.png",
-                "deeplabcut/pose_estimation_tensorflow/lib/nms_cython/nms_grid.pyx",
-                "deeplabcut/pose_estimation_tensorflow/lib/nms_cython/nms_grid.cpp",
-                "deeplabcut/pose_estimation_tensorflow/lib/nms_cython/include/nms_scoremap.hxx",
-                "deeplabcut/pose_estimation_tensorflow/lib/nms_cython/include/andres/marray.hxx",
             ],
         )
     ],
