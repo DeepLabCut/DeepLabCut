@@ -23,6 +23,9 @@ def model_outputs():
     locrefs *= 7.2801
     pafs = np.reshape(pafs, (*pafs.shape[:3], -1, 2))
     return scmaps, locrefs, pafs
+
+
+@pytest.fixture(scope="session")
 def sample_image():
     return np.asarray(Image.open(os.path.join(TEST_DATA_DIR, "image.png")))
 
