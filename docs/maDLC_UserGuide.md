@@ -278,10 +278,11 @@ Alternatively, you can set the loader (as well as other training parameters) in 
 
 Importantly, image cropping as previously done with `deeplabcut.cropimagesandlabels` in multi-animal projects
 is now part of the augmentation pipeline. In other words, image crops are no longer stored in labeled-data/..._cropped
-folders. Crop size still defaults to (400, 400); if your images are very large (2k, 4k pixels), consider increasing this size, but be aware unless you have a lagre GPU (24 GB or more), you will hit memory errors. You can lower the batch size, but this may affect performance.
-In addition, one can specify a crop sampling strategy: crop centers can either be taken at random over the image (`uniform`) or the annotated keypoints (`keypoints`); with a focus on regions of the scene with high body part density (`density`); last, combining `uniform` and `density` for a `hybrid` balanced strategy (the default strategy). Note that both parameters can be easily edited prior to training in the **pose_cfg.yaml** configuration file.
+folders. Crop size still defaults to (400, 400); if your images are very large (e.g. 2k, 4k pixels), consider increasing the crop size, but be aware unless you have a strong GPU (24 GB memory or more), you will hit memory errors. You can lower the batch size, but this may affect performance.
+
+In addition, one can specify a crop sampling strategy: crop centers can either be taken at random over the image (`uniform`) or the annotated keypoints (`keypoints`); with a focus on regions of the scene with high body part density (`density`); last, combining `uniform` and `density` for a `hybrid` balanced strategy (this is the default strategy). Note that both parameters can be easily edited prior to training in the **pose_cfg.yaml** configuration file.
 As a reminder, cropping images into smaller patches is a form of data augmentation that simultaneously
-allows the use of batch processing even on small GPUs that could not otherwise accommodate larger images + larger batchsizes..
+allows the use of batch processing even on small GPUs that could not otherwise accommodate larger images + larger batchsizes (this usually increases performance and decreasing training time). 
 
 
 ### Train The Network:
