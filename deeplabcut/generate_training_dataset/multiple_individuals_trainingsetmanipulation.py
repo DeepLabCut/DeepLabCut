@@ -101,6 +101,7 @@ def create_multianimaltraining_dataset(
     net_type=None,
     numdigits=2,
     crop_size=(400, 400),
+    crop_sampling="hybrid",
     paf_graph=None,
     trainIndices=None,
     testIndices=None,
@@ -139,6 +140,14 @@ def create_multianimaltraining_dataset(
         Dimensions (width, height) of the crops for data augmentation.
         Default is 400x400.
 
+    crop_sampling: str, optional
+        Crop centers sampling method. Must be either:
+        "uniform" (randomly over the image),
+        "keypoints" (randomly over the annotated keypoints),
+        "density" (weighing preferentially dense regions of keypoints),
+        or "hybrid" (alternating randomly between "uniform" and "density").
+        Default is "hybrid".
+
     paf_graph: list of lists, optional (default=None)
         If not None, overwrite the default complete graph. This is useful for advanced users who
         already know a good graph, or simply want to use a specific one. Note that, in that case,
@@ -163,6 +172,10 @@ def create_multianimaltraining_dataset(
     """
     if len(crop_size) != 2 or not all(isinstance(v, int) for v in crop_size):
         raise ValueError("Crop size must be a tuple of two integers (width, height).")
+
+    if crop_sampling not in ("uniform", "keypoints", "density", "hybrid"):
+            raise ValueError(f"Invalid sampling {crop_sampling}. Must be "
+                             f"either 'uniform', 'keypoints', 'density', or 'hybrid.")
 
     # Loading metadata from config file:
     cfg = auxiliaryfunctions.read_config(config)
@@ -386,6 +399,7 @@ def create_multianimaltraining_dataset(
                 if cfg.get("identity", False)
                 else 0,
                 "crop_size": list(crop_size),
+                "crop_sampling": crop_sampling,
             }
 
             trainingdata = MakeTrain_pose_yaml(
@@ -549,5 +563,6 @@ def convert_cropped_to_standard_dataset(
         Shuffles=sorted(shuffle_inds),
         net_type=net_type,
         paf_graph=pose_cfg["partaffinityfield_graph"],
-        crop_size=pose_cfg.get("crop_size", [400, 400])
+        crop_size=pose_cfg.get("crop_size", [400, 400]),
+        crop_sampling=pose_cfg.get("crop_sampling", "hybrid"),
     )

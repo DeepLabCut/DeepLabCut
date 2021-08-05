@@ -98,7 +98,6 @@ if __name__ == "__main__":
         "batch_size": 1,
         "save_iters": N_ITER,
         "display_iters": N_ITER // 2,
-        "n_crops": 2,
         "crop_size": [200, 200],
         # "multi_step": [[0.001, N_ITER]],
     }
