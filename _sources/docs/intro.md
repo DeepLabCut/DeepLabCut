@@ -16,11 +16,6 @@
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1628250004229-KVYD7JJVHYEFDJ32L9VJ/DLClogo2021.jpg?format=1000w" width="95%">
 </p>
 
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1619609897110-TKSTWKEM6HTGXID9D489/ke17ZwdGBToddI8pDm48kAvjv6tW_eojYQmNU0ncbllZw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVHBSTXHtjUKlhRtWJ1Vo6l1B2bxJtByvWSjL6Vz3amc5yb8BodarTVrzIWCp72ioWw/triMouseDLC.gif?format=300w" height="150">
-
-<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3fbd0c898583417a040dfc/1547681053201/rat-grasp.gif?format=300w" height="150">
-</p>
-
 DeepLabCut is a toolbox for markerless pose estimation of animals performing various tasks. [Read a short development and application summary below](https://github.com/AlexEMG/DeepLabCut#why-use-deeplabcut). As long as you can see (label) what you want to track, you can use this toolbox, as it is animal and object agnostic.
 
 This new JupyterBook Docs Hub serves as a landing page for both new and advanced users. Check out the left sidebar for new the main docs, but also tutorials and "recipes" for interesting ways to use DLC and functionality that is not documented elsewhere. Have a new recipe? Please contribute!
