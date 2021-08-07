@@ -21,7 +21,7 @@ C. You have calibration images taken (see details below!).
 
 
 ***If you need more than 2 camera support:**
-Due to the excellent work of others, we will not have >2 cameras (via calibration) support at this time. We also opt not to have them in DLC, as we want users to have the most flexibility in their systems. Here are other excellent options for you to use:
+Here are other excellent options for you to use that extend DeepLabCut:
 
 - **[anipose.org](https://anipose.readthedocs.io/en/latest/)**; a wrapper for 3D deeplabcut https://github.com/lambdaloop/anipose
   - it provides >3 camera support and is built to work directly with DeepLabCut. You can `pip install anipose` into your DLC conda environment.
