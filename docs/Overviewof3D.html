@@ -295,34 +295,49 @@
             <nav id="bd-toc-nav">
                 <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#create-a-new-3d-project">
-   (1) Create a New 3D Project:
+  <a class="reference internal nav-link" href="#if-you-need-more-than-2-camera-support">
+   *
+   <strong>
+    If you need more than 2 camera support:
+   </strong>
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#take-and-process-camera-calibration-images">
-   (2) Take and Process Camera Calibration Images:
+  <a class="reference internal nav-link" href="#jump-in-with-direct-deeplabcut-2-camera-support">
+   Jump in with direct DeepLabCut 2-camera support:
   </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#check-for-undistortion">
-   (3) Check for Undistortion:
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#triangulation-take-your-2d-to-3d">
-   (4) Triangulation –&gt; Take your 2D to 3D!
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#visualize-your-3d-deeplabcut-videos">
-   (5) Visualize your 3D DeepLabCut Videos:
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#if-you-use-this-code">
-   If you use this code:
-  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#create-a-new-3d-project">
+     (1) Create a New 3D Project:
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#take-and-process-camera-calibration-images">
+     (2) Take and Process Camera Calibration Images:
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#check-for-undistortion">
+     (3) Check for Undistortion:
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#triangulation-take-your-2d-to-3d">
+     (4) Triangulation –&gt; Take your 2D to 3D!
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#visualize-your-3d-deeplabcut-videos">
+     (5) Visualize your 3D DeepLabCut Videos:
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#if-you-use-this-code">
+     If you use this code:
+    </a>
+   </li>
+  </ul>
  </li>
 </ul>
 
@@ -337,34 +352,30 @@
                 
   <div class="section" id="d-deeplabcut">
 <h1>3D DeepLabCut<a class="headerlink" href="#d-deeplabcut" title="Permalink to this headline">¶</a></h1>
-<p>We support 2-camera based 3D pose estimation</p>
+<p>In this repo we directly support 2-camera based 3D pose estimation. If you want n camera support, plus nicer optimization methods, please see our new work that was published at <a class="reference external" href="https://github.com/African-Robotics-Unit/AcinoSet">ICRA 2021 on strong baseline 3D models (and a 3D dataset)</a>. In the link you will find how we optimize 6+ camera DLC output data for cheetahs (and see more below).</p>
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589578632599-HQENUYUIBI9KYTZA2WXV/ke17ZwdGBToddI8pDm48kBgERiRoVg6XJpnbAnG076FZw-zPPgdn4jUwVcJE1ZvWhcwhEtWJXoshNdA9f1qD7Y5_KuY_fkOEvGrDVB8aRb13EC_7Ld97nVeJG4MMJk1tqSdWG3KOMGCA68a4XjyT5g/3D.png?format=300w" width="350" title="DLC-3D" alt="DLC 3D" align="right" vspace = "50">
-<ul class="simple">
-<li><p>Watch a <a class="reference external" href="https://youtu.be/Eh6oIGE4dwI">DEMO VIDEO</a> on how to use this code!</p></li>
-</ul>
-<p><strong>Our code base assumes you:</strong></p>
+<p><strong>Our code base in this repo assumes you:</strong></p>
 <p>A. You have 2D videos and a DeepLabCut network to analyze them as described in the <a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/blob/master/docs/UseOverviewGuide.md">main documentation</a>. This can be with multiple separate networks for each camera, or one network trained on all views (See <a class="reference external" href="https://www.biorxiv.org/content/10.1101/476531v1">Nath*, Mathis* et al., 2019</a>).</p>
 <p>B. You are using 2 cameras for 3D*.</p>
 <p>C. You have calibration images taken (see details below!).</p>
+<div class="section" id="if-you-need-more-than-2-camera-support">
+<h2>*<strong>If you need more than 2 camera support:</strong><a class="headerlink" href="#if-you-need-more-than-2-camera-support" title="Permalink to this headline">¶</a></h2>
+<p>Here are other excellent options for you to use that extend DeepLabCut:</p>
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1628432165795-BBF6AWCK1BEKV3AJ6GF5/cheetah.gif?format=1500w" width="350" title="AcinoSet-3D" alt="DLC 3D" align="right" vspace = "50">
+<ul class="simple">
+<li><p><strong><a class="reference external" href="https://github.com/African-Robotics-Unit/AcinoSet">AcinoSet</a></strong>; <strong>n</strong>-camera support with triangulation, extended Kalman filtering, and trajectory optimation code (see video to the right for a min demo, courtesy of Prof. Patel), plus a GUI to visualize 3D data. It is built to work directly with DeepLabCut (but currently tailored to cheetah’s, thus some coding skills are required at this time).</p></li>
+<li><p><strong><a class="reference external" href="https://anipose.readthedocs.io/en/latest/">anipose.org</a></strong>; a wrapper for 3D deeplabcut that provides &gt;3 camera support and is built to work directly with DeepLabCut. You can <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">anipose</span></code> into your DLC conda environment.</p></li>
+<li><p><strong>Argus, easywand or DLTdv</strong> w/DeepLabCut see <a class="reference external" href="https://github.com/haliaetus13/DLCconverterDLT">https://github.com/haliaetus13/DLCconverterDLT</a> this can be used with the the highly popular Argus or DLTdv tools for wand calibration.</p></li>
+</ul>
+</div>
+<div class="section" id="jump-in-with-direct-deeplabcut-2-camera-support">
+<h2>Jump in with direct DeepLabCut 2-camera support:<a class="headerlink" href="#jump-in-with-direct-deeplabcut-2-camera-support" title="Permalink to this headline">¶</a></h2>
 <p align="center">
 <img src= https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1560968522350-COKR986AQESF5N1N7QNK/ke17ZwdGBToddI8pDm48kNaO57GzHjWqV-xM6jVvY6ZZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpyR5k0u27ivMv3az5DOhUvLuYQefjfUWYPEDVexVC_mSas4X78tjQKn3yE00zHvnK8/3D_maousLarger.gif?format=750w width="85%">
  </p>
-<p>*<strong>If you need more than 2 camera support:</strong>
-Here are other excellent options for you to use that extend DeepLabCut:</p>
-<ul class="simple">
-<li><p><strong><a class="reference external" href="https://anipose.readthedocs.io/en/latest/">anipose.org</a></strong>; a wrapper for 3D deeplabcut <a class="reference external" href="https://github.com/lambdaloop/anipose">https://github.com/lambdaloop/anipose</a></p>
-<ul>
-<li><p>it provides &gt;3 camera support and is built to work directly with DeepLabCut. You can <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">anipose</span></code> into your DLC conda environment.</p></li>
-</ul>
-</li>
-<li><p>using Argus, easywand or DLTdv w/deeplabcut <a class="reference external" href="https://github.com/haliaetus13/DLCconverterDLT">https://github.com/haliaetus13/DLCconverterDLT</a></p>
-<ul>
-<li><p>this can be used with the the highly popular Argus or DLTdv tools for wand calibration.</p></li>
-</ul>
-</li>
-</ul>
 <div class="section" id="create-a-new-3d-project">
-<h2>(1) Create a New 3D Project:<a class="headerlink" href="#create-a-new-3d-project" title="Permalink to this headline">¶</a></h2>
+<h3>(1) Create a New 3D Project:<a class="headerlink" href="#create-a-new-3d-project" title="Permalink to this headline">¶</a></h3>
+<p>Watch a <a class="reference external" href="https://youtu.be/Eh6oIGE4dwI">DEMO VIDEO</a> on how to use this code!</p>
 <p>You will run this function <strong>one</strong> time per project; a project is defined as a given set of cameras and calibration images. You can always analyze new videos within this project.</p>
 <p>The function <strong>create_new_project_3d</strong> creates a new project directory specifically for converting the 2D pose to 3D pose, required subdirectories, and a basic 3D project configuration file. Each project is identified by the name of the project (e.g. Task1), name of the experimenter (e.g. YourName), as well as the date at creation.</p>
 <p>Thus, this function requires the user to input the enter the name of the project, the name of the experimenter and number of cameras to be used. Currently, DeepLabCut supports triangulation using 2 cameras, but will expand to more than 2 cameras in a future version.</p>
@@ -392,7 +403,7 @@ Use a chessboard as big as possible, ideally a chessboard with of at least 8x6 s
 </p>
 </div>
 <div class="section" id="take-and-process-camera-calibration-images">
-<h2>(2) Take and Process Camera Calibration Images:<a class="headerlink" href="#take-and-process-camera-calibration-images" title="Permalink to this headline">¶</a></h2>
+<h3>(2) Take and Process Camera Calibration Images:<a class="headerlink" href="#take-and-process-camera-calibration-images" title="Permalink to this headline">¶</a></h3>
 <p>(<strong>CRITICAL!</strong>) You must take images of a checkerboard to calibrate your images. Here are example boards you could print and use (mount it on a flat, hard surface!): <a class="reference external" href="https://markhedleyjones.com/projects/calibration-checkerboard-collection">https://markhedleyjones.com/projects/calibration-checkerboard-collection</a>.</p>
 <ul class="simple">
 <li><p>You must save the image pairs as .jpg files.</p></li>
@@ -436,7 +447,7 @@ extracts the grid pattern from the calibration images and store them under the <
 <p>Once you have run this for the project, you do not need to do so again (unless you want to re-calibrate your cameras); be advised, if you do re-calibrate, you may want to clearly mark which videos are analyzed with “old” vs. “new” calibration images.</p>
 </div>
 <div class="section" id="check-for-undistortion">
-<h2>(3) Check for Undistortion:<a class="headerlink" href="#check-for-undistortion" title="Permalink to this headline">¶</a></h2>
+<h3>(3) Check for Undistortion:<a class="headerlink" href="#check-for-undistortion" title="Permalink to this headline">¶</a></h3>
 <p>In order to check how well the stereo calibration is, it is recommended to undistort the calibration images and the corner points using camera matrices and project these undistorted points on the undistorted images to check if they align correctly. This can be done in deeplabcut as:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">check_undistortion</span><span class="p">(</span><span class="n">config_path3d</span><span class="p">,</span> <span class="n">cbrow</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">cbcol</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
 </pre></div>
@@ -444,7 +455,7 @@ extracts the grid pattern from the calibration images and store them under the <
 <p>Each calibration image is undistorted and saved under the directory <code class="docutils literal notranslate"><span class="pre">undistortion</span></code>. A plot with a pair of undistorted camera images with its undistorted corner points overlaid is also stored. Please visually inspect this image. All the undistorted corner points from all the calibration images are triangulated and plotted for the user to visualize for any undistortion related errors. If they are not correct, go check and revise the calibration images (then repeat the calibration and this step)!</p>
 </div>
 <div class="section" id="triangulation-take-your-2d-to-3d">
-<h2>(4) Triangulation –&gt; Take your 2D to 3D!<a class="headerlink" href="#triangulation-take-your-2d-to-3d" title="Permalink to this headline">¶</a></h2>
+<h3>(4) Triangulation –&gt; Take your 2D to 3D!<a class="headerlink" href="#triangulation-take-your-2d-to-3d" title="Permalink to this headline">¶</a></h3>
 <p>If there are no errors in the undistortion, then the pose from the 2 cameras can be triangulated to get the 3D DeepLabCut coordinates!</p>
 <p>(<strong>CRITICAL!</strong>) Name the video files in such a way that the file name <strong>contains the name of the cameras</strong> as specified in the <code class="docutils literal notranslate"><span class="pre">config</span> <span class="pre">file</span></code>. e.g. if the cameras as named as <code class="docutils literal notranslate"><span class="pre">camera-1</span></code> and <code class="docutils literal notranslate"><span class="pre">camera-2</span></code> (or <code class="docutils literal notranslate"><span class="pre">cam-1</span></code>, <code class="docutils literal notranslate"><span class="pre">cam-2</span></code> etc.) then the video filename must contain this naming, i.e. this could be named as <code class="docutils literal notranslate"><span class="pre">rig-1-mouse-day1-camera-1.avi</span></code> and <code class="docutils literal notranslate"><span class="pre">rig-1-mouse-day1-camera-2.avi</span></code> or could be <code class="docutils literal notranslate"><span class="pre">rig-1-mouse-day1-camera-1-date.avi</span></code> and <code class="docutils literal notranslate"><span class="pre">rig-1-mouse-day1-camera-2-date.avi</span></code>.</p>
 <ul class="simple">
@@ -503,7 +514,7 @@ save_as_csv: bool, optional
  </p>
 </div>
 <div class="section" id="visualize-your-3d-deeplabcut-videos">
-<h2>(5) Visualize your 3D DeepLabCut Videos:<a class="headerlink" href="#visualize-your-3d-deeplabcut-videos" title="Permalink to this headline">¶</a></h2>
+<h3>(5) Visualize your 3D DeepLabCut Videos:<a class="headerlink" href="#visualize-your-3d-deeplabcut-videos" title="Permalink to this headline">¶</a></h3>
 <p>In order to visualize both the 2D videos with tracked points plut the pose in 3D, the user can create a 3D video for certain frames (these are large files, so we advise just looking at a subset of frames). The user can specify the config file, the <strong>path of the triangulated file folder</strong>, and specify the start and end frame indices to create a 3D labeled video. Note that the <code class="docutils literal notranslate"><span class="pre">triangulated_file_folder</span></code> is where the newly created file that ends with <code class="docutils literal notranslate"><span class="pre">yourDLC_3D_scorername.h5</span></code> is located. This can be done using:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video_3d</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;triangulated_file_folder&#39;</span><span class="p">],</span> <span class="n">start</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">250</span><span class="p">)</span>
 </pre></div>
@@ -539,8 +550,9 @@ zlim: list
 </div>
 </div>
 <div class="section" id="if-you-use-this-code">
-<h2>If you use this code:<a class="headerlink" href="#if-you-use-this-code" title="Permalink to this headline">¶</a></h2>
+<h3>If you use this code:<a class="headerlink" href="#if-you-use-this-code" title="Permalink to this headline">¶</a></h3>
 <p>We kindly ask that you cite <a class="reference external" href="https://www.nature.com/articles/s41593-018-0209-y">Mathis et al, 2018</a> <strong>&amp;</strong> <a class="reference external" href="https://doi.org/10.1038/s41596-019-0176-0">Nath*, Mathis*, et al., 2019</a>.</p>
+</div>
 </div>
 </div>
 
