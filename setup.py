@@ -27,7 +27,7 @@ setuptools.setup(
         "ipython",
         "filterpy",
         "ruamel.yaml>=0.15.0",
-        "imgaug==0.4.0",
+        "imgaug>=0.4.0",
         "numba",
         "matplotlib",
         "networkx",
