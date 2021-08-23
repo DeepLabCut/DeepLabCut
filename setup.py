@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -28,7 +27,7 @@ setuptools.setup(
         "ipython",
         "filterpy",
         "ruamel.yaml>=0.15.0",
-        "imgaug",
+        "imgaug==0.4.0",
         "numba",
         "matplotlib",
         "networkx",
