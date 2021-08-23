@@ -16,6 +16,7 @@ import argparse
 import os
 import os.path
 import pickle
+import re
 import time
 from pathlib import Path
 
@@ -1461,7 +1462,14 @@ def convert_detections2tracklets(
                     "uniquebodyparts"
                 ]:  # Initialize storage of the 'single' individual track
                     tracklets["single"] = {}
-                    tracklets["single"].update(ass.unique)
+                    _single = {}
+                    for index, imname in enumerate(imnames):
+                        single_detection = ass.unique.get(index)
+                        if single_detection is None:
+                            continue
+                        imindex = int(re.findall(r"\d+", imname)[0])
+                        _single[imindex] = single_detection
+                    tracklets["single"].update(_single)
 
                 keep = set(multi_bpts).difference(ignore_bodyparts or [])
                 keep_inds = sorted(multi_bpts.index(bpt) for bpt in keep)
