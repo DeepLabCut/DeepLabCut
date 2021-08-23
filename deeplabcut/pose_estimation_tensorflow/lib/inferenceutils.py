@@ -630,7 +630,10 @@ class Assembler:
             for _, group in groups:
                 ass = Assembly(self.n_multibodyparts)
                 for joint in sorted(group, key=lambda x: x.confidence, reverse=True):
-                    if joint.confidence >= self.pcutoff and joint.label < self.n_multibodyparts:
+                    if (
+                        joint.confidence >= self.pcutoff
+                        and joint.label < self.n_multibodyparts
+                    ):
                         ass.add_joint(joint)
                 if len(ass):
                     assemblies.append(ass)
@@ -650,7 +653,7 @@ class Assembler:
                     if link.affinity < self.min_affinity:
                         links.remove(link)
 
-            if self.window_size >= 1:
+            if self.window_size >= 1 and links:
                 # Store selected edges for subsequent frames
                 vecs = np.vstack([link.to_vector() for link in links])
                 self._trees[ind_frame] = cKDTree(vecs)
@@ -859,7 +862,7 @@ def _parse_ground_truth_data(data):
             if np.isnan(row[:, :2]).all():
                 continue
             ass = Assembly(row.shape[0])
-            ass.data[:, :row.shape[1]] = row
+            ass.data[:, : row.shape[1]] = row
             temp.append(ass)
         if not temp:
             continue
