@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 
 from deeplabcut.utils import auxiliaryfunctions
-
+from deeplabcut.generate_training_dataset import trainingsetmanipulation
 
 def extractindividualsandbodyparts(cfg):
     individuals = cfg["individuals"].copy()
@@ -171,7 +171,7 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
 
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
-    video_names = [Path(i).stem for i in videos]
+    video_names = [trainingsetmanipulation._robust_path_split(i)[1] for i in videos]
     folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
 
     individuals, uniquebodyparts, multianimalbodyparts = extractindividualsandbodyparts(
