@@ -3,7 +3,7 @@ filterpy
 h5py
 ruamel.yaml>=0.15.0
 intel-openmp
-imgaug
+imgaug==0.4.0
 jupyter-book>=0.7.0b
 numba
 matplotlib
