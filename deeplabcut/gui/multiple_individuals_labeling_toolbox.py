@@ -167,6 +167,7 @@ class ImagePanel(BasePanel):
         xlim = self.axes.get_xlim()
         ylim = self.axes.get_ylim()
         self.axes.clear()
+        # convert the image to RGB as you are showing the image with matplotlib
         im = cv2.imread(img)[..., ::-1]
         colorIndex = []
         for indiv in range(len(individuals)):
