@@ -139,9 +139,7 @@ class ImagePanel(BasePanel):
             return None, None, None
 
     def drawEpLines(self, drawImage, lines, sourcePts, offsets, colorIndex, cmap):
-        drawImage = cv2.cvtColor(drawImage, cv2.COLOR_BGR2RGB)
         height, width, depth = drawImage.shape
-        labelNum = 0
         for line, pt, cIdx in zip(lines, sourcePts, colorIndex):
             if pt[0] > -1000:
                 coeffs = line[0]
@@ -166,7 +164,8 @@ class ImagePanel(BasePanel):
         ylim = self.axes.get_ylim()
         self.axes.clear()
 
-        im = cv2.imread(img)[..., ::-1]
+        im = cv2.imread(img)
+        im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)        
         colorIndex = np.linspace(np.max(im), np.min(im), len(bodyparts))
         # draw epipolar lines
         epLines, sourcePts, offsets = self.retrieveData_and_computeEpLines(img, itr)

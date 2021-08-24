@@ -143,7 +143,6 @@ class ImagePanel(BasePanel):
             return None, None, None
 
     def drawEpLines(self, drawImage, lines, sourcePts, offsets, colorIndex, cmap):
-        drawImage = cv2.cvtColor(drawImage, cv2.COLOR_BGR2RGB)
         height, width, depth = drawImage.shape
         for line, pt, cIdx in zip(lines, sourcePts, colorIndex):
             if pt[0] > -1000:
@@ -168,9 +167,8 @@ class ImagePanel(BasePanel):
         xlim = self.axes.get_xlim()
         ylim = self.axes.get_ylim()
         self.axes.clear()
-        #        im = cv2.imread(img)
-        # convert the image to RGB as you are showing the image with matplotlib
-        im = cv2.imread(img)[..., ::-1]
+        im = cv2.imread(img)
+        im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
         colorIndex = []
         for indiv in range(len(individuals)):
             colorIndex.extend(np.linspace(np.max(im), np.min(im), len(bodyparts)))
