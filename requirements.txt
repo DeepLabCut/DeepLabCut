@@ -8,7 +8,7 @@ jupyter-book>=0.7.0b
 numba
 matplotlib
 networkx
-numpy
+numpy>=1.21
 opencv-python-headless
 pandas>=1.0.1
 patsy
