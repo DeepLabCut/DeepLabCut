@@ -248,7 +248,7 @@ class VideoWriter(VideoReader):
         output_path = self.make_output_path(suffix, dest_folder)
         command = (
             f"ffmpeg -n -i {self.video_path} -ss {start} -to {end} "
-            f"-c:a copy {output_path}"
+            f"-c:v copy {output_path}"
         )
         subprocess.call(command, shell=True)
         return output_path
@@ -297,7 +297,7 @@ class VideoWriter(VideoReader):
         command = (
             f"ffmpeg -n -i \"{self.video_path}\" "
             f"-filter:v crop={self.width}:{self.height}:{x1}:{y1} "
-            f"-c:a copy \"{output_path}\""
+            f"-c:v copy \"{output_path}\""
         )
         subprocess.call(command, shell=True)
         return output_path
@@ -314,7 +314,7 @@ class VideoWriter(VideoReader):
         output_path = self.make_output_path(suffix, dest_folder)
         command = (
             f"ffmpeg -n -i {self.video_path} -filter:v "
-            f'"scale={width}:{height}{{}}" -c:a copy {output_path}'
+            f'"scale={width}:{height}{{}}" -c:v copy {output_path}'
         )
         # Rotate, see: https://stackoverflow.com/questions/3937387/rotating-videos-with-ffmpeg
         # interesting option to just update metadata.
