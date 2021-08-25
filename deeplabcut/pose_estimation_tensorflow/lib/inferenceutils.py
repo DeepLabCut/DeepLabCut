@@ -135,7 +135,10 @@ class Assembly:
 
     @property
     def affinity(self):
-        return self._affinity / self.n_links
+        n_links = self.n_links
+        if not n_links:
+            return 0
+        return self._affinity / n_links
 
     @property
     def n_links(self):
