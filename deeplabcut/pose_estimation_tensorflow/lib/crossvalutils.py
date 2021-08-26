@@ -18,8 +18,6 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 from scipy.spatial import cKDTree
-from scipy.spatial.distance import cdist
-from scipy.optimize import linear_sum_assignment
 from sklearn.metrics.cluster import contingency_matrix
 
 from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import (
@@ -124,10 +122,12 @@ def _calc_within_between_pafs(
         except KeyError:
             pass
         bpts = df.index.get_level_values("bodyparts").unique().to_list()
-        coords_gt = (df.unstack(["individuals", "coords"])
-                     .reindex(bpts, level="bodyparts")
-                     .to_numpy()
-                     .reshape((len(bpts), -1, 2)))
+        coords_gt = (
+            df.unstack(["individuals", "coords"])
+            .reindex(bpts, level="bodyparts")
+            .to_numpy()
+            .reshape((len(bpts), -1, 2))
+        )
         coords = dict_["prediction"]["coordinates"][0]
         # Get animal IDs and corresponding indices in the arrays of detections
         lookup = dict()
@@ -287,7 +287,9 @@ def _get_n_best_paf_graphs(
         raise ValueError('`which` must be either "best" or "worst"')
 
     (within_train, _), (between_train, _) = _calc_within_between_pafs(
-        data, metadata, train_set_only=True,
+        data,
+        metadata,
+        train_set_only=True,
     )
     # Handle unlabeled bodyparts...
     existing_edges = set(k for k, v in within_train.items() if v)
@@ -297,10 +299,7 @@ def _get_n_best_paf_graphs(
 
     if not any(between_train.values()):
         # Only 1 animal, let us return the full graph indices only
-        return (
-            [existing_edges],
-            dict(zip(existing_edges, [0] * len(existing_edges)))
-        )
+        return ([existing_edges], dict(zip(existing_edges, [0] * len(existing_edges))))
 
     scores, _ = zip(
         *[
