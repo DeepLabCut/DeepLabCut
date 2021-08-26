@@ -135,7 +135,10 @@ class Assembly:
 
     @property
     def affinity(self):
-        return self._affinity / self.n_links
+        n_links = self.n_links
+        if not n_links:
+            return 0
+        return self._affinity / n_links
 
     @property
     def n_links(self):
@@ -914,7 +917,10 @@ def evaluate_assembly(
             "mAR": 0.0,
         }
 
-    oks = np.asarray([match[2] for match in all_matched])
+    conf_pred = np.asarray([match[0].affinity for match in all_matched])
+    idx = np.argsort(-conf_pred, kind="mergesort")
+    # Sort matching score (OKS) in descending order of assembly affinity
+    oks = np.asarray([match[2] for match in all_matched])[idx]
     ntot = len(all_matched) + len(all_unmatched)
     recall_thresholds = np.linspace(0, 1, 101)
     precisions = []
@@ -925,7 +931,11 @@ def evaluate_assembly(
         rc = tp / ntot
         pr = tp / (fp + tp + np.spacing(1))
         recall = rc[-1]
-        pr = np.sort(pr)[::-1]
+        # Guarantee precision decreases monotonically
+        # See https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173)
+        for i in range(len(pr) - 1, 0, -1):
+            if pr[i] > pr[i - 1]:
+                pr[i - 1] = pr[i]
         inds_rc = np.searchsorted(rc, recall_thresholds)
         precision = np.zeros(inds_rc.shape)
         valid = inds_rc < len(pr)
