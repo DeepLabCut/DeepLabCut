@@ -1,1 +1,22 @@
-theme: jekyll-theme-cayman
+title: DeepLabCut
+author: The DeepLabCut Team
+logo: docs/images/logo.png
+only_build_toc_files: true
+
+execute:
+  execute_notebooks: "off"
+
+html:
+  extra_navbar: ""
+  use_issues_button: true
+  use_repository_button: true
+  extra_footer: |
+    <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+
+repository:
+  url: https://github.com/DeepLabCut/DeepLabCut
+  path_to_book: docs
+  branch: master
+
+launch_buttons:
+  colab_url: "https://colab.research.google.com/github/AlexEMG/DeepLabCut/blob/master/examples/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.ipynb"

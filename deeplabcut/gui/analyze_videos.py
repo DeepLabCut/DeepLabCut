@@ -491,7 +491,11 @@ class Analyze_videos(wx.Panel):
             )
             if self.create_video_with_all_detections.GetStringSelection() == "Yes":
                 deeplabcut.create_video_with_all_detections(
-                    self.config, self.filelist, shuffle, trainingsetindex
+                    self.config,
+                    self.filelist,
+                    videotype=self.videotype.GetValue(),
+                    shuffle=shuffle,
+                    trainingsetindex=trainingsetindex,
                 )
         else:
             scorername = deeplabcut.analyze_videos(

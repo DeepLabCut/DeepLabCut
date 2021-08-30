@@ -39,7 +39,6 @@ from numba.core.errors import NumbaPerformanceWarning
 from scipy.optimize import linear_sum_assignment
 from scipy.stats import mode
 from tqdm import tqdm
-from shapely.geometry import Polygon
 
 
 warnings.simplefilter("ignore", category=NumbaPerformanceWarning)
@@ -194,32 +193,6 @@ class Ellipse:
     @property
     def aspect_ratio(self):
         return max(self.width, self.height) / min(self.width, self.height)
-
-    @property
-    def geometry(self):
-        if self._geometry is None:
-            t = np.linspace(0, 2 * np.pi, 40)
-            ca = math.cos(self.theta)
-            sa = math.sin(self.theta)
-            at = 0.5 * self.width * np.cos(t)
-            bt = 0.5 * self.height * np.sin(t)
-            xx = at * ca - bt * sa + self.x
-            yy = at * sa + bt * ca + self.y
-            self._geometry = Polygon(list(zip(xx, yy)))
-        return self._geometry
-
-    def calc_iou_with(self, other_ellipse):
-        geom1 = self.geometry
-        geom2 = other_ellipse.geometry
-        if not geom1.is_valid:
-            geom1 = geom1.buffer(0)
-        if not geom2.is_valid:
-            geom2 = geom2.buffer(0)
-        if not geom1.intersects(geom2):
-            return 0
-        inter = geom1.intersection(geom2).area
-        union = geom1.union(geom2).area
-        return inter / union
 
     def calc_similarity_with(self, other_ellipse):
         max_dist = max(

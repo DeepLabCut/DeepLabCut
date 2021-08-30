@@ -62,7 +62,6 @@ def create_config_template(multianimal=False):
         \n
     # Cropping Parameters (for analysis and outlier frame detection)
         cropping:
-        croppedtraining:
     #if cropping is true for analysis, then set the values here:
         x1:
         x2:
@@ -110,7 +109,6 @@ def create_config_template(multianimal=False):
         \n
     # Cropping Parameters (for analysis and outlier frame detection)
         cropping:
-        croppedtraining:
     #if cropping is true for analysis, then set the values here:
         x1:
         x2:
@@ -516,7 +514,7 @@ def IntersectionofBodyPartsandOnesGivenbyUser(cfg, comparisonbodyparts):
         allbpts = cfg["bodyparts"]
 
     if comparisonbodyparts == "all":
-        return allbpts
+        return list(allbpts)
     else:  # take only items in list that are actually bodyparts...
         cpbpts = []
         # Ensure same order as in config.yaml

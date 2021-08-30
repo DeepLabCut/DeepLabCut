@@ -9,17 +9,16 @@ Licensed under GNU Lesser General Public License v3.0
 """
 import heapq
 import itertools
+import multiprocessing
 import networkx as nx
 import numpy as np
 import operator
-import os
 import pandas as pd
 import pickle
 import warnings
 from collections import defaultdict
 from dataclasses import dataclass
 from math import sqrt, erf
-from multiprocessing import Pool
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial import cKDTree
 from scipy.spatial.distance import pdist, cdist
@@ -136,7 +135,10 @@ class Assembly:
 
     @property
     def affinity(self):
-        return self._affinity / self.n_links
+        n_links = self.n_links
+        if not n_links:
+            return 0
+        return self._affinity / n_links
 
     @property
     def n_links(self):
@@ -277,10 +279,16 @@ class Assembler:
         mu = np.nanmean(dists, axis=0)
         missing = np.isnan(dists)
         dists = np.where(missing, mu, dists)
-        kde = gaussian_kde(dists.T)
-        kde.mean = mu
-        self._kde = kde
-        self.safe_edge = True
+        try:
+            kde = gaussian_kde(dists.T)
+            kde.mean = mu
+            self._kde = kde
+            self.safe_edge = True
+        except np.linalg.LinAlgError:
+            # Covariance matrix estimation fails due to numerical singularities
+            warnings.warn(
+                "The assembler could not be robustly calibrated. Continuing without it..."
+            )
 
     def calc_assembly_mahalanobis_dist(
         self, assembly, return_proba=False, nan_policy="little"
@@ -342,7 +350,8 @@ class Assembler:
 
     def extract_best_links(self, joints_dict, costs, trees=None):
         links = []
-        for (s, t), ind in zip(self.graph, self.paf_inds):
+        for ind in self.paf_inds:
+            s, t = self.graph[ind]
             dets_s = joints_dict.get(s, None)
             dets_t = joints_dict.get(t, None)
             if dets_s is None or dets_t is None:
@@ -587,6 +596,8 @@ class Assembler:
         for joint in joints:
             bag[joint.label].append(joint)
 
+        assembled = set()
+
         if self.n_uniquebodyparts:
             unique = np.full((self.n_uniquebodyparts, 3), np.nan)
             for n, ind in enumerate(range(self.n_multibodyparts, self.n_keypoints)):
@@ -597,6 +608,11 @@ class Assembler:
                     det = max(dets, key=lambda x: x.confidence)
                 else:
                     det = dets[0]
+                # Mark the unique body parts as assembled anyway so
+                # they are not used later on to fill assemblies.
+                assembled.update(d.idx for d in dets)
+                if det.confidence <= self.pcutoff and not self.add_discarded:
+                    continue
                 unique[n] = *det.pos, det.confidence
             if np.isnan(unique).all():
                 unique = None
@@ -608,7 +624,6 @@ class Assembler:
 
         if self.identity_only:
             assemblies = []
-            assembled = set()
             get_attr = operator.attrgetter("group")
             temp = sorted(
                 (joint for joint in joints if np.isfinite(joint.confidence)),
@@ -618,7 +633,10 @@ class Assembler:
             for _, group in groups:
                 ass = Assembly(self.n_multibodyparts)
                 for joint in sorted(group, key=lambda x: x.confidence, reverse=True):
-                    if joint.confidence >= self.pcutoff:
+                    if (
+                        joint.confidence >= self.pcutoff
+                        and joint.label < self.n_multibodyparts
+                    ):
                         ass.add_joint(joint)
                 if len(ass):
                     assemblies.append(ass)
@@ -638,12 +656,13 @@ class Assembler:
                     if link.affinity < self.min_affinity:
                         links.remove(link)
 
-            if self.window_size >= 1:
+            if self.window_size >= 1 and links:
                 # Store selected edges for subsequent frames
                 vecs = np.vstack([link.to_vector() for link in links])
                 self._trees[ind_frame] = cKDTree(vecs)
 
-            assemblies, assembled = self.build_assemblies(links)
+            assemblies, assembled_ = self.build_assemblies(links)
+            assembled.update(assembled_)
 
         # Remove invalid assemblies
         discarded = set(
@@ -710,7 +729,10 @@ class Assembler:
     def assemble(self, chunk_size=1, n_processes=None):
         self.assemblies = dict()
         self.unique = dict()
-        if chunk_size == 0 or os.name == "nt":  # Avoid multiprocessing on Windows
+        # Spawning (rather than forking) multiple processes does not
+        # work nicely with the GUI or interactive sessions.
+        # In that case, we fall back to the serial assembly.
+        if chunk_size == 0 or multiprocessing.get_start_method() == "spawn":
             for i, data_dict in enumerate(tqdm(self)):
                 assemblies, unique = self._assemble(data_dict, i)
                 if assemblies:
@@ -724,7 +746,7 @@ class Assembler:
                 return i, self._assemble(self[i], i)
 
             n_frames = len(self.metadata["imnames"])
-            with Pool(n_processes) as p:
+            with multiprocessing.Pool(n_processes) as p:
                 with tqdm(total=n_frames) as pbar:
                     for i, (assemblies, unique) in p.imap_unordered(
                         wrapped, range(n_frames), chunksize=chunk_size
@@ -843,7 +865,7 @@ def _parse_ground_truth_data(data):
             if np.isnan(row[:, :2]).all():
                 continue
             ass = Assembly(row.shape[0])
-            ass.data[:, :row.shape[1]] = row
+            ass.data[:, : row.shape[1]] = row
             temp.append(ass)
         if not temp:
             continue
@@ -895,7 +917,10 @@ def evaluate_assembly(
             "mAR": 0.0,
         }
 
-    oks = np.asarray([match[2] for match in all_matched])
+    conf_pred = np.asarray([match[0].affinity for match in all_matched])
+    idx = np.argsort(-conf_pred, kind="mergesort")
+    # Sort matching score (OKS) in descending order of assembly affinity
+    oks = np.asarray([match[2] for match in all_matched])[idx]
     ntot = len(all_matched) + len(all_unmatched)
     recall_thresholds = np.linspace(0, 1, 101)
     precisions = []
@@ -906,7 +931,11 @@ def evaluate_assembly(
         rc = tp / ntot
         pr = tp / (fp + tp + np.spacing(1))
         recall = rc[-1]
-        pr = np.sort(pr)[::-1]
+        # Guarantee precision decreases monotonically
+        # See https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173)
+        for i in range(len(pr) - 1, 0, -1):
+            if pr[i] > pr[i - 1]:
+                pr[i - 1] = pr[i]
         inds_rc = np.searchsorted(rc, recall_thresholds)
         precision = np.zeros(inds_rc.shape)
         valid = inds_rc < len(pr)

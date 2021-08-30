@@ -23,7 +23,7 @@ media_path = os.path.join(deeplabcut.__path__[0], "gui", "media")
 logo = os.path.join(media_path, "logo.png")
 
 
-# DownSampleVideo(vname,width=-1,height=200,outsuffix='downsampled',outpath=None,rotateccw=False):
+# DownSampleVideo(vname,width=-1,height=200,outsuffix='downsampled',outpath=None,rotatecw=False):
 
 
 class Video_Editing(wx.Panel):
@@ -200,7 +200,7 @@ class Video_Editing(wx.Panel):
                     video,
                     width=-1,
                     height=self.height.GetValue(),
-                    rotateccw=self.rotate_val,
+                    rotatecw=self.rotate_val,
                     angle=self.vangle.GetValue(),
                 )
         else:

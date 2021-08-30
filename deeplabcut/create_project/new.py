@@ -63,8 +63,23 @@ def create_new_project(
     from datetime import datetime as dt
     from deeplabcut.utils import auxiliaryfunctions
 
+    months_3letter = {
+        1: "Jan",
+        2: "Feb",
+        3: "Mar",
+        4: "Apr",
+        5: "May",
+        6: "Jun",
+        7: "Jul",
+        8: "Aug",
+        9: "Sep",
+        10: "Oct",
+        11: "Nov",
+        12: "Dec",
+    }
+
     date = dt.today()
-    month = date.strftime("%B")
+    month = months_3letter[date.month]
     day = date.day
     d = str(month[0:3] + str(day))
     date = dt.today().strftime("%Y-%m-%d")
@@ -205,7 +220,6 @@ def create_new_project(
         cfg_file["skeleton"] = [["bodypart1", "bodypart2"], ["objectA", "bodypart3"]]
         cfg_file["default_augmenter"] = "default"
         cfg_file["default_net_type"] = "resnet_50"
-    cfg_file["croppedtraining"] = False
 
     # common parameters:
     cfg_file["Task"] = project

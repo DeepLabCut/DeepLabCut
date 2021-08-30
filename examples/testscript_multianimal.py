@@ -2,6 +2,7 @@ import os
 import deeplabcut
 import numpy as np
 import pandas as pd
+import shutil
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
 
@@ -10,7 +11,8 @@ if __name__ == "__main__":
     SCORER = "dlc_team"
     NUM_FRAMES = 5
     TRAIN_SIZE = 0.8
-    NET = "dlcrnet_ms5"
+    NET = "dlcr101_ms5"
+    #NET = "dlcrnet_ms5"
     #NET = "resnet_152"
     #NET = "efficientnet-b0"
     #NET = "mobilenet_v2_0.35" # should be fixed
@@ -68,7 +70,7 @@ if __name__ == "__main__":
         for image in auxiliaryfunctions.grab_files_in_folder(image_folder, "png")
     ]
     fake_data = np.tile(
-        np.repeat(50 * np.arange(len(animals_id)) + 100, 2), (len(index), 1)
+        np.repeat(50 * np.arange(len(animals_id)) + 50, 2), (len(index), 1)
     )
     df = pd.DataFrame(fake_data, index=index, columns=columns)
     output_path = os.path.join(image_folder, f"CollectedData_{SCORER}.csv")
@@ -77,9 +79,6 @@ if __name__ == "__main__":
         output_path.replace("csv", "h5"), "df_with_missing", format="table", mode="w"
     )
     print("Artificial data created.")
-
-    print("Cropping and exchanging")
-    deeplabcut.cropimagesandlabels(config_path, userfeedback=False)
 
     print("Checking labels...")
     deeplabcut.check_labels(config_path, draw_skeleton=False)
@@ -93,12 +92,13 @@ if __name__ == "__main__":
     model_folder = auxiliaryfunctions.GetModelFolder(
         TRAIN_SIZE, 1, cfg, cfg["project_path"]
     )
-    pose_config_path = os.path.join(model_folder, "train/pose_cfg.yaml")
+    pose_config_path = os.path.join(model_folder, "train", "pose_cfg.yaml")
     edits = {
         "global_scale": 0.5,
         "batch_size": 1,
         "save_iters": N_ITER,
         "display_iters": N_ITER // 2,
+        "crop_size": [200, 200],
         # "multi_step": [[0.001, N_ITER]],
     }
     deeplabcut.auxiliaryfunctions.edit_config(pose_config_path, edits)
@@ -145,12 +145,18 @@ if __name__ == "__main__":
     )
     print("Tracklets created...")
 
+    # Copy over meaningful tracklets to test stitching
     pickle_file = os.path.join(
         os.path.dirname(basepath), "tests", "data", "trimouse_tracklets.pickle"
     )
+    shutil.copy(
+        pickle_file,
+        os.path.splitext(new_video_path)[0] + scorer + "_el.pickle",
+    )
     deeplabcut.stitch_tracklets(
         config_path,
-        pickle_file,
+        [new_video_path],
+        "mp4",
         output_name=os.path.splitext(new_video_path)[0] + scorer + "_el.h5",
     )
 
@@ -183,4 +189,21 @@ if __name__ == "__main__":
     )
     print("Outlier frames extracted.")
     """
+
+    print("Export model...")
+    deeplabcut.export_model(config_path, shuffle=1, make_tar=False)
+
+    print("Merging datasets...")
+    trainIndices, testIndices = deeplabcut.mergeandsplit(
+        config_path, trainindex=0, uniform=True
+    )
+
+    print("Creating two identical splits...")
+    deeplabcut.create_multianimaltraining_dataset(
+        config_path,
+        Shuffles=[4, 5],
+        trainIndices=[trainIndices, trainIndices],
+        testIndices=[testIndices, testIndices],
+    )
+
     print("ALL DONE!!! - default multianimal cases are functional.")

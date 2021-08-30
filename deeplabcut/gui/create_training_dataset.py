@@ -99,7 +99,7 @@ class Create_training_dataset(wx.Panel):
             "efficientnet-b6",
         ]
         self.net_choice.Set(options)
-        self.net_choice.SetValue("resnet_50")
+        self.net_choice.SetValue("dlcrnet_ms5")
         netboxsizer.Add(self.net_choice, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
         aug_text = wx.StaticBox(self, label="Select the augmentation method")
@@ -135,38 +135,6 @@ class Create_training_dataset(wx.Panel):
             style=wx.RA_SPECIFY_COLS,
         )
         self.userfeedback.SetSelection(1)
-
-        if config_file.get("multianimalproject", False):
-
-            self.cropandlabel = wx.RadioBox(
-                self,
-                label="Crop and Label Data (Yes is required, set crop values)",
-                choices=["Yes", "No"],
-                majorDimension=1,
-                style=wx.RA_SPECIFY_COLS,
-            )
-            self.cropandlabel.Bind(wx.EVT_RADIOBOX, self.input_crop_size)
-            self.cropandlabel.SetSelection(0)
-            self.crop_text = wx.StaticBox(
-                self, label="Crop settings (set to smaller than your input images)"
-            )
-            self.crop_sizer = wx.StaticBoxSizer(self.crop_text, wx.VERTICAL)
-            self.crop_widgets = []
-            for name, val in [
-                ("# of crops", "10"),
-                ("height", "400"),
-                ("width", "400"),
-            ]:
-                temp_sizer = wx.BoxSizer(wx.HORIZONTAL)
-                label = wx.StaticText(self, label=name)
-                text = wx.TextCtrl(self, value=val)
-                self.crop_widgets.append([label, text])
-                temp_sizer.Add(label, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-                temp_sizer.Add(text, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-                self.crop_sizer.Add(temp_sizer)
-            self.crop_sizer.ShowItems(True)
-            self.hbox3.Add(self.cropandlabel, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-            self.hbox3.Add(self.crop_sizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         self.hbox2.Add(shuffle_text_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         self.hbox2.Add(trainingindex_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
@@ -291,13 +259,6 @@ class Create_training_dataset(wx.Panel):
         self.sizer.Fit(self)
         self.Layout()
 
-    def input_crop_size(self, event):
-        if self.cropandlabel.GetStringSelection() == "No":
-            self.crop_sizer.ShowItems(False)
-        else:
-            self.crop_sizer.ShowItems(True)
-        self.SetSizer(self.sizer)
-
     def on_focus(self, event):
         pass
 
@@ -368,15 +329,6 @@ class Create_training_dataset(wx.Panel):
             userfeedback = False
 
         if config_file.get("multianimalproject", False):
-            if self.cropandlabel.GetStringSelection() == "Yes":
-                n_crops, height, width = [
-                    int(text.GetValue()) for _, text in self.crop_widgets
-                ]
-                deeplabcut.cropimagesandlabels(
-                    self.config, n_crops, (height, width), userfeedback
-                )
-            else:
-                random = False
             deeplabcut.create_multianimaltraining_dataset(
                 self.config,
                 num_shuffles,
