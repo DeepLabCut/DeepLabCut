@@ -31,7 +31,7 @@ setuptools.setup(
         "numba",
         "matplotlib",
         "networkx",
-        "numpy>=1.21",
+        "numpy",
         "opencv-python-headless",
         "pandas>=1.0.1",
         "scikit-image>=0.17",
