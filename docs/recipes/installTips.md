@@ -254,7 +254,7 @@ Follow prompts!
 
 Given this is a totally fresh install, here are a few things that I also needed: `sudo apt install libcanberra-gtk-module libcanberra-gtk3-module`
 
-We strongly recommend for Ubunut users to use Docker (https://hub.docker.com/r/deeplabcut/deeplabcut) - it's a much more reproducible environment.
+We strongly recommend for Ubuntu users to use Docker (https://hub.docker.com/r/deeplabcut/deeplabcut) - it's a much more reproducible environment.
 
 If you want to use our conda file, then I proceeded below:
 
