@@ -85,7 +85,7 @@
         <ul class="nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="../intro.html">
-   Installation: how to install DeepLabCut
+   DeepLabCut Documentation
   </a>
  </li>
 </ul>
@@ -336,12 +336,12 @@
      Next, DeepLabCut!
     </a>
    </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#troubleshooting-note-if-you-get-a-failed-build-due-to-wxpython-i-e">
-     Troubleshooting: Note, if you get a failed build due to wxPython, i.e.:
-    </a>
-   </li>
   </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#troubleshooting-note-if-you-get-a-failed-build-due-to-wxpython-note-this-does-not-happen-on-ubuntu-18-16-etc-i-e">
+   Troubleshooting: Note, if you get a failed build due to wxPython (note, this does not happen on Ubuntu 18, 16, etc), i.e.:
+  </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#deeplabcut-m1-chip-installation-environment-instructions">
@@ -387,6 +387,11 @@
 <p>If you make changes to the code/first use the code, be sure you run <code class="docutils literal notranslate"><span class="pre">./resinstall.sh</span></code>, which you find in the main DeepLabCut folder:</p>
 <p><img alt="" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1609353210708-FRNREI7HUNS4GLDSJ00G/ke17ZwdGBToddI8pDm48kAya1IcSd32bok4WHvykeicUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYy7Mythp_T-mtop-vrsUOmeInPi9iDjx9w8K4ZfjXt2dq18t0tDkB2HMfL2JGcLHN27k5rSOPIU8nEAZT0p1MiSCjLISwBs8eEdxAxTptZAUg/Screen+Shot+2020-12-30+at+7.33.16+PM.png?format=2500w" /></p>
 <p>Then, you can see what version you have with <code class="docutils literal notranslate"><span class="pre">deeplabcut.__version__</span></code></p>
+<p>If you make changes, you can also then utilize our test scripts. Run the desired test script found here (you will need to git clone first): <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/">https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/</a>.</p>
+<p>i.e., for example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">testscript_multianimal</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="installation-on-ubuntu-18-04-lts">
 <h2>Installation on Ubuntu 18.04 LTS<a class="headerlink" href="#installation-on-ubuntu-18-04-lts" title="Permalink to this headline">¶</a></h2>
@@ -562,13 +567,16 @@ For more examples and ideas, visit:
 </div>
 <div class="section" id="next-deeplabcut">
 <h3>Next, DeepLabCut!<a class="headerlink" href="#next-deeplabcut" title="Permalink to this headline">¶</a></h3>
-<p>Given this is a totally fresh install, here are a few things that I also needed: <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt</span> <span class="pre">install</span> <span class="pre">libcanberra-gtk-module</span> <span class="pre">libcanberra-gtk3-module</span></code> Then I proceeded below:</p>
+<p>Given this is a totally fresh install, here are a few things that I also needed: <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt</span> <span class="pre">install</span> <span class="pre">libcanberra-gtk-module</span> <span class="pre">libcanberra-gtk3-module</span></code></p>
+<p>We strongly recommend for Ubuntu users to use Docker (<a class="reference external" href="https://hub.docker.com/r/deeplabcut/deeplabcut">https://hub.docker.com/r/deeplabcut/deeplabcut</a>) - it’s a much more reproducible environment.</p>
+<p>If you want to use our conda file, then I proceeded below:</p>
 <p>I grab the conda file from the website at <a class="reference external" href="http://www.deeplabcut.org">www.deeplabcut.org</a>. Simply click to download. For me, this goes into Downloads.</p>
 <p>So, I open a terminal, <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">Downloads</span></code>, and then run: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">-f</span> <span class="pre">DEEPLABCUT.yaml</span></code></p>
 <p>Follow prompts!</p>
 </div>
-<div class="section" id="troubleshooting-note-if-you-get-a-failed-build-due-to-wxpython-i-e">
-<h3>Troubleshooting: Note, if you get a failed build due to wxPython, i.e.:<a class="headerlink" href="#troubleshooting-note-if-you-get-a-failed-build-due-to-wxpython-i-e" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="troubleshooting-note-if-you-get-a-failed-build-due-to-wxpython-note-this-does-not-happen-on-ubuntu-18-16-etc-i-e">
+<h2>Troubleshooting: Note, if you get a failed build due to wxPython (note, this does not happen on Ubuntu 18, 16, etc), i.e.:<a class="headerlink" href="#troubleshooting-note-if-you-get-a-failed-build-due-to-wxpython-note-this-does-not-happen-on-ubuntu-18-16-etc-i-e" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ERROR</span><span class="p">:</span> <span class="n">Command</span> <span class="n">errored</span> <span class="n">out</span> <span class="k">with</span> <span class="n">exit</span> <span class="n">status</span> <span class="mi">1</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">mackenzie</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">DLC</span><span class="o">-</span><span class="n">GPU</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">python</span> <span class="o">-</span><span class="n">u</span> <span class="o">-</span><span class="n">c</span> <span class="s1">&#39;import io, os, sys, setuptools, tokenize; sys.argv[0] = &#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;/tmp/pip-install-0jsmkrr1/wxpython_aeff462b2060421a9cf65df55f63a126/setup.py&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;; __file__=&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;/tmp/pip-install-0jsmkrr1/wxpython_aeff462b2060421a9cf65df55f63a126/setup.py&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;;f = getattr(tokenize, &#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;open&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;, open)(__file__) if os.path.exists(__file__) else io.StringIO(&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;from setuptools import setup; setup()&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;);code = f.read().replace(&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;</span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;, &#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;);f.close();exec(compile(code, __file__, &#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;exec&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;))&#39;</span> <span class="n">install</span> <span class="o">--</span><span class="n">record</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">pip</span><span class="o">-</span><span class="n">record</span><span class="o">-</span><span class="n">pzy9q5u2</span><span class="o">/</span><span class="n">install</span><span class="o">-</span><span class="n">record</span><span class="o">.</span><span class="n">txt</span> <span class="o">--</span><span class="n">single</span><span class="o">-</span><span class="n">version</span><span class="o">-</span><span class="n">externally</span><span class="o">-</span><span class="n">managed</span> <span class="o">--</span><span class="nb">compile</span> <span class="o">--</span><span class="n">install</span><span class="o">-</span><span class="n">headers</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">mackenzie</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">DLC</span><span class="o">-</span><span class="n">GPU</span><span class="o">/</span><span class="n">include</span><span class="o">/</span><span class="n">python3</span><span class="mf">.7</span><span class="n">m</span><span class="o">/</span><span class="n">wxpython</span> <span class="n">Check</span> <span class="n">the</span> <span class="n">logs</span> <span class="k">for</span> <span class="n">full</span> <span class="n">command</span> <span class="n">output</span><span class="o">.</span>
 
 <span class="n">failed</span>
@@ -576,7 +584,7 @@ For more examples and ideas, visit:
 <span class="n">CondaEnvException</span><span class="p">:</span> <span class="n">Pip</span> <span class="n">failed</span>
 </pre></div>
 </div>
-<p>remove conda env: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">remove</span> <span class="pre">--name</span> <span class="pre">DEEPLABCUT</span> <span class="pre">--all</span></code>, open the DLC-GPU.yaml file (any text editor!) and change <code class="docutils literal notranslate"><span class="pre">deeplabcut[gui]</span></code> to <code class="docutils literal notranslate"><span class="pre">deeplabcut</span></code>. Then run: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">-f</span> <span class="pre">DEEPLABCUT.yaml</span></code> again…</p>
+<p>You can either: remove conda env: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">remove</span> <span class="pre">--name</span> <span class="pre">DEEPLABCUT</span> <span class="pre">--all</span></code>, open the DLC-GPU.yaml file (any text editor!) and change <code class="docutils literal notranslate"><span class="pre">deeplabcut[gui]</span></code> to <code class="docutils literal notranslate"><span class="pre">deeplabcut</span></code>. Then run: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">-f</span> <span class="pre">DEEPLABCUT.yaml</span></code> again…</p>
 <p>then you will get:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
  <span class="n">Successfully</span> <span class="n">uninstalled</span> <span class="n">decorator</span><span class="o">-</span><span class="mf">5.0.9</span>
@@ -593,9 +601,8 @@ For more examples and ideas, visit:
 <span class="c1">#     $ conda deactivate</span>
 </pre></div>
 </div>
-<p>Activate! <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">DEEPLABCUT</span></code> and then run: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">conda-forge</span> <span class="pre">wxpython</span></code> … after this finishes, run: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut[gui]</span></code></p>
-<p>Now you might get some warnings, but for me it was then totally fine to run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code> which launches the DLC GUI!</p>
-</div>
+<p>Activate! <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">DEEPLABCUT</span></code> and then run: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">conda-forge</span> <span class="pre">wxpython</span></code>.</p>
+<p>Then run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code> which launches the DLC GUI.</p>
 </div>
 <div class="section" id="deeplabcut-m1-chip-installation-environment-instructions">
 <h2>DeepLabCut M1 chip installation environment instructions:<a class="headerlink" href="#deeplabcut-m1-chip-installation-environment-instructions" title="Permalink to this headline">¶</a></h2>
