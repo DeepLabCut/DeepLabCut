@@ -80,7 +80,7 @@ In the terminal type:
 
 The only thing you then need to add to the env is deeplabcut (`pip install deeplabcut`) or `pip install 'deeplabcut[gui]'` which has wxPython for GUI support. For Windows and MacOS, you just run `pip install -U wxPython<4.1.0` but for linux you might need the specific wheel (https://wxpython.org/pages/downloads/index.html).
 
-We have some tips for linux users here, as the latest Ubunut doesnm't easily support a 1-click install: https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html
+We have some tips for linux users here, as the latest Ubuntu doesn't easily support a 1-click install: https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html
 
 ### **GPU Support:**
 
