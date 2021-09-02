@@ -255,7 +255,8 @@ Follow prompts!
 Given this is a totally fresh install, here are a few things that I also needed: `sudo apt install libcanberra-gtk-module libcanberra-gtk3-module`
 
 We strongly recommend for Ubunut users to use Docker (https://hub.docker.com/r/deeplabcut/deeplabcut) - it's a much more reproducible environment.
-Then I proceeded below:
+
+If you want to use our conda file, then I proceeded below:
 
 I grab the conda file from the website at www.deeplabcut.org. Simply click to download. For me, this goes into Downloads.
 
@@ -273,8 +274,6 @@ failed
 CondaEnvException: Pip failed
 ```
 You can either: remove conda env: `conda remove --name DEEPLABCUT --all`, open the DLC-GPU.yaml file (any text editor!) and change `deeplabcut[gui]` to `deeplabcut`. Then run: `conda env create -f DEEPLABCUT.yaml` again...
-
-Or, you can use this file () which is for Ubunutu 20.04 LTS (and just has the same edits as above).
 
 then you will get:
 ```python
