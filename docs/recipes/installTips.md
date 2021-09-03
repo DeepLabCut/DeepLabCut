@@ -330,17 +330,17 @@ During training and analysis steps, DeepLabCut does not use the GPU processor he
 
 (1) Open the task manager. If it looks like the image below, click on "More Details" 
 
-![taskManager](https://github.com/backyardbiomech/docImages/blob/main/DeepLabCut/taskManager.png)
+![taskManager](https://github.com/backyardbiomech/docImages/blob/main/DeepLabCut/taskManager.png?format=750w)
 
 (2) That will bring up the following, which still isn't helpful and has caused confusion for users. The %GPU does not reflect DeepLabCut usage.
 
-![taskManagerDetails](https://github.com/backyardbiomech/docImages/blob/main/DeepLabCut/TaskManagerDetails.png)
+![taskManagerDetails](https://github.com/backyardbiomech/docImages/blob/main/DeepLabCut/TaskManagerDetails.png?format=750w)
 
 (3) Click on the **Performance** tab. On that page, click on the small arrow under GPU (it might start as **3D**, and change it to **CUDA**.  
 
 (4) During training, you should see the **Dedicated GPU memory usage** increase to near maximum, and you should see some activity in the **CUDA** graph. The graph below is the activity while running `testscript.py`.
 
 
-![TaskManger during training](https://github.com/backyardbiomech/docImages/blob/main/DeepLabCut/taskManagerTraining.png)
+![TaskManger during training](https://github.com/backyardbiomech/docImages/blob/main/DeepLabCut/taskManagerTraining.png?format=1500w)
 
 (5) If you don't see activity there during training, then your GPU is likely not installed correctly for DeepLabCut. Return to the installation instructions, and be sure you installed CUDA 11+, and ran `conda install cudnn -c conda-forge` after installing DeepLabCut.
