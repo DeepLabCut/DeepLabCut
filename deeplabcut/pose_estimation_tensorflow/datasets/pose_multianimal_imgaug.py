@@ -482,7 +482,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
                 n_joints = joint_ids.size
                 if n_joints:
                     inds = np.arange(n_joints) + coordinateoffset
-                    mask_ = mask[..., inds].sum(axis=2)
+                    mask_ = mask[..., inds].any(axis=2)
                     scmap[mask_, person_id + num_joints] = 1
                 coordinateoffset += n_joints
 
