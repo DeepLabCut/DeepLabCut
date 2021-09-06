@@ -475,10 +475,10 @@ class MAImgaugPoseDataset(BasePoseDataset):
         if num_idchannel > 0:
             coordinateoffset = 0
             # Find indices of individuals in joint_id
-            idx = [i for i, id_ in enumerate(data_item.joints)
+            idx = [(i, id_) for i, id_ in enumerate(data_item.joints)
                    if id_ < num_idchannel]
-            for person_id in idx:
-                joint_ids = joint_id[person_id]
+            for i, person_id in idx:
+                joint_ids = joint_id[i]
                 n_joints = joint_ids.size
                 if n_joints:
                     inds = np.arange(n_joints) + coordinateoffset
