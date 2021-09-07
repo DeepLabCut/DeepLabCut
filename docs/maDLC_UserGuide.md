@@ -11,22 +11,18 @@ Note, we strongly encourage you to use the [Project Manager GUI](https://github.
 You should think of maDLC being **four** parts.
 - (1) Curate annotation data that allows you to learn a model to track the objects/animals of interest.
 - (2) Create a high-quality pose estimation model.
-- (3) Track in space and time, i.e., assemble bodyparts to detected objects/animals and link across time. This step performs assembly and tracking (comprising first local tracking and then tracklet stitching by global reasoning). 
+- (3) Track in space and time, i.e., assemble bodyparts to detected objects/animals and link across time. This step performs assembly and tracking (comprising first local tracking and then tracklet stitching by global reasoning).
 - (4) Any and all post-processing you wish to do with the output data, either within DLC or outside of it.
 
 Thus, you should always label, train, and evaluate the pose estimation performance first. If and when that performance is high, then you should go advance to the tracking step (and video analysis). There is a natural break point for this, as you will see below.
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1596370260800-SP2GWKDPJCOIR7LJ31VM/ke17ZwdGBToddI8pDm48kB4fL2ovSQh5dRlH2jCMtpoUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcSV94BuD0XUinmig_1P1RJNYVU597j3jgswapL4c_w92BJE9r6UgUperYhWQ2ubQ_/workflow.png?format=2500w" width="550" title="maDLC" alt="maDLC" align="center" vspace = "50">
 
-## Install and test:
+## Install:
 
 **Quick start:** If you are using DeepLabCut on the cloud, or otherwise cannot use the GUIs and you should install with: `pip install deeplabcut`; if you need GUI support, please use: `pip install 'deeplabcut[gui]'`.
 
-Install DLC (we recommend using our supplied conda env) then run the test script found here (you will need to git clone first):
-https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/testscript_multianimal.py
-```python
-python testscript_multianimal.py
-```
+IF you want to use the bleeding edge version to make edits to the code, see here on how to install it and test it (https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html#how-to-use-the-latest-updates-directly-from-github).
 
 ## Get started in the terminal or Project GUI:
 
@@ -282,7 +278,7 @@ folders. Crop size still defaults to (400, 400); if your images are very large (
 
 In addition, one can specify a crop sampling strategy: crop centers can either be taken at random over the image (`uniform`) or the annotated keypoints (`keypoints`); with a focus on regions of the scene with high body part density (`density`); last, combining `uniform` and `density` for a `hybrid` balanced strategy (this is the default strategy). Note that both parameters can be easily edited prior to training in the **pose_cfg.yaml** configuration file.
 As a reminder, cropping images into smaller patches is a form of data augmentation that simultaneously
-allows the use of batch processing even on small GPUs that could not otherwise accommodate larger images + larger batchsizes (this usually increases performance and decreasing training time). 
+allows the use of batch processing even on small GPUs that could not otherwise accommodate larger images + larger batchsizes (this usually increases performance and decreasing training time).
 
 
 ### Train The Network:

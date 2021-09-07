@@ -34,7 +34,12 @@ If you make changes to the code/first use the code, be sure you run `./resinstal
 
 Then, you can see what version you have with `deeplabcut.__version__`
 
+If you make changes, you can also then utilize our test scripts. Run the desired test script found here (you will need to git clone first): https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/.
 
+i.e., for example:
+```
+python testscript_multianimal.py
+```
 
 ## Installation on Ubuntu 18.04 LTS
 
@@ -247,7 +252,11 @@ Follow prompts!
 
 ### Next, DeepLabCut!
 
-Given this is a totally fresh install, here are a few things that I also needed: `sudo apt install libcanberra-gtk-module libcanberra-gtk3-module` Then I proceeded below:
+Given this is a totally fresh install, here are a few things that I also needed: `sudo apt install libcanberra-gtk-module libcanberra-gtk3-module`
+
+We strongly recommend for Ubuntu users to use Docker (https://hub.docker.com/r/deeplabcut/deeplabcut) - it's a much more reproducible environment.
+
+If you want to use our conda file, then I proceeded below:
 
 I grab the conda file from the website at www.deeplabcut.org. Simply click to download. For me, this goes into Downloads.
 
@@ -255,7 +264,7 @@ So, I open a terminal, `cd Downloads`, and then run: `conda env create -f DEEPLA
 
 Follow prompts!
 
-### Troubleshooting: Note, if you get a failed build due to wxPython, i.e.:
+## Troubleshooting: Note, if you get a failed build due to wxPython (note, this does not happen on Ubuntu 18, 16, etc), i.e.:
 
 ```python
 ERROR: Command errored out with exit status 1: /home/mackenzie/anaconda3/envs/DLC-GPU/bin/python -u -c 'import io, os, sys, setuptools, tokenize; sys.argv[0] = '"'"'/tmp/pip-install-0jsmkrr1/wxpython_aeff462b2060421a9cf65df55f63a126/setup.py'"'"'; __file__='"'"'/tmp/pip-install-0jsmkrr1/wxpython_aeff462b2060421a9cf65df55f63a126/setup.py'"'"';f = getattr(tokenize, '"'"'open'"'"', open)(__file__) if os.path.exists(__file__) else io.StringIO('"'"'from setuptools import setup; setup()'"'"');code = f.read().replace('"'"'\r\n'"'"', '"'"'\n'"'"');f.close();exec(compile(code, __file__, '"'"'exec'"'"'))' install --record /tmp/pip-record-pzy9q5u2/install-record.txt --single-version-externally-managed --compile --install-headers /home/mackenzie/anaconda3/envs/DLC-GPU/include/python3.7m/wxpython Check the logs for full command output.
@@ -264,8 +273,7 @@ failed
 
 CondaEnvException: Pip failed
 ```
-
-remove conda env: `conda remove --name DEEPLABCUT --all`, open the DLC-GPU.yaml file (any text editor!) and change `deeplabcut[gui]` to `deeplabcut`. Then run: `conda env create -f DEEPLABCUT.yaml` again...
+You can either: remove conda env: `conda remove --name DEEPLABCUT --all`, open the DLC-GPU.yaml file (any text editor!) and change `deeplabcut[gui]` to `deeplabcut`. Then run: `conda env create -f DEEPLABCUT.yaml` again...
 
 then you will get:
 ```python
@@ -284,10 +292,9 @@ done
 #     $ conda deactivate
 ```
 
-Activate! `conda activate DEEPLABCUT` and then run: `conda install -c conda-forge wxpython` ... after this finishes, run: `pip install deeplabcut[gui]`
+Activate! `conda activate DEEPLABCUT` and then run: `conda install -c conda-forge wxpython`.
 
-Now you might get some warnings, but for me it was then totally fine to run `python -m deeplabcut` which launches the DLC GUI!
-
+Then run `python -m deeplabcut` which launches the DLC GUI.
 
 
 ## DeepLabCut M1 chip installation environment instructions:
