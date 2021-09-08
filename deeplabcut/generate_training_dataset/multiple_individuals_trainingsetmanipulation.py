@@ -97,6 +97,7 @@ def create_multianimaltraining_dataset(
     config,
     num_shuffles=1,
     Shuffles=None,
+    df=None,
     windows2linux=False,
     net_type=None,
     numdigits=2,
@@ -186,10 +187,11 @@ def create_multianimaltraining_dataset(
     full_training_path = Path(project_path, trainingsetfolder)
     auxiliaryfunctions.attempttomakefolder(full_training_path, recursive=True)
 
-    Data = merge_annotateddatasets(cfg, full_training_path, windows2linux)
-    if Data is None:
-        return
-    Data = Data[scorer]
+    if df is None:
+        df = merge_annotateddatasets(cfg, full_training_path, windows2linux)
+        if df is None:
+            return
+        df = df[scorer]
 
     if net_type is None:  # loading & linking pretrained models
         net_type = cfg.get("default_net_type", "dlcrnet_ms5")
@@ -207,11 +209,9 @@ def create_multianimaltraining_dataset(
         multi_stage = True
         
     dataset_type = "multi-animal-imgaug"
-    (
-        individuals,
-        uniquebodyparts,
-        multianimalbodyparts,
-    ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
+    mask_multi = df.columns.get_level_values('individuals') != 'single'
+    multianimalbodyparts = df.columns.get_level_values('bodyparts')[mask_multi].unique().to_list()
+    uniquebodyparts = df.columns.get_level_values('bodyparts')[~mask_multi].unique().to_list()
 
     if paf_graph is None:  # Automatically form a complete PAF graph
         partaffinityfield_graph = [
@@ -250,7 +250,7 @@ def create_multianimaltraining_dataset(
         for shuffle in Shuffles:  # Creating shuffles starting from 1
             for train_frac in cfg["TrainingFraction"]:
                 train_inds, test_inds = SplitTrials(
-                    range(len(Data)), train_frac
+                    range(len(df)), train_frac
                 )
                 splits.append(
                     (train_frac, shuffle, (train_inds, test_inds))
@@ -293,7 +293,7 @@ def create_multianimaltraining_dataset(
 
         # Make training file!
         data = format_multianimal_training_data(
-            Data,
+            df,
             trainIndices,
             cfg["project_path"],
             numdigits,

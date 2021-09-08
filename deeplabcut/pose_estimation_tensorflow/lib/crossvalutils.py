@@ -183,8 +183,11 @@ def _benchmark_paf_graphs(
     calibration_file="",
     oks_sigma=0.1,
 ):
-    n_multi = len(auxfun_multianimal.extractindividualsandbodyparts(config)[2])
-    data_ = {"metadata": data.pop("metadata")}
+    metadata = data.pop("metadata")
+    multi_bpts_orig = auxfun_multianimal.extractindividualsandbodyparts(config)[2]
+    multi_bpts = set(multi_bpts_orig).intersection(metadata['all_joints_names'])
+    n_multi = len(multi_bpts)
+    data_ = {"metadata": metadata}
     for k, v in data.items():
         data_[k] = v["prediction"]
     ass = Assembler(
@@ -219,7 +222,7 @@ def _benchmark_paf_graphs(
     # Form ground truth beforehand
     ground_truth = []
     for i, imname in enumerate(image_paths):
-        temp = data[imname]["groundtruth"][2]
+        temp = data[imname]["groundtruth"][2].reindex(multi_bpts, level='bodyparts')
         ground_truth.append(temp.to_numpy().reshape((-1, 2)))
     ground_truth = np.stack(ground_truth)[:, mask_multi]
     temp = np.ones((*ground_truth.shape[:2], 3))

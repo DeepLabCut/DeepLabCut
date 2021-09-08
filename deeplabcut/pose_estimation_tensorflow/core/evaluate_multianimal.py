@@ -205,6 +205,7 @@ def evaluate_multianimal_full(
             # Ignore best edges possibly defined during a prior evaluation
             _ = dlc_cfg.pop("paf_best", None)
             joints = dlc_cfg["all_joints_names"]
+            n_multibpts = len(set(cfg["multianimalbodyparts"]).intersection(joints))
 
             # Create folder structure to store results.
             evaluationfolder = os.path.join(
@@ -420,8 +421,8 @@ def evaluate_multianimal_full(
                         sess.close()  # closes the current tf session
 
                         # Compute all distance statistics
-                        df_dist = pd.DataFrame(dist, columns=df.index)
-                        df_conf = pd.DataFrame(conf, columns=df.index)
+                        df_dist = pd.DataFrame(dist[:, ~np.isnan(dist).all(axis=0)], columns=df.index)
+                        df_conf = pd.DataFrame(conf[:, ~np.isnan(conf).all(axis=0)], columns=df.index)
                         df_joint = pd.concat(
                             [df_dist, df_conf],
                             keys=["rmse", "conf"],
@@ -530,7 +531,6 @@ def evaluate_multianimal_full(
 
                     # Skip data-driven skeleton selection unless
                     # the model was trained on the full graph.
-                    n_multibpts = len(cfg["multianimalbodyparts"])
                     max_n_edges = n_multibpts * (n_multibpts - 1) // 2
                     n_edges = len(dlc_cfg["partaffinityfield_graph"])
                     if n_edges == max_n_edges:
@@ -552,7 +552,7 @@ def evaluate_multianimal_full(
                     df.loc(axis=0)[('mAP', 'mean')] = [d['mAP'] for d in results[2]]
                     df.loc(axis=0)[('mAR', 'mean')] = [d['mAR'] for d in results[2]]
                     with open(data_path.replace("_full.", "_map."), "wb") as file:
-                        pickle.dump((df, paf_scores), file)
+                        pickle.dump((results, df, paf_scores), file)
 
                 if len(final_result) > 0:  # Only append if results were calculated
                     make_results_file(final_result, evaluationfolder, DLCscorer)
