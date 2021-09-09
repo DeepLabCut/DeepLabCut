@@ -182,10 +182,11 @@ def _benchmark_paf_graphs(
     identity_only=False,
     calibration_file="",
     oks_sigma=0.1,
+    at=None,
 ):
     metadata = data.pop("metadata")
     multi_bpts_orig = auxfun_multianimal.extractindividualsandbodyparts(config)[2]
-    multi_bpts = set(multi_bpts_orig).intersection(metadata['all_joints_names'])
+    multi_bpts = [j for j in metadata['all_joints_names'] if j in multi_bpts_orig]
     n_multi = len(multi_bpts)
     data_ = {"metadata": metadata}
     for k, v in data.items():
@@ -202,6 +203,10 @@ def _benchmark_paf_graphs(
     )
     if calibration_file:
         ass.calibrate(calibration_file)
+
+    if at is not None:  # Keep only the images we want to evaluate graphs on
+        ass.metadata['imnames'] = [ass.metadata['imnames'][i] for i in at]
+        ass.window_size = 0
 
     params = ass.metadata
     image_paths = params["imnames"]
@@ -221,7 +226,7 @@ def _benchmark_paf_graphs(
 
     # Form ground truth beforehand
     ground_truth = []
-    for i, imname in enumerate(image_paths):
+    for imname in image_paths:
         temp = data[imname]["groundtruth"][2].reindex(multi_bpts, level='bodyparts')
         ground_truth.append(temp.to_numpy().reshape((-1, 2)))
     ground_truth = np.stack(ground_truth)[:, mask_multi]
@@ -234,7 +239,6 @@ def _benchmark_paf_graphs(
 
     # Assemble animals on the full set of detections
     paf_inds = sorted(paf_inds, key=len)
-    paf_graph = ass.graph
     n_graphs = len(paf_inds)
     all_scores = []
     all_metrics = []
@@ -359,6 +363,7 @@ def cross_validate_paf_graphs(
     overwrite_config=True,
     n_graphs=10,
     paf_inds=None,
+    at=None,
 ):
     cfg = auxiliaryfunctions.read_config(config)
     inf_cfg = auxiliaryfunctions.read_plainconfig(inference_config)
@@ -401,6 +406,7 @@ def cross_validate_paf_graphs(
         greedy,
         add_discarded,
         calibration_file=calibration_file,
+        at=at,
     )
     # Select optimal PAF graph
     df = results[1]
