@@ -177,9 +177,13 @@ def _benchmark_paf_graphs(
     identity_only=False,
     calibration_file="",
     oks_sigma=0.1,
+    split_inds=None,
 ):
-    n_multi = len(auxfun_multianimal.extractindividualsandbodyparts(config)[2])
-    data_ = {"metadata": data.pop("metadata")}
+    metadata = data.pop("metadata")
+    multi_bpts_orig = auxfun_multianimal.extractindividualsandbodyparts(config)[2]
+    multi_bpts = [j for j in metadata['all_joints_names'] if j in multi_bpts_orig]
+    n_multi = len(multi_bpts)
+    data_ = {"metadata": metadata}
     for k, v in data.items():
         data_[k] = v["prediction"]
     ass = Assembler(
@@ -211,7 +215,7 @@ def _benchmark_paf_graphs(
     # Form ground truth beforehand
     ground_truth = []
     for i, imname in enumerate(image_paths):
-        temp = data[imname]["groundtruth"][2]
+        temp = data[imname]["groundtruth"][2].reindex(multi_bpts, level='bodyparts')
         ground_truth.append(temp.to_numpy().reshape((-1, 2)))
     ground_truth = np.stack(ground_truth)
     temp = np.ones((*ground_truth.shape[:2], 3))
@@ -223,7 +227,6 @@ def _benchmark_paf_graphs(
 
     # Assemble animals on the full set of detections
     paf_inds = sorted(paf_inds, key=len)
-    paf_graph = ass.graph
     n_graphs = len(paf_inds)
     all_scores = []
     all_metrics = []
@@ -231,7 +234,13 @@ def _benchmark_paf_graphs(
         print(f"Graph {j}|{n_graphs}")
         ass.paf_inds = paf
         ass.assemble()
-        oks = evaluate_assembly(ass.assemblies, ass_true_dict, oks_sigma)
+        if split_inds is not None:
+            oks = []
+            for inds in split_inds:
+                assemblies = {k: v for k, v in ass.assemblies.items() if k in inds}
+                oks.append(evaluate_assembly(assemblies, ass_true_dict, oks_sigma))
+        else:
+            oks = evaluate_assembly(ass.assemblies, ass_true_dict, oks_sigma)
         all_metrics.append(oks)
         scores = np.full((len(image_paths), 2), np.nan)
         for i, imname in enumerate(tqdm(image_paths)):
@@ -390,6 +399,10 @@ def cross_validate_paf_graphs(
         greedy,
         add_discarded,
         calibration_file=calibration_file,
+        split_inds=[
+            metadata["data"]["trainIndices"],
+            metadata["data"]["testIndices"],
+        ],
     )
     # Select optimal PAF graph
     df = results[1]
