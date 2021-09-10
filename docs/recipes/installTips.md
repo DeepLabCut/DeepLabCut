@@ -34,12 +34,7 @@ If you make changes to the code/first use the code, be sure you run `./resinstal
 
 Then, you can see what version you have with `deeplabcut.__version__`
 
-If you make changes, you can also then utilize our test scripts. Run the desired test script found here (you will need to git clone first): https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/.
 
-i.e., for example:
-```
-python testscript_multianimal.py
-```
 
 ## Installation on Ubuntu 18.04 LTS
 
@@ -252,11 +247,7 @@ Follow prompts!
 
 ### Next, DeepLabCut!
 
-Given this is a totally fresh install, here are a few things that I also needed: `sudo apt install libcanberra-gtk-module libcanberra-gtk3-module`
-
-We strongly recommend for Ubuntu users to use Docker (https://hub.docker.com/r/deeplabcut/deeplabcut) - it's a much more reproducible environment.
-
-If you want to use our conda file, then I proceeded below:
+Given this is a totally fresh install, here are a few things that I also needed: `sudo apt install libcanberra-gtk-module libcanberra-gtk3-module` Then I proceeded below:
 
 I grab the conda file from the website at www.deeplabcut.org. Simply click to download. For me, this goes into Downloads.
 
@@ -264,7 +255,7 @@ So, I open a terminal, `cd Downloads`, and then run: `conda env create -f DEEPLA
 
 Follow prompts!
 
-## Troubleshooting: Note, if you get a failed build due to wxPython (note, this does not happen on Ubuntu 18, 16, etc), i.e.:
+### Troubleshooting: Note, if you get a failed build due to wxPython, i.e.:
 
 ```python
 ERROR: Command errored out with exit status 1: /home/mackenzie/anaconda3/envs/DLC-GPU/bin/python -u -c 'import io, os, sys, setuptools, tokenize; sys.argv[0] = '"'"'/tmp/pip-install-0jsmkrr1/wxpython_aeff462b2060421a9cf65df55f63a126/setup.py'"'"'; __file__='"'"'/tmp/pip-install-0jsmkrr1/wxpython_aeff462b2060421a9cf65df55f63a126/setup.py'"'"';f = getattr(tokenize, '"'"'open'"'"', open)(__file__) if os.path.exists(__file__) else io.StringIO('"'"'from setuptools import setup; setup()'"'"');code = f.read().replace('"'"'\r\n'"'"', '"'"'\n'"'"');f.close();exec(compile(code, __file__, '"'"'exec'"'"'))' install --record /tmp/pip-record-pzy9q5u2/install-record.txt --single-version-externally-managed --compile --install-headers /home/mackenzie/anaconda3/envs/DLC-GPU/include/python3.7m/wxpython Check the logs for full command output.
@@ -273,7 +264,8 @@ failed
 
 CondaEnvException: Pip failed
 ```
-You can either: remove conda env: `conda remove --name DEEPLABCUT --all`, open the DLC-GPU.yaml file (any text editor!) and change `deeplabcut[gui]` to `deeplabcut`. Then run: `conda env create -f DEEPLABCUT.yaml` again...
+
+remove conda env: `conda remove --name DEEPLABCUT --all`, open the DLC-GPU.yaml file (any text editor!) and change `deeplabcut[gui]` to `deeplabcut`. Then run: `conda env create -f DEEPLABCUT.yaml` again...
 
 then you will get:
 ```python
@@ -292,9 +284,10 @@ done
 #     $ conda deactivate
 ```
 
-Activate! `conda activate DEEPLABCUT` and then run: `conda install -c conda-forge wxpython`.
+Activate! `conda activate DEEPLABCUT` and then run: `conda install -c conda-forge wxpython` ... after this finishes, run: `pip install deeplabcut[gui]`
 
-Then run `python -m deeplabcut` which launches the DLC GUI.
+Now you might get some warnings, but for me it was then totally fine to run `python -m deeplabcut` which launches the DLC GUI!
+
 
 
 ## DeepLabCut M1 chip installation environment instructions:
@@ -328,3 +321,25 @@ https://drive.google.com/file/d/17pSwfoNuyf3YR8vCaVggHeI-pMQ3xL7l/view?usp=shari
 GUI will open!
 
 Note: Based on issue #1380 thanks!
+
+## How to confirm that your GPU is being used by DeepLabCut
+
+During training and analysis steps, DeepLabCut does not use the GPU processor heavily. To confirm that DeepLabCut is properly using your GPU:
+
+**On Windows**:
+
+(1) Open the task manager. If it looks like the image below, click on "More Details" 
+
+<img src="https://github.com/backyardbiomech/docImages/blob/main/DeepLabCut/taskManager.png" width="50%">
+
+(2) That will bring up the following, which still isn't helpful and has caused confusion for users. The %GPU does not reflect DeepLabCut usage.
+
+<img src="https://github.com/backyardbiomech/docImages/blob/main/DeepLabCut/TaskManagerDetails.png" width="50%">
+
+(3) Click on the **Performance** tab. On that page, click on the small arrow under GPU (it might start as **3D**, and change it to **CUDA**.  
+
+(4) During training, you should see the **Dedicated GPU memory usage** increase to near maximum, and you should see some activity in the **CUDA** graph. The graph below is the activity while running `testscript.py`.
+
+<img src="https://github.com/backyardbiomech/docImages/blob/main/DeepLabCut/taskManagerTraining.png" width="70%">
+
+(5) If you don't see activity there during training, then your GPU is likely not installed correctly for DeepLabCut. Return to the installation instructions, and be sure you installed CUDA 11+, and ran `conda install cudnn -c conda-forge` after installing DeepLabCut.
