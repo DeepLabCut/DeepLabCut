@@ -41,6 +41,21 @@ i.e., for example:
 python testscript_multianimal.py
 ```
 
+### Quick pull and install from the github repository
+
+If you just want to install the latest pre-release without editing, you can activate your anaconda env, and run 
+
+```
+pip install --upgrade git+https://github.com/deeplabcut/deeplabcut.git
+```
+
+which will download and update deeplabcut, and any dependencies that don't match the new version. If you want to force upgrade all of the dependencies to the latest available versions, too, then run
+
+```
+pip install --upgrade --upgrade-strategy eager git+https://github.com/deeplabcut/deeplabcut.git
+```
+
+
 ## Installation on Ubuntu 18.04 LTS
 
 ### Here are our tips for an easy installation. This is done on a fresh computer installation (Ubuntu 18.04 LTS)
