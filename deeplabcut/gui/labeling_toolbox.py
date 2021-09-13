@@ -552,7 +552,7 @@ class MainFrame(BaseFrame):
         """
         This function is to create a hotkey to skip up on the radio button panel.
         """
-        if self.rdb.GetSelection() < len(self.bodyparts) - 1:
+        if self.rdb.GetSelection() > 0:
             self.rdb.SetSelection(self.rdb.GetSelection() - 1)
 
     def browseDir(self, event):
