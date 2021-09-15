@@ -495,6 +495,13 @@ class TrackletStitcher:
             label: k for k, v in self._mapping.items() for label in v.values()
         }
 
+        # Store tracklets and corresponding negatives (those that overlap in time)
+        self._lu_overlap = defaultdict(list)
+        for tracklet1, tracklet2 in combinations(self, 2):
+            if tracklet2 in tracklet1:
+                self._lu_overlap[tracklet1].append(tracklet2)
+                self._lu_overlap[tracklet2].append(tracklet1)
+
     def __getitem__(self, item):
         return self.tracklets[item]
 
@@ -589,6 +596,28 @@ class TrackletStitcher:
                         max_gap = val
                     break
         return max_gap
+
+    def mine(self, n_samples):
+        p = np.asarray([t.likelihood for t in self])
+        p /= p.sum()
+        tracklets = np.random.choice(self, n_samples, p=p)
+        triplets = []
+        for tracklet in tracklets:
+            ind_anchor, ind_pos = np.random.choice(tracklet.inds, 2, replace=False)
+            anchor = tracklet.get_data_at(ind_anchor)[:, :2].astype(int)
+            pos = tracklet.get_data_at(ind_pos)[:, :2].astype(int)
+            overlapping_tracklet = np.random.choice(
+                # Filter tracklets overlapping at ind_anchor
+                [t for t in self._lu_overlap[tracklet] if ind_anchor in t.inds]
+            )
+            neg = overlapping_tracklet.get_data_at(ind_anchor)[:, :2].astype(int)
+            triplet = (
+                (anchor, ind_anchor),
+                (pos, ind_pos),
+                (neg, ind_anchor)
+            )
+            triplets.append(triplet)
+        return triplets
 
     def build_graph(
         self,
