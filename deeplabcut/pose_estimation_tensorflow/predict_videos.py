@@ -266,10 +266,15 @@ def analyze_videos(
     else:
         xyz_labs = ["x", "y", "likelihood"]
 
+    collect_extra = True
+    extra_dict = None
     if TFGPUinference:
         sess, inputs, outputs = predict.setup_GPUpose_prediction(dlc_cfg,allow_growth=allow_growth)
     else:
-        sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg,allow_growth=allow_growth)
+        if collect_extra:
+            sess, inputs, outputs, extra_dict =predict.setup_pose_prediction(dlc_cfg,allow_growth=allow_growth,collect_extra = collect_extra)
+        else:
+            sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg,allow_growth=allow_growth)
 
     pdindex = pd.MultiIndex.from_product(
         [[DLCscorer], dlc_cfg["all_joints_names"], xyz_labs],
@@ -297,6 +302,7 @@ def analyze_videos(
                     outputs,
                     destfolder,
                     robust_nframes=robust_nframes,
+                    extra_dict = extra_dict
                 )
         else:
             for video in Videos:

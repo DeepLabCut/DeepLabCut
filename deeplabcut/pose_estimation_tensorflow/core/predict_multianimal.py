@@ -206,10 +206,21 @@ def predict_batched_peaks_and_costs(
     peaks_gt=None,
     n_points=10,
     n_decimals=3,
+    extra_dict = None
 ):
+
+    if extra_dict:
+        features = sess.run(extra_dict['features'],
+                            feed_dict = {inputs:images_batch}
+                            )
+        keypoint_embedding = sess.run(extra_dict['keypoint_embedding'],
+                                      feed_dict = {inputs:images_batch}
+                                      )
+        
+
     scmaps, locrefs, pafs, peaks = sess.run(
         outputs, feed_dict={inputs: images_batch}
-    )
+    )        
     if ~np.any(peaks):
         return []
 
@@ -243,8 +254,10 @@ def predict_batched_peaks_and_costs(
         )
         for i, costs in enumerate(costs_gt):
             preds[i]["groundtruth_costs"] = costs
-
-    return preds
+    if extra_dict:
+        return preds, features, keypoint_embedding
+    else:
+        return preds
 
 
 def find_local_maxima(scmap, radius, threshold):

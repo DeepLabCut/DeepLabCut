@@ -107,6 +107,41 @@ def SaveFullMultiAnimalData(data, metadata, dataname, suffix="_full"):
     """ Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py """
     data_path = dataname.split(".h5")[0] + suffix + ".pickle"
     metadata_path = dataname.split(".h5")[0] + "_meta.pickle"
+    features_path = dataname.split('.h5')[0] +'_features.pickle'
+    keypoint_embedding_path = dataname.split('.h5')[0] +'_keypoint_embedding.pickle'
+    features_exist = False
+    keypoint_embedding_exist = False
+    
+    for k in data.keys():
+        if 'features_' in k:
+            features_exist = True
+            break
+    for k in data.keys():
+        if 'keypoint_embedding_' in k:
+            keypoint_embedding_exist = True
+            break
+    if keypoint_embedding_exist:
+        keypoint_embedding_dict = {}
+        for key in list(data.keys()):
+            if 'keypoint_embedding_' in key:
+                keypoint_embedding = data[key]
+                new_key = key.replace('keypoint_embedding_','')
+                keypoint_embedding_dict[new_key] = keypoint_embedding
+                data.pop(key,None)
+        with open(keypoint_embedding_path, 'wb') as f:
+            pickle.dump(keypoint_embedding_dict, f, pickle.HIGHEST_PROTOCOL)
+    if features_exist:
+        features_dict = {}
+        for key in list(data.keys()):
+            if 'features_' in key:
+                features = data[key]
+                new_key = key.replace('features_','')
+                features_dict[new_key] = features
+                data.pop(key, None)
+        with open(features_path, 'wb') as f:
+            pickle.dump(features_dict, f, pickle.HIGHEST_PROTOCOL)
+        
+    
     with open(data_path, "wb") as f:
         pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
     with open(metadata_path, "wb") as f:

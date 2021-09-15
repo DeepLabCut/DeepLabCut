@@ -54,6 +54,7 @@ class PoseResnet(BasePoseNet):
         out = super(PoseResnet, self).prediction_layers(
             features, scope, reuse,
         )
+        out['features'] = features
         with tf.compat.v1.variable_scope(scope, reuse=reuse):
             if self.cfg['intermediate_supervision']:
                 layer_name = "resnet_v1_{}/block{}/unit_{}/bottleneck_v1"

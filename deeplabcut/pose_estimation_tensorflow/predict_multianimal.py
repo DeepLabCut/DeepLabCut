@@ -32,6 +32,7 @@ def AnalyzeMultiAnimalVideo(
     outputs,
     destfolder=None,
     robust_nframes=False,
+    extra_dict = None
 ):
     """ Helper function for analyzing a video with multiple individuals """
 
@@ -85,6 +86,7 @@ def AnalyzeMultiAnimalVideo(
                 vid,
                 nframes,
                 int(dlc_cfg["batch_size"]),
+                extra_dict = extra_dict
             )
         else:
             PredicteData, nframes = GetPoseandCostsS(
@@ -120,7 +122,7 @@ def AnalyzeMultiAnimalVideo(
 
 
 def GetPoseandCostsF(
-    cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize,
+    cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, extra_dict = None
 ):
     """ Batchwise prediction of pose """
     strwidth = int(np.ceil(np.log10(nframes)))  # width for strings
@@ -144,11 +146,19 @@ def GetPoseandCostsF(
             frames[batch_ind] = img_as_ubyte(frame)
             inds.append(counter)
             if batch_ind == batchsize - 1:
-                D = predict.predict_batched_peaks_and_costs(
-                    dlc_cfg, frames, sess, inputs, outputs,
-                )
-                for ind, data in zip(inds, D):
+
+                if extra_dict:
+                    D, features, keypoint_embedding = predict.predict_batched_peaks_and_costs(
+                        dlc_cfg, frames, sess, inputs, outputs, extra_dict = extra_dict
+                        )
+                else:
+                    D = predict.predict_batched_peaks_and_costs(
+                        dlc_cfg, frames, sess, inputs, outputs,
+                    )
+                for i, (ind, data) in enumerate(zip(inds, D)):
                     PredicteData["frame" + str(ind).zfill(strwidth)] = data
+                    if extra_dict:
+                        PredicteData['features_'+"frame" + str(ind).zfill(strwidth)] = features[i].astype(np.float16)
                 batch_ind = 0
                 inds.clear()
                 batch_num += 1
@@ -156,11 +166,20 @@ def GetPoseandCostsF(
                 batch_ind += 1
         elif counter >= nframes:
             if batch_ind > 0:
-                D = predict.predict_batched_peaks_and_costs(
-                    dlc_cfg, frames, sess, inputs, outputs,
-                )
-                for ind, data in zip(inds, D):
+
+                if extra_dict:
+                    D, features, keypoint_embedding = predict.predict_batched_peaks_and_costs(
+                        dlc_cfg, frames, sess, inputs, outputs, extra_dict = extra_dict
+                        )
+                else:
+                    D = predict.predict_batched_peaks_and_costs(
+                        dlc_cfg, frames, sess, inputs, outputs,
+                    )
+                
+                for i, (ind, data) in enumerate(zip(inds, D)):
                     PredicteData["frame" + str(ind).zfill(strwidth)] = data
+                    if extra_dict:
+                        PredicteData['features_'+"frame" + str(ind).zfill(strwidth)] = features[i].astype(np.float16)
             break
         counter += 1
         pbar.update(1)

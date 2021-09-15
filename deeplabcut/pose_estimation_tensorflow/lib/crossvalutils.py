@@ -130,15 +130,15 @@ def _calc_within_between_pafs(
             .to_numpy()
             .reshape((len(bpts), -1, 2))
         )
-        if np.isnan(coords_gt).all():
+        if pd.isnull(coords_gt).all():
             continue
 
         coords = dict_["prediction"]["coordinates"][0]
         # Get animal IDs and corresponding indices in the arrays of detections
         lookup = dict()
         for i, (coord, coord_gt) in enumerate(zip(coords, coords_gt)):
-            inds = np.flatnonzero(np.all(~np.isnan(coord), axis=1))
-            inds_gt = np.flatnonzero(np.all(~np.isnan(coord_gt), axis=1))
+            inds = np.flatnonzero(np.all(~pd.isnull(coord), axis=1))
+            inds_gt = np.flatnonzero(np.all(~pd.isnull(coord_gt), axis=1))
             if inds.size and inds_gt.size:
                 neighbors = _find_closest_neighbors(coord_gt[inds_gt], coord[inds], k=3)
                 found = neighbors != -1
@@ -244,7 +244,7 @@ def _benchmark_paf_graphs(
         scores = np.full((len(image_paths), 2), np.nan)
         for i, imname in enumerate(tqdm(image_paths)):
             gt = ground_truth[i]
-            gt = gt[~np.isnan(gt).any(axis=1)]
+            gt = gt[~pd.isnull(gt).any(axis=1)]
             if len(np.unique(gt[:, 2])) < 2:  # Only consider frames with 2+ animals
                 continue
 
@@ -260,7 +260,7 @@ def _benchmark_paf_graphs(
                     for n, animal in enumerate(animals)
                 ]
                 hyp = np.concatenate(animals)
-                hyp = hyp[~np.isnan(hyp).any(axis=1)]
+                hyp = hyp[~pd.isnull(hyp).any(axis=1)]
                 scores[i, 0] = (n_dets - hyp.shape[0]) / n_dets
                 neighbors = _find_closest_neighbors(gt[:, :2], hyp[:, :2])
                 valid = neighbors != -1
