@@ -21,19 +21,22 @@ You first **need to decide if you want to use a CPU or GPU for your models**: (N
 
   - **CPU?** Great, jump to the next section below!
 
-  - **GPU?**  If you want to use your own GPU (i.e., a GPU is in your workstation), then you need to be sure you have a CUDA compatible GPU, CUDA, and cuDNN installed. Please note, which CUDA you install depends on what version of tensorflow you want to use. So, please check "GPU Support" below carefully. Note, DeepLabCut is up to date with the latest CUDA and tensorflow versions!
+  - **GPU?**  If you want to use your own GPU (i.e., a GPU is in your workstation), then you need to be sure you have a CUDA compatible GPU, CUDA, and cuDNN installed. Please note, which CUDA you install depends on what version of tensorflow you want to use. So, please check "GPU Support" below carefully. **Note, DeepLabCut is up to date with the latest CUDA and tensorflow versions!**
 
   - **DIY:** For the experts that want DLC in a different custom environment, it's also on pypi, simply `pip install 'deeplabcut[gui]'` (and have Tensorflow and wxPython also installed) for DeepLabCut + GUI.  Deeplabcut without the GUIs can be installed with `pip install deeplabcut`. See more Tips at the bottom as well.
 
 ### CPU or GPU:
 
-(A) Download/git clone this repo (in the terminal/cmd program, while **in a folder** you wish to place DeepLabCut
-To git clone type: ``git clone https://github.com/DeepLabCut/DeepLabCut.git``). Note, this can be anywhere, even downloads is fine OR just click [HERE](http://www.mackenziemathislab.org/s/DEEPLABCUT.yaml) to download the conda file.
+(A) **Click [HERE](http://www.mackenziemathislab.org/s/DEEPLABCUT.yaml) to download the conda file!**
+(or you can grab from github: git clone this repo (in the terminal/cmd program, while **in a folder** you wish to place DeepLabCut
+To git clone type: ``git clone https://github.com/DeepLabCut/DeepLabCut.git``). Note, this can be anywhere, even downloads is fine)
 
-(B) Now, in Terminal (or Anaconda Command Prompt for windows users), go to the folder named ``conda-environments`` using the command "`cd`" (which stands for change directory).
-For example, if you cloned the repo onto your Desktop, the command may look like:
+(B) Now, in Terminal (or Anaconda Command Prompt for windows users), go to the folder where you downloaded the file.
+For example, if you downloaded it from The CLICK HERE above, it likely went into your downloads folder: ``cd C:\Users\YourUserName\Downloads``
 
-``cd C:\Users\YourUserName\Desktop\DeepLabCut\conda-environments`` or downloaded it from deeplabcut.org: ``cd C:\Users\YourUserName\Downloads``
+If you cloned the repo onto your Desktop, the command may look like:
+
+``cd C:\Users\YourUserName\Desktop\DeepLabCut\conda-environments``
 
 To get the location right, a cool trick is to drag the folder and drop it into Terminal. Alternatively, you can (on Windows) hold SHIFT and right-click > Copy as path, or (on Mac) right-click and while in the menu press the OPTION key to reveal Copy as Pathname.
 
@@ -54,7 +57,6 @@ NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)
 
 Next, [head over to the Docs to decide which mode to use DeepLabCut in. You have both standard and multi-animal installed.](/docs#readme)
 
-If you want to test your installation in an automatic way, see: :video_camera: [how to test your installation](https://www.youtube.com/watch?v=IOWtKn3l33s)!
 
 ### Pro Tips:
 
@@ -62,7 +64,7 @@ If you ever want to update your DLC, just run `pip install --upgrade deeplabcut`
 
 Here are some conda environment management tips: https://kapeli.com/cheat_sheets/Conda.docset/Contents/Resources/Documents/index
 
-**Pro Tip:** A great way to test your installation is to use our provided testscripts. This would mean you need to be up-to-date with the latest code though! Please see [here](https://github.com/DeepLabCut/DeepLabCut/wiki/How-to-use-the-latest-GitHub-code) on how to get the latest GitHub code, and how to test your installation by following this video: https://www.youtube.com/watch?v=IOWtKn3l33s
+**Pro Tip:** If you want to modify code and then test it, you can use our provided testscripts. This would mean you need to be up-to-date with the latest GitHub-based code though! Please see [here](https://github.com/DeepLabCut/DeepLabCut/wiki/How-to-use-the-latest-GitHub-code) on how to get the latest GitHub code, and how to test your installation by following this video: https://www.youtube.com/watch?v=IOWtKn3l33s
 
 
 ### Creating your own customized conda env (recommended route for Linux: Ubuntu, CentOS, Mint, etc.)
@@ -78,7 +80,7 @@ In the terminal type:
 
 The only thing you then need to add to the env is deeplabcut (`pip install deeplabcut`) or `pip install 'deeplabcut[gui]'` which has wxPython for GUI support. For Windows and MacOS, you just run `pip install -U wxPython<4.1.0` but for linux you might need the specific wheel (https://wxpython.org/pages/downloads/index.html).
 
-We have some tips for linux users here: https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html
+We have some tips for linux users here, as the latest Ubuntu doesn't easily support a 1-click install: https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html
 
 ### **GPU Support:**
 

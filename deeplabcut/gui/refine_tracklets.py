@@ -19,6 +19,7 @@ import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
 
 from deeplabcut.gui import LOGO_PATH
+from pathlib import Path
 
 
 class Refine_tracklets(wx.Panel):
@@ -91,6 +92,7 @@ class Refine_tracklets(wx.Panel):
         )
         self.sel_video.Bind(wx.EVT_FILEPICKER_CHANGED, self.select_video)
 
+        vbox_ = wx.BoxSizer(wx.VERTICAL)
         hbox_ = wx.BoxSizer(wx.HORIZONTAL)
         videotype_text = wx.StaticBox(self, label="Specify the videotype")
         videotype_text_boxsizer = wx.StaticBoxSizer(videotype_text, wx.VERTICAL)
@@ -112,10 +114,26 @@ class Refine_tracklets(wx.Panel):
         trainingset_boxsizer.Add(
             self.trainingset, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
         )
+
+        tracker_text = wx.StaticBox(
+            self, label="Specify the Tracker Method (you can try each)"
+        )
+        tracker_text_boxsizer = wx.StaticBoxSizer(tracker_text, wx.VERTICAL)
+        trackertypes = ["skeleton", "box", "ellipse"]
+        self.trackertypes = wx.ComboBox(
+            self, choices=trackertypes, style=wx.CB_READONLY
+        )
+        self.trackertypes.SetValue("ellipse")
+        tracker_text_boxsizer.Add(
+            self.trackertypes, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
+        )
+
         hbox_.Add(videotype_text_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         hbox_.Add(shuffle_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         hbox_.Add(trainingset_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-        sizer.Add(hbox_, pos=(5, 0))
+        vbox_.Add(hbox_)
+        vbox_.Add(tracker_text_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        sizer.Add(vbox_, pos=(5, 0))
 
         self.create_tracks_btn = wx.Button(self, label="Step1: Create tracks")
         sizer.Add(self.create_tracks_btn, pos=(6, 1))
@@ -291,10 +309,6 @@ class Refine_tracklets(wx.Panel):
         """
         self.config = self.sel_config.GetPath()
 
-    def select_datafile(self, event):
-        self.datafile = self.sel_datafile.GetPath()
-        self.sel_datafile.SetPath(os.path.basename(self.datafile))
-
     def select_video(self, event):
         self.video = self.sel_video.GetPath()
         self.sel_video.SetPath(os.path.basename(self.video))
@@ -307,12 +321,28 @@ class Refine_tracklets(wx.Panel):
             shuffle=self.shuffle.GetValue(),
             trainingsetindex=self.trainingset.GetValue(),
             n_tracks=self.ntracks.GetValue(),
+            track_method=self.trackertypes.GetValue(),
         )
 
     def refine_tracklets(self, event):
+        DLCscorer, _ = auxiliaryfunctions.GetScorerName(
+            self.cfg,
+            self.shuffle.GetValue(),
+            self.cfg["TrainingFraction"][self.trainingset.GetValue()],
+        )
+        track_method = self.trackertypes.GetValue()
+        if track_method == "ellipse":
+            method = "el"
+        elif track_method == "box":
+            method = "bx"
+        else:
+            method = "sk"
+        dest = str(Path(self.video).parents[0])
+        vname = Path(self.video).stem
+        datafile = os.path.join(dest, vname + DLCscorer + f"_{method}.h5")
         self.manager, self.viz = deeplabcut.refine_tracklets(
             self.config,
-            self.datafile.replace("pickle", "h5"),
+            datafile,
             self.video,
             min_swap_len=self.slider_swap.GetValue(),
             trail_len=self.length_track.GetValue(),
