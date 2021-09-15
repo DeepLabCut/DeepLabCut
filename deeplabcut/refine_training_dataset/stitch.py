@@ -606,9 +606,17 @@ class TrackletStitcher:
             ind_anchor, ind_pos = np.random.choice(tracklet.inds, 2, replace=False)
             anchor = tracklet.get_data_at(ind_anchor)[:, :2].astype(int)
             pos = tracklet.get_data_at(ind_pos)[:, :2].astype(int)
-            overlapping_tracklet = np.random.choice(self._lu_overlap[tracklet]).get_data_at(ind_anchor)
-            neg = overlapping_tracklet[:, :2].astype(int)
-            triplets.append((anchor, pos, neg))
+            overlapping_tracklet = np.random.choice(
+                # Filter tracklets overlapping at ind_anchor
+                [t for t in self._lu_overlap[tracklet] if ind_anchor in t.inds]
+            )
+            neg = overlapping_tracklet.get_data_at(ind_anchor)[:, :2].astype(int)
+            triplet = (
+                (anchor, ind_anchor),
+                (pos, ind_pos),
+                (neg, ind_anchor)
+            )
+            triplets.append(triplet)
         return triplets
 
     def build_graph(
