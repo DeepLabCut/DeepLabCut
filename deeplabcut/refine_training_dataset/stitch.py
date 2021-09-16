@@ -603,13 +603,14 @@ class TrackletStitcher:
         tracklets = np.random.choice(self, n_samples, p=p)
         triplets = []
         for tracklet in tracklets:
-            ind_anchor, ind_pos = np.random.choice(tracklet.inds, 2, replace=False)
-            anchor = tracklet.get_data_at(ind_anchor)[:, :2].astype(int)
-            pos = tracklet.get_data_at(ind_pos)[:, :2].astype(int)
-            overlapping_tracklet = np.random.choice(
+            overlapping_tracklets = []
+            while not overlapping_tracklets:
+                ind_anchor, ind_pos = np.random.choice(tracklet.inds, 2, replace=False)
+                anchor = tracklet.get_data_at(ind_anchor)[:, :2].astype(int)
+                pos = tracklet.get_data_at(ind_pos)[:, :2].astype(int)
                 # Filter tracklets overlapping at ind_anchor
-                [t for t in self._lu_overlap[tracklet] if ind_anchor in t.inds]
-            )
+                overlapping_tracklets = [t for t in self._lu_overlap[tracklet] if ind_anchor in t.inds]
+            overlapping_tracklet = np.random.choice(overlapping_tracklets)
             neg = overlapping_tracklet.get_data_at(ind_anchor)[:, :2].astype(int)
             triplet = (
                 (anchor, ind_anchor),
