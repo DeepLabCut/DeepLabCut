@@ -12,6 +12,7 @@ import os
 import pickle
 import shutil
 from collections import defaultdict
+from copy import deepcopy
 from tqdm import tqdm
 
 import networkx as nx
@@ -102,6 +103,7 @@ def _calc_within_between_pafs(
     per_edge=True,
     train_set_only=True,
 ):
+    data = deepcopy(data)
     train_inds = set(metadata["data"]["trainIndices"])
     graph = data["metadata"]["PAFgraph"]
     within_train = defaultdict(list)
@@ -128,6 +130,9 @@ def _calc_within_between_pafs(
             .to_numpy()
             .reshape((len(bpts), -1, 2))
         )
+        if np.isnan(coords_gt).all():
+            continue
+
         coords = dict_["prediction"]["coordinates"][0]
         # Get animal IDs and corresponding indices in the arrays of detections
         lookup = dict()
@@ -208,6 +213,9 @@ def _benchmark_paf_graphs(
         .reindex(bodyparts, level="bodyparts")
         .index
     )
+    mask_multi = idx.get_level_values("individuals") != "single"
+    if not mask_multi.all():
+        idx = idx.drop("single", level="individuals")
     individuals = idx.get_level_values("individuals").unique()
     n_individuals = len(individuals)
     map_ = dict(zip(individuals, range(n_individuals)))
@@ -217,7 +225,7 @@ def _benchmark_paf_graphs(
     for i, imname in enumerate(image_paths):
         temp = data[imname]["groundtruth"][2].reindex(multi_bpts, level='bodyparts')
         ground_truth.append(temp.to_numpy().reshape((-1, 2)))
-    ground_truth = np.stack(ground_truth)
+    ground_truth = np.stack(ground_truth)[:, mask_multi]
     temp = np.ones((*ground_truth.shape[:2], 3))
     temp[..., :2] = ground_truth
     temp = temp.reshape((temp.shape[0], n_individuals, -1, 3))
