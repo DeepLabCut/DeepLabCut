@@ -1,0 +1,3 @@
+include pyproject.toml
+include LICENSE
+recursive-include deeplabcut_docker *.sh

@@ -97,35 +97,40 @@ EOF
 
 # Launch the UI version of DeepLabCut
 gui() {
+    extra_args="$@"
     update gui || exit 1
     build gui || exit 1
-    args="$(get_x11_args) $(get_mount_args)"
+    args="$(get_x11_args) $(get_mount_args) ${extra_args}"
     $DOCKER run -it --rm ${args} $(get_local_container_name gui) \
         || err "Failed to launch the DLC GUI. Used args: \"${args}\""
 }
 
 # Launch a Jupyter Server in the current directory
 notebook() {
+    extra_args="$@"
     update gui-jupyter || exit 1
     build gui-jupyter || exit 1
-    args="$(get_x11_args) $(get_mount_args)"
+    args="$(get_x11_args) $(get_mount_args) ${extra_args}"
     $DOCKER run -p 127.0.0.1:8888:8888 -it --rm ${args} $(get_local_container_name gui-jupyter) \
         || err "Failed to launch the notebook server. Used args: \"${args}\""
 }
 
 # Launch the command line, using DLC in light mode
 bash() {
+    extra_args="$@"
     update core || exit 1
     build core || exit 1
-    args="$(get_mount_args)"
+    args="$(get_mount_args) ${extra_args}"
     $DOCKER run -it $args $(get_local_container_name core) bash
 }
 
 check_system
-case "${1:-gui}" in
-    gui) gui ;;
-    notebook) notebook ;;
-    bash) bash ;;
+subcommand=${1:-gui}
+shift 1
+case "${subcommand}" in
+    gui) gui "$@" ;;
+    notebook) notebook "$@" ;;
+    bash) bash "$@" ;;
     *)
         echo "Usage"
         echo "$0 [gui|notebook|help]"

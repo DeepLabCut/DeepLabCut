@@ -10,29 +10,67 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import argparse
-import subprocess
+import os
+import pty
 import sys
 
-__version__ = '0.0.1-alpha'
+__version__ = "0.0.3-alpha"
+
+_MOTD = r"""
+                    .--,       .--,
+                    ( (  \.---./  ) )
+                     '.__/o   o\__.'
+                       `{=  ^  =}´
+                         >  u  <
+ ____________________.""`-------`"".______________________  
+\   ___                   __         __   _____       __  /
+/  / _ \ ___  ___  ___   / /  ___ _ / /  / ___/__ __ / /_ \
+\ / // // -_)/ -_)/ _ \ / /__/ _ `// _ \/ /__ / // // __/ /
+//____/ \__/ \__// .__//____/\_,_//_.__/\___/ \_,_/ \__/  \
+\_________________________________________________________/
+                       ___)( )(___ `-.___. 
+                      (((__) (__)))      ~`
+
+Welcome to DeepLabCut docker!
+"""
+
 
 def _parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        'container',
-        type = str,
-        choices = ["gui", "notebook", "bash"],
+    parser = argparse.ArgumentParser(
+        "deeplabcut-docker",
+        description=(
+            "Utility tool for launching DeepLabCut docker containers. "
+            "Only a single argument is given to specify the container type. "
+            "By default, the current directory is mounted into the container "
+            "and used as the current working directory. You can additionally "
+            "specify any additional docker argument specified in "
+            "https://docs.docker.com/engine/reference/commandline/cli/."
+        ),
     )
-    return parser.parse_args()
+    parser.add_argument(
+        "container",
+        type=str,
+        choices=["gui", "notebook", "bash"],
+        help=(
+            "The container to launch. A list of all containers is available on "
+            "https://hub.docker.com/r/deeplabcut/deeplabcut/tags. By default, the "
+            "latest DLC version will be selected and automatically updated, if "
+            "possible. All containers are currently launched in interactive mode "
+            "by default, meaning you can use Ctrl+C in your terminal session to "
+            "terminate a command."
+        ),
+    )
+    return parser.parse_known_args()
+
 
 def main():
-    # https://stackoverflow.com/a/18422264
-    # CC BY-SA 4.0, Viktor Kerkez & Smart Manoj
-    args = _parse_args()
-    process = subprocess.Popen(['./deeplabcut-docker.sh', args.container], 
-                stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
-    process.communicate()
-    #for c in iter(lambda: process.stdout.read(1), b''): 
-    #    sys.stdout.buffer.write(c)
+    """Main entry point. Parse arguments and launch container."""
+    launch_args, docker_arguments = _parse_args()
+    argv = ["deeplabcut_docker.sh", launch_args.container, *docker_arguments]
+    print(_MOTD, file=sys.stderr)
+    pty.spawn(argv)
+    print("Container stopped.", file=sys.stderr)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
