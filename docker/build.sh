@@ -51,14 +51,25 @@ run_test() {
      python3 testscript_cli.py
 }
 
-for tag in base latest-core latest-gui; do
-    (
-	cd ${DOCKERDIR};
-    	${DOCKER_BUILD} -t ${BASENAME}:${tag} -f Dockerfile.${tag} .
-    )
-    echo $tag
-done
-
-for tag in latest-core; do
-    run_test ${BASENAME}:${tag}
+for arg in "$@"; do
+case $1 in
+  build)
+	for tag in base latest-core latest-gui latest-gui-jupyter; do
+	    (
+		cd ${DOCKERDIR};
+		${DOCKER_BUILD} -t ${BASENAME}:${tag} -f Dockerfile.${tag} .
+	    )
+	    echo $tag
+	done
+  ;;
+  test)
+	for tag in latest-core; do
+	    run_test ${BASENAME}:${tag}
+	done
+  ;;
+  push)
+	for tag in base latest-core latest-gui latest-gui-jupyter; do
+	    ${DOCKER} push deeplabcut/deeplabcut:${tag}
+	done
+esac
 done
