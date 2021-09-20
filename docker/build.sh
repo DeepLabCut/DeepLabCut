@@ -1,7 +1,6 @@
 #!/bin/bash
 # Build script for deeplabcut docker images.
-# Run from the repository root without arguments:
-# > docker/build.sh
+# > docker/build.sh [build|test|push]
 
 set -e
 
@@ -53,23 +52,23 @@ run_test() {
 
 for arg in "$@"; do
 case $1 in
-  build)
-	for tag in base latest-core latest-gui latest-gui-jupyter; do
-	    (
-		cd ${DOCKERDIR};
-		${DOCKER_BUILD} -t ${BASENAME}:${tag} -f Dockerfile.${tag} .
-	    )
-	    echo $tag
-	done
-  ;;
-  test)
-	for tag in latest-core; do
-	    run_test ${BASENAME}:${tag}
-	done
-  ;;
-  push)
-	for tag in base latest-core latest-gui latest-gui-jupyter; do
-	    ${DOCKER} push deeplabcut/deeplabcut:${tag}
-	done
+    build)
+        for tag in base latest-core latest-gui latest-gui-jupyter; do
+            (
+            cd ${DOCKERDIR};
+            ${DOCKER_BUILD} -t ${BASENAME}:${tag} -f Dockerfile.${tag} .
+            )
+            echo $tag
+        done
+    ;;
+    test)
+        for tag in latest-core; do
+            run_test ${BASENAME}:${tag}
+        done
+    ;;
+    push)
+        for tag in base latest-core latest-gui latest-gui-jupyter; do
+            ${DOCKER} push deeplabcut/deeplabcut:${tag}
+        done
 esac
 done
