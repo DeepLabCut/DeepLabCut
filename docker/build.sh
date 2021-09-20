@@ -52,14 +52,13 @@ run_test() {
 }
 
 for tag in base latest-core latest-gui; do
-#    (
-#	cd ${DOCKERDIR};
-#    	${DOCKER_BUILD} -t ${BASENAME}:${tag} -f Dockerfile.${tag} .
-#    )
-	echo $tag
+    (
+	cd ${DOCKERDIR};
+    	${DOCKER_BUILD} -t ${BASENAME}:${tag} -f Dockerfile.${tag} .
+    )
+    echo $tag
 done
 
-# TODO: By default, only test the DLC light image
 for tag in latest-core; do
     run_test ${BASENAME}:${tag}
 done
