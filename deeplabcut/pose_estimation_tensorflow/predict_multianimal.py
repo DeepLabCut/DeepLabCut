@@ -19,7 +19,7 @@ from tqdm import tqdm
 from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal as predict
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 from deeplabcut.utils.auxfun_videos import VideoWriter
-
+from mmappickle import mmapdict
 
 def AnalyzeMultiAnimalVideo(
     video,
@@ -138,8 +138,14 @@ def GetPoseandCostsF(
     pbar = tqdm(total=nframes)
     counter = 0
     inds = []
-
+    feature_counter = 0 # counting how many features have been processed
+    block_counter = 0 # keeping track of the current block id
+    
+    project_path = cfg['project_path']
+    feature_dict = mmapdict(os.path.join(project_path,'/mnt/md0/shaokai/features.mmdpickle'))
     PredicteData = {}
+
+    
     while cap.video.isOpened():
         frame = cap.read_frame(crop=cfg["cropping"])
         if frame is not None:
@@ -158,7 +164,12 @@ def GetPoseandCostsF(
                 for i, (ind, data) in enumerate(zip(inds, D)):
                     PredicteData["frame" + str(ind).zfill(strwidth)] = data
                     if extra_dict:
-                        PredicteData['features_'+"frame" + str(ind).zfill(strwidth)] = features[i].astype(np.float16)
+
+                        fname = "frame" + str(ind).zfill(strwidth)
+                        feature_dict[fname] = features[i].astype(np.float16)
+                            
+
+                        
                 batch_ind = 0
                 inds.clear()
                 batch_num += 1
@@ -179,7 +190,8 @@ def GetPoseandCostsF(
                 for i, (ind, data) in enumerate(zip(inds, D)):
                     PredicteData["frame" + str(ind).zfill(strwidth)] = data
                     if extra_dict:
-                        PredicteData['features_'+"frame" + str(ind).zfill(strwidth)] = features[i].astype(np.float16)
+                        fname = "frame" + str(ind).zfill(strwidth)
+                        feature_dict[fname] = features[i].astype(np.float16)                        
             break
         counter += 1
         pbar.update(1)
