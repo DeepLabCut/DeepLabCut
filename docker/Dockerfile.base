@@ -5,7 +5,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update -yy \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir deeplabcut==2.2
+RUN pip install --no-cache-dir deeplabcut>=2.2.0.2
 
 # TODO required to fix permission errors when running the container with limited permission.
 RUN chmod a+rwx -R /usr/local/lib/python3.8/dist-packages/deeplabcut/pose_estimation_tensorflow/models/pretrained
