@@ -99,7 +99,7 @@ EOF
 gui() {
     update gui || exit 1
     build gui || exit 1
-    args=$(get_x11_args) $(get_mount_args)
+    args="$(get_x11_args) $(get_mount_args)"
     $DOCKER run -it --rm ${args} $(get_local_container_name gui) \
         || err "Failed to launch the DLC GUI. Used args: \"${args}\""
 }
@@ -108,7 +108,7 @@ gui() {
 notebook() {
     update gui-jupyter || exit 1
     build gui-jupyter || exit 1
-    args=$(get_x11_args) $(get_mount_args)
+    args="$(get_x11_args) $(get_mount_args)"
     $DOCKER run -it --rm ${args} $(get_local_container_name gui-jupyter) \
         || err "Failed to launch the notebook server. Used args: \"${args}\""
 }
@@ -117,7 +117,7 @@ notebook() {
 bash() {
     update core || exit 1
     build core || exit 1
-    args=$(get_mount_args)
+    args="$(get_mount_args)"
     $DOCKER run -it $args $(get_local_container_name core) bash
 }
 
