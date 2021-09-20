@@ -12,16 +12,31 @@ The images are synced to DockerHub: https://hub.docker.com/r/deeplabcut/deeplabc
 ## Quickstart
 
 You can use the images fully standalone, without the need of cloning the DeepLabCut repo.
-Simply download the `deeplabcut-docker.sh` image in a local directory.
+Simply download the `deeplabcut-docker.sh` script to your local working directory.
+We provide docker containers for three different use cases outlined below.
 
-For a quick start, you can build a local image based on the DLC images by running
+In all cases, your current directory will be mounted in the container, and the container
+will be started with your current username and group.
 
-``` bash
-docker/interact.sh [image name]
+### User interface
+
+To launch the DLC GUI directly, run
+
+```bash
+./deeplabcut-docker.sh gui
 ```
 
-which will give you a [nice](https://ohmybash.nntoan.com/) shell with correct user permissions along with a `git` setup within the container.
-This environment might be useful for prototyping. You'll have read access to the files in your current directory.
+### Interactive console with DLC in light mode
+
+```bash
+./deeplabcut-docker.sh bash
+```
+
+### Jupyter Notebooks
+
+```bash
+./deeplabcut-docker.sh notebook
+```
 
 ## For developers
 
@@ -29,15 +44,21 @@ Make sure your docker daemon is running and navigate to the repository root dire
 You can build the images by running
 
 ```
-docker/build.sh
+docker/build.sh build
 ```
 
-Note that this assumes that you have rights to execute `docker build` and `docker run` commands which requires either `sudo` access or membership in the `docker` group on your local machine. The script determines the correct mode automatically.
+Note that this assumes that you have rights to execute `docker build` and `docker run` commands which requires either `sudo` access or membership in the `docker` group on your local machine. If you are not in the `docker` group, run the script with the environment variable `DOCKER="sudo docker"` set to override the default docker command.
 
-Built images can be pushed to dockerhub by running
+Images can be verified by running
 
 ```
-docker/push.sh
+docker/build.sh test
+``` 
+
+Built images can be pushed to DockerHub by running
+
+```
+docker/build.sh push
 ``` 
 
 ## Acknowledgements
