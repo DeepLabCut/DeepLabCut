@@ -3,8 +3,8 @@
 This repo contains build routines for the following official DeepLabCut docker images:
 - `deeplabcut/deeplabcut:base`: Base image with TF2.5, cuDNN8 and DLC
 - `deeplabcut/deeplabcut:latest-core`: DLC in light mode
-- `deeplabcut/deeplabcut:latest-gui`: DLC in UI mode
-- `deeplabcut/deeplabcut:latest-gui-jupyter`: DLC in UI mode, with jupyter installed
+- `deeplabcut/deeplabcut:latest-gui`: DLC in GUI mode
+- `deeplabcut/deeplabcut:latest-gui-jupyter`: DLC in GUI mode, with jupyter installed
 
 All images are based on Python 3.8.
 The images are synced to DockerHub: https://hub.docker.com/r/deeplabcut/deeplabcut
