@@ -12,6 +12,8 @@ from deeplabcut.utils import (
     read_config,
     auxiliaryfunctions,
     auxfun_multianimal,
+    inference
+
 )
 from itertools import combinations, cycle
 from networkx.algorithms.flow import preflow_push
@@ -1104,7 +1106,32 @@ def stitch_tracklets(
         cfg["TrainingFraction"][trainingsetindex],
         modelprefix=modelprefix,
     )
+    checkpoint = '/mnt/md0/shaokai/TransReID/3mice_dlc_transreid_30_from_gt.pth'
+    kpts_num = 12
+    path_to_features = '/mnt/md0/shaokai/TransReID/data/videocompressed1DLC_resnet50_MultiMouseJun22shuffle1_200000_features.pickle'
+    dlctrans = inference.DLCTrans(checkpoint = checkpoint, kpts_num = kpts_num, path_to_features = path_to_features)
+    def trans_weight_func(tracklet1,tracklet2):
 
+        if tracklet1 < tracklet2:
+            ind_img1 = tracklet1.inds[-1]            
+            coord1 = tracklet1.data[-1][:,:2]
+            ind_img2 = tracklet2.inds[0]            
+            coord2 = tracklet2.data[0][:,:2]
+        else:
+            ind_img2 = tracklet2.inds[-1]
+            ind_img1 = tracklet1.inds[0]
+            coord2 = tracklet2.data[-1][:,:2]
+            coord1 = tracklet1.data[0][:,:2]
+        t1 = (coord1, ind_img1)
+        t2 = (coord2, ind_img2)
+
+        dist = dlctrans(t1,t2)
+        dist = (dist+1)/2
+        w = 0.01 if tracklet1.identity == tracklet2.identity else 1
+        cost = w * stitcher.calculate_edge_weight(tracklet1, tracklet2)
+        
+        print (dist)
+        return dist*(-1) + cost
     for video in vids:
         print("Processing... ", video)
         videofolder = str(Path(video).parents[0])
@@ -1129,7 +1156,11 @@ def stitch_tracklets(
                 def weight_func(t1, t2):
                     w = 0.01 if t1.identity == t2.identity else 1
                     return w * stitcher.calculate_edge_weight(t1, t2)
-            stitcher.build_graph(max_gap=max_gap, weight_func=weight_func)
+
+
+                
+            #stitcher.build_graph(max_gap=max_gap, weight_func=weight_func)
+            stitcher.build_graph(max_gap=max_gap, weight_func=trans_weight_func)            
             stitcher.stitch()
             stitcher.write_tracks(output_name, animal_names)
         except FileNotFoundError as e:

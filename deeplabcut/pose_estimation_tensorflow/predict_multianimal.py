@@ -142,7 +142,10 @@ def GetPoseandCostsF(
     block_counter = 0 # keeping track of the current block id
     
     project_path = cfg['project_path']
-    feature_dict = mmapdict(os.path.join(project_path,'/mnt/md0/shaokai/features.mmdpickle'))
+
+    save_features = False
+    if save_features:
+        feature_dict = mmapdict(os.path.join(project_path,'features.mmdpickle'))
     PredicteData = {}
 
     
@@ -166,7 +169,8 @@ def GetPoseandCostsF(
                     if extra_dict:
 
                         fname = "frame" + str(ind).zfill(strwidth)
-                        feature_dict[fname] = features[i].astype(np.float16)
+                        if save_features:
+                            feature_dict[fname] = features[i].astype(np.float16)
                             
 
                         
@@ -191,7 +195,8 @@ def GetPoseandCostsF(
                     PredicteData["frame" + str(ind).zfill(strwidth)] = data
                     if extra_dict:
                         fname = "frame" + str(ind).zfill(strwidth)
-                        feature_dict[fname] = features[i].astype(np.float16)                        
+                        if save_features:
+                            feature_dict[fname] = features[i].astype(np.float16)                        
             break
         counter += 1
         pbar.update(1)
