@@ -109,7 +109,7 @@ notebook() {
     update gui-jupyter || exit 1
     build gui-jupyter || exit 1
     args="$(get_x11_args) $(get_mount_args)"
-    $DOCKER run -it --rm ${args} $(get_local_container_name gui-jupyter) \
+    $DOCKER run -p 127.0.0.1:8888:8888 -it --rm ${args} $(get_local_container_name gui-jupyter) \
         || err "Failed to launch the notebook server. Used args: \"${args}\""
 }
 
