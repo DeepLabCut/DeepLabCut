@@ -23,7 +23,7 @@
 
     
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/sphinx-book-theme.e8f53015daec13862f6db5e763c41738.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/sphinx-book-theme.e2363ea40746bee74734a24ffefccd78.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
@@ -51,8 +51,8 @@
     <script async="async" src="../_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="DeepLabCut User Guide (for single animal projects)" href="standardDeepLabCut_UserGuide.html" />
-    <link rel="prev" title="Welcome to Our Documentation Hub!" href="README.html" />
+    <link rel="next" title="DeepLabCut Docker containers" href="docker.html" />
+    <link rel="prev" title="Documentation Overview:" href="UseOverviewGuide.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en" />
     
@@ -70,6 +70,10 @@
     
         <div class="navbar-brand-box">
     <a class="navbar-brand text-wrap" href="../index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
       
       <img src="../_static/logo.png" class="logo" alt="logo">
       
@@ -100,9 +104,19 @@
    Welcome to Our Documentation Hub!
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="UseOverviewGuide.html">
+   Documentation Overview:
+  </a>
+ </li>
  <li class="toctree-l1 current active">
   <a class="current reference internal" href="#">
    How To Install DeepLabCut
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="docker.html">
+   DeepLabCut Docker containers
   </a>
  </li>
  <li class="toctree-l1">
@@ -380,7 +394,7 @@
 <p>DeepLabCut can be run on Windows, Linux, or MacOS (see also <a class="reference external" href="/docs/installation.md#technical-considerations">technical considerations</a>).</p>
 <p>The installation process is as easy as this figure!</p>
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1609805496320-48N5Y3NEBIVVNUIXPNBV/ke17ZwdGBToddI8pDm48kEPc72vD8ARkQNSjpzTzPRsUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8GRo6ASst2s6pLvNAu_PZdLjGeaj0GkoPWeOP-8DYHB5lK4wgKtPMRocsaeGU4PClrIJgRK3oXroL8Ygt-EThXU/Intall.png?format=750w" width="250" title="DLC" alt="DLC" align="right" vspace = "50">
-<p>Please note, there are several modes of installation, and the user should decide to either use a <strong>system-wide</strong> (see <a class="reference external" href="/docs/installation.md#system-wide-considerations">note below</a>), <strong>Anaconda environment</strong> based installation (<strong>recommended</strong>), or the supplied <strong>Docker container</strong> (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but <strong>Anaconda is the easiest route.</strong></p>
+<p>Please note, there are several modes of installation, and the user should decide to either use a <strong>system-wide</strong> (see <a class="reference external" href="/docs/installation.md#system-wide-considerations">note below</a>), <strong>Anaconda environment</strong> based installation (<strong>recommended</strong>), or the supplied <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/tree/master/docker.md"><strong>Docker container</strong></a> (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but <strong>Anaconda is the easiest route.</strong></p>
 <div class="section" id="step-1-you-need-to-have-python-3-7-installed-and-we-highly-recommend-using-anaconda-to-do-so">
 <h2>Step 1: You need to have Python &gt;3.7 installed, and we highly recommend using Anaconda to do so.<a class="headerlink" href="#step-1-you-need-to-have-python-3-7-installed-and-we-highly-recommend-using-anaconda-to-do-so" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="simply-download-the-appropriate-files-here-https-www-anaconda-com-distribution">
@@ -506,7 +520,7 @@ Here are some additional resources users have found helpful (posted without endo
 <ul class="simple">
 <li><p>Computer:</p>
 <ul>
-<li><p>For reference, we use e.g. Dell workstations (79xx series) with <strong>Ubuntu 16.04 LTS, 18.04 LTS, or 20.04 LTS</strong> and run a Docker container that has TensorFlow, etc. installed (<a class="reference external" href="https://github.com/DeepLabCut/Docker4DeepLabCut2.0">https://github.com/DeepLabCut/Docker4DeepLabCut2.0</a>).</p></li>
+<li><p>For reference, we use e.g. Dell workstations (79xx series) with <strong>Ubuntu 16.04 LTS, 18.04 LTS, or 20.04 LTS</strong> and for verions prior to 2.2, we run a Docker container that has TensorFlow, etc. installed (<a class="reference external" href="https://github.com/DeepLabCut/Docker4DeepLabCut2.0">https://github.com/DeepLabCut/Docker4DeepLabCut2.0</a>). Now we use the new Docker containers supplied on this repo, also available through <a class="reference external" href="https://hub.docker.com/r/deeplabcut/deeplabcut">DockerHub</a> or the <a class="reference external" href="https://pypi.org/project/deeplabcut-docker/"><code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span></code></a> helper script.</p></li>
 </ul>
 </li>
 <li><p>Computer Hardware:</p>
@@ -530,8 +544,7 @@ Here are some additional resources users have found helpful (posted without endo
 <li><p>To note, is it possible to run DeepLabCut on your CPU, but it will be VERY slow (see: <a class="reference external" href="https://www.biorxiv.org/content/early/2018/10/30/457242">Mathis &amp; Warren</a>). However, this is the preferred path if you want to test DeepLabCut on your own computer/data before purchasing a GPU, with the added benefit of a straightforward installation! Otherwise, use our COLAB notebooks for GPU access for testing.</p></li>
 </ul>
 </li>
-<li><p>Docker: We highly recommend advaced users use the supplied <a class="reference external" href="https://github.com/MMathisLab/Docker4DeepLabCut2.0">Docker container</a>.
-NOTE: <a class="reference external" href="https://github.com/NVIDIA/nvidia-docker/issues/43">this container does not work on windows hosts!</a></p></li>
+<li><p>Docker: We highly recommend advanced users use the supplied <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/tree/master/docker.md">Docker container</a></p></li>
 </ul>
 </li>
 </ul>
@@ -569,19 +582,19 @@ NOTE: <a class="reference external" href="https://github.com/NVIDIA/nvidia-docke
 <div class='prev-next-bottom'>
     
     <div id="prev">
-        <a class="left-prev" href="README.html" title="previous page">
+        <a class="left-prev" href="UseOverviewGuide.html" title="previous page">
             <i class="prevnext-label fas fa-angle-left"></i>
             <div class="prevnext-info">
                 <p class="prevnext-label">previous</p>
-                <p class="prevnext-title">Welcome to Our Documentation Hub!</p>
+                <p class="prevnext-title">Documentation Overview:</p>
             </div>
         </a>
     </div>
      <div id="next">
-        <a class="right-next" href="standardDeepLabCut_UserGuide.html" title="next page">
+        <a class="right-next" href="docker.html" title="next page">
             <div class="prevnext-info">
                 <p class="prevnext-label">next</p>
-                <p class="prevnext-title">DeepLabCut User Guide (for single animal projects)</p>
+                <p class="prevnext-title">DeepLabCut Docker containers</p>
             </div>
             <i class="prevnext-label fas fa-angle-right"></i>
         </a>
@@ -591,7 +604,7 @@ NOTE: <a class="reference external" href="https://github.com/NVIDIA/nvidia-docke
         
         </div>
     </div>
-    <footer class="footer mt-5 mt-md-0">
+    <footer class="footer">
     <div class="container">
       <p>
         
