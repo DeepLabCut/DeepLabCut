@@ -288,20 +288,18 @@ def evaluate_multianimal_full(
                     )
 
                     data_path = resultsfilename.split(".h5")[0] + "_full.pickle"
+                    if plotting:
+                        foldername = os.path.join(
+                            str(evaluationfolder),
+                            "LabeledImages_"
+                            + DLCscorer
+                            + "_"
+                            + Snapshots[snapindex],
+                        )
+                        auxiliaryfunctions.attempttomakefolder(foldername)
                     if os.path.isfile(data_path):
                         print("Model already evaluated.", resultsfilename)
                     else:
-                        if plotting:
-                            foldername = os.path.join(
-                                str(evaluationfolder),
-                                "LabeledImages_"
-                                + DLCscorer
-                                + "_"
-                                + Snapshots[snapindex],
-                            )
-                            auxiliaryfunctions.attempttomakefolder(foldername)
-                            fig, ax = visualization.create_minimal_figure()
-
                         sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
 
                         PredicteData = {}
@@ -387,35 +385,6 @@ def evaluate_multianimal_full(
                                     sl = imageindex, inds[inds_gt[found]]
                                     dist[sl] = min_dists
                                     conf[sl] = probs_pred[n_joint][neighbors[found]].squeeze()
-
-                            if plotting:
-                                temp_xy = GT.unstack("bodyparts")[joints].values
-                                gt = temp_xy.reshape(
-                                    (-1, 2, temp_xy.shape[1])
-                                ).T.swapaxes(1, 2)
-                                h, w, _ = np.shape(frame)
-                                fig.set_size_inches(w / 100, h / 100)
-                                ax.set_xlim(0, w)
-                                ax.set_ylim(0, h)
-                                ax.invert_yaxis()
-                                ax = visualization.make_multianimal_labeled_image(
-                                    frame,
-                                    gt,
-                                    coords_pred,
-                                    probs_pred,
-                                    colors,
-                                    cfg["dotsize"],
-                                    cfg["alphavalue"],
-                                    cfg["pcutoff"],
-                                    ax=ax,
-                                )
-                                visualization.save_labeled_frame(
-                                    fig,
-                                    image_path,
-                                    foldername,
-                                    imageindex in trainIndices,
-                                )
-                                visualization.erase_artists(ax)
 
                         sess.close()  # closes the current tf session
 
@@ -540,7 +509,7 @@ def evaluate_multianimal_full(
                     else:
                         n_graphs = 1
                         paf_inds = [list(range(n_edges))]
-                    results, paf_scores = crossvalutils.cross_validate_paf_graphs(
+                    results, paf_scores, best_assemblies = crossvalutils.cross_validate_paf_graphs(
                         config,
                         str(path_test_config).replace("pose_", "inference_"),
                         data_path,
@@ -548,6 +517,59 @@ def evaluate_multianimal_full(
                         n_graphs=n_graphs,
                         paf_inds=paf_inds,
                     )
+                    if plotting:
+                        assemblies, assemblies_unique, image_paths = best_assemblies
+                        fig, ax = visualization.create_minimal_figure()
+                        n_animals = len(cfg['individuals'])
+                        if cfg['uniquebodyparts']:
+                            n_animals += 1
+                        colors = visualization.get_cmap(n_animals, name=cfg["colormap"])
+                        for k, v in tqdm(assemblies.items()):
+                            imname = image_paths[k]
+                            image_path = os.path.join(cfg["project_path"], imname)
+                            image = io.imread(image_path)
+                            if image.ndim == 2 or image.shape[-1] == 1:
+                                image = skimage.color.gray2rgb(image)
+                            frame = img_as_ubyte(image)
+                            h, w, _ = np.shape(frame)
+                            fig.set_size_inches(w / 100, h / 100)
+                            ax.set_xlim(0, w)
+                            ax.set_ylim(0, h)
+                            ax.invert_yaxis()
+
+                            gt = [s.to_numpy().reshape((-1, 2)) for _, s in Data.loc[imname].groupby('individuals')]
+                            coords_pred = []
+                            coords_pred += [ass.xy for ass in v]
+                            probs_pred = []
+                            probs_pred += [ass.data[:, 2:3] for ass in v]
+                            if assemblies_unique is not None:
+                                unique = assemblies_unique.get(k, None)
+                                if unique is not None:
+                                    coords_pred.append(unique[:, :2])
+                                    probs_pred.append(unique[:, 2:3])
+                            while len(coords_pred) < len(gt):
+                                coords_pred.append(np.full((1, 2), np.nan))
+                                probs_pred.append(np.full((1, 2), np.nan))
+                            ax = visualization.make_multianimal_labeled_image(
+                                frame,
+                                gt,
+                                coords_pred,
+                                probs_pred,
+                                colors,
+                                cfg["dotsize"],
+                                cfg["alphavalue"],
+                                cfg["pcutoff"],
+                                ax=ax,
+                            )
+                            visualization.save_labeled_frame(
+                                fig,
+                                image_path,
+                                foldername,
+                                k in trainIndices,
+                            )
+                            visualization.erase_artists(ax)
+
+
                     df = results[1].copy()
                     df.loc(axis=0)[('mAP', 'mean')] = [d['mAP'] for d in results[2]]
                     df.loc(axis=0)[('mAR', 'mean')] = [d['mAR'] for d in results[2]]

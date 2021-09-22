@@ -235,10 +235,12 @@ def _benchmark_paf_graphs(
     n_graphs = len(paf_inds)
     all_scores = []
     all_metrics = []
+    all_assemblies = []
     for j, paf in enumerate(paf_inds, start=1):
         print(f"Graph {j}|{n_graphs}")
         ass.paf_inds = paf
         ass.assemble()
+        all_assemblies.append((ass.assemblies, ass.unique, ass.metadata['imnames']))
         oks = evaluate_assembly(ass.assemblies, ass_true_dict, oks_sigma)
         all_metrics.append(oks)
         scores = np.full((len(image_paths), 2), np.nan)
@@ -278,7 +280,7 @@ def _benchmark_paf_graphs(
         dfs.append(df)
     big_df = pd.concat(dfs)
     group = big_df.groupby("ngraph")
-    return (all_scores, group.agg(["mean", "std"]).T, all_metrics)
+    return (all_scores, group.agg(["mean", "std"]).T, all_metrics, all_assemblies)
 
 
 def _get_n_best_paf_graphs(
@@ -412,4 +414,4 @@ def cross_validate_paf_graphs(
     if output_name:
         with open(output_name, "wb") as file:
             pickle.dump([results], file)
-    return results, paf_scores
+    return results[:3], paf_scores, results[3][size_opt]
