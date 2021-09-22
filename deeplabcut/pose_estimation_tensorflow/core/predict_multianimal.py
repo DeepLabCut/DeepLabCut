@@ -88,7 +88,7 @@ def compute_edge_costs(
         idx = np.arange(peaks.shape[0])
         idx_per_bpt = {j: idx[bpt_inds == j].tolist() for j in range(n_bodyparts)}
         edges = []
-        for k, (s, t) in enumerate(graph):
+        for k, (s, t) in zip(paf_inds, graph):
             inds_s = idx_per_bpt[s]
             inds_t = idx_per_bpt[t]
             if not (inds_s and inds_t):
@@ -133,15 +133,15 @@ def compute_edge_costs(
     for i in range(n_samples):
         samples_i_mask = sample_inds == i
         costs = dict()
-        for paf_ind, k in zip(paf_inds, range(len(graph))):
+        for k in paf_inds:
             edges_k_mask = edge_inds == k
             idx = np.flatnonzero(samples_i_mask & edges_k_mask)
             s, t = all_edges[idx].T
             n_sources = np.unique(s).size
             n_targets = np.unique(t).size
-            costs[paf_ind] = dict()
-            costs[paf_ind]["m1"] = affinities[idx].reshape((n_sources, n_targets))
-            costs[paf_ind]["distance"] = lengths[idx].reshape((n_sources, n_targets))
+            costs[k] = dict()
+            costs[k]["m1"] = affinities[idx].reshape((n_sources, n_targets))
+            costs[k]["distance"] = lengths[idx].reshape((n_sources, n_targets))
         all_costs.append(costs)
 
     return all_costs
