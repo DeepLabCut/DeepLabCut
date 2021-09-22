@@ -81,6 +81,7 @@ update() {
 # Build the docker container
 # Usage: build [core|gui|gui-jupyter]
 build() {
+    tag=$1
     _build $(get_container_name $tag) $(get_local_container_name $tag)
 }
 
