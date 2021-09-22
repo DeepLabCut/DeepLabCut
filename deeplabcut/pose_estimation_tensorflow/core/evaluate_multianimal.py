@@ -549,8 +549,10 @@ def evaluate_multianimal_full(
                         paf_inds=paf_inds,
                     )
                     df = results[1].copy()
-                    df.loc(axis=0)[('mAP', 'mean')] = [d['mAP'] for d in results[2]]
-                    df.loc(axis=0)[('mAR', 'mean')] = [d['mAR'] for d in results[2]]
+                    df.loc(axis=0)[('mAP_train', 'mean')] = [d[0]['mAP'] for d in results[2]]
+                    df.loc(axis=0)[('mAR_train', 'mean')] = [d[0]['mAR'] for d in results[2]]
+                    df.loc(axis=0)[('mAP_test', 'mean')] = [d[1]['mAP'] for d in results[2]]
+                    df.loc(axis=0)[('mAR_test', 'mean')] = [d[1]['mAR'] for d in results[2]]
                     with open(data_path.replace("_full.", "_map."), "wb") as file:
                         pickle.dump((df, paf_scores), file)
 
