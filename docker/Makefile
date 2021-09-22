@@ -1,7 +1,10 @@
+clean:
+	rm -r dist/
+
 prepare_build:
 	python3 -m pip install --upgrade twine build
 
-build: prepare_build
+build: prepare_build clean 
 	python3 -m build
 
 upload_test: prepare_build
