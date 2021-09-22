@@ -14,7 +14,7 @@ import os
 import pty
 import sys
 
-__version__ = "0.0.5-alpha"
+__version__ = "0.0.7-alpha"
 
 _MOTD = r"""
                     .--,       .--,
