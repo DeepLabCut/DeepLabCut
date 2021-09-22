@@ -6,7 +6,7 @@ prepare_build:
 	python3 -m pip install --upgrade twine build
 	cp ../docs/docker.md PYPI_README.md
 
-build: prepare_build clean 
+build: clean prepare_build  
 	python3 -m build
 
 upload_test: prepare_build

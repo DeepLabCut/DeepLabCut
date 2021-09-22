@@ -11,20 +11,27 @@ DLC_NOTEBOOK_PORT=${DLC_NOTEBOOK_PORT:-8888}
 # Check if the current users has privileges to start
 # a docker container.
 check_system() {
-    if [ $(groups | grep -c docker) -eq 0 ]; then
-	if [[ "$DOCKER" == "sudo docker" ]]; then
-	    return 0 
+    if [[ $(uname -s) == Linux ]]; then
+        if [ $(groups | grep -c docker) -eq 0 ]; then
+        if [[ "$DOCKER" == "sudo docker" ]]; then
+            return 0 
+            fi
+            err "The current user $(id -u) is not                      "
+            err "part of the \"docker\" group.                         "
+            err "Please either:                                        "
+            err " 1) Launch this script with the DOCKER environment    "
+            err "    variable set to DOCKER=\"sudo docker\" (use this  "
+            err "    with care)!                                       "
+            err " 2) Add your user to the docker group. You might need "
+            err "    to log in and out again to see the effect of the  "
+            err "    change.                                           "
+            exit 1
         fi
-        err "The current user $(id -u) is not                      "
-        err "part of the \"docker\" group.                         "
-        err "Please either:                                        "
-        err " 1) Launch this script with the DOCKER environment    "
-        err "    variable set to DOCKER=\"sudo docker\" (use this  "
-        err "    with care)!                                       "
-        err " 2) Add your user to the docker group. You might need "
-        err "    to log in and out again to see the effect of the  "
-        err "    change.                                           "
-        exit 1
+    elif [[ $(uname -s) == Darwin ]]; then
+        err "Please note that macOSX support is currently experimental"
+        err "If you encounter errors, please open an issue on"
+        err "https://github.com/DeepLabCut/DeepLabCut/issues"
+        err "Thanks for testing the package!"
     fi
 }
 
