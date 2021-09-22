@@ -102,7 +102,7 @@ update() {
 # Usage: build [core|gui|gui-jupyter]
 build() {
     tag=$1
-    _build $(get_container_name $tag) $(get_local_container_name $tag)
+    _build $(get_container_name $tag) $(get_local_container_name $tag) || exit 1
 }
 
 _build() {
@@ -121,7 +121,8 @@ _build() {
     # Create same user as on the host system
     run mkdir -p /home
     run mkdir -p /app
-    run groupadd -g $gid $gname || groupmod -g $gid $gname
+    run groupadd -g $gid $gname || groupmod -o -g $gid $gname
+    # || groupmod -g $gid $gname
     run useradd -d /home -s /bin/bash -u $uid -g $gid $uname
     run chown -R $uname:$gname /home
     run chown -R $uname:$gname /app
@@ -129,6 +130,10 @@ _build() {
     # Switch to the local user from now on
     user $uname
 EOF
+    if [ $? -ne 0 ]; then
+        err Build failed.
+        exit 1
+    fi
     err Build succeeded
 }
 
