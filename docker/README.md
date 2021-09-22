@@ -1,5 +1,7 @@
 # DeepLabCut Dockerfiles
 
+**Note that this README is mainly intended for DeepLabCut developers. The main documentation contains its own user documentation on the provided docker images.**
+
 This repo contains build routines for the following official DeepLabCut docker images:
 - `deeplabcut/deeplabcut:base`: Base image with TF2.5, cuDNN8 and DLC
 - `deeplabcut/deeplabcut:latest-core`: DLC in light mode
@@ -12,31 +14,31 @@ The images are synced to DockerHub: https://hub.docker.com/r/deeplabcut/deeplabc
 ## Quickstart
 
 You can use the images fully standalone, without the need of cloning the DeepLabCut repo.
-Simply download the `deeplabcut-docker.sh` script to your local working directory.
+A helper package called `deeplabcut-docker` is available on PyPI and can be installed by running
+
+``` bash
+pip install deeplabcut-docker
+```
+
+*Note: Advanced users can also directly download and use the `deeplabcut-docker.sh` script if this is preferred over a python helper script.*
+
 We provide docker containers for three different use cases outlined below.
 
 In all cases, your current directory will be mounted in the container, and the container
 will be started with your current username and group.
 
-### User interface
-
-To launch the DLC GUI directly, run
-
-```bash
-./deeplabcut-docker.sh gui
-```
-
-### Interactive console with DLC in light mode
-
-```bash
-./deeplabcut-docker.sh bash
-```
-
-### Jupyter Notebooks
-
-```bash
-./deeplabcut-docker.sh notebook
-```
+- To launch the DLC GUI directly, run
+  ```bash
+  deeplabcut-docker gui
+  ```
+- Interactive console with DLC in light mode
+  ```bash
+  deeplabcut-docker bash
+  ```
+- A Jupyter notebook server can be launched with
+  ```bash
+  deeplabcut-docker notebook
+  ```
 
 ## For developers
 
