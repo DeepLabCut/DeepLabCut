@@ -170,7 +170,7 @@ If you perform the system-wide installation, and the computer has other Python p
      - TensorFlow
        - You will need [TensorFlow](https://www.tensorflow.org/) (we used version 1.0 in the paper, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.15, and 2.0 to 2.5**; we recommend TF2.5 now) for Python 3.7, 3.8, or 3.9 with GPU support.
         - To note, is it possible to run DeepLabCut on your CPU, but it will be VERY slow (see: [Mathis & Warren](https://www.biorxiv.org/content/early/2018/10/30/457242)). However, this is the preferred path if you want to test DeepLabCut on your own computer/data before purchasing a GPU, with the added benefit of a straightforward installation! Otherwise, use our COLAB notebooks for GPU access for testing.
-     - Docker: We highly recommend advaced users use the supplied [Docker container]((https://github.com/DeepLabCut/DeepLabCut/tree/master/docker.md)
+     - Docker: We highly recommend advanced users use the supplied [Docker container](https://github.com/DeepLabCut/DeepLabCut/tree/master/docker.md)
 
 
 
