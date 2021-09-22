@@ -666,7 +666,9 @@ def load_features_from_coord(features, key, coords, valid_mask_for_fish = False)
     #key = 'frame'+ str(frame_id).zfill(4)
 
     if valid_mask_for_fish:
-        mask = np.array([0,1,2,3,6])
+        #mask = np.array([0,1,2,3,6])
+        #mask = np.array([1,2,3,6])
+        mask = np.array([1,2,6])
         coords = coords[mask,:]
 
     feature = features[key]
@@ -753,16 +755,16 @@ class build_dlc_transformer(nn.Module):
 
 
 class DLCTrans:
-    def __init__(self,checkpoint = None, kpts_num = None, path_to_features = None):
+    def __init__(self,checkpoint = None, kpts_num = None, path_to_features = None, animal = None):
         self.checkpoint = checkpoint
-
-        if 'pickle' in path_to_features:
-
+        self.animal = animal
+        if '.pickle' in path_to_features:
             print ('loading pickle')
             with open(path_to_features,'rb') as f:
                 self.features = pickle.load(f)
         else:
-            self.features = mmapdict(path_to_features, True)
+            print ('loading pickle with mmapdict')
+            self.features = mmapdict(path_to_features)
 
         
         self.model = build_dlc_transformer(kpts_num)
@@ -770,7 +772,8 @@ class DLCTrans:
         print ('loading params')
         self._load_params()
         self.model.double()        
-        self.model.eval()        
+        self.model.eval()
+
 
 
         
@@ -784,15 +787,21 @@ class DLCTrans:
         
         coord_a = preprocess(coord_a.astype(np.int64))
         coord_b = preprocess(coord_b.astype(np.int64))
+
+        zfill_width_dict = {'fish': 3,
+                   'marmoset': 5,
+                   'pup': 4,
+                    '3mice': 4}
         
-        frame_a = 'frame' + str(frame_a).zfill(4)
-        frame_b = 'frame' + str(frame_b).zfill(4)
+        frame_a = 'frame' + str(frame_a).zfill(zfill_width_dict[self.animal])
+        frame_b = 'frame' + str(frame_b).zfill(zfill_width_dict[self.animal])
 
-        if frame_a not in self.features or frame_b not in self.features:
-            return None
+        #if frame_a not in self.features or frame_b not in self.features:
+        #    print ('here')
+        #    return None
 
-        vec_a = load_features_from_coord(self.features, frame_a, coord_a, valid_mask_for_fish = False)
-        vec_b = load_features_from_coord(self.features, frame_b, coord_b, valid_mask_for_fish = False)
+        vec_a = load_features_from_coord(self.features, frame_a, coord_a, valid_mask_for_fish = self.animal == 'fish')
+        vec_b = load_features_from_coord(self.features, frame_b, coord_b, valid_mask_for_fish = self.animal =='fish')
 
         return vec_a, vec_b
         

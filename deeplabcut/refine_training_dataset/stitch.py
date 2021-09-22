@@ -1106,10 +1106,36 @@ def stitch_tracklets(
         cfg["TrainingFraction"][trainingsetindex],
         modelprefix=modelprefix,
     )
-    checkpoint = '/mnt/md0/shaokai/TransReID/3mice_dlc_transreid_30_from_gt.pth'
-    kpts_num = 12
-    path_to_features = '/mnt/md0/shaokai/TransReID/data/videocompressed1DLC_resnet50_MultiMouseJun22shuffle1_200000_features.pickle'
-    dlctrans = inference.DLCTrans(checkpoint = checkpoint, kpts_num = kpts_num, path_to_features = path_to_features)
+    use_trans = False
+    if use_trans:
+        animal = 'fish'
+
+        kpts_num_dict = {'3mice': 12, 'fish': 3, 'pup':5, 'marmoset': 15}
+        checkpoint = f'/mnt/md0/shaokai/TransReID/{animal}_dlc_transreid_from_pickle.pth'
+        kpts_num = kpts_num_dict[animal]
+
+        path_to_features_dict = {'fish': 'fish_features.mmdpickle',
+                            'marmoset': 'marmoset_features.mmdpickle',
+                            '3mice': '3mice_features.mmdpickle',
+                            'pup':'pup_features.mmdpickle'}
+
+        gt_path = {'fish':'fishgt.h5',
+                       'marmoset':'marmosetgt.h5',
+                       'pup':'pupgt.h5',
+                       '3mice':'videocompressed1gt.h5'}
+
+        path_to_el = {'fish':'deeplc.menidia.feeding.school3.176pm.S04.D.shortDLC_resnet50_SchoolingMay7shuffle1_200000_el.pickle',
+                          'marmoset':'short_videocropDLC_dlcrnetms5_MarmosetMay7shuffle1_60000_el.pickle',
+                          'pup':'pup_el.pickle',
+                          '3mice':'videocompressed1DLC_resnet50_MultiMouseJun22shuffle1_200000_el.pickle'}
+
+        data_folder = '/mnt/md0/shaokai/TransReID/data/'
+
+        path_to_features = os.path.join(data_folder,path_to_features_dict[animal])
+        
+        
+        dlctrans = inference.DLCTrans(checkpoint = checkpoint, kpts_num = kpts_num, path_to_features = path_to_features, animal = animal)
+
     def trans_weight_func(tracklet1,tracklet2):
 
         if tracklet1 < tracklet2:
@@ -1127,11 +1153,9 @@ def stitch_tracklets(
 
         dist = dlctrans(t1,t2)
         dist = (dist+1)/2
-        w = 0.01 if tracklet1.identity == tracklet2.identity else 1
-        cost = w * stitcher.calculate_edge_weight(tracklet1, tracklet2)
-        
-        print (dist)
-        return dist*(-1) + cost
+
+        return -dist
+
     for video in vids:
         print("Processing... ", video)
         videofolder = str(Path(video).parents[0])
@@ -1157,10 +1181,11 @@ def stitch_tracklets(
                     w = 0.01 if t1.identity == t2.identity else 1
                     return w * stitcher.calculate_edge_weight(t1, t2)
 
+            if use_trans:
+                stitcher.build_graph(max_gap=max_gap, weight_func=trans_weight_func)
+            else:
+                stitcher.build_graph(max_gap=max_gap, weight_func=weight_func)
 
-                
-            #stitcher.build_graph(max_gap=max_gap, weight_func=weight_func)
-            stitcher.build_graph(max_gap=max_gap, weight_func=trans_weight_func)            
             stitcher.stitch()
             stitcher.write_tracks(output_name, animal_names)
         except FileNotFoundError as e:
