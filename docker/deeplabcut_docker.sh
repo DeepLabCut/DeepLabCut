@@ -4,10 +4,9 @@
 # Usage:
 #   $ ./deeplabcut-docker.sh [gui|notebook|bash]
 
-set -x
-
 DOCKER=${DOCKER:-docker}
-DLC_VERSION="latest"
+DLC_VERSION=${DLC_VERSION:-"latest"}
+DLC_NOTEBOOK_PORT=${DLC_NOTEBOOK_PORT:-8888}
 
 # Check if the current users has privileges to start
 # a docker container.
@@ -41,11 +40,25 @@ get_x11_args() {
          "-v /tmp/.X11-unix:/tmp/.X11-unix" 
          "-v $XAUTHORITY:/home/developer/.Xauthority"
         )
-    else
+    elif [[ $(uname -s) == Darwin ]]; then
         err "Using OSX config"
+        # TODO(stes) This is most likely not robust for all users;
+        #            We need to replace "en0" by some dynamic way
+        #            of figuring out the active network interface.
+        #            Even better would be to use 127.0.0.1, if this
+        #            is possible with the correct external config
+        ip=$(ifconfig en0 | grep inet | awk '$1=="inet" {print $2}')
+        display_id=$(echo $DISPLAY | sed -e 's/.*\(:[0-9]\)/\1/')
         args=(
-          "-e DISPLAY=host.docker.internal$DISPLAY"
+         "-e DISPLAY=${ip}${display_id}"
         )
+    else
+        err "Unknown operating system:"
+        err "$(uname -s)"
+        err "Please open an issue on "
+        err "https://github.com/DeepLabCut/DeepLabCut/issues"
+        err "And attach your full console output."
+        exit 1
     fi
     echo "${args[@]}"
 }
@@ -122,7 +135,11 @@ notebook() {
     update gui-jupyter || exit 1
     build gui-jupyter || exit 1
     args="$(get_x11_args) $(get_mount_args) ${extra_args} -v /app/examples"
-    $DOCKER run -p 127.0.0.1:8888:8888 -it --rm ${args} $(get_local_container_name gui-jupyter) \
+    err "Starting the notebook server."
+    err "Open your browser at"
+    err "http://127.0.0.1:${DLC_NOTEBOOK_PORT}"
+    err "If prompted for a password, enter 'deeplabcut'."
+    $DOCKER run -p 127.0.0.1:${DLC_NOTEBOOK_PORT}:8888 -it --rm ${args} $(get_local_container_name gui-jupyter) \
         || err "Failed to launch the notebook server. Used args: \"${args}\""
 }
 
