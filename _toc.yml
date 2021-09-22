@@ -4,8 +4,8 @@ parts:
 - caption: Main Documentation
   chapters:
   - file: docs/README
-  - file: docs/installation
   - file: docs/UseOverviewGuide
+  - file: docs/installation
   - file: docs/docker
   - file: docs/standardDeepLabCut_UserGuide
   - file: docs/maDLC_UserGuide
