@@ -1,4 +1,4 @@
 include pyproject.toml
 include PYPI_README.md
 include LICENSE
-recursive-include deeplabcut_docker *.sh
+include deeplabcut_docker.sh

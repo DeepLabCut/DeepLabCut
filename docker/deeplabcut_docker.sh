@@ -95,7 +95,7 @@ err() {
 
 # Update the docker container
 update() {
-    $DOCKER pull -q $(get_container_name $1)
+    $DOCKER pull $(get_container_name $1)
 }
 
 # Build the docker container
@@ -108,20 +108,28 @@ build() {
 _build() {
     remote_name=$1
     local_name=$2
+
+    uname=$(id -un)
+    uid=$(id -u)
+    gname=$(id -gn)
+    gid=$(id -g)
+
+    err "Configuring a local container for user $uname ($uid) in group $gname ($gid)"
     $DOCKER build -q -t ${local_name} - << EOF
     from ${remote_name}
 
     # Create same user as on the host system
     run mkdir -p /home
     run mkdir -p /app
-    run groupadd -g $(id -g) $(id -gn)
-    run useradd -d /home -s /bin/bash -u $(id -u) -g $(id -g) $(id -un)
-    run chown -R $(id -un):$(id -gn) /home
-    run chown -R $(id -un):$(id -gn) /app
+    run groupadd -g $gid $gname || groupmod -g $gid $gname
+    run useradd -d /home -s /bin/bash -u $uid -g $gid $uname
+    run chown -R $uname:$gname /home
+    run chown -R $uname:$gname /app
 
     # Switch to the local user from now on
-    user $(id -un)
+    user $uname
 EOF
+    err Build succeeded
 }
 
 ### Start of CLI functions ###
@@ -180,6 +188,6 @@ case "${subcommand}" in
     custom) custom "$@" ;;
     *)
         echo "Usage"
-        echo "$0 [gui|notebook|help]"
+        echo "$0 [gui|notebook|bash|help]"
         ;;
 esac
