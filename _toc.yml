@@ -5,7 +5,7 @@ parts:
   chapters:
   - file: docs/README
   - file: docs/installation
-  - file: docs/UseOverViewGuide
+  - file: docs/UseOverviewGuide
   - file: docs/docker
   - file: docs/standardDeepLabCut_UserGuide
   - file: docs/maDLC_UserGuide
