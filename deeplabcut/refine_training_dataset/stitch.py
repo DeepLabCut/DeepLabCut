@@ -602,18 +602,21 @@ class TrackletStitcher:
     def mine(self, n_samples):
         p = np.asarray([t.likelihood for t in self])
         p /= p.sum()
-        tracklets = np.random.choice(self, n_samples, p=p)
         triplets = []
-        for tracklet in tracklets:
-            overlapping_tracklets = []
-            while not overlapping_tracklets:
-                ind_anchor, ind_pos = np.random.choice(tracklet.inds, 2, replace=False)
-                anchor = tracklet.get_data_at(ind_anchor)[:, :2].astype(int)
-                pos = tracklet.get_data_at(ind_pos)[:, :2].astype(int)
-                # Filter tracklets overlapping at ind_anchor
-                overlapping_tracklets = [t for t in self._lu_overlap[tracklet] if ind_anchor in t.inds]
-            overlapping_tracklet = np.random.choice(overlapping_tracklets)
+        while len(triplets) != n_samples:
+            tracklet = np.random.choice(self, p=p)
+            overlapping_tracklets = self._lu_overlap[tracklet]
+            if not overlapping_tracklets:
+                continue
+            # Pick the closest (spatially) overlapping tracklet
+            ind_min = np.argmin([tracklet.distance_to(t) for t in overlapping_tracklets])
+            overlapping_tracklet = overlapping_tracklets[ind_min]
+            common_inds = set(tracklet.inds).intersection(overlapping_tracklet.inds)
+            ind_anchor = np.random.choice(list(common_inds))
+            anchor = tracklet.get_data_at(ind_anchor)[:, :2].astype(int)
             neg = overlapping_tracklet.get_data_at(ind_anchor)[:, :2].astype(int)
+            ind_pos = np.random.choice(tracklet.inds[tracklet.inds != ind_anchor])
+            pos = tracklet.get_data_at(ind_pos)[:, :2].astype(int)
             triplet = (
                 (anchor, ind_anchor),
                 (pos, ind_pos),
