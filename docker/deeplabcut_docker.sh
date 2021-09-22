@@ -122,7 +122,6 @@ _build() {
     run mkdir -p /home
     run mkdir -p /app
     run groupadd -g $gid $gname || groupmod -o -g $gid $gname
-    # || groupmod -g $gid $gname
     run useradd -d /home -s /bin/bash -u $uid -g $gid $uname
     run chown -R $uname:$gname /home
     run chown -R $uname:$gname /app
