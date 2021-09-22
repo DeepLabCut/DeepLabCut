@@ -53,6 +53,7 @@ run_test() {
 for arg in "$@"; do
 case $1 in
     build)
+	cp -r examples ${DOCKERDIR}
         for tag in base latest-core latest-gui latest-gui-jupyter; do
             (
             cd ${DOCKERDIR};
@@ -72,3 +73,4 @@ case $1 in
         done
 esac
 done
+

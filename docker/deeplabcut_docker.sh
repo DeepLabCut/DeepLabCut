@@ -4,6 +4,8 @@
 # Usage:
 #   $ ./deeplabcut-docker.sh [gui|notebook|bash]
 
+set -x
+
 DOCKER=${DOCKER:-docker}
 DLC_VERSION="latest"
 
@@ -11,6 +13,9 @@ DLC_VERSION="latest"
 # a docker container.
 check_system() {
     if [ $(groups | grep -c docker) -eq 0 ]; then
+	if [[ "$DOCKER" == "sudo docker" ]]; then
+	    return 0 
+        fi
         err "The current user $(id -u) is not                      "
         err "part of the \"docker\" group.                         "
         err "Please either:                                        "
@@ -70,15 +75,20 @@ err() {
 
 # Update the docker container
 update() {
-    docker pull -q $(get_container_name $1)
+    $DOCKER pull -q $(get_container_name $1)
 }
 
 # Build the docker container
 # Usage: build [core|gui|gui-jupyter]
 build() {
-    tag=$1
-    $DOCKER build -q -t $(get_local_container_name $tag) - << EOF
-    from $(get_container_name $tag)
+    _build $(get_container_name $tag) $(get_local_container_name $tag)
+}
+
+_build() {
+    remote_name=$1
+    local_name=$2
+    $DOCKER build -q -t ${local_name} - << EOF
+    from ${remote_name}
 
     # Create same user as on the host system
     run mkdir -p /home
@@ -110,7 +120,7 @@ notebook() {
     extra_args="$@"
     update gui-jupyter || exit 1
     build gui-jupyter || exit 1
-    args="$(get_x11_args) $(get_mount_args) ${extra_args}"
+    args="$(get_x11_args) $(get_mount_args) ${extra_args} -v /app/examples"
     $DOCKER run -p 127.0.0.1:8888:8888 -it --rm ${args} $(get_local_container_name gui-jupyter) \
         || err "Failed to launch the notebook server. Used args: \"${args}\""
 }
@@ -124,6 +134,17 @@ bash() {
     $DOCKER run -it $args $(get_local_container_name core) bash
 }
 
+# Launch a custom docker image (for developers)
+# Takes a local image name as the first argument.
+custom() {
+    image=$1
+    shift 1
+    extra_args="$@"
+    _build $image "${image}-custom" || exit 1
+    args="$(get_mount_args) ${extra_args}"
+    $DOCKER run -it $args ${image}-custom bash
+}
+
 check_system
 subcommand=${1:-gui}
 shift 1
@@ -131,6 +152,7 @@ case "${subcommand}" in
     gui) gui "$@" ;;
     notebook) notebook "$@" ;;
     bash) bash "$@" ;;
+    custom) custom "$@" ;;
     *)
         echo "Usage"
         echo "$0 [gui|notebook|help]"
