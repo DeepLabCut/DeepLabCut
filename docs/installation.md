@@ -6,7 +6,7 @@ The installation process is as easy as this figure!
 
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1609805496320-48N5Y3NEBIVVNUIXPNBV/ke17ZwdGBToddI8pDm48kEPc72vD8ARkQNSjpzTzPRsUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8GRo6ASst2s6pLvNAu_PZdLjGeaj0GkoPWeOP-8DYHB5lK4wgKtPMRocsaeGU4PClrIJgRK3oXroL8Ygt-EThXU/Intall.png?format=750w" width="250" title="DLC" alt="DLC" align="right" vspace = "50">
 
- Please note, there are several modes of installation, and the user should decide to either use a **system-wide** (see [note below](/docs/installation.md#system-wide-considerations)), **Anaconda environment** based installation (**recommended**), or the supplied **Docker container** (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but **Anaconda is the easiest route.**
+ Please note, there are several modes of installation, and the user should decide to either use a **system-wide** (see [note below](/docs/installation.md#system-wide-considerations)), **Anaconda environment** based installation (**recommended**), or the supplied [**Docker container**](./docker.md) (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but **Anaconda is the easiest route.**
 
 
  ## Step 1: You need to have Python >3.7 installed, and we highly recommend using Anaconda to do so.
