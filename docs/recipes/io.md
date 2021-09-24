@@ -36,14 +36,14 @@ For `.avi` files you want to change the codec and the quality metric, since `crf
 `ffmpeg -i "path_to_video" -c:v mjpeg -q:v 10 "output_path"`
 
 `-q:v` is a quality metric with values ranging from 1 to 31 with reasonable values being around 10. 
-If you want to compress all your recordings for easier storage or moving to cloud storage, you can use a for loop that will go through all videos in a directory that are in a certain container. Let’s say we want to transcode our .avi videos to .mp4 and make them smaller without quality loss. Note, that the loop has be run from inside the folder the videos are in:
+If you want to compress all your recordings for easier storage or moving to cloud storage, you can use a for loop that will go through all videos in a directory that are in a certain container. Let’s say we want to transcode our `.avi` videos to `.mp4` and make them smaller without quality loss. Note, that the loop has be run from inside the folder the videos are in:
 
 `for %i in (*.avi) do ffmpeg -i "%i" -c:v libx265 -preset fast -crf 18 "%~ni.mp4"` 
 
-This command will reencode all of our videos into an .mp4 container and save them with the same name as the original (without overwriting them).
+This command will reencode all of our videos into an `.mp4` container and save them with the same name as the original (without overwriting them).
 Additionally, ffmpeg allows you to also crop or rescale the videos for possible improvement in inference speed further down the line in DLC workflow. To either crop or rescale you need to use 
 `-filter:v` parameter after which you’d add either `"crop=Xsize:Ysize:Xstart:Ystart"` for cropping or 
-`"scale=Xsize:Ysize"` for rescale. Note that when using “scale” the values how be a result of integer division of the original video size. If you want to keep the aspect ratio, you can simply set either X or Y to `-1` and only give one of the  or you can use `“scale=iw/2:ih/2”` which will simply make the video 2 times smaller in both dimensions. For instance, if you have a videos at 1920x1080 resolution and want to rescale it to 960x540 for faster inference while also reencoding from .avi and doing some compression in a loop, the command would be something like this:
+`"scale=Xsize:Ysize"` for rescale. Note that when using “scale” the values how be a result of integer division of the original video size. If you want to keep the aspect ratio, you can simply set either X or Y to `-1` and only give one of the  or you can use `“scale=iw/2:ih/2”` which will simply make the video 2 times smaller in both dimensions. For instance, if you have a videos at 1920x1080 resolution and want to rescale it to 960x540 for faster inference while also reencoding from `.avi` and doing some compression in a loop, the command would be something like this:
 
 `for %i in (*.avi) do ffmpeg -i "%i" -c:v libx265 -preset fast -crf 18 -filter:v "scale= iw/2:ih/2" "%~ni.mp4"`
 
