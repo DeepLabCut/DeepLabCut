@@ -15,7 +15,7 @@ clips = vid.split(n_splits=10)
 deeplabcut.analyze_videos(config_path, clips, ext)
 ```
 
-## Transcoding or reencoding broken videos
+## Tips on video reencoding and preprocessing 
 
 While moving videos between computers or from your computer to cloud storage you can encounter issues with analysis or creating labeled video due to video corruption. 
 The issue can present itself during those steps and you have to carefully review the traceback. Sometimes it might look like the videos were analyzed but in fact analysis stopped right before the end of the video (corruption of the metadata when more indices are assigned than there are actual frames in a video). 
