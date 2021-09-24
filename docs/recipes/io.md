@@ -47,5 +47,7 @@ Additionally, ffmpeg allows you to also crop or rescale the videos for possible 
 ```
 for %i in (*.avi) do ffmpeg -i "%i" -c:v libx265 -preset fast -crf 18 -filter:v "scale= iw/2:ih/2" "%~ni.mp4"
 ```
-If audio is not a necessary in the videos you can also save some space by requesting specifically for the encoder to not encode any audio stream by adding `-an` just before specifying output filename.
-
+If audio is not a necessary in the videos you can also save some space by requesting specifically for the encoder to not encode any audio stream by adding `-an` just before specifying output filename, like so:
+```
+for %i in (*.avi) do ffmpeg -i "%i" -c:v libx265 -preset fast -crf 18 -filter:v "scale= iw/2:ih/2" -an "%~ni.mp4"
+```
