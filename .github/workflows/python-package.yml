@@ -57,7 +57,7 @@ jobs:
       - name: Run functional tests
         run: |
           if [ "$RUNNER_OS" == "macOS" ]; then
-              print('skipping fxn tests on MacOS only')
+              pass
           else
             pip install git+git://github.com/${{ github.repository }}.git@${{ github.sha }}
             python examples/testscript.py
