@@ -72,6 +72,32 @@ The DeepLabCut version in this container is equivalent to the one you install wi
 
 Advanced users and developers can visit the `/docker` subdirectory in the DeepLabCut codebase on Github. We provide Dockerfiles for all images, along with build instructions there.
 
+## Prerequisites (if you don't have Docker installed already)
+
+**(1)** Install Docker. See https://docs.docker.com/install/ & for Ubuntu: https://docs.docker.com/install/linux/docker-ce/ubuntu/
+Test docker: 
+
+    $ sudo docker run hello-world
+    
+ The output should be: ``Hello from Docker! This message shows that your installation appears to be working correctly.``
+
+*if you get the error ``docker: Error response from daemon: Unknown runtime specified nvidia.`` just simply restart docker: 
+  
+       $ sudo systemctl daemon-reload
+       $ sudo systemctl restart docker
+
+    
+**(2)** Add your user to the docker group (https://docs.docker.com/install/linux/linux-postinstall/#manage-docker-as-a-non-root-user)
+Quick guide  to create the docker group and add your user: 
+Create the docker group.
+
+    $ sudo groupadd docker
+Add your user to the docker group.
+
+    $ sudo usermod -aG docker $USER
+
+(perhaps restart your computer (best) or (at min) open a new terminal to make sure that you are added from now on)
+
 
 ## Notes and troubleshooting
 
