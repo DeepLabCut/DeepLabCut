@@ -18,7 +18,7 @@ jobs:
         include:
           - os: ubuntu-latest
             path: ~/.cache/pip
-          - os: macos-latest
+          - os: macOS-10.15
             path: ~/Library/Caches/pip
           - os: windows-latest
             path: ~\AppData\Local\pip\Cache
