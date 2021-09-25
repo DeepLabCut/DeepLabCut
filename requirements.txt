@@ -23,6 +23,6 @@ tensorflow>=2.0
 tables
 tensorpack
 tf_slim
-tqdm>=4.50
+tqdm
 moviepy
 Pillow>=7.1
