@@ -56,9 +56,6 @@ jobs:
 
       - name: Run functional tests
         run: |
-          if [ "$RUNNER_OS" == "macOS" ]; then
-              pass
-          else
-            pip install git+git://github.com/${{ github.repository }}.git@${{ github.sha }}
-            python examples/testscript.py
-            python examples/testscript_multianimal.py
+          pip install git+git://github.com/${{ github.repository }}.git@${{ github.sha }}
+          python examples/testscript.py
+          python examples/testscript_multianimal.py
