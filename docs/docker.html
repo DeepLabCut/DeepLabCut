@@ -336,6 +336,11 @@
   </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#prerequisites-if-you-don-t-have-docker-installed-already">
+   Prerequisites (if you don’t have Docker installed already)
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#notes-and-troubleshooting">
    Notes and troubleshooting
   </a>
@@ -366,7 +371,12 @@ Note that this will <em>not</em> disprupt or install Tensorflow, or any other De
 <ul class="simple">
 <li><p><em>Note 1: When running any of the following commands first, it can take some time to complete (a few minutes, depending on your internet connection), since it downloads the Docker image in the background. If you do not see any errors in your terminal, assume that everything is working fine! Subsequent runs of the command will be faster.</em></p></li>
 <li><p><em>Note 2: The Terminal mode image can be used on all supported plattforms (Linux and MacOS). The GUI images can only be considered stable on Linux systems as of DeepLabCut 2.2.0.2 and need additional configuration on Mac.</em></p></li>
+<li><p><em>Note 3: For any mode below, you might want to set which directory is the base, namely, so you can have read/write (or ready only access). Here is how to do so:
+If you want to mount the whole directory could e.g., pass</em></p></li>
 </ul>
+<p><code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span> <span class="pre">bash</span> <span class="pre">-v</span> <span class="pre">/home/mackenzie/DEEPLABCUT:/home/mackenzie/DEEPLABCUT</span></code></p>
+<p>(which will mount the full directory into the container in read/write mode)</p>
+<p>If read-only access is enough, <code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span> <span class="pre">bash</span> <span class="pre">-v</span> <span class="pre">/home/mackenzie/DEEPLABCUT:/home/mackenzie/DEEPLABCUT:ro</span></code></p>
 <div class="section" id="gui-mode">
 <h3>GUI mode<a class="headerlink" href="#gui-mode" title="Permalink to this headline">¶</a></h3>
 <p>To run DeepLabCut in GUI mode and start the DeepLabCut GUI, simply run</p>
@@ -403,6 +413,31 @@ Note that this will <em>not</em> disprupt or install Tensorflow, or any other De
 <h3>Advanced usage<a class="headerlink" href="#advanced-usage" title="Permalink to this headline">¶</a></h3>
 <p>Advanced users and developers can visit the <code class="docutils literal notranslate"><span class="pre">/docker</span></code> subdirectory in the DeepLabCut codebase on Github. We provide Dockerfiles for all images, along with build instructions there.</p>
 </div>
+</div>
+<div class="section" id="prerequisites-if-you-don-t-have-docker-installed-already">
+<h2>Prerequisites (if you don’t have Docker installed already)<a class="headerlink" href="#prerequisites-if-you-don-t-have-docker-installed-already" title="Permalink to this headline">¶</a></h2>
+<p><strong>(1)</strong> Install Docker. See <a class="reference external" href="https://docs.docker.com/install/">https://docs.docker.com/install/</a> &amp; for Ubuntu: <a class="reference external" href="https://docs.docker.com/install/linux/docker-ce/ubuntu/">https://docs.docker.com/install/linux/docker-ce/ubuntu/</a>
+Test docker:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ sudo docker run hello-world
+</pre></div>
+</div>
+<p>The output should be: <code class="docutils literal notranslate"><span class="pre">Hello</span> <span class="pre">from</span> <span class="pre">Docker!</span> <span class="pre">This</span> <span class="pre">message</span> <span class="pre">shows</span> <span class="pre">that</span> <span class="pre">your</span> <span class="pre">installation</span> <span class="pre">appears</span> <span class="pre">to</span> <span class="pre">be</span> <span class="pre">working</span> <span class="pre">correctly.</span></code></p>
+<p>*if you get the error <code class="docutils literal notranslate"><span class="pre">docker:</span> <span class="pre">Error</span> <span class="pre">response</span> <span class="pre">from</span> <span class="pre">daemon:</span> <span class="pre">Unknown</span> <span class="pre">runtime</span> <span class="pre">specified</span> <span class="pre">nvidia.</span></code> just simply restart docker:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>   $ sudo systemctl daemon-reload
+   $ sudo systemctl restart docker
+</pre></div>
+</div>
+<p><strong>(2)</strong> Add your user to the docker group (<a class="reference external" href="https://docs.docker.com/install/linux/linux-postinstall/#manage-docker-as-a-non-root-user">https://docs.docker.com/install/linux/linux-postinstall/#manage-docker-as-a-non-root-user</a>)
+Quick guide  to create the docker group and add your user:
+Create the docker group.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ sudo groupadd docker
+</pre></div>
+</div>
+<p>Add your user to the docker group.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ sudo usermod -aG docker $USER
+</pre></div>
+</div>
+<p>(perhaps restart your computer (best) or (at min) open a new terminal to make sure that you are added from now on)</p>
 </div>
 <div class="section" id="notes-and-troubleshooting">
 <h2>Notes and troubleshooting<a class="headerlink" href="#notes-and-troubleshooting" title="Permalink to this headline">¶</a></h2>
