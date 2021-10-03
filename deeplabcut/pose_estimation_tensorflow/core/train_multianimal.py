@@ -202,9 +202,6 @@ def train(
     coord.request_stop()
     coord.join([thread])
     sess.close()
-    
-    from numba import cuda
-    cuda.close()
         
     # return to original path.
     os.chdir(str(start_path))
