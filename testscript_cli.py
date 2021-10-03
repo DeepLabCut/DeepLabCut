@@ -71,7 +71,7 @@ cfg["skeleton"] = [["bodypart1", "bodypart2"], ["bodypart1", "bodypart3"]]
 dlc.auxiliaryfunctions.write_config(path_config_file, cfg)
 
 print("EXTRACTING FRAMES")
-dlc.extract_frames(path_config_file, mode="automatic", userfeedback=False, opencv=False)
+dlc.extract_frames(path_config_file, mode="automatic", userfeedback=False, opencv=True)
 
 print("CREATING SOME LABELS FOR THE FRAMES")
 frames = os.listdir(os.path.join(cfg["project_path"], "labeled-data", videoname))
