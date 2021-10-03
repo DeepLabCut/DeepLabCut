@@ -71,10 +71,7 @@ if __name__ == "__main__":
     deeplabcut.auxiliaryfunctions.write_config(path_config_file, cfg)
 
     print("EXTRACTING FRAMES")
-    if platform.system() == "Darwin":
-        deeplabcut.extract_frames(path_config_file, mode="automatic", userfeedback=False, opencv=False) 
-    else: 
-        deeplabcut.extract_frames(path_config_file, mode="automatic", userfeedback=False, opencv=True) 
+    deeplabcut.extract_frames(path_config_file, mode="automatic", userfeedback=False) 
         
     print("CREATING-SOME LABELS FOR THE FRAMES")
     frames = os.listdir(os.path.join(cfg["project_path"], "labeled-data", videoname))
