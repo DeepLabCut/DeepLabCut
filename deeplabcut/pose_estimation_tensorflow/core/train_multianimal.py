@@ -204,7 +204,7 @@ def train(
     sess.close()
     
     from numba import cuda
-        cuda.close()
+    cuda.close()
         
     # return to original path.
     os.chdir(str(start_path))
