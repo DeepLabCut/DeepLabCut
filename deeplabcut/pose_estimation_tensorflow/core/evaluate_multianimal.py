@@ -467,7 +467,7 @@ def evaluate_multianimal_full(
 
                         if show_errors:
                             string = (
-                                "Results for {} training iterations: {}, shuffle {}:\n"
+                                "Results for {} training iterations, training fraction of {}, and shuffle {}:\n"
                                 "Train error: {} pixels. Test error: {} pixels.\n"
                                 "With pcutoff of {}:\n"
                                 "Train error: {} pixels. Test error: {} pixels."
