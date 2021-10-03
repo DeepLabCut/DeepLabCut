@@ -454,7 +454,7 @@ class Analyze_videos(wx.Panel):
         trainingsetindex = self.trainingset.GetValue()
 
         if self.cfg.get("multianimalproject", False):
-            print("Analyzing ... ")
+            print("DLC network loading and video analysis starting ... ")
         else:
             if self.csv.GetStringSelection() == "Yes":
                 save_as_csv = True
