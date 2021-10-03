@@ -73,7 +73,7 @@ if __name__ == "__main__":
     print("EXTRACTING FRAMES")
     if platform.system() == "Darwin":
         deeplabcut.extract_frames(path_config_file, mode="automatic", userfeedback=False, opencv=False) 
-    else 
+    else: 
         deeplabcut.extract_frames(path_config_file, mode="automatic", userfeedback=False, opencv=True) 
         
     print("CREATING-SOME LABELS FOR THE FRAMES")
