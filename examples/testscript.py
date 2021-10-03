@@ -71,7 +71,7 @@ if __name__ == "__main__":
     deeplabcut.auxiliaryfunctions.write_config(path_config_file, cfg)
 
     print("EXTRACTING FRAMES")
-    if platform.system() == "Darwin" 
+    if platform.system() == "Darwin":
         deeplabcut.extract_frames(path_config_file, mode="automatic", userfeedback=False, opencv=False) 
     else 
         deeplabcut.extract_frames(path_config_file, mode="automatic", userfeedback=False, opencv=True) 
