@@ -198,8 +198,8 @@ def train(
             model_name = cfg["snapshot_prefix"]
             saver.save(sess, model_name, global_step=it)
 
-    
     lrf.close()
+    
     sess.close()
     coord.request_stop()
     coord.join([thread])
