@@ -81,7 +81,7 @@ class DraggablePoint:
             self.background = canvas.copy_from_bbox(self.point.axes.bbox)
             axes.draw_artist(self.point)
             canvas.blit(axes.bbox)
-        elif event.button == 2:
+        elif event.button == 3:
             """
             To remove a predicted label. Internally, the coordinates of the selected predicted label is replaced with nan. The user needs to right click for the event.After right
             click the data point is removed from the plot.
