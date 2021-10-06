@@ -11,8 +11,8 @@ if __name__ == "__main__":
     SCORER = "dlc_team"
     NUM_FRAMES = 5
     TRAIN_SIZE = 0.8
-    NET = "dlcr101_ms5"
-    #NET = "dlcrnet_ms5"
+    # NET = "dlcr101_ms5"
+    NET = "dlcrnet_ms5"
     #NET = "resnet_152"
     #NET = "efficientnet-b0"
     #NET = "mobilenet_v2_0.35" # should be fixed
@@ -33,7 +33,13 @@ if __name__ == "__main__":
 
     print("Editing config...")
     cfg = auxiliaryfunctions.edit_config(
-        config_path, {"numframes2pick": NUM_FRAMES, "TrainingFraction": [TRAIN_SIZE]}
+        config_path,
+        {
+            "numframes2pick": NUM_FRAMES,
+            "TrainingFraction": [TRAIN_SIZE],
+            "identity": True,
+            "uniquebodyparts": ['corner1', 'corner2'],
+        }
     )
     print("Config edited.")
 
@@ -85,7 +91,7 @@ if __name__ == "__main__":
     print("Labels checked.")
 
     print("Creating train dataset...")
-    deeplabcut.create_multianimaltraining_dataset(config_path, net_type=NET)
+    deeplabcut.create_multianimaltraining_dataset(config_path, net_type=NET, crop_size=(200, 200))
     print("Train dataset created.")
 
     print("Editing pose config...")
