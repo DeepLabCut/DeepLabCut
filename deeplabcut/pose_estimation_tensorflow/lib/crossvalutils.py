@@ -225,7 +225,7 @@ def _benchmark_paf_graphs(
     for i, imname in enumerate(image_paths):
         temp = data[imname]["groundtruth"][2].reindex(multi_bpts, level='bodyparts')
         ground_truth.append(temp.to_numpy().reshape((-1, 2)))
-    ground_truth = np.stack(ground_truth)[:, mask_multi]
+    ground_truth = np.stack(ground_truth)
     temp = np.ones((*ground_truth.shape[:2], 3))
     temp[..., :2] = ground_truth
     temp = temp.reshape((temp.shape[0], n_individuals, -1, 3))
