@@ -266,7 +266,7 @@ def extract_maps(
 
 def resize_to_same_shape(array, array_dest):
     shape_dest = array_dest.shape
-    return resize(array, (shape_dest[1], shape_dest[0]))
+    return resize(array, (shape_dest[0], shape_dest[1]))
 
 
 def resize_all_maps(image, scmap, locref, paf):
