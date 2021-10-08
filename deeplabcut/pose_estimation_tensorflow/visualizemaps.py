@@ -9,10 +9,9 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import os
-
-import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+from skimage.transform import resize
 
 
 def extract_maps(
@@ -267,9 +266,7 @@ def extract_maps(
 
 def resize_to_same_shape(array, array_dest):
     shape_dest = array_dest.shape
-    return cv2.resize(
-        array, (shape_dest[1], shape_dest[0]), interpolation=cv2.INTER_CUBIC
-    )
+    return resize(array, (shape_dest[1], shape_dest[0]))
 
 
 def resize_all_maps(image, scmap, locref, paf):
