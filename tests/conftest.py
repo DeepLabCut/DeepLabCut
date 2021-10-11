@@ -2,11 +2,40 @@ import numpy as np
 import os
 import pickle
 import pytest
+import shutil
+import urllib.request
+import zipfile
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
+from io import BytesIO
 from PIL import Image
+from tqdm import tqdm
 
 
 TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
+
+
+def unzip_from_url(url, dest_folder):
+    """Directly extract files without writing the archive to disk."""
+    os.makedirs(dest_folder, exist_ok=True)
+    resp = urllib.request.urlopen(url)
+    with zipfile.ZipFile(BytesIO(resp.read())) as zf:
+        for member in tqdm(zf.infolist(), desc="Extracting"):
+            try:
+                zf.extract(member, path=dest_folder)
+            except zipfile.error:
+                pass
+
+
+def pytest_sessionstart(session):
+    unzip_from_url(
+        "https://github.com/jeylau/UnitTestData/raw/main/data.zip",
+        os.path.split(TEST_DATA_DIR)[0],
+    )
+    session.__DATA_FOLDER = TEST_DATA_DIR
+
+
+def pytest_sessionfinish(session, exitstatus):
+    shutil.rmtree(session.__DATA_FOLDER)
 
 
 @pytest.fixture(scope="session")
