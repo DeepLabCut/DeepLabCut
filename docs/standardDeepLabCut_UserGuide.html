@@ -878,7 +878,7 @@ list (<code class="docutils literal notranslate"><span class="pre">extractionalg
 <p>(A) Visible body part with accurate DeepLabCut prediction. These labels do not need any modifications.</p>
 <p>(B) Visible body part but wrong DeepLabCut prediction. Move the label’s location to the actual position of the
 body part.</p>
-<p>(C) Invisible, occluded body part. Remove the predicted label by DeepLabCut with a right click. Every predicted
+<p>(C) Invisible, occluded body part. Remove the predicted label by DeepLabCut with a middle click. Every predicted
 label is shown, even when DeepLabCut is uncertain. This is necessary, so that the user can potentially move
 the predicted label. However, to help the user to remove all invisible body parts the low-likelihood predictions
 are shown as open circles (rather than disks).</p>
@@ -890,7 +890,7 @@ as invalid.</p>
 </pre></div>
 </div>
 <p>This will launch a GUI where the user can refine the labels.</p>
-<p>Use the ‘Load Labels’ button to select one of the subdirectories, where the extracted frames are stored. Every label will be identified by a unique color. For better chances to identify the low-confidence labels, specify the threshold of the likelihood. This changes the body parts with likelihood below this threshold to appear as circles and the ones above as solid disks while retaining the same color scheme. Next, to adjust the position of the label, hover the mouse over the labels to identify the specific body part, left click and drag it to a different location. To delete a specific label, right click on the label (once a label is deleted, it cannot be retrieved).</p>
+<p>Use the ‘Load Labels’ button to select one of the subdirectories, where the extracted frames are stored. Every label will be identified by a unique color. For better chances to identify the low-confidence labels, specify the threshold of the likelihood. This changes the body parts with likelihood below this threshold to appear as circles and the ones above as solid disks while retaining the same color scheme. Next, to adjust the position of the label, hover the mouse over the labels to identify the specific body part, left click and drag it to a different location. To delete a specific label, middle click on the label (once a label is deleted, it cannot be retrieved).</p>
 <p>After correcting the labels for all the frames in each of the subdirectories, the users should merge the data set to
 create a new dataset. In this step the iteration parameter in the config.yaml file is automatically updated.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">merge_datasets</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
