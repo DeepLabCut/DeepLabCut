@@ -100,7 +100,7 @@ The ONLY thing you need to do **first** if you have an NVIDIA GPU, NVIDIA driver
 
 **SECOND**, install CUDA (versions up to CUDA11 are supported, together with TF2.5): https://developer.nvidia.com/ (Note that cuDNN, https://developer.nvidia.com/cudnn, is supplied inside the anaconda environment files, so you don't need to install it again).
 
-**THIRD:** Follow the steps above to get the `DLC-GPU` conda file and install it!
+**THIRD:** Follow the steps above to get the `DEEPLABCUT` conda file and install it!
 
 ##### Notes:
 
