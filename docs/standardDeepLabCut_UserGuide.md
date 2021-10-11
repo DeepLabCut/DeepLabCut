@@ -518,7 +518,7 @@ In the automatic configuration, before the frame selection happens, the user is 
 (B) Visible body part but wrong DeepLabCut prediction. Move the label’s location to the actual position of the
 body part.
 
-(C) Invisible, occluded body part. Remove the predicted label by DeepLabCut with a right click. Every predicted
+(C) Invisible, occluded body part. Remove the predicted label by DeepLabCut with a middle click. Every predicted
 label is shown, even when DeepLabCut is uncertain. This is necessary, so that the user can potentially move
 the predicted label. However, to help the user to remove all invisible body parts the low-likelihood predictions
 are shown as open circles (rather than disks).
@@ -533,7 +533,7 @@ deeplabcut.refine_labels(config_path)
 ```
 This will launch a GUI where the user can refine the labels.
 
-Use the ‘Load Labels’ button to select one of the subdirectories, where the extracted frames are stored. Every label will be identified by a unique color. For better chances to identify the low-confidence labels, specify the threshold of the likelihood. This changes the body parts with likelihood below this threshold to appear as circles and the ones above as solid disks while retaining the same color scheme. Next, to adjust the position of the label, hover the mouse over the labels to identify the specific body part, left click and drag it to a different location. To delete a specific label, right click on the label (once a label is deleted, it cannot be retrieved).
+Use the ‘Load Labels’ button to select one of the subdirectories, where the extracted frames are stored. Every label will be identified by a unique color. For better chances to identify the low-confidence labels, specify the threshold of the likelihood. This changes the body parts with likelihood below this threshold to appear as circles and the ones above as solid disks while retaining the same color scheme. Next, to adjust the position of the label, hover the mouse over the labels to identify the specific body part, left click and drag it to a different location. To delete a specific label, middle click on the label (once a label is deleted, it cannot be retrieved).
 
 After correcting the labels for all the frames in each of the subdirectories, the users should merge the data set to
 create a new dataset. In this step the iteration parameter in the config.yaml file is automatically updated.
