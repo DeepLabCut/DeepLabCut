@@ -270,7 +270,7 @@ def _benchmark_paf_graphs(
                 ]
                 hyp = np.concatenate(animals)
                 hyp = hyp[~np.isnan(hyp).any(axis=1)]
-                scores[i, 0] = (n_dets - hyp.shape[0]) / n_dets
+                scores[i, 0] = max(0, (n_dets - hyp.shape[0]) / n_dets)
                 neighbors = _find_closest_neighbors(gt[:, :2], hyp[:, :2])
                 valid = neighbors != -1
                 id_gt = gt[valid, 2]
