@@ -74,7 +74,7 @@ def AnalyzeMultiAnimalVideo(
         )
         start = time.time()
 
-        print("Starting to extract posture")
+        print("Starting to extract posture from the video(s) with batchsize:", dlc_cfg["batch_size"])
         if int(dlc_cfg["batch_size"]) > 1:
             PredicteData, nframes = GetPoseandCostsF(
                 cfg,
@@ -114,7 +114,7 @@ def AnalyzeMultiAnimalVideo(
             "cropping_parameters": coords,
         }
         metadata = {"data": dictionary}
-        print("Saving results in %s..." % (destfolder))
+        print("Video Analyzed. Saving results in %s..." % (destfolder))
 
         _ = auxfun_multianimal.SaveFullMultiAnimalData(PredicteData, metadata, dataname)
 

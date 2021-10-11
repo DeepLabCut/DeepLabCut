@@ -307,7 +307,7 @@ def evaluate_multianimal_full(
                         PredicteData = {}
                         dist = np.full((len(Data), len(all_bpts)), np.nan)
                         conf = np.full_like(dist, np.nan)
-                        print("Analyzing data...")
+                        print("Network Evaluation underway...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
                             image_path = os.path.join(cfg["project_path"], imagename)
                             image = io.imread(image_path)
@@ -467,7 +467,7 @@ def evaluate_multianimal_full(
 
                         if show_errors:
                             string = (
-                                "Results for {} training iterations: {}, shuffle {}:\n"
+                                "Results for {} training iterations, training fraction of {}, and shuffle {}:\n"
                                 "Train error: {} pixels. Test error: {} pixels.\n"
                                 "With pcutoff of {}:\n"
                                 "Train error: {} pixels. Test error: {} pixels."
