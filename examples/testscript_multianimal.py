@@ -151,14 +151,6 @@ if __name__ == "__main__":
     )
     print("Tracklets created...")
 
-    # Copy over meaningful tracklets to test stitching
-    pickle_file = os.path.join(
-        os.path.dirname(basepath), "tests", "data", "trimouse_tracklets.pickle"
-    )
-    shutil.copy(
-        pickle_file,
-        os.path.splitext(new_video_path)[0] + scorer + "_el.pickle",
-    )
     deeplabcut.stitch_tracklets(
         config_path,
         [new_video_path],
