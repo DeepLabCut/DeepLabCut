@@ -599,6 +599,7 @@ def proc_video(
                 if bodyparts2connect:
                     all_bpts = df.columns.get_level_values("bodyparts")[::3]
                     inds = get_segment_indices(bodyparts2connect, all_bpts)
+                clip = vp(fname=video, fps=outputframerate)
                 create_video_with_keypoints_only(
                     df,
                     videooutname,
@@ -609,7 +610,9 @@ def proc_video(
                     skeleton_color=skeleton_color,
                     color_by=color_by,
                     colormap=cfg["colormap"],
+                    fps=clip.fps(),
                 )
+                clip.close()
             elif not fastmode:
                 tmpfolder = os.path.join(str(videofolder), "temp-" + vname)
                 if save_frames:
@@ -676,6 +679,7 @@ def proc_video(
             print(e)
 
 
+DEFAULT_FRAME_RATE_WITH_KEYPOINTS_ONLY = 25
 def create_video_with_keypoints_only(
     df,
     output_name,
@@ -687,7 +691,7 @@ def create_video_with_keypoints_only(
     skeleton_color="navy",
     color_by="bodypart",
     colormap="viridis",
-    fps=25,
+    fps=None,
     dpi=200,
     codec="h264",
 ):
@@ -696,6 +700,9 @@ def create_video_with_keypoints_only(
     n_bodyparts = len(bodypart_names)
     nx = int(np.nanmax(df.xs("x", axis=1, level="coords")))
     ny = int(np.nanmax(df.xs("y", axis=1, level="coords")))
+
+    if fps is None:
+        fps = DEFAULT_FRAME_RATE_WITH_KEYPOINTS_ONLY
 
     n_frames = df.shape[0]
     xyp = df.values.reshape((n_frames, -1, 3))
