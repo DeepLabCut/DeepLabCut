@@ -643,6 +643,7 @@ def proc_video(
                     displaycropped,
                     color_by,
                 )
+                clip.close()
             else:
                 if displaycropped:  # then the cropped video + the labels is depicted
                     clip = vp(
