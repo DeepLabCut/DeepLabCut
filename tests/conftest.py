@@ -28,7 +28,7 @@ def unzip_from_url(url, dest_folder):
 
 def pytest_sessionstart(session):
     unzip_from_url(
-        "https://github.com/jeylau/UnitTestData/raw/main/data.zip",
+        "https://github.com/DeepLabCut/UnitTestData/raw/main/data.zip",
         os.path.split(TEST_DATA_DIR)[0],
     )
     session.__DATA_FOLDER = TEST_DATA_DIR
