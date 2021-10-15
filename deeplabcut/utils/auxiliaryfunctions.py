@@ -62,7 +62,6 @@ def create_config_template(multianimal=False):
         \n
     # Cropping Parameters (for analysis and outlier frame detection)
         cropping:
-        croppedtraining:
     #if cropping is true for analysis, then set the values here:
         x1:
         x2:
@@ -110,7 +109,6 @@ def create_config_template(multianimal=False):
         \n
     # Cropping Parameters (for analysis and outlier frame detection)
         cropping:
-        croppedtraining:
     #if cropping is true for analysis, then set the values here:
         x1:
         x2:
@@ -293,7 +291,7 @@ def attempttomakefolder(foldername, recursive=False):
         )  # https://github.com/AlexEMG/DeepLabCut/issues/105 (windows)
 
     if os.path.isdir(foldername):
-        print(foldername, " already exists!")
+        pass
     else:
         if recursive:
             os.makedirs(foldername)

@@ -124,4 +124,4 @@ Built with inverse residual blocks like MobileNets, but more powerful than ResNe
 
 ## How can I compare them?
 
-Great question! So, the best way to do this is to use the **same** test/train split (that is generated in create_training_dataset) with different models. Here, as of 2.1+, we have a **new** function that lets you do this easily. Instead of using `create_training_dataset` you will run `create_training_model_comparision` (see the docstrings by `deeplabcut.create_training_model_comparision?` or run the Project Manager GUI - `deeplabcut.launch_dlc()`-  for assistance.
+Great question! So, the best way to do this is to use the **same** test/train split (that is generated in create_training_dataset) with different models. Here, as of 2.1+, we have a **new** function that lets you do this easily. Instead of using `create_training_dataset` you will run `create_training_model_comparison` (see the docstrings by `deeplabcut.create_training_model_comparison?` or run the Project Manager GUI - `deeplabcut.launch_dlc()`-  for assistance.

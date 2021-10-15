@@ -135,9 +135,7 @@ def test_assembler(tmpdir_factory, real_assemblies):
         [3, 4],
         [0, 2],
     ]
-    paf_inds = [ass.graph.index(edge) for edge in naive_graph]
-    ass.graph = naive_graph
-    ass.paf_inds = paf_inds
+    ass.paf_inds = [ass.graph.index(edge) for edge in naive_graph]
     ass.assemble()
     assert not ass.unique
     assert len(ass.assemblies) == len(real_assemblies)
@@ -184,9 +182,7 @@ def test_assembler_with_identity(tmpdir_factory, real_assemblies):
         [3, 4],
         [0, 2],
     ]
-    paf_inds = [ass.graph.index(edge) for edge in naive_graph]
-    ass.graph = naive_graph
-    ass.paf_inds = paf_inds
+    ass.paf_inds = [ass.graph.index(edge) for edge in naive_graph]
     ass.assemble()
     assert not ass.unique
     assert len(ass.assemblies) == len(real_assemblies)

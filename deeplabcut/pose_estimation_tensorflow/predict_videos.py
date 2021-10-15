@@ -16,6 +16,7 @@ import argparse
 import os
 import os.path
 import pickle
+import re
 import time
 from pathlib import Path
 
@@ -52,7 +53,6 @@ def analyze_videos(
     TFGPUinference=True,
     dynamic=(False, 0.5, 10),
     modelprefix="",
-    c_engine=False,
     robust_nframes=False,
     allow_growth=False
 ):
@@ -110,11 +110,6 @@ def analyze_videos(
         expanded by the margin and from then on only the posture within this crop is analyzed (until the object is lost, i.e. <detectiontreshold). The
         current position is utilized for updating the crop window for the next frame (this is why the margin is important and should be set large
         enough given the movement of the animal).
-
-    c_engine: bool, optional (default=False)
-        If True, uses C code to detect 2D local maxima for multianimal inference.
-        Pure-Python functions are used by default, which, although slower, do not require the user
-        to install Cython and compile external code.
 
     robust_nframes: bool, optional (default=False)
         Evaluate a video's number of frames in a robust manner.
@@ -290,18 +285,6 @@ def analyze_videos(
             from deeplabcut.pose_estimation_tensorflow.predict_multianimal import (
                 AnalyzeMultiAnimalVideo,
             )
-
-            # Re-use data-driven PAF graph for video analysis. Note that this must
-            # happen after setting up the TF session to avoid graph mismatch.
-            best_edges = dlc_cfg.get("paf_best")
-            if best_edges is not None:
-                best_graph = [dlc_cfg["partaffinityfield_graph"][i] for i in best_edges]
-            else:
-                best_graph = dlc_cfg["partaffinityfield_graph"]
-
-            dlc_cfg["partaffinityfield_graph"] = best_graph
-            dlc_cfg["num_limbs"] = len(best_graph)
-
             for video in Videos:
                 AnalyzeMultiAnimalVideo(
                     video,
@@ -312,10 +295,7 @@ def analyze_videos(
                     sess,
                     inputs,
                     outputs,
-                    pdindex,
-                    save_as_csv,
                     destfolder,
-                    c_engine=c_engine,
                     robust_nframes=robust_nframes,
                 )
         else:
@@ -1482,7 +1462,14 @@ def convert_detections2tracklets(
                     "uniquebodyparts"
                 ]:  # Initialize storage of the 'single' individual track
                     tracklets["single"] = {}
-                    tracklets["single"].update(ass.unique)
+                    _single = {}
+                    for index, imname in enumerate(imnames):
+                        single_detection = ass.unique.get(index)
+                        if single_detection is None:
+                            continue
+                        imindex = int(re.findall(r"\d+", imname)[0])
+                        _single[imindex] = single_detection
+                    tracklets["single"].update(_single)
 
                 keep = set(multi_bpts).difference(ignore_bodyparts or [])
                 keep_inds = sorted(multi_bpts.index(bpt) for bpt in keep)
@@ -1516,8 +1503,7 @@ def convert_detections2tracklets(
 
         os.chdir(str(start_path))
 
-        print("The tracklets were created. Now you can 'refine_tracklets'.")
-        # print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
+        print("The tracklets were created (i.e., under the hood deeplabcut.convert_detections2tracklets was run). Now you can 'refine_tracklets' in the GUI, or run 'deeplabcut.stitch_tracklets'.")
     else:
         print("No video(s) found. Please check your path!")
 

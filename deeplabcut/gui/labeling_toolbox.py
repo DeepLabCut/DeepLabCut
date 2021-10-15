@@ -139,9 +139,7 @@ class ImagePanel(BasePanel):
             return None, None, None
 
     def drawEpLines(self, drawImage, lines, sourcePts, offsets, colorIndex, cmap):
-        drawImage = cv2.cvtColor(drawImage, cv2.COLOR_BGR2RGB)
         height, width, depth = drawImage.shape
-        labelNum = 0
         for line, pt, cIdx in zip(lines, sourcePts, colorIndex):
             if pt[0] > -1000:
                 coeffs = line[0]
@@ -165,13 +163,13 @@ class ImagePanel(BasePanel):
         xlim = self.axes.get_xlim()
         ylim = self.axes.get_ylim()
         self.axes.clear()
-
+        # convert the image to RGB as you are showing the image with matplotlib
         im = cv2.imread(img)[..., ::-1]
         colorIndex = np.linspace(np.max(im), np.min(im), len(bodyparts))
         # draw epipolar lines
         epLines, sourcePts, offsets = self.retrieveData_and_computeEpLines(img, itr)
         if epLines is not None:
-            im = self.drawEpLines(im, epLines, sourcePts, offsets, colorIndex, cmap)
+            im = self.drawEpLines(im.copy(), epLines, sourcePts, offsets, colorIndex, cmap)
         ax = self.axes.imshow(im, cmap=cmap)
         self.orig_xlim = self.axes.get_xlim()
         self.orig_ylim = self.axes.get_ylim()
@@ -554,7 +552,7 @@ class MainFrame(BaseFrame):
         """
         This function is to create a hotkey to skip up on the radio button panel.
         """
-        if self.rdb.GetSelection() < len(self.bodyparts) - 1:
+        if self.rdb.GetSelection() > 0:
             self.rdb.SetSelection(self.rdb.GetSelection() - 1)
 
     def browseDir(self, event):

@@ -11,22 +11,18 @@ Note, we strongly encourage you to use the [Project Manager GUI](https://github.
 You should think of maDLC being **four** parts.
 - (1) Curate annotation data that allows you to learn a model to track the objects/animals of interest.
 - (2) Create a high-quality pose estimation model.
-- (3) Track in space and time, i.e., assemble bodyparts to detected objects/animals and link across time. This step performs assembly and tracking (comprising first local tracking and then tracklet stitching by global reasoning). 
+- (3) Track in space and time, i.e., assemble bodyparts to detected objects/animals and link across time. This step performs assembly and tracking (comprising first local tracking and then tracklet stitching by global reasoning).
 - (4) Any and all post-processing you wish to do with the output data, either within DLC or outside of it.
 
 Thus, you should always label, train, and evaluate the pose estimation performance first. If and when that performance is high, then you should go advance to the tracking step (and video analysis). There is a natural break point for this, as you will see below.
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1596370260800-SP2GWKDPJCOIR7LJ31VM/ke17ZwdGBToddI8pDm48kB4fL2ovSQh5dRlH2jCMtpoUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcSV94BuD0XUinmig_1P1RJNYVU597j3jgswapL4c_w92BJE9r6UgUperYhWQ2ubQ_/workflow.png?format=2500w" width="550" title="maDLC" alt="maDLC" align="center" vspace = "50">
 
-## Install and test:
+## Install:
 
 **Quick start:** If you are using DeepLabCut on the cloud, or otherwise cannot use the GUIs and you should install with: `pip install deeplabcut`; if you need GUI support, please use: `pip install 'deeplabcut[gui]'`.
 
-Install DLC (we recommend using our supplied conda env) then run the test script found here (you will need to git clone first):
-https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/testscript_multianimal.py
-```python
-python testscript_multianimal.py
-```
+IF you want to use the bleeding edge version to make edits to the code, see here on how to install it and test it (https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html#how-to-use-the-latest-updates-directly-from-github).
 
 ## Get started in the terminal or Project GUI:
 
@@ -224,21 +220,9 @@ deeplabcut.check_labels(config_path, visualizeindividuals=True/False)
 
 For each video directory in labeled-data this function creates a subdirectory with **labeled** as a suffix. Those directories contain the frames plotted with the annotated body parts. The user can double check if the body parts are labeled correctly. If they are not correct, the user can reload the frames (i.e. `deeplabcut.label_frames`), move them around, and click save again.
 
-**CROP+LABEL:** When you are done checking the label quality and adjusting if needed, please then use this new function to crop frames /labels for more efficient training. PLEASE call this before you create a training dataset by running:
-```python
-deeplabcut.cropimagesandlabels(path_config_file, userfeedback=False)
-```
+
 ### Create Training Dataset:
 
-Ideally for training DNNs, one uses large batch sizes. Thus, for mutli-animal training batch processing is preferred. This means that we'd like the images to be similarly sized. You can of course have differing size of images you label (but we suggest cropping out useless pixels!). So, we have a new function that can pre-process your data to be compatible with batch training. As noted above, please run this function before you `create_multianmialtraining_dataset`. This function assures that each crop is "small", by default 400 x 400, which allows larger batchsizes and that there are multiple crops so that different parts of larger images are covered.
-
-You **should also first run** `deeplabcut.cropimagesandlabels(config_path)` before creating a training set, as we use batch processing and many users have smaller GPUs that cannot accommodate larger images + larger batchsizes. This is also a type of data augmentation.
-
-NOTE: you can edit the crop size. If your images are very large (2k, 4k pixels), consider increasing this size, but be aware unless you have a lagre GPU (24 GB or more), you will hit memory errors. _You can lower the batchsize, but this may affect performance._
-
-```python
-deeplabcut.cropimagesandlabels(path_config_file, size=(400, 400), userfeedback=False)
-```
 At this point you also select your neural network type. Please see Lauer et al. 2021 for options. For **create_multianimaltraining_dataset** we already changed this such that by default you will use imgaug, ADAM optimization, our new DLCRNet, and batch training. We suggest these defaults at this time. Then run:
 
 ```python
@@ -265,7 +249,7 @@ are listed in Box 2.
 **OPTIONAL POINTS:**
 
 With the data-driven skeleton selection introduced in 2.2rc1, DLC networks are trained by default
-on complete skeletons (i.e., they learn all possible redundant connections), before being optimially pruned
+on complete skeletons (i.e., they learn all possible redundant connections), before being optimally pruned
 at model evaluation. Although this procedure is by far superior to manually defining a graph,
 we leave manually-defining a skeleton as an option for the advanced user:
 
@@ -287,6 +271,14 @@ Our recent [A Primer on Motion Capture with Deep Learning: Principles, Pitfalls,
 
 
 Alternatively, you can set the loader (as well as other training parameters) in the **pose_cfg.yaml** file of the model that you want to train. Note, to get details on the options, look at the default file: [**pose_cfg.yaml**](https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml).
+
+Importantly, image cropping as previously done with `deeplabcut.cropimagesandlabels` in multi-animal projects
+is now part of the augmentation pipeline. In other words, image crops are no longer stored in labeled-data/..._cropped
+folders. Crop size still defaults to (400, 400); if your images are very large (e.g. 2k, 4k pixels), consider increasing the crop size, but be aware unless you have a strong GPU (24 GB memory or more), you will hit memory errors. You can lower the batch size, but this may affect performance.
+
+In addition, one can specify a crop sampling strategy: crop centers can either be taken at random over the image (`uniform`) or the annotated keypoints (`keypoints`); with a focus on regions of the scene with high body part density (`density`); last, combining `uniform` and `density` for a `hybrid` balanced strategy (this is the default strategy). Note that both parameters can be easily edited prior to training in the **pose_cfg.yaml** configuration file.
+As a reminder, cropping images into smaller patches is a form of data augmentation that simultaneously
+allows the use of batch processing even on small GPUs that could not otherwise accommodate larger images + larger batchsizes (this usually increases performance and decreasing training time).
 
 
 ### Train The Network:

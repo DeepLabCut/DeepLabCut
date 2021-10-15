@@ -13,7 +13,7 @@
 [![GitHub forks](https://img.shields.io/github/forks/AlexEMG/DeepLabCut.svg?style=social&label=Fork)](https://github.com/AlexEMG/DeepLabCut)
 
 <p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1609244670293-I4G1WXUK4R4ELSG20YWN/ke17ZwdGBToddI8pDm48kMSuf4e2vyXWwmoX99kS6G0UqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcB2zTWnNYNsbaeRctoqYAz_Z2hBxiefVgk3iqj7SAtv40MC358Orr9N-QLax1vImS/dlc_logo_whiteBkgnd.png?format=2500w" width="95%">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1628250004229-KVYD7JJVHYEFDJ32L9VJ/DLClogo2021.jpg?format=1000w" width="95%">
 </p>
 <p align="center">
     <a href="https://www.mousemotorlab.org/deeplabcut/">www.deeplabcut.org</a>
@@ -34,14 +34,14 @@ DeepLabCut is a toolbox for markerless pose estimation of animals performing var
 
 **Latest updates:**
 
-:purple_heart: **DeepLabCut supports multi-animal pose estimation!** maDLC is out of beta mode and beta is depreciated, thanks to the testers out there! Your labeled data will be backwards compatible, but not all other steps. Please see the [new `2.2rcX` releases](https://github.com/DeepLabCut/DeepLabCut/releases) for what's new & how to install it, please see our new [preprint, Lauer et al 2021](https://www.biorxiv.org/content/10.1101/2021.04.30.442096v1), and the [new docs]( https://deeplabcut.github.io/DeepLabCut) on how to use it!
+:purple_heart: **DeepLabCut supports multi-animal pose estimation!** maDLC is out of beta/rc mode and beta is depreciated, thanks to the testers out there! Your labeled data will be backwards compatible, but not all other steps. Please see the [new `2.2+` releases](https://github.com/DeepLabCut/DeepLabCut/releases) for what's new & how to install it, please see our new [preprint, Lauer et al 2021](https://www.biorxiv.org/content/10.1101/2021.04.30.442096v1), and the [new docs]( https://deeplabcut.github.io/DeepLabCut) on how to use it!
 
 :purple_heart: We have a **real-time** package available! http://DLClive.deeplabcut.org
 
 # [Installation: how to install DeepLabCut](docs/installation.md)
 
-Very quick start: `pip install "deeplabcut[gui]"` that includes all GUI functions, or `pip install deeplabcut` (headless version)
-* We recommend using our conda file, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/master/conda-environments/README.md).
+Very quick start: `pip install "deeplabcut[gui]"` that includes all GUI functions, or `pip install deeplabcut` (headless version).
+* We recommend using our conda file, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/master/conda-environments/README.md) or the new [`deeplabcut-docker` package](https://github.com/DeepLabCut/DeepLabCut/tree/master/docker).
 
 # [Documentation: The DeepLabCut Process](https://deeplabcut.github.io/DeepLabCut)
 
@@ -61,7 +61,7 @@ We provide data and several Jupyter Notebooks: one that walks you through a demo
 
 # Why use DeepLabCut?
 
-In 2018, we demonstrated the capabilities for [trail tracking](https://vnmurthylab.org/), [reaching in mice](http://www.mousemotorlab.org/) and various Drosophila behaviors during egg-laying (see [Mathis et al.](https://www.nature.com/articles/s41593-018-0209-y) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks and/or species. The toolbox has already been successfully applied (by us and others) to [rats](http://www.mousemotorlab.org/deeplabcut), humans, various fish species, bacteria, leeches, various robots, cheetahs, [mouse whiskers](http://www.mousemotorlab.org/deeplabcut) and [race horses](http://www.mousemotorlab.org/deeplabcut). DeepLabCut utilizes the feature detectors (ResNets + readout layers) of one of the state-of-the-art algorithms for human pose estimation by Insafutdinov et al., called DeeperCut, which inspired the name for our toolbox (see references below). Furthermore, we have added faster variants with MobileNetV2 backbones (see [Pretraining boosts out-of-domain robustness for pose estimation](https://arxiv.org/abs/1909.11229)). Additionally, we have improved the inference speed and provided additional augmentation methods (via tensorpack and imgaug), and added real-time and mutli-animal support, and new neural networks optimized for animal pose estimation.
+In 2018, we demonstrated the capabilities for [trail tracking](https://vnmurthylab.org/), [reaching in mice](http://www.mousemotorlab.org/) and various Drosophila behaviors during egg-laying (see [Mathis et al.](https://www.nature.com/articles/s41593-018-0209-y) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks and/or species. The toolbox has already been successfully applied (by us and others) to [rats](http://www.mousemotorlab.org/deeplabcut), humans, various fish species, bacteria, leeches, various robots, cheetahs, [mouse whiskers](http://www.mousemotorlab.org/deeplabcut) and [race horses](http://www.mousemotorlab.org/deeplabcut). DeepLabCut utilized the feature detectors (ResNets + readout layers) of one of the state-of-the-art algorithms for human pose estimation by Insafutdinov et al., called DeeperCut, which inspired the name for our toolbox (see references below). Since this time, the package has changed substantially.  The code has been re-tooled and re-factored since 2.1+: We have added faster and higher performance variants with MobileNetV2s, EfficientNets, and our own DLCRNet backbones (see [Pretraining boosts out-of-domain robustness for pose estimation](https://arxiv.org/abs/1909.11229) and [Lauer et al 2021](https://www.biorxiv.org/content/10.1101/2021.04.30.442096v1)). Additionally, we have improved the inference speed and provided both additional and novel augmentation methods, added real-time, and multi-animal support. We currently provide state-of-the-art performance for animal pose estimation.
 
 <p align="center">
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3e47258a922d548c483247/1547585339819/ErrorvsTrainingsetSize.png?format=750w" height="160">
@@ -80,7 +80,7 @@ In 2018, we demonstrated the capabilities for [trail tracking](https://vnmurthyl
 
 ## Code contributors:
 
-DLC code was originally developed by [Alexander Mathis](https://github.com/AlexEMG) & [Mackenzie Mathis](https://github.com/MMathisLab), and was extended in 2.0 with [Tanmay Nath](http://www.mousemotorlab.org/team), and currently actively developed with our CZI DLC Fellow, [Jessy Lauer](https://github.com/jeylau). The original feature detector code is based on Eldar Insafutdinov's TensorFlow implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow). DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals including  Mert Yuksekgonul, Tom Biasi, Richard Warren, Ronny Eichler, Hao Wu, Federico Claudi, Gary Kane and Jonny Saunders as well as the [contributors](https://github.com/AlexEMG/DeepLabCut/graphs/contributors). Please see [AUTHORS](https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS) for more details!
+DLC code was originally developed by [Alexander Mathis](https://github.com/AlexEMG) & [Mackenzie Mathis](https://github.com/MMathisLab), and was extended in 2.0 with [Tanmay Nath](http://www.mousemotorlab.org/team), and currently (2.1+) actively developed with our CZI DLC Fellow, [Jessy Lauer](https://github.com/jeylau). DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals including  Mert Yuksekgonul, Tom Biasi, Richard Warren, Ronny Eichler, Hao Wu, Federico Claudi, Gary Kane and Jonny Saunders as well as the [contributors](https://github.com/DeepLabCut/DeepLabCut/graphs/contributors). Please see [AUTHORS](https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS) for more details!
 
 This is an actively developed package and we welcome community development and involvement.
 
@@ -188,6 +188,8 @@ This package includes graphical user interfaces to label your data, and take you
 VERSION 1.0: The initial, Nature Neuroscience version of [DeepLabCut](https://www.nature.com/articles/s41593-018-0209-y) can be found in the history of git, or here: https://github.com/AlexEMG/DeepLabCut/releases/tag/1.11
 
 ## News (and in the news):
+
+- August 2021: 2.2 becomes the new stable release for DeepLabCut.
 
 - July 2021: Docs are now at https://deeplabcut.github.io/DeepLabCut and we now include TensorFlow 2 support!
 

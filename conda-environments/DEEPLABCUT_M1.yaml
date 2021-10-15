@@ -33,4 +33,4 @@ dependencies:
   - python.app
   - ffmpeg
   - pip:
-    - "deeplabcut[gui]>=2.2rc3"
+    - "deeplabcut[gui]"

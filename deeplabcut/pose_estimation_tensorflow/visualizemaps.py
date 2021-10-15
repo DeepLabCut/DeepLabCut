@@ -242,6 +242,7 @@ def extract_maps(
                     scmap, locref = predict.extract_cnn_output(outputs_np, dlc_cfg)
                     paf = None
                     pagraph = []
+                peaks = outputs_np[-1]
 
                 if imageindex in testIndices:
                     trainingfram = False
@@ -253,6 +254,7 @@ def extract_maps(
                     scmap,
                     locref,
                     paf,
+                    peaks,
                     bptnames,
                     pagraph,
                     imagename,
@@ -442,6 +444,7 @@ def extract_save_all_maps(
                     scmap,
                     locref,
                     paf,
+                    peaks,
                     bptnames,
                     pafgraph,
                     impath,
