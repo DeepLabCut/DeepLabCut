@@ -284,8 +284,9 @@ def KmeansbasedFrameselectioncv2(
                         if (
                             not allocated
                         ):  #'DATA' not in locals(): #allocate memory in first pass
-                            DATA = np.empty(
-                                (nframes, np.shape(image)[0], np.shape(image)[1] * 3)
+                            DATA = np.zeros(
+                                (nframes, np.shape(image)[0], np.shape(image)[1] * 3),
+                                dtype=np.uint8,
                             )
                             allocated = True
                         DATA[counter, :, :] = np.hstack(
@@ -315,8 +316,9 @@ def KmeansbasedFrameselectioncv2(
                         if (
                             not allocated
                         ):  #'DATA' not in locals(): #allocate memory in first pass
-                            DATA = np.empty(
-                                (nframes, np.shape(image)[0], np.shape(image)[1])
+                            DATA = np.zeros(
+                                (nframes, np.shape(image)[0], np.shape(image)[1]),
+                                dtype=np.uint8,
                             )
                             allocated = True
                         DATA[counter, :, :] = np.mean(image, 2)
@@ -346,8 +348,9 @@ def KmeansbasedFrameselectioncv2(
                         if (
                             not allocated
                         ):  #'DATA' not in locals(): #allocate memory in first pass
-                            DATA = np.empty(
-                                (nframes, np.shape(image)[0], np.shape(image)[1] * 3)
+                            DATA = np.zeros(
+                                (nframes, np.shape(image)[0], np.shape(image)[1] * 3),
+                                dtype=np.uint8,
                             )
                             allocated = True
                         DATA[counter, :, :] = np.hstack(
@@ -376,8 +379,9 @@ def KmeansbasedFrameselectioncv2(
                         if (
                             not allocated
                         ):  #'DATA' not in locals(): #allocate memory in first pass
-                            DATA = np.empty(
-                                (nframes, np.shape(image)[0], np.shape(image)[1])
+                            DATA = np.zeros(
+                                (nframes, np.shape(image)[0], np.shape(image)[1]),
+                                dtype=np.uint8,
                             )
                             allocated = True
                         DATA[counter, :, :] = np.mean(image, 2)
