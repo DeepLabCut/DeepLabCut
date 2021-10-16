@@ -282,7 +282,10 @@ var Search = {
                   complete: function(jqxhr, textstatus) {
                     var data = jqxhr.responseText;
                     if (data !== '' && data !== undefined) {
-                      listItem.append(Search.makeSearchSummary(data, searchterms, hlterms));
+                      var summary = Search.makeSearchSummary(data, searchterms, hlterms);
+                      if (summary) {
+                        listItem.append(summary);
+                      }
                     }
                     Search.output.append(listItem);
                     setTimeout(function() {
@@ -498,6 +501,9 @@ var Search = {
    */
   makeSearchSummary : function(htmlText, keywords, hlwords) {
     var text = Search.htmlToText(htmlText);
+    if (text == "") {
+      return null;
+    }
     var textLower = text.toLowerCase();
     var start = 0;
     $.each(keywords, function() {
@@ -509,7 +515,7 @@ var Search = {
     var excerpt = ((start > 0) ? '...' : '') +
       $.trim(text.substr(start, 240)) +
       ((start + 240 - text.length) ? '...' : '');
-    var rv = $('<div class="context"></div>').text(excerpt);
+    var rv = $('<p class="context"></p>').text(excerpt);
     $.each(hlwords, function() {
       rv = rv.highlightText(this, 'highlighted');
     });
