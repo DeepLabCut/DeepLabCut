@@ -69,7 +69,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ),
     entry_points="""[console_scripts]
-            dlc=dlc:main""",
+            dlc=deeplabcut.cli:main""",
 )
 
 # https://www.python.org/dev/peps/pep-0440/#compatible-release
