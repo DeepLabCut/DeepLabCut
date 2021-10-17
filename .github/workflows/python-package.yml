@@ -50,8 +50,8 @@ jobs:
         shell: bash
         
       - name: Install TF for macOS
-      run: |
-        if [ "$RUNNER_OS" == "Linux" ]; then
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
             pass
           elif [ "$RUNNER_OS" == "macOS" ]; then
             /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/apple/tensorflow_macos/master/scripts/download_and_install.sh)"
