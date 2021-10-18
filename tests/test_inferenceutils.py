@@ -37,6 +37,15 @@ def test_calc_object_keypoint_similarity(real_assemblies):
     assert inferenceutils.calc_object_keypoint_similarity(xy3, xy1, sigma) == 0
     assert np.isnan(inferenceutils.calc_object_keypoint_similarity(xy1, xy3, sigma))
 
+    # Test flipped keypoints
+    xy4 = xy1.copy()
+    symmetric_pair = [0, 11]
+    xy4[symmetric_pair] = xy4[symmetric_pair[::-1]]
+    assert inferenceutils.calc_object_keypoint_similarity(xy1, xy4, sigma) != 1
+    assert inferenceutils.calc_object_keypoint_similarity(
+        xy1, xy4, sigma, symmetric_kpts=[symmetric_pair]
+    ) == 1
+
 
 def test_match_assemblies(real_assemblies):
     assemblies = real_assemblies[0]
@@ -59,6 +68,17 @@ def test_evaluate_assemblies(real_assemblies):
     thresholds = np.linspace(0.5, 0.95, n_thresholds)
     dict_ = inferenceutils.evaluate_assembly(
         assemblies, assemblies, oks_thresholds=thresholds
+    )
+    assert dict_["mAP"] == dict_["mAR"] == 1
+    assert len(dict_["precisions"]) == len(dict_["recalls"]) == n_thresholds
+    assert dict_["precisions"].shape[1] == 101
+    np.testing.assert_allclose(dict_["precisions"], 1)
+
+    dict_ = inferenceutils.evaluate_assembly(
+        assemblies,
+        assemblies,
+        oks_thresholds=thresholds,
+        symmetric_kpts=[(0, 5), (1, 4)]
     )
     assert dict_["mAP"] == dict_["mAR"] == 1
     assert len(dict_["precisions"]) == len(dict_["recalls"]) == n_thresholds
