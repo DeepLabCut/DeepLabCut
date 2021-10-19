@@ -14,8 +14,6 @@ from mmappickle import mmapdict
 from itertools import combinations
 
 
-
-
 import math
 from functools import partial
 from itertools import repeat
@@ -26,6 +24,40 @@ import torch.nn.functional as F
 #from torch._six import container_abcs
 import collections.abc as container_abcs
 
+
+
+class DataPath:
+    def __init__(self, animal = 'fish'):
+
+        self.animal = animal        
+        self.mice_video_id = 1
+        self.data_source = 'pickle'
+
+        if self.mice_video_id == 1:
+            mice_feature_fname = '3mice_features.mmdpickle'
+            mice_gt_fname = 'videocompressed1gt.h5'
+        elif self.mice_video_id == 4:
+            mice_feature_fname = '3mice_features_video4.mmdpickle'
+            mice_gt_fname = 'videocompressed4gt.h5'
+        
+        self.path_to_features = {'fish': 'fish_features.mmdpickle',
+                            'marmoset': 'marmoset_features.mmdpickle',
+                            '3mice': mice_feature_fname,
+                            'pup':'pup_features.mmdpickle'}[self.animal]
+
+        self.gt_path = {'fish':'fishgt.h5',
+                   'marmoset':'marmosetgt.h5',
+                   'pup':'pupgt.h5',
+                   '3mice': mice_gt_fname}[self.animal]
+
+        self.path_to_el = {'fish':'deeplc.menidia.feeding.school3.176pm.S04.D.shortDLC_dlcrnetms5_SchoolingMay7shuffle1_60000_el.pickle',
+                           'marmoset':'short_videocropDLC_dlcrnetms5_MarmosetMay7shuffle1_60000_el.pickle',
+                      'pup':'F35Day1shortDLC_dlcrnetms5_CrackingParentingMar24shuffle1_60000_el.pickle',
+                      '3mice':f'videocompressed{self.mice_video_id}DLC_dlcrnetms5_MultiMouseJun22shuffle1_60000_el.pickle'}[self.animal]
+
+
+        self.checkpoint = f'/mnt/md0/shaokai/TransReID/models_{self.data_source}/{self.animal}_dlc_transreid_190.pth'
+        self.data_folder = '/mnt/md0/shaokai/TransReID/data/'    
 # From PyTorch internals
 def _ntuple(n):
     def parse(x):
@@ -37,6 +69,10 @@ def _ntuple(n):
 IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
 to_2tuple = _ntuple(2)
+
+
+
+
 
 def drop_path(x, drop_prob: float = 0., training: bool = False):
     """Drop paths (Stochastic Depth) per sample (when applied in main path of residual blocks).
@@ -671,6 +707,7 @@ def load_features_from_coord(features, key, coords, valid_mask_for_fish = False)
         mask = np.array([1,2,6])
         coords = coords[mask,:]
 
+
     feature = features[key]
 
 
@@ -683,6 +720,8 @@ def load_features_from_coord(features, key, coords, valid_mask_for_fish = False)
     for i,coord in enumerate(coords):
 
         x,y = coord
+        #x-=1
+        #y-=1
         if np.sum(coord) == 0:
             vec = np.zeros(2048)
         else:
@@ -697,7 +736,7 @@ def load_features_from_coord(features, key, coords, valid_mask_for_fish = False)
 def preprocess(arr):
     indices = np.where(np.logical_or(arr>9000,arr < 0))
     arr[indices] = 0
-    arr = arr // 16
+    arr = (arr -8) // 16
     return arr
 
 
@@ -805,7 +844,7 @@ class DLCTrans:
 
         return vec_a, vec_b
         
-    def __call__(self,inp_a,inp_b):
+    def __call__(self,inp_a,inp_b, return_features = False):
         # tracklets
         device = "cuda"
 
@@ -830,7 +869,10 @@ class DLCTrans:
 
             
             dist = self.cos(vec_a, vec_b)
-            return dist
+            if return_features:
+                return dist, vec_a, vec_b
+            else:
+                return dist
 
 
 if __name__ == '__main__':

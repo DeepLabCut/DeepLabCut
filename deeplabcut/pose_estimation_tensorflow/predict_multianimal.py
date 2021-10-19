@@ -19,6 +19,7 @@ from tqdm import tqdm
 from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal as predict
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 from deeplabcut.utils.auxfun_videos import VideoWriter
+from deeplabcut import utils
 from mmappickle import mmapdict
 
 def AnalyzeMultiAnimalVideo(
@@ -143,7 +144,8 @@ def GetPoseandCostsF(
     
     project_path = cfg['project_path']
 
-    save_features = False
+    DataPath = utils.inference.DataPath
+    save_features = False#False#DataPath.save_features
     if save_features:
         feature_dict = mmapdict(os.path.join(project_path,'features.mmdpickle'))
     PredicteData = {}

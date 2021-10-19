@@ -15,6 +15,7 @@ from deeplabcut.utils import (
     inference
 
 )
+from deeplabcut import utils
 from itertools import combinations, cycle
 from networkx.algorithms.flow import preflow_push
 from pathlib import Path
@@ -1014,6 +1015,9 @@ def stitch_tracklets(
     destfolder=None,
     modelprefix="",
     output_name="",
+    use_trans = False,
+    animal = 'fish'    
+        
 ):
     """
     Stitch sparse tracklets into full tracks via a graph-based,
@@ -1109,33 +1113,22 @@ def stitch_tracklets(
         cfg["TrainingFraction"][trainingsetindex],
         modelprefix=modelprefix,
     )
-    use_trans = False
+
     if use_trans:
-        animal = 'fish'
 
         kpts_num_dict = {'3mice': 12, 'fish': 3, 'pup':5, 'marmoset': 15}
-        checkpoint = f'/mnt/md0/shaokai/TransReID/{animal}_dlc_transreid_from_pickle.pth'
+
         kpts_num = kpts_num_dict[animal]
-
-        path_to_features_dict = {'fish': 'fish_features.mmdpickle',
-                            'marmoset': 'marmoset_features.mmdpickle',
-                            '3mice': '3mice_features.mmdpickle',
-                            'pup':'pup_features.mmdpickle'}
-
-        gt_path = {'fish':'fishgt.h5',
-                       'marmoset':'marmosetgt.h5',
-                       'pup':'pupgt.h5',
-                       '3mice':'videocompressed1gt.h5'}
-
-        path_to_el = {'fish':'deeplc.menidia.feeding.school3.176pm.S04.D.shortDLC_resnet50_SchoolingMay7shuffle1_200000_el.pickle',
-                          'marmoset':'short_videocropDLC_dlcrnetms5_MarmosetMay7shuffle1_60000_el.pickle',
-                          'pup':'pup_el.pickle',
-                          '3mice':'videocompressed1DLC_resnet50_MultiMouseJun22shuffle1_200000_el.pickle'}
-
-        data_folder = '/mnt/md0/shaokai/TransReID/data/'
-
-        path_to_features = os.path.join(data_folder,path_to_features_dict[animal])
         
+        DataPath = utils.inference.DataPath(animal = animal)
+
+        data_folder = DataPath.data_folder
+        
+        path_to_features = DataPath.path_to_features
+        
+        path_to_features = os.path.join(data_folder,path_to_features)
+
+        checkpoint = DataPath.checkpoint
         
         dlctrans = inference.DLCTrans(checkpoint = checkpoint, kpts_num = kpts_num, path_to_features = path_to_features, animal = animal)
 
