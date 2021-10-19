@@ -65,7 +65,7 @@ This set of arguments will create a project directory with the name **Name of th
 
 **labeled-data:** This directory will store the frames used to create the training dataset. Frames from different videos are stored in separate subdirectories. Each frame has a filename related to the temporal index within the corresponding video, which allows the user to trace every frame back to its origin.
 
-**training-datasets:**  This directory will contain the training dataset used to train the network and metadata, which contains information about how the training dataset was created.  
+**training-datasets:**  This directory will contain the training dataset used to train the network and metadata, which contains information about how the training dataset was created.
 
 **videos:** Directory of video links or videos. When **copy\_videos** is set to ``False``, this directory contains symbolic links to the videos. If it is set to ``True`` then the videos will be copied to this directory. The default is ``False``. Additionally, if the user wants to add new videos to the project at any stage, the function **add\_new\_videos** can be used. This will update the list of videos in the project's configuration file. Note: you neither need to use this folder for videos, nor is it required for analyzing videos (they can be anywhere).
 
@@ -211,7 +211,7 @@ is one of the most critical parts for creating the training dataset. The DeepLab
 ‘check_labels’ to do so. It is used as follows:
 ```python
 deeplabcut.check_labels(config_path, visualizeindividuals=True/False)
- ```   
+ ```
 **maDeepLabCut:** you can check and plot colors per individual or per body part, just set the flag `visualizeindividuals=True/False`. Note, you can run this twice in both states to see both images.
 
 <p align="center">
@@ -334,7 +334,7 @@ saveiters: this variable is actually set in pose_config.yaml. However, you can o
 the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
 
 maxiters: This sets how many iterations to train. This variable is set in pose_config.yaml. However, you can overwrite it with this. If None, the value from there is used, otherwise it is overwritten! Default: None
-```    
+```
 
 ### Evaluate the Trained Network:
 
@@ -421,8 +421,17 @@ Please note that you do **not** get the .h5/csv file you might be used to gettin
 If this does not look good, we recommend extracting and labeling more frames (even from more videos). Try to label close interactions of animals for best performance. Once you label more, you can create a new training set and train.
 
 You can either:
-1. extract more frames from existing or new videos and label as when initially building the training data set, or
-2. extract outlier frames based on the videos you just analyzed. To do this, you first need to analyze a video and convert to tracklets (Step 1 and 2 in the Analyze Video tab of the GUI), then you load the tracklet file into the refine tracklet GUI, and "Save" without making any modifications (or run `deeplabcut.convert_raw_tracks_to_h5(config_path, picklefile)`). That will create the files needed in the Extract Outlier Frames tab of the GUI.
+1. extract more frames manually from existing or new videos and label as when initially building the training data set, or
+2. let DeepLabCut find frames where keypoints were poorly detected and automatically extract those for you. All you need is
+to run:
+```python
+from deeplabcut.refine_training_dataset import find_outliers_in_raw_data
+
+find_outliers_in_raw_data(config_path, pickle_file, video_file)
+```
+where pickle_file is the `_full.pickle` one obtains after video analysis.
+Flagged frames will be added to your collection of images in the corresponding labeled-data folders for you to label.
+
 
 ### ------------------- ANIMAL ASSEMBLY & TRACKING ACROSS FRAMES -------------------
 
@@ -472,6 +481,12 @@ deeplabcut.convert_detections2tracklets(..., identity_only=True)
 
 **Animal assembly and tracking quality** can be assessed via `deeplabcut.utils.make_labeled_video.create_video_from_pickled_tracks`. This function provides an additional diagnostic tool before moving on to refining tracklets.
 
+If animal assemblies do not look pretty, an alternative to the outlier search described above is to pass the
+`_assemblies.pickle` to `find_outliers_in_raw_data` in place of the `_full.pickle`.
+This will focus the outlier search on unusual assemblies (i.e., animal skeletons that were oddly reconstructed). This may be a bit more sensitive with crowded scenes or frames where animals interact closely.
+Note though that at that stage it is likely preferable anyway to carry on with the remaining steps, and extract outliers
+from the final h5 file as was customary in single animal projects.
+
 **Next, tracklets are stitched to form complete tracks with:
 
 ```python
@@ -508,7 +523,7 @@ If you fill in gaps, they will be associated to an ultra low probability, 0.01, 
 
 [Read more here!](functionDetails.md#madeeplabcut-critical-point---assemble--refine-tracklets)
 
-Short demo:  
+Short demo:
  <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588690928000-90ZMRIM8SN6QE20ZOMNX/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/refineDEMO.gif?format=750w" width="70%">
 </p>
