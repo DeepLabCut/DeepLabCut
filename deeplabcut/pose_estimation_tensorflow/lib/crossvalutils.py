@@ -182,6 +182,8 @@ def _benchmark_paf_graphs(
     identity_only=False,
     calibration_file="",
     oks_sigma=0.1,
+    margin=0,
+    symmetric_kpts=None,
     split_inds=None,
 ):
     metadata = data.pop("metadata")
@@ -246,9 +248,23 @@ def _benchmark_paf_graphs(
             oks = []
             for inds in split_inds:
                 assemblies = {k: v for k, v in ass.assemblies.items() if k in inds}
-                oks.append(evaluate_assembly(assemblies, ass_true_dict, oks_sigma))
+                oks.append(
+                    evaluate_assembly(
+                        assemblies,
+                        ass_true_dict,
+                        oks_sigma,
+                        margin=margin,
+                        symmetric_kpts=symmetric_kpts,
+                    )
+                )
         else:
-            oks = evaluate_assembly(ass.assemblies, ass_true_dict, oks_sigma)
+            oks = evaluate_assembly(
+                ass.assemblies,
+                ass_true_dict,
+                oks_sigma,
+                margin=margin,
+                symmetric_kpts=symmetric_kpts,
+            )
         all_metrics.append(oks)
         scores = np.full((len(image_paths), 2), np.nan)
         for i, imname in enumerate(tqdm(image_paths)):
@@ -359,12 +375,15 @@ def cross_validate_paf_graphs(
     metadata_file,
     output_name="",
     pcutoff=0.1,
+    oks_sigma=0.1,
+    margin=0,
     greedy=False,
     add_discarded=True,
     calibrate=False,
     overwrite_config=True,
     n_graphs=10,
     paf_inds=None,
+    symmetric_kpts=None,
 ):
     cfg = auxiliaryfunctions.read_config(config)
     inf_cfg = auxiliaryfunctions.read_plainconfig(inference_config)
@@ -406,6 +425,9 @@ def cross_validate_paf_graphs(
         paf_inds,
         greedy,
         add_discarded,
+        oks_sigma=oks_sigma,
+        margin=margin,
+        symmetric_kpts=symmetric_kpts,
         calibration_file=calibration_file,
         split_inds=[
             metadata["data"]["trainIndices"],

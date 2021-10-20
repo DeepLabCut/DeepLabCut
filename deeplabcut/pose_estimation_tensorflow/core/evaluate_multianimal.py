@@ -547,6 +547,9 @@ def evaluate_multianimal_full(
                         data_path.replace("_full.", "_meta."),
                         n_graphs=n_graphs,
                         paf_inds=paf_inds,
+                        oks_sigma=dlc_cfg.get("oks_sigma", 0.1),
+                        margin=dlc_cfg.get("bbox_margin", 0),
+                        symmetric_kpts=dlc_cfg.get("symmetric_kpts"),
                     )
                     df = results[1].copy()
                     df.loc(axis=0)[('mAP_train', 'mean')] = [d[0]['mAP'] for d in results[2]]
