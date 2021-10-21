@@ -784,9 +784,15 @@ but does not guarantee best performance.</p>
 <p>If this does not look good, we recommend extracting and labeling more frames (even from more videos). Try to label close interactions of animals for best performance. Once you label more, you can create a new training set and train.</p>
 <p>You can either:</p>
 <ol class="simple">
-<li><p>extract more frames from existing or new videos and label as when initially building the training data set, or</p></li>
-<li><p>extract outlier frames based on the videos you just analyzed. To do this, you first need to analyze a video and convert to tracklets (Step 1 and 2 in the Analyze Video tab of the GUI), then you load the tracklet file into the refine tracklet GUI, and “Save” without making any modifications (or run <code class="docutils literal notranslate"><span class="pre">deeplabcut.convert_raw_tracks_to_h5(config_path,</span> <span class="pre">picklefile)</span></code>). That will create the files needed in the Extract Outlier Frames tab of the GUI.</p></li>
+<li><p>extract more frames manually from existing or new videos and label as when initially building the training data set, or</p></li>
+<li><p>let DeepLabCut find frames where keypoints were poorly detected and automatically extract those for you. All you need is
+to run:</p></li>
 </ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">find_outliers_in_raw_data</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">pickle_file</span><span class="p">,</span> <span class="n">video_file</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where pickle_file is the <code class="docutils literal notranslate"><span class="pre">_full.pickle</span></code> one obtains after video analysis.
+Flagged frames will be added to your collection of images in the corresponding labeled-data folders for you to label.</p>
 </div>
 </div>
 <div class="section" id="animal-assembly-tracking-across-frames">
@@ -830,6 +836,11 @@ utilized in place of motion trackers to form tracklets.</p>
 </pre></div>
 </div>
 <p><strong>Animal assembly and tracking quality</strong> can be assessed via <code class="docutils literal notranslate"><span class="pre">deeplabcut.utils.make_labeled_video.create_video_from_pickled_tracks</span></code>. This function provides an additional diagnostic tool before moving on to refining tracklets.</p>
+<p>If animal assemblies do not look pretty, an alternative to the outlier search described above is to pass the
+<code class="docutils literal notranslate"><span class="pre">_assemblies.pickle</span></code> to <code class="docutils literal notranslate"><span class="pre">find_outliers_in_raw_data</span></code> in place of the <code class="docutils literal notranslate"><span class="pre">_full.pickle</span></code>.
+This will focus the outlier search on unusual assemblies (i.e., animal skeletons that were oddly reconstructed). This may be a bit more sensitive with crowded scenes or frames where animals interact closely.
+Note though that at that stage it is likely preferable anyway to carry on with the remaining steps, and extract outliers
+from the final h5 file as was customary in single animal projects.</p>
 <p>**Next, tracklets are stitched to form complete tracks with:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">stitch_tracklets</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;videofile_path&#39;</span><span class="p">],</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;mp4&#39;</span><span class="p">,</span>
                             <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">trainingsetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">track_method</span><span class="o">=</span><span class="s1">&#39;box/ellipse/skeleton&#39;</span><span class="p">)</span>
