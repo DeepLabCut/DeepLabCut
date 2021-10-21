@@ -26,7 +26,7 @@ try:
     mpl.use("WxAgg")
     from deeplabcut import generate_training_dataset
     from deeplabcut import refine_training_dataset
-    
+
     from deeplabcut.gui import select_crop_parameters
     from deeplabcut.gui.launch_script import launch_dlc
     from deeplabcut.gui.label_frames import label_frames
@@ -112,7 +112,11 @@ from deeplabcut.pose_estimation_3d import (
 )
 
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
-from deeplabcut.refine_training_dataset import extract_outlier_frames, merge_datasets
+from deeplabcut.refine_training_dataset import (
+    extract_outlier_frames,
+    merge_datasets,
+    find_outliers_in_raw_data,
+)
 from deeplabcut.post_processing import filterpredictions, analyzeskeleton
 
 
