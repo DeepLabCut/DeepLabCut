@@ -425,9 +425,7 @@ You can either:
 2. let DeepLabCut find frames where keypoints were poorly detected and automatically extract those for you. All you need is
 to run:
 ```python
-from deeplabcut.refine_training_dataset import find_outliers_in_raw_data
-
-find_outliers_in_raw_data(config_path, pickle_file, video_file)
+deeplabcut.find_outliers_in_raw_data(config_path, pickle_file, video_file)
 ```
 where pickle_file is the `_full.pickle` one obtains after video analysis.
 Flagged frames will be added to your collection of images in the corresponding labeled-data folders for you to label.
