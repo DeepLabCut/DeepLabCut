@@ -14,7 +14,7 @@ pandas>=1.0.1
 patsy
 pyyaml
 setuptools
-scikit-image>=0.17
+scikit-image>=0.17,<=0.18.1
 scikit-learn
 scipy>=1.4
 six
