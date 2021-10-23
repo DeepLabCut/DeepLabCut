@@ -680,7 +680,7 @@ def proc_video(
             print(e)
 
 
-DEFAULT_FRAME_RATE_WITH_KEYPOINTS_ONLY = 25
+DEFAULT_FRAME_RATE_FOR_LABELLED_VIDEO = 25
 def create_video_with_keypoints_only(
     df,
     output_name,
@@ -703,7 +703,7 @@ def create_video_with_keypoints_only(
     ny = int(np.nanmax(df.xs("y", axis=1, level="coords")))
 
     if fps is None:
-        fps = DEFAULT_FRAME_RATE_WITH_KEYPOINTS_ONLY
+        fps = DEFAULT_FRAME_RATE_FOR_LABELLED_VIDEO
 
     n_frames = df.shape[0]
     xyp = df.values.reshape((n_frames, -1, 3))
