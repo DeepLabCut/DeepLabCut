@@ -472,6 +472,9 @@ deeplabcut.convert_detections2tracklets(..., identity_only=True)
 
 **Animal assembly and tracking quality** can be assessed via `deeplabcut.utils.make_labeled_video.create_video_from_pickled_tracks`. This function provides an additional diagnostic tool before moving on to refining tracklets.
 
+
+**Note:** If only one individual is to be assembled and tracked, assembly and tracking are skipped, and detections are treated as in single-animal projects; i.e., it is the keypoints with highest confidence that are kept and accumulated over frames to form a single, long tracklet. No action is required from users, this is done automatically.
+
 **Next, tracklets are stitched to form complete tracks with:
 
 ```python
