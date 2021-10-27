@@ -102,6 +102,7 @@ from deeplabcut.pose_estimation_tensorflow import (
     visualize_paf,
     extract_save_all_maps,
     export_model,
+    quantify_performance,
 )
 
 from deeplabcut.pose_estimation_3d import (

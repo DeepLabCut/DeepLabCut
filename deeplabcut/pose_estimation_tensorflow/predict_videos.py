@@ -912,10 +912,8 @@ def analyze_time_lapse_frames(
 
     You can crop the frames (before analysis), by changing 'cropping'=True and setting 'x1','x2','y1','y2' in the config file.
 
-    Output: The labels are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position \n
-            in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
-            in the same directory, where the video is stored. However, if the flag save_as_csv is set to True, the data can also be exported in \n
-            comma-separated values format (.csv), which in turn can be imported in many programs, such as MATLAB, R, Prism, etc.
+    Output: DLCscorer: string
+        Return the DLCscorername (name of the DLC model), see below for an example
 
     Parameters
     ----------
@@ -958,7 +956,9 @@ def analyze_time_lapse_frames(
 
     If you want to analyze all frames in a directory:
     >>> directory='/Users/alex/mouse_m7s3'
-    >>> deeplabcut.analyze_videos(path_config_file,directory)
+    >>> dlcscorer=deeplabcut.analyze_videos(path_config_file,directory)
+    >>> print(dlcscorer) #print example name!
+    DLC_mobnet_35_openfieldOct30shuffle1_10000
 
     --------
 
@@ -1077,7 +1077,7 @@ def analyze_time_lapse_frames(
         os.chdir(directory)
         framelist = np.sort([fn for fn in os.listdir(os.curdir) if (frametype in fn)])
         vname = Path(directory).stem
-        
+
         notanalyzed, dataname, DLCscorer = auxiliaryfunctions.CheckifNotAnalyzed(
             destfolder, vname, DLCscorer, DLCscorerlegacy, flag="framestack"
         )
@@ -1141,7 +1141,7 @@ def analyze_time_lapse_frames(
                 )
 
     os.chdir(str(start_path))
-
+    return DLCscorer
 
 def _convert_detections_to_tracklets(
     cfg,

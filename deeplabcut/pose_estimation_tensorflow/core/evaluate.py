@@ -540,10 +540,10 @@ def evaluate_network(
 
     Examples
     --------
-    If you do not want to plot
+    Standard evaluation of Shuffle 1:
     >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml', Shuffles=[1])
     --------
-    If you want to plot
+    If you also want to plot:
     >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml',Shuffles=[1],True)
 
     """
@@ -946,6 +946,52 @@ def evaluate_network(
 
     # returning to intial folder
     os.chdir(str(start_path))
+
+def quantify_performance(config,DLCscorer,directory,comparisonbodyparts='all'):
+    '''
+    WIP function to evaluate model DLCscorer on directory. Assuming that this folder contains
+    /CollectedData_scorername.h5
+
+    Example use:
+
+    import deeplabcut
+    config='/Users/alex/Code/dlc_playingdata/openfield-Pranav-2018-10-30/config.yaml'
+    directory='/Users/alex//Code/dlc_playingdata/mouse_m7s3'
+
+    DLCscorer =deeplabcut.analyze_time_lapse_frames(config,directory)
+    deeplabcut.quantify_performance(config,DLCscorer,directory)
+
+    '''
+    import os
+    from pathlib import Path
+    from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
+    import pandas as pd
+
+    cfg = auxiliaryfunctions.read_config(config)
+
+    # Get list of body parts to evaluate network for
+    comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
+        cfg, comparisonbodyparts
+    )
+
+    Data = pd.read_hdf(os.path.join(directory,"CollectedData_" + cfg["scorer"] + ".h5"))
+    DataMachine=pd.read_hdf(os.path.join(directory,Path(directory).stem+DLCscorer+'.h5'))
+
+    DataCombined = pd.concat([Data.T, DataMachine.T], axis=0, sort=False).T
+
+    RMSE, RMSEpcutoff = pairwisedistances(
+        DataCombined,
+        cfg["scorer"],
+        DLCscorer,
+        cfg["pcutoff"],
+        comparisonbodyparts,
+    )
+
+    testerror = np.nanmean(RMSE.values.flatten())
+    testerrorpcutoff = np.nanmean(
+        RMSEpcutoff.values.flatten()
+    )
+    print(testerror,testerrorpcutoff)
 
 
 def make_results_file(final_result, evaluationfolder, DLCscorer):
