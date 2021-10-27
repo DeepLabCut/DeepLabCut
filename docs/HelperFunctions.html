@@ -415,9 +415,9 @@ to use them, use the <code class="docutils literal notranslate"><span class="pre
 </div>
 <div class="section" id="new-model-export-function">
 <h2>New! Model Export function:<a class="headerlink" href="#new-model-export-function" title="Permalink to this headline">¶</a></h2>
-<p>This function allows you to export a well-trained model for real-time applications, etc.</p>
+<p>This function allows you to export a well-trained single animal model for real-time applications, etc. This function is part of <a class="reference external" href="https://elifesciences.org/articles/61909">Kane et al, 2020 eLife</a>. Please see the paper and related code-base on how to use this utility.</p>
 <ul class="simple">
-<li><p>One such example use case is with the <a class="reference external" href="https://github.com/bonsai-rx/deeplabcut">Bonsai-DeepLabCut</a> plug in. Namely, you need to first export your trained model from DLC, then follow the instructions for Bonsai-specific use.</p></li>
+<li><p>Another example use case is with the <a class="reference external" href="https://github.com/bonsai-rx/deeplabcut">Bonsai-DeepLabCut</a> plug in. Namely, you need to first export your trained model from DLC, then follow the instructions for Bonsai-specific use.</p></li>
 </ul>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">export_model</span><span class="p">(</span><span class="n">cfg_path</span><span class="p">,</span> <span class="n">iteration</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">trainingsetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">snapshotindex</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">TFGPUinference</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">make_tar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
