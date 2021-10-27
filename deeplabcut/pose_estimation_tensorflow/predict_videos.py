@@ -82,7 +82,7 @@ def analyze_videos(
         Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
 
     gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU put None.
-    See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+        See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
 
     save_as_csv: bool, optional
         Saves the predictions in a .csv file. The default is ``False``; if provided it must be either ``True`` or ``False``
@@ -902,6 +902,8 @@ def analyze_time_lapse_frames(
     trainingsetindex=0,
     gputouse=None,
     save_as_csv=False,
+    destfolder=None,
+    batchsize=None,
     rgb=True,
     modelprefix="",
 ):
@@ -933,10 +935,17 @@ def analyze_time_lapse_frames(
         Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
 
     gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU put None.
-    See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+        See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
 
     save_as_csv: bool, optional
         Saves the predictions in a .csv file. The default is ``False``; if provided it must be either ``True`` or ``False``
+
+    destfolder: string, optional
+        Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this
+        folder also needs to be passed.
+
+    batchsize: int, default from pose_cfg.yaml
+        Change batch size for inference; if given overwrites value in pose_cfg.yaml
 
     rbg: bool, optional.
         Whether to load image as rgb; Note e.g. some tiffs do not alow that option in imread, then just set this to false.
@@ -947,8 +956,10 @@ def analyze_time_lapse_frames(
     >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml','/analysis/project/timelapseexperiment1')
     --------
 
-    If you want to analyze all frames in /analysis/project/timelapseexperiment1
-    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml','/analysis/project/timelapseexperiment1')
+    If you want to analyze all frames in a directory:
+    >>> directory='/Users/alex/mouse_m7s3'
+    >>> deeplabcut.analyze_videos(path_config_file,directory)
+
     --------
 
     Note: for test purposes one can extract all frames from a video with ffmeg, e.g. ffmpeg -i testvideo.avi thumb%04d.png
@@ -961,6 +972,9 @@ def analyze_time_lapse_frames(
 
     tf.compat.v1.reset_default_graph()
     start_path = os.getcwd()  # record cwd to return to this directory in the end
+
+    if destfolder is None:
+        destfolder = Path(directory)
 
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
@@ -1018,8 +1032,12 @@ def analyze_time_lapse_frames(
     )
     trainingsiterations = (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[-1]
 
-    # update batchsize (based on parameters in config.yaml)
-    dlc_cfg["batch_size"] = cfg["batch_size"]
+    if batchsize == None:
+        # update batchsize (based on parameters in config.yaml)
+        dlc_cfg["batch_size"] = cfg["batch_size"]
+    else:
+        dlc_cfg["batch_size"] = batchsize
+        cfg["batch_size"] = batchsize
 
     # Name for scorer:
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
@@ -1059,9 +1077,11 @@ def analyze_time_lapse_frames(
         os.chdir(directory)
         framelist = np.sort([fn for fn in os.listdir(os.curdir) if (frametype in fn)])
         vname = Path(directory).stem
+        
         notanalyzed, dataname, DLCscorer = auxiliaryfunctions.CheckifNotAnalyzed(
-            directory, vname, DLCscorer, DLCscorerlegacy, flag="framestack"
+            destfolder, vname, DLCscorer, DLCscorerlegacy, flag="framestack"
         )
+
         if notanalyzed:
             nframes = len(framelist)
             if nframes > 0:

@@ -652,6 +652,8 @@ def CheckifPostProcessing(folder, vname, DLCscorer, DLCscorerlegacy, suffix="fil
 
 
 def CheckifNotAnalyzed(destfolder, vname, DLCscorer, DLCscorerlegacy, flag="video"):
+    ''' auxiliaryfunction that assembles file name and checks if it was *not* analyzed. '''
+    
     h5files = list(grab_files_in_folder(destfolder, "h5", relative=False))
     if not len(h5files):
         dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
