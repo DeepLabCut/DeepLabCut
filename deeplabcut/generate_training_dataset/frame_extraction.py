@@ -1,10 +1,10 @@
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 
 Please see AUTHORS for contributors.
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
@@ -393,10 +393,10 @@ def extract_frames(
         elif any(has_failed):
             print("Although most frames were extracted, some were invalid.")
         else:
-            print("Frames were successfully extracted, for the videos of interest.")
+            print("Frames were successfully extracted, for the videos listed in the config.yaml file.")
         print(
             "\nYou can now label the frames using the function 'label_frames' "
-            "(if you extracted enough frames for all videos)."
+            "(Note, you should label frames extracted from diverse videos (and many videos; we do not recommend training on single videos!))."
         )
 
     elif mode == "match":
