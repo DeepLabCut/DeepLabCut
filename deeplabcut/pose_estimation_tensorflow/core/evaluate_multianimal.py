@@ -528,9 +528,12 @@ def evaluate_multianimal_full(
 
                         tf.compat.v1.reset_default_graph()
 
+                    n_multibpts = len(cfg["multianimalbodyparts"])
+                    if n_multibpts == 1:
+                        continue
+
                     # Skip data-driven skeleton selection unless
                     # the model was trained on the full graph.
-                    n_multibpts = len(cfg["multianimalbodyparts"])
                     max_n_edges = n_multibpts * (n_multibpts - 1) // 2
                     n_edges = len(dlc_cfg["partaffinityfield_graph"])
                     if n_edges == max_n_edges:
