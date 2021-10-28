@@ -102,6 +102,7 @@ def test_tracking_montblanc(
 
 
 def test_calc_bboxes_from_keypoints():
+    # Test bounding box from a single keypoint
     xy = np.asarray([[[0, 0, 1]]])
     np.testing.assert_equal(
         trackingutils.calc_bboxes_from_keypoints(xy, 10), [[-10, -10, 10, 10, 1]]
