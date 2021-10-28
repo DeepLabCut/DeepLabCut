@@ -353,7 +353,7 @@ reliably report if a body part is visible in a given frame. (see discussions of 
 legs during 3D behavior in [Mathis et al, 2018]). The evaluation results are computed by typing:
 
 Setting ``plotting`` to True plots all the testing and training frames with the manual and predicted labels; these will
-be colored by individual by default. They can alternatively be colored by bodypart type by passing `plotting`=`bodypart`.
+be colored by body part type by default. They can alternatively be colored by individual by passing `plotting`=`individual`.
 The user should visually check the labeled test (and training) images that are created in the ‘evaluation-results’ directory.
 Ideally, DeepLabCut labeled unseen (test images) according to the user’s required accuracy, and the average train
 and test errors are comparable (good generalization). What (numerically) comprises an acceptable MAE depends on
