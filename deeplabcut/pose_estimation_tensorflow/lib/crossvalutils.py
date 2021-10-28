@@ -434,6 +434,8 @@ def cross_validate_paf_graphs(
             metadata["data"]["testIndices"],
         ],
     )
+    print(results)
+    print("ABC")
     # Select optimal PAF graph
     df = results[1]
     size_opt = np.argmax((1 - df.loc["miss", "mean"]) * df.loc["purity", "mean"])

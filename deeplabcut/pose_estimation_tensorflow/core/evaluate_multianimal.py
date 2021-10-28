@@ -109,6 +109,8 @@ def evaluate_multianimal_full(
     comparisonbodyparts="all",
     gputouse=None,
     modelprefix="",
+    directory = None,
+    frametype='.png'
 ):
     from deeplabcut.pose_estimation_tensorflow.core import (
         predict,
@@ -137,19 +139,39 @@ def evaluate_multianimal_full(
     else:
         TrainingFractions = [cfg["TrainingFraction"][trainingsetindex]]
 
-    # Loading human annotatated data
-    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
-    Data = pd.read_hdf(
-        os.path.join(
-            cfg["project_path"],
-            str(trainingsetfolder),
-            "CollectedData_" + cfg["scorer"] + ".h5",
+
+    if directory is not None and os.path.isdir(directory):
+        # We want to predict & evaluate data in this folder!
+        print("Analyzing all frames in the directory: ", directory)
+        os.chdir(directory)
+        framelist = np.sort([fn for fn in os.listdir(os.curdir) if (frametype in fn)])
+        vname = Path(directory).stem
+
+        # Loading human annotatated data
+        trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+        Data = pd.read_hdf(
+            os.path.join(
+                directory,
+                "CollectedData_" + cfg["scorer"] + ".h5",
+            )
         )
-    )
-    # Handle data previously annotated on a different platform
-    sep = "/" if "/" in Data.index[0] else "\\"
-    if sep != os.path.sep:
-        Data.index = Data.index.str.replace(sep, os.path.sep)
+
+    else:
+
+        # Loading human annotatated data
+        trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+        Data = pd.read_hdf(
+            os.path.join(
+                cfg["project_path"],
+                str(trainingsetfolder),
+                "CollectedData_" + cfg["scorer"] + ".h5",
+            )
+        )
+        # Handle data previously annotated on a different platform
+        sep = "/" if "/" in Data.index[0] else "\\"
+        if sep != os.path.sep:
+            Data.index = Data.index.str.replace(sep, os.path.sep)
+
     # Get list of body parts to evaluate network for
     comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
         cfg, comparisonbodyparts
@@ -170,6 +192,7 @@ def evaluate_multianimal_full(
             datafn, metadatafn = auxiliaryfunctions.GetDataandMetaDataFilenames(
                 trainingsetfolder, trainFraction, shuffle, cfg
             )
+            print(datafn,metadatafn)
             modelfolder = os.path.join(
                 cfg["project_path"],
                 str(
@@ -200,21 +223,25 @@ def evaluate_multianimal_full(
 
             # TODO: IMPLEMENT for different batch sizes?
             dlc_cfg["batch_size"] = 1  # due to differently sized images!!!
-
             stride = dlc_cfg["stride"]
             # Ignore best edges possibly defined during a prior evaluation
             _ = dlc_cfg.pop("paf_best", None)
             joints = dlc_cfg["all_joints_names"]
 
-            # Create folder structure to store results.
-            evaluationfolder = os.path.join(
-                cfg["project_path"],
-                str(
-                    auxiliaryfunctions.GetEvaluationFolder(
-                        trainFraction, shuffle, cfg, modelprefix=modelprefix
-                    )
-                ),
-            )
+            if directory is not None and os.path.isdir(directory):
+                evaluationfolder=directory
+            else:
+                # Create folder structure to store results.
+                evaluationfolder = os.path.join(
+                    cfg["project_path"],
+                    str(
+                        auxiliaryfunctions.GetEvaluationFolder(
+                            trainFraction, shuffle, cfg, modelprefix=modelprefix
+                        )
+                    ),
+                )
+
+
             auxiliaryfunctions.attempttomakefolder(evaluationfolder, recursive=True)
             # path_train_config = modelfolder / 'train' / 'pose_cfg.yaml'
 
@@ -307,9 +334,18 @@ def evaluate_multianimal_full(
                         PredicteData = {}
                         dist = np.full((len(Data), len(all_bpts)), np.nan)
                         conf = np.full_like(dist, np.nan)
+
                         print("Network Evaluation underway...")
+                        if directory is not None and os.path.isdir(directory):
+                            imageroot=directory           # here just imagename in /directory
+                            numimages=len(Data.index)
+                            trainIndices = []
+                            testIndices = range(numimages)
+                        else:
+                            imageroot=cfg["project_path"] # here imagename contains /labeled-data/foder/
+
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
-                            image_path = os.path.join(cfg["project_path"], imagename)
+                            image_path = os.path.join(imageroot, imagename)
                             image = io.imread(image_path)
                             if image.ndim == 2 or image.shape[-1] == 1:
                                 image = skimage.color.gray2rgb(image)
@@ -540,6 +576,7 @@ def evaluate_multianimal_full(
                     else:
                         n_graphs = 1
                         paf_inds = [list(range(n_edges))]
+
                     results, paf_scores = crossvalutils.cross_validate_paf_graphs(
                         config,
                         str(path_test_config).replace("pose_", "inference_"),
@@ -551,6 +588,10 @@ def evaluate_multianimal_full(
                         margin=dlc_cfg.get("bbox_margin", 0),
                         symmetric_kpts=dlc_cfg.get("symmetric_kpts"),
                     )
+
+                    print(results)
+                    print(paf_scores)
+
                     df = results[1].copy()
                     df.loc(axis=0)[('mAP_train', 'mean')] = [d[0]['mAP'] for d in results[2]]
                     df.loc(axis=0)[('mAR_train', 'mean')] = [d[0]['mAR'] for d in results[2]]

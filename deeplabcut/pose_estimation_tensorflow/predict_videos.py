@@ -1069,7 +1069,7 @@ def analyze_time_lapse_frames(
     # Loading the images
     ##################################################
     # checks if input is a directory
-    if os.path.isdir(directory) == True:
+    if os.path.isdir(directory):
         """
         Analyzes all the frames in the directory.
         """

@@ -501,6 +501,8 @@ def evaluate_network(
     gputouse=None,
     rescale=False,
     modelprefix="",
+    directory=None,
+    frametype='.png'
 ):
     """
 
@@ -545,7 +547,19 @@ def evaluate_network(
     --------
     If you also want to plot:
     >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml',Shuffles=[1],True)
+    ________
+    For multi-animal projects you can also evaluate a model on a directory (of images)
 
+    import deeplabcut
+
+    config='/Users/alex/Code/dlc_playingdata/MultiMouse-Daniel-2019-12-16/config.yaml'
+    directory='/Users/alex//Code/dlc_playingdata/videocompressed0'
+    deeplabcut.evaluate_network(config,Shuffles=[0],directory=directory,plotting=True)
+
+    Note (here the path doesn't contain labeled-data/abc/abc.png):
+        D=pd.read_hdf('/Users/alex/Code/dlc_playingdata/videocompressed0/CollectedData_Daniel.h5')
+        D.index = [f.split('/')[-1] for f in D.index]
+        D.to_hdf('/Users/alex/Code/dlc_playingdata/videocompressed0/CollectedData_Daniel.h5', "df_with_missing", format="table", mode="w")
     """
     import os
 
@@ -558,6 +572,7 @@ def evaluate_network(
         from .evaluate_multianimal import evaluate_multianimal_full
 
         # TODO: Make this code not so redundant!
+        # ATTENTION: directory is a hack for now, and undocumented.
         evaluate_multianimal_full(
             config=config,
             Shuffles=Shuffles,
@@ -566,6 +581,8 @@ def evaluate_network(
             comparisonbodyparts=comparisonbodyparts,
             gputouse=gputouse,
             modelprefix=modelprefix,
+            directory=directory,
+            frametype=frametype
         )
     else:
         from deeplabcut.utils.auxfun_videos import imread, imresize
@@ -952,11 +969,11 @@ def quantify_performance(config,DLCscorer,directory,comparisonbodyparts='all'):
     WIP function to evaluate model DLCscorer on directory. Assuming that this folder contains
     /CollectedData_scorername.h5
 
-    Example use:
+    Example use case:
 
     import deeplabcut
     config='/Users/alex/Code/dlc_playingdata/openfield-Pranav-2018-10-30/config.yaml'
-    directory='/Users/alex//Code/dlc_playingdata/mouse_m7s3'
+    directory='/Users/alex//Code/dlc_playingdata/m4s1'
 
     DLCscorer =deeplabcut.analyze_time_lapse_frames(config,directory)
     deeplabcut.quantify_performance(config,DLCscorer,directory)
