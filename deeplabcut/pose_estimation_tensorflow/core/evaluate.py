@@ -522,6 +522,7 @@ def evaluate_network(
     plotting: bool or str, optional
         Plots the predictions on the train and test images.
         The default is ``False``; if provided it must be either ``True``, ``False``, "bodypart", or "individual".
+        Setting to ``True`` defaults as "bodypart" for multi-animal projects.
 
     show_errors: bool, optional
         Display train and test errors. The default is `True``
