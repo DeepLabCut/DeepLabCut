@@ -129,7 +129,7 @@ def evaluate_multianimal_full(
     start_path = os.getcwd()
 
     if plotting is True:
-        plotting = "individual"  # Better default for maDLC projects
+        plotting = "bodypart"
 
     ##################################################
     # Load data...
