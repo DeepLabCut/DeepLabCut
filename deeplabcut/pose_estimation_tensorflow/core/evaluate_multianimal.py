@@ -104,7 +104,7 @@ def evaluate_multianimal_full(
     config,
     Shuffles=[1],
     trainingsetindex=0,
-    plotting=None,
+    plotting=False,
     show_errors=True,
     comparisonbodyparts="all",
     gputouse=None,
@@ -127,6 +127,9 @@ def evaluate_multianimal_full(
         os.environ["CUDA_VISIBLE_DEVICES"] = str(gputouse)
 
     start_path = os.getcwd()
+
+    if plotting is True:
+        plotting = "individual"  # Better default for maDLC projects
 
     ##################################################
     # Load data...
@@ -291,12 +294,12 @@ def evaluate_multianimal_full(
                     if plotting:
                         foldername = os.path.join(
                             str(evaluationfolder),
-                            "LabeledImages_"
-                            + DLCscorer
-                            + "_"
-                            + Snapshots[snapindex],
+                            "LabeledImages_" + DLCscorer + "_" + Snapshots[snapindex],
                         )
                         auxiliaryfunctions.attempttomakefolder(foldername)
+                        if plotting == "bodypart":
+                            fig, ax = visualization.create_minimal_figure()
+
                     if os.path.isfile(data_path):
                         print("Model already evaluated.", resultsfilename)
                     else:
@@ -340,7 +343,9 @@ def evaluate_multianimal_full(
                                 inplace=True,
                             )
                             temp["sample"] = 0
-                            peaks_gt = temp.loc[:, ["sample", "y", "x", "bodyparts"]].to_numpy()
+                            peaks_gt = temp.loc[
+                                :, ["sample", "y", "x", "bodyparts"]
+                            ].to_numpy()
                             peaks_gt[:, 1:3] = (peaks_gt[:, 1:3] - stride // 2) / stride
                             pred = predictma.predict_batched_peaks_and_costs(
                                 dlc_cfg,
@@ -376,15 +381,49 @@ def evaluate_multianimal_full(
                                     # Pick the predictions closest to ground truth,
                                     # rather than the ones the model has most confident in
                                     xy_gt_values = xy_gt.iloc[inds_gt].values
-                                    neighbors = _find_closest_neighbors(xy_gt_values, xy, k=3)
+                                    neighbors = _find_closest_neighbors(
+                                        xy_gt_values, xy, k=3
+                                    )
                                     found = neighbors != -1
                                     min_dists = np.linalg.norm(
-                                        xy_gt_values[found] - xy[neighbors[found]], axis=1,
+                                        xy_gt_values[found] - xy[neighbors[found]],
+                                        axis=1,
                                     )
                                     inds = np.flatnonzero(all_bpts == bpt)
                                     sl = imageindex, inds[inds_gt[found]]
                                     dist[sl] = min_dists
-                                    conf[sl] = probs_pred[n_joint][neighbors[found]].squeeze()
+                                    conf[sl] = probs_pred[n_joint][
+                                        neighbors[found]
+                                    ].squeeze()
+
+                            if plotting == "bodypart":
+                                temp_xy = GT.unstack("bodyparts")[joints].values
+                                gt = temp_xy.reshape(
+                                    (-1, 2, temp_xy.shape[1])
+                                ).T.swapaxes(1, 2)
+                                h, w, _ = np.shape(frame)
+                                fig.set_size_inches(w / 100, h / 100)
+                                ax.set_xlim(0, w)
+                                ax.set_ylim(0, h)
+                                ax.invert_yaxis()
+                                ax = visualization.make_multianimal_labeled_image(
+                                    frame,
+                                    gt,
+                                    coords_pred,
+                                    probs_pred,
+                                    colors,
+                                    cfg["dotsize"],
+                                    cfg["alphavalue"],
+                                    cfg["pcutoff"],
+                                    ax=ax,
+                                )
+                                visualization.save_labeled_frame(
+                                    fig,
+                                    image_path,
+                                    foldername,
+                                    imageindex in trainIndices,
+                                )
+                                visualization.erase_artists(ax)
 
                         sess.close()  # closes the current tf session
 
@@ -468,7 +507,9 @@ def evaluate_multianimal_full(
                             "minimal confidence": dlc_cfg["minconfidence"],
                             "sigma": dlc_cfg.get("sigma", 1),
                             "PAFgraph": dlc_cfg["partaffinityfield_graph"],
-                            "PAFinds": np.arange(len(dlc_cfg["partaffinityfield_graph"])),
+                            "PAFinds": np.arange(
+                                len(dlc_cfg["partaffinityfield_graph"])
+                            ),
                             "all_joints": [
                                 [i] for i in range(len(dlc_cfg["all_joints"]))
                             ],
@@ -509,7 +550,11 @@ def evaluate_multianimal_full(
                     else:
                         n_graphs = 1
                         paf_inds = [list(range(n_edges))]
-                    results, paf_scores, best_assemblies = crossvalutils.cross_validate_paf_graphs(
+                    (
+                        results,
+                        paf_scores,
+                        best_assemblies,
+                    ) = crossvalutils.cross_validate_paf_graphs(
                         config,
                         str(path_test_config).replace("pose_", "inference_"),
                         data_path,
@@ -517,11 +562,11 @@ def evaluate_multianimal_full(
                         n_graphs=n_graphs,
                         paf_inds=paf_inds,
                     )
-                    if plotting:
+                    if plotting == "individual":
                         assemblies, assemblies_unique, image_paths = best_assemblies
                         fig, ax = visualization.create_minimal_figure()
-                        n_animals = len(cfg['individuals'])
-                        if cfg['uniquebodyparts']:
+                        n_animals = len(cfg["individuals"])
+                        if cfg["uniquebodyparts"]:
                             n_animals += 1
                         colors = visualization.get_cmap(n_animals, name=cfg["colormap"])
                         for k, v in tqdm(assemblies.items()):
@@ -537,7 +582,10 @@ def evaluate_multianimal_full(
                             ax.set_ylim(0, h)
                             ax.invert_yaxis()
 
-                            gt = [s.to_numpy().reshape((-1, 2)) for _, s in Data.loc[imname].groupby('individuals')]
+                            gt = [
+                                s.to_numpy().reshape((-1, 2))
+                                for _, s in Data.loc[imname].groupby("individuals")
+                            ]
                             coords_pred = []
                             coords_pred += [ass.xy for ass in v]
                             probs_pred = []
@@ -569,10 +617,9 @@ def evaluate_multianimal_full(
                             )
                             visualization.erase_artists(ax)
 
-
                     df = results[1].copy()
-                    df.loc(axis=0)[('mAP', 'mean')] = [d['mAP'] for d in results[2]]
-                    df.loc(axis=0)[('mAR', 'mean')] = [d['mAR'] for d in results[2]]
+                    df.loc(axis=0)[("mAP", "mean")] = [d["mAP"] for d in results[2]]
+                    df.loc(axis=0)[("mAR", "mean")] = [d["mAR"] for d in results[2]]
                     with open(data_path.replace("_full.", "_map."), "wb") as file:
                         pickle.dump((df, paf_scores), file)
 
