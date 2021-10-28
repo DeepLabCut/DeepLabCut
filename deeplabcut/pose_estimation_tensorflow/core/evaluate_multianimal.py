@@ -308,7 +308,7 @@ def evaluate_multianimal_full(
                         PredicteData = {}
                         dist = np.full((len(Data), len(all_bpts)), np.nan)
                         conf = np.full_like(dist, np.nan)
-                        print("Analyzing data...")
+                        print("Network Evaluation underway...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
                             image_path = os.path.join(cfg["project_path"], imagename)
                             image = io.imread(image_path)
@@ -475,7 +475,7 @@ def evaluate_multianimal_full(
 
                         if show_errors:
                             string = (
-                                "Results for {} training iterations: {}, shuffle {}:\n"
+                                "Results for {} training iterations, training fraction of {}, and shuffle {}:\n"
                                 "Train error: {} pixels. Test error: {} pixels.\n"
                                 "With pcutoff of {}:\n"
                                 "Train error: {} pixels. Test error: {} pixels."
@@ -561,6 +561,9 @@ def evaluate_multianimal_full(
                         data_path.replace("_full.", "_meta."),
                         n_graphs=n_graphs,
                         paf_inds=paf_inds,
+                        oks_sigma=dlc_cfg.get("oks_sigma", 0.1),
+                        margin=dlc_cfg.get("bbox_margin", 0),
+                        symmetric_kpts=dlc_cfg.get("symmetric_kpts"),
                     )
                     if plotting == "individual":
                         assemblies, assemblies_unique, image_paths = best_assemblies
@@ -618,8 +621,10 @@ def evaluate_multianimal_full(
                             visualization.erase_artists(ax)
 
                     df = results[1].copy()
-                    df.loc(axis=0)[("mAP", "mean")] = [d["mAP"] for d in results[2]]
-                    df.loc(axis=0)[("mAR", "mean")] = [d["mAR"] for d in results[2]]
+                    df.loc(axis=0)[('mAP_train', 'mean')] = [d[0]['mAP'] for d in results[2]]
+                    df.loc(axis=0)[('mAR_train', 'mean')] = [d[0]['mAR'] for d in results[2]]
+                    df.loc(axis=0)[('mAP_test', 'mean')] = [d[1]['mAP'] for d in results[2]]
+                    df.loc(axis=0)[('mAR_test', 'mean')] = [d[1]['mAR'] for d in results[2]]
                     with open(data_path.replace("_full.", "_map."), "wb") as file:
                         pickle.dump((df, paf_scores), file)
 

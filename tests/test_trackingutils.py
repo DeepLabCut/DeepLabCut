@@ -77,6 +77,30 @@ def test_tracking(real_assemblies, real_tracklets):
     )
 
 
+def test_tracking_montblanc(
+    real_assemblies_montblanc,
+    real_tracklets_montblanc,
+):
+    tracklets_ref = real_tracklets_montblanc.copy()
+    _ = tracklets_ref.pop("header", None)
+    tracklets = dict()
+    tracklets["single"] = real_assemblies_montblanc[1]
+    mot_tracker = trackingutils.SORTEllipse(1, 1, 0.6)
+    for ind, assemblies in real_assemblies_montblanc[0].items():
+        animals = np.stack([ass.data for ass in assemblies])
+        trackers = mot_tracker.track(animals[..., :2])
+        trackingutils.fill_tracklets(tracklets, trackers, animals, ind)
+    assert len(tracklets) == len(tracklets_ref)
+    assert [len(tracklet) for tracklet in tracklets.values()] == [
+        len(tracklet) for tracklet in tracklets_ref.values()
+    ]
+    for k, assemblies in tracklets.items():
+        ref = tracklets_ref[k]
+        for ind, data in assemblies.items():
+            frame = f'frame{str(ind).zfill(3)}' if k != "single" else ind
+            np.testing.assert_equal(data, ref[frame])
+
+
 def test_calc_bboxes_from_keypoints():
     xy = np.asarray([[[0, 0, 1]]])
     np.testing.assert_equal(

@@ -806,23 +806,53 @@ class Assembler:
             pickle.dump(data, file, pickle.HIGHEST_PROTOCOL)
 
 
-def calc_object_keypoint_similarity(xy_pred, xy_true, sigma):
+def calc_object_keypoint_similarity(
+    xy_pred,
+    xy_true,
+    sigma,
+    margin=0,
+    symmetric_kpts=None,
+):
     visible_gt = ~np.isnan(xy_true).all(axis=1)
     if visible_gt.sum() < 2:  # At least 2 points needed to calculate scale
         return np.nan
     true = xy_true[visible_gt]
-    pred = xy_pred[visible_gt]
-    pred[np.isnan(pred)] = np.inf
-    dist_squared = np.sum((pred - true) ** 2, axis=1)
-    scale_squared = np.product(np.ptp(true, axis=0) + np.spacing(1))
+    scale_squared = np.product(np.ptp(true, axis=0) + np.spacing(1) + margin * 2)
     if np.isclose(scale_squared, 0):
         return np.nan
     k_squared = (2 * sigma) ** 2
-    oks = np.exp(-dist_squared / (2 * scale_squared * k_squared))
-    return np.mean(oks)
+    denom = 2 * scale_squared * k_squared
+    if symmetric_kpts is None:
+        pred = xy_pred[visible_gt]
+        pred[np.isnan(pred)] = np.inf
+        dist_squared = np.sum((pred - true) ** 2, axis=1)
+        oks = np.exp(-dist_squared / denom)
+        return np.mean(oks)
+    else:
+        oks = []
+        xy_preds = [xy_pred]
+        combos = (pair for l in range(len(symmetric_kpts))
+                  for pair in itertools.combinations(symmetric_kpts, l + 1))
+        for pairs in combos:
+            # Swap corresponding keypoints
+            tmp = xy_pred.copy()
+            for pair in pairs:
+                tmp[pair, :] = tmp[pair[::-1], :]
+            xy_preds.append(tmp)
+        for xy_pred in xy_preds:
+            pred = xy_pred[visible_gt]
+            pred[np.isnan(pred)] = np.inf
+            dist_squared = np.sum((pred - true) ** 2, axis=1)
+            oks.append(np.mean(np.exp(-dist_squared / denom)))
+        return max(oks)
 
-
-def match_assemblies(ass_pred, ass_true, sigma):
+def match_assemblies(
+    ass_pred,
+    ass_true,
+    sigma,
+    margin=0,
+    symmetric_kpts=None,
+):
     inds_true = list(range(len(ass_true)))
     inds_pred = np.argsort(
         [ins.affinity if ins.n_links else ins.confidence for ins in ass_pred]
@@ -833,7 +863,11 @@ def match_assemblies(ass_pred, ass_true, sigma):
         oks = []
         for ind_true in inds_true:
             xy_true = ass_true[ind_true].xy
-            oks.append(calc_object_keypoint_similarity(xy_pred, xy_true, sigma))
+            oks.append(
+                calc_object_keypoint_similarity(
+                    xy_pred, xy_true, sigma, margin, symmetric_kpts,
+                )
+            )
         if np.all(np.isnan(oks)):
             continue
         ind_best = np.nanargmax(oks)
@@ -898,6 +932,8 @@ def evaluate_assembly(
     ass_true_dict,
     oks_sigma=0.072,
     oks_thresholds=np.linspace(0.5, 0.95, 10),
+    margin=0,
+    symmetric_kpts=None,
 ):
     # sigma is taken as the median of all COCO keypoint standard deviations
     all_matched = []
@@ -906,7 +942,9 @@ def evaluate_assembly(
         ass_true = ass_true_dict.get(ind)
         if ass_true is None:
             continue
-        matched, unmatched = match_assemblies(ass_pred, ass_true, oks_sigma)
+        matched, unmatched = match_assemblies(
+            ass_pred, ass_true, oks_sigma, margin, symmetric_kpts,
+        )
         all_matched.extend(matched)
         all_unmatched.extend(unmatched)
     if not all_matched:

@@ -422,8 +422,15 @@ Please note that you do **not** get the .h5/csv file you might be used to gettin
 If this does not look good, we recommend extracting and labeling more frames (even from more videos). Try to label close interactions of animals for best performance. Once you label more, you can create a new training set and train.
 
 You can either:
-1. extract more frames from existing or new videos and label as when initially building the training data set, or
-2. extract outlier frames based on the videos you just analyzed. To do this, you first need to analyze a video and convert to tracklets (Step 1 and 2 in the Analyze Video tab of the GUI), then you load the tracklet file into the refine tracklet GUI, and "Save" without making any modifications (or run `deeplabcut.convert_raw_tracks_to_h5(config_path, picklefile)`). That will create the files needed in the Extract Outlier Frames tab of the GUI.
+1. extract more frames manually from existing or new videos and label as when initially building the training data set, or
+2. let DeepLabCut find frames where keypoints were poorly detected and automatically extract those for you. All you need is
+to run:
+```python
+deeplabcut.find_outliers_in_raw_data(config_path, pickle_file, video_file)
+```
+where pickle_file is the `_full.pickle` one obtains after video analysis.
+Flagged frames will be added to your collection of images in the corresponding labeled-data folders for you to label.
+
 
 ### ------------------- ANIMAL ASSEMBLY & TRACKING ACROSS FRAMES -------------------
 
@@ -472,6 +479,12 @@ deeplabcut.convert_detections2tracklets(..., identity_only=True)
 
 
 **Animal assembly and tracking quality** can be assessed via `deeplabcut.utils.make_labeled_video.create_video_from_pickled_tracks`. This function provides an additional diagnostic tool before moving on to refining tracklets.
+
+If animal assemblies do not look pretty, an alternative to the outlier search described above is to pass the
+`_assemblies.pickle` to `find_outliers_in_raw_data` in place of the `_full.pickle`.
+This will focus the outlier search on unusual assemblies (i.e., animal skeletons that were oddly reconstructed). This may be a bit more sensitive with crowded scenes or frames where animals interact closely.
+Note though that at that stage it is likely preferable anyway to carry on with the remaining steps, and extract outliers
+from the final h5 file as was customary in single animal projects.
 
 **Next, tracklets are stitched to form complete tracks with:
 

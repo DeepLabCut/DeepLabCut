@@ -144,7 +144,6 @@ class Create_training_dataset(wx.Panel):
         if config_file.get("multianimalproject", False):
 
             self.model_comparison_choice = "No"
-            print("currently DLCRNet is only supported in multi-animal mode")
         else:
             self.model_comparison_choice = wx.RadioBox(
                 self,

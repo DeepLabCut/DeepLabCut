@@ -738,7 +738,7 @@ class TrackletStitcher:
                 _ = self._finalize_tracks()
 
     def _finalize_tracks(self):
-        residuals = [res for res in sorted(self.residuals, key=len) if len(res) > 2]
+        residuals = [res for res in sorted(self.residuals, key=len) if len(res) > 1]
         # Cycle through the residuals and incorporate back those
         # that only fit in a single tracklet.
         n_attemps = 0

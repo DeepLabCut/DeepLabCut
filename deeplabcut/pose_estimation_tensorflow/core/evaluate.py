@@ -1,10 +1,10 @@
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 
 Please see AUTHORS for contributors.
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
@@ -758,7 +758,7 @@ def evaluate_network(
                     print(
                         "Running ",
                         DLCscorer,
-                        " with # of trainingiterations:",
+                        " with # of training iterations:",
                         trainingsiterations,
                     )
                     (
@@ -778,7 +778,7 @@ def evaluate_network(
                         PredicteData = np.zeros(
                             (Numimages, 3 * len(dlc_cfg["all_joints_names"]))
                         )
-                        print("Analyzing data...")
+                        print("Running evaluation ...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
                             image = imread(
                                 os.path.join(cfg["project_path"], imagename), mode="RGB"
@@ -825,7 +825,7 @@ def evaluate_network(
                         )
 
                         print(
-                            "Done and results stored for snapshot: ",
+                            "Analysis is done and the results are stored (see evaluation-results) for snapshot: ",
                             Snapshots[snapindex],
                         )
                         DataCombined = pd.concat(
@@ -945,10 +945,10 @@ def evaluate_network(
                         "The network is evaluated and the results are stored in the subdirectory 'evaluation_results'."
                     )
                     print(
-                        "If it generalizes well, choose the best model for prediction and update the config file with the appropriate index for the 'snapshotindex'.\nUse the function 'analyze_video' to make predictions on new videos."
+                        "Please check the results, then choose the best model (snapshot) for prediction. You can update the config.yaml file with the appropriate index for the 'snapshotindex'.\nUse the function 'analyze_video' to make predictions on new videos."
                     )
                     print(
-                        "Otherwise consider retraining the network (see DeepLabCut workflow Fig 2)"
+                        "Otherwise, consider adding more labeled-data and retraining the network (see DeepLabCut workflow Fig 2, Nath 2019)"
                     )
 
     # returning to intial folder

@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pytest
 from deeplabcut.refine_training_dataset.stitch import Tracklet, TrackletStitcher
 
@@ -172,6 +173,32 @@ def test_stitcher_real(tmpdir_factory, real_tracklets):
 
     output_name = tmpdir_factory.mktemp("data").join("fake.h5")
     stitcher.write_tracks(output_name, ["mickey", "minnie", "bianca"])
+
+
+def test_stitcher_montblanc(real_tracklets_montblanc):
+    stitcher = TrackletStitcher.from_dict_of_dict(
+        real_tracklets_montblanc, n_tracks=3,
+    )
+    assert len(stitcher) == 5
+    assert all(tracklet.is_continuous for tracklet in stitcher.tracklets)
+    assert all(tracklet.identity == -1 for tracklet in stitcher.tracklets)
+    assert len(stitcher.residuals) == 1
+    assert len(stitcher.residuals[0]) == 2
+    assert stitcher.compute_max_gap(stitcher.tracklets) == 5
+
+    stitcher.build_graph()
+    assert stitcher.G.number_of_edges() == 18
+    weights = [w for *_, w in stitcher.G.edges.data("weight") if w]
+    assert weights == [2453, 24498, 5428]
+
+    stitcher.stitch()
+    assert len(stitcher.tracks) == 3
+    assert all(len(track) >= 176 for track in stitcher.tracks)
+    assert all(0.996 <= track.likelihood <= 1 for track in stitcher.tracks)
+
+    df_gt = pd.read_hdf('tests/data/montblanc_tracks.h5')
+    df = stitcher.format_df()
+    np.testing.assert_equal(df.to_numpy(), df_gt.to_numpy())
 
 
 def test_stitcher_with_identity(real_tracklets):
