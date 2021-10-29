@@ -228,7 +228,9 @@ def evaluate_multianimal_full(
             dlc_cfg["batch_size"] = 1  # due to differently sized images!!!
             stride = dlc_cfg["stride"]
             # Ignore best edges possibly defined during a prior evaluation
-            _ = dlc_cfg.pop("paf_best", None)
+            # unless we're evaluating a new directory
+            if directory is None:
+                _ = dlc_cfg.pop("paf_best", None)
             joints = dlc_cfg["all_joints_names"]
 
             if directory is not None and os.path.isdir(directory):
@@ -574,18 +576,18 @@ def evaluate_multianimal_full(
 
                         tf.compat.v1.reset_default_graph()
 
-                    # Skip data-driven skeleton selection unless
-                    # the model was trained on the full graph.
+                    # Skip data-driven skeleton selection unless the model
+                    # was trained on the full graph or a new folder is evaluated
                     n_multibpts = len(cfg["multianimalbodyparts"])
                     max_n_edges = n_multibpts * (n_multibpts - 1) // 2
                     n_edges = len(dlc_cfg["partaffinityfield_graph"])
-                    if n_edges == max_n_edges:
+                    if n_edges == max_n_edges and directory is None:
                         print("Selecting best skeleton...")
                         n_graphs = 10
                         paf_inds = None
                     else:
                         n_graphs = 1
-                        paf_inds = [list(range(n_edges))]
+                        paf_inds = [dlc_cfg.get('paf_best') or list(range(n_edges))]
                     (
                         results,
                         paf_scores,

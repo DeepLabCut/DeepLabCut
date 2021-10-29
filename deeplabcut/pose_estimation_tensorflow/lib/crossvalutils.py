@@ -321,11 +321,17 @@ def _get_n_best_paf_graphs(
     if which not in ("best", "worst"):
         raise ValueError('`which` must be either "best" or "worst"')
 
-    (within_train, _), (between_train, _) = _calc_within_between_pafs(
+    has_train_inds = bool(metadata["data"]["trainIndices"])
+    vals = _calc_within_between_pafs(
         data,
         metadata,
-        train_set_only=True,
+        train_set_only=has_train_inds,
     )
+    (within_train, within_test), (between_train, _) = vals
+    if not has_train_inds:  # skip graph search on training data
+        edges = list(within_test)
+        return ([edges], dict(zip(edges, [0] * len(edges))))
+
     # Handle unlabeled bodyparts...
     existing_edges = set(k for k, v in within_train.items() if v)
     if ignore_inds is not None:

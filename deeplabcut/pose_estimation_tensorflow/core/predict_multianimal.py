@@ -217,7 +217,7 @@ def predict_batched_peaks_and_costs(
     locrefs *= pose_cfg["locref_stdev"]
     pafs = np.reshape(pafs, (*pafs.shape[:3], -1, 2))
     graph = pose_cfg["partaffinityfield_graph"]
-    limbs = pose_cfg.get("paf_best", np.arange(len(graph)))
+    limbs = pose_cfg.get("paf_best") or np.arange(len(graph))
     graph = [graph[l] for l in limbs]
     preds = compute_peaks_and_costs(
         scmaps,
