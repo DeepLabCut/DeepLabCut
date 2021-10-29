@@ -394,7 +394,7 @@ def create_labeled_video(
 
     keypoints_only: bool, optional
         By default, both video frames and keypoints are visible. If true, only the keypoints are shown. These clips are an hommage to Johansson movies,
-        see https://www.youtube.com/watch?v=1F5ICP9SYLU and of course his seminal paper: "Visual perception of biological motion and a model for its analysis" 
+        see https://www.youtube.com/watch?v=1F5ICP9SYLU and of course his seminal paper: "Visual perception of biological motion and a model for its analysis"
         by Gunnar Johansson in Perception & Psychophysics 1973.
 
     Frames2plot: List of indices
@@ -680,7 +680,6 @@ def proc_video(
             print(e)
 
 
-DEFAULT_FRAME_RATE_WITH_KEYPOINTS_ONLY = 25
 def create_video_with_keypoints_only(
     df,
     output_name,
@@ -692,7 +691,7 @@ def create_video_with_keypoints_only(
     skeleton_color="navy",
     color_by="bodypart",
     colormap="viridis",
-    fps=None,
+    fps=25,
     dpi=200,
     codec="h264",
 ):
@@ -701,9 +700,6 @@ def create_video_with_keypoints_only(
     n_bodyparts = len(bodypart_names)
     nx = int(np.nanmax(df.xs("x", axis=1, level="coords")))
     ny = int(np.nanmax(df.xs("y", axis=1, level="coords")))
-
-    if fps is None:
-        fps = DEFAULT_FRAME_RATE_WITH_KEYPOINTS_ONLY
 
     n_frames = df.shape[0]
     xyp = df.values.reshape((n_frames, -1, 3))
