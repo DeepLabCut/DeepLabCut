@@ -9,10 +9,9 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import os
-
-import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+from skimage.transform import resize
 
 
 def extract_maps(
@@ -267,9 +266,7 @@ def extract_maps(
 
 def resize_to_same_shape(array, array_dest):
     shape_dest = array_dest.shape
-    return cv2.resize(
-        array, (shape_dest[1], shape_dest[0]), interpolation=cv2.INTER_CUBIC
-    )
+    return resize(array, (shape_dest[0], shape_dest[1]))
 
 
 def resize_all_maps(image, scmap, locref, paf):
@@ -367,6 +364,7 @@ def extract_save_all_maps(
     shuffle=1,
     trainingsetindex=0,
     comparisonbodyparts="all",
+    extract_paf=True,
     all_paf_in_one=True,
     gputouse=None,
     rescale=False,
@@ -391,6 +389,10 @@ def extract_save_all_maps(
 
     comparisonbodyparts: list of bodyparts, Default is "all".
         The average error will be computed for those body parts only (Has to be a subset of the body parts).
+
+    extract_paf : bool
+        Extract part affinity fields by default.
+        Note that turning it off will make the function much faster.
 
     all_paf_in_one : bool
         By default, all part affinity fields are displayed on a single frame.
@@ -450,6 +452,8 @@ def extract_save_all_maps(
                     impath,
                     trainingframe,
                 ) = maps[imagenr]
+                if not extract_paf:
+                    paf = None
                 label = "train" if trainingframe else "test"
                 imname = os.path.split(os.path.splitext(impath)[0])[1]
                 scmap, (locref_x, locref_y), paf = resize_all_maps(
