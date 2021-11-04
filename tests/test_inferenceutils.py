@@ -112,7 +112,8 @@ def test_assembly():
     assert ass.data[j2.label, -1] == -1
     assert ass.area == 0
     assert ass.intersection_with(ass) == 1.0
-    assert np.all(np.isnan(ass._dict["data"]))
+    # Original (cached) coordinates must have remained empty
+    assert np.all(np.isnan(ass._dict["data"][:, :2]))
 
     ass.remove_joint(j2)
     assert len(ass) == 1
