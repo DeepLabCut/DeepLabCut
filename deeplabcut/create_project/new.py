@@ -213,6 +213,7 @@ def create_new_project(
         ]
         cfg_file["default_augmenter"] = "multi-animal-imgaug"
         cfg_file["default_net_type"] = "dlcrnet_ms5"
+        cfg_file["default_track_method"] = "ellipse"
     else:
         cfg_file, ruamelFile = auxiliaryfunctions.create_config_template()
         cfg_file["multianimalproject"] = False
