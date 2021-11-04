@@ -358,7 +358,6 @@ def create_labeled_video(
     displaycropped=False,
     color_by="bodypart",
     modelprefix="",
-    track_method="",
 ):
     """
     Labels the bodyparts in a video. Make sure the video is already analyzed by the function 'analyze_video'
@@ -394,7 +393,7 @@ def create_labeled_video(
 
     keypoints_only: bool, optional
         By default, both video frames and keypoints are visible. If true, only the keypoints are shown. These clips are an hommage to Johansson movies,
-        see https://www.youtube.com/watch?v=1F5ICP9SYLU and of course his seminal paper: "Visual perception of biological motion and a model for its analysis" 
+        see https://www.youtube.com/watch?v=1F5ICP9SYLU and of course his seminal paper: "Visual perception of biological motion and a model for its analysis"
         by Gunnar Johansson in Perception & Psychophysics 1973.
 
     Frames2plot: List of indices
@@ -453,6 +452,7 @@ def create_labeled_video(
 
     """
     cfg = auxiliaryfunctions.read_config(config)
+    track_method = cfg.get("default_track_method", "")
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
         cfg, shuffle, trainFraction, modelprefix=modelprefix

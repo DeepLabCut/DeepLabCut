@@ -151,20 +151,6 @@ class Analyze_videos(wx.Panel):
                 1,
             )
 
-            tracker_text = wx.StaticBox(
-                self, label="Specify the Tracker Method (you can try each)"
-            )
-            tracker_text_boxsizer = wx.StaticBoxSizer(tracker_text, wx.VERTICAL)
-            trackertypes = ["skeleton", "box", "ellipse"]
-            self.trackertypes = wx.ComboBox(
-                self, choices=trackertypes, style=wx.CB_READONLY
-            )
-            self.trackertypes.SetValue("ellipse")
-            tracker_text_boxsizer.Add(
-                self.trackertypes, 1,wx.EXPAND | wx.TOP | wx.BOTTOM,1
-            )
-            self.hbox3.Add(tracker_text_boxsizer, 1,  1)
-
             self.overwrite = wx.RadioBox(
                 self,
                 label="Overwrite tracking files (set to yes if you edit inference parameters)",
@@ -418,16 +404,10 @@ class Analyze_videos(wx.Panel):
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             overwrite=overwrite,
-            track_method=self.trackertypes.GetValue(),
             calibrate=self.calibrate.GetStringSelection() == "Yes",
             window_size=self.winsize.GetValue(),
             identity_only=self.identity_toggle.GetStringSelection() == "Yes",
         )
-
-    # def video_tracklets(self,event):
-    #    shuffle = self.shuffle.GetValue()
-    #    trainingsetindex = self.trainingset.GetValue()
-    #    deeplabcut.create_video_from_pickled_tracks(self.filelist, picklefile, pcutoff=0.6)
 
     def select_videos(self, event):
         """

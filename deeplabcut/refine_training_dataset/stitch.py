@@ -975,7 +975,6 @@ def stitch_tracklets(
     prestitch_residuals=True,
     max_gap=None,
     weight_func=None,
-    track_method="ellipse",
     destfolder=None,
     modelprefix="",
     output_name="",
@@ -1042,9 +1041,6 @@ def stitch_tracklets(
         belong to the same track; i.e., the higher the confidence that the
         tracklets should be stitched together, the lower the returned value.
 
-    track_method: str, optional
-        Method used to track animals, either 'box', 'skeleton', or 'ellipse' (default).
-
     destfolder: string, optional
         Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this
         folder also needs to be passed.
@@ -1064,6 +1060,7 @@ def stitch_tracklets(
         return
 
     cfg = read_config(config_path)
+    track_method = cfg.get("default_track_method", "ellipse")
     animal_names = cfg["individuals"]
     if n_tracks is None:
         n_tracks = len(animal_names)

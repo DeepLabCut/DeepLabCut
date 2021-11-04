@@ -79,7 +79,6 @@ def filterpredictions(
     save_as_csv=True,
     destfolder=None,
     modelprefix="",
-    track_method="",
 ):
     """
 
@@ -148,6 +147,7 @@ def filterpredictions(
     Returns filtered pandas array with the same structure as normal output of network.
     """
     cfg = auxiliaryfunctions.read_config(config)
+    track_method = cfg.get("default_track_method", "")
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
         cfg,
         shuffle,

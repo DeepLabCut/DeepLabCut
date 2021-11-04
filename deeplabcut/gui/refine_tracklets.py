@@ -115,24 +115,10 @@ class Refine_tracklets(wx.Panel):
             self.trainingset, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
         )
 
-        tracker_text = wx.StaticBox(
-            self, label="Specify the Tracker Method (you can try each)"
-        )
-        tracker_text_boxsizer = wx.StaticBoxSizer(tracker_text, wx.VERTICAL)
-        trackertypes = ["skeleton", "box", "ellipse"]
-        self.trackertypes = wx.ComboBox(
-            self, choices=trackertypes, style=wx.CB_READONLY
-        )
-        self.trackertypes.SetValue("ellipse")
-        tracker_text_boxsizer.Add(
-            self.trackertypes, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
-        )
-
         hbox_.Add(videotype_text_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         hbox_.Add(shuffle_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         hbox_.Add(trainingset_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         vbox_.Add(hbox_)
-        vbox_.Add(tracker_text_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         sizer.Add(vbox_, pos=(5, 0))
 
         self.create_tracks_btn = wx.Button(self, label="Step1: Create tracks")
@@ -263,13 +249,6 @@ class Refine_tracklets(wx.Panel):
     def filter_after_refinement(self, event):  # why is video type needed?
         shuffle = self.shuffle.GetValue()
         trainingsetindex = self.trainingset.GetValue()
-        method = os.path.splitext(self.datafile)[0]
-        if method.endswith("sk"):
-            tracker = "skeleton"
-        elif method.endswith("bx"):
-            tracker = "box"
-        else:
-            tracker = "ellipse"
         window_length = self.filterlength_track.GetValue()
         if window_length % 2 != 1:
             raise ValueError("Window length should be odd.")
@@ -281,7 +260,6 @@ class Refine_tracklets(wx.Panel):
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             filtertype=self.filter_track.GetValue(),
-            track_method=tracker,
             windowlength=self.filterlength_track.GetValue(),
             save_as_csv=True,
         )
@@ -321,7 +299,6 @@ class Refine_tracklets(wx.Panel):
             shuffle=self.shuffle.GetValue(),
             trainingsetindex=self.trainingset.GetValue(),
             n_tracks=self.ntracks.GetValue(),
-            track_method=self.trackertypes.GetValue(),
         )
 
     def refine_tracklets(self, event):
@@ -330,7 +307,7 @@ class Refine_tracklets(wx.Panel):
             self.shuffle.GetValue(),
             self.cfg["TrainingFraction"][self.trainingset.GetValue()],
         )
-        track_method = self.trackertypes.GetValue()
+        track_method = self.cfg.get("default_track_method", "ellipse")
         if track_method == "ellipse":
             method = "el"
         elif track_method == "box":

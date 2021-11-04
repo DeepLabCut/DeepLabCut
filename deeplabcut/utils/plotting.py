@@ -170,7 +170,6 @@ def plot_trajectories(
     showfigures=False,
     destfolder=None,
     modelprefix="",
-    track_method="",
     imagetype=".png",
     resolution=100,
     linewidth=1.0,
@@ -227,6 +226,7 @@ def plot_trajectories(
 
     """
     cfg = auxiliaryfunctions.read_config(config)
+    track_method = cfg.get("default_track_method", "")
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
         cfg, shuffle, trainFraction, modelprefix=modelprefix

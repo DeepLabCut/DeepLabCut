@@ -181,7 +181,6 @@ def extract_outlier_frames(
     savelabeled=False,
     destfolder=None,
     modelprefix="",
-    track_method="",
 ):
     """
     Extracts the outlier frames in case, the predictions are not correct for a certain video from the cropped video running from
@@ -283,6 +282,7 @@ def extract_outlier_frames(
     )
     if not len(bodyparts):
         raise ValueError("No valid bodyparts were selected.")
+    track_method = cfg.get("default_track_method", "")
 
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
         cfg,

@@ -176,7 +176,6 @@ def analyzeskeleton(
     save_as_csv=False,
     destfolder=None,
     modelprefix="",
-    track_method="",
 ):
     """
     Extracts length and orientation of each "bone" of the skeleton as defined in the config file.
@@ -205,16 +204,13 @@ def analyzeskeleton(
     destfolder: string, optional
         Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this
         folder also needs to be passed.
-
-    track_method: string, optional
-        Specifies the tracker used to generate the data. Empty by default (corresponding to
-        a single animal project). For multiple animals, must be either 'box', 'skeleton', or 'ellipse'.
     """
     # Load config file, scorer and videos
     cfg = auxiliaryfunctions.read_config(config)
     if not cfg["skeleton"]:
         raise ValueError("No skeleton defined in the config.yaml.")
 
+    track_method = cfg.get("default_track_method", "")
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
         cfg,
         shuffle,

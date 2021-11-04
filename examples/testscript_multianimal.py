@@ -144,10 +144,7 @@ if __name__ == "__main__":
 
     print("Convert detections to tracklets...")
     deeplabcut.convert_detections2tracklets(
-        config_path, [new_video_path], "mp4", track_method="box"
-    )
-    deeplabcut.convert_detections2tracklets(
-        config_path, [new_video_path], "mp4", track_method="ellipse"
+        config_path, [new_video_path], "mp4",
     )
     print("Tracklets created...")
 
@@ -160,7 +157,7 @@ if __name__ == "__main__":
 
     print("Plotting trajectories...")
     deeplabcut.plot_trajectories(
-        config_path, [new_video_path], "mp4", track_method="ellipse"
+        config_path, [new_video_path], "mp4",
     )
     print("Trajectory plotted.")
 
@@ -171,19 +168,18 @@ if __name__ == "__main__":
         "mp4",
         save_frames=False,
         color_by="individual",
-        track_method="ellipse",
     )
     print("Labeled video created.")
 
     print("Filtering predictions...")
     deeplabcut.filterpredictions(
-        config_path, [new_video_path], "mp4", track_method="ellipse"
+        config_path, [new_video_path], "mp4",
     )
     print("Predictions filtered.")
     """
     print("Extracting outlier frames...")
     deeplabcut.extract_outlier_frames(
-        config_path, [new_video_path], "mp4", automatic=True, track_method="ellipse"
+        config_path, [new_video_path], "mp4", automatic=True,
     )
     print("Outlier frames extracted.")
     """
