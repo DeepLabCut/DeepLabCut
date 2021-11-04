@@ -55,7 +55,8 @@ def analyze_videos(
     dynamic=(False, 0.5, 10),
     modelprefix="",
     robust_nframes=False,
-    allow_growth=False
+    allow_growth=False,
+    auto_track=True,
 ):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
@@ -120,6 +121,11 @@ def analyze_videos(
     allow_growth: bool, default false.
         For some smaller GPUs the memory issues happen. If true, the memory allocator does not pre-allocate the entire specified
         GPU memory region, instead starting small and growing as needed. See issue: https://forum.image.sc/t/how-to-stop-running-out-of-vram/30551/2
+
+    auto_track: bool, optional (default=True)
+        By default, tracking and stitching are automatically performed, producing the final h5 data file.
+        This is equivalent to the behavior of single-animal projects.
+        If False, one must run `convert_detections2tracklets` and `stitch_tracklets` afterwards.
 
     Examples
     --------
@@ -299,25 +305,25 @@ def analyze_videos(
                     destfolder,
                     robust_nframes=robust_nframes,
                 )
-                # Automatically run assembly+tracking+stitching
-                convert_detections2tracklets(
-                    config,
-                    [video],
-                    videotype,
-                    shuffle,
-                    trainingsetindex,
-                    destfolder=destfolder,
-                    modelprefix=modelprefix,
-                )
-                stitch_tracklets(
-                    config,
-                    [video],
-                    videotype,
-                    shuffle,
-                    trainingsetindex,
-                    destfolder=destfolder,
-                    modelprefix=modelprefix,
-                )
+                if auto_track:
+                    convert_detections2tracklets(
+                        config,
+                        [video],
+                        videotype,
+                        shuffle,
+                        trainingsetindex,
+                        destfolder=destfolder,
+                        modelprefix=modelprefix,
+                    )
+                    stitch_tracklets(
+                        config,
+                        [video],
+                        videotype,
+                        shuffle,
+                        trainingsetindex,
+                        destfolder=destfolder,
+                        modelprefix=modelprefix,
+                    )
         else:
             for video in Videos:
                 DLCscorer = AnalyzeVideo(
