@@ -867,6 +867,10 @@ def match_assemblies(
     margin=0,
     symmetric_kpts=None,
 ):
+    # Only consider assemblies of at least two keypoints
+    ass_pred = [a for a in ass_pred if len(a) > 1]
+    ass_true = [a for a in ass_true if len(a) > 1]
+
     inds_true = list(range(len(ass_true)))
     inds_pred = np.argsort(
         [ins.affinity if ins.n_links else ins.confidence for ins in ass_pred]
