@@ -84,6 +84,7 @@ class Link:
 class Assembly:
     def __init__(self, size):
         self.data = np.full((size, 4), np.nan)
+        self.confidence = 1  # 1 by defaut, overwritten otherwise with `add_joint`
         self._affinity = 0
         self._links = []
         self._visible = set()
@@ -105,6 +106,15 @@ class Assembly:
             assembly.add_link(link)
         return assembly
 
+    @classmethod
+    def from_array(cls, array):
+        n_bpts = array.shape[0]
+        ass = cls(size=n_bpts)
+        ass.data[:, :array.shape[1]] = array
+        nonempty = np.flatnonzero(~np.isnan(array).any(axis=1))
+        ass._visible.update(nonempty)
+        return ass
+
     @property
     def xy(self):
         return self.data[:, :2]
@@ -124,6 +134,10 @@ class Assembly:
     @property
     def confidence(self):
         return np.nanmean(self.data[:, 2])
+
+    @confidence.setter
+    def confidence(self, confidence):
+        self.data[:, 2] = confidence
 
     @property
     def soft_identity(self):
@@ -898,8 +912,7 @@ def _parse_ground_truth_data(data):
         for row in arr:
             if np.isnan(row[:, :2]).all():
                 continue
-            ass = Assembly(row.shape[0])
-            ass.data[:, : row.shape[1]] = row
+            ass = Assembly.from_array(row)
             temp.append(ass)
         if not temp:
             continue
