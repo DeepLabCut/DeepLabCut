@@ -8,11 +8,7 @@ import re
 import scipy.linalg.interpolative as sli
 import warnings
 from collections import defaultdict
-from deeplabcut.utils import (
-    read_config,
-    auxiliaryfunctions,
-    auxfun_multianimal,
-)
+from deeplabcut.utils import auxiliaryfunctions
 from itertools import combinations, cycle
 from networkx.algorithms.flow import preflow_push
 from pathlib import Path
@@ -1059,7 +1055,7 @@ def stitch_tracklets(
         print("No video(s) found. Please check your path!")
         return
 
-    cfg = read_config(config_path)
+    cfg = auxiliaryfunctions.read_config(config_path)
     track_method = cfg.get("default_track_method", "ellipse")
     animal_names = cfg["individuals"]
     if n_tracks is None:
