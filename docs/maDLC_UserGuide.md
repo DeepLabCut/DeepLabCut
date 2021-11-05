@@ -441,13 +441,13 @@ After pose estimation, now you perform assembly and tracking. *NEW* in 2.2 is a 
 ```python
 deeplabcut.analyze_videos(config_path, ['/fullpath/project/videos/'], videotype='.mp4')
 ```
-Note: You do **not** get the .h5/csv file you might be used to getting in standard DLC (this comes next!).
+*NEW* in 2.2.1: `deeplabcut.analyze_videos` has a new argument `auto_track=True`, chaining pose estimation, tracking, and stitching in a single function call with defaults we found to work well. Thus, you'll now get the .h5 file you might be used to getting in standard DLC. If `auto_track=False`, one must run `convert_detections2tracklets` and `stitch_tracklets` manually (see below), granting more control over the last steps of the workflow (ideal for advanced users).
 
-Now that you have detections (which are saved as a pickle file, not h5, btw), we need to assemble and track the animals. This step has several tracker types (`track_method`), and we recommend testing which one works best on your data (but typically we find ellipse is best).
+Now that you have detections (which are saved as a pickle file, not h5, btw), we need to assemble and track the animals. This step has several tracker types (`default_track_method` in the main config.yaml file), and we recommend testing which one works best on your data (but typically we find ellipse is best).
 
 ```python
 deeplabcut.convert_detections2tracklets(config_path, ['videofile_path'], videotype='mp4',
-                                        shuffle=1, trainingsetindex=0, track_method='box/ellipse/skeleton')
+                                        shuffle=1, trainingsetindex=0)
 ```
 You can validate the tracking parameters. Namely, you can iteratively change the parameters, run `convert_detections2tracklets` then load them in the GUI (`refine_tracklets`) if you want to look at the performance. If you want to edit these, you will need to open the `inference_cfg.yaml` file (or click button in GUI). The options are:
 
@@ -489,7 +489,7 @@ from the final h5 file as was customary in single animal projects.
 
 ```python
 deeplabcut.stitch_tracklets(config_path, ['videofile_path'], videotype='mp4',
-                            shuffle=1, trainingsetindex=0, track_method='box/ellipse/skeleton')
+                            shuffle=1, trainingsetindex=0)
 ```
 
 Note that the base signature of the function is identical to `analyze_videos` and `convert_detections2tracklets`.
@@ -532,7 +532,7 @@ Firstly, Here are some tips for scaling up your video analysis, including loopin
 
 You can also filter the predicted bodyparts by:
 ```python
-deeplabcut.filterpredictions(config_path,['/fullpath/project/videos/reachingvideo1.avi'], track_method='box/ellipse/skeleton')
+deeplabcut.filterpredictions(config_path,['/fullpath/project/videos/reachingvideo1.avi'])
 ```
 Note, this creates a file with the ending filtered.h5 that you can use for further analysis. This filtering step has many parameters, so please see the full docstring by typing: ``deeplabcut.filterpredictions?``
 
@@ -545,12 +545,12 @@ Note, this creates a file with the ending filtered.h5 that you can use for furth
 
 Plot the outputs:
 ```python
-deeplabcut.plot_trajectories(config_path,['/fullpath/project/videos/reachingvideo1.avi'],filtered = True, track_method='box/ellipse/skeleton')
+deeplabcut.plot_trajectories(config_path,['/fullpath/project/videos/reachingvideo1.avi'],filtered = True)
 ```
 
 Create videos:
 ```
-deeplabcut.create_labeled_video(config_path, [`/analysis/project/videos/reachingvideo1.avi','/fullpath/project/videos/reachingvideo2.avi'],filtered = True, track_method='box/ellipse/skeleton')
+deeplabcut.create_labeled_video(config_path, [`/analysis/project/videos/reachingvideo1.avi','/fullpath/project/videos/reachingvideo2.avi'],filtered = True)
 ```
 
 (more details [here](functionDetails.md#i-video-analysis-and-plotting-results))
