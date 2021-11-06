@@ -1315,7 +1315,12 @@ def convert_detections2tracklets(
 
     """
     cfg = auxiliaryfunctions.read_config(config)
-    track_method = cfg.get("default_track_method", "ellipse")
+    track_method = cfg.get("default_track_method")
+    if track_method is None:
+        track_method = "ellipse"
+        cfg["default_track_method"] = track_method
+        auxiliaryfunctions.write_config(config, cfg)
+
     if track_method not in ("box", "skeleton", "ellipse"):
         raise ValueError(
             "Invalid tracking method. Only `box`, `skeleton` and `ellipse` are currently supported."
