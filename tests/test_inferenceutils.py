@@ -276,7 +276,7 @@ def test_assembler_calibration(real_assemblies):
     j2 = inferenceutils.Joint(tuple(assembly.xy[1]), label=1)
     link = inferenceutils.Link(j1, j2)
     p = ass.calc_link_probability(link)
-    assert np.isclose(p, 0.990, atol=1e-3)
+    assert np.isclose(p, 0.993, atol=1e-3)
 
 
 def test_find_outlier_assemblies(real_assemblies):
