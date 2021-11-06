@@ -148,5 +148,7 @@ class VideoProcessorCV(VideoProcessor):
         self.svid.write(np.flip(frame, 2))
 
     def close(self):
-        self.svid.release()
-        self.vid.release()
+        if hasattr(self, 'svid') and self.svid is not None:
+            self.svid.release()
+        if hasattr(self, 'vid') and self.vid is not None:
+            self.vid.release()
