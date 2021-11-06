@@ -836,6 +836,7 @@ utilized in place of motion trackers to form tracklets.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">convert_detections2tracklets</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">identity_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
+<p><strong>Note:</strong> If only one individual is to be assembled and tracked, assembly and tracking are skipped, and detections are treated as in single-animal projects; i.e., it is the keypoints with highest confidence that are kept and accumulated over frames to form a single, long tracklet. No action is required from users, this is done automatically.</p>
 <p><strong>Animal assembly and tracking quality</strong> can be assessed via <code class="docutils literal notranslate"><span class="pre">deeplabcut.utils.make_labeled_video.create_video_from_pickled_tracks</span></code>. This function provides an additional diagnostic tool before moving on to refining tracklets.</p>
 <p>If animal assemblies do not look pretty, an alternative to the outlier search described above is to pass the
 <code class="docutils literal notranslate"><span class="pre">_assemblies.pickle</span></code> to <code class="docutils literal notranslate"><span class="pre">find_outliers_in_raw_data</span></code> in place of the <code class="docutils literal notranslate"><span class="pre">_full.pickle</span></code>.
