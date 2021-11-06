@@ -441,7 +441,7 @@ After pose estimation, now you perform assembly and tracking. *NEW* in 2.2 is a 
 ```python
 deeplabcut.analyze_videos(config_path, ['/fullpath/project/videos/'], videotype='.mp4')
 ```
-*NEW* in 2.2.1: `deeplabcut.analyze_videos` has a new argument `auto_track=True`, chaining pose estimation, tracking, and stitching in a single function call with defaults we found to work well. Thus, you'll now get the .h5 file you might be used to getting in standard DLC. If `auto_track=False`, one must run `convert_detections2tracklets` and `stitch_tracklets` manually (see below), granting more control over the last steps of the workflow (ideal for advanced users).
+*NEW* in 2.2.0.3: `deeplabcut.analyze_videos` has a new argument `auto_track=True`, chaining pose estimation, tracking, and stitching in a single function call with defaults we found to work well. Thus, you'll now get the .h5 file you might be used to getting in standard DLC. If `auto_track=False`, one must run `convert_detections2tracklets` and `stitch_tracklets` manually (see below), granting more control over the last steps of the workflow (ideal for advanced users).
 
 Now that you have detections (which are saved as a pickle file, not h5, btw), we need to assemble and track the animals. This step has several tracker types (`default_track_method` in the main config.yaml file), and we recommend testing which one works best on your data (but typically we find ellipse is best).
 
