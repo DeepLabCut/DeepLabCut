@@ -162,15 +162,18 @@ def compute_peaks_and_costs(
     n_samples, _, _, n_channels = np.shape(scmaps)
     n_bodyparts = n_channels - n_id_channels
     pos = calc_peak_locations(locrefs, peak_inds_in_batch, stride, n_decimals)
-    costs = compute_edge_costs(
-        pafs,
-        peak_inds_in_batch,
-        graph,
-        paf_inds,
-        n_bodyparts,
-        n_points,
-        n_decimals,
-    )
+    if graph:
+        costs = compute_edge_costs(
+            pafs,
+            peak_inds_in_batch,
+            graph,
+            paf_inds,
+            n_bodyparts,
+            n_points,
+            n_decimals,
+        )
+    else:
+        costs = None
     s, r, c, b = peak_inds_in_batch.T
     prob = np.round(scmaps[s, r, c, b], n_decimals).reshape((-1, 1))
     if n_id_channels:
@@ -189,7 +192,9 @@ def compute_peaks_and_costs(
             p.append(prob[idx])
             if n_id_channels:
                 id_.append(ids[idx])
-        dict_ = {"coordinates": (xy,), "confidence": p, "costs": costs[i]}
+        dict_ = {"coordinates": (xy,), "confidence": p}
+        if costs is not None:
+            dict_["costs"] = costs[i]
         if n_id_channels:
             dict_["identity"] = id_
         peaks_and_costs.append(dict_)
@@ -207,7 +212,7 @@ def predict_batched_peaks_and_costs(
     n_points=10,
     n_decimals=3,
 ):
-    scmaps, locrefs, pafs, peaks = sess.run(
+    scmaps, locrefs, *pafs, peaks = sess.run(
         outputs, feed_dict={inputs: images_batch}
     )
     if ~np.any(peaks):
@@ -215,7 +220,10 @@ def predict_batched_peaks_and_costs(
 
     locrefs = np.reshape(locrefs, (*locrefs.shape[:3], -1, 2))
     locrefs *= pose_cfg["locref_stdev"]
-    pafs = np.reshape(pafs, (*pafs.shape[:3], -1, 2))
+    if pafs:
+        pafs = np.reshape(pafs[0], (*pafs[0].shape[:3], -1, 2))
+    else:
+        pafs = None
     graph = pose_cfg["partaffinityfield_graph"]
     limbs = pose_cfg.get("paf_best", np.arange(len(graph)))
     graph = [graph[l] for l in limbs]
@@ -231,7 +239,7 @@ def predict_batched_peaks_and_costs(
         n_points,
         n_decimals,
     )
-    if peaks_gt is not None:
+    if peaks_gt is not None and graph:
         costs_gt = compute_edge_costs(
             pafs,
             peaks_gt,

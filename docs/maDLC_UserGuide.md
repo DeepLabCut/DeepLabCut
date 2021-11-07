@@ -352,8 +352,9 @@ strengths of DeepLabCut is that due to the probabilistic output of the scoremap,
 reliably report if a body part is visible in a given frame. (see discussions of finger tips in reaching and the Drosophila
 legs during 3D behavior in [Mathis et al, 2018]). The evaluation results are computed by typing:
 
-Setting ``plotting`` to true plots all the testing and training frames with the manual and predicted labels. The user
-should visually check the labeled test (and training) images that are created in the ‘evaluation-results’ directory.
+Setting ``plotting`` to True plots all the testing and training frames with the manual and predicted labels; these will
+be colored by body part type by default. They can alternatively be colored by individual by passing `plotting`=`individual`.
+The user should visually check the labeled test (and training) images that are created in the ‘evaluation-results’ directory.
 Ideally, DeepLabCut labeled unseen (test images) according to the user’s required accuracy, and the average train
 and test errors are comparable (good generalization). What (numerically) comprises an acceptable MAE depends on
 many factors (including the size of the tracked body parts, the labeling variability, etc.). Note that the test error can
@@ -476,14 +477,18 @@ To use this ID information, simply pass:
 deeplabcut.convert_detections2tracklets(..., identity_only=True)
 ```
 
+**Note:** If only one individual is to be assembled and tracked, assembly and tracking are skipped, and detections are treated as in single-animal projects; i.e., it is the keypoints with highest confidence that are kept and accumulated over frames to form a single, long tracklet. No action is required from users, this is done automatically.
+
 
 **Animal assembly and tracking quality** can be assessed via `deeplabcut.utils.make_labeled_video.create_video_from_pickled_tracks`. This function provides an additional diagnostic tool before moving on to refining tracklets.
+
 
 If animal assemblies do not look pretty, an alternative to the outlier search described above is to pass the
 `_assemblies.pickle` to `find_outliers_in_raw_data` in place of the `_full.pickle`.
 This will focus the outlier search on unusual assemblies (i.e., animal skeletons that were oddly reconstructed). This may be a bit more sensitive with crowded scenes or frames where animals interact closely.
 Note though that at that stage it is likely preferable anyway to carry on with the remaining steps, and extract outliers
 from the final h5 file as was customary in single animal projects.
+
 
 **Next, tracklets are stitched to form complete tracks with:
 

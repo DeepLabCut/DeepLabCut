@@ -18,6 +18,7 @@ import os.path
 import pickle
 import re
 import time
+import warnings
 from pathlib import Path
 
 import cv2
@@ -1326,6 +1327,10 @@ def convert_detections2tracklets(
             "Invalid tracking method. Only `box`, `skeleton` and `ellipse` are currently supported."
         )
 
+    if len(cfg["multianimalbodyparts"]) == 1 and track_method != "box":
+        warnings.warn("Switching to `box` tracker for single point tracking...")
+        track_method = "box"
+
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     start_path = os.getcwd()  # record cwd to return to this directory in the end
 
@@ -1500,31 +1505,39 @@ def convert_detections2tracklets(
                         _single[imindex] = single_detection
                     tracklets["single"].update(_single)
 
-                keep = set(multi_bpts).difference(ignore_bodyparts or [])
-                keep_inds = sorted(multi_bpts.index(bpt) for bpt in keep)
-                for index, imname in tqdm(enumerate(imnames)):
-                    assemblies = ass.assemblies.get(index)
-                    if assemblies is None:
-                        continue
-                    animals = np.stack([ass.data for ass in assemblies])
-                    if not identity_only:
-                        if track_method == "box":
-                            bboxes = trackingutils.calc_bboxes_from_keypoints(
-                                animals[:, keep_inds], inferencecfg["boundingboxslack"], offset=0
-                            )  # TODO: get cropping parameters and utilize!
-                            trackers = mot_tracker.update(bboxes)
+                if inferencecfg["topktoretain"] == 1:
+                    tracklets[0] = {}
+                    for index, imname in tqdm(enumerate(imnames)):
+                        assemblies = ass.assemblies.get(index)
+                        if assemblies is None:
+                            continue
+                        tracklets[0][imname] = assemblies[0].data
+                else:
+                    keep = set(multi_bpts).difference(ignore_bodyparts or [])
+                    keep_inds = sorted(multi_bpts.index(bpt) for bpt in keep)
+                    for index, imname in tqdm(enumerate(imnames)):
+                        assemblies = ass.assemblies.get(index)
+                        if assemblies is None:
+                            continue
+                        animals = np.stack([ass.data for ass in assemblies])
+                        if not identity_only:
+                            if track_method == "box":
+                                bboxes = trackingutils.calc_bboxes_from_keypoints(
+                                    animals[:, keep_inds], inferencecfg["boundingboxslack"],
+                                )  # TODO: get cropping parameters and utilize!
+                                trackers = mot_tracker.update(bboxes)
+                            else:
+                                xy = animals[:, keep_inds, :2]
+                                trackers = mot_tracker.track(xy)
                         else:
-                            xy = animals[:, keep_inds, :2]
-                            trackers = mot_tracker.track(xy)
-                    else:
-                        # Optimal identity assignment based on soft voting
-                        mat = np.zeros((len(assemblies), inferencecfg["topktoretain"]))
-                        for nrow, assembly in enumerate(assemblies):
-                            for k, v in assembly.soft_identity.items():
-                                mat[nrow, k] = v
-                        inds = linear_sum_assignment(mat, maximize=True)
-                        trackers = np.c_[inds][:, ::-1]
-                    trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
+                            # Optimal identity assignment based on soft voting
+                            mat = np.zeros((len(assemblies), inferencecfg["topktoretain"]))
+                            for nrow, assembly in enumerate(assemblies):
+                                for k, v in assembly.soft_identity.items():
+                                    mat[nrow, k] = v
+                            inds = linear_sum_assignment(mat, maximize=True)
+                            trackers = np.c_[inds][:, ::-1]
+                        trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
 
                 tracklets["header"] = pdindex
                 with open(trackname, "wb") as f:

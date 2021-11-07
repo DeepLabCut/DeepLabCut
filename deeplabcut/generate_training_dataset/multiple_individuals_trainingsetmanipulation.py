@@ -205,7 +205,7 @@ def create_multianimaltraining_dataset(
             num_layers = 50
         net_type = "resnet_{}".format(num_layers)
         multi_stage = True
-        
+
     dataset_type = "multi-animal-imgaug"
     (
         individuals,
@@ -230,7 +230,8 @@ def create_multianimaltraining_dataset(
 
 
     print("Utilizing the following graph:", partaffinityfield_graph)
-    partaffinityfield_predict = True
+    # Disable the prediction of PAFs if the graph is empty
+    partaffinityfield_predict = bool(partaffinityfield_graph)
 
     # Loading the encoder (if necessary downloading from TF)
     dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()

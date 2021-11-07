@@ -599,6 +599,7 @@ def proc_video(
                 if bodyparts2connect:
                     all_bpts = df.columns.get_level_values("bodyparts")[::3]
                     inds = get_segment_indices(bodyparts2connect, all_bpts)
+                clip = vp(fname=video, fps=outputframerate)
                 create_video_with_keypoints_only(
                     df,
                     videooutname,
@@ -609,7 +610,9 @@ def proc_video(
                     skeleton_color=skeleton_color,
                     color_by=color_by,
                     colormap=cfg["colormap"],
+                    fps=clip.fps(),
                 )
+                clip.close()
             elif not fastmode:
                 tmpfolder = os.path.join(str(videofolder), "temp-" + vname)
                 if save_frames:
@@ -640,6 +643,7 @@ def proc_video(
                     displaycropped,
                     color_by,
                 )
+                clip.close()
             else:
                 if displaycropped:  # then the cropped video + the labels is depicted
                     clip = vp(
