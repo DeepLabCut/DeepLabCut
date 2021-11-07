@@ -622,6 +622,15 @@ class Assembler:
         if not any(i in bag for i in range(self.n_multibodyparts)):
             return None, unique
 
+        if self.n_multibodyparts == 1:
+            assemblies = []
+            for joint in bag[0]:
+                if joint.confidence >= self.pcutoff:
+                    ass = Assembly(self.n_multibodyparts)
+                    ass.add_joint(joint)
+                    assemblies.append(ass)
+            return assemblies, unique
+
         if self.max_n_individuals == 1:
             get_attr = operator.attrgetter("confidence")
             ass = Assembly(self.n_multibodyparts)

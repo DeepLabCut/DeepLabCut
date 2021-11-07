@@ -18,6 +18,7 @@ import os.path
 import pickle
 import re
 import time
+import warnings
 from pathlib import Path
 
 import cv2
@@ -1297,6 +1298,10 @@ def convert_detections2tracklets(
         )
 
     cfg = auxiliaryfunctions.read_config(config)
+    if len(cfg["multianimalbodyparts"]) == 1 and track_method != "box":
+        warnings.warn("Switching to `box` tracker for single point tracking...")
+        track_method = "box"
+
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     start_path = os.getcwd()  # record cwd to return to this directory in the end
 
@@ -1489,7 +1494,7 @@ def convert_detections2tracklets(
                         if not identity_only:
                             if track_method == "box":
                                 bboxes = trackingutils.calc_bboxes_from_keypoints(
-                                    animals[:, keep_inds], inferencecfg["boundingboxslack"], offset=0
+                                    animals[:, keep_inds], inferencecfg["boundingboxslack"],
                                 )  # TODO: get cropping parameters and utilize!
                                 trackers = mot_tracker.update(bboxes)
                             else:
