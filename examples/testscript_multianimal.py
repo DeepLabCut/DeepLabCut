@@ -2,8 +2,8 @@ import os
 import deeplabcut
 import numpy as np
 import pandas as pd
+import shutil
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
-from deeplabcut.refine_training_dataset.tracklets import convert_raw_tracks_to_h5
 
 
 if __name__ == "__main__":
@@ -11,8 +11,12 @@ if __name__ == "__main__":
     SCORER = "dlc_team"
     NUM_FRAMES = 5
     TRAIN_SIZE = 0.8
-    NET = "resnet_50"
-    # NET = "efficientnet-b0"
+    # NET = "dlcr101_ms5"
+    NET = "dlcrnet_ms5"
+    #NET = "resnet_152"
+    #NET = "efficientnet-b0"
+    #NET = "mobilenet_v2_0.35" # should be fixed
+
     N_ITER = 5
 
     basepath = os.path.dirname(os.path.realpath(__file__))
@@ -29,7 +33,13 @@ if __name__ == "__main__":
 
     print("Editing config...")
     cfg = auxiliaryfunctions.edit_config(
-        config_path, {"numframes2pick": NUM_FRAMES, "TrainingFraction": [TRAIN_SIZE]}
+        config_path,
+        {
+            "numframes2pick": NUM_FRAMES,
+            "TrainingFraction": [TRAIN_SIZE],
+            "identity": True,
+            "uniquebodyparts": ['corner1', 'corner2'],
+        }
     )
     print("Config edited.")
 
@@ -66,7 +76,7 @@ if __name__ == "__main__":
         for image in auxiliaryfunctions.grab_files_in_folder(image_folder, "png")
     ]
     fake_data = np.tile(
-        np.repeat(50 * np.arange(len(animals_id)) + 100, 2), (len(index), 1)
+        np.repeat(50 * np.arange(len(animals_id)) + 50, 2), (len(index), 1)
     )
     df = pd.DataFrame(fake_data, index=index, columns=columns)
     output_path = os.path.join(image_folder, f"CollectedData_{SCORER}.csv")
@@ -76,27 +86,25 @@ if __name__ == "__main__":
     )
     print("Artificial data created.")
 
-    print("Cropping and exchanging")
-    deeplabcut.cropimagesandlabels(config_path, userfeedback=False)
-
     print("Checking labels...")
     deeplabcut.check_labels(config_path, draw_skeleton=False)
     print("Labels checked.")
 
     print("Creating train dataset...")
-    deeplabcut.create_multianimaltraining_dataset(config_path, net_type=NET)
+    deeplabcut.create_multianimaltraining_dataset(config_path, net_type=NET, crop_size=(200, 200))
     print("Train dataset created.")
 
     print("Editing pose config...")
     model_folder = auxiliaryfunctions.GetModelFolder(
         TRAIN_SIZE, 1, cfg, cfg["project_path"]
     )
-    pose_config_path = os.path.join(model_folder, "train/pose_cfg.yaml")
+    pose_config_path = os.path.join(model_folder, "train", "pose_cfg.yaml")
     edits = {
         "global_scale": 0.5,
         "batch_size": 1,
         "save_iters": N_ITER,
         "display_iters": N_ITER // 2,
+        "crop_size": [200, 200],
         # "multi_step": [[0.001, N_ITER]],
     }
     deeplabcut.auxiliaryfunctions.edit_config(pose_config_path, edits)
@@ -108,11 +116,11 @@ if __name__ == "__main__":
 
     print("Evaluating network...")
     deeplabcut.evaluate_network(config_path, plotting=True)
-    deeplabcut.evaluate_multianimal_crossvalidate(
-        config_path, n_iter=8, init_points=3
-    )  # parameters so it is fast
 
     print("Network evaluated....")
+
+    print("Extracting maps...")
+    deeplabcut.extract_save_all_maps(config_path, Indices=[0, 1, 2])
 
     new_video_path = deeplabcut.ShortenVideo(
         video_path,
@@ -123,87 +131,36 @@ if __name__ == "__main__":
     )
 
     print("Analyzing video...")
-    deeplabcut.analyze_videos(config_path, [new_video_path], "mp4", robust_nframes=True)
+    deeplabcut.analyze_videos(config_path, [new_video_path], "mp4", robust_nframes=True,allow_growth=True)
+
     print("Video analyzed.")
 
     print("Create video with all detections...")
     scorer, _ = auxiliaryfunctions.GetScorerName(cfg, 1, TRAIN_SIZE)
-    deeplabcut.create_video_with_all_detections(config_path, [new_video_path], scorer)
+    deeplabcut.create_video_with_all_detections(
+        config_path, [new_video_path], shuffle=1, displayedbodyparts=["bodypart1"]
+    )
     print("Video created.")
 
-    edgewisecondition = True
     print("Convert detections to tracklets...")
     deeplabcut.convert_detections2tracklets(
-        config_path,
-        [new_video_path],
-        "mp4",
-        track_method="box",
-        edgewisecondition=edgewisecondition,
-    )
-    deeplabcut.convert_detections2tracklets(
-        config_path, [new_video_path], "mp4", track_method="skeleton"
+        config_path, [new_video_path], "mp4", track_method="box"
     )
     deeplabcut.convert_detections2tracklets(
         config_path, [new_video_path], "mp4", track_method="ellipse"
     )
     print("Tracklets created...")
 
-    print("Extracting maps...")
-    deeplabcut.extract_save_all_maps(config_path, Indices=[0, 1, 2])
-
-    print("Analyzing video...")
-    deeplabcut.analyze_videos(config_path, [new_video_path], "mp4", save_as_csv=True)
-    print("Video analyzed.")
-
-    print("Create video with all detections...")
-    scorer, _ = auxiliaryfunctions.GetScorerName(cfg, 1, TRAIN_SIZE)
-    deeplabcut.create_video_with_all_detections(
-        config_path, [new_video_path], scorer, displayedbodyparts=["bodypart1"]
+    deeplabcut.stitch_tracklets(
+        config_path,
+        [new_video_path],
+        "mp4",
+        output_name=os.path.splitext(new_video_path)[0] + scorer + "_el.h5",
     )
-    print("Video created.")
-
-    print("Create data file...")
-    picklefile = os.path.splitext(new_video_path)[0] + scorer + "_sk.pickle"
-    try:
-        convert_raw_tracks_to_h5(config_path, picklefile)
-        convert_raw_tracks_to_h5(config_path, picklefile.replace("_sk.pi", "_bx.pi"))
-
-    except IOError:
-        print("Empty tracklets properly caught! Using fake data rather...")
-        temp = pd.read_hdf(os.path.join(image_folder, f"CollectedData_{SCORER}.h5"))
-        # Need to add the 'likelihood' level value to simulate analyzed data
-        # Ugliest hack in the history of pandas
-        columns = (
-            temp.columns.to_series()
-            .unstack([0, 1, 2])
-            .append(pd.Series(None, name="likelihood"))
-            .unstack()
-            .index
-        )
-        data = np.ones((temp.shape[0], temp.shape[1] // 2 * 3))
-        data.reshape((data.shape[0], -1, 3))[:, :, :2] = temp.values.reshape(
-            (temp.shape[0], -1, 2)
-        )
-        df = pd.DataFrame(data, columns=columns)
-        df.to_hdf(
-            picklefile.replace("pickle", "h5"),
-            "df_with_missing",
-            format="table",
-            mode="w",
-        )
-        df.to_hdf(
-            picklefile.replace("sk", "bx").replace("pickle", "h5"),
-            "df_with_missing",
-            format="table",
-            mode="w",
-        )
 
     print("Plotting trajectories...")
     deeplabcut.plot_trajectories(
-        config_path, [new_video_path], "mp4", track_method="box"
-    )
-    deeplabcut.plot_trajectories(
-        config_path, [new_video_path], "mp4", track_method="skeleton"
+        config_path, [new_video_path], "mp4", track_method="ellipse"
     )
     print("Trajectory plotted.")
 
@@ -214,28 +171,37 @@ if __name__ == "__main__":
         "mp4",
         save_frames=False,
         color_by="individual",
-        track_method="box",
-    )
-    deeplabcut.create_labeled_video(
-        config_path,
-        [new_video_path],
-        "mp4",
-        save_frames=False,
-        color_by="bodypart",
-        track_method="skeleton",
+        track_method="ellipse",
     )
     print("Labeled video created.")
 
     print("Filtering predictions...")
     deeplabcut.filterpredictions(
-        config_path, [new_video_path], "mp4", track_method="box"
+        config_path, [new_video_path], "mp4", track_method="ellipse"
     )
     print("Predictions filtered.")
-
+    """
     print("Extracting outlier frames...")
     deeplabcut.extract_outlier_frames(
-        config_path, [new_video_path], "mp4", automatic=True, track_method="box"
+        config_path, [new_video_path], "mp4", automatic=True, track_method="ellipse"
     )
     print("Outlier frames extracted.")
+    """
+
+    print("Export model...")
+    deeplabcut.export_model(config_path, shuffle=1, make_tar=False)
+
+    print("Merging datasets...")
+    trainIndices, testIndices = deeplabcut.mergeandsplit(
+        config_path, trainindex=0, uniform=True
+    )
+
+    print("Creating two identical splits...")
+    deeplabcut.create_multianimaltraining_dataset(
+        config_path,
+        Shuffles=[4, 5],
+        trainIndices=[trainIndices, trainIndices],
+        testIndices=[testIndices, testIndices],
+    )
 
     print("ALL DONE!!! - default multianimal cases are functional.")

@@ -13,6 +13,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from deeplabcut.generate_training_dataset import trainingsetmanipulation
 from deeplabcut.utils import auxiliaryfunctions
 import warnings
 
@@ -40,7 +41,7 @@ def convertannotationdata_fromwindows2unixstyle(
     """
     cfg = auxiliaryfunctions.read_config(config)
     folders = [
-        Path(config).parent / "labeled-data" / Path(vid).stem
+        Path(config).parent / "labeled-data" / trainingsetmanipulation._robust_path_split(vid)[1]
         for vid in cfg["video_sets"]
     ]
 
@@ -54,7 +55,7 @@ def convertannotationdata_fromwindows2unixstyle(
         if askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha":
             fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"])
             if os.path.exists(fn + ".h5"):
-                Data = pd.read_hdf(fn + ".h5", "df_with_missing")
+                Data = pd.read_hdf(fn + ".h5")
                 if win2linux:
                     convertpaths_to_unixstyle(Data, fn)
                 else:
@@ -170,8 +171,12 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4"):
     deeplabcut.analyze_videos_converth5_to_csv('/media/alex/experimentaldata/cheetahvideos','.mp4')
 
     """
-    h5_files = list(auxiliaryfunctions.grab_files_in_folder(video_folder, "h5", relative=False))
-    videos = auxiliaryfunctions.grab_files_in_folder(video_folder, videotype, relative=False)
+    h5_files = list(
+        auxiliaryfunctions.grab_files_in_folder(video_folder, "h5", relative=False)
+    )
+    videos = auxiliaryfunctions.grab_files_in_folder(
+        video_folder, videotype, relative=False
+    )
     for video in videos:
         if "_labeled" in video:
             continue
@@ -182,7 +187,7 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4"):
                 if "DLC" in scorer or "DeepCut" in scorer:
                     print("Found output file for scorer:", scorer)
                     print(f"Converting {file}...")
-                    df = pd.read_hdf(file, "df_with_missing")
+                    df = pd.read_hdf(file)
                     df.to_csv(file.replace(".h5", ".csv"))
     print("All pose files were converted.")
 
@@ -194,19 +199,15 @@ def merge_windowsannotationdataONlinuxsystem(cfg):
 
     AnnotationData = []
     data_path = Path(cfg["project_path"], "labeled-data")
-    use_cropped = cfg.get("croppedtraining", False)
     annotationfolders = []
     for elem in auxiliaryfunctions.grab_files_in_folder(data_path, relative=False):
-        if os.path.isdir(elem) and (
-            (use_cropped and elem.endswith("_cropped"))
-            or not (use_cropped or "_cropped" in elem)
-        ):
+        if os.path.isdir(elem):
             annotationfolders.append(elem)
     print("The following folders were found:", annotationfolders)
     for folder in annotationfolders:
         filename = os.path.join(folder, "CollectedData_" + cfg["scorer"] + ".h5")
         try:
-            data = pd.read_hdf(filename, "df_with_missing")
+            data = pd.read_hdf(filename)
             AnnotationData.append(data)
         except FileNotFoundError:
             print(filename, " not found (perhaps not annotated)")

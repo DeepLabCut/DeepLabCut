@@ -9,10 +9,9 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import os
-
-import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+from skimage.transform import resize
 
 
 def extract_maps(
@@ -54,27 +53,21 @@ def extract_maps(
 
     """
     from deeplabcut.utils.auxfun_videos import imread, imresize
-    from deeplabcut.pose_estimation_tensorflow.nnet import predict
-    from deeplabcut.pose_estimation_tensorflow.nnet import (
+    from deeplabcut.pose_estimation_tensorflow.core import (
+        predict,
         predict_multianimal as predictma,
     )
     from deeplabcut.pose_estimation_tensorflow.config import load_config
-    from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import data_to_input
+    from deeplabcut.pose_estimation_tensorflow.datasets.utils import data_to_input
     from deeplabcut.utils import auxiliaryfunctions
     from tqdm import tqdm
     import tensorflow as tf
-
-    vers = (tf.__version__).split(".")
-    if int(vers[0]) == 1 and int(vers[1]) > 12:
-        TF = tf.compat.v1
-    else:
-        TF = tf
 
     import pandas as pd
     from pathlib import Path
     import numpy as np
 
-    TF.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  #
     #    tf.logging.set_verbosity(tf.logging.WARN)
 
@@ -105,8 +98,7 @@ def extract_maps(
             cfg["project_path"],
             str(trainingsetfolder),
             "CollectedData_" + cfg["scorer"] + ".h5",
-        ),
-        "df_with_missing",
+        )
     )
 
     # Make folder for evaluation
@@ -249,6 +241,7 @@ def extract_maps(
                     scmap, locref = predict.extract_cnn_output(outputs_np, dlc_cfg)
                     paf = None
                     pagraph = []
+                peaks = outputs_np[-1]
 
                 if imageindex in testIndices:
                     trainingfram = False
@@ -260,6 +253,7 @@ def extract_maps(
                     scmap,
                     locref,
                     paf,
+                    peaks,
                     bptnames,
                     pagraph,
                     imagename,
@@ -272,9 +266,7 @@ def extract_maps(
 
 def resize_to_same_shape(array, array_dest):
     shape_dest = array_dest.shape
-    return cv2.resize(
-        array, (shape_dest[1], shape_dest[0]), interpolation=cv2.INTER_CUBIC
-    )
+    return resize(array, (shape_dest[0], shape_dest[1]))
 
 
 def resize_all_maps(image, scmap, locref, paf):
@@ -372,6 +364,7 @@ def extract_save_all_maps(
     shuffle=1,
     trainingsetindex=0,
     comparisonbodyparts="all",
+    extract_paf=True,
     all_paf_in_one=True,
     gputouse=None,
     rescale=False,
@@ -396,6 +389,10 @@ def extract_save_all_maps(
 
     comparisonbodyparts: list of bodyparts, Default is "all".
         The average error will be computed for those body parts only (Has to be a subset of the body parts).
+
+    extract_paf : bool
+        Extract part affinity fields by default.
+        Note that turning it off will make the function much faster.
 
     all_paf_in_one : bool
         By default, all part affinity fields are displayed on a single frame.
@@ -449,11 +446,14 @@ def extract_save_all_maps(
                     scmap,
                     locref,
                     paf,
+                    peaks,
                     bptnames,
                     pafgraph,
                     impath,
                     trainingframe,
                 ) = maps[imagenr]
+                if not extract_paf:
+                    paf = None
                 label = "train" if trainingframe else "test"
                 imname = os.path.split(os.path.splitext(impath)[0])[1]
                 scmap, (locref_x, locref_y), paf = resize_all_maps(
@@ -468,11 +468,11 @@ def extract_save_all_maps(
                         list_of_inds.append(
                             [(2 * n, 2 * n + 1), (bptnames[edge[0]], bptnames[edge[1]])]
                         )
-                if len(to_plot)>1:
+                if len(to_plot) > 1:
                     map_ = scmap[:, :, to_plot].sum(axis=2)
                     locref_x_ = locref_x[:, :, to_plot].sum(axis=2)
                     locref_y_ = locref_y[:, :, to_plot].sum(axis=2)
-                elif len(to_plot)==1 and len(bptnames)>1:
+                elif len(to_plot) == 1 and len(bptnames) > 1:
                     map_ = scmap[:, :, to_plot]
                     locref_x_ = locref_x[:, :, to_plot]
                     locref_y_ = locref_y[:, :, to_plot]

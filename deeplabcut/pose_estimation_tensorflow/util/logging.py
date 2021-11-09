@@ -10,7 +10,7 @@ def setup_logging():
     FORMAT = "%(asctime)-15s %(message)s"
     logging.basicConfig(
         filename=os.path.join("log.txt"),
-        filemode="w",
+        filemode="a",
         datefmt="%Y-%m-%d %H:%M:%S",
         level=logging.INFO,
         format=FORMAT,

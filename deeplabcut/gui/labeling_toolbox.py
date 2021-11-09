@@ -58,7 +58,9 @@ class ImagePanel(BasePanel):
                     if self.sourceCam is None:
                         sourceCam = [
                             otherCam for otherCam in cams if cam not in otherCam
-                        ][0] #WHY?
+                        ][
+                            0
+                        ]  # WHY?
                     else:
                         sourceCam = self.sourceCam
 
@@ -80,12 +82,13 @@ class ImagePanel(BasePanel):
 
             try:
                 dataFrame = pd.read_hdf(
-                    os.path.join(sourceCam_path, "CollectedData_" + scorer + ".h5"),
-                    "df_with_missing",
+                    os.path.join(sourceCam_path, "CollectedData_" + scorer + ".h5")
                 )
                 dataFrame.sort_index(inplace=True)
             except IOError:
-                print("source camera images have not yet been labeled, or you have opened this folder in the wrong mode!")
+                print(
+                    "source camera images have not yet been labeled, or you have opened this folder in the wrong mode!"
+                )
                 return None, None, None
 
             # Find offset terms for drawing epipolar Lines
@@ -136,9 +139,7 @@ class ImagePanel(BasePanel):
             return None, None, None
 
     def drawEpLines(self, drawImage, lines, sourcePts, offsets, colorIndex, cmap):
-        drawImage = cv2.cvtColor(drawImage, cv2.COLOR_BGR2RGB)
         height, width, depth = drawImage.shape
-        labelNum = 0
         for line, pt, cIdx in zip(lines, sourcePts, colorIndex):
             if pt[0] > -1000:
                 coeffs = line[0]
@@ -162,13 +163,13 @@ class ImagePanel(BasePanel):
         xlim = self.axes.get_xlim()
         ylim = self.axes.get_ylim()
         self.axes.clear()
-
+        # convert the image to RGB as you are showing the image with matplotlib
         im = cv2.imread(img)[..., ::-1]
         colorIndex = np.linspace(np.max(im), np.min(im), len(bodyparts))
         # draw epipolar lines
         epLines, sourcePts, offsets = self.retrieveData_and_computeEpLines(img, itr)
         if epLines is not None:
-            im = self.drawEpLines(im, epLines, sourcePts, offsets, colorIndex, cmap)
+            im = self.drawEpLines(im.copy(), epLines, sourcePts, offsets, colorIndex, cmap)
         ax = self.axes.imshow(im, cmap=cmap)
         self.orig_xlim = self.axes.get_xlim()
         self.orig_ylim = self.axes.get_ylim()
@@ -177,7 +178,7 @@ class ImagePanel(BasePanel):
         cbar = self.figure.colorbar(
             ax, cax=cax, spacing="proportional", ticks=colorIndex
         )
-        cbar.set_ticklabels(bodyparts[::-1])
+        cbar.set_ticklabels(bodyparts)
         self.axes.set_title(str(str(itr) + "/" + str(len(index) - 1) + " " + img_name))
         if keep_view:
             self.axes.set_xlim(xlim)
@@ -242,7 +243,7 @@ class ScrollPanel(SP.ScrolledPanel):
 class MainFrame(BaseFrame):
     def __init__(self, parent, config, imtypes, config3d, sourceCam):
         super(MainFrame, self).__init__(
-            "DeepLabCut2.0 - Labeling ToolBox", parent, imtypes,
+            "DeepLabCut2.0 - Labeling ToolBox", parent, imtypes
         )
 
         self.statusbar.SetStatusText(
@@ -371,9 +372,7 @@ class MainFrame(BaseFrame):
             inv = self.axes.transData.inverted()
             pos_rel = list(inv.transform(pos_abs))
             y1, y2 = self.axes.get_ylim()
-            pos_rel[1] = (
-                y1 - pos_rel[1] + y2
-            )  # Recall y-axis is inverted
+            pos_rel[1] = y1 - pos_rel[1] + y2  # Recall y-axis is inverted
             i = np.nanargmin(
                 [self.calc_distance(*dp.point.center, *pos_rel) for dp in self.drs]
             )
@@ -553,7 +552,7 @@ class MainFrame(BaseFrame):
         """
         This function is to create a hotkey to skip up on the radio button panel.
         """
-        if self.rdb.GetSelection() < len(self.bodyparts) - 1:
+        if self.rdb.GetSelection() > 0:
             self.rdb.SetSelection(self.rdb.GetSelection() - 1)
 
     def browseDir(self, event):
@@ -620,8 +619,7 @@ class MainFrame(BaseFrame):
         # Reading the existing dataset,if already present
         try:
             self.dataFrame = pd.read_hdf(
-                os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5"),
-                "df_with_missing",
+                os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5")
             )
             self.dataFrame.sort_index(inplace=True)
             self.prev.Enable(True)
@@ -894,9 +892,7 @@ class MainFrame(BaseFrame):
                 )
             ]
             self.axes.add_patch(circle[0])
-            self.dr = auxfun_drag.DraggablePoint(
-                circle[0], self.bodyparts[bpindex]
-            )
+            self.dr = auxfun_drag.DraggablePoint(circle[0], self.bodyparts[bpindex])
             self.dr.connect()
             self.dr.coords = MainFrame.getLabels(self, self.iter)[bpindex]
             self.drs.append(self.dr)
@@ -952,7 +948,6 @@ class MainFrame(BaseFrame):
             self.canvas.mpl_connect("button_release_event", self.onButtonRelease)
         else:
             self.slider.Enable(False)
-
 
 
 def show(config, config3d, sourceCam, imtypes=["*.png"]):

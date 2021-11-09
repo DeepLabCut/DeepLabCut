@@ -63,8 +63,23 @@ def create_new_project(
     from datetime import datetime as dt
     from deeplabcut.utils import auxiliaryfunctions
 
+    months_3letter = {
+        1: "Jan",
+        2: "Feb",
+        3: "Mar",
+        4: "Apr",
+        5: "May",
+        6: "Jun",
+        7: "Jul",
+        8: "Aug",
+        9: "Sep",
+        10: "Oct",
+        11: "Nov",
+        12: "Dec",
+    }
+
     date = dt.today()
-    month = date.strftime("%B")
+    month = months_3letter[date.month]
     day = date.day
     d = str(month[0:3] + str(day))
     date = dt.today().strftime("%Y-%m-%d")
@@ -139,11 +154,16 @@ def create_new_project(
                 src = str(src)
                 dst = str(dst)
                 os.symlink(src, dst)
+                print("Created the symlink of {} to {}".format(src, dst))
             except OSError:
-                import subprocess
-
-                subprocess.check_call("mklink %s %s" % (dst, src), shell=True)
-            print("Created the symlink of {} to {}".format(src, dst))
+                try:
+                    import subprocess
+                    subprocess.check_call("mklink %s %s" % (dst, src), shell=True)
+                except OSError:
+                    print("Symlink creation impossible (exFat architecture?): "
+                          "cutting/pasting the video instead.")
+                    shutil.move(os.fspath(src), os.fspath(dst))
+                    print("{} moved to {}".format(src, dst))
             videos = destinations
 
     if copy_videos == True:
@@ -181,6 +201,7 @@ def create_new_project(
     if multianimal:  # parameters specific to multianimal project
         cfg_file, ruamelFile = auxiliaryfunctions.create_config_template(multianimal)
         cfg_file["multianimalproject"] = multianimal
+        cfg_file["identity"] = False
         cfg_file["individuals"] = ["individual1", "individual2", "individual3"]
         cfg_file["multianimalbodyparts"] = ["bodypart1", "bodypart2", "bodypart3"]
         cfg_file["uniquebodyparts"] = []
@@ -191,13 +212,14 @@ def create_new_project(
             ["bodypart1", "bodypart3"],
         ]
         cfg_file["default_augmenter"] = "multi-animal-imgaug"
+        cfg_file["default_net_type"] = "dlcrnet_ms5"
     else:
         cfg_file, ruamelFile = auxiliaryfunctions.create_config_template()
         cfg_file["multianimalproject"] = False
         cfg_file["bodyparts"] = ["bodypart1", "bodypart2", "bodypart3", "objectA"]
         cfg_file["skeleton"] = [["bodypart1", "bodypart2"], ["objectA", "bodypart3"]]
         cfg_file["default_augmenter"] = "default"
-    cfg_file["croppedtraining"] = False
+        cfg_file["default_net_type"] = "resnet_50"
 
     # common parameters:
     cfg_file["Task"] = project
@@ -211,7 +233,6 @@ def create_new_project(
     cfg_file["numframes2pick"] = 20
     cfg_file["TrainingFraction"] = [0.95]
     cfg_file["iteration"] = 0
-    cfg_file["default_net_type"] = "resnet_50"
     cfg_file["snapshotindex"] = -1
     cfg_file["x1"] = 0
     cfg_file["x2"] = 640
@@ -228,7 +249,7 @@ def create_new_project(
     cfg_file["pcutoff"] = 0.6
     cfg_file["dotsize"] = 12  # for plots size of dots
     cfg_file["alphavalue"] = 0.7  # for plots transparency of markers
-    cfg_file["colormap"] = "plasma"  # for plots type of colormap
+    cfg_file["colormap"] = "rainbow"  # for plots type of colormap
 
     projconfigfile = os.path.join(str(project_path), "config.yaml")
     # Write dictionary to yaml  config file

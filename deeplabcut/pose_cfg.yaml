@@ -26,13 +26,32 @@ global_scale: 0.8
 dataset_type: imgaug
 batch_size: 1
 
+# Probability with which the augmenters will be applied to input images
+# Note some augmentations have their own probability (e.g. claheratio/rotratio/...)
+apply_prob: 0.5
+
+# Resize images prior to augmentation
+pre_resize: []  # Specify [width, height] if pre-resizing is desired
+
+# Smart, on-the-fly image cropping, replacing deeplabcut.cropimagesandlabels
+crop_size: [400, 400]  # width, height
+max_shift: 0.4  # Maximum relative shift of the position of the crop center
+crop_sampling: hybrid  # Sample crop centers either uniformly over the image or based on keypoint neighbor density, at random
+
+# Other crop_sampling variants:
+#- uniform -- spatially uniform sampling of crops (over the image)
+#- keypoints -- keypoint based sampling of crops (over the image)
+#- density -- keypoint based sampling of crops biasing towards regions with more keypoints (over the image)
+#- hybrid -- 50% density and 50% uniform
+
+
 #Data loaders, i.e. with additional data augmentation options (as of 2.0.9+):
 #default with be with no extra dataloaders. Other options: 'tensorpack, deterministic'
 #types of datasets, see factory: deeplabcut/pose_estimation_tensorflow/dataset/factory.py
 #For deterministic, see https://github.com/AlexEMG/DeepLabCut/pull/324
 #For tensorpack, see https://github.com/AlexEMG/DeepLabCut/pull/409
 
-#what is the fraction of training samples with cropping? (used for scalecrop, )
+#what is the fraction of training samples with cropping? (used for scalecrop)
 cropratio: 0.4
 # see below for cropping variables for tensorpack and scalecrop (these need to be set in pose_cfg.yaml per model)
 # for imagaug strengh is modulated by crop_by
@@ -49,6 +68,29 @@ scale_jitter_up: 1.25
 # Randomly flips an image horizontally to augment training data
 mirror: False #imgaug & tensorpack do not consider mirror symmetric joints now,
 #i.e. left hand and right hand are not swapped
+
+# Functions from augmenters.contrast
+# set True to use with default parameters, otherwise give a dictionary for keyword arguments
+# If no ratio value is given, set to 0.4 by default
+
+# Functions from augmenters.convolve,
+# set True to use with default parameters, otherwise give a dictionary for keyword arguments
+# If no ratio value is given, set to 0.4 by default
+
+# contrast:
+clahe: True
+claheratio: 0.1
+histeq: True
+histeqratio: 0.1
+#
+# convolution:
+sharpen: False
+sharpenratio: 0.3
+edge: False
+emboss:
+   alpha: [0.0, 1.0]
+   strength: [0.5, 1.5]
+   embossratio: 0.1
 
 ##############################################################################
 #### Augmentation type: scalecrop + tensorpack variables
@@ -78,8 +120,9 @@ mirror: False #imgaug & tensorpack do not consider mirror symmetric joints now,
 ##############################################################################
 
 # NOTE: as of DLC 2.1 these are defined when creating the training set!
-# Type of the CNN to use, currently resnets + mobilenets are supported (see docs)
+# Type of the CNN to use, currently resnets + mobilenets + efficientnets + our dlcrnet are supported (see docs)
 net_type: resnet_50
+multi_stage: false
 #init_weights: ./snapshot-5000
 
 

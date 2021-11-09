@@ -71,9 +71,7 @@ def label_frames(
     os.chdir(str(wd))
     cfg = auxiliaryfunctions.read_config(config)
     if cfg.get("multianimalproject", False) or multiple_individualsGUI:
-        from deeplabcut.gui import (
-            multiple_individuals_labeling_toolbox,
-        )
+        from deeplabcut.gui import multiple_individuals_labeling_toolbox
 
         multiple_individuals_labeling_toolbox.show(config, config3d, sourceCam)
     else:
@@ -142,10 +140,10 @@ class Label_frames(wx.Panel):
         self.check.Bind(wx.EVT_BUTTON, self.check_labelF)
         self.check.Enable(True)
 
-        self.build = wx.Button(self, label="Build skeleton")
-        sizer.Add(self.build, pos=(4, 3), flag=wx.BOTTOM | wx.RIGHT, border=10)
-        self.build.Bind(wx.EVT_BUTTON, self.build_skeleton)
-        self.build.Enable(True)
+        # self.build = wx.Button(self, label="Build skeleton")
+        # sizer.Add(self.build, pos=(4, 3), flag=wx.BOTTOM | wx.RIGHT, border=10)
+        # self.build.Bind(wx.EVT_BUTTON, self.build_skeleton)
+        # self.build.Enable(True)
 
         self.cfg = auxiliaryfunctions.read_config(self.config)
         if self.cfg.get("multianimalproject", False):
@@ -201,8 +199,8 @@ class Label_frames(wx.Panel):
         result = dlg.ShowModal()
         check_labels(self.config, visualizeindividuals=True)
 
-    def build_skeleton(self, event):
-        skeleton.SkeletonBuilder(self.config)
+    # def build_skeleton(self, event):
+    #    skeleton.SkeletonBuilder(self.config)
 
     def select_config(self, event):
         """

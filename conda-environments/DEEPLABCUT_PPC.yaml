@@ -1,0 +1,31 @@
+name: DEEPLABCUT_PPC
+channels:
+  - https://public.dhe.ibm.com/ibmdl/export/pub/software/server/ibm-ai/conda/
+  - powerai
+  - defaults
+  - conda-forge
+  - hcc
+dependencies:
+  - ffmpeg
+  - jupyter
+  - nb_conda
+  - matplotlib
+  - moviepy
+  - networkx
+  - numba
+  - opencv
+  - pandas>=1.0.1
+  - patsy
+  - Pillow>=7.1
+  - pip
+  - pyyaml
+  - python=3.7
+  - pytables
+  - scikit-image>=0.17,<=0.18.1
+  - scikit-learn
+  - scipy>=1.4
+  - statsmodels>=0.11
+  - tensorflow>=2.0
+  - tensorpack
+  - tf_slim
+  - tqdm

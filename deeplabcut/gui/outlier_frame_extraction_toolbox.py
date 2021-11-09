@@ -80,7 +80,7 @@ class MainFrame(BaseFrame):
         self, parent, config, video, shuffle, Dataframe, savelabeled, multianimal
     ):
         super(MainFrame, self).__init__(
-            "DeepLabCut2.0 - Manual Outlier Frame Extraction", parent,
+            "DeepLabCut2.0 - Manual Outlier Frame Extraction", parent
         )
 
         ###################################################################################################################################################
@@ -101,7 +101,7 @@ class MainFrame(BaseFrame):
         topSplitter = wx.SplitterWindow(self)
         vSplitter = wx.SplitterWindow(topSplitter)
 
-        self.image_panel = ImagePanel(vSplitter, self.gui_size)
+        self.image_panel = ImagePanel(vSplitter, config, self.gui_size)
         self.choice_panel = ScrollPanel(vSplitter)
 
         vSplitter.SplitVertically(
@@ -383,7 +383,7 @@ class MainFrame(BaseFrame):
             io.imsave(img_name, frame)
             if self.savelabeled:
                 self.figure.savefig(labeled_img_name, bbox_inches="tight")
-            Data = pd.read_hdf(self.machinefile, "df_with_missing")
+            Data = pd.read_hdf(self.machinefile)
             DataCombined = pd.concat([Data, DF])
             DataCombined = DataCombined[~DataCombined.index.duplicated(keep="first")]
             DataCombined.to_hdf(self.machinefile, key="df_with_missing", mode="w")

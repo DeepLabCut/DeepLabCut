@@ -1,5 +1,5 @@
 """
-DeepLabCut2.0 Toolbox (deeplabcut.org)
+DeepLabCut2.2 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
 https://github.com/DeepLabCut/DeepLabCut
 Please see AUTHORS for contributors.
@@ -86,12 +86,13 @@ class ImagePanel(BasePanel):
 
             try:
                 dataFrame = pd.read_hdf(
-                    os.path.join(sourceCam_path, "CollectedData_" + scorer + ".h5"),
-                    "df_with_missing",
+                    os.path.join(sourceCam_path, "CollectedData_" + scorer + ".h5")
                 )
                 dataFrame.sort_index(inplace=True)
             except IOError:
-                print("source camera images have not yet been labeled, or you have opened this folder in the wrong mode!")
+                print(
+                    "source camera images have not yet been labeled, or you have opened this folder in the wrong mode!"
+                )
                 return None, None, None
 
             # Find offset terms for drawing epipolar Lines
@@ -142,7 +143,6 @@ class ImagePanel(BasePanel):
             return None, None, None
 
     def drawEpLines(self, drawImage, lines, sourcePts, offsets, colorIndex, cmap):
-        drawImage = cv2.cvtColor(drawImage, cv2.COLOR_BGR2RGB)
         height, width, depth = drawImage.shape
         for line, pt, cIdx in zip(lines, sourcePts, colorIndex):
             if pt[0] > -1000:
@@ -167,7 +167,6 @@ class ImagePanel(BasePanel):
         xlim = self.axes.get_xlim()
         ylim = self.axes.get_ylim()
         self.axes.clear()
-        #        im = cv2.imread(img)
         # convert the image to RGB as you are showing the image with matplotlib
         im = cv2.imread(img)[..., ::-1]
         colorIndex = []
@@ -177,8 +176,7 @@ class ImagePanel(BasePanel):
         # draw epipolar lines
         epLines, sourcePts, offsets = self.retrieveData_and_computeEpLines(img, itr)
         if epLines is not None:
-            im = self.drawEpLines(im, epLines, sourcePts, offsets, colorIndex, cmap)
-
+            im = self.drawEpLines(im.copy(), epLines, sourcePts, offsets, colorIndex, cmap)
         ax = self.axes.imshow(im, cmap=cmap)
         self.orig_xlim = self.axes.get_xlim()
         self.orig_ylim = self.axes.get_ylim()
@@ -284,7 +282,7 @@ class ScrollPanel(SP.ScrolledPanel):
 class MainFrame(BaseFrame):
     def __init__(self, parent, config, config3d, sourceCam):
         super(MainFrame, self).__init__(
-            "DeepLabCut2.0 - Multiple Individuals Labeling ToolBox", parent,
+            "DeepLabCut 2.2 - Multiple Individuals Labeling", parent
         )
 
         self.statusbar.SetStatusText(
@@ -416,9 +414,7 @@ class MainFrame(BaseFrame):
             inv = self.axes.transData.inverted()
             pos_rel = list(inv.transform(pos_abs))
             y1, y2 = self.axes.get_ylim()
-            pos_rel[1] = (
-                y1 - pos_rel[1] + y2
-            )  # Recall y-axis is inverted
+            pos_rel[1] = y1 - pos_rel[1] + y2  # Recall y-axis is inverted
             i = np.nanargmin(
                 [self.calc_distance(*dp.point.center, *pos_rel) for dp in self.drs]
             )
@@ -708,7 +704,7 @@ class MainFrame(BaseFrame):
         """
         This function is to create a hotkey to skip up on the radio button panel.
         """
-        if self.rdb.GetSelection() < len(self.multibodyparts) - 1:
+        if self.rdb.GetSelection() > 0:
             self.rdb.SetSelection(self.rdb.GetSelection() - 1)
 
     def browseDir(self, event):
@@ -758,7 +754,8 @@ class MainFrame(BaseFrame):
             self.Close(True)
 
         self.uniquebodyparts = uniquebodyparts
-        self.individual_names = individuals
+        self.individual_names_ = individuals
+        self.individual_names = self.individual_names_.copy()
 
         self.videos = self.cfg["video_sets"].keys()
         self.markerSize = self.cfg["dotsize"]
@@ -790,8 +787,7 @@ class MainFrame(BaseFrame):
         # Reading the existing dataset,if already present
         try:
             self.dataFrame = pd.read_hdf(
-                os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5"),
-                "df_with_missing",
+                os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5")
             )
             # Handle data previously labeled on a different platform
             sep = "/" if "/" in self.dataFrame.index[0] else "\\"
@@ -861,9 +857,30 @@ class MainFrame(BaseFrame):
             missing_frames = set(old_imgs).difference(self.relativeimagenames)
             self.dataFrame.drop(missing_frames, inplace=True)
 
-        # Check whether new labels were added
+        # Check whether new individuals or body parts were added
+        old_animals = self.dataFrame.columns.get_level_values("individuals").unique()
+        self.new_animals = [x for x in self.individual_names if x not in old_animals]
         self.new_multi = [x for x in self.multibodyparts if x not in self._old_multi]
         self.new_unique = [x for x in self.uniquebodyparts if x not in self._old_unique]
+
+        if self.new_animals:
+            dlg = wx.MessageDialog(
+                None,
+                "New individual found in the config file. Do you want to see all the other ones?",
+                "New individual found",
+                wx.YES_NO | wx.ICON_WARNING,
+            )
+            result = dlg.ShowModal()
+            if result == wx.ID_NO:
+                self.individual_names = self.new_animals
+            self.dataFrame = MainFrame.create_dataframe(
+                self,
+                self.dataFrame,
+                self.relativeimagenames,
+                self.new_animals,
+                self._old_unique,
+                self._old_multi,
+            )
 
         # Checking if user added a new label
         if not any([self.new_multi, self.new_unique]):  # i.e. no new labels
@@ -901,7 +918,7 @@ class MainFrame(BaseFrame):
                 self,
                 self.dataFrame,
                 self.relativeimagenames,
-                self.individual_names,
+                self.dataFrame.columns.get_level_values("individuals").unique(),
                 self.new_unique,
                 self.new_multi,
             )
@@ -1179,6 +1196,8 @@ class MainFrame(BaseFrame):
         self.updatedCoords = []
         for j, ind in enumerate(self.individual_names):
             idcolor = self.idmap(j)
+            if ind not in self.dataFrame.columns.get_level_values(1):
+                continue
             if ind == "single":
                 for c, bp in enumerate(self.uniquebodyparts):
                     image_points = [
@@ -1207,9 +1226,7 @@ class MainFrame(BaseFrame):
                     )
                     self.axes.add_patch(circle)
                     self.dr = auxfun_drag.DraggablePoint(
-                        circle,
-                        self.uniquebodyparts[c],
-                        individual_names=ind,
+                        circle, self.uniquebodyparts[c], individual_names=ind
                     )
                     self.dr.connect()
                     self.dr.coords = image_points
@@ -1245,9 +1262,7 @@ class MainFrame(BaseFrame):
                     )
                     self.axes.add_patch(circle)
                     self.dr = auxfun_drag.DraggablePoint(
-                        circle,
-                        self.multibodyparts[c],
-                        individual_names=ind,
+                        circle, self.multibodyparts[c], individual_names=ind
                     )
                     self.dr.connect()
                     self.dr.coords = image_points
@@ -1265,12 +1280,15 @@ class MainFrame(BaseFrame):
         """
 
         for idx, bp in enumerate(self.updatedCoords):
-            self.dataFrame.loc[self.relativeimagenames[self.iter]][
-                self.scorer, bp[-1][2], bp[0][-1], "x"
-            ] = bp[-1][0]
-            self.dataFrame.loc[self.relativeimagenames[self.iter]][
-                self.scorer, bp[-1][2], bp[0][-1], "y"
-            ] = bp[-1][1]
+
+            x, y, ind = bp[-1][:3]
+            bpt = bp[0][-1]
+            self.dataFrame.loc[
+                self.relativeimagenames[self.iter], (self.scorer, ind, bpt, "x")
+            ] = x
+            self.dataFrame.loc[
+                self.relativeimagenames[self.iter], (self.scorer, ind, bpt, "y")
+            ] = y
 
     def saveDataSet(self, event):
         """
@@ -1291,7 +1309,7 @@ class MainFrame(BaseFrame):
         self.dataFrame = self.dataFrame.loc[:, valid]
         # Re-organize the dataframe so the CSV looks consistent with the config
         self.dataFrame = self.dataFrame.reindex(
-            columns=self.individual_names, level="individuals"
+            columns=self.individual_names_, level="individuals"
         ).reindex(columns=config_bpts, level="bodyparts")
         self.dataFrame.to_csv(
             os.path.join(self.dir, "CollectedData_" + self.scorer + ".csv")

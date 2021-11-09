@@ -42,10 +42,9 @@ if __name__ == "__main__":
     dfolder = basepath
 
     dfolder = None
-    net_type = "resnet_50"  #'mobilenet_v2_0.35' #'resnet_50'
-
-    # net_type = "mobilenet_v2_0.35"
-    # net_type = "efficientnet-b0"  # to -b6
+    net_type = "resnet_50"  
+    #net_type = "mobilenet_v2_0.35"
+    #net_type = "efficientnet-b0"  # to -b6
 
     augmenter_type = "default"  # = imgaug!!
     augmenter_type2 = "scalecrop"
@@ -72,8 +71,8 @@ if __name__ == "__main__":
     deeplabcut.auxiliaryfunctions.write_config(path_config_file, cfg)
 
     print("EXTRACTING FRAMES")
-    deeplabcut.extract_frames(path_config_file, mode="automatic", userfeedback=False)
-
+    deeplabcut.extract_frames(path_config_file, mode="automatic", userfeedback=False) 
+        
     print("CREATING-SOME LABELS FOR THE FRAMES")
     frames = os.listdir(os.path.join(cfg["project_path"], "labeled-data", videoname))
     # As this next step is manual, we update the labels by putting them on the diagonal (fixed for all frames)
@@ -316,6 +315,7 @@ if __name__ == "__main__":
         save_as_csv=True,
         destfolder=dfolder,
         cropping=[0, 50, 0, 50],
+        allow_growth=True
     )
 
     print("Extracting skeleton distances, filter and plot filtered output")

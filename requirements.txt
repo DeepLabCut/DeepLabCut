@@ -1,34 +1,29 @@
-python-dateutil
 ipython
-ipython-genutils
-wheel
-certifi
-chardet
-click
-cython
 filterpy
 h5py
 ruamel.yaml>=0.15.0
 intel-openmp ; platform_machine == "x86_64"
-imgaug ; platform_machine == "x86_64"
-numba==0.51.1 ; platform_machine == "x86_64"
-numba ; platform_machine == "ppc64le"
-matplotlib>=3.1.*
+imgaug==0.4.0 ; platform_machine == "x86_64"
+jupyter-book>=0.7.0b
+numba
+matplotlib
 networkx
-numpy~=1.17.3 ; platform_machine == "x86_64"
-numpy ; platform_machine == "ppc64le"
-opencv-python-headless~=3.4.9.33 ; platform_machine == "x86_64"
+numpy
+opencv-python-headless ; platform_machine == "x86_64"
+opencv ; platform_machine == "ppc64le"
 pandas>=1.0.1
 patsy
 pyyaml
 setuptools
-scikit-image>=0.17
+scikit-image>=0.17,<=0.18.1
 scikit-learn
 scipy>=1.4
 six
 statsmodels>=0.11
+tensorflow>=2.0
 tables
-tensorpack==0.9.8
+tensorpack
+tf_slim
 tqdm
-moviepy<=1.0.1
-bayesian-optimization
+moviepy
+Pillow>=7.1

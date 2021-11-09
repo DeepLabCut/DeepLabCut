@@ -1,0 +1,32 @@
+format: jb-book
+root: docs/intro
+parts:
+- caption: Main Documentation
+  chapters:
+  - file: docs/README
+  - file: docs/UseOverviewGuide
+  - file: docs/installation
+  - file: docs/docker
+  - file: docs/standardDeepLabCut_UserGuide
+  - file: docs/maDLC_UserGuide
+  - file: docs/PROJECT_GUI
+  - file: docs/Overviewof3D
+- caption: Tutorials
+  chapters:
+  - file: docs/tutorial
+  - file: docs/convert_maDLC
+  - file: docs/HelperFunctions
+- caption: Recipes
+  chapters:
+  - file: docs/recipes/installTips
+  - file: docs/recipes/io
+  - file: docs/recipes/nn
+  - file: docs/recipes/post
+  - file: docs/recipes/BatchProcessing
+  - file: docs/recipes/TechHardware
+  - file: docs/recipes/DLCMethods
+- caption: Mission & Contribute
+  chapters:
+  - file: docs/MISSION_AND_VALUES
+  - file: docs/roadmap
+  - file: docs/Governance

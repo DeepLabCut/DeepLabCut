@@ -9,10 +9,11 @@ Licensed under GNU Lesser General Public License v3.0
 """
 import os
 import pickle
+import warnings
 from pathlib import Path
-
 import numpy as np
 import pandas as pd
+import ruamel.yaml.representer
 import yaml
 from ruamel.yaml import YAML
 
@@ -28,6 +29,7 @@ def create_config_template(multianimal=False):
         scorer:
         date:
         multianimalproject:
+        identity:
         \n
     # Project path (change when moving around)
         project_path:
@@ -60,7 +62,6 @@ def create_config_template(multianimal=False):
         \n
     # Cropping Parameters (for analysis and outlier frame detection)
         cropping:
-        croppedtraining:
     #if cropping is true for analysis, then set the values here:
         x1:
         x2:
@@ -78,6 +79,7 @@ def create_config_template(multianimal=False):
         scorer:
         date:
         multianimalproject:
+        identity:
         \n
     # Project path (change when moving around)
         project_path:
@@ -107,7 +109,6 @@ def create_config_template(multianimal=False):
         \n
     # Cropping Parameters (for analysis and outlier frame detection)
         cropping:
-        croppedtraining:
     #if cropping is true for analysis, then set the values here:
         x1:
         x2:
@@ -237,7 +238,16 @@ def edit_config(configname, edits, output_name=""):
         cfg[key] = value
     if not output_name:
         output_name = configname
-    write_plainconfig(output_name, cfg)
+    try:
+        write_plainconfig(output_name, cfg)
+    except ruamel.yaml.representer.RepresenterError:
+        warnings.warn(
+            "Some edits could not be written. "
+            "The configuration file will be left unchanged."
+        )
+        for key in edits:
+            cfg.pop(key)
+        write_plainconfig(output_name, cfg)
     return cfg
 
 
@@ -281,7 +291,7 @@ def attempttomakefolder(foldername, recursive=False):
         )  # https://github.com/AlexEMG/DeepLabCut/issues/105 (windows)
 
     if os.path.isdir(foldername):
-        print(foldername, " already exists!")
+        pass
     else:
         if recursive:
             os.makedirs(foldername)
@@ -470,10 +480,10 @@ def GetEvaluationFolder(trainFraction, shuffle, cfg, modelprefix=""):
     Task = cfg["Task"]
     date = cfg["date"]
     iterate = "iteration-" + str(cfg["iteration"])
-    if 'eval_prefix' in cfg:
-        eval_prefix = cfg['eval_prefix']+'/'
+    if "eval_prefix" in cfg:
+        eval_prefix = cfg["eval_prefix"] + "/"
     else:
-        eval_prefix = 'evaluation-results'+'/'
+        eval_prefix = "evaluation-results" + "/"
     return Path(
         modelprefix,
         eval_prefix
@@ -497,11 +507,14 @@ def get_deeplabcut_path():
 
 def IntersectionofBodyPartsandOnesGivenbyUser(cfg, comparisonbodyparts):
     """ Returns all body parts when comparisonbodyparts=='all', otherwise all bpts that are in the intersection of comparisonbodyparts and the actual bodyparts """
-    allbpts = cfg["bodyparts"]
-    if "MULTI" in allbpts:
+    # if "MULTI!" in allbpts:
+    if cfg["multianimalproject"]:
         allbpts = cfg["multianimalbodyparts"] + cfg["uniquebodyparts"]
+    else:
+        allbpts = cfg["bodyparts"]
+
     if comparisonbodyparts == "all":
-        return allbpts
+        return list(allbpts)
     else:  # take only items in list that are actually bodyparts...
         cpbpts = []
         # Ensure same order as in config.yaml
@@ -566,10 +579,12 @@ def GetScorerName(
             "pose_cfg.yaml",
         )
     )
-    if (
-        "resnet" in dlc_cfg["net_type"]
-    ):  # ABBREVIATE NETWORK NAMES -- esp. for mobilenet!
-        netname = dlc_cfg["net_type"].replace(" _", "")
+    # ABBREVIATE NETWORK NAMES -- esp. for mobilenet!
+    if "resnet" in dlc_cfg["net_type"]:
+        if dlc_cfg.get("multi_stage", False):
+            netname = "dlcrnetms5"
+        else:
+            netname = dlc_cfg["net_type"].replace("_", "")
     elif "mobilenet" in dlc_cfg["net_type"]:  # mobilenet >> mobnet_100; mobnet_35 etc.
         netname = "mobnet_" + str(int(float(dlc_cfg["net_type"].split("_")[-1]) * 100))
     elif "efficientnet" in dlc_cfg["net_type"]:
@@ -708,7 +723,7 @@ def find_analyzed_data(folder, videoname, scorer, filtered=False, track_method="
         tracker = "_sk"
     elif track_method == "box":
         tracker = "_bx"
-    elif track_method == 'ellipse':
+    elif track_method == "ellipse":
         tracker = "_el"
     else:
         tracker = ""
@@ -764,8 +779,8 @@ def load_detection_data(video, scorer, track_method):
         tracker = "sk"
     elif track_method == "box":
         tracker = "bx"
-    elif track_method == 'ellipse':
-        tracker = 'el'
+    elif track_method == "ellipse":
+        tracker = "el"
     else:
         raise ValueError(f"Unrecognized track_method={track_method}")
 

@@ -81,9 +81,9 @@ deeplabcut.export_model
 
 ### New! Model Export function:
 
-This function allows you to export a well-trained model for real-time applications, etc. 
+This function allows you to export a well-trained single animal model for real-time applications, etc. This function is part of [Kane et al, 2020 eLife](https://elifesciences.org/articles/61909). Please see the paper and related code-base on how to use this utility.
 
-- One such example use case is with the [Bonsai-DeepLabCut](https://github.com/bonsai-rx/deeplabcut) plug in. Namely, you need to first export your trained model from DLC, then follow the instructions for Bonsai-specific use.
+- Another example use case is with the [Bonsai-DeepLabCut](https://github.com/bonsai-rx/deeplabcut) plug in. Namely, you need to first export your trained model from DLC, then follow the instructions for Bonsai-specific use.
 
 ```python
 deeplabcut.export_model(cfg_path, iteration=None, shuffle=1, trainingsetindex=0, snapshotindex=None, TFGPUinference=True, overwrite=False, make_tar=True)

@@ -23,7 +23,7 @@ media_path = os.path.join(deeplabcut.__path__[0], "gui", "media")
 logo = os.path.join(media_path, "logo.png")
 
 
-# DownSampleVideo(vname,width=-1,height=200,outsuffix='downsampled',outpath=None,rotateccw=False):
+# DownSampleVideo(vname,width=-1,height=200,outsuffix='downsampled',outpath=None,rotatecw=False):
 
 
 class Video_Editing(wx.Panel):
@@ -103,7 +103,7 @@ class Video_Editing(wx.Panel):
             self,
             label="Downsample: rotate video?",
             choices=["Yes", "No", "Arbitrary"],
-            #majorDimension=0,
+            # majorDimension=0,
             style=wx.RA_SPECIFY_COLS,
         )
         self.rotate.SetSelection(1)
@@ -120,7 +120,9 @@ class Video_Editing(wx.Panel):
         )
         angle = wx.StaticBox(self, label="Angle for arbitrary rotation (deg)")
         vangle_boxsizer = wx.StaticBoxSizer(angle, wx.VERTICAL)
-        self.vangle = FS.FloatSpin(self, value="0.0", min_val=-360.0, max_val=360.0, digits=2)
+        self.vangle = FS.FloatSpin(
+            self, value="0.0", min_val=-360.0, max_val=360.0, digits=2
+        )
         vangle_boxsizer.Add(self.vangle, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
         video_start = wx.StaticBox(self, label="Shorten: start time (sec)")
@@ -155,8 +157,7 @@ class Video_Editing(wx.Panel):
         self.ok.Bind(wx.EVT_BUTTON, self.crop_video)
 
         self.reset = wx.Button(self, label="Reset")
-        self.sizer.Add(
-            self.reset, pos=(6, 0), flag=wx.LEFT, border=10)
+        self.sizer.Add(self.reset, pos=(6, 0), flag=wx.LEFT, border=10)
         self.reset.Bind(wx.EVT_BUTTON, self.reset_edit_videos)
 
         self.sizer.AddGrowableCol(3)
@@ -199,7 +200,7 @@ class Video_Editing(wx.Panel):
                     video,
                     width=-1,
                     height=self.height.GetValue(),
-                    rotateccw=self.rotate_val,
+                    rotatecw=self.rotate_val,
                     angle=self.vangle.GetValue(),
                 )
         else:

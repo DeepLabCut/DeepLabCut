@@ -211,7 +211,7 @@ def plot_trajectories(
         Specifies the destination folder that was used for storing analysis data (default is the path of the video).
 
     imagetype: string, default ".png"
-        Specifies the output image format, tested '.tif', '.jpg', '.svg' and ".png". 
+        Specifies the output image format, tested '.tif', '.jpg', '.svg' and ".png".
 
     resolution: int, default 100
         Specifies the resolution (in dpi) of saved figures. Note higher resolution figures take longer to generate.
@@ -266,7 +266,13 @@ def plot_trajectories(
                 for bp in df.columns.get_level_values("bodyparts").unique()
                 if bp in bodyparts
             ]
-            for animal in individuals:
+            # Either display the animals defined in the config if they are found
+            # in the dataframe, or all the trajectories regardless of their names
+            try:
+                animals = set(df.columns.get_level_values("individuals"))
+            except KeyError:
+                animals = {""}
+            for animal in animals.intersection(individuals) or animals:
                 PlottingResults(
                     tmpfolder,
                     df,
@@ -286,7 +292,7 @@ def plot_trajectories(
                     video, DLCscorer, track_method
                 )
                 print(
-                    'Call "deeplabcut.refine_training_dataset.convert_raw_tracks_to_h5()"'
+                    'Call "deeplabcut.stitch_tracklets()"'
                     " prior to plotting the trajectories."
                 )
             except FileNotFoundError as e:
@@ -294,7 +300,7 @@ def plot_trajectories(
                 print(
                     f"Make sure {video} was previously analyzed, and that "
                     f'detections were successively converted to tracklets using "deeplabcut.convert_detections2tracklets()" '
-                    f'and "deeplabcut.convert_raw_tracks_to_h5()".'
+                    f'and "deeplabcut.stitch_tracklets()".'
                 )
 
     if not all(failed):

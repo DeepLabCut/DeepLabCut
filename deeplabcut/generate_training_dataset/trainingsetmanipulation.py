@@ -7,18 +7,18 @@ Please see AUTHORS for contributors.
 https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
+import math
 import logging
 import os
 import os.path
-import shutil
 
 from functools import lru_cache
 from pathlib import Path
+from PIL import Image
 
 import numpy as np
 import pandas as pd
 import yaml
-from skimage import io
 
 from deeplabcut.pose_estimation_tensorflow import training
 from deeplabcut.utils import (
@@ -143,7 +143,7 @@ def dropduplicatesinannotatinfiles(config):
     for folder in folders:
         try:
             fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
-            DC = pd.read_hdf(fn, "df_with_missing")
+            DC = pd.read_hdf(fn)
             numimages = len(DC.index)
             DC = DC[~DC.index.duplicated(keep="first")]
             if len(DC.index) < numimages:
@@ -175,7 +175,7 @@ def dropannotationfileentriesduetodeletedimages(config):
 
     for folder in folders:
         fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
-        DC = pd.read_hdf(fn, "df_with_missing")
+        DC = pd.read_hdf(fn)
         dropped = False
         for imagename in DC.index:
             if os.path.isfile(os.path.join(cfg["project_path"], imagename)):
@@ -208,7 +208,7 @@ def dropimagesduetolackofannotation(config):
 
     for folder in folders:
         fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
-        DC = pd.read_hdf(fn, "df_with_missing")
+        DC = pd.read_hdf(fn)
         dropped = False
         annotatedimages = [fn.split(os.sep)[-1] for fn in DC.index]
         imagelist = [fns for fns in os.listdir(str(folder)) if ".png" in fns]
@@ -234,177 +234,6 @@ def dropimagesduetolackofannotation(config):
             " in folder:",
             len(imagelist),
         )
-
-
-def cropimagesandlabels(
-    config,
-    numcrops=10,
-    size=(400, 400),
-    userfeedback=True,
-    cropdata=True,
-    excludealreadycropped=False,
-    updatevideoentries=True,
-):
-    """
-    Crop images into multiple random crops (defined by numcrops) of size dimensions. If cropdata=True then the
-    annotation data is loaded and labels for cropped images are inherited.
-    If false, then one can make crops for unlabeled folders.
-
-    This can be helpul for large frames with multiple animals. Then a smaller set of equally sized images is created.
-
-    Parameters
-    ----------
-    config : string
-        String containing the full path of the config file in the project.
-
-    numcrops: number of random crops (around random bodypart)
-
-    size: height x width in pixels
-
-    userfeedback: bool, optional
-        If this is set to false, then all requested train/test splits are created (no matter if they already exist). If you
-        want to assure that previous splits etc. are not overwritten, then set this to True and you will be asked for each split.
-
-    cropdata: bool, default True:
-        If true creates corresponding annotation data (from ground truth)
-
-    excludealreadycropped: bool, default False:
-        If true, ignore original videos whose frames are already cropped.
-        This is only useful after adding new videos post dataset creation,
-        as folders containing no new frames are otherwise automatically ignored.
-
-    updatevideoentries, bool, default true
-        If true updates video_list entries to refer to cropped frames instead. This makes sense for subsequent processing.
-
-    Example
-    --------
-    for labeling the frames
-    >>> deeplabcut.cropimagesandlabels('/analysis/project/reaching-task/config.yaml')
-
-    --------
-    """
-    from tqdm import trange
-
-    indexlength = int(np.ceil(np.log10(numcrops)))
-    project_path = os.path.dirname(config)
-    cfg = auxiliaryfunctions.read_config(config)
-    videos = cfg.get("video_sets_original")
-    if videos is None:
-        videos = cfg["video_sets"]
-    elif excludealreadycropped:
-        for video in list(videos):
-            _, ext = os.path.splitext(video)
-            s = video.replace(ext, f"_cropped{ext}")
-            if s in cfg["video_sets"]:
-                videos.pop(video)
-    if not videos:
-        return
-
-    if (
-        "video_sets_original" not in cfg.keys() and updatevideoentries
-    ):  # this dict is kept for storing links to original full-sized videos
-        cfg["video_sets_original"] = {}
-
-    for video in videos:
-        vidpath, vidname, videotype = _robust_path_split(video)
-        folder = os.path.join(project_path, "labeled-data", vidname)
-        if userfeedback:
-            print("Do you want to crop frames for folder: ", folder, "?")
-            askuser = input("(yes/no):")
-        else:
-            askuser = "y"
-        if askuser == "y" or askuser == "yes" or askuser == "Y" or askuser == "Yes":
-            new_vidname = vidname + "_cropped"
-            new_folder = os.path.join(project_path, "labeled-data", new_vidname)
-            auxiliaryfunctions.attempttomakefolder(new_folder)
-
-            AnnotationData = []
-            pd_index = []
-
-            fn = os.path.join(folder, f"CollectedData_{cfg['scorer']}.h5")
-            df = pd.read_hdf(fn, "df_with_missing")
-            data = df.values.reshape((df.shape[0], -1, 2))
-            sep = "/" if "/" in df.index[0] else "\\"
-            if sep != os.path.sep:
-                df.index = df.index.str.replace(sep, os.path.sep)
-            video_new = sep.join((vidpath, new_vidname + videotype))
-            if video_new in cfg["video_sets"]:
-                _, w, _, h = map(int, cfg["video_sets"][video_new]["crop"].split(","))
-                temp_size = (h, w)
-            else:
-                temp_size = size
-            images = project_path + os.path.sep + df.index
-            # Avoid cropping already cropped images
-            cropped_images = auxiliaryfunctions.grab_files_in_folder(new_folder, "png")
-            cropped_names = set(map(lambda x: x.split("c")[0], cropped_images))
-            imnames = [
-                im for im in images.to_list() if Path(im).stem not in cropped_names
-            ]
-            if not imnames:
-                continue
-            ic = io.imread_collection(imnames)
-            for i in trange(len(ic)):
-                frame = ic[i]
-                h, w = np.shape(frame)[:2]
-                if temp_size[0] >= h or temp_size[1] >= w:
-                    raise ValueError("Crop dimensions are larger than image size")
-
-                imagename = os.path.relpath(ic.files[i], project_path)
-                ind = np.flatnonzero(df.index == imagename)[0]
-                cropindex = 0
-                attempts = -1
-                while cropindex < numcrops:
-                    dd = np.array(data[ind].copy(), dtype=float)
-                    y0, x0 = (
-                        np.random.randint(h - temp_size[0]),
-                        np.random.randint(w - temp_size[1]),
-                    )
-                    y1 = y0 + temp_size[0]
-                    x1 = x0 + temp_size[1]
-                    with np.errstate(invalid="ignore"):
-                        within = np.all((dd >= [x0, y0]) & (dd < [x1, y1]), axis=1)
-                    if cropdata:
-                        dd[within] -= [x0, y0]
-                        dd[~within] = np.nan
-                    attempts += 1
-                    if within.any() or attempts > 10:
-                        newimname = str(
-                            Path(imagename).stem
-                            + "c"
-                            + str(cropindex).zfill(indexlength)
-                            + ".png"
-                        )
-                        cropppedimgname = os.path.join(new_folder, newimname)
-                        io.imsave(cropppedimgname, frame[y0:y1, x0:x1])
-                        cropindex += 1
-                        pd_index.append(
-                            os.path.join("labeled-data", new_vidname, newimname)
-                        )
-                        AnnotationData.append(dd.flatten())
-
-            if cropdata:
-                df = pd.DataFrame(AnnotationData, index=pd_index, columns=df.columns)
-                fn_new = fn.replace(folder, new_folder)
-                try:
-                    df_old = pd.read_hdf(fn_new)
-                    df = pd.concat((df_old, df))
-                except FileNotFoundError:
-                    pass
-                df.to_hdf(fn_new, key="df_with_missing", mode="w")
-                df.to_csv(fn_new.replace(".h5", ".csv"))
-
-            if updatevideoentries and cropdata:
-                # moving old entry to _original, dropping it from video_set and update crop parameters
-                video_orig = sep.join((vidpath, vidname + videotype))
-                if video_orig not in cfg["video_sets_original"]:
-                    cfg["video_sets_original"][video_orig] = cfg["video_sets"][video_orig]
-                    cfg["video_sets"].pop(video_orig)
-                    cfg["video_sets"][sep.join((vidpath, new_vidname + videotype))] = {
-                        "crop": ", ".join(map(str, [0, temp_size[1], 0, temp_size[0]]))
-                    }
-
-    cfg["croppedtraining"] = True
-    auxiliaryfunctions.write_config(config, cfg)
 
 
 def check_labels(
@@ -461,8 +290,7 @@ def check_labels(
     for folder in folders:
         try:
             DataCombined = pd.read_hdf(
-                os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5"),
-                "df_with_missing",
+                os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
             )
             if cfg.get("multianimalproject", False):
                 color_by = "individual" if visualizeindividuals else "bodypart"
@@ -524,7 +352,13 @@ def MakeTrain_pose_yaml(
 
 
 def MakeTest_pose_yaml(
-    dictionary, keys2save, saveasfile, nmsradius=None, minconfidence=None
+    dictionary,
+    keys2save,
+    saveasfile,
+    nmsradius=None,
+    minconfidence=None,
+    sigma=None,
+    locref_smooth=None,
 ):
     dict_test = {}
     for key in keys2save:
@@ -535,6 +369,10 @@ def MakeTest_pose_yaml(
         dict_test["nmsradius"] = nmsradius
     if minconfidence is not None:
         dict_test["minconfidence"] = minconfidence
+    if sigma is not None:
+        dict_test["sigma"] = sigma
+    if locref_smooth is not None:
+        dict_test["locref_smooth"] = locref_smooth
 
     dict_test["scoremap_dir"] = "test"
     with open(saveasfile, "w") as f:
@@ -553,7 +391,14 @@ def MakeInference_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
 
 def _robust_path_split(path):
     sep = "\\" if "\\" in path else "/"
-    parent, file = path.rsplit(sep, 1)
+    splits = path.rsplit(sep, 1)
+    if len(splits) == 1:
+        parent = '.'
+        file = splits[0]
+    elif len(splits) == 2:
+        parent, file = splits
+    else:
+        raise('Unknown filepath split for path {}'.format(path))
     filename, ext = os.path.splitext(file)
     return parent, filename, ext
 
@@ -575,13 +420,12 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
             data_path / filename, f'CollectedData_{cfg["scorer"]}.h5'
         )
         try:
-            data = pd.read_hdf(file_path, "df_with_missing")
+            data = pd.read_hdf(file_path)
             AnnotationData.append(data)
         except FileNotFoundError:
             print(
                 file_path,
-                " not found (perhaps not annotated). If training on cropped data, "
-                "make sure to call `cropimagesandlabels` prior to creating the dataset.",
+                " not found (perhaps not annotated)."
             )
 
     if not len(AnnotationData):
@@ -636,9 +480,16 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
     return AnnotationData
 
 
-def SplitTrials(trialindex, trainFraction=0.8):
+def SplitTrials(
+    trialindex,
+    trainFraction=0.8,
+    enforce_train_fraction=False,
+):
     """ Split a trial index into train and test sets. Also checks that the trainFraction is a two digit number between 0 an 1. The reason
-    is that the folders contain the trainfraction as int(100*trainFraction). """
+    is that the folders contain the trainfraction as int(100*trainFraction).
+    If enforce_train_fraction is True, train and test indices are padded with -1
+    such that the ratio of their lengths is exactly the desired train fraction.
+    """
     if trainFraction > 1 or trainFraction < 0:
         print(
             "The training fraction should be a two digit number between 0 and 1; i.e. 0.95. Please change accordingly."
@@ -651,12 +502,41 @@ def SplitTrials(trialindex, trainFraction=0.8):
         )
         return ([], [])
     else:
-        trainsetsize = int(len(trialindex) * round(trainFraction, 2))
+        index_len = len(trialindex)
+        train_fraction = round(trainFraction, 2)
+        train_size = index_len * train_fraction
         shuffle = np.random.permutation(trialindex)
-        testIndices = shuffle[trainsetsize:]
-        trainIndices = shuffle[:trainsetsize]
+        test_indices = shuffle[int(train_size):]
+        train_indices = shuffle[:int(train_size)]
+        if enforce_train_fraction and not train_size.is_integer():
+            train_indices, test_indices = pad_train_test_indices(
+                train_indices, test_indices, train_fraction,
+            )
+        return train_indices, test_indices
 
-        return (trainIndices, testIndices)
+
+def pad_train_test_indices(train_inds, test_inds, train_fraction):
+    n_train_inds = len(train_inds)
+    n_test_inds = len(test_inds)
+    index_len = n_train_inds + n_test_inds
+    if n_train_inds / index_len == train_fraction:
+        return
+
+    # Determine the index length required to guarantee
+    # the train–test ratio is exactly the desired one.
+    min_length_req = int(100 / math.gcd(100, int(round(100 * train_fraction))))
+    min_n_train = int(round(min_length_req * train_fraction))
+    min_n_test = min_length_req - min_n_train
+    mult = max(
+        math.ceil(n_train_inds / min_n_train),
+        math.ceil(n_test_inds / min_n_test),
+    )
+    n_train = mult * min_n_train
+    n_test = mult * min_n_test
+    # Pad indices so lengths agree
+    train_inds = np.append(train_inds, [-1] * (n_train - n_train_inds))
+    test_inds = np.append(test_inds, [-1] * (n_test - n_test_inds))
+    return train_inds, test_inds
 
 
 def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
@@ -715,7 +595,7 @@ def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
     fn = os.path.join(project_path, trainingsetfolder, "CollectedData_" + cfg["scorer"])
 
     try:
-        Data = pd.read_hdf(fn + ".h5", "df_with_missing")
+        Data = pd.read_hdf(fn + ".h5")
     except FileNotFoundError:
         Data = merge_annotateddatasets(
             cfg,
@@ -730,7 +610,9 @@ def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
     if uniform == True:
         TrainingFraction = cfg["TrainingFraction"]
         trainFraction = TrainingFraction[trainindex]
-        trainIndices, testIndices = SplitTrials(range(len(Data.index)), trainFraction)
+        trainIndices, testIndices = SplitTrials(
+            range(len(Data.index)), trainFraction, True,
+        )
     else:  # leave one folder out split
         videos = cfg["video_sets"].keys()
         test_video_name = [Path(i).stem for i in videos][trainindex]
@@ -748,8 +630,11 @@ def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
 
 
 @lru_cache(maxsize=None)
-def _read_image_shape_fast(path):
-    return io.imread(path).shape
+def read_image_shape_fast(path):
+    # Blazing fast and does not load the image into memory
+    with Image.open(path) as img:
+        width, height = img.size
+        return len(img.getbands()), height, width
 
 
 def format_training_data(df, train_inds, nbodyparts, project_path):
@@ -765,18 +650,15 @@ def format_training_data(df, train_inds, nbodyparts, project_path):
         data = dict()
         filename = df.index[i]
         data["image"] = filename
-        img_shape = _read_image_shape_fast(os.path.join(project_path, filename))
-        try:
-            data["size"] = img_shape[2], img_shape[0], img_shape[1]
-        except IndexError:
-            data["size"] = 1, img_shape[0], img_shape[1]
+        img_shape = read_image_shape_fast(os.path.join(project_path, filename))
+        data["size"] = img_shape
         temp = df.iloc[i].values.reshape(-1, 2)
         joints = np.c_[range(nbodyparts), temp]
         joints = joints[~np.isnan(joints).any(axis=1)].astype(int)
         # Check that points lie within the image
         inside = np.logical_and(
-            np.logical_and(joints[:, 1] < img_shape[1], joints[:, 1] > 0),
-            np.logical_and(joints[:, 2] < img_shape[0], joints[:, 2] > 0),
+            np.logical_and(joints[:, 1] < img_shape[2], joints[:, 1] > 0),
+            np.logical_and(joints[:, 2] < img_shape[1], joints[:, 2] > 0),
         )
         if not all(inside):
             joints = joints[inside]
@@ -888,7 +770,11 @@ def create_training_dataset(
         if net_type is None:  # loading & linking pretrained models
             net_type = cfg.get("default_net_type", "resnet_50")
         else:
-            if "resnet" in net_type or "mobilenet" in net_type or "efficientnet" in net_type:
+            if (
+                "resnet" in net_type
+                or "mobilenet" in net_type
+                or "efficientnet" in net_type
+            ):
                 pass
             else:
                 raise ValueError("Invalid network type:", net_type)
@@ -899,16 +785,13 @@ def create_training_dataset(
                 # updating variable if null/None! #backwardscompatability
                 auxiliaryfunctions.edit_config(config, {"default_augmenter": "imgaug"})
                 augmenter_type = "imgaug"
-        else:
-            if augmenter_type in [
+        elif augmenter_type not in [
                 "default",
                 "scalecrop",
                 "imgaug",
                 "tensorpack",
                 "deterministic",
             ]:
-                pass
-            else:
                 raise ValueError("Invalid augmenter type:", augmenter_type)
 
         # Loading the encoder (if necessary downloading from TF)
@@ -949,6 +832,12 @@ def create_training_dataset(
                 print(
                     f"You passed a split with the following fraction: {int(100 * trainFraction)}%"
                 )
+                # Now that the training fraction is guaranteed to be correct,
+                # the values added to pad the indices are removed.
+                train_inds = np.asarray(train_inds)
+                train_inds = train_inds[train_inds != -1]
+                test_inds = np.asarray(test_inds)
+                test_inds = test_inds[test_inds != -1]
                 splits.append(
                     (trainFraction, Shuffles[shuffle], (train_inds, test_inds))
                 )
