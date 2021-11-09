@@ -2,22 +2,24 @@
 
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+#import PyQt5
 import numpy as np
 import sys
 
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QApplication, QWidget
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWinExtras import QtWin
+#from PyQt5.QtWinExtras import QtWin
 
 
 from MainApp import *
-
-try:
-    myappid = 'mycompany.myproduct.subproduct.version'
-    QtWin.setCurrentProcessExplicitAppUserModelID(myappid)
-except ImportError:
-    pass
+from MainWindow import *
+import deeplabcut
+#try:
+#    myappid = 'mycompany.myproduct.subproduct.version'
+#    QtWin.setCurrentProcessExplicitAppUserModelID(myappid)
+#except ImportError:
+#    pass
 
 
 
@@ -25,7 +27,10 @@ if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QIcon('C:/Users/User/PycharmProjects/pictures/logo.png'))
 
-    window = MainApp()
+    #app.setStyle('Windows')
+    #app.setStyleSheet("Windows")
+
+    window = MainWindow()
 
     window.show()
     sys.exit(app.exec_())

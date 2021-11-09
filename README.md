@@ -1,4 +1,3 @@
-# DLCGUIdev
-WIP gui for dlc
+# DLCgui
 
-requirements: PyQt5 
+WIP gui for dlc
