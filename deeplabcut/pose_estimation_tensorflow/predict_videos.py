@@ -54,7 +54,8 @@ def analyze_videos(
     dynamic=(False, 0.5, 10),
     modelprefix="",
     robust_nframes=False,
-    allow_growth=False
+    allow_growth=False,
+    use_shelve=False,
 ):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
@@ -119,6 +120,11 @@ def analyze_videos(
     allow_growth: bool, default false.
         For some smaller GPUs the memory issues happen. If true, the memory allocator does not pre-allocate the entire specified
         GPU memory region, instead starting small and growing as needed. See issue: https://forum.image.sc/t/how-to-stop-running-out-of-vram/30551/2
+
+    use_shelve: bool, optional (default=False)
+        By default, data are dumped in a pickle file at the end of the video analysis.
+        Otherwise, data are written to disk on the fly using a "shelf"; i.e., a pickle-based,
+        persistent, database-like object by default, resulting in constant memory footprint.
 
     Examples
     --------
@@ -297,6 +303,7 @@ def analyze_videos(
                     outputs,
                     destfolder,
                     robust_nframes=robust_nframes,
+                    use_shelve=use_shelve,
                 )
         else:
             for video in Videos:
