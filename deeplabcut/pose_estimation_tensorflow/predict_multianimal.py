@@ -151,9 +151,9 @@ def GetPoseandCostsF(
 
     if shelf_path:
         db = shelve.open(
-            shelf_path,
-            protocol=pickle.DEFAULT_PROTOCOL,
-        )
+                shelf_path,
+                protocol=pickle.DEFAULT_PROTOCOL,
+            )
     else:
         db = dict()
     db["metadata"] = {
@@ -172,7 +172,11 @@ def GetPoseandCostsF(
     }
     while cap.video.isOpened():
         frame = cap.read_frame(crop=cfg["cropping"])
+        key = "frame" + str(counter).zfill(strwidth)
         if frame is not None:
+            # Avoid overwriting data already on the shelf
+            if isinstance(db, shelve.Shelf) and key in db:
+                continue
             frames[batch_ind] = img_as_ubyte(frame)
             inds.append(counter)
             if batch_ind == batchsize - 1:
@@ -216,9 +220,9 @@ def GetPoseandCostsS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, shelf_pa
 
     if shelf_path:
         db = shelve.open(
-        shelf_path,
-        protocol=pickle.DEFAULT_PROTOCOL,
-    )
+            shelf_path,
+            protocol=pickle.DEFAULT_PROTOCOL,
+        )
     else:
         db = dict()
     db["metadata"] = {
@@ -239,12 +243,16 @@ def GetPoseandCostsS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, shelf_pa
     counter = 0
     while cap.video.isOpened():
         frame = cap.read_frame(crop=cfg["cropping"])
+        key = "frame" + str(counter).zfill(strwidth)
         if frame is not None:
+            # Avoid overwriting data already on the shelf
+            if isinstance(db, shelve.Shelf) and key in db:
+                continue
             frame = img_as_ubyte(frame)
             dets = predict.predict_batched_peaks_and_costs(
                 dlc_cfg, np.expand_dims(frame, axis=0), sess, inputs, outputs,
             )
-            db["frame" + str(counter).zfill(strwidth)] = dets[0]
+            db[key] = dets[0]
             del dets
         elif counter >= nframes:
             break
