@@ -168,7 +168,33 @@ def test_assembler(tmpdir_factory, real_assemblies):
     ass.to_pickle(str(output_name).replace("h5", "pickle"))
 
 
-def test_assembler_with_single(real_assemblies_montblanc):
+def test_assembler_with_single_bodypart(real_assemblies):
+    with open(os.path.join(TEST_DATA_DIR, "trimouse_full.pickle"), "rb") as file:
+        temp = pickle.load(file)
+    data = {"metadata": temp.pop("metadata")}
+    for k, dict_ in temp.items():
+        data[k] = {
+            "coordinates": (dict_["coordinates"][0][:1],),
+            "confidence": dict_["confidence"][:1],
+        }
+    ass = inferenceutils.Assembler(
+        data,
+        max_n_individuals=3,
+        n_multibodyparts=1,
+    )
+    ass.metadata["joint_names"] = ass.metadata["joint_names"][:1]
+    ass.metadata["num_joints"] = 1
+    ass.metadata["paf_graph"] = []
+    ass.metadata["paf"] = []
+    ass.metadata["bpts"] = [0]
+    ass.metadata["ibpts"] = [0]
+    ass.assemble(chunk_size=0)
+    assert not ass.unique
+    assert len(ass.assemblies) == len(real_assemblies)
+    assert all(len(a) == 3 for a in ass.assemblies.values())
+
+
+def test_assembler_with_unique_bodypart(real_assemblies_montblanc):
     with open(os.path.join(TEST_DATA_DIR, "montblanc_full.pickle"), "rb") as file:
         data = pickle.load(file)
     ass = inferenceutils.Assembler(
@@ -276,7 +302,7 @@ def test_assembler_calibration(real_assemblies):
     j2 = inferenceutils.Joint(tuple(assembly.xy[1]), label=1)
     link = inferenceutils.Link(j1, j2)
     p = ass.calc_link_probability(link)
-    assert np.isclose(p, 0.990, atol=1e-3)
+    assert np.isclose(p, 0.993, atol=1e-3)
 
 
 def test_find_outlier_assemblies(real_assemblies):

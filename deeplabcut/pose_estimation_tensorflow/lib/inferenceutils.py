@@ -326,7 +326,7 @@ class Assembler:
         j = link.j2.label
         ind = _conv_square_to_condensed_indices(i, j, self.n_multibodyparts)
         mu = self._kde.mean[ind]
-        sigma = self._kde.covariance[i, j]
+        sigma = self._kde.covariance[ind, ind]
         z = (link.length ** 2 - mu) / sigma
         return 2 * (1 - 0.5 * (1 + erf(abs(z) / sqrt(2))))
 
@@ -621,6 +621,22 @@ class Assembler:
 
         if not any(i in bag for i in range(self.n_multibodyparts)):
             return None, unique
+
+        if self.n_multibodyparts == 1:
+            assemblies = []
+            for joint in bag[0]:
+                if joint.confidence >= self.pcutoff:
+                    ass = Assembly(self.n_multibodyparts)
+                    ass.add_joint(joint)
+                    assemblies.append(ass)
+            return assemblies, unique
+
+        if self.max_n_individuals == 1:
+            get_attr = operator.attrgetter("confidence")
+            ass = Assembly(self.n_multibodyparts)
+            for joints in bag.values():
+                ass.add_joint(max(joints, key=get_attr))
+            return [ass], unique
 
         if self.identity_only:
             assemblies = []

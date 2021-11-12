@@ -477,14 +477,18 @@ To use this ID information, simply pass:
 deeplabcut.convert_detections2tracklets(..., identity_only=True)
 ```
 
+**Note:** If only one individual is to be assembled and tracked, assembly and tracking are skipped, and detections are treated as in single-animal projects; i.e., it is the keypoints with highest confidence that are kept and accumulated over frames to form a single, long tracklet. No action is required from users, this is done automatically.
+
 
 **Animal assembly and tracking quality** can be assessed via `deeplabcut.utils.make_labeled_video.create_video_from_pickled_tracks`. This function provides an additional diagnostic tool before moving on to refining tracklets.
+
 
 If animal assemblies do not look pretty, an alternative to the outlier search described above is to pass the
 `_assemblies.pickle` to `find_outliers_in_raw_data` in place of the `_full.pickle`.
 This will focus the outlier search on unusual assemblies (i.e., animal skeletons that were oddly reconstructed). This may be a bit more sensitive with crowded scenes or frames where animals interact closely.
 Note though that at that stage it is likely preferable anyway to carry on with the remaining steps, and extract outliers
 from the final h5 file as was customary in single animal projects.
+
 
 **Next, tracklets are stitched to form complete tracks with:
 
