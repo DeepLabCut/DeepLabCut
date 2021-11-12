@@ -1469,6 +1469,10 @@ def convert_detections2tracklets(
                     ass.calibrate(train_data_file)
                 ass.assemble()
                 ass.to_pickle(dataname.split(".h5")[0] + "_assemblies.pickle")
+                try:
+                    data.close()
+                except AttributeError:
+                    pass
 
                 if cfg[
                     "uniquebodyparts"
