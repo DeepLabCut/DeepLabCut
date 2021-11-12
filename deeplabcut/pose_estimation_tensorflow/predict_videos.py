@@ -1140,9 +1140,13 @@ def _convert_detections_to_tracklets(
     paf_graph = [partaffinityfield_graph[l] for l in paf_inds]
 
     if track_method == "box":
-        mot_tracker = trackingutils.Sort(inference_cfg)
+        mot_tracker = trackingutils.SORTBox(
+            inference_cfg["max_age"],
+            inference_cfg["min_hits"],
+            inference_cfg.get("oks_threshold", 0.3),
+        )
     elif track_method == "skeleton":
-        mot_tracker = trackingutils.SORT(
+        mot_tracker = trackingutils.SORTSkeleton(
             len(joints),
             inference_cfg["max_age"],
             inference_cfg["min_hits"],
@@ -1190,13 +1194,12 @@ def _convert_detections_to_tracklets(
             continue
         animals = np.stack([ass.data[:, :3] for ass in assemblies])
         if track_method == "box":
-            bboxes = trackingutils.calc_bboxes_from_keypoints(
+            xy = trackingutils.calc_bboxes_from_keypoints(
                 animals, inference_cfg.get("boundingboxslack", 0)
             )  # TODO: get cropping parameters and utilize!
-            trackers = mot_tracker.update(bboxes)
         else:
             xy = animals[..., :2]
-            trackers = mot_tracker.track(xy)
+        trackers = mot_tracker.track(xy)
         trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
 
     bodypartlabels = [joint for joint in joints for _ in range(3)]
@@ -1426,9 +1429,13 @@ def convert_detections2tracklets(
                 imnames = [fn for fn in data if fn != "metadata"]
 
                 if track_method == "box":
-                    mot_tracker = trackingutils.Sort(inferencecfg)
+                    mot_tracker = trackingutils.SORTBox(
+                        inferencecfg["max_age"],
+                        inferencecfg["min_hits"],
+                        inferencecfg.get("oks_threshold", 0.3),
+                    )
                 elif track_method == "skeleton":
-                    mot_tracker = trackingutils.SORT(
+                    mot_tracker = trackingutils.SORTSkeleton(
                         numjoints,
                         inferencecfg["max_age"],
                         inferencecfg["min_hits"],
@@ -1493,13 +1500,12 @@ def convert_detections2tracklets(
                         animals = np.stack([ass.data for ass in assemblies])
                         if not identity_only:
                             if track_method == "box":
-                                bboxes = trackingutils.calc_bboxes_from_keypoints(
+                                xy = trackingutils.calc_bboxes_from_keypoints(
                                     animals[:, keep_inds], inferencecfg["boundingboxslack"],
                                 )  # TODO: get cropping parameters and utilize!
-                                trackers = mot_tracker.update(bboxes)
                             else:
                                 xy = animals[:, keep_inds, :2]
-                                trackers = mot_tracker.track(xy)
+                            trackers = mot_tracker.track(xy)
                         else:
                             # Optimal identity assignment based on soft voting
                             mat = np.zeros((len(assemblies), inferencecfg["topktoretain"]))
