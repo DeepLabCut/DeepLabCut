@@ -40,6 +40,13 @@ def _conv_square_to_condensed_indices(ind_row, ind_col, n):
 Position = Tuple[float, float]
 
 
+def _wrapped(args):
+    # This function is used in the Assembler to fork off new processes
+    # See Assembler.assemble
+    i, assembler = args
+    return i, assembler._assemble(assembler[i], i)
+
+
 @dataclass(frozen=True)
 class Joint:
     pos: Position
@@ -756,16 +763,13 @@ class Assembler:
                 if unique is not None:
                     self.unique[i] = unique
         else:
-            global wrapped  # Hack to make the function pickable
-
-            def wrapped(i):
-                return i, self._assemble(self[i], i)
-
             n_frames = len(self.metadata["imnames"])
             with multiprocessing.Pool(n_processes) as p:
                 with tqdm(total=n_frames) as pbar:
                     for i, (assemblies, unique) in p.imap_unordered(
-                        wrapped, range(n_frames), chunksize=chunk_size
+                        _wrapped,
+                        ((i, self) for i in range(n_frames)),
+                        chunksize=chunk_size
                     ):
                         if assemblies:
                             self.assemblies[i] = assemblies
