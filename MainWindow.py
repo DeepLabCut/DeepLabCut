@@ -1,6 +1,5 @@
 import sys
 
-from createStatus import *
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QApplication, QTabWidget
 from PyQt5.QtWidgets import QWidget, QLabel, QRadioButton, QFormLayout, QFileDialog
@@ -17,8 +16,15 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QPixmap
 from PyQt5 import QtGui
 
-from MainApp import *
+
+#from MainApp import *
 from CreateProject import *
+from OpenProject import *
+from extract_frames import *
+from label_frames import *
+from create_training_dataset import *
+from train_network import *
+from evaluate_network import *
 import deeplabcut
 #from deeplabcut.gui import canvas, widgets
 #from deeplabcut.utils import auxiliaryfunctions, video_reader
@@ -39,18 +45,23 @@ class MainWindow(QtWidgets.QMainWindow):
         desktop = QtWidgets.QDesktopWidget().screenGeometry(0)
         self.screen_width = desktop.width()
         self.screen_height = desktop.height()
+        self.config = None
+        self.cfg = dict()
+        self.loaded = False
+
+        self.default_set()
 
         self.welcome_page('Welcome.png')
         self.window_set()
         self.default_set()
+
 
         names = ['new_project.png', 'open.png', 'help.png']
         self.createActions(names)
         self.createMenuBar()
         self.createToolBars(0)
 
-        self.config = None
-        self.cfg = dict()
+
 
 
         #self.canvas = canvas.Canvas(self.main_panel)
@@ -63,14 +74,19 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowTitle("DeepLabCut")
         #self.setGeometry(300,150,1500,750)
         self.setMinimumSize(1500, 750)
+        self.statusbar = self.statusBar()
+        self.statusbar.showMessage("www.deeplabcut.org")
+
+        self.setStatusBar(self.statusbar)
+
 
         palette = QtGui.QPalette()
         palette.setColor(QtGui.QPalette.Background, QtGui.QColor("#ffffff"))
         self.setPalette(palette)
 
-        logo_dir = os.path.dirname(os.path.realpath('logo.png')) + os.path.sep
-        logo = logo_dir + '/pictures/logo.png'
-        self.setWindowIcon(QIcon(logo))
+        self.logo_dir = os.path.dirname(os.path.realpath('logo.png')) + os.path.sep
+        self.logo = self.logo_dir + '/pictures/logo.png'
+        self.setWindowIcon(QIcon(self.logo))
 
         self.status_bar = self.statusBar()
         self.status_bar.setObjectName('Status Bar')
@@ -141,7 +157,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.openAction = QAction("&Open...", self)
         self.openAction.setIcon(QIcon("icons/"+names[1]))
         self.openAction.setShortcut('Ctrl+O')
-        #self.openAction.triggered.connect(self.parent.open_project)
+        self.openAction.triggered.connect(self._open)
 
         self.saveAction = QAction("&Save", self)
         self.exitAction = QAction("&Exit", self)
@@ -212,15 +228,21 @@ class MainWindow(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot()
     def _create(self):
         # action = self.sender()
-        self.class_Second = CreateProject(self)
-        self.class_Second.show()
+        create_p = CreateProject(self)
+        create_p.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        if create_p.exec_() == QtWidgets.QDialog.Accepted:
+            print('loaded:   ', create_p.loaded)
+            self.loaded =create_p.loaded
+            print('cfg:   ', create_p.cfg)
+            self.cfg = create_p.cfg
 
-    def open_project(self):
-        config = QFileDialog.getOpenFileName(self, caption='Select a configuration file',
-                                                       directory=self.project_folder, filter='Config files (*.yaml)')[0]
-        if not config:
-            return
-        self.load_config(config)
+        if create_p.loaded:
+            self.add_tabs()
+
+    def _open(self):
+        open_p = OpenProject( self.loaded )
+        #open_p.exec_()
+
 
     def load_config(self, config):
         self.config = config
@@ -247,4 +269,27 @@ class MainWindow(QtWidgets.QMainWindow):
         self.createToolBars(1)
         self.updateMenuBar()
 
+    def add_tabs(self):
+        # Add all the other pages
+        # Create a top-level layout
+
+        # Create the tab widget with two tabs
+        tabs = QtWidgets.QTabWidget()
+        tabs.setContentsMargins(0, 20, 0, 0)
+        extract_page = Extract_page(self, self.cfg)
+        label_page = Label_page(self, self.cfg)
+        create_training_ds_page = Create_training_dataset_page(self, self.cfg)
+        train_network_page = Train_network_page(self, self.cfg)
+        evaluate_network_page = Evaluate_network_page(self, self.cfg)
+
+        tabs.addTab(extract_page, "Extract frames")
+        tabs.addTab(label_page, "Label frames")
+        tabs.addTab(create_training_ds_page, "Create training dataset")
+        tabs.addTab(train_network_page, "Train network")
+        tabs.addTab(evaluate_network_page, "Evaluate network")
+        tabs.addTab(QtWidgets.QWidget(), "Video editor")
+        tabs.addTab(QtWidgets.QWidget(), "Analyze videos")
+        tabs.addTab(QtWidgets.QWidget(), "Create videos")
+
+        self.setCentralWidget(tabs)
 

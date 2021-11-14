@@ -12,7 +12,7 @@ from PyQt5.QtGui import QIcon
 #from PyQt5.QtWinExtras import QtWin
 
 
-from MainApp import *
+#from MainApp import *
 from MainWindow import *
 import deeplabcut
 #try:
