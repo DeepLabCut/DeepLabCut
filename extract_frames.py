@@ -1,6 +1,7 @@
 import os
 import pydoc
 import sys
+from pathlib import Path
 
 from PyQt5.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup
 from PyQt5 import QtWidgets
@@ -9,6 +10,7 @@ from PyQt5.QtGui import QIcon
 
 
 from deeplabcut.generate_training_dataset import extract_frames
+from deeplabcut.utils import auxiliaryfunctions
 
 class Extract_page(QWidget):
 
@@ -337,6 +339,16 @@ class Extract_page(QWidget):
         clusterstep = self.cluster_step_spin.value()
         slider_width = self.slider_width.value()
 
+        print('self.config: ', self.config)
+        print('mode: ', mode)
+        print('crop: ', crop)
+        print('userfeedback: ', userfeedback)
+        print('opencv: ', opencv)
+
+        print('algo: ', algo)
+        print('clusterstep: ', clusterstep)
+        print('slider_width: ', slider_width)
+
         extract_frames(
             self.config,
             mode,
@@ -347,7 +359,7 @@ class Extract_page(QWidget):
             cluster_resizewidth=30,
             cluster_color=False,
             opencv=opencv,
-            slider_width=slider_width,
+            slider_width=slider_width
         )
 
         msg = QtWidgets.QMessageBox()
@@ -362,14 +374,7 @@ class Extract_page(QWidget):
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         retval = msg.exec_()
 
-        # print('mode: ', mode)
-        # print('crop: ', crop)
-        # print('userfeedback: ', userfeedback)
-        # print('opencv: ', opencv)
-        #
-        # print('algo: ', algo)
-        # print('clusterstep: ', clusterstep)
-        # print('slider_width: ', slider_width)
+
 
 
 

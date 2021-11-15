@@ -1,23 +1,29 @@
 import deeplabcut
 
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtGui import QIcon
 import os
 
 class OpenProject(QtWidgets.QDialog):
-    def __init__(self, loaded):
-        super().__init__()
+    def __init__(self, parent):
+        super(OpenProject, self).__init__(parent)
 
         self.setWindowTitle('Load Existing Project')
         self.setMinimumSize(800, 400)
 
+        self.cfg = None
+        self.loaded = False
+
         main_layout = QtWidgets.QVBoxLayout(self)
         self.layout_open()
 
-        #self.create_button = QtWidgets.QPushButton('Create')
-        #self.create_button.setDefault(True)
-        # self.create_button.clicked.connect(self.finalize_project)
+        self.open_button = QtWidgets.QPushButton('Ok')
+        self.open_button.setDefault(True)
+        self.open_button.clicked.connect(self.open_project)
+
         main_layout.addWidget(self.open_frame)
-        self.exec_()
+        main_layout.addWidget(self.open_button, alignment=QtCore.Qt.AlignRight)
+        #self.exec_()
         #main_layout.addWidget(self.create_button, alignment=QtCore.Qt.AlignRight)
 
     def layout_open(self):
@@ -32,11 +38,11 @@ class OpenProject(QtWidgets.QDialog):
         load_button = QtWidgets.QPushButton('Browse')
         load_button.clicked.connect((self.load_config))
 
+
         grid = QtWidgets.QGridLayout(self.open_frame)
         grid.setSpacing(30)
         grid.addWidget(open_label, 0, 0)
         grid.addWidget(self.open_line, 0, 1)
-
         grid.addWidget(load_button, 1, 1)
 
         return self.open_frame
@@ -44,17 +50,59 @@ class OpenProject(QtWidgets.QDialog):
     def open_config_name(self):
         #self.proj_default = text
         text = self.open_line.text()
-        print(text)
+        #print(text)
 
     def load_config(self):
-        cwd = os.getcwd()
+        #cwd = os.getcwd()
+        cwd = 'C:/Anna/test'
         config = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select a configuration file", cwd, "Config files (*.yaml)"
         )
         if not config:
             return
-        #self._config_file(config)
+        self.cfg = config[0]
+        self.open_line.setText(self.cfg)
 
-    #def _config_file(self,):
+    def open_project(self):
+        if self.cfg == '':
+            msg = QtWidgets.QMessageBox()
+            msg.setIcon(QtWidgets.QMessageBox.Critical)
+            msg.setText("Please choose the config.yaml file to load the project")
+
+            msg.setWindowTitle("Error")
+            msg.setMinimumWidth(400)
+            self.logo_dir = os.path.dirname(os.path.realpath('logo.png')) + os.path.sep
+            self.logo = self.logo_dir + '/pictures/logo.png'
+            msg.setWindowIcon(QIcon(self.logo))
+            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+            #msg.buttonClicked.connect(self.ok_clicked)
+            retval = msg.exec_()
+
+            self.loaded = False
+        else:
+            msg = QtWidgets.QMessageBox()
+            msg.setIcon(QtWidgets.QMessageBox.Information)
+            msg.setText("Project Loaded!")
+
+            msg.setWindowTitle("Info")
+            msg.setMinimumWidth(350)
+            self.logo_dir = os.path.dirname(os.path.realpath('logo.png')) + os.path.sep
+            self.logo = self.logo_dir + '/pictures/logo.png'
+            msg.setWindowIcon(QIcon(self.logo))
+            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+            msg.buttonClicked.connect(self.ok_clicked)
+            retval = msg.exec_()
+            self.loaded = True
+
+            # self.sel_vids_new.Enable(True)
+            # self.addvid.Enable(True)
+            # self.edit_config_file.Enable(True)
+            self.close()
+
+    def ok_clicked(self):
+            print('ok')
+            self.loaded = True
+            self.accept()
+
 
 

@@ -117,8 +117,8 @@ class Train_network_page(QWidget):
         self.layout_attributes.addLayout(self.layout_display)
 
         self.ok_button = QtWidgets.QPushButton('Ok')
-        self.ok_button.setContentsMargins(0, 80, 40, 40)
-        #self.ok_button.clicked.connect(self.train_network)
+        self.ok_button.setContentsMargins(0, 40, 40, 40)
+        # self.ok_button.clicked.connect(self.train_network)
 
         self.layout_attributes.addWidget(self.ok_button, alignment=Qt.AlignRight)
 
@@ -271,6 +271,8 @@ class Train_network_page(QWidget):
             self.pose_cfg_choice = True
         else:
             self.pose_cfg_choice = False
+
+
 
 
 

@@ -98,11 +98,18 @@ class Evaluate_network_page(QWidget):
         self.layout_attributes.addLayout(self.layout_specify_plot)
         self.layout_attributes.addLayout(self.layout_predictions)
 
-        self.ok_button = QtWidgets.QPushButton('Ok')
-        self.ok_button.setContentsMargins(0, 40, 40, 40)
-        #self.ok_button.clicked.connect(self.train_network)
+        self.ev_nw_button = QtWidgets.QPushButton('RUN: Evaluate Network')
+        self.ev_nw_button.setMinimumWidth(200)
+        self.ev_nw_button.setContentsMargins(0, 80, 40, 40)
+        # self.ev_nw_button.clicked.connect(self.evaluate_network)
 
-        self.layout_attributes.addWidget(self.ok_button, alignment=Qt.AlignRight)
+        self.opt_button = QtWidgets.QPushButton('Optional: Plot 3 test maps')
+        self.opt_button.setMinimumWidth(200)
+        self.opt_button.setContentsMargins(0, 80, 40, 40)
+        # self.opt_button.clicked.connect(self.plot_maps)
+
+        self.layout_attributes.addWidget(self.ev_nw_button, alignment=Qt.AlignRight)
+        self.layout_attributes.addWidget(self.opt_button, alignment=Qt.AlignRight)
 
         self.inLayout.addLayout(self.layout_attributes)
 

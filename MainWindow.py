@@ -25,6 +25,7 @@ from label_frames import *
 from create_training_dataset import *
 from train_network import *
 from evaluate_network import *
+from video_editor import *
 import deeplabcut
 #from deeplabcut.gui import canvas, widgets
 #from deeplabcut.utils import auxiliaryfunctions, video_reader
@@ -231,17 +232,25 @@ class MainWindow(QtWidgets.QMainWindow):
         create_p = CreateProject(self)
         create_p.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         if create_p.exec_() == QtWidgets.QDialog.Accepted:
-            print('loaded:   ', create_p.loaded)
+            #print('loaded:   ', create_p.loaded)
             self.loaded =create_p.loaded
-            print('cfg:   ', create_p.cfg)
+            #print('cfg:   ', create_p.cfg)
             self.cfg = create_p.cfg
 
         if create_p.loaded:
             self.add_tabs()
 
     def _open(self):
-        open_p = OpenProject( self.loaded )
-        #open_p.exec_()
+        open_p = OpenProject(self)
+        open_p.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        if open_p.exec_() == QtWidgets.QDialog.Accepted:
+            print('loaded:   ', open_p.loaded)
+            self.loaded = open_p.loaded
+            print('cfg:   ', open_p.cfg)
+            self.cfg = open_p.cfg
+
+        if open_p.loaded:
+            self.add_tabs()
 
 
     def load_config(self, config):
@@ -281,13 +290,14 @@ class MainWindow(QtWidgets.QMainWindow):
         create_training_ds_page = Create_training_dataset_page(self, self.cfg)
         train_network_page = Train_network_page(self, self.cfg)
         evaluate_network_page = Evaluate_network_page(self, self.cfg)
+        video_editor_page = Video_editor_page(self, self.cfg)
 
         tabs.addTab(extract_page, "Extract frames")
         tabs.addTab(label_page, "Label frames")
         tabs.addTab(create_training_ds_page, "Create training dataset")
         tabs.addTab(train_network_page, "Train network")
         tabs.addTab(evaluate_network_page, "Evaluate network")
-        tabs.addTab(QtWidgets.QWidget(), "Video editor")
+        tabs.addTab(video_editor_page, "Video editor")
         tabs.addTab(QtWidgets.QWidget(), "Analyze videos")
         tabs.addTab(QtWidgets.QWidget(), "Create videos")
 
