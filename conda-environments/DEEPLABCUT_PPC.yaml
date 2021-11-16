@@ -29,3 +29,5 @@ dependencies:
   - tensorpack
   - tf_slim
   - tqdm
+  - pip:
+    - "deeplabcut[gui]"
