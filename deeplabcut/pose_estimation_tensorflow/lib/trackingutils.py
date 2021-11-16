@@ -39,7 +39,7 @@ def calc_iou(bbox1, bbox2):
     )
 
 
-class BaseTracker(metaclass=abc.ABCMeta):
+class BaseTracker:
     """Base class for a constant-velocity Kalman filter-based tracker."""
     n_trackers = 0
 
@@ -387,6 +387,7 @@ class SORTBase(metaclass=abc.ABCMeta):
         self.n_frames = 0
         self.trackers = []
 
+    @abc.abstractmethod
     def track(self):
         pass
 
