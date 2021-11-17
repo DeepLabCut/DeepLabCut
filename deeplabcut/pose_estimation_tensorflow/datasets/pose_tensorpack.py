@@ -409,7 +409,7 @@ class TensorpackPoseDataset(BasePoseDataset):
     def get_scale(self):
         cfg = self.cfg
         scale = cfg["global_scale"]
-        if hasattr(cfg, "scale_jitter_lo") and hasattr(cfg, "scale_jitter_up"):
+        if "scale_jitter_lo" in cfg and "scale_jitter_up" in cfg:
             scale_jitter = rand.uniform(cfg["scale_jitter_lo"], cfg["scale_jitter_up"])
             scale *= scale_jitter
         return scale
@@ -419,7 +419,7 @@ class TensorpackPoseDataset(BasePoseDataset):
         return self.make_batch(next_batch)
 
     def is_valid_size(self, image_size, scale):
-        if hasattr(self.cfg, "min_input_size") and hasattr(self.cfg, "max_input_size"):
+        if "min_input_size" in self.cfg and "max_input_size" in self.cfg:
             input_width = image_size[2] * scale
             input_height = image_size[1] * scale
             if (

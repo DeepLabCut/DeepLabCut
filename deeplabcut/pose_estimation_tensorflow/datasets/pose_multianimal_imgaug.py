@@ -391,7 +391,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
     def get_scale(self):
         cfg = self.cfg
         scale = cfg["global_scale"]
-        if hasattr(cfg, "scale_jitter_lo") and hasattr(cfg, "scale_jitter_up"):
+        if "scale_jitter_lo" in cfg and "scale_jitter_up" in cfg:
             scale_jitter = rand.uniform(cfg["scale_jitter_lo"], cfg["scale_jitter_up"])
             scale *= scale_jitter
         return scale
@@ -401,7 +401,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         min_input_size = self.cfg.get("min_input_size", 100)
         if im_height < min_input_size or im_width < min_input_size:
             return False
-        if hasattr(self.cfg, "max_input_size"):
+        if "max_input_size" in self.cfg:
             max_input_size = self.cfg["max_input_size"]
             if im_width * im_height > max_input_size * max_input_size:
                 return False

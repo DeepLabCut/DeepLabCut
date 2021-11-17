@@ -141,7 +141,7 @@ class DeterministicPoseDataset(BasePoseDataset):
         if self.cfg["deterministic"]:
             np.random.seed(42)
         scale = self.scale
-        if hasattr(self.cfg, "scale_jitter_lo") and hasattr(self.cfg, "scale_jitter_up"):
+        if "scale_jitter_lo" in self.cfg and "scale_jitter_up" in self.cfg:
             scale_jitter = np.random.uniform(self.cfg['scale_jitter_lo'], self.cfg['scale_jitter_up'])
             scale *= scale_jitter
         return scale
@@ -158,7 +158,7 @@ class DeterministicPoseDataset(BasePoseDataset):
             return self.make_batch(data_item, scale, mirror)
 
     def is_valid_size(self, image_size, scale):
-        if hasattr(self.cfg, "min_input_size") and hasattr(self.cfg, "max_input_size"):
+        if "min_input_size" in self.cfg and "max_input_size" in self.cfg:
             input_width = image_size[2] * scale
             input_height = image_size[1] * scale
             if (

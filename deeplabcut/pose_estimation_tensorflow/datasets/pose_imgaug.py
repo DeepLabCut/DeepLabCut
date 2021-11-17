@@ -400,9 +400,9 @@ class ImgaugPoseDataset(BasePoseDataset):
     def get_scale(self):
         cfg = self.cfg
         scale = cfg["global_scale"]
-        if hasattr(cfg, "scale_jitter_lo") and hasattr(cfg, "scale_jitter_up"):
+        if "scale_jitter_lo" in cfg and "scale_jitter_up" in cfg:
             scale_jitter = rand.uniform(
-                0.75 * cfg["scale_jitter_lo"], 1.25 * cfg["scale_jitter_up"]
+                cfg["scale_jitter_lo"], cfg["scale_jitter_up"]
             )
             scale *= scale_jitter
         return scale
