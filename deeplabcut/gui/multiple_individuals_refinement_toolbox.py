@@ -400,11 +400,9 @@ class MainFrame(BaseFrame):
             # Overwrite the config-defined individual names
             # with those actually present in the annotated data
             self.individual_names = (
-                self.Dataframe
-                    .columns
-                    .get_level_values("individuals")
-                    .unique()
-                    .to_list()
+                self.Dataframe.columns.get_level_values("individuals")
+                .unique()
+                .to_list()
             )
             self.Dataframe.sort_index(inplace=True)
             self.scorer = self.Dataframe.columns.get_level_values(0)[0]

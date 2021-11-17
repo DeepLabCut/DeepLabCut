@@ -276,9 +276,13 @@ def analyze_videos(
         xyz_labs = ["x", "y", "likelihood"]
 
     if TFGPUinference:
-        sess, inputs, outputs = predict.setup_GPUpose_prediction(dlc_cfg,allow_growth=allow_growth)
+        sess, inputs, outputs = predict.setup_GPUpose_prediction(
+            dlc_cfg, allow_growth=allow_growth
+        )
     else:
-        sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg,allow_growth=allow_growth)
+        sess, inputs, outputs = predict.setup_pose_prediction(
+            dlc_cfg, allow_growth=allow_growth
+        )
 
     pdindex = pd.MultiIndex.from_product(
         [[DLCscorer], dlc_cfg["all_joints_names"], xyz_labs],
@@ -294,6 +298,7 @@ def analyze_videos(
             from deeplabcut.pose_estimation_tensorflow.predict_multianimal import (
                 AnalyzeMultiAnimalVideo,
             )
+
             for video in Videos:
                 AnalyzeMultiAnimalVideo(
                     video,
@@ -1152,13 +1157,7 @@ def analyze_time_lapse_frames(
 
 
 def _convert_detections_to_tracklets(
-    cfg,
-    inference_cfg,
-    data,
-    metadata,
-    output_path,
-    greedy=False,
-    calibrate=False,
+    cfg, inference_cfg, data, metadata, output_path, greedy=False, calibrate=False,
 ):
     track_method = cfg.get("default_track_method", "ellipse")
     if track_method not in ("box", "skeleton", "ellipse"):
@@ -1445,7 +1444,9 @@ def convert_detections2tracklets(
 
                 # TODO: adjust this for multi + unique bodyparts!
                 # this is only for multianimal parts and uniquebodyparts as one (not one uniquebodyparts guy tracked etc. )
-                bodypartlabels = [bpt for i, bpt in enumerate(all_jointnames) for _ in range(3)]
+                bodypartlabels = [
+                    bpt for i, bpt in enumerate(all_jointnames) for _ in range(3)
+                ]
                 scorers = len(bodypartlabels) * [DLCscorer]
                 xylvalue = int(len(bodypartlabels) / 3) * ["x", "y", "likelihood"]
                 pdindex = pd.MultiIndex.from_arrays(
@@ -1524,7 +1525,8 @@ def convert_detections2tracklets(
                         if not identity_only:
                             if track_method == "box":
                                 bboxes = trackingutils.calc_bboxes_from_keypoints(
-                                    animals[:, keep_inds], inferencecfg["boundingboxslack"],
+                                    animals[:, keep_inds],
+                                    inferencecfg["boundingboxslack"],
                                 )  # TODO: get cropping parameters and utilize!
                                 trackers = mot_tracker.update(bboxes)
                             else:
@@ -1532,13 +1534,17 @@ def convert_detections2tracklets(
                                 trackers = mot_tracker.track(xy)
                         else:
                             # Optimal identity assignment based on soft voting
-                            mat = np.zeros((len(assemblies), inferencecfg["topktoretain"]))
+                            mat = np.zeros(
+                                (len(assemblies), inferencecfg["topktoretain"])
+                            )
                             for nrow, assembly in enumerate(assemblies):
                                 for k, v in assembly.soft_identity.items():
                                     mat[nrow, k] = v
                             inds = linear_sum_assignment(mat, maximize=True)
                             trackers = np.c_[inds][:, ::-1]
-                        trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
+                        trackingutils.fill_tracklets(
+                            tracklets, trackers, animals, imname
+                        )
 
                 tracklets["header"] = pdindex
                 with open(trackname, "wb") as f:
@@ -1546,7 +1552,9 @@ def convert_detections2tracklets(
 
         os.chdir(str(start_path))
 
-        print("The tracklets were created (i.e., under the hood deeplabcut.convert_detections2tracklets was run). Now you can 'refine_tracklets' in the GUI, or run 'deeplabcut.stitch_tracklets'.")
+        print(
+            "The tracklets were created (i.e., under the hood deeplabcut.convert_detections2tracklets was run). Now you can 'refine_tracklets' in the GUI, or run 'deeplabcut.stitch_tracklets'."
+        )
     else:
         print("No video(s) found. Please check your path!")
 

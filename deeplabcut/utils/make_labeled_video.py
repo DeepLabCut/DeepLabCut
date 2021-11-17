@@ -458,7 +458,7 @@ def create_labeled_video(
 
     """
     cfg = auxiliaryfunctions.read_config(config)
-    track_method = auxfun_multianimal.get_track_method(cfg,track_method=track_method)
+    track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
 
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
@@ -662,7 +662,12 @@ def proc_video(
                         fps=outputframerate,
                     )
                 else:  # then the full video + the (perhaps in cropped mode analyzed labels) are depicted
-                    clip = vp(fname=video, sname=videooutname, codec=codec, fps=outputframerate)
+                    clip = vp(
+                        fname=video,
+                        sname=videooutname,
+                        codec=codec,
+                        fps=outputframerate,
+                    )
                 CreateVideo(
                     clip,
                     df,

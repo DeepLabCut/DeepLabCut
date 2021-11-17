@@ -216,7 +216,7 @@ def analyzeskeleton(
     if not cfg["skeleton"]:
         raise ValueError("No skeleton defined in the config.yaml.")
 
-    track_method = auxfun_multianimal.get_track_method(cfg,track_method=track_method)
+    track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
         cfg,
         shuffle,

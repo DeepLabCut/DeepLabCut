@@ -152,7 +152,7 @@ def filterpredictions(
     Returns filtered pandas array with the same structure as normal output of network.
     """
     cfg = auxiliaryfunctions.read_config(config)
-    track_method = auxfun_multianimal.get_track_method(cfg,track_method=track_method)
+    track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
 
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
         cfg,

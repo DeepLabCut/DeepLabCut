@@ -169,7 +169,9 @@ class ImagePanel(BasePanel):
         # draw epipolar lines
         epLines, sourcePts, offsets = self.retrieveData_and_computeEpLines(img, itr)
         if epLines is not None:
-            im = self.drawEpLines(im.copy(), epLines, sourcePts, offsets, colorIndex, cmap)
+            im = self.drawEpLines(
+                im.copy(), epLines, sourcePts, offsets, colorIndex, cmap
+            )
         ax = self.axes.imshow(im, cmap=cmap)
         self.orig_xlim = self.axes.get_xlim()
         self.orig_ylim = self.axes.get_ylim()

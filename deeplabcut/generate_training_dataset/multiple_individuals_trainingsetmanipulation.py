@@ -30,10 +30,7 @@ from deeplabcut.utils import auxiliaryfunctions, auxfun_models, auxfun_multianim
 
 
 def format_multianimal_training_data(
-    df,
-    train_inds,
-    project_path,
-    n_decimals=2,
+    df, train_inds, project_path, n_decimals=2,
 ):
     train_data = []
     nrows = df.shape[0]
@@ -44,9 +41,7 @@ def format_multianimal_training_data(
     mask_single = individuals.str.contains("single")
     n_animals = n_individuals - 1 if np.any(mask_single) else n_individuals
     array = np.full(
-        (nrows, n_individuals, n_bodyparts, 3),
-        fill_value=np.nan,
-        dtype=np.float32
+        (nrows, n_individuals, n_bodyparts, 3), fill_value=np.nan, dtype=np.float32
     )
     array[..., 0] = np.arange(n_bodyparts)
     temp = df.to_numpy()
@@ -55,9 +50,7 @@ def format_multianimal_training_data(
     array[:, :n_animals, :n_multibodyparts, 1:] = temp_multi
     if n_animals != n_individuals:  # There is a unique individual
         n_uniquebodyparts = n_bodyparts - n_multibodyparts
-        temp_single = np.reshape(
-            temp[:, mask_single], (nrows, 1, n_uniquebodyparts, 2)
-        )
+        temp_single = np.reshape(temp[:, mask_single], (nrows, 1, n_uniquebodyparts, 2))
         array[:, -1:, -n_uniquebodyparts:, 1:] = temp_single
     array = np.round(array, decimals=n_decimals)
     for i in tqdm(train_inds):
@@ -174,8 +167,10 @@ def create_multianimaltraining_dataset(
         raise ValueError("Crop size must be a tuple of two integers (width, height).")
 
     if crop_sampling not in ("uniform", "keypoints", "density", "hybrid"):
-            raise ValueError(f"Invalid sampling {crop_sampling}. Must be "
-                             f"either 'uniform', 'keypoints', 'density', or 'hybrid.")
+        raise ValueError(
+            f"Invalid sampling {crop_sampling}. Must be "
+            f"either 'uniform', 'keypoints', 'density', or 'hybrid."
+        )
 
     # Loading metadata from config file:
     cfg = auxiliaryfunctions.read_config(config)
@@ -201,7 +196,7 @@ def create_multianimaltraining_dataset(
     ### dlcr101_ms5/dlcr152_ms5: backbone resnet101/152 + multi-fusion & multi-stage module
     if all(net in net_type for net in ("dlcr", "_ms5")):
         num_layers = re.findall("dlcr([0-9]*)", net_type)[0]
-        if num_layers == '':
+        if num_layers == "":
             num_layers = 50
         net_type = "resnet_{}".format(num_layers)
         multi_stage = True
@@ -216,18 +211,15 @@ def create_multianimaltraining_dataset(
     if paf_graph is None:  # Automatically form a complete PAF graph
         partaffinityfield_graph = [
             list(edge) for edge in combinations(range(len(multianimalbodyparts)), 2)
-    ]
+        ]
     else:
         # Ignore possible connections between 'multi' and 'unique' body parts;
         # one can never be too careful...
-        to_ignore = auxfun_multianimal.filter_unwanted_paf_connections(
-            cfg, paf_graph
-        )
+        to_ignore = auxfun_multianimal.filter_unwanted_paf_connections(cfg, paf_graph)
         partaffinityfield_graph = [
             edge for i, edge in enumerate(paf_graph) if i not in to_ignore
         ]
         auxfun_multianimal.validate_paf_graph(cfg, partaffinityfield_graph)
-
 
     print("Utilizing the following graph:", partaffinityfield_graph)
     # Disable the prediction of PAFs if the graph is empty
@@ -250,12 +242,8 @@ def create_multianimaltraining_dataset(
         splits = []
         for shuffle in Shuffles:  # Creating shuffles starting from 1
             for train_frac in cfg["TrainingFraction"]:
-                train_inds, test_inds = SplitTrials(
-                    range(len(Data)), train_frac
-                )
-                splits.append(
-                    (train_frac, shuffle, (train_inds, test_inds))
-                )
+                train_inds, test_inds = SplitTrials(range(len(Data)), train_frac)
+                splits.append((train_frac, shuffle, (train_inds, test_inds)))
     else:
         if len(trainIndices) != len(testIndices) != len(Shuffles):
             raise ValueError(
@@ -277,9 +265,7 @@ def create_multianimaltraining_dataset(
             train_inds = train_inds[train_inds != -1]
             test_inds = np.asarray(test_inds)
             test_inds = test_inds[test_inds != -1]
-            splits.append(
-                (trainFraction, Shuffles[shuffle], (train_inds, test_inds))
-            )
+            splits.append((trainFraction, Shuffles[shuffle], (train_inds, test_inds)))
 
     for trainFraction, shuffle, (trainIndices, testIndices) in splits:
         ####################################################
@@ -294,10 +280,7 @@ def create_multianimaltraining_dataset(
 
         # Make training file!
         data = format_multianimal_training_data(
-            Data,
-            trainIndices,
-            cfg["project_path"],
-            numdigits,
+            Data, trainIndices, cfg["project_path"], numdigits,
         )
 
         if len(trainIndices) > 0:
@@ -353,10 +336,7 @@ def create_multianimaltraining_dataset(
             )
             path_test_config = str(
                 os.path.join(
-                    cfg["project_path"],
-                    Path(modelfoldername),
-                    "test",
-                    "pose_cfg.yaml",
+                    cfg["project_path"], Path(modelfoldername), "test", "pose_cfg.yaml",
                 )
             )
             path_inference_config = str(
@@ -376,8 +356,7 @@ def create_multianimaltraining_dataset(
                 "num_joints": len(multianimalbodyparts)
                 + len(uniquebodyparts),  # cfg["uniquebodyparts"]),
                 "all_joints": [
-                    [i]
-                    for i in range(len(multianimalbodyparts) + len(uniquebodyparts))
+                    [i] for i in range(len(multianimalbodyparts) + len(uniquebodyparts))
                 ],  # cfg["uniquebodyparts"]))],
                 "all_joints_names": jointnames,
                 "init_weights": model_path,
@@ -441,9 +420,7 @@ def create_multianimaltraining_dataset(
                 dlcparent_path, "inference_cfg.yaml"
             )
             items2change = {
-                "minimalnumberofconnections": int(
-                    len(cfg["multianimalbodyparts"]) / 2
-                ),
+                "minimalnumberofconnections": int(len(cfg["multianimalbodyparts"]) / 2),
                 "topktoretain": len(cfg["individuals"])
                 + 1 * (len(cfg["uniquebodyparts"]) > 0),
                 "withid": cfg.get("identity", False),
@@ -460,10 +437,7 @@ def create_multianimaltraining_dataset(
 
 
 def convert_cropped_to_standard_dataset(
-    config_path,
-    recreate_datasets=True,
-    delete_crops=True,
-    back_up=True,
+    config_path, recreate_datasets=True, delete_crops=True, back_up=True,
 ):
     import pandas as pd
     import pickle
@@ -475,8 +449,10 @@ def convert_cropped_to_standard_dataset(
     videos_orig = cfg.pop("video_sets_original")
     is_cropped = cfg.pop("croppedtraining")
     if videos_orig is None or not is_cropped:
-        print("Labeled data do not appear to be cropped. "
-              "Project will remain unchanged...")
+        print(
+            "Labeled data do not appear to be cropped. "
+            "Project will remain unchanged..."
+        )
         return
 
     project_path = cfg["project_path"]
@@ -542,9 +518,7 @@ def convert_cropped_to_standard_dataset(
 
     # Search a pose_config.yaml file to parse missing information
     pose_config_path = ""
-    for dirpath, _, filenames in os.walk(
-            os.path.join(project_path, "dlc-models")
-    ):
+    for dirpath, _, filenames in os.walk(os.path.join(project_path, "dlc-models")):
         for file in filenames:
             if file.endswith("pose_cfg.yaml"):
                 pose_config_path = os.path.join(dirpath, file)

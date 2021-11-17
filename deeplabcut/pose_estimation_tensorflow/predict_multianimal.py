@@ -74,7 +74,10 @@ def AnalyzeMultiAnimalVideo(
         )
         start = time.time()
 
-        print("Starting to extract posture from the video(s) with batchsize:", dlc_cfg["batch_size"])
+        print(
+            "Starting to extract posture from the video(s) with batchsize:",
+            dlc_cfg["batch_size"],
+        )
         if int(dlc_cfg["batch_size"]) > 1:
             PredicteData, nframes = GetPoseandCostsF(
                 cfg,

@@ -13,9 +13,9 @@ if __name__ == "__main__":
     TRAIN_SIZE = 0.8
     # NET = "dlcr101_ms5"
     NET = "dlcrnet_ms5"
-    #NET = "resnet_152"
-    #NET = "efficientnet-b0"
-    #NET = "mobilenet_v2_0.35" # should be fixed
+    # NET = "resnet_152"
+    # NET = "efficientnet-b0"
+    # NET = "mobilenet_v2_0.35" # should be fixed
 
     N_ITER = 5
 
@@ -38,8 +38,8 @@ if __name__ == "__main__":
             "numframes2pick": NUM_FRAMES,
             "TrainingFraction": [TRAIN_SIZE],
             "identity": True,
-            "uniquebodyparts": ['corner1', 'corner2'],
-        }
+            "uniquebodyparts": ["corner1", "corner2"],
+        },
     )
     print("Config edited.")
 
@@ -91,7 +91,9 @@ if __name__ == "__main__":
     print("Labels checked.")
 
     print("Creating train dataset...")
-    deeplabcut.create_multianimaltraining_dataset(config_path, net_type=NET, crop_size=(200, 200))
+    deeplabcut.create_multianimaltraining_dataset(
+        config_path, net_type=NET, crop_size=(200, 200)
+    )
     print("Train dataset created.")
 
     print("Editing pose config...")
@@ -131,7 +133,9 @@ if __name__ == "__main__":
     )
 
     print("Analyzing video...")
-    deeplabcut.analyze_videos(config_path, [new_video_path], "mp4", robust_nframes=True,allow_growth=True)
+    deeplabcut.analyze_videos(
+        config_path, [new_video_path], "mp4", robust_nframes=True, allow_growth=True
+    )
 
     print("Video analyzed.")
 
@@ -163,11 +167,7 @@ if __name__ == "__main__":
 
     print("Creating labeled video...")
     deeplabcut.create_labeled_video(
-        config_path,
-        [new_video_path],
-        "mp4",
-        save_frames=False,
-        color_by="individual",
+        config_path, [new_video_path], "mp4", save_frames=False, color_by="individual",
     )
     print("Labeled video created.")
 

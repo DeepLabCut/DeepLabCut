@@ -51,10 +51,7 @@ def test_sort_ellipse():
     assert trackers.shape == (2, 7)
     trackingutils.fill_tracklets(tracklets, trackers, poses, imname=0)
     assert all(id_ in tracklets for id_ in trackers[:, -2])
-    assert all(
-        np.array_equal(tracklets[n][0], pose)
-        for n, pose in enumerate(poses)
-    )
+    assert all(np.array_equal(tracklets[n][0], pose) for n, pose in enumerate(poses))
 
 
 def test_tracking(real_assemblies, real_tracklets):
@@ -71,15 +68,12 @@ def test_tracking(real_assemblies, real_tracklets):
         len(tracklet) for tracklet in tracklets_ref.values()
     ]
     assert all(
-        t.shape[1] == 4
-        for tracklet in tracklets.values()
-        for t in tracklet.values()
+        t.shape[1] == 4 for tracklet in tracklets.values() for t in tracklet.values()
     )
 
 
 def test_tracking_montblanc(
-    real_assemblies_montblanc,
-    real_tracklets_montblanc,
+    real_assemblies_montblanc, real_tracklets_montblanc,
 ):
     tracklets_ref = real_tracklets_montblanc.copy()
     _ = tracklets_ref.pop("header", None)
@@ -97,7 +91,7 @@ def test_tracking_montblanc(
     for k, assemblies in tracklets.items():
         ref = tracklets_ref[k]
         for ind, data in assemblies.items():
-            frame = f'frame{str(ind).zfill(3)}' if k != "single" else ind
+            frame = f"frame{str(ind).zfill(3)}" if k != "single" else ind
             np.testing.assert_equal(data, ref[frame])
 
 

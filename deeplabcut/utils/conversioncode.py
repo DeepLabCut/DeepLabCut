@@ -41,7 +41,9 @@ def convertannotationdata_fromwindows2unixstyle(
     """
     cfg = auxiliaryfunctions.read_config(config)
     folders = [
-        Path(config).parent / "labeled-data" / trainingsetmanipulation._robust_path_split(vid)[1]
+        Path(config).parent
+        / "labeled-data"
+        / trainingsetmanipulation._robust_path_split(vid)[1]
         for vid in cfg["video_sets"]
     ]
 

@@ -21,7 +21,12 @@ import statsmodels.api as sm
 from skimage.util import img_as_ubyte
 
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualization, frameselectiontools
+from deeplabcut.utils import (
+    auxiliaryfunctions,
+    auxfun_multianimal,
+    visualization,
+    frameselectiontools,
+)
 from deeplabcut.utils.auxfun_videos import VideoWriter
 
 
@@ -287,7 +292,7 @@ def extract_outlier_frames(
     )
     if not len(bodyparts):
         raise ValueError("No valid bodyparts were selected.")
-    track_method = auxfun_multianimal.get_track_method(cfg,track_method=track_method)
+    track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
 
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
         cfg,

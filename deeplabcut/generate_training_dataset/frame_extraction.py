@@ -393,7 +393,9 @@ def extract_frames(
         elif any(has_failed):
             print("Although most frames were extracted, some were invalid.")
         else:
-            print("Frames were successfully extracted, for the videos listed in the config.yaml file.")
+            print(
+                "Frames were successfully extracted, for the videos listed in the config.yaml file."
+            )
         print(
             "\nYou can now label the frames using the function 'label_frames' "
             "(Note, you should label frames extracted from diverse videos (and many videos; we do not recommend training on single videos!))."

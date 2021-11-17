@@ -99,7 +99,6 @@ class Analyze_videos(wx.Panel):
         self.hbox3 = wx.BoxSizer(wx.HORIZONTAL)
         self.hbox4 = wx.BoxSizer(wx.HORIZONTAL)
 
-
         videotype_text = wx.StaticBox(self, label="Specify the videotype")
         videotype_text_boxsizer = wx.StaticBoxSizer(videotype_text, wx.VERTICAL)
         videotypes = [".avi", ".mp4", ".mov"]
@@ -112,17 +111,16 @@ class Analyze_videos(wx.Panel):
         shuffle_text = wx.StaticBox(self, label="Specify the shuffle")
         shuffle_boxsizer = wx.StaticBoxSizer(shuffle_text, wx.VERTICAL)
         self.shuffle = wx.SpinCtrl(self, value="1", min=0, max=100)
-        shuffle_boxsizer.Add(self.shuffle, 1,wx.EXPAND | wx.TOP | wx.BOTTOM,  1)
+        shuffle_boxsizer.Add(self.shuffle, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
 
         trainingset = wx.StaticBox(self, label="Specify the trainingset index")
         trainingset_boxsizer = wx.StaticBoxSizer(trainingset, wx.VERTICAL)
         self.trainingset = wx.SpinCtrl(self, value="0", min=0, max=100)
-        trainingset_boxsizer.Add(self.trainingset, 1,wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
+        trainingset_boxsizer.Add(self.trainingset, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
 
-
-        self.hbox1.Add(videotype_text_boxsizer, 1, wx.EXPAND | wx.TOP | wx.BOTTOM,1)
+        self.hbox1.Add(videotype_text_boxsizer, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
         self.hbox1.Add(shuffle_boxsizer, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
-        self.hbox1.Add(trainingset_boxsizer, 1, wx.EXPAND | wx.TOP | wx.BOTTOM,1)
+        self.hbox1.Add(trainingset_boxsizer, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
 
         if self.cfg.get("multianimalproject", False):
 
@@ -181,10 +179,12 @@ class Analyze_videos(wx.Panel):
             self.identity_toggle.SetSelection(1)
             self.hbox4.Add(self.identity_toggle, 1, 1)
 
-            winsize_text = wx.StaticBox(self, label="Prioritize past connections over a window of size:")
+            winsize_text = wx.StaticBox(
+                self, label="Prioritize past connections over a window of size:"
+            )
             winsize_sizer = wx.StaticBoxSizer(winsize_text, wx.VERTICAL)
             self.winsize = wx.SpinCtrl(self, value="0")
-            winsize_sizer.Add(self.winsize, 1, wx.EXPAND | wx.TOP | wx.BOTTOM,1)
+            winsize_sizer.Add(self.winsize, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
             self.hbox4.Add(winsize_sizer, 1, 1)
 
         else:

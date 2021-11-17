@@ -19,21 +19,24 @@ import pandas as pd
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.generate_training_dataset import trainingsetmanipulation
 
+
 def extractindividualsandbodyparts(cfg):
     individuals = cfg["individuals"].copy()
     if len(cfg["uniquebodyparts"]) > 0:
         individuals.append("single")
     return individuals, cfg["uniquebodyparts"], cfg["multianimalbodyparts"]
 
-def get_track_method(cfg,track_method=""):
+
+def get_track_method(cfg, track_method=""):
     if cfg.get("multianimalproject", False):
-        if track_method!="":
-            #TODO: check if this tracker actually exists?
-            return cfg.get("default_track_method", track_method) #
+        if track_method != "":
+            # TODO: check if this tracker actually exists?
+            return cfg.get("default_track_method", track_method)  #
         else:
             return ""
-    else: # no tracker for single-animal projects
+    else:  # no tracker for single-animal projects
         return ""
+
 
 def IntersectionofIndividualsandOnesGivenbyUser(cfg, individuals):
     """ Returns all individuals when set to 'all', otherwise all bpts that are in the intersection of comparisonbodyparts and the actual bodyparts """

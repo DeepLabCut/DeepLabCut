@@ -281,6 +281,7 @@ def write_plainconfig(configname, cfg):
     with open(configname, "w") as file:
         YAML().dump(cfg, file)
 
+
 def attempttomakefolder(foldername, recursive=False):
     """ Attempts to create a folder with specified name. Does nothing if it already exists. """
     try:

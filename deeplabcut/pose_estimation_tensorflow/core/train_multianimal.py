@@ -27,7 +27,7 @@ from deeplabcut.pose_estimation_tensorflow.core.train import (
     setup_preloading,
     start_preloading,
     get_optimizer,
-    LearningRate
+    LearningRate,
 )
 
 
@@ -88,10 +88,13 @@ def train(
                 include=["MobilenetV2"]
             )
         elif "efficientnet" in net_type:
-            variables_to_restore = slim.get_variables_to_restore(include=["efficientnet"])
+            variables_to_restore = slim.get_variables_to_restore(
+                include=["efficientnet"]
+            )
             variables_to_restore = {
-                    var.op.name.replace("efficientnet/", "")
-                    + "/ExponentialMovingAverage":var for var in variables_to_restore
+                var.op.name.replace("efficientnet/", "")
+                + "/ExponentialMovingAverage": var
+                for var in variables_to_restore
             }
         else:
             print("Wait for DLC 2.3.")
@@ -199,12 +202,11 @@ def train(
             saver.save(sess, model_name, global_step=it)
 
     lrf.close()
-    
+
     sess.close()
     coord.request_stop()
     coord.join([thread])
-    
-        
+
     # return to original path.
     os.chdir(str(start_path))
 
