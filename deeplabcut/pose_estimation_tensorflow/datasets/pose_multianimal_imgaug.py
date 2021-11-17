@@ -38,7 +38,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
     @property
     def default_crop_size(self):
-        return self.cfg.get("crop_size", (400, 400))  # width, height
+        return np.array(self.cfg.get("crop_size", (400, 400)))  # width, height
 
     def load_dataset(self):
         cfg = self.cfg
@@ -296,7 +296,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         }
 
     def calc_target_and_scoremap_sizes(self):
-        target_size = np.asarray(self.default_crop_size) * self.sample_scale()
+        target_size = self.default_crop_size * self.sample_scale()
         target_size = np.ceil(target_size).astype(int)
         if not self.is_valid_size(target_size):
             target_size = self.default_crop_size
