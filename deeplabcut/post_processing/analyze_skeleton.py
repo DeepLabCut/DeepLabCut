@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 from scipy.spatial import distance
 
-from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
 
 # utility functions
@@ -176,6 +176,7 @@ def analyzeskeleton(
     save_as_csv=False,
     destfolder=None,
     modelprefix="",
+    track_method="",
 ):
     """
     Extracts length and orientation of each "bone" of the skeleton as defined in the config file.
@@ -204,13 +205,18 @@ def analyzeskeleton(
     destfolder: string, optional
         Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this
         folder also needs to be passed.
+
+    track_method: string, optional
+         Specifies the tracker used to generate the data. Empty by default (corresponding to a single animal project).
+         For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will be taken from the config.yaml file if none is given.
+
     """
     # Load config file, scorer and videos
     cfg = auxiliaryfunctions.read_config(config)
     if not cfg["skeleton"]:
         raise ValueError("No skeleton defined in the config.yaml.")
 
-    track_method = cfg.get("default_track_method", "")
+    track_method = auxfun_multianimal.get_track_method(cfg,track_method=track_method)
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
         cfg,
         shuffle,

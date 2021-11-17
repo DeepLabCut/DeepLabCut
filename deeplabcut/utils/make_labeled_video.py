@@ -358,6 +358,7 @@ def create_labeled_video(
     displaycropped=False,
     color_by="bodypart",
     modelprefix="",
+    track_method="",
 ):
     """
     Labels the bodyparts in a video. Make sure the video is already analyzed by the function 'analyze_video'
@@ -427,6 +428,11 @@ def create_labeled_video(
         Coloring rule. By default, each bodypart is colored differently.
         If set to 'individual', points belonging to a single individual are colored the same.
 
+    track_method: string, optional
+         Specifies the tracker used to generate the data. Empty by default (corresponding to a single animal project).
+         For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will be taken from the config.yaml file if none is given.
+
+
     Examples
     --------
     If you want to create the labeled video for only 1 video
@@ -452,7 +458,8 @@ def create_labeled_video(
 
     """
     cfg = auxiliaryfunctions.read_config(config)
-    track_method = cfg.get("default_track_method", "")
+    track_method = auxfun_multianimal.get_track_method(cfg,track_method=track_method)
+
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
         cfg, shuffle, trainFraction, modelprefix=modelprefix

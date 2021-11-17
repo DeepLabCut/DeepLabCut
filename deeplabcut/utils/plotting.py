@@ -173,6 +173,7 @@ def plot_trajectories(
     imagetype=".png",
     resolution=100,
     linewidth=1.0,
+    track_method="",
 ):
     """
     Plots the trajectories of various bodyparts across the video.
@@ -218,6 +219,10 @@ def plot_trajectories(
     linewidth: float, default 1.0
         Specifies width of line for line and histogram plots.
 
+    track_method: string, optional
+         Specifies the tracker used to generate the data. Empty by default (corresponding to a single animal project).
+         For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will be taken from the config.yaml file if none is given.
+
     Example
     --------
     for labeling the frames
@@ -226,7 +231,8 @@ def plot_trajectories(
 
     """
     cfg = auxiliaryfunctions.read_config(config)
-    track_method = cfg.get("default_track_method", "")
+    track_method = auxfun_multianimal.get_track_method(cfg,track_method=track_method)
+
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
         cfg, shuffle, trainFraction, modelprefix=modelprefix

@@ -21,7 +21,7 @@ import statsmodels.api as sm
 from skimage.util import img_as_ubyte
 
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
-from deeplabcut.utils import auxiliaryfunctions, visualization, frameselectiontools
+from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualization, frameselectiontools
 from deeplabcut.utils.auxfun_videos import VideoWriter
 
 
@@ -181,6 +181,7 @@ def extract_outlier_frames(
     savelabeled=False,
     destfolder=None,
     modelprefix="",
+    track_method="",
 ):
     """
     Extracts the outlier frames in case, the predictions are not correct for a certain video from the cropped video running from
@@ -260,6 +261,10 @@ def extract_outlier_frames(
     destfolder: string, optional
         Specifies the destination folder that was used for storing analysis data (default is the path of the video).
 
+    track_method: string, optional
+         Specifies the tracker used to generate the data. Empty by default (corresponding to a single animal project).
+         For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will be taken from the config.yaml file if none is given.
+
     Examples
 
     Windows example for extracting the frames with default settings
@@ -282,7 +287,7 @@ def extract_outlier_frames(
     )
     if not len(bodyparts):
         raise ValueError("No valid bodyparts were selected.")
-    track_method = cfg.get("default_track_method", "")
+    track_method = auxfun_multianimal.get_track_method(cfg,track_method=track_method)
 
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
         cfg,
