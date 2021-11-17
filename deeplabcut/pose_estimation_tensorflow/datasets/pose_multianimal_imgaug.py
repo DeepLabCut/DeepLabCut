@@ -11,11 +11,10 @@ Licensed under GNU Lesser General Public License v3.0
 import logging
 import os
 import pickle
-import random as rand
-
 import imageio
 import imgaug.augmenters as iaa
 import numpy as np
+
 from imgaug.augmentables import Keypoint, KeypointsOnImage
 from deeplabcut.pose_estimation_tensorflow.datasets import augmentation
 from deeplabcut.pose_estimation_tensorflow.datasets.factory import PoseDatasetFactory
@@ -297,7 +296,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         }
 
     def calc_target_and_scoremap_sizes(self):
-        target_size = np.asarray(self.default_crop_size) * self.get_scale()
+        target_size = np.asarray(self.default_crop_size) * self.sample_scale()
         target_size = np.ceil(target_size).astype(int)
         if not self.is_valid_size(target_size):
             target_size = self.default_crop_size
@@ -387,14 +386,6 @@ class MAImgaugPoseDataset(BasePoseDataset):
         if self.cfg["mirror"]:
             num *= 2
         return num
-
-    def get_scale(self):
-        cfg = self.cfg
-        scale = cfg["global_scale"]
-        if "scale_jitter_lo" in cfg and "scale_jitter_up" in cfg:
-            scale_jitter = rand.uniform(cfg["scale_jitter_lo"], cfg["scale_jitter_up"])
-            scale *= scale_jitter
-        return scale
 
     def is_valid_size(self, target_size):
         im_width, im_height = target_size

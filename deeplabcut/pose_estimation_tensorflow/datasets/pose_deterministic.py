@@ -137,20 +137,11 @@ class DeterministicPoseDataset(BasePoseDataset):
     def get_training_sample(self, imidx):
         return self.data[imidx]
 
-    def get_scale(self):
-        if self.cfg["deterministic"]:
-            np.random.seed(42)
-        scale = self.scale
-        if "scale_jitter_lo" in self.cfg and "scale_jitter_up" in self.cfg:
-            scale_jitter = np.random.uniform(self.cfg['scale_jitter_lo'], self.cfg['scale_jitter_up'])
-            scale *= scale_jitter
-        return scale
-
     def next_batch(self):
         while True:
             imidx, mirror = self.next_training_sample()
             data_item = self.get_training_sample(imidx)
-            scale = self.get_scale()
+            scale = self.sample_scale()
 
             if not self.is_valid_size(data_item.im_size, scale):
                 continue

@@ -21,7 +21,6 @@ https://github.com/tensorpack/tensorpack
 
 import multiprocessing
 import os
-import random as rand
 
 import cv2
 import numpy as np
@@ -405,14 +404,6 @@ class TensorpackPoseDataset(BasePoseDataset):
             self.image_indices = image_indices
         else:
             self.image_indices = np.random.permutation(num_images)
-
-    def get_scale(self):
-        cfg = self.cfg
-        scale = cfg["global_scale"]
-        if "scale_jitter_lo" in cfg and "scale_jitter_up" in cfg:
-            scale_jitter = rand.uniform(cfg["scale_jitter_lo"], cfg["scale_jitter_up"])
-            scale *= scale_jitter
-        return scale
 
     def next_batch(self):
         next_batch = next(self.aug)
