@@ -126,7 +126,8 @@ def analyze_videos(
     auto_track: bool, optional (default=True)
         By default, tracking and stitching are automatically performed, producing the final h5 data file.
         This is equivalent to the behavior of single-animal projects.
-        If False, one must run `convert_detections2tracklets` and `stitch_tracklets` afterwards.
+        
+        If False, one must run `convert_detections2tracklets` and `stitch_tracklets` afterwards, in order to obtain the h5 file. 
 
     Examples
     --------
