@@ -1,9 +1,9 @@
 DeepLabCut (www.deeplabcut.org) was initially developed by
-Alexander & Mackenzie Mathis in collaboration with Matthias Bethge.
+Alexander & Mackenzie Mathis in collaboration with Matthias Bethge. 
+It is actively developed by Alexander & Mackenzie Mathis (steering council and owners).
 
 DeepLabCut is an open-source tool and has benefited from suggestions and edits by many
-individuals:
-https://github.com/AlexEMG/DeepLabCut/graphs/contributors
+individuals: DeepLabCut/graphs/contributors
 
 ############################################################################################################
 
@@ -13,8 +13,8 @@ M Mathis, mackenzie@post.harvard.edu | https://github.com/MMathisLab
 
 Specific external contributors:
 E Insafutdinov and co-authors of DeeperCut (see README) for feature detectors: https://github.com/eldar
-- Thus, code in this subdirectory https://github.com/AlexEMG/DeepLabCut/tree/master/deeplabcut/pose_estimation_tensorflow
-was adapted from: https://github.com/eldar/pose-tensorflow
+- Thus, code in this subdirectory at the time of April 2018, deeplabcut/pose_estimation_tensorflow
+was adapted from: https://github.com/eldar/pose-tensorflow.
 
 Products:
 DeepLabCut: markerless pose estimation of user-defined body parts with deep learning. Nature Neuroscience, 2018.
@@ -61,9 +61,10 @@ M Mathis, mackenzie@post.harvard.edu | https://github.com/MMathisLab
 Specific external contributors:
 Tensorpack augmentation: https://github.com/DeepLabCut/DeepLabCut/pull/409 by Katie Rupp
 
-Preprint:
-Pretraining boosts out-of-domain robustness for pose estimation
-A. Mathis, M. Yüksekgönül, B. Rogers, M. Bethge, M. Mathis
+Products:
+Pretraining boosts out-of-domain robustness for pose estimation. WACV, 2021.
+http://www.mackenziemathislab.org/horse10
+A. Mathis, T. Biasi, S. Schneider, M. Yüksekgönül, B. Rogers, M. Bethge, M. Mathis
 
 ############################################################################################################
 
@@ -73,6 +74,7 @@ J Lauer, jessy@deeplabcut.org | https://github.com/jeylau
 M Mathis, mackenzie@post.harvard.edu | https://github.com/MMathisLab
 M Zhou, https://github.com/zhoumu53
 S Ye, https://github.com/yeshaokai
+S Schneider, https://github.com/stes
 T Biasi, https://github.com/tbiasi
 G Kane, https://github.com/gkane26
 M Yüksekgönül, https://github.com/mertyg
@@ -80,6 +82,6 @@ T Nath, https://github.com/meet10may
 
 Preprint:
 Multi-animal pose estimation and tracking with DeepLabCut
-J Lauer,  M Zhou,  S Ye,  W Menegas,  T Nath,  MM Rahman, V Di Santo, 
+J Lauer,  M Zhou,  S Ye,  W Menegas,  S Schneider, T Nath,  MM Rahman, V Di Santo, 
 D Soberanes, G Feng, VN Murthy, G Lauder, C Dulac,  M Mathis, A Mathis
 https://www.biorxiv.org/content/10.1101/2021.04.30.442096v1

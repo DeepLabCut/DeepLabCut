@@ -1194,6 +1194,10 @@ class MainFrame(BaseFrame):
         """
         self.drs = []
         self.updatedCoords = []
+        if len(self.individual_names)>1:
+            self.norm, self.colorIndex = self.image_panel.getColorIndices(
+                self.img, self.multibodyparts
+            )
         for j, ind in enumerate(self.individual_names):
             idcolor = self.idmap(j)
             if ind not in self.dataFrame.columns.get_level_values(1):
@@ -1248,9 +1252,6 @@ class MainFrame(BaseFrame):
                         self.dataFrame[self.scorer][ind][bp]["x"].values[self.iter],
                         self.dataFrame[self.scorer][ind][bp]["y"].values[self.iter],
                     ]
-                    self.norm, self.colorIndex = self.image_panel.getColorIndices(
-                        self.img, self.multibodyparts
-                    )
                     color = self.colormap(self.norm(self.colorIndex[c]))
                     circle = patches.Circle(
                         (self.points[0], self.points[1]),

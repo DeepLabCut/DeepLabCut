@@ -60,3 +60,20 @@ def test_association_costs(model_outputs, ground_truth_detections):
         np.allclose(v["distance"], costs_gt[k]["distance"], atol=1.5)
         for k, v in costs_pred.items()
     )
+
+
+def test_compute_peaks_and_costs_no_graph(model_outputs):
+    peak_inds = predict_multianimal.find_local_peak_indices_maxpool_nms(
+        model_outputs[0], RADIUS, THRESHOLD,
+    )
+    with tf.compat.v1.Session() as sess:
+        peak_inds = sess.run(peak_inds)
+    preds = predict_multianimal.compute_peaks_and_costs(
+        *model_outputs,
+        peak_inds,
+        graph=[],
+        paf_inds=[],
+        n_id_channels=0,
+        stride=STRIDE,
+    )[0]
+    assert "costs" not in preds

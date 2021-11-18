@@ -182,6 +182,8 @@ def _benchmark_paf_graphs(
     identity_only=False,
     calibration_file="",
     oks_sigma=0.1,
+    margin=0,
+    symmetric_kpts=None,
     split_inds=None,
 ):
     metadata = data.pop("metadata")
@@ -238,17 +240,33 @@ def _benchmark_paf_graphs(
     n_graphs = len(paf_inds)
     all_scores = []
     all_metrics = []
+    all_assemblies = []
     for j, paf in enumerate(paf_inds, start=1):
         print(f"Graph {j}|{n_graphs}")
         ass.paf_inds = paf
         ass.assemble()
+        all_assemblies.append((ass.assemblies, ass.unique, ass.metadata['imnames']))
         if split_inds is not None:
             oks = []
             for inds in split_inds:
                 assemblies = {k: v for k, v in ass.assemblies.items() if k in inds}
-                oks.append(evaluate_assembly(assemblies, ass_true_dict, oks_sigma))
+                oks.append(
+                    evaluate_assembly(
+                        assemblies,
+                        ass_true_dict,
+                        oks_sigma,
+                        margin=margin,
+                        symmetric_kpts=symmetric_kpts,
+                    )
+                )
         else:
-            oks = evaluate_assembly(ass.assemblies, ass_true_dict, oks_sigma)
+            oks = evaluate_assembly(
+                ass.assemblies,
+                ass_true_dict,
+                oks_sigma,
+                margin=margin,
+                symmetric_kpts=symmetric_kpts,
+            )
         all_metrics.append(oks)
         scores = np.full((len(image_paths), 2), np.nan)
         for i, imname in enumerate(tqdm(image_paths)):
@@ -270,7 +288,7 @@ def _benchmark_paf_graphs(
                 ]
                 hyp = np.concatenate(animals)
                 hyp = hyp[~np.isnan(hyp).any(axis=1)]
-                scores[i, 0] = (n_dets - hyp.shape[0]) / n_dets
+                scores[i, 0] = max(0, (n_dets - hyp.shape[0]) / n_dets)
                 neighbors = _find_closest_neighbors(gt[:, :2], hyp[:, :2])
                 valid = neighbors != -1
                 id_gt = gt[valid, 2]
@@ -287,7 +305,7 @@ def _benchmark_paf_graphs(
         dfs.append(df)
     big_df = pd.concat(dfs)
     group = big_df.groupby("ngraph")
-    return (all_scores, group.agg(["mean", "std"]).T, all_metrics)
+    return (all_scores, group.agg(["mean", "std"]).T, all_metrics, all_assemblies)
 
 
 def _get_n_best_paf_graphs(
@@ -359,12 +377,15 @@ def cross_validate_paf_graphs(
     metadata_file,
     output_name="",
     pcutoff=0.1,
+    oks_sigma=0.1,
+    margin=0,
     greedy=False,
     add_discarded=True,
     calibrate=False,
     overwrite_config=True,
     n_graphs=10,
     paf_inds=None,
+    symmetric_kpts=None,
 ):
     cfg = auxiliaryfunctions.read_config(config)
     inf_cfg = auxiliaryfunctions.read_plainconfig(inference_config)
@@ -406,6 +427,9 @@ def cross_validate_paf_graphs(
         paf_inds,
         greedy,
         add_discarded,
+        oks_sigma=oks_sigma,
+        margin=margin,
+        symmetric_kpts=symmetric_kpts,
         calibration_file=calibration_file,
         split_inds=[
             metadata["data"]["trainIndices"],
@@ -425,4 +449,4 @@ def cross_validate_paf_graphs(
     if output_name:
         with open(output_name, "wb") as file:
             pickle.dump([results], file)
-    return results, paf_scores
+    return results[:3], paf_scores, results[3][size_opt]

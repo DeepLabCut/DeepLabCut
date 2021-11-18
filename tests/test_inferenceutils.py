@@ -37,6 +37,15 @@ def test_calc_object_keypoint_similarity(real_assemblies):
     assert inferenceutils.calc_object_keypoint_similarity(xy3, xy1, sigma) == 0
     assert np.isnan(inferenceutils.calc_object_keypoint_similarity(xy1, xy3, sigma))
 
+    # Test flipped keypoints
+    xy4 = xy1.copy()
+    symmetric_pair = [0, 11]
+    xy4[symmetric_pair] = xy4[symmetric_pair[::-1]]
+    assert inferenceutils.calc_object_keypoint_similarity(xy1, xy4, sigma) != 1
+    assert inferenceutils.calc_object_keypoint_similarity(
+        xy1, xy4, sigma, symmetric_kpts=[symmetric_pair]
+    ) == 1
+
 
 def test_match_assemblies(real_assemblies):
     assemblies = real_assemblies[0]
@@ -59,6 +68,17 @@ def test_evaluate_assemblies(real_assemblies):
     thresholds = np.linspace(0.5, 0.95, n_thresholds)
     dict_ = inferenceutils.evaluate_assembly(
         assemblies, assemblies, oks_thresholds=thresholds
+    )
+    assert dict_["mAP"] == dict_["mAR"] == 1
+    assert len(dict_["precisions"]) == len(dict_["recalls"]) == n_thresholds
+    assert dict_["precisions"].shape[1] == 101
+    np.testing.assert_allclose(dict_["precisions"], 1)
+
+    dict_ = inferenceutils.evaluate_assembly(
+        assemblies,
+        assemblies,
+        oks_thresholds=thresholds,
+        symmetric_kpts=[(0, 5), (1, 4)]
     )
     assert dict_["mAP"] == dict_["mAR"] == 1
     assert len(dict_["precisions"]) == len(dict_["recalls"]) == n_thresholds
@@ -148,6 +168,59 @@ def test_assembler(tmpdir_factory, real_assemblies):
     ass.to_pickle(str(output_name).replace("h5", "pickle"))
 
 
+def test_assembler_with_single_bodypart(real_assemblies):
+    with open(os.path.join(TEST_DATA_DIR, "trimouse_full.pickle"), "rb") as file:
+        temp = pickle.load(file)
+    data = {"metadata": temp.pop("metadata")}
+    for k, dict_ in temp.items():
+        data[k] = {
+            "coordinates": (dict_["coordinates"][0][:1],),
+            "confidence": dict_["confidence"][:1],
+        }
+    ass = inferenceutils.Assembler(
+        data,
+        max_n_individuals=3,
+        n_multibodyparts=1,
+    )
+    ass.metadata["joint_names"] = ass.metadata["joint_names"][:1]
+    ass.metadata["num_joints"] = 1
+    ass.metadata["paf_graph"] = []
+    ass.metadata["paf"] = []
+    ass.metadata["bpts"] = [0]
+    ass.metadata["ibpts"] = [0]
+    ass.assemble(chunk_size=0)
+    assert not ass.unique
+    assert len(ass.assemblies) == len(real_assemblies)
+    assert all(len(a) == 3 for a in ass.assemblies.values())
+
+
+def test_assembler_with_unique_bodypart(real_assemblies_montblanc):
+    with open(os.path.join(TEST_DATA_DIR, "montblanc_full.pickle"), "rb") as file:
+        data = pickle.load(file)
+    ass = inferenceutils.Assembler(
+        data,
+        max_n_individuals=3,
+        n_multibodyparts=4,
+        pcutoff=0.1,
+        min_affinity=0.1,
+    )
+    assert len(ass.metadata["imnames"]) == 180
+    assert ass.n_keypoints == 5
+    assert len(ass.graph) == len(ass.paf_inds) == 6
+    ass.assemble(chunk_size=0)
+    assert len(ass.assemblies) == len(real_assemblies_montblanc[0])
+    assert len(ass.unique) == len(real_assemblies_montblanc[1])
+    assemblies = np.concatenate(
+        [ass.xy for assemblies in ass.assemblies.values()
+         for ass in assemblies]
+    )
+    assemblies_gt = np.concatenate(
+        [ass.xy for assemblies in real_assemblies_montblanc[0].values()
+         for ass in assemblies]
+    )
+    np.testing.assert_equal(assemblies, assemblies_gt)
+
+
 def test_assembler_with_identity(tmpdir_factory, real_assemblies):
     with open(os.path.join(TEST_DATA_DIR, "trimouse_full.pickle"), "rb") as file:
         data = pickle.load(file)
@@ -229,7 +302,7 @@ def test_assembler_calibration(real_assemblies):
     j2 = inferenceutils.Joint(tuple(assembly.xy[1]), label=1)
     link = inferenceutils.Link(j1, j2)
     p = ass.calc_link_probability(link)
-    assert np.isclose(p, 0.990, atol=1e-3)
+    assert np.isclose(p, 0.993, atol=1e-3)
 
 
 def test_find_outlier_assemblies(real_assemblies):
