@@ -13,6 +13,7 @@ import numpy as np
 import warnings
 from collections import defaultdict
 from filterpy.common import kinematic_kf
+from filterpy.kalman import KalmanFilter
 from matplotlib import patches
 from numba import jit
 from numba.core.errors import NumbaPerformanceWarning
@@ -323,7 +324,26 @@ class SkeletonTracker(BaseTracker):
 class BoxTracker(BaseTracker):
     def __init__(self, bbox):
         super().__init__(dim=4, dim_z=4)
-        self.kf.dim_x = 7
+        self.kf = KalmanFilter(dim_x=7, dim_z=4)
+        self.kf.F = np.array(
+            [
+                [1, 0, 0, 0, 1, 0, 0],
+                [0, 1, 0, 0, 0, 1, 0],
+                [0, 0, 1, 0, 0, 0, 1],
+                [0, 0, 0, 1, 0, 0, 0],
+                [0, 0, 0, 0, 1, 0, 0],
+                [0, 0, 0, 0, 0, 1, 0],
+                [0, 0, 0, 0, 0, 0, 1],
+            ]
+        )
+        self.kf.H = np.array(
+            [
+                [1, 0, 0, 0, 0, 0, 0],
+                [0, 1, 0, 0, 0, 0, 0],
+                [0, 0, 1, 0, 0, 0, 0],
+                [0, 0, 0, 1, 0, 0, 0],
+            ]
+        )
         self.kf.R[2:, 2:] *= 10.0
         # Give high uncertainty to the unobservable initial velocities
         self.kf.P[4:, 4:] *= 1000.0
@@ -357,7 +377,7 @@ class BoxTracker(BaseTracker):
         """
         w = np.sqrt(x[2] * x[3])
         h = x[2] / w
-        if score == None:
+        if score is None:
             return np.array(
                 [x[0] - w / 2.0, x[1] - h / 2.0, x[0] + w / 2.0, x[1] + h / 2.0]
             ).reshape((1, 4))
