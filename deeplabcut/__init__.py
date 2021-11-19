@@ -75,7 +75,6 @@ from deeplabcut.utils import (
     auxiliaryfunctions,
     convert2_maDLC,
     convertcsv2h5,
-    convertannotationdata_fromwindows2unixstyle,
     analyze_videos_converth5_to_csv,
     auxfun_videos,
 )

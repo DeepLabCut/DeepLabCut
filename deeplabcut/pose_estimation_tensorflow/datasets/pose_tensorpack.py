@@ -113,7 +113,7 @@ class Pose(RNGDataFlow):
             item = DataItem()
             item.image_id = i
             base = str(self.cfg["project_path"])
-            im_path = os.path.join(base, sample[0][0])
+            im_path = os.path.join(base, *[s.strip() for s in sample[0][0]])
             item.im_path = im_path
             item.im_size = sample[1][0]
             if len(sample) >= 3:

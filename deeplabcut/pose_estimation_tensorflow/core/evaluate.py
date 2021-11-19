@@ -585,7 +585,7 @@ def evaluate_network(
         from deeplabcut.pose_estimation_tensorflow.datasets.utils import (
             data_to_input,
         )
-        from deeplabcut.utils import auxiliaryfunctions
+        from deeplabcut.utils import auxiliaryfunctions, conversioncode
         import tensorflow as tf
 
         # If a string was passed in, auto-convert to True for backward compatibility
@@ -741,6 +741,7 @@ def evaluate_network(
                 else:
                     scale = 1
 
+                conversioncode.guarantee_multiindex_rows(Data)
                 ##################################################
                 # Compute predictions over images
                 ##################################################
@@ -788,7 +789,7 @@ def evaluate_network(
                         print("Running evaluation ...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
                             image = imread(
-                                os.path.join(cfg["project_path"], imagename), mode="RGB"
+                                os.path.join(cfg["project_path"], *imagename), mode="RGB"
                             )
                             if scale != 1:
                                 image = imresize(image, scale)
@@ -825,11 +826,9 @@ def evaluate_network(
 
                         # Saving results
                         DataMachine = pd.DataFrame(
-                            PredicteData, columns=index, index=Data.index.values
+                            PredicteData, columns=index, index=Data.index
                         )
-                        DataMachine.to_hdf(
-                            resultsfilename, "df_with_missing", format="table", mode="w"
-                        )
+                        DataMachine.to_hdf(resultsfilename, "df_with_missing")
 
                         print(
                             "Analysis is done and the results are stored (see evaluation-results) for snapshot: ",
@@ -922,6 +921,7 @@ def evaluate_network(
                         # print(final_result)
                     else:
                         DataMachine = pd.read_hdf(resultsfilename)
+                        conversioncode.guarantee_multiindex_rows(DataMachine)
                         if plotting:
                             DataCombined = pd.concat(
                                 [Data.T, DataMachine.T], axis=0, sort=False

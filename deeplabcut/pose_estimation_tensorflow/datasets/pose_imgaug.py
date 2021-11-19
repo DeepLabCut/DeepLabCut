@@ -93,7 +93,7 @@ class ImgaugPoseDataset(BasePoseDataset):
 
                 item = DataItem()
                 item.image_id = i
-                item.im_path = sample[0][0]
+                item.im_path = os.path.join(*[s.strip() for s in sample[0][0]])
                 item.im_size = sample[1][0]
                 if len(sample) >= 3:
                     joints = sample[2][0][0]
@@ -123,7 +123,7 @@ class ImgaugPoseDataset(BasePoseDataset):
                 sample = pickledata[i]  # mlab[0, i]
                 item = DataItem()
                 item.image_id = i
-                item.im_path = sample["image"]  # [0][0]
+                item.im_path = os.path.join(*sample["image"])  # [0][0]
                 item.im_size = sample["size"]  # sample[1][0]
                 if len(sample) >= 3:
                     item.num_animals = len(sample["joints"])

@@ -57,7 +57,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             sample = pickledata[i]  # mlab[0, i]
             item = DataItem()
             item.image_id = i
-            item.im_path = sample["image"]  # [0][0]
+            item.im_path = os.path.join(*sample["image"])  # [0][0]
             item.im_size = sample["size"]  # sample[1][0]
             if "joints" in sample.keys():
                 Joints = sample["joints"]

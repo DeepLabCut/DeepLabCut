@@ -178,7 +178,7 @@ def dropannotationfileentriesduetodeletedimages(config):
         DC = pd.read_hdf(fn)
         dropped = False
         for imagename in DC.index:
-            if os.path.isfile(os.path.join(cfg["project_path"], imagename)):
+            if os.path.isfile(os.path.join(cfg["project_path"], *imagename)):
                 pass
             else:
                 print("Dropping...", imagename)
@@ -292,6 +292,7 @@ def check_labels(
             DataCombined = pd.read_hdf(
                 os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
             )
+            conversioncode.guarantee_multiindex_rows(DataCombined)
             if cfg.get("multianimalproject", False):
                 color_by = "individual" if visualizeindividuals else "bodypart"
             else:  # for single animal projects
@@ -403,7 +404,7 @@ def _robust_path_split(path):
     return parent, filename, ext
 
 
-def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
+def merge_annotateddatasets(cfg, trainingsetfolder_full):
     """
     Merges all the h5 files for all labeled-datasets (from individual videos).
 
@@ -453,30 +454,10 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
     AnnotationData = AnnotationData.reindex(
         bodyparts, axis=1, level=AnnotationData.columns.names.index("bodyparts")
     )
-
-    # Let's check if the code is *not* run on windows (Source: #https://stackoverflow.com/questions/1325581/how-do-i-check-if-im-running-on-windows-in-python)
-    # but the paths are in windows format...
-    windowspath = "\\" in AnnotationData.index[0]
-    if os.name != "nt" and windowspath and not windows2linux:
-        print(
-            "It appears that the images were labeled on a Windows system, but you are currently trying to create a training set on a Unix system. \n In this case the paths should be converted. Do you want to proceed with the conversion?"
-        )
-        askuser = input("yes/no")
-    else:
-        askuser = "no"
-
+    conversioncode.guarantee_multiindex_rows(AnnotationData)
     filename = os.path.join(trainingsetfolder_full, f'CollectedData_{cfg["scorer"]}')
-    if (
-        windows2linux or askuser == "yes" or askuser == "y" or askuser == "Ja"
-    ):  # convert windows path in pandas array \\ to unix / !
-        AnnotationData = conversioncode.convertpaths_to_unixstyle(
-            AnnotationData, filename
-        )
-        print("Annotation data converted to unix format...")
-    else:  # store as is
-        AnnotationData.to_hdf(filename + ".h5", key="df_with_missing", mode="w")
-        AnnotationData.to_csv(filename + ".csv")  # human readable.
-
+    AnnotationData.to_hdf(filename + ".h5", key="df_with_missing", mode="w")
+    AnnotationData.to_csv(filename + ".csv")  # human readable.
     return AnnotationData
 
 
@@ -539,7 +520,7 @@ def pad_train_test_indices(train_inds, test_inds, train_fraction):
     return train_inds, test_inds
 
 
-def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
+def mergeandsplit(config, trainindex=0, uniform=True):
     """
     This function allows additional control over "create_training_dataset".
 
@@ -560,10 +541,6 @@ def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
 
     uniform: bool, optional
         Perform uniform split (disregarding folder structure in labeled data), or (if False) leave one folder out.
-
-    windows2linux: bool.
-        The annotation files contain path formated according to your operating system. If you label on windows
-        but train & evaluate on a unix system (e.g. ubunt, colab, Mac) set this variable to True to convert the paths.
 
     Examples
     --------
@@ -600,11 +577,11 @@ def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
         Data = merge_annotateddatasets(
             cfg,
             Path(os.path.join(project_path, trainingsetfolder)),
-            windows2linux=windows2linux,
         )
         if Data is None:
             return [], []
 
+    conversioncode.guarantee_multiindex_rows(Data)
     Data = Data[scorer]  # extract labeled data
 
     if uniform == True:
@@ -619,8 +596,7 @@ def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
         print("Excluding the following folder (from training):", test_video_name)
         trainIndices, testIndices = [], []
         for index, name in enumerate(Data.index):
-            # print(index,name.split(os.sep)[1])
-            if test_video_name == name.split(os.sep)[1]:  # this is the video name
+            if test_video_name == name[1]:  # this is the video name
                 # print(name,test_video_name)
                 testIndices.append(index)
             else:
@@ -650,7 +626,7 @@ def format_training_data(df, train_inds, nbodyparts, project_path):
         data = dict()
         filename = df.index[i]
         data["image"] = filename
-        img_shape = read_image_shape_fast(os.path.join(project_path, filename))
+        img_shape = read_image_shape_fast(os.path.join(project_path, *filename))
         data["size"] = img_shape
         temp = df.iloc[i].values.reshape(-1, 2)
         joints = np.c_[range(nbodyparts), temp]
@@ -682,7 +658,6 @@ def create_training_dataset(
     config,
     num_shuffles=1,
     Shuffles=None,
-    windows2linux=False,
     userfeedback=False,
     trainIndices=None,
     testIndices=None,
@@ -705,10 +680,6 @@ def create_training_dataset(
 
     Shuffles: list of shuffles.
         Alternatively the user can also give a list of shuffles (integers!).
-
-    windows2linux: bool.
-        The annotation files contain path formated according to your operating system. If you label on windows
-        but train & evaluate on a unix system (e.g. ubunt, colab, Mac) set this variable to True to convert the paths.
 
     userfeedback: bool, optional
         If this is set to false, then all requested train/test splits are created (no matter if they already exist). If you
@@ -746,7 +717,7 @@ def create_training_dataset(
         )
 
         create_multianimaltraining_dataset(
-            config, num_shuffles, Shuffles, windows2linux, net_type
+            config, num_shuffles, Shuffles, net_type
         )
     else:
         scorer = cfg["scorer"]
@@ -760,7 +731,7 @@ def create_training_dataset(
         )
 
         Data = merge_annotateddatasets(
-            cfg, Path(os.path.join(project_path, trainingsetfolder)), windows2linux
+            cfg, Path(os.path.join(project_path, trainingsetfolder)),
         )
         if Data is None:
             return
@@ -996,7 +967,6 @@ def create_training_model_comparison(
     net_types=["resnet_50"],
     augmenter_types=["default"],
     userfeedback=False,
-    windows2linux=False,
 ):
     """
     Creates a training dataset with different networks and augmentation types (dataset_loader) so that the shuffles
@@ -1027,10 +997,6 @@ def create_training_model_comparison(
     userfeedback: bool, optional
         If this is set to false, then all requested train/test splits are created (no matter if they already exist). If you
         want to assure that previous splits etc. are not overwritten, then set this to True and you will be asked for each split.
-
-    windows2linux: bool.
-        The annotation files contain path formated according to your operating system. If you label on windows
-        but train & evaluate on a unix system (e.g. ubunt, colab, Mac) set this variable to True to convert the paths.
 
     Example
     --------
@@ -1089,6 +1055,5 @@ def create_training_model_comparison(
                     testIndices=[testIndices],
                     augmenter_type=aug,
                     userfeedback=userfeedback,
-                    windows2linux=windows2linux,
                 )
                 logger.info(log_info)
