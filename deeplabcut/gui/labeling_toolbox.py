@@ -653,8 +653,8 @@ class MainFrame(BaseFrame):
             self.iter = 0
 
         # Reading the image name
-        self.img = Path(*self.dataFrame.index[self.iter])
-        img_name = self.img.name
+        self.img = os.path.join(*self.dataFrame.index[self.iter])
+        img_name = Path(self.img).name
         self.norm, self.colorIndex = self.image_panel.getColorIndices(
             self.img, self.bodyparts
         )
