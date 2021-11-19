@@ -46,6 +46,9 @@ def test_calc_target_and_scoremap_sizes(
 ):
     ma_dataset.cfg["global_scale"] = scale
     ma_dataset.cfg["stride"] = stride
+    # Disable stochastic scale jitter
+    ma_dataset.cfg["scale_jitter_lo"] = 1
+    ma_dataset.cfg["scale_jitter_up"] = 1
     target_size, sm_size = ma_dataset.calc_target_and_scoremap_sizes()
     np.testing.assert_equal(np.asarray([400, 400]) * scale, target_size)
     np.testing.assert_equal(target_size / stride, sm_size)
