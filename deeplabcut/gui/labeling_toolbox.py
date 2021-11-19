@@ -943,8 +943,6 @@ class MainFrame(BaseFrame):
         self.dataFrame.to_hdf(
             os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5"),
             "df_with_missing",
-            format="table",
-            mode="w",
         )
 
     def onChecked(self, event):
