@@ -1,7 +1,8 @@
-
+import os
 from PyQt5.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon
 
 import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
@@ -143,6 +144,7 @@ class Create_training_dataset_page(QWidget):
             "efficientnet-b6",
         ]
         self.net_choice.addItems(options)
+        self.net_choice.setCurrentText('resnet_50')
 
         l_opt.addWidget(opt_text)
         l_opt.addWidget(self.net_choice)
@@ -281,24 +283,37 @@ class Create_training_dataset_page(QWidget):
         else:
             if self.model_comparison == False:
                 print(' comparison = False')
-                # deeplabcut.create_training_dataset(
-                #     self.config,
-                #     num_shuffles,
-                #     Shuffles=[self.shuffle.value()],
-                #     userfeedback=userfeedback,
-                #     net_type=self.net_choice.currentText(),
-                #     augmenter_type=self.aug_choice.currentText(),
-                # )
+                deeplabcut.create_training_dataset(
+                    self.config,
+                    num_shuffles,
+                    Shuffles=[self.shuffle.value()],
+                    userfeedback=userfeedback,
+                    net_type=self.net_choice.currentText(),
+                    augmenter_type=self.aug_choice.currentText(),
+                )
+                msg = QtWidgets.QMessageBox()
+                msg.setIcon(QtWidgets.QMessageBox.Information)
+                msg.setText("The training dataset is successfully created.")
+                msg.setInformativeText("Use the function 'train_network' to start training. Happy training!")
+
+                msg.setWindowTitle("Info")
+                msg.setMinimumWidth(900)
+                self.logo_dir = os.path.dirname(os.path.realpath('logo.png')) + os.path.sep
+                self.logo = self.logo_dir + '/pictures/logo.png'
+                msg.setWindowIcon(QIcon(self.logo))
+                msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+                retval = msg.exec_()
+
             else:
                 print(' comparison = True')
-                # deeplabcut.create_training_model_comparison(
-                #     self.config,
-                #     trainindex=trainindex,
-                #     num_shuffles=num_shuffles,
-                #     userfeedback=userfeedback,
-                #     net_types=self.net_type,
-                #     augmenter_types=self.aug_type,
-                # )
+                deeplabcut.create_training_model_comparison(
+                    self.config,
+                    trainindex=trainindex,
+                    num_shuffles=num_shuffles,
+                    userfeedback=userfeedback,
+                    net_types=self.net_type,
+                    augmenter_types=self.aug_type,
+                )
 
 
 

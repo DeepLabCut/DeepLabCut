@@ -17,7 +17,7 @@ from deeplabcut.utils import auxiliaryfunctions
 
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QCheckBox
+from PyQt5.QtWidgets import QCheckBox, QButtonGroup
 from PyQt5.QtCore import Qt
 import os
 
@@ -42,6 +42,7 @@ class CreateProject(QtWidgets.QDialog):
         self.cfg = None
         self.copy = False
         self.loaded = False
+        self.user_fbk = True
         self.filelist = []
 
 
@@ -111,13 +112,46 @@ class CreateProject(QtWidgets.QDialog):
 
         ch_box2 = QCheckBox("Copy the videos")
         ch_box2.stateChanged.connect(self.activate_copy_videos)
+
         ch_box3 = QCheckBox("Is it a multi-animal project?")
         self.multi_choice = False
         #ch_box3.stateChanged.connect(self.clickBox)
 
+        ch_box4 = QCheckBox("User feedback")
+        ch_box4.stateChanged.connect(self.activate_fbk)
+
         #optional_attr.addLayout(sel_dir, alignment=QtCore.Qt.AlignTop)
-        grid.addWidget(ch_box2, 5,0)
-        grid.addWidget(ch_box3, 6,0)
+        grid.addWidget(ch_box2, 5, 0)
+        grid.addWidget(ch_box3, 6, 0)
+        grid.addWidget(ch_box4, 7, 0)
+
+        # label = QtWidgets.QLabel('Do you want feedback?')
+        # # label.setContentsMargins(0, 20, 0, 0)
+        #
+        # fbk_layout = QtWidgets.QHBoxLayout()
+        # fbk_layout.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        # fbk_layout.setSpacing(0)
+        # fbk_layout.setContentsMargins(20, 0, 0, 0)
+        #
+        # self.btngroup_opencv = QButtonGroup()
+        #
+        # self.fbk_choice1 = QtWidgets.QRadioButton('Yes')
+        # self.fbk_choice1.setChecked(True)
+        # #self.fbk_choice1.toggled.connect(lambda: self.update_feedback_choice(self.fbk_choice1))
+        #
+        # self.fbk_choice2 = QtWidgets.QRadioButton('No')
+        # #self.fbk_choice2.toggled.connect(lambda: self.update_feedback_choice(self.fbk_choice2))
+        #
+        # self.btngroup_opencv.addButton(self.fbk_choice1)
+        # self.btngroup_opencv.addButton(self.fbk_choice2)
+        #
+        # fbk_layout.addWidget(self.fbk_choice1)
+        # fbk_layout.addWidget(self.fbk_choice2)
+        #
+        # grid.addWidget(label, 7, 0)
+        # grid.addLayout(fbk_layout, 7, 1)
+
+
 
         return self.user_frame
 
@@ -180,6 +214,14 @@ class CreateProject(QtWidgets.QDialog):
         #num_of_videos = "Total %s Videos selected" % len(self.filelist)
         self.load_button.setText("Total %s Videos selected"% len(self.filelist))
 
+    def activate_fbk(self, state):
+        # Activates the feedback option
+        if state == QtCore.Qt.Checked:
+            self.user_fbk = True
+            print('T')
+        else:
+            self.user_fbk = False
+            print('F')
 
     def update_project_location(self):
         full_name = self.name_default.format(self.proj_line.text(), self.exp_line.text())
@@ -231,7 +273,7 @@ class CreateProject(QtWidgets.QDialog):
             msg.setText("New Project Created")
 
             msg.setWindowTitle("Info")
-            msg.setMinimumWidth(350)
+            msg.setMinimumWidth(400)
             self.logo_dir = os.path.dirname(os.path.realpath('logo.png')) + os.path.sep
             self.logo = self.logo_dir + '/pictures/logo.png'
             msg.setWindowIcon(QIcon(self.logo))

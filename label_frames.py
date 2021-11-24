@@ -167,7 +167,7 @@ class Label_page(QWidget):
     def check_labelF(self, event):
         msg = QtWidgets.QMessageBox()
         msg.setIcon(QtWidgets.QMessageBox.Information)
-        msg.setText("This will now plot the labeled frames afer you have finished labeling!")
+        msg.setText("This will now plot the labeled frames after you have finished labeling!")
 
         msg.setWindowTitle("Info")
         msg.setMinimumWidth(1000)
@@ -178,6 +178,8 @@ class Label_page(QWidget):
         retval = msg.exec_()
 
         check_labels(self.config, visualizeindividuals=False)
+
+
     def label_frames(self):
         self.frame = None
         label_frames(self.config)

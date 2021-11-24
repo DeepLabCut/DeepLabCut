@@ -49,6 +49,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.config = None
         self.cfg = dict()
         self.loaded = False
+        self.user_feedback = False
 
         self.default_set()
 
@@ -236,6 +237,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.loaded =create_p.loaded
             #print('cfg:   ', create_p.cfg)
             self.cfg = create_p.cfg
+            self.user_feedback = create_p.user_fbk
 
         if create_p.loaded:
             self.add_tabs()
@@ -248,6 +250,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.loaded = open_p.loaded
             print('cfg:   ', open_p.cfg)
             self.cfg = open_p.cfg
+            self.user_feedback = open_p.user_fbk
 
         if open_p.loaded:
             self.add_tabs()

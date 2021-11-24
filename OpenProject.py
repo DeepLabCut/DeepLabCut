@@ -2,6 +2,7 @@ import deeplabcut
 
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QCheckBox
 import os
 
 class OpenProject(QtWidgets.QDialog):
@@ -13,6 +14,7 @@ class OpenProject(QtWidgets.QDialog):
 
         self.cfg = None
         self.loaded = False
+        self.user_fbk = True
 
         main_layout = QtWidgets.QVBoxLayout(self)
         self.layout_open()
@@ -38,12 +40,18 @@ class OpenProject(QtWidgets.QDialog):
         load_button = QtWidgets.QPushButton('Browse')
         load_button.clicked.connect((self.load_config))
 
+        label = QtWidgets.QLabel('Optional Attributes:')
+
+        ch_box = QCheckBox("User feedback")
+        ch_box.stateChanged.connect(self.activate_fbk)
 
         grid = QtWidgets.QGridLayout(self.open_frame)
         grid.setSpacing(30)
         grid.addWidget(open_label, 0, 0)
         grid.addWidget(self.open_line, 0, 1)
         grid.addWidget(load_button, 1, 1)
+        grid.addWidget(label, 2, 0)
+        grid.addWidget(ch_box, 2, 1)
 
         return self.open_frame
 
@@ -62,6 +70,13 @@ class OpenProject(QtWidgets.QDialog):
             return
         self.cfg = config[0]
         self.open_line.setText(self.cfg)
+
+    def activate_fbk(self, state):
+        # Activates the feedback option
+        if state == QtCore.Qt.Checked:
+            self.user_fbk = True
+        else:
+            self.user_fbk = False
 
     def open_project(self):
         if self.cfg == '':
@@ -85,7 +100,7 @@ class OpenProject(QtWidgets.QDialog):
             msg.setText("Project Loaded!")
 
             msg.setWindowTitle("Info")
-            msg.setMinimumWidth(350)
+            msg.setMinimumWidth(400)
             self.logo_dir = os.path.dirname(os.path.realpath('logo.png')) + os.path.sep
             self.logo = self.logo_dir + '/pictures/logo.png'
             msg.setWindowIcon(QIcon(self.logo))

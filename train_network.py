@@ -8,6 +8,7 @@ from pathlib import Path
 from PyQt5.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon
 
 import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
@@ -33,14 +34,15 @@ class Train_network_page(QWidget):
         default_pose_cfg_path = os.path.join(
             Path(deeplabcut.__file__).parent, "pose_cfg.yaml"
         )
-        #pose_cfg = auxiliaryfunctions.read_plainconfig(default_pose_cfg_path)
-        # self.display_iters = str(pose_cfg["display_iters"])
-        # self.save_iters = str(pose_cfg["save_iters"])
-        # self.max_iters = str(pose_cfg["multi_step"][-1][-1])
 
-        self.display_iters = 1000
-        self.save_iters = 50000
-        self.max_iters = 1030000
+        pose_cfg = auxiliaryfunctions.read_plainconfig(default_pose_cfg_path)
+        self.display_iters = str(pose_cfg["display_iters"])
+        self.save_iters = str(pose_cfg["save_iters"])
+        self.max_iters = str(pose_cfg["multi_step"][-1][-1])
+
+        # self.display_iters = 1000
+        # self.save_iters = 50000
+        # self.max_iters = 1030000
 
         self.set_page()
 
@@ -118,7 +120,7 @@ class Train_network_page(QWidget):
 
         self.ok_button = QtWidgets.QPushButton('Ok')
         self.ok_button.setContentsMargins(0, 40, 40, 40)
-        # self.ok_button.clicked.connect(self.train_network)
+        self.ok_button.clicked.connect(self.train_network)
 
         self.layout_attributes.addWidget(self.ok_button, alignment=Qt.AlignRight)
 
@@ -254,15 +256,15 @@ class Train_network_page(QWidget):
         l_opt.setContentsMargins(20, 0, 0, 0)
 
         opt_text = QtWidgets.QLabel("Number of snapshots to keep")
-        self.snapshots_spin = QSpinBox()
-        self.snapshots_spin.setValue(5)
-        self.snapshots_spin.setMinimum(1)
-        self.snapshots_spin.setMaximum(100)
-        self.snapshots_spin.setMinimumWidth(300)
-        self.snapshots_spin.setMinimumHeight(30)
+        self.snapshots = QSpinBox()
+        self.snapshots.setValue(5)
+        self.snapshots.setMinimum(1)
+        self.snapshots.setMaximum(100)
+        self.snapshots.setMinimumWidth(300)
+        self.snapshots.setMinimumHeight(30)
 
         l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.snapshots_spin)
+        l_opt.addWidget(self.snapshots)
         self.layout_display.addLayout(l_opt)
 
 
@@ -271,6 +273,46 @@ class Train_network_page(QWidget):
             self.pose_cfg_choice = True
         else:
             self.pose_cfg_choice = False
+
+    def train_network(self):
+        #### children?
+        shuffle = int(self.shuffles.value())
+        ####
+        trainingsetindex = int(self.trainingindex.value())
+        ####
+        max_snapshots_to_keep = int(self.snapshots.value())
+        ####
+        displayiters = int(self.display_iters_spin.value())
+        ####
+        saveiters = int(self.save_iters_spin.value())
+        ####
+        maxiters = int(self.max_iters_spin.value())
+
+        deeplabcut.train_network(
+            self.config,
+            shuffle,
+            trainingsetindex,
+            gputouse=None,
+            max_snapshots_to_keep=max_snapshots_to_keep,
+            autotune=None,
+            displayiters=displayiters,
+            saveiters=saveiters,
+            maxiters=maxiters,
+        )
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        msg.setText("The network is now trained and ready to evaluate.")
+        msg.setInformativeText("Use the function 'evaluate_network' to evaluate the network.")
+
+        msg.setWindowTitle("Info")
+        msg.setMinimumWidth(900)
+        self.logo_dir = os.path.dirname(os.path.realpath('logo.png')) + os.path.sep
+        self.logo = self.logo_dir + '/pictures/logo.png'
+        msg.setWindowIcon(QIcon(self.logo))
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        retval = msg.exec_()
+
+
 
 
 

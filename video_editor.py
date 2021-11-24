@@ -68,12 +68,12 @@ class Video_editor_page(QWidget):
         choose_video_text = QtWidgets.QLabel("Choose the video")
         choose_video_text.setContentsMargins(0, 0, 60, 0)
 
-        select_video_button = QtWidgets.QPushButton('Select video')
-        select_video_button.setMaximumWidth(150)
-        #select_video_button.clicked.connect(self.select_video)
+        self.select_video_button = QtWidgets.QPushButton('Select video')
+        self.select_video_button.setMaximumWidth(150)
+        self.select_video_button.clicked.connect(self.select_video)
 
         layout_choose_video.addWidget(choose_video_text)
-        layout_choose_video.addWidget(select_video_button)
+        layout_choose_video.addWidget(self.select_video_button)
 
         self.inLayout.addLayout(layout_cfg)
         self.inLayout.addLayout(layout_choose_video)
@@ -91,4 +91,17 @@ class Video_editor_page(QWidget):
         if not config:
             return
         self.config = config
+
+    def select_video(self):
+        print('select_video')
+        cwd = os.getcwd()
+        dlg = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Select video to modify", cwd, "", "*.*"
+        )
+        if dlg:
+            self.vids = dlg[0]
+            self.filelist = self.filelist + self.vids  # [0]
+            self.select_video_button.setText("Total %s Videos selected"% len(self.filelist))
+
+
 

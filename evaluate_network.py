@@ -20,6 +20,9 @@ class Evaluate_network_page(QWidget):
         self.method = "automatic"
 
         self.config = cfg
+        self.plot_choice = False
+        self.plot_scoremaps = False
+        self.bodyparts = []
 
         self.inLayout = QtWidgets.QVBoxLayout(self)
         self.inLayout.setAlignment(Qt.AlignTop)
@@ -101,7 +104,7 @@ class Evaluate_network_page(QWidget):
         self.ev_nw_button = QtWidgets.QPushButton('RUN: Evaluate Network')
         self.ev_nw_button.setMinimumWidth(200)
         self.ev_nw_button.setContentsMargins(0, 80, 40, 40)
-        # self.ev_nw_button.clicked.connect(self.evaluate_network)
+        self.ev_nw_button.clicked.connect(self.evaluate_network)
 
         self.opt_button = QtWidgets.QPushButton('Optional: Plot 3 test maps')
         self.opt_button.setMinimumWidth(200)
@@ -119,7 +122,7 @@ class Evaluate_network_page(QWidget):
         self.config = text
 
     def browse_dir(self):
-        print('browse_dir')
+
         cwd = self.config
         config = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select a configuration file", cwd, "Config files (*.yaml)"
@@ -150,13 +153,13 @@ class Evaluate_network_page(QWidget):
         l_opt.setContentsMargins(20, 0, 0, 0)
 
         opt_text = QtWidgets.QLabel("Specify the trainingset index")
-        self.trainingindex = QSpinBox()
-        self.trainingindex.setValue(0)
-        self.trainingindex.setMinimumWidth(400)
-        self.trainingindex.setMinimumHeight(30)
+        self.trainingset = QSpinBox()
+        self.trainingset.setValue(0)
+        self.trainingset.setMinimumWidth(400)
+        self.trainingset.setMinimumHeight(30)
 
         l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.trainingindex)
+        l_opt.addWidget(self.trainingset)
         self.layout_specify_plot.addLayout(l_opt)
     def _plot_maps_choice(self):
         l_opt = QtWidgets.QVBoxLayout()
@@ -168,11 +171,11 @@ class Evaluate_network_page(QWidget):
         self.btngroup_plot_maps_choice = QButtonGroup()
 
         self.plot_maps_choice1 = QtWidgets.QRadioButton('Yes')
-        #self.pose_cfg_choice1.toggled.connect(lambda: self.update_pose_cfg_choice(self.pose_cfg_choice1))
+        self.plot_maps_choice1.toggled.connect(lambda: self.update_map_choice(self.plot_maps_choice1))
 
         self.plot_maps_choice2 = QtWidgets.QRadioButton('No')
         self.plot_maps_choice2.setChecked(True)
-        #self.pose_cfg_choice2.toggled.connect(lambda: self.update_pose_cfg_choice(self.pose_cfg_choice2))
+        self.plot_maps_choice2.toggled.connect(lambda: self.update_map_choice(self.plot_maps_choice2))
 
         self.btngroup_plot_maps_choice.addButton(self.plot_maps_choice1)
         self.btngroup_plot_maps_choice.addButton(self.plot_maps_choice2)
@@ -192,11 +195,11 @@ class Evaluate_network_page(QWidget):
         self.btngroup_plot_predictions_choice = QButtonGroup()
 
         self.plot_predictions_choice1 = QtWidgets.QRadioButton('Yes')
-        #self.pose_cfg_choice1.toggled.connect(lambda: self.update_pose_cfg_choice(self.pose_cfg_choice1))
+        self.plot_predictions_choice1.toggled.connect(lambda: self.update_plot_choice(self.plot_predictions_choice1))
 
         self.plot_predictions_choice2 = QtWidgets.QRadioButton('No')
         self.plot_predictions_choice2.setChecked(True)
-        #self.pose_cfg_choice2.toggled.connect(lambda: self.update_pose_cfg_choice(self.pose_cfg_choice2))
+        self.plot_predictions_choice2.toggled.connect(lambda: self.update_plot_choice(self.plot_predictions_choice2))
 
         self.btngroup_plot_predictions_choice.addButton(self.plot_predictions_choice1)
         self.btngroup_plot_predictions_choice.addButton(self.plot_predictions_choice2)
@@ -215,17 +218,79 @@ class Evaluate_network_page(QWidget):
         opt_text = QtWidgets.QLabel("Compare all bodyparts?")
         self.btngroup_compare_bp = QButtonGroup()
 
-        self.compaare_bp_choice1 = QtWidgets.QRadioButton('Yes')
-        self.compaare_bp_choice1.setChecked(True)
-        #self.pose_cfg_choice1.toggled.connect(lambda: self.update_pose_cfg_choice(self.pose_cfg_choice1))
+        self.compare_bp_choice1 = QtWidgets.QRadioButton('Yes')
+        self.compare_bp_choice1.setChecked(True)
+        self.compare_bp_choice1.toggled.connect(lambda: self.update_bp_choice(self.compare_bp_choice1))
 
-        self.compaare_bp_choice2 = QtWidgets.QRadioButton('No')
-        #self.pose_cfg_choice2.toggled.connect(lambda: self.update_pose_cfg_choice(self.pose_cfg_choice2))
+        self.compare_bp_choice2 = QtWidgets.QRadioButton('No')
+        self.compare_bp_choice2.toggled.connect(lambda: self.update_bp_choice(self.compare_bp_choice2))
 
-        self.btngroup_compare_bp.addButton(self.compaare_bp_choice1)
-        self.btngroup_compare_bp.addButton(self.compaare_bp_choice2)
+        self.btngroup_compare_bp.addButton(self.compare_bp_choice1)
+        self.btngroup_compare_bp.addButton(self.compare_bp_choice2)
 
         l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.compaare_bp_choice1)
-        l_opt.addWidget(self.compaare_bp_choice2)
+        l_opt.addWidget(self.compare_bp_choice1)
+        l_opt.addWidget(self.compare_bp_choice2)
         self.layout_predictions.addLayout(l_opt)
+
+    def update_map_choice(self, rb):
+        if rb.text() == "Yes":
+            self.plot_scoremaps = True
+            print('plot_scoremaps = T')
+        else:
+            self.plot_scoremaps = False
+            print('plot_scoremaps = F')
+
+    def update_plot_choice(self, rb):
+        if rb.text() == "Yes":
+            self.plot_choice = True
+            print('plot_choice = T')
+        else:
+            self.plot_choice = False
+            print('plot_choice = F')
+
+    def update_bp_choice(self, rb):
+        if rb.text() == "Yes":
+            self.plot_bp_choice = True
+            print('plot_bp_choice = T')
+
+            self.bodyparts = "all"
+            # self.bodyparts_to_compare.Hide()
+            # self.SetSizer(self.sizer)
+            # self.sizer.Fit(self)
+
+        else:
+            self.plot_bp_choice = False
+            print('plot_bp_choice = F')
+            # self.bodyparts_to_compare.Show()
+            # self.getbp(event)
+            # self.SetSizer(self.sizer)
+            # self.sizer.Fit(self)
+
+    def getbp(self):
+        self.bodyparts = list()
+        # self.bodyparts = list(self.bodyparts_to_compare.GetCheckedStrings())
+
+    def evaluate_network(self):
+
+        trainingsetindex = self.trainingset.value()
+
+        Shuffles = [self.shuffles.value()]
+        plotting = self.plot_choice
+
+        if self.plot_scoremaps:
+            for shuffle in Shuffles:
+                deeplabcut.extract_save_all_maps(self.config, shuffle=shuffle)
+
+        if len(self.bodyparts) == 0:
+            self.bodyparts = "all"
+        deeplabcut.evaluate_network(
+            self.config,
+            Shuffles=Shuffles,
+            trainingsetindex=trainingsetindex,
+            plotting=plotting,
+            show_errors=True,
+            comparisonbodyparts=self.bodyparts,
+        )
+
+
