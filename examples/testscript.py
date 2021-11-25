@@ -15,11 +15,14 @@ It produces nothing of interest scientifically.
 import os
 import deeplabcut
 import platform
+import scipy.io as sio
 import subprocess
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+
+from deeplabcut.utils import auxiliaryfunctions
 
 
 if __name__ == "__main__":
@@ -42,7 +45,7 @@ if __name__ == "__main__":
     dfolder = basepath
 
     dfolder = None
-    net_type = "resnet_50"  
+    net_type = "resnet_50"
     #net_type = "mobilenet_v2_0.35"
     #net_type = "efficientnet-b0"  # to -b6
 
@@ -71,8 +74,8 @@ if __name__ == "__main__":
     deeplabcut.auxiliaryfunctions.write_config(path_config_file, cfg)
 
     print("EXTRACTING FRAMES")
-    deeplabcut.extract_frames(path_config_file, mode="automatic", userfeedback=False) 
-        
+    deeplabcut.extract_frames(path_config_file, mode="automatic", userfeedback=False)
+
     print("CREATING-SOME LABELS FOR THE FRAMES")
     frames = os.listdir(os.path.join(cfg["project_path"], "labeled-data", videoname))
     # As this next step is manual, we update the labels by putting them on the diagonal (fixed for all frames)
@@ -119,6 +122,18 @@ if __name__ == "__main__":
     deeplabcut.create_training_dataset(
         path_config_file, net_type=net_type, augmenter_type=augmenter_type
     )
+
+    # Check the training image paths are correctly stored as arrays of strings
+    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+    datafile, _ = auxiliaryfunctions.GetDataandMetaDataFilenames(
+        trainingsetfolder, 0.8, 1, cfg,
+    )
+    mlab = sio.loadmat(os.path.join(cfg["project_path"], datafile))["dataset"]
+    num_images = mlab.shape[1]
+    for i in range(num_images):
+        imgpath = mlab[0, i][0][0]
+        assert len(imgpath) == 3
+        assert imgpath.dtype.char == "U"
 
     posefile = os.path.join(
         cfg["project_path"],
