@@ -860,6 +860,8 @@ def create_video_with_all_detections(
 
             for n in trange(clip.nframes):
                 frame = clip.load_frame()
+                if frame is None:
+                    continue
                 try:
                     ind = frames.index(n)
                     dets = Assembler._flatten_detections(data[frame_names[ind]])
