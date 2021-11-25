@@ -312,27 +312,63 @@
             <nav id="bd-toc-nav" aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#step-1-you-need-to-have-python-3-7-installed-and-we-highly-recommend-using-anaconda-to-do-so">
-   Step 1: You need to have Python &gt;3.7 installed, and we highly recommend using Anaconda to do so.
+  <a class="reference internal nav-link" href="#pip">
+   PIP:
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#simply-download-the-appropriate-files-here-https-www-anaconda-com-distribution">
-     Simply download the appropriate files here: https://www.anaconda.com/distribution/
+    <a class="reference internal nav-link" href="#please-note-there-are-several-modes-of-installation-and-the-user-should-decide-to-either-use-a-system-wide-see-note-below-anaconda-environment-based-installation-recommended-or-the-supplied-docker-container-recommended-for-ubuntu-advanced-users-one-can-of-course-also-use-other-python-distributions-than-anaconda-but-anaconda-is-the-easiest-route">
+     Please note, there are several modes of installation, and the user should decide to either use a
+     <strong>
+      system-wide
+     </strong>
+     (see note below),
+     <strong>
+      Anaconda environment
+     </strong>
+     based installation (
+     <strong>
+      recommended
+     </strong>
+     ), or the supplied
+     <strong>
+      Docker container
+     </strong>
+     (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but
+     <strong>
+      Anaconda is the easiest route.
+     </strong>
     </a>
    </li>
   </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#step-2-easy-install-please-use-our-supplied-anaconda-environments">
-   Step 2: Easy install: please use our supplied Anaconda environments
+  <a class="reference internal nav-link" href="#conda-the-installation-process-is-as-easy-as-this-figure">
+   CONDA: The installation process is as easy as this figure! –&gt;
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#cpu-or-gpu">
-     CPU or GPU:
+    <a class="reference internal nav-link" href="#step-1-you-need-to-have-python-3-7-installed-and-we-highly-recommend-using-anaconda-to-do-so">
+     Step 1: You need to have Python &gt;3.7 installed, and we highly recommend using Anaconda to do so.
     </a>
    </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#simply-download-the-appropriate-files-here-https-www-anaconda-com-distribution">
+     Simply download the appropriate files here: https://www.anaconda.com/distribution/
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#step-2-easy-install-please-use-our-supplied-anaconda-environments">
+     Step 2: Easy install: please use our supplied Anaconda environments
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#docker">
+   DOCKER:
+  </a>
+  <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#pro-tips">
      Pro Tips:
@@ -395,28 +431,35 @@
   <div class="tex2jax_ignore mathjax_ignore section" id="how-to-install-deeplabcut">
 <h1>How To Install DeepLabCut<a class="headerlink" href="#how-to-install-deeplabcut" title="Permalink to this headline">¶</a></h1>
 <p>DeepLabCut can be run on Windows, Linux, or MacOS (see also <a class="reference external" href="/docs/installation.md#technical-considerations">technical considerations</a>).</p>
-<p>The installation process is as easy as this figure!</p>
+<div class="section" id="pip">
+<h2>PIP:<a class="headerlink" href="#pip" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Everything you need to run DeepLabCut (i.e., our source code and our dependencies) can be installed with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[gui]'</span></code> (for GUI support) or without: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut</span></code>.</p></li>
+</ul>
+<div class="section" id="please-note-there-are-several-modes-of-installation-and-the-user-should-decide-to-either-use-a-system-wide-see-note-below-anaconda-environment-based-installation-recommended-or-the-supplied-docker-container-recommended-for-ubuntu-advanced-users-one-can-of-course-also-use-other-python-distributions-than-anaconda-but-anaconda-is-the-easiest-route">
+<h3>Please note, there are several modes of installation, and the user should decide to either use a <strong>system-wide</strong> (see <a class="reference external" href="/docs/installation.md#system-wide-considerations">note below</a>), <strong>Anaconda environment</strong> based installation (<strong>recommended</strong>), or the supplied <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/tree/master/docker.md"><strong>Docker container</strong></a> (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but <strong>Anaconda is the easiest route.</strong><a class="headerlink" href="#please-note-there-are-several-modes-of-installation-and-the-user-should-decide-to-either-use-a-system-wide-see-note-below-anaconda-environment-based-installation-recommended-or-the-supplied-docker-container-recommended-for-ubuntu-advanced-users-one-can-of-course-also-use-other-python-distributions-than-anaconda-but-anaconda-is-the-easiest-route" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="conda-the-installation-process-is-as-easy-as-this-figure">
+<h2>CONDA: The installation process is as easy as this figure! –&gt;<a class="headerlink" href="#conda-the-installation-process-is-as-easy-as-this-figure" title="Permalink to this headline">¶</a></h2>
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1609805496320-48N5Y3NEBIVVNUIXPNBV/ke17ZwdGBToddI8pDm48kEPc72vD8ARkQNSjpzTzPRsUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8GRo6ASst2s6pLvNAu_PZdLjGeaj0GkoPWeOP-8DYHB5lK4wgKtPMRocsaeGU4PClrIJgRK3oXroL8Ygt-EThXU/Intall.png?format=750w" width="250" title="DLC" alt="DLC" align="right" vspace = "50">
-<p>Please note, there are several modes of installation, and the user should decide to either use a <strong>system-wide</strong> (see <a class="reference external" href="/docs/installation.md#system-wide-considerations">note below</a>), <strong>Anaconda environment</strong> based installation (<strong>recommended</strong>), or the supplied <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/tree/master/docker.md"><strong>Docker container</strong></a> (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but <strong>Anaconda is the easiest route.</strong></p>
 <div class="section" id="step-1-you-need-to-have-python-3-7-installed-and-we-highly-recommend-using-anaconda-to-do-so">
-<h2>Step 1: You need to have Python &gt;3.7 installed, and we highly recommend using Anaconda to do so.<a class="headerlink" href="#step-1-you-need-to-have-python-3-7-installed-and-we-highly-recommend-using-anaconda-to-do-so" title="Permalink to this headline">¶</a></h2>
+<h3>Step 1: You need to have Python &gt;3.7 installed, and we highly recommend using Anaconda to do so.<a class="headerlink" href="#step-1-you-need-to-have-python-3-7-installed-and-we-highly-recommend-using-anaconda-to-do-so" title="Permalink to this headline">¶</a></h3>
+</div>
 <div class="section" id="simply-download-the-appropriate-files-here-https-www-anaconda-com-distribution">
 <h3>Simply download the appropriate files here: <a class="reference external" href="https://www.anaconda.com/distribution/">https://www.anaconda.com/distribution/</a><a class="headerlink" href="#simply-download-the-appropriate-files-here-https-www-anaconda-com-distribution" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Anaconda is perhaps the easiest way to install Python and additional packages across various operating systems. With Anaconda you create all the dependencies in an <a class="reference external" href="https://conda.io/docs/user-guide/tasks/manage-environments.html">environment</a> on your machine.</p></li>
 </ul>
 </div>
-</div>
 <div class="section" id="step-2-easy-install-please-use-our-supplied-anaconda-environments">
-<h2>Step 2: Easy install: please use our supplied Anaconda environments<a class="headerlink" href="#step-2-easy-install-please-use-our-supplied-anaconda-environments" title="Permalink to this headline">¶</a></h2>
+<h3>Step 2: Easy install: please use our supplied Anaconda environments<a class="headerlink" href="#step-2-easy-install-please-use-our-supplied-anaconda-environments" title="Permalink to this headline">¶</a></h3>
 <p>You first <strong>need to decide if you want to use a CPU or GPU for your models</strong>: (Note, you can also use the CPU-only for project management and labeling the data! Then, for example, use Google Colaboratory GPUs for free (read more <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/tree/master/examples#demo-4-deeplabcut-training-and-analysis-on-google-colaboratory-with-googles-gpus">here</a> and there are a lot of helper videos on <a class="reference external" href="https://www.youtube.com/playlist?list=PLjpMSEOb9vRFwwgIkLLN1NmJxFprkO_zi">our YouTube channel!</a>).</p>
 <ul class="simple">
 <li><p><strong>CPU?</strong> Great, jump to the next section below!</p></li>
 <li><p><strong>GPU?</strong>  If you want to use your own GPU (i.e., a GPU is in your workstation), then you need to be sure you have a CUDA compatible GPU, CUDA, and cuDNN installed. Please note, which CUDA you install depends on what version of tensorflow you want to use. So, please check “GPU Support” below carefully. <strong>Note, DeepLabCut is up to date with the latest CUDA and tensorflow versions!</strong></p></li>
-<li><p><strong>DIY:</strong> For the experts that want DLC in a different custom environment, it’s also on pypi, simply <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[gui]'</span></code> (and have Tensorflow and wxPython also installed) for DeepLabCut + GUI.  Deeplabcut without the GUIs can be installed with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut</span></code>. See more Tips at the bottom as well.</p></li>
+<li><p>Next:</p></li>
 </ul>
-<div class="section" id="cpu-or-gpu">
-<h3>CPU or GPU:<a class="headerlink" href="#cpu-or-gpu" title="Permalink to this headline">¶</a></h3>
 <p>(A) <strong>Click <a class="reference external" href="http://www.mackenziemathislab.org/s/DEEPLABCUT.yaml">HERE</a> to download the conda file!</strong>
 (or you can grab from github: git clone this repo (in the terminal/cmd program, while <strong>in a folder</strong> you wish to place DeepLabCut
 To git clone type: <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/DeepLabCut/DeepLabCut.git</span></code>). Note, this can be anywhere, even downloads is fine)</p>
@@ -437,6 +480,12 @@ NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)</p
 <p><strong>Great, that’s it! DeepLabCut is installed!</strong></p>
 <p>Next, <a class="reference external" href="/docs#readme">head over to the Docs to decide which mode to use DeepLabCut in. You have both standard and multi-animal installed.</a></p>
 </div>
+</div>
+<div class="section" id="docker">
+<h2>DOCKER:<a class="headerlink" href="#docker" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>We also have docker containers. Docker is the most reproducible way to use and deploy code. Please see our dedicated docker package and page <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/docker.html">here</a>.</p></li>
+</ul>
 <div class="section" id="pro-tips">
 <h3>Pro Tips:<a class="headerlink" href="#pro-tips" title="Permalink to this headline">¶</a></h3>
 <p>If you ever want to update your DLC, just run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">deeplabcut</span></code> once you are inside your env. If you want to use a specific release, then you need to specify the version you want, such as <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut==2.2</span></code>. Once installed, you can check the version by running <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">deeplabcut</span></code> <code class="docutils literal notranslate"><span class="pre">deeplabcut.__version__</span></code>. Don’t be afraid to update, DLC is backwards compatible with your 2.0+ projects and performance continues to get better and new features are added nearly monthly.</p>
