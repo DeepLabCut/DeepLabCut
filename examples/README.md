@@ -8,7 +8,7 @@ We provide a Project Manager GUI that will walk you through the major steps and 
 ## Demo 1: run DeepLabCut [on our open-field data](JUPYTER/Demo_labeledexample_Openfield.ipynb)
  - This will give you a feel of the workflow for DeepLabCut. Follow the instructions inside the notebook!
 
-Note, the notebooks with labeled data: [reaching data](Demo_labeledexample_MouseReaching.ipynb), or [open-field data](Demo_labeledexample_Openfield.ipynb) can be run on a CPU, GPU, etc. The one with the open-field data even achieves good/okay results, when trained for half an hour on a GPU! (To note, this is NOT the full dataset that was used in Mathis et al, 2018)
+Note, the notebooks with labeled data: [reaching data](JUPYTER/Demo_labeledexample_MouseReaching.ipynb), or [open-field data](JUPYTER/Demo_labeledexample_Openfield.ipynb) can be run on a CPU, GPU, etc. The one with the open-field data even achieves good/okay results, when trained for half an hour on a GPU! (To note, this is NOT the full dataset that was used in Mathis et al, 2018)
 
 ## Demo 2: Set up DeepLabCut on [your own data](JUPYTER/Demo_yourowndata.ipynb)
 - Now that you're a master of the demos, this Notebook walks you through how to build your own pipeline:

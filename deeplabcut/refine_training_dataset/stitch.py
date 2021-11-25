@@ -8,6 +8,7 @@ import re
 import scipy.linalg.interpolative as sli
 import warnings
 from collections import defaultdict
+from deeplabcut.pose_estimation_tensorflow.lib.trackingutils import calc_iou
 from deeplabcut.utils import auxiliaryfunctions
 from itertools import combinations, cycle
 from networkx.algorithms.flow import preflow_push
@@ -310,27 +311,12 @@ class Tracklet:
             else:
                 bbox1 = self.calc_bbox(0)
                 bbox2 = other_tracklet.calc_bbox(-1)
-            overlap = self.iou(bbox1, bbox2)
+            overlap = calc_iou(bbox1, bbox2)
         return overlap
 
     @staticmethod
     def undirected_hausdorff(u, v):
         return max(directed_hausdorff(u, v)[0], directed_hausdorff(v, u)[0])
-
-    @staticmethod
-    def iou(bbox1, bbox2):
-        x1 = max(bbox1[0], bbox2[0])
-        y1 = max(bbox1[1], bbox2[1])
-        x2 = min(bbox1[2], bbox2[2])
-        y2 = min(bbox1[3], bbox2[3])
-        w = max(0, x2 - x1)
-        h = max(0, y2 - y1)
-        wh = w * h
-        return wh / (
-            (bbox1[2] - bbox1[0]) * (bbox1[3] - bbox1[1])
-            + (bbox2[2] - bbox2[0]) * (bbox2[3] - bbox2[1])
-            - wh
-        )
 
     def calc_bbox(self, ind):
         xy = self.xy[ind]

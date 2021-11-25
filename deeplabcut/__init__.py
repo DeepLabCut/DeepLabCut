@@ -34,7 +34,7 @@ try:
     from deeplabcut.gui.tracklet_toolbox import refine_tracklets
 
     from deeplabcut.utils.skeleton import SkeletonBuilder
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
     print(
         "DLC loaded in light mode; you cannot use any GUI (labeling, relabeling and standalone GUI)"
     )
