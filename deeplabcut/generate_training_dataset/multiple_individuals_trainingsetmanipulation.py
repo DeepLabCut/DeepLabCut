@@ -11,6 +11,7 @@ Licensed under GNU Lesser General Public License v3.0
 import os
 import os.path
 import re
+import warnings
 from itertools import combinations
 from pathlib import Path
 
@@ -97,6 +98,7 @@ def create_multianimaltraining_dataset(
     config,
     num_shuffles=1,
     Shuffles=None,
+    windows2linux=False,
     net_type=None,
     numdigits=2,
     crop_size=(400, 400),
@@ -165,6 +167,12 @@ def create_multianimaltraining_dataset(
     >>> deeplabcut.create_multianimaltraining_dataset(r'C:\\Users\\Ulf\\looming-task\\config.yaml',Shuffles=[3,17,5])
     --------
     """
+    if windows2linux:
+        warnings.warn(
+            "`windows2linux` has no effect since 2.2.0.4 and will be removed in 2.2.1.",
+            FutureWarning,
+        )
+
     if len(crop_size) != 2 or not all(isinstance(v, int) for v in crop_size):
         raise ValueError("Crop size must be a tuple of two integers (width, height).")
 

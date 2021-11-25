@@ -11,6 +11,7 @@ import math
 import logging
 import os
 import os.path
+import warnings
 
 from functools import lru_cache
 from pathlib import Path
@@ -658,6 +659,7 @@ def create_training_dataset(
     config,
     num_shuffles=1,
     Shuffles=None,
+    windows2linux=False,
     userfeedback=False,
     trainIndices=None,
     testIndices=None,
@@ -709,6 +711,13 @@ def create_training_dataset(
     """
     import scipy.io as sio
 
+    if windows2linux:
+        # DeprecationWarnings are silenced since Python 3.2 unless triggered in __main__
+        warnings.warn(
+            "`windows2linux` has no effect since 2.2.0.4 and will be removed in 2.2.1.",
+            FutureWarning,
+        )
+
     # Loading metadata from config file:
     cfg = auxiliaryfunctions.read_config(config)
     if cfg.get("multianimalproject", False):
@@ -717,7 +726,7 @@ def create_training_dataset(
         )
 
         create_multianimaltraining_dataset(
-            config, num_shuffles, Shuffles, net_type
+            config, num_shuffles, Shuffles, net_type=net_type
         )
     else:
         scorer = cfg["scorer"]
@@ -967,6 +976,7 @@ def create_training_model_comparison(
     net_types=["resnet_50"],
     augmenter_types=["default"],
     userfeedback=False,
+    windows2linux=False,
 ):
     """
     Creates a training dataset with different networks and augmentation types (dataset_loader) so that the shuffles
@@ -1009,6 +1019,12 @@ def create_training_model_comparison(
     """
     # read cfg file
     cfg = auxiliaryfunctions.read_config(config)
+
+    if windows2linux:
+        warnings.warn(
+            "`windows2linux` has no effect since 2.2.0.4 and will be removed in 2.2.1.",
+            FutureWarning,
+        )
 
     # create log file
     log_file_name = os.path.join(cfg["project_path"], "training_model_comparison.log")
