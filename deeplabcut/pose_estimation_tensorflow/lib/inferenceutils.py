@@ -269,6 +269,10 @@ class Assembler:
         except KeyError:
             pass
         n_bpts = len(df.columns.get_level_values("bodyparts").unique())
+        if n_bpts == 1:
+            warnings.warn("There is only one keypoint; skipping calibration...")
+            return
+
         xy = df.to_numpy().reshape((-1, n_bpts, 2))
         frac_valid = np.mean(~np.isnan(xy), axis=(1, 2))
         # Only keeps skeletons that are more than 90% complete
