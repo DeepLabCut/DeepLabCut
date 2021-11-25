@@ -498,7 +498,7 @@ def compute_deviations(
         meany, CIy = FitSARIMAXModel(y, p, p_bound, alpha, ARdegree, MAdegree)
         distance = np.sqrt((x - meanx) ** 2 + (y - meany) ** 2)
         significant = (
-            (x < CIx[:, 0]) + (x > CIx[:, 1]) + (x < CIy[:, 0]) + (y > CIy[:, 1])
+            (x < CIx[:, 0]) + (x > CIx[:, 1]) + (y < CIy[:, 0]) + (y > CIy[:, 1])
         )
         preds.append(np.c_[distance, significant, meanx, meany, CIx, CIy])
 

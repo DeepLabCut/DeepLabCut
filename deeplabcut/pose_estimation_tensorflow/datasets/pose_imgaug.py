@@ -18,7 +18,6 @@ https://imgaug.readthedocs.io/en/latest/
 import logging
 import os
 import pickle
-import random as rand
 
 import imgaug.augmenters as iaa
 import numpy as np
@@ -279,7 +278,7 @@ class ImgaugPoseDataset(BasePoseDataset):
         joint_ids = []
         data_items = []
         # Scale is sampled only once to transform all of the images of a batch into same size.
-        scale = self.get_scale()
+        scale = self.sample_scale()
         while True:
             idx = np.random.choice(self.num_images)
             size = self.data[idx].im_size
@@ -396,16 +395,6 @@ class ImgaugPoseDataset(BasePoseDataset):
         if self.cfg["mirror"]:
             num *= 2
         return num
-
-    def get_scale(self):
-        cfg = self.cfg
-        scale = cfg["global_scale"]
-        if hasattr(cfg, "scale_jitter_lo") and hasattr(cfg, "scale_jitter_up"):
-            scale_jitter = rand.uniform(
-                0.75 * cfg["scale_jitter_lo"], 1.25 * cfg["scale_jitter_up"]
-            )
-            scale *= scale_jitter
-        return scale
 
     def is_valid_size(self, target_size_product):
         if target_size_product > self.max_input_sizesquare:
