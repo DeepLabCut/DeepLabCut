@@ -2,11 +2,9 @@ import numpy as np
 import os
 import pickle
 import pytest
+from conftest import TEST_DATA_DIR
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
 from scipy.spatial.distance import squareform
-
-
-TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
 
 
 def test_conv_square_to_condensed_indices():

@@ -1,16 +1,15 @@
 import os
 import pytest
+from conftest import TEST_DATA_DIR
 from deeplabcut.utils.auxfun_videos import VideoWriter
 
 
-TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
-video = os.path.join(TEST_DATA_DIR, "vid.avi")
 POS_FRAMES = 1  # Equivalent to cv2.CAP_PROP_POS_FRAMES
 
 
 @pytest.fixture()
 def video_clip():
-    return VideoWriter(video)
+    return VideoWriter(os.path.join(TEST_DATA_DIR, "vid.avi"))
 
 
 def test_reader_wrong_inputs(tmp_path):
