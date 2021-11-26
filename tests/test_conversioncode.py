@@ -6,7 +6,6 @@ from deeplabcut.utils import conversioncode
 
 def test_guarantee_multiindex_rows():
     df_unix = pd.read_hdf(os.path.join(TEST_DATA_DIR, "trimouse_calib.h5"))
-    paths = list(df_unix.index)
     df_posix = df_unix.copy()
     df_posix.index = df_posix.index.str.replace("/", "\\")
     nrows = len(df_unix)
@@ -17,4 +16,3 @@ def test_guarantee_multiindex_rows():
         assert df.index.nlevels == 3
         assert all(df.index.get_level_values(0) == "labeled-data")
         assert all(img.endswith('.png') for img in df.index.get_level_values(2))
-        assert [os.path.join(*tup) for tup in df.index] == paths
