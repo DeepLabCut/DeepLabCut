@@ -15,6 +15,7 @@ class Video_editor_page(QWidget):
         super(Video_editor_page, self).__init__(parent)
 
         self.method = "automatic"
+        self.filelist = []
         self.config = cfg
 
         self.inLayout = QtWidgets.QVBoxLayout(self)
@@ -69,7 +70,7 @@ class Video_editor_page(QWidget):
         choose_video_text.setContentsMargins(0, 0, 60, 0)
 
         self.select_video_button = QtWidgets.QPushButton('Select video')
-        self.select_video_button.setMaximumWidth(150)
+        self.select_video_button.setMaximumWidth(250)
         self.select_video_button.clicked.connect(self.select_video)
 
         layout_choose_video.addWidget(choose_video_text)
@@ -111,7 +112,7 @@ class Video_editor_page(QWidget):
 
         self.crop_button = QtWidgets.QPushButton('CROP')
         self.crop_button.setContentsMargins(0, 40, 40, 40)
-        #self.crop_button.clicked.connect(self.)
+        self.crop_button.clicked.connect(self.crop_video)
 
         self.layout_attributes.addWidget(self.crop_button, alignment=Qt.AlignRight)
 
@@ -134,13 +135,14 @@ class Video_editor_page(QWidget):
     def select_video(self):
         print('select_video')
         cwd = os.getcwd()
-        dlg = QtWidgets.QFileDialog.getOpenFileName(
+        videos_file = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select video to modify", cwd, "", "*.*"
         )
-        if dlg:
-            self.vids = dlg[0]
-            self.filelist = self.filelist + self.vids  # [0]
+        if videos_file:
+            self.vids = videos_file[0]
+            self.filelist.append(self.vids)
             self.select_video_button.setText("Total %s Videos selected"% len(self.filelist))
+            self.select_video_button.adjustSize()
 
     def _layout_downsample(self):
         l_opt = QtWidgets.QVBoxLayout()
@@ -244,6 +246,14 @@ class Video_editor_page(QWidget):
         l_opt.addWidget(opt_text)
         l_opt.addWidget(self.angle)
         self.layout_shorten.addLayout(l_opt)
+
+    def crop_video(self, event):
+        Videos = self.filelist
+        if len(Videos) > 0:
+            for video in Videos:
+                deeplabcut.CropVideo(video, useGUI=True)
+        else:
+            print("Please select a video first!")
 
 
 

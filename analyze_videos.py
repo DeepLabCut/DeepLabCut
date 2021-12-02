@@ -24,6 +24,12 @@ class Analyze_videos_page(QWidget):
         self.cfg = auxiliaryfunctions.read_config(self.config)
         self.draw = False
 
+        self.csv = False
+        self.dynamic = False
+        self.trajectory = False
+        self.filter = False
+        self.showfigs = True
+
         self.inLayout = QtWidgets.QVBoxLayout(self)
         self.inLayout.setAlignment(Qt.AlignTop)
         self.inLayout.setSpacing(20)
@@ -120,12 +126,22 @@ class Analyze_videos_page(QWidget):
             self._layout_save()
             self._layout_filter()
             self._layout_plot()
-
             self.layout_attributes.addLayout(self.layout_save_filter)
+
+            self.layout_crop_plot = QtWidgets.QHBoxLayout()
+            self.layout_crop_plot.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+
+            self.layout_crop_plot.setSpacing(170)
+            self.layout_crop_plot.setContentsMargins(20, 0, 50, 20)
+
+            self._layout_crop()
+            self._layout_trajectories()
+
+            self.layout_attributes.addLayout(self.layout_crop_plot)
 
         self.step_button = QtWidgets.QPushButton('Step 1: Analyze Videos')
         self.step_button.setContentsMargins(0, 40, 40, 40)
-        # self.step_button.clicked.connect(self.)x
+        self.step_button.clicked.connect(self.analyze_videos)
 
         self.layout_attributes.addWidget(self.step_button, alignment=Qt.AlignRight)
         self.inLayout.addLayout(self.layout_attributes)
@@ -147,15 +163,15 @@ class Analyze_videos_page(QWidget):
         self.config = config
 
     def select_video(self):
-        print('select_video')
         cwd = os.getcwd()
-        dlg = QtWidgets.QFileDialog.getOpenFileName(
+        videos_file = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select video to modify", cwd, "", "*.*"
         )
-        if dlg:
-            self.vids = dlg[0]
-            self.filelist = self.filelist + self.vids  # [0]
-            self.select_video_button.setText("Total %s Videos selected"% len(self.filelist))
+        if videos_file:
+            self.vids = videos_file[0]
+            self.filelist.append(self.vids)
+            self.select_video_button.setText("Total %s Videos selected" % len(self.filelist))
+            self.select_video_button.adjustSize()
 
     def _layout_videotype(self):
         l_opt = QtWidgets.QVBoxLayout()
@@ -182,14 +198,14 @@ class Analyze_videos_page(QWidget):
         l_opt.setContentsMargins(0, 0, 0, 0)
 
         opt_text = QtWidgets.QLabel("Specify the shuffle")
-        self.shuffles = QSpinBox()
-        self.shuffles.setMaximum(100)
-        self.shuffles.setValue(1)
-        self.shuffles.setMinimumWidth(400)
-        self.shuffles.setMinimumHeight(30)
+        self.shuffle = QSpinBox()
+        self.shuffle.setMaximum(100)
+        self.shuffle.setValue(1)
+        self.shuffle.setMinimumWidth(400)
+        self.shuffle.setMinimumHeight(30)
 
         l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.shuffles)
+        l_opt.addWidget(self.shuffle)
         self.layout_specify.addLayout(l_opt)
 
     def _layout_trainingset(self):
@@ -219,11 +235,11 @@ class Analyze_videos_page(QWidget):
         self.btngroup_csv_choice = QButtonGroup()
 
         self.csv_choice1 = QtWidgets.QRadioButton('Yes')
-        # self.rotate_video_choice1.toggled.connect(lambda: self.update_rotate_video_choice(self.rotate_video_choice1))
+        self.csv_choice1.toggled.connect(lambda: self.update_csv_choice(self.csv_choice1))
 
         self.csv_choice2 = QtWidgets.QRadioButton('No')
         self.csv_choice2.setChecked(True)
-        # self.rotate_video_choice2.toggled.connect(lambda: self.update_rotate_video_choice(self.rotate_video_choice2))
+        self.csv_choice2.toggled.connect(lambda: self.update_csv_choice(self.csv_choice2))
 
         self.btngroup_csv_choice.addButton(self.csv_choice1)
         self.btngroup_csv_choice.addButton(self.csv_choice2)
@@ -243,11 +259,11 @@ class Analyze_videos_page(QWidget):
         self.btngroup_filter_choice = QButtonGroup()
 
         self.filter_choice1 = QtWidgets.QRadioButton('Yes')
-        # self.rotate_video_choice1.toggled.connect(lambda: self.update_rotate_video_choice(self.rotate_video_choice1))
+        self.filter_choice1.toggled.connect(lambda: self.update_filter_choice(self.filter_choice1))
 
         self.filter_choice2 = QtWidgets.QRadioButton('No')
         self.filter_choice2.setChecked(True)
-        # self.rotate_video_choice2.toggled.connect(lambda: self.update_rotate_video_choice(self.rotate_video_choice2))
+        self.filter_choice2.toggled.connect(lambda: self.update_filter_choice(self.filter_choice2))
 
         self.btngroup_filter_choice.addButton(self.filter_choice1)
         self.btngroup_filter_choice.addButton(self.filter_choice2)
@@ -268,10 +284,10 @@ class Analyze_videos_page(QWidget):
 
         self.showfigs_choice1 = QtWidgets.QRadioButton('Yes')
         self.showfigs_choice1.setChecked(True)
-        # self.rotate_video_choice1.toggled.connect(lambda: self.update_rotate_video_choice(self.rotate_video_choice1))
+        self.showfigs_choice1.toggled.connect(lambda: self.update_showfigs_choice(self.showfigs_choice1))
 
         self.showfigs_choice2 = QtWidgets.QRadioButton('No')
-        # self.rotate_video_choice2.toggled.connect(lambda: self.update_rotate_video_choice(self.rotate_video_choice2))
+        self.showfigs_choice2.toggled.connect(lambda: self.update_showfigs_choice(self.showfigs_choice2))
 
         self.btngroup_showfigs_choice.addButton(self.showfigs_choice1)
         self.btngroup_showfigs_choice.addButton(self.showfigs_choice2)
@@ -280,6 +296,153 @@ class Analyze_videos_page(QWidget):
         l_opt.addWidget(self.showfigs_choice1)
         l_opt.addWidget(self.showfigs_choice2)
         self.layout_save_filter.addLayout(l_opt)
+
+    def _layout_crop(self):
+        l_opt = QtWidgets.QVBoxLayout()
+        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        l_opt.setSpacing(20)
+        l_opt.setContentsMargins(20, 0, 0, 0)
+
+        opt_text = QtWidgets.QLabel("Want to dynamically crop bodyparts?")
+        self.btngroup_crop_choice = QButtonGroup()
+
+        self.crop_choice1 = QtWidgets.QRadioButton('Yes')
+        self.crop_choice1.toggled.connect(lambda: self.update_crop_choice(self.crop_choice1))
+
+        self.crop_choice2 = QtWidgets.QRadioButton('No')
+        self.crop_choice2.setChecked(True)
+        self.crop_choice2.toggled.connect(lambda: self.update_crop_choice(self.crop_choice2))
+
+        self.btngroup_crop_choice.addButton(self.crop_choice1)
+        self.btngroup_crop_choice.addButton(self.crop_choice2)
+
+        l_opt.addWidget(opt_text)
+        l_opt.addWidget(self.crop_choice1)
+        l_opt.addWidget(self.crop_choice2)
+        self.layout_crop_plot.addLayout(l_opt)
+
+    def _layout_trajectories(self):
+        l_opt = QtWidgets.QVBoxLayout()
+        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        l_opt.setSpacing(20)
+        #l_opt.setContentsMargins(20, 0, 0, 0)
+
+        opt_text = QtWidgets.QLabel("Want to plot the trajectories?")
+        self.btngroup_plot_trajectory_choice = QButtonGroup()
+
+        self.plot_trajectory_choice1 = QtWidgets.QRadioButton('Yes')
+        self.plot_trajectory_choice1.toggled.connect(lambda: self.update_plot_trajectory_choice(self.plot_trajectory_choice1))
+
+        self.plot_trajectory_choice2 = QtWidgets.QRadioButton('No')
+        self.plot_trajectory_choice2.setChecked(True)
+        self.plot_trajectory_choice2.toggled.connect(lambda: self.update_plot_trajectory_choice(self.plot_trajectory_choice2))
+
+        self.btngroup_plot_trajectory_choice.addButton(self.plot_trajectory_choice1)
+        self.btngroup_plot_trajectory_choice.addButton(self.plot_trajectory_choice2)
+
+        l_opt.addWidget(opt_text)
+        l_opt.addWidget(self.plot_trajectory_choice1)
+        l_opt.addWidget(self.plot_trajectory_choice2)
+        self.layout_crop_plot.addLayout(l_opt)
+
+    def update_csv_choice(self, rb):
+        if rb.text() == "Yes":
+            self.csv = True
+        else:
+            self.csv = False
+
+    def update_filter_choice(self, rb):
+        if rb.text() == "Yes":
+            self.filter = True
+        else:
+            self.filter = False
+    def update_showfigs_choice(self, rb):
+        if rb.text() == "Yes":
+            self.showfigs = True
+        else:
+            self.showfigs = False
+
+    def update_crop_choice(self, rb):
+        if rb.text() == "Yes":
+            self.dynamic = True
+        else:
+            self.dynamic = False
+
+    def update_plot_trajectory_choice(self, rb):
+        if rb.text() == "Yes":
+            self.trajectory = True
+        else:
+            self.trajectory = False
+
+    def analyze_videos(self):
+
+        shuffle = self.shuffle.value()
+        trainingsetindex = self.trainingset.value()
+
+        if self.cfg.get("multianimalproject", False):
+            print("Analyzing ... ")
+        else:
+            save_as_csv = self.csv
+            if self.dynamic:
+                dynamic = (True, 0.5, 10)
+            else:
+                dynamic = (False, 0.5, 10)
+
+            _filter = self.filter
+
+        if self.cfg["cropping"] == "True":
+            crop = self.cfg["x1"], self.cfg["x2"], self.cfg["y1"], self.cfg["y2"]
+        else:
+            crop = None
+        if self.cfg.get("multianimalproject", False):
+            print("multianimalproject")
+        else:
+            print("videotype", self.videotype.currentText())
+            print("shuffle", shuffle)
+            print("trainingsetindex", trainingsetindex)
+            print("save_as_csv", save_as_csv)
+            print("crop", crop)
+            print("dynamic", dynamic)
+            scorername = deeplabcut.analyze_videos(
+                self.config,
+                self.filelist,
+                videotype=self.videotype.currentText(),
+                shuffle=shuffle,
+                trainingsetindex=trainingsetindex,
+                gputouse=None,
+                save_as_csv=save_as_csv,
+                cropping=crop,
+                dynamic=dynamic,
+            )
+            if _filter:
+                print("filter")
+                deeplabcut.filterpredictions(
+                    self.config,
+                    self.filelist,
+                    videotype=self.videotype.currentText(),
+                    shuffle=shuffle,
+                    trainingsetindex=trainingsetindex,
+                    filtertype="median",
+                    windowlength=5,
+                    save_as_csv=save_as_csv,
+                )
+
+            if self.trajectory:
+                showfig = self.showfigs
+                deeplabcut.plot_trajectories(
+                    self.config,
+                    self.filelist,
+                    displayedbodyparts=self.bodyparts,
+                    videotype=self.videotype.currentText(),
+                    shuffle=shuffle,
+                    trainingsetindex=trainingsetindex,
+                    filtered=_filter,
+                    showfigures=showfig,
+                )
+
+
+
+
 
 
 

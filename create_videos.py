@@ -161,13 +161,14 @@ class Create_videos_page(QWidget):
     def select_video(self):
         print('select_video')
         cwd = os.getcwd()
-        dlg = QtWidgets.QFileDialog.getOpenFileName(
+        videos_file = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select video to modify", cwd, "", "*.*"
         )
-        if dlg:
-            self.vids = dlg[0]
-            self.filelist = self.filelist + self.vids  # [0]
-            self.select_video_button.setText("Total %s Videos selected"% len(self.filelist))
+        if videos_file:
+            self.vids = videos_file[0]
+            self.filelist.append(self.vids)
+            self.select_video_button.setText("Total %s Videos selected" % len(self.filelist))
+            self.select_video_button.adjustSize()
 
     def _layout_videotype(self):
         l_opt = QtWidgets.QVBoxLayout()
