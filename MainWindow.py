@@ -26,6 +26,11 @@ from create_training_dataset import *
 from train_network import *
 from evaluate_network import *
 from video_editor import *
+from analyze_videos import  *
+from create_videos import *
+from extract_outlier_frames import *
+from refine_labels import *
+
 import deeplabcut
 #from deeplabcut.gui import canvas, widgets
 #from deeplabcut.utils import auxiliaryfunctions, video_reader
@@ -294,6 +299,10 @@ class MainWindow(QtWidgets.QMainWindow):
         train_network_page = Train_network_page(self, self.cfg)
         evaluate_network_page = Evaluate_network_page(self, self.cfg)
         video_editor_page = Video_editor_page(self, self.cfg)
+        analyze_videos_page = Analyze_videos_page(self, self.cfg)
+        create_videos_page = Create_videos_page(self, self.cfg)
+        extract_outlier_frames_page = Extract_outlier_frames_page(self, self.cfg)
+        refine_labels_page = Refine_labels_page(self, self.cfg)
 
         tabs.addTab(extract_page, "Extract frames")
         tabs.addTab(label_page, "Label frames")
@@ -301,8 +310,10 @@ class MainWindow(QtWidgets.QMainWindow):
         tabs.addTab(train_network_page, "Train network")
         tabs.addTab(evaluate_network_page, "Evaluate network")
         tabs.addTab(video_editor_page, "Video editor")
-        tabs.addTab(QtWidgets.QWidget(), "Analyze videos")
-        tabs.addTab(QtWidgets.QWidget(), "Create videos")
+        tabs.addTab(analyze_videos_page, "Analyze videos")
+        tabs.addTab(create_videos_page, "Create videos")
+        tabs.addTab(extract_outlier_frames_page, "Extract outlier frames")
+        tabs.addTab(refine_labels_page, "Refine labels")
 
         self.setCentralWidget(tabs)
 

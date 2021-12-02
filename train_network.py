@@ -203,8 +203,11 @@ class Train_network_page(QWidget):
 
         opt_text = QtWidgets.QLabel("Display iterations")
         self.display_iters_spin = QSpinBox()
-        self.display_iters_spin.setValue(100)
+        #print(int(self.max_iters))
         self.display_iters_spin.setMinimum(1)
+        self.display_iters_spin.setMaximum(int(self.max_iters))
+        self.display_iters_spin.setValue(1000)
+
         #self.display_iters_spin.setMaximum(int(self.max_iters))
         self.display_iters_spin.setMinimumWidth(300)
         self.display_iters_spin.setMinimumHeight(30)
@@ -221,9 +224,11 @@ class Train_network_page(QWidget):
 
         opt_text = QtWidgets.QLabel("Save iterations")
         self.save_iters_spin = QSpinBox()
-        self.save_iters_spin.setValue(10000)
+
         self.save_iters_spin.setMinimum(1)
-        #self.save_iters_spin.setMaximum(int(self.max_iters))
+        self.save_iters_spin.setMaximum(int(self.max_iters))
+        self.save_iters_spin.setValue(50000)
+
         self.save_iters_spin.setMinimumWidth(300)
         self.save_iters_spin.setMinimumHeight(30)
 
@@ -239,9 +244,10 @@ class Train_network_page(QWidget):
 
         opt_text = QtWidgets.QLabel("Maximum iterations")
         self.max_iters_spin = QSpinBox()
-        self.max_iters_spin.setValue(50000)
+
         self.max_iters_spin.setMinimum(1)
-        #self.max_iters_spin.setMaximum(int(self.max_iters))
+        self.max_iters_spin.setMaximum(int(self.max_iters))
+        self.max_iters_spin.setValue(1030000)
         self.max_iters_spin.setMinimumWidth(300)
         self.max_iters_spin.setMinimumHeight(30)
 

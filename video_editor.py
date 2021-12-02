@@ -3,7 +3,7 @@ import os
 import pydoc
 import sys
 
-from PyQt5.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup
+from PyQt5.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup, QDoubleSpinBox
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 
@@ -78,6 +78,45 @@ class Video_editor_page(QWidget):
         self.inLayout.addLayout(layout_cfg)
         self.inLayout.addLayout(layout_choose_video)
 
+        self.layout_attributes = QtWidgets.QVBoxLayout()
+        self.layout_attributes.setAlignment(Qt.AlignTop)
+        self.layout_attributes.setSpacing(20)
+        self.layout_attributes.setContentsMargins(0, 0, 40, 0)
+
+        label = QtWidgets.QLabel('Attributes')
+        label.setContentsMargins(20, 20, 0, 10)
+        self.layout_attributes.addWidget(label)
+
+        self.layout_downsample = QtWidgets.QHBoxLayout()
+        self.layout_downsample.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+
+        self.layout_downsample.setSpacing(200)
+        self.layout_downsample.setContentsMargins(20, 0, 50, 20)
+
+        self._layout_downsample()
+        self._layout_rotate_video()
+
+        self.layout_shorten = QtWidgets.QHBoxLayout()
+        self.layout_shorten.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+
+        self.layout_shorten.setSpacing(20)
+        self.layout_shorten.setContentsMargins(20, 0, 50, 0)
+
+        self._start_time()
+        self._stop_time()
+        self._angle()
+
+        self.layout_attributes.addLayout(self.layout_downsample)
+        self.layout_attributes.addLayout(self.layout_shorten)
+
+        self.crop_button = QtWidgets.QPushButton('CROP')
+        self.crop_button.setContentsMargins(0, 40, 40, 40)
+        #self.crop_button.clicked.connect(self.)
+
+        self.layout_attributes.addWidget(self.crop_button, alignment=Qt.AlignRight)
+
+        self.inLayout.addLayout(self.layout_attributes)
+
     def update_cfg(self):
         text = self.proj_line.text()
         self.config = text
@@ -102,6 +141,111 @@ class Video_editor_page(QWidget):
             self.vids = dlg[0]
             self.filelist = self.filelist + self.vids  # [0]
             self.select_video_button.setText("Total %s Videos selected"% len(self.filelist))
+
+    def _layout_downsample(self):
+        l_opt = QtWidgets.QVBoxLayout()
+        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        l_opt.setSpacing(20)
+        l_opt.setContentsMargins(20, 0, 0, 0)
+
+        opt_text = QtWidgets.QLabel("Downsample - specify the video height (aspect ratio fixed)")
+        self.video_height = QSpinBox()
+        self.video_height.setMaximum(1000)
+
+        self.video_height.setValue(256)
+        self.video_height.setMinimumWidth(400)
+        self.video_height.setMinimumHeight(30)
+
+        l_opt.addWidget(opt_text)
+        l_opt.addWidget(self.video_height)
+        self.layout_downsample.addLayout(l_opt)
+
+    def _layout_rotate_video(self):
+        l_opt = QtWidgets.QVBoxLayout()
+        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        l_opt.setSpacing(20)
+        l_opt.setContentsMargins(20, 0, 0, 0)
+
+        opt_text = QtWidgets.QLabel("Downsample: rotate video?")
+        self.btngroup_rotate_video_choice = QButtonGroup()
+
+        self.rotate_video_choice1 = QtWidgets.QRadioButton('Yes')
+        #self.rotate_video_choice1.toggled.connect(lambda: self.update_rotate_video_choice(self.rotate_video_choice1))
+
+        self.rotate_video_choice2 = QtWidgets.QRadioButton('No')
+        self.rotate_video_choice2.setChecked(True)
+        #self.rotate_video_choice2.toggled.connect(lambda: self.update_rotate_video_choice(self.rotate_video_choice2))
+
+        self.rotate_video_choice3 = QtWidgets.QRadioButton('Arbitrary')
+        #self.rotate_video_choice3.toggled.connect(lambda: self.update_rotate_video_choice(self.rotate_video_choice3))
+
+        self.btngroup_rotate_video_choice.addButton(self.rotate_video_choice1)
+        self.btngroup_rotate_video_choice.addButton(self.rotate_video_choice2)
+        self.btngroup_rotate_video_choice.addButton(self.rotate_video_choice3)
+
+        l_opt.addWidget(opt_text)
+        l_opt.addWidget(self.rotate_video_choice1)
+        l_opt.addWidget(self.rotate_video_choice2)
+        l_opt.addWidget(self.rotate_video_choice3)
+        self.layout_downsample.addLayout(l_opt)
+
+    def _start_time(self):
+        l_opt = QtWidgets.QVBoxLayout()
+        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        l_opt.setSpacing(20)
+        l_opt.setContentsMargins(20, 0, 0, 0)
+
+        opt_text = QtWidgets.QLabel("Shorten: start time (sec)")
+        self.video_start = QSpinBox()
+        self.video_start.setMaximum(3600)
+
+        self.video_start.setValue(1)
+        self.video_start.setMinimumWidth(400)
+        self.video_start.setMinimumHeight(30)
+
+        l_opt.addWidget(opt_text)
+        l_opt.addWidget(self.video_start)
+        self.layout_shorten.addLayout(l_opt)
+
+    def _stop_time(self):
+        l_opt = QtWidgets.QVBoxLayout()
+        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        l_opt.setSpacing(20)
+        l_opt.setContentsMargins(20, 0, 0, 0)
+
+        opt_text = QtWidgets.QLabel("Shorten: stop time (sec)")
+        self.video_stop = QSpinBox()
+        self.video_stop.setMaximum(3600)
+        self.video_stop.setMinimum(1)
+
+        self.video_stop.setValue(30)
+        self.video_stop.setMinimumWidth(400)
+        self.video_stop.setMinimumHeight(30)
+
+        l_opt.addWidget(opt_text)
+        l_opt.addWidget(self.video_stop)
+        self.layout_shorten.addLayout(l_opt)
+    def _angle(self):
+        l_opt = QtWidgets.QVBoxLayout()
+        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        l_opt.setSpacing(20)
+        l_opt.setContentsMargins(20, 0, 0, 0)
+
+        opt_text = QtWidgets.QLabel("Angle for arbitrary rotation (deg)")
+        self.angle = QDoubleSpinBox()
+        self.angle.setMaximum(360.0)
+        self.angle.setMinimum(-360.0)
+        self.angle.setDecimals(2)
+
+        self.angle.setValue(0.0)
+        self.angle.setMinimumWidth(400)
+        self.angle.setMinimumHeight(30)
+
+        l_opt.addWidget(opt_text)
+        l_opt.addWidget(self.angle)
+        self.layout_shorten.addLayout(l_opt)
+
+
 
 
 

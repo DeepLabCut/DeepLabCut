@@ -213,7 +213,7 @@ class Evaluate_network_page(QWidget):
         l_opt = QtWidgets.QVBoxLayout()
         l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
         l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
+        l_opt.setContentsMargins(40, 0, 0, 0)
 
         opt_text = QtWidgets.QLabel("Compare all bodyparts?")
         self.btngroup_compare_bp = QButtonGroup()
