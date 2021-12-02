@@ -477,9 +477,9 @@ def extract_save_all_maps(
                     locref_x_ = locref_x[:, :, to_plot]
                     locref_y_ = locref_y[:, :, to_plot]
                 else:
-                    map_ = scmap[:, :]
-                    locref_x_ = locref_x[:, :]
-                    locref_y_ = locref_y[:, :]
+                    map_ = scmap[..., 0]
+                    locref_x_ = locref_x[..., 0]
+                    locref_y_ = locref_y[..., 0]
                 fig1, _ = visualize_scoremaps(image, map_)
                 temp = dest_path.format(
                     imname=imname,

@@ -1301,10 +1301,6 @@ def convert_detections2tracklets(
         )
 
     cfg = auxiliaryfunctions.read_config(config)
-    if len(cfg["multianimalbodyparts"]) == 1 and track_method != "box":
-        warnings.warn("Switching to `box` tracker for single point tracking...")
-        track_method = "box"
-
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     start_path = os.getcwd()  # record cwd to return to this directory in the end
 
@@ -1340,6 +1336,13 @@ def convert_detections2tracklets(
         inferencecfg = auxfun_multianimal.read_inferencecfg(path_inference_config, cfg)
     else:
         auxfun_multianimal.check_inferencecfg_sanity(cfg, inferencecfg)
+
+    if len(cfg["multianimalbodyparts"]) == 1 and track_method != "box":
+        warnings.warn("Switching to `box` tracker for single point tracking...")
+        track_method = "box"
+        # Also ensure `boundingboxslack` is greater than zero, otherwise overlap
+        # between trackers cannot be evaluated, resulting in empty tracklets.
+        inferencecfg["boundingboxslack"] = max(inferencecfg["boundingboxslack"], 40)
 
     # Check which snapshots are available and sort them by # iterations
     try:
