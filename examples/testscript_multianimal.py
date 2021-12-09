@@ -5,13 +5,19 @@ import pandas as pd
 import pickle
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 import random
+from pathlib import Path
 
-MODELS = ["dlcrnet_ms5", "dlcr101_ms5", "efficientnet-b0","mobilenet_v2_0.35"]
+MODELS = ["dlcrnet_ms5", "dlcr101_ms5", "efficientnet-b0", "mobilenet_v2_0.35"]
 
-USE_SHELVE = False # random.choice([True,False])
-#TODO: fix true, currenctly cannot do the full_detection video and later
+
+N_ITER = 5
+
+
+USE_SHELVE = False  # random.choice([True,False])
+# TODO: fix true, currenctly cannot do the full_detection video and later
 
 if __name__ == "__main__":
+
     TASK = "multi_mouse"
     SCORER = "dlc_team"
     NUM_FRAMES = 5
@@ -19,12 +25,13 @@ if __name__ == "__main__":
 
     # NET = "dlcr101_ms5"
     NET = "dlcrnet_ms5"
+
     # Always test a different model from list above
     NET = random.choice(MODELS)
 
-    N_ITER = 5
-
     basepath = os.path.dirname(os.path.realpath(__file__))
+    DESTFOLDER = basepath
+
     video = "m3v1mp4"
     video_path = os.path.join(
         basepath, "openfield-Pranav-2018-10-30", "videos", video + ".mp4"
@@ -106,10 +113,7 @@ if __name__ == "__main__":
     # Check the training image paths are correctly stored as arrays of strings
     trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
     datafile, _ = auxiliaryfunctions.GetDataandMetaDataFilenames(
-        trainingsetfolder,
-        0.8,
-        1,
-        cfg,
+        trainingsetfolder, 0.8, 1, cfg,
     )
     datafile = datafile.split(".mat")[0] + ".pickle"
     with open(os.path.join(cfg["project_path"], datafile), "rb") as f:
@@ -165,7 +169,6 @@ if __name__ == "__main__":
 
     print("Video analyzed.")
 
-
     print("Create video with all detections...")
     scorer, _ = auxiliaryfunctions.GetScorerName(cfg, 1, TRAIN_SIZE)
 
@@ -220,6 +223,8 @@ if __name__ == "__main__":
     )
     print("Outlier frames extracted.")
 
+    vname = Path(new_video_path).stem
+
     file = os.path.join(
         cfg["project_path"],
         "labeled-data",
@@ -231,7 +236,7 @@ if __name__ == "__main__":
     DF = pd.read_hdf(file, "df_with_missing")
     DLCscorer = np.unique(DF.columns.get_level_values(0))[0]
     DF.columns.set_levels([scorer.replace(DLCscorer, scorer)], level=0, inplace=True)
-    DF = DF.drop("likelihood", axis=1, level=2)
+    DF = DF.drop("likelihood", axis=1, level=3)
     DF.to_csv(
         os.path.join(
             cfg["project_path"],
@@ -253,12 +258,10 @@ if __name__ == "__main__":
     )
 
     print("MERGING")
-    deeplabcut.merge_datasets(path_config_file)  # iteration + 1
+    deeplabcut.merge_datasets(config_path)  # iteration + 1
 
     print("CREATING TRAININGSET updated training set")
-    deeplabcut.create_training_dataset(
-        path_config_file, net_type=net_type
-    )
+    deeplabcut.create_training_dataset(config_path, net_type=NET)
 
     print("Training network...")
     deeplabcut.train_network(config_path, maxiters=N_ITER)
@@ -269,12 +272,11 @@ if __name__ == "__main__":
 
     print("Network evaluated....")
 
-
     deeplabcut.analyze_videos(
-        path_config_file,
-        [newvideo2],
+        config_path,
+        [new_video_path],
         save_as_csv=True,
-        destfolder=dfolder,
+        destfolder=DESTFOLDER,
         cropping=[0, 50, 0, 50],
         allow_growth=True,
         use_shelve=True,
