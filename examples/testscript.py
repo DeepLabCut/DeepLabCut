@@ -24,6 +24,11 @@ import pandas as pd
 
 from deeplabcut.utils import auxiliaryfunctions
 
+import random
+
+USE_SHELVE = random.choice([True,False])
+MODELS = ["dlcrnet_ms5", "dlcr101_ms5", "efficientnet-b0","mobilenet_v2_0.35"]
+
 
 if __name__ == "__main__":
     task = "TEST"  # Enter the name of your experiment Task
@@ -45,9 +50,7 @@ if __name__ == "__main__":
     dfolder = basepath
 
     dfolder = None
-    net_type = "resnet_50"
-    #net_type = "mobilenet_v2_0.35"
-    #net_type = "efficientnet-b0"  # to -b6
+    net_type = random.choice(MODELS)
 
     augmenter_type = "default"  # = imgaug!!
     augmenter_type2 = "scalecrop"
@@ -126,7 +129,10 @@ if __name__ == "__main__":
     # Check the training image paths are correctly stored as arrays of strings
     trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
     datafile, _ = auxiliaryfunctions.GetDataandMetaDataFilenames(
-        trainingsetfolder, 0.8, 1, cfg,
+        trainingsetfolder,
+        0.8,
+        1,
+        cfg,
     )
     mlab = sio.loadmat(os.path.join(cfg["project_path"], datafile))["dataset"]
     num_images = mlab.shape[1]
@@ -330,7 +336,8 @@ if __name__ == "__main__":
         save_as_csv=True,
         destfolder=dfolder,
         cropping=[0, 50, 0, 50],
-        allow_growth=True
+        allow_growth=True,
+        use_shelve=USE_SHELVE,
     )
 
     print("Extracting skeleton distances, filter and plot filtered output")
