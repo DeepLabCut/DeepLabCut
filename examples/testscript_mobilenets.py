@@ -13,6 +13,7 @@ It should take about 4:15 minutes to run this in a CPU. (incl. downloading the R
 It produces nothing of interest scientifically.
 """
 import os
+
 os.environ["DLClight"] = "True"
 import deeplabcut
 from pathlib import Path
