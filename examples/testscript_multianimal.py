@@ -2,7 +2,7 @@ import os
 import deeplabcut
 import numpy as np
 import pandas as pd
-import shutil
+import pickle
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
 
@@ -93,6 +93,17 @@ if __name__ == "__main__":
     print("Creating train dataset...")
     deeplabcut.create_multianimaltraining_dataset(config_path, net_type=NET, crop_size=(200, 200))
     print("Train dataset created.")
+
+    # Check the training image paths are correctly stored as arrays of strings
+    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+    datafile, _ = auxiliaryfunctions.GetDataandMetaDataFilenames(
+        trainingsetfolder, 0.8, 1, cfg,
+    )
+    datafile = datafile.split(".mat")[0] + ".pickle"
+    with open(os.path.join(cfg["project_path"], datafile), "rb") as f:
+        pickledata = pickle.load(f)
+    num_images = len(pickledata)
+    assert all(len(pickledata[i]["image"]) == 3 for i in range(num_images))
 
     print("Editing pose config...")
     model_folder = auxiliaryfunctions.GetModelFolder(
