@@ -98,10 +98,7 @@ def _calc_separability(
 
 
 def _calc_within_between_pafs(
-    data,
-    metadata,
-    per_edge=True,
-    train_set_only=True,
+    data, metadata, per_edge=True, train_set_only=True,
 ):
     data = deepcopy(data)
     train_inds = set(metadata["data"]["trainIndices"])
@@ -188,7 +185,7 @@ def _benchmark_paf_graphs(
 ):
     metadata = data.pop("metadata")
     multi_bpts_orig = auxfun_multianimal.extractindividualsandbodyparts(config)[2]
-    multi_bpts = [j for j in metadata['all_joints_names'] if j in multi_bpts_orig]
+    multi_bpts = [j for j in metadata["all_joints_names"] if j in multi_bpts_orig]
     n_multi = len(multi_bpts)
     data_ = {"metadata": metadata}
     for k, v in data.items():
@@ -225,7 +222,7 @@ def _benchmark_paf_graphs(
     # Form ground truth beforehand
     ground_truth = []
     for i, imname in enumerate(image_paths):
-        temp = data[imname]["groundtruth"][2].reindex(multi_bpts, level='bodyparts')
+        temp = data[imname]["groundtruth"][2].reindex(multi_bpts, level="bodyparts")
         ground_truth.append(temp.to_numpy().reshape((-1, 2)))
     ground_truth = np.stack(ground_truth)
     temp = np.ones((*ground_truth.shape[:2], 3))
@@ -245,7 +242,7 @@ def _benchmark_paf_graphs(
         print(f"Graph {j}|{n_graphs}")
         ass.paf_inds = paf
         ass.assemble()
-        all_assemblies.append((ass.assemblies, ass.unique, ass.metadata['imnames']))
+        all_assemblies.append((ass.assemblies, ass.unique, ass.metadata["imnames"]))
         if split_inds is not None:
             oks = []
             for inds in split_inds:
@@ -322,9 +319,7 @@ def _get_n_best_paf_graphs(
         raise ValueError('`which` must be either "best" or "worst"')
 
     (within_train, _), (between_train, _) = _calc_within_between_pafs(
-        data,
-        metadata,
-        train_set_only=True,
+        data, metadata, train_set_only=True,
     )
     # Handle unlabeled bodyparts...
     existing_edges = set(k for k, v in within_train.items() if v)
@@ -402,9 +397,7 @@ def cross_validate_paf_graphs(
         cfg, params["paf_graph"]
     )
     best_graphs = _get_n_best_paf_graphs(
-        data, metadata, params["paf_graph"],
-        ignore_inds=to_ignore,
-        n_graphs=n_graphs,
+        data, metadata, params["paf_graph"], ignore_inds=to_ignore, n_graphs=n_graphs,
     )
     paf_scores = best_graphs[1]
     if paf_inds is None:
@@ -431,10 +424,7 @@ def cross_validate_paf_graphs(
         margin=margin,
         symmetric_kpts=symmetric_kpts,
         calibration_file=calibration_file,
-        split_inds=[
-            metadata["data"]["trainIndices"],
-            metadata["data"]["testIndices"],
-        ],
+        split_inds=[metadata["data"]["trainIndices"], metadata["data"]["testIndices"],],
     )
     # Select optimal PAF graph
     df = results[1]

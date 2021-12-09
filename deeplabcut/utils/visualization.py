@@ -295,8 +295,9 @@ def make_labeled_images_from_dataframe(
             bones.extend(zip(match1, match2))
     ind_bones = tuple(zip(*bones))
 
-    images_list = [os.path.join(cfg["project_path"], *tuple_)
-                   for tuple_ in df.index.tolist()]
+    images_list = [
+        os.path.join(cfg["project_path"], *tuple_) for tuple_ in df.index.tolist()
+    ]
     if not destfolder:
         destfolder = os.path.dirname(images_list[0])
     tmpfolder = destfolder + "_labeled"

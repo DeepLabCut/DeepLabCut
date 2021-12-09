@@ -9,8 +9,10 @@ from deeplabcut.pose_estimation_tensorflow.datasets import (
 )
 from deeplabcut.utils import read_plainconfig
 
+
 def mock_imread(path, mode):
     return (np.random.rand(400, 400, 3) * 255).astype(np.uint8)
+
 
 pose_multianimal_imgaug.imread = mock_imread
 
@@ -25,21 +27,10 @@ def ma_dataset():
 
 @pytest.mark.parametrize(
     "scale, stride",
-    [
-        (0.6, 2),
-        (0.6, 4),
-        (0.6, 8),
-        (0.8, 4),
-        (1.0, 8),
-        (1.2, 8),
-        (0.6, 4),
-        (0.8, 8),
-    ]
+    [(0.6, 2), (0.6, 4), (0.6, 8), (0.8, 4), (1.0, 8), (1.2, 8), (0.6, 4), (0.8, 8),],
 )
 def test_calc_target_and_scoremap_sizes(
-    ma_dataset,
-    scale,
-    stride,
+    ma_dataset, scale, stride,
 ):
     ma_dataset.cfg["global_scale"] = scale
     ma_dataset.cfg["stride"] = stride
@@ -54,14 +45,14 @@ def test_calc_target_and_scoremap_sizes(
 def test_get_batch(ma_dataset):
     for batch_size in 1, 4, 8, 16:
         ma_dataset.batch_size = batch_size
-        (
-            batch_images,
-            joint_ids,
-            batch_joints,
-            data_items,
-        ) = ma_dataset.get_batch()
-        assert len(batch_images) == len(joint_ids) == len(batch_joints) \
-               == len(data_items) == batch_size
+        (batch_images, joint_ids, batch_joints, data_items,) = ma_dataset.get_batch()
+        assert (
+            len(batch_images)
+            == len(joint_ids)
+            == len(batch_joints)
+            == len(data_items)
+            == batch_size
+        )
         for data_item, joint_id in zip(data_items, joint_ids):
             assert len(data_item.joints) == len(joint_id)
             for joints, id_ in zip(data_item.joints.values(), joint_id):
@@ -81,18 +72,20 @@ def test_get_targetmaps(ma_dataset, num_idchannel):
     scale = np.mean(target_size / ma_dataset.default_crop_size)
     maps = ma_dataset.get_targetmaps_update(*batch, sm_size, scale)
     assert all(len(map_) == ma_dataset.batch_size for map_ in maps.values())
-    assert maps[Batch.part_score_targets][0].shape \
-           == maps[Batch.part_score_weights][0].shape
-    assert maps[Batch.part_score_targets][0].shape[2] \
-           == ma_dataset.cfg["num_joints"] + num_idchannel
-    assert maps[Batch.locref_targets][0].shape \
-           == maps[Batch.locref_mask][0].shape
-    assert maps[Batch.locref_targets][0].shape[2] \
-           == 2 * ma_dataset.cfg["num_joints"]
-    assert maps[Batch.pairwise_targets][0].shape \
-           == maps[Batch.pairwise_targets][0].shape
-    assert maps[Batch.pairwise_targets][0].shape[2] \
-           == 2 * ma_dataset.cfg["num_limbs"]
+    assert (
+        maps[Batch.part_score_targets][0].shape
+        == maps[Batch.part_score_weights][0].shape
+    )
+    assert (
+        maps[Batch.part_score_targets][0].shape[2]
+        == ma_dataset.cfg["num_joints"] + num_idchannel
+    )
+    assert maps[Batch.locref_targets][0].shape == maps[Batch.locref_mask][0].shape
+    assert maps[Batch.locref_targets][0].shape[2] == 2 * ma_dataset.cfg["num_joints"]
+    assert (
+        maps[Batch.pairwise_targets][0].shape == maps[Batch.pairwise_targets][0].shape
+    )
+    assert maps[Batch.pairwise_targets][0].shape[2] == 2 * ma_dataset.cfg["num_limbs"]
 
 
 def test_batching(ma_dataset):

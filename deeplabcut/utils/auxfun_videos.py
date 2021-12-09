@@ -48,7 +48,9 @@ class VideoReader:
         while fr < numframes:
             success, frame = self.video.read()
             if not success or frame is None:
-                warnings.warn(f'Opencv failed to load frame {fr}. Use ffmpeg to re-encode video file')
+                warnings.warn(
+                    f"Opencv failed to load frame {fr}. Use ffmpeg to re-encode video file"
+                )
             fr += 1
 
     @property
@@ -295,9 +297,9 @@ class VideoWriter(VideoReader):
         x1, _, y1, _ = self.get_bbox()
         output_path = self.make_output_path(suffix, dest_folder)
         command = (
-            f"ffmpeg -n -i \"{self.video_path}\" "
+            f'ffmpeg -n -i "{self.video_path}" '
             f"-filter:v crop={self.width}:{self.height}:{x1}:{y1} "
-            f"-c:a copy \"{output_path}\""
+            f'-c:a copy "{output_path}"'
         )
         subprocess.call(command, shell=True)
         return output_path
@@ -337,13 +339,13 @@ class VideoWriter(VideoReader):
             dest_folder = self.directory
         return os.path.join(dest_folder, f"{self.name}{suffix}{self.format}")
 
-    
+
 def check_video_integrity(video_path):
     vid = VideoReader(video_path)
     vid.check_integrity()
     vid.check_integrity_robust()
 
-    
+
 # Historically DLC used: from scipy.misc import imread, imresize >> deprecated functions
 def imread(path, mode=None):
     return cv2.imread(path)[..., ::-1]  # ~10% faster than using cv2.cvtColor

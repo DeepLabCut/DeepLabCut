@@ -29,7 +29,9 @@ from deeplabcut.pose_estimation_tensorflow.nnets.factory import PoseNetFactory
 
 def setup_pose_prediction(cfg, allow_growth=False):
     tf.compat.v1.reset_default_graph()
-    inputs = tf.compat.v1.placeholder(tf.float32, shape=[cfg['batch_size'], None, None, 3])
+    inputs = tf.compat.v1.placeholder(
+        tf.float32, shape=[cfg["batch_size"], None, None, 3]
+    )
     net_heads = PoseNetFactory.create(cfg).test(inputs)
     outputs = [net_heads["part_prob"]]
     if cfg["location_refinement"]:
@@ -206,7 +208,9 @@ def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
 ### Code for TF inference on GPU
 def setup_GPUpose_prediction(cfg, allow_growth=False):
     tf.compat.v1.reset_default_graph()
-    inputs = tf.compat.v1.placeholder(tf.float32, shape=[cfg['batch_size'], None, None, 3])
+    inputs = tf.compat.v1.placeholder(
+        tf.float32, shape=[cfg["batch_size"], None, None, 3]
+    )
     net_heads = PoseNetFactory.create(cfg).inference(inputs)
     outputs = [net_heads["pose"]]
 
