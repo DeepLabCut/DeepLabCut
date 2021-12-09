@@ -77,8 +77,8 @@ def AnalyzeMultiAnimalVideo(
         start = time.time()
 
         print(
-          "Starting to extract posture from the video(s) with batchsize:",
-          dlc_cfg["batch_size"],
+            "Starting to extract posture from the video(s) with batchsize:",
+            dlc_cfg["batch_size"],
         )
         if use_shelve:
             shelf_path = dataname.split(".h5")[0] + "_full.pickle"
@@ -131,7 +131,9 @@ def AnalyzeMultiAnimalVideo(
             with open(metadata_path, "wb") as f:
                 pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
         else:
-            _ = auxfun_multianimal.SaveFullMultiAnimalData(PredicteData, metadata, dataname)
+            _ = auxfun_multianimal.SaveFullMultiAnimalData(
+                PredicteData, metadata, dataname
+            )
 
 
 def GetPoseandCostsF(
@@ -153,10 +155,7 @@ def GetPoseandCostsF(
     inds = []
 
     if shelf_path:
-        db = shelve.open(
-                shelf_path,
-                protocol=pickle.DEFAULT_PROTOCOL,
-            )
+        db = shelve.open(shelf_path, protocol=pickle.DEFAULT_PROTOCOL,)
     else:
         db = dict()
     db["metadata"] = {
@@ -222,10 +221,7 @@ def GetPoseandCostsS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, shelf_pa
         cap.set_bbox(cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"])
 
     if shelf_path:
-        db = shelve.open(
-            shelf_path,
-            protocol=pickle.DEFAULT_PROTOCOL,
-        )
+        db = shelve.open(shelf_path, protocol=pickle.DEFAULT_PROTOCOL,)
     else:
         db = dict()
     db["metadata"] = {

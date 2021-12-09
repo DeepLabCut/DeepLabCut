@@ -570,8 +570,7 @@ def mergeandsplit(config, trainindex=0, uniform=True):
         Data = pd.read_hdf(fn + ".h5")
     except FileNotFoundError:
         Data = merge_annotateddatasets(
-            cfg,
-            Path(os.path.join(project_path, trainingsetfolder)),
+            cfg, Path(os.path.join(project_path, trainingsetfolder)),
         )
         if Data is None:
             return [], []

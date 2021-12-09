@@ -110,7 +110,7 @@ class Assembly:
     def from_array(cls, array):
         n_bpts = array.shape[0]
         ass = cls(size=n_bpts)
-        ass.data[:, :array.shape[1]] = array
+        ass.data[:, : array.shape[1]] = array
         nonempty = np.flatnonzero(~np.isnan(array).any(axis=1))
         ass._visible.update(nonempty)
         return ass

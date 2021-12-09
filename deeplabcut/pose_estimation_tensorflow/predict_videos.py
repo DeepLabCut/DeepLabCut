@@ -1549,7 +1549,8 @@ def convert_detections2tracklets(
                         if not identity_only:
                             if track_method == "box":
                                 xy = trackingutils.calc_bboxes_from_keypoints(
-                                    animals[:, keep_inds], inferencecfg["boundingboxslack"],
+                                    animals[:, keep_inds],
+                                    inferencecfg["boundingboxslack"],
                                 )  # TODO: get cropping parameters and utilize!
                             else:
                                 xy = animals[:, keep_inds, :2]

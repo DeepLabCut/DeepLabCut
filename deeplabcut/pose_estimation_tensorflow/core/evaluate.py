@@ -582,9 +582,7 @@ def evaluate_network(
         from deeplabcut.utils.auxfun_videos import imread, imresize
         from deeplabcut.pose_estimation_tensorflow.core import predict
         from deeplabcut.pose_estimation_tensorflow.config import load_config
-        from deeplabcut.pose_estimation_tensorflow.datasets.utils import (
-            data_to_input,
-        )
+        from deeplabcut.pose_estimation_tensorflow.datasets.utils import data_to_input
         from deeplabcut.utils import auxiliaryfunctions, conversioncode
         import tensorflow as tf
 
@@ -789,7 +787,8 @@ def evaluate_network(
                         print("Running evaluation ...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
                             image = imread(
-                                os.path.join(cfg["project_path"], *imagename), mode="RGB"
+                                os.path.join(cfg["project_path"], *imagename),
+                                mode="RGB",
                             )
                             if scale != 1:
                                 image = imresize(image, scale)

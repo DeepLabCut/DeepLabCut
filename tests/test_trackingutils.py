@@ -101,9 +101,7 @@ def test_tracking_box(real_assemblies, real_tracklets):
         len(tracklet) for tracklet in tracklets_ref.values()
     ]
     assert all(
-        t.shape[1] == 4
-        for tracklet in tracklets.values()
-        for t in tracklet.values()
+        t.shape[1] == 4 for tracklet in tracklets.values() for t in tracklet.values()
     )
 
 
