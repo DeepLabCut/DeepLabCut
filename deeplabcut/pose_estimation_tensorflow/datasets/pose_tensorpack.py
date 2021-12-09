@@ -21,7 +21,6 @@ https://github.com/tensorpack/tensorpack
 
 import multiprocessing
 import os
-import random as rand
 
 import cv2
 import numpy as np
@@ -113,7 +112,7 @@ class Pose(RNGDataFlow):
             item = DataItem()
             item.image_id = i
             base = str(self.cfg["project_path"])
-            im_path = os.path.join(base, sample[0][0])
+            im_path = os.path.join(base, *[s.strip() for s in sample[0][0]])
             item.im_path = im_path
             item.im_size = sample[1][0]
             if len(sample) >= 3:
@@ -406,20 +405,12 @@ class TensorpackPoseDataset(BasePoseDataset):
         else:
             self.image_indices = np.random.permutation(num_images)
 
-    def get_scale(self):
-        cfg = self.cfg
-        scale = cfg["global_scale"]
-        if hasattr(cfg, "scale_jitter_lo") and hasattr(cfg, "scale_jitter_up"):
-            scale_jitter = rand.uniform(cfg["scale_jitter_lo"], cfg["scale_jitter_up"])
-            scale *= scale_jitter
-        return scale
-
     def next_batch(self):
         next_batch = next(self.aug)
         return self.make_batch(next_batch)
 
     def is_valid_size(self, image_size, scale):
-        if hasattr(self.cfg, "min_input_size") and hasattr(self.cfg, "max_input_size"):
+        if "min_input_size" in self.cfg and "max_input_size" in self.cfg:
             input_width = image_size[2] * scale
             input_height = image_size[1] * scale
             if (

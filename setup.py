@@ -4,7 +4,6 @@
 DeepLabCut2.0-2.2 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
 https://github.com/DeepLabCut/DeepLabCut
-
 Please see AUTHORS for contributors.
 https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
@@ -17,7 +16,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="deeplabcut",
-    version="2.2rc3",
+    version="2.2.0.3",
     author="A. & M. Mathis Labs",
     author_email="alexander@deeplabcut.org",
     description="Markerless pose-estimation of user-defined features with deep learning",
@@ -28,14 +27,14 @@ setuptools.setup(
         "ipython",
         "filterpy",
         "ruamel.yaml>=0.15.0",
-        "imgaug",
+        "imgaug>=0.4.0",
         "numba",
         "matplotlib",
         "networkx",
         "numpy",
         "opencv-python-headless",
         "pandas>=1.0.1",
-        "scikit-image>=0.17",
+        "scikit-image>=0.17,<=0.18.1",
         "scikit-learn",
         "scipy>=1.4",
         "statsmodels>=0.11",
@@ -60,10 +59,6 @@ setuptools.setup(
                 "deeplabcut/pose_estimation_tensorflow/models/pretrained/pretrained_model_urls.yaml",
                 "deeplabcut/gui/media/logo.png",
                 "deeplabcut/gui/media/dlc_1-01.png",
-                "deeplabcut/pose_estimation_tensorflow/lib/nms_cython/nms_grid.pyx",
-                "deeplabcut/pose_estimation_tensorflow/lib/nms_cython/nms_grid.cpp",
-                "deeplabcut/pose_estimation_tensorflow/lib/nms_cython/include/nms_scoremap.hxx",
-                "deeplabcut/pose_estimation_tensorflow/lib/nms_cython/include/andres/marray.hxx",
             ],
         )
     ],

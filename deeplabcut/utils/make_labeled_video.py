@@ -394,7 +394,7 @@ def create_labeled_video(
 
     keypoints_only: bool, optional
         By default, both video frames and keypoints are visible. If true, only the keypoints are shown. These clips are an hommage to Johansson movies,
-        see https://www.youtube.com/watch?v=1F5ICP9SYLU and of course his seminal paper: "Visual perception of biological motion and a model for its analysis" 
+        see https://www.youtube.com/watch?v=1F5ICP9SYLU and of course his seminal paper: "Visual perception of biological motion and a model for its analysis"
         by Gunnar Johansson in Perception & Psychophysics 1973.
 
     Frames2plot: List of indices
@@ -599,6 +599,7 @@ def proc_video(
                 if bodyparts2connect:
                     all_bpts = df.columns.get_level_values("bodyparts")[::3]
                     inds = get_segment_indices(bodyparts2connect, all_bpts)
+                clip = vp(fname=video, fps=outputframerate)
                 create_video_with_keypoints_only(
                     df,
                     videooutname,
@@ -609,7 +610,9 @@ def proc_video(
                     skeleton_color=skeleton_color,
                     color_by=color_by,
                     colormap=cfg["colormap"],
+                    fps=clip.fps(),
                 )
+                clip.close()
             elif not fastmode:
                 tmpfolder = os.path.join(str(videofolder), "temp-" + vname)
                 if save_frames:
@@ -640,6 +643,7 @@ def proc_video(
                     displaycropped,
                     color_by,
                 )
+                clip.close()
             else:
                 if displaycropped:  # then the cropped video + the labels is depicted
                     clip = vp(
@@ -856,6 +860,8 @@ def create_video_with_all_detections(
 
             for n in trange(clip.nframes):
                 frame = clip.load_frame()
+                if frame is None:
+                    continue
                 try:
                     ind = frames.index(n)
                     dets = Assembler._flatten_detections(data[frame_names[ind]])

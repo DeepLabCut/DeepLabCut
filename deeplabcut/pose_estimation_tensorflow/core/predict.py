@@ -39,6 +39,8 @@ def setup_pose_prediction(cfg, allow_growth=False):
         print("Activating extracting of PAFs")
         outputs.append(net_heads["pairwise_pred"])
 
+    outputs.append(net_heads["peak_inds"])
+
     restorer = tf.compat.v1.train.Saver()
 
     if allow_growth:

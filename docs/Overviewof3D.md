@@ -1,12 +1,11 @@
 # 3D DeepLabCut
 
-We support 2-camera based 3D pose estimation
+In this repo we directly support 2-camera based 3D pose estimation. If you want n camera support, plus nicer optimization methods, please see our new work that was published at [ICRA 2021 on strong baseline 3D models (and a 3D dataset)](https://github.com/African-Robotics-Unit/AcinoSet). In the link you will find how we optimize 6+ camera DLC output data for cheetahs (and see more below).
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589578632599-HQENUYUIBI9KYTZA2WXV/ke17ZwdGBToddI8pDm48kBgERiRoVg6XJpnbAnG076FZw-zPPgdn4jUwVcJE1ZvWhcwhEtWJXoshNdA9f1qD7Y5_KuY_fkOEvGrDVB8aRb13EC_7Ld97nVeJG4MMJk1tqSdWG3KOMGCA68a4XjyT5g/3D.png?format=300w" width="350" title="DLC-3D" alt="DLC 3D" align="right" vspace = "50">
 
-- Watch a [DEMO VIDEO](https://youtu.be/Eh6oIGE4dwI) on how to use this code!
 
-**Our code base assumes you:**
+**Our code base in this repo assumes you:**
 
 A. You have 2D videos and a DeepLabCut network to analyze them as described in the [main documentation](https://github.com/AlexEMG/DeepLabCut/blob/master/docs/UseOverviewGuide.md). This can be with multiple separate networks for each camera, or one network trained on all views (See [Nath*, Mathis* et al., 2019](https://www.biorxiv.org/content/10.1101/476531v1)).
 
@@ -14,23 +13,30 @@ B. You are using 2 cameras for 3D*.
 
 C. You have calibration images taken (see details below!).
 
+
+### ***If you need more than 2 camera support:**
+Here are other excellent options for you to use that extend DeepLabCut:
+
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1628432165795-BBF6AWCK1BEKV3AJ6GF5/cheetah.gif?format=1500w" width="350" title="AcinoSet-3D" alt="DLC 3D" align="right" vspace = "50">
+
+- **[AcinoSet](https://github.com/African-Robotics-Unit/AcinoSet)**; **n**-camera support with triangulation, extended Kalman filtering, and trajectory optimation code (see video to the right for a min demo, courtesy of Prof. Patel), plus a GUI to visualize 3D data. It is built to work directly with DeepLabCut (but currently tailored to cheetah's, thus some coding skills are required at this time). 
+
+
+- **[anipose.org](https://anipose.readthedocs.io/en/latest/)**; a wrapper for 3D deeplabcut that provides >3 camera support and is built to work directly with DeepLabCut. You can `pip install anipose` into your DLC conda environment.
+
+- **Argus, easywand or DLTdv** w/DeepLabCut see https://github.com/haliaetus13/DLCconverterDLT; this can be used with the the highly popular Argus or DLTdv tools for wand calibration.
+
+
+## Jump in with direct DeepLabCut 2-camera support:
+
 <p align="center">
 <img src= https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1560968522350-COKR986AQESF5N1N7QNK/ke17ZwdGBToddI8pDm48kNaO57GzHjWqV-xM6jVvY6ZZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpyR5k0u27ivMv3az5DOhUvLuYQefjfUWYPEDVexVC_mSas4X78tjQKn3yE00zHvnK8/3D_maousLarger.gif?format=750w width="85%">
  </p>
 
-
-
-***If you need more than 2 camera support:**
-Due to the excellent work of others, we will not have >2 cameras (via calibration) support at this time. We also opt not to have them in DLC, as we want users to have the most flexibility in their systems. Here are other excellent options for you to use:
-
-- **[anipose.org](https://anipose.readthedocs.io/en/latest/)**; a wrapper for 3D deeplabcut https://github.com/lambdaloop/anipose
-  - it provides >3 camera support and is built to work directly with DeepLabCut. You can `pip install anipose` into your DLC conda environment.
-
-- using Argus, easywand or DLTdv w/deeplabcut https://github.com/haliaetus13/DLCconverterDLT
-   - this can be used with the the highly popular Argus or DLTdv tools for wand calibration.
-
-
 ### (1) Create a New 3D Project:
+
+Watch a [DEMO VIDEO](https://youtu.be/Eh6oIGE4dwI) on how to use this code!
+
 
 You will run this function **one** time per project; a project is defined as a given set of cameras and calibration images. You can always analyze new videos within this project.
 

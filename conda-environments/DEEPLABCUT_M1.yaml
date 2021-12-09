@@ -1,0 +1,36 @@
+# DEEPLABCUT_M1.yaml
+
+#DeepLabCut2.0 Toolbox (deeplabcut.org)
+#© A. & M. Mathis Labs
+#https://github.com/DeepLabCut/DeepLabCut
+#Please see AUTHORS for contributors.
+
+#https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#Licensed under GNU Lesser General Public License v3.0
+#
+# DeepLabCut M1 environment instructions:
+# For the M1 chip, please first download the Rosetta wheel for tensorflow 2.4.1:
+# https://drive.google.com/file/d/17pSwfoNuyf3YR8vCaVggHeI-pMQ3xL7l/view?usp=sharing
+#
+# Then, run:
+#
+# conda env create -f DEEPLABCUT_M1.yaml
+#
+# Next, activate the environment, and in the terminal cd to  Downloads, and then run:
+# pip install tensorflow-2.4.1-py3-none-any.whl --no-dependencies --force-reinstall
+#
+# Next, launch DLC with pythonw -m deeplabcut
+
+name: DEEPLABCUT_M1
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.7
+  - pip
+  - jupyter
+  - nb_conda
+  - python.app
+  - ffmpeg
+  - pip:
+    - "deeplabcut[gui]"

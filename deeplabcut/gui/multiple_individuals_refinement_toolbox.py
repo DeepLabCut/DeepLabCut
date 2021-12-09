@@ -31,7 +31,11 @@ from skimage import io
 
 from deeplabcut.gui import auxfun_drag
 from deeplabcut.gui.widgets import BasePanel, WidgetPanel, BaseFrame
-from deeplabcut.utils import auxiliaryfunctions, visualization
+from deeplabcut.utils import (
+    auxiliaryfunctions,
+    visualization,
+    conversioncode,
+)
 
 
 # ###########################################################################
@@ -55,7 +59,7 @@ class ImagePanel(BasePanel):
                     + "/"
                     + str(len(index) - 1)
                     + " "
-                    + str(Path(index[itr]).stem)
+                    + str(Path(*index[itr]).stem)
                     + " "
                     + " Threshold chosen is: "
                     + str("{0:.2f}".format(threshold))
@@ -68,7 +72,7 @@ class ImagePanel(BasePanel):
                     + "/"
                     + str(len(index) - 1)
                     + " "
-                    + str(Path(index[itr]).stem)
+                    + str(Path(*index[itr]).stem)
                 )
             )
         if keep_view:
@@ -313,7 +317,7 @@ class MainFrame(BaseFrame):
         MainFrame.updateZoomPan(self)
         self.updatedCoords = []
 
-        img_name = Path(self.index[self.iter]).name
+        img_name = Path(*self.index[self.iter]).name
         #        self.axes.clear()
         self.figure.delaxes(self.figure.axes[1])
         (
@@ -406,6 +410,7 @@ class MainFrame(BaseFrame):
                     .unique()
                     .to_list()
             )
+            conversioncode.guarantee_multiindex_rows(self.Dataframe)
             self.Dataframe.sort_index(inplace=True)
             self.scorer = self.Dataframe.columns.get_level_values(0)[0]
 
@@ -416,7 +421,7 @@ class MainFrame(BaseFrame):
             self.index = list(self.Dataframe.iloc[:, 0].index)
             # Reading images
 
-            self.img = os.path.join(self.project_path, self.index[self.iter])
+            self.img = os.path.join(self.project_path, *self.index[self.iter])
             img_name = Path(self.img).name
             self.norm, self.colorIndex = self.image_panel.getColorIndices(
                 self.img, self.bodyparts
@@ -465,7 +470,7 @@ class MainFrame(BaseFrame):
             self.axes.callbacks.connect("ylim_changed", self.onZoom)
 
             instruction = wx.MessageBox(
-                "1. Enter the likelihood threshold. \n\n2. Each prediction will be shown with a unique color. \n All the data points above the threshold will be marked as circle filled with a unique color. All the data points below the threshold will be marked with a hollow circle. \n\n3. Enable the checkbox to adjust the marker size. \n\n4.  Hover your mouse over data points to see the labels and their likelihood. \n\n5. Left click and drag to move the data points. \n\n6. Right click on any data point to remove it. Be careful, you cannot undo this step. \n Click once on the zoom button to zoom-in the image.The cursor will become cross, click and drag over a point to zoom in. \n Click on the zoom button again to disable the zooming function and recover the cursor. \n Use pan button to pan across the image while zoomed in. Use home button to go back to the full;default view. \n\n7. When finished click 'Save' to save all the changes. \n\n8. Click OK to continue",
+                "1. Enter the likelihood threshold. \n\n2. Each prediction will be shown with a unique color. \n All the data points above the threshold will be marked as circle filled with a unique color. All the data points below the threshold will be marked with a hollow circle. \n\n3. Enable the checkbox to adjust the marker size. \n\n4.  Hover your mouse over data points to see the labels and their likelihood. \n\n5. Left click and drag to move the data points. \n\n6. Middle click on any data point to remove it. Be careful, you cannot undo this step. \n Click once on the zoom button to zoom-in the image.The cursor will become cross, click and drag over a point to zoom in. \n Click on the zoom button again to disable the zooming function and recover the cursor. \n Use pan button to pan across the image while zoomed in. Use home button to go back to the full;default view. \n\n7. When finished click 'Save' to save all the changes. \n\n8. Click OK to continue",
                 "User instructions",
                 wx.OK | wx.ICON_INFORMATION,
             )
@@ -483,7 +488,7 @@ class MainFrame(BaseFrame):
                 textBox.ShowModal()
                 self.threshold = float(textBox.GetValue())
                 textBox.Destroy()
-                self.img = os.path.join(self.project_path, self.index[self.iter])
+                self.img = os.path.join(self.project_path, *self.index[self.iter])
                 img_name = Path(self.img).name
                 self.axes.clear()
                 self.preview = False
@@ -569,7 +574,7 @@ class MainFrame(BaseFrame):
 
         if len(self.index) > self.iter:
             self.updatedCoords = []
-            self.img = os.path.join(self.project_path, self.index[self.iter])
+            self.img = os.path.join(self.project_path, *self.index[self.iter])
             img_name = Path(self.img).name
 
             # Plotting
@@ -624,7 +629,7 @@ class MainFrame(BaseFrame):
                     self.index = list(self.Dataframe.iloc[:, 0].index)
                 self.iter = self.iter - 1
 
-                self.img = os.path.join(self.project_path, self.index[self.iter])
+                self.img = os.path.join(self.project_path, *self.index[self.iter])
                 img_name = Path(self.img).name
 
                 (
@@ -673,7 +678,7 @@ class MainFrame(BaseFrame):
         if self.iter >= 0:
             self.updatedCoords = []
             # Reading Image
-            self.img = os.path.join(self.project_path, self.index[self.iter])
+            self.img = os.path.join(self.project_path, *self.index[self.iter])
             img_name = Path(self.img).name
 
             # Plotting
@@ -746,7 +751,7 @@ class MainFrame(BaseFrame):
         # Checks if zoom/pan button is ON
         MainFrame.updateZoomPan(self)
         wx.MessageBox(
-            "1. Enter the likelihood threshold. \n\n2. All the data points above the threshold will be marked as circle filled with a unique color. All the data points below the threshold will be marked with a hollow circle. \n\n3. Enable the checkbox to adjust the marker size (you will not be able to zoom/pan/home until the next frame). \n\n4. Hover your mouse over data points to see the labels and their likelihood. \n\n5. LEFT click+drag to move the data points. \n\n6. RIGHT click on any data point to remove it. Be careful, you cannot undo this step! \n Click once on the zoom button to zoom-in the image. The cursor will become cross, click and drag over a point to zoom in. \n Click on the zoom button again to disable the zooming function and recover the cursor. \n Use pan button to pan across the image while zoomed in. Use home button to go back to the full default view. \n\n7. When finished click 'Save' to save all the changes. \n\n8. Click OK to continue",
+            "1. Enter the likelihood threshold. \n\n2. All the data points above the threshold will be marked as circle filled with a unique color. All the data points below the threshold will be marked with a hollow circle. \n\n3. Enable the checkbox to adjust the marker size (you will not be able to zoom/pan/home until the next frame). \n\n4. Hover your mouse over data points to see the labels and their likelihood. \n\n5. LEFT click+drag to move the data points. \n\n6. MIDDLE click on any data point to remove it. Be careful, you cannot undo this step! \n Click once on the zoom button to zoom-in the image. The cursor will become cross, click and drag over a point to zoom in. \n Click on the zoom button again to disable the zooming function and recover the cursor. \n Use pan button to pan across the image while zoomed in. Use home button to go back to the full default view. \n\n7. When finished click 'Save' to save all the changes. \n\n8. Click OK to continue",
             "User instructions",
             wx.OK | wx.ICON_INFORMATION,
         )
@@ -779,7 +784,7 @@ class MainFrame(BaseFrame):
     def check_labels(self):
         print("Checking labels if they are outside the image")
         for i in self.Dataframe.index:
-            image_name = os.path.join(self.project_path, i)
+            image_name = os.path.join(self.project_path, *i)
             im = PIL.Image.open(image_name)
             self.width, self.height = im.size
             for ind in self.individual_names:

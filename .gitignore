@@ -6,6 +6,8 @@
 /examples/3D*
 /examples/OUT
 .local
+.DS_Store
+examples/.DS_Store
 
 # Tensorflow checkpoints
 *.ckpt
@@ -108,6 +110,7 @@ ENV/
 # Spyder project settings
 .spyderproject
 .spyproject
+.vscode
 
 # Rope project settings
 .ropeproject

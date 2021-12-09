@@ -2,7 +2,7 @@ import os
 import deeplabcut
 import numpy as np
 import pandas as pd
-import shutil
+import pickle
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
 
@@ -11,6 +11,7 @@ if __name__ == "__main__":
     SCORER = "dlc_team"
     NUM_FRAMES = 5
     TRAIN_SIZE = 0.8
+    # NET = "dlcr101_ms5"
     NET = "dlcrnet_ms5"
     #NET = "resnet_152"
     #NET = "efficientnet-b0"
@@ -32,7 +33,13 @@ if __name__ == "__main__":
 
     print("Editing config...")
     cfg = auxiliaryfunctions.edit_config(
-        config_path, {"numframes2pick": NUM_FRAMES, "TrainingFraction": [TRAIN_SIZE]}
+        config_path,
+        {
+            "numframes2pick": NUM_FRAMES,
+            "TrainingFraction": [TRAIN_SIZE],
+            "identity": True,
+            "uniquebodyparts": ['corner1', 'corner2'],
+        }
     )
     print("Config edited.")
 
@@ -69,7 +76,7 @@ if __name__ == "__main__":
         for image in auxiliaryfunctions.grab_files_in_folder(image_folder, "png")
     ]
     fake_data = np.tile(
-        np.repeat(50 * np.arange(len(animals_id)) + 100, 2), (len(index), 1)
+        np.repeat(50 * np.arange(len(animals_id)) + 50, 2), (len(index), 1)
     )
     df = pd.DataFrame(fake_data, index=index, columns=columns)
     output_path = os.path.join(image_folder, f"CollectedData_{SCORER}.csv")
@@ -79,27 +86,36 @@ if __name__ == "__main__":
     )
     print("Artificial data created.")
 
-    print("Cropping and exchanging")
-    deeplabcut.cropimagesandlabels(config_path, userfeedback=False)
-
     print("Checking labels...")
     deeplabcut.check_labels(config_path, draw_skeleton=False)
     print("Labels checked.")
 
     print("Creating train dataset...")
-    deeplabcut.create_multianimaltraining_dataset(config_path, net_type=NET)
+    deeplabcut.create_multianimaltraining_dataset(config_path, net_type=NET, crop_size=(200, 200))
     print("Train dataset created.")
+
+    # Check the training image paths are correctly stored as arrays of strings
+    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+    datafile, _ = auxiliaryfunctions.GetDataandMetaDataFilenames(
+        trainingsetfolder, 0.8, 1, cfg,
+    )
+    datafile = datafile.split(".mat")[0] + ".pickle"
+    with open(os.path.join(cfg["project_path"], datafile), "rb") as f:
+        pickledata = pickle.load(f)
+    num_images = len(pickledata)
+    assert all(len(pickledata[i]["image"]) == 3 for i in range(num_images))
 
     print("Editing pose config...")
     model_folder = auxiliaryfunctions.GetModelFolder(
         TRAIN_SIZE, 1, cfg, cfg["project_path"]
     )
-    pose_config_path = os.path.join(model_folder, "train/pose_cfg.yaml")
+    pose_config_path = os.path.join(model_folder, "train", "pose_cfg.yaml")
     edits = {
         "global_scale": 0.5,
         "batch_size": 1,
         "save_iters": N_ITER,
         "display_iters": N_ITER // 2,
+        "crop_size": [200, 200],
         # "multi_step": [[0.001, N_ITER]],
     }
     deeplabcut.auxiliaryfunctions.edit_config(pose_config_path, edits)
@@ -146,14 +162,6 @@ if __name__ == "__main__":
     )
     print("Tracklets created...")
 
-    # Copy over meaningful tracklets to test stitching
-    pickle_file = os.path.join(
-        os.path.dirname(basepath), "tests", "data", "trimouse_tracklets.pickle"
-    )
-    shutil.copy(
-        pickle_file,
-        os.path.splitext(new_video_path)[0] + scorer + "_el.pickle",
-    )
     deeplabcut.stitch_tracklets(
         config_path,
         [new_video_path],

@@ -30,7 +30,11 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from deeplabcut.gui import auxfun_drag
 from deeplabcut.gui.widgets import BasePanel, WidgetPanel, BaseFrame
-from deeplabcut.utils import auxiliaryfunctions, auxiliaryfunctions_3d
+from deeplabcut.utils import (
+    auxiliaryfunctions,
+    auxiliaryfunctions_3d,
+    conversioncode,
+)
 
 
 class ImagePanel(BasePanel):
@@ -139,9 +143,7 @@ class ImagePanel(BasePanel):
             return None, None, None
 
     def drawEpLines(self, drawImage, lines, sourcePts, offsets, colorIndex, cmap):
-        drawImage = cv2.cvtColor(drawImage, cv2.COLOR_BGR2RGB)
         height, width, depth = drawImage.shape
-        labelNum = 0
         for line, pt, cIdx in zip(lines, sourcePts, colorIndex):
             if pt[0] > -1000:
                 coeffs = line[0]
@@ -165,13 +167,13 @@ class ImagePanel(BasePanel):
         xlim = self.axes.get_xlim()
         ylim = self.axes.get_ylim()
         self.axes.clear()
-
+        # convert the image to RGB as you are showing the image with matplotlib
         im = cv2.imread(img)[..., ::-1]
         colorIndex = np.linspace(np.max(im), np.min(im), len(bodyparts))
         # draw epipolar lines
         epLines, sourcePts, offsets = self.retrieveData_and_computeEpLines(img, itr)
         if epLines is not None:
-            im = self.drawEpLines(im, epLines, sourcePts, offsets, colorIndex, cmap)
+            im = self.drawEpLines(im.copy(), epLines, sourcePts, offsets, colorIndex, cmap)
         ax = self.axes.imshow(im, cmap=cmap)
         self.orig_xlim = self.axes.get_xlim()
         self.orig_ylim = self.axes.get_ylim()
@@ -554,7 +556,7 @@ class MainFrame(BaseFrame):
         """
         This function is to create a hotkey to skip up on the radio button panel.
         """
-        if self.rdb.GetSelection() < len(self.bodyparts) - 1:
+        if self.rdb.GetSelection() > 0:
             self.rdb.SetSelection(self.rdb.GetSelection() - 1)
 
     def browseDir(self, event):
@@ -614,21 +616,23 @@ class MainFrame(BaseFrame):
         self.statusbar.SetStatusText(
             "Working on folder: {}".format(os.path.split(str(self.dir))[-1])
         )
-        self.relativeimagenames = [
+        relativeimagenames = [
             "labeled" + n.split("labeled")[1] for n in self.index
         ]  # [n.split(self.project_path+'/')[1] for n in self.index]
-
+        self.relativeimagenames = [tuple(name.split(os.path.sep))
+                                   for name in relativeimagenames]
         # Reading the existing dataset,if already present
         try:
             self.dataFrame = pd.read_hdf(
                 os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5")
             )
+            conversioncode.guarantee_multiindex_rows(self.dataFrame)
             self.dataFrame.sort_index(inplace=True)
             self.prev.Enable(True)
 
             # Finds the first empty row in the dataframe and sets the iteration to that index
             for idx, j in enumerate(self.dataFrame.index):
-                values = self.dataFrame.loc[j, :].values
+                values = self.dataFrame.loc(axis=0)[j].values
                 if np.prod(np.isnan(values)) == 1:
                     self.iter = idx
                     break
@@ -639,38 +643,38 @@ class MainFrame(BaseFrame):
             a = np.empty((len(self.index), 2))
             a[:] = np.nan
             for bodypart in self.bodyparts:
-                index = pd.MultiIndex.from_product(
+                cols = pd.MultiIndex.from_product(
                     [[self.scorer], [bodypart], ["x", "y"]],
                     names=["scorer", "bodyparts", "coords"],
                 )
-                frame = pd.DataFrame(a, columns=index, index=self.relativeimagenames)
+                index = pd.MultiIndex.from_tuples(self.relativeimagenames)
+                frame = pd.DataFrame(a, columns=cols, index=index)
                 self.dataFrame = pd.concat([self.dataFrame, frame], axis=1)
             self.iter = 0
 
         # Reading the image name
-        self.img = self.dataFrame.index[self.iter]
+        self.img = os.path.join(*self.dataFrame.index[self.iter])
         img_name = Path(self.img).name
         self.norm, self.colorIndex = self.image_panel.getColorIndices(
             self.img, self.bodyparts
         )
 
         # Checking for new frames and adding them to the existing dataframe
-        old_imgs = np.sort(list(self.dataFrame.index))
+        old_imgs = sorted(self.dataFrame.index)
         self.newimages = list(set(self.relativeimagenames) - set(old_imgs))
-        if not self.newimages:
-            pass
-        else:
+        if self.newimages:
             print("Found new frames..")
             # Create an empty dataframe with all the new images and then merge this to the existing dataframe.
             self.df = None
             a = np.empty((len(self.newimages), 2))
             a[:] = np.nan
             for bodypart in self.bodyparts:
-                index = pd.MultiIndex.from_product(
+                cols = pd.MultiIndex.from_product(
                     [[self.scorer], [bodypart], ["x", "y"]],
                     names=["scorer", "bodyparts", "coords"],
                 )
-                frame = pd.DataFrame(a, columns=index, index=self.newimages)
+                index = pd.MultiIndex.from_tuples(self.newimages)
+                frame = pd.DataFrame(a, columns=cols, index=index)
                 self.df = pd.concat([self.df, frame], axis=1)
             self.dataFrame = pd.concat([self.dataFrame, self.df], axis=0)
             # Sort it by the index values
@@ -728,11 +732,12 @@ class MainFrame(BaseFrame):
             a = np.empty((len(self.index), 2))
             a[:] = np.nan
             for bodypart in self.new_bodyparts:
-                index = pd.MultiIndex.from_product(
+                cols = pd.MultiIndex.from_product(
                     [[self.scorer], [bodypart], ["x", "y"]],
                     names=["scorer", "bodyparts", "coords"],
                 )
-                frame = pd.DataFrame(a, columns=index, index=self.relativeimagenames)
+                index = pd.MultiIndex.from_tuples(self.relativeimagenames)
+                frame = pd.DataFrame(a, columns=cols, index=index)
                 self.dataFrame = pd.concat([self.dataFrame, frame], axis=1)
 
             (
@@ -938,8 +943,6 @@ class MainFrame(BaseFrame):
         self.dataFrame.to_hdf(
             os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5"),
             "df_with_missing",
-            format="table",
-            mode="w",
         )
 
     def onChecked(self, event):

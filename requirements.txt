@@ -3,7 +3,7 @@ filterpy
 h5py
 ruamel.yaml>=0.15.0
 intel-openmp
-imgaug
+imgaug==0.4.0
 jupyter-book>=0.7.0b
 numba
 matplotlib
@@ -14,7 +14,7 @@ pandas>=1.0.1
 patsy
 pyyaml
 setuptools
-scikit-image>=0.17
+scikit-image>=0.17,<=0.18.1
 scikit-learn
 scipy>=1.4
 six

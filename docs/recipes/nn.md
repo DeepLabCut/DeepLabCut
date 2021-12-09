@@ -35,7 +35,7 @@ deeplabcut.create_training_dataset(configpath, augmenter_type='imgaug')
 ```
 
 When you do this (i.e. pass `augmenter_type`) what underlying files you are calling are these:
-https://github.com/AlexEMG/DeepLabCut/tree/master/deeplabcut/pose_estimation_tensorflow/dataset
+https://github.com/DeepLabCut/DeepLabCut/tree/master/deeplabcut/pose_estimation_tensorflow/datasets
 You can look at what types of augmentation are available to you (or edit those files to add more). Moreover, you can add more options to the pose_cfg.yaml file. Here is a simple script you can modify and run to automatically edit the correct pose_cfg.yaml to add more augmentation to the `imgaug` loader (or open it and edit yourself).
 
 But, you can add more:
@@ -124,4 +124,4 @@ Built with inverse residual blocks like MobileNets, but more powerful than ResNe
 
 ## How can I compare them?
 
-Great question! So, the best way to do this is to use the **same** test/train split (that is generated in create_training_dataset) with different models. Here, as of 2.1+, we have a **new** function that lets you do this easily. Instead of using `create_training_dataset` you will run `create_training_model_comparision` (see the docstrings by `deeplabcut.create_training_model_comparision?` or run the Project Manager GUI - `deeplabcut.launch_dlc()`-  for assistance.
+Great question! So, the best way to do this is to use the **same** test/train split (that is generated in create_training_dataset) with different models. Here, as of 2.1+, we have a **new** function that lets you do this easily. Instead of using `create_training_dataset` you will run `create_training_model_comparison` (see the docstrings by `deeplabcut.create_training_model_comparison?` or run the Project Manager GUI - `deeplabcut.launch_dlc()`-  for assistance.

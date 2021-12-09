@@ -2,12 +2,12 @@
 
 Below we will first outline what you need to get started, the different ways you can use DeepLabCut, and then the full workflow. Note, we highly recommend you also read and follow our [Nature Protocols paper](https://www.nature.com/articles/s41596-019-0176-0), which is (still) fully relevant to standard DeepLabCut.
 
-- :computer:  [How to install DeepLabCut](/docs/installation.md)
+- [How to install DeepLabCut](/docs/installation.md)
 
-- :information_desk_person: Decide on your needs: there are **two main modes, standard DeepLabCut or multi-animal DeepLabCut**. We highly recommend carefully considering which one is best for your needs. For example, a white mouse + black mouse would call for standard, while two black mice would use multi-animal. **:blue_heart: [Important Information on how to use DLC in different scenarios (single vs multi animal)](/docs/UseOverviewGuide.md#important-information-on-using-deeplabcut)** Then pick: 
+- Decide on your needs: there are **two main modes, standard DeepLabCut or multi-animal DeepLabCut**. We highly recommend carefully considering which one is best for your needs. For example, a white mouse + black mouse would call for standard, while two black mice would use multi-animal. **[Important Information on how to use DLC in different scenarios (single vs multi animal)](/docs/UseOverviewGuide.md#important-information-on-using-deeplabcut)** Then pick:
 
-- :chart_with_upwards_trend: (1) [How to use standard DeepLabCut](/docs/standardDeepLabCut_UserGuide.md) 
-- :chart_with_upwards_trend: (2) [How to use multi-animal DeepLabCut](/docs/maDLC_UserGuide.md)
+- (1) [How to use standard DeepLabCut](/docs/standardDeepLabCut_UserGuide.md)
+- (2) [How to use multi-animal DeepLabCut](/docs/maDLC_UserGuide.md)
 
  **Additional Learning Resources:**
 
@@ -16,7 +16,7 @@ Below we will first outline what you need to get started, the different ways you
  - [EXPLANATIONS:](https://github.com/DeepLabCut/DeepLabCut/wiki) resources on understanding how DeepLabCut works
  - [REFERENCES:](https://github.com/DeepLabCut/DeepLabCut#references) read the science behind DeepLabCut
 
-:movie_camera: Getting Started: [a video tutorial on navigating the documentation!](https://www.youtube.com/watch?v=A9qZidI7tL8)
+Getting Started: [a video tutorial on navigating the documentation!](https://www.youtube.com/watch?v=A9qZidI7tL8)
 
 
  ### What you need to get started:
@@ -51,9 +51,9 @@ This page contains a list of the essential functions of DeepLabCut as well as de
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1560124235138-A9VEZB45SQPD5Z0BDEXA/ke17ZwdGBToddI8pDm48kKsvCFNoOAts8bgs5LXY20UUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcZaDohTswVrVk6oKw3G03bTl18OXeDyNJsBjNlGiyPYGo9Ewyd5AI5wx6CleNeBtf/dlc_steps.jpg?format=1000w" height="270">
 </p>
 
-:mega: **NOTE:** There is a highly similar workflow for 2.2+ (and your 2.X projects are still fully compatible with this format!).
+**NOTE:** There is a highly similar workflow for 2.2+ (and your 2.X projects are still fully compatible with this format!).
 
-**:purple_heart: DLC 2.2:** as of 2.2 we support "multi-animal projects," but these new features can also be used on single animals too (details below). The workflow is highly similar, but with a few key additional steps. Please carefully review the functions below for more details. You can search/look for **maDeepLabCut** for specific steps that are changed, or see this more comprehensive guide [here](/docs/maDLC_AdvUserGuide.md)
+** DLC 2.2:** as of 2.2 we support "multi-animal projects," but these new features can also be used on single animals too (details below). The workflow is highly similar, but with a few key additional steps. Please carefully review the functions below for more details. You can search/look for **maDeepLabCut** for specific steps that are changed, or see this more comprehensive guide [here](/docs/maDLC_AdvUserGuide.md)
 
  <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1596370260800-SP2GWKDPJCOIR7LJ31VM/ke17ZwdGBToddI8pDm48kB4fL2ovSQh5dRlH2jCMtpoUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcSV94BuD0XUinmig_1P1RJNYVU597j3jgswapL4c_w92BJE9r6UgUperYhWQ2ubQ_/workflow.png?format=2500w" height="570">
@@ -65,7 +65,7 @@ You can have as many projects on your computer as you wish. You can have DeepLab
 <p align="center">
 <img src=  https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559758477126-B9PU1EFA7L7L1I24Z2EH/ke17ZwdGBToddI8pDm48kH6mtUjqMdETiS6k4kEkCoR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UQf4d-kVja3vCG3Q_2S8RPAcZTZ9JxgjXkf3-Un9aT84H3bqxw7fF48mhrq5Ulr0Hg/howtouseDLC2d_3d-01.png?format=500w width="60%">
  </p>
- 
+
 
 # Specific Advice for Using DeepLabCut:
 
@@ -82,22 +82,22 @@ We highly recommend using 2.2 first in the Project Manager GUI ([Option 3](docs/
 - **I have single animal videos, but I want to use the advanced tracking features & updated network capabilities introduced (for multi-animal projects) in DLC2.2:**
    - quick start: when you `create_new_project` just set the flag `multianimal=True`.
 
-:movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/JDsa8R5J0nQ)
+[VIDEO TUTORIAL AVAILABLE!](https://youtu.be/JDsa8R5J0nQ)
 
-Some tips: i.e. this is good for say, a hand or a mouse if you feel the "skeleton" during training would increase performance. DON'T do this for things that could be identified an individual objects. i.e., don't do whisker 1, whisker 2, whisker 3 as 3 individuals. Each whisker always has a specific spatial location, and by calling them individuals you will do WORSE than in single animal mode. 
+Some tips: i.e. this is good for say, a hand or a mouse if you feel the "skeleton" during training would increase performance. DON'T do this for things that could be identified an individual objects. i.e., don't do whisker 1, whisker 2, whisker 3 as 3 individuals. Each whisker always has a specific spatial location, and by calling them individuals you will do WORSE than in single animal mode.
 
 - **I have single animal videos, but I want to use new features within in DLC2.2:**
-   - quick start: when you `create_new_project` just set the flag `multianimal=Flase`, but you still get lots of upgrades! This is the typical work path for many of you. 
+   - quick start: when you `create_new_project` just set the flag `multianimal=Flase`, but you still get lots of upgrades! This is the typical work path for many of you.
 
 - **I have multiple *identical-looking animals* in my videos and I need to use DLC2.2:**
    - quick start: when you `create_new_project` set the flag `multianimal=True`. If you can't tell them apart, you can assign the "individual" ID to any animal in each frame. See this [labeling w/2.2 demo video](https://www.youtube.com/watch?v=_qbEqNKApsI)
 
-:movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/Kp-stcTm77g)
+[VIDEO TUTORIAL AVAILABLE!](https://youtu.be/Kp-stcTm77g)
 
 - **I have multiple animals, *but I can tell them apart,* in my videos and want to use DLC2.2:**
    - quick start: when you `create_new_project` set the flag `multianimal=True`. And always label the "individual" ID name the same; i.e. if you have mouse1 and mouse2 but mouse2 always has a miniscope, in every frame label mouse2 consistently. See this [labeling w/2.2 demo video](https://www.youtube.com/watch?v=_qbEqNKApsI). Then, you MUST put the following in the config.yaml file: `identity: true`
 
-:movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/Kp-stcTm77g) - ALSO, if you can tell them apart, label animals them consistently!
+[VIDEO TUTORIAL AVAILABLE!](https://youtu.be/Kp-stcTm77g) - ALSO, if you can tell them apart, label animals them consistently!
 
 - **I have a pre-2.2 single animal project, but I want to use 2.2:**
 
@@ -115,13 +115,15 @@ Great - now that you get the overall workflow let's jump in! Here, you have seve
 
 
 ## Option 1: Demo Notebooks:
-:movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=DRT-Cq2vdWs)
+[VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=DRT-Cq2vdWs)
 
 We provide Jupyter and COLAB notebooks for using DeepLabCut on both a pre-labeled dataset, and on the end user’s
 own dataset. See all the demo's [here!](/examples) Please note that GUIs are not easily supported in Jupyter in MacOS, as you need a framework build of python. While it's possible to launch them with a few tweaks, we recommend using the Project Manager GUI or terminal, so please follow the instructions below.
 
 ## Option 2: using the Project Manager GUI:
-:movie_camera: [VIDEO TUTORIAL!](https://www.youtube.com/watch?v=KcXogR-p5Ak) :movie_camera: [VIDEO TUTORIAL#2!](https://youtu.be/Kp-stcTm77g)
+[VIDEO TUTORIAL!](https://www.youtube.com/watch?v=KcXogR-p5Ak)
+
+[VIDEO TUTORIAL#2!](https://youtu.be/Kp-stcTm77g)
 
 Start iPython, or if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython`` or ``python``, but otherwise it's the same.
 If you are using DeepLabCut on the cloud, you cannot use the GUIs and you need to first set `DLClight=True`. If you use Windows, please always open the terminal with administrator privileges. Please read more [here](https://github.com/DeepLabCut/Docker4DeepLabCut2.0), and in our Nature Protocols paper [here](https://www.nature.com/articles/s41596-019-0176-0). And, see our [troubleshooting wiki](https://github.com/AlexEMG/DeepLabCut/wiki/Troubleshooting-Tips).
@@ -134,9 +136,10 @@ That's it! Follow the GUI for details
 
 
 ## Option 3: using the program terminal, Start iPython*:
-:movie_camera: [VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=7xwOhUcIGio)
+
+[VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=7xwOhUcIGio)
 
 Please decide with mode you want to use DeepLabCut, and follow one of the following:
 
-- :chart_with_upwards_trend: (1) [How to use standard DeepLabCut](/docs/standardDeepLabCut_UserGuide.md) 
-- :chart_with_upwards_trend: (2) [How to use multi-animal DeepLabCut](/docs/maDLC_UserGuide.md)
+- (1) [How to use standard DeepLabCut](/docs/standardDeepLabCut_UserGuide.md)
+- (2) [How to use multi-animal DeepLabCut](/docs/maDLC_UserGuide.md)

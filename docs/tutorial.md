@@ -51,18 +51,6 @@ deeplabcut.check_labels(
 )
 ```
 
-
-**Crop frames to augment the dataset**
-```python
-deeplabcut.cropimagesandlabels(
-    config_path,
-    numcrops=10,
-    size=(400, 400),
-    userfeedback=False,
-)
-```
-
-
 **Create the training dataset**
 ```python
 deeplabcut.create_multianimaltraining_dataset(

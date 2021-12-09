@@ -61,7 +61,7 @@ class DeterministicPoseDataset(BasePoseDataset):
 
             item = DataItem()
             item.image_id = i
-            item.im_path = sample[0][0]
+            item.im_path = os.path.join(*[s.strip() for s in sample[0][0]])
             item.im_size = sample[1][0]
             if len(sample) >= 3:
                 joints = sample[2][0][0]
@@ -137,20 +137,11 @@ class DeterministicPoseDataset(BasePoseDataset):
     def get_training_sample(self, imidx):
         return self.data[imidx]
 
-    def get_scale(self):
-        if self.cfg["deterministic"]:
-            np.random.seed(42)
-        scale = self.scale
-        if hasattr(self.cfg, "scale_jitter_lo") and hasattr(self.cfg, "scale_jitter_up"):
-            scale_jitter = np.random.uniform(self.cfg['scale_jitter_lo'], self.cfg['scale_jitter_up'])
-            scale *= scale_jitter
-        return scale
-
     def next_batch(self):
         while True:
             imidx, mirror = self.next_training_sample()
             data_item = self.get_training_sample(imidx)
-            scale = self.get_scale()
+            scale = self.sample_scale()
 
             if not self.is_valid_size(data_item.im_size, scale):
                 continue
@@ -158,7 +149,7 @@ class DeterministicPoseDataset(BasePoseDataset):
             return self.make_batch(data_item, scale, mirror)
 
     def is_valid_size(self, image_size, scale):
-        if hasattr(self.cfg, "min_input_size") and hasattr(self.cfg, "max_input_size"):
+        if "min_input_size" in self.cfg and "max_input_size" in self.cfg:
             input_width = image_size[2] * scale
             input_height = image_size[1] * scale
             if (

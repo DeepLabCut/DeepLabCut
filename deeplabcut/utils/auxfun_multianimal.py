@@ -16,8 +16,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from deeplabcut.utils import auxiliaryfunctions
-
+from deeplabcut.utils import auxiliaryfunctions, conversioncode
+from deeplabcut.generate_training_dataset import trainingsetmanipulation
 
 def extractindividualsandbodyparts(cfg):
     individuals = cfg["individuals"].copy()
@@ -171,7 +171,7 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
 
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
-    video_names = [Path(i).stem for i in videos]
+    video_names = [trainingsetmanipulation._robust_path_split(i)[1] for i in videos]
     folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
 
     individuals, uniquebodyparts, multianimalbodyparts = extractindividualsandbodyparts(
@@ -206,6 +206,7 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
 
             fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"])
             Data = pd.read_hdf(fn + ".h5")
+            conversioncode.guarantee_multiindex_rows(Data)
             imindex = Data.index
 
             print("This is a single animal data set, converting to multi...", folder)
@@ -269,11 +270,11 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
                     dataFrame = pd.concat([dataFrame, frame], axis=1)
 
             Data.to_hdf(
-                fn + "singleanimal.h5", "df_with_missing", format="table", mode="w"
+                fn + "singleanimal.h5", "df_with_missing",
             )
             Data.to_csv(fn + "singleanimal.csv")
 
-            dataFrame.to_hdf(fn + ".h5", "df_with_missing", format="table", mode="w")
+            dataFrame.to_hdf(fn + ".h5", "df_with_missing")
             dataFrame.to_csv(fn + ".csv")
 
 
@@ -299,6 +300,7 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
         ):  # multilanguage support :)
             fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"])
             Data = pd.read_hdf(fn + ".h5")
+            conversioncode.guarantee_multiindex_rows(Data)
             imindex = Data.index
 
             if "individuals" in Data.columns.names and (
@@ -342,12 +344,12 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
                         DataFrame = pd.concat([DataFrame, dataFrame], axis=1)
 
                 Data.to_hdf(
-                    fn + "multianimal.h5", "df_with_missing", format="table", mode="w"
+                    fn + "multianimal.h5", "df_with_missing",
                 )
                 Data.to_csv(fn + "multianimal.csv")
 
                 DataFrame.to_hdf(
-                    fn + ".h5", "df_with_missing", format="table", mode="w"
+                    fn + ".h5", "df_with_missing",
                 )
                 DataFrame.to_csv(fn + ".csv")
             elif target == None or target == "multi":
@@ -429,12 +431,12 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
                         DataFrame = pd.concat([DataFrame, dataFrame], axis=1)
 
                 Data.to_hdf(
-                    fn + "singleanimal.h5", "df_with_missing", format="table", mode="w"
+                    fn + "singleanimal.h5", "df_with_missing",
                 )
                 Data.to_csv(fn + "singleanimal.csv")
 
                 DataFrame.to_hdf(
-                    fn + ".h5", "df_with_missing", format="table", mode="w"
+                    fn + ".h5", "df_with_missing",
                 )
                 DataFrame.to_csv(fn + ".csv")
 
