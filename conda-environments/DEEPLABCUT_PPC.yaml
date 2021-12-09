@@ -4,7 +4,6 @@ channels:
   - powerai
   - defaults
   - conda-forge
-  - hcc
 dependencies:
   - ffmpeg
   - jupyter
@@ -14,12 +13,13 @@ dependencies:
   - networkx
   - numba
   - opencv
+  - imgaug=0.4.0
   - pandas>=1.0.1
   - patsy
   - Pillow>=7.1
   - pip
-  - pyyaml
   - python=3.7
+  - pyyaml
   - pytables
   - scikit-image>=0.17,<=0.18.1
   - scikit-learn
@@ -30,4 +30,4 @@ dependencies:
   - tf_slim
   - tqdm
   - pip:
-    - "deeplabcut[gui]"
+    - git+https://github.com/esi-neuroscience/DeepLabCut.git#egg=deeplabcut

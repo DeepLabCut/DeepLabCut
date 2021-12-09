@@ -10,7 +10,6 @@ matplotlib
 networkx
 numpy
 opencv-python-headless ; platform_machine == "x86_64"
-opencv ; platform_machine == "ppc64le"
 pandas>=1.0.1
 patsy
 pyyaml
