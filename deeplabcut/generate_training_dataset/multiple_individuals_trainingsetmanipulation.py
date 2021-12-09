@@ -219,7 +219,22 @@ def create_multianimaltraining_dataset(
     if paf_graph is None:  # Automatically form a complete PAF graph
         partaffinityfield_graph = [
             list(edge) for edge in combinations(range(len(multianimalbodyparts)), 2)
-    ]
+        ]
+        n_edges_orig = len(partaffinityfield_graph)
+         # If the graph is unnecessarily large, we randomly prune it to
+         # half its size (see Suppl. Fig S10c in Lauer et al., 2022).
+        if n_edges_orig > 105:  # From 16 body parts on
+            import networkx as nx
+            import random
+
+            G = nx.Graph(partaffinityfield_graph)
+            n_edges = int(0.5 * n_edges_orig)
+            while True:
+                g = nx.Graph(random.sample(G.edges, n_edges))
+                if len(g.nodes) == 15 and nx.is_connected(g):
+                    print('Valid subgraph found...')
+                    break
+            partaffinityfield_graph = [sorted(edge) for edge in g.edges]
     else:
         # Ignore possible connections between 'multi' and 'unique' body parts;
         # one can never be too careful...
