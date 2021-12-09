@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import pytest
+from conftest import TEST_DATA_DIR
 from deeplabcut.pose_estimation_tensorflow.datasets import (
     Batch,
     pose_multianimal_imgaug,
@@ -18,7 +19,6 @@ pose_multianimal_imgaug.imread = mock_imread
 
 @pytest.fixture()
 def ma_dataset():
-    TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
     cfg = read_plainconfig(os.path.join(TEST_DATA_DIR, "pose_cfg.yaml"))
     cfg["project_path"] = TEST_DATA_DIR
     cfg["dataset"] = "trimouse_train_data.pickle"

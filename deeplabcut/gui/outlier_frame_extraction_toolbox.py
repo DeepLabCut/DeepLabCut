@@ -26,7 +26,11 @@ from skimage.util import img_as_ubyte
 
 from deeplabcut.create_project import add
 from deeplabcut.gui.widgets import BasePanel, WidgetPanel, BaseFrame
-from deeplabcut.utils import auxiliaryfunctions, visualization
+from deeplabcut.utils import (
+    auxiliaryfunctions,
+    visualization,
+    conversioncode,
+)
 from deeplabcut.utils.auxfun_videos import VideoWriter
 
 
@@ -226,6 +230,7 @@ class MainFrame(BaseFrame):
         self.video_source = Path(video).resolve()
         self.shuffle = shuffle
         self.Dataframe = Dataframe
+        conversioncode.guarantee_multiindex_rows(self.Dataframe)
         self.savelabeled = savelabeled
         self.multianimal = multianimal
         if self.multianimal:
@@ -384,6 +389,7 @@ class MainFrame(BaseFrame):
             if self.savelabeled:
                 self.figure.savefig(labeled_img_name, bbox_inches="tight")
             Data = pd.read_hdf(self.machinefile)
+            conversioncode.guarantee_multiindex_rows(Data)
             DataCombined = pd.concat([Data, DF])
             DataCombined = DataCombined[~DataCombined.index.duplicated(keep="first")]
             DataCombined.to_hdf(self.machinefile, key="df_with_missing", mode="w")

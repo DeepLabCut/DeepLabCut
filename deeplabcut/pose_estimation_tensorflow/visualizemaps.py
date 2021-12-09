@@ -224,7 +224,7 @@ def extract_maps(
 
             DATA = {}
             for imageindex, imagename in tqdm(Indices):
-                image = imread(os.path.join(cfg["project_path"], imagename), mode="RGB")
+                image = imread(os.path.join(cfg["project_path"], *imagename), mode="RGB")
                 if scale != 1:
                     image = imresize(image, scale)
 
@@ -455,7 +455,7 @@ def extract_save_all_maps(
                 if not extract_paf:
                     paf = None
                 label = "train" if trainingframe else "test"
-                imname = os.path.split(os.path.splitext(impath)[0])[1]
+                imname = impath[-1]
                 scmap, (locref_x, locref_y), paf = resize_all_maps(
                     image, scmap, locref, paf
                 )
@@ -477,9 +477,9 @@ def extract_save_all_maps(
                     locref_x_ = locref_x[:, :, to_plot]
                     locref_y_ = locref_y[:, :, to_plot]
                 else:
-                    map_ = scmap[:, :]
-                    locref_x_ = locref_x[:, :]
-                    locref_y_ = locref_y[:, :]
+                    map_ = scmap[..., 0]
+                    locref_x_ = locref_x[..., 0]
+                    locref_y_ = locref_y[..., 0]
                 fig1, _ = visualize_scoremaps(image, map_)
                 temp = dest_path.format(
                     imname=imname,

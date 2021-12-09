@@ -149,7 +149,7 @@ def plot_and_save_labeled_frame(
     ax,
     scaling=1,
 ):
-    image_path = os.path.join(cfg["project_path"], DataCombined.index[ind])
+    image_path = os.path.join(cfg["project_path"], *DataCombined.index[ind])
     frame = io.imread(image_path)
     if np.ndim(frame) > 2:  # color image!
         h, w, numcolors = np.shape(frame)
@@ -295,15 +295,12 @@ def make_labeled_images_from_dataframe(
             bones.extend(zip(match1, match2))
     ind_bones = tuple(zip(*bones))
 
-    sep = "/" if "/" in df.index[0] else "\\"
-    images = cfg["project_path"] + sep + df.index
-    if sep != os.path.sep:
-        images = images.str.replace(sep, os.path.sep)
+    images_list = [os.path.join(cfg["project_path"], *tuple_)
+                   for tuple_ in df.index.tolist()]
     if not destfolder:
-        destfolder = os.path.dirname(images[0])
+        destfolder = os.path.dirname(images_list[0])
     tmpfolder = destfolder + "_labeled"
     attempttomakefolder(tmpfolder)
-    images_list = images.to_list()
     ic = io.imread_collection(images_list)
 
     h, w = ic[0].shape[:2]

@@ -16,6 +16,7 @@ import pandas as pd
 import ruamel.yaml.representer
 import yaml
 from ruamel.yaml import YAML
+from deeplabcut.utils import conversioncode
 
 
 def create_config_template(multianimal=False):

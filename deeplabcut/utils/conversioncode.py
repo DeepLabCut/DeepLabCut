@@ -9,83 +9,9 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import os
-from pathlib import Path
-
 import pandas as pd
-
-from deeplabcut.generate_training_dataset import trainingsetmanipulation
 from deeplabcut.utils import auxiliaryfunctions
-import warnings
-
-
-def convertannotationdata_fromwindows2unixstyle(
-    config, userfeedback=True, win2linux=True
-):
-    """
-    Converts paths in annotation file (CollectedData_*user*.h5) in labeled-data/videofolder1, etc.
-
-    from windows to linux format. This is important when one e.g. labeling on Windows, but
-    wants to re-label/check_labels/ on a Linux computer (and vice versa).
-
-    Note for training data annotated on Windows in Linux this is not necessary, as the data
-    gets converted during training set creation.
-
-    config : string
-        Full path of the config.yaml file as a string.
-
-    userfeedback: bool, optional
-        If true the user will be asked specifically for each folder in labeled-data if the containing csv shall be converted to hdf format.
-
-    win2linux: bool, optional.
-        By default converts from windows to linux. If false, converts from unix to windows.
-    """
-    cfg = auxiliaryfunctions.read_config(config)
-    folders = [
-        Path(config).parent
-        / "labeled-data"
-        / trainingsetmanipulation._robust_path_split(vid)[1]
-        for vid in cfg["video_sets"]
-    ]
-
-    for folder in folders:
-        if userfeedback:
-            print("Do you want to convert the annotationdata in folder:", folder, "?")
-            askuser = input("yes/no")
-        else:
-            askuser = "yes"
-
-        if askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha":
-            fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"])
-            if os.path.exists(fn + ".h5"):
-                Data = pd.read_hdf(fn + ".h5")
-                if win2linux:
-                    convertpaths_to_unixstyle(Data, fn)
-                else:
-                    convertpaths_to_windowsstyle(Data, fn)
-            else:
-                warnings.warn(f"Could not find '{fn+'.h5'}'. skipping")
-
-
-def convertpaths_to_unixstyle(Data, fn):
-    """ auxiliary function that converts paths in annotation files:
-        labeled-data\\video\\imgXXX.png to labeled-data/video/imgXXX.png """
-    Data.to_csv(fn + "windows" + ".csv")
-    Data.to_hdf(fn + "windows" + ".h5", "df_with_missing", format="table", mode="w")
-    Data.index = Data.index.str.replace("\\", "/")
-    Data.to_csv(fn + ".csv")
-    Data.to_hdf(fn + ".h5", "df_with_missing", format="table", mode="w")
-    return Data
-
-
-def convertpaths_to_windowsstyle(Data, fn):
-    """ auxiliary function that converts paths in annotation files:
-        labeled-data/video/imgXXX.png to labeled-data\\video\\imgXXX.png """
-    Data.to_csv(fn + "unix" + ".csv")
-    Data.to_hdf(fn + "unix" + ".h5", "df_with_missing", format="table", mode="w")
-    Data.index = Data.index.str.replace("/", "\\")
-    Data.to_csv(fn + ".csv")
-    Data.to_hdf(fn + ".h5", "df_with_missing", format="table", mode="w")
-    return Data
+from pathlib import Path
 
 
 def convertcsv2h5(config, userfeedback=True, scorer=None):
@@ -215,3 +141,12 @@ def merge_windowsannotationdataONlinuxsystem(cfg):
             print(filename, " not found (perhaps not annotated)")
 
     return AnnotationData
+
+
+def guarantee_multiindex_rows(df):
+    # Make paths platform-agnostic if they are not already
+    if not isinstance(df.index, pd.MultiIndex):  # Backwards compatibility
+        path = df.index[0]
+        sep = "/" if "/" in path else "\\"
+        splits = tuple(df.index.str.split(sep))
+        df.index = pd.MultiIndex.from_tuples(splits)

@@ -11,6 +11,7 @@ Licensed under GNU Lesser General Public License v3.0
 import os
 import os.path
 import re
+import warnings
 from itertools import combinations
 from pathlib import Path
 
@@ -55,7 +56,7 @@ def format_multianimal_training_data(
     array = np.round(array, decimals=n_decimals)
     for i in tqdm(train_inds):
         filename = filenames[i]
-        img_shape = read_image_shape_fast(os.path.join(project_path, filename))
+        img_shape = read_image_shape_fast(os.path.join(project_path, *filename))
         joints = dict()
         has_data = False
         for n, xy in enumerate(array[i]):
@@ -118,10 +119,6 @@ def create_multianimaltraining_dataset(
     Shuffles: list of shuffles.
         Alternatively the user can also give a list of shuffles (integers!).
 
-    windows2linux: bool.
-        The annotation files contain path formated according to your operating system. If you label on windows
-        but train & evaluate on a unix system (e.g. ubunt, colab, Mac) set this variable to True to convert the paths.
-
     net_type: string
         Type of networks. Currently resnet_50, resnet_101, and resnet_152, efficientnet-b0, efficientnet-b1, efficientnet-b2, efficientnet-b3,
         efficientnet-b4, efficientnet-b5, and efficientnet-b6 as well as dlcrnet_ms5 are supported (not the MobileNets!).
@@ -163,6 +160,12 @@ def create_multianimaltraining_dataset(
     >>> deeplabcut.create_multianimaltraining_dataset(r'C:\\Users\\Ulf\\looming-task\\config.yaml',Shuffles=[3,17,5])
     --------
     """
+    if windows2linux:
+        warnings.warn(
+            "`windows2linux` has no effect since 2.2.0.4 and will be removed in 2.2.1.",
+            FutureWarning,
+        )
+
     if len(crop_size) != 2 or not all(isinstance(v, int) for v in crop_size):
         raise ValueError("Crop size must be a tuple of two integers (width, height).")
 
@@ -181,7 +184,7 @@ def create_multianimaltraining_dataset(
     full_training_path = Path(project_path, trainingsetfolder)
     auxiliaryfunctions.attempttomakefolder(full_training_path, recursive=True)
 
-    Data = merge_annotateddatasets(cfg, full_training_path, windows2linux)
+    Data = merge_annotateddatasets(cfg, full_training_path)
     if Data is None:
         return
     Data = Data[scorer]
@@ -492,7 +495,7 @@ def convert_cropped_to_standard_dataset(
     img_names_old = np.asarray(
         [strip_cropped_image_name(img) for img in df_old.index.to_list()]
     )
-    df = merge_annotateddatasets(cfg, datasets_folder, False)
+    df = merge_annotateddatasets(cfg, datasets_folder)
     img_names = df.index.to_numpy()
     train_idx = []
     test_idx = []

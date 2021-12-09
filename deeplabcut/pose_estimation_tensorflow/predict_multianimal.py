@@ -8,7 +8,8 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 import os
-import os.path
+import pickle
+import shelve
 import time
 from pathlib import Path
 
@@ -32,6 +33,7 @@ def AnalyzeMultiAnimalVideo(
     outputs,
     destfolder=None,
     robust_nframes=False,
+    use_shelve=False,
 ):
     """ Helper function for analyzing a video with multiple individuals """
 
@@ -75,9 +77,13 @@ def AnalyzeMultiAnimalVideo(
         start = time.time()
 
         print(
-            "Starting to extract posture from the video(s) with batchsize:",
-            dlc_cfg["batch_size"],
+          "Starting to extract posture from the video(s) with batchsize:",
+          dlc_cfg["batch_size"],
         )
+        if use_shelve:
+            shelf_path = dataname.split(".h5")[0] + "_full.pickle"
+        else:
+            shelf_path = ""
         if int(dlc_cfg["batch_size"]) > 1:
             PredicteData, nframes = GetPoseandCostsF(
                 cfg,
@@ -88,10 +94,11 @@ def AnalyzeMultiAnimalVideo(
                 vid,
                 nframes,
                 int(dlc_cfg["batch_size"]),
+                shelf_path,
             )
         else:
             PredicteData, nframes = GetPoseandCostsS(
-                cfg, dlc_cfg, sess, inputs, outputs, vid, nframes,
+                cfg, dlc_cfg, sess, inputs, outputs, vid, nframes, shelf_path,
             )
 
         stop = time.time()
@@ -119,11 +126,16 @@ def AnalyzeMultiAnimalVideo(
         metadata = {"data": dictionary}
         print("Video Analyzed. Saving results in %s..." % (destfolder))
 
-        _ = auxfun_multianimal.SaveFullMultiAnimalData(PredicteData, metadata, dataname)
+        if use_shelve:
+            metadata_path = dataname.split(".h5")[0] + "_meta.pickle"
+            with open(metadata_path, "wb") as f:
+                pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
+        else:
+            _ = auxfun_multianimal.SaveFullMultiAnimalData(PredicteData, metadata, dataname)
 
 
 def GetPoseandCostsF(
-    cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize,
+    cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, shelf_path,
 ):
     """ Batchwise prediction of pose """
     strwidth = int(np.ceil(np.log10(nframes)))  # width for strings
@@ -140,10 +152,34 @@ def GetPoseandCostsF(
     counter = 0
     inds = []
 
-    PredicteData = {}
+    if shelf_path:
+        db = shelve.open(
+                shelf_path,
+                protocol=pickle.DEFAULT_PROTOCOL,
+            )
+    else:
+        db = dict()
+    db["metadata"] = {
+        "nms radius": dlc_cfg["nmsradius"],
+        "minimal confidence": dlc_cfg["minconfidence"],
+        "sigma": dlc_cfg.get("sigma", 1),
+        "PAFgraph": dlc_cfg["partaffinityfield_graph"],
+        "PAFinds": dlc_cfg.get(
+            "paf_best", np.arange(len(dlc_cfg["partaffinityfield_graph"]))
+        ),
+        "all_joints": [[i] for i in range(len(dlc_cfg["all_joints"]))],
+        "all_joints_names": [
+            dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))
+        ],
+        "nframes": nframes,
+    }
     while cap.video.isOpened():
         frame = cap.read_frame(crop=cfg["cropping"])
+        key = "frame" + str(counter).zfill(strwidth)
         if frame is not None:
+            # Avoid overwriting data already on the shelf
+            if isinstance(db, shelve.Shelf) and key in db:
+                continue
             frames[batch_ind] = img_as_ubyte(frame)
             inds.append(counter)
             if batch_ind == batchsize - 1:
@@ -151,7 +187,8 @@ def GetPoseandCostsF(
                     dlc_cfg, frames, sess, inputs, outputs,
                 )
                 for ind, data in zip(inds, D):
-                    PredicteData["frame" + str(ind).zfill(strwidth)] = data
+                    db["frame" + str(ind).zfill(strwidth)] = data
+                del D
                 batch_ind = 0
                 inds.clear()
                 batch_num += 1
@@ -163,14 +200,35 @@ def GetPoseandCostsF(
                     dlc_cfg, frames, sess, inputs, outputs,
                 )
                 for ind, data in zip(inds, D):
-                    PredicteData["frame" + str(ind).zfill(strwidth)] = data
+                    db["frame" + str(ind).zfill(strwidth)] = data
+                del D
             break
         counter += 1
         pbar.update(1)
 
     cap.close()
     pbar.close()
-    PredicteData["metadata"] = {
+    try:
+        db.close()
+    except AttributeError:
+        pass
+    return db, nframes
+
+
+def GetPoseandCostsS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, shelf_path):
+    """ Non batch wise pose estimation for video cap."""
+    strwidth = int(np.ceil(np.log10(nframes)))  # width for strings
+    if cfg["cropping"]:
+        cap.set_bbox(cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"])
+
+    if shelf_path:
+        db = shelve.open(
+            shelf_path,
+            protocol=pickle.DEFAULT_PROTOCOL,
+        )
+    else:
+        db = dict()
+    db["metadata"] = {
         "nms radius": dlc_cfg["nmsradius"],
         "minimal confidence": dlc_cfg["minconfidence"],
         "sigma": dlc_cfg.get("sigma", 1),
@@ -184,44 +242,29 @@ def GetPoseandCostsF(
         ],
         "nframes": nframes,
     }
-    return PredicteData, nframes
-
-
-def GetPoseandCostsS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
-    """ Non batch wise pose estimation for video cap."""
-    strwidth = int(np.ceil(np.log10(nframes)))  # width for strings
-    if cfg["cropping"]:
-        cap.set_bbox(cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"])
-
-    PredicteData = {}  # np.zeros((nframes, 3 * len(dlc_cfg['all_joints_names'])))
     pbar = tqdm(total=nframes)
     counter = 0
     while cap.video.isOpened():
         frame = cap.read_frame(crop=cfg["cropping"])
+        key = "frame" + str(counter).zfill(strwidth)
         if frame is not None:
+            # Avoid overwriting data already on the shelf
+            if isinstance(db, shelve.Shelf) and key in db:
+                continue
             frame = img_as_ubyte(frame)
             dets = predict.predict_batched_peaks_and_costs(
                 dlc_cfg, np.expand_dims(frame, axis=0), sess, inputs, outputs,
             )
-            PredicteData["frame" + str(counter).zfill(strwidth)] = dets[0]
+            db[key] = dets[0]
+            del dets
         elif counter >= nframes:
             break
         counter += 1
         pbar.update(1)
 
     pbar.close()
-    PredicteData["metadata"] = {
-        "nms radius": dlc_cfg["nmsradius"],
-        "minimal confidence": dlc_cfg["minconfidence"],
-        "sigma": dlc_cfg.get("sigma", 1),
-        "PAFgraph": dlc_cfg["partaffinityfield_graph"],
-        "PAFinds": dlc_cfg.get(
-            "paf_best", np.arange(len(dlc_cfg["partaffinityfield_graph"]))
-        ),
-        "all_joints": [[i] for i in range(len(dlc_cfg["all_joints"]))],
-        "all_joints_names": [
-            dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))
-        ],
-        "nframes": nframes,
-    }
-    return PredicteData, nframes
+    try:
+        db.close()
+    except AttributeError:
+        pass
+    return db, nframes

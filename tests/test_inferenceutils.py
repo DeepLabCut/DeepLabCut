@@ -2,11 +2,9 @@ import numpy as np
 import os
 import pickle
 import pytest
+from conftest import TEST_DATA_DIR
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
 from scipy.spatial.distance import squareform
-
-
-TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
 
 
 def test_conv_square_to_condensed_indices():
@@ -115,7 +113,8 @@ def test_assembly():
     assert ass.data[j2.label, -1] == -1
     assert ass.area == 0
     assert ass.intersection_with(ass) == 1.0
-    assert np.all(np.isnan(ass._dict["data"]))
+    # Original (cached) coordinates must have remained empty
+    assert np.all(np.isnan(ass._dict["data"][:, :2]))
 
     ass.remove_joint(j2)
     assert len(ass) == 1
