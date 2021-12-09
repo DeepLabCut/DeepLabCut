@@ -4,22 +4,34 @@ import numpy as np
 import pandas as pd
 import pickle
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
+import random
+from pathlib import Path
 
+MODELS = ["dlcrnet_ms5", "dlcr101_ms5", "efficientnet-b0", "mobilenet_v2_0.35"]
+
+
+N_ITER = 5
+
+
+USE_SHELVE = False  # random.choice([True,False])
+# TODO: fix true, currenctly cannot do the full_detection video and later
 
 if __name__ == "__main__":
+
     TASK = "multi_mouse"
     SCORER = "dlc_team"
     NUM_FRAMES = 5
     TRAIN_SIZE = 0.8
+
     # NET = "dlcr101_ms5"
     NET = "dlcrnet_ms5"
-    #NET = "resnet_152"
-    #NET = "efficientnet-b0"
-    #NET = "mobilenet_v2_0.35" # should be fixed
 
-    N_ITER = 5
+    # Always test a different model from list above
+    NET = random.choice(MODELS)
 
     basepath = os.path.dirname(os.path.realpath(__file__))
+    DESTFOLDER = basepath
+
     video = "m3v1mp4"
     video_path = os.path.join(
         basepath, "openfield-Pranav-2018-10-30", "videos", video + ".mp4"
@@ -29,6 +41,7 @@ if __name__ == "__main__":
     config_path = deeplabcut.create_new_project(
         TASK, SCORER, [video_path], copy_videos=True, multianimal=True
     )
+
     print("Project created.")
 
     print("Editing config...")
@@ -38,8 +51,8 @@ if __name__ == "__main__":
             "numframes2pick": NUM_FRAMES,
             "TrainingFraction": [TRAIN_SIZE],
             "identity": True,
-            "uniquebodyparts": ['corner1', 'corner2'],
-        }
+            "uniquebodyparts": ["corner1", "corner2"],
+        },
     )
     print("Config edited.")
 
@@ -91,7 +104,10 @@ if __name__ == "__main__":
     print("Labels checked.")
 
     print("Creating train dataset...")
-    deeplabcut.create_multianimaltraining_dataset(config_path, net_type=NET, crop_size=(200, 200))
+    deeplabcut.create_multianimaltraining_dataset(
+        config_path, net_type=NET, crop_size=(200, 200)
+    )
+
     print("Train dataset created.")
 
     # Check the training image paths are correctly stored as arrays of strings
@@ -142,15 +158,24 @@ if __name__ == "__main__":
     )
 
     print("Analyzing video...")
-    deeplabcut.analyze_videos(config_path, [new_video_path], "mp4", robust_nframes=True,allow_growth=True)
+    deeplabcut.analyze_videos(
+        config_path,
+        [new_video_path],
+        "mp4",
+        robust_nframes=True,
+        allow_growth=True,
+        use_shelve=USE_SHELVE,
+    )
 
     print("Video analyzed.")
 
     print("Create video with all detections...")
     scorer, _ = auxiliaryfunctions.GetScorerName(cfg, 1, TRAIN_SIZE)
+
     deeplabcut.create_video_with_all_detections(
         config_path, [new_video_path], shuffle=1, displayedbodyparts=["bodypart1"]
     )
+
     print("Video created.")
 
     print("Convert detections to tracklets...")
@@ -191,13 +216,71 @@ if __name__ == "__main__":
         config_path, [new_video_path], "mp4", track_method="ellipse"
     )
     print("Predictions filtered.")
-    """
+
     print("Extracting outlier frames...")
     deeplabcut.extract_outlier_frames(
         config_path, [new_video_path], "mp4", automatic=True, track_method="ellipse"
     )
     print("Outlier frames extracted.")
-    """
+
+    vname = Path(new_video_path).stem
+
+    file = os.path.join(
+        cfg["project_path"],
+        "labeled-data",
+        vname,
+        "machinelabels-iter" + str(cfg["iteration"]) + ".h5",
+    )
+
+    print("RELABELING")
+    DF = pd.read_hdf(file, "df_with_missing")
+    DLCscorer = np.unique(DF.columns.get_level_values(0))[0]
+    DF.columns.set_levels([scorer.replace(DLCscorer, scorer)], level=0, inplace=True)
+    DF = DF.drop("likelihood", axis=1, level=3)
+    DF.to_csv(
+        os.path.join(
+            cfg["project_path"],
+            "labeled-data",
+            vname,
+            "CollectedData_" + scorer + ".csv",
+        )
+    )
+    DF.to_hdf(
+        os.path.join(
+            cfg["project_path"],
+            "labeled-data",
+            vname,
+            "CollectedData_" + scorer + ".h5",
+        ),
+        "df_with_missing",
+        format="table",
+        mode="w",
+    )
+
+    print("MERGING")
+    deeplabcut.merge_datasets(config_path)  # iteration + 1
+
+    print("CREATING TRAININGSET updated training set")
+    deeplabcut.create_training_dataset(config_path, net_type=NET)
+
+    print("Training network...")
+    deeplabcut.train_network(config_path, maxiters=N_ITER)
+    print("Network trained.")
+
+    print("Evaluating network...")
+    deeplabcut.evaluate_network(config_path, plotting=True)
+
+    print("Network evaluated....")
+
+    deeplabcut.analyze_videos(
+        config_path,
+        [new_video_path],
+        save_as_csv=True,
+        destfolder=DESTFOLDER,
+        cropping=[0, 50, 0, 50],
+        allow_growth=True,
+        use_shelve=True,
+    )
 
     print("Export model...")
     deeplabcut.export_model(config_path, shuffle=1, make_tar=False)

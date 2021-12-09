@@ -15,4 +15,4 @@ def test_guarantee_multiindex_rows():
         assert len(df) == nrows
         assert df.index.nlevels == 3
         assert all(df.index.get_level_values(0) == "labeled-data")
-        assert all(img.endswith('.png') for img in df.index.get_level_values(2))
+        assert all(img.endswith(".png") for img in df.index.get_level_values(2))

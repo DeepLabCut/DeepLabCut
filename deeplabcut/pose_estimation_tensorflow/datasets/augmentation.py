@@ -5,11 +5,7 @@ from scipy.spatial.distance import pdist, squareform
 
 class KeypointAwareCropToFixedSize(iaa.CropToFixedSize):
     def __init__(
-        self,
-        width,
-        height,
-        max_shift=0.4,
-        crop_sampling="hybrid",
+        self, width, height, max_shift=0.4, crop_sampling="hybrid",
     ):
         """
         Parameters
@@ -36,10 +32,12 @@ class KeypointAwareCropToFixedSize(iaa.CropToFixedSize):
         )
         # Clamp to 40% of crop size to ensure that at least
         # the center keypoint remains visible after the offset is applied.
-        self.max_shift = max(0., min(max_shift, 0.4))
+        self.max_shift = max(0.0, min(max_shift, 0.4))
         if crop_sampling not in ("uniform", "keypoints", "density", "hybrid"):
-            raise ValueError(f"Invalid sampling {crop_sampling}. Must be "
-                             f"either 'uniform', 'keypoints', 'density', or 'hybrid.")
+            raise ValueError(
+                f"Invalid sampling {crop_sampling}. Must be "
+                f"either 'uniform', 'keypoints', 'density', or 'hybrid."
+            )
         self.crop_sampling = crop_sampling
 
     @staticmethod

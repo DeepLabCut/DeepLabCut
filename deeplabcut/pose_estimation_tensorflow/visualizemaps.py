@@ -224,7 +224,9 @@ def extract_maps(
 
             DATA = {}
             for imageindex, imagename in tqdm(Indices):
-                image = imread(os.path.join(cfg["project_path"], *imagename), mode="RGB")
+                image = imread(
+                    os.path.join(cfg["project_path"], *imagename), mode="RGB"
+                )
                 if scale != 1:
                     image = imresize(image, scale)
 

@@ -33,7 +33,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         self.batch_size = cfg["batch_size"]
         print("Batch Size is %d" % self.batch_size)
         self.pipeline = self.build_augmentation_pipeline(
-            apply_prob=cfg.get('apply_prob', 0.5),
+            apply_prob=cfg.get("apply_prob", 0.5),
         )
 
     @property
@@ -311,12 +311,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
     def next_batch(self, plotting=False):
         while True:
-            (
-                batch_images,
-                joint_ids,
-                batch_joints,
-                data_items,
-            ) = self.get_batch()
+            (batch_images, joint_ids, batch_joints, data_items,) = self.get_batch()
 
             # Scale is sampled only once (per batch) to transform all of the images into same size.
             target_size, sm_size = self.calc_target_and_scoremap_sizes()
@@ -466,8 +461,11 @@ class MAImgaugPoseDataset(BasePoseDataset):
         if num_idchannel > 0:
             coordinateoffset = 0
             # Find indices of individuals in joint_id
-            idx = [(i, id_) for i, id_ in enumerate(data_item.joints)
-                   if id_ < num_idchannel]
+            idx = [
+                (i, id_)
+                for i, id_ in enumerate(data_item.joints)
+                if id_ < num_idchannel
+            ]
             for i, person_id in idx:
                 joint_ids = joint_id[i]
                 n_joints = joint_ids.size
@@ -507,13 +505,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
                         distance_along = Dx * x + Dy * y
                         distance_across = (
-                            (
-                                (
-                                    y * Dx
-                                    - x * Dy
-                                )
-                                - d2mid
-                            )
+                            ((y * Dx - x * Dy) - d2mid)
                             * 1.0
                             / self.cfg["pafwidth"]
                             * scale
@@ -559,7 +551,9 @@ class MAImgaugPoseDataset(BasePoseDataset):
         locref_scale = 1.0 / self.cfg["locref_stdev"]
         dist_thresh_sq = dist_thresh ** 2
 
-        partaffinityfield_shape = np.concatenate([size, np.array([self.cfg["num_limbs"] * 2])])
+        partaffinityfield_shape = np.concatenate(
+            [size, np.array([self.cfg["num_limbs"] * 2])]
+        )
         partaffinityfield_map = np.zeros(partaffinityfield_shape)
         if self.cfg["weigh_only_present_joints"]:
             partaffinityfield_mask = np.zeros(partaffinityfield_shape)

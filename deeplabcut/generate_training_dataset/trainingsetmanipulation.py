@@ -395,12 +395,12 @@ def _robust_path_split(path):
     sep = "\\" if "\\" in path else "/"
     splits = path.rsplit(sep, 1)
     if len(splits) == 1:
-        parent = '.'
+        parent = "."
         file = splits[0]
     elif len(splits) == 2:
         parent, file = splits
     else:
-        raise('Unknown filepath split for path {}'.format(path))
+        raise ("Unknown filepath split for path {}".format(path))
     filename, ext = os.path.splitext(file)
     return parent, filename, ext
 
@@ -425,10 +425,7 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
             data = pd.read_hdf(file_path)
             AnnotationData.append(data)
         except FileNotFoundError:
-            print(
-                file_path,
-                " not found (perhaps not annotated)."
-            )
+            print(file_path, " not found (perhaps not annotated).")
 
     if not len(AnnotationData):
         print(
@@ -463,9 +460,7 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
 
 
 def SplitTrials(
-    trialindex,
-    trainFraction=0.8,
-    enforce_train_fraction=False,
+    trialindex, trainFraction=0.8, enforce_train_fraction=False,
 ):
     """ Split a trial index into train and test sets. Also checks that the trainFraction is a two digit number between 0 an 1. The reason
     is that the folders contain the trainfraction as int(100*trainFraction).
@@ -488,8 +483,8 @@ def SplitTrials(
         train_fraction = round(trainFraction, 2)
         train_size = index_len * train_fraction
         shuffle = np.random.permutation(trialindex)
-        test_indices = shuffle[int(train_size):]
-        train_indices = shuffle[:int(train_size)]
+        test_indices = shuffle[int(train_size) :]
+        train_indices = shuffle[: int(train_size)]
         if enforce_train_fraction and not train_size.is_integer():
             train_indices, test_indices = pad_train_test_indices(
                 train_indices, test_indices, train_fraction,
@@ -510,8 +505,7 @@ def pad_train_test_indices(train_inds, test_inds, train_fraction):
     min_n_train = int(round(min_length_req * train_fraction))
     min_n_test = min_length_req - min_n_train
     mult = max(
-        math.ceil(n_train_inds / min_n_train),
-        math.ceil(n_test_inds / min_n_test),
+        math.ceil(n_train_inds / min_n_train), math.ceil(n_test_inds / min_n_test),
     )
     n_train = mult * min_n_train
     n_test = mult * min_n_test
@@ -576,8 +570,7 @@ def mergeandsplit(config, trainindex=0, uniform=True):
         Data = pd.read_hdf(fn + ".h5")
     except FileNotFoundError:
         Data = merge_annotateddatasets(
-            cfg,
-            Path(os.path.join(project_path, trainingsetfolder)),
+            cfg, Path(os.path.join(project_path, trainingsetfolder)),
         )
         if Data is None:
             return [], []
@@ -766,13 +759,13 @@ def create_training_dataset(
                 auxiliaryfunctions.edit_config(config, {"default_augmenter": "imgaug"})
                 augmenter_type = "imgaug"
         elif augmenter_type not in [
-                "default",
-                "scalecrop",
-                "imgaug",
-                "tensorpack",
-                "deterministic",
-            ]:
-                raise ValueError("Invalid augmenter type:", augmenter_type)
+            "default",
+            "scalecrop",
+            "imgaug",
+            "tensorpack",
+            "deterministic",
+        ]:
+            raise ValueError("Invalid augmenter type:", augmenter_type)
 
         # Loading the encoder (if necessary downloading from TF)
         dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()

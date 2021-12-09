@@ -55,7 +55,8 @@ def analyze_videos(
     dynamic=(False, 0.5, 10),
     modelprefix="",
     robust_nframes=False,
-    allow_growth=False
+    allow_growth=False,
+    use_shelve=False,
 ):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
@@ -120,6 +121,11 @@ def analyze_videos(
     allow_growth: bool, default false.
         For some smaller GPUs the memory issues happen. If true, the memory allocator does not pre-allocate the entire specified
         GPU memory region, instead starting small and growing as needed. See issue: https://forum.image.sc/t/how-to-stop-running-out-of-vram/30551/2
+
+    use_shelve: bool, optional (default=False)
+        By default, data are dumped in a pickle file at the end of the video analysis.
+        Otherwise, data are written to disk on the fly using a "shelf"; i.e., a pickle-based,
+        persistent, database-like object by default, resulting in constant memory footprint.
 
     Examples
     --------
@@ -268,9 +274,13 @@ def analyze_videos(
         xyz_labs = ["x", "y", "likelihood"]
 
     if TFGPUinference:
-        sess, inputs, outputs = predict.setup_GPUpose_prediction(dlc_cfg,allow_growth=allow_growth)
+        sess, inputs, outputs = predict.setup_GPUpose_prediction(
+            dlc_cfg, allow_growth=allow_growth
+        )
     else:
-        sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg,allow_growth=allow_growth)
+        sess, inputs, outputs = predict.setup_pose_prediction(
+            dlc_cfg, allow_growth=allow_growth
+        )
 
     pdindex = pd.MultiIndex.from_product(
         [[DLCscorer], dlc_cfg["all_joints_names"], xyz_labs],
@@ -286,6 +296,7 @@ def analyze_videos(
             from deeplabcut.pose_estimation_tensorflow.predict_multianimal import (
                 AnalyzeMultiAnimalVideo,
             )
+
             for video in Videos:
                 AnalyzeMultiAnimalVideo(
                     video,
@@ -298,6 +309,7 @@ def analyze_videos(
                     outputs,
                     destfolder,
                     robust_nframes=robust_nframes,
+                    use_shelve=use_shelve,
                 )
         else:
             for video in Videos:
@@ -1421,7 +1433,9 @@ def convert_detections2tracklets(
 
                 # TODO: adjust this for multi + unique bodyparts!
                 # this is only for multianimal parts and uniquebodyparts as one (not one uniquebodyparts guy tracked etc. )
-                bodypartlabels = [bpt for i, bpt in enumerate(all_jointnames) for _ in range(3)]
+                bodypartlabels = [
+                    bpt for i, bpt in enumerate(all_jointnames) for _ in range(3)
+                ]
                 scorers = len(bodypartlabels) * [DLCscorer]
                 xylvalue = int(len(bodypartlabels) / 3) * ["x", "y", "likelihood"]
                 pdindex = pd.MultiIndex.from_arrays(
@@ -1472,6 +1486,10 @@ def convert_detections2tracklets(
                     ass.calibrate(train_data_file)
                 ass.assemble()
                 ass.to_pickle(dataname.split(".h5")[0] + "_assemblies.pickle")
+                try:
+                    data.close()
+                except AttributeError:
+                    pass
 
                 if cfg[
                     "uniquebodyparts"
@@ -1504,20 +1522,25 @@ def convert_detections2tracklets(
                         if not identity_only:
                             if track_method == "box":
                                 xy = trackingutils.calc_bboxes_from_keypoints(
-                                    animals[:, keep_inds], inferencecfg["boundingboxslack"],
+                                    animals[:, keep_inds],
+                                    inferencecfg["boundingboxslack"],
                                 )  # TODO: get cropping parameters and utilize!
                             else:
                                 xy = animals[:, keep_inds, :2]
                             trackers = mot_tracker.track(xy)
                         else:
                             # Optimal identity assignment based on soft voting
-                            mat = np.zeros((len(assemblies), inferencecfg["topktoretain"]))
+                            mat = np.zeros(
+                                (len(assemblies), inferencecfg["topktoretain"])
+                            )
                             for nrow, assembly in enumerate(assemblies):
                                 for k, v in assembly.soft_identity.items():
                                     mat[nrow, k] = v
                             inds = linear_sum_assignment(mat, maximize=True)
                             trackers = np.c_[inds][:, ::-1]
-                        trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
+                        trackingutils.fill_tracklets(
+                            tracklets, trackers, animals, imname
+                        )
 
                 tracklets["header"] = pdindex
                 with open(trackname, "wb") as f:
@@ -1525,7 +1548,9 @@ def convert_detections2tracklets(
 
         os.chdir(str(start_path))
 
-        print("The tracklets were created (i.e., under the hood deeplabcut.convert_detections2tracklets was run). Now you can 'refine_tracklets' in the GUI, or run 'deeplabcut.stitch_tracklets'.")
+        print(
+            "The tracklets were created (i.e., under the hood deeplabcut.convert_detections2tracklets was run). Now you can 'refine_tracklets' in the GUI, or run 'deeplabcut.stitch_tracklets'."
+        )
     else:
         print("No video(s) found. Please check your path!")
 

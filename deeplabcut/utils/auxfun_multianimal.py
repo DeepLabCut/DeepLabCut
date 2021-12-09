@@ -10,6 +10,7 @@ Licensed under GNU Lesser General Public License v3.0
 
 import os
 import pickle
+import shelve
 from itertools import combinations
 from pathlib import Path
 
@@ -18,6 +19,7 @@ import pandas as pd
 
 from deeplabcut.utils import auxiliaryfunctions, conversioncode
 from deeplabcut.generate_training_dataset import trainingsetmanipulation
+
 
 def extractindividualsandbodyparts(cfg):
     individuals = cfg["individuals"].copy()
@@ -116,8 +118,11 @@ def SaveFullMultiAnimalData(data, metadata, dataname, suffix="_full"):
 
 def LoadFullMultiAnimalData(dataname):
     """ Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py """
-    with open(dataname.split(".h5")[0] + "_full.pickle", "rb") as handle:
-        data = pickle.load(handle)
+    try:
+        with open(dataname.split(".h5")[0] + "_full.pickle", "rb") as handle:
+            data = pickle.load(handle)
+    except FileNotFoundError:
+        data = shelve.open(dataname.split(".h5")[0] + "_full.pickle", flag="r",)
     with open(dataname.split(".h5")[0] + "_meta.pickle", "rb") as handle:
         metadata = pickle.load(handle)
     return data, metadata

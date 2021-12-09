@@ -341,8 +341,7 @@ def evaluate_multianimal_full(
                             # is (sample_index, peak_y, peak_x, bpt_index) to slice the PAFs.
                             temp = df.reset_index(level="bodyparts").dropna()
                             temp["bodyparts"].replace(
-                                dict(zip(joints, range(len(joints)))),
-                                inplace=True,
+                                dict(zip(joints, range(len(joints)))), inplace=True,
                             )
                             temp["sample"] = 0
                             peaks_gt = temp.loc[
@@ -618,18 +617,23 @@ def evaluate_multianimal_full(
                                 ax=ax,
                             )
                             visualization.save_labeled_frame(
-                                fig,
-                                image_path,
-                                foldername,
-                                k in trainIndices,
+                                fig, image_path, foldername, k in trainIndices,
                             )
                             visualization.erase_artists(ax)
 
                     df = results[1].copy()
-                    df.loc(axis=0)[('mAP_train', 'mean')] = [d[0]['mAP'] for d in results[2]]
-                    df.loc(axis=0)[('mAR_train', 'mean')] = [d[0]['mAR'] for d in results[2]]
-                    df.loc(axis=0)[('mAP_test', 'mean')] = [d[1]['mAP'] for d in results[2]]
-                    df.loc(axis=0)[('mAR_test', 'mean')] = [d[1]['mAR'] for d in results[2]]
+                    df.loc(axis=0)[("mAP_train", "mean")] = [
+                        d[0]["mAP"] for d in results[2]
+                    ]
+                    df.loc(axis=0)[("mAR_train", "mean")] = [
+                        d[0]["mAR"] for d in results[2]
+                    ]
+                    df.loc(axis=0)[("mAP_test", "mean")] = [
+                        d[1]["mAP"] for d in results[2]
+                    ]
+                    df.loc(axis=0)[("mAR_test", "mean")] = [
+                        d[1]["mAR"] for d in results[2]
+                    ]
                     with open(data_path.replace("_full.", "_map."), "wb") as file:
                         pickle.dump((df, paf_scores), file)
 

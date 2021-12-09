@@ -42,15 +42,11 @@ def calc_iou(bbox1, bbox2):
 
 class BaseTracker:
     """Base class for a constant-velocity Kalman filter-based tracker."""
+
     n_trackers = 0
 
     def __init__(self, dim, dim_z):
-        self.kf = kinematic_kf(
-            dim,
-            1,
-            dim_z=dim_z,
-            order_by_dim=False,
-        )
+        self.kf = kinematic_kf(dim, 1, dim_z=dim_z, order_by_dim=False,)
         self.id = self.__class__.n_trackers
         self.__class__.n_trackers += 1
         self.time_since_update = 0
@@ -74,11 +70,11 @@ class BaseTracker:
 
     @property
     def state(self):
-        return self.kf.x.squeeze()[:self.kf.dim_z]
+        return self.kf.x.squeeze()[: self.kf.dim_z]
 
     @state.setter
     def state(self, state):
-        self.kf.x[:self.kf.dim_z] = state
+        self.kf.x[: self.kf.dim_z] = state
 
 
 class Ellipse:
@@ -316,9 +312,7 @@ class SkeletonTracker(BaseTracker):
         if empty.any():
             fill = np.nanmean(pose, axis=0)
             curr_pose[empty] = fill
-        super(SkeletonTracker, type(self)).state.fset(
-            self, curr_pose.reshape((-1, 1))
-        )
+        super(SkeletonTracker, type(self)).state.fset(self, curr_pose.reshape((-1, 1)))
 
 
 class BoxTracker(BaseTracker):
