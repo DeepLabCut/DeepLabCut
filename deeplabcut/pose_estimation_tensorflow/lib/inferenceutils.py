@@ -110,7 +110,7 @@ class Assembly:
     def from_array(cls, array):
         n_bpts = array.shape[0]
         ass = cls(size=n_bpts)
-        ass.data[:, :array.shape[1]] = array
+        ass.data[:, : array.shape[1]] = array
         nonempty = np.flatnonzero(~np.isnan(array).any(axis=1))
         ass._visible.update(nonempty)
         return ass
@@ -841,11 +841,7 @@ class Assembler:
 
 
 def calc_object_keypoint_similarity(
-    xy_pred,
-    xy_true,
-    sigma,
-    margin=0,
-    symmetric_kpts=None,
+    xy_pred, xy_true, sigma, margin=0, symmetric_kpts=None,
 ):
     visible_gt = ~np.isnan(xy_true).all(axis=1)
     if visible_gt.sum() < 2:  # At least 2 points needed to calculate scale
@@ -865,8 +861,11 @@ def calc_object_keypoint_similarity(
     else:
         oks = []
         xy_preds = [xy_pred]
-        combos = (pair for l in range(len(symmetric_kpts))
-                  for pair in itertools.combinations(symmetric_kpts, l + 1))
+        combos = (
+            pair
+            for l in range(len(symmetric_kpts))
+            for pair in itertools.combinations(symmetric_kpts, l + 1)
+        )
         for pairs in combos:
             # Swap corresponding keypoints
             tmp = xy_pred.copy()
@@ -880,12 +879,9 @@ def calc_object_keypoint_similarity(
             oks.append(np.mean(np.exp(-dist_squared / denom)))
         return max(oks)
 
+
 def match_assemblies(
-    ass_pred,
-    ass_true,
-    sigma,
-    margin=0,
-    symmetric_kpts=None,
+    ass_pred, ass_true, sigma, margin=0, symmetric_kpts=None,
 ):
     # Only consider assemblies of at least two keypoints
     ass_pred = [a for a in ass_pred if len(a) > 1]

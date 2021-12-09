@@ -464,8 +464,8 @@ class TrackletStitcher:
 
         # Note that if tracklets are very short, some may actually be part of the same track
         # and thus incorrectly reflect separate track endpoints...
-        self._first_tracklets = sorted(self, key=lambda t: t.start)[:self.n_tracks]
-        self._last_tracklets = sorted(self, key=lambda t: t.end)[-self.n_tracks:]
+        self._first_tracklets = sorted(self, key=lambda t: t.start)[: self.n_tracks]
+        self._last_tracklets = sorted(self, key=lambda t: t.end)[-self.n_tracks :]
 
         # Map each Tracklet to an entry and output nodes and vice versa,
         # which is convenient once the tracklets are stitched.
@@ -573,10 +573,7 @@ class TrackletStitcher:
         return max_gap
 
     def build_graph(
-        self,
-        nodes=None,
-        max_gap=None,
-        weight_func=None,
+        self, nodes=None, max_gap=None, weight_func=None,
     ):
         if nodes is None:
             nodes = self.tracklets
@@ -1081,6 +1078,7 @@ def stitch_tracklets(
                 def weight_func(t1, t2):
                     w = 0.01 if t1.identity == t2.identity else 1
                     return w * stitcher.calculate_edge_weight(t1, t2)
+
             stitcher.build_graph(max_gap=max_gap, weight_func=weight_func)
             stitcher.stitch()
             stitcher.write_tracks(output_name, animal_names)

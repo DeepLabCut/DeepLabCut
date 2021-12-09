@@ -655,7 +655,12 @@ def proc_video(
                         fps=outputframerate,
                     )
                 else:  # then the full video + the (perhaps in cropped mode analyzed labels) are depicted
-                    clip = vp(fname=video, sname=videooutname, codec=codec, fps=outputframerate)
+                    clip = vp(
+                        fname=video,
+                        sname=videooutname,
+                        codec=codec,
+                        fps=outputframerate,
+                    )
                 CreateVideo(
                     clip,
                     df,

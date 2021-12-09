@@ -157,7 +157,9 @@ def train_network(
     try:
         cfg_dlc = auxiliaryfunctions.read_plainconfig(poseconfigfile)
         if "multi-animal" in cfg_dlc["dataset_type"]:
-            from deeplabcut.pose_estimation_tensorflow.core.train_multianimal import train
+            from deeplabcut.pose_estimation_tensorflow.core.train_multianimal import (
+                train,
+            )
 
             print("Selecting multi-animal trainer")
             train(

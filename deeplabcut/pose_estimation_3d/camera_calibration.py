@@ -233,9 +233,7 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4):
             )
 
             # Stereo Rectification
-            rectify_scale = (
-                alpha
-            )  # Free scaling parameter check this https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html#fisheye-stereorectify
+            rectify_scale = alpha  # Free scaling parameter check this https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html#fisheye-stereorectify
             R1, R2, P1, P2, Q, roi1, roi2 = cv2.stereoRectify(
                 cameraMatrix1,
                 distCoeffs1,
