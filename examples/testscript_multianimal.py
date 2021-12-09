@@ -270,7 +270,7 @@ if __name__ == "__main__":
         destfolder=DESTFOLDER,
         cropping=[0, 50, 0, 50],
         allow_growth=True,
-        use_shelve=True,
+        use_shelve=USE_SHELVE,
     )
 
     print("Export model...")
