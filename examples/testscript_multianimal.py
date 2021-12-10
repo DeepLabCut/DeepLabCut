@@ -13,8 +13,7 @@ MODELS = ["dlcrnet_ms5", "dlcr101_ms5", "efficientnet-b0", "mobilenet_v2_0.35"]
 N_ITER = 5
 
 
-USE_SHELVE = False  # random.choice([True,False])
-# TODO: fix true, currenctly cannot do the full_detection video and later
+USE_SHELVE = random.choice([True, False])
 
 if __name__ == "__main__":
 

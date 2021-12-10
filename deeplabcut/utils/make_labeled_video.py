@@ -843,8 +843,9 @@ def create_video_with_all_detections(
 
         if not (os.path.isfile(outputname)):
             print("Creating labeled video for ", str(Path(video).stem))
-            with open(full_pickle, "rb") as file:
-                data = pickle.load(file)
+            h5file = full_pickle.replace("_full.pickle", ".h5")
+            data, _ = auxfun_multianimal.LoadFullMultiAnimalData(h5file)
+            data = dict(data)  # Cast to dict (making a copy) so items can safely be popped
 
             header = data.pop("metadata")
             all_jointnames = header["all_joints_names"]

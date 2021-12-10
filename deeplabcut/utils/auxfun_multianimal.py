@@ -133,7 +133,7 @@ def LoadFullMultiAnimalData(dataname):
         with open(dataname.split(".h5")[0] + "_full.pickle", "rb") as handle:
             data = pickle.load(handle)
     except FileNotFoundError:
-        data = shelve.open(dataname.split(".h5")[0] + "_full.pickle", flag="r",)
+        data = shelve.open(dataname.split(".h5")[0] + "_full.pickle", flag="r")
     with open(dataname.split(".h5")[0] + "_meta.pickle", "rb") as handle:
         metadata = pickle.load(handle)
     return data, metadata
