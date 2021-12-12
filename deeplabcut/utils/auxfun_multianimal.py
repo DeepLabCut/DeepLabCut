@@ -129,12 +129,13 @@ def SaveFullMultiAnimalData(data, metadata, dataname, suffix="_full"):
 
 def LoadFullMultiAnimalData(dataname):
     """ Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py """
+    data_file = dataname.split(".h5")[0] + "_full.pickle"
     try:
-        with open(dataname.split(".h5")[0] + "_full.pickle", "rb") as handle:
+        with open(data_file, "rb") as handle:
             data = pickle.load(handle)
-    except FileNotFoundError:
-        data = shelve.open(dataname.split(".h5")[0] + "_full.pickle", flag="r")
-    with open(dataname.split(".h5")[0] + "_meta.pickle", "rb") as handle:
+    except pickle.UnpicklingError:
+        data = shelve.open(data_file, flag="r")
+    with open(data_file.replace("_full.", "_meta."), "rb") as handle:
         metadata = pickle.load(handle)
     return data, metadata
 
