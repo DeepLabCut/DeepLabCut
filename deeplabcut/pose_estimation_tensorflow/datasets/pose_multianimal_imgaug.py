@@ -21,6 +21,7 @@ from deeplabcut.pose_estimation_tensorflow.datasets.factory import PoseDatasetFa
 from deeplabcut.pose_estimation_tensorflow.datasets.pose_base import BasePoseDataset
 from deeplabcut.pose_estimation_tensorflow.datasets.utils import DataItem, Batch
 from deeplabcut.utils.auxfun_videos import imread
+from deeplabcut.utils.conversioncode import robust_split_path
 from math import sqrt
 
 
@@ -56,8 +57,11 @@ class MAImgaugPoseDataset(BasePoseDataset):
             sample = pickledata[i]  # mlab[0, i]
             item = DataItem()
             item.image_id = i
-            item.im_path = os.path.join(*sample["image"])  # [0][0]
-            item.im_size = sample["size"]  # sample[1][0]
+            im_path = sample["image"]
+            if isinstance(im_path, str):
+                im_path = robust_split_path(im_path)
+            item.im_path = os.path.join(*im_path)
+            item.im_size = sample["size"]
             if "joints" in sample.keys():
                 Joints = sample["joints"]
                 if (

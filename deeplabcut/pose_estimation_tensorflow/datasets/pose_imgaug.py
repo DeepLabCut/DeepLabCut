@@ -24,6 +24,7 @@ import numpy as np
 import scipy.io as sio
 
 from deeplabcut.utils.auxfun_videos import imread
+from deeplabcut.utils.conversioncode import robust_split_path
 from .factory import PoseDatasetFactory
 from .pose_base import BasePoseDataset
 from .utils import DataItem, Batch
@@ -92,7 +93,12 @@ class ImgaugPoseDataset(BasePoseDataset):
 
                 item = DataItem()
                 item.image_id = i
-                item.im_path = os.path.join(*[s.strip() for s in sample[0][0]])
+                im_path = sample[0][0]
+                if isinstance(im_path, str):
+                    im_path = robust_split_path(im_path)
+                else:
+                    im_path = [s.strip() for s in im_path]
+                item.im_path = os.path.join(*im_path)
                 item.im_size = sample[1][0]
                 if len(sample) >= 3:
                     joints = sample[2][0][0]
