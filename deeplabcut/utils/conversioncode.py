@@ -150,3 +150,8 @@ def guarantee_multiindex_rows(df):
         sep = "/" if "/" in path else "\\"
         splits = tuple(df.index.str.split(sep))
         df.index = pd.MultiIndex.from_tuples(splits)
+
+
+def robust_split_path(s):
+    sep = "/" if "/" in s else "\\"
+    return tuple(s.split(sep))
