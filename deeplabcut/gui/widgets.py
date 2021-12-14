@@ -51,7 +51,7 @@ class BaseFrame(wx.Frame):
     """Contains the main GUI and button boxes"""
 
     def __init__(self, frame_title="", parent=None, imtypes=None):
-        # Settting the GUI size and panels design
+        # Setting the GUI size and panels design
         displays = (
             wx.Display(i) for i in range(wx.Display.GetCount())
         )  # Gets the number of displays
@@ -77,9 +77,8 @@ class BaseFrame(wx.Frame):
         self.statusbar = self.CreateStatusBar()
         self.statusbar.SetStatusText("")
 
-        self.SetSizeHints(
-            wx.Size(self.gui_size)
-        )  #  This sets the minimum size of the GUI. It can scale now!
+        # This sets the minimum size of the GUI. It can scale now!
+        self.SetSizeHints(wx.Size(800, 600))
 
     @staticmethod
     def calc_distance(x1, y1, x2, y2):
