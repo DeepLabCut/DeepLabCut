@@ -119,7 +119,6 @@ class Pose(RNGDataFlow):
             else:
                 im_path = [s.strip() for s in im_path]
             item.im_path = os.path.join(base, *im_path)
-            item.im_path = im_path
             item.im_size = sample[1][0]
             if len(sample) >= 3:
                 joints = sample[2][0][0]
