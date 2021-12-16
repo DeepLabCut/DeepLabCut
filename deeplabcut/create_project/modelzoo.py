@@ -267,25 +267,13 @@ def create_pretrained_project(
         pose_cfg = deeplabcut.auxiliaryfunctions.read_plainconfig(path_train_config)
         print(path_train_config)
         # Updating config file:
-        dict = {
+        dict_ = {
             "default_net_type": pose_cfg["net_type"],
             "default_augmenter": pose_cfg["dataset_type"],
             "bodyparts": pose_cfg["all_joints_names"],
-            "skeleton": [],  # TODO: update with paf_graph
             "dotsize": 6,
         }
-        auxiliaryfunctions.edit_config(cfg, dict)
-
-        # Create the pose_config.yaml files
-        parent_path = Path(os.path.dirname(deeplabcut.__file__))
-        defaultconfigfile = str(parent_path / "pose_cfg.yaml")
-        trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(config)
-        datafilename, metadatafilename = auxiliaryfunctions.GetDataandMetaDataFilenames(
-            trainingsetfolder,
-            trainFraction=config["TrainingFraction"][0],
-            shuffle=1,
-            cfg=config,
-        )
+        auxiliaryfunctions.edit_config(cfg, dict_)
 
         # downloading base encoder / not required unless on re-trains (but when a training set is created this happens anyway)
         # model_path, num_shuffles=auxfun_models.Check4weights(pose_cfg['net_type'], parent_path, num_shuffles= 1)
