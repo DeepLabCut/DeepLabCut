@@ -465,10 +465,9 @@ def GetModelFolder(trainFraction, shuffle, cfg, modelprefix=""):
     iterate = "iteration-" + str(cfg["iteration"])
     return Path(
         modelprefix,
-        "dlc-models/"
-        + iterate
-        + "/"
-        + Task
+        "dlc-models",
+        iterate,
+        Task
         + date
         + "-trainset"
         + str(int(trainFraction * 100))
@@ -482,15 +481,14 @@ def GetEvaluationFolder(trainFraction, shuffle, cfg, modelprefix=""):
     date = cfg["date"]
     iterate = "iteration-" + str(cfg["iteration"])
     if "eval_prefix" in cfg:
-        eval_prefix = cfg["eval_prefix"] + "/"
+        eval_prefix = cfg["eval_prefix"]
     else:
-        eval_prefix = "evaluation-results" + "/"
+        eval_prefix = "evaluation-results"
     return Path(
         modelprefix,
-        eval_prefix
-        + iterate
-        + "/"
-        + Task
+        eval_prefix,
+        iterate,
+        Task
         + date
         + "-trainset"
         + str(int(trainFraction * 100))
