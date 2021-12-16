@@ -348,7 +348,7 @@ def check_video_integrity(video_path):
 
 # Historically DLC used: from scipy.misc import imread, imresize >> deprecated functions
 def imread(path, mode=None):
-    return cv2.imread(path)[..., ::-1]  # ~10% faster than using cv2.cvtColor
+    return cv2.imread(path, cv2.IMREAD_UNCHANGED)[..., ::-1]  # ~10% faster than using cv2.cvtColor
 
 
 # https://docs.opencv.org/3.4.0/da/d54/group__imgproc__transform.html#ga5bb5a1fea74ea38e1a5445ca803ff121
@@ -508,7 +508,7 @@ def DownSampleVideo(
 
     rotatecw: str
         Default "No", rotates clockwise if "Yes", "Arbitrary" for arbitrary rotation by specified angle.
-        
+
     angle: float
         Angle to rotate by in degrees, default 0.0. Negative values rotate counter-clockwise
 
