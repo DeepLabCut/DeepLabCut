@@ -14,6 +14,7 @@ import time
 from pathlib import Path
 
 import numpy as np
+from skimage.color import rgba2rgb
 from skimage.util import img_as_ubyte
 from tqdm import tqdm
 
@@ -179,7 +180,10 @@ def GetPoseandCostsF(
             # Avoid overwriting data already on the shelf
             if isinstance(db, shelve.Shelf) and key in db:
                 continue
-            frames[batch_ind] = img_as_ubyte(frame)
+            frame = img_as_ubyte(frame)
+            if frame.shape[-1] == 4:
+                frame = rgba2rgb(frame)
+            frames[batch_ind] = frame
             inds.append(counter)
             if batch_ind == batchsize - 1:
                 D = predict.predict_batched_peaks_and_costs(
@@ -248,6 +252,8 @@ def GetPoseandCostsS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, shelf_pa
             if isinstance(db, shelve.Shelf) and key in db:
                 continue
             frame = img_as_ubyte(frame)
+            if frame.shape[-1] == 4:
+                frame = rgba2rgb(frame)
             dets = predict.predict_batched_peaks_and_costs(
                 dlc_cfg, np.expand_dims(frame, axis=0), sess, inputs, outputs,
             )

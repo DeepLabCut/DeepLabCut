@@ -316,6 +316,8 @@ def evaluate_multianimal_full(
                             image = io.imread(image_path)
                             if image.ndim == 2 or image.shape[-1] == 1:
                                 image = skimage.color.gray2rgb(image)
+                            elif image.shape[-1] == 4:
+                                image = skimage.color.rgba2rgb(image)
                             frame = img_as_ubyte(image)
 
                             GT = Data.iloc[imageindex]
