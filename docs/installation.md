@@ -6,7 +6,7 @@ DeepLabCut can be run on Windows, Linux, or MacOS (see also [technical considera
 
 - Everything you need to run DeepLabCut (i.e., our source code and our dependencies) can be installed with `pip install 'deeplabcut[gui]'` (for GUI support) or without: `pip install deeplabcut`.
 
-#### Please note, there are several modes of installation, and the user should decide to either use a **system-wide** (see [note below](/docs/installation.md#system-wide-considerations)), **Anaconda environment** based installation (**recommended**), or the supplied [**Docker container**](https://github.com/DeepLabCut/DeepLabCut/tree/master/docker.md) (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but **Anaconda is the easiest route.**
+- Please note, there are several modes of installation, and the user should decide to either use a **system-wide** (see [note below](/docs/installation.md#system-wide-considerations)), **Anaconda environment** based installation (**recommended**), or the supplied [**Docker container**](https://github.com/DeepLabCut/DeepLabCut/tree/master/docker.md) (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but **Anaconda is the easiest route.**
 
 ## CONDA: The installation process is as easy as this figure! -->
 
