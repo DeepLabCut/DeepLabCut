@@ -203,17 +203,6 @@ class Create_Labeled_Videos(wx.Panel):
         hbox4.Add(self.bodyparts_to_compare, 3, wx.EXPAND | wx.TOP | wx.BOTTOM, 3)
 
         if self.cfg.get("multianimalproject", False):
-            tracker_text = wx.StaticBox(self, label="Specify the Tracker Method!")
-            tracker_text_boxsizer = wx.StaticBoxSizer(tracker_text, wx.VERTICAL)
-            trackertypes = ["skeleton", "box", "ellipse"]
-            self.trackertypes = wx.ComboBox(
-                self, choices=trackertypes, style=wx.CB_READONLY
-            )
-            self.trackertypes.SetValue("ellipse")
-            tracker_text_boxsizer.Add(
-                self.trackertypes, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
-            )
-
             self.trajectory = wx.RadioBox(
                 self,
                 label="Want to plot the trajectories?",
@@ -223,7 +212,6 @@ class Create_Labeled_Videos(wx.Panel):
             )
 
             hbox4.Add(self.trajectory, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-            hbox4.Add(tracker_text_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         boxsizer.Add(hbox3, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
         boxsizer.Add(hbox4, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
@@ -327,7 +315,7 @@ class Create_Labeled_Videos(wx.Panel):
         if config_file.get("multianimalproject", False):
             print(
                 "Creating a video with the "
-                + self.trackertypes.GetValue()
+                + config_file.get("default_track_method", "ellipse")
                 + " tracker method!"
             )
             if self.plot_idv.GetStringSelection() == "Yes":
@@ -347,7 +335,6 @@ class Create_Labeled_Videos(wx.Panel):
                 trailpoints=self.trail_points.GetValue(),
                 filtered=filtered,
                 color_by=color_by,
-                track_method=self.trackertypes.GetValue(),
             )
 
             if self.trajectory.GetStringSelection() == "Yes":
@@ -360,7 +347,6 @@ class Create_Labeled_Videos(wx.Panel):
                     trainingsetindex=trainingsetindex,
                     filtered=filtered,
                     showfigures=False,
-                    track_method=self.trackertypes.GetValue(),
                 )
         else:
             deeplabcut.create_labeled_video(

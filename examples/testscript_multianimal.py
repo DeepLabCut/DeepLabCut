@@ -13,8 +13,7 @@ MODELS = ["dlcrnet_ms5", "dlcr101_ms5", "efficientnet-b0", "mobilenet_v2_0.35"]
 N_ITER = 5
 
 
-USE_SHELVE = False  # random.choice([True,False])
-# TODO: fix true, currenctly cannot do the full_detection video and later
+USE_SHELVE = random.choice([True, False])
 
 if __name__ == "__main__":
 
@@ -107,7 +106,6 @@ if __name__ == "__main__":
     deeplabcut.create_multianimaltraining_dataset(
         config_path, net_type=NET, crop_size=(200, 200)
     )
-
     print("Train dataset created.")
 
     # Check the training image paths are correctly stored as arrays of strings
@@ -180,10 +178,7 @@ if __name__ == "__main__":
 
     print("Convert detections to tracklets...")
     deeplabcut.convert_detections2tracklets(
-        config_path, [new_video_path], "mp4", track_method="box"
-    )
-    deeplabcut.convert_detections2tracklets(
-        config_path, [new_video_path], "mp4", track_method="ellipse"
+        config_path, [new_video_path], "mp4",
     )
     print("Tracklets created...")
 
@@ -196,30 +191,25 @@ if __name__ == "__main__":
 
     print("Plotting trajectories...")
     deeplabcut.plot_trajectories(
-        config_path, [new_video_path], "mp4", track_method="ellipse"
+        config_path, [new_video_path], "mp4",
     )
     print("Trajectory plotted.")
 
     print("Creating labeled video...")
     deeplabcut.create_labeled_video(
-        config_path,
-        [new_video_path],
-        "mp4",
-        save_frames=False,
-        color_by="individual",
-        track_method="ellipse",
+        config_path, [new_video_path], "mp4", save_frames=False, color_by="individual",
     )
     print("Labeled video created.")
 
     print("Filtering predictions...")
     deeplabcut.filterpredictions(
-        config_path, [new_video_path], "mp4", track_method="ellipse"
+        config_path, [new_video_path], "mp4",
     )
     print("Predictions filtered.")
 
     print("Extracting outlier frames...")
     deeplabcut.extract_outlier_frames(
-        config_path, [new_video_path], "mp4", automatic=True, track_method="ellipse"
+        config_path, [new_video_path], "mp4", automatic=True,
     )
     print("Outlier frames extracted.")
 
@@ -279,7 +269,8 @@ if __name__ == "__main__":
         destfolder=DESTFOLDER,
         cropping=[0, 50, 0, 50],
         allow_growth=True,
-        use_shelve=True,
+        use_shelve=USE_SHELVE,
+        auto_track=False,
     )
 
     print("Export model...")

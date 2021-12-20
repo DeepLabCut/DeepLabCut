@@ -122,20 +122,6 @@ class Extract_outlier_frames(wx.Panel):
         hbox1.Add(shuffles_text_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         hbox1.Add(trainingindex_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         hbox2.Add(outlier_algo_text_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-
-        if self.cfg.get("multianimalproject", False):
-            tracker_text = wx.StaticBox(self, label="Specify the Tracker Method!")
-            tracker_text_boxsizer = wx.StaticBoxSizer(tracker_text, wx.VERTICAL)
-            trackertypes = ["skeleton", "box", "ellipse"]
-            self.trackertypes = wx.ComboBox(
-                self, choices=trackertypes, style=wx.CB_READONLY
-            )
-            self.trackertypes.SetValue("ellipse")
-            tracker_text_boxsizer.Add(
-                self.trackertypes, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
-            )
-            hbox2.Add(tracker_text_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-
         boxsizer.Add(hbox1, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
         boxsizer.Add(hbox2, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
@@ -200,10 +186,6 @@ class Extract_outlier_frames(wx.Panel):
             self.sel_vids.SetLabel("Total %s Videos selected" % len(self.filelist))
 
     def extract_outlier_frames(self, event):
-        tracker = ""
-        if self.cfg.get("multianimalproject", False):
-            tracker = self.trackertypes.GetValue()
-
         deeplabcut.extract_outlier_frames(
             config=self.config,
             videos=self.filelist,
@@ -211,7 +193,6 @@ class Extract_outlier_frames(wx.Panel):
             shuffle=self.shuffles.GetValue(),
             trainingsetindex=self.trainingindex.GetValue(),
             outlieralgorithm=self.algotype.GetValue(),
-            track_method=tracker,
         )
 
     def reset_extract_outlier_frames(self, event):

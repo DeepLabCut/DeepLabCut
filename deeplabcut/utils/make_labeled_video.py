@@ -428,6 +428,11 @@ def create_labeled_video(
         Coloring rule. By default, each bodypart is colored differently.
         If set to 'individual', points belonging to a single individual are colored the same.
 
+    track_method: string, optional
+         Specifies the tracker used to generate the data. Empty by default (corresponding to a single animal project).
+         For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will be taken from the config.yaml file if none is given.
+
+
     Examples
     --------
     If you want to create the labeled video for only 1 video
@@ -453,6 +458,8 @@ def create_labeled_video(
 
     """
     cfg = auxiliaryfunctions.read_config(config)
+    track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
+
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
         cfg, shuffle, trainFraction, modelprefix=modelprefix
@@ -836,8 +843,9 @@ def create_video_with_all_detections(
 
         if not (os.path.isfile(outputname)):
             print("Creating labeled video for ", str(Path(video).stem))
-            with open(full_pickle, "rb") as file:
-                data = pickle.load(file)
+            h5file = full_pickle.replace("_full.pickle", ".h5")
+            data, _ = auxfun_multianimal.LoadFullMultiAnimalData(h5file)
+            data = dict(data)  # Cast to dict (making a copy) so items can safely be popped
 
             header = data.pop("metadata")
             all_jointnames = header["all_joints_names"]

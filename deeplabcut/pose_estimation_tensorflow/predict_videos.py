@@ -32,6 +32,7 @@ from tqdm import tqdm
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.core import predict
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingutils
+from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
 
@@ -56,6 +57,7 @@ def analyze_videos(
     modelprefix="",
     robust_nframes=False,
     allow_growth=False,
+    auto_track=True,
     use_shelve=False,
 ):
     """
@@ -121,6 +123,12 @@ def analyze_videos(
     allow_growth: bool, default false.
         For some smaller GPUs the memory issues happen. If true, the memory allocator does not pre-allocate the entire specified
         GPU memory region, instead starting small and growing as needed. See issue: https://forum.image.sc/t/how-to-stop-running-out-of-vram/30551/2
+
+    auto_track: bool, optional (default=True)
+        By default, tracking and stitching are automatically performed, producing the final h5 data file.
+        This is equivalent to the behavior of single-animal projects.
+        
+        If False, one must run `convert_detections2tracklets` and `stitch_tracklets` afterwards, in order to obtain the h5 file. 
 
     use_shelve: bool, optional (default=False)
         By default, data are dumped in a pickle file at the end of the video analysis.
@@ -311,6 +319,25 @@ def analyze_videos(
                     robust_nframes=robust_nframes,
                     use_shelve=use_shelve,
                 )
+                if auto_track:
+                    convert_detections2tracklets(
+                        config,
+                        [video],
+                        videotype,
+                        shuffle,
+                        trainingsetindex,
+                        destfolder=destfolder,
+                        modelprefix=modelprefix,
+                    )
+                    stitch_tracklets(
+                        config,
+                        [video],
+                        videotype,
+                        shuffle,
+                        trainingsetindex,
+                        destfolder=destfolder,
+                        modelprefix=modelprefix,
+                    )
         else:
             for video in Videos:
                 DLCscorer = AnalyzeVideo(
@@ -1137,20 +1164,17 @@ def analyze_time_lapse_frames(
 
 
 def _convert_detections_to_tracklets(
-    cfg,
-    inference_cfg,
-    data,
-    metadata,
-    output_path,
-    track_method="ellipse",
-    greedy=False,
-    calibrate=False,
+    cfg, inference_cfg, data, metadata, output_path, greedy=False, calibrate=False,
 ):
+    track_method = cfg.get("default_track_method", "ellipse")
+    if track_method not in ("box", "skeleton", "ellipse"):
+        raise ValueError(
+            "Invalid tracking method. Only `box`, `skeleton` and `ellipse` are currently supported."
+        )
     joints = data["metadata"]["all_joints_names"]
     partaffinityfield_graph = data["metadata"]["PAFgraph"]
     paf_inds = data["metadata"]["PAFinds"]
     paf_graph = [partaffinityfield_graph[l] for l in paf_inds]
-
     if track_method == "box":
         mot_tracker = trackingutils.SORTBox(
             inference_cfg["max_age"],
@@ -1238,7 +1262,6 @@ def convert_detections2tracklets(
     ignore_bodyparts=None,
     inferencecfg=None,
     modelprefix="",
-    track_method="ellipse",
     greedy=False,
     calibrate=False,
     window_size=0,
@@ -1271,11 +1294,6 @@ def convert_detections2tracklets(
         Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this
         folder also needs to be passed.
 
-    track_method: str, optional
-        Method used to track animals, either 'box', 'skeleton', or 'ellipse'.
-        By default, a constant velocity Kalman filter is used to track
-        covariance error ellipses fitted to an individual's body parts.
-
     ignore_bodyparts: optional
         List of body part names that should be ignored during tracking (advanced).
         By default, all the body parts are used.
@@ -1307,12 +1325,21 @@ def convert_detections2tracklets(
     --------
 
     """
+    cfg = auxiliaryfunctions.read_config(config)
+    track_method = cfg.get("default_track_method", "ellipse")
+
     if track_method not in ("box", "skeleton", "ellipse"):
         raise ValueError(
             "Invalid tracking method. Only `box`, `skeleton` and `ellipse` are currently supported."
         )
 
-    cfg = auxiliaryfunctions.read_config(config)
+    if len(cfg["multianimalbodyparts"]) == 1 and track_method != "box":
+        warnings.warn("Switching to `box` tracker for single point tracking...")
+        track_method = "box"
+
+    cfg["default_track_method"] = track_method
+    auxiliaryfunctions.write_config(config, cfg)
+
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     start_path = os.getcwd()  # record cwd to return to this directory in the end
 

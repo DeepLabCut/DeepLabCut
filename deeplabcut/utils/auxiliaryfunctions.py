@@ -58,6 +58,7 @@ def create_config_template(multianimal=False):
         iteration:
         default_net_type:
         default_augmenter:
+        default_track_method:
         snapshotindex:
         batch_size:
         \n

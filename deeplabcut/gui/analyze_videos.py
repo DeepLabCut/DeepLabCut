@@ -99,7 +99,6 @@ class Analyze_videos(wx.Panel):
         self.hbox3 = wx.BoxSizer(wx.HORIZONTAL)
         self.hbox4 = wx.BoxSizer(wx.HORIZONTAL)
 
-
         videotype_text = wx.StaticBox(self, label="Specify the videotype")
         videotype_text_boxsizer = wx.StaticBoxSizer(videotype_text, wx.VERTICAL)
         videotypes = [".avi", ".mp4", ".mov"]
@@ -112,17 +111,16 @@ class Analyze_videos(wx.Panel):
         shuffle_text = wx.StaticBox(self, label="Specify the shuffle")
         shuffle_boxsizer = wx.StaticBoxSizer(shuffle_text, wx.VERTICAL)
         self.shuffle = wx.SpinCtrl(self, value="1", min=0, max=100)
-        shuffle_boxsizer.Add(self.shuffle, 1,wx.EXPAND | wx.TOP | wx.BOTTOM,  1)
+        shuffle_boxsizer.Add(self.shuffle, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
 
         trainingset = wx.StaticBox(self, label="Specify the trainingset index")
         trainingset_boxsizer = wx.StaticBoxSizer(trainingset, wx.VERTICAL)
         self.trainingset = wx.SpinCtrl(self, value="0", min=0, max=100)
-        trainingset_boxsizer.Add(self.trainingset, 1,wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
+        trainingset_boxsizer.Add(self.trainingset, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
 
-
-        self.hbox1.Add(videotype_text_boxsizer, 1, wx.EXPAND | wx.TOP | wx.BOTTOM,1)
+        self.hbox1.Add(videotype_text_boxsizer, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
         self.hbox1.Add(shuffle_boxsizer, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
-        self.hbox1.Add(trainingset_boxsizer, 1, wx.EXPAND | wx.TOP | wx.BOTTOM,1)
+        self.hbox1.Add(trainingset_boxsizer, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
 
         if self.cfg.get("multianimalproject", False):
 
@@ -150,20 +148,6 @@ class Analyze_videos(wx.Panel):
                 wx.EXPAND | wx.TOP | wx.BOTTOM,
                 1,
             )
-
-            tracker_text = wx.StaticBox(
-                self, label="Specify the Tracker Method (you can try each)"
-            )
-            tracker_text_boxsizer = wx.StaticBoxSizer(tracker_text, wx.VERTICAL)
-            trackertypes = ["skeleton", "box", "ellipse"]
-            self.trackertypes = wx.ComboBox(
-                self, choices=trackertypes, style=wx.CB_READONLY
-            )
-            self.trackertypes.SetValue("ellipse")
-            tracker_text_boxsizer.Add(
-                self.trackertypes, 1,wx.EXPAND | wx.TOP | wx.BOTTOM,1
-            )
-            self.hbox3.Add(tracker_text_boxsizer, 1,  1)
 
             self.overwrite = wx.RadioBox(
                 self,
@@ -195,10 +179,12 @@ class Analyze_videos(wx.Panel):
             self.identity_toggle.SetSelection(1)
             self.hbox4.Add(self.identity_toggle, 1, 1)
 
-            winsize_text = wx.StaticBox(self, label="Prioritize past connections over a window of size:")
+            winsize_text = wx.StaticBox(
+                self, label="Prioritize past connections over a window of size:"
+            )
             winsize_sizer = wx.StaticBoxSizer(winsize_text, wx.VERTICAL)
             self.winsize = wx.SpinCtrl(self, value="0")
-            winsize_sizer.Add(self.winsize, 1, wx.EXPAND | wx.TOP | wx.BOTTOM,1)
+            winsize_sizer.Add(self.winsize, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
             self.hbox4.Add(winsize_sizer, 1, 1)
 
         else:
@@ -418,16 +404,10 @@ class Analyze_videos(wx.Panel):
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             overwrite=overwrite,
-            track_method=self.trackertypes.GetValue(),
             calibrate=self.calibrate.GetStringSelection() == "Yes",
             window_size=self.winsize.GetValue(),
             identity_only=self.identity_toggle.GetStringSelection() == "Yes",
         )
-
-    # def video_tracklets(self,event):
-    #    shuffle = self.shuffle.GetValue()
-    #    trainingsetindex = self.trainingset.GetValue()
-    #    deeplabcut.create_video_from_pickled_tracks(self.filelist, picklefile, pcutoff=0.6)
 
     def select_videos(self, event):
         """
