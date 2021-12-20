@@ -11,6 +11,7 @@ Licensed under GNU Lesser General Public License v3.0
 import os
 import matplotlib.pyplot as plt
 import numpy as np
+from skimage.color import rgba2rgb
 from skimage.transform import resize
 
 
@@ -227,6 +228,8 @@ def extract_maps(
                 image = imread(
                     os.path.join(cfg["project_path"], *imagename), mode="RGB"
                 )
+                if image.shape[-1] == 4:
+                    image = rgba2rgb(image)
                 if scale != 1:
                     image = imresize(image, scale)
 
