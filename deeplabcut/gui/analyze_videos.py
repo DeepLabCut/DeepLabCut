@@ -176,7 +176,7 @@ class Analyze_videos(wx.Panel):
 
             self.filter = wx.RadioBox(
                 self,
-                label="Want to filter the predictions?",
+                label="Want to filter the predictions? (+ csv file)",
                 choices=["Yes", "No"],
                 majorDimension=1,
                 style=wx.RA_SPECIFY_COLS,
@@ -473,6 +473,8 @@ class Analyze_videos(wx.Panel):
                     self.filelist,
                     shuffle=shuffle,
                 )
+            if self.filter.GetStringSelection() == "Yes":
+                deeplabcut.filterpredictions(self.config, self.filelist)
         else:
             scorername = deeplabcut.analyze_videos(
                 self.config,
