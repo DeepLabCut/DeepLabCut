@@ -36,7 +36,7 @@ class Extract_outlier_frames(wx.Panel):
         # design the panel
         self.sizer = wx.GridBagSizer(5, 5)
 
-        text = wx.StaticText(self, label="DeepLabCut - OPTIONAL: Extract & Refine labels on Outlier Frames")
+        text = wx.StaticText(self, label="DeepLabCut - OPTIONAL: Extract and Refine labels on Outlier Frames")
         self.sizer.Add(text, pos=(0, 0), flag=wx.TOP | wx.LEFT | wx.BOTTOM, border=15)
         # Add logo of DLC
         icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(LOGO_PATH))

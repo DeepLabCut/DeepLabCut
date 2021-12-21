@@ -94,10 +94,11 @@ class Create_training_dataset(wx.Panel):
             "efficientnet-b0",
         ]
         self.net_choice.Set(options)
+        
         if self.cfg.get("multianimalproject", False):
             self.net_choice.SetValue("dlcrnet_ms5")
-
-        self.net_choice.SetValue("resnet_50")
+        else:
+            self.net_choice.SetValue("resnet_50")
 
         netboxsizer.Add(self.net_choice, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
