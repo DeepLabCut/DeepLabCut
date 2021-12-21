@@ -99,12 +99,11 @@ class Train_network(wx.Panel):
         self.shuffles = wx.SpinCtrl(self, value="1", min=0, max=100)
         shuffles_text_boxsizer.Add(self.shuffles, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
-        trainingindex = wx.StaticBox(self, label="Specify the trainingset index")
-        trainingindex_boxsizer = wx.StaticBoxSizer(trainingindex, wx.VERTICAL)
-        self.trainingindex = wx.SpinCtrl(self, value="0", min=0, max=100)
-        trainingindex_boxsizer.Add(
-            self.trainingindex, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
-        )
+        #trainingindex = wx.StaticBox(self, label="Specify the trainingset index")
+        #trainingindex_boxsizer = wx.StaticBoxSizer(trainingindex, wx.VERTICAL)
+        #self.trainingindex = wx.SpinCtrl(self, value="0", min=0, max=100)
+        #trainingindex_boxsizer.Add(
+        #    self.trainingindex, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
         self.pose_cfg_choice = wx.RadioBox(
             self,
@@ -135,9 +134,9 @@ class Train_network(wx.Panel):
         )
         # self.display_iters.Enable(False)
 
-        save_iters_text = wx.StaticBox(self, label="Save iterations")
+        save_iters_text = wx.StaticBox(self, label="Save X number of iterations")
         save_iters_text_boxsizer = wx.StaticBoxSizer(save_iters_text, wx.VERTICAL)
-        self.save_iters = wx.SpinCtrl(self, value=save_iters, min=1, max=int(max_iters))
+        self.save_iters = wx.SpinCtrl(self, value="10000", min=1, max=int(max_iters))
         save_iters_text_boxsizer.Add(
             self.save_iters, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
         )
@@ -145,20 +144,20 @@ class Train_network(wx.Panel):
 
         max_iters_text = wx.StaticBox(self, label="Maximum iterations")
         max_iters_text_boxsizer = wx.StaticBoxSizer(max_iters_text, wx.VERTICAL)
-        self.max_iters = wx.SpinCtrl(self, value=max_iters, min=1, max=int(max_iters))
+        self.max_iters = wx.SpinCtrl(self, value="500000", min=1, max=int(max_iters))
         max_iters_text_boxsizer.Add(
             self.max_iters, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
         )
         # self.max_iters.Enable(False)
 
-        snapshots = wx.StaticBox(self, label="Number of snapshots to keep")
+        snapshots = wx.StaticBox(self, label="Number of network snapshots to keep")
         snapshots_boxsizer = wx.StaticBoxSizer(snapshots, wx.VERTICAL)
-        self.snapshots = wx.SpinCtrl(self, value="5", min=1, max=100)
+        self.snapshots = wx.SpinCtrl(self, value="10", min=1, max=100)
         snapshots_boxsizer.Add(self.snapshots, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
         # self.snapshots.Enable(False)
 
         hbox1.Add(shuffles_text_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-        hbox1.Add(trainingindex_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        #hbox1.Add(trainingindex_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         hbox1.Add(self.pose_cfg_choice, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
         hbox1.Add(vbox1, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
@@ -216,14 +215,14 @@ class Train_network(wx.Panel):
     def chooseOption(self, event):
         if self.pose_cfg_choice.GetStringSelection() == "Yes":
             self.shuffles.Enable(False)
-            self.trainingindex.Enable(False)
+            #self.trainingindex.Enable(False)
             self.pose_cfg_text.Show()
             self.update_params_text.Show()
             self.SetSizer(self.sizer)
             self.sizer.Fit(self)
         else:
             self.shuffles.Enable(True)
-            self.trainingindex.Enable(True)
+            #self.trainingindex.Enable(True)
             self.pose_cfg_text.Hide()
             self.update_params_text.Hide()
             self.SetSizer(self.sizer)
@@ -238,19 +237,21 @@ class Train_network(wx.Panel):
         """
         """
         self.shuffles.Enable(True)
-        self.trainingindex.Enable(True)
+        #self.trainingindex.Enable(True)
         self.display_iters.Enable(True)
         self.save_iters.Enable(True)
         self.max_iters.Enable(True)
         self.snapshots.Enable(True)
         # Read the pose config file
+
         cfg = auxiliaryfunctions.read_config(self.config)
-        trainFraction = cfg["TrainingFraction"][self.trainingindex.GetValue()]
+        trainFraction = cfg["TrainingFraction"]
+        #print(trainFraction[-1])
         #        print(os.path.join(cfg['project_path'],auxiliaryfunctions.GetModelFolder(trainFraction, self.shuffles.GetValue(),cfg),'train','pose_cfg.yaml'))
         self.pose_cfg_path = os.path.join(
             cfg["project_path"],
             auxiliaryfunctions.GetModelFolder(
-                trainFraction, self.shuffles.GetValue(), cfg
+                trainFraction[-1], self.shuffles.GetValue(), cfg
             ),
             "train",
             "pose_cfg.yaml",
@@ -277,7 +278,7 @@ class Train_network(wx.Panel):
             self.save_iters.SetValue(save_iters)
             self.max_iters.SetValue(max_iters)
             self.shuffles.Enable(True)
-            self.trainingindex.Enable(True)
+            #self.trainingindex.Enable(True)
             self.display_iters.Enable(True)
             self.save_iters.Enable(True)
             self.max_iters.Enable(True)
@@ -290,11 +291,6 @@ class Train_network(wx.Panel):
             shuffle = int(self.shuffles.Children[0].GetValue())
         else:
             shuffle = int(self.shuffles.GetValue())
-
-        if self.trainingindex.Children:
-            trainingsetindex = int(self.trainingindex.Children[0].GetValue())
-        else:
-            trainingsetindex = int(self.trainingindex.GetValue())
 
         if self.snapshots.Children:
             max_snapshots_to_keep = int(self.snapshots.Children[0].GetValue())
@@ -319,7 +315,6 @@ class Train_network(wx.Panel):
         deeplabcut.train_network(
             self.config,
             shuffle,
-            trainingsetindex,
             gputouse=None,
             max_snapshots_to_keep=max_snapshots_to_keep,
             autotune=None,
@@ -337,7 +332,7 @@ class Train_network(wx.Panel):
         self.pose_cfg_text.Hide()
         self.update_params_text.Hide()
         self.pose_cfg_choice.SetSelection(1)
-        self.display_iters.SetValue(100)
+        self.display_iters.SetValue(1000)
         self.save_iters.SetValue(10000)
         self.max_iters.SetValue(50000)
         self.snapshots.SetValue(5)
