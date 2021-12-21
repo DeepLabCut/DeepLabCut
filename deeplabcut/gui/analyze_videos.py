@@ -37,7 +37,7 @@ class Analyze_videos(wx.Panel):
         self.cfg = auxiliaryfunctions.read_config(self.config)
         self.draw = False
         # design the panel
-        self.sizer = wx.GridBagSizer(5, 15)
+        self.sizer = wx.GridBagSizer(5, 10)
 
 
         text = wx.StaticText(self, label="DeepLabCut - Step 7. Analyze Videos")
@@ -257,7 +257,7 @@ class Analyze_videos(wx.Panel):
         self.trail_points_text.Hide()
         self.trail_points.Hide()
 
-        self.hbox4.Add(self.trajectory_to_plot, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
+        self.hbox3.Add(self.trajectory_to_plot, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
         boxsizer.Add(self.hbox3, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
         self.hbox4.Add(self.draw_skeleton, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
@@ -419,7 +419,7 @@ class Analyze_videos(wx.Panel):
                 cropping=crop,
                 robust_nframes=robust,
                 auto_track=True,
-                n_tracks=self.ntracks,
+                n_tracks=self.ntracks.GetValue(),
             )
             if self.create_video_with_all_detections.GetStringSelection() == "Yes":
                 deeplabcut.create_video_with_all_detections(
