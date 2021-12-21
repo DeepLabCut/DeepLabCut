@@ -108,20 +108,20 @@ class Refine_tracklets(wx.Panel):
         self.shuffle = wx.SpinCtrl(self, value="1", min=0, max=100)
         shuffle_boxsizer.Add(self.shuffle, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
-        trainingset = wx.StaticBox(self, label="Specify the trainingset index")
-        trainingset_boxsizer = wx.StaticBoxSizer(trainingset, wx.VERTICAL)
-        self.trainingset = wx.SpinCtrl(self, value="0", min=0, max=100)
-        trainingset_boxsizer.Add(
-            self.trainingset, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
-        )
+        #trainingset = wx.StaticBox(self, label="Specify the trainingset index")
+        #trainingset_boxsizer = wx.StaticBoxSizer(trainingset, wx.VERTICAL)
+        #self.trainingset = wx.SpinCtrl(self, value="0", min=0, max=100)
+        #trainingset_boxsizer.Add(
+        #    self.trainingset, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
+        #)
 
         hbox_.Add(videotype_text_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         hbox_.Add(shuffle_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-        hbox_.Add(trainingset_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        #hbox_.Add(trainingset_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         vbox_.Add(hbox_)
         sizer.Add(vbox_, pos=(5, 0))
 
-        self.create_tracks_btn = wx.Button(self, label="Step1: Create tracks")
+        self.create_tracks_btn = wx.Button(self, label="Run(or re-run) tracking")
         sizer.Add(self.create_tracks_btn, pos=(6, 1))
         self.create_tracks_btn.Bind(wx.EVT_BUTTON, self.create_tracks)
 
@@ -193,7 +193,7 @@ class Refine_tracklets(wx.Panel):
         sizer.Add(self.inf_cfg_text, pos=(12, 2), flag=wx.BOTTOM | wx.RIGHT, border=10)
         self.inf_cfg_text.Bind(wx.EVT_BUTTON, self.edit_inf_config)
 
-        self.ok = wx.Button(self, label="Optional: Refine tracks")
+        self.ok = wx.Button(self, label="Refine tracks GUI Launch")
         sizer.Add(self.ok, pos=(9, 1))
         self.ok.Bind(wx.EVT_BUTTON, self.refine_tracklets)
 
@@ -211,7 +211,7 @@ class Refine_tracklets(wx.Panel):
         sizer.Add(self.filter, pos=(11, 1), flag=wx.BOTTOM | wx.RIGHT, border=10)
         self.filter.Bind(wx.EVT_BUTTON, self.filter_after_refinement)
 
-        self.export = wx.Button(self, label="Optional: Merge refined data")
+        self.export = wx.Button(self, label="Optional: Merge refined data into training set")
         sizer.Add(self.export, pos=(13, 1), flag=wx.BOTTOM | wx.RIGHT, border=10)
         self.export.Bind(wx.EVT_BUTTON, self.export_data)
         self.export.Disable()
@@ -223,12 +223,12 @@ class Refine_tracklets(wx.Panel):
 
     def edit_inf_config(self, event):
         # Read the infer config file
-        trainingsetindex = self.trainingset.GetValue()
-        trainFraction = self.cfg["TrainingFraction"][trainingsetindex]
+        #trainingsetindex = self.trainingset.GetValue()
+        trainFraction = self.cfg["TrainingFraction"]
         self.inf_cfg_path = os.path.join(
             self.cfg["project_path"],
             auxiliaryfunctions.GetModelFolder(
-                trainFraction, self.shuffle.GetValue(), self.cfg
+                trainFraction[-1], self.shuffle.GetValue(), self.cfg
             ),
             "test",
             "inference_cfg.yaml",
@@ -248,7 +248,7 @@ class Refine_tracklets(wx.Panel):
 
     def filter_after_refinement(self, event):  # why is video type needed?
         shuffle = self.shuffle.GetValue()
-        trainingsetindex = self.trainingset.GetValue()
+        #trainingsetindex = self.trainingset.GetValue()
         window_length = self.filterlength_track.GetValue()
         if window_length % 2 != 1:
             raise ValueError("Window length should be odd.")
@@ -258,7 +258,7 @@ class Refine_tracklets(wx.Panel):
             [self.video],
             videotype=self.videotype.GetValue(),
             shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
+            #trainingsetindex=trainingsetindex,
             filtertype=self.filter_track.GetValue(),
             windowlength=self.filterlength_track.GetValue(),
             save_as_csv=True,
@@ -297,7 +297,7 @@ class Refine_tracklets(wx.Panel):
             [self.video],
             videotype=self.videotype.GetValue(),
             shuffle=self.shuffle.GetValue(),
-            trainingsetindex=self.trainingset.GetValue(),
+            #trainingsetindex=self.trainingset.GetValue(),
             n_tracks=self.ntracks.GetValue(),
         )
 
@@ -305,7 +305,7 @@ class Refine_tracklets(wx.Panel):
         DLCscorer, _ = auxiliaryfunctions.GetScorerName(
             self.cfg,
             self.shuffle.GetValue(),
-            self.cfg["TrainingFraction"][self.trainingset.GetValue()],
+            self.cfg["TrainingFraction"][-1],
         )
         track_method = self.cfg.get("default_track_method", "ellipse")
         if track_method == "ellipse":
