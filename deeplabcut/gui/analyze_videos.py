@@ -42,7 +42,7 @@ class Analyze_videos(wx.Panel):
 
         text = wx.StaticText(self, label="DeepLabCut - Step 7. Analyze Videos")
 
-        self.sizer.Add(text, pos=(0, 0), flag=wx.TOP | wx.LEFT | wx.BOTTOM, border=15)
+        self.sizer.Add(text, pos=(0, 0), flag=wx.TOP | wx.LEFT | wx.BOTTOM, border=10)
         # Add logo of DLC
         icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(LOGO_PATH))
         self.sizer.Add(
@@ -51,7 +51,7 @@ class Analyze_videos(wx.Panel):
 
         line1 = wx.StaticLine(self)
         self.sizer.Add(
-            line1, pos=(1, 0), span=(1, 8), flag=wx.EXPAND | wx.BOTTOM, border=15
+            line1, pos=(1, 0), span=(1, 8), flag=wx.EXPAND | wx.BOTTOM, border=10
         )
 
         self.cfg_text = wx.StaticText(self, label="Select the config file")
@@ -96,13 +96,23 @@ class Analyze_videos(wx.Panel):
         self.hbox4 = wx.BoxSizer(wx.HORIZONTAL)
         self.hbox5 = wx.BoxSizer(wx.HORIZONTAL)
 
-#### BOX 2 ####
+#### BOX 1 ####
+
         shuffle_text = wx.StaticBox(self, label="Specify the shuffle")
         shuffle_boxsizer = wx.StaticBoxSizer(shuffle_text, wx.VERTICAL)
         self.shuffle = wx.SpinCtrl(self, value="1", min=0, max=100)
         shuffle_boxsizer.Add(self.shuffle, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
-        boxsizer.Add(self.hbox2, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-        self.hbox2.Add(shuffle_boxsizer, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
+
+        ntracks_text = wx.StaticBox(self, label="Number of animals")
+        ntracks_boxsizer = wx.StaticBoxSizer(ntracks_text, wx.VERTICAL)
+        self.ntracks = wx.SpinCtrl(self, value=str(len(self.cfg["individuals"])), min=1, max=1000)
+        ntracks_boxsizer.Add(self.ntracks, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
+
+        boxsizer.Add(self.hbox1, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+        self.hbox1.Add(shuffle_boxsizer, 0, 0)
+        self.hbox1.Add(ntracks_boxsizer, 1, 1)
+
+#### BOX 2 ####
 
         if self.cfg.get("multianimalproject", False):
 
@@ -114,7 +124,7 @@ class Analyze_videos(wx.Panel):
                 style=wx.RA_SPECIFY_COLS,
             )
             self.robust.SetSelection(1)
-            self.hbox2.Add(self.robust, 1, 1)
+
 
             self.create_video_with_all_detections = wx.RadioBox(
                 self,
@@ -123,7 +133,13 @@ class Analyze_videos(wx.Panel):
                 majorDimension=1,
                 style=wx.RA_SPECIFY_COLS,)
             self.create_video_with_all_detections.SetSelection(0)
-            self.hbox2.Add(self.create_video_with_all_detections,1,wx.EXPAND | wx.TOP | wx.BOTTOM,1,)
+
+
+            boxsizer.Add(self.hbox2, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+            self.hbox2.Add(self.robust, 0,  wx.EXPAND | wx.TOP | wx.BOTTOM,0)
+            self.hbox2.Add(self.create_video_with_all_detections,0, wx.EXPAND | wx.TOP | wx.BOTTOM,0)
+
+
 
 #### BOX 3 ####
             self.calibrate = wx.RadioBox(
@@ -131,30 +147,23 @@ class Analyze_videos(wx.Panel):
                 label="Calibrate animal assembly?",
                 choices=["Yes", "No"],
                 majorDimension=1,
-                style=wx.RA_SPECIFY_COLS,
-            )
+                style=wx.RA_SPECIFY_COLS,)
             self.calibrate.SetSelection(1)
-            self.hbox3.Add(self.calibrate, 1, 1)
+
 
             self.identity_toggle = wx.RadioBox(
                 self,
                 label="Assemble using animal identity?",
                 choices=["Yes", "No"],
                 majorDimension=1,
-                style=wx.RA_SPECIFY_COLS,
-            )
+                style=wx.RA_SPECIFY_COLS,)
             self.identity_toggle.SetSelection(1)
-            self.hbox3.Add(self.identity_toggle, 1, 1)
 
-            winsize_text = wx.StaticBox(
-                self, label="Prioritize past connections over a window of size:"
-            )
-            winsize_sizer = wx.StaticBoxSizer(winsize_text, wx.VERTICAL)
-            self.winsize = wx.SpinCtrl(self, value="0")
-            winsize_sizer.Add(self.winsize, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
-            self.hbox3.Add(winsize_sizer, 1, 1)
+            self.hbox2.Add(self.calibrate, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+            self.hbox2.Add(self.identity_toggle, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
 
-#### BOX 4 ####
+
+#### BOX 3 ####
 
             self.csv = wx.RadioBox(
                 self,
@@ -192,10 +201,10 @@ class Analyze_videos(wx.Panel):
             self.trajectory.Bind(wx.EVT_RADIOBOX, self.chooseOption)
             self.trajectory.SetSelection(1)
 
-            self.hbox4.Add(self.csv, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-            self.hbox4.Add(self.filter, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-            self.hbox4.Add(self.showfigs, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-            self.hbox4.Add(self.trajectory, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+            self.hbox3.Add(self.csv, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+            self.hbox3.Add(self.filter, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+            self.hbox3.Add(self.showfigs, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+            self.hbox3.Add(self.trajectory, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
 
         else:
             self.dynamic = wx.RadioBox(
@@ -206,9 +215,10 @@ class Analyze_videos(wx.Panel):
                 style=wx.RA_SPECIFY_COLS,
             )
             self.dynamic.SetSelection(1)
-            self.hbox4.Add(self.dynamic, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+            self.hbox3.Add(self.dynamic, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
 
+        boxsizer.Add(self.hbox3, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
 
 
 
@@ -247,7 +257,7 @@ class Analyze_videos(wx.Panel):
         self.trail_points_text.Hide()
         self.trail_points.Hide()
 
-        self.hbox3.Add(self.trajectory_to_plot, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        self.hbox4.Add(self.trajectory_to_plot, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
         boxsizer.Add(self.hbox3, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
         self.hbox4.Add(self.draw_skeleton, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
@@ -409,6 +419,7 @@ class Analyze_videos(wx.Panel):
                 cropping=crop,
                 robust_nframes=robust,
                 auto_track=True,
+                n_tracks=self.ntracks,
             )
             if self.create_video_with_all_detections.GetStringSelection() == "Yes":
                 deeplabcut.create_video_with_all_detections(

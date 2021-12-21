@@ -58,6 +58,7 @@ def analyze_videos(
     robust_nframes=False,
     allow_growth=False,
     auto_track=True,
+    n_tracks=None,
     use_shelve=False,
 ):
     """
@@ -127,8 +128,8 @@ def analyze_videos(
     auto_track: bool, optional (default=True)
         By default, tracking and stitching are automatically performed, producing the final h5 data file.
         This is equivalent to the behavior of single-animal projects.
-        
-        If False, one must run `convert_detections2tracklets` and `stitch_tracklets` afterwards, in order to obtain the h5 file. 
+
+        If False, one must run `convert_detections2tracklets` and `stitch_tracklets` afterwards, in order to obtain the h5 file.
 
     use_shelve: bool, optional (default=False)
         By default, data are dumped in a pickle file at the end of the video analysis.
@@ -336,6 +337,7 @@ def analyze_videos(
                         shuffle,
                         trainingsetindex,
                         destfolder=destfolder,
+                        n_tracks=n_tracks,
                         modelprefix=modelprefix,
                     )
         else:
