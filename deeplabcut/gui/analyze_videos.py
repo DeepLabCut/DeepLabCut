@@ -103,14 +103,17 @@ class Analyze_videos(wx.Panel):
         self.shuffle = wx.SpinCtrl(self, value="1", min=0, max=100)
         shuffle_boxsizer.Add(self.shuffle, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
 
-        ntracks_text = wx.StaticBox(self, label="Number of animals")
-        ntracks_boxsizer = wx.StaticBoxSizer(ntracks_text, wx.VERTICAL)
-        self.ntracks = wx.SpinCtrl(self, value=str(len(self.cfg["individuals"])), min=1, max=1000)
-        ntracks_boxsizer.Add(self.ntracks, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
-
         boxsizer.Add(self.hbox1, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
         self.hbox1.Add(shuffle_boxsizer, 0, 0)
-        self.hbox1.Add(ntracks_boxsizer, 1, 1)
+
+        if self.cfg.get("multianimalproject", False):
+            ntracks_text = wx.StaticBox(self, label="Number of animals")
+            ntracks_boxsizer = wx.StaticBoxSizer(ntracks_text, wx.VERTICAL)
+            self.ntracks = wx.SpinCtrl(self, value=str(len(self.cfg["individuals"])), min=1, max=1000)
+            ntracks_boxsizer.Add(self.ntracks, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
+            self.hbox1.Add(ntracks_boxsizer, 1, 1)
+
+
 
 #### BOX 2 ####
 
@@ -139,9 +142,6 @@ class Analyze_videos(wx.Panel):
             self.hbox2.Add(self.robust, 0,  wx.EXPAND | wx.TOP | wx.BOTTOM,0)
             self.hbox2.Add(self.create_video_with_all_detections,0, wx.EXPAND | wx.TOP | wx.BOTTOM,0)
 
-
-
-#### BOX 3 ####
             self.calibrate = wx.RadioBox(
                 self,
                 label="Calibrate animal assembly?",
@@ -215,7 +215,53 @@ class Analyze_videos(wx.Panel):
                 style=wx.RA_SPECIFY_COLS,
             )
             self.dynamic.SetSelection(1)
-            self.hbox3.Add(self.dynamic, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+            self.hbox3.Add(self.dynamic, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+
+            self.csv = wx.RadioBox(
+                self,
+                label="Want to save result(s) as csv?",
+                choices=["Yes", "No"],
+                majorDimension=1,
+                style=wx.RA_SPECIFY_COLS,
+            )
+            self.csv.SetSelection(1)
+
+            self.filter = wx.RadioBox(
+                self,
+                label="Want to filter the predictions?",
+                choices=["Yes", "No"],
+                majorDimension=1,
+                style=wx.RA_SPECIFY_COLS,
+            )
+            self.filter.SetSelection(1)
+
+            self.trajectory = wx.RadioBox(
+                self,
+                label="Want to plot the trajectories?",
+                choices=["Yes", "No"],
+                majorDimension=1,
+                style=wx.RA_SPECIFY_COLS,
+            )
+
+            self.showfigs = wx.RadioBox(
+                self,
+                label="Want plots to pop up?",
+                choices=["Yes", "No"],
+                majorDimension=1,
+                style=wx.RA_SPECIFY_COLS,
+            )
+            self.trajectory.Bind(wx.EVT_RADIOBOX, self.chooseOption)
+            self.trajectory.SetSelection(1)
+
+            #boxsizer.Add(self.hbox2, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+            self.hbox1.Add(self.csv, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+            self.hbox1.Add(self.filter, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+            self.hbox3.Add(self.showfigs, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+            self.hbox3.Add(self.trajectory, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+
+
+
+
 
 
         boxsizer.Add(self.hbox3, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
