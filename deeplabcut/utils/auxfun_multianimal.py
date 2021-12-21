@@ -133,7 +133,7 @@ def LoadFullMultiAnimalData(dataname):
     try:
         with open(data_file, "rb") as handle:
             data = pickle.load(handle)
-    except pickle.UnpicklingError:
+    except (pickle.UnpicklingError, FileNotFoundError):
         data = shelve.open(data_file, flag="r")
     with open(data_file.replace("_full.", "_meta."), "rb") as handle:
         metadata = pickle.load(handle)
