@@ -74,7 +74,7 @@ def convertcsv2h5(config, userfeedback=True, scorer=None):
             print("Attention:", folder, "does not appear to have labeled data!")
 
 
-def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4"):
+def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4",singlevideo=False):
     """
     By default the output poses (when running analyze_videos) are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position \n
     in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
@@ -99,12 +99,21 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4"):
     deeplabcut.analyze_videos_converth5_to_csv('/media/alex/experimentaldata/cheetahvideos','.mp4')
 
     """
-    h5_files = list(
-        auxiliaryfunctions.grab_files_in_folder(video_folder, "h5", relative=False)
-    )
-    videos = auxiliaryfunctions.grab_files_in_folder(
-        video_folder, videotype, relative=False
-    )
+
+    if singlevideo: # can also be called with a single video (from GUI)
+        videos = [video_folder]
+        h5_files = list(
+            auxiliaryfunctions.grab_files_in_folder(Path(video_folder).parent, "h5", relative=False)
+        )
+    else:
+
+        h5_files = list(
+            auxiliaryfunctions.grab_files_in_folder(video_folder, "h5", relative=False)
+        )
+        videos = auxiliaryfunctions.grab_files_in_folder(
+            video_folder, videotype, relative=False
+        )
+
     for video in videos:
         if "_labeled" in video:
             continue
@@ -117,6 +126,7 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4"):
                     print(f"Converting {file}...")
                     df = pd.read_hdf(file)
                     df.to_csv(file.replace(".h5", ".csv"))
+
     print("All pose files were converted.")
 
 
