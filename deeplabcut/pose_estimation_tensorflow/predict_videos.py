@@ -195,6 +195,7 @@ def analyze_videos(
 
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
+    iteration = cfg["iteration"]
 
     if cropping is not None:
         cfg["cropping"] = True
@@ -215,8 +216,8 @@ def analyze_videos(
         dlc_cfg = load_config(str(path_test_config))
     except FileNotFoundError:
         raise FileNotFoundError(
-            "It seems the model for shuffle %s and trainFraction %s does not exist."
-            % (shuffle, trainFraction)
+            "It seems the model for iteration %s and shuffle %s and trainFraction %s does not exist."
+            % (iteration, shuffle, trainFraction)
         )
 
     # Check which snapshots are available and sort them by # iterations
@@ -230,7 +231,7 @@ def analyze_videos(
         )
     except FileNotFoundError:
         raise FileNotFoundError(
-            "Snapshots not found! It seems the dataset for shuffle %s has not been trained/does not exist.\n Please train it before using it to analyze videos.\n Use the function 'train_network' to train the network for shuffle %s."
+            "Snapshots not found! It seems the dataset for shuffle %s has not been trained/does not exist.\n Be sure you also have the intented iteration number set.\n Please train it before using it to analyze videos.\n Use the function 'train_network' to train the network for shuffle %s."
             % (shuffle, shuffle)
         )
 
