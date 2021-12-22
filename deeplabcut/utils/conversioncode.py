@@ -74,7 +74,7 @@ def convertcsv2h5(config, userfeedback=True, scorer=None):
             print("Attention:", folder, "does not appear to have labeled data!")
 
 
-def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4",singlevideo=False):
+def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4",listofvideos=False):
     """
     By default the output poses (when running analyze_videos) are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position \n
     in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
@@ -100,11 +100,14 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4",singlevideo=F
 
     """
 
-    if singlevideo: # can also be called with a single video (from GUI)
-        videos = [video_folder]
-        h5_files = list(
-            auxiliaryfunctions.grab_files_in_folder(Path(video_folder).parent, "h5", relative=False)
-        )
+    if listofvideos: # can also be called with a list of videos (from GUI)
+        videos = video_folder # GUI gives a list of videos
+        if len(videos)>0:
+            h5_files = list(
+                auxiliaryfunctions.grab_files_in_folder(Path(videos[0]).parent, "h5", relative=False)
+            )
+        else:
+            h5_files =[]
     else:
 
         h5_files = list(
