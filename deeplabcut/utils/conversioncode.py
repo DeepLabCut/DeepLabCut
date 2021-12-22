@@ -130,7 +130,7 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4",listofvideos=
                     df = pd.read_hdf(file)
                     df.to_csv(file.replace(".h5", ".csv"))
 
-    print("All pose files were converted.")
+    print("All H5 files were converted to CSV.")
 
 
 def merge_windowsannotationdataONlinuxsystem(cfg):
