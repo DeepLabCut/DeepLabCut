@@ -251,9 +251,8 @@ class Analyze_videos(wx.Panel):
                 style=wx.RA_SPECIFY_COLS,
             )
             self.trajectory.Bind(wx.EVT_RADIOBOX, self.chooseOption)
-            self.trajectory.SetSelection(1)
+            self.trajectory.SetSelection(0)
 
-            #boxsizer.Add(self.hbox2, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
             self.hbox1.Add(self.csv, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
             self.hbox1.Add(self.filter, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
             self.hbox3.Add(self.showfigs, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
@@ -475,6 +474,9 @@ class Analyze_videos(wx.Panel):
                 )
             if self.filter.GetStringSelection() == "Yes":
                 deeplabcut.filterpredictions(self.config, self.filelist)
+
+            if self.csv.GetStringSelection() == "Yes":
+                deeplabcut.analyze_videos_converth5_to_csv(self.filelist,listofvideos=True)
         else:
             scorername = deeplabcut.analyze_videos(
                 self.config,
@@ -518,7 +520,7 @@ class Analyze_videos(wx.Panel):
         else:
             self.csv.SetSelection(1)
             self.filter.SetSelection(1)
-            self.trajectory.SetSelection(1)
+            self.trajectory.SetSelection(0)
             self.dynamic.SetSelection(1)
             # self.select_destfolder.SetPath("None")
         #self.config = []
