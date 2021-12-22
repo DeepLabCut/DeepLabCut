@@ -477,6 +477,13 @@ class Analyze_videos(wx.Panel):
 
             if self.csv.GetStringSelection() == "Yes":
                 deeplabcut.analyze_videos_converth5_to_csv(self.filelist,listofvideos=True)
+
+            if self.trajectory.GetStringSelection() == "Yes":
+                if self.showfigs.GetStringSelection() == "No":
+                    showfig = False
+                else:
+                    showfig = True
+                deeplabcut.plot_trajectories(self.config,self.filelist,showfigures=showfig)
         else:
             scorername = deeplabcut.analyze_videos(
                 self.config,
