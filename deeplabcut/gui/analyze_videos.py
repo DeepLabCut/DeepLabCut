@@ -465,7 +465,10 @@ class Analyze_videos(wx.Panel):
                 robust_nframes=robust,
                 auto_track=True,
                 n_tracks=self.ntracks.GetValue(),
+                calibrate=self.calibrate.GetStringSelection() == "Yes",
+                identity_only=self.identity_toggle.GetStringSelection() == "Yes",
             )
+
             if self.create_video_with_all_detections.GetStringSelection() == "Yes":
                 deeplabcut.create_video_with_all_detections(
                     self.config,

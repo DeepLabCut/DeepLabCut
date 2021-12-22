@@ -59,6 +59,8 @@ def analyze_videos(
     allow_growth=False,
     auto_track=True,
     n_tracks=None,
+    calibrate=False,
+    identity_only=False,
     use_shelve=False,
 ):
     """
@@ -130,6 +132,24 @@ def analyze_videos(
         This is equivalent to the behavior of single-animal projects.
 
         If False, one must run `convert_detections2tracklets` and `stitch_tracklets` afterwards, in order to obtain the h5 file.
+
+        This function has 3 related sub-calls:
+
+    identity_only: bool, optional (default=False)
+        If True and animal identity was learned by the model,
+        assembly and tracking rely exclusively on identity prediction.
+
+    calibrate: bool, optional (default=False)
+        If True, use training data to calibrate the animal assembly procedure.
+        This improves its robustness to wrong body part links,
+        but requires very little missing data.
+
+    n_tracks : int, optional
+        Number of tracks to reconstruct. By default, taken as the number
+        of individuals defined in the config.yaml. Another number can be
+        passed if the number of animals in the video is different from
+        the number of animals the model was trained on.
+
 
     use_shelve: bool, optional (default=False)
         By default, data are dumped in a pickle file at the end of the video analysis.
@@ -329,6 +349,8 @@ def analyze_videos(
                         trainingsetindex,
                         destfolder=destfolder,
                         modelprefix=modelprefix,
+                        calibrate=calibrate,
+                        identity_only=identity_only,
                     )
                     stitch_tracklets(
                         config,
