@@ -160,9 +160,12 @@ def guarantee_multiindex_rows(df):
     # Make paths platform-agnostic if they are not already
     if not isinstance(df.index, pd.MultiIndex):  # Backwards compatibility
         path = df.index[0]
-        sep = "/" if "/" in path else "\\"
-        splits = tuple(df.index.str.split(sep))
-        df.index = pd.MultiIndex.from_tuples(splits)
+        try:
+            sep = "/" if "/" in path else "\\"
+            splits = tuple(df.index.str.split(sep))
+            df.index = pd.MultiIndex.from_tuples(splits)
+        except TypeError:  #  Ignore numerical index of frame indices
+            pass
 
 
 def robust_split_path(s):
