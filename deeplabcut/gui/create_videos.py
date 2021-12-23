@@ -1,5 +1,5 @@
 """
-DeepLabCut2.0 Toolbox (deeplabcut.org)
+DeepLabCut2.2+ Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
 https://github.com/DeepLabCut/DeepLabCut
 Please see AUTHORS for contributors.
