@@ -127,8 +127,8 @@ def analyze_videos(
     auto_track: bool, optional (default=True)
         By default, tracking and stitching are automatically performed, producing the final h5 data file.
         This is equivalent to the behavior of single-animal projects.
-        
-        If False, one must run `convert_detections2tracklets` and `stitch_tracklets` afterwards, in order to obtain the h5 file. 
+
+        If False, one must run `convert_detections2tracklets` and `stitch_tracklets` afterwards, in order to obtain the h5 file.
 
     use_shelve: bool, optional (default=False)
         By default, data are dumped in a pickle file at the end of the video analysis.
@@ -402,7 +402,7 @@ def checkcropping(cfg, cap):
 
 
 def GetPoseF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
-    """ Batchwise prediction of pose """
+    """Batchwise prediction of pose"""
     PredictedData = np.zeros(
         (nframes, dlc_cfg["num_outputs"] * 3 * len(dlc_cfg["all_joints_names"]))
     )
@@ -454,7 +454,7 @@ def GetPoseF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
 
 
 def GetPoseS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
-    """ Non batch wise pose estimation for video cap."""
+    """Non batch wise pose estimation for video cap."""
     if cfg["cropping"]:
         ny, nx = checkcropping(cfg, cap)
 
@@ -492,7 +492,7 @@ def GetPoseS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
 
 
 def GetPoseS_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
-    """ Non batch wise pose estimation for video cap."""
+    """Non batch wise pose estimation for video cap."""
     if cfg["cropping"]:
         ny, nx = checkcropping(cfg, cap)
 
@@ -537,7 +537,7 @@ def GetPoseS_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
 
 
 def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
-    """ Batchwise prediction of pose """
+    """Batchwise prediction of pose"""
     PredictedData = np.zeros((nframes, 3 * len(dlc_cfg["all_joints_names"])))
     batch_ind = 0  # keeps track of which image within a batch should be written to
     batch_num = 0  # keeps track of which batch you are at
@@ -608,7 +608,7 @@ def getboundingbox(x, y, nx, ny, margin):
 def GetPoseDynamic(
     cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, detectiontreshold, margin
 ):
-    """ Non batch wise pose estimation for video cap by dynamically cropping around previously detected parts."""
+    """Non batch wise pose estimation for video cap by dynamically cropping around previously detected parts."""
     if cfg["cropping"]:
         ny, nx = checkcropping(cfg, cap)
     else:
@@ -692,7 +692,7 @@ def AnalyzeVideo(
     TFGPUinference=True,
     dynamic=(False, 0.5, 10),
 ):
-    """ Helper function for analyzing a video. """
+    """Helper function for analyzing a video."""
     print("Starting to analyze % ", video)
 
     if destfolder is None:
@@ -822,12 +822,12 @@ def AnalyzeVideo(
 def GetPosesofFrames(
     cfg, dlc_cfg, sess, inputs, outputs, directory, framelist, nframes, batchsize
 ):
-    """ Batchwise prediction of pose for frame list in directory"""
+    """Batchwise prediction of pose for frame list in directory"""
     from deeplabcut.utils.auxfun_videos import imread
 
     print("Starting to extract posture")
     im = imread(os.path.join(directory, framelist[0]), mode="skimage")
-    
+
     ny, nx, nc = np.shape(im)
     print(
         "Overall # of frames: ",
@@ -869,7 +869,7 @@ def GetPosesofFrames(
     if batchsize == 1:
         for counter, framename in enumerate(framelist):
             im = imread(os.path.join(directory, framename), mode="skimage")
-            
+
             if counter % step == 0:
                 pbar.update(step)
 
@@ -888,7 +888,7 @@ def GetPosesofFrames(
         )  # this keeps all the frames of a batch
         for counter, framename in enumerate(framelist):
             im = imread(os.path.join(directory, framename), mode="skimage")
-            
+
             if counter % step == 0:
                 pbar.update(step)
 
@@ -1148,7 +1148,13 @@ def analyze_time_lapse_frames(
 
 
 def _convert_detections_to_tracklets(
-    cfg, inference_cfg, data, metadata, output_path, greedy=False, calibrate=False,
+    cfg,
+    inference_cfg,
+    data,
+    metadata,
+    output_path,
+    greedy=False,
+    calibrate=False,
 ):
     track_method = cfg.get("default_track_method", "ellipse")
     if track_method not in ("box", "skeleton", "ellipse"):

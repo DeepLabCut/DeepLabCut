@@ -18,7 +18,7 @@ from tqdm import tqdm
 
 
 def pairwisedistances(DataCombined, scorer1, scorer2, pcutoff=-1, bodyparts=None):
-    """ Calculates the pairwise Euclidean distance metric over body parts vs. images"""
+    """Calculates the pairwise Euclidean distance metric over body parts vs. images"""
     mask = DataCombined[scorer2].xs("likelihood", level=1, axis=1) >= pcutoff
     if bodyparts == None:
         Pointwisesquareddistance = (DataCombined[scorer1] - DataCombined[scorer2]) ** 2
@@ -191,7 +191,7 @@ def calculatepafdistancebounds(
 def Plotting(
     cfg, comparisonbodyparts, DLCscorer, trainIndices, DataCombined, foldername
 ):
-    """ Function used for plotting GT and predictions """
+    """Function used for plotting GT and predictions"""
     from deeplabcut.utils import visualization
 
     colors = visualization.get_cmap(len(comparisonbodyparts), name=cfg["colormap"])
@@ -631,8 +631,10 @@ def evaluate_network(
         )
 
         # Get list of body parts to evaluate network for
-        comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
-            cfg, comparisonbodyparts
+        comparisonbodyparts = (
+            auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
+                cfg, comparisonbodyparts
+            )
         )
         # Make folder for evaluation
         auxiliaryfunctions.attempttomakefolder(

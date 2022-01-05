@@ -233,7 +233,7 @@ def extract_maps(
                     image = imresize(image, scale)
 
                 image_batch = data_to_input(image)
-                
+
                 # Compute prediction with the CNN
                 outputs_np = sess.run(outputs, feed_dict={inputs: image_batch})
 

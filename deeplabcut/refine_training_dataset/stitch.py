@@ -573,7 +573,10 @@ class TrackletStitcher:
         return max_gap
 
     def build_graph(
-        self, nodes=None, max_gap=None, weight_func=None,
+        self,
+        nodes=None,
+        max_gap=None,
+        weight_func=None,
     ):
         if nodes is None:
             nodes = self.tracklets

@@ -335,7 +335,8 @@ def evaluate_multianimal_full(
                             # is (sample_index, peak_y, peak_x, bpt_index) to slice the PAFs.
                             temp = df.reset_index(level="bodyparts").dropna()
                             temp["bodyparts"].replace(
-                                dict(zip(joints, range(len(joints)))), inplace=True,
+                                dict(zip(joints, range(len(joints)))),
+                                inplace=True,
                             )
                             temp["sample"] = 0
                             peaks_gt = temp.loc[
@@ -574,7 +575,7 @@ def evaluate_multianimal_full(
                             imname = image_paths[k]
                             image_path = os.path.join(cfg["project_path"], *imname)
                             frame = auxfun_videos.imread(image_path, mode="skimage")
-                            
+
                             h, w, _ = np.shape(frame)
                             fig.set_size_inches(w / 100, h / 100)
                             ax.set_xlim(0, w)
@@ -609,7 +610,10 @@ def evaluate_multianimal_full(
                                 ax=ax,
                             )
                             visualization.save_labeled_frame(
-                                fig, image_path, foldername, k in trainIndices,
+                                fig,
+                                image_path,
+                                foldername,
+                                k in trainIndices,
                             )
                             visualization.erase_artists(ax)
 
