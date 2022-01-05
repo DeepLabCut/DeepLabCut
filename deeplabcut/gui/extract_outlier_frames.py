@@ -36,7 +36,7 @@ class Extract_outlier_frames(wx.Panel):
         # design the panel
         self.sizer = wx.GridBagSizer(5, 5)
 
-        text = wx.StaticText(self, label="DeepLabCut - Step 8. Extract outlier frames")
+        text = wx.StaticText(self, label="DeepLabCut - OPTIONAL: Extract and Refine labels on Outlier Frames")
         self.sizer.Add(text, pos=(0, 0), flag=wx.TOP | wx.LEFT | wx.BOTTOM, border=15)
         # Add logo of DLC
         icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(LOGO_PATH))
@@ -86,7 +86,6 @@ class Extract_outlier_frames(wx.Panel):
         boxsizer = wx.StaticBoxSizer(sb, wx.VERTICAL)
 
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
-        hbox2 = wx.BoxSizer(wx.HORIZONTAL)
 
         videotype_text = wx.StaticBox(self, label="Specify the videotype")
         videotype_text_boxsizer = wx.StaticBoxSizer(videotype_text, wx.VERTICAL)
@@ -94,36 +93,25 @@ class Extract_outlier_frames(wx.Panel):
         self.videotype = wx.ComboBox(self, choices=videotypes, style=wx.CB_READONLY)
         self.videotype.SetValue(".avi")
         videotype_text_boxsizer.Add(
-            self.videotype, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
+            self.videotype, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1
         )
 
         shuffles_text = wx.StaticBox(self, label="Specify the shuffle")
         shuffles_text_boxsizer = wx.StaticBoxSizer(shuffles_text, wx.VERTICAL)
         self.shuffles = wx.SpinCtrl(self, value="1", min=0, max=100)
-        shuffles_text_boxsizer.Add(self.shuffles, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-
-        trainingindex = wx.StaticBox(self, label="Specify the trainingset index")
-        trainingindex_boxsizer = wx.StaticBoxSizer(trainingindex, wx.VERTICAL)
-        self.trainingindex = wx.SpinCtrl(self, value="0", min=0, max=100)
-        trainingindex_boxsizer.Add(
-            self.trainingindex, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
-        )
+        shuffles_text_boxsizer.Add(self.shuffles, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
 
         outlier_algo_text = wx.StaticBox(self, label="Specify the algorithm")
         outlier_algo_text_boxsizer = wx.StaticBoxSizer(outlier_algo_text, wx.VERTICAL)
         algotypes = ["jump", "fitting", "uncertain", "manual"]
         self.algotype = wx.ComboBox(self, choices=algotypes, style=wx.CB_READONLY)
         self.algotype.SetValue("jump")
-        outlier_algo_text_boxsizer.Add(
-            self.algotype, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
-        )
+        outlier_algo_text_boxsizer.Add(self.algotype, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
 
         hbox1.Add(videotype_text_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         hbox1.Add(shuffles_text_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-        hbox1.Add(trainingindex_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-        hbox2.Add(outlier_algo_text_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        hbox1.Add(outlier_algo_text_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         boxsizer.Add(hbox1, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-        boxsizer.Add(hbox2, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
         self.sizer.Add(
             boxsizer,
@@ -133,11 +121,24 @@ class Extract_outlier_frames(wx.Panel):
             border=10,
         )
 
+### LABELING ###
+
+
+
+        self.ok = wx.Button(self, label="LAUNCH GUI")
+        self.sizer.Add(self.ok, pos=(7, 4))
+        self.ok.Bind(wx.EVT_BUTTON, self.refine_labels)
+
+        self.merge = wx.Button(self, label="Merge dataset")
+        self.sizer.Add(self.merge, pos=(7, 3), flag=wx.BOTTOM | wx.RIGHT, border=10)
+        self.merge.Bind(wx.EVT_BUTTON, self.merge_dataset)
+        self.merge.Enable(False)
+
         self.help_button = wx.Button(self, label="Help")
         self.sizer.Add(self.help_button, pos=(6, 0), flag=wx.LEFT, border=10)
         self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
 
-        self.ok = wx.Button(self, label="Ok")
+        self.ok = wx.Button(self, label="EXTRACT FRAMES")
         self.sizer.Add(self.ok, pos=(6, 4))
         self.ok.Bind(wx.EVT_BUTTON, self.extract_outlier_frames)
 
@@ -191,7 +192,6 @@ class Extract_outlier_frames(wx.Panel):
             videos=self.filelist,
             videotype=self.videotype.GetValue(),
             shuffle=self.shuffles.GetValue(),
-            trainingsetindex=self.trainingindex.GetValue(),
             outlieralgorithm=self.algotype.GetValue(),
         )
 
@@ -206,3 +206,28 @@ class Extract_outlier_frames(wx.Panel):
         self.sel_vids.SetLabel("Select videos to analyze")
         self.SetSizer(self.sizer)
         self.sizer.Fit(self)
+
+    def refine_labels(self, event):
+        self.merge.Enable(True)
+        deeplabcut.refine_labels(self.config)
+
+    def merge_dataset(self, event):
+        dlg = wx.MessageDialog(
+            None,
+            "1. Make sure that you have refined all the labels before merging the dataset.\n\n2. If you merge the dataset, you need to re-create the training dataset before you start the training.\n\n3. Are you ready to merge the dataset?",
+            "Warning",
+            wx.YES_NO | wx.ICON_WARNING,
+        )
+        result = dlg.ShowModal()
+        if result == wx.ID_YES:
+            notebook = self.GetParent()
+            notebook.SetSelection(4)
+            deeplabcut.merge_datasets(self.config, forceiterate=None)
+
+    def reset_refine_labels(self, event):
+        """
+        Reset to default
+        """
+        self.config = []
+        #self.sel_config.SetPath("")
+        self.merge.Enable(False)

@@ -57,8 +57,11 @@ def analyze_videos(
     modelprefix="",
     robust_nframes=False,
     allow_growth=False,
-    auto_track=True,
     use_shelve=False,
+    auto_track=True,
+    n_tracks=None,
+    calibrate=False,
+    identity_only=False,
 ):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
@@ -123,17 +126,36 @@ def analyze_videos(
     allow_growth: bool, default false.
         For some smaller GPUs the memory issues happen. If true, the memory allocator does not pre-allocate the entire specified
         GPU memory region, instead starting small and growing as needed. See issue: https://forum.image.sc/t/how-to-stop-running-out-of-vram/30551/2
-
-    auto_track: bool, optional (default=True)
-        By default, tracking and stitching are automatically performed, producing the final h5 data file.
-        This is equivalent to the behavior of single-animal projects.
-
-        If False, one must run `convert_detections2tracklets` and `stitch_tracklets` afterwards, in order to obtain the h5 file.
-
+    
     use_shelve: bool, optional (default=False)
         By default, data are dumped in a pickle file at the end of the video analysis.
         Otherwise, data are written to disk on the fly using a "shelf"; i.e., a pickle-based,
         persistent, database-like object by default, resulting in constant memory footprint.
+
+    The following parameters are only relevant for multi-animal projects:
+    
+    auto_track: bool, optional (default=True)
+        By default, tracking and stitching are automatically performed, producing the final h5 data file.
+        This is equivalent to the behavior for single-animal projects.
+
+        If False, one must run `convert_detections2tracklets` and `stitch_tracklets` afterwards, in order to obtain the h5 file.
+
+    This function has 3 related sub-calls:
+
+    identity_only: bool, optional (default=False)
+        If True and animal identity was learned by the model,
+        assembly and tracking rely exclusively on identity prediction.
+
+    calibrate: bool, optional (default=False)
+        If True, use training data to calibrate the animal assembly procedure.
+        This improves its robustness to wrong body part links,
+        but requires very little missing data.
+
+    n_tracks : int, optional
+        Number of tracks to reconstruct. By default, taken as the number
+        of individuals defined in the config.yaml. Another number can be
+        passed if the number of animals in the video is different from
+        the number of animals the model was trained on.
 
     Examples
     --------
@@ -174,6 +196,7 @@ def analyze_videos(
 
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
+    iteration = cfg["iteration"]
 
     if cropping is not None:
         cfg["cropping"] = True
@@ -194,8 +217,8 @@ def analyze_videos(
         dlc_cfg = load_config(str(path_test_config))
     except FileNotFoundError:
         raise FileNotFoundError(
-            "It seems the model for shuffle %s and trainFraction %s does not exist."
-            % (shuffle, trainFraction)
+            "It seems the model for iteration %s and shuffle %s and trainFraction %s does not exist."
+            % (iteration, shuffle, trainFraction)
         )
 
     # Check which snapshots are available and sort them by # iterations
@@ -209,7 +232,7 @@ def analyze_videos(
         )
     except FileNotFoundError:
         raise FileNotFoundError(
-            "Snapshots not found! It seems the dataset for shuffle %s has not been trained/does not exist.\n Please train it before using it to analyze videos.\n Use the function 'train_network' to train the network for shuffle %s."
+            "Snapshots not found! It seems the dataset for shuffle %s has not been trained/does not exist.\n Be sure you also have the intented iteration number set.\n Please train it before using it to analyze videos.\n Use the function 'train_network' to train the network for shuffle %s."
             % (shuffle, shuffle)
         )
 
@@ -328,6 +351,8 @@ def analyze_videos(
                         trainingsetindex,
                         destfolder=destfolder,
                         modelprefix=modelprefix,
+                        calibrate=calibrate,
+                        identity_only=identity_only,
                     )
                     stitch_tracklets(
                         config,
@@ -336,6 +361,7 @@ def analyze_videos(
                         shuffle,
                         trainingsetindex,
                         destfolder=destfolder,
+                        n_tracks=n_tracks,
                         modelprefix=modelprefix,
                     )
         else:

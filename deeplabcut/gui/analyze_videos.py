@@ -1,5 +1,5 @@
 """
-DeepLabCut2.0 Toolbox (deeplabcut.org)
+DeepLabCut2.2+ Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
 https://github.com/DeepLabCut/DeepLabCut
 Please see AUTHORS for contributors.
@@ -39,18 +39,14 @@ class Analyze_videos(wx.Panel):
         # design the panel
         self.sizer = wx.GridBagSizer(5, 10)
 
-        if self.cfg.get("multianimalproject", False):
-            text = wx.StaticText(
-                self, label="DeepLabCut - Step 7. Analyze Videos and Detect Tracklets"
-            )
-        else:
-            text = wx.StaticText(self, label="DeepLabCut - Step 7. Analyze Videos ....")
 
-        self.sizer.Add(text, pos=(0, 0), flag=wx.TOP | wx.LEFT | wx.BOTTOM, border=15)
+        text = wx.StaticText(self, label="DeepLabCut - Step 7. Analyze Videos")
+
+        self.sizer.Add(text, pos=(0, 0), flag=wx.TOP | wx.LEFT | wx.BOTTOM, border=10)
         # Add logo of DLC
         icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(LOGO_PATH))
         self.sizer.Add(
-            icon, pos=(0, 8), flag=wx.TOP | wx.RIGHT | wx.ALIGN_RIGHT, border=5
+            icon, pos=(0, 10), flag=wx.TOP | wx.RIGHT | wx.ALIGN_RIGHT, border=5
         )
 
         line1 = wx.StaticLine(self)
@@ -98,29 +94,28 @@ class Analyze_videos(wx.Panel):
         self.hbox2 = wx.BoxSizer(wx.HORIZONTAL)
         self.hbox3 = wx.BoxSizer(wx.HORIZONTAL)
         self.hbox4 = wx.BoxSizer(wx.HORIZONTAL)
+        self.hbox5 = wx.BoxSizer(wx.HORIZONTAL)
 
-        videotype_text = wx.StaticBox(self, label="Specify the videotype")
-        videotype_text_boxsizer = wx.StaticBoxSizer(videotype_text, wx.VERTICAL)
-        videotypes = [".avi", ".mp4", ".mov"]
-        self.videotype = wx.ComboBox(self, choices=videotypes, style=wx.CB_READONLY)
-        self.videotype.SetValue(".avi")
-        videotype_text_boxsizer.Add(
-            self.videotype, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1
-        )
+#### BOX 1 ####
 
         shuffle_text = wx.StaticBox(self, label="Specify the shuffle")
         shuffle_boxsizer = wx.StaticBoxSizer(shuffle_text, wx.VERTICAL)
         self.shuffle = wx.SpinCtrl(self, value="1", min=0, max=100)
         shuffle_boxsizer.Add(self.shuffle, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
 
-        trainingset = wx.StaticBox(self, label="Specify the trainingset index")
-        trainingset_boxsizer = wx.StaticBoxSizer(trainingset, wx.VERTICAL)
-        self.trainingset = wx.SpinCtrl(self, value="0", min=0, max=100)
-        trainingset_boxsizer.Add(self.trainingset, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
+        boxsizer.Add(self.hbox1, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+        self.hbox1.Add(shuffle_boxsizer, 0, 0)
 
-        self.hbox1.Add(videotype_text_boxsizer, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
-        self.hbox1.Add(shuffle_boxsizer, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
-        self.hbox1.Add(trainingset_boxsizer, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
+        if self.cfg.get("multianimalproject", False):
+            ntracks_text = wx.StaticBox(self, label="Number of animals")
+            ntracks_boxsizer = wx.StaticBoxSizer(ntracks_text, wx.VERTICAL)
+            self.ntracks = wx.SpinCtrl(self, value=str(len(self.cfg["individuals"])), min=1, max=1000)
+            ntracks_boxsizer.Add(self.ntracks, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
+            self.hbox1.Add(ntracks_boxsizer, 1, 1)
+
+
+
+#### BOX 2 ####
 
         if self.cfg.get("multianimalproject", False):
 
@@ -132,62 +127,44 @@ class Analyze_videos(wx.Panel):
                 style=wx.RA_SPECIFY_COLS,
             )
             self.robust.SetSelection(1)
-            self.hbox2.Add(self.robust, 1, 1)
+
 
             self.create_video_with_all_detections = wx.RadioBox(
                 self,
                 label="Create video for checking detections",
                 choices=["Yes", "No"],
                 majorDimension=1,
-                style=wx.RA_SPECIFY_COLS,
-            )
-            self.create_video_with_all_detections.SetSelection(1)
-            self.hbox2.Add(
-                self.create_video_with_all_detections,
-                1,
-                wx.EXPAND | wx.TOP | wx.BOTTOM,
-                1,
-            )
+                style=wx.RA_SPECIFY_COLS,)
+            self.create_video_with_all_detections.SetSelection(0)
 
-            self.overwrite = wx.RadioBox(
-                self,
-                label="Overwrite tracking files (set to yes if you edit inference parameters)",
-                choices=["Yes", "No"],
-                majorDimension=1,
-                style=wx.RA_SPECIFY_COLS,
-            )
-            self.overwrite.SetSelection(1)
-            self.hbox3.Add(self.overwrite, 1, 1)
+
+            boxsizer.Add(self.hbox2, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+            self.hbox2.Add(self.robust, 0,  wx.EXPAND | wx.TOP | wx.BOTTOM,0)
+            self.hbox2.Add(self.create_video_with_all_detections,0, wx.EXPAND | wx.TOP | wx.BOTTOM,0)
 
             self.calibrate = wx.RadioBox(
                 self,
                 label="Calibrate animal assembly?",
                 choices=["Yes", "No"],
                 majorDimension=1,
-                style=wx.RA_SPECIFY_COLS,
-            )
+                style=wx.RA_SPECIFY_COLS,)
             self.calibrate.SetSelection(1)
-            self.hbox4.Add(self.calibrate, 1, 1)
+
 
             self.identity_toggle = wx.RadioBox(
                 self,
-                label="Assemble with identity only?",
+                label="Assemble using animal identity?",
                 choices=["Yes", "No"],
                 majorDimension=1,
-                style=wx.RA_SPECIFY_COLS,
-            )
+                style=wx.RA_SPECIFY_COLS,)
             self.identity_toggle.SetSelection(1)
-            self.hbox4.Add(self.identity_toggle, 1, 1)
 
-            winsize_text = wx.StaticBox(
-                self, label="Prioritize past connections over a window of size:"
-            )
-            winsize_sizer = wx.StaticBoxSizer(winsize_text, wx.VERTICAL)
-            self.winsize = wx.SpinCtrl(self, value="0")
-            winsize_sizer.Add(self.winsize, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
-            self.hbox4.Add(winsize_sizer, 1, 1)
+            self.hbox2.Add(self.calibrate, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+            self.hbox2.Add(self.identity_toggle, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
 
-        else:
+
+#### BOX 3 ####
+
             self.csv = wx.RadioBox(
                 self,
                 label="Want to save result(s) as csv?",
@@ -197,6 +174,39 @@ class Analyze_videos(wx.Panel):
             )
             self.csv.SetSelection(1)
 
+            self.filter = wx.RadioBox(
+                self,
+                label="Want to filter the predictions? (+ csv file)",
+                choices=["Yes", "No"],
+                majorDimension=1,
+                style=wx.RA_SPECIFY_COLS,
+            )
+            self.filter.SetSelection(1)
+
+            self.trajectory = wx.RadioBox(
+                self,
+                label="Want to plot the trajectories?",
+                choices=["Yes", "No"],
+                majorDimension=1,
+                style=wx.RA_SPECIFY_COLS,
+            )
+
+            self.showfigs = wx.RadioBox(
+                self,
+                label="Want plots to pop up?",
+                choices=["Yes", "No"],
+                majorDimension=1,
+                style=wx.RA_SPECIFY_COLS,
+            )
+            self.trajectory.Bind(wx.EVT_RADIOBOX, self.chooseOption)
+            self.trajectory.SetSelection(1)
+
+            self.hbox3.Add(self.csv, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+            self.hbox3.Add(self.filter, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+            self.hbox3.Add(self.showfigs, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+            self.hbox3.Add(self.trajectory, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+
+        else:
             self.dynamic = wx.RadioBox(
                 self,
                 label="Want to dynamically crop bodyparts?",
@@ -205,6 +215,16 @@ class Analyze_videos(wx.Panel):
                 style=wx.RA_SPECIFY_COLS,
             )
             self.dynamic.SetSelection(1)
+            self.hbox3.Add(self.dynamic, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+
+            self.csv = wx.RadioBox(
+                self,
+                label="Want to save result(s) as csv?",
+                choices=["Yes", "No"],
+                majorDimension=1,
+                style=wx.RA_SPECIFY_COLS,
+            )
+            self.csv.SetSelection(1)
 
             self.filter = wx.RadioBox(
                 self,
@@ -230,19 +250,23 @@ class Analyze_videos(wx.Panel):
                 majorDimension=1,
                 style=wx.RA_SPECIFY_COLS,
             )
-
             self.trajectory.Bind(wx.EVT_RADIOBOX, self.chooseOption)
-            self.trajectory.SetSelection(1)
+            self.trajectory.SetSelection(0)
 
-            self.hbox2.Add(self.csv, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-            self.hbox2.Add(self.filter, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-            self.hbox2.Add(self.showfigs, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+            self.hbox1.Add(self.csv, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+            self.hbox1.Add(self.filter, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+            self.hbox3.Add(self.showfigs, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+            self.hbox3.Add(self.trajectory, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
 
-            self.hbox3.Add(self.dynamic, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-            self.hbox3.Add(self.trajectory, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
-        boxsizer.Add(self.hbox1, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-        boxsizer.Add(self.hbox2, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+
+
+
+
+        boxsizer.Add(self.hbox3, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+
+
+
 
         config_file = auxiliaryfunctions.read_config(self.config)
         if config_file.get("multianimalproject", False):
@@ -278,7 +302,7 @@ class Analyze_videos(wx.Panel):
         self.trail_points_text.Hide()
         self.trail_points.Hide()
 
-        self.hbox3.Add(self.trajectory_to_plot, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        self.hbox3.Add(self.trajectory_to_plot, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
         boxsizer.Add(self.hbox3, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
         self.hbox4.Add(self.draw_skeleton, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
@@ -296,18 +320,10 @@ class Analyze_videos(wx.Panel):
         self.sizer.Add(self.help_button, pos=(7, 0), flag=wx.LEFT, border=10)
         self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
 
-        self.ok = wx.Button(self, label="Step 1: Analyze Videos")
+        self.ok = wx.Button(self, label="Analyze Videos")
         self.sizer.Add(self.ok, pos=(7, 4), flag=wx.BOTTOM | wx.RIGHT, border=10)
         self.ok.Bind(wx.EVT_BUTTON, self.analyze_videos)
 
-        if config_file.get("multianimalproject", False):
-            self.ok = wx.Button(self, label="Step 2: Convert to Tracklets")
-            self.sizer.Add(self.ok, pos=(7, 5), border=10)
-            self.ok.Bind(wx.EVT_BUTTON, self.convert2_tracklets)
-
-            self.inf_cfg_text = wx.Button(self, label="Edit inference_config.yaml")
-            self.sizer.Add(self.inf_cfg_text, pos=(8, 5), border=10)
-            self.inf_cfg_text.Bind(wx.EVT_BUTTON, self.edit_inf_config)
 
         self.reset = wx.Button(self, label="Reset")
         self.sizer.Add(
@@ -340,8 +356,7 @@ class Analyze_videos(wx.Panel):
     def edit_inf_config(self, event):
         # Read the infer config file
         cfg = auxiliaryfunctions.read_config(self.config)
-        trainingsetindex = self.trainingset.GetValue()
-        trainFraction = cfg["TrainingFraction"][trainingsetindex]
+        #trainFraction = cfg["TrainingFraction"][trainingsetindex]
         self.inf_cfg_path = os.path.join(
             cfg["project_path"],
             auxiliaryfunctions.GetModelFolder(
@@ -390,24 +405,6 @@ class Analyze_videos(wx.Panel):
         """
         self.config = self.sel_config.GetPath()
 
-    def convert2_tracklets(self, event):
-        shuffle = self.shuffle.GetValue()
-        trainingsetindex = self.trainingset.GetValue()
-        if self.overwrite.GetStringSelection() == "Yes":
-            overwrite = True
-        else:
-            overwrite = False
-        deeplabcut.convert_detections2tracklets(
-            self.config,
-            self.filelist,
-            videotype=self.videotype.GetValue(),
-            shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
-            overwrite=overwrite,
-            calibrate=self.calibrate.GetStringSelection() == "Yes",
-            window_size=self.winsize.GetValue(),
-            identity_only=self.identity_toggle.GetStringSelection() == "Yes",
-        )
 
     def select_videos(self, event):
         """
@@ -431,10 +428,10 @@ class Analyze_videos(wx.Panel):
     def analyze_videos(self, event):
 
         shuffle = self.shuffle.GetValue()
-        trainingsetindex = self.trainingset.GetValue()
 
         if self.cfg.get("multianimalproject", False):
             print("DLC network loading and video analysis starting ... ")
+            auto_track=True
         else:
             if self.csv.GetStringSelection() == "Yes":
                 save_as_csv = True
@@ -462,28 +459,39 @@ class Analyze_videos(wx.Panel):
             scorername = deeplabcut.analyze_videos(
                 self.config,
                 self.filelist,
-                videotype=self.videotype.GetValue(),
                 shuffle=shuffle,
-                trainingsetindex=trainingsetindex,
                 gputouse=None,
                 cropping=crop,
                 robust_nframes=robust,
+                auto_track=True,
+                n_tracks=self.ntracks.GetValue(),
+                calibrate=self.calibrate.GetStringSelection() == "Yes",
+                identity_only=self.identity_toggle.GetStringSelection() == "Yes",
             )
+
             if self.create_video_with_all_detections.GetStringSelection() == "Yes":
                 deeplabcut.create_video_with_all_detections(
                     self.config,
                     self.filelist,
-                    videotype=self.videotype.GetValue(),
                     shuffle=shuffle,
-                    trainingsetindex=trainingsetindex,
                 )
+            if self.filter.GetStringSelection() == "Yes":
+                deeplabcut.filterpredictions(self.config, self.filelist)
+
+            if self.csv.GetStringSelection() == "Yes":
+                deeplabcut.analyze_videos_converth5_to_csv(self.filelist,listofvideos=True)
+
+            if self.trajectory.GetStringSelection() == "Yes":
+                if self.showfigs.GetStringSelection() == "No":
+                    showfig = False
+                else:
+                    showfig = True
+                deeplabcut.plot_trajectories(self.config,self.filelist,showfigures=showfig)
         else:
             scorername = deeplabcut.analyze_videos(
                 self.config,
                 self.filelist,
-                videotype=self.videotype.GetValue(),
                 shuffle=shuffle,
-                trainingsetindex=trainingsetindex,
                 gputouse=None,
                 save_as_csv=save_as_csv,
                 cropping=crop,
@@ -493,9 +501,7 @@ class Analyze_videos(wx.Panel):
                 deeplabcut.filterpredictions(
                     self.config,
                     self.filelist,
-                    videotype=self.videotype.GetValue(),
                     shuffle=shuffle,
-                    trainingsetindex=trainingsetindex,
                     filtertype="median",
                     windowlength=5,
                     save_as_csv=save_as_csv,
@@ -510,9 +516,7 @@ class Analyze_videos(wx.Panel):
                     self.config,
                     self.filelist,
                     displayedbodyparts=self.bodyparts,
-                    videotype=self.videotype.GetValue(),
                     shuffle=shuffle,
-                    trainingsetindex=trainingsetindex,
                     filtered=_filter,
                     showfigures=showfig,
                 )
@@ -526,16 +530,15 @@ class Analyze_videos(wx.Panel):
         else:
             self.csv.SetSelection(1)
             self.filter.SetSelection(1)
-            self.trajectory.SetSelection(1)
+            self.trajectory.SetSelection(0)
             self.dynamic.SetSelection(1)
             # self.select_destfolder.SetPath("None")
-        self.config = []
-        self.sel_config.SetPath("")
-        self.videotype.SetStringSelection(".avi")
+        #self.config = []
+        #self.sel_config.SetPath("")
+        #self.videotype.SetStringSelection(".avi")
         self.sel_vids.SetLabel("Select videos to analyze")
         self.filelist = []
         self.shuffle.SetValue(1)
-        self.trainingset.SetValue(0)
         if self.draw_skeleton.IsShown():
             self.draw_skeleton.SetSelection(1)
             self.draw_skeleton.Hide()

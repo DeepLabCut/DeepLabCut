@@ -32,7 +32,6 @@ setuptools.setup(
         "matplotlib",
         "networkx",
         "numpy",
-        "opencv-python-headless",
         "pandas>=1.0.1",
         "scikit-image>=0.17,<=0.18.1",
         "scikit-learn",
