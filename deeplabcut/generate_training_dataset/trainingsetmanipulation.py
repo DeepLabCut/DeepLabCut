@@ -962,12 +962,14 @@ def get_largestshuffle_index(config):
     dlc_model_path = os.path.join(project_path, "dlc-models", iterate)
     if os.path.isdir(dlc_model_path):
         models = os.listdir(dlc_model_path)
-        # sort the models directories
+        # sort the model directories
         models.sort(key=lambda f: int("".join(filter(str.isdigit, f))))
-        # get the shuffle index
-        max_shuffle_index = int(models[-1].split("shuffle")[-1])
+
+        # get the shuffle index and offset by 1.
+        max_shuffle_index = int(models[-1].split("shuffle")[-1]) + 1
     else:
         max_shuffle_index = 0
+
     return max_shuffle_index
 
 
@@ -976,7 +978,7 @@ def create_training_model_comparison(
     trainindex=0,
     num_shuffles=1,
     net_types=["resnet_50"],
-    augmenter_types=["default"],
+    augmenter_types=["imgaug"],
     userfeedback=False,
     windows2linux=False,
 ):
@@ -1010,12 +1012,19 @@ def create_training_model_comparison(
         If this is set to false, then all requested train/test splits are created (no matter if they already exist). If you
         want to assure that previous splits etc. are not overwritten, then set this to True and you will be asked for each split.
 
+    Returns
+    ----------
+    shuffle_list: list
+        List of indices corresponding to the trainigsplits/models that were created.
+
     Example
     --------
-    >>> deeplabcut.create_training_model_comparison('/analysis/project/reaching-task/config.yaml',num_shuffles=1,net_types=['resnet_50','resnet_152'],augmenter_types=['tensorpack','deterministic'])
+    >>> shuffle_list = deeplabcut.create_training_model_comparison('/analysis/project/reaching-task/config.yaml',num_shuffles=1,net_types=['resnet_50','resnet_152'],augmenter_types=['tensorpack','deterministic'])
 
     Windows:
-    >>> deeplabcut.create_training_model_comparison('C:\\Users\\Ulf\\looming-task\\config.yaml',num_shuffles=1,net_types=['resnet_50','resnet_152'],augmenter_types=['tensorpack','deterministic'])
+    >>> shuffle_list = deeplabcut.create_training_model_comparison('C:\\Users\\Ulf\\looming-task\\config.yaml',num_shuffles=1,net_types=['resnet_50','resnet_152'],augmenter_types=['tensorpack','deterministic'])
+
+    See examples/testscript_openfielddata_augmentationcomparison.py for an example of how to use shuffle_list.
 
     --------
     """
@@ -1043,6 +1052,7 @@ def create_training_model_comparison(
 
     largestshuffleindex = get_largestshuffle_index(config)
 
+    shuffle_list = []
     for shuffle in range(num_shuffles):
         trainIndices, testIndices = mergeandsplit(
             config, trainindex=trainindex, uniform=True
@@ -1055,6 +1065,8 @@ def create_training_model_comparison(
                     + idx_net * len(augmenter_types)
                     + shuffle * len(augmenter_types) * len(net_types)
                 )
+
+                shuffle_list.append(get_max_shuffle_idx)
                 log_info = str(
                     "Shuffle index:"
                     + str(get_max_shuffle_idx)
@@ -1064,6 +1076,8 @@ def create_training_model_comparison(
                     + aug
                     + ", trainsetindex:"
                     + str(trainindex)
+                    + ", frozen shuffle ID:"
+                    + str(shuffle)
                 )
                 create_training_dataset(
                     config,
@@ -1075,3 +1089,5 @@ def create_training_model_comparison(
                     userfeedback=userfeedback,
                 )
                 logger.info(log_info)
+
+    return shuffle_list
