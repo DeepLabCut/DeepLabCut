@@ -189,7 +189,7 @@ deeplabcut.load_demo_data(path_config_file)
 deeplabcut.create_training_model_comparison(
     path_config_file,
     num_shuffles=1,
-    net_types=["resnet_50", "efficientnet-b3"],
+    net_types=["resnet_50"],
     augmenter_types=["imgaug", "scalecrop", "tensorpack"],
 )
 
@@ -200,14 +200,14 @@ for shuffle in Shuffles:
         path_config_file, shuffle=shuffle
     )
 
-    edits = {"decay_steps": maxiters, "lr_init": 0.0005}  # * 8}  # for EfficientNet
+    edits = {"decay_steps": maxiters, "lr_init": 0.0005}
     DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
 
     if shuffle % 3 == 1:  # imgaug
         edits = {"rotation": 180, "motion_blur": True}
         DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
 
-    elif shuffle % 3 == 0:  # Tensorpack:
+    elif shuffle % 3 == 0:  # Tensorpack (as counting starts with one)
         edits = {"rotation": 180, "noise_sigma": 0.01}
         DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
 
