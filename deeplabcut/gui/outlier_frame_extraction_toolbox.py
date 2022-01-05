@@ -42,7 +42,6 @@ class ImagePanel(BasePanel):
         """
         Returns the colormaps ticks and . The order of ticks labels is reversed.
         """
-        #        im = io.imread(img)
         norm = mcolors.Normalize(vmin=np.min(img), vmax=np.max(img))
         ticks = np.linspace(np.min(img), np.max(img), len(bodyparts))[::-1]
         return norm, ticks

@@ -820,18 +820,14 @@ def AnalyzeVideo(
 
 
 def GetPosesofFrames(
-    cfg, dlc_cfg, sess, inputs, outputs, directory, framelist, nframes, batchsize, rgb
+    cfg, dlc_cfg, sess, inputs, outputs, directory, framelist, nframes, batchsize
 ):
     """ Batchwise prediction of pose for frame list in directory"""
-    # from skimage.io import imread
     from deeplabcut.utils.auxfun_videos import imread
 
     print("Starting to extract posture")
-    if rgb:
-        im = imread(os.path.join(directory, framelist[0]), mode="RGB")
-    else:
-        im = imread(os.path.join(directory, framelist[0]))
-
+    im = imread(os.path.join(directory, framelist[0]), mode="skimage")
+    
     ny, nx, nc = np.shape(im)
     print(
         "Overall # of frames: ",
@@ -872,12 +868,8 @@ def GetPosesofFrames(
 
     if batchsize == 1:
         for counter, framename in enumerate(framelist):
-            # frame=imread(os.path.join(directory,framename),mode='RGB')
-            if rgb:
-                im = imread(os.path.join(directory, framename), mode="RGB")
-            else:
-                im = imread(os.path.join(directory, framename))
-
+            im = imread(os.path.join(directory, framename), mode="skimage")
+            
             if counter % step == 0:
                 pbar.update(step)
 
@@ -895,11 +887,8 @@ def GetPosesofFrames(
             (batchsize, ny, nx, 3), dtype="ubyte"
         )  # this keeps all the frames of a batch
         for counter, framename in enumerate(framelist):
-            if rgb:
-                im = imread(os.path.join(directory, framename), mode="RGB")
-            else:
-                im = imread(os.path.join(directory, framename))
-
+            im = imread(os.path.join(directory, framename), mode="skimage")
+            
             if counter % step == 0:
                 pbar.update(step)
 
@@ -942,7 +931,6 @@ def analyze_time_lapse_frames(
     trainingsetindex=0,
     gputouse=None,
     save_as_csv=False,
-    rgb=True,
     modelprefix="",
 ):
     """
@@ -977,9 +965,6 @@ def analyze_time_lapse_frames(
 
     save_as_csv: bool, optional
         Saves the predictions in a .csv file. The default is ``False``; if provided it must be either ``True`` or ``False``
-
-    rbg: bool, optional.
-        Whether to load image as rgb; Note e.g. some tiffs do not alow that option in imread, then just set this to false.
 
     Examples
     --------
@@ -1117,7 +1102,6 @@ def analyze_time_lapse_frames(
                     framelist,
                     nframes,
                     dlc_cfg["batch_size"],
-                    rgb,
                 )
                 stop = time.time()
 

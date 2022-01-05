@@ -788,7 +788,7 @@ def evaluate_network(
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
                             image = imread(
                                 os.path.join(cfg["project_path"], *imagename),
-                                mode="RGB",
+                                mode="skimage",
                             )
                             if scale != 1:
                                 image = imresize(image, scale)
