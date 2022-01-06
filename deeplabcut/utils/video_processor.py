@@ -56,12 +56,10 @@ class VideoProcessor(object):
             self.FPS = fps
 
     def load_frame(self):
-        try:
-            frame = self._read_frame()
+        frame = self._read_frame()
+        if frame is not None:
             self.i += 1
-            return frame
-        except Exception as ex:
-            print("Error: %s", ex)
+        return frame
 
     def height(self):
         return self.h
@@ -142,11 +140,16 @@ class VideoProcessorCV(VideoProcessor):
 
     def _read_frame(self):  # return RGB (rather than BGR)!
         # return cv2.cvtColor(np.flip(self.vid.read()[1],2), cv2.COLOR_BGR2RGB)
-        return np.flip(self.vid.read()[1], 2)
+        success, frame = self.vid.read()
+        if not success:
+            return frame
+        return np.flip(frame, 2)
 
     def save_frame(self, frame):
         self.svid.write(np.flip(frame, 2))
 
     def close(self):
-        self.svid.release()
-        self.vid.release()
+        if hasattr(self, "svid") and self.svid is not None:
+            self.svid.release()
+        if hasattr(self, "vid") and self.vid is not None:
+            self.vid.release()

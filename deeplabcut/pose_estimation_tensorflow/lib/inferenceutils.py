@@ -84,6 +84,7 @@ class Link:
 class Assembly:
     def __init__(self, size):
         self.data = np.full((size, 4), np.nan)
+        self.confidence = 1  # 1 by defaut, overwritten otherwise with `add_joint`
         self._affinity = 0
         self._links = []
         self._visible = set()
@@ -105,6 +106,15 @@ class Assembly:
             assembly.add_link(link)
         return assembly
 
+    @classmethod
+    def from_array(cls, array):
+        n_bpts = array.shape[0]
+        ass = cls(size=n_bpts)
+        ass.data[:, : array.shape[1]] = array
+        nonempty = np.flatnonzero(~np.isnan(array).any(axis=1))
+        ass._visible.update(nonempty)
+        return ass
+
     @property
     def xy(self):
         return self.data[:, :2]
@@ -124,6 +134,10 @@ class Assembly:
     @property
     def confidence(self):
         return np.nanmean(self.data[:, 2])
+
+    @confidence.setter
+    def confidence(self, confidence):
+        self.data[:, 2] = confidence
 
     @property
     def soft_identity(self):
@@ -269,6 +283,10 @@ class Assembler:
         except KeyError:
             pass
         n_bpts = len(df.columns.get_level_values("bodyparts").unique())
+        if n_bpts == 1:
+            warnings.warn("There is only one keypoint; skipping calibration...")
+            return
+
         xy = df.to_numpy().reshape((-1, n_bpts, 2))
         frac_valid = np.mean(~np.isnan(xy), axis=(1, 2))
         # Only keeps skeletons that are more than 90% complete
@@ -326,7 +344,7 @@ class Assembler:
         j = link.j2.label
         ind = _conv_square_to_condensed_indices(i, j, self.n_multibodyparts)
         mu = self._kde.mean[ind]
-        sigma = self._kde.covariance[i, j]
+        sigma = self._kde.covariance[ind, ind]
         z = (link.length ** 2 - mu) / sigma
         return 2 * (1 - 0.5 * (1 + erf(abs(z) / sqrt(2))))
 
@@ -622,6 +640,22 @@ class Assembler:
         if not any(i in bag for i in range(self.n_multibodyparts)):
             return None, unique
 
+        if self.n_multibodyparts == 1:
+            assemblies = []
+            for joint in bag[0]:
+                if joint.confidence >= self.pcutoff:
+                    ass = Assembly(self.n_multibodyparts)
+                    ass.add_joint(joint)
+                    assemblies.append(ass)
+            return assemblies, unique
+
+        if self.max_n_individuals == 1:
+            get_attr = operator.attrgetter("confidence")
+            ass = Assembly(self.n_multibodyparts)
+            for joints in bag.values():
+                ass.add_joint(max(joints, key=get_attr))
+            return [ass], unique
+
         if self.identity_only:
             assemblies = []
             get_attr = operator.attrgetter("group")
@@ -806,41 +840,67 @@ class Assembler:
             pickle.dump(data, file, pickle.HIGHEST_PROTOCOL)
 
 
-def calc_object_keypoint_similarity(xy_pred, xy_true, sigma):
+def calc_object_keypoint_similarity(
+    xy_pred, xy_true, sigma, margin=0, symmetric_kpts=None,
+):
     visible_gt = ~np.isnan(xy_true).all(axis=1)
     if visible_gt.sum() < 2:  # At least 2 points needed to calculate scale
         return np.nan
     true = xy_true[visible_gt]
-    pred = xy_pred[visible_gt]
-    pred[np.isnan(pred)] = np.inf
-    dist_squared = np.sum((pred - true) ** 2, axis=1)
-    scale_squared = np.product(np.ptp(true, axis=0) + np.spacing(1))
+    scale_squared = np.product(np.ptp(true, axis=0) + np.spacing(1) + margin * 2)
     if np.isclose(scale_squared, 0):
         return np.nan
     k_squared = (2 * sigma) ** 2
-    oks = np.exp(-dist_squared / (2 * scale_squared * k_squared))
-    return np.mean(oks)
-
-
-def match_assemblies(ass_pred, ass_true, sigma):
-    inds_true = list(range(len(ass_true)))
-    inds_pred = np.argsort(
-        [ins.affinity if ins.n_links else ins.confidence for ins in ass_pred]
-    )[::-1]
-    matched = []
-    for ind_pred in inds_pred:
-        xy_pred = ass_pred[ind_pred].xy
+    denom = 2 * scale_squared * k_squared
+    if symmetric_kpts is None:
+        pred = xy_pred[visible_gt]
+        pred[np.isnan(pred)] = np.inf
+        dist_squared = np.sum((pred - true) ** 2, axis=1)
+        oks = np.exp(-dist_squared / denom)
+        return np.mean(oks)
+    else:
         oks = []
-        for ind_true in inds_true:
-            xy_true = ass_true[ind_true].xy
-            oks.append(calc_object_keypoint_similarity(xy_pred, xy_true, sigma))
-        if np.all(np.isnan(oks)):
-            continue
-        ind_best = np.nanargmax(oks)
-        ind_true_best = inds_true.pop(ind_best)
-        matched.append((ass_pred[ind_pred], ass_true[ind_true_best], oks[ind_best]))
-        if not inds_true:
-            break
+        xy_preds = [xy_pred]
+        combos = (
+            pair
+            for l in range(len(symmetric_kpts))
+            for pair in itertools.combinations(symmetric_kpts, l + 1)
+        )
+        for pairs in combos:
+            # Swap corresponding keypoints
+            tmp = xy_pred.copy()
+            for pair in pairs:
+                tmp[pair, :] = tmp[pair[::-1], :]
+            xy_preds.append(tmp)
+        for xy_pred in xy_preds:
+            pred = xy_pred[visible_gt]
+            pred[np.isnan(pred)] = np.inf
+            dist_squared = np.sum((pred - true) ** 2, axis=1)
+            oks.append(np.mean(np.exp(-dist_squared / denom)))
+        return max(oks)
+
+
+def match_assemblies(
+    ass_pred, ass_true, sigma, margin=0, symmetric_kpts=None,
+):
+    # Only consider assemblies of at least two keypoints
+    ass_pred = [a for a in ass_pred if len(a) > 1]
+    ass_true = [a for a in ass_true if len(a) > 1]
+
+    mat = np.zeros((len(ass_pred), len(ass_true)))
+    for i, a_pred in enumerate(ass_pred):
+        for j, a_true in enumerate(ass_true):
+            oks = calc_object_keypoint_similarity(
+                a_pred.xy, a_true.xy, sigma, margin, symmetric_kpts,
+            )
+            if ~np.isnan(oks):
+                mat[i, j] = oks
+    rows, cols = linear_sum_assignment(mat, maximize=True)
+    matched = []
+    inds_true = list(range(len(ass_true)))
+    for row, col in zip(rows, cols):
+        matched.append((ass_pred[row], ass_true[col], mat[row, col]))
+        _ = inds_true.remove(col)
     unmatched = [ass_true[ind] for ind in inds_true]
     return matched, unmatched
 
@@ -864,8 +924,7 @@ def _parse_ground_truth_data(data):
         for row in arr:
             if np.isnan(row[:, :2]).all():
                 continue
-            ass = Assembly(row.shape[0])
-            ass.data[:, : row.shape[1]] = row
+            ass = Assembly.from_array(row)
             temp.append(ass)
         if not temp:
             continue
@@ -898,6 +957,8 @@ def evaluate_assembly(
     ass_true_dict,
     oks_sigma=0.072,
     oks_thresholds=np.linspace(0.5, 0.95, 10),
+    margin=0,
+    symmetric_kpts=None,
 ):
     # sigma is taken as the median of all COCO keypoint standard deviations
     all_matched = []
@@ -906,7 +967,9 @@ def evaluate_assembly(
         ass_true = ass_true_dict.get(ind)
         if ass_true is None:
             continue
-        matched, unmatched = match_assemblies(ass_pred, ass_true, oks_sigma)
+        matched, unmatched = match_assemblies(
+            ass_pred, ass_true, oks_sigma, margin, symmetric_kpts,
+        )
         all_matched.extend(matched)
         all_unmatched.extend(unmatched)
     if not all_matched:

@@ -11,6 +11,7 @@ class PoseNetFactory:
                 warnings.warn("Overwriting existing network {}.")
             cls._nets[type_] = net
             return net
+
         return wrapper
 
     @classmethod

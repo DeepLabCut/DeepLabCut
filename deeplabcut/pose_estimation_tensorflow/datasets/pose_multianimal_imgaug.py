@@ -11,17 +11,17 @@ Licensed under GNU Lesser General Public License v3.0
 import logging
 import os
 import pickle
-import random as rand
-
 import imageio
 import imgaug.augmenters as iaa
 import numpy as np
+
 from imgaug.augmentables import Keypoint, KeypointsOnImage
 from deeplabcut.pose_estimation_tensorflow.datasets import augmentation
 from deeplabcut.pose_estimation_tensorflow.datasets.factory import PoseDatasetFactory
 from deeplabcut.pose_estimation_tensorflow.datasets.pose_base import BasePoseDataset
 from deeplabcut.pose_estimation_tensorflow.datasets.utils import DataItem, Batch
 from deeplabcut.utils.auxfun_videos import imread
+from deeplabcut.utils.conversioncode import robust_split_path
 from math import sqrt
 
 
@@ -34,12 +34,12 @@ class MAImgaugPoseDataset(BasePoseDataset):
         self.batch_size = cfg["batch_size"]
         print("Batch Size is %d" % self.batch_size)
         self.pipeline = self.build_augmentation_pipeline(
-            apply_prob=cfg.get('apply_prob', 0.5),
+            apply_prob=cfg.get("apply_prob", 0.5),
         )
 
     @property
     def default_crop_size(self):
-        return self.cfg.get("crop_size", (400, 400))  # width, height
+        return np.array(self.cfg.get("crop_size", (400, 400)))  # width, height
 
     def load_dataset(self):
         cfg = self.cfg
@@ -57,8 +57,11 @@ class MAImgaugPoseDataset(BasePoseDataset):
             sample = pickledata[i]  # mlab[0, i]
             item = DataItem()
             item.image_id = i
-            item.im_path = sample["image"]  # [0][0]
-            item.im_size = sample["size"]  # sample[1][0]
+            im_path = sample["image"]
+            if isinstance(im_path, str):
+                im_path = robust_split_path(im_path)
+            item.im_path = os.path.join(*im_path)
+            item.im_size = sample["size"]
             if "joints" in sample.keys():
                 Joints = sample["joints"]
                 if (
@@ -297,7 +300,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         }
 
     def calc_target_and_scoremap_sizes(self):
-        target_size = np.asarray(self.default_crop_size) * self.get_scale()
+        target_size = self.default_crop_size * self.sample_scale()
         target_size = np.ceil(target_size).astype(int)
         if not self.is_valid_size(target_size):
             target_size = self.default_crop_size
@@ -312,12 +315,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
     def next_batch(self, plotting=False):
         while True:
-            (
-                batch_images,
-                joint_ids,
-                batch_joints,
-                data_items,
-            ) = self.get_batch()
+            (batch_images, joint_ids, batch_joints, data_items,) = self.get_batch()
 
             # Scale is sampled only once (per batch) to transform all of the images into same size.
             target_size, sm_size = self.calc_target_and_scoremap_sizes()
@@ -388,20 +386,12 @@ class MAImgaugPoseDataset(BasePoseDataset):
             num *= 2
         return num
 
-    def get_scale(self):
-        cfg = self.cfg
-        scale = cfg["global_scale"]
-        if hasattr(cfg, "scale_jitter_lo") and hasattr(cfg, "scale_jitter_up"):
-            scale_jitter = rand.uniform(cfg["scale_jitter_lo"], cfg["scale_jitter_up"])
-            scale *= scale_jitter
-        return scale
-
     def is_valid_size(self, target_size):
         im_width, im_height = target_size
         min_input_size = self.cfg.get("min_input_size", 100)
         if im_height < min_input_size or im_width < min_input_size:
             return False
-        if hasattr(self.cfg, "max_input_size"):
+        if "max_input_size" in self.cfg:
             max_input_size = self.cfg["max_input_size"]
             if im_width * im_height > max_input_size * max_input_size:
                 return False
@@ -475,8 +465,11 @@ class MAImgaugPoseDataset(BasePoseDataset):
         if num_idchannel > 0:
             coordinateoffset = 0
             # Find indices of individuals in joint_id
-            idx = [(i, id_) for i, id_ in enumerate(data_item.joints)
-                   if id_ < num_idchannel]
+            idx = [
+                (i, id_)
+                for i, id_ in enumerate(data_item.joints)
+                if id_ < num_idchannel
+            ]
             for i, person_id in idx:
                 joint_ids = joint_id[i]
                 n_joints = joint_ids.size
@@ -516,13 +509,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
                         distance_along = Dx * x + Dy * y
                         distance_across = (
-                            (
-                                (
-                                    y * Dx
-                                    - x * Dy
-                                )
-                                - d2mid
-                            )
+                            ((y * Dx - x * Dy) - d2mid)
                             * 1.0
                             / self.cfg["pafwidth"]
                             * scale
@@ -568,7 +555,9 @@ class MAImgaugPoseDataset(BasePoseDataset):
         locref_scale = 1.0 / self.cfg["locref_stdev"]
         dist_thresh_sq = dist_thresh ** 2
 
-        partaffinityfield_shape = np.concatenate([size, np.array([self.cfg["num_limbs"] * 2])])
+        partaffinityfield_shape = np.concatenate(
+            [size, np.array([self.cfg["num_limbs"] * 2])]
+        )
         partaffinityfield_map = np.zeros(partaffinityfield_shape)
         if self.cfg["weigh_only_present_joints"]:
             partaffinityfield_mask = np.zeros(partaffinityfield_shape)

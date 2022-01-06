@@ -26,21 +26,21 @@ from .factory import PoseNetFactory
 class PoseEfficientNet(BasePoseNet):
     def __init__(self, cfg):
         super(PoseEfficientNet, self).__init__(cfg)
-        if 'use_batch_norm' not in self.cfg:
-            self.cfg['use_batch_norm'] = False
-        if 'use_drop_out' not in self.cfg:
-            self.cfg['use_drop_out'] = False
+        if "use_batch_norm" not in self.cfg:
+            self.cfg["use_batch_norm"] = False
+        if "use_drop_out" not in self.cfg:
+            self.cfg["use_drop_out"] = False
 
     def extract_features(self, inputs, use_batch_norm=False, use_drop_out=False):
         im_centered = self.center_inputs(inputs)
         im_centered /= tf.constant(eff.STDDEV_RGB, shape=[1, 1, 3])
         with tf.compat.v1.variable_scope("efficientnet"):
-            eff_net_type = self.cfg['net_type'].replace('_', '-')
+            eff_net_type = self.cfg["net_type"].replace("_", "-")
             net, end_points = eff.build_model_base(
                 im_centered,
                 eff_net_type,
                 use_batch_norm=use_batch_norm,
-                drop_out=use_drop_out
+                drop_out=use_drop_out,
             )
         return net, end_points
 
@@ -49,5 +49,7 @@ class PoseEfficientNet(BasePoseNet):
         return self.prediction_layers(net)
 
     def test(self, inputs):
-        heads = self.get_net(inputs, self.cfg['use_batch_norm'], self.cfg['use_drop_out'])
+        heads = self.get_net(
+            inputs, self.cfg["use_batch_norm"], self.cfg["use_drop_out"]
+        )
         return self.add_inference_layers(heads)

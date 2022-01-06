@@ -21,7 +21,12 @@ import statsmodels.api as sm
 from skimage.util import img_as_ubyte
 
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
-from deeplabcut.utils import auxiliaryfunctions, visualization, frameselectiontools
+from deeplabcut.utils import (
+    auxiliaryfunctions,
+    auxfun_multianimal,
+    visualization,
+    frameselectiontools,
+)
 from deeplabcut.utils.auxfun_videos import VideoWriter
 
 
@@ -261,6 +266,10 @@ def extract_outlier_frames(
     destfolder: string, optional
         Specifies the destination folder that was used for storing analysis data (default is the path of the video).
 
+    track_method: string, optional
+         Specifies the tracker used to generate the data. Empty by default (corresponding to a single animal project).
+         For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will be taken from the config.yaml file if none is given.
+
     Examples
 
     Windows example for extracting the frames with default settings
@@ -283,6 +292,7 @@ def extract_outlier_frames(
     )
     if not len(bodyparts):
         raise ValueError("No valid bodyparts were selected.")
+    track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
 
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
         cfg,
@@ -488,7 +498,7 @@ def compute_deviations(
         meany, CIy = FitSARIMAXModel(y, p, p_bound, alpha, ARdegree, MAdegree)
         distance = np.sqrt((x - meanx) ** 2 + (y - meany) ** 2)
         significant = (
-            (x < CIx[:, 0]) + (x > CIx[:, 1]) + (x < CIy[:, 0]) + (y > CIy[:, 1])
+            (x < CIx[:, 0]) + (x > CIx[:, 1]) + (y < CIy[:, 0]) + (y > CIy[:, 1])
         )
         preds.append(np.c_[distance, significant, meanx, meany, CIx, CIy])
 

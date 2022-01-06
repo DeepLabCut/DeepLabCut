@@ -17,6 +17,7 @@ import numpy as np
 import os
 import scipy.io as sio
 from deeplabcut.utils.auxfun_videos import imread, imresize
+from deeplabcut.utils.conversioncode import robust_split_path
 from .factory import PoseDatasetFactory
 from .pose_base import BasePoseDataset
 from .utils import (
@@ -47,7 +48,7 @@ class DeterministicPoseDataset(BasePoseDataset):
 
     def load_dataset(self):
         cfg = self.cfg
-        file_name = os.path.join(self.cfg["project_path"], cfg['dataset'])
+        file_name = os.path.join(self.cfg["project_path"], cfg["dataset"])
         mlab = sio.loadmat(file_name)
         self.raw_data = mlab
         mlab = mlab["dataset"]
@@ -61,7 +62,12 @@ class DeterministicPoseDataset(BasePoseDataset):
 
             item = DataItem()
             item.image_id = i
-            item.im_path = sample[0][0]
+            im_path = sample[0][0]
+            if isinstance(im_path, str):
+                im_path = robust_split_path(im_path)
+            else:
+                im_path = [s.strip() for s in im_path]
+            item.im_path = os.path.join(*im_path)
             item.im_size = sample[1][0]
             if len(sample) >= 3:
                 joints = sample[2][0][0]
@@ -137,20 +143,11 @@ class DeterministicPoseDataset(BasePoseDataset):
     def get_training_sample(self, imidx):
         return self.data[imidx]
 
-    def get_scale(self):
-        if self.cfg["deterministic"]:
-            np.random.seed(42)
-        scale = self.scale
-        if hasattr(self.cfg, "scale_jitter_lo") and hasattr(self.cfg, "scale_jitter_up"):
-            scale_jitter = np.random.uniform(self.cfg['scale_jitter_lo'], self.cfg['scale_jitter_up'])
-            scale *= scale_jitter
-        return scale
-
     def next_batch(self):
         while True:
             imidx, mirror = self.next_training_sample()
             data_item = self.get_training_sample(imidx)
-            scale = self.get_scale()
+            scale = self.sample_scale()
 
             if not self.is_valid_size(data_item.im_size, scale):
                 continue
@@ -158,7 +155,7 @@ class DeterministicPoseDataset(BasePoseDataset):
             return self.make_batch(data_item, scale, mirror)
 
     def is_valid_size(self, image_size, scale):
-        if hasattr(self.cfg, "min_input_size") and hasattr(self.cfg, "max_input_size"):
+        if "min_input_size" in self.cfg and "max_input_size" in self.cfg:
             input_width = image_size[2] * scale
             input_height = image_size[1] * scale
             if (
@@ -175,7 +172,7 @@ class DeterministicPoseDataset(BasePoseDataset):
         im_file = data_item.im_path
         logging.debug("image %s", im_file)
         logging.debug("mirror %r", mirror)
-        image = imread(os.path.join(self.cfg['project_path'], im_file), mode="RGB")
+        image = imread(os.path.join(self.cfg["project_path"], im_file), mode="RGB")
 
         if self.has_gt:
             joints = np.copy(data_item.joints)

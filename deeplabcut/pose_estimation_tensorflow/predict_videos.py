@@ -18,6 +18,7 @@ import os.path
 import pickle
 import re
 import time
+import warnings
 from pathlib import Path
 
 import cv2
@@ -31,6 +32,7 @@ from tqdm import tqdm
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.core import predict
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingutils
+from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
 
@@ -54,7 +56,12 @@ def analyze_videos(
     dynamic=(False, 0.5, 10),
     modelprefix="",
     robust_nframes=False,
-    allow_growth=False
+    allow_growth=False,
+    auto_track=True,
+    n_tracks=None,
+    calibrate=False,
+    identity_only=False,
+    use_shelve=False,
 ):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
@@ -120,6 +127,35 @@ def analyze_videos(
         For some smaller GPUs the memory issues happen. If true, the memory allocator does not pre-allocate the entire specified
         GPU memory region, instead starting small and growing as needed. See issue: https://forum.image.sc/t/how-to-stop-running-out-of-vram/30551/2
 
+    auto_track: bool, optional (default=True)
+        By default, tracking and stitching are automatically performed, producing the final h5 data file.
+        This is equivalent to the behavior of single-animal projects.
+
+        If False, one must run `convert_detections2tracklets` and `stitch_tracklets` afterwards, in order to obtain the h5 file.
+
+        This function has 3 related sub-calls:
+
+    identity_only: bool, optional (default=False)
+        If True and animal identity was learned by the model,
+        assembly and tracking rely exclusively on identity prediction.
+
+    calibrate: bool, optional (default=False)
+        If True, use training data to calibrate the animal assembly procedure.
+        This improves its robustness to wrong body part links,
+        but requires very little missing data.
+
+    n_tracks : int, optional
+        Number of tracks to reconstruct. By default, taken as the number
+        of individuals defined in the config.yaml. Another number can be
+        passed if the number of animals in the video is different from
+        the number of animals the model was trained on.
+
+
+    use_shelve: bool, optional (default=False)
+        By default, data are dumped in a pickle file at the end of the video analysis.
+        Otherwise, data are written to disk on the fly using a "shelf"; i.e., a pickle-based,
+        persistent, database-like object by default, resulting in constant memory footprint.
+
     Examples
     --------
 
@@ -159,6 +195,7 @@ def analyze_videos(
 
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
+    iteration = cfg["iteration"]
 
     if cropping is not None:
         cfg["cropping"] = True
@@ -179,8 +216,8 @@ def analyze_videos(
         dlc_cfg = load_config(str(path_test_config))
     except FileNotFoundError:
         raise FileNotFoundError(
-            "It seems the model for shuffle %s and trainFraction %s does not exist."
-            % (shuffle, trainFraction)
+            "It seems the model for iteration %s and shuffle %s and trainFraction %s does not exist."
+            % (iteration, shuffle, trainFraction)
         )
 
     # Check which snapshots are available and sort them by # iterations
@@ -194,7 +231,7 @@ def analyze_videos(
         )
     except FileNotFoundError:
         raise FileNotFoundError(
-            "Snapshots not found! It seems the dataset for shuffle %s has not been trained/does not exist.\n Please train it before using it to analyze videos.\n Use the function 'train_network' to train the network for shuffle %s."
+            "Snapshots not found! It seems the dataset for shuffle %s has not been trained/does not exist.\n Be sure you also have the intented iteration number set.\n Please train it before using it to analyze videos.\n Use the function 'train_network' to train the network for shuffle %s."
             % (shuffle, shuffle)
         )
 
@@ -267,9 +304,13 @@ def analyze_videos(
         xyz_labs = ["x", "y", "likelihood"]
 
     if TFGPUinference:
-        sess, inputs, outputs = predict.setup_GPUpose_prediction(dlc_cfg,allow_growth=allow_growth)
+        sess, inputs, outputs = predict.setup_GPUpose_prediction(
+            dlc_cfg, allow_growth=allow_growth
+        )
     else:
-        sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg,allow_growth=allow_growth)
+        sess, inputs, outputs = predict.setup_pose_prediction(
+            dlc_cfg, allow_growth=allow_growth
+        )
 
     pdindex = pd.MultiIndex.from_product(
         [[DLCscorer], dlc_cfg["all_joints_names"], xyz_labs],
@@ -285,6 +326,7 @@ def analyze_videos(
             from deeplabcut.pose_estimation_tensorflow.predict_multianimal import (
                 AnalyzeMultiAnimalVideo,
             )
+
             for video in Videos:
                 AnalyzeMultiAnimalVideo(
                     video,
@@ -297,7 +339,30 @@ def analyze_videos(
                     outputs,
                     destfolder,
                     robust_nframes=robust_nframes,
+                    use_shelve=use_shelve,
                 )
+                if auto_track:
+                    convert_detections2tracklets(
+                        config,
+                        [video],
+                        videotype,
+                        shuffle,
+                        trainingsetindex,
+                        destfolder=destfolder,
+                        modelprefix=modelprefix,
+                        calibrate=calibrate,
+                        identity_only=identity_only,
+                    )
+                    stitch_tracklets(
+                        config,
+                        [video],
+                        videotype,
+                        shuffle,
+                        trainingsetindex,
+                        destfolder=destfolder,
+                        n_tracks=n_tracks,
+                        modelprefix=modelprefix,
+                    )
         else:
             for video in Videos:
                 DLCscorer = AnalyzeVideo(
@@ -1124,24 +1189,25 @@ def analyze_time_lapse_frames(
 
 
 def _convert_detections_to_tracklets(
-    cfg,
-    inference_cfg,
-    data,
-    metadata,
-    output_path,
-    track_method="ellipse",
-    greedy=False,
-    calibrate=False,
+    cfg, inference_cfg, data, metadata, output_path, greedy=False, calibrate=False,
 ):
+    track_method = cfg.get("default_track_method", "ellipse")
+    if track_method not in ("box", "skeleton", "ellipse"):
+        raise ValueError(
+            "Invalid tracking method. Only `box`, `skeleton` and `ellipse` are currently supported."
+        )
     joints = data["metadata"]["all_joints_names"]
     partaffinityfield_graph = data["metadata"]["PAFgraph"]
     paf_inds = data["metadata"]["PAFinds"]
     paf_graph = [partaffinityfield_graph[l] for l in paf_inds]
-
     if track_method == "box":
-        mot_tracker = trackingutils.Sort(inference_cfg)
+        mot_tracker = trackingutils.SORTBox(
+            inference_cfg["max_age"],
+            inference_cfg["min_hits"],
+            inference_cfg.get("oks_threshold", 0.3),
+        )
     elif track_method == "skeleton":
-        mot_tracker = trackingutils.SORT(
+        mot_tracker = trackingutils.SORTSkeleton(
             len(joints),
             inference_cfg["max_age"],
             inference_cfg["min_hits"],
@@ -1189,13 +1255,12 @@ def _convert_detections_to_tracklets(
             continue
         animals = np.stack([ass.data[:, :3] for ass in assemblies])
         if track_method == "box":
-            bboxes = trackingutils.calc_bboxes_from_keypoints(
+            xy = trackingutils.calc_bboxes_from_keypoints(
                 animals, inference_cfg.get("boundingboxslack", 0)
             )  # TODO: get cropping parameters and utilize!
-            trackers = mot_tracker.update(bboxes)
         else:
             xy = animals[..., :2]
-            trackers = mot_tracker.track(xy)
+        trackers = mot_tracker.track(xy)
         trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
 
     bodypartlabels = [joint for joint in joints for _ in range(3)]
@@ -1222,7 +1287,6 @@ def convert_detections2tracklets(
     ignore_bodyparts=None,
     inferencecfg=None,
     modelprefix="",
-    track_method="ellipse",
     greedy=False,
     calibrate=False,
     window_size=0,
@@ -1255,11 +1319,6 @@ def convert_detections2tracklets(
         Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this
         folder also needs to be passed.
 
-    track_method: str, optional
-        Method used to track animals, either 'box', 'skeleton', or 'ellipse'.
-        By default, a constant velocity Kalman filter is used to track
-        covariance error ellipses fitted to an individual's body parts.
-
     ignore_bodyparts: optional
         List of body part names that should be ignored during tracking (advanced).
         By default, all the body parts are used.
@@ -1291,12 +1350,21 @@ def convert_detections2tracklets(
     --------
 
     """
+    cfg = auxiliaryfunctions.read_config(config)
+    track_method = cfg.get("default_track_method", "ellipse")
+
     if track_method not in ("box", "skeleton", "ellipse"):
         raise ValueError(
             "Invalid tracking method. Only `box`, `skeleton` and `ellipse` are currently supported."
         )
 
-    cfg = auxiliaryfunctions.read_config(config)
+    if len(cfg["multianimalbodyparts"]) == 1 and track_method != "box":
+        warnings.warn("Switching to `box` tracker for single point tracking...")
+        track_method = "box"
+
+    cfg["default_track_method"] = track_method
+    auxiliaryfunctions.write_config(config, cfg)
+
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     start_path = os.getcwd()  # record cwd to return to this directory in the end
 
@@ -1332,6 +1400,13 @@ def convert_detections2tracklets(
         inferencecfg = auxfun_multianimal.read_inferencecfg(path_inference_config, cfg)
     else:
         auxfun_multianimal.check_inferencecfg_sanity(cfg, inferencecfg)
+
+    if len(cfg["multianimalbodyparts"]) == 1 and track_method != "box":
+        warnings.warn("Switching to `box` tracker for single point tracking...")
+        track_method = "box"
+        # Also ensure `boundingboxslack` is greater than zero, otherwise overlap
+        # between trackers cannot be evaluated, resulting in empty tracklets.
+        inferencecfg["boundingboxslack"] = max(inferencecfg["boundingboxslack"], 40)
 
     # Check which snapshots are available and sort them by # iterations
     try:
@@ -1410,7 +1485,9 @@ def convert_detections2tracklets(
 
                 # TODO: adjust this for multi + unique bodyparts!
                 # this is only for multianimal parts and uniquebodyparts as one (not one uniquebodyparts guy tracked etc. )
-                bodypartlabels = [bpt for i, bpt in enumerate(all_jointnames) for _ in range(3)]
+                bodypartlabels = [
+                    bpt for i, bpt in enumerate(all_jointnames) for _ in range(3)
+                ]
                 scorers = len(bodypartlabels) * [DLCscorer]
                 xylvalue = int(len(bodypartlabels) / 3) * ["x", "y", "likelihood"]
                 pdindex = pd.MultiIndex.from_arrays(
@@ -1421,9 +1498,13 @@ def convert_detections2tracklets(
                 imnames = [fn for fn in data if fn != "metadata"]
 
                 if track_method == "box":
-                    mot_tracker = trackingutils.Sort(inferencecfg)
+                    mot_tracker = trackingutils.SORTBox(
+                        inferencecfg["max_age"],
+                        inferencecfg["min_hits"],
+                        inferencecfg.get("oks_threshold", 0.3),
+                    )
                 elif track_method == "skeleton":
-                    mot_tracker = trackingutils.SORT(
+                    mot_tracker = trackingutils.SORTSkeleton(
                         numjoints,
                         inferencecfg["max_age"],
                         inferencecfg["min_hits"],
@@ -1457,6 +1538,10 @@ def convert_detections2tracklets(
                     ass.calibrate(train_data_file)
                 ass.assemble()
                 ass.to_pickle(dataname.split(".h5")[0] + "_assemblies.pickle")
+                try:
+                    data.close()
+                except AttributeError:
+                    pass
 
                 if cfg[
                     "uniquebodyparts"
@@ -1471,31 +1556,43 @@ def convert_detections2tracklets(
                         _single[imindex] = single_detection
                     tracklets["single"].update(_single)
 
-                keep = set(multi_bpts).difference(ignore_bodyparts or [])
-                keep_inds = sorted(multi_bpts.index(bpt) for bpt in keep)
-                for index, imname in tqdm(enumerate(imnames)):
-                    assemblies = ass.assemblies.get(index)
-                    if assemblies is None:
-                        continue
-                    animals = np.stack([ass.data for ass in assemblies])
-                    if not identity_only:
-                        if track_method == "box":
-                            bboxes = trackingutils.calc_bboxes_from_keypoints(
-                                animals[:, keep_inds], inferencecfg["boundingboxslack"], offset=0
-                            )  # TODO: get cropping parameters and utilize!
-                            trackers = mot_tracker.update(bboxes)
-                        else:
-                            xy = animals[:, keep_inds, :2]
+                if inferencecfg["topktoretain"] == 1:
+                    tracklets[0] = {}
+                    for index, imname in tqdm(enumerate(imnames)):
+                        assemblies = ass.assemblies.get(index)
+                        if assemblies is None:
+                            continue
+                        tracklets[0][imname] = assemblies[0].data
+                else:
+                    keep = set(multi_bpts).difference(ignore_bodyparts or [])
+                    keep_inds = sorted(multi_bpts.index(bpt) for bpt in keep)
+                    for index, imname in tqdm(enumerate(imnames)):
+                        assemblies = ass.assemblies.get(index)
+                        if assemblies is None:
+                            continue
+                        animals = np.stack([ass.data for ass in assemblies])
+                        if not identity_only:
+                            if track_method == "box":
+                                xy = trackingutils.calc_bboxes_from_keypoints(
+                                    animals[:, keep_inds],
+                                    inferencecfg["boundingboxslack"],
+                                )  # TODO: get cropping parameters and utilize!
+                            else:
+                                xy = animals[:, keep_inds, :2]
                             trackers = mot_tracker.track(xy)
-                    else:
-                        # Optimal identity assignment based on soft voting
-                        mat = np.zeros((len(assemblies), inferencecfg["topktoretain"]))
-                        for nrow, assembly in enumerate(assemblies):
-                            for k, v in assembly.soft_identity.items():
-                                mat[nrow, k] = v
-                        inds = linear_sum_assignment(mat, maximize=True)
-                        trackers = np.c_[inds][:, ::-1]
-                    trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
+                        else:
+                            # Optimal identity assignment based on soft voting
+                            mat = np.zeros(
+                                (len(assemblies), inferencecfg["topktoretain"])
+                            )
+                            for nrow, assembly in enumerate(assemblies):
+                                for k, v in assembly.soft_identity.items():
+                                    mat[nrow, k] = v
+                            inds = linear_sum_assignment(mat, maximize=True)
+                            trackers = np.c_[inds][:, ::-1]
+                        trackingutils.fill_tracklets(
+                            tracklets, trackers, animals, imname
+                        )
 
                 tracklets["header"] = pdindex
                 with open(trackname, "wb") as f:
@@ -1503,8 +1600,9 @@ def convert_detections2tracklets(
 
         os.chdir(str(start_path))
 
-        print("The tracklets were created. Now you can 'refine_tracklets'.")
-        # print("If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract any outlier frames!")
+        print(
+            "The tracklets were created (i.e., under the hood deeplabcut.convert_detections2tracklets was run). Now you can 'refine_tracklets' in the GUI, or run 'deeplabcut.stitch_tracklets'."
+        )
     else:
         print("No video(s) found. Please check your path!")
 

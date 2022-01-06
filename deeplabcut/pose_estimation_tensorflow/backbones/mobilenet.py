@@ -265,9 +265,9 @@ def mobilenet_base(  # pylint: disable=invalid-name
 
 @contextlib.contextmanager
 def _scope_all(scope, default_scope=None):
-    with tf.compat.v1.variable_scope(scope, default_name=default_scope) as s, tf.compat.v1.name_scope(
-        s.original_name_scope
-    ):
+    with tf.compat.v1.variable_scope(
+        scope, default_name=default_scope
+    ) as s, tf.compat.v1.name_scope(s.original_name_scope):
         yield s
 
 
@@ -375,7 +375,12 @@ def global_pool(input_tensor, pool_op=tf.nn.avg_pool2d):
     shape = input_tensor.get_shape().as_list()
     if shape[1] is None or shape[2] is None:
         kernel_size = tf.convert_to_tensor(
-            value=[1, tf.shape(input=input_tensor)[1], tf.shape(input=input_tensor)[2], 1]
+            value=[
+                1,
+                tf.shape(input=input_tensor)[1],
+                tf.shape(input=input_tensor)[2],
+                1,
+            ]
         )
     else:
         kernel_size = [1, shape[1], shape[2], 1]
@@ -438,7 +443,8 @@ def training_scope(
     ), safe_arg_scope(
         [slim.dropout], is_training=is_training, keep_prob=dropout_keep_prob
     ), slim.arg_scope(
-        [slim.conv2d], weights_regularizer=tf.keras.regularizers.l2(0.5 * (weight_decay))
+        [slim.conv2d],
+        weights_regularizer=tf.keras.regularizers.l2(0.5 * (weight_decay)),
     ), slim.arg_scope(
         [slim.separable_conv2d], weights_regularizer=None
     ) as s:
