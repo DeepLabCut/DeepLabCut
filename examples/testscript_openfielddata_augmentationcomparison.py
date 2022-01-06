@@ -7,38 +7,38 @@ This is a test script to compare the loaders and models.
 This script creates one identical splits for the openfield test dataset and trains it with imgaug (default), scalecrop
 and the tensorpack loader. We also compare 3 backbones (mobilenet, resnet, efficientnet)
 
-My results were (Run with DLC *2.10.4* in Apr 2021) for 100 k iterations
+My results were (Run with DLC *2.2.0.4* in Jan 6 2022) for 50 k iterations
 
-ResNet50:
-Imgaug: (includes new default contrast augmentation!)
-Done and results stored for snapshot:  snapshot-100000
-Results for 100000  training iterations: 95 1 train error: 1.77 pixels. Test error: 2.24  pixels.
-With pcutoff of 0.4  train error: 1.77 pixels. Test error: 2.24 pixels
+DLC_mobnet_35_openfieldOct30shuffle0_50000 and Imgaug with # of training iterations: 50000
+Results for 50000 training iterations: 95 0 train error: 3.06 pixels. Test error: 3.44 pixels.
+With pcutoff of 0.4 train error: 3.06 pixels. Test error: 3.44 pixel
 
-Scalecrop:
-Done and results stored for snapshot:  snapshot-100000
-Results for 100000  training iterations: 95 2 train error: 2.11 pixels. Test error: 3.26  pixels.
-With pcutoff of 0.4  train error: 2.11 pixels. Test error: 3.26 pixels
+DLC_mobnet_35_openfieldOct30shuffle1_50000 and scalecrop with # of training iterations: 50000
+Results for 50000 training iterations: 95 1 train error: 2.44 pixels. Test error: 3.84 pixels.
+With pcutoff of 0.4 train error: 2.44 pixels. Test error: 3.84 pixels
 
-TensorPack:
-Results for 100000  training iterations: 95 3 train error: 1.35 pixels. Test error: 2.3  pixels.
-With pcutoff of 0.4  train error: 1.35 pixels. Test error: 2.3 pixels
+DLC_mobnet_35_openfieldOct30shuffle2_50000 and tensorpack with # of training iterations: 50000
+Results for 50000 training iterations: 95 2 train error: 2.41 pixels. Test error: 3.04 pixels.
+With pcutoff of 0.4 train error: 2.41 pixels. Test error: 3.04 pixels
 
-Results Jan 2020:
+DLC_resnet50_openfieldOct30shuffle3_50000 and Imgaug with # of training iterations: 50000
+Results for 50000 training iterations: 95 3 train error: 2.69 pixels. Test error: 2.97 pixels.
+With pcutoff of 0.4 train error: 2.69 pixels. Test error: 2.97 pixels
 
-MobileNetV2 0.35
-Results for 10000  training iterations: 95 1 train error: 5.79 pixels. Test error: 5.63  pixels.
-With pcutoff of 0.4  train error: 5.79 pixels. Test error: 5.63 pixels
+DLC_resnet50_openfieldOct30shuffle4_50000 and scalecrop with # of training iterations: 50000
+Results for 50000 training iterations: 95 4 train error: 2.0 pixels. Test error: 2.69 pixels.
+With pcutoff of 0.4 train error: 2.0 pixels. Test error: 2.69 pixels
 
-ResNet 50
-Results for 10000  training iterations: 95 2 train error: 3.61 pixels. Test error: 3.7  pixels.
-With pcutoff of 0.4  train error: 3.61 pixels. Test error: 3.7 pixels
+DLC_resnet50_openfieldOct30shuffle5_50000 and tensorpack with # of training iterations: 50000
+Results for 50000 training iterations: 95 5 train error: 1.96 pixels. Test error: 2.65 pixels.
+With pcutoff of 0.4 train error: 1.96 pixels. Test error: 2.65 pixels
 
-EffNet-b3
-Results for 10000  training iterations: 95 3 train error: 6.86 pixels. Test error: 6.63  pixels.
-With pcutoff of 0.4  train error: 6.86 pixels. Test error: 6.63 pixels
+DLC_effnet_b3_openfieldOct30shuffle6_50000 with Imgaug with # of training iterations: 50000
+Results for 50000 training iterations: 95 6 train error: 2.63 pixels. Test error: 2.65 pixels.
+With pcutoff of 0.4 train error: 2.63 pixels. Test error: 2.65 pixels
 
-TODO: Note we should still optimize the MobNet & EffNet learning rates for this dataset (also training is pretty short!)
+effnet with tensorpack and scalecrop didn't converge.
+
 
 Notice: despite the higher RMSE for imgaug due to the augmentation,
 the network performs much better on the testvideo (see Neuron Primer: https://www.cell.com/neuron/pdf/S0896-6273(20)30717-0.pdf)
@@ -59,7 +59,6 @@ cfg = deeplabcut.auxiliaryfunctions.read_config(path_config_file)
 maxiters = 50000
 saveiters = 10000
 displayiters = 500
-Shuffles = 1 + np.arange(6)
 
 deeplabcut.load_demo_data(path_config_file, createtrainingset=False)
 ## Create one identical splits for 3 networks and 3 augmentations
