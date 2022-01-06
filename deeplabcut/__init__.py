@@ -107,7 +107,8 @@ from deeplabcut.pose_estimation_tensorflow import (
 
 
 from deeplabcut.pose_tracking_pytorch import (
-    train_tracking_transformer
+    train_tracking_transformer,
+    eval_transformer
     )
 
 from deeplabcut.pose_estimation_3d import (
