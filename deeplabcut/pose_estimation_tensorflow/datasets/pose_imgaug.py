@@ -300,7 +300,9 @@ class ImgaugPoseDataset(BasePoseDataset):
             im_file = data_item.im_path
 
             logging.debug("image %s", im_file)
-            image = imread(os.path.join(self.cfg["project_path"], im_file), mode="RGB")
+            image = imread(
+                os.path.join(self.cfg["project_path"], im_file), mode="skimage"
+            )
 
             if self.has_gt:
                 joints = np.copy(data_item.joints)

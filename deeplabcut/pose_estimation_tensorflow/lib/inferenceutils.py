@@ -841,7 +841,11 @@ class Assembler:
 
 
 def calc_object_keypoint_similarity(
-    xy_pred, xy_true, sigma, margin=0, symmetric_kpts=None,
+    xy_pred,
+    xy_true,
+    sigma,
+    margin=0,
+    symmetric_kpts=None,
 ):
     visible_gt = ~np.isnan(xy_true).all(axis=1)
     if visible_gt.sum() < 2:  # At least 2 points needed to calculate scale
@@ -881,7 +885,11 @@ def calc_object_keypoint_similarity(
 
 
 def match_assemblies(
-    ass_pred, ass_true, sigma, margin=0, symmetric_kpts=None,
+    ass_pred,
+    ass_true,
+    sigma,
+    margin=0,
+    symmetric_kpts=None,
 ):
     # Only consider assemblies of at least two keypoints
     ass_pred = [a for a in ass_pred if len(a) > 1]
@@ -891,7 +899,11 @@ def match_assemblies(
     for i, a_pred in enumerate(ass_pred):
         for j, a_true in enumerate(ass_true):
             oks = calc_object_keypoint_similarity(
-                a_pred.xy, a_true.xy, sigma, margin, symmetric_kpts,
+                a_pred.xy,
+                a_true.xy,
+                sigma,
+                margin,
+                symmetric_kpts,
             )
             if ~np.isnan(oks):
                 mat[i, j] = oks
@@ -968,7 +980,11 @@ def evaluate_assembly(
         if ass_true is None:
             continue
         matched, unmatched = match_assemblies(
-            ass_pred, ass_true, oks_sigma, margin, symmetric_kpts,
+            ass_pred,
+            ass_true,
+            oks_sigma,
+            margin,
+            symmetric_kpts,
         )
         all_matched.extend(matched)
         all_unmatched.extend(unmatched)

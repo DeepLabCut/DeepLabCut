@@ -10,13 +10,15 @@ from deeplabcut.generate_training_dataset import (
     trainingsetmanipulation,
     multiple_individuals_trainingsetmanipulation,
 )
+
+from deeplabcut.utils.auxfun_videos import imread
 from deeplabcut.utils.conversioncode import guarantee_multiindex_rows
-from skimage import io, color
+from skimage import color, io
 
 
 def test_read_image_shape_fast(tmp_path):
     path_rgb_image = os.path.join(TEST_DATA_DIR, "image.png")
-    img = io.imread(path_rgb_image)
+    img = imread(path_rgb_image, mode="skimage")
     shape = img.shape
     assert read_image_shape_fast(path_rgb_image) == (shape[2], shape[0], shape[1])
     path_gray_image = str(tmp_path / "gray.png")

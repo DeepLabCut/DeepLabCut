@@ -318,7 +318,7 @@ def check_labels(
 
 
 def boxitintoacell(joints):
-    """ Auxiliary function for creating matfile."""
+    """Auxiliary function for creating matfile."""
     outer = np.array([[None]], dtype=object)
     outer[0, 0] = np.array(joints, dtype="int64")
     return outer
@@ -460,9 +460,11 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
 
 
 def SplitTrials(
-    trialindex, trainFraction=0.8, enforce_train_fraction=False,
+    trialindex,
+    trainFraction=0.8,
+    enforce_train_fraction=False,
 ):
-    """ Split a trial index into train and test sets. Also checks that the trainFraction is a two digit number between 0 an 1. The reason
+    """Split a trial index into train and test sets. Also checks that the trainFraction is a two digit number between 0 an 1. The reason
     is that the folders contain the trainfraction as int(100*trainFraction).
     If enforce_train_fraction is True, train and test indices are padded with -1
     such that the ratio of their lengths is exactly the desired train fraction.
@@ -487,7 +489,9 @@ def SplitTrials(
         train_indices = shuffle[: int(train_size)]
         if enforce_train_fraction and not train_size.is_integer():
             train_indices, test_indices = pad_train_test_indices(
-                train_indices, test_indices, train_fraction,
+                train_indices,
+                test_indices,
+                train_fraction,
             )
         return train_indices, test_indices
 
@@ -505,7 +509,8 @@ def pad_train_test_indices(train_inds, test_inds, train_fraction):
     min_n_train = int(round(min_length_req * train_fraction))
     min_n_test = min_length_req - min_n_train
     mult = max(
-        math.ceil(n_train_inds / min_n_train), math.ceil(n_test_inds / min_n_test),
+        math.ceil(n_train_inds / min_n_train),
+        math.ceil(n_test_inds / min_n_test),
     )
     n_train = mult * min_n_train
     n_test = mult * min_n_test
@@ -570,7 +575,8 @@ def mergeandsplit(config, trainindex=0, uniform=True):
         Data = pd.read_hdf(fn + ".h5")
     except FileNotFoundError:
         Data = merge_annotateddatasets(
-            cfg, Path(os.path.join(project_path, trainingsetfolder)),
+            cfg,
+            Path(os.path.join(project_path, trainingsetfolder)),
         )
         if Data is None:
             return [], []
@@ -582,7 +588,9 @@ def mergeandsplit(config, trainindex=0, uniform=True):
         TrainingFraction = cfg["TrainingFraction"]
         trainFraction = TrainingFraction[trainindex]
         trainIndices, testIndices = SplitTrials(
-            range(len(Data.index)), trainFraction, True,
+            range(len(Data.index)),
+            trainFraction,
+            True,
         )
     else:  # leave one folder out split
         videos = cfg["video_sets"].keys()
@@ -733,7 +741,8 @@ def create_training_dataset(
         )
 
         Data = merge_annotateddatasets(
-            cfg, Path(os.path.join(project_path, trainingsetfolder)),
+            cfg,
+            Path(os.path.join(project_path, trainingsetfolder)),
         )
         if Data is None:
             return
@@ -946,19 +955,21 @@ def create_training_dataset(
 
 
 def get_largestshuffle_index(config):
-    """ Returns the largest shuffle for all dlc-models in the current iteration."""
+    """Returns the largest shuffle for all dlc-models in the current iteration."""
     cfg = auxiliaryfunctions.read_config(config)
     project_path = cfg["project_path"]
     iterate = "iteration-" + str(cfg["iteration"])
     dlc_model_path = os.path.join(project_path, "dlc-models", iterate)
     if os.path.isdir(dlc_model_path):
         models = os.listdir(dlc_model_path)
-        # sort the models directories
+        # sort the model directories
         models.sort(key=lambda f: int("".join(filter(str.isdigit, f))))
-        # get the shuffle index
-        max_shuffle_index = int(models[-1].split("shuffle")[-1])
+
+        # get the shuffle index and offset by 1.
+        max_shuffle_index = int(models[-1].split("shuffle")[-1]) + 1
     else:
         max_shuffle_index = 0
+
     return max_shuffle_index
 
 
@@ -967,7 +978,7 @@ def create_training_model_comparison(
     trainindex=0,
     num_shuffles=1,
     net_types=["resnet_50"],
-    augmenter_types=["default"],
+    augmenter_types=["imgaug"],
     userfeedback=False,
     windows2linux=False,
 ):
@@ -1001,12 +1012,19 @@ def create_training_model_comparison(
         If this is set to false, then all requested train/test splits are created (no matter if they already exist). If you
         want to assure that previous splits etc. are not overwritten, then set this to True and you will be asked for each split.
 
+    Returns
+    ----------
+    shuffle_list: list
+        List of indices corresponding to the trainigsplits/models that were created.
+
     Example
     --------
-    >>> deeplabcut.create_training_model_comparison('/analysis/project/reaching-task/config.yaml',num_shuffles=1,net_types=['resnet_50','resnet_152'],augmenter_types=['tensorpack','deterministic'])
+    >>> shuffle_list = deeplabcut.create_training_model_comparison('/analysis/project/reaching-task/config.yaml',num_shuffles=1,net_types=['resnet_50','resnet_152'],augmenter_types=['tensorpack','deterministic'])
 
     Windows:
-    >>> deeplabcut.create_training_model_comparison('C:\\Users\\Ulf\\looming-task\\config.yaml',num_shuffles=1,net_types=['resnet_50','resnet_152'],augmenter_types=['tensorpack','deterministic'])
+    >>> shuffle_list = deeplabcut.create_training_model_comparison('C:\\Users\\Ulf\\looming-task\\config.yaml',num_shuffles=1,net_types=['resnet_50','resnet_152'],augmenter_types=['tensorpack','deterministic'])
+
+    See examples/testscript_openfielddata_augmentationcomparison.py for an example of how to use shuffle_list.
 
     --------
     """
@@ -1034,6 +1052,7 @@ def create_training_model_comparison(
 
     largestshuffleindex = get_largestshuffle_index(config)
 
+    shuffle_list = []
     for shuffle in range(num_shuffles):
         trainIndices, testIndices = mergeandsplit(
             config, trainindex=trainindex, uniform=True
@@ -1046,6 +1065,8 @@ def create_training_model_comparison(
                     + idx_net * len(augmenter_types)
                     + shuffle * len(augmenter_types) * len(net_types)
                 )
+
+                shuffle_list.append(get_max_shuffle_idx)
                 log_info = str(
                     "Shuffle index:"
                     + str(get_max_shuffle_idx)
@@ -1055,6 +1076,8 @@ def create_training_model_comparison(
                     + aug
                     + ", trainsetindex:"
                     + str(trainindex)
+                    + ", frozen shuffle ID:"
+                    + str(shuffle)
                 )
                 create_training_dataset(
                     config,
@@ -1066,3 +1089,5 @@ def create_training_model_comparison(
                     userfeedback=userfeedback,
                 )
                 logger.info(log_info)
+
+    return shuffle_list

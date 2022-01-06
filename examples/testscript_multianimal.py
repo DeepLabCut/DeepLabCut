@@ -111,7 +111,10 @@ if __name__ == "__main__":
     # Check the training image paths are correctly stored as arrays of strings
     trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
     datafile, _ = auxiliaryfunctions.GetDataandMetaDataFilenames(
-        trainingsetfolder, 0.8, 1, cfg,
+        trainingsetfolder,
+        0.8,
+        1,
+        cfg,
     )
     datafile = datafile.split(".mat")[0] + ".pickle"
     with open(os.path.join(cfg["project_path"], datafile), "rb") as f:
@@ -178,7 +181,9 @@ if __name__ == "__main__":
 
     print("Convert detections to tracklets...")
     deeplabcut.convert_detections2tracklets(
-        config_path, [new_video_path], "mp4",
+        config_path,
+        [new_video_path],
+        "mp4",
     )
     print("Tracklets created...")
 
@@ -191,25 +196,36 @@ if __name__ == "__main__":
 
     print("Plotting trajectories...")
     deeplabcut.plot_trajectories(
-        config_path, [new_video_path], "mp4",
+        config_path,
+        [new_video_path],
+        "mp4",
     )
     print("Trajectory plotted.")
 
     print("Creating labeled video...")
     deeplabcut.create_labeled_video(
-        config_path, [new_video_path], "mp4", save_frames=False, color_by="individual",
+        config_path,
+        [new_video_path],
+        "mp4",
+        save_frames=False,
+        color_by="individual",
     )
     print("Labeled video created.")
 
     print("Filtering predictions...")
     deeplabcut.filterpredictions(
-        config_path, [new_video_path], "mp4",
+        config_path,
+        [new_video_path],
+        "mp4",
     )
     print("Predictions filtered.")
 
     print("Extracting outlier frames...")
     deeplabcut.extract_outlier_frames(
-        config_path, [new_video_path], "mp4", automatic=True,
+        config_path,
+        [new_video_path],
+        "mp4",
+        automatic=True,
     )
     print("Outlier frames extracted.")
 

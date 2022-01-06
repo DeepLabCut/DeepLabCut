@@ -57,11 +57,11 @@ def analyze_videos(
     modelprefix="",
     robust_nframes=False,
     allow_growth=False,
+    use_shelve=False,
     auto_track=True,
     n_tracks=None,
     calibrate=False,
     identity_only=False,
-    use_shelve=False,
 ):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
@@ -126,14 +126,21 @@ def analyze_videos(
     allow_growth: bool, default false.
         For some smaller GPUs the memory issues happen. If true, the memory allocator does not pre-allocate the entire specified
         GPU memory region, instead starting small and growing as needed. See issue: https://forum.image.sc/t/how-to-stop-running-out-of-vram/30551/2
+    
+    use_shelve: bool, optional (default=False)
+        By default, data are dumped in a pickle file at the end of the video analysis.
+        Otherwise, data are written to disk on the fly using a "shelf"; i.e., a pickle-based,
+        persistent, database-like object by default, resulting in constant memory footprint.
 
+    The following parameters are only relevant for multi-animal projects:
+    
     auto_track: bool, optional (default=True)
         By default, tracking and stitching are automatically performed, producing the final h5 data file.
-        This is equivalent to the behavior of single-animal projects.
+        This is equivalent to the behavior for single-animal projects.
 
         If False, one must run `convert_detections2tracklets` and `stitch_tracklets` afterwards, in order to obtain the h5 file.
 
-        This function has 3 related sub-calls:
+    This function has 3 related sub-calls:
 
     identity_only: bool, optional (default=False)
         If True and animal identity was learned by the model,
@@ -149,12 +156,6 @@ def analyze_videos(
         of individuals defined in the config.yaml. Another number can be
         passed if the number of animals in the video is different from
         the number of animals the model was trained on.
-
-
-    use_shelve: bool, optional (default=False)
-        By default, data are dumped in a pickle file at the end of the video analysis.
-        Otherwise, data are written to disk on the fly using a "shelf"; i.e., a pickle-based,
-        persistent, database-like object by default, resulting in constant memory footprint.
 
     Examples
     --------
@@ -427,7 +428,7 @@ def checkcropping(cfg, cap):
 
 
 def GetPoseF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
-    """ Batchwise prediction of pose """
+    """Batchwise prediction of pose"""
     PredictedData = np.zeros(
         (nframes, dlc_cfg["num_outputs"] * 3 * len(dlc_cfg["all_joints_names"]))
     )
@@ -479,7 +480,7 @@ def GetPoseF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
 
 
 def GetPoseS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
-    """ Non batch wise pose estimation for video cap."""
+    """Non batch wise pose estimation for video cap."""
     if cfg["cropping"]:
         ny, nx = checkcropping(cfg, cap)
 
@@ -517,7 +518,7 @@ def GetPoseS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
 
 
 def GetPoseS_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
-    """ Non batch wise pose estimation for video cap."""
+    """Non batch wise pose estimation for video cap."""
     if cfg["cropping"]:
         ny, nx = checkcropping(cfg, cap)
 
@@ -562,7 +563,7 @@ def GetPoseS_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
 
 
 def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
-    """ Batchwise prediction of pose """
+    """Batchwise prediction of pose"""
     PredictedData = np.zeros((nframes, 3 * len(dlc_cfg["all_joints_names"])))
     batch_ind = 0  # keeps track of which image within a batch should be written to
     batch_num = 0  # keeps track of which batch you are at
@@ -633,7 +634,7 @@ def getboundingbox(x, y, nx, ny, margin):
 def GetPoseDynamic(
     cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, detectiontreshold, margin
 ):
-    """ Non batch wise pose estimation for video cap by dynamically cropping around previously detected parts."""
+    """Non batch wise pose estimation for video cap by dynamically cropping around previously detected parts."""
     if cfg["cropping"]:
         ny, nx = checkcropping(cfg, cap)
     else:
@@ -717,7 +718,7 @@ def AnalyzeVideo(
     TFGPUinference=True,
     dynamic=(False, 0.5, 10),
 ):
-    """ Helper function for analyzing a video. """
+    """Helper function for analyzing a video."""
     print("Starting to analyze % ", video)
 
     if destfolder is None:
@@ -845,17 +846,13 @@ def AnalyzeVideo(
 
 
 def GetPosesofFrames(
-    cfg, dlc_cfg, sess, inputs, outputs, directory, framelist, nframes, batchsize, rgb
+    cfg, dlc_cfg, sess, inputs, outputs, directory, framelist, nframes, batchsize
 ):
-    """ Batchwise prediction of pose for frame list in directory"""
-    # from skimage.io import imread
+    """Batchwise prediction of pose for frame list in directory"""
     from deeplabcut.utils.auxfun_videos import imread
 
     print("Starting to extract posture")
-    if rgb:
-        im = imread(os.path.join(directory, framelist[0]), mode="RGB")
-    else:
-        im = imread(os.path.join(directory, framelist[0]))
+    im = imread(os.path.join(directory, framelist[0]), mode="skimage")
 
     ny, nx, nc = np.shape(im)
     print(
@@ -897,11 +894,7 @@ def GetPosesofFrames(
 
     if batchsize == 1:
         for counter, framename in enumerate(framelist):
-            # frame=imread(os.path.join(directory,framename),mode='RGB')
-            if rgb:
-                im = imread(os.path.join(directory, framename), mode="RGB")
-            else:
-                im = imread(os.path.join(directory, framename))
+            im = imread(os.path.join(directory, framename), mode="skimage")
 
             if counter % step == 0:
                 pbar.update(step)
@@ -920,10 +913,7 @@ def GetPosesofFrames(
             (batchsize, ny, nx, 3), dtype="ubyte"
         )  # this keeps all the frames of a batch
         for counter, framename in enumerate(framelist):
-            if rgb:
-                im = imread(os.path.join(directory, framename), mode="RGB")
-            else:
-                im = imread(os.path.join(directory, framename))
+            im = imread(os.path.join(directory, framename), mode="skimage")
 
             if counter % step == 0:
                 pbar.update(step)
@@ -967,7 +957,6 @@ def analyze_time_lapse_frames(
     trainingsetindex=0,
     gputouse=None,
     save_as_csv=False,
-    rgb=True,
     modelprefix="",
 ):
     """
@@ -1002,9 +991,6 @@ def analyze_time_lapse_frames(
 
     save_as_csv: bool, optional
         Saves the predictions in a .csv file. The default is ``False``; if provided it must be either ``True`` or ``False``
-
-    rbg: bool, optional.
-        Whether to load image as rgb; Note e.g. some tiffs do not alow that option in imread, then just set this to false.
 
     Examples
     --------
@@ -1142,7 +1128,6 @@ def analyze_time_lapse_frames(
                     framelist,
                     nframes,
                     dlc_cfg["batch_size"],
-                    rgb,
                 )
                 stop = time.time()
 
@@ -1189,7 +1174,13 @@ def analyze_time_lapse_frames(
 
 
 def _convert_detections_to_tracklets(
-    cfg, inference_cfg, data, metadata, output_path, greedy=False, calibrate=False,
+    cfg,
+    inference_cfg,
+    data,
+    metadata,
+    output_path,
+    greedy=False,
+    calibrate=False,
 ):
     track_method = cfg.get("default_track_method", "ellipse")
     if track_method not in ("box", "skeleton", "ellipse"):
