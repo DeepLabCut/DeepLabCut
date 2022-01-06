@@ -1,0 +1,100 @@
+import numpy as np
+import pickle
+import os
+import pandas as pd
+from deeplabcut.refine_training_dataset.stitch import (
+    TrackletStitcher,
+    Tracklet,
+)
+
+from pathlib import Path
+
+from itertools import combinations
+from random import shuffle
+from mmappickle import mmapdict
+
+np.random.seed(0)
+
+
+def generate_train_triplets_from_pickle(path_to_el, num_triplets = 1000):
+    ts = TrackletStitcher.from_pickle(path_to_el, 3)
+    triplets = ts.mine(num_triplets)
+    assert len(triplets) == num_triplets
+    return triplets    
+        
+
+def query_feature_by_coord_in_img_space(feature_dict, frame_id, ref_coord):
+
+    features = feature_dict[frame_id]['features']
+    coordinates = feature_dict[frame_id]['coordinates']
+
+    diff = coordinates - ref_coord
+    diff[np.where(np.logical_or(diff>9000, diff< 0))] = np.nan
+    match_id = np.argmin(np.nanmean(diff, axis = (1,2)))
+    
+
+    return features[match_id]
+
+
+
+def save_train_triplets(feature_fname,triplets, out_name):
+    ret_vecs = []
+
+    feature_dict = mmapdict(feature_fname, True)
+
+
+    nframes = len(feature_dict.keys())
+    
+    zfill_width = int(np.ceil(np.log10(nframes)))
+    
+    for triplet in triplets:
+
+        anchor, pos, neg = triplet[0], triplet[1], triplet[2]
+
+        anchor_coord, anchor_frame = anchor
+        pos_coord, pos_frame = pos
+        neg_coord, neg_frame = neg
+
+        #if animal == 'pup' and anchor_coord.shape[0]!=5:
+        #    continue
+        
+        anchor_frame = 'frame'+str(anchor_frame).zfill(zfill_width)
+        pos_frame = 'frame'+str(pos_frame).zfill(zfill_width)
+        neg_frame = 'frame'+str(neg_frame).zfill(zfill_width)
+
+
+        anchor_vec = query_feature_by_coord_in_img_space(feature_dict,anchor_frame, anchor_coord)
+        pos_vec = query_feature_by_coord_in_img_space(feature_dict, pos_frame, pos_coord)
+        neg_vec = query_feature_by_coord_in_img_space(feature_dict, neg_frame, neg_coord)        
+
+        ret_vecs.append([anchor_vec,pos_vec,neg_vec])
+
+    ret_vecs = np.array(ret_vecs)
+
+    with open(out_name, 'wb') as f:
+        np.save(f, ret_vecs)
+
+
+
+def create_train_using_pickle(feature_fname, path_to_pickle, out_name):
+    triplets = generate_train_triplets_from_pickle(path_to_pickle)
+    save_train_triplets(feature_fname,triplets, out_name)
+
+
+
+def create_triplets_dataset(Videos, DLCscorer):
+
+
+    # 1) reference to video folder and get the proper bpt_feature file for feature table
+    # 2) get either the path to gt or the path to el pickle
+
+
+    for video in Videos:
+        vname = Path(video).stem
+        videofolder = str(Path(video).parents[0])
+        feature_fname = os.path.join(videofolder, vname + DLCscorer + '_bpt_features.mmdpickle')
+        el_file = os.path.join(videofolder, vname + DLCscorer + '_el.pickle')
+        out_fname = os.path.join(videofolder, vname + DLCscorer + '_triplet_vector.npy')
+        create_train_using_pickle(feature_fname, el_file, out_fname)
+    
+    

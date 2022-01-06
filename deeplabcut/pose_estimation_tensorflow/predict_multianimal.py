@@ -16,11 +16,103 @@ import numpy as np
 from skimage.util import img_as_ubyte
 from tqdm import tqdm
 
+from deeplabcut.pose_tracking_pytorch import load_features_from_coord, convert_coord_from_img_space_to_feature_space
 from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal as predict
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 from deeplabcut.utils.auxfun_videos import VideoWriter
 from deeplabcut import utils
 from mmappickle import mmapdict
+import pickle
+
+
+
+
+def Extract_Bpt_Feature_From_Video(
+    video,
+    DLCscorer,
+    trainFraction,
+    cfg,
+    dlc_cfg,
+    sess,
+    inputs,
+    outputs,
+    destfolder=None,
+    robust_nframes=False,
+    extra_dict = None):
+    
+    assert extra_dict!= None
+
+    
+    print("Starting to analyze % ", video)
+    vname = Path(video).stem
+    videofolder = str(Path(video).parents[0])
+    if destfolder is None:
+        destfolder = videofolder
+    auxiliaryfunctions.attempttomakefolder(destfolder)
+    dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
+
+    if os.path.exists(dataname.split('.h5')[0] +'_bpt_features.mmdpickle'):
+        return 
+    
+    assemble_filename = dataname.split('.h5')[0] + '_assemblies.pickle'
+
+    feature_dict = mmapdict(dataname.split('.h5')[0] +'_bpt_features.mmdpickle')
+    
+    with open(assemble_filename, 'rb') as f:
+        assemblies = pickle.load(f)
+        # assemblies has keys [1...  n_frame-1]
+        # at each key, there are a list of n_animals
+        # for each animal, there are arrays of keypoints
+        # only the first two are used    
+        
+        print("Loading ", video)
+        vid = VideoWriter(video)
+        if robust_nframes:
+            nframes = vid.get_n_frames(robust=True)
+            duration = vid.calc_duration(robust=True)
+            fps = nframes / duration
+        else:
+            nframes = len(vid)
+            duration = vid.calc_duration(robust=False)
+            fps = vid.fps
+
+        nx, ny = vid.dimensions
+        print(
+            "Duration of video [s]: ",
+            round(duration, 2),
+            ", recorded with ",
+            round(fps, 2),
+            "fps!",
+        )
+        print(
+            "Overall # of frames: ",
+            nframes,
+            " found with (before cropping) frame dimensions: ",
+            nx,
+            ny,
+        )
+        start = time.time()
+
+        print("Starting to extract posture")
+        if int(dlc_cfg["batch_size"]) > 1:
+            # for multi animal, seems only this is used
+            PredicteData, nframes = GetPoseandCostsF_from_assemblies(
+                cfg,
+                dlc_cfg,
+                sess,
+                inputs,
+                outputs,
+                vid,
+                nframes,
+                int(dlc_cfg["batch_size"]),
+                assemblies,
+                feature_dict,
+                extra_dict
+            )
+        else:
+            raise NotImplementedError('Not implemented yet')
+
+
 
 def AnalyzeMultiAnimalVideo(
     video,
@@ -122,6 +214,107 @@ def AnalyzeMultiAnimalVideo(
         _ = auxfun_multianimal.SaveFullMultiAnimalData(PredicteData, metadata, dataname)
 
 
+
+def GetPoseandCostsF_from_assemblies(
+        cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, assemblies, feature_dict, extra_dict
+):
+
+    """ Batchwise prediction of pose """
+    strwidth = int(np.ceil(np.log10(nframes)))  # width for strings
+    batch_ind = 0  # keeps track of which image within a batch should be written to
+    batch_num = 0  # keeps track of which batch you are at
+    if cfg["cropping"]:
+        cap.set_bbox(cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"])
+    nx, ny = cap.dimensions
+
+    frames = np.empty(
+        (batchsize, ny, nx, 3), dtype="ubyte"
+    )  # this keeps all frames in a batch
+    pbar = tqdm(total=nframes)
+    counter = 0
+    inds = []
+    feature_counter = 0 # counting how many features have been processed
+    block_counter = 0 # keeping track of the current block id
+    
+    project_path = cfg['project_path']
+    
+    PredicteData = {}
+
+    
+    while cap.video.isOpened():
+        frame = cap.read_frame(crop=cfg["cropping"])
+        if frame is not None:
+            frames[batch_ind] = img_as_ubyte(frame)
+            inds.append(counter)
+            if batch_ind == batchsize - 1:
+
+
+                D, features, keypoint_embedding = predict.predict_batched_peaks_and_costs(
+                    dlc_cfg, frames, sess, inputs, outputs, extra_dict = extra_dict
+                )
+
+                for i, (ind, data) in enumerate(zip(inds, D)):
+                    PredicteData["frame" + str(ind).zfill(strwidth)] = data                    
+                    fname = "frame" + str(ind).zfill(strwidth)
+
+                    raw_coords = assemblies[ind]
+                    coords_img_space = np.array([coord[:,:2] for coord in raw_coords]) # only first two columns are useful
+                    
+                    coords_feature_space = convert_coord_from_img_space_to_feature_space(coords_img_space)
+                    bpt_features = load_features_from_coord(features[i].astype(np.float16),  coords_feature_space)
+                    ## load features from coordinates
+                    ## handle multiple animals
+                    temp = {'features': bpt_features, 'coordinates': coords_img_space}
+                    feature_dict[fname] = temp                
+                        
+                batch_ind = 0
+                inds.clear()
+                batch_num += 1
+            else:
+                batch_ind += 1
+        elif counter >= nframes:
+            if batch_ind > 0:
+
+
+                D, features, keypoint_embedding = predict.predict_batched_peaks_and_costs(
+                    dlc_cfg, frames, sess, inputs, outputs, extra_dict = extra_dict
+                )
+                
+                for i, (ind, data) in enumerate(zip(inds, D)):
+                    PredicteData["frame" + str(ind).zfill(strwidth)] = data
+                    fname = "frame" + str(ind).zfill(strwidth)
+
+                    raw_coords = assemblies[ind]
+                    coords_img_space = np.array([coord[:,:2] for coord in raw_coords]) # only first two columns are useful
+                    
+                    coords_feature_space = convert_coord_from_img_space_to_feature_space(coords_img_space)
+                    bpt_features = load_features_from_coord(features[i].astype(np.float16),  coords_feature_space)                    
+                    temp = {'features': bpt_features, 'coordinates': coords_img_space}
+                    feature_dict[fname] = temp
+                        
+            break
+        counter += 1
+        pbar.update(1)
+
+    cap.close()
+    pbar.close()
+    PredicteData["metadata"] = {
+        "nms radius": dlc_cfg["nmsradius"],
+        "minimal confidence": dlc_cfg["minconfidence"],
+        "sigma": dlc_cfg.get("sigma", 1),
+        "PAFgraph": dlc_cfg["partaffinityfield_graph"],
+        "PAFinds": dlc_cfg.get(
+            "paf_best", np.arange(len(dlc_cfg["partaffinityfield_graph"]))
+        ),
+        "all_joints": [[i] for i in range(len(dlc_cfg["all_joints"]))],
+        "all_joints_names": [
+            dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))
+        ],
+        "nframes": nframes,
+    }
+    return PredicteData, nframes
+    
+
 def GetPoseandCostsF(
     cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, extra_dict = None
 ):
@@ -144,8 +337,8 @@ def GetPoseandCostsF(
     
     project_path = cfg['project_path']
 
-    DataPath = utils.inference.DataPath
-    save_features = False#False#DataPath.save_features
+
+    save_features = False
     if save_features:
         feature_dict = mmapdict(os.path.join(project_path,'features.mmdpickle'))
     PredicteData = {}

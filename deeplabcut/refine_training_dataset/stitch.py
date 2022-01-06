@@ -8,14 +8,11 @@ import re
 import scipy.linalg.interpolative as sli
 import warnings
 from collections import defaultdict
-from deeplabcut.utils import (
-    read_config,
-    auxiliaryfunctions,
-    auxfun_multianimal,
-    inference
-
-)
-from deeplabcut import utils
+from deeplabcut.pose_tracking_pytorch import inference
+import glob
+import deeplabcut
+from deeplabcut.utils.auxfun_videos import VideoWriter
+from functools import partial
 from itertools import combinations, cycle
 from networkx.algorithms.flow import preflow_push
 from pathlib import Path
@@ -23,7 +20,7 @@ from scipy.linalg import hankel
 from scipy.spatial.distance import directed_hausdorff
 from scipy.stats import mode
 from tqdm import trange
-
+from mmappickle import mmapdict
 
 class Tracklet:
     def __init__(self, data, inds):
@@ -1015,7 +1012,7 @@ def stitch_tracklets(
     destfolder=None,
     modelprefix="",
     output_name="",
-    use_trans = False,
+    transformer_checkpoint = '',
     animal = 'fish'    
         
 ):
@@ -1097,43 +1094,29 @@ def stitch_tracklets(
     -------
     A TrackletStitcher object
     """
-    vids = auxiliaryfunctions.Getlistofvideos(videos, videotype)
+    vids = deeplabcut.utils.auxiliaryfunctions.Getlistofvideos(videos, videotype)
     if not vids:
         print("No video(s) found. Please check your path!")
         return
 
-    cfg = read_config(config_path)
+    cfg = deeplabcut.utils.read_config(config_path)
     animal_names = cfg["individuals"]
     if n_tracks is None:
         n_tracks = len(animal_names)
 
-    DLCscorer, _ = auxiliaryfunctions.GetScorerName(
+    DLCscorer, _ = deeplabcut.utils.auxiliaryfunctions.GetScorerName(
         cfg,
         shuffle,
         cfg["TrainingFraction"][trainingsetindex],
         modelprefix=modelprefix,
     )
 
-    if use_trans:
+    
+    if transformer_checkpoint:        
+        dlctrans = inference.DLCTrans(checkpoint = transformer_checkpoint)
 
-        kpts_num_dict = {'3mice': 12, 'fish': 3, 'pup':5, 'marmoset': 15}
-
-        kpts_num = kpts_num_dict[animal]
-        
-        DataPath = utils.inference.DataPath(animal = animal)
-
-        data_folder = DataPath.data_folder
-        
-        path_to_features = DataPath.path_to_features
-        
-        path_to_features = os.path.join(data_folder,path_to_features)
-
-        checkpoint = DataPath.checkpoint
-        
-        dlctrans = inference.DLCTrans(checkpoint = checkpoint, kpts_num = kpts_num, path_to_features = path_to_features, animal = animal)
-
-    def trans_weight_func(tracklet1,tracklet2):
-
+    def trans_weight_func(tracklet1, tracklet2, nframe, feature_dict):
+        zfill_width = int(np.ceil(np.log10(nframe)))
         if tracklet1 < tracklet2:
             ind_img1 = tracklet1.inds[-1]            
             coord1 = tracklet1.data[-1][:,:2]
@@ -1147,18 +1130,28 @@ def stitch_tracklets(
         t1 = (coord1, ind_img1)
         t2 = (coord2, ind_img2)
 
-        dist = dlctrans(t1,t2)
+        dist = dlctrans(t1,t2,zfill_width, feature_dict)
         dist = (dist+1)/2
 
         return -dist
 
     for video in vids:
         print("Processing... ", video)
+        nframe = len(VideoWriter(video))
         videofolder = str(Path(video).parents[0])
         dest = destfolder or videofolder
-        auxiliaryfunctions.attempttomakefolder(dest)
+        deeplabcut.utils.auxiliaryfunctions.attempttomakefolder(dest)
         vname = Path(video).stem
+
+        feature_dict_path = glob.glob(os.path.join(videofolder,vname+'*.mmdpickle'))
+        # should only exist one
+        assert len(feature_dict_path) == 1
+        
+        feature_dict = mmapdict(feature_dict_path[0], True)        
         dataname = os.path.join(dest, vname + DLCscorer + ".h5")
+
+        
+        
         if track_method == "ellipse":
             method = "el"
         elif track_method == "box":
@@ -1177,8 +1170,8 @@ def stitch_tracklets(
                     w = 0.01 if t1.identity == t2.identity else 1
                     return w * stitcher.calculate_edge_weight(t1, t2)
 
-            if use_trans:
-                stitcher.build_graph(max_gap=max_gap, weight_func=trans_weight_func)
+            if transformer_checkpoint:
+                stitcher.build_graph(max_gap=max_gap, weight_func=partial(trans_weight_func,nframe = nframe, feature_dict = feature_dict))
             else:
                 stitcher.build_graph(max_gap=max_gap, weight_func=weight_func)
 
