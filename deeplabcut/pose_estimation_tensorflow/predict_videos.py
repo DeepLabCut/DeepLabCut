@@ -58,7 +58,9 @@ def create_tracking_dataset(
     dynamic=(False, 0.5, 10),
     modelprefix="",
     robust_nframes=False,
-    allow_growth=False        
+    allow_growth=False,
+    n_triplets = 1000
+        
 ):
     if "TF_CUDNN_USE_AUTOTUNE" in os.environ:
         del os.environ["TF_CUDNN_USE_AUTOTUNE"]  # was potentially set during training
@@ -210,7 +212,7 @@ def create_tracking_dataset(
                     robust_nframes=robust_nframes,
                     extra_dict = extra_dict
                 )
-            create_triplets_dataset(Videos, DLCscorer)
+            create_triplets_dataset(Videos, DLCscorer, n_triplets = n_triplets)
             
         else:
             raise NotImplementedError('not implmented')

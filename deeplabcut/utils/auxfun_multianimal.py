@@ -15,6 +15,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from mmappickle import mmapdict
 
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.generate_training_dataset import trainingsetmanipulation
@@ -107,26 +108,7 @@ def SaveFullMultiAnimalData(data, metadata, dataname, suffix="_full"):
     """ Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py """
     data_path = dataname.split(".h5")[0] + suffix + ".pickle"
     metadata_path = dataname.split(".h5")[0] + "_meta.pickle"
-
-    keypoint_embedding_path = dataname.split('.h5')[0] +'_keypoint_embedding.pickle'
-    keypoint_embedding_exist = False
-    
-
-    for k in data.keys():
-        if 'keypoint_embedding_' in k:
-            keypoint_embedding_exist = True
-            break
-    if keypoint_embedding_exist:
-        keypoint_embedding_dict = {}
-        for key in list(data.keys()):
-            if 'keypoint_embedding_' in key:
-                keypoint_embedding = data[key]
-                new_key = key.replace('keypoint_embedding_','')
-                keypoint_embedding_dict[new_key] = keypoint_embedding
-                data.pop(key,None)
-        with open(keypoint_embedding_path, 'wb') as f:
-            pickle.dump(keypoint_embedding_dict, f, pickle.HIGHEST_PROTOCOL)
-        
+            
     
     with open(data_path, "wb") as f:
         pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
@@ -135,6 +117,17 @@ def SaveFullMultiAnimalData(data, metadata, dataname, suffix="_full"):
     return data_path, metadata_path
 
 
+
+
+def LoadFullMultiAnimalData(dataname):
+    """ Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py """
+
+    data_dict = mmapdict(dataname, True) 
+
+    return data, data_dict['metadata']
+    
+
+'''
 def LoadFullMultiAnimalData(dataname):
     """ Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py """
     with open(dataname.split(".h5")[0] + "_full.pickle", "rb") as handle:
@@ -142,7 +135,7 @@ def LoadFullMultiAnimalData(dataname):
     with open(dataname.split(".h5")[0] + "_meta.pickle", "rb") as handle:
         metadata = pickle.load(handle)
     return data, metadata
-
+'''
 
 def returnlabelingdata(config):
     """ Returns a specific labeleing data set -- the user will be asked which one. """

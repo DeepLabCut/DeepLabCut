@@ -54,7 +54,7 @@ def split_train_test(npy_list):
     return train_list, test_list
     
     
-def train_tracking_transformer(videos):
+def train_tracking_transformer(path_config_file, videos, modelprefix = '',  train_epochs = 100, ckpt_folder = ''):
 
     npy_list = []
     for video in videos:
@@ -91,7 +91,7 @@ def train_tracking_transformer(videos):
 
     num_query = 1
 
-
+    
     do_dlc_train(
         cfg,
         model,
@@ -101,7 +101,7 @@ def train_tracking_transformer(videos):
         optimizer,
         scheduler,
         num_kpts,
-        num_query, 0,  total_epochs = 100
+        num_query, 0,  total_epochs = train_epochs, ckpt_folder = ckpt_folder
     )
 
 

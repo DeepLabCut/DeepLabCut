@@ -901,10 +901,10 @@ class TrackletStitcher:
             df = df.join(df2, how="outer")
         return df
 
-    def write_tracks(self, output_name="", animal_names=None):
+    def write_tracks(self, output_name="", suffix = '', animal_names=None):
         df = self.format_df(animal_names)
         if not output_name:
-            output_name = self.filename.replace("pickle", "h5")
+            output_name = self.filename.replace("pickle", "h5").replace('.', '_'+suffix+'.')
         df.to_hdf(output_name, "tracks", format="table", mode="w")
 
     @staticmethod
@@ -1176,6 +1176,9 @@ def stitch_tracklets(
                 stitcher.build_graph(max_gap=max_gap, weight_func=weight_func)
 
             stitcher.stitch()
-            stitcher.write_tracks(output_name, animal_names)
+            if transformer_checkpoint:
+                stitcher.write_tracks(output_name = output_name, animal_names = animal_names, suffix = 'trans')
+            else:
+                stitcher.write_tracks(output_name = output_name, animal_names = animal_names, suffix = '')
         except FileNotFoundError as e:
             print(e, "\nSkipping...")
