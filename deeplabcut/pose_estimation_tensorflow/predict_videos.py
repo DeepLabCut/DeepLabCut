@@ -1365,9 +1365,6 @@ def convert_detections2tracklets(
         warnings.warn("Switching to `box` tracker for single point tracking...")
         track_method = "box"
 
-    cfg["default_track_method"] = track_method
-    auxiliaryfunctions.write_config(config, cfg)
-
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     start_path = os.getcwd()  # record cwd to return to this directory in the end
 
