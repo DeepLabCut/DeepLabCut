@@ -38,7 +38,7 @@ def get_track_method(cfg, track_method=""):
                 )
             return track_method
         else: # default
-            if cfg.get("default_track_method", "") == "": #check if empty default
+            if cfg.get("default_track_method", "") is None: #check if empty default
                 print("Empty def. tracker in config file found, overwritten by ellipse tracker.")
                 cfg["default_track_method"] = "ellipse"
                 auxiliaryfunctions.write_config(config, cfg)
