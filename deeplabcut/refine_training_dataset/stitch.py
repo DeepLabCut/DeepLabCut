@@ -9,7 +9,7 @@ import scipy.linalg.interpolative as sli
 import warnings
 from collections import defaultdict
 from deeplabcut.pose_estimation_tensorflow.lib.trackingutils import calc_iou
-from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 from itertools import combinations, cycle
 from networkx.algorithms.flow import preflow_push
 from pathlib import Path
@@ -959,6 +959,7 @@ def stitch_tracklets(
     weight_func=None,
     destfolder=None,
     modelprefix="",
+    track_method="",
     output_name="",
 ):
     """
@@ -1027,6 +1028,11 @@ def stitch_tracklets(
         Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this
         folder also needs to be passed.
 
+    track_method: string, optional
+         Specifies the tracker used to generate the pose estimation data.
+         For multiple animals, must be either 'box', 'skeleton', or 'ellipse'
+         and will be taken from the config.yaml file if none is given.
+
     output_name : str, optional
         Name of the output h5 file.
         By default, tracks are automatically stored into the same directory
@@ -1042,7 +1048,9 @@ def stitch_tracklets(
         return
 
     cfg = auxiliaryfunctions.read_config(config_path)
-    track_method = cfg.get("default_track_method", "ellipse")
+    track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
+
+
     animal_names = cfg["individuals"]
     if n_tracks is None:
         n_tracks = len(animal_names)

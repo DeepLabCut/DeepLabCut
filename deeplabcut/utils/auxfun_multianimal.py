@@ -31,10 +31,14 @@ def extractindividualsandbodyparts(cfg):
 def get_track_method(cfg, track_method=""):
     if cfg.get("multianimalproject", False):
         if track_method != "":
-            # TODO: check if this tracker actually exists?
-            return cfg.get("default_track_method", track_method)  #
-        else:
-            return ""
+            # check if it exists:
+            if track_method not in ("box", "skeleton", "ellipse"):
+                raise ValueError(
+                    "Invalid tracking method. Only `box`, `skeleton` and `ellipse` are currently supported."
+                )
+            return track_method
+        else: # default
+            return cfg.get("default_track_method", "ellipse")
     else:  # no tracker for single-animal projects
         return ""
 

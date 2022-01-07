@@ -11,9 +11,9 @@ MODELS = ["dlcrnet_ms5", "dlcr101_ms5", "efficientnet-b0", "mobilenet_v2_0.35"]
 
 
 N_ITER = 5
+TESTTRACKER = 'ellipse'
 
-
-USE_SHELVE = random.choice([True, False])
+USE_SHELVE = False #random.choice([True, False])
 
 if __name__ == "__main__":
 
@@ -184,6 +184,7 @@ if __name__ == "__main__":
         config_path,
         [new_video_path],
         "mp4",
+        track_method=TESTTRACKER
     )
     print("Tracklets created...")
 
@@ -192,6 +193,7 @@ if __name__ == "__main__":
         [new_video_path],
         "mp4",
         output_name=os.path.splitext(new_video_path)[0] + scorer + "_el.h5",
+        track_method=TESTTRACKER
     )
 
     print("Plotting trajectories...")
@@ -199,6 +201,7 @@ if __name__ == "__main__":
         config_path,
         [new_video_path],
         "mp4",
+        track_method=TESTTRACKER
     )
     print("Trajectory plotted.")
 
@@ -209,6 +212,7 @@ if __name__ == "__main__":
         "mp4",
         save_frames=False,
         color_by="individual",
+        track_method=TESTTRACKER
     )
     print("Labeled video created.")
 
@@ -217,6 +221,7 @@ if __name__ == "__main__":
         config_path,
         [new_video_path],
         "mp4",
+        track_method=TESTTRACKER
     )
     print("Predictions filtered.")
 
@@ -226,6 +231,7 @@ if __name__ == "__main__":
         [new_video_path],
         "mp4",
         automatic=True,
+        track_method=TESTTRACKER
     )
     print("Outlier frames extracted.")
 
@@ -278,6 +284,7 @@ if __name__ == "__main__":
 
     print("Network evaluated....")
 
+    print("Analyzing video with auto_track....")
     deeplabcut.analyze_videos(
         config_path,
         [new_video_path],
@@ -286,7 +293,7 @@ if __name__ == "__main__":
         cropping=[0, 50, 0, 50],
         allow_growth=True,
         use_shelve=USE_SHELVE,
-        auto_track=False,
+        auto_track=True,
     )
 
     print("Export model...")

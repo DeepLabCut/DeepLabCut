@@ -292,6 +292,7 @@ def extract_outlier_frames(
     )
     if not len(bodyparts):
         raise ValueError("No valid bodyparts were selected.")
+
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
 
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
