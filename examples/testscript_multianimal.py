@@ -293,7 +293,7 @@ if __name__ == "__main__":
         cropping=[0, 50, 0, 50],
         allow_growth=True,
         use_shelve=USE_SHELVE,
-        auto_track=True,
+        auto_track=False,
     )
 
     print("Export model...")
