@@ -126,14 +126,14 @@ def analyze_videos(
     allow_growth: bool, default false.
         For some smaller GPUs the memory issues happen. If true, the memory allocator does not pre-allocate the entire specified
         GPU memory region, instead starting small and growing as needed. See issue: https://forum.image.sc/t/how-to-stop-running-out-of-vram/30551/2
-    
+
     use_shelve: bool, optional (default=False)
         By default, data are dumped in a pickle file at the end of the video analysis.
         Otherwise, data are written to disk on the fly using a "shelf"; i.e., a pickle-based,
         persistent, database-like object by default, resulting in constant memory footprint.
 
     The following parameters are only relevant for multi-animal projects:
-    
+
     auto_track: bool, optional (default=True)
         By default, tracking and stitching are automatically performed, producing the final h5 data file.
         This is equivalent to the behavior for single-animal projects.
@@ -342,7 +342,7 @@ def analyze_videos(
                     robust_nframes=robust_nframes,
                     use_shelve=use_shelve,
                 )
-                if auto_track:
+                if auto_track: # tracker type is taken from default in cfg
                     convert_detections2tracklets(
                         config,
                         [video],
@@ -1187,6 +1187,7 @@ def _convert_detections_to_tracklets(
         raise ValueError(
             "Invalid tracking method. Only `box`, `skeleton` and `ellipse` are currently supported."
         )
+
     joints = data["metadata"]["all_joints_names"]
     partaffinityfield_graph = data["metadata"]["PAFgraph"]
     paf_inds = data["metadata"]["PAFinds"]
@@ -1282,6 +1283,7 @@ def convert_detections2tracklets(
     calibrate=False,
     window_size=0,
     identity_only=False,
+    track_method="",
 ):
     """
     This should be called at the end of deeplabcut.analyze_videos for multianimal projects!
@@ -1334,15 +1336,25 @@ def convert_detections2tracklets(
         If True and animal identity was learned by the model,
         assembly and tracking rely exclusively on identity prediction.
 
+    track_method: string, optional
+         Specifies the tracker used to generate the pose estimation data.
+         For multiple animals, must be either 'box', 'skeleton', or 'ellipse'
+         and will be taken from the config.yaml file if none is given.
+
+
     Examples
     --------
     If you want to convert detections to tracklets:
     >>> deeplabcut.convert_detections2tracklets('/analysis/project/reaching-task/config.yaml',[]'/analysis/project/video1.mp4'], videotype='.mp4')
+
+    If you want to convert detections to tracklets based on box_tracker:
+    >>> deeplabcut.convert_detections2tracklets('/analysis/project/reaching-task/config.yaml',[]'/analysis/project/video1.mp4'], videotype='.mp4',track_method='box')
+
     --------
 
     """
     cfg = auxiliaryfunctions.read_config(config)
-    track_method = cfg.get("default_track_method", "ellipse")
+    track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
 
     if track_method not in ("box", "skeleton", "ellipse"):
         raise ValueError(
