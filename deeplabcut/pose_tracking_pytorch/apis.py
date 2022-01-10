@@ -7,6 +7,44 @@ from .eval_tracker import *
 import glob
 
 def transformer_reID(path_config_file, videos, modelprefix = '', n_tracks=3, track_method ='ellipse', train_epochs = 100, n_triplets = 1000, shuffle = 1):
+
+    """
+    
+    Performs tracking with transformer. 
+
+    Substeps include:
+
+    Mines triplets from videos and these triplets are later used to tran a transformer that's
+    able to perform reID. The transformer is then used as a stitching loss when tracklets are
+    stitched during tracking.
+
+    Outputs: The tracklet file is saved as _el_trans.h5 in the same folder where the non transformer tracklet file is stored.
+     
+    Parameters
+    ----------
+    path_config_file: string
+        Full path of the config.yaml file as a string.
+
+    videos: list
+        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
+    
+    n_tracks: (optinal), int    
+         
+        number of tracks to be formed in the videos. (TODO) handling videos with different number of tracks
+     
+    train_epochs: (optional), int
+        
+        number of epochs to train the transformer
+
+    n_triplets: (optional) int
+        
+        number of triplets to be mined from the videos
+
+
+
+    """
+    
+    
     # calling create_tracking_dataset, train_tracking_transformer, stitch_tracklets
 
     # should take number of triplets to mine
@@ -35,6 +73,41 @@ def transformer_reID(path_config_file, videos, modelprefix = '', n_tracks=3, tra
 
 def eval_tracking(path_config_file, path_to_ground_truth, video, modelprefix = '',  n_tracks = 3, top_frames = 5, shuffle = 1, use_trans = False):
 
+    """
+    
+    Evaluating tracking result based on ground truth for a video
+
+    Outputs: standard tracking metrics such as mota
+     
+    Parameters
+    ----------
+    path_config_file: string
+        Full path of the config.yaml file as a string.
+
+    path_to_ground_truth
+
+        tracking ground truth file to the video 
+
+    video: string
+        Path to the video we want to evaluate
+    
+    top_frames: (optional), float, in the range (0,100) as percentage
+        
+        Pick the hardest frames sorted by how close animals are
+
+    n_tracks: (optinal), int    
+         
+        number of tracks to be formed in the videos. (TODO) handling videos with different number of tracks
+
+    use_trans: (optional) boolean
+
+        if true, evaluate transformer based tracking. if false, evaluate non transformer based tracking
+
+
+    """
+
+
+    
     if use_trans:
         eval_transformer(path_config_file, path_to_ground_truth, video, modelprefix = modelprefix,  n_tracks = n_tracks, top_frames = top_frames, shuffle = shuffle)
     else:
@@ -83,6 +156,10 @@ def eval_non_transformer(path_config_file, path_to_ground_truth, video, modelpre
     
 def eval_transformer(path_config_file, path_to_ground_truth, video, modelprefix = '',  n_tracks = 3, top_frames = 5, shuffle = 1):
 
+
+
+
+    
     # get path_to_el_pickle from video path
     # get path_to_features from video path
 
