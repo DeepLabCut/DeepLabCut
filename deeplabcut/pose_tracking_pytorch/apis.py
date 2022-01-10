@@ -33,6 +33,54 @@ def transformer_reID(path_config_file, videos, modelprefix = '', n_tracks=3, tra
     deeplabcut.stitch_tracklets(path_config_file, videos, track_method=track_method, modelprefix = modelprefix, n_tracks = n_tracks , transformer_checkpoint = transformer_checkpoint)
     
 
+def eval_tracking(path_config_file, path_to_ground_truth, video, modelprefix = '',  n_tracks = 3, top_frames = 5, shuffle = 1, use_trans = False):
+
+    if use_trans:
+        eval_transformer(path_config_file, path_to_ground_truth, video, modelprefix = modelprefix,  n_tracks = n_tracks, top_frames = top_frames, shuffle = shuffle)
+    else:
+        eval_non_transformer(path_config_file, path_to_ground_truth, video, modelprefix = modelprefix,  n_tracks = n_tracks, top_frames = top_frames, shuffle = shuffle)
+
+def eval_non_transformer(path_config_file, path_to_ground_truth, video, modelprefix = '',  n_tracks = 3, top_frames = 5, shuffle = 1):
+    
+
+    vname = Path(video).stem
+    videofolder = str(Path(video).parents[0])
+
+    el_fnames = glob.glob(os.path.join(videofolder, vname +'*_el.pickle'))
+
+    assert len(el_fnames) == 1
+    
+    path_to_el_pickle = el_fnames[0]
+
+    prox, viz = calc_proximity_and_visibility_indices(path_to_ground_truth)
+
+    thres = np.percentile(prox, 100-top_frames)
+
+    crossing_indices =  prox>thres
+
+    crossing_frames = np.where(crossing_indices == True)
+
+    ground_truth = pd.read_hdf(path_to_ground_truth)
+    
+    ground_truth_data = reconstruct_all_bboxes(
+        ground_truth, 0, to_xywh=True
+    )
+
+    stitcher = TrackletStitcher.from_pickle(path_to_el_pickle, n_tracks)
+
+    stitcher.build_graph()
+    stitcher.stitch()
+    df = stitcher.format_df().reindex(range(ground_truth_data.shape[1]))
+    bboxes_with_stitcher = reconstruct_all_bboxes(df, 0, to_xywh=True)    
+    
+    try:
+        temp = compute_mot_metrics_bboxes(bboxes_with_stitcher[:,crossing_indices,:], ground_truth_data[:,crossing_indices,:])
+    except:
+        temp = compute_mot_metrics_bboxes(bboxes_with_stitcher, ground_truth_data)
+
+    print_all_metrics([temp])
+
+    
 def eval_transformer(path_config_file, path_to_ground_truth, video, modelprefix = '',  n_tracks = 3, top_frames = 5, shuffle = 1):
 
     # get path_to_el_pickle from video path

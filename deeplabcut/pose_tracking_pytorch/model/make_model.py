@@ -432,18 +432,6 @@ __factory_T_type = {
     'dlc_transreid': dlc_base_kpt_TransReID
 }
 
-def make_model(cfg, num_class, camera_num, view_num):
-    if cfg.MODEL.NAME == 'transformer':
-        if cfg.MODEL.JPM:
-            model = build_transformer_local(num_class, camera_num, view_num, cfg, __factory_T_type, rearrange=cfg.MODEL.RE_ARRANGE)
-            print('===========building transformer with JPM module ===========')
-        else:
-            model = build_transformer(num_class, camera_num, view_num, cfg, __factory_T_type)
-            print('===========building transformer===========')
-    else:
-        model = Backbone(num_class, cfg)
-        print('===========building ResNet===========')
-    return model
 
 
 def make_dlc_model(cfg, kpt_num):
