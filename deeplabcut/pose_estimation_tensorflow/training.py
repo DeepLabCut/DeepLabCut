@@ -13,7 +13,7 @@ from pathlib import Path
 
 
 def return_train_network_path(config, shuffle=1, trainingsetindex=0, modelprefix=""):
-    """ Returns the training and test pose config file names as well as the folder where the snapshot is
+    """Returns the training and test pose config file names as well as the folder where the snapshot is
     Parameters
     ----------
     config : string

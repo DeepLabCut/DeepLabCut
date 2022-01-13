@@ -236,7 +236,9 @@ class MAImgaugPoseDataset(BasePoseDataset):
             im_file = data_item.im_path
 
             logging.debug("image %s", im_file)
-            image = imread(os.path.join(self.cfg["project_path"], im_file), mode="RGB")
+            image = imread(
+                os.path.join(self.cfg["project_path"], im_file), mode="skimage"
+            )
             if self.has_gt:
                 Joints = data_item.joints
                 joint_id = [
@@ -252,7 +254,12 @@ class MAImgaugPoseDataset(BasePoseDataset):
         return batch_images, joint_ids, batch_joints, data_items
 
     def get_targetmaps_update(
-        self, joint_ids, joints, data_items, sm_size, scale,
+        self,
+        joint_ids,
+        joints,
+        data_items,
+        sm_size,
+        scale,
     ):
         part_score_targets = []
         part_score_weights = []
@@ -315,7 +322,12 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
     def next_batch(self, plotting=False):
         while True:
-            (batch_images, joint_ids, batch_joints, data_items,) = self.get_batch()
+            (
+                batch_images,
+                joint_ids,
+                batch_joints,
+                data_items,
+            ) = self.get_batch()
 
             # Scale is sampled only once (per batch) to transform all of the images into same size.
             target_size, sm_size = self.calc_target_and_scoremap_sizes()

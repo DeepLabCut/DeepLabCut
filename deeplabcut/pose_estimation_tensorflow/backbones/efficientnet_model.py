@@ -386,7 +386,7 @@ class MBConvBlockWithoutDepthwise(MBConvBlock):
 
 class Model(tf.keras.Model):
     """A class implements tf.keras.Model for MNAS-like model.
-      Reference: https://arxiv.org/abs/1807.11626
+    Reference: https://arxiv.org/abs/1807.11626
     """
 
     def __init__(self, blocks_args=None, global_params=None):

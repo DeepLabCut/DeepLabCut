@@ -226,14 +226,14 @@ def extract_maps(
             DATA = {}
             for imageindex, imagename in tqdm(Indices):
                 image = imread(
-                    os.path.join(cfg["project_path"], *imagename), mode="RGB"
+                    os.path.join(cfg["project_path"], *imagename), mode="skimage"
                 )
-                if image.shape[-1] == 4:
-                    image = rgba2rgb(image)
+
                 if scale != 1:
                     image = imresize(image, scale)
 
                 image_batch = data_to_input(image)
+
                 # Compute prediction with the CNN
                 outputs_np = sess.run(outputs, feed_dict={inputs: image_batch})
 
