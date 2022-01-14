@@ -158,18 +158,19 @@ def create_new_project(
             except OSError:
                 try:
                     import subprocess
+
                     subprocess.check_call("mklink %s %s" % (dst, src), shell=True)
                 except OSError:
-                    print("Symlink creation impossible (exFat architecture?): "
-                          "cutting/pasting the video instead.")
+                    print(
+                        "Symlink creation impossible (exFat architecture?): "
+                        "cutting/pasting the video instead."
+                    )
                     shutil.move(os.fspath(src), os.fspath(dst))
                     print("{} moved to {}".format(src, dst))
             videos = destinations
 
     if copy_videos == True:
-        videos = (
-            destinations
-        )  # in this case the *new* location should be added to the config file
+        videos = destinations  # in this case the *new* location should be added to the config file
 
     # adds the video list to the config.yaml file
     video_sets = {}
@@ -213,6 +214,7 @@ def create_new_project(
         ]
         cfg_file["default_augmenter"] = "multi-animal-imgaug"
         cfg_file["default_net_type"] = "dlcrnet_ms5"
+        cfg_file["default_track_method"] = "ellipse"
     else:
         cfg_file, ruamelFile = auxiliaryfunctions.create_config_template()
         cfg_file["multianimalproject"] = False
@@ -240,9 +242,7 @@ def create_new_project(
     cfg_file["y2"] = 624
     cfg_file[
         "batch_size"
-    ] = (
-        8
-    )  # batch size during inference (video - analysis); see https://www.biorxiv.org/content/early/2018/10/30/457242
+    ] = 8  # batch size during inference (video - analysis); see https://www.biorxiv.org/content/early/2018/10/30/457242
     cfg_file["corner2move2"] = (50, 50)
     cfg_file["move2corner"] = True
     cfg_file["skeleton_color"] = "black"

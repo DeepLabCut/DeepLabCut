@@ -2,168 +2,46 @@
 # -*- coding: utf-8 -*-
 """
 
-This is a test script to compare the loaders. tensorpack allows much more choices for augmentation. The parameters
-can be set in pose_dataset_tensorpack.py and of course specifically in each pose_config.yaml file before training. In fact,
-pose_dataset_tensorpack.py will fall back to default parameters if they are not defined in pose_config.yaml and one is
-using dataset_type:'tensorpack'
+This is a test script to compare the loaders and models. 
 
-This script creates one identical split for the openfield test dataset and trains it with the
-standard loader and the tensorpack loader for k iterations in DLC 2.0 docker with TF 1.8 on a NVIDIA GTX 1080Ti.
+This script creates one identical splits for the openfield test dataset and trains it with imgaug (default), scalecrop
+and the tensorpack loader. We also compare 3 backbones (mobilenet, resnet, efficientnet)
 
-My results were (Run with DLC 2.0.9 in Sept 2019)
+My results were (Run with DLC *2.2.0.4* in Jan 6 2022) for 50 k iterations
 
-**With standard loader:**
+DLC_mobnet_35_openfieldOct30shuffle0_50000 and Imgaug with # of training iterations: 50000
+Results for 50000 training iterations: 95 0 train error: 3.06 pixels. Test error: 3.44 pixels.
+With pcutoff of 0.4 train error: 3.06 pixels. Test error: 3.44 pixel
 
-Training iterations:	%Training dataset	Shuffle number	 Train error(px)	 Test error(px)	p-cutoff used	Train error with p-cutoff	Test error with p-cutoff
-10000	80	2	2.64	3.11	0.4	2.64	3.11
-20000	80	2	2.26	2.72	0.4	2.26	2.72
-30000	80	2	1.71	2.28	0.4	1.71	2.28
-40000	80	2	1.88	2.61	0.4	1.88	2.61
-50000	80	2	1.86	2.32	0.4	1.86	2.32
-60000	80	2	1.92	2.42	0.4	1.92	2.42
-70000	80	2	2.38	3.04	0.4	2.38	3.04
-80000	80	2	1.55	2.34	0.4	1.55	2.34
-90000	80	2	1.5	2.27	0.4	1.5	2.27
-100000	80	2	1.52	2.34	0.4	1.52	2.34
+DLC_mobnet_35_openfieldOct30shuffle1_50000 and scalecrop with # of training iterations: 50000
+Results for 50000 training iterations: 95 1 train error: 2.44 pixels. Test error: 3.84 pixels.
+With pcutoff of 0.4 train error: 2.44 pixels. Test error: 3.84 pixels
 
+DLC_mobnet_35_openfieldOct30shuffle2_50000 and tensorpack with # of training iterations: 50000
+Results for 50000 training iterations: 95 2 train error: 2.41 pixels. Test error: 3.04 pixels.
+With pcutoff of 0.4 train error: 2.41 pixels. Test error: 3.04 pixels
 
-**With tensorpack loader:**
+DLC_resnet50_openfieldOct30shuffle3_50000 and Imgaug with # of training iterations: 50000
+Results for 50000 training iterations: 95 3 train error: 2.69 pixels. Test error: 2.97 pixels.
+With pcutoff of 0.4 train error: 2.69 pixels. Test error: 2.97 pixels
 
-Training iterations:	%Training dataset	Shuffle number	 Train error(px)	 Test error(px)	p-cutoff used	Train error with p-cutoff	Test error with p-cutoff
-10000	80	3	2.35	2.91	0.4	2.35	2.91
-20000	80	3	3.28	3.51	0.4	3.28	3.51
-30000	80	3	1.57	2.24	0.4	1.57	2.24
-40000	80	3	3.54	4.17	0.4	3.54	4.17
-50000	80	3	1.76	2.74	0.4	1.76	2.74
-60000	80	3	2.85	3.39	0.4	2.85	3.39
-70000	80	3	3.88	4.71	0.4	3.88	4.71
-80000	80	3	1.2	2.06	0.4	1.2	2.06
-90000	80	3	2.2	3.07	0.4	2.2	3.07
-100000	80	3	1.06	1.96	0.4	1.06	1.96
+DLC_resnet50_openfieldOct30shuffle4_50000 and scalecrop with # of training iterations: 50000
+Results for 50000 training iterations: 95 4 train error: 2.0 pixels. Test error: 2.69 pixels.
+With pcutoff of 0.4 train error: 2.0 pixels. Test error: 2.69 pixels
 
+DLC_resnet50_openfieldOct30shuffle5_50000 and tensorpack with # of training iterations: 50000
+Results for 50000 training iterations: 95 5 train error: 1.96 pixels. Test error: 2.65 pixels.
+With pcutoff of 0.4 train error: 1.96 pixels. Test error: 2.65 pixels
 
-For details on TensorPack check out:
+DLC_effnet_b3_openfieldOct30shuffle6_50000 with Imgaug with # of training iterations: 50000
+Results for 50000 training iterations: 95 6 train error: 2.63 pixels. Test error: 2.65 pixels.
+With pcutoff of 0.4 train error: 2.63 pixels. Test error: 2.65 pixels
 
-A Neural Net Training Interface on TensorFlow, with focus on speed + flexibility
-https://github.com/tensorpack/tensorpack
+effnet with tensorpack and scalecrop didn't converge.
 
-My results were (Run with DLC 2.2b5 in May 2020) for 20k iterations
-
-Imagaug augmentation:
-
-Results for 20000  training iterations: 95 1 train error: 3.25 pixels. Test error: 4.98  pixels.
-With pcutoff of 0.4  train error: 3.25 pixels. Test error: 4.98 pixels
-
-Default augmentation:
-
-Results for 20000  training iterations: 95 2 train error: 2.5 pixels. Test error: 4.08  pixels.
-With pcutoff of 0.4  train error: 2.5 pixels. Test error: 4.08 pixels
-
-Tensorpack augmentation:
-
-Results for 20000  training iterations: 95 3 train error: 3.06 pixels. Test error: 4.78  pixels.
-With pcutoff of 0.4  train error: 3.06 pixels. Test error: 4.78 pixels
-
-My results were (Run with DLC *2.2b7* in July 2020) for 20k iterations
-
-Attention: default changed!
-
-***Default = Imagaug**** augmentation:
-
-Done and results stored for snapshot:  snapshot-20000
-Results for 20000  training iterations: 95 1 train error: 2.93 pixels. Test error: 3.09  pixels.
-With pcutoff of 0.4  train error: 2.93 pixels. Test error: 3.09 pixels
-
-Scalecrop (was = default) augmentation:
-
-Done and results stored for snapshot:  snapshot-20000
-Results for 20000  training iterations: 95 2 train error: 2.5 pixels. Test error: 2.57  pixels.
-With pcutoff of 0.4  train error: 2.5 pixels. Test error: 2.57 pixels
-
-Tensorpack augmentation:
-
-Done and results stored for snapshot:  snapshot-20000
-Results for 20000  training iterations: 95 3 train error: 3.1 pixels. Test error: 3.29  pixels.
-With pcutoff of 0.4  train error: 3.1 pixels. Test error: 3.29 pixels
-
-My results were (Run with DLC *2.2b7* on August 1st 2020) for 10k iterations
-
-Imgaug:
-Results for 10000  training iterations: 95 1 train error: 3.78 pixels. Test error: 3.89  pixels.
-With pcutoff of 0.4  train error: 3.78 pixels. Test error: 3.89 pixels
-
-Scalecrop:
-Done and results stored for snapshot:  snapshot-10000
-Results for 10000  training iterations: 95 2 train error: 2.81 pixels. Test error: 2.46  pixels.
-With pcutoff of 0.4  train error: 2.81 pixels. Test error: 2.46 pixels
-
-Tensorpack:
-Done and results stored for snapshot:  snapshot-10000
-Results for 10000  training iterations: 95 3 train error: 3.76 pixels. Test error: 3.98  pixels.
-With pcutoff of 0.4  train error: 3.76 pixels. Test error: 3.98 pixels
-
-
-My results were (Run with DLC *2.2b8* on Sept 7 2020) for 10k iterations
-
-Imgaug:
-Results for 10000  training iterations: 95 1 train error: 2.63 pixels. Test error: 3.88  pixels.
-With pcutoff of 0.4  train error: 2.63 pixels. Test error: 3.88 pixels
-
-Scalecrop:
-Results for 10000  training iterations: 95 2 train error: 3.08 pixels. Test error: 4.02  pixels.
-With pcutoff of 0.4  train error: 3.08 pixels. Test error: 4.02 pixels
-
-Tensorpack:
-Results for 10000  training iterations: 95 3 train error: 2.9 pixels. Test error: 3.31  pixels.
-With pcutoff of 0.4  train error: 2.9 pixels. Test error: 3.31 pixels
-
-My results were (Run with DLC *2.1.9* in Jan 2021) for 10 k iterations
-
-**ResNet50
-Imgaug:
-Results for 100000  training iterations: 95 1 train error: 2.13 pixels. Test error: 2.22  pixels.
-With pcutoff of 0.4  train error: 2.13 pixels. Test error: 2.22 pixels
-
-Scalecrop:
-Results for 100000  training iterations: 95 2 train error: 1.47 pixels. Test error: 1.77  pixels.
-With pcutoff of 0.4  train error: 1.47 pixels. Test error: 1.77 pixels
-
-Tensorpack:
-Results for 100000  training iterations: 95 3 train error: 2.09 pixels. Test error: 2.36  pixels.
-With pcutoff of 0.4  train error: 2.09 pixels. Test error: 2.36 pixels
-
-**EffNet-b3
-Imgaug:
-Results for 100000  training iterations: 95 4 train error: 2.39 pixels. Test error: 2.57  pixels.
-With pcutoff of 0.4  train error: 2.39 pixels. Test error: 2.57 pixels
-
-Scalecrop:
-Results for 100000  training iterations: 95 5 train error: 2.26 pixels. Test error: 2.24  pixels.
-With pcutoff of 0.4  train error: 2.26 pixels. Test error: 2.24 pixels
-
-Tensorpack:
-Results for 100000  training iterations: 95 6 train error: 1.65 pixels. Test error: 2.24  pixels.
-With pcutoff of 0.4  train error: 1.65 pixels. Test error: 2.24 pixels
 
 Notice: despite the higher RMSE for imgaug due to the augmentation,
 the network performs much better on the testvideo (see Neuron Primer: https://www.cell.com/neuron/pdf/S0896-6273(20)30717-0.pdf)
-
-My results were (Run with DLC *2.10.4* in Apr 2021) for 100 k iterations
-
-ResNet50:
-Imgaug: (includes new default contrast augmentation!)
-Done and results stored for snapshot:  snapshot-100000
-Results for 100000  training iterations: 95 1 train error: 1.77 pixels. Test error: 2.24  pixels.
-With pcutoff of 0.4  train error: 1.77 pixels. Test error: 2.24 pixels
-
-Scalecrop:
-Done and results stored for snapshot:  snapshot-100000
-Results for 100000  training iterations: 95 2 train error: 2.11 pixels. Test error: 3.26  pixels.
-With pcutoff of 0.4  train error: 2.11 pixels. Test error: 3.26 pixels
-
-TensorPack:
-Results for 100000  training iterations: 95 3 train error: 1.35 pixels. Test error: 2.3  pixels.
-With pcutoff of 0.4  train error: 1.35 pixels. Test error: 2.3 pixels
 
 """
 
@@ -181,36 +59,40 @@ cfg = deeplabcut.auxiliaryfunctions.read_config(path_config_file)
 maxiters = 50000
 saveiters = 10000
 displayiters = 500
-Shuffles = 1 + np.arange(6)
 
-deeplabcut.load_demo_data(path_config_file)
-## Create one split and make Shuffle 2 and 3 have the same split.
+deeplabcut.load_demo_data(path_config_file, createtrainingset=False)
+## Create one identical splits for 3 networks and 3 augmentations
+
 ###Note that the new function in DLC 2.1 simplifies network/augmentation comparisons greatly:
-deeplabcut.create_training_model_comparison(
+Shuffles = deeplabcut.create_training_model_comparison(
     path_config_file,
     num_shuffles=1,
-    net_types=["resnet_50", "efficientnet-b3"],
+    net_types=["mobilenet_v2_0.35", "resnet_50", "efficientnet-b3"],
     augmenter_types=["imgaug", "scalecrop", "tensorpack"],
 )
 
-
-for shuffle in Shuffles:
-
+for idx, shuffle in enumerate(Shuffles):
     posefile, _, _ = deeplabcut.return_train_network_path(
         path_config_file, shuffle=shuffle
     )
 
-    edits = {"decay_steps": maxiters, "lr_init": 0.0005}  # * 8}  # for EfficientNet
-    DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
-
-    if shuffle % 3 == 1:  # imgaug
+    # Setting specific parameters for training
+    if idx % 3 == 0:  # imgaug
         edits = {"rotation": 180, "motion_blur": True}
         DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
-
-    elif shuffle % 3 == 0:  # Tensorpack:
+    elif idx % 3 == 2:  # Tensorpack
         edits = {"rotation": 180, "noise_sigma": 0.01}
         DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
 
+    if idx > 5:  # EfficientNet
+        print(posefile, "changing now!!")
+        edits = {
+            "decay_steps": maxiters,
+            "lr_init": 0.0005,
+        }
+        DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
+
+for shuffle in Shuffles:
     print("TRAIN NETWORK", shuffle)
     deeplabcut.train_network(
         path_config_file,
@@ -221,10 +103,6 @@ for shuffle in Shuffles:
         max_snapshots_to_keep=11,
     )
 
-print("EVALUATE")
-deeplabcut.evaluate_network(path_config_file, Shuffles=Shuffles, plotting=True)
-
-for shuffles in Shuffle:
     print("Analyze Video")
 
     videofile_path = os.path.join(
@@ -236,3 +114,6 @@ for shuffles in Shuffle:
     print("Create Labeled Video and plot")
     deeplabcut.create_labeled_video(path_config_file, [videofile_path], shuffle=shuffle)
     deeplabcut.plot_trajectories(path_config_file, [videofile_path], shuffle=shuffle)
+
+print("EVALUATE")
+deeplabcut.evaluate_network(path_config_file, Shuffles=Shuffles, plotting=False)

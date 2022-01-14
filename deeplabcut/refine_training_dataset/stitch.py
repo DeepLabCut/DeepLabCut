@@ -8,11 +8,8 @@ import re
 import scipy.linalg.interpolative as sli
 import warnings
 from collections import defaultdict
-from deeplabcut.utils import (
-    read_config,
-    auxiliaryfunctions,
-    auxfun_multianimal,
-)
+from deeplabcut.pose_estimation_tensorflow.lib.trackingutils import calc_iou
+from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 from itertools import combinations, cycle
 from networkx.algorithms.flow import preflow_push
 from pathlib import Path
@@ -314,27 +311,12 @@ class Tracklet:
             else:
                 bbox1 = self.calc_bbox(0)
                 bbox2 = other_tracklet.calc_bbox(-1)
-            overlap = self.iou(bbox1, bbox2)
+            overlap = calc_iou(bbox1, bbox2)
         return overlap
 
     @staticmethod
     def undirected_hausdorff(u, v):
         return max(directed_hausdorff(u, v)[0], directed_hausdorff(v, u)[0])
-
-    @staticmethod
-    def iou(bbox1, bbox2):
-        x1 = max(bbox1[0], bbox2[0])
-        y1 = max(bbox1[1], bbox2[1])
-        x2 = min(bbox1[2], bbox2[2])
-        y2 = min(bbox1[3], bbox2[3])
-        w = max(0, x2 - x1)
-        h = max(0, y2 - y1)
-        wh = w * h
-        return wh / (
-            (bbox1[2] - bbox1[0]) * (bbox1[3] - bbox1[1])
-            + (bbox2[2] - bbox2[0]) * (bbox2[3] - bbox2[1])
-            - wh
-        )
 
     def calc_bbox(self, ind):
         xy = self.xy[ind]
@@ -482,8 +464,8 @@ class TrackletStitcher:
 
         # Note that if tracklets are very short, some may actually be part of the same track
         # and thus incorrectly reflect separate track endpoints...
-        self._first_tracklets = sorted(self, key=lambda t: t.start)[:self.n_tracks]
-        self._last_tracklets = sorted(self, key=lambda t: t.end)[-self.n_tracks:]
+        self._first_tracklets = sorted(self, key=lambda t: t.start)[: self.n_tracks]
+        self._last_tracklets = sorted(self, key=lambda t: t.end)[-self.n_tracks :]
 
         # Map each Tracklet to an entry and output nodes and vice versa,
         # which is convenient once the tracklets are stitched.
@@ -600,17 +582,21 @@ class TrackletStitcher:
     def mine(self, n_samples):
         p = np.asarray([t.likelihood for t in self])
         p /= p.sum()
-        tracklets = np.random.choice(self, n_samples, p=p)
         triplets = []
-        for tracklet in tracklets:
-            ind_anchor, ind_pos = np.random.choice(tracklet.inds, 2, replace=False)
+        while len(triplets) != n_samples:
+            tracklet = np.random.choice(self, p=p)
+            overlapping_tracklets = self._lu_overlap[tracklet]
+            if not overlapping_tracklets:
+                continue
+            # Pick the closest (spatially) overlapping tracklet
+            ind_min = np.argmin([tracklet.distance_to(t) for t in overlapping_tracklets])
+            overlapping_tracklet = overlapping_tracklets[ind_min]
+            common_inds = set(tracklet.inds).intersection(overlapping_tracklet.inds)
+            ind_anchor = np.random.choice(list(common_inds))
             anchor = tracklet.get_data_at(ind_anchor)[:, :2].astype(int)
-            pos = tracklet.get_data_at(ind_pos)[:, :2].astype(int)
-            overlapping_tracklet = np.random.choice(
-                # Filter tracklets overlapping at ind_anchor
-                [t for t in self._lu_overlap[tracklet] if ind_anchor in t.inds]
-            )
             neg = overlapping_tracklet.get_data_at(ind_anchor)[:, :2].astype(int)
+            ind_pos = np.random.choice(tracklet.inds[tracklet.inds != ind_anchor])
+            pos = tracklet.get_data_at(ind_pos)[:, :2].astype(int)
             triplet = (
                 (anchor, ind_anchor),
                 (pos, ind_pos),
@@ -767,7 +753,7 @@ class TrackletStitcher:
                 _ = self._finalize_tracks()
 
     def _finalize_tracks(self):
-        residuals = [res for res in sorted(self.residuals, key=len) if len(res) > 2]
+        residuals = [res for res in sorted(self.residuals, key=len) if len(res) > 1]
         # Cycle through the residuals and incorporate back those
         # that only fit in a single tracklet.
         n_attemps = 0
@@ -1004,9 +990,9 @@ def stitch_tracklets(
     prestitch_residuals=True,
     max_gap=None,
     weight_func=None,
-    track_method="ellipse",
     destfolder=None,
     modelprefix="",
+    track_method="",
     output_name="",
 ):
     """
@@ -1071,12 +1057,14 @@ def stitch_tracklets(
         belong to the same track; i.e., the higher the confidence that the
         tracklets should be stitched together, the lower the returned value.
 
-    track_method: str, optional
-        Method used to track animals, either 'box', 'skeleton', or 'ellipse' (default).
-
     destfolder: string, optional
         Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this
         folder also needs to be passed.
+
+    track_method: string, optional
+         Specifies the tracker used to generate the pose estimation data.
+         For multiple animals, must be either 'box', 'skeleton', or 'ellipse'
+         and will be taken from the config.yaml file if none is given.
 
     output_name : str, optional
         Name of the output h5 file.
@@ -1092,7 +1080,10 @@ def stitch_tracklets(
         print("No video(s) found. Please check your path!")
         return
 
-    cfg = read_config(config_path)
+    cfg = auxiliaryfunctions.read_config(config_path)
+    track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
+
+
     animal_names = cfg["individuals"]
     if n_tracks is None:
         n_tracks = len(animal_names)
@@ -1128,6 +1119,7 @@ def stitch_tracklets(
                 def weight_func(t1, t2):
                     w = 0.01 if t1.identity == t2.identity else 1
                     return w * stitcher.calculate_edge_weight(t1, t2)
+
             stitcher.build_graph(max_gap=max_gap, weight_func=weight_func)
             stitcher.stitch()
             stitcher.write_tracks(output_name, animal_names)

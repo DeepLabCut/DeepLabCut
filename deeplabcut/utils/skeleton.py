@@ -75,6 +75,7 @@ class SkeletonBuilder:
         sep = "/" if "/" in row else "\\"
         if sep != os.path.sep:
             row = row.replace(sep, os.path.sep)
+        
         self.image = io.imread(os.path.join(self.cfg["project_path"], row))
         self.inds = set()
         self.segs = set()

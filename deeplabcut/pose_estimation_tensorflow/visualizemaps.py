@@ -9,10 +9,10 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import os
-
-import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+from skimage.color import rgba2rgb
+from skimage.transform import resize
 
 
 def extract_maps(
@@ -225,11 +225,15 @@ def extract_maps(
 
             DATA = {}
             for imageindex, imagename in tqdm(Indices):
-                image = imread(os.path.join(cfg["project_path"], imagename), mode="RGB")
+                image = imread(
+                    os.path.join(cfg["project_path"], *imagename), mode="skimage"
+                )
+
                 if scale != 1:
                     image = imresize(image, scale)
 
                 image_batch = data_to_input(image)
+
                 # Compute prediction with the CNN
                 outputs_np = sess.run(outputs, feed_dict={inputs: image_batch})
 
@@ -267,9 +271,7 @@ def extract_maps(
 
 def resize_to_same_shape(array, array_dest):
     shape_dest = array_dest.shape
-    return cv2.resize(
-        array, (shape_dest[1], shape_dest[0]), interpolation=cv2.INTER_CUBIC
-    )
+    return resize(array, (shape_dest[0], shape_dest[1]))
 
 
 def resize_all_maps(image, scmap, locref, paf):
@@ -367,6 +369,7 @@ def extract_save_all_maps(
     shuffle=1,
     trainingsetindex=0,
     comparisonbodyparts="all",
+    extract_paf=True,
     all_paf_in_one=True,
     gputouse=None,
     rescale=False,
@@ -391,6 +394,10 @@ def extract_save_all_maps(
 
     comparisonbodyparts: list of bodyparts, Default is "all".
         The average error will be computed for those body parts only (Has to be a subset of the body parts).
+
+    extract_paf : bool
+        Extract part affinity fields by default.
+        Note that turning it off will make the function much faster.
 
     all_paf_in_one : bool
         By default, all part affinity fields are displayed on a single frame.
@@ -450,8 +457,10 @@ def extract_save_all_maps(
                     impath,
                     trainingframe,
                 ) = maps[imagenr]
+                if not extract_paf:
+                    paf = None
                 label = "train" if trainingframe else "test"
-                imname = os.path.split(os.path.splitext(impath)[0])[1]
+                imname = impath[-1]
                 scmap, (locref_x, locref_y), paf = resize_all_maps(
                     image, scmap, locref, paf
                 )
@@ -473,9 +482,9 @@ def extract_save_all_maps(
                     locref_x_ = locref_x[:, :, to_plot]
                     locref_y_ = locref_y[:, :, to_plot]
                 else:
-                    map_ = scmap[:, :]
-                    locref_x_ = locref_x[:, :]
-                    locref_y_ = locref_y[:, :]
+                    map_ = scmap[..., 0]
+                    locref_x_ = locref_x[..., 0]
+                    locref_y_ = locref_y[..., 0]
                 fig1, _ = visualize_scoremaps(image, map_)
                 temp = dest_path.format(
                     imname=imname,

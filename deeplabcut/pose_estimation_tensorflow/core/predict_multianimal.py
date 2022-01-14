@@ -18,7 +18,7 @@ from scipy.ndimage import measurements
 
 
 def extract_cnn_output(outputs_np, cfg):
-    """ extract locref, scmap and partaffinityfield from network """
+    """extract locref, scmap and partaffinityfield from network"""
     scmap = outputs_np[0]
     scmap = np.squeeze(scmap)
     if cfg["location_refinement"]:
@@ -39,7 +39,7 @@ def extract_cnn_output(outputs_np, cfg):
 
 
 def extract_cnn_outputmulti(outputs_np, cfg):
-    """ extract locref + scmap from network
+    """extract locref + scmap from network
     Dimensions: image batch x imagedim1 x imagedim2 x bodypart"""
     scmap = outputs_np[0]
     if cfg["location_refinement"]:
@@ -88,7 +88,7 @@ def compute_edge_costs(
         idx = np.arange(peaks.shape[0])
         idx_per_bpt = {j: idx[bpt_inds == j].tolist() for j in range(n_bodyparts)}
         edges = []
-        for k, (s, t) in enumerate(graph):
+        for k, (s, t) in zip(paf_inds, graph):
             inds_s = idx_per_bpt[s]
             inds_t = idx_per_bpt[t]
             if not (inds_s and inds_t):
@@ -133,15 +133,15 @@ def compute_edge_costs(
     for i in range(n_samples):
         samples_i_mask = sample_inds == i
         costs = dict()
-        for paf_ind, k in zip(paf_inds, range(len(graph))):
+        for k in paf_inds:
             edges_k_mask = edge_inds == k
             idx = np.flatnonzero(samples_i_mask & edges_k_mask)
             s, t = all_edges[idx].T
             n_sources = np.unique(s).size
             n_targets = np.unique(t).size
-            costs[paf_ind] = dict()
-            costs[paf_ind]["m1"] = affinities[idx].reshape((n_sources, n_targets))
-            costs[paf_ind]["distance"] = lengths[idx].reshape((n_sources, n_targets))
+            costs[k] = dict()
+            costs[k]["m1"] = affinities[idx].reshape((n_sources, n_targets))
+            costs[k]["distance"] = lengths[idx].reshape((n_sources, n_targets))
         all_costs.append(costs)
 
     return all_costs
@@ -162,15 +162,18 @@ def compute_peaks_and_costs(
     n_samples, _, _, n_channels = np.shape(scmaps)
     n_bodyparts = n_channels - n_id_channels
     pos = calc_peak_locations(locrefs, peak_inds_in_batch, stride, n_decimals)
-    costs = compute_edge_costs(
-        pafs,
-        peak_inds_in_batch,
-        graph,
-        paf_inds,
-        n_bodyparts,
-        n_points,
-        n_decimals,
-    )
+    if graph:
+        costs = compute_edge_costs(
+            pafs,
+            peak_inds_in_batch,
+            graph,
+            paf_inds,
+            n_bodyparts,
+            n_points,
+            n_decimals,
+        )
+    else:
+        costs = None
     s, r, c, b = peak_inds_in_batch.T
     prob = np.round(scmaps[s, r, c, b], n_decimals).reshape((-1, 1))
     if n_id_channels:
@@ -189,7 +192,9 @@ def compute_peaks_and_costs(
             p.append(prob[idx])
             if n_id_channels:
                 id_.append(ids[idx])
-        dict_ = {"coordinates": (xy,), "confidence": p, "costs": costs[i]}
+        dict_ = {"coordinates": (xy,), "confidence": p}
+        if costs is not None:
+            dict_["costs"] = costs[i]
         if n_id_channels:
             dict_["identity"] = id_
         peaks_and_costs.append(dict_)
@@ -207,15 +212,16 @@ def predict_batched_peaks_and_costs(
     n_points=10,
     n_decimals=3,
 ):
-    scmaps, locrefs, pafs, peaks = sess.run(
-        outputs, feed_dict={inputs: images_batch}
-    )
+    scmaps, locrefs, *pafs, peaks = sess.run(outputs, feed_dict={inputs: images_batch})
     if ~np.any(peaks):
         return []
 
     locrefs = np.reshape(locrefs, (*locrefs.shape[:3], -1, 2))
     locrefs *= pose_cfg["locref_stdev"]
-    pafs = np.reshape(pafs, (*pafs.shape[:3], -1, 2))
+    if pafs:
+        pafs = np.reshape(pafs[0], (*pafs[0].shape[:3], -1, 2))
+    else:
+        pafs = None
     graph = pose_cfg["partaffinityfield_graph"]
     limbs = pose_cfg.get("paf_best", np.arange(len(graph)))
     graph = [graph[l] for l in limbs]
@@ -231,7 +237,7 @@ def predict_batched_peaks_and_costs(
         n_points,
         n_decimals,
     )
-    if peaks_gt is not None:
+    if peaks_gt is not None and graph:
         costs_gt = compute_edge_costs(
             pafs,
             peaks_gt,
@@ -259,7 +265,7 @@ def find_local_maxima(scmap, radius, threshold):
 
 
 def find_local_peak_indices_maxpool_nms(scmaps, radius, threshold):
-    pooled = tf.nn.max_pool2d(scmaps, [radius, radius], strides=1, padding='SAME')
+    pooled = tf.nn.max_pool2d(scmaps, [radius, radius], strides=1, padding="SAME")
     maxima = scmaps * tf.cast(tf.equal(scmaps, pooled), tf.float32)
     return tf.cast(tf.where(maxima >= threshold), tf.int32)
 
@@ -274,7 +280,8 @@ def find_local_peak_indices_dilation(scmaps, radius, threshold):
     width = tf.shape(scmaps)[2]
     depth = tf.shape(scmaps)[3]
     scmaps_flat = tf.reshape(
-        tf.transpose(scmaps, [0, 3, 1, 2]), [-1, height, width, 1],
+        tf.transpose(scmaps, [0, 3, 1, 2]),
+        [-1, height, width, 1],
     )
     scmaps_dil = tf.nn.dilation2d(
         scmaps_flat,
@@ -284,7 +291,8 @@ def find_local_peak_indices_dilation(scmaps, radius, threshold):
         padding="SAME",
     )
     scmaps_dil = tf.transpose(
-        tf.reshape(scmaps_dil, [-1, depth, height, width]), [0, 2, 3, 1],
+        tf.reshape(scmaps_dil, [-1, depth, height, width]),
+        [0, 2, 3, 1],
     )
     argmax_and_thresh_img = (scmaps > scmaps_dil) & (scmaps > threshold)
     return tf.cast(tf.where(argmax_and_thresh_img), tf.int32)

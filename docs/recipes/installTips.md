@@ -352,16 +352,16 @@ During training and analysis steps, DeepLabCut does not use the GPU processor he
 
 (1) Open the task manager. If it looks like the image below, click on "More Details" 
 
-<img src="https://github.com/backyardbiomech/docImages/blob/main/DeepLabCut/taskManager.png" width="50%">
+![](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/a0db3157-2228-4444-8084-36801659f272/installBrandon1.png?format=500w)
 
 (2) That will bring up the following, which still isn't helpful and has caused confusion for users. The %GPU does not reflect DeepLabCut usage.
 
-<img src="https://github.com/backyardbiomech/docImages/blob/main/DeepLabCut/TaskManagerDetails.png" width="50%">
+![](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/117e3573-60bb-4599-b00b-c75276b24173/installBrandon2.png?format=500w)
 
 (3) Click on the **Performance** tab. On that page, click on the small arrow under GPU (it might start as **3D**, and change it to **CUDA**.  
 
 (4) During training, you should see the **Dedicated GPU memory usage** increase to near maximum, and you should see some activity in the **CUDA** graph. The graph below is the activity while running `testscript.py`.
 
-<img src="https://github.com/backyardbiomech/docImages/blob/main/DeepLabCut/taskManagerTraining.png" width="70%">
+![](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/b1d03ca0-f8ba-4a31-a399-6e86856c81b0/installBrandon3.png?format=500w)
 
 (5) If you don't see activity there during training, then your GPU is likely not installed correctly for DeepLabCut. Return to the installation instructions, and be sure you installed CUDA 11+, and ran `conda install cudnn -c conda-forge` after installing DeepLabCut.

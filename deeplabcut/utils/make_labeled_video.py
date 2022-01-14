@@ -394,7 +394,7 @@ def create_labeled_video(
 
     keypoints_only: bool, optional
         By default, both video frames and keypoints are visible. If true, only the keypoints are shown. These clips are an hommage to Johansson movies,
-        see https://www.youtube.com/watch?v=1F5ICP9SYLU and of course his seminal paper: "Visual perception of biological motion and a model for its analysis" 
+        see https://www.youtube.com/watch?v=1F5ICP9SYLU and of course his seminal paper: "Visual perception of biological motion and a model for its analysis"
         by Gunnar Johansson in Perception & Psychophysics 1973.
 
     Frames2plot: List of indices
@@ -428,6 +428,11 @@ def create_labeled_video(
         Coloring rule. By default, each bodypart is colored differently.
         If set to 'individual', points belonging to a single individual are colored the same.
 
+    track_method: string, optional
+         Specifies the tracker used to generate the data. Empty by default (corresponding to a single animal project).
+         For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will be taken from the config.yaml file if none is given.
+
+
     Examples
     --------
     If you want to create the labeled video for only 1 video
@@ -453,6 +458,8 @@ def create_labeled_video(
 
     """
     cfg = auxiliaryfunctions.read_config(config)
+    track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
+
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
         cfg, shuffle, trainFraction, modelprefix=modelprefix
@@ -599,6 +606,7 @@ def proc_video(
                 if bodyparts2connect:
                     all_bpts = df.columns.get_level_values("bodyparts")[::3]
                     inds = get_segment_indices(bodyparts2connect, all_bpts)
+                clip = vp(fname=video, fps=outputframerate)
                 create_video_with_keypoints_only(
                     df,
                     videooutname,
@@ -609,7 +617,9 @@ def proc_video(
                     skeleton_color=skeleton_color,
                     color_by=color_by,
                     colormap=cfg["colormap"],
+                    fps=clip.fps(),
                 )
+                clip.close()
             elif not fastmode:
                 tmpfolder = os.path.join(str(videofolder), "temp-" + vname)
                 if save_frames:
@@ -640,6 +650,7 @@ def proc_video(
                     displaycropped,
                     color_by,
                 )
+                clip.close()
             else:
                 if displaycropped:  # then the cropped video + the labels is depicted
                     clip = vp(
@@ -651,7 +662,12 @@ def proc_video(
                         fps=outputframerate,
                     )
                 else:  # then the full video + the (perhaps in cropped mode analyzed labels) are depicted
-                    clip = vp(fname=video, sname=videooutname, codec=codec, fps=outputframerate)
+                    clip = vp(
+                        fname=video,
+                        sname=videooutname,
+                        codec=codec,
+                        fps=outputframerate,
+                    )
                 CreateVideo(
                     clip,
                     df,
@@ -827,8 +843,9 @@ def create_video_with_all_detections(
 
         if not (os.path.isfile(outputname)):
             print("Creating labeled video for ", str(Path(video).stem))
-            with open(full_pickle, "rb") as file:
-                data = pickle.load(file)
+            h5file = full_pickle.replace("_full.pickle", ".h5")
+            data, _ = auxfun_multianimal.LoadFullMultiAnimalData(h5file)
+            data = dict(data)  # Cast to dict (making a copy) so items can safely be popped
 
             header = data.pop("metadata")
             all_jointnames = header["all_joints_names"]
@@ -856,6 +873,8 @@ def create_video_with_all_detections(
 
             for n in trange(clip.nframes):
                 frame = clip.load_frame()
+                if frame is None:
+                    continue
                 try:
                     ind = frames.index(n)
                     dets = Assembler._flatten_detections(data[frame_names[ind]])

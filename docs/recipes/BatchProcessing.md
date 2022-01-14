@@ -114,7 +114,7 @@ for project in Projects[model]:
     print("Shuffle: ", shuffle)
     print("config: ", config)
 
-    deeplabcut.create_training_dataset(config, Shuffles=[shuffle],windows2linux=True)
+    deeplabcut.create_training_dataset(config, Shuffles=[shuffle])
 
     deeplabcut.train_network(config, shuffle=shuffle, max_snapshots_to_keep=5, maxiters=Maxiter)
     print("Evaluating...")
