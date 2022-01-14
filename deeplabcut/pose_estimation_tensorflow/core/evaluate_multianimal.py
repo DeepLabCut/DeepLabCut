@@ -304,7 +304,12 @@ def evaluate_multianimal_full(
                         print("Model already evaluated.", resultsfilename)
                     else:
 
-                        sess, inputs, outputs, extra_dict = predict.setup_pose_prediction(dlc_cfg, collect_extra = True)
+                        (
+                            sess,
+                            inputs,
+                            outputs,
+                            extra_dict,
+                        ) = predict.setup_pose_prediction(dlc_cfg, collect_extra=True)
 
                         PredicteData = {}
                         dist = np.full((len(Data), len(all_bpts)), np.nan)
@@ -347,14 +352,18 @@ def evaluate_multianimal_full(
                             peaks_gt[:, 1:3] = (peaks_gt[:, 1:3] - stride // 2) / stride
 
                             if collect_extra:
-                                pred, features, keypoint_embedding = predictma.predict_batched_peaks_and_costs(
+                                (
+                                    pred,
+                                    features,
+                                    keypoint_embedding,
+                                ) = predictma.predict_batched_peaks_and_costs(
                                     dlc_cfg,
                                     np.expand_dims(frame, axis=0),
                                     sess,
                                     inputs,
                                     outputs,
                                     peaks_gt.astype(int),
-                                    extra_dict = extra_dict
+                                    extra_dict=extra_dict,
                                 )
                             else:
                                 pred = predictma.predict_batched_peaks_and_costs(
@@ -364,7 +373,7 @@ def evaluate_multianimal_full(
                                     inputs,
                                     outputs,
                                     peaks_gt.astype(int),
-                                )                                
+                                )
                             if not pred:
                                 continue
                             else:
@@ -378,9 +387,10 @@ def evaluate_multianimal_full(
                                 groundtruthcoordinates,
                                 GT,
                             ]
-                            PredicteData['keypoint_embedding_'+imagename] = keypoint_embedding
-                                                        
-                            
+                            PredicteData[
+                                "keypoint_embedding_" + imagename
+                            ] = keypoint_embedding
+
                             coords_pred = pred["coordinates"][0]
                             probs_pred = pred["confidence"]
                             for bpt, xy_gt in df.groupby(level="bodyparts"):
@@ -439,9 +449,6 @@ def evaluate_multianimal_full(
 
                         sess.close()  # closes the current tf session
 
-
-                        
-                        
                         # Compute all distance statistics
                         df_dist = pd.DataFrame(dist, columns=df.index)
                         df_conf = pd.DataFrame(conf, columns=df.index)

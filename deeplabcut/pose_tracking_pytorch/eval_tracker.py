@@ -22,6 +22,7 @@ from tqdm import trange
 import torch
 import argparse
 
+
 def reconstruct_bbox_from_bodyparts(data, margin, to_xywh=False):
     bbox = np.full((data.shape[0], 5), np.nan)
     x = data.xs("x", axis=1, level=-1)
@@ -41,7 +42,7 @@ def reconstruct_bbox_from_bodyparts(data, margin, to_xywh=False):
 def reconstruct_all_bboxes(data, margin, to_xywh):
     animals = data.columns.get_level_values("individuals").unique().tolist()
     try:
-        animals.remove('single')
+        animals.remove("single")
     except ValueError:
         pass
     bboxes = np.full((len(animals), data.shape[0], 5), np.nan)
@@ -83,7 +84,7 @@ def print_all_metrics(accumulators, all_params=None):
 
 def compute_mot_metrics_bboxes(bboxes, bboxes_ground_truth):
     if bboxes.shape != bboxes_ground_truth.shape:
-        raise ValueError('Dimension mismatch. Check the inputs.')
+        raise ValueError("Dimension mismatch. Check the inputs.")
 
     ids = np.array(list(range(bboxes_ground_truth.shape[0])))
     acc = mm.MOTAccumulator(auto_id=True)
@@ -124,7 +125,8 @@ def evaluate_tracker(
         )
     elif track_method == "ellipse":
         ground_truth_data = trackingutils.reconstruct_all_ellipses(
-            ground_truth, inference_cfg.get("sd", 2))
+            ground_truth, inference_cfg.get("sd", 2)
+        )
     else:
         raise ValueError(f"Unknown track method {track_method}")
 
@@ -142,7 +144,7 @@ def evaluate_tracker(
 
     keep = set(multi_bpts).difference(ignore_bodyparts or [])
     keep_inds = sorted(multi_bpts.index(bpt) for bpt in keep)
-    
+
     ntot = len(params)
     accumulators = []
     accumulators_with_stitcher = []
@@ -161,8 +163,10 @@ def evaluate_tracker(
             )
         acc = mm.MOTAccumulator(auto_id=True)
         tracklets = dict()
-        tracklets['header'] = pd.MultiIndex.from_product([[''], ass.metadata['joint_names'], ['x', 'y', 'likelihood']],
-                                                     names=['scorer', 'bodyparts', 'coords'])
+        tracklets["header"] = pd.MultiIndex.from_product(
+            [[""], ass.metadata["joint_names"], ["x", "y", "likelihood"]],
+            names=["scorer", "bodyparts", "coords"],
+        )
         if cfg[
             "uniquebodyparts"
         ]:  # Initialize storage of the 'single' individual track
@@ -185,10 +189,12 @@ def evaluate_tracker(
             if not identity_only:
                 if track_method == "box":
                     bboxes = trackingutils.calc_bboxes_from_keypoints(
-                        animals[:, keep_inds], testing_cfg.get("boundingboxslack", 0), offset=0
+                        animals[:, keep_inds],
+                        testing_cfg.get("boundingboxslack", 0),
+                        offset=0,
                     )  # TODO: get cropping parameters and utilize!
                     trackers = mot_tracker.update(bboxes)
-        
+
                     bboxes_hyp = convert_bbox_to_xywh(trackers[:, :4])
                     bboxes_gt = ground_truth_data[:, i, :4]
                     ids_gt = ids.copy()
@@ -220,7 +226,7 @@ def evaluate_tracker(
                         for j, tracker in enumerate(hyp_el):
                             cost_matrix[i, j] = 1 - el.calc_similarity_with(tracker)
                     acc.update(ids_gt, trackers[:, -1], cost_matrix)
-                
+
                 trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
             # else:
             #     mat = np.zeros((len(assemblies), testing_cfg["topktoretain"]))
@@ -233,7 +239,7 @@ def evaluate_tracker(
 
         accumulators.append(acc)
         if n_tracks:
-            if track_method == 'ellipse':
+            if track_method == "ellipse":
                 ground_truth_data = reconstruct_all_bboxes(
                     ground_truth, inference_cfg.get("boundingboxslack", 0), to_xywh=True
                 )
@@ -244,11 +250,14 @@ def evaluate_tracker(
                 stitcher.stitch()
                 df = stitcher.format_df().reindex(range(ground_truth_data.shape[1]))
                 bboxes_with_stitcher = reconstruct_all_bboxes(
-                    df, testing_cfg['boundingboxslack'], to_xywh=True,
+                    df,
+                    testing_cfg["boundingboxslack"],
+                    to_xywh=True,
                 )
-                temp = compute_mot_metrics_bboxes(bboxes_with_stitcher, ground_truth_data)
+                temp = compute_mot_metrics_bboxes(
+                    bboxes_with_stitcher, ground_truth_data
+                )
                 accumulators_with_stitcher.append(temp)
-                                   
 
     summary = print_all_metrics(accumulators, params)
     if len(accumulators_with_stitcher):
@@ -257,35 +266,31 @@ def evaluate_tracker(
         summary2 = None
     return summary, summary2
 
-from deeplabcut.pose_tracking_pytorch import ( 
-    inference
-)
+
+from deeplabcut.pose_tracking_pytorch import inference
+
 
 def calc_proximity_and_visibility_indices(hdf_file):
 
-
-    
     import pandas as pd
     from scipy.spatial import cKDTree
     from scipy.spatial.distance import cdist
+
     df = pd.read_hdf(hdf_file)
 
+    df = df.droplevel("scorer", axis=1).dropna(axis=1, how="all")
+    df.drop("likelihood", axis=1, level=-1, inplace=True)
+    if "single" in df:
+        df.drop("single", axis=1, level=0, inplace=True)
+    n_animals = len(df.columns.get_level_values("individuals").unique())
 
-    
-    df = df.droplevel('scorer', axis=1).dropna(axis=1, how='all')
-    df.drop('likelihood', axis=1, level=-1, inplace=True)
-    if 'single' in df:
-        df.drop('single', axis=1, level=0, inplace=True)
-    n_animals = len(df.columns.get_level_values('individuals').unique())
-
-    temp = df.groupby('individuals', axis=1).count()
+    temp = df.groupby("individuals", axis=1).count()
     mask = temp >= 2 * 2
     counts = mask.sum(axis=1)
     viz = counts / n_animals
-    df.dropna(how='all', inplace=True)
+    df.dropna(how="all", inplace=True)
     coords = df.to_numpy().reshape((df.shape[0], n_animals, -1, 2))
 
-    
     centroids = np.expand_dims(np.nanmean(coords, axis=2), 2)
 
     index = np.zeros(coords.shape[:2])
@@ -305,7 +310,3 @@ def calc_proximity_and_visibility_indices(hdf_file):
     prox = np.nanmean(index, axis=1)
     prox = prox[~np.isnan(prox)]
     return prox, viz
-
-
-
-

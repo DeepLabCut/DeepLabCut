@@ -7,10 +7,13 @@ from ..tracking_utils.reranking import re_ranking
 def euclidean_distance(qf, gf):
     m = qf.shape[0]
     n = gf.shape[0]
-    dist_mat = torch.pow(qf, 2).sum(dim=1, keepdim=True).expand(m, n) + \
-               torch.pow(gf, 2).sum(dim=1, keepdim=True).expand(n, m).t()
+    dist_mat = (
+        torch.pow(qf, 2).sum(dim=1, keepdim=True).expand(m, n)
+        + torch.pow(gf, 2).sum(dim=1, keepdim=True).expand(n, m).t()
+    )
     dist_mat.addmm_(1, -2, qf, gf.t())
     return dist_mat.cpu().numpy()
+
 
 def cosine_similarity(qf, gf):
     epsilon = 0.00001
@@ -27,8 +30,8 @@ def cosine_similarity(qf, gf):
 
 def eval_func(distmat, q_pids, g_pids, q_camids, g_camids, max_rank=50):
     """Evaluation with market1501 metric
-        Key: for each query identity, its gallery images from the same camera view are discarded.
-        """
+    Key: for each query identity, its gallery images from the same camera view are discarded.
+    """
     num_q, num_g = distmat.shape
     # distmat g
     #    q    1 3 2 4
@@ -43,7 +46,7 @@ def eval_func(distmat, q_pids, g_pids, q_camids, g_camids, max_rank=50):
     # compute cmc curve for each query
     all_cmc = []
     all_AP = []
-    num_valid_q = 0.  # number of valid query
+    num_valid_q = 0.0  # number of valid query
     for q_idx in range(num_q):
         # get query pid and camid
         q_pid = q_pids[q_idx]
@@ -65,13 +68,13 @@ def eval_func(distmat, q_pids, g_pids, q_camids, g_camids, max_rank=50):
         cmc[cmc > 1] = 1
 
         all_cmc.append(cmc[:max_rank])
-        num_valid_q += 1.
+        num_valid_q += 1.0
 
         # compute average precision
         # reference: https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Average_precision
         num_rel = orig_cmc.sum()
         tmp_cmc = orig_cmc.cumsum()
-        #tmp_cmc = [x / (i + 1.) for i, x in enumerate(tmp_cmc)]
+        # tmp_cmc = [x / (i + 1.) for i, x in enumerate(tmp_cmc)]
         y = np.arange(1, tmp_cmc.shape[0] + 1) * 1.0
         tmp_cmc = tmp_cmc / y
         tmp_cmc = np.asarray(tmp_cmc) * orig_cmc
@@ -87,7 +90,7 @@ def eval_func(distmat, q_pids, g_pids, q_camids, g_camids, max_rank=50):
     return all_cmc, mAP
 
 
-class R1_mAP_eval():
+class R1_mAP_eval:
     def __init__(self, num_query, max_rank=50, feat_norm=True, reranking=False):
         super(R1_mAP_eval, self).__init__()
         self.num_query = num_query
@@ -112,25 +115,22 @@ class R1_mAP_eval():
             print("The test feature is normalized")
             feats = torch.nn.functional.normalize(feats, dim=1, p=2)  # along channel
         # query
-        qf = feats[:self.num_query]
-        q_pids = np.asarray(self.pids[:self.num_query])
-        q_camids = np.asarray(self.camids[:self.num_query])
+        qf = feats[: self.num_query]
+        q_pids = np.asarray(self.pids[: self.num_query])
+        q_camids = np.asarray(self.camids[: self.num_query])
         # gallery
-        gf = feats[self.num_query:]
-        g_pids = np.asarray(self.pids[self.num_query:])
+        gf = feats[self.num_query :]
+        g_pids = np.asarray(self.pids[self.num_query :])
 
-        g_camids = np.asarray(self.camids[self.num_query:])
+        g_camids = np.asarray(self.camids[self.num_query :])
         if self.reranking:
-            print('=> Enter reranking')
+            print("=> Enter reranking")
             # distmat = re_ranking(qf, gf, k1=20, k2=6, lambda_value=0.3)
             distmat = re_ranking(qf, gf, k1=50, k2=15, lambda_value=0.3)
 
         else:
-            print('=> Computing DistMat with euclidean_distance')
+            print("=> Computing DistMat with euclidean_distance")
             distmat = euclidean_distance(qf, gf)
         cmc, mAP = eval_func(distmat, q_pids, g_pids, q_camids, g_camids)
 
         return cmc, mAP, distmat, self.pids, self.camids, qf, gf
-
-
-

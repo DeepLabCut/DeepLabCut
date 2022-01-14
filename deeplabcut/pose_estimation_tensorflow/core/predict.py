@@ -27,7 +27,7 @@ import tensorflow as tf
 from deeplabcut.pose_estimation_tensorflow.nnets.factory import PoseNetFactory
 
 
-def setup_pose_prediction(cfg, allow_growth=False, collect_extra = False):
+def setup_pose_prediction(cfg, allow_growth=False, collect_extra=False):
     tf.compat.v1.reset_default_graph()
     inputs = tf.compat.v1.placeholder(
         tf.float32, shape=[cfg["batch_size"], None, None, 3]
@@ -45,10 +45,11 @@ def setup_pose_prediction(cfg, allow_growth=False, collect_extra = False):
     outputs.append(net_heads["peak_inds"])
 
     if collect_extra:
-        extra_dict['features'] = net_heads['features']
-        extra_dict['keypoint_embedding'] = tf.reduce_mean(net_heads['part_prob'],axis=3)
+        extra_dict["features"] = net_heads["features"]
+        extra_dict["keypoint_embedding"] = tf.reduce_mean(
+            net_heads["part_prob"], axis=3
+        )
 
-    
     restorer = tf.compat.v1.train.Saver()
 
     if allow_growth:

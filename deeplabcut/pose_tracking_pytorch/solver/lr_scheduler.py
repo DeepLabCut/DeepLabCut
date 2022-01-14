@@ -11,16 +11,17 @@ import torch
 # separating MultiStepLR with WarmupLR
 # but the current LRScheduler design doesn't allow it
 
+
 class WarmupMultiStepLR(torch.optim.lr_scheduler._LRScheduler):
     def __init__(
-            self,
-            optimizer,
-            milestones,  # steps
-            gamma=0.1,
-            warmup_factor=1.0 / 3,
-            warmup_iters=500,
-            warmup_method="linear",
-            last_epoch=-1,
+        self,
+        optimizer,
+        milestones,  # steps
+        gamma=0.1,
+        warmup_factor=1.0 / 3,
+        warmup_iters=500,
+        warmup_method="linear",
+        last_epoch=-1,
     ):
         if not list(milestones) == sorted(milestones):
             raise ValueError(

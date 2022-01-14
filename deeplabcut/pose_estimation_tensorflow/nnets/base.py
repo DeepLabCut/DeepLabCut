@@ -222,9 +222,9 @@ class BasePoseNet(metaclass=abc.ABCMeta):
         if self.cfg["pairwise_predict"] or self.cfg["partaffinityfield_predict"]:
             outputs["pairwise_pred"] = heads["pairwise_pred"]
 
-        if 'features' in heads:
-            outputs['features'] = heads['features']
-            
+        if "features" in heads:
+            outputs["features"] = heads["features"]
+
         return outputs
 
     def center_inputs(self, inputs):

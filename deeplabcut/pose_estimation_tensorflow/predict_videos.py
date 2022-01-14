@@ -34,7 +34,9 @@ from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.core import predict
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingutils
 
-from deeplabcut.pose_estimation_tensorflow.predict_multianimal import Extract_Bpt_Feature_From_Video
+from deeplabcut.pose_estimation_tensorflow.predict_multianimal import (
+    Extract_Bpt_Feature_From_Video,
+)
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
@@ -60,8 +62,7 @@ def create_tracking_dataset(
     modelprefix="",
     robust_nframes=False,
     allow_growth=False,
-    n_triplets = 1000
-        
+    n_triplets=1000,
 ):
     if "TF_CUDNN_USE_AUTOTUNE" in os.environ:
         del os.environ["TF_CUDNN_USE_AUTOTUNE"]  # was potentially set during training
@@ -182,10 +183,13 @@ def create_tracking_dataset(
         xyz_labs = ["x", "y", "likelihood"]
 
     if TFGPUinference:
-        sess, inputs, outputs = predict.setup_GPUpose_prediction(dlc_cfg,allow_growth=allow_growth)
+        sess, inputs, outputs = predict.setup_GPUpose_prediction(
+            dlc_cfg, allow_growth=allow_growth
+        )
     else:
-        sess, inputs, outputs, extra_dict =predict.setup_pose_prediction(dlc_cfg,allow_growth=allow_growth,collect_extra = True)
-
+        sess, inputs, outputs, extra_dict = predict.setup_pose_prediction(
+            dlc_cfg, allow_growth=allow_growth, collect_extra=True
+        )
 
     pdindex = pd.MultiIndex.from_product(
         [[DLCscorer], dlc_cfg["all_joints_names"], xyz_labs],
@@ -211,13 +215,13 @@ def create_tracking_dataset(
                     outputs,
                     destfolder,
                     robust_nframes=robust_nframes,
-                    extra_dict = extra_dict
+                    extra_dict=extra_dict,
                 )
-            create_triplets_dataset(Videos, DLCscorer, n_triplets = n_triplets)
-            
+            create_triplets_dataset(Videos, DLCscorer, n_triplets=n_triplets)
+
         else:
-            raise NotImplementedError('not implmented')
-        
+            raise NotImplementedError("not implmented")
+
         os.chdir(str(start_path))
         if "multi-animal" in dlc_cfg["dataset_type"]:
             print(
@@ -237,7 +241,8 @@ def create_tracking_dataset(
     else:
         print("No video(s) were found. Please check your paths and/or 'video_type'.")
         return DLCscorer
-    
+
+
 def analyze_videos(
     config,
     videos,
@@ -539,7 +544,7 @@ def analyze_videos(
                     robust_nframes=robust_nframes,
                     use_shelve=use_shelve,
                 )
-                if auto_track: # tracker type is taken from default in cfg
+                if auto_track:  # tracker type is taken from default in cfg
                     convert_detections2tracklets(
                         config,
                         [video],
@@ -1466,11 +1471,11 @@ def _convert_detections_to_tracklets(
 
 
 def create_transid_tracking_dataset(
-        path_config_file,
-        
+    path_config_file,
 ):
     pass
-    #an api placeholder
+    # an api placeholder
+
 
 def convert_detections2tracklets(
     config,

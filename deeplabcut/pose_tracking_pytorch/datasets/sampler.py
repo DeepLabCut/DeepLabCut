@@ -4,6 +4,7 @@ import copy
 import random
 import numpy as np
 
+
 class RandomIdentitySampler(Sampler):
     """
     Randomly sample N identities, then for each identity,
@@ -19,8 +20,8 @@ class RandomIdentitySampler(Sampler):
         self.batch_size = batch_size
         self.num_instances = num_instances
         self.num_pids_per_batch = self.batch_size // self.num_instances
-        self.index_dic = defaultdict(list) #dict with list value
-        #{783: [0, 5, 116, 876, 1554, 2041],...,}
+        self.index_dic = defaultdict(list)  # dict with list value
+        # {783: [0, 5, 116, 876, 1554, 2041],...,}
         for index, (_, pid, _, _) in enumerate(self.data_source):
             self.index_dic[pid].append(index)
         self.pids = list(self.index_dic.keys())
@@ -64,4 +65,3 @@ class RandomIdentitySampler(Sampler):
 
     def __len__(self):
         return self.length
-

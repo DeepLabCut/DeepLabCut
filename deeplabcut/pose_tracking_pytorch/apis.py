@@ -1,16 +1,26 @@
 import deeplabcut
 import os
 
-#from deeplabcut.pose_tracking_pytorch import  train_tracking_transformer
-#from deeplabcut.pose_estimation_tensorflow import create_tracking_dataset
+# from deeplabcut.pose_tracking_pytorch import  train_tracking_transformer
+# from deeplabcut.pose_estimation_tensorflow import create_tracking_dataset
 from .eval_tracker import *
 import glob
 
-def transformer_reID(path_config_file, videos, modelprefix = '', n_tracks=3, track_method ='ellipse', train_epochs = 100, n_triplets = 1000, shuffle = 1):
+
+def transformer_reID(
+    path_config_file,
+    videos,
+    modelprefix="",
+    n_tracks=3,
+    track_method="ellipse",
+    train_epochs=100,
+    n_triplets=1000,
+    shuffle=1,
+):
 
     """
-    
-    Performs tracking with transformer. 
+
+    Performs tracking with transformer.
 
     Substeps include:
 
@@ -19,7 +29,7 @@ def transformer_reID(path_config_file, videos, modelprefix = '', n_tracks=3, tra
     stitched during tracking.
 
     Outputs: The tracklet file is saved as _el_trans.h5 in the same folder where the non transformer tracklet file is stored.
-     
+
     Parameters
     ----------
     path_config_file: string
@@ -27,58 +37,81 @@ def transformer_reID(path_config_file, videos, modelprefix = '', n_tracks=3, tra
 
     videos: list
         A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
-    
-    n_tracks: (optinal), int    
-         
+
+    n_tracks: (optinal), int
+
         number of tracks to be formed in the videos. (TODO) handling videos with different number of tracks
-     
+
     train_epochs: (optional), int
-        
+
         number of epochs to train the transformer
 
     n_triplets: (optional) int
-        
+
         number of triplets to be mined from the videos
 
 
 
     """
-    
-    
+
     # calling create_tracking_dataset, train_tracking_transformer, stitch_tracklets
 
     # should take number of triplets to mine
-    deeplabcut.pose_estimation_tensorflow.create_tracking_dataset(path_config_file, videos, modelprefix = modelprefix, n_triplets = n_triplets)
-
-    trainposeconfigfile, testposeconfigfile, snapshotfolder = deeplabcut.return_train_network_path(
-        path_config_file,
-        shuffle=shuffle,
-        modelprefix=modelprefix,
-        trainingsetindex=0
+    deeplabcut.pose_estimation_tensorflow.create_tracking_dataset(
+        path_config_file, videos, modelprefix=modelprefix, n_triplets=n_triplets
     )
-    
-    
+
+    (
+        trainposeconfigfile,
+        testposeconfigfile,
+        snapshotfolder,
+    ) = deeplabcut.return_train_network_path(
+        path_config_file, shuffle=shuffle, modelprefix=modelprefix, trainingsetindex=0
+    )
+
     # modelprefix impacts where the model is loaded
-    deeplabcut.pose_tracking_pytorch.train_tracking_transformer(path_config_file, videos, modelprefix = modelprefix, train_epochs = train_epochs, ckpt_folder = snapshotfolder)
+    deeplabcut.pose_tracking_pytorch.train_tracking_transformer(
+        path_config_file,
+        videos,
+        modelprefix=modelprefix,
+        train_epochs=train_epochs,
+        ckpt_folder=snapshotfolder,
+    )
 
-
-    transformer_checkpoint = os.path.join(snapshotfolder, f'dlc_transreid_{train_epochs}.pth')
-
+    transformer_checkpoint = os.path.join(
+        snapshotfolder, f"dlc_transreid_{train_epochs}.pth"
+    )
 
     if not os.path.exists(transformer_checkpoint):
-        raise FileNotFoundError(f'checkpoint {transformer_checkpoint} not found')
+        raise FileNotFoundError(f"checkpoint {transformer_checkpoint} not found")
 
-    deeplabcut.stitch_tracklets(path_config_file, videos, track_method=track_method, modelprefix = modelprefix, n_tracks = n_tracks , transformer_checkpoint = transformer_checkpoint)
-    
+    deeplabcut.stitch_tracklets(
+        path_config_file,
+        videos,
+        track_method=track_method,
+        modelprefix=modelprefix,
+        n_tracks=n_tracks,
+        transformer_checkpoint=transformer_checkpoint,
+    )
 
-def eval_tracking(path_config_file, path_to_ground_truth, video, modelprefix = '',  n_tracks = 3, top_frames = 5, shuffle = 1, use_trans = False):
+
+def eval_tracking(
+    path_config_file,
+    path_to_ground_truth,
+    video,
+    modelprefix="",
+    n_tracks=3,
+    top_frames=5,
+    shuffle=1,
+    use_trans=False,
+):
 
     """
-    
+
     Evaluating tracking result based on ground truth for a video
 
     Outputs: standard tracking metrics such as mota
-     
+
     Parameters
     ----------
     path_config_file: string
@@ -86,17 +119,17 @@ def eval_tracking(path_config_file, path_to_ground_truth, video, modelprefix = '
 
     path_to_ground_truth
 
-        tracking ground truth file to the video 
+        tracking ground truth file to the video
 
     video: string
         Path to the video we want to evaluate
-    
+
     top_frames: (optional), float, in the range (0,100) as percentage
-        
+
         Pick the hardest frames sorted by how close animals are
 
-    n_tracks: (optinal), int    
-         
+    n_tracks: (optinal), int
+
         number of tracks to be formed in the videos. (TODO) handling videos with different number of tracks
 
     use_trans: (optional) boolean
@@ -106,170 +139,188 @@ def eval_tracking(path_config_file, path_to_ground_truth, video, modelprefix = '
 
     """
 
-
-    
     if use_trans:
-        eval_transformer(path_config_file, path_to_ground_truth, video, modelprefix = modelprefix,  n_tracks = n_tracks, top_frames = top_frames, shuffle = shuffle)
+        eval_transformer(
+            path_config_file,
+            path_to_ground_truth,
+            video,
+            modelprefix=modelprefix,
+            n_tracks=n_tracks,
+            top_frames=top_frames,
+            shuffle=shuffle,
+        )
     else:
-        eval_non_transformer(path_config_file, path_to_ground_truth, video, modelprefix = modelprefix,  n_tracks = n_tracks, top_frames = top_frames, shuffle = shuffle)
+        eval_non_transformer(
+            path_config_file,
+            path_to_ground_truth,
+            video,
+            modelprefix=modelprefix,
+            n_tracks=n_tracks,
+            top_frames=top_frames,
+            shuffle=shuffle,
+        )
 
-def eval_non_transformer(path_config_file, path_to_ground_truth, video, modelprefix = '',  n_tracks = 3, top_frames = 5, shuffle = 1):
-    
+
+def eval_non_transformer(
+    path_config_file,
+    path_to_ground_truth,
+    video,
+    modelprefix="",
+    n_tracks=3,
+    top_frames=5,
+    shuffle=1,
+):
 
     vname = Path(video).stem
     videofolder = str(Path(video).parents[0])
 
-    el_fnames = glob.glob(os.path.join(videofolder, vname +'*_el.pickle'))
+    el_fnames = glob.glob(os.path.join(videofolder, vname + "*_el.pickle"))
 
     assert len(el_fnames) == 1
-    
+
     path_to_el_pickle = el_fnames[0]
 
     prox, viz = calc_proximity_and_visibility_indices(path_to_ground_truth)
 
-    thres = np.percentile(prox, 100-top_frames)
+    thres = np.percentile(prox, 100 - top_frames)
 
-    crossing_indices =  prox>thres
+    crossing_indices = prox > thres
 
     crossing_frames = np.where(crossing_indices == True)
 
     ground_truth = pd.read_hdf(path_to_ground_truth)
-    
-    ground_truth_data = reconstruct_all_bboxes(
-        ground_truth, 0, to_xywh=True
-    )
+
+    ground_truth_data = reconstruct_all_bboxes(ground_truth, 0, to_xywh=True)
 
     stitcher = TrackletStitcher.from_pickle(path_to_el_pickle, n_tracks)
 
     stitcher.build_graph()
     stitcher.stitch()
     df = stitcher.format_df().reindex(range(ground_truth_data.shape[1]))
-    bboxes_with_stitcher = reconstruct_all_bboxes(df, 0, to_xywh=True)    
-    
+    bboxes_with_stitcher = reconstruct_all_bboxes(df, 0, to_xywh=True)
+
     try:
-        temp = compute_mot_metrics_bboxes(bboxes_with_stitcher[:,crossing_indices,:], ground_truth_data[:,crossing_indices,:])
+        temp = compute_mot_metrics_bboxes(
+            bboxes_with_stitcher[:, crossing_indices, :],
+            ground_truth_data[:, crossing_indices, :],
+        )
     except:
         temp = compute_mot_metrics_bboxes(bboxes_with_stitcher, ground_truth_data)
 
     print_all_metrics([temp])
 
-    
-def eval_transformer(path_config_file, path_to_ground_truth, video, modelprefix = '',  n_tracks = 3, top_frames = 5, shuffle = 1):
 
+def eval_transformer(
+    path_config_file,
+    path_to_ground_truth,
+    video,
+    modelprefix="",
+    n_tracks=3,
+    top_frames=5,
+    shuffle=1,
+):
 
-
-
-    
     # get path_to_el_pickle from video path
     # get path_to_features from video path
 
-    trainposeconfigfile, testposeconfigfile, snapshotfolder = deeplabcut.return_train_network_path(
-        path_config_file,
-        shuffle=shuffle,
-        modelprefix=modelprefix,
-        trainingsetindex=0
+    (
+        trainposeconfigfile,
+        testposeconfigfile,
+        snapshotfolder,
+    ) = deeplabcut.return_train_network_path(
+        path_config_file, shuffle=shuffle, modelprefix=modelprefix, trainingsetindex=0
     )
 
-    
-    ckpts = glob.glob(os.path.join(snapshotfolder,'dlc_transreid_*.pth'))
+    ckpts = glob.glob(os.path.join(snapshotfolder, "dlc_transreid_*.pth"))
 
-    if len(ckpts)==0:
-        raise FileNotFoundError('transformer checkpoint not found')
+    if len(ckpts) == 0:
+        raise FileNotFoundError("transformer checkpoint not found")
 
     # use the very last one
     transformer_checkpoint = os.path.join(snapshotfolder, ckpts[-1])
-        
-    
+
     vname = Path(video).stem
     videofolder = str(Path(video).parents[0])
-    feature_fnames = glob.glob(os.path.join(videofolder,vname +'*_bpt_features.mmdpickle'))    
-    el_fnames = glob.glob(os.path.join(videofolder, vname +'*_el.pickle'))
+    feature_fnames = glob.glob(
+        os.path.join(videofolder, vname + "*_bpt_features.mmdpickle")
+    )
+    el_fnames = glob.glob(os.path.join(videofolder, vname + "*_el.pickle"))
 
     nframe = len(VideoWriter(video))
     zfill_width = int(np.ceil(np.log10(nframe)))
-    
+
     assert len(feature_fnames) == 1 and len(el_fnames) == 1
     path_to_features = feature_fnames[0]
 
-    feature_dict = mmapdict(path_to_features, True)            
-    
-    path_to_el_pickle = el_fnames[0]                                      
-    
+    feature_dict = mmapdict(path_to_features, True)
+
+    path_to_el_pickle = el_fnames[0]
+
     prox, viz = calc_proximity_and_visibility_indices(path_to_ground_truth)
 
-    thres = np.percentile(prox, 100-top_frames)
+    thres = np.percentile(prox, 100 - top_frames)
 
-    crossing_indices =  prox>thres
+    crossing_indices = prox > thres
 
     crossing_frames = np.where(crossing_indices == True)
 
+    print("path_to_ground_truth", path_to_ground_truth)
+    print("path_to_el_pickle", path_to_el_pickle)
+    print("path_to_features", path_to_features)
 
-
-    print ('path_to_ground_truth', path_to_ground_truth)
-    print ('path_to_el_pickle', path_to_el_pickle)
-    print ('path_to_features', path_to_features)
-        
     ground_truth = pd.read_hdf(path_to_ground_truth)
-    
-    ground_truth_data = reconstruct_all_bboxes(
-        ground_truth, 0, to_xywh=True
-    )
 
+    ground_truth_data = reconstruct_all_bboxes(ground_truth, 0, to_xywh=True)
 
-    
     dlctrans = inference.DLCTrans(transformer_checkpoint)
-    
-    def trans_weight_func(tracklet1,tracklet2, nframe, feature_dict):
+
+    def trans_weight_func(tracklet1, tracklet2, nframe, feature_dict):
 
         if tracklet1 < tracklet2:
-            ind_img1 = tracklet1.inds[-1]            
-            coord1 = tracklet1.data[-1][:,:2]
-            ind_img2 = tracklet2.inds[0]            
-            coord2 = tracklet2.data[0][:,:2]
+            ind_img1 = tracklet1.inds[-1]
+            coord1 = tracklet1.data[-1][:, :2]
+            ind_img2 = tracklet2.inds[0]
+            coord2 = tracklet2.data[0][:, :2]
         else:
             ind_img2 = tracklet2.inds[-1]
             ind_img1 = tracklet1.inds[0]
-            coord2 = tracklet2.data[-1][:,:2]
-            coord1 = tracklet1.data[0][:,:2]
-
+            coord2 = tracklet2.data[-1][:, :2]
+            coord1 = tracklet1.data[0][:, :2]
 
         t1 = (coord1, ind_img1)
         t2 = (coord2, ind_img2)
 
-        dist = dlctrans(t1,t2, zfill_width, feature_dict,return_features = False)
+        dist = dlctrans(t1, t2, zfill_width, feature_dict, return_features=False)
 
-        
-        dist = (dist+1)/2
+        dist = (dist + 1) / 2
         w = 0.01 if tracklet1.identity == tracklet2.identity else 1
         cost = w * stitcher.calculate_edge_weight(tracklet1, tracklet2)
- 
+
         return -dist
-
-
 
     def original_weight(tracklet1, tracklet2):
         w = 0.01 if tracklet1.identity == tracklet2.identity else 1
-        cost = w * stitcher.calculate_edge_weight(tracklet1, tracklet2)            
+        cost = w * stitcher.calculate_edge_weight(tracklet1, tracklet2)
         return cost
 
-        
-    
     stitcher = TrackletStitcher.from_pickle(path_to_el_pickle, n_tracks)
 
-    
-    stitcher.build_graph(weight_func = partial(trans_weight_func, nframe = nframe, feature_dict = feature_dict))
+    stitcher.build_graph(
+        weight_func=partial(trans_weight_func, nframe=nframe, feature_dict=feature_dict)
+    )
     stitcher.stitch()
     df = stitcher.format_df().reindex(range(ground_truth_data.shape[1]))
     bboxes_with_stitcher = reconstruct_all_bboxes(df, 0, to_xywh=True)
 
-    #print ('crossing num')
-    #print (np.sum(crossing_indices))
-        
+    # print ('crossing num')
+    # print (np.sum(crossing_indices))
 
     try:
-        temp = compute_mot_metrics_bboxes(bboxes_with_stitcher[:,crossing_indices,:], ground_truth_data[:,crossing_indices,:])
+        temp = compute_mot_metrics_bboxes(
+            bboxes_with_stitcher[:, crossing_indices, :],
+            ground_truth_data[:, crossing_indices, :],
+        )
     except:
         temp = compute_mot_metrics_bboxes(bboxes_with_stitcher, ground_truth_data)
 
     print_all_metrics([temp])
-

@@ -22,7 +22,7 @@ class ArcFace(nn.Module):
         if bias:
             self.bias = Parameter(torch.Tensor(out_features))
         else:
-            self.register_parameter('bias', None)
+            self.register_parameter("bias", None)
         self.reset_parameters()
 
     def reset_parameters(self):
@@ -39,15 +39,17 @@ class ArcFace(nn.Module):
         phi = torch.where(cosine > self.th, phi, cosine - self.mm)
         # --------------------------- convert label to one-hot ---------------------------
         # one_hot = torch.zeros(cosine.size(), requires_grad=True, device='cuda')
-        one_hot = torch.zeros(cosine.size(), device='cuda')
+        one_hot = torch.zeros(cosine.size(), device="cuda")
         one_hot.scatter_(1, label.view(-1, 1).long(), 1)
         # -------------torch.where(out_i = {x_i if condition_i else y_i) -------------
         output = (one_hot * phi) + (
-                    (1.0 - one_hot) * cosine)  # you can use torch.where if your torch.__version__ is 0.4
+            (1.0 - one_hot) * cosine
+        )  # you can use torch.where if your torch.__version__ is 0.4
         output *= self.s
         # print(output)
 
         return output
+
 
 class CircleLoss(nn.Module):
     def __init__(self, in_features, num_classes, s=256, m=0.25):
@@ -58,15 +60,14 @@ class CircleLoss(nn.Module):
         self._num_classes = num_classes
         self.reset_parameters()
 
-
     def reset_parameters(self):
         nn.init.kaiming_uniform_(self.weight, a=math.sqrt(5))
 
     def __call__(self, bn_feat, targets):
 
         sim_mat = F.linear(F.normalize(bn_feat), F.normalize(self.weight))
-        alpha_p = torch.clamp_min(-sim_mat.detach() + 1 + self.m, min=0.)
-        alpha_n = torch.clamp_min(sim_mat.detach() + self.m, min=0.)
+        alpha_p = torch.clamp_min(-sim_mat.detach() + 1 + self.m, min=0.0)
+        alpha_n = torch.clamp_min(sim_mat.detach() + self.m, min=0.0)
         delta_p = 1 - self.m
         delta_n = self.m
 

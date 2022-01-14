@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
+
+
 class CrossEntropyLabelSmooth(nn.Module):
     """Cross entropy loss with label smoothing regularizer.
 
@@ -27,16 +29,21 @@ class CrossEntropyLabelSmooth(nn.Module):
             targets: ground truth labels with shape (num_classes)
         """
         log_probs = self.logsoftmax(inputs)
-        targets = torch.zeros(log_probs.size()).scatter_(1, targets.unsqueeze(1).data.cpu(), 1)
-        if self.use_gpu: targets = targets.cuda()
+        targets = torch.zeros(log_probs.size()).scatter_(
+            1, targets.unsqueeze(1).data.cpu(), 1
+        )
+        if self.use_gpu:
+            targets = targets.cuda()
         targets = (1 - self.epsilon) * targets + self.epsilon / self.num_classes
-        loss = (- targets * log_probs).mean(0).sum()
+        loss = (-targets * log_probs).mean(0).sum()
         return loss
+
 
 class LabelSmoothingCrossEntropy(nn.Module):
     """
     NLL loss with label smoothing.
     """
+
     def __init__(self, smoothing=0.1):
         """
         Constructor for the LabelSmoothing module.
@@ -45,7 +52,7 @@ class LabelSmoothingCrossEntropy(nn.Module):
         super(LabelSmoothingCrossEntropy, self).__init__()
         assert smoothing < 1.0
         self.smoothing = smoothing
-        self.confidence = 1. - smoothing
+        self.confidence = 1.0 - smoothing
 
     def forward(self, x, target):
         logprobs = F.log_softmax(x, dim=-1)

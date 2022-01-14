@@ -437,7 +437,7 @@ class PoseMultiNet(BasePoseNet):
                         self.cfg["num_joints"] + self.cfg.get("num_idchannel", 0),
                     )
                     out["part_pred_interm"] = pred_layer
-        out['features'] = features
+        out["features"] = features
         return out
 
     def get_net(self, inputs):

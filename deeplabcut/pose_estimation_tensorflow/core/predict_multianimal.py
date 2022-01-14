@@ -211,12 +211,10 @@ def predict_batched_peaks_and_costs(
     peaks_gt=None,
     n_points=10,
     n_decimals=3,
-    extra_dict = None
+    extra_dict=None,
 ):
-        
-    scmaps, locrefs, pafs, peaks = sess.run(
-        outputs, feed_dict={inputs: images_batch}
-    )        
+
+    scmaps, locrefs, pafs, peaks = sess.run(outputs, feed_dict={inputs: images_batch})
 
     scmaps, locrefs, *pafs, peaks = sess.run(outputs, feed_dict={inputs: images_batch})
     if ~np.any(peaks):
