@@ -24,15 +24,17 @@ If you are new to DeepLabCut, we have 3 resources we recommend before jumping in
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1605642639913-OIUBVR8R0JLYZQPRIYIR/ke17ZwdGBToddI8pDm48kMMAxEenKbh651VJujierMxZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpw-CO5bsXt3Lwn3O5kv-PfTgGtLU9oye8D4J7Fixq38Gl-o9tfrEtbnqpPzC5bXTas/ezgif.com-gif-maker.gif?format=750w" width="95%">
 </p>
 
+ - [Real-time feedback with DeepLabCut: DeepLabCut-live](https://github.com/DeepLabCut/DeepLabCut-live)
+
  - [DeepLabCut 3D](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/Overviewof3D.md)
 
  - [Helper functions](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/HelperFunctions.md)
 
  - [Developer Road Map!](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/roadmap.md)
 
- - [How to Contribute to DeepLabCut](https://github.com/DeepLabCut/DeepLabCut/master/blob/CONTRIBUTING.md) and the [Code of Conduct](https://github.com/DeepLabCut/DeepLabCut/blob/CODE_OF_CONDUCT.md)
+ - [How to Contribute to DeepLabCut](https://github.com/DeepLabCut/DeepLabCut/blob/master/CONTRIBUTING.md) and the [Code of Conduct](https://github.com/DeepLabCut/DeepLabCut/blob/master/CODE_OF_CONDUCT.md)
 
- - [The Authors of DeepLabCut](https://github.com/DeepLabCut/DeepLabCut/master/blob/AUTHORS)
+ - [The Authors of DeepLabCut](https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS)
 
 A quick video to help you navigate the docs:  **Click on the image!**
 
