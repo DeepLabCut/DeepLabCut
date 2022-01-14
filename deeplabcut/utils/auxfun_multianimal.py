@@ -10,6 +10,7 @@ Licensed under GNU Lesser General Public License v3.0
 
 import os
 import pickle
+import shelve
 from itertools import combinations
 from pathlib import Path
 
@@ -17,14 +18,36 @@ import numpy as np
 import pandas as pd
 from mmappickle import mmapdict
 
-from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils import auxiliaryfunctions, conversioncode
 from deeplabcut.generate_training_dataset import trainingsetmanipulation
+
 
 def extractindividualsandbodyparts(cfg):
     individuals = cfg["individuals"].copy()
     if len(cfg["uniquebodyparts"]) > 0:
         individuals.append("single")
     return individuals, cfg["uniquebodyparts"], cfg["multianimalbodyparts"]
+
+
+def get_track_method(cfg, track_method=""):
+    if cfg.get("multianimalproject", False):
+        if track_method != "":
+            # check if it exists:
+            if track_method not in ("box", "skeleton", "ellipse"):
+                raise ValueError(
+                    "Invalid tracking method. Only `box`, `skeleton` and `ellipse` are currently supported."
+                )
+            return track_method
+        else: # default
+            if cfg.get("default_track_method", "") is None: #check if empty default
+                print("Empty def. tracker in config file found, overwritten by ellipse tracker.")
+                cfg["default_track_method"] = "ellipse"
+                auxiliaryfunctions.write_config(config, cfg)
+
+            return cfg.get("default_track_method", "ellipse")
+
+    else:  # no tracker for single-animal projects
+        return ""
 
 
 def IntersectionofIndividualsandOnesGivenbyUser(cfg, individuals):
@@ -130,9 +153,13 @@ def LoadFullMultiAnimalData(dataname):
 '''
 def LoadFullMultiAnimalData(dataname):
     """ Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py """
-    with open(dataname.split(".h5")[0] + "_full.pickle", "rb") as handle:
-        data = pickle.load(handle)
-    with open(dataname.split(".h5")[0] + "_meta.pickle", "rb") as handle:
+    data_file = dataname.split(".h5")[0] + "_full.pickle"
+    try:
+        with open(data_file, "rb") as handle:
+            data = pickle.load(handle)
+    except (pickle.UnpicklingError, FileNotFoundError):
+        data = shelve.open(data_file, flag="r")
+    with open(data_file.replace("_full.", "_meta."), "rb") as handle:
         metadata = pickle.load(handle)
     return data, metadata
 '''
@@ -220,6 +247,7 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
 
             fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"])
             Data = pd.read_hdf(fn + ".h5")
+            conversioncode.guarantee_multiindex_rows(Data)
             imindex = Data.index
 
             print("This is a single animal data set, converting to multi...", folder)
@@ -283,11 +311,11 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
                     dataFrame = pd.concat([dataFrame, frame], axis=1)
 
             Data.to_hdf(
-                fn + "singleanimal.h5", "df_with_missing", format="table", mode="w"
+                fn + "singleanimal.h5", "df_with_missing",
             )
             Data.to_csv(fn + "singleanimal.csv")
 
-            dataFrame.to_hdf(fn + ".h5", "df_with_missing", format="table", mode="w")
+            dataFrame.to_hdf(fn + ".h5", "df_with_missing")
             dataFrame.to_csv(fn + ".csv")
 
 
@@ -313,6 +341,7 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
         ):  # multilanguage support :)
             fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"])
             Data = pd.read_hdf(fn + ".h5")
+            conversioncode.guarantee_multiindex_rows(Data)
             imindex = Data.index
 
             if "individuals" in Data.columns.names and (
@@ -356,12 +385,12 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
                         DataFrame = pd.concat([DataFrame, dataFrame], axis=1)
 
                 Data.to_hdf(
-                    fn + "multianimal.h5", "df_with_missing", format="table", mode="w"
+                    fn + "multianimal.h5", "df_with_missing",
                 )
                 Data.to_csv(fn + "multianimal.csv")
 
                 DataFrame.to_hdf(
-                    fn + ".h5", "df_with_missing", format="table", mode="w"
+                    fn + ".h5", "df_with_missing",
                 )
                 DataFrame.to_csv(fn + ".csv")
             elif target == None or target == "multi":
@@ -443,12 +472,12 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
                         DataFrame = pd.concat([DataFrame, dataFrame], axis=1)
 
                 Data.to_hdf(
-                    fn + "singleanimal.h5", "df_with_missing", format="table", mode="w"
+                    fn + "singleanimal.h5", "df_with_missing",
                 )
                 Data.to_csv(fn + "singleanimal.csv")
 
                 DataFrame.to_hdf(
-                    fn + ".h5", "df_with_missing", format="table", mode="w"
+                    fn + ".h5", "df_with_missing",
                 )
                 DataFrame.to_csv(fn + ".csv")
 

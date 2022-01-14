@@ -34,6 +34,7 @@ from deeplabcut.utils import (
     auxiliaryfunctions,
     auxfun_multianimal,
     auxiliaryfunctions_3d,
+    conversioncode,
 )
 
 # ###########################################################################
@@ -176,7 +177,9 @@ class ImagePanel(BasePanel):
         # draw epipolar lines
         epLines, sourcePts, offsets = self.retrieveData_and_computeEpLines(img, itr)
         if epLines is not None:
-            im = self.drawEpLines(im.copy(), epLines, sourcePts, offsets, colorIndex, cmap)
+            im = self.drawEpLines(
+                im.copy(), epLines, sourcePts, offsets, colorIndex, cmap
+            )
         ax = self.axes.imshow(im, cmap=cmap)
         self.orig_xlim = self.axes.get_xlim()
         self.orig_ylim = self.axes.get_ylim()
@@ -780,21 +783,17 @@ class MainFrame(BaseFrame):
         self.statusbar.SetStatusText(
             "Working on folder: {}".format(os.path.split(str(self.dir))[-1])
         )
-        self.relativeimagenames = [
+        relativeimagenames = [
             "labeled" + n.split("labeled")[1] for n in self.index
         ]  # [n.split(self.project_path+'/')[1] for n in self.index]
-
+        self.relativeimagenames = [tuple(name.split(os.path.sep))
+                                   for name in relativeimagenames]
         # Reading the existing dataset,if already present
         try:
             self.dataFrame = pd.read_hdf(
                 os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5")
             )
-            # Handle data previously labeled on a different platform
-            sep = "/" if "/" in self.dataFrame.index[0] else "\\"
-            if sep != os.path.sep:
-                self.dataFrame.index = self.dataFrame.index.str.replace(
-                    sep, os.path.sep
-                )
+            conversioncode.guarantee_multiindex_rows(self.dataFrame)
             self.dataFrame.sort_index(inplace=True)
             self.prev.Enable(True)
             # Finds the first empty row in the dataframe and sets the iteration to that index
@@ -832,7 +831,7 @@ class MainFrame(BaseFrame):
         img_name = Path(self.index[self.iter]).name
 
         # Checking for new frames and adding them to the existing dataframe
-        old_imgs = np.sort(list(self.dataFrame.index))
+        old_imgs = sorted(self.dataFrame.index)
         self.newimages = list(set(self.relativeimagenames) - set(old_imgs))
         if self.newimages:
             print("Found new frames..")
@@ -1001,27 +1000,30 @@ class MainFrame(BaseFrame):
             if uniquebodyparts is not None:
                 if prefix == "single":
                     for c, bp in enumerate(uniquebodyparts):
-                        index = pd.MultiIndex.from_product(
+                        cols = pd.MultiIndex.from_product(
                             [[self.scorer], [prefix], [bp], ["x", "y"]],
                             names=["scorer", "individuals", "bodyparts", "coords"],
                         )
-                        frame = pd.DataFrame(a, columns=index, index=relativeimagenames)
+                        index = pd.MultiIndex.from_tuples(relativeimagenames)
+                        frame = pd.DataFrame(a, columns=cols, index=index)
                         dataFrame = pd.concat([dataFrame, frame], axis=1)
                 else:
                     for c, bp in enumerate(multibodyparts):
-                        index = pd.MultiIndex.from_product(
+                        cols = pd.MultiIndex.from_product(
                             [[self.scorer], [prefix], [bp], ["x", "y"]],
                             names=["scorer", "individuals", "bodyparts", "coords"],
                         )
-                        frame = pd.DataFrame(a, columns=index, index=relativeimagenames)
+                        index = pd.MultiIndex.from_tuples(relativeimagenames)
+                        frame = pd.DataFrame(a, columns=cols, index=index)
                         dataFrame = pd.concat([dataFrame, frame], axis=1)
             else:
                 for c, bp in enumerate(multibodyparts):
-                    index = pd.MultiIndex.from_product(
+                    cols = pd.MultiIndex.from_product(
                         [[self.scorer], [prefix], [bp], ["x", "y"]],
                         names=["scorer", "individuals", "bodyparts", "coords"],
                     )
-                    frame = pd.DataFrame(a, columns=index, index=relativeimagenames)
+                    index = pd.MultiIndex.from_tuples(relativeimagenames)
+                    frame = pd.DataFrame(a, columns=cols, index=index)
                     dataFrame = pd.concat([dataFrame, frame], axis=1)
         dataFrame.sort_index(inplace=True)
         return dataFrame
@@ -1194,6 +1196,10 @@ class MainFrame(BaseFrame):
         """
         self.drs = []
         self.updatedCoords = []
+        if len(self.individual_names) > 1:
+            self.norm, self.colorIndex = self.image_panel.getColorIndices(
+                self.img, self.multibodyparts
+            )
         for j, ind in enumerate(self.individual_names):
             idcolor = self.idmap(j)
             if ind not in self.dataFrame.columns.get_level_values(1):
@@ -1248,9 +1254,6 @@ class MainFrame(BaseFrame):
                         self.dataFrame[self.scorer][ind][bp]["x"].values[self.iter],
                         self.dataFrame[self.scorer][ind][bp]["y"].values[self.iter],
                     ]
-                    self.norm, self.colorIndex = self.image_panel.getColorIndices(
-                        self.img, self.multibodyparts
-                    )
                     color = self.colormap(self.norm(self.colorIndex[c]))
                     circle = patches.Circle(
                         (self.points[0], self.points[1]),
@@ -1317,8 +1320,6 @@ class MainFrame(BaseFrame):
         self.dataFrame.to_hdf(
             os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5"),
             "df_with_missing",
-            format="table",
-            mode="w",
         )
 
     def onChecked(self, event):

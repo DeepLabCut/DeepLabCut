@@ -1,8 +1,10 @@
 import numpy as np
+import pickle
 from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
 
 
 BEST_GRAPH = [14, 15, 16, 11, 22, 31, 61, 7, 59, 62, 64]
+BEST_GRAPH_MONTBLANC = [1, 0, 2, 5, 4, 3]
 
 
 def test_get_n_best_paf_graphs(evaluation_data_and_metadata):
@@ -16,6 +18,19 @@ def test_get_n_best_paf_graphs(evaluation_data_and_metadata):
     assert len(dict_) == len(params["paf_graph"])
     assert len(paf_inds[0]) == 11
     assert paf_inds[0] == BEST_GRAPH
+    assert len(paf_inds[-1]) == len(params["paf_graph"])
+
+
+def test_get_n_best_paf_graphs_montblanc(evaluation_data_and_metadata_montblanc):
+    data, metadata = evaluation_data_and_metadata_montblanc
+    params = crossvalutils._set_up_evaluation(data)
+    paf_inds, dict_ = crossvalutils._get_n_best_paf_graphs(
+        data, metadata, params["paf_graph"],
+    )
+    assert len(paf_inds) == 4
+    assert len(dict_) == len(params["paf_graph"])
+    assert [len(inds) for inds in paf_inds] == list(range(3, 7))
+    assert paf_inds[-1] == BEST_GRAPH_MONTBLANC
     assert len(paf_inds[-1]) == len(params["paf_graph"])
 
 
@@ -49,3 +64,35 @@ def test_benchmark_paf_graphs(evaluation_data_and_metadata):
     miss, purity = results[1].xs("mean", level=1).to_numpy().squeeze()
     assert np.isclose(miss, 0.02, atol=1e-2)
     assert np.isclose(purity, 0.98, atol=1e-2)
+
+
+def test_benchmark_paf_graphs_montblanc(evaluation_data_and_metadata_montblanc):
+    data, metadata = evaluation_data_and_metadata_montblanc
+    cfg = {
+        "individuals": [f"bird{i}" for i in range(1, 9)],
+        "uniquebodyparts": ["center"],
+        "multianimalbodyparts": ["head", "tail", "leftwing", "rightwing",],
+    }
+    inference_cfg = {"topktoretain": 8, "pcutoff": 0.1, "pafthreshold": 0.1}
+    results = crossvalutils._benchmark_paf_graphs(
+        cfg,
+        inference_cfg,
+        data,
+        [BEST_GRAPH_MONTBLANC],
+        split_inds=[metadata["data"]["trainIndices"], metadata["data"]["testIndices"]],
+    )
+    with open("tests/data/montblanc_map.pickle", "rb") as file:
+        results_gt = pickle.load(file)
+    np.testing.assert_equal(
+        results[1].loc["purity"].to_numpy().squeeze(),
+        results_gt[0].loc["purity", 6].to_numpy(),
+    )
+    vals = [
+        results[2][0][0]["mAP"],
+        results[2][0][0]["mAR"],
+        results[2][0][1]["mAP"],
+        results[2][0][1]["mAR"],
+    ]
+    np.testing.assert_equal(
+        vals, results_gt[0].iloc[-4:, -1].to_numpy(),
+    )

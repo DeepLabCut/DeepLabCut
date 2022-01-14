@@ -4,6 +4,7 @@
 /examples/TES*
 /examples/multi*
 /examples/3D*
+/examples/m3*
 /examples/OUT
 .local
 .DS_Store
@@ -110,6 +111,7 @@ ENV/
 # Spyder project settings
 .spyderproject
 .spyproject
+.vscode/*
 
 # Rope project settings
 .ropeproject

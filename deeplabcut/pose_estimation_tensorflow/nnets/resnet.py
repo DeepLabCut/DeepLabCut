@@ -33,7 +33,7 @@ class PoseResnet(BasePoseNet):
         super(PoseResnet, self).__init__(cfg)
 
     def extract_features(self, inputs):
-        net_fun = net_funcs[self.cfg['net_type']]
+        net_fun = net_funcs[self.cfg["net_type"]]
         im_centered = self.center_inputs(inputs)
         with slim.arg_scope(resnet_v1.resnet_arg_scope()):
             net, end_points = net_fun(
@@ -52,22 +52,24 @@ class PoseResnet(BasePoseNet):
         reuse=None,
     ):
         out = super(PoseResnet, self).prediction_layers(
-            features, scope, reuse,
+            features,
+            scope,
+            reuse,
         )
         out['features'] = features
         with tf.compat.v1.variable_scope(scope, reuse=reuse):
-            if self.cfg['intermediate_supervision']:
+            if self.cfg["intermediate_supervision"]:
                 layer_name = "resnet_v1_{}/block{}/unit_{}/bottleneck_v1"
-                num_layers = re.findall("resnet_([0-9]*)", self.cfg['net_type'])[0]
+                num_layers = re.findall("resnet_([0-9]*)", self.cfg["net_type"])[0]
                 interm_name = layer_name.format(
-                    num_layers, 3, self.cfg['intermediate_supervision_layer']
+                    num_layers, 3, self.cfg["intermediate_supervision_layer"]
                 )
                 block_interm_out = end_points[interm_name]
                 out["part_pred_interm"] = prediction_layer(
                     self.cfg,
                     block_interm_out,
                     "intermediate_supervision",
-                    self.cfg['num_joints'] + self.cfg.get("num_idchannel", 0),
+                    self.cfg["num_joints"] + self.cfg.get("num_idchannel", 0),
                 )
         return out
 

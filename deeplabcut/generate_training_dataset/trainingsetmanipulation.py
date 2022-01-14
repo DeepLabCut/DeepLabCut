@@ -11,6 +11,7 @@ import math
 import logging
 import os
 import os.path
+import warnings
 
 from functools import lru_cache
 from pathlib import Path
@@ -178,7 +179,7 @@ def dropannotationfileentriesduetodeletedimages(config):
         DC = pd.read_hdf(fn)
         dropped = False
         for imagename in DC.index:
-            if os.path.isfile(os.path.join(cfg["project_path"], imagename)):
+            if os.path.isfile(os.path.join(cfg["project_path"], *imagename)):
                 pass
             else:
                 print("Dropping...", imagename)
@@ -292,6 +293,7 @@ def check_labels(
             DataCombined = pd.read_hdf(
                 os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
             )
+            conversioncode.guarantee_multiindex_rows(DataCombined)
             if cfg.get("multianimalproject", False):
                 color_by = "individual" if visualizeindividuals else "bodypart"
             else:  # for single animal projects
@@ -316,7 +318,7 @@ def check_labels(
 
 
 def boxitintoacell(joints):
-    """ Auxiliary function for creating matfile."""
+    """Auxiliary function for creating matfile."""
     outer = np.array([[None]], dtype=object)
     outer[0, 0] = np.array(joints, dtype="int64")
     return outer
@@ -393,17 +395,17 @@ def _robust_path_split(path):
     sep = "\\" if "\\" in path else "/"
     splits = path.rsplit(sep, 1)
     if len(splits) == 1:
-        parent = '.'
+        parent = "."
         file = splits[0]
     elif len(splits) == 2:
         parent, file = splits
     else:
-        raise('Unknown filepath split for path {}'.format(path))
+        raise ("Unknown filepath split for path {}".format(path))
     filename, ext = os.path.splitext(file)
     return parent, filename, ext
 
 
-def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
+def merge_annotateddatasets(cfg, trainingsetfolder_full):
     """
     Merges all the h5 files for all labeled-datasets (from individual videos).
 
@@ -423,10 +425,7 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
             data = pd.read_hdf(file_path)
             AnnotationData.append(data)
         except FileNotFoundError:
-            print(
-                file_path,
-                " not found (perhaps not annotated)."
-            )
+            print(file_path, " not found (perhaps not annotated).")
 
     if not len(AnnotationData):
         print(
@@ -453,30 +452,10 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full, windows2linux):
     AnnotationData = AnnotationData.reindex(
         bodyparts, axis=1, level=AnnotationData.columns.names.index("bodyparts")
     )
-
-    # Let's check if the code is *not* run on windows (Source: #https://stackoverflow.com/questions/1325581/how-do-i-check-if-im-running-on-windows-in-python)
-    # but the paths are in windows format...
-    windowspath = "\\" in AnnotationData.index[0]
-    if os.name != "nt" and windowspath and not windows2linux:
-        print(
-            "It appears that the images were labeled on a Windows system, but you are currently trying to create a training set on a Unix system. \n In this case the paths should be converted. Do you want to proceed with the conversion?"
-        )
-        askuser = input("yes/no")
-    else:
-        askuser = "no"
-
+    conversioncode.guarantee_multiindex_rows(AnnotationData)
     filename = os.path.join(trainingsetfolder_full, f'CollectedData_{cfg["scorer"]}')
-    if (
-        windows2linux or askuser == "yes" or askuser == "y" or askuser == "Ja"
-    ):  # convert windows path in pandas array \\ to unix / !
-        AnnotationData = conversioncode.convertpaths_to_unixstyle(
-            AnnotationData, filename
-        )
-        print("Annotation data converted to unix format...")
-    else:  # store as is
-        AnnotationData.to_hdf(filename + ".h5", key="df_with_missing", mode="w")
-        AnnotationData.to_csv(filename + ".csv")  # human readable.
-
+    AnnotationData.to_hdf(filename + ".h5", key="df_with_missing", mode="w")
+    AnnotationData.to_csv(filename + ".csv")  # human readable.
     return AnnotationData
 
 
@@ -485,7 +464,7 @@ def SplitTrials(
     trainFraction=0.8,
     enforce_train_fraction=False,
 ):
-    """ Split a trial index into train and test sets. Also checks that the trainFraction is a two digit number between 0 an 1. The reason
+    """Split a trial index into train and test sets. Also checks that the trainFraction is a two digit number between 0 an 1. The reason
     is that the folders contain the trainfraction as int(100*trainFraction).
     If enforce_train_fraction is True, train and test indices are padded with -1
     such that the ratio of their lengths is exactly the desired train fraction.
@@ -506,11 +485,13 @@ def SplitTrials(
         train_fraction = round(trainFraction, 2)
         train_size = index_len * train_fraction
         shuffle = np.random.permutation(trialindex)
-        test_indices = shuffle[int(train_size):]
-        train_indices = shuffle[:int(train_size)]
+        test_indices = shuffle[int(train_size) :]
+        train_indices = shuffle[: int(train_size)]
         if enforce_train_fraction and not train_size.is_integer():
             train_indices, test_indices = pad_train_test_indices(
-                train_indices, test_indices, train_fraction,
+                train_indices,
+                test_indices,
+                train_fraction,
             )
         return train_indices, test_indices
 
@@ -539,7 +520,7 @@ def pad_train_test_indices(train_inds, test_inds, train_fraction):
     return train_inds, test_inds
 
 
-def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
+def mergeandsplit(config, trainindex=0, uniform=True):
     """
     This function allows additional control over "create_training_dataset".
 
@@ -560,10 +541,6 @@ def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
 
     uniform: bool, optional
         Perform uniform split (disregarding folder structure in labeled data), or (if False) leave one folder out.
-
-    windows2linux: bool.
-        The annotation files contain path formated according to your operating system. If you label on windows
-        but train & evaluate on a unix system (e.g. ubunt, colab, Mac) set this variable to True to convert the paths.
 
     Examples
     --------
@@ -600,18 +577,20 @@ def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
         Data = merge_annotateddatasets(
             cfg,
             Path(os.path.join(project_path, trainingsetfolder)),
-            windows2linux=windows2linux,
         )
         if Data is None:
             return [], []
 
+    conversioncode.guarantee_multiindex_rows(Data)
     Data = Data[scorer]  # extract labeled data
 
     if uniform == True:
         TrainingFraction = cfg["TrainingFraction"]
         trainFraction = TrainingFraction[trainindex]
         trainIndices, testIndices = SplitTrials(
-            range(len(Data.index)), trainFraction, True,
+            range(len(Data.index)),
+            trainFraction,
+            True,
         )
     else:  # leave one folder out split
         videos = cfg["video_sets"].keys()
@@ -619,8 +598,7 @@ def mergeandsplit(config, trainindex=0, uniform=True, windows2linux=False):
         print("Excluding the following folder (from training):", test_video_name)
         trainIndices, testIndices = [], []
         for index, name in enumerate(Data.index):
-            # print(index,name.split(os.sep)[1])
-            if test_video_name == name.split(os.sep)[1]:  # this is the video name
+            if test_video_name == name[1]:  # this is the video name
                 # print(name,test_video_name)
                 testIndices.append(index)
             else:
@@ -650,7 +628,7 @@ def format_training_data(df, train_inds, nbodyparts, project_path):
         data = dict()
         filename = df.index[i]
         data["image"] = filename
-        img_shape = read_image_shape_fast(os.path.join(project_path, filename))
+        img_shape = read_image_shape_fast(os.path.join(project_path, *filename))
         data["size"] = img_shape
         temp = df.iloc[i].values.reshape(-1, 2)
         joints = np.c_[range(nbodyparts), temp]
@@ -706,10 +684,6 @@ def create_training_dataset(
     Shuffles: list of shuffles.
         Alternatively the user can also give a list of shuffles (integers!).
 
-    windows2linux: bool.
-        The annotation files contain path formated according to your operating system. If you label on windows
-        but train & evaluate on a unix system (e.g. ubunt, colab, Mac) set this variable to True to convert the paths.
-
     userfeedback: bool, optional
         If this is set to false, then all requested train/test splits are created (no matter if they already exist). If you
         want to assure that previous splits etc. are not overwritten, then set this to True and you will be asked for each split.
@@ -738,6 +712,13 @@ def create_training_dataset(
     """
     import scipy.io as sio
 
+    if windows2linux:
+        # DeprecationWarnings are silenced since Python 3.2 unless triggered in __main__
+        warnings.warn(
+            "`windows2linux` has no effect since 2.2.0.4 and will be removed in 2.2.1.",
+            FutureWarning,
+        )
+
     # Loading metadata from config file:
     cfg = auxiliaryfunctions.read_config(config)
     if cfg.get("multianimalproject", False):
@@ -746,7 +727,7 @@ def create_training_dataset(
         )
 
         create_multianimaltraining_dataset(
-            config, num_shuffles, Shuffles, windows2linux, net_type
+            config, num_shuffles, Shuffles, net_type=net_type
         )
     else:
         scorer = cfg["scorer"]
@@ -760,7 +741,8 @@ def create_training_dataset(
         )
 
         Data = merge_annotateddatasets(
-            cfg, Path(os.path.join(project_path, trainingsetfolder)), windows2linux
+            cfg,
+            Path(os.path.join(project_path, trainingsetfolder)),
         )
         if Data is None:
             return
@@ -786,13 +768,13 @@ def create_training_dataset(
                 auxiliaryfunctions.edit_config(config, {"default_augmenter": "imgaug"})
                 augmenter_type = "imgaug"
         elif augmenter_type not in [
-                "default",
-                "scalecrop",
-                "imgaug",
-                "tensorpack",
-                "deterministic",
-            ]:
-                raise ValueError("Invalid augmenter type:", augmenter_type)
+            "default",
+            "scalecrop",
+            "imgaug",
+            "tensorpack",
+            "deterministic",
+        ]:
+            raise ValueError("Invalid augmenter type:", augmenter_type)
 
         # Loading the encoder (if necessary downloading from TF)
         dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
@@ -973,19 +955,21 @@ def create_training_dataset(
 
 
 def get_largestshuffle_index(config):
-    """ Returns the largest shuffle for all dlc-models in the current iteration."""
+    """Returns the largest shuffle for all dlc-models in the current iteration."""
     cfg = auxiliaryfunctions.read_config(config)
     project_path = cfg["project_path"]
     iterate = "iteration-" + str(cfg["iteration"])
     dlc_model_path = os.path.join(project_path, "dlc-models", iterate)
     if os.path.isdir(dlc_model_path):
         models = os.listdir(dlc_model_path)
-        # sort the models directories
+        # sort the model directories
         models.sort(key=lambda f: int("".join(filter(str.isdigit, f))))
-        # get the shuffle index
-        max_shuffle_index = int(models[-1].split("shuffle")[-1])
+
+        # get the shuffle index and offset by 1.
+        max_shuffle_index = int(models[-1].split("shuffle")[-1]) + 1
     else:
         max_shuffle_index = 0
+
     return max_shuffle_index
 
 
@@ -994,7 +978,7 @@ def create_training_model_comparison(
     trainindex=0,
     num_shuffles=1,
     net_types=["resnet_50"],
-    augmenter_types=["default"],
+    augmenter_types=["imgaug"],
     userfeedback=False,
     windows2linux=False,
 ):
@@ -1028,21 +1012,30 @@ def create_training_model_comparison(
         If this is set to false, then all requested train/test splits are created (no matter if they already exist). If you
         want to assure that previous splits etc. are not overwritten, then set this to True and you will be asked for each split.
 
-    windows2linux: bool.
-        The annotation files contain path formated according to your operating system. If you label on windows
-        but train & evaluate on a unix system (e.g. ubunt, colab, Mac) set this variable to True to convert the paths.
+    Returns
+    ----------
+    shuffle_list: list
+        List of indices corresponding to the trainigsplits/models that were created.
 
     Example
     --------
-    >>> deeplabcut.create_training_model_comparison('/analysis/project/reaching-task/config.yaml',num_shuffles=1,net_types=['resnet_50','resnet_152'],augmenter_types=['tensorpack','deterministic'])
+    >>> shuffle_list = deeplabcut.create_training_model_comparison('/analysis/project/reaching-task/config.yaml',num_shuffles=1,net_types=['resnet_50','resnet_152'],augmenter_types=['tensorpack','deterministic'])
 
     Windows:
-    >>> deeplabcut.create_training_model_comparison('C:\\Users\\Ulf\\looming-task\\config.yaml',num_shuffles=1,net_types=['resnet_50','resnet_152'],augmenter_types=['tensorpack','deterministic'])
+    >>> shuffle_list = deeplabcut.create_training_model_comparison('C:\\Users\\Ulf\\looming-task\\config.yaml',num_shuffles=1,net_types=['resnet_50','resnet_152'],augmenter_types=['tensorpack','deterministic'])
+
+    See examples/testscript_openfielddata_augmentationcomparison.py for an example of how to use shuffle_list.
 
     --------
     """
     # read cfg file
     cfg = auxiliaryfunctions.read_config(config)
+
+    if windows2linux:
+        warnings.warn(
+            "`windows2linux` has no effect since 2.2.0.4 and will be removed in 2.2.1.",
+            FutureWarning,
+        )
 
     # create log file
     log_file_name = os.path.join(cfg["project_path"], "training_model_comparison.log")
@@ -1059,6 +1052,7 @@ def create_training_model_comparison(
 
     largestshuffleindex = get_largestshuffle_index(config)
 
+    shuffle_list = []
     for shuffle in range(num_shuffles):
         trainIndices, testIndices = mergeandsplit(
             config, trainindex=trainindex, uniform=True
@@ -1071,6 +1065,8 @@ def create_training_model_comparison(
                     + idx_net * len(augmenter_types)
                     + shuffle * len(augmenter_types) * len(net_types)
                 )
+
+                shuffle_list.append(get_max_shuffle_idx)
                 log_info = str(
                     "Shuffle index:"
                     + str(get_max_shuffle_idx)
@@ -1080,6 +1076,8 @@ def create_training_model_comparison(
                     + aug
                     + ", trainsetindex:"
                     + str(trainindex)
+                    + ", frozen shuffle ID:"
+                    + str(shuffle)
                 )
                 create_training_dataset(
                     config,
@@ -1089,6 +1087,7 @@ def create_training_model_comparison(
                     testIndices=[testIndices],
                     augmenter_type=aug,
                     userfeedback=userfeedback,
-                    windows2linux=windows2linux,
                 )
                 logger.info(log_info)
+
+    return shuffle_list

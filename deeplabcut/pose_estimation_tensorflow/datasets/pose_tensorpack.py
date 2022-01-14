@@ -21,11 +21,11 @@ https://github.com/tensorpack/tensorpack
 
 import multiprocessing
 import os
-import random as rand
 
 import cv2
 import numpy as np
 import scipy.io as sio
+from deeplabcut.utils.conversioncode import robust_split_path
 from numpy import array as arr
 from tensorpack.dataflow.base import RNGDataFlow
 from tensorpack.dataflow.common import MapData
@@ -113,8 +113,12 @@ class Pose(RNGDataFlow):
             item = DataItem()
             item.image_id = i
             base = str(self.cfg["project_path"])
-            im_path = os.path.join(base, sample[0][0])
-            item.im_path = im_path
+            im_path = sample[0][0]
+            if isinstance(im_path, str):
+                im_path = robust_split_path(im_path)
+            else:
+                im_path = [s.strip() for s in im_path]
+            item.im_path = os.path.join(base, *im_path)
             item.im_size = sample[1][0]
             if len(sample) >= 3:
                 joints = sample[2][0][0]
@@ -406,20 +410,12 @@ class TensorpackPoseDataset(BasePoseDataset):
         else:
             self.image_indices = np.random.permutation(num_images)
 
-    def get_scale(self):
-        cfg = self.cfg
-        scale = cfg["global_scale"]
-        if hasattr(cfg, "scale_jitter_lo") and hasattr(cfg, "scale_jitter_up"):
-            scale_jitter = rand.uniform(cfg["scale_jitter_lo"], cfg["scale_jitter_up"])
-            scale *= scale_jitter
-        return scale
-
     def next_batch(self):
         next_batch = next(self.aug)
         return self.make_batch(next_batch)
 
     def is_valid_size(self, image_size, scale):
-        if hasattr(self.cfg, "min_input_size") and hasattr(self.cfg, "max_input_size"):
+        if "min_input_size" in self.cfg and "max_input_size" in self.cfg:
             input_width = image_size[2] * scale
             input_height = image_size[1] * scale
             if (

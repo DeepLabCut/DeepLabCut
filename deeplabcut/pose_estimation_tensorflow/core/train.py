@@ -18,6 +18,7 @@ import threading
 from pathlib import Path
 
 import tensorflow as tf
+
 tf.compat.v1.disable_eager_execution()
 import tf_slim as slim
 
@@ -98,10 +99,7 @@ def get_optimizer(loss_op, cfg):
         print("Switching to cosine decay schedule with adam!")
         cfg["optimizer"] = "adam"
         learning_rate = tf.compat.v1.train.cosine_decay(
-            cfg["lr_init"],
-            tstep,
-            cfg["decay_steps"],
-            alpha=cfg["alpha_r"]
+            cfg["lr_init"], tstep, cfg["decay_steps"], alpha=cfg["alpha_r"]
         )
     else:
         learning_rate = tf.compat.v1.placeholder(tf.float32, shape=[])

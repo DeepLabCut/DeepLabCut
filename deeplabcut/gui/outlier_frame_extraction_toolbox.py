@@ -26,7 +26,11 @@ from skimage.util import img_as_ubyte
 
 from deeplabcut.create_project import add
 from deeplabcut.gui.widgets import BasePanel, WidgetPanel, BaseFrame
-from deeplabcut.utils import auxiliaryfunctions, visualization
+from deeplabcut.utils import (
+    auxiliaryfunctions,
+    visualization,
+    conversioncode,
+)
 from deeplabcut.utils.auxfun_videos import VideoWriter
 
 
@@ -38,7 +42,6 @@ class ImagePanel(BasePanel):
         """
         Returns the colormaps ticks and . The order of ticks labels is reversed.
         """
-        #        im = io.imread(img)
         norm = mcolors.Normalize(vmin=np.min(img), vmax=np.max(img))
         ticks = np.linspace(np.min(img), np.max(img), len(bodyparts))[::-1]
         return norm, ticks
@@ -226,6 +229,7 @@ class MainFrame(BaseFrame):
         self.video_source = Path(video).resolve()
         self.shuffle = shuffle
         self.Dataframe = Dataframe
+        conversioncode.guarantee_multiindex_rows(self.Dataframe)
         self.savelabeled = savelabeled
         self.multianimal = multianimal
         if self.multianimal:
@@ -384,6 +388,7 @@ class MainFrame(BaseFrame):
             if self.savelabeled:
                 self.figure.savefig(labeled_img_name, bbox_inches="tight")
             Data = pd.read_hdf(self.machinefile)
+            conversioncode.guarantee_multiindex_rows(Data)
             DataCombined = pd.concat([Data, DF])
             DataCombined = DataCombined[~DataCombined.index.duplicated(keep="first")]
             DataCombined.to_hdf(self.machinefile, key="df_with_missing", mode="w")
@@ -466,9 +471,7 @@ class MainFrame(BaseFrame):
                     cbar.set_ticklabels(self.all_bodyparts)
 
                 for ci, ind in enumerate(self.individual_names):
-                    col_idx = (
-                        0
-                    )  # variable for iterating through the colorscheme for all bodyparts
+                    col_idx = 0  # variable for iterating through the colorscheme for all bodyparts
                     image_points = []
                     if ind == "single":
                         if self.visualization_rdb.GetSelection() == 0:
