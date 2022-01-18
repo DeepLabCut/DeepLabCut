@@ -314,6 +314,12 @@ class Assembler:
         if self._kde is None:
             raise ValueError("Assembler should be calibrated first with training data.")
 
+        if not len(assembly):
+            # Distance is undefined if the assembly is empty
+            if return_proba:
+                return np.inf, 0
+            return np.inf
+
         dists = assembly.calc_pairwise_distances() - self._kde.mean
         mask = np.isnan(dists)
         if mask.any() and nan_policy == "little":
@@ -373,6 +379,8 @@ class Assembler:
             dets_s = joints_dict.get(s, None)
             dets_t = joints_dict.get(t, None)
             if dets_s is None or dets_t is None:
+                continue
+            if ind not in costs:
                 continue
             lengths = costs[ind]["distance"]
             if np.isinf(lengths).all():
@@ -705,7 +713,7 @@ class Assembler:
             if joint.idx not in assembled and np.isfinite(joint.confidence)
         )
         for assembly in assemblies[::-1]:
-            if 0 < assembly.n_links < self.min_n_links:
+            if 0 <= assembly.n_links < self.min_n_links:
                 for link in assembly._links:
                     discarded.update((link.j1, link.j2))
                 assemblies.remove(assembly)
