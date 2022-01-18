@@ -130,7 +130,7 @@ def _calc_within_between_pafs(
             .to_numpy()
             .reshape((len(bpts), -1, 2))
         )
-        if pd.isnull(coords_gt).all():
+        if np.isnan(coords_gt).all():
             continue
 
         coords = dict_["prediction"]["coordinates"][0]

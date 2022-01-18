@@ -30,7 +30,7 @@ from mmappickle import mmapdict
 import pickle
 
 
-def Extract_Bpt_Feature_From_Video(
+def extract_bpt_feature_from_video(
     video,
     DLCscorer,
     trainFraction,
@@ -39,12 +39,11 @@ def Extract_Bpt_Feature_From_Video(
     sess,
     inputs,
     outputs,
+    extra_dict,        
     destfolder=None,
     robust_nframes=False,
-    extra_dict=None,
-):
 
-    assert extra_dict != None
+):
 
     print("Starting to analyze % ", video)
     vname = Path(video).stem
@@ -110,7 +109,6 @@ def Extract_Bpt_Feature_From_Video(
                 int(dlc_cfg["batch_size"]),
                 assemblies,
                 feature_dict,
-                extra_dict,
             )
         else:
             raise NotImplementedError("Not implemented yet")
@@ -248,7 +246,6 @@ def GetPoseandCostsF_from_assemblies(
     batchsize,
     assemblies,
     feature_dict,
-    extra_dict,
 ):
 
     """Batchwise prediction of pose"""
@@ -268,7 +265,6 @@ def GetPoseandCostsF_from_assemblies(
     feature_counter = 0  # counting how many features have been processed
     block_counter = 0  # keeping track of the current block id
 
-    project_path = cfg["project_path"]
 
     PredicteData = {}
 
@@ -281,10 +277,9 @@ def GetPoseandCostsF_from_assemblies(
 
                 (
                     D,
-                    features,
-                    keypoint_embedding,
+                    features
                 ) = predict.predict_batched_peaks_and_costs(
-                    dlc_cfg, frames, sess, inputs, outputs, extra_dict=extra_dict
+                    dlc_cfg, frames, sess, inputs, outputs, extra_dict
                 )
 
                 for i, (ind, data) in enumerate(zip(inds, D)):
@@ -297,7 +292,7 @@ def GetPoseandCostsF_from_assemblies(
                     )  # only first two columns are useful
 
                     coords_feature_space = (
-                        convert_coord_from_img_space_to_feature_space(coords_img_space)
+                        convert_coord_from_img_space_to_feature_space(coords_img_space, stride = dlc_cfg['stride'])
                     )
                     bpt_features = load_features_from_coord(
                         features[i].astype(np.float16), coords_feature_space
@@ -317,8 +312,7 @@ def GetPoseandCostsF_from_assemblies(
 
                 (
                     D,
-                    features,
-                    keypoint_embedding,
+                    features
                 ) = predict.predict_batched_peaks_and_costs(
                     dlc_cfg, frames, sess, inputs, outputs, extra_dict=extra_dict
                 )
@@ -333,7 +327,7 @@ def GetPoseandCostsF_from_assemblies(
                     )  # only first two columns are useful
 
                     coords_feature_space = (
-                        convert_coord_from_img_space_to_feature_space(coords_img_space)
+                        convert_coord_from_img_space_to_feature_space(coords_img_space, stride = dlc_cfg['stride'])
                     )
                     bpt_features = load_features_from_coord(
                         features[i].astype(np.float16), coords_feature_space
@@ -392,7 +386,6 @@ def GetPoseandCostsF(
     feature_counter = 0  # counting how many features have been processed
     block_counter = 0  # keeping track of the current block id
 
-    project_path = cfg["project_path"]
 
     if shelf_path:
         db = shelve.open(

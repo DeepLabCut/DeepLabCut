@@ -74,19 +74,19 @@ def create_train_using_pickle(feature_fname, path_to_pickle, out_name, n_triplet
     save_train_triplets(feature_fname, triplets, out_name)
 
 
-def create_triplets_dataset(Videos, DLCscorer, n_triplets=1000):
+def create_triplets_dataset(videos, dlcscorer, n_triplets=1000):
 
     # 1) reference to video folder and get the proper bpt_feature file for feature table
     # 2) get either the path to gt or the path to el pickle
 
-    for video in Videos:
+    for video in videos:
         vname = Path(video).stem
         videofolder = str(Path(video).parents[0])
         feature_fname = os.path.join(
-            videofolder, vname + DLCscorer + "_bpt_features.mmdpickle"
+            videofolder, vname + dlcscorer + "_bpt_features.mmdpickle"
         )
-        el_file = os.path.join(videofolder, vname + DLCscorer + "_el.pickle")
-        out_fname = os.path.join(videofolder, vname + DLCscorer + "_triplet_vector.npy")
+        el_file = os.path.join(videofolder, vname + dlcscorer + "_el.pickle")
+        out_fname = os.path.join(videofolder, vname + dlcscorer + "_triplet_vector.npy")
         create_train_using_pickle(
             feature_fname, el_file, out_fname, n_triplets=n_triplets
         )

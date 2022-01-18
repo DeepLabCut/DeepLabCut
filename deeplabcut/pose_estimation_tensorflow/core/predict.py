@@ -46,9 +46,6 @@ def setup_pose_prediction(cfg, allow_growth=False, collect_extra=False):
 
     if collect_extra:
         extra_dict["features"] = net_heads["features"]
-        extra_dict["keypoint_embedding"] = tf.reduce_mean(
-            net_heads["part_prob"], axis=3
-        )
 
     restorer = tf.compat.v1.train.Saver()
 

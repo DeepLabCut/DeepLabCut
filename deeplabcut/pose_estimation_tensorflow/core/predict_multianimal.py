@@ -214,8 +214,11 @@ def predict_batched_peaks_and_costs(
     extra_dict=None,
 ):
 
-    scmaps, locrefs, pafs, peaks = sess.run(outputs, feed_dict={inputs: images_batch})
-
+    if extra_dict:
+        features = sess.run(extra_dict['features'],
+                            feed_dict = {inputs:images_batch}
+                            )
+    
     scmaps, locrefs, *pafs, peaks = sess.run(outputs, feed_dict={inputs: images_batch})
     if ~np.any(peaks):
         return []
@@ -254,7 +257,7 @@ def predict_batched_peaks_and_costs(
         for i, costs in enumerate(costs_gt):
             preds[i]["groundtruth_costs"] = costs
     if extra_dict:
-        return preds, features, keypoint_embedding
+        return preds, features
     else:
         return preds
 

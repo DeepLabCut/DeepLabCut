@@ -332,7 +332,7 @@ def evaluate_multianimal_full(
                             )
                             groundtruthcoordinates = list(df.values[:, np.newaxis])
                             for i, coords in enumerate(groundtruthcoordinates):
-                                if pd.isnull(coords).any():
+                                if np.isnan(coords).any():
                                     groundtruthcoordinates[i] = np.empty(
                                         (0, 2), dtype=float
                                     )
@@ -354,8 +354,7 @@ def evaluate_multianimal_full(
                             if collect_extra:
                                 (
                                     pred,
-                                    features,
-                                    keypoint_embedding,
+                                    features
                                 ) = predictma.predict_batched_peaks_and_costs(
                                     dlc_cfg,
                                     np.expand_dims(frame, axis=0),
@@ -387,9 +386,6 @@ def evaluate_multianimal_full(
                                 groundtruthcoordinates,
                                 GT,
                             ]
-                            PredicteData[
-                                "keypoint_embedding_" + imagename
-                            ] = keypoint_embedding
 
                             coords_pred = pred["coordinates"][0]
                             probs_pred = pred["confidence"]

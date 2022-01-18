@@ -35,7 +35,7 @@ from deeplabcut.pose_estimation_tensorflow.core import predict
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingutils
 
 from deeplabcut.pose_estimation_tensorflow.predict_multianimal import (
-    Extract_Bpt_Feature_From_Video,
+    extract_bpt_feature_from_video,
 )
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
@@ -204,7 +204,7 @@ def create_tracking_dataset(
         if "multi-animal" in dlc_cfg["dataset_type"]:
 
             for video in Videos:
-                Extract_Bpt_Feature_From_Video(
+                extract_bpt_feature_from_video(
                     video,
                     DLCscorer,
                     trainFraction,
@@ -213,9 +213,9 @@ def create_tracking_dataset(
                     sess,
                     inputs,
                     outputs,
-                    destfolder,
+                    extra_dict,
+                    destfolder=destfolder,
                     robust_nframes=robust_nframes,
-                    extra_dict=extra_dict,
                 )
             create_triplets_dataset(Videos, DLCscorer, n_triplets=n_triplets)
 
@@ -1469,12 +1469,6 @@ def _convert_detections_to_tracklets(
     with open(output_path, "wb") as f:
         pickle.dump(tracklets, f, pickle.HIGHEST_PROTOCOL)
 
-
-def create_transid_tracking_dataset(
-    path_config_file,
-):
-    pass
-    # an api placeholder
 
 
 def convert_detections2tracklets(

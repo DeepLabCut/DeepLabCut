@@ -3,7 +3,6 @@ from .datasets import make_dlc_dataloader
 from .model import make_dlc_model
 from .solver import make_optimizer, make_easy_optimizer
 from .solver.scheduler_factory import create_scheduler
-from .loss import make_loss
 from .loss import easy_triplet_loss
 from .processor import do_dlc_train
 import random

@@ -32,58 +32,6 @@ from .config import cfg
 from deeplabcut.pose_tracking_pytorch.model.backbones import dlc_base_kpt_TransReID
 
 
-"""
-class build_dlc_transformer(nn.Module):
-    def __init__(self, kpt_num, embed_dim = 128, depth = 4, num_heads = 4, mlp_ratio = 1, attn_drop_rate = 0.0, drop_rate = 0.0, sie_xishu = 1.5, drop_path_rate = 0.1, local_feature = False):
-        super(build_dlc_transformer,self).__init__()
-        self.in_planes = 128
-        self.num_kpts = kpt_num
-
-        self.embed_dim = embed_dim
-        self.depth = depth
-        self.num_heads = num_heads
-        self.mlp_ratio = mlp_ratio
-        self.sie_xishu = sie_xishu
-        self.attn_drop_rate = attn_drop_rate
-        self.drop_rate = drop_rate
-        self.drop_path_rate = drop_path_rate
-        self.local_feature = local_feature
-        
-        self.base = DLCTransReID(embed_dim = self.embed_dim,
-                                 depth = self.depth,
-                                 num_heads = self.num_heads,
-                                 mlp_ratio = self.mlp_ratio,
-                                 qkv_bias = True,
-                                 norm_layer = partial(nn.LayerNorm, eps = 1e-6),
-                                 local_feature = self.local_feature,                                 
-                                 sie_xishu=self.sie_xishu,
-                                 drop_path_rate=self.drop_path_rate,
-                                 drop_rate= self.drop_rate,
-                                 attn_drop_rate=self.attn_drop_rate,
-                                 num_kpts = self.num_kpts)
-        
-        
-        self.classifier = nn.Identity()        
-
-        self.bottleneck = nn.Identity()        
-
-    def forward(self, x):
-        global_feat = self.base(x)
-
-        feat = self.bottleneck(global_feat)
-        
-        q = self.classifier(feat)
-        norm = torch.norm(q, p=2, dim=1, keepdim = True)
-        q = q.div(norm)
-        return q
-
-    def load_param(self, trained_path):
-        param_dict = torch.load(trained_path)
-        for i in param_dict:
-            self.state_dict()[i.replace('module.', '')].copy_(param_dict[i])
-        print('Loading pretrained model from {}'.format(trained_path))
-"""
-
 
 inference_factory = {"dlc_transreid": dlc_base_kpt_TransReID}
 

@@ -19,7 +19,6 @@ def easy_triplet_loss():
 
     return loss_func
 
-
 def make_loss(cfg, num_classes):  # modified by gu
     sampler = cfg.DATALOADER.SAMPLER
     feat_dim = 2048

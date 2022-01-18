@@ -21,14 +21,14 @@ def load_features_from_coord(feature, coords, valid_mask_for_fish=False):
     return feat_vec
 
 
-def convert_coord_from_img_space_to_feature_space(arr):
+def convert_coord_from_img_space_to_feature_space(arr, stride = 16):
 
     # remove abnormal values and fill them as 0s
     # take care of difference between feature map space and original image space
     arr = arr.astype(np.int64)
     indices = np.where(np.logical_or(arr > 9000, arr < 0))
     arr[indices] = 0
-    arr = (arr - 8) // 16
+    arr = (arr - (stride//2) ) // stride
 
     return arr
 

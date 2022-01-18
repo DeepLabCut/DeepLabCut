@@ -6,12 +6,13 @@ import os
 from .eval_tracker import *
 import glob
 
+method_dict = {'ellipse':'el','box':'bx'}
 
 def transformer_reID(
     path_config_file,
     videos,
+    n_tracks, 
     modelprefix="",
-    n_tracks=3,
     track_method="ellipse",
     train_epochs=100,
     n_triplets=1000,
@@ -28,7 +29,7 @@ def transformer_reID(
     able to perform reID. The transformer is then used as a stitching loss when tracklets are
     stitched during tracking.
 
-    Outputs: The tracklet file is saved as _el_trans.h5 in the same folder where the non transformer tracklet file is stored.
+    Outputs: The tracklet file is saved as _track_trans.h5 in the same folder where the non transformer tracklet file is stored.
 
     Parameters
     ----------
@@ -38,7 +39,7 @@ def transformer_reID(
     videos: list
         A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
 
-    n_tracks: (optinal), int
+    n_tracks: int
 
         number of tracks to be formed in the videos. (TODO) handling videos with different number of tracks
 
@@ -49,7 +50,6 @@ def transformer_reID(
     n_triplets: (optional) int
 
         number of triplets to be mined from the videos
-
 
 
     """
@@ -99,8 +99,9 @@ def eval_tracking(
     path_config_file,
     path_to_ground_truth,
     video,
+    n_tracks,
+    track_method,        
     modelprefix="",
-    n_tracks=3,
     top_frames=5,
     shuffle=1,
     use_trans=False,
@@ -126,7 +127,7 @@ def eval_tracking(
 
     top_frames: (optional), float, in the range (0,100) as percentage
 
-        Pick the hardest frames sorted by how close animals are
+        Option to only evaluate top_frames % of these frames with highest scene density
 
     n_tracks: (optinal), int
 
@@ -144,8 +145,9 @@ def eval_tracking(
             path_config_file,
             path_to_ground_truth,
             video,
+            n_tracks,
+            track_method,
             modelprefix=modelprefix,
-            n_tracks=n_tracks,
             top_frames=top_frames,
             shuffle=shuffle,
         )
@@ -154,8 +156,9 @@ def eval_tracking(
             path_config_file,
             path_to_ground_truth,
             video,
+            n_tracks,
+            track_method,
             modelprefix=modelprefix,
-            n_tracks=n_tracks,
             top_frames=top_frames,
             shuffle=shuffle,
         )
@@ -165,40 +168,34 @@ def eval_non_transformer(
     path_config_file,
     path_to_ground_truth,
     video,
+    n_tracks,
+    track_method,
     modelprefix="",
-    n_tracks=3,
     top_frames=5,
     shuffle=1,
 ):
 
+    if track_method in method_dict:
+        method = method_dict[track_method]
+    else:
+        method = 'sk'
+    
     vname = Path(video).stem
     videofolder = str(Path(video).parents[0])
-
-    el_fnames = glob.glob(os.path.join(videofolder, vname + "*_el.pickle"))
-
-    assert len(el_fnames) == 1
-
-    path_to_el_pickle = el_fnames[0]
-
+    track_fnames = glob.glob(os.path.join(videofolder, vname + f"*_{method}.pickle"))
+    
+    path_to_track_pickle = track_fnames[-1]
     prox, viz = calc_proximity_and_visibility_indices(path_to_ground_truth)
-
     thres = np.percentile(prox, 100 - top_frames)
-
     crossing_indices = prox > thres
 
-    crossing_frames = np.where(crossing_indices == True)
-
     ground_truth = pd.read_hdf(path_to_ground_truth)
-
     ground_truth_data = reconstruct_all_bboxes(ground_truth, 0, to_xywh=True)
-
-    stitcher = TrackletStitcher.from_pickle(path_to_el_pickle, n_tracks)
-
+    stitcher = TrackletStitcher.from_pickle(path_to_track_pickle, n_tracks)
     stitcher.build_graph()
     stitcher.stitch()
     df = stitcher.format_df().reindex(range(ground_truth_data.shape[1]))
     bboxes_with_stitcher = reconstruct_all_bboxes(df, 0, to_xywh=True)
-
     try:
         temp = compute_mot_metrics_bboxes(
             bboxes_with_stitcher[:, crossing_indices, :],
@@ -206,22 +203,26 @@ def eval_non_transformer(
         )
     except:
         temp = compute_mot_metrics_bboxes(bboxes_with_stitcher, ground_truth_data)
-
     print_all_metrics([temp])
-
 
 def eval_transformer(
     path_config_file,
     path_to_ground_truth,
     video,
+    n_tracks,
+    track_method,    
     modelprefix="",
-    n_tracks=3,
     top_frames=5,
     shuffle=1,
 ):
 
-    # get path_to_el_pickle from video path
+    # get path_to_track_pickle from video path
     # get path_to_features from video path
+
+    if track_method in method_dict:
+        method = method_dict[track_method]
+    else:
+        method = 'sk'
 
     (
         trainposeconfigfile,
@@ -244,36 +245,23 @@ def eval_transformer(
     feature_fnames = glob.glob(
         os.path.join(videofolder, vname + "*_bpt_features.mmdpickle")
     )
-    el_fnames = glob.glob(os.path.join(videofolder, vname + "*_el.pickle"))
+    track_fnames = glob.glob(os.path.join(videofolder, vname + f"*_{method}.pickle"))
 
     nframe = len(VideoWriter(video))
     zfill_width = int(np.ceil(np.log10(nframe)))
 
-    assert len(feature_fnames) == 1 and len(el_fnames) == 1
     path_to_features = feature_fnames[0]
-
     feature_dict = mmapdict(path_to_features, True)
-
-    path_to_el_pickle = el_fnames[0]
-
+    path_to_track_pickle = track_fnames[-1]    
     prox, viz = calc_proximity_and_visibility_indices(path_to_ground_truth)
-
     thres = np.percentile(prox, 100 - top_frames)
-
     crossing_indices = prox > thres
-
-    crossing_frames = np.where(crossing_indices == True)
-
     print("path_to_ground_truth", path_to_ground_truth)
-    print("path_to_el_pickle", path_to_el_pickle)
+    print("path_to_track_pickle", path_to_track_pickle)
     print("path_to_features", path_to_features)
-
     ground_truth = pd.read_hdf(path_to_ground_truth)
-
     ground_truth_data = reconstruct_all_bboxes(ground_truth, 0, to_xywh=True)
-
     dlctrans = inference.DLCTrans(transformer_checkpoint)
-
     def trans_weight_func(tracklet1, tracklet2, nframe, feature_dict):
 
         if tracklet1 < tracklet2:
@@ -293,17 +281,15 @@ def eval_transformer(
         dist = dlctrans(t1, t2, zfill_width, feature_dict, return_features=False)
 
         dist = (dist + 1) / 2
-        w = 0.01 if tracklet1.identity == tracklet2.identity else 1
-        cost = w * stitcher.calculate_edge_weight(tracklet1, tracklet2)
+        
+        # original cost 
+        #w = 0.01 if tracklet1.identity == tracklet2.identity else 1
+        #cost = w * stitcher.calculate_edge_weight(tracklet1, tracklet2)
 
         return -dist
 
-    def original_weight(tracklet1, tracklet2):
-        w = 0.01 if tracklet1.identity == tracklet2.identity else 1
-        cost = w * stitcher.calculate_edge_weight(tracklet1, tracklet2)
-        return cost
 
-    stitcher = TrackletStitcher.from_pickle(path_to_el_pickle, n_tracks)
+    stitcher = TrackletStitcher.from_pickle(path_to_track_pickle, n_tracks)
 
     stitcher.build_graph(
         weight_func=partial(trans_weight_func, nframe=nframe, feature_dict=feature_dict)
@@ -312,8 +298,6 @@ def eval_transformer(
     df = stitcher.format_df().reindex(range(ground_truth_data.shape[1]))
     bboxes_with_stitcher = reconstruct_all_bboxes(df, 0, to_xywh=True)
 
-    # print ('crossing num')
-    # print (np.sum(crossing_indices))
 
     try:
         temp = compute_mot_metrics_bboxes(
