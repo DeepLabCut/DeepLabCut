@@ -37,7 +37,7 @@ setuptools.setup(
         "scikit-learn",
         "scipy>=1.4",
         "statsmodels>=0.11",
-        "tables",
+        "tables<=3.6.1",
         "tensorflow>=2.0",
         "tensorpack",
         "tf_slim",
