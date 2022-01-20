@@ -18,8 +18,8 @@ from .tracking_utils.preprocessing import query_feature_by_coord_in_img_space
 np.random.seed(0)
 
 
-def generate_train_triplets_from_pickle(path_to_el, n_triplets=1000):
-    ts = TrackletStitcher.from_pickle(path_to_el, 3)
+def generate_train_triplets_from_pickle(path_to_track, n_triplets=1000):
+    ts = TrackletStitcher.from_pickle(path_to_track, 3)
     triplets = ts.mine(n_triplets)
     assert len(triplets) == n_triplets
     return triplets
@@ -74,10 +74,10 @@ def create_train_using_pickle(feature_fname, path_to_pickle, out_name, n_triplet
     save_train_triplets(feature_fname, triplets, out_name)
 
 
-def create_triplets_dataset(videos, dlcscorer, n_triplets=1000):
+def create_triplets_dataset(videos, dlcscorer, track_method, n_triplets=1000):
 
     # 1) reference to video folder and get the proper bpt_feature file for feature table
-    # 2) get either the path to gt or the path to el pickle
+    # 2) get either the path to gt or the path to track pickle
 
     for video in videos:
         vname = Path(video).stem
@@ -85,8 +85,8 @@ def create_triplets_dataset(videos, dlcscorer, n_triplets=1000):
         feature_fname = os.path.join(
             videofolder, vname + dlcscorer + "_bpt_features.mmdpickle"
         )
-        el_file = os.path.join(videofolder, vname + dlcscorer + "_el.pickle")
+        track_file = os.path.join(videofolder, vname + dlcscorer + f"_{track_method}.pickle")
         out_fname = os.path.join(videofolder, vname + dlcscorer + "_triplet_vector.npy")
         create_train_using_pickle(
-            feature_fname, el_file, out_fname, n_triplets=n_triplets
+            feature_fname, track_file, out_fname, n_triplets=n_triplets
         )

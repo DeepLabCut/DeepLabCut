@@ -48,7 +48,6 @@ def do_dlc_train(
     scheduler,
     num_kpts,
     num_query,
-    local_rank,
     total_epochs=300,
     ckpt_folder="",
 ):
@@ -65,14 +64,7 @@ def do_dlc_train(
     logger.info("start training")
     _LOCAL_PROCESS_GROUP = None
     if device:
-        model.to(local_rank)
-        if torch.cuda.device_count() > 1 and cfg.MODEL.DIST_TRAIN:
-            print("Using {} GPUs for training".format(torch.cuda.device_count()))
-            # model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[local_rank], find_unused_parameters=True)
-            model = torch.nn.parallel.DistributedDataParallel(
-                model, find_unused_parameters=True
-            )
-
+        model.to(device)
     loss_meter = AverageMeter()
     acc_meter = AverageMeter()
 

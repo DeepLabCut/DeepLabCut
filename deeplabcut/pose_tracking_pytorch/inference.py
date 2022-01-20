@@ -21,16 +21,10 @@ import torch.nn.functional as F
 # from torch._six import container_abcs
 import collections.abc as container_abcs
 
-from deeplabcut.pose_tracking_pytorch.tracking_utils import (
-    load_features_from_coord,
-    convert_coord_from_img_space_to_feature_space,
-    query_feature_by_coord_in_img_space,
-)
-
 from deeplabcut.pose_tracking_pytorch.model import build_dlc_transformer
 from .config import cfg
 from deeplabcut.pose_tracking_pytorch.model.backbones import dlc_base_kpt_TransReID
-
+from deeplabcut.pose_tracking_pytorch.tracking_utils import query_feature_by_coord_in_img_space
 
 
 inference_factory = {"dlc_transreid": dlc_base_kpt_TransReID}

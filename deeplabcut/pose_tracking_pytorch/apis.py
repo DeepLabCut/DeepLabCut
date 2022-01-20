@@ -3,7 +3,7 @@ import os
 
 # from deeplabcut.pose_tracking_pytorch import  train_tracking_transformer
 # from deeplabcut.pose_estimation_tensorflow import create_tracking_dataset
-from .eval_tracker import *
+from .eval_tracker import reconstruct_all_bboxes, print_all_metrics,compute_mot_metrics_bboxes, calc_proximity_and_visibility_indices
 import glob
 
 method_dict = {'ellipse':'el','box':'bx'}
@@ -11,7 +11,8 @@ method_dict = {'ellipse':'el','box':'bx'}
 def transformer_reID(
     path_config_file,
     videos,
-    n_tracks, 
+    n_tracks,
+    train_frac = 0.8, 
     modelprefix="",
     track_method="ellipse",
     train_epochs=100,
@@ -57,8 +58,14 @@ def transformer_reID(
     # calling create_tracking_dataset, train_tracking_transformer, stitch_tracklets
 
     # should take number of triplets to mine
+
+    if track_method in method_dict:
+        method = method_dict[track_method]
+    else:
+        raise ValueError('no proper track method selected')    
+    
     deeplabcut.pose_estimation_tensorflow.create_tracking_dataset(
-        path_config_file, videos, modelprefix=modelprefix, n_triplets=n_triplets
+        path_config_file, videos, method, modelprefix=modelprefix, n_triplets=n_triplets
     )
 
     (
@@ -73,6 +80,7 @@ def transformer_reID(
     deeplabcut.pose_tracking_pytorch.train_tracking_transformer(
         path_config_file,
         videos,
+        train_frac = train_frac, 
         modelprefix=modelprefix,
         train_epochs=train_epochs,
         ckpt_folder=snapshotfolder,
@@ -178,7 +186,7 @@ def eval_non_transformer(
     if track_method in method_dict:
         method = method_dict[track_method]
     else:
-        method = 'sk'
+        raise ValueError('no proper track method selected')
     
     vname = Path(video).stem
     videofolder = str(Path(video).parents[0])

@@ -137,8 +137,8 @@ def _calc_within_between_pafs(
         # Get animal IDs and corresponding indices in the arrays of detections
         lookup = dict()
         for i, (coord, coord_gt) in enumerate(zip(coords, coords_gt)):
-            inds = np.flatnonzero(np.all(~pd.isnull(coord), axis=1))
-            inds_gt = np.flatnonzero(np.all(~pd.isnull(coord_gt), axis=1))
+            inds = np.flatnonzero(np.all(~np.isnan(coord), axis=1))
+            inds_gt = np.flatnonzero(np.all(~np.isnan(coord_gt), axis=1))
             if inds.size and inds_gt.size:
                 neighbors = _find_closest_neighbors(coord_gt[inds_gt], coord[inds], k=3)
                 found = neighbors != -1

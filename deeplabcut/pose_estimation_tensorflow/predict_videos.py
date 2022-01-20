@@ -49,6 +49,7 @@ from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 def create_tracking_dataset(
     config,
     videos,
+    track_method,
     videotype="avi",
     shuffle=1,
     trainingsetindex=0,
@@ -61,9 +62,12 @@ def create_tracking_dataset(
     dynamic=(False, 0.5, 10),
     modelprefix="",
     robust_nframes=False,
-    allow_growth=False,
     n_triplets=1000,
 ):
+
+    # allow_growth must be true here because tensorflow does not automatically free gpu memory and setting it as false occupies all gpu memory so that pytorch cannot kick in
+    allow_growth=True
+    
     if "TF_CUDNN_USE_AUTOTUNE" in os.environ:
         del os.environ["TF_CUDNN_USE_AUTOTUNE"]  # was potentially set during training
 
@@ -217,7 +221,11 @@ def create_tracking_dataset(
                     destfolder=destfolder,
                     robust_nframes=robust_nframes,
                 )
-            create_triplets_dataset(Videos, DLCscorer, n_triplets=n_triplets)
+
+            # should close tensorflow session here in order to free gpu
+            sess.close()
+            tf.keras.backend.clear_session()
+            create_triplets_dataset(Videos, DLCscorer, track_method,  n_triplets=n_triplets)
 
         else:
             raise NotImplementedError("not implmented")

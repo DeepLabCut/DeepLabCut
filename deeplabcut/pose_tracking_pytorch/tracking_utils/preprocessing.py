@@ -14,6 +14,7 @@ def load_features_from_coord(feature, coords, valid_mask_for_fish=False):
         for kpt_idx in range(coords.shape[1]):
             coord = coords[animal_idx][kpt_idx]
             x, y = coord
+
             vec = feature[y, x, :]
             if np.sum(coord) != 0:
                 feat_vec[animal_idx][kpt_idx] = vec
@@ -21,16 +22,17 @@ def load_features_from_coord(feature, coords, valid_mask_for_fish=False):
     return feat_vec
 
 
-def convert_coord_from_img_space_to_feature_space(arr, stride = 16):
+def convert_coord_from_img_space_to_feature_space(arr, stride):
 
-    # remove abnormal values and fill them as 0s
+    stride = stride * 2 # because there is only one deconv. This will change if there are different numbers of deconv layers    
+
+    arr = np.nan_to_num(arr).astype(np.int64)
+
     # take care of difference between feature map space and original image space
-    arr = arr.astype(np.int64)
-    indices = np.where(np.logical_or(arr > 9000, arr < 0))
-    arr[indices] = 0
+    
     arr = (arr - (stride//2) ) // stride
 
-    return arr
+    return arr.astype(np.int64)
 
 
 def query_feature_by_coord_in_img_space(feature_dict, frame_id, ref_coord):

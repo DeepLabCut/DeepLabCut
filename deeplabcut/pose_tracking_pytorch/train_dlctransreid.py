@@ -28,7 +28,7 @@ def set_seed(seed):
     torch.backends.cudnn.benchmark = True
 
 
-def split_train_test(npy_list):
+def split_train_test(npy_list, train_frac):
     # with npy list form videos, split each to train and test
 
     x_list = []
@@ -39,7 +39,7 @@ def split_train_test(npy_list):
         vectors = np.load(npy)
         n_samples = vectors.shape[0]
         indices = np.random.permutation(n_samples)
-        num_train = int(n_samples * 0.8)
+        num_train = int(n_samples * train_frac)
         vectors = vectors[indices]
         train = vectors[:num_train]
         test = vectors[num_train:]
@@ -53,7 +53,7 @@ def split_train_test(npy_list):
 
 
 def train_tracking_transformer(
-    path_config_file, videos, modelprefix="", train_epochs=100, ckpt_folder=""
+        path_config_file, videos, train_frac = 0.8, modelprefix="", train_epochs=100, ckpt_folder=""
 ):
 
     npy_list = []
@@ -64,7 +64,7 @@ def train_tracking_transformer(
         # assuming there is only one match
         npy_list.append(files[0])
 
-    train_list, test_list = split_train_test(npy_list)
+    train_list, test_list = split_train_test(npy_list, train_frac)
 
     train_loader, val_loader = make_dlc_dataloader(train_list, test_list)
 
@@ -100,7 +100,6 @@ def train_tracking_transformer(
         scheduler,
         num_kpts,
         num_query,
-        0,
         total_epochs=train_epochs,
         ckpt_folder=ckpt_folder,
     )

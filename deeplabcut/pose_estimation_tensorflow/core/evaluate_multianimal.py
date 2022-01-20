@@ -391,7 +391,7 @@ def evaluate_multianimal_full(
                             probs_pred = pred["confidence"]
                             for bpt, xy_gt in df.groupby(level="bodyparts"):
                                 inds_gt = np.flatnonzero(
-                                    np.all(~pd.isnull(xy_gt), axis=1)
+                                    np.all(~np.isnan(xy_gt), axis=1)
                                 )
                                 n_joint = joints.index(bpt)
                                 xy = coords_pred[n_joint]

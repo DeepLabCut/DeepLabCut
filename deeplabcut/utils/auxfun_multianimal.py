@@ -141,17 +141,6 @@ def SaveFullMultiAnimalData(data, metadata, dataname, suffix="_full"):
 
 
 
-'''
-def LoadFullMultiAnimalData(dataname):
-    """ Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py """
-
-    data_dict = mmapdict(dataname, True) 
-
-    return data, data_dict['metadata']
-   
-''' 
-
-
 def LoadFullMultiAnimalData(dataname):
     """ Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py """
     data_file = dataname.split(".h5")[0] + "_full.pickle"
