@@ -423,6 +423,7 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
         )
         try:
             data = pd.read_hdf(file_path)
+            conversioncode.guarantee_multiindex_rows(data)
             AnnotationData.append(data)
         except FileNotFoundError:
             print(file_path, " not found (perhaps not annotated).")
@@ -452,7 +453,6 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
     AnnotationData = AnnotationData.reindex(
         bodyparts, axis=1, level=AnnotationData.columns.names.index("bodyparts")
     )
-    conversioncode.guarantee_multiindex_rows(AnnotationData)
     filename = os.path.join(trainingsetfolder_full, f'CollectedData_{cfg["scorer"]}')
     AnnotationData.to_hdf(filename + ".h5", key="df_with_missing", mode="w")
     AnnotationData.to_csv(filename + ".csv")  # human readable.

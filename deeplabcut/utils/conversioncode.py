@@ -149,6 +149,7 @@ def merge_windowsannotationdataONlinuxsystem(cfg):
         filename = os.path.join(folder, "CollectedData_" + cfg["scorer"] + ".h5")
         try:
             data = pd.read_hdf(filename)
+            guarantee_multiindex_rows(data)
             AnnotationData.append(data)
         except FileNotFoundError:
             print(filename, " not found (perhaps not annotated)")
