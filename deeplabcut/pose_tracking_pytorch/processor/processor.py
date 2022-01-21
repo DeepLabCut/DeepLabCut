@@ -5,9 +5,7 @@ import torch
 import torch.nn as nn
 from ..tracking_utils.meter import AverageMeter
 from ..tracking_utils.metrics import R1_mAP_eval
-from torch.cuda import amp
 import torch.distributed as dist
-import matplotlib.pyplot as plt
 import pickle
 import numpy as np
 
@@ -69,7 +67,7 @@ def do_dlc_train(
     acc_meter = AverageMeter()
 
     evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM)
-    # scaler = amp.GradScaler()
+
     # train
     epoch_list = []
     train_acc_list = []
@@ -93,7 +91,6 @@ def do_dlc_train(
             pos = pos.to(device)
             neg = neg.to(device)
 
-            # anchor_feat, pos_feat, neg_feat = model(anchor,pos,neg)
             anchor_feat = model(anchor)
             pos_feat = model(pos)
             neg_feat = model(neg)

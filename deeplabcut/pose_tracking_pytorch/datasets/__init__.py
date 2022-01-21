@@ -1,3 +1,1 @@
-from .make_dataloader import (
-    make_dlc_dataloader
-)
+from .make_dataloader import make_dlc_dataloader

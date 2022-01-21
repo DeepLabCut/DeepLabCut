@@ -1,6 +1,5 @@
 import torch
 import numpy as np
-import os
 from ..tracking_utils.reranking import re_ranking
 
 
