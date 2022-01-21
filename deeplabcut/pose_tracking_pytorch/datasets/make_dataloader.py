@@ -1,12 +1,6 @@
 import torch
 import torchvision.transforms as T
 from torch.utils.data import DataLoader
-
-from .bases import ImageDataset
-from timm.data.random_erasing import RandomErasing
-from .sampler import RandomIdentitySampler
-from .sampler_ddp import RandomIdentitySampler_DDP
-import torch.distributed as dist
 from .dlc_vec import TripletDataset, PairDataset
 
 __factory = {"dlc_triplet": TripletDataset, "dlc_pair": PairDataset}
@@ -53,7 +47,7 @@ def make_dlc_dataloader(train_list, test_list):
     # use triplet loss
 
     batch_size = 64
-    
+
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size)
     val_dataset = TripletDataset(test_list)

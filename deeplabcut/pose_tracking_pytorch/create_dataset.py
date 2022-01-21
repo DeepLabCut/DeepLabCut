@@ -1,18 +1,10 @@
 import numpy as np
-import pickle
 import os
-import pandas as pd
 from deeplabcut.refine_training_dataset.stitch import (
     TrackletStitcher,
-    Tracklet,
 )
-
 from pathlib import Path
-
-from itertools import combinations
-from random import shuffle
 from mmappickle import mmapdict
-
 from .tracking_utils.preprocessing import query_feature_by_coord_in_img_space
 
 np.random.seed(0)

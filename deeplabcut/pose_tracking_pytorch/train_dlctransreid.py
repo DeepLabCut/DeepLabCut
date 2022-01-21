@@ -1,21 +1,16 @@
-from .tracking_utils.logger import setup_logger
-from .datasets import make_dlc_dataloader
-from .model import make_dlc_model
-from .solver import make_optimizer, make_easy_optimizer
-from .solver.scheduler_factory import create_scheduler
-from .loss import easy_triplet_loss
-from .processor import do_dlc_train
 import random
 import torch
 import numpy as np
 import os
-import sys
-import argparse
 import glob
 from pathlib import Path
-
-# from timm.scheduler import create_scheduler
 from .config import cfg
+from .datasets import make_dlc_dataloader
+from .model import make_dlc_model
+from .solver import make_easy_optimizer
+from .solver.scheduler_factory import create_scheduler
+from .loss import easy_triplet_loss
+from .processor import do_dlc_train
 
 
 def set_seed(seed):
@@ -78,14 +73,7 @@ def train_tracking_transformer(
 
     triplet_loss = easy_triplet_loss()
 
-    # ok
-
     optimizer = make_easy_optimizer(cfg, model)
-
-    # optimizer, optimizer_center = make_optimizer(cfg, model, triplet_loss)
-
-    # probably need to change optimizer too
-
     scheduler = create_scheduler(cfg, optimizer)
 
     num_query = 1

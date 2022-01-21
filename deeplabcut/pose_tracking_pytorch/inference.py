@@ -1,28 +1,8 @@
 import torch
 import torch.nn as nn
-from functools import partial
-import os
-import pandas as pd
-import pickle
 import numpy as np
-
-from mmappickle import mmapdict
-from itertools import combinations
-
-
-import math
-from functools import partial
-from itertools import repeat
-
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-
-# from torch._six import container_abcs
-import collections.abc as container_abcs
-
-from deeplabcut.pose_tracking_pytorch.model import build_dlc_transformer
 from .config import cfg
+from deeplabcut.pose_tracking_pytorch.model import build_dlc_transformer
 from deeplabcut.pose_tracking_pytorch.model.backbones import dlc_base_kpt_TransReID
 from deeplabcut.pose_tracking_pytorch.tracking_utils import query_feature_by_coord_in_img_space
 

@@ -66,10 +66,3 @@ class PairDataset(Dataset):
             vec2 = self.transform(vec2)
 
         return (vec1, gt1), (vec2, gt2)
-
-
-if __name__ == "__main__":
-    dataset = VecDataset("../test.npy")
-
-    for i, item in enumerate(dataset):
-        print(item)
