@@ -66,13 +66,17 @@ def validate_paf_graph(cfg, paf_graph):
 def prune_paf_graph(list_of_edges, desired_n_edges):
     G = nx.Graph(list_of_edges)
     n_edges = len(G.edges)
-    if desired_n_edges >= n_edges:
-        raise ValueError(f'`desired_n_edges` should be smaller than {n_edges}.')
     n_nodes = len(G.nodes)
+    if not n_nodes - 1 <= desired_n_edges < n_edges:
+        raise ValueError(
+            f"""`desired_n_edges` should be greater than or equal to {n_nodes - 1},
+            but smaller than {n_edges}."""
+        )
+
     while True:
         g = nx.Graph(random.sample(G.edges, desired_n_edges))
         if len(g.nodes) == n_nodes and nx.is_connected(g):
-            print('Valid subgraph found...')
+            print("Valid subgraph found...")
             break
     return [sorted(edge) for edge in g.edges]
 

@@ -221,7 +221,7 @@ def create_multianimaltraining_dataset(
         ]
         n_edges_orig = len(partaffinityfield_graph)
          # If the graph is unnecessarily large, we randomly prune it to
-         # half its size (see Suppl. Fig S10c in Lauer et al., 2022).
+         # half its size (see Suppl. Fig S9c in Lauer et al., 2022).
         if n_edges_orig > 105:  # From 16 body parts on
             partaffinityfield_graph = auxfun_multianimal.prune_paf_graph(
                 partaffinityfield_graph, int(n_edges_orig * 0.5),

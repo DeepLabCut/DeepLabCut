@@ -1,0 +1,15 @@
+import pytest
+from deeplabcut.utils import auxfun_multianimal
+from itertools import combinations
+
+
+def test_prune_paf_graph():
+    n_bpts = 10  # This corresponds to 45 edges
+    edges = [list(edge) for edge in combinations(range(n_bpts), 2)]
+    with pytest.raises(ValueError):
+        pruned_edges = auxfun_multianimal.prune_paf_graph(edges, n_bpts - 2)
+        pruned_edges = auxfun_multianimal.prune_paf_graph(edges, len(edges))
+
+    for target in range(20, 45, 5):
+        pruned_edges = auxfun_multianimal.prune_paf_graph(edges, target)
+        assert len(pruned_edges) == target
