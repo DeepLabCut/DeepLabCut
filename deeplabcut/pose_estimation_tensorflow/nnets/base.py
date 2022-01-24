@@ -117,6 +117,7 @@ class BasePoseNet(metaclass=abc.ABCMeta):
                     "pairwise_pred",
                     self.cfg["num_limbs"] * 2,
                 )
+        out['features'] = features
         return out
 
     def inference(self, inputs):

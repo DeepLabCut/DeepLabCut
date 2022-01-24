@@ -45,6 +45,7 @@ def do_dlc_train(
     optimizer,
     scheduler,
     num_kpts,
+    feature_dim,
     num_query,
     total_epochs=300,
     ckpt_folder="",
@@ -90,6 +91,7 @@ def do_dlc_train(
             anchor = anchor.to(device)
             pos = pos.to(device)
             neg = neg.to(device)
+
 
             anchor_feat = model(anchor)
             pos_feat = model(pos)
@@ -137,7 +139,7 @@ def do_dlc_train(
         if epoch % checkpoint_period == 0:
 
             torch.save(
-                {"state_dict": model.state_dict(), "num_kpts": num_kpts},
+                {"state_dict": model.state_dict(), "num_kpts": num_kpts, 'feature_dim': feature_dim},
                 os.path.join(ckpt_folder, model_name + "_{}.pth".format(epoch)),
             )
 

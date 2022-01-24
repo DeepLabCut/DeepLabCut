@@ -308,8 +308,7 @@ def evaluate_multianimal_full(
                             sess,
                             inputs,
                             outputs,
-                            extra_dict,
-                        ) = predict.setup_pose_prediction(dlc_cfg, collect_extra=True)
+                        ) = predict.setup_pose_prediction(dlc_cfg)
 
                         PredicteData = {}
                         dist = np.full((len(Data), len(all_bpts)), np.nan)
@@ -351,28 +350,15 @@ def evaluate_multianimal_full(
                             ].to_numpy()
                             peaks_gt[:, 1:3] = (peaks_gt[:, 1:3] - stride // 2) / stride
 
-                            if collect_extra:
-                                (
-                                    pred,
-                                    features
-                                ) = predictma.predict_batched_peaks_and_costs(
-                                    dlc_cfg,
-                                    np.expand_dims(frame, axis=0),
-                                    sess,
-                                    inputs,
-                                    outputs,
-                                    peaks_gt.astype(int),
-                                    extra_dict=extra_dict,
-                                )
-                            else:
-                                pred = predictma.predict_batched_peaks_and_costs(
-                                    dlc_cfg,
-                                    np.expand_dims(frame, axis=0),
-                                    sess,
-                                    inputs,
-                                    outputs,
-                                    peaks_gt.astype(int),
-                                )
+                            pred = predictma.predict_batched_peaks_and_costs(
+                                dlc_cfg,
+                                np.expand_dims(frame, axis=0),
+                                sess,
+                                inputs,
+                                outputs,
+                                peaks_gt.astype(int),
+                            )
+                            
                             if not pred:
                                 continue
                             else:

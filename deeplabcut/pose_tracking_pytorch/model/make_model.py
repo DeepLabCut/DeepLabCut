@@ -132,12 +132,13 @@ class Backbone(nn.Module):
 
 
 class build_dlc_transformer(nn.Module):
-    def __init__(self, cfg, kpt_num, factory):
+    def __init__(self, cfg, in_chans, kpt_num, factory):
         super(build_dlc_transformer, self).__init__()
         self.cos_layer = cfg.MODEL.COS_LAYER
         self.in_planes = 128
         self.kpt_num = kpt_num
         self.base = factory["dlc_transreid"](
+            in_chans=in_chans,
             sie_xishu=cfg.MODEL.SIE_COE,
             drop_path_rate=cfg.MODEL.DROP_PATH,
             drop_rate=cfg.MODEL.DROP_OUT,
@@ -145,15 +146,10 @@ class build_dlc_transformer(nn.Module):
             kpt_num=kpt_num,
         )
 
-        # self.classifier = Cosface(self.in_planes, num_classes,
-        #                          s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
-
         self.classifier = nn.Identity()
 
-        # self.bottleneck = nn.BatchNorm1d(self.in_planes)
         self.bottleneck = nn.Identity()
-        # self.bottleneck.bias.requires_grad_(False)
-        # self.bottleneck.apply(weights_init_kaiming)
+
         self.ID_LOSS_TYPE = "cosface"
 
     def forward(self, x):
@@ -162,7 +158,7 @@ class build_dlc_transformer(nn.Module):
         feat = self.bottleneck(global_feat)
 
         q = self.classifier(feat)
-        # print (q.shape)
+
         norm = torch.norm(q, p=2, dim=1, keepdim=True)
         q = q.div(norm)
         return q
@@ -549,8 +545,8 @@ __factory_T_type = {
 }
 
 
-def make_dlc_model(cfg, kpt_num):
+def make_dlc_model(cfg, feature_dim, kpt_num):
 
-    model = build_dlc_transformer(cfg, kpt_num, __factory_T_type)
+    model = build_dlc_transformer(cfg, feature_dim, kpt_num, __factory_T_type)
 
     return model

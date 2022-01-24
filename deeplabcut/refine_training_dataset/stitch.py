@@ -1134,14 +1134,14 @@ def stitch_tracklets(
         deeplabcut.utils.auxiliaryfunctions.attempttomakefolder(dest)
         vname = Path(video).stem
 
-        feature_dict_path = glob.glob(os.path.join(videofolder, vname + "*.mmdpickle"))
+        feature_dict_path = os.path.join(videofolder, vname + DLCscorer + "_bpt_features.mmdpickle")
         # should only exist one
 
-        if len(feature_dict_path) < 1:
-            raise FileNotFoundError(f'Found {len(feature_dict_path)} file(s) for video feature. Did you run transformer_reID()?')
-        
+        if not os.path.exists(feature_dict_path) and transformer_checkpoint:
+            raise FileNotFoundError(f'Found {feature_dict_path} does not exist for video feature. Did you run transformer_reID()?')
+        elif transformer_checkpoint and os.path.exists(feature_dict_path):
+            feature_dict = mmapdict(feature_dict_path, True)
 
-        feature_dict = mmapdict(feature_dict_path[0], True)
         dataname = os.path.join(dest, vname + DLCscorer + ".h5")
 
         if track_method == "ellipse":

@@ -80,6 +80,7 @@ class PoseMobileNet(BasePoseNet):
             scope,
             reuse,
         )
+
         with tf.compat.v1.variable_scope(scope, reuse=reuse):
             if self.cfg["intermediate_supervision"]:
                 out["part_pred_interm"] = prediction_layer(

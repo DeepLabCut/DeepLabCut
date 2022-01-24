@@ -48,14 +48,14 @@ def split_train_test(npy_list, train_frac):
 
 
 def train_tracking_transformer(
-        path_config_file, videos, train_frac = 0.8, modelprefix="", train_epochs=100, ckpt_folder=""
+        path_config_file, dlcscorer, videos, train_frac = 0.8, modelprefix="", train_epochs=100, ckpt_folder=""
 ):
 
     npy_list = []
     for video in videos:
         videofolder = str(Path(video).parents[0])
         video_name = video.split("/")[-1].split(".")[0]
-        files = glob.glob(os.path.join(videofolder, video_name + "*.npy"))
+        files = glob.glob(os.path.join(videofolder, video_name + dlcscorer + "*.npy"))
         # assuming there is only one match
         npy_list.append(files[0])
 
@@ -67,7 +67,10 @@ def train_tracking_transformer(
 
     num_kpts = train_list.shape[2]
 
-    model = make_dlc_model(cfg, num_kpts)
+    feature_dim = train_list.shape[-1]
+    
+    
+    model = make_dlc_model(cfg, feature_dim, num_kpts)
 
     # make my own loss factory
 
@@ -87,6 +90,7 @@ def train_tracking_transformer(
         optimizer,
         scheduler,
         num_kpts,
+        feature_dim, 
         num_query,
         total_epochs=train_epochs,
         ckpt_folder=ckpt_folder,

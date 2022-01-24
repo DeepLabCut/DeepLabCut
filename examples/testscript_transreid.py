@@ -7,8 +7,8 @@ from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 import random
 from pathlib import Path
 
-MODELS = ["dlcrnet_ms5", "dlcr101_ms5", "efficientnet-b0", "mobilenet_v2_0.35"]
-
+#MODELS = ["dlcrnet_ms5", "dlcr101_ms5", "efficientnet-b0", "mobilenet_v2_0.35"]
+MODELS = ["dlcrnet_ms5",] # "efficientnet-b0", "mobilenet_v2_0.35"]
 
 N_ITER = 5
 TESTTRACKER = 'ellipse'
@@ -117,10 +117,17 @@ if __name__ == "__main__":
         cfg,
     )
     datafile = datafile.split(".mat")[0] + ".pickle"
+    print (f'datafile is {os.path.join(cfg["project_path"],datafile)}')
     with open(os.path.join(cfg["project_path"], datafile), "rb") as f:
         pickledata = pickle.load(f)
     num_images = len(pickledata)
-    assert all(len(pickledata[i]["image"]) == 3 for i in range(num_images))
+    print (pickledata)
+    for i in range(num_images):
+
+        print (len(pickledata[i]['joints']))
+
+        
+    assert all(len(pickledata[i]["joints"]) == 3 for i in range(num_images))
 
     print("Editing pose config...")
     model_folder = auxiliaryfunctions.GetModelFolder(
@@ -189,9 +196,7 @@ if __name__ == "__main__":
     print("Tracklets created...")
 
     ### adding it here
-
     modelprefix = ''
-
     (
         trainposeconfigfile,
         testposeconfigfile,
@@ -202,12 +207,14 @@ if __name__ == "__main__":
     
     deeplabcut.pose_estimation_tensorflow.create_tracking_dataset(config_path,
                                                                   [new_video_path],
-                                                                  'ellipse')
+                                                                  TESTTRACKER)
+    
     train_epochs = 100
     train_frac = 0.8
 
     deeplabcut.pose_tracking_pytorch.train_tracking_transformer(
-        config_path, 
+        config_path,
+        scorer,
         [new_video_path],
         train_frac = train_frac, 
         modelprefix=modelprefix,
@@ -218,7 +225,6 @@ if __name__ == "__main__":
     transformer_checkpoint = os.path.join(
         snapshotfolder, f"dlc_transreid_{train_epochs}.pth"
     )
-
     
     deeplabcut.stitch_tracklets(
         config_path,
@@ -228,7 +234,8 @@ if __name__ == "__main__":
         track_method=TESTTRACKER,
         transformer_checkpoint = transformer_checkpoint
     )
-
+    
+    
     print("Plotting trajectories...")
     deeplabcut.plot_trajectories(
         config_path,
@@ -329,20 +336,15 @@ if __name__ == "__main__":
         auto_track=False,
     )
 
-    print("Export model...")
-    deeplabcut.export_model(config_path, shuffle=1, make_tar=False)
+    n_tracks = 3
 
-    print("Merging datasets...")
-    trainIndices, testIndices = deeplabcut.mergeandsplit(
-        config_path, trainindex=0, uniform=True
-    )
-
-    print("Creating two identical splits...")
-    deeplabcut.create_multianimaltraining_dataset(
-        config_path,
-        Shuffles=[4, 5],
-        trainIndices=[trainIndices, trainIndices],
-        testIndices=[testIndices, testIndices],
-    )
-
+    print ('Testing the unified API for transformer')
+    
+    deeplabcut.transformer_reID(config_path,
+                                scorer,
+                                [new_video_path],
+                                n_tracks)
+                                
+    
+    
     print("ALL DONE!!! - default multianimal cases are functional.")

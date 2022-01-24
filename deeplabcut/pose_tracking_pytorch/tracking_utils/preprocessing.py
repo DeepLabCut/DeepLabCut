@@ -8,7 +8,7 @@ def load_features_from_coord(feature, coords, valid_mask_for_fish=False):
         mask = np.array([1, 2, 6])
         coords = coords[mask, :]
 
-    feat_vec = np.zeros((coords.shape[0], coords.shape[1], 2048))
+    feat_vec = np.zeros((coords.shape[0], coords.shape[1], feature.shape[-1]))
 
     for animal_idx in range(coords.shape[0]):
         for kpt_idx in range(coords.shape[1]):

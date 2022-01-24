@@ -6,10 +6,10 @@ import os
 from .eval_tracker import reconstruct_all_bboxes, print_all_metrics,compute_mot_metrics_bboxes, calc_proximity_and_visibility_indices
 import glob
 
-method_dict = {'ellipse':'el','box':'bx'}
 
 def transformer_reID(
     path_config_file,
+    dlcscorer,
     videos,
     n_tracks,
     train_frac = 0.8, 
@@ -37,6 +37,9 @@ def transformer_reID(
     path_config_file: string
         Full path of the config.yaml file as a string.
 
+    dlcscorer: string
+        dlcscorer that kepps track of the model it uses
+
     videos: list
         A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
 
@@ -59,13 +62,10 @@ def transformer_reID(
 
     # should take number of triplets to mine
 
-    if track_method in method_dict:
-        method = method_dict[track_method]
-    else:
-        raise ValueError('no proper track method selected')    
+
     
     deeplabcut.pose_estimation_tensorflow.create_tracking_dataset(
-        path_config_file, videos, method, modelprefix=modelprefix, n_triplets=n_triplets
+        path_config_file, videos, track_method, modelprefix=modelprefix, n_triplets=n_triplets
     )
 
     (
@@ -79,6 +79,7 @@ def transformer_reID(
     # modelprefix impacts where the model is loaded
     deeplabcut.pose_tracking_pytorch.train_tracking_transformer(
         path_config_file,
+        dlcscorer,
         videos,
         train_frac = train_frac, 
         modelprefix=modelprefix,
@@ -105,6 +106,7 @@ def transformer_reID(
 
 def eval_tracking(
     path_config_file,
+    dlcscorer,
     path_to_ground_truth,
     video,
     n_tracks,
@@ -151,6 +153,7 @@ def eval_tracking(
     if use_trans:
         eval_transformer(
             path_config_file,
+            dlcscorer,
             path_to_ground_truth,
             video,
             n_tracks,
@@ -162,6 +165,7 @@ def eval_tracking(
     else:
         eval_non_transformer(
             path_config_file,
+            dlcscorer,
             path_to_ground_truth,
             video,
             n_tracks,
@@ -174,6 +178,7 @@ def eval_tracking(
 
 def eval_non_transformer(
     path_config_file,
+    dlcscorer,
     path_to_ground_truth,
     video,
     n_tracks,
@@ -183,14 +188,18 @@ def eval_non_transformer(
     shuffle=1,
 ):
 
-    if track_method in method_dict:
-        method = method_dict[track_method]
+    if track_method == 'ellipse':
+        method = 'el'
+    elif track_method == 'box':
+        method = 'bx'
+    elif track_method == 'skeleton':
+        method = 'sk'
     else:
-        raise ValueError('no proper track method selected')
+        raise ValueError (f'{track_method} is not supported here')
     
     vname = Path(video).stem
     videofolder = str(Path(video).parents[0])
-    track_fnames = glob.glob(os.path.join(videofolder, vname + f"*_{method}.pickle"))
+    track_fnames = os.path.join(videofolder, vname + dlcscorer + f"_{method}.pickle")
     
     path_to_track_pickle = track_fnames[-1]
     prox, viz = calc_proximity_and_visibility_indices(path_to_ground_truth)
@@ -215,6 +224,7 @@ def eval_non_transformer(
 
 def eval_transformer(
     path_config_file,
+    dlcscorer,
     path_to_ground_truth,
     video,
     n_tracks,
@@ -227,10 +237,16 @@ def eval_transformer(
     # get path_to_track_pickle from video path
     # get path_to_features from video path
 
-    if track_method in method_dict:
-        method = method_dict[track_method]
-    else:
+    if track_method == 'ellipse':
+        method = 'el'
+    elif track_method == 'box':
+        method = 'bx'
+    elif track_method =='skeleton':
         method = 'sk'
+    else:
+        raise ValueError (f'{track_method} is not supported here')
+    
+
 
     (
         trainposeconfigfile,
@@ -250,15 +266,14 @@ def eval_transformer(
 
     vname = Path(video).stem
     videofolder = str(Path(video).parents[0])
-    feature_fnames = glob.glob(
-        os.path.join(videofolder, vname + "*_bpt_features.mmdpickle")
-    )
-    track_fnames = glob.glob(os.path.join(videofolder, vname + f"*_{method}.pickle"))
+    feature_fnames = os.path.join(videofolder, vname + dlcscorer +  "_bpt_features.mmdpickle")
+
+    track_fnames = os.path.join(videofolder, vname + dlcscroer + f"_{method}.pickle")
 
     nframe = len(VideoWriter(video))
     zfill_width = int(np.ceil(np.log10(nframe)))
 
-    path_to_features = feature_fnames[0]
+    path_to_features = feature_fnames[-1]
     feature_dict = mmapdict(path_to_features, True)
     path_to_track_pickle = track_fnames[-1]    
     prox, viz = calc_proximity_and_visibility_indices(path_to_ground_truth)

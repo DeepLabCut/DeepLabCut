@@ -38,7 +38,7 @@ def train(
     maxiters,
     max_to_keep=5,
     keepdeconvweights=True,
-    allow_growth=False,
+    allow_growth=True,
 ):
     start_path = os.getcwd()
     os.chdir(

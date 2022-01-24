@@ -771,6 +771,7 @@ def resize_pos_embed(posemb, posemb_new, hight, width):
 
 
 def dlc_base_kpt_TransReID(
+    in_chans=2048,
     drop_rate=0.0,
     attn_drop_rate=0.0,
     drop_path_rate=0.1,
@@ -786,6 +787,7 @@ def dlc_base_kpt_TransReID(
     mlp_ratio = 1
     num_kpts = kpt_num
     model = DLCTransReID(
+        in_chans=in_chans,
         embed_dim=embed_dim,
         depth=depth,
         num_heads=num_heads,
