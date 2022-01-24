@@ -27,7 +27,11 @@ from deeplabcut.generate_training_dataset import (
     MakeInference_yaml,
     pad_train_test_indices,
 )
-from deeplabcut.utils import auxiliaryfunctions, auxfun_models, auxfun_multianimal
+from deeplabcut.utils import (
+    auxiliaryfunctions,
+    auxfun_models,
+    auxfun_multianimal,
+)
 
 
 def format_multianimal_training_data(
@@ -219,17 +223,9 @@ def create_multianimaltraining_dataset(
          # If the graph is unnecessarily large, we randomly prune it to
          # half its size (see Suppl. Fig S10c in Lauer et al., 2022).
         if n_edges_orig > 105:  # From 16 body parts on
-            import networkx as nx
-            import random
-
-            G = nx.Graph(partaffinityfield_graph)
-            n_edges = int(0.5 * n_edges_orig)
-            while True:
-                g = nx.Graph(random.sample(G.edges, n_edges))
-                if len(g.nodes) == 15 and nx.is_connected(g):
-                    print('Valid subgraph found...')
-                    break
-            partaffinityfield_graph = [sorted(edge) for edge in g.edges]
+            partaffinityfield_graph = auxfun_multianimal.prune_paf_graph(
+                partaffinityfield_graph, int(n_edges_orig * 0.5),
+            )
     else:
         # Ignore possible connections between 'multi' and 'unique' body parts;
         # one can never be too careful...

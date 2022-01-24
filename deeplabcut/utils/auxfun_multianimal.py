@@ -10,10 +10,12 @@ Licensed under GNU Lesser General Public License v3.0
 
 import os
 import pickle
+import random
 import shelve
 from itertools import combinations
 from pathlib import Path
 
+import networkx as nx
 import numpy as np
 import pandas as pd
 
@@ -59,6 +61,20 @@ def validate_paf_graph(cfg, paf_graph):
             f"For multi-animal projects, all multianimalbodyparts should be connected. "
             f"Ideally there should be at least one (multinode) path from each multianimalbodyparts to each other multianimalbodyparts. "
         )
+
+
+def prune_paf_graph(list_of_edges, desired_n_edges):
+    G = nx.Graph(list_of_edges)
+    n_edges = len(G.edges)
+    if desired_n_edges >= n_edges:
+        raise ValueError(f'`desired_n_edges` should be smaller than {n_edges}.')
+    n_nodes = len(G.nodes)
+    while True:
+        g = nx.Graph(random.sample(G.edges, desired_n_edges))
+        if len(g.nodes) == n_nodes and nx.is_connected(g):
+            print('Valid subgraph found...')
+            break
+    return [sorted(edge) for edge in g.edges]
 
 
 def getpafgraph(cfg, printnames=True):
