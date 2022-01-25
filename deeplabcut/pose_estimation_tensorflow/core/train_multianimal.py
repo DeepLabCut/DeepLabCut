@@ -141,7 +141,7 @@ def train(
         print("Save_iters overwritten as", save_iters)
 
     cumloss, partloss, locrefloss, pwloss = 0.0, 0.0, 0.0, 0.0
-    lr_gen = LearningRate(cfg)
+    lr_gen = LearningRate(cfg, start_iter)
     stats_path = Path(config_yaml).with_name("learning_stats.csv")
     lrf = open(str(stats_path), "w")
 

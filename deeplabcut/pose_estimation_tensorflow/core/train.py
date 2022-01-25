@@ -32,9 +32,13 @@ from deeplabcut.pose_estimation_tensorflow.util.logging import setup_logging
 
 
 class LearningRate(object):
-    def __init__(self, cfg):
+    def __init__(self, cfg, start_iteration):
         self.steps = cfg["multi_step"]
         self.current_step = 0
+        # Initializing lr to right value if DLC already trained
+        for step in self.steps:
+            if start_iteration >= step[1]:
+                self.current_step += 1
 
     def get_lr(self, iteration):
         lr = self.steps[self.current_step][0]
