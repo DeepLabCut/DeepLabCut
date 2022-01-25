@@ -56,7 +56,7 @@ def do_dlc_train(
     # eval_period = cfg.SOLVER.EVAL_PERIOD
     eval_period = 10
 
-    device = "cuda"
+    device = cfg.MODEL.DEVICE
     epochs = cfg.SOLVER.MAX_EPOCHS
 
     logger = logging.getLogger("transreid.train")
