@@ -110,8 +110,10 @@ class Assembly:
         n_bpts = array.shape[0]
         ass = cls(size=n_bpts)
         ass.confidence = 1
-        ass.data[:, : array.shape[1]] = array
-        nonempty = np.flatnonzero(~np.isnan(array).any(axis=1))
+        ass.data[:, :array.shape[1]] = array
+        mask = np.isnan(array).any(axis=1)
+        ass.data[mask, 2] = np.nan
+        nonempty = np.flatnonzero(~mask)
         ass._visible.update(nonempty)
         return ass
 
