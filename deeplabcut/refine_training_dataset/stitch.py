@@ -891,9 +891,9 @@ class TrackletStitcher:
     def write_tracks(self, output_name="", suffix="", animal_names=None):
         df = self.format_df(animal_names)
         if not output_name:
-            output_name = self.filename.replace("pickle", "h5").replace(
-                ".", "_" + suffix + "."
-            )
+            if suffix:
+                suffix = "_" + suffix
+            output_name = self.filename.replace(".pickle", f"{suffix}.h5")
         df.to_hdf(output_name, "tracks", format="table", mode="w")
 
     @staticmethod
