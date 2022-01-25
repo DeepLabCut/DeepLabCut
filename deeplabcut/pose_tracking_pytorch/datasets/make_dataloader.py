@@ -1,5 +1,4 @@
 import torch
-import torchvision.transforms as T
 from torch.utils.data import DataLoader
 from .dlc_vec import TripletDataset, PairDataset
 
@@ -27,31 +26,9 @@ def val_collate_fn(batch):
     return torch.stack(imgs, dim=0), pids, camids, camids_batch, viewids, img_paths
 
 
-
-
-def make_dlc_dataloader(train_list, test_list):
-
-    # normalizing the features in the dataset getitem function
-
-    train_transform = None
-    val_transform = None
-
-    num_workers = 2
-
-    # use my own vec dataset
-
-    print(train_list.shape)
-
+def make_dlc_dataloader(train_list, test_list, batch_size=64):
     train_dataset = TripletDataset(train_list)
-
-    # use triplet loss
-
-    batch_size = 64
-
-
     train_loader = DataLoader(train_dataset, batch_size=batch_size)
     val_dataset = TripletDataset(test_list)
-
     val_loader = DataLoader(val_dataset, batch_size=batch_size)
-
     return train_loader, val_loader
