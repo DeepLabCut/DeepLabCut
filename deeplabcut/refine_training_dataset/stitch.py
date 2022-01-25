@@ -1002,7 +1002,6 @@ def stitch_tracklets(
     track_method="",
     output_name="",
     transformer_checkpoint="",
-    animal="fish",
 ):
     """
     Stitch sparse tracklets into full tracks via a graph-based,
@@ -1138,7 +1137,7 @@ def stitch_tracklets(
         # should only exist one
 
         if not os.path.exists(feature_dict_path) and transformer_checkpoint:
-            raise FileNotFoundError(f'Found {feature_dict_path} does not exist for video feature. Did you run transformer_reID()?')
+            raise FileNotFoundError(f'{feature_dict_path} does not exist. Did you run transformer_reID()?')
         elif transformer_checkpoint and os.path.exists(feature_dict_path):
             feature_dict = mmapdict(feature_dict_path, True)
 
