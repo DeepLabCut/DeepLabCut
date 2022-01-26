@@ -24,6 +24,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/DeepLabCut/DeepLabCut",
     install_requires=[
+        "dlc2nwb",
         "ipython",
         "filterpy",
         "ruamel.yaml>=0.15.0",
