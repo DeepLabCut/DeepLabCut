@@ -176,50 +176,12 @@ def do_dlc_train(
         pickle.dump(plot_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def do_inference(cfg, model, val_loader, num_query):
-    device = "cuda"
-    logger = logging.getLogger("transreid.test")
-    logger.info("Enter inferencing")
-
-    evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM)
-
-    evaluator.reset()
-
-    if device:
-        if torch.cuda.device_count() > 1:
-            print("Using {} GPUs for inference".format(torch.cuda.device_count()))
-            model = nn.DataParallel(model)
-        model.to(device)
-
-    model.eval()
-    img_path_list = []
-
-    for n_iter, (img, pid, camid, camids, target_view, imgpath) in enumerate(
-        val_loader
-    ):
-        with torch.no_grad():
-            img = img.to(device)
-            camids = camids.to(device)
-            target_view = target_view.to(device)
-            feat = model(img, cam_label=camids, view_label=target_view)
-            evaluator.update((feat, pid, camid))
-            img_path_list.extend(imgpath)
-
-    cmc, mAP, _, _, _, _, _ = evaluator.compute()
-    logger.info("Validation Results ")
-    logger.info("mAP: {:.1%}".format(mAP))
-    for r in [1, 5, 10]:
-        logger.info("CMC curve, Rank-{:<3}:{:.1%}".format(r, cmc[r - 1]))
-    return cmc[0], cmc[4]
-
-
 def do_dlc_inference(cfg, model, triplet_loss, val_loader, num_query):
-
     device = "cuda"
     logger = logging.getLogger("transreid.test")
     logger.info("Enter inferencing")
 
-    evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM)
+    evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg["feat_norm"])
 
     evaluator.reset()
 
@@ -280,7 +242,7 @@ def do_dlc_pair_inference(cfg, model, val_loader, num_query):
     logger = logging.getLogger("transreid.test")
     logger.info("Enter inferencing")
 
-    evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM)
+    evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg["feat_norm"])
 
     evaluator.reset()
 

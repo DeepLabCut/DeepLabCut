@@ -1,7 +1,6 @@
 import torch
 
 
-# make it as simple as possible
 def easy_triplet_loss():
     def loss_func(anchor, positive, neg):
         triplet_loss = torch.nn.TripletMarginLoss()

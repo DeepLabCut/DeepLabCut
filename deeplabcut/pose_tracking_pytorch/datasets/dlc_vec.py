@@ -1,6 +1,5 @@
 from torch.utils.data import Dataset
 import numpy as np
-import pickle
 
 
 class TripletDataset(Dataset):
@@ -38,31 +37,3 @@ class TripletDataset(Dataset):
             neg = self.transform(neg)
 
         return anchor, pos, neg
-
-
-class PairDataset(Dataset):
-    def __init__(self, datasource, transform=None):
-        self.datasource = datasource
-        with open(datasource, "rb") as f:
-            data = pickle.load(f)
-            self.x = data["vectors"]
-            self.y = data["gts"]
-
-        self.transform = transform
-
-    def __len__(self):
-        return len(self.x)
-
-    def __getitem__(self, index):
-        vec1, vec2 = self.x[index]
-        gt1, gt2 = self.y[index]
-        vec1 = vec1.astype(np.float32)
-        vec2 = vec2.astype(np.float32)
-
-        if self.transform is not None:
-            # maybe needs to convert them to embeddings and position token
-
-            vec1 = self.transform(vec1)
-            vec2 = self.transform(vec2)
-
-        return (vec1, gt1), (vec2, gt2)
