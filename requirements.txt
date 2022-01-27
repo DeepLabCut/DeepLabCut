@@ -1,4 +1,3 @@
-dlc2nwb
 ipython
 filterpy
 h5py
