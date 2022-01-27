@@ -216,15 +216,18 @@ def create_multianimaltraining_dataset(
     ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
 
     if paf_graph is None:  # Automatically form a complete PAF graph
+        n_bpts = len(multianimalbodyparts)
         partaffinityfield_graph = [
-            list(edge) for edge in combinations(range(len(multianimalbodyparts)), 2)
+            list(edge) for edge in combinations(range(n_bpts), 2)
         ]
         n_edges_orig = len(partaffinityfield_graph)
-         # If the graph is unnecessarily large, we randomly prune it to
-         # half its size (see Suppl. Fig S9c in Lauer et al., 2022).
-        if n_edges_orig > 105:  # From 16 body parts on
+        # If the graph is unnecessarily large (with 15+ keypoints by default),
+        # we randomly prune it to a size guaranteeing an average node degree of 6;
+        # see Suppl. Fig S9c in Lauer et al., 2022.
+        if n_edges_orig >= 105:
             partaffinityfield_graph = auxfun_multianimal.prune_paf_graph(
-                partaffinityfield_graph, int(n_edges_orig * 0.5),
+                # Three times as many edges as there are body parts ==> degree 6 on average
+                partaffinityfield_graph, int(n_bpts * 3),
             )
     else:
         # Ignore possible connections between 'multi' and 'unique' body parts;
