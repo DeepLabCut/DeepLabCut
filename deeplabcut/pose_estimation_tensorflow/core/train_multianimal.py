@@ -141,24 +141,25 @@ def train(
         print("Save_iters overwritten as", save_iters)
 
     cumloss, partloss, locrefloss, pwloss = 0.0, 0.0, 0.0, 0.0
-    lr_gen = LearningRate(cfg, start_iter)
+    lr_gen = LearningRate(cfg)
     stats_path = Path(config_yaml).with_name("learning_stats.csv")
     lrf = open(str(stats_path), "w")
 
     print("Training parameters:")
     print(cfg)
     print("Starting multi-animal training....")
+    max_iter += start_iter  # max_iter is relative to start_iter
     for it in range(start_iter, max_iter + 1):
         if "efficientnet" in net_type:
-            dict = {tstep: it}
-            current_lr = sess.run(learning_rate, feed_dict=dict)
+            dict_ = {tstep: it - start_iter}
+            current_lr = sess.run(learning_rate, feed_dict=dict_)
         else:
-            current_lr = lr_gen.get_lr(it)
-            dict = {learning_rate: current_lr}
+            current_lr = lr_gen.get_lr(it - start_iter)
+            dict_ = {learning_rate: current_lr}
 
         # [_, loss_val, summary] = sess.run([train_op, total_loss, merged_summaries],feed_dict={learning_rate: current_lr})
         [_, alllosses, loss_val, summary] = sess.run(
-            [train_op, losses, total_loss, merged_summaries], feed_dict=dict
+            [train_op, losses, total_loss, merged_summaries], feed_dict=dict_
         )
 
         partloss += alllosses["part_loss"]  # scoremap loss
