@@ -148,12 +148,13 @@ def train(
     print("Training parameters:")
     print(cfg)
     print("Starting multi-animal training....")
+    max_iter += start_iter  # max_iter is relative to start_iter
     for it in range(start_iter, max_iter + 1):
         if "efficientnet" in net_type:
-            dict = {tstep: it}
+            dict = {tstep: it - start_iter}
             current_lr = sess.run(learning_rate, feed_dict=dict)
         else:
-            current_lr = lr_gen.get_lr(it)
+            current_lr = lr_gen.get_lr(it - start_iter)
             dict = {learning_rate: current_lr}
 
         # [_, loss_val, summary] = sess.run([train_op, total_loss, merged_summaries],feed_dict={learning_rate: current_lr})
