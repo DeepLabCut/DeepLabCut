@@ -8,6 +8,7 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
+import math
 import os
 import pickle
 import random
@@ -63,10 +64,19 @@ def validate_paf_graph(cfg, paf_graph):
         )
 
 
-def prune_paf_graph(list_of_edges, desired_n_edges):
+def prune_paf_graph(list_of_edges, desired_n_edges=None, average_degree=None):
+    if not (desired_n_edges or average_degree):
+        raise ValueError(
+            "Either `desired_n_edges` or `average_degree` must be specified."
+        )
+
     G = nx.Graph(list_of_edges)
     n_edges = len(G.edges)
     n_nodes = len(G.nodes)
+    if average_degree is not None:
+        # (average_degree / 2) as many edges as there are nodes is required
+        # for undirected graphs to reach the target degree.
+        desired_n_edges = math.ceil(n_nodes * average_degree / 2)
     if not n_nodes - 1 <= desired_n_edges < n_edges:
         raise ValueError(
             f"""`desired_n_edges` should be greater than or equal to {n_nodes - 1},

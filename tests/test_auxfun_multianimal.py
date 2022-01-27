@@ -17,7 +17,8 @@ def test_prune_paf_graph():
         assert len(pruned_edges) == target
 
     for degree in (4, 6, 8):
-        target = n_bpts * degree // 2
-        pruned_edges = auxfun_multianimal.prune_paf_graph(edges, target)
+        pruned_edges = auxfun_multianimal.prune_paf_graph(
+            edges, average_degree=degree,
+        )
         G = nx.Graph(pruned_edges)
         assert np.mean(list(dict(G.degree).values())) == degree

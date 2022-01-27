@@ -226,8 +226,7 @@ def create_multianimaltraining_dataset(
         # see Suppl. Fig S9c in Lauer et al., 2022.
         if n_edges_orig >= 105:
             partaffinityfield_graph = auxfun_multianimal.prune_paf_graph(
-                # Three times as many edges as there are body parts ==> degree 6 on average
-                partaffinityfield_graph, int(n_bpts * 3),
+                partaffinityfield_graph, average_degree=6,
             )
     else:
         # Ignore possible connections between 'multi' and 'unique' body parts;
