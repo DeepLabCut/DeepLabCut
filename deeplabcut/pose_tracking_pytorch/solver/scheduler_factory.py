@@ -5,19 +5,12 @@ from .cosine_lr import CosineLRScheduler
 
 
 def create_scheduler(cfg, optimizer, num_epochs=200):
-    # num_epochs = cfg.SOLVER.MAX_EPOCHS
     num_epochs = num_epochs
-    # type 1
-    # lr_min = 0.01 * cfg.SOLVER.BASE_LR
-    # warmup_lr_init = 0.001 * cfg.SOLVER.BASE_LR
-    # type 2
-    lr_min = 0.002 * cfg.SOLVER.BASE_LR
-    warmup_lr_init = 0.01 * cfg.SOLVER.BASE_LR
-    # type 3
-    # lr_min = 0.001 * cfg.SOLVER.BASE_LR
-    # warmup_lr_init = 0.01 * cfg.SOLVER.BASE_LR
 
-    warmup_t = cfg.SOLVER.WARMUP_EPOCHS
+    lr_min = 0.002 * cfg["base_lr"]
+    warmup_lr_init = 0.01 * cfg["base_lr"]
+
+    warmup_t = cfg["warmup_epochs"]
     noise_range = None
 
     lr_scheduler = CosineLRScheduler(

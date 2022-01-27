@@ -51,13 +51,11 @@ def do_dlc_train(
     ckpt_folder="",
 ):
 
-    log_period = cfg.SOLVER.LOG_PERIOD
-    checkpoint_period = cfg.SOLVER.CHECKPOINT_PERIOD
-    # eval_period = cfg.SOLVER.EVAL_PERIOD
+    log_period = cfg["log_period"]
+    checkpoint_period = cfg["checkpoint_period"]
     eval_period = 10
 
-    device = cfg.MODEL.DEVICE
-    epochs = cfg.SOLVER.MAX_EPOCHS
+    device = cfg["device"]
 
     logger = logging.getLogger("transreid.train")
     logger.info("start training")
@@ -67,7 +65,7 @@ def do_dlc_train(
     loss_meter = AverageMeter()
     acc_meter = AverageMeter()
 
-    evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM)
+    evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg["feat_norm"])
 
     # train
     epoch_list = []
@@ -125,7 +123,7 @@ def do_dlc_train(
         train_acc = total_correct / total_n
         train_acc_list.append(train_acc.item())
 
-        if cfg.MODEL.DIST_TRAIN:
+        if cfg["dist_train"]:
             pass
         else:
             logger.info(

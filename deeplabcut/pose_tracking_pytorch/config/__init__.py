@@ -1,8 +1,10 @@
-# encoding: utf-8
-"""
-@author:  sherlock
-@contact: sherlockliao01@gmail.com
-"""
+import os
+from deeplabcut.utils.auxiliaryfunctions import (
+    read_plainconfig,
+    get_deeplabcut_path,
+)
 
-from .defaults import _C as cfg
-from .defaults import _C as cfg_test
+
+dlcparent_path = get_deeplabcut_path()
+reid_config = os.path.join(dlcparent_path, "reid_cfg.yaml")
+cfg = read_plainconfig(reid_config)

@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import numpy as np
-from .config import cfg
+from deeplabcut.pose_tracking_pytorch.config import cfg
 from deeplabcut.pose_tracking_pytorch.model import build_dlc_transformer
 from deeplabcut.pose_tracking_pytorch.model.backbones import dlc_base_kpt_TransReID
 from deeplabcut.pose_tracking_pytorch.tracking_utils import query_feature_by_coord_in_img_space
@@ -16,7 +16,6 @@ class DLCTrans:
 
         ckpt_dict = torch.load(self.checkpoint)
 
-        
         self.model = build_dlc_transformer(
             cfg, ckpt_dict['feature_dim'], ckpt_dict["num_kpts"], inference_factory
         )

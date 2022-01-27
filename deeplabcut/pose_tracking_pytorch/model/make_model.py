@@ -134,15 +134,15 @@ class Backbone(nn.Module):
 class build_dlc_transformer(nn.Module):
     def __init__(self, cfg, in_chans, kpt_num, factory):
         super(build_dlc_transformer, self).__init__()
-        self.cos_layer = cfg.MODEL.COS_LAYER
+        self.cos_layer = cfg["cos_layer"]
         self.in_planes = 128
         self.kpt_num = kpt_num
         self.base = factory["dlc_transreid"](
             in_chans=in_chans,
-            sie_xishu=cfg.MODEL.SIE_COE,
-            drop_path_rate=cfg.MODEL.DROP_PATH,
-            drop_rate=cfg.MODEL.DROP_OUT,
-            attn_drop_rate=cfg.MODEL.ATT_DROP_RATE,
+            sie_xishu=cfg["sie_coe"],
+            drop_path_rate=cfg["drop_path"],
+            drop_rate=cfg["drop_out"],
+            attn_drop_rate=cfg["att_drop_rate"],
             kpt_num=kpt_num,
         )
 
