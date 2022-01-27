@@ -32,13 +32,9 @@ from deeplabcut.pose_estimation_tensorflow.util.logging import setup_logging
 
 
 class LearningRate(object):
-    def __init__(self, cfg, start_iteration):
+    def __init__(self, cfg):
         self.steps = cfg["multi_step"]
         self.current_step = 0
-        # Initializing lr to right value if DLC already trained
-        for step in self.steps:
-            if start_iteration >= step[1]:
-                self.current_step += 1
 
     def get_lr(self, iteration):
         lr = self.steps[self.current_step][0]
@@ -265,16 +261,17 @@ def train(
     print("Training parameter:")
     print(cfg)
     print("Starting training....")
+    max_iter += start_iter  # max_iter is relative to start_iter
     for it in range(start_iter, max_iter + 1):
         if "efficientnet" in net_type:
-            dict = {tstep: it}
-            current_lr = sess.run(learning_rate, feed_dict=dict)
+            dict_ = {tstep: it - start_iter}
+            current_lr = sess.run(learning_rate, feed_dict=dict_)
         else:
-            current_lr = lr_gen.get_lr(it)
-            dict = {learning_rate: current_lr}
+            current_lr = lr_gen.get_lr(it - start_iter)
+            dict_ = {learning_rate: current_lr}
 
         [_, loss_val, summary] = sess.run(
-            [train_op, total_loss, merged_summaries], feed_dict=dict
+            [train_op, total_loss, merged_summaries], feed_dict=dict_
         )
         cum_loss += loss_val
         train_writer.add_summary(summary, it)
