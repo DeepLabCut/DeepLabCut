@@ -117,16 +117,9 @@ if __name__ == "__main__":
         cfg,
     )
     datafile = datafile.split(".mat")[0] + ".pickle"
-    print (f'datafile is {os.path.join(cfg["project_path"],datafile)}')
     with open(os.path.join(cfg["project_path"], datafile), "rb") as f:
         pickledata = pickle.load(f)
     num_images = len(pickledata)
-    print (pickledata)
-    for i in range(num_images):
-
-        print (len(pickledata[i]['joints']))
-
-        
     assert all(len(pickledata[i]["joints"]) == 3 for i in range(num_images))
 
     print("Editing pose config...")
@@ -209,14 +202,14 @@ if __name__ == "__main__":
                                                                   [new_video_path],
                                                                   TESTTRACKER)
     
-    train_epochs = 100
+    train_epochs = 10
     train_frac = 0.8
 
     deeplabcut.pose_tracking_pytorch.train_tracking_transformer(
         config_path,
         scorer,
         [new_video_path],
-        train_frac = train_frac, 
+        train_frac=train_frac,
         modelprefix=modelprefix,
         train_epochs=train_epochs,
         ckpt_folder=snapshotfolder,
@@ -225,16 +218,16 @@ if __name__ == "__main__":
     transformer_checkpoint = os.path.join(
         snapshotfolder, f"dlc_transreid_{train_epochs}.pth"
     )
-    
+
     deeplabcut.stitch_tracklets(
         config_path,
         [new_video_path],
         "mp4",
         output_name=os.path.splitext(new_video_path)[0] + scorer + "_el.h5",
         track_method=TESTTRACKER,
-        transformer_checkpoint = transformer_checkpoint
+        transformer_checkpoint=transformer_checkpoint
     )
-    
+
     
     print("Plotting trajectories...")
     deeplabcut.plot_trajectories(
@@ -340,11 +333,14 @@ if __name__ == "__main__":
 
     print ('Testing the unified API for transformer')
     
-    deeplabcut.transformer_reID(config_path,
-                                scorer,
-                                [new_video_path],
-                                n_tracks)
-                                
-    
-    
+    deeplabcut.transformer_reID(
+        config_path,
+        scorer,
+        [new_video_path],
+        n_tracks,
+        track_method=TESTTRACKER,
+        train_epochs=10,
+        n_triplets=100,
+    )
+
     print("ALL DONE!!! - default multianimal cases are functional.")
