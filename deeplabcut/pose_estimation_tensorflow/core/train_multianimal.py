@@ -28,6 +28,7 @@ from deeplabcut.pose_estimation_tensorflow.core.train import (
     start_preloading,
     get_optimizer,
     LearningRate,
+    allow_memory_growth,
 )
 
 
@@ -106,12 +107,8 @@ def train(
     )  # selects how many snapshots are stored, see https://github.com/AlexEMG/DeepLabCut/issues/8#issuecomment-387404835
 
     if allow_growth:
-        config = tf.compat.v1.ConfigProto()
-        config.gpu_options.allow_growth = True
-        sess = tf.compat.v1.Session(config=config)
-    else:
-        sess = tf.compat.v1.Session()
-
+        allow_memory_growth()
+    sess = tf.compat.v1.Session()
     coord, thread = start_preloading(sess, enqueue_op, dataset, placeholders)
     train_writer = tf.compat.v1.summary.FileWriter(cfg["log_dir"], sess.graph)
     learning_rate, train_op, tstep = get_optimizer(total_loss, cfg)

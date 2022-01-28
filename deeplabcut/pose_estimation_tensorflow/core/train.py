@@ -141,6 +141,11 @@ def get_optimizer_with_freeze(loss_op, cfg):
     return learning_rate, train_unfrozen_op, train_frozen_op
 
 
+def allow_memory_growth():
+    for dev in tf.config.list_physical_devices("GPU"):
+        tf.config.experimental.set_memory_growth(dev, True)
+
+
 def train(
     config_yaml,
     displayiters,
@@ -208,12 +213,8 @@ def train(
     )  # selects how many snapshots are stored, see https://github.com/AlexEMG/DeepLabCut/issues/8#issuecomment-387404835
 
     if allow_growth:
-        config = tf.compat.v1.ConfigProto()
-        config.gpu_options.allow_growth = True
-        sess = tf.compat.v1.Session(config=config)
-    else:
-        sess = tf.compat.v1.Session()
-
+        allow_memory_growth()
+    sess = tf.compat.v1.Session()
     coord, thread = start_preloading(sess, enqueue_op, dataset, placeholders)
     train_writer = tf.compat.v1.summary.FileWriter(cfg["log_dir"], sess.graph)
 

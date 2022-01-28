@@ -25,6 +25,9 @@ https://arxiv.org/abs/1909.11229
 import numpy as np
 import tensorflow as tf
 from deeplabcut.pose_estimation_tensorflow.nnets.factory import PoseNetFactory
+from deeplabcut.pose_estimation_tensorflow.core.train import (
+    allow_memory_growth,
+)
 
 
 def setup_pose_prediction(cfg, allow_growth=False):
@@ -46,11 +49,8 @@ def setup_pose_prediction(cfg, allow_growth=False):
     restorer = tf.compat.v1.train.Saver()
 
     if allow_growth:
-        config = tf.compat.v1.ConfigProto()
-        config.gpu_options.allow_growth = True
-        sess = tf.compat.v1.Session(config=config)
-    else:
-        sess = tf.compat.v1.Session()
+        allow_memory_growth()
+    sess = tf.compat.v1.Session()
     sess.run(tf.compat.v1.global_variables_initializer())
     sess.run(tf.compat.v1.local_variables_initializer())
 
@@ -217,12 +217,8 @@ def setup_GPUpose_prediction(cfg, allow_growth=False):
     restorer = tf.compat.v1.train.Saver()
 
     if allow_growth:
-        config = tf.compat.v1.ConfigProto()
-        config.gpu_options.allow_growth = True
-        sess = tf.compat.v1.Session(config=config)
-    else:
-        sess = tf.compat.v1.Session()
-
+        allow_memory_growth()
+    sess = tf.compat.v1.Session()
     sess.run(tf.compat.v1.global_variables_initializer())
     sess.run(tf.compat.v1.local_variables_initializer())
 
