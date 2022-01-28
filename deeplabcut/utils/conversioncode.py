@@ -146,13 +146,6 @@ def analyze_videos_converth5_to_nwb(
     deeplabcut.analyze_videos_converth5_to_csv('/media/alex/experimentaldata/cheetahvideos','.mp4')
 
     """
-    try:
-        from dlc2nwb.utils import convert_h5_to_nwb
-    except ImportError:
-        raise ImportError(
-            "The package `dlc2nwb` is missing. Please run `pip install dlc2nwb`."
-        )
-
     if listofvideos: # can also be called with a list of videos (from GUI)
         videos = video_folder # GUI gives a list of videos
         if len(videos)>0:
@@ -179,6 +172,14 @@ def _convert_h5_files_to(filetype, config, h5_files, videos):
             f"""Unsupported destination format {filetype}.
             Must be one of {SUPPORTED_FILETYPES}."""
         )
+
+    if filetype == "nwb":
+        try:
+            from dlc2nwb.utils import convert_h5_to_nwb
+        except ImportError:
+            raise ImportError(
+                "The package `dlc2nwb` is missing. Please run `pip install dlc2nwb`."
+            )
 
     for video in videos:
         if "_labeled" in video:
