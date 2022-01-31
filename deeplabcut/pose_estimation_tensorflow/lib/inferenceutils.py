@@ -933,7 +933,7 @@ def parse_ground_truth_data_file(h5_file):
         pass
     n_individuals = len(df.columns.get_level_values("individuals").unique())
     n_bodyparts = len(df.columns.get_level_values("bodyparts").unique())
-    data = df.to_numpy().reshape((df.shape[0], n_individuals, n_bodyparts, 3))
+    data = df.to_numpy().reshape((df.shape[0], n_individuals, n_bodyparts, -1))
     return _parse_ground_truth_data(data)
 
 
