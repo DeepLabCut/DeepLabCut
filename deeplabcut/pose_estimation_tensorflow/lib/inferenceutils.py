@@ -84,7 +84,7 @@ class Link:
 class Assembly:
     def __init__(self, size):
         self.data = np.full((size, 4), np.nan)
-        self.confidence = 1  # 1 by defaut, overwritten otherwise with `add_joint`
+        self.confidence = 0  # 0 by defaut, overwritten otherwise with `add_joint`
         self._affinity = 0
         self._links = []
         self._visible = set()
@@ -108,11 +108,13 @@ class Assembly:
 
     @classmethod
     def from_array(cls, array):
-        n_bpts = array.shape[0]
+        n_bpts, n_cols = array.shape
         ass = cls(size=n_bpts)
-        ass.data[:, : array.shape[1]] = array
-        nonempty = np.flatnonzero(~np.isnan(array).any(axis=1))
-        ass._visible.update(nonempty)
+        ass.data[:, :n_cols] = array
+        visible = np.flatnonzero(~np.isnan(array).any(axis=1))
+        if n_cols < 3:  # Only xy coordinates are being set
+            ass.data[visible, 2] = 1  # Set detection confidence to 1
+        ass._visible.update(visible)
         return ass
 
     @property
