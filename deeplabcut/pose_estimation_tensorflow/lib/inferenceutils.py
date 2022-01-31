@@ -931,6 +931,11 @@ def parse_ground_truth_data_file(h5_file):
         df.drop("single", axis=1, level="individuals", inplace=True)
     except KeyError:
         pass
+    # Cast columns of dtype 'object' to float to avoid TypeError
+    # further down in _parse_ground_truth_data.
+    cols = df.select_dtypes(include="object").columns
+    if cols.to_list():
+        df[cols] = df[cols].astype("float")
     n_individuals = len(df.columns.get_level_values("individuals").unique())
     n_bodyparts = len(df.columns.get_level_values("bodyparts").unique())
     data = df.to_numpy().reshape((df.shape[0], n_individuals, n_bodyparts, -1))
