@@ -293,7 +293,7 @@ def evaluate_multianimal_full(
                     if plotting:
                         foldername = os.path.join(
                             str(evaluationfolder),
-                            "LabeledImages_" + DLCscorer + "_" + Snapshots[snapindex],
+                            "LabeledImages_" + DLCscorer + "-" + Snapshots[snapindex],
                         )
                         auxiliaryfunctions.attempttomakefolder(foldername)
                         if plotting == "bodypart":
