@@ -74,6 +74,7 @@ def extract_frames(
     slider_width=25,
     config3d=None,
     extracted_cam=0,
+    videos=None,
 ):
     """
     Extracts frames from the videos in the config.yaml file. Only the videos in the config.yaml will be used to select the frames.\n
@@ -142,6 +143,9 @@ def extract_frames(
         The index of the camera that already has extracted frames. This will match frame numbers to extract for all other cameras.
         This parameter is necessary if you wish to use epipolar lines in the labeling toolbox. Only use if mode = 'match' and config3d is provided.
 
+    videos: list, default: None
+            A list of the string containing full paths to videos to extract frames for. If this is left as None all videos in the config file will have frames extracted.
+
     Examples
     --------
     for selecting frames automatically with 'kmeans' and want to crop the frames.
@@ -206,8 +210,8 @@ def extract_frames(
             raise Exception(
                 "Perhaps consider extracting more, or a natural number of frames."
             )
-
-        videos = cfg.get("video_sets_original") or cfg["video_sets"]
+        if videos is None:
+            videos = cfg.get("video_sets_original") or cfg["video_sets"]
         if opencv:
             from deeplabcut.utils.auxfun_videos import VideoReader
         else:

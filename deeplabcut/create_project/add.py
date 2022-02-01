@@ -44,6 +44,7 @@ def add_new_videos(config, videos, copy_videos=False, coords=None):
 
     from deeplabcut.utils import auxiliaryfunctions
     from deeplabcut.utils.auxfun_videos import VideoReader
+    from deeplabcut.generate_training_dataset.frame_extraction import extract_frames
 
     # Read the config file
     cfg = auxiliaryfunctions.read_config(config)
@@ -99,8 +100,8 @@ def add_new_videos(config, videos, copy_videos=False, coords=None):
             cfg["video_sets"].update(params)
         else:
             cfg["video_sets_original"].update(params)
-
+    videos_str = [str(video) for video in videos]
+    extract_frames(config, userfeedback=False, videos=videos_str)
     auxiliaryfunctions.write_config(config, cfg)
-    print(
-        "New video was added to the project! Use the function 'extract_frames' to select frames for labeling."
-    )
+
+    print("New videos were added to the project and frames have been extracted for labeling!")
