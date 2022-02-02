@@ -990,10 +990,8 @@ def evaluate_assembly(
     # sigma is taken as the median of all COCO keypoint standard deviations
     all_matched = []
     all_unmatched = []
-    for ind, ass_pred in tqdm(ass_pred_dict.items()):
-        ass_true = ass_true_dict.get(ind)
-        if ass_true is None:
-            continue
+    for ind, ass_true in tqdm(ass_true_dict.items()):
+        ass_pred = ass_pred_dict.get(ind, [])
         matched, unmatched = match_assemblies(
             ass_pred,
             ass_true,
