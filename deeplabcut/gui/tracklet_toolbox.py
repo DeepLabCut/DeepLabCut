@@ -296,7 +296,7 @@ class TrackletVisualizer:
         self.draggable = not self.draggable
         if self.draggable:
             self._curr_frame = self.curr_frame
-            self.scat.set_offsets([])
+            self.scat.set_offsets(np.empty((0, 2)))
             self.add_draggable_points()
         else:
             self.save_coords()
