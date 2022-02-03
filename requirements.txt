@@ -20,7 +20,7 @@ scipy>=1.4
 six
 statsmodels>=0.11
 tensorflow>=2.0
-tables
+tables<=3.6.1
 tensorpack
 tf_slim
 tqdm
