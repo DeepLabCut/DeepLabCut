@@ -268,7 +268,6 @@ class Extract_page(QWidget):
         self.config = text
 
     def browse_dir(self):
-        print('browse_dir')
         cwd = self.config
         config = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select a configuration file", cwd, "Config files (*.yaml)"

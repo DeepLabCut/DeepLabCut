@@ -13,6 +13,7 @@ from deeplabcut.utils import auxiliaryfunctions, skeleton
 from pathlib import Path
 
 def label_frames(
+    self,
     config,
     multiple_individualsGUI=False,
     imtypes=["*.png"],
@@ -69,7 +70,7 @@ def label_frames(
         print('labeling_toolbox')
         import labeling_toolbox
 
-        labeling_toolbox.show() #config, config3d, sourceCam, imtypes=imtypes
+        labeling_toolbox.show(self, config, config3d, sourceCam, imtypes=imtypes) #config, config3d, sourceCam, imtypes=imtypes
 
     os.chdir(startpath)
 
@@ -182,4 +183,4 @@ class Label_page(QWidget):
 
     def label_frames(self):
         self.frame = None
-        label_frames(self.config)
+        label_frames(self, self.config)

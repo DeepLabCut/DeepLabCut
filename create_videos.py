@@ -2,10 +2,8 @@ import os
 import pydoc
 import sys
 
-import wx
 
 import deeplabcut
-
 from deeplabcut.utils import auxiliaryfunctions, skeleton
 
 from PyQt5.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup, QDoubleSpinBox

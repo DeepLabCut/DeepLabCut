@@ -8,7 +8,7 @@ from PyQt5.QtCore import Qt
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-class BasePanel(QtWidgets.QDialog):
+class BasePanel(QtWidgets.QFrame):
     def __init__(self, parent, config, gui_size, **kwargs):
         super(BasePanel, self).__init__(parent)
 
@@ -20,6 +20,9 @@ class BasePanel(QtWidgets.QDialog):
         self.canvas = FigureCanvas(self, -1, self.figure)
         self.orig_xlim = None
         self.orig_ylim = None
+        self.sizer = QtWidgets.QHBoxLayout()
+        self.sizer.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        self.sizer.addWidget(self.canvas)
 
     def getfigure(self):
         # Returns the figure, axes and canvas
@@ -35,10 +38,12 @@ class BaseFrame(QtWidgets.QFrame):
     def __init__(self, frame_title="", parent=None, imtypes=None):
         # Settting the GUI size and panels design
 
+
+        index = 0  # For display 1.
+        screenWidth = 500
+        screenHeight = 900
+        self.gui_size = (screenWidth * 0.8, screenHeight * 0.75)
         self.imtypes = imtypes  # imagetypes to look for in folder e.g. *.png
-        # self.statusbar = self.statusBar()
-        # self.statusbar.showMessage("")
-        # self.setStatusBar(self.statusbar)
 
 
 
