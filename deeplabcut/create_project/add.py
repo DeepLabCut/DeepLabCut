@@ -9,7 +9,7 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 
-def add_new_videos(config, videos, copy_videos=False, coords=None):
+def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frames=True):
     """
     Add new videos to the config file at any stage of the project.
 
@@ -24,8 +24,13 @@ def add_new_videos(config, videos, copy_videos=False, coords=None):
     copy_videos : bool, optional
         If this is set to True, the symlink of the videos are copied to the project/videos directory. The default is
         ``False``; if provided it must be either ``True`` or ``False``.
+
     coords: list, optional
-      A list containing the list of cropping coordinates of the video. The default is set to None.
+        A list containing the list of cropping coordinates of the video. The default is set to None.
+
+    extract_frames: bool, optional
+        if this is set to True extract_frames will be run on the new videos
+
     Examples
     --------
     Video will be added, with cropping dimenions according to the frame dimensinos of mouse5.avi
@@ -44,7 +49,7 @@ def add_new_videos(config, videos, copy_videos=False, coords=None):
 
     from deeplabcut.utils import auxiliaryfunctions
     from deeplabcut.utils.auxfun_videos import VideoReader
-    from deeplabcut.generate_training_dataset.frame_extraction import extract_frames
+    from deeplabcut.generate_training_dataset import frame_extraction
 
     # Read the config file
     cfg = auxiliaryfunctions.read_config(config)
@@ -101,7 +106,11 @@ def add_new_videos(config, videos, copy_videos=False, coords=None):
         else:
             cfg["video_sets_original"].update(params)
     videos_str = [str(video) for video in videos]
-    extract_frames(config, userfeedback=False, videos=videos_str)
+    if extract_frames:
+        frame_extraction.extract_frames(config, userfeedback=False, videos=videos_str)
+
     auxiliaryfunctions.write_config(config, cfg)
 
-    print("New videos were added to the project and frames have been extracted for labeling!")
+    print(
+        "New videos were added to the project and frames have been extracted for labeling!"
+    )
