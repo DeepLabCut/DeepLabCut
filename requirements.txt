@@ -9,7 +9,6 @@ numba
 matplotlib
 networkx
 numpy
-opencv-python-headless
 pandas>=1.0.1
 patsy
 pyyaml
@@ -20,7 +19,7 @@ scipy>=1.4
 six
 statsmodels>=0.11
 tensorflow>=2.0
-tables
+tables<=3.6.1
 tensorpack
 tf_slim
 tqdm

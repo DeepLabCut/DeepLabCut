@@ -61,7 +61,7 @@ class PoseMobileNet(BasePoseNet):
         super(PoseMobileNet, self).__init__(cfg)
 
     def extract_features(self, inputs):
-        net_fun, net_arg_scope = networks[self.cfg['net_type']]
+        net_fun, net_arg_scope = networks[self.cfg["net_type"]]
         im_centered = self.center_inputs(inputs)
         with slim.arg_scope(net_arg_scope()):
             net, end_points = net_fun(im_centered)
@@ -76,15 +76,17 @@ class PoseMobileNet(BasePoseNet):
         reuse=None,
     ):
         out = super(PoseMobileNet, self).prediction_layers(
-            features, scope, reuse,
+            features,
+            scope,
+            reuse,
         )
         with tf.compat.v1.variable_scope(scope, reuse=reuse):
-            if self.cfg['intermediate_supervision']:
+            if self.cfg["intermediate_supervision"]:
                 out["part_pred_interm"] = prediction_layer(
                     self.cfg,
                     end_points[f"layer_{self.cfg['intermediate_supervision_layer']}"],
                     "intermediate_supervision",
-                    self.cfg['num_joints'] + self.cfg.get("num_idchannel", 0),
+                    self.cfg["num_joints"] + self.cfg.get("num_idchannel", 0),
                 )
         return out
 

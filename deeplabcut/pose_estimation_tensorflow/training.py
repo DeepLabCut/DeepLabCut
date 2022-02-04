@@ -13,7 +13,7 @@ from pathlib import Path
 
 
 def return_train_network_path(config, shuffle=1, trainingsetindex=0, modelprefix=""):
-    """ Returns the training and test pose config file names as well as the folder where the snapshot is
+    """Returns the training and test pose config file names as well as the folder where the snapshot is
     Parameters
     ----------
     config : string
@@ -157,7 +157,9 @@ def train_network(
     try:
         cfg_dlc = auxiliaryfunctions.read_plainconfig(poseconfigfile)
         if "multi-animal" in cfg_dlc["dataset_type"]:
-            from deeplabcut.pose_estimation_tensorflow.core.train_multianimal import train
+            from deeplabcut.pose_estimation_tensorflow.core.train_multianimal import (
+                train,
+            )
 
             print("Selecting multi-animal trainer")
             train(

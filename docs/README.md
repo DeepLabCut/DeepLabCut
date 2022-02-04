@@ -24,16 +24,20 @@ If you are new to DeepLabCut, we have 3 resources we recommend before jumping in
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1605642639913-OIUBVR8R0JLYZQPRIYIR/ke17ZwdGBToddI8pDm48kMMAxEenKbh651VJujierMxZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpw-CO5bsXt3Lwn3O5kv-PfTgGtLU9oye8D4J7Fixq38Gl-o9tfrEtbnqpPzC5bXTas/ezgif.com-gif-maker.gif?format=750w" width="95%">
 </p>
 
+ - [Real-time feedback with DeepLabCut: DeepLabCut-live](https://github.com/DeepLabCut/DeepLabCut-live)
+
  - [DeepLabCut 3D](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/Overviewof3D.md)
 
  - [Helper functions](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/HelperFunctions.md)
 
  - [Developer Road Map!](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/roadmap.md)
 
- - [How to Contribute to DeepLabCut](https://github.com/DeepLabCut/DeepLabCut/master/blob/CONTRIBUTING.md) and the [Code of Conduct](https://github.com/DeepLabCut/DeepLabCut/blob/CODE_OF_CONDUCT.md)
+ - [How to Contribute to DeepLabCut](https://github.com/DeepLabCut/DeepLabCut/blob/master/CONTRIBUTING.md) and the [Code of Conduct](https://github.com/DeepLabCut/DeepLabCut/blob/master/CODE_OF_CONDUCT.md)
 
- - [The Authors of DeepLabCut](https://github.com/DeepLabCut/DeepLabCut/master/blob/AUTHORS)
+ - [The Authors of DeepLabCut](https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS)
 
 A quick video to help you navigate the docs:  **Click on the image!**
 
 [![Watch the video](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1582931103893-0YCXSXAKJR218B101W38/ke17ZwdGBToddI8pDm48kJ1KQcuvke5FTEGELkUtJ-tZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIrueQmuW2z7_VjRAJlsMCy1JrSO6-zKAUtz5k3N9334U/learningpanel+%284%29.png?format=1000w)](https://www.youtube.com/watch?v=A9qZidI7tL8)
+
+- Please note: what we cannot do is provided support or help designing your experiments and data analysis. The number of requests for this is too great to sustain in our inbox. We are happy to answer such questions in the forum as a community, in a scalable way. We hope and believe we have given enough tools and resources to get started and to accelerate your research program, and this is backed by the >700 citations using DLC, 2 clinical trials by others, and countless applications. Thus, we believe this code works, is accessible, and with limited programming knowledge can be used. Please read our Missions & Values statement to learn more about what we DO hope to provide you.

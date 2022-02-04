@@ -18,7 +18,7 @@ from tqdm import tqdm
 
 
 def pairwisedistances(DataCombined, scorer1, scorer2, pcutoff=-1, bodyparts=None):
-    """ Calculates the pairwise Euclidean distance metric over body parts vs. images"""
+    """Calculates the pairwise Euclidean distance metric over body parts vs. images"""
     mask = DataCombined[scorer2].xs("likelihood", level=1, axis=1) >= pcutoff
     if bodyparts == None:
         Pointwisesquareddistance = (DataCombined[scorer1] - DataCombined[scorer2]) ** 2
@@ -191,7 +191,7 @@ def calculatepafdistancebounds(
 def Plotting(
     cfg, comparisonbodyparts, DLCscorer, trainIndices, DataCombined, foldername
 ):
-    """ Function used for plotting GT and predictions """
+    """Function used for plotting GT and predictions"""
     from deeplabcut.utils import visualization
 
     colors = visualization.get_cmap(len(comparisonbodyparts), name=cfg["colormap"])
@@ -582,10 +582,8 @@ def evaluate_network(
         from deeplabcut.utils.auxfun_videos import imread, imresize
         from deeplabcut.pose_estimation_tensorflow.core import predict
         from deeplabcut.pose_estimation_tensorflow.config import load_config
-        from deeplabcut.pose_estimation_tensorflow.datasets.utils import (
-            data_to_input,
-        )
-        from deeplabcut.utils import auxiliaryfunctions
+        from deeplabcut.pose_estimation_tensorflow.datasets.utils import data_to_input
+        from deeplabcut.utils import auxiliaryfunctions, conversioncode
         import tensorflow as tf
 
         # If a string was passed in, auto-convert to True for backward compatibility
@@ -633,8 +631,10 @@ def evaluate_network(
         )
 
         # Get list of body parts to evaluate network for
-        comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
-            cfg, comparisonbodyparts
+        comparisonbodyparts = (
+            auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
+                cfg, comparisonbodyparts
+            )
         )
         # Make folder for evaluation
         auxiliaryfunctions.attempttomakefolder(
@@ -741,6 +741,7 @@ def evaluate_network(
                 else:
                     scale = 1
 
+                conversioncode.guarantee_multiindex_rows(Data)
                 ##################################################
                 # Compute predictions over images
                 ##################################################
@@ -788,7 +789,8 @@ def evaluate_network(
                         print("Running evaluation ...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
                             image = imread(
-                                os.path.join(cfg["project_path"], imagename), mode="RGB"
+                                os.path.join(cfg["project_path"], *imagename),
+                                mode="skimage",
                             )
                             if scale != 1:
                                 image = imresize(image, scale)
@@ -825,11 +827,9 @@ def evaluate_network(
 
                         # Saving results
                         DataMachine = pd.DataFrame(
-                            PredicteData, columns=index, index=Data.index.values
+                            PredicteData, columns=index, index=Data.index
                         )
-                        DataMachine.to_hdf(
-                            resultsfilename, "df_with_missing", format="table", mode="w"
-                        )
+                        DataMachine.to_hdf(resultsfilename, "df_with_missing")
 
                         print(
                             "Analysis is done and the results are stored (see evaluation-results) for snapshot: ",
@@ -922,6 +922,7 @@ def evaluate_network(
                         # print(final_result)
                     else:
                         DataMachine = pd.read_hdf(resultsfilename)
+                        conversioncode.guarantee_multiindex_rows(DataMachine)
                         if plotting:
                             DataCombined = pd.concat(
                                 [Data.T, DataMachine.T], axis=0, sort=False

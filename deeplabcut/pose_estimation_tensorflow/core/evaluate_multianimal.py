@@ -12,13 +12,9 @@ Licensed under GNU Lesser General Public License v3.0
 import os
 import pickle
 from pathlib import Path
-
 import numpy as np
 import pandas as pd
-import skimage.color
 from scipy.spatial import cKDTree
-from skimage import io
-from skimage.util import img_as_ubyte
 from tqdm import tqdm
 
 from deeplabcut.pose_estimation_tensorflow.core.evaluate import make_results_file
@@ -114,7 +110,12 @@ def evaluate_multianimal_full(
         predict,
         predict_multianimal as predictma,
     )
-    from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
+    from deeplabcut.utils import (
+        auxiliaryfunctions,
+        auxfun_multianimal,
+        auxfun_videos,
+        conversioncode,
+    )
 
     import tensorflow as tf
 
@@ -149,10 +150,8 @@ def evaluate_multianimal_full(
             "CollectedData_" + cfg["scorer"] + ".h5",
         )
     )
-    # Handle data previously annotated on a different platform
-    sep = "/" if "/" in Data.index[0] else "\\"
-    if sep != os.path.sep:
-        Data.index = Data.index.str.replace(sep, os.path.sep)
+    conversioncode.guarantee_multiindex_rows(Data)
+
     # Get list of body parts to evaluate network for
     comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
         cfg, comparisonbodyparts
@@ -310,11 +309,8 @@ def evaluate_multianimal_full(
                         conf = np.full_like(dist, np.nan)
                         print("Network Evaluation underway...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
-                            image_path = os.path.join(cfg["project_path"], imagename)
-                            image = io.imread(image_path)
-                            if image.ndim == 2 or image.shape[-1] == 1:
-                                image = skimage.color.gray2rgb(image)
-                            frame = img_as_ubyte(image)
+                            image_path = os.path.join(cfg["project_path"], *imagename)
+                            frame = auxfun_videos.imread(image_path, mode="skimage")
 
                             GT = Data.iloc[imageindex]
                             if not GT.any():
@@ -577,11 +573,9 @@ def evaluate_multianimal_full(
                         colors = visualization.get_cmap(n_animals, name=cfg["colormap"])
                         for k, v in tqdm(assemblies.items()):
                             imname = image_paths[k]
-                            image_path = os.path.join(cfg["project_path"], imname)
-                            image = io.imread(image_path)
-                            if image.ndim == 2 or image.shape[-1] == 1:
-                                image = skimage.color.gray2rgb(image)
-                            frame = img_as_ubyte(image)
+                            image_path = os.path.join(cfg["project_path"], *imname)
+                            frame = auxfun_videos.imread(image_path, mode="skimage")
+
                             h, w, _ = np.shape(frame)
                             fig.set_size_inches(w / 100, h / 100)
                             ax.set_xlim(0, w)
@@ -624,10 +618,18 @@ def evaluate_multianimal_full(
                             visualization.erase_artists(ax)
 
                     df = results[1].copy()
-                    df.loc(axis=0)[('mAP_train', 'mean')] = [d[0]['mAP'] for d in results[2]]
-                    df.loc(axis=0)[('mAR_train', 'mean')] = [d[0]['mAR'] for d in results[2]]
-                    df.loc(axis=0)[('mAP_test', 'mean')] = [d[1]['mAP'] for d in results[2]]
-                    df.loc(axis=0)[('mAR_test', 'mean')] = [d[1]['mAR'] for d in results[2]]
+                    df.loc(axis=0)[("mAP_train", "mean")] = [
+                        d[0]["mAP"] for d in results[2]
+                    ]
+                    df.loc(axis=0)[("mAR_train", "mean")] = [
+                        d[0]["mAR"] for d in results[2]
+                    ]
+                    df.loc(axis=0)[("mAP_test", "mean")] = [
+                        d[1]["mAP"] for d in results[2]
+                    ]
+                    df.loc(axis=0)[("mAR_test", "mean")] = [
+                        d[1]["mAR"] for d in results[2]
+                    ]
                     with open(data_path.replace("_full.", "_map."), "wb") as file:
                         pickle.dump((df, paf_scores), file)
 

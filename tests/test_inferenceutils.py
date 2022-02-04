@@ -2,11 +2,9 @@ import numpy as np
 import os
 import pickle
 import pytest
+from conftest import TEST_DATA_DIR
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
 from scipy.spatial.distance import squareform
-
-
-TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
 
 
 def test_conv_square_to_condensed_indices():
@@ -42,9 +40,12 @@ def test_calc_object_keypoint_similarity(real_assemblies):
     symmetric_pair = [0, 11]
     xy4[symmetric_pair] = xy4[symmetric_pair[::-1]]
     assert inferenceutils.calc_object_keypoint_similarity(xy1, xy4, sigma) != 1
-    assert inferenceutils.calc_object_keypoint_similarity(
-        xy1, xy4, sigma, symmetric_kpts=[symmetric_pair]
-    ) == 1
+    assert (
+        inferenceutils.calc_object_keypoint_similarity(
+            xy1, xy4, sigma, symmetric_kpts=[symmetric_pair]
+        )
+        == 1
+    )
 
 
 def test_match_assemblies(real_assemblies):
@@ -78,7 +79,7 @@ def test_evaluate_assemblies(real_assemblies):
         assemblies,
         assemblies,
         oks_thresholds=thresholds,
-        symmetric_kpts=[(0, 5), (1, 4)]
+        symmetric_kpts=[(0, 5), (1, 4)],
     )
     assert dict_["mAP"] == dict_["mAR"] == 1
     assert len(dict_["precisions"]) == len(dict_["recalls"]) == n_thresholds
@@ -112,7 +113,8 @@ def test_assembly():
     assert ass.data[j2.label, -1] == -1
     assert ass.area == 0
     assert ass.intersection_with(ass) == 1.0
-    assert np.all(np.isnan(ass._dict["data"]))
+    # Original (cached) coordinates must have remained empty
+    assert np.all(np.isnan(ass._dict["data"][:, :2]))
 
     ass.remove_joint(j2)
     assert len(ass) == 1
@@ -177,11 +179,7 @@ def test_assembler_with_single_bodypart(real_assemblies):
             "coordinates": (dict_["coordinates"][0][:1],),
             "confidence": dict_["confidence"][:1],
         }
-    ass = inferenceutils.Assembler(
-        data,
-        max_n_individuals=3,
-        n_multibodyparts=1,
-    )
+    ass = inferenceutils.Assembler(data, max_n_individuals=3, n_multibodyparts=1,)
     ass.metadata["joint_names"] = ass.metadata["joint_names"][:1]
     ass.metadata["num_joints"] = 1
     ass.metadata["paf_graph"] = []
@@ -198,11 +196,7 @@ def test_assembler_with_unique_bodypart(real_assemblies_montblanc):
     with open(os.path.join(TEST_DATA_DIR, "montblanc_full.pickle"), "rb") as file:
         data = pickle.load(file)
     ass = inferenceutils.Assembler(
-        data,
-        max_n_individuals=3,
-        n_multibodyparts=4,
-        pcutoff=0.1,
-        min_affinity=0.1,
+        data, max_n_individuals=3, n_multibodyparts=4, pcutoff=0.1, min_affinity=0.1,
     )
     assert len(ass.metadata["imnames"]) == 180
     assert ass.n_keypoints == 5
@@ -211,12 +205,14 @@ def test_assembler_with_unique_bodypart(real_assemblies_montblanc):
     assert len(ass.assemblies) == len(real_assemblies_montblanc[0])
     assert len(ass.unique) == len(real_assemblies_montblanc[1])
     assemblies = np.concatenate(
-        [ass.xy for assemblies in ass.assemblies.values()
-         for ass in assemblies]
+        [ass.xy for assemblies in ass.assemblies.values() for ass in assemblies]
     )
     assemblies_gt = np.concatenate(
-        [ass.xy for assemblies in real_assemblies_montblanc[0].values()
-         for ass in assemblies]
+        [
+            ass.xy
+            for assemblies in real_assemblies_montblanc[0].values()
+            for ass in assemblies
+        ]
     )
     np.testing.assert_equal(assemblies, assemblies_gt)
 
@@ -232,11 +228,7 @@ def test_assembler_with_identity(tmpdir_factory, real_assemblies):
             ids = [np.random.rand(c.shape[0], 3) for c in conf]
             v["identity"] = ids
 
-    ass = inferenceutils.Assembler(
-        data,
-        max_n_individuals=3,
-        n_multibodyparts=12,
-    )
+    ass = inferenceutils.Assembler(data, max_n_individuals=3, n_multibodyparts=12,)
     assert ass._has_identity
     assert len(ass.metadata["imnames"]) == 50
     assert ass.n_keypoints == 12
@@ -262,11 +254,7 @@ def test_assembler_with_identity(tmpdir_factory, real_assemblies):
     assert sum(1 for a in ass.assemblies.values() for _ in a) == sum(
         1 for a in real_assemblies.values() for _ in a
     )
-    assert all(
-        np.all(_.data[:, -1] != -1)
-        for a in ass.assemblies.values()
-        for _ in a
-    )
+    assert all(np.all(_.data[:, -1] != -1) for a in ass.assemblies.values() for _ in a)
 
     # Test now with identity only and ensure assemblies
     # contain only parts of a single group ID.
