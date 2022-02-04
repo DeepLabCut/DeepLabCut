@@ -48,4 +48,6 @@ individuals:
   - unicorn 6
 ```
 
-and change `topktoretain` in the `project-folder/..path-to-model../test/inference_cfg.yaml` to the max number of animals you want to track, e.g. `topktoretain: 5`.
+and change `topktoretain` in the `project-folder/..path-to-model../test/inference_cfg.yaml` to the max number of animals you want to track, e.g. `topktoretain: 6`.
+
+When running `stitch_tracklets` you will need to pass the correct number of animals in the `n_tracks` argument. 
