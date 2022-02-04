@@ -10,7 +10,7 @@ Licensed under GNU Lesser General Public License v3.0
 
 """
 Class to drag,annotate and remove the data points. Use left click to drag the data points
-around. Use right click to remove any unwanted data points. Internally the corresponding data
+around. Use middle click to remove any unwanted data points. Internally the corresponding data
 point is set to nan. When the user hovers the mouse over any data point, each data point is annotated with the labels and its corresponding likelihood. These annotations also move with the drag!
 """
 
@@ -83,7 +83,7 @@ class DraggablePoint:
             canvas.blit(axes.bbox)
         elif event.button == 2:
             """
-            To remove a predicted label. Internally, the coordinates of the selected predicted label is replaced with nan. The user needs to right click for the event.After right
+            To remove a predicted label. Internally, the coordinates of the selected predicted label is replaced with nan. The user needs to middle click for the event. After right
             click the data point is removed from the plot.
             """
             message = f"Do you want to remove the label {self.bodyParts}?"

@@ -42,5 +42,6 @@ class MainFrame(BaseFrame):
 
 def launch_dlc():
     app = wx.App()
+    app.locale = wx.Locale(wx.LANGUAGE_ENGLISH)
     frame = MainFrame().Show()
     app.MainLoop()

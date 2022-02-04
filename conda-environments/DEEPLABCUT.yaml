@@ -24,4 +24,4 @@ dependencies:
   - nb_conda
   - ffmpeg
   - pip:
-    - "deeplabcut[gui]==2.2rc3"
+    - "deeplabcut[gui]"

@@ -1,10 +1,10 @@
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 
 Please see AUTHORS for contributors.
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
@@ -18,7 +18,7 @@ from tqdm import tqdm
 
 
 def pairwisedistances(DataCombined, scorer1, scorer2, pcutoff=-1, bodyparts=None):
-    """ Calculates the pairwise Euclidean distance metric over body parts vs. images"""
+    """Calculates the pairwise Euclidean distance metric over body parts vs. images"""
     mask = DataCombined[scorer2].xs("likelihood", level=1, axis=1) >= pcutoff
     if bodyparts == None:
         Pointwisesquareddistance = (DataCombined[scorer1] - DataCombined[scorer2]) ** 2
@@ -191,7 +191,7 @@ def calculatepafdistancebounds(
 def Plotting(
     cfg, comparisonbodyparts, DLCscorer, trainIndices, DataCombined, foldername
 ):
-    """ Function used for plotting GT and predictions """
+    """Function used for plotting GT and predictions"""
     from deeplabcut.utils import visualization
 
     colors = visualization.get_cmap(len(comparisonbodyparts), name=cfg["colormap"])
@@ -495,13 +495,12 @@ def evaluate_network(
     config,
     Shuffles=[1],
     trainingsetindex=0,
-    plotting=None,
+    plotting=False,
     show_errors=True,
     comparisonbodyparts="all",
     gputouse=None,
     rescale=False,
     modelprefix="",
-    c_engine=False,
 ):
     """
 
@@ -520,8 +519,10 @@ def evaluate_network(
         Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml). This
         variable can also be set to "all".
 
-    plotting: bool, optional
-        Plots the predictions on the train and test images. The default is ``False``; if provided it must be either ``True`` or ``False``
+    plotting: bool or str, optional
+        Plots the predictions on the train and test images.
+        The default is ``False``; if provided it must be either ``True``, ``False``, "bodypart", or "individual".
+        Setting to ``True`` defaults as "bodypart" for multi-animal projects.
 
     show_errors: bool, optional
         Display train and test errors. The default is `True``
@@ -541,13 +542,22 @@ def evaluate_network(
 
     Examples
     --------
-    If you do not want to plot
+    If you do not want to plot, just evalute shuffle 1.
     >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml', Shuffles=[1])
     --------
-    If you want to plot
-    >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml',Shuffles=[1],True)
+    If you want to plot and evaluate shuffle 0 and 1.
+    >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml',Shuffles=[0, 1],plotting = True)
+
+    --------
+    If you want to plot assemblies for a maDLC project:
+    >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml',Shuffles=[1],plotting = "individual")
+
+    Note: this defaults to standard plotting for single-animal projects.
 
     """
+    if plotting not in (True, False, "bodypart", "individual"):
+        raise ValueError(f"Unknown value for `plotting`={plotting}")
+
     import os
 
     start_path = os.getcwd()
@@ -567,17 +577,17 @@ def evaluate_network(
             comparisonbodyparts=comparisonbodyparts,
             gputouse=gputouse,
             modelprefix=modelprefix,
-            c_engine=c_engine,
         )
     else:
         from deeplabcut.utils.auxfun_videos import imread, imresize
         from deeplabcut.pose_estimation_tensorflow.core import predict
         from deeplabcut.pose_estimation_tensorflow.config import load_config
-        from deeplabcut.pose_estimation_tensorflow.datasets.utils import (
-            data_to_input,
-        )
-        from deeplabcut.utils import auxiliaryfunctions
+        from deeplabcut.pose_estimation_tensorflow.datasets.utils import data_to_input
+        from deeplabcut.utils import auxiliaryfunctions, conversioncode
         import tensorflow as tf
+
+        # If a string was passed in, auto-convert to True for backward compatibility
+        plotting = bool(plotting)
 
         if "TF_CUDNN_USE_AUTOTUNE" in os.environ:
             del os.environ[
@@ -621,8 +631,10 @@ def evaluate_network(
         )
 
         # Get list of body parts to evaluate network for
-        comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
-            cfg, comparisonbodyparts
+        comparisonbodyparts = (
+            auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
+                cfg, comparisonbodyparts
+            )
         )
         # Make folder for evaluation
         auxiliaryfunctions.attempttomakefolder(
@@ -729,6 +741,7 @@ def evaluate_network(
                 else:
                     scale = 1
 
+                conversioncode.guarantee_multiindex_rows(Data)
                 ##################################################
                 # Compute predictions over images
                 ##################################################
@@ -753,7 +766,7 @@ def evaluate_network(
                     print(
                         "Running ",
                         DLCscorer,
-                        " with # of trainingiterations:",
+                        " with # of training iterations:",
                         trainingsiterations,
                     )
                     (
@@ -773,10 +786,11 @@ def evaluate_network(
                         PredicteData = np.zeros(
                             (Numimages, 3 * len(dlc_cfg["all_joints_names"]))
                         )
-                        print("Analyzing data...")
+                        print("Running evaluation ...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
                             image = imread(
-                                os.path.join(cfg["project_path"], imagename), mode="RGB"
+                                os.path.join(cfg["project_path"], *imagename),
+                                mode="skimage",
                             )
                             if scale != 1:
                                 image = imresize(image, scale)
@@ -813,14 +827,12 @@ def evaluate_network(
 
                         # Saving results
                         DataMachine = pd.DataFrame(
-                            PredicteData, columns=index, index=Data.index.values
+                            PredicteData, columns=index, index=Data.index
                         )
-                        DataMachine.to_hdf(
-                            resultsfilename, "df_with_missing", format="table", mode="w"
-                        )
+                        DataMachine.to_hdf(resultsfilename, "df_with_missing")
 
                         print(
-                            "Done and results stored for snapshot: ",
+                            "Analysis is done and the results are stored (see evaluation-results) for snapshot: ",
                             Snapshots[snapindex],
                         )
                         DataCombined = pd.concat(
@@ -910,6 +922,7 @@ def evaluate_network(
                         # print(final_result)
                     else:
                         DataMachine = pd.read_hdf(resultsfilename)
+                        conversioncode.guarantee_multiindex_rows(DataMachine)
                         if plotting:
                             DataCombined = pd.concat(
                                 [Data.T, DataMachine.T], axis=0, sort=False
@@ -940,10 +953,10 @@ def evaluate_network(
                         "The network is evaluated and the results are stored in the subdirectory 'evaluation_results'."
                     )
                     print(
-                        "If it generalizes well, choose the best model for prediction and update the config file with the appropriate index for the 'snapshotindex'.\nUse the function 'analyze_video' to make predictions on new videos."
+                        "Please check the results, then choose the best model (snapshot) for prediction. You can update the config.yaml file with the appropriate index for the 'snapshotindex'.\nUse the function 'analyze_video' to make predictions on new videos."
                     )
                     print(
-                        "Otherwise consider retraining the network (see DeepLabCut workflow Fig 2)"
+                        "Otherwise, consider adding more labeled-data and retraining the network (see DeepLabCut workflow Fig 2, Nath 2019)"
                     )
 
     # returning to intial folder

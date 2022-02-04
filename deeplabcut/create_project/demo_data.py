@@ -17,18 +17,22 @@ from deeplabcut.utils import auxiliaryfunctions
 
 def load_demo_data(config, createtrainingset=True):
     """
-  Loads the demo data. Make sure that you are in the same directory where you have downloaded or cloned the deeplabcut.
+    Loads the demo data -- subset from trail-tracking data in Mathis et al. 2018. 
+    When loading, it sets paths correctly to run this project on your system
+    
+    Parameter
+      ----------
+      config : string
+          Full path of the config.yaml file of the provided demo dataset as a string.
 
-  Parameter
-    ----------
-    config : string
-        Full path of the config.yaml file of the provided demo dataset as a string.
-
-    Example
-    --------
-    >>> deeplabcut.load_demo_data('config.yaml')
-    --------
-  """
+      createtrainingset : bool 
+          Boolean variable indicating if a training set shall be created. 
+          
+      Example
+      --------
+      >>> deeplabcut.load_demo_data('config.yaml')
+      --------
+    """
     config = Path(config).resolve()
     config = str(config)
 

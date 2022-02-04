@@ -31,6 +31,7 @@ class Create_training_dataset(wx.Panel):
         # variable initilization
         self.method = "automatic"
         self.config = cfg
+        self.cfg = auxiliaryfunctions.read_config(self.config)
         # design the panel
         self.sizer = wx.GridBagSizer(5, 5)
 
@@ -89,17 +90,16 @@ class Create_training_dataset(wx.Panel):
             "dlcrnet_ms5",
             "resnet_50",
             "resnet_101",
-            "resnet_152",
             "mobilenet_v2_1.0",
-            "mobilenet_v2_0.75",
-            "mobilenet_v2_0.5",
-            "mobilenet_v2_0.35",
             "efficientnet-b0",
-            "efficientnet-b3",
-            "efficientnet-b6",
         ]
         self.net_choice.Set(options)
-        self.net_choice.SetValue("dlcrnet_ms5")
+        
+        if self.cfg.get("multianimalproject", False):
+            self.net_choice.SetValue("dlcrnet_ms5")
+        else:
+            self.net_choice.SetValue("resnet_50")
+
         netboxsizer.Add(self.net_choice, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
         aug_text = wx.StaticBox(self, label="Select the augmentation method")
@@ -120,12 +120,12 @@ class Create_training_dataset(wx.Panel):
         self.shuffle = wx.SpinCtrl(self, value="1", min=1, max=100)
         shuffle_text_boxsizer.Add(self.shuffle, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
-        trainingindex_box = wx.StaticBox(self, label="Specify the trainingset index")
-        trainingindex_boxsizer = wx.StaticBoxSizer(trainingindex_box, wx.VERTICAL)
-        self.trainingindex = wx.SpinCtrl(self, value="0", min=0, max=100)
-        trainingindex_boxsizer.Add(
-            self.trainingindex, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
-        )
+        #trainingindex_box = wx.StaticBox(self, label="Specify the trainingset index")
+        #trainingindex_boxsizer = wx.StaticBoxSizer(trainingindex_box, wx.VERTICAL)
+        #self.trainingindex = wx.SpinCtrl(self, value="0", min=0, max=100)
+        #trainingindex_boxsizer.Add(
+        #    self.trainingindex, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
+        #)
 
         self.userfeedback = wx.RadioBox(
             self,
@@ -136,47 +136,14 @@ class Create_training_dataset(wx.Panel):
         )
         self.userfeedback.SetSelection(1)
 
-        if config_file.get("multianimalproject", False):
-
-            self.cropandlabel = wx.RadioBox(
-                self,
-                label="Crop and Label Data (Yes is required, set crop values)",
-                choices=["Yes", "No"],
-                majorDimension=1,
-                style=wx.RA_SPECIFY_COLS,
-            )
-            self.cropandlabel.Bind(wx.EVT_RADIOBOX, self.input_crop_size)
-            self.cropandlabel.SetSelection(0)
-            self.crop_text = wx.StaticBox(
-                self, label="Crop settings (set to smaller than your input images)"
-            )
-            self.crop_sizer = wx.StaticBoxSizer(self.crop_text, wx.VERTICAL)
-            self.crop_widgets = []
-            for name, val in [
-                ("# of crops", "10"),
-                ("height", "400"),
-                ("width", "400"),
-            ]:
-                temp_sizer = wx.BoxSizer(wx.HORIZONTAL)
-                label = wx.StaticText(self, label=name)
-                text = wx.TextCtrl(self, value=val)
-                self.crop_widgets.append([label, text])
-                temp_sizer.Add(label, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-                temp_sizer.Add(text, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
-                self.crop_sizer.Add(temp_sizer)
-            self.crop_sizer.ShowItems(True)
-            self.hbox3.Add(self.cropandlabel, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-            self.hbox3.Add(self.crop_sizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-
         self.hbox2.Add(shuffle_text_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-        self.hbox2.Add(trainingindex_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        #self.hbox2.Add(trainingindex_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
-        self.hbox3.Add(self.userfeedback, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        self.hbox2.Add(self.userfeedback, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         if config_file.get("multianimalproject", False):
 
             self.model_comparison_choice = "No"
-            print("currently DLCRNet is only supported in multi-animal mode")
         else:
             self.model_comparison_choice = wx.RadioBox(
                 self,
@@ -291,13 +258,6 @@ class Create_training_dataset(wx.Panel):
         self.sizer.Fit(self)
         self.Layout()
 
-    def input_crop_size(self, event):
-        if self.cropandlabel.GetStringSelection() == "No":
-            self.crop_sizer.ShowItems(False)
-        else:
-            self.crop_sizer.ShowItems(True)
-        self.SetSizer(self.sizer)
-
     def on_focus(self, event):
         pass
 
@@ -360,7 +320,7 @@ class Create_training_dataset(wx.Panel):
         """
         num_shuffles = self.shuffle.GetValue()
         config_file = auxiliaryfunctions.read_config(self.config)
-        trainindex = self.trainingindex.GetValue()
+        #trainindex = self.trainingindex.GetValue()
 
         if self.userfeedback.GetStringSelection() == "Yes":
             userfeedback = True
@@ -368,15 +328,6 @@ class Create_training_dataset(wx.Panel):
             userfeedback = False
 
         if config_file.get("multianimalproject", False):
-            if self.cropandlabel.GetStringSelection() == "Yes":
-                n_crops, height, width = [
-                    int(text.GetValue()) for _, text in self.crop_widgets
-                ]
-                deeplabcut.cropimagesandlabels(
-                    self.config, n_crops, (height, width), userfeedback
-                )
-            else:
-                random = False
             deeplabcut.create_multianimaltraining_dataset(
                 self.config,
                 num_shuffles,
@@ -411,7 +362,7 @@ class Create_training_dataset(wx.Panel):
         self.sel_config.SetPath("")
         # self.shuffles.SetValue("1")
         self.net_choice.SetValue("resnet_50")
-        self.aug_choice.SetValue("default")
+        self.aug_choice.SetValue("imgaug")
         self.model_comparison_choice.SetSelection(1)
         self.network_box.Hide()
         self.networks_to_compare.Hide()
