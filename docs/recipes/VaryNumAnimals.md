@@ -1,22 +1,6 @@
-<!-- 
+# Varying the number of animals in multi-animal DeepLabCut
 
-Comments from Mack + Alex:
---------------------------
-
-- having gifs of examples is important here too. 
-- also recipes should include GUI use, and links to other steps (ie put a link to more details on “analyze_videos” etc! 
-
-
-Questions:
-----------
-- should links direct to code or other tutorials?
-- auto_track=True doesn't work for different num of animals right?
-
--->
-
-# maDLC: Varying the number of animals
-
-In case you have videos of the same experimental setting where the number of animals is changing between videos, DLC can deal with that like a champ. 
+In case you have videos of the same experimental setting where the number of animals is changing between videos, DeepLabCut can deal with that like a champ. 
 
 ## In case of a new project
 
@@ -55,6 +39,9 @@ If you run [`analyze_videos`](https://deeplabcut.github.io/DeepLabCut/docs/maDLC
 When running [`stitch_tracklets`](https://deeplabcut.github.io/DeepLabCut/docs/maDLC_UserGuide.html#optimized-animal-assembly-video-analysis) you will need to pass the correct number of animals in the `n_tracks` argument. 
 
 
+
+In both cases, bear in mind that the `auto_track=True` argument available in `analyze_videos` since the [2.2.0.3 release](https://github.com/DeepLabCut/DeepLabCut/releases/tag/v2.2.0.3) will not work when dealing with a varying number of animals.
+
 ---
 
-For more details and advice on the complete pipeline of a multi-animal DLC project, check out the [maDLC user guide](https://deeplabcut.github.io/DeepLabCut/docs/maDLC_UserGuide.html).
+For more details and advice on the complete pipeline of a multi-animal DeepLabCut project, check out the [user guide](https://deeplabcut.github.io/DeepLabCut/docs/maDLC_UserGuide.html).

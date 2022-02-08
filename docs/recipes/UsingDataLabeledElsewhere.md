@@ -1,10 +1,10 @@
-# Using data labeled in other software in DLC
+# Using data labeled in other software in DeepLabCut
 
-You may have annotation data in different formats, yet want to use the DLC pipeline. In this case, you need to convert the data to our format. Simply, you can format your data in an excel sheet (.csv file) or pandas array (.h5 file).
+You may have annotation data in different formats, yet want to use the DeepLabCut pipeline. In this case, you need to convert the data to our format. Simply, you can format your data in an excel sheet (.csv file) or pandas array (.h5 file).
 
 Here is a guide to do this via the ".csv" route: (the pandas array route is identical, just format the pandas array in the same way).
 
-1. Create a project as describe in our [single animal](https://deeplabcut.github.io/DeepLabCut/docs/standardDeepLabCut_UserGuide.html) and [multi-animal](https://deeplabcut.github.io/DeepLabCut/docs/maDLC_UserGuide.html) user guides. <br><br>
+1. Create a project as described in our [single animal](https://deeplabcut.github.io/DeepLabCut/docs/standardDeepLabCut_UserGuide.html) and [multi-animal](https://deeplabcut.github.io/DeepLabCut/docs/maDLC_UserGuide.html) user guides. <br><br>
 
 2. Edit the `config.yaml` file to include the body part names. Please take care that spelling, spacing, and capitalization are **identical** to the "labeled data body part names". <br><br>
 
