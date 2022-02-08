@@ -1,6 +1,7 @@
 <!-- 
 
 Comments from Mack + Alex:
+--------------------------
 
 - having gifs of examples is important here too. 
 - also recipes should include GUI use, and links to other steps (ie put a link to more details on “analyze_videos” etc! 
