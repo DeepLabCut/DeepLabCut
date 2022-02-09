@@ -10,9 +10,19 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import setuptools
+from pathlib import Path
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
+
+requirements = []
+root = Path(__file__).parent
+filename = str(root / "requirements.txt")
+with open(filename) as f:
+    for line in f:
+        stripped = line.split("#")[0].strip()
+        if len(stripped) > 0:
+            requirements.append(stripped)
 
 setuptools.setup(
     name="deeplabcut",
@@ -23,29 +33,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/DeepLabCut/DeepLabCut",
-    install_requires=[
-        "ipython",
-        "filterpy",
-        "ruamel.yaml>=0.15.0",
-        "imgaug>=0.4.0",
-        "numba",
-        "matplotlib",
-        "networkx",
-        "numpy",
-        "pandas>=1.0.1",
-        "scikit-image>=0.17,<=0.18.1",
-        "scikit-learn",
-        "scipy>=1.4",
-        "statsmodels>=0.11",
-        "tables<=3.6.1",
-        "tensorflow>=2.0",
-        "tensorpack",
-        "tf_slim",
-        "tqdm",
-        "moviepy",
-        "pyyaml",
-        "Pillow>=7.1",
-    ],
+    install_requires=requirements,
     extras_require={"gui": ["wxpython<4.1"]},
     scripts=["deeplabcut/pose_estimation_tensorflow/models/pretrained/download.sh"],
     packages=setuptools.find_packages(),
