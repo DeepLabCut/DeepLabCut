@@ -276,25 +276,23 @@ class ScrollPanel(QFrame):
         slider_vbox.addLayout(slider_hbox)
         slider_vbox.addWidget(self.label)
 
-
-
-
-        #self.slider.setEnabled(False)
+        self.slider.setEnabled(False)
         self.choiceBox.addLayout(slider_vbox)
-        print("slider")
+
+        self.checkBox = QCheckBox("Adjust marker size")
+        self.choiceBox.addWidget(self.checkBox)
 
         self.btngroup = QButtonGroup()
         choices = [l for l in bodyparts]
         fieldrbns_text = QtWidgets.QLabel("Select a bodypart to label")
+        fieldrbns_text.setContentsMargins(0,20,0,0)
         self.choiceBox.addWidget(fieldrbns_text)
         self.fieldradiobox = dict()
         for l in bodyparts:
             self.fieldradiobox[l] = QtWidgets.QRadioButton(l)
             self.btngroup.addButton(self.fieldradiobox[l])
             self.choiceBox.addWidget(self.fieldradiobox[l])
-        print("box")
 
-        self.checkBox = None
 
         # self.slider = wx.Slider(
         #     self,
@@ -649,8 +647,9 @@ class MainFrame(QMainWindow):
             ) = self.choice_panel.addRadioButtons(
                 self.bodyparts, self.file, self.markerSize
             )
-            '''
+
             self.buttonCounter = MainFrame.plot(self, self.img)
+            '''
             self.cidClick = self.canvas.mpl_connect("button_press_event", self.onClick)
             self.canvas.mpl_connect("button_release_event", self.onButtonRelease)
         else:
@@ -703,6 +702,53 @@ class MainFrame(QMainWindow):
         # self.slider.Bind(wx.EVT_SLIDER, self.OnSliderScroll)
 
 '''
+    def getLabels(self, img_index):
+        """
+        Returns a list of x and y labels of the corresponding image index
+        """
+        self.previous_image_points = []
+        for bpindex, bp in enumerate(self.bodyparts):
+            image_points = [
+                [
+                    self.dataFrame[self.scorer][bp]["x"].values[self.iter],
+                    self.dataFrame[self.scorer][bp]["y"].values[self.iter],
+                    bp,
+                    bpindex,
+                ]
+            ]
+            self.previous_image_points.append(image_points)
+        return self.previous_image_points
+    def plot(self, img):
+        """
+        Plots and call auxfun_drag class for moving and removing points.
+        """
+        self.drs = []
+        self.updatedCoords = []
+        for bpindex, bp in enumerate(self.bodyparts):
+            color = self.colormap(self.norm(self.colorIndex[bpindex]))
+            self.points = [
+                self.dataFrame[self.scorer][bp]["x"].values[self.iter],
+                self.dataFrame[self.scorer][bp]["y"].values[self.iter],
+            ]
+            circle = [
+                patches.Circle(
+                    (self.points[0], self.points[1]),
+                    radius=self.markerSize,
+                    fc=color,
+                    alpha=self.alpha,
+                )
+            ]
+            self.axes.add_patch(circle[0])
+            self.dr = auxfun_drag.DraggablePoint(circle[0], self.bodyparts[bpindex])
+            self.dr.connect()
+            self.dr.coords = MainFrame.getLabels(self, self.iter)[bpindex]
+            self.drs.append(self.dr)
+            self.updatedCoords.append(self.dr.coords)
+            if not np.isnan(self.points)[0]:
+                self.buttonCounter.append(bpindex)
+        self.figure.canvas.draw()
+
+        return self.buttonCounter
 
 
 
