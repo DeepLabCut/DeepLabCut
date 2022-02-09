@@ -293,24 +293,7 @@ class ScrollPanel(QFrame):
             self.btngroup.addButton(self.fieldradiobox[l])
             self.choiceBox.addWidget(self.fieldradiobox[l])
 
-
-        # self.slider = wx.Slider(
-        #     self,
-        #     -1,
-        #     markersize,
-        #     1,
-        #     markersize * 3,
-        #     size=(250, -1),
-        #     style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS,
-        # )
-        # self.slider.Enable(False)
-        # self.checkBox = wx.CheckBox(self, id=wx.ID_ANY, label="Adjust marker size.")
-        # self.choiceBox.Add(self.slider, 0, wx.ALL, 5)
-        # self.choiceBox.Add(self.checkBox, 0, wx.ALL, 5)
-        # self.choiceBox.Add(self.fieldradiobox, 0, wx.EXPAND | wx.ALL, 10)
-        # self.SetSizerAndFit(self.choiceBox)
-        # self.Layout()
-        return (self.choiceBox, self.fieldradiobox, self.slider, self.checkBox)
+        return (self.choiceBox, self.btngroup, self.slider, self.checkBox)
 
     def setvalue(self):
         self.label.setText(str(self.slider.value()))
@@ -330,7 +313,6 @@ class MainFrame(QMainWindow):
         size = self.size()
         self.imtypes = imtypes
 
-        #
         # self.logo_dir = os.path.dirname(os.path.realpath('logo.png')) + os.path.sep
         # self.logo = self.logo_dir + '/pictures/logo.png'
         # self.setWindowIcon(QIcon(self.logo))
@@ -341,16 +323,15 @@ class MainFrame(QMainWindow):
 
         centralWidget = QWidget(self)
         hbox = QHBoxLayout()
-        # # self.image_panel = ImagePanel(
-        # #     config, config3d, sourceCam, self.gui_size
-        # # )
+        # self.image_panel = ImagePanel(
+        #     config, config3d, sourceCam, self.gui_size
+        # )
         self.image_panel = ImagePanel(
             self, config, config3d, sourceCam
         )
 
         self.image_panel.setFrameShape(QFrame.StyledPanel)
         self.image_panel.setMinimumWidth(size.width()*0.75)
-        #self.image_panel.setMaximumWidth(size.width()*0.8)
         self.image_panel.setMinimumHeight(size.height() * 0.75)
 
 
@@ -405,6 +386,7 @@ class MainFrame(QMainWindow):
 
         self.zoom = QtWidgets.QPushButton('Zoom')  ###
         self.l_btns.addWidget(self.zoom, alignment=Qt.AlignCenter)
+        self.zoom.setCheckable(True)
         self.zoom.setEnabled(False)
         # self.zoom.clicked.connect(self.zoomButton)
 
@@ -415,8 +397,9 @@ class MainFrame(QMainWindow):
 
         self.pan = QtWidgets.QPushButton('Pan')
         self.l_btns.addWidget(self.pan, alignment=Qt.AlignCenter)
+        self.pan.setCheckable(True)
         self.pan.setEnabled(False)
-        # self.pan.clicked.connect(self.panButton)
+        self.pan.clicked.connect(self.panButton)
 
         self.lock = QCheckBox("Lock View")
         self.l_btns.addWidget(self.lock, alignment=Qt.AlignCenter)
@@ -464,8 +447,78 @@ class MainFrame(QMainWindow):
         ):
             self.updateZoomPan()
             self.statusbar.SetStatusText("Zoom Off")
+
+    def panButton(self):
+        print(self.pan.isChecked())
+        if self.pan.isChecked():
+            self.toolbar.pan()
+            #self.statusbar.SetStatusText("Pan On")
+            self.zoom.setChecked(False)
+        else:
+            self.toolbar.pan()
+            #self.statusbar.SetStatusText("Pan Off")
+
     ###############################################################################################################################
     # BUTTONS FUNCTIONS FOR HOTKEYS
+
+    def onButtonRelease(self, event):
+        if self.pan.isChecked():
+            self.updateZoomPan()
+            #self.statusbar.SetStatusText("Pan Off")
+
+    def onClick(self, event):
+        """
+        This function adds labels and auto advances to the next label.
+        """
+        x1 = event.xdata
+        y1 = event.ydata
+
+        print("self.rdb.checkedId() = ",self.rdb.checkedId())
+        rbn_id = abs(self.rdb.checkedId()+2)
+        print('rbn_id = ', rbn_id)
+        if event.button == 3:
+            if rbn_id in self.buttonCounter:
+                msg = QtWidgets.QMessageBox()
+                msg.setIcon(QtWidgets.QMessageBox.Critical)
+                msg.setText("%s is already annotated. \n Select another body part to annotate."
+                    % (str(self.bodyparts[rbn_id])))
+                msg.setWindowTitle("Error")
+                msg.setMinimumWidth(300)
+                msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+                msg.exec_()
+
+            else:
+                color = self.colormap(
+                    self.norm(self.colorIndex[rbn_id])
+                )
+                circle = [
+                    patches.Circle(
+                        (x1, y1), radius=self.markerSize, fc=color, alpha=self.alpha
+                    )
+                ]
+                self.num.append(circle)
+                self.axes.add_patch(circle[0])
+                self.dr = auxfun_drag.DraggablePoint(
+                    circle[0], self.bodyparts[rbn_id]
+                )
+                self.dr.connect()
+                self.buttonCounter.append(rbn_id)
+                self.dr.coords = [
+                    [
+                        x1,
+                        y1,
+                        self.bodyparts[rbn_id],
+                        self.rdb.checkedId(),
+                    ]
+                ]
+                self.drs.append(self.dr)
+                self.updatedCoords.append(self.dr.coords)
+                if self.rdb.checkedId() < len(self.bodyparts) - 1:
+                    self.rdb.setId(self.rdb.button(self.rdb.checkedId()),self.rdb.checkedId() - 1)
+                self.figure.canvas.draw()
+
+        self.canvas.mpl_disconnect(self.onClick)
+        self.canvas.mpl_disconnect(self.onButtonRelease)
 
     def browseDir(self):
         """
@@ -503,8 +556,6 @@ class MainFrame(QMainWindow):
         self.colormap = self.colormap.reversed()
         self.project_path = self.cfg["project_path"]
 
-        print("self.bodyparts: ", self.bodyparts)
-
         imlist = []
 
         for imtype in self.imtypes:
@@ -515,10 +566,8 @@ class MainFrame(QMainWindow):
                     if ("labeled.png" not in fn)
                 ]
             )
-        print("imlist = ", imlist)
         if len(imlist) == 0:
             print("No images found!!")
-        print("self.imtypes: ", self.imtypes)
 
         self.index = np.sort(imlist)
         # self.statusbar.SetStatusText(
@@ -565,9 +614,6 @@ class MainFrame(QMainWindow):
         self.norm, self.colorIndex = self.image_panel.getColorIndices(
             self.img, self.bodyparts, self.dir
         )
-        print("self.img: ", self.img)
-        print("self.norm: ", self.norm)
-        print("self.bodyparts: ", self.bodyparts)
 
         # Checking for new frames and adding them to the existing dataframe
         old_imgs = np.sort(list(self.dataFrame.index))
@@ -649,8 +695,9 @@ class MainFrame(QMainWindow):
             )
 
             self.buttonCounter = MainFrame.plot(self, self.img)
-            '''
             self.cidClick = self.canvas.mpl_connect("button_press_event", self.onClick)
+            print("self.buttonCounter: ",self.buttonCounter)
+            '''
             self.canvas.mpl_connect("button_release_event", self.onButtonRelease)
         else:
             # dlg = wx.MessageDialog(
