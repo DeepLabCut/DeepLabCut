@@ -327,10 +327,7 @@ def analyze_videos(
     ##################################################
     # Looping over videos
     ##################################################
-    print(1)
     Videos = auxiliaryfunctions.Getlistofvideos(videos, videotype)
-    print(2)
-    print(len(Videos))
     if len(Videos) > 0:
         if "multi-animal" in dlc_cfg["dataset_type"]:
             from deeplabcut.pose_estimation_tensorflow.predict_multianimal import (
@@ -338,7 +335,6 @@ def analyze_videos(
             )
 
             for video in Videos:
-                print(3)
                 AnalyzeMultiAnimalVideo(
                     video,
                     DLCscorer,
@@ -574,7 +570,6 @@ def GetPoseS_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
 
 def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
     """Batchwise prediction of pose"""
-    print("~~~~~~~~~~~~~~~~~~~~~~~")
     PredictedData = np.zeros((nframes, 3 * len(dlc_cfg["all_joints_names"])))
     batch_ind = 0  # keeps track of which image within a batch should be written to
     batch_num = 0  # keeps track of which batch you are at
@@ -770,7 +765,7 @@ def AnalyzeVideo(
 
         dynamic_analysis_state, detectiontreshold, margin = dynamic
         start = time.time()
-        print("Starting to extract posture 1")
+        print("Starting to extract posture")
         if dynamic_analysis_state:
             PredictedData, nframes = GetPoseDynamic(
                 cfg,
@@ -852,8 +847,8 @@ def AnalyzeVideo(
             range(nframes),
             save_as_csv,
         )
-    # finally:
-    return DLCscorer
+    finally:
+        return DLCscorer
 
 
 def GetPosesofFrames(
@@ -862,7 +857,7 @@ def GetPosesofFrames(
     """Batchwise prediction of pose for frame list in directory"""
     from deeplabcut.utils.auxfun_videos import imread
 
-    print("Starting to extract posture 2")
+    print("Starting to extract posture")
     im = imread(os.path.join(directory, framelist[0]), mode="skimage")
 
     ny, nx, nc = np.shape(im)
