@@ -305,7 +305,7 @@ def analyze_videos(
     else:
         xyz_labs = ["x", "y", "likelihood"]
 
-    # use_openvino = False
+    use_openvino = False
     if use_openvino:
         sess, inputs, outputs = predict.setup_openvino_pose_prediction(
             dlc_cfg
@@ -787,7 +787,6 @@ def AnalyzeVideo(
         else:
             if int(dlc_cfg["batch_size"]) > 1:
                 if TFGPUinference:
-                    print(13)
                     PredictedData, nframes = GetPoseF_GTF(
                         cfg,
                         dlc_cfg,
@@ -798,9 +797,7 @@ def AnalyzeVideo(
                         nframes,
                         int(dlc_cfg["batch_size"]),
                     )
-                    print(14)
                 else:
-                    print(12)
                     PredictedData, nframes = GetPoseF(
                         cfg,
                         dlc_cfg,
@@ -813,12 +810,10 @@ def AnalyzeVideo(
                     )
             else:
                 if TFGPUinference:
-                    print(11)
                     PredictedData, nframes = GetPoseS_GTF(
                         cfg, dlc_cfg, sess, inputs, outputs, cap, nframes
                     )
                 else:
-                    print(22)
                     PredictedData, nframes = GetPoseS(
                         cfg, dlc_cfg, sess, inputs, outputs, cap, nframes
                     )
@@ -1096,8 +1091,6 @@ def analyze_time_lapse_frames(
         trainingsiterations=trainingsiterations,
         modelprefix=modelprefix,
     )
-    print("here 1")
-    exit()
     sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
 
     # update number of outputs and adjust pandas indices

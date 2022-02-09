@@ -304,12 +304,10 @@ def create_pretrained_project(
         MakeTest_pose_yaml(pose_cfg, keys2save, path_test_config)
 
         video_dir = os.path.join(config["project_path"], "videos")
-        print("start <<<<")
         if analyzevideo == True:
+            print("Analyzing video...")
             deeplabcut.analyze_videos(cfg, [video_dir], videotype, save_as_csv=True)
 
-        print("finish <<<<")
-        exit()
         if createlabeledvideo == True:
             if filtered:
                 deeplabcut.filterpredictions(cfg, [video_dir], videotype)

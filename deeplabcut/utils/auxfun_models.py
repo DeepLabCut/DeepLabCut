@@ -128,19 +128,18 @@ def DownloadModel(modelname, target_dir):
         )
     )
     if modelname in neturls.keys():
-        pass
-        # url = neturls[modelname]
-        # response = urllib.request.urlopen(url)
-        # print(
-        #     "Downloading the model from the DeepLabCut server @Harvard -> Go Crimson!!! {}....".format(
-        #         url
-        #     )
-        # )
-        # total_size = int(response.getheader("Content-Length"))
-        # pbar = tqdm(unit="B", total=total_size, position=0)
-        # filename, _ = urllib.request.urlretrieve(url, reporthook=show_progress)
-        # with tarfile.open(filename, mode="r:gz") as tar:
-        #     tar.extractall(target_dir, members=tarfilenamecutting(tar))
+        url = neturls[modelname]
+        response = urllib.request.urlopen(url)
+        print(
+            "Downloading the model from the DeepLabCut server @Harvard -> Go Crimson!!! {}....".format(
+                url
+            )
+        )
+        total_size = int(response.getheader("Content-Length"))
+        pbar = tqdm(unit="B", total=total_size, position=0)
+        filename, _ = urllib.request.urlretrieve(url, reporthook=show_progress)
+        with tarfile.open(filename, mode="r:gz") as tar:
+            tar.extractall(target_dir, members=tarfilenamecutting(tar))
     else:
         models = [
             fn
