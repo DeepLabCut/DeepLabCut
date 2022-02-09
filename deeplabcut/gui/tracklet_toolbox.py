@@ -416,7 +416,7 @@ class TrackletVisualizer:
                     ] = ~self.manager.tracklet_swaps[self.picked_pair][self.cuts]
                     self.fill_shaded_areas()
                     self.cuts = []
-                    self.ax_slider.lines = []
+                    self.ax_slider.lines.clear()
         elif event.key == "backspace":
             if not self.dps:  # Last flag deletion
                 try:
@@ -508,7 +508,7 @@ class TrackletVisualizer:
                 if len(self.cuts) > 1:
                     mask[self.cuts[-2] : self.cuts[-1] + 1] = True
                     self.cuts = []
-                    self.ax_slider.lines = []
+                    self.ax_slider.lines.clear()
                     self.clean_collections()
                 else:
                     return
