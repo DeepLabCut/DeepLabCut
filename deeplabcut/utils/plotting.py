@@ -231,7 +231,9 @@ def plot_trajectories(
 
     """
     cfg = auxiliaryfunctions.read_config(config)
+    print(track_method)
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
+    exit()
 
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(

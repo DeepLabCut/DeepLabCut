@@ -62,6 +62,7 @@ def analyze_videos(
     n_tracks=None,
     calibrate=False,
     identity_only=False,
+    use_openvino=True,
 ):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
@@ -304,7 +305,12 @@ def analyze_videos(
     else:
         xyz_labs = ["x", "y", "likelihood"]
 
-    if TFGPUinference:
+    # use_openvino = False
+    if use_openvino:
+        sess, inputs, outputs = predict.setup_openvino_pose_prediction(
+            dlc_cfg
+        )
+    elif TFGPUinference:
         sess, inputs, outputs = predict.setup_GPUpose_prediction(
             dlc_cfg, allow_growth=allow_growth
         )
@@ -321,7 +327,10 @@ def analyze_videos(
     ##################################################
     # Looping over videos
     ##################################################
+    print(1)
     Videos = auxiliaryfunctions.Getlistofvideos(videos, videotype)
+    print(2)
+    print(len(Videos))
     if len(Videos) > 0:
         if "multi-animal" in dlc_cfg["dataset_type"]:
             from deeplabcut.pose_estimation_tensorflow.predict_multianimal import (
@@ -329,6 +338,7 @@ def analyze_videos(
             )
 
             for video in Videos:
+                print(3)
                 AnalyzeMultiAnimalVideo(
                     video,
                     DLCscorer,
@@ -564,6 +574,7 @@ def GetPoseS_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
 
 def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
     """Batchwise prediction of pose"""
+    print("~~~~~~~~~~~~~~~~~~~~~~~")
     PredictedData = np.zeros((nframes, 3 * len(dlc_cfg["all_joints_names"])))
     batch_ind = 0  # keeps track of which image within a batch should be written to
     batch_num = 0  # keeps track of which batch you are at
@@ -759,7 +770,7 @@ def AnalyzeVideo(
 
         dynamic_analysis_state, detectiontreshold, margin = dynamic
         start = time.time()
-        print("Starting to extract posture")
+        print("Starting to extract posture 1")
         if dynamic_analysis_state:
             PredictedData, nframes = GetPoseDynamic(
                 cfg,
@@ -776,6 +787,7 @@ def AnalyzeVideo(
         else:
             if int(dlc_cfg["batch_size"]) > 1:
                 if TFGPUinference:
+                    print(13)
                     PredictedData, nframes = GetPoseF_GTF(
                         cfg,
                         dlc_cfg,
@@ -786,7 +798,9 @@ def AnalyzeVideo(
                         nframes,
                         int(dlc_cfg["batch_size"]),
                     )
+                    print(14)
                 else:
+                    print(12)
                     PredictedData, nframes = GetPoseF(
                         cfg,
                         dlc_cfg,
@@ -799,10 +813,12 @@ def AnalyzeVideo(
                     )
             else:
                 if TFGPUinference:
+                    print(11)
                     PredictedData, nframes = GetPoseS_GTF(
                         cfg, dlc_cfg, sess, inputs, outputs, cap, nframes
                     )
                 else:
+                    print(22)
                     PredictedData, nframes = GetPoseS(
                         cfg, dlc_cfg, sess, inputs, outputs, cap, nframes
                     )
@@ -841,8 +857,8 @@ def AnalyzeVideo(
             range(nframes),
             save_as_csv,
         )
-    finally:
-        return DLCscorer
+    # finally:
+    return DLCscorer
 
 
 def GetPosesofFrames(
@@ -851,7 +867,7 @@ def GetPosesofFrames(
     """Batchwise prediction of pose for frame list in directory"""
     from deeplabcut.utils.auxfun_videos import imread
 
-    print("Starting to extract posture")
+    print("Starting to extract posture 2")
     im = imread(os.path.join(directory, framelist[0]), mode="skimage")
 
     ny, nx, nc = np.shape(im)
@@ -1080,6 +1096,8 @@ def analyze_time_lapse_frames(
         trainingsiterations=trainingsiterations,
         modelprefix=modelprefix,
     )
+    print("here 1")
+    exit()
     sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
 
     # update number of outputs and adjust pandas indices
