@@ -10,19 +10,10 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import setuptools
-from pathlib import Path
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-requirements = []
-root = Path(__file__).parent
-filename = str(root / "requirements.txt")
-with open(filename) as f:
-    for line in f:
-        stripped = line.split("#")[0].strip()
-        if len(stripped) > 0:
-            requirements.append(stripped)
 
 setuptools.setup(
     name="deeplabcut",
