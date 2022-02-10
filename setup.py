@@ -35,7 +35,7 @@ setuptools.setup(
     url="https://github.com/DeepLabCut/DeepLabCut",
     install_requires=[
         "ipython",
-        "filterpy>=1.14.4",
+        "filterpy>=1.4.4",
         "ruamel.yaml>=0.15.0",
         "imgaug>=0.4.0",
         "numba>=0.54",
