@@ -251,7 +251,6 @@ class CreateProject(QtWidgets.QDialog):
                 copy_videos=self.copy
             )
         else:
-            #print('else')
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Critical)
             msg.setText("Some of the enteries are missing.")

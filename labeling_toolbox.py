@@ -188,21 +188,19 @@ class ImagePanel(QFrame):
         ylim = self.axes.get_ylim()
         self.axes.clear()
         # convert the image to RGB as you are showing the image with matplotlib
-        print("dir: ", dir)
+
         image = dir + '/' + img.split('/')[-1]
-        print(image)
+
         im = cv2.imread(image)[..., ::-1]
-        print("im = ", im)
+
         colorIndex = np.linspace(np.max(im), np.min(im), len(bodyparts))
         # draw epipolar lines
         epLines, sourcePts, offsets = self.retrieveData_and_computeEpLines(img, itr)
-        print("epLines = ", epLines)
-        print("sourcePts = ", sourcePts)
-        print("offsets = ", offsets)
+
         if epLines is not None:
             im = self.drawEpLines(im.copy(), epLines, sourcePts, offsets, colorIndex, cmap)
         ax = self.axes.imshow(im, cmap=cmap)
-        print("cmap = ", cmap)
+
         self.orig_xlim = self.axes.get_xlim()
         self.orig_ylim = self.axes.get_ylim()
         divider = make_axes_locatable(self.axes)
@@ -210,30 +208,26 @@ class ImagePanel(QFrame):
         cbar = self.figure.colorbar(
             ax, cax=cax, spacing="proportional", ticks=colorIndex
         )
-        print("ax = ", ax)
         cbar.set_ticklabels(bodyparts)
-        print("title = ", str(str(itr) + "/" + str(len(index) - 1) + " " + img_name))
+
         self.axes.set_title(str(str(itr) + "/" + str(len(index) - 1) + " " + img_name))
         if keep_view:
             self.axes.set_xlim(xlim)
             self.axes.set_ylim(ylim)
         if self.toolbar is None:
             self.toolbar = NavigationToolbar(self.canvas, self)
-        print("self.toolbar = ",self.toolbar)
+
         return (self.figure, self.axes, self.canvas, self.toolbar)
 
     def getColorIndices(self, img, bodyparts, dir):
         """
         Returns the colormaps ticks and . The order of ticks labels is reversed.
         """
-        print("img: ", img)
         image = dir+'/' + img.split('/')[-1]
-        print(image)
         im = cv2.imread(image)
         norm = mcolors.Normalize(vmin=0, vmax=np.max(im))
-        #print("norm: ",norm)
         ticks = np.linspace(0, np.max(im), len(bodyparts))[::-1]
-        #print("ticks: ", ticks)
+
         return norm, ticks
 
 class ScrollPanel(QFrame):
@@ -373,12 +367,12 @@ class MainFrame(QMainWindow):
         self.prev = QtWidgets.QPushButton('<<Previous')
         self.l_btns.addWidget(self.prev, alignment=Qt.AlignCenter)
         self.prev.setEnabled(False)
-        # self.prev.clicked.connect(self.prevImage)
+        self.prev.clicked.connect(self.prevImage)
 
         self.next = QtWidgets.QPushButton('Next>>')
         self.l_btns.addWidget(self.next, alignment=Qt.AlignCenter)
         self.next.setEnabled(False)
-        # self.next.clicked.connect(self.nextImage)
+        self.next.clicked.connect(self.nextImage)
 
         self.help = QtWidgets.QPushButton('Help')
         self.l_btns.addWidget(self.help, alignment=Qt.AlignCenter)
@@ -434,11 +428,23 @@ class MainFrame(QMainWindow):
         self.prezoom_xlim = []
         self.prezoom_ylim = []
     #################################################################
+    def updateZoomPan(self, *args):
+        # Checks if zoom/pan button is ON
+
+        if self.pan.isChecked():
+            self.toolbar.pan()
+            self.pan.setChecked(False)
+
+        if self.zoom.isChecked():
+            self.toolbar.zoom()
+            self.zoom.setChecked(False)
+
+
     def onZoom(self, ax):
         # See if axis limits have actually changed
         curr_xlim = self.axes.get_xlim()
         curr_ylim = self.axes.get_ylim()
-        print("self.zoom.text() = ",self.zoom.text() )
+
         if self.zoom.text() and not (
             self.prezoom_xlim[0] == curr_xlim[0]
             and self.prezoom_xlim[1] == curr_xlim[1]
@@ -446,10 +452,10 @@ class MainFrame(QMainWindow):
             and self.prezoom_ylim[1] == curr_ylim[1]
         ):
             self.updateZoomPan()
-            self.statusbar.SetStatusText("Zoom Off")
+            #self.statusbar.SetStatusText("Zoom Off") #TODO: status bar
 
     def panButton(self):
-        print(self.pan.isChecked())
+
         if self.pan.isChecked():
             self.toolbar.pan()
             #self.statusbar.SetStatusText("Pan On")
@@ -460,6 +466,44 @@ class MainFrame(QMainWindow):
 
     ###############################################################################################################################
     # BUTTONS FUNCTIONS FOR HOTKEYS
+
+
+    def OnSliderScroll(self, event):
+        """
+        Adjust marker size for plotting the annotations
+        """
+        MainFrame.saveEachImage(self)
+        MainFrame.updateZoomPan(self)
+        self.buttonCounter = []
+        self.markerSize = self.slider.value()
+        img_name = Path(self.index[self.iter]).name
+        self.figure.delaxes(self.figure.axes[1])
+        self.figure, self.axes, self.canvas, self.toolbar = self.image_panel.drawplot(
+            self.img,
+            img_name,
+            self.iter,
+            self.index,
+            self.bodyparts,
+            self.colormap,
+            keep_view=True,
+            dir=self.dir,
+        )
+
+        self.axes.callbacks.connect("xlim_changed", self.onZoom)
+        self.axes.callbacks.connect("ylim_changed", self.onZoom)
+        self.buttonCounter = MainFrame.plot(self, self.img)
+
+    def activateSlider(self):
+        """
+        Activates the slider to increase the markersize
+        """
+       # self.checkSlider = event.GetEventObject()
+        if self.checkBox.isChecked():
+            self.activate_slider = True
+            self.slider.setEnabled(True)
+            MainFrame.updateZoomPan(self)
+        else:
+            self.slider.setEnabled(False)
 
     def onButtonRelease(self, event):
         if self.pan.isChecked():
@@ -473,14 +517,12 @@ class MainFrame(QMainWindow):
         x1 = event.xdata
         y1 = event.ydata
 
-        print("self.rdb.checkedId() = ",self.rdb.checkedId())
         rbn_id = abs(self.rdb.checkedId()+2)
-        print('rbn_id = ', rbn_id)
         if event.button == 3:
             if rbn_id in self.buttonCounter:
                 msg = QtWidgets.QMessageBox()
                 msg.setIcon(QtWidgets.QMessageBox.Critical)
-                msg.setText("%s is already annotated. \n Select another body part to annotate."
+                msg.setText("%s is already annotated. \nSelect another body part to annotate."
                     % (str(self.bodyparts[rbn_id])))
                 msg.setWindowTitle("Error")
                 msg.setMinimumWidth(300)
@@ -533,7 +575,6 @@ class MainFrame(QMainWindow):
             return
         dirname = QtCore.QDir.toNativeSeparators(dirname)
         self.dir = dirname.replace('\\','/')
-        print("dirname = ", self.dir)
 
         self.load.setEnabled(False)
         self.next.setEnabled(True)
@@ -619,8 +660,6 @@ class MainFrame(QMainWindow):
         old_imgs = np.sort(list(self.dataFrame.index))
         self.newimages = list(set(self.relativeimagenames) - set(old_imgs))
 
-        print("old_imgs: ", old_imgs)
-        print("self.newimages: ", self.newimages)
         if not self.newimages:
             pass
         else:
@@ -640,7 +679,6 @@ class MainFrame(QMainWindow):
             self.dataFrame = pd.concat([self.dataFrame, self.df], axis=0)
             # Sort it by the index values
             self.dataFrame.sort_index(inplace=True)
-            print("index: ", index)
 
         # checks for unique bodyparts
         if len(self.bodyparts) != len(set(self.bodyparts)):
@@ -651,19 +689,10 @@ class MainFrame(QMainWindow):
 
         # Extracting the list of new labels
         oldBodyParts = self.dataFrame.columns.get_level_values(1)
-        print("oldBodyParts: ", oldBodyParts)
         _, idx = np.unique(oldBodyParts, return_index=True)
         oldbodyparts2plot = list(oldBodyParts[np.sort(idx)])
         self.new_bodyparts = [x for x in self.bodyparts if x not in oldbodyparts2plot]
         # Checking if user added a new label
-        print("new_bodyparts: ", self.new_bodyparts)
-
-        print("self.img: ", self.img)
-        print("img_name: ", img_name)
-        print("self.iter: ", self.iter)
-        print("self.index: ", self.index)
-        print("self.bodyparts: ", self.bodyparts)
-        print("self.colormap: ", self.colormap)
 
         if not self.new_bodyparts:  # i.e. no new label
             (
@@ -674,16 +703,9 @@ class MainFrame(QMainWindow):
             ) = self.image_panel.drawplot(
                 self.img, img_name, self.iter, self.index, self.bodyparts, self.colormap, dir=self.dir
             )
-            print("self.img: ", self.img)
-            print("img_name: ", img_name)
-            print("self.iter: ", self.iter)
-            print("self.index: ", self.index)
-            print("self.bodyparts: ", self.bodyparts)
-            print("self.colormap: ", self.colormap)
+
             self.axes.callbacks.connect("xlim_changed", self.onZoom)
             self.axes.callbacks.connect("ylim_changed", self.onZoom)
-            print("bodyparts: ", self.new_bodyparts)
-            print("self.zoom.text() = ", self.zoom.text())
 
             (
                 self.choiceBox,
@@ -696,22 +718,22 @@ class MainFrame(QMainWindow):
 
             self.buttonCounter = MainFrame.plot(self, self.img)
             self.cidClick = self.canvas.mpl_connect("button_press_event", self.onClick)
-            print("self.buttonCounter: ",self.buttonCounter)
-            '''
             self.canvas.mpl_connect("button_release_event", self.onButtonRelease)
+
         else:
-            # dlg = wx.MessageDialog(
-            #     None,
-            #     "New label found in the config file. Do you want to see all the other labels?",
-            #     "New label found",
-            #     wx.YES_NO | wx.ICON_WARNING,
-            # )
-            # result = dlg.ShowModal()
-            # if result == wx.ID_NO:
-            #     self.bodyparts = self.new_bodyparts
-            #     self.norm, self.colorIndex = self.image_panel.getColorIndices(
-            #         self.img, self.bodyparts
-            #     )
+            msg = QtWidgets.QMessageBox()
+            msg.setIcon(QtWidgets.QMessageBox.Question)
+            msg.setText("New label found in the config file. \nDo you want to see all the other labels?")
+            msg.setWindowTitle("New label found")
+            msg.setMinimumWidth(300)
+            msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+            result = msg.exec_()
+
+            if (result == QMessageBox.No):
+                self.bodyparts = self.new_bodyparts
+                self.norm, self.colorIndex = self.image_panel.getColorIndices(
+                    self.img, self.bodyparts, self.dir
+                )
             a = np.empty((len(self.index), 2))
             a[:] = np.nan
             for bodypart in self.new_bodyparts:
@@ -728,7 +750,7 @@ class MainFrame(QMainWindow):
                 self.canvas,
                 self.toolbar,
             ) = self.image_panel.drawplot(
-                self.img, img_name, self.iter, self.index, self.bodyparts, self.colormap
+                self.img, img_name, self.iter, self.index, self.bodyparts, self.colormap, dir=self.dir
             )
             self.axes.callbacks.connect("xlim_changed", self.onZoom)
             self.axes.callbacks.connect("ylim_changed", self.onZoom)
@@ -745,15 +767,116 @@ class MainFrame(QMainWindow):
             self.canvas.mpl_connect("button_release_event", self.onButtonRelease)
             self.buttonCounter = MainFrame.plot(self, self.img)
 
-        # self.checkBox.Bind(wx.EVT_CHECKBOX, self.activateSlider)
-        # self.slider.Bind(wx.EVT_SLIDER, self.OnSliderScroll)
 
-'''
+        self.checkBox.stateChanged.connect(self.activateSlider)
+        self.slider.valueChanged.connect(self.OnSliderScroll)
+
+    def nextImage(self, event):
+        """
+        Moves to next image
+        """
+        #  Checks for the last image and disables the Next button
+        if len(self.index) - self.iter == 1:
+            self.next.setEnabled(False)
+            return
+        self.prev.setEnabled(True)
+        print("next")
+        # Checks if zoom/pan button is ON
+        MainFrame.updateZoomPan(self)
+
+        # self.statusbar.SetStatusText(
+        #     "Working on folder: {}".format(os.path.split(str(self.dir))[-1])
+        # )
+
+        self.rdb.setId(self.rdb.button(-2), -2)
+
+        self.file = 1
+        # Refreshing the button counter
+        self.buttonCounter = []
+
+        MainFrame.saveEachImage(self)
+        self.iter = self.iter + 1
+
+        if len(self.index) >= self.iter:
+            print("if")
+            self.updatedCoords = MainFrame.getLabels(self, self.iter)
+            self.img = self.index[self.iter]
+            img_name = Path(self.index[self.iter]).name
+            self.figure.delaxes(
+                self.figure.axes[1]
+            )  # Removes the axes corresponding to the colorbar
+            (
+                self.figure,
+                self.axes,
+                self.canvas,
+                self.toolbar,
+            ) = self.image_panel.drawplot(
+                self.img,
+                img_name,
+                self.iter,
+                self.index,
+                self.bodyparts,
+                self.colormap,
+                keep_view=self.view_locked,
+                dir = self.dir,
+            )
+            self.axes.callbacks.connect("xlim_changed", self.onZoom)
+            self.axes.callbacks.connect("ylim_changed", self.onZoom)
+
+            self.buttonCounter = MainFrame.plot(self, self.img)
+            self.cidClick = self.canvas.mpl_connect("button_press_event", self.onClick)
+            self.canvas.mpl_connect("button_release_event", self.onButtonRelease)
+
+    def prevImage(self, event):
+        """
+        Checks the previous Image and enables user to move the annotations.
+        """
+        # Checks for the first image and disables the Previous button
+        if self.iter == 0:
+            self.prev.setEnabled(False)
+            return
+        else:
+            self.next.setEnabled(True)
+        # Checks if zoom/pan button is ON
+        MainFrame.updateZoomPan(self)
+        # self.statusbar.SetStatusText(
+        #     "Working on folder: {}".format(os.path.split(str(self.dir))[-1])
+        # )
+        MainFrame.saveEachImage(self)
+
+        self.buttonCounter = []
+        self.iter = self.iter - 1
+
+        self.rdb.setId(self.rdb.button(-2), -2)
+        self.img = self.index[self.iter]
+        img_name = Path(self.index[self.iter]).name
+        self.figure.delaxes(
+            self.figure.axes[1]
+        )  # Removes the axes corresponding to the colorbar
+        self.figure, self.axes, self.canvas, self.toolbar = self.image_panel.drawplot(
+            self.img,
+            img_name,
+            self.iter,
+            self.index,
+            self.bodyparts,
+            self.colormap,
+            keep_view=self.view_locked,
+            dir=self.dir,
+        )
+        self.axes.callbacks.connect("xlim_changed", self.onZoom)
+        self.axes.callbacks.connect("ylim_changed", self.onZoom)
+
+        self.buttonCounter = MainFrame.plot(self, self.img)
+        self.cidClick = self.canvas.mpl_connect("button_press_event", self.onClick)
+        self.canvas.mpl_connect("button_release_event", self.onButtonRelease)
+        MainFrame.saveEachImage(self)
+
     def getLabels(self, img_index):
         """
         Returns a list of x and y labels of the corresponding image index
         """
         self.previous_image_points = []
+        print("getLabels")
         for bpindex, bp in enumerate(self.bodyparts):
             image_points = [
                 [
@@ -765,10 +888,26 @@ class MainFrame(QMainWindow):
             ]
             self.previous_image_points.append(image_points)
         return self.previous_image_points
+
+    def saveEachImage(self):
+        """
+        Saves data for each image
+        """
+        print("saveEachImage")
+        for idx, bp in enumerate(self.updatedCoords):
+            self.dataFrame.loc[self.relativeimagenames[self.iter]][
+                self.scorer, bp[0][-2], "x"
+            ] = bp[-1][0]
+            self.dataFrame.loc[self.relativeimagenames[self.iter]][
+                self.scorer, bp[0][-2], "y"
+            ] = bp[-1][1]
+
+
     def plot(self, img):
         """
         Plots and call auxfun_drag class for moving and removing points.
         """
+        print("plot")
         self.drs = []
         self.updatedCoords = []
         for bpindex, bp in enumerate(self.bodyparts):
