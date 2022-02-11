@@ -1,3 +1,3 @@
 # DLCgui
 
-WIP gui for dlc
+```python main.py```
