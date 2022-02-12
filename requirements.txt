@@ -25,3 +25,4 @@ tf_slim
 tqdm
 moviepy
 Pillow>=7.1
+openvino-dev==2021.4.2

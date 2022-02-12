@@ -25,6 +25,8 @@ class OpenVINOSession:
                     "[1, 747, 832, 3]",
                     "--extensions",
                     os.path.join(os.path.dirname(__file__), "mo_extensions"),
+                    "--data_type",
+                    "FP16",
                 ],
                 check=True,
             )
@@ -34,11 +36,7 @@ class OpenVINOSession:
         self.input_name = next(iter(self.net.input_info.keys()))
         self.output_name = next(iter(self.net.outputs.keys()))
         self.net.input_info[self.input_name].precision = "U8"
-
-        # Load network to device
-        config = {'CPU_THROUGHPUT_STREAMS': 'CPU_THROUGHPUT_AUTO'}
-        self.exec_net = self.ie.load_network(self.net, "CPU", config, num_requests=0)
-
+        self.exec_net = None
 
     def _get_idle_infer_request(self):
         infer_request_id = self.exec_net.get_idle_request_id()
@@ -55,7 +53,15 @@ class OpenVINOSession:
     def run(self, output, feed_dict):
         inp = next(iter(feed_dict.values()))
 
-        # For better efficiency, model is initialized for batch_size 1 and every sample processed independently
+        if self.exec_net is None:
+            # For better efficiency, model is initialized for batch_size 1 and every sample processed independently
+            inp_shape = [1, 3] + list(inp.shape[1:3])
+            self.net.reshape({self.input_name: inp_shape})
+
+            # Load network to device
+            config = {'CPU_THROUGHPUT_STREAMS': 'CPU_THROUGHPUT_AUTO'}
+            self.exec_net = self.ie.load_network(self.net, "CPU", config, num_requests=0)
+
         batch_size = inp.shape[0]
         batch_output = np.zeros([batch_size] + self.net.outputs[self.output_name].shape, dtype=np.float32)
 

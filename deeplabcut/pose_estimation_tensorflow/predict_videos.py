@@ -305,7 +305,6 @@ def analyze_videos(
     else:
         xyz_labs = ["x", "y", "likelihood"]
 
-    use_openvino = False
     if use_openvino:
         sess, inputs, outputs = predict.setup_openvino_pose_prediction(
             dlc_cfg
