@@ -480,19 +480,21 @@ def evaluate_multianimal_full(
 
                             print("##########################################")
                             print(
-                                "Average Euclidean distance to GT per individual (in pixels)"
+                                "Average Euclidean distance to GT per individual (in pixels; test-only)"
                             )
                             print(
-                                error_masked.groupby("individuals", axis=1)
+                                error_masked.iloc[testIndices]
+                                .groupby("individuals", axis=1)
                                 .mean()
                                 .mean()
                                 .to_string()
                             )
                             print(
-                                "Average Euclidean distance to GT per bodypart (in pixels)"
+                                "Average Euclidean distance to GT per bodypart (in pixels; test-only)"
                             )
                             print(
-                                error_masked.groupby("bodyparts", axis=1)
+                                error_masked.iloc[testIndices]
+                                .groupby("bodyparts", axis=1)
                                 .mean()
                                 .mean()
                                 .to_string()
