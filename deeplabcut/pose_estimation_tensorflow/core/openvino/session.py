@@ -50,20 +50,20 @@ class OpenVINOSession:
         return infer_request_id
 
 
-    def run(self, output, feed_dict):
-        inp = next(iter(feed_dict.values()))
+    def run(self, out_name, feed_dict):
+        inp_name, inp = next(iter(feed_dict.items()))
 
         if self.exec_net is None:
             # For better efficiency, model is initialized for batch_size 1 and every sample processed independently
             inp_shape = [1, 3] + list(inp.shape[1:3])
-            self.net.reshape({self.input_name: inp_shape})
+            self.net.reshape({inp_name: inp_shape})
 
             # Load network to device
             config = {'CPU_THROUGHPUT_STREAMS': 'CPU_THROUGHPUT_AUTO'}
             self.exec_net = self.ie.load_network(self.net, "CPU", config, num_requests=0)
 
         batch_size = inp.shape[0]
-        batch_output = np.zeros([batch_size] + self.net.outputs[self.output_name].shape, dtype=np.float32)
+        batch_output = np.zeros([batch_size] + self.net.outputs[out_name].shape, dtype=np.float32)
 
         # List that maps infer requests to index of processed sample from batch.
         # -1 means that request has not been started yet.
@@ -76,11 +76,11 @@ class OpenVINOSession:
 
             # Copy output prediction
             if out_id != -1:
-                batch_output[out_id] = request.output_blobs[self.output_name].buffer
+                batch_output[out_id] = request.output_blobs[out_name].buffer
 
             # Start this request on new data
             infer_request_input_id[infer_request_id] = inp_id
-            request.async_infer({self.input_name: inp[inp_id].transpose(2, 0, 1)})
+            request.async_infer({inp_name: inp[inp_id].transpose(2, 0, 1)})
 
         # Wait for the rest of requests
         status = self.exec_net.wait()
@@ -91,6 +91,6 @@ class OpenVINOSession:
             if out_id == -1:
                 continue
             request = self.exec_net.requests[infer_request_id]
-            batch_output[out_id] = request.output_blobs[self.output_name].buffer
+            batch_output[out_id] = request.output_blobs[out_name].buffer
 
         return batch_output.reshape(-1, 3)

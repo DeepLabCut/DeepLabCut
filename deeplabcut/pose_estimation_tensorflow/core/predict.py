@@ -238,4 +238,5 @@ def extract_GPUprediction(outputs, cfg):
 
 
 def setup_openvino_pose_prediction(cfg):
-    return OpenVINOSession(cfg), 456, [789]
+    sess = OpenVINOSession(cfg)
+    return sess, sess.input_name, [sess.output_name]
