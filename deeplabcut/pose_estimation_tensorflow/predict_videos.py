@@ -34,6 +34,7 @@ from deeplabcut.pose_estimation_tensorflow.core import predict
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingutils
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
+from deeplabcut.pose_estimation_tensorflow.core.openvino.session import GetPoseF_OV
 
 
 ####################################################
@@ -62,7 +63,7 @@ def analyze_videos(
     n_tracks=None,
     calibrate=False,
     identity_only=False,
-    use_openvino=True,
+    use_openvino="MULTI:CPU,GPU",
 ):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
@@ -307,7 +308,7 @@ def analyze_videos(
 
     if use_openvino:
         sess, inputs, outputs = predict.setup_openvino_pose_prediction(
-            dlc_cfg
+            dlc_cfg, device=use_openvino
         )
     elif TFGPUinference:
         sess, inputs, outputs = predict.setup_GPUpose_prediction(
@@ -386,6 +387,7 @@ def analyze_videos(
                     destfolder,
                     TFGPUinference,
                     dynamic,
+                    use_openvino,
                 )
 
         os.chdir(str(start_path))
@@ -722,6 +724,7 @@ def AnalyzeVideo(
     destfolder=None,
     TFGPUinference=True,
     dynamic=(False, 0.5, 10),
+    use_openvino="MULTI:CPU,GPU",
 ):
     """Helper function for analyzing a video."""
     print("Starting to analyze % ", video)
@@ -780,28 +783,20 @@ def AnalyzeVideo(
             # GetPoseF_GTF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,int(dlc_cfg["batch_size"]))
         else:
             if int(dlc_cfg["batch_size"]) > 1:
-                if TFGPUinference:
-                    PredictedData, nframes = GetPoseF_GTF(
-                        cfg,
+                args = (cfg,
                         dlc_cfg,
                         sess,
                         inputs,
                         outputs,
                         cap,
                         nframes,
-                        int(dlc_cfg["batch_size"]),
-                    )
+                        int(dlc_cfg["batch_size"]))
+                if use_openvino:
+                    PredictedData, nframes = GetPoseF_OV(*args)
+                elif TFGPUinference:
+                    PredictedData, nframes = GetPoseF_GTF(*args)
                 else:
-                    PredictedData, nframes = GetPoseF(
-                        cfg,
-                        dlc_cfg,
-                        sess,
-                        inputs,
-                        outputs,
-                        cap,
-                        nframes,
-                        int(dlc_cfg["batch_size"]),
-                    )
+                    PredictedData, nframes = GetPoseF(*args)
             else:
                 if TFGPUinference:
                     PredictedData, nframes = GetPoseS_GTF(

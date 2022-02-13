@@ -3,12 +3,15 @@ import sys
 import subprocess
 
 import numpy as np
+from tqdm import tqdm
+import cv2
 from openvino.inference_engine import IECore, StatusCode
 
 class OpenVINOSession:
-    def __init__(self, cfg):
+    def __init__(self, cfg, device):
         self.ie = IECore()
         self.xml_path = cfg["init_weights"] + ".xml"
+        self.device = device
 
         # Convert a frozen graph to OpenVINO IR format
         if not os.path.exists(self.xml_path):
@@ -50,17 +53,25 @@ class OpenVINOSession:
         return infer_request_id
 
 
+    def _init_model(self, inp_h, inp_w):
+        # For better efficiency, model is initialized for batch_size 1 and every sample processed independently
+        inp_shape = [1, 3, inp_h, inp_w]
+        self.net.reshape({self.input_name: inp_shape})
+
+        # Load network to device
+        config = {}
+        if "CPU" in self.device:
+            config["CPU_THROUGHPUT_STREAMS"] = "CPU_THROUGHPUT_AUTO"
+        if "GPU" in self.device:
+            config["GPU_THROUGHPUT_STREAMS"] = "GPU_THROUGHPUT_AUTO"
+        self.exec_net = self.ie.load_network(self.net, self.device, config, num_requests=0)
+
+
     def run(self, out_name, feed_dict):
         inp_name, inp = next(iter(feed_dict.items()))
 
         if self.exec_net is None:
-            # For better efficiency, model is initialized for batch_size 1 and every sample processed independently
-            inp_shape = [1, 3] + list(inp.shape[1:3])
-            self.net.reshape({inp_name: inp_shape})
-
-            # Load network to device
-            config = {'CPU_THROUGHPUT_STREAMS': 'CPU_THROUGHPUT_AUTO'}
-            self.exec_net = self.ie.load_network(self.net, "CPU", config, num_requests=0)
+            self._init_model(inp.shape[1], inp.shape[2])
 
         batch_size = inp.shape[0]
         batch_output = np.zeros([batch_size] + self.net.outputs[out_name].shape, dtype=np.float32)
@@ -94,3 +105,66 @@ class OpenVINOSession:
             batch_output[out_id] = request.output_blobs[out_name].buffer
 
         return batch_output.reshape(-1, 3)
+
+
+def GetPoseF_OV(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
+    """Prediction of pose"""
+    PredictedData = np.zeros((nframes, 3 * len(dlc_cfg["all_joints_names"])))
+    ny, nx = int(cap.get(4)), int(cap.get(3))
+    if cfg["cropping"]:
+        ny, nx = checkcropping(cfg, cap)
+
+    sess._init_model(ny, nx)
+
+    pbar = tqdm(total=nframes)
+    counter = 0
+    step = max(10, int(nframes / 100))
+    inds = [-1] * len(sess.exec_net.requests)  # Keep indices of frames which are currently in processing
+    while cap.isOpened():
+        if counter % step == 0:
+            pbar.update(step)
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        # Prepare input data
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        if cfg["cropping"]:
+            frame = frame[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]]
+
+        # Get idle iference request. If there is processed data - copy to output list
+        infer_request_id = sess._get_idle_infer_request()
+        out_id = inds[infer_request_id]
+        request = sess.exec_net.requests[infer_request_id]
+
+        # Copy output prediction
+        if out_id != -1:
+            pose = request.output_blobs[sess.output_name].buffer
+            pose[:, [0, 1, 2]] = pose[
+                :, [1, 0, 2]
+            ]  # change order to have x,y,confidence
+            pose = np.reshape(
+                pose, (1, -1)
+            )  # bring into batchsize times x,y,conf etc.
+            PredictedData[out_id] = pose
+
+        # Start this request on new data
+        inds[infer_request_id] = counter
+        request.async_infer({sess.input_name: frame.transpose(2, 0, 1)})
+
+        counter += 1
+
+    # Wait for the rest of requests
+    status = sess.exec_net.wait()
+    if status != StatusCode.OK:
+        raise Exception("Wait for idle request failed!")
+
+    for infer_request_id, out_id in enumerate(inds):
+        if out_id == -1:
+            continue
+        request = sess.exec_net.requests[infer_request_id]
+        pose = request.output_blobs[sess.output_name].buffer
+        PredictedData[out_id] = pose[:, [1, 0, 2]].reshape(1, -1)
+
+    pbar.close()
+    return PredictedData, nframes
