@@ -417,88 +417,32 @@ def triangulate(
         print("Now you can create 3D video(s) using deeplabcut.create_labeled_video_3d")
 
 
-"""
-ToDo: speed up func. below and check only for one cam individually
-PredicteData = np.zeros((nframes, 3 * len(dlc_cfg['all_joints_names'])))
-PredicteData[batch_num*batchsize:batch_num*batchsize+batch_ind, :] = pose[:batch_ind,:]
-pdindex = pd.MultiIndex.from_product([[DLCscorer], dlc_cfg['all_joints_names'], ['x', 'y', 'likelihood']],names=['scorer', 'bodyparts', 'coords'])
-auxiliaryfunctions.SaveData(PredicteData[:nframes,:], metadata, dataname, pdindex, framelist,save_as_csv)
-"""
-
-
-def _undistort_points(df_view1, df_view2, stereo_params):
-    scorer_cam1 = df_view1.columns.get_level_values("scorer")[0]
-    scorer_cam2 = df_view2.columns.get_level_values("scorer")[0]
-    camera_pair = list(stereo_params)[0]
-
-    mtx_l = stereo_params[camera_pair]["cameraMatrix1"]
-    dist_l = stereo_params[camera_pair]["distCoeffs1"]
-
-    mtx_r = stereo_params[camera_pair]["cameraMatrix2"]
-    dist_r = stereo_params[camera_pair]["distCoeffs2"]
-
-    R1 = stereo_params[camera_pair]["R1"]
-    P1 = stereo_params[camera_pair]["P1"]
-
-    R2 = stereo_params[camera_pair]["R2"]
-    P2 = stereo_params[camera_pair]["P2"]
-
-    # Create an empty dataFrame to store the undistorted 2d coordinates and likelihood
-    (
-        dataFrame_cam1_undistort,
-        scorer_cam1,
-        bodyparts,
-    ) = auxiliaryfunctions_3d.create_empty_df(
-        df_view1, scorer_cam1, flag="2d"
+def _undistort_points(points, mat, coeffs, p, r):
+    pts = points.reshape((-1, 3))
+    pts_undist = cv2.undistortPoints(
+        src=pts[:, :2].astype(np.float32),
+        cameraMatrix=mat,
+        distCoeffs=coeffs,
+        P=p,
+        R=r,
     )
-    (
-        dataFrame_cam2_undistort,
-        scorer_cam2,
-        bodyparts,
-    ) = auxiliaryfunctions_3d.create_empty_df(
-        df_view2, scorer_cam2, flag="2d"
-    )
+    pts[:, :2] = pts_undist.squeeze()
+    return pts.reshape((points.shape[0], -1))
 
-    for bpindex, bp in tqdm(enumerate(bodyparts)):
-        points_cam1 = df_view1.xs(bp, level="bodyparts", axis=1).values[:, :2]
-        points_cam1_remapped = cv2.undistortPoints(
-            src=points_cam1.astype(np.float32),
-            cameraMatrix=mtx_l,
-            distCoeffs=dist_l,
-            P=P1,
-            R=R1,
+
+def _undistort_views(df_views, stereo_params):
+    df_views_undist = []
+    for df_view, camera_pair in zip(df_views, stereo_params):
+        params = stereo_params[camera_pair]
+        pts_undist = _undistort_points(
+            df_view.to_numpy(),
+            params["cameraMatrix1"],
+            params["distCoeffs1"],
+            params["P1"],
+            params["R1"],
         )
-        dataFrame_cam1_undistort.loc(axis=1)[
-            scorer_cam1, bp, ["x", "y"]
-        ] = points_cam1_remapped.squeeze()
-        dataFrame_cam1_undistort.loc(axis=1)[
-            scorer_cam1, bp, "likelihood"
-        ] = df_view1.xs(
-            [bp, "likelihood"], level=["bodyparts", "coords"], axis=1
-        ).values
-
-        # Undistorting the points from cam2 camera
-        points_cam2 = df_view2.xs(bp, level="bodyparts", axis=1).values[:, :2]
-        points_cam2_remapped = cv2.undistortPoints(
-            src=points_cam2.astype(np.float32),
-            cameraMatrix=mtx_r,
-            distCoeffs=dist_r,
-            P=P2,
-            R=R2,
-        )
-        dataFrame_cam2_undistort.loc(axis=1)[
-            scorer_cam2, bp, ["x", "y"]
-        ] = points_cam2_remapped.squeeze()
-        dataFrame_cam2_undistort.loc(axis=1)[
-            scorer_cam2, bp, "likelihood"
-        ] = df_view2.xs(
-            [bp, "likelihood"], level=["bodyparts", "coords"], axis=1
-        ).values
-
-    # Save the undistorted files
-    dataFrame_cam1_undistort.sort_index(inplace=True)
-    dataFrame_cam2_undistort.sort_index(inplace=True)
-    return dataFrame_cam1_undistort, dataFrame_cam2_undistort
+        df_views_undist.append(pd.DataFrame(pts_undist, df_view.index, df_view.columns))
+    return df_views_undist
 
 
 def undistort_points(config, dataframe, camera_pair):
@@ -528,8 +472,9 @@ def undistort_points(config, dataframe, camera_pair):
     dataframe_cam2 = pd.read_hdf(dataframe[1])
     path_stereo_file = os.path.join(path_camera_matrix, "stereo_params.pickle")
     stereo_file = auxiliaryfunctions.read_pickle(path_stereo_file)
-    dataFrame_cam1_undistort, dataFrame_cam2_undistort = _undistort_points(
-        dataframe_cam1, dataframe_cam2, stereo_file,
+    dataFrame_cam1_undistort, dataFrame_cam2_undistort = _undistort_views(
+        (dataframe_cam1, dataframe_cam2),
+        stereo_file,
     )
 
     return (
