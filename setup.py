@@ -14,6 +14,7 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+
 setuptools.setup(
     name="deeplabcut",
     version="2.2.0.6",
@@ -25,24 +26,23 @@ setuptools.setup(
     url="https://github.com/DeepLabCut/DeepLabCut",
     install_requires=[
         "ipython",
-        "filterpy",
+        "filterpy>=1.4.4",
         "ruamel.yaml>=0.15.0",
         "imgaug>=0.4.0",
-        "numba",
-        "matplotlib",
-        "networkx",
-        "numpy",
+        "numba>=0.54",
+        "matplotlib>=3.3",
+        "networkx>=2.6",
+        "numpy>=1.18.5",
         "pandas>=1.0.1",
         "scikit-image>=0.17,<=0.18.1",
-        "scikit-learn",
+        "scikit-learn>=1.0",
         "scipy>=1.4",
-        "statsmodels>=0.11",
-        "tables<=3.6.1",
+        "statsmodels>=0.11,!=0.13.2",
+        "tables>=3.7.0",
         "tensorflow>=2.0",
-        "tensorpack",
-        "tf_slim",
+        "tensorpack>=0.11",
+        "tf_slim>=1.1.0",
         "tqdm",
-        "moviepy",
         "pyyaml",
         "Pillow>=7.1",
     ],
