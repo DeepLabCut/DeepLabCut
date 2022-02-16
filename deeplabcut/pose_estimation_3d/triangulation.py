@@ -430,30 +430,28 @@ def _undistort_points(points, mat, coeffs, p, r):
     return pts.reshape((points.shape[0], -1))
 
 
-def _undistort_views(df_views, stereo_params):
+def _undistort_views(df_view_pairs, stereo_params):
     df_views_undist = []
-    for df_view, camera_pair in zip(df_views, stereo_params):
+    for df_view_pair, camera_pair in zip(df_view_pairs, stereo_params):
         params = stereo_params[camera_pair]
-        pts_undist = _undistort_points(
-            df_view.to_numpy(),
-            params["cameraMatrix1"],
-            params["distCoeffs1"],
-            params["P1"],
-            params["R1"],
-        )
-        df_views_undist.append(pd.DataFrame(pts_undist, df_view.index, df_view.columns))
+        dfs = []
+        for i, df_view in enumerate(df_view_pair, start=1):
+            pts_undist = _undistort_points(
+                df_view.to_numpy(),
+                params[f"cameraMatrix{i}"],
+                params[f"distCoeffs{i}"],
+                params[f"P{i}"],
+                params[f"R{i}"],
+            )
+            df = pd.DataFrame(pts_undist, df_view.index, df_view.columns)
+            dfs.append(df)
+        df_views_undist.append(dfs)
     return df_views_undist
 
 
 def undistort_points(config, dataframe, camera_pair):
     cfg_3d = auxiliaryfunctions.read_config(config)
-    (
-        img_path,
-        path_corners,
-        path_camera_matrix,
-        path_undistort,
-        _,
-    ) = auxiliaryfunctions_3d.Foldernames3Dproject(cfg_3d)
+    path_camera_matrix = auxiliaryfunctions_3d.Foldernames3Dproject(cfg_3d)[2]
     """
     path_undistort = destfolder
     filename_cam1 = Path(dataframe[0]).stem
@@ -473,9 +471,9 @@ def undistort_points(config, dataframe, camera_pair):
     path_stereo_file = os.path.join(path_camera_matrix, "stereo_params.pickle")
     stereo_file = auxiliaryfunctions.read_pickle(path_stereo_file)
     dataFrame_cam1_undistort, dataFrame_cam2_undistort = _undistort_views(
-        (dataframe_cam1, dataframe_cam2),
+        [(dataframe_cam1, dataframe_cam2)],
         stereo_file,
-    )
+    )[0]
 
     return (
         dataFrame_cam1_undistort,
