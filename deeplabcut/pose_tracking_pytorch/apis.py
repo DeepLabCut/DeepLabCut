@@ -3,16 +3,17 @@ import os
 
 # from deeplabcut.pose_tracking_pytorch import  train_tracking_transformer
 # from deeplabcut.pose_estimation_tensorflow import create_tracking_dataset
+from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 from .eval_tracker import reconstruct_all_bboxes, print_all_metrics,compute_mot_metrics_bboxes, calc_proximity_and_visibility_indices
 import glob
 
 
 def transformer_reID(
     path_config_file,
-    dlcscorer,
     videos,
     n_tracks=None,
     train_frac = 0.8, 
+    trainingsetindex=0, # this is only used to get DLC scorer, might need further tweaking to work 
     modelprefix="",
     track_method="ellipse",
     train_epochs=100,
@@ -62,7 +63,14 @@ def transformer_reID(
 
     # should take number of triplets to mine
 
+    cfg = auxiliaryfunctions.read_config(path_config_file)
 
+    DLCscorer, _ = deeplabcut.utils.auxiliaryfunctions.GetScorerName(
+        cfg,
+        shuffle,
+        cfg["TrainingFraction"][trainingsetindex],
+        modelprefix=modelprefix,
+    )
     
     deeplabcut.pose_estimation_tensorflow.create_tracking_dataset(
         path_config_file, videos, track_method, modelprefix=modelprefix, n_triplets=n_triplets
@@ -79,7 +87,7 @@ def transformer_reID(
     # modelprefix impacts where the model is loaded
     deeplabcut.pose_tracking_pytorch.train_tracking_transformer(
         path_config_file,
-        dlcscorer,
+        DLCscorer,
         videos,
         train_frac = train_frac, 
         modelprefix=modelprefix,

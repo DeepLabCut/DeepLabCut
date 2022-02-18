@@ -603,17 +603,7 @@ def GetScorerName(
     )
     # legacy scorername until DLC 2.1. (cfg['resnet'] is deprecated / which is why we get the resnet_xyz name from dlc_cfg!
     # scorer_legacy = 'DeepCut' + "_resnet" + str(cfg['resnet']) + "_" + Task + str(date) + 'shuffle' + str(shuffle) + '_' + str(trainingsiterations)
-    scorer_legacy = (
-        "DeepCut_"
-        + netname
-        + "_"
-        + Task
-        + str(date)
-        + "shuffle"
-        + str(shuffle)
-        + "_"
-        + str(trainingsiterations)
-    )
+    scorer_legacy = scorer.replace("DLC", "DeepCut")
     return scorer, scorer_legacy
 
 
