@@ -11,7 +11,7 @@ def transformer_reID(
     path_config_file,
     dlcscorer,
     videos,
-    n_tracks,
+    n_tracks=None,
     train_frac = 0.8, 
     modelprefix="",
     track_method="ellipse",
