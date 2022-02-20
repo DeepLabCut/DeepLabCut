@@ -1,4 +1,4 @@
-import argparse
+
 import glob
 import os
 import os.path
@@ -15,21 +15,20 @@ import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import sys
+
 
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtWidgets import QWidget
 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from deeplabcut.gui import auxfun_drag
-#from deeplabcut.gui.widgets import BasePanel, WidgetPanel, BaseFrame
 from deeplabcut.utils import auxiliaryfunctions, auxiliaryfunctions_3d
-#FigureCanvasQTtAgg
+
 
 class ImagePanel(QFrame):
     def __init__(self, parent, config, config3d, sourceCam, dir=None):
@@ -63,18 +62,15 @@ class ImagePanel(QFrame):
     def retrieveData_and_computeEpLines(self, img, imNum):
 
         # load labeledPoints and fundamental Matrix
-        print("imNum = ", imNum)
-        print("self.config3d  = ", self.config3d)
+
         if self.config3d is not None:
             cfg_3d = auxiliaryfunctions.read_config(self.config3d)
             cams = cfg_3d["camera_names"]
             path_camera_matrix = auxiliaryfunctions_3d.Foldernames3Dproject(cfg_3d)[2]
             path_stereo_file = os.path.join(path_camera_matrix, "stereo_params.pickle")
             stereo_file = auxiliaryfunctions.read_pickle(path_stereo_file)
-            print("r1")
 
             for cam in cams:
-                print("r2")
                 if cam in img:
                     labelCam = cam
                     if self.sourceCam is None:
@@ -95,7 +91,7 @@ class ImagePanel(QFrame):
             else:
                 camera_pair = cams[labelCamIdx] + "-" + cams[sourceCamIdx]
                 sourceCam_numInPair = 2
-            print("r3")
+
             fundMat = stereo_file[camera_pair]["F"]
             sourceCam_path = os.path.split(img.replace(labelCam, sourceCam))[0]
 
@@ -154,12 +150,10 @@ class ImagePanel(QFrame):
                 sourcePts, int(sourceCam_numInPair), fundMat
             )
             epLines_source2label.reshape(-1, 3)
-            print("end")
 
             return epLines_source2label, sourcePts, labelCam_offsets
 
         else:
-            print("end")
             return None, None, None
 
     def drawEpLines(self, drawImage, lines, sourcePts, offsets, colorIndex, cmap):
@@ -273,7 +267,6 @@ class ScrollPanel(QFrame):
         self.choiceBox.addWidget(self.checkBox)
 
         self.btngroup = QButtonGroup()
-        choices = [l for l in bodyparts]
         fieldrbns_text = QtWidgets.QLabel("Select a bodypart to label")
         fieldrbns_text.setContentsMargins(0,20,0,0)
         self.choiceBox.addWidget(fieldrbns_text)
@@ -282,11 +275,12 @@ class ScrollPanel(QFrame):
             self.fieldradiobox[l] = QtWidgets.QRadioButton(l)
             self.btngroup.addButton(self.fieldradiobox[l])
             self.choiceBox.addWidget(self.fieldradiobox[l])
-
+        self.fieldradiobox[bodyparts[0]].setChecked(True)
         return (self.choiceBox, self.btngroup, self.slider, self.checkBox)
 
     def setvalue(self):
         self.label.setText(str(self.slider.value()))
+
     def clearBoxer(self):
         self.choiceBox.Clear(True)
 
@@ -295,7 +289,7 @@ class ScrollPanel(QFrame):
 
 
 class MainFrame(QMainWindow):
-    def __init__(self, parent, config, imtypes, config3d, sourceCam): # , config, imtypes, config3d, sourceCam
+    def __init__(self, parent, config, imtypes, config3d, sourceCam):
         super(MainFrame, self).__init__(parent)
 
         self.setWindowTitle('DeepLabCut2.0 - Labeling ToolBox')
@@ -326,21 +320,18 @@ class MainFrame(QMainWindow):
         self.choice_panel = ScrollPanel(self)
         self. choice_panel.setFrameShape(QFrame.StyledPanel)
 
-        bottom = QFrame() #BottomPanel(self, config)
+        bottom = QFrame()
         bottom.setFrameShape(QFrame.StyledPanel)
 
         splitter1 = QSplitter(Qt.Horizontal)
         splitter1.addWidget(self.image_panel)
         splitter1.addWidget(self.choice_panel)
-        #splitter1.setStretchFactor(1, 10)
 
         splitter2 = QSplitter(Qt.Vertical)
-        #splitter2.setStretchFactor(1, 10)
         splitter2.addWidget(splitter1)
         splitter2.addWidget(bottom)
 
         hbox.addWidget(splitter2)
-        #hbox.setAlignment(Qt.AlignTop | Qt.AlignRight)
         centralWidget.setLayout(hbox)
         self.setCentralWidget(centralWidget)
 
@@ -423,6 +414,7 @@ class MainFrame(QMainWindow):
         self.prezoom_xlim = []
         self.prezoom_ylim = []
     #################################################################
+
     def updateZoomPan(self, *args):
         # Checks if zoom/pan button is ON
 
@@ -499,7 +491,7 @@ class MainFrame(QMainWindow):
         """
         Activates the slider to increase the markersize
         """
-       # self.checkSlider = event.GetEventObject()
+
         if self.checkBox.isChecked():
             self.activate_slider = True
             self.slider.setEnabled(True)
@@ -519,7 +511,7 @@ class MainFrame(QMainWindow):
         x1 = event.xdata
         y1 = event.ydata
 
-        rbn_id = abs(self.rdb.checkedId()+2)
+        rbn_id = abs(self.rdb.checkedId())-2
         if event.button == 3:
             if rbn_id in self.buttonCounter:
                 msg = QtWidgets.QMessageBox()
@@ -557,8 +549,9 @@ class MainFrame(QMainWindow):
                 ]
                 self.drs.append(self.dr)
                 self.updatedCoords.append(self.dr.coords)
-                if self.rdb.checkedId() < len(self.bodyparts) - 1:
-                    self.rdb.setId(self.rdb.button(self.rdb.checkedId()),self.rdb.checkedId() - 1)
+                if rbn_id < len(self.bodyparts) - 1:
+                    #self.rdb.setId(self.rdb.button(self.rdb.checkedId()),self.rdb.checkedId() - 1)
+                    self.rdb.button(self.rdb.checkedId() - 1).setChecked(True)
                 self.figure.canvas.draw()
 
         self.canvas.mpl_disconnect(self.onClick)
@@ -570,7 +563,11 @@ class MainFrame(QMainWindow):
         Show the DirDialog and ask the user to change the directory where machine labels are stored
         """
         self.statusBar.showMessage("Looking for a folder to start labeling...")
-        cwd = os.path.join(os.getcwd(), "labeled-data")
+
+        path = self.config_file.split('/')[0:-1]
+        path = '\\'.join(path)
+
+        cwd = os.path.join(path, "labeled-data")
         dirname = QtWidgets.QFileDialog.getExistingDirectory(self,
                                                              'Choose the directory where your extracted frames are saved:',
                                                              cwd)
@@ -695,6 +692,7 @@ class MainFrame(QMainWindow):
         _, idx = np.unique(oldBodyParts, return_index=True)
         oldbodyparts2plot = list(oldBodyParts[np.sort(idx)])
         self.new_bodyparts = [x for x in self.bodyparts if x not in oldbodyparts2plot]
+
         # Checking if user added a new label
 
         if not self.new_bodyparts:  # i.e. no new label
@@ -799,7 +797,7 @@ class MainFrame(QMainWindow):
                 self.axes.clear()
                 self.figure.delaxes(self.figure.axes[1])
 
-            #self.choiceBox.Clear(True) #TODO: find the saame function in pyqt5
+            #self.choiceBox.Clear(True) #TODO: find the same function in pyqt5
             MainFrame.updateZoomPan(self)
             MainFrame.browseDir(self)
             self.save.setEnabled(True)
@@ -818,7 +816,6 @@ class MainFrame(QMainWindow):
         self.statusBar.showMessage("Help")
         self.help_info = QtWidgets.QDialog()
         self.help_info.adjustSize()
-        #msg.setWindowIcon(QtWidgets.QMessageBox.Information)
         info = QLabel("1. Select an individual and one of the body parts from the radio buttons to add a label \n (if necessary change config.yaml first to edit the label names). \n\n2. Right clicking on the image will add the selected label and the next available label will be selected from the radio button. \n The label will be marked as circle filled with a unique color (and individual ID a unique color on the rim).\n\n3. To change the marker size, mark the checkbox and move the slider, then uncheck the box. \n\n4. Hover your mouse over this newly added label to see its name. \n\n5. Use left click and drag to move the label position.  \n\n6. Once you are happy with the position, right click to add the next available label. \n You can always reposition the old labels, if required. \n You can delete a label with the middle button mouse click (or click 'delete' key). \n\n7. Click Next/Previous to move to the next/previous image (or hot-key arrows left and right).\n User can also re-label a delete point by going to a previous/next image then returning to the current image. \n NOTE: the user cannot add a label if the label is already present. \n \n8. You can click Cntrl+C to copy+paste labels from a previous image into the current image. \n\n9. When finished labeling all the images, click 'Save' to save all the labels as a .h5 file. \n\n10. Click OK to continue using the labeling GUI. For more tips and hotkeys: see docs!!")
         self.help_info.setWindowTitle("User instructions")
 
@@ -901,6 +898,7 @@ class MainFrame(QMainWindow):
         )
 
         self.rdb.setId(self.rdb.button(-2), -2)
+        self.rdb.button(-2).setChecked(True)
 
         self.file = 1
         # Refreshing the button counter
@@ -960,6 +958,8 @@ class MainFrame(QMainWindow):
         self.iter = self.iter - 1
 
         self.rdb.setId(self.rdb.button(-2), -2)
+        self.rdb.button(-2).setChecked(True)
+
         self.img = self.index[self.iter]
         img_name = Path(self.index[self.iter]).name
         self.figure.delaxes(
@@ -1058,13 +1058,3 @@ def show(self, config, config3d, sourceCam, imtypes=["*.png"]):
     frame = MainFrame(self,config, imtypes, config3d, sourceCam)
     frame.show()
 
-
-
-
-
-# if __name__ == "__main__":
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument("config")
-#     parser.add_argument("config3d")
-#     parser.add_argument("sourceCam")
-#     cli_args = parser.parse_args()

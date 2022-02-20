@@ -109,7 +109,7 @@ class Extract_outlier_frames_page(QWidget):
         self.layout_attributes.addLayout(self.layout_outlier_alg)
         self.ok_button = QtWidgets.QPushButton('Ok')
         self.ok_button.setContentsMargins(0, 40, 40, 40)
-        # self.ok_button.clicked.connect(self.)
+        self.ok_button.clicked.connect(self.extract_outlier_frames)
 
         self.layout_attributes.addWidget(self.ok_button, alignment=Qt.AlignRight)
 
@@ -120,22 +120,22 @@ class Extract_outlier_frames_page(QWidget):
         self.config = text
 
     def browse_dir(self):
-        print('browse_dir')
         cwd = self.config
         config = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select a configuration file", cwd, "Config files (*.yaml)"
         )
-        if not config:
+        if not config[0]:
             return
-        self.config = config
+        self.config = config[0]
+        self.cfg_line.setText(self.config)
 
     def select_video(self):
-        print('select_video')
-        cwd = os.getcwd()
+        cwd = self.config.split('/')[0:-1]
+        cwd = '\\'.join(cwd)
         videos_file = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select video to modify", cwd, "", "*.*"
         )
-        if videos_file:
+        if videos_file[0]:
             self.vids = videos_file[0]
             self.filelist.append(self.vids)
             self.select_video_button.setText("Total %s Videos selected" % len(self.filelist))
@@ -209,3 +209,19 @@ class Extract_outlier_frames_page(QWidget):
         l_opt.addWidget(opt_text)
         l_opt.addWidget(self.videotype)
         self.layout_outlier_alg.addLayout(l_opt)
+
+    def extract_outlier_frames(self):
+        tracker = ""
+        # TODO: multianimal part
+        # if self.cfg.get("multianimalproject", False):
+        #     tracker = self.trackertypes.GetValue()
+
+        deeplabcut.extract_outlier_frames(
+            config=self.config,
+            videos=self.filelist,
+            videotype=self.videotype.currentText(),
+            shuffle=self.shuffles.value(),
+            trainingsetindex=self.trainingset.value(),
+            outlieralgorithm=self.videotype.currentText(),
+            track_method=tracker,
+        )

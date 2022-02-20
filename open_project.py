@@ -1,4 +1,3 @@
-import deeplabcut
 
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtGui import QIcon
@@ -25,8 +24,7 @@ class OpenProject(QtWidgets.QDialog):
 
         main_layout.addWidget(self.open_frame)
         main_layout.addWidget(self.open_button, alignment=QtCore.Qt.AlignRight)
-        #self.exec_()
-        #main_layout.addWidget(self.create_button, alignment=QtCore.Qt.AlignRight)
+
 
     def layout_open(self):
         self.open_frame = QtWidgets.QFrame(self)
@@ -56,13 +54,11 @@ class OpenProject(QtWidgets.QDialog):
         return self.open_frame
 
     def open_config_name(self):
-        #self.proj_default = text
-        text = self.open_line.text()
-        #print(text)
+        self.open_line.text()
+
 
     def load_config(self):
-        #cwd = os.getcwd()
-        cwd = 'C:/Anna/test'
+        cwd = os.getcwd()
         config = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select a configuration file", cwd, "Config files (*.yaml)"
         )
@@ -73,6 +69,7 @@ class OpenProject(QtWidgets.QDialog):
 
     def activate_fbk(self, state):
         # Activates the feedback option
+        # TODO: finish functionality: with user feedback (self.user_fbk = True) / without (self.user_fbk = False)
         if state == QtCore.Qt.Checked:
             self.user_fbk = True
         else:
@@ -90,8 +87,7 @@ class OpenProject(QtWidgets.QDialog):
             self.logo = self.logo_dir + '/pictures/logo.png'
             msg.setWindowIcon(QIcon(self.logo))
             msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-            #msg.buttonClicked.connect(self.ok_clicked)
-            retval = msg.exec_()
+            msg.exec_()
 
             self.loaded = False
         else:
@@ -106,16 +102,12 @@ class OpenProject(QtWidgets.QDialog):
             msg.setWindowIcon(QIcon(self.logo))
             msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
             msg.buttonClicked.connect(self.ok_clicked)
-            retval = msg.exec_()
+            msg.exec_()
             self.loaded = True
 
-            # self.sel_vids_new.Enable(True)
-            # self.addvid.Enable(True)
-            # self.edit_config_file.Enable(True)
             self.close()
 
     def ok_clicked(self):
-            print('ok')
             self.loaded = True
             self.accept()
 

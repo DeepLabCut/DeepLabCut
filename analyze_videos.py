@@ -30,6 +30,12 @@ class Analyze_videos_page(QWidget):
         self.filter = False
         self.showfigs = True
 
+
+        # if self.cfg.get("multianimalproject", False):
+        #     self.bodyparts = self.cfg["multianimalbodyparts"]
+        # else:
+        #     self.bodyparts = self.cfg["bodyparts"]
+
         self.inLayout = QtWidgets.QVBoxLayout(self)
         self.inLayout.setAlignment(Qt.AlignTop)
         self.inLayout.setSpacing(20)
@@ -112,10 +118,83 @@ class Analyze_videos_page(QWidget):
 
         self.layout_attributes.addLayout(self.layout_specify)
 
-        print(self.cfg.get("multianimalproject", False))
-
         if self.cfg.get("multianimalproject", False):
             print("multianimalproject")
+            # TODO: finish multianimal part:
+            # self.robust = wx.RadioBox(
+            #                 self,
+            #                 label="Use ffprobe to read video metadata (slow but robust)",
+            #                 choices=["Yes", "No"],
+            #                 majorDimension=1,
+            #                 style=wx.RA_SPECIFY_COLS,
+            #             )
+            #             self.robust.SetSelection(1)
+            #             self.hbox2.Add(self.robust, 1, 1)
+            #
+            #             self.create_video_with_all_detections = wx.RadioBox(
+            #                 self,
+            #                 label="Create video for checking detections",
+            #                 choices=["Yes", "No"],
+            #                 majorDimension=1,
+            #                 style=wx.RA_SPECIFY_COLS,
+            #             )
+            #             self.create_video_with_all_detections.SetSelection(1)
+            #             self.hbox2.Add(
+            #                 self.create_video_with_all_detections,
+            #                 1,
+            #                 wx.EXPAND | wx.TOP | wx.BOTTOM,
+            #                 1,
+            #             )
+            #
+            #             tracker_text = wx.StaticBox(
+            #                 self, label="Specify the Tracker Method (you can try each)"
+            #             )
+            #             tracker_text_boxsizer = wx.StaticBoxSizer(tracker_text, wx.VERTICAL)
+            #             trackertypes = ["skeleton", "box", "ellipse"]
+            #             self.trackertypes = wx.ComboBox(
+            #                 self, choices=trackertypes, style=wx.CB_READONLY
+            #             )
+            #             self.trackertypes.SetValue("ellipse")
+            #             tracker_text_boxsizer.Add(
+            #                 self.trackertypes, 1,wx.EXPAND | wx.TOP | wx.BOTTOM,1
+            #             )
+            #             self.hbox3.Add(tracker_text_boxsizer, 1,  1)
+            #
+            #             self.overwrite = wx.RadioBox(
+            #                 self,
+            #                 label="Overwrite tracking files (set to yes if you edit inference parameters)",
+            #                 choices=["Yes", "No"],
+            #                 majorDimension=1,
+            #                 style=wx.RA_SPECIFY_COLS,
+            #             )
+            #             self.overwrite.SetSelection(1)
+            #             self.hbox3.Add(self.overwrite, 1, 1)
+            #
+            #             self.calibrate = wx.RadioBox(
+            #                 self,
+            #                 label="Calibrate animal assembly?",
+            #                 choices=["Yes", "No"],
+            #                 majorDimension=1,
+            #                 style=wx.RA_SPECIFY_COLS,
+            #             )
+            #             self.calibrate.SetSelection(1)
+            #             self.hbox4.Add(self.calibrate, 1, 1)
+            #
+            #             self.identity_toggle = wx.RadioBox(
+            #                 self,
+            #                 label="Assemble with identity only?",
+            #                 choices=["Yes", "No"],
+            #                 majorDimension=1,
+            #                 style=wx.RA_SPECIFY_COLS,
+            #             )
+            #             self.identity_toggle.SetSelection(1)
+            #             self.hbox4.Add(self.identity_toggle, 1, 1)
+            #
+            #             winsize_text = wx.StaticBox(self, label="Prioritize past connections over a window of size:")
+            #             winsize_sizer = wx.StaticBoxSizer(winsize_text, wx.VERTICAL)
+            #             self.winsize = wx.SpinCtrl(self, value="0")
+            #             winsize_sizer.Add(self.winsize, 1, wx.EXPAND | wx.TOP | wx.BOTTOM,1)
+            #             self.hbox4.Add(winsize_sizer, 1, 1)
         else:
             self.layout_save_filter = QtWidgets.QHBoxLayout()
             self.layout_save_filter.setAlignment(Qt.AlignLeft | Qt.AlignTop)
@@ -143,31 +222,35 @@ class Analyze_videos_page(QWidget):
         self.step_button.setContentsMargins(0, 40, 40, 40)
         self.step_button.clicked.connect(self.analyze_videos)
 
+        self.edit_config_file = QtWidgets.QPushButton('Edit config.yaml')
+        # TODO: finish function:
+        # self.edit_config_file.clicked.connect(self.)
+
         self.layout_attributes.addWidget(self.step_button, alignment=Qt.AlignRight)
+        self.layout_attributes.addWidget(self.edit_config_file, alignment=Qt.AlignRight)
         self.inLayout.addLayout(self.layout_attributes)
-
-
 
     def update_cfg(self):
         text = self.proj_line.text()
         self.config = text
 
     def browse_dir(self):
-        print('browse_dir')
         cwd = self.config
         config = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select a configuration file", cwd, "Config files (*.yaml)"
         )
-        if not config:
+        if not config[0]:
             return
-        self.config = config
+        self.config = config[0]
+        self.cfg_line.setText(self.config)
 
     def select_video(self):
-        cwd = os.getcwd()
+        cwd = self.config.split('/')[0:-1]
+        cwd = '\\'.join(cwd)
         videos_file = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select video to modify", cwd, "", "*.*"
         )
-        if videos_file:
+        if videos_file[0]:
             self.vids = videos_file[0]
             self.filelist.append(self.vids)
             self.select_video_button.setText("Total %s Videos selected" % len(self.filelist))
@@ -179,7 +262,7 @@ class Analyze_videos_page(QWidget):
         l_opt.setSpacing(20)
         l_opt.setContentsMargins(20, 0, 0, 0)
 
-        opt_text = QtWidgets.QLabel("Select the network")
+        opt_text = QtWidgets.QLabel("Specify the videotype")
         self.videotype = QComboBox()
         self.videotype.setMinimumWidth(350)
         self.videotype.setMinimumHeight(30)
@@ -325,7 +408,16 @@ class Analyze_videos_page(QWidget):
         l_opt = QtWidgets.QVBoxLayout()
         l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
         l_opt.setSpacing(20)
-        #l_opt.setContentsMargins(20, 0, 0, 0)
+
+        # TODO: add CheckListBox:
+
+        #   self.trajectory_to_plot = wx.CheckListBox(
+        #       self, choices=bodyparts, style=0, name="Select the bodyparts"
+        #   )
+        #   self.trajectory_to_plot.Bind(wx.EVT_CHECKLISTBOX, self.getbp)
+        #   self.trajectory_to_plot.SetCheckedItems(range(len(bodyparts)))
+        #   self.trajectory_to_plot.Hide()
+
 
         opt_text = QtWidgets.QLabel("Want to plot the trajectories?")
         self.btngroup_plot_trajectory_choice = QButtonGroup()
@@ -371,11 +463,18 @@ class Analyze_videos_page(QWidget):
     def update_plot_trajectory_choice(self, rb):
         if rb.text() == "Yes":
             self.trajectory = True
+            # TODO: finish functionality
+            # self.trajectory_to_plot.Show()
+            # self.getbp()
         else:
             self.trajectory = False
+            # self.trajectory_to_plot.Hide()
+            # self.bodyparts = []
+
+    def getbp(self, event):
+        self.bodyparts = list(self.trajectory_to_plot.GetCheckedStrings())
 
     def analyze_videos(self):
-
         shuffle = self.shuffle.value()
         trainingsetindex = self.trainingset.value()
 
@@ -397,12 +496,7 @@ class Analyze_videos_page(QWidget):
         if self.cfg.get("multianimalproject", False):
             print("multianimalproject")
         else:
-            print("videotype", self.videotype.currentText())
-            print("shuffle", shuffle)
-            print("trainingsetindex", trainingsetindex)
-            print("save_as_csv", save_as_csv)
-            print("crop", crop)
-            print("dynamic", dynamic)
+
             scorername = deeplabcut.analyze_videos(
                 self.config,
                 self.filelist,
@@ -415,7 +509,6 @@ class Analyze_videos_page(QWidget):
                 dynamic=dynamic,
             )
             if _filter:
-                print("filter")
                 deeplabcut.filterpredictions(
                     self.config,
                     self.filelist,

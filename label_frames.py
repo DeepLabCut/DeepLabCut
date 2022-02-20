@@ -64,13 +64,10 @@ def label_frames(
     cfg = auxiliaryfunctions.read_config(config)
     if cfg.get("multianimalproject", False) or multiple_individualsGUI:
         import multiple_individuals_labeling_toolbox
-
-        #multiple_individuals_labeling_toolbox.show(config, config3d, sourceCam)
+        #multiple_individuals_labeling_toolbox.show(config, config3d, sourceCam) #TODO
     else:
-        print('labeling_toolbox')
         import labeling_toolbox
-
-        labeling_toolbox.show(self, config, config3d, sourceCam, imtypes=imtypes) #config, config3d, sourceCam, imtypes=imtypes
+        labeling_toolbox.show(self, config, config3d, sourceCam, imtypes=imtypes)
 
     os.chdir(startpath)
 
@@ -146,24 +143,23 @@ class Label_page(QWidget):
 
         self.cfg = auxiliaryfunctions.read_config(self.config)
         if self.cfg.get("multianimalproject", False):
-            print('F')
-            # ?
-        else: print('Y')
+            print('False')
+            #TODO:finish multianimal part
+        else: print('True')
 
     def update_cfg(self):
-        text = self.proj_line.text()
+        text = self.cfg_line.text()
         self.config = text
-        print(text)
 
     def browse_dir(self):
-        print('browse_dir')
         cwd = self.config
         config = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select a configuration file", cwd, "Config files (*.yaml)"
         )
-        if not config:
+        if not config[0]:
             return
-        self.config = config
+        self.config = config[0]
+        self.cfg_line.setText(self.config)
 
     def check_labelF(self, event):
         msg = QtWidgets.QMessageBox()
@@ -176,7 +172,7 @@ class Label_page(QWidget):
         self.logo = self.logo_dir + '/pictures/logo.png'
         msg.setWindowIcon(QIcon(self.logo))
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-        retval = msg.exec_()
+        msg.exec_()
 
         check_labels(self.config, visualizeindividuals=False)
 

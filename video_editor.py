@@ -18,6 +18,8 @@ class Video_editor_page(QWidget):
         self.filelist = []
         self.config = cfg
 
+        self.rotate_val = None
+
         self.inLayout = QtWidgets.QVBoxLayout(self)
         self.inLayout.setAlignment(Qt.AlignTop)
         self.inLayout.setSpacing(20)
@@ -110,12 +112,21 @@ class Video_editor_page(QWidget):
         self.layout_attributes.addLayout(self.layout_downsample)
         self.layout_attributes.addLayout(self.layout_shorten)
 
+        self.btn_layout = QtWidgets.QHBoxLayout()
+        self.btn_layout.setContentsMargins(0, 20, 20, 20)
+        self.btn_layout.setSpacing(20)
+
+        self.down_button = QtWidgets.QPushButton('DOWNSAMPLE')
+        self.down_button.setMaximumWidth(200)
+        self.down_button.clicked.connect(self.downsample_video)
+        self.btn_layout.addWidget(self.down_button, alignment=Qt.AlignRight)
+
         self.crop_button = QtWidgets.QPushButton('CROP')
-        self.crop_button.setContentsMargins(0, 40, 40, 40)
+        self.crop_button.setMaximumWidth(200)
         self.crop_button.clicked.connect(self.crop_video)
+        self.btn_layout.addWidget(self.crop_button, alignment=Qt.AlignRight)
 
-        self.layout_attributes.addWidget(self.crop_button, alignment=Qt.AlignRight)
-
+        self.layout_attributes.addLayout(self.btn_layout)
         self.inLayout.addLayout(self.layout_attributes)
 
     def update_cfg(self):
@@ -123,22 +134,23 @@ class Video_editor_page(QWidget):
         self.config = text
 
     def browse_dir(self):
-        print('browse_dir')
         cwd = self.config
         config = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select a configuration file", cwd, "Config files (*.yaml)"
         )
-        if not config:
+        if not config[0]:
             return
-        self.config = config
+        self.config = config[0]
+        self.cfg_line.setText(self.config)
 
     def select_video(self):
-        print('select_video')
-        cwd = os.getcwd()
+        cwd = self.config.split('/')[0:-1]
+        cwd = '\\'.join(cwd)
+
         videos_file = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select video to modify", cwd, "", "*.*"
         )
-        if videos_file:
+        if videos_file[0]:
             self.vids = videos_file[0]
             self.filelist.append(self.vids)
             self.select_video_button.setText("Total %s Videos selected"% len(self.filelist))
@@ -172,14 +184,14 @@ class Video_editor_page(QWidget):
         self.btngroup_rotate_video_choice = QButtonGroup()
 
         self.rotate_video_choice1 = QtWidgets.QRadioButton('Yes')
-        #self.rotate_video_choice1.toggled.connect(lambda: self.update_rotate_video_choice(self.rotate_video_choice1))
+        self.rotate_video_choice1.toggled.connect(lambda: self.update_rotate_video_choice(self.rotate_video_choice1))
 
         self.rotate_video_choice2 = QtWidgets.QRadioButton('No')
         self.rotate_video_choice2.setChecked(True)
-        #self.rotate_video_choice2.toggled.connect(lambda: self.update_rotate_video_choice(self.rotate_video_choice2))
+        self.rotate_video_choice2.toggled.connect(lambda: self.update_rotate_video_choice(self.rotate_video_choice2))
 
         self.rotate_video_choice3 = QtWidgets.QRadioButton('Arbitrary')
-        #self.rotate_video_choice3.toggled.connect(lambda: self.update_rotate_video_choice(self.rotate_video_choice3))
+        self.rotate_video_choice3.toggled.connect(lambda: self.update_rotate_video_choice(self.rotate_video_choice3))
 
         self.btngroup_rotate_video_choice.addButton(self.rotate_video_choice1)
         self.btngroup_rotate_video_choice.addButton(self.rotate_video_choice2)
@@ -246,6 +258,24 @@ class Video_editor_page(QWidget):
         l_opt.addWidget(opt_text)
         l_opt.addWidget(self.angle)
         self.layout_shorten.addLayout(l_opt)
+
+    def update_rotate_video_choice(self, rb):
+        self.rotate_val = rb.text()
+
+    def downsample_video(self, event):
+
+        Videos = self.filelist
+        if len(Videos) > 0:
+            for video in Videos:
+                deeplabcut.DownSampleVideo(
+                    video,
+                    width=-1,
+                    height=self.video_height.value(),
+                    rotatecw=self.rotate_val,
+                    angle=self.angle.value(),
+                )
+        else:
+            print("Please select a video first!")
 
     def crop_video(self, event):
         Videos = self.filelist

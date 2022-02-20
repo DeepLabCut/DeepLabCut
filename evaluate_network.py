@@ -4,12 +4,11 @@ import subprocess
 import sys
 import webbrowser
 
-from PyQt5.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup
+from PyQt5.QtWidgets import QWidget, QSpinBox, QButtonGroup
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 
 import deeplabcut
-from deeplabcut.gui import LOGO_PATH
 from deeplabcut.utils import auxiliaryfunctions
 
 class Evaluate_network_page(QWidget):
@@ -22,6 +21,7 @@ class Evaluate_network_page(QWidget):
         self.config = cfg
         self.plot_choice = False
         self.plot_scoremaps = False
+        self.cfg = auxiliaryfunctions.read_config(self.config)
         self.bodyparts = []
 
         self.inLayout = QtWidgets.QVBoxLayout(self)
@@ -109,12 +109,24 @@ class Evaluate_network_page(QWidget):
         self.opt_button = QtWidgets.QPushButton('Optional: Plot 3 test maps')
         self.opt_button.setMinimumWidth(200)
         self.opt_button.setContentsMargins(0, 80, 40, 40)
-        # self.opt_button.clicked.connect(self.plot_maps)
+        self.opt_button.clicked.connect(self.plot_maps)
 
         self.layout_attributes.addWidget(self.ev_nw_button, alignment=Qt.AlignRight)
         self.layout_attributes.addWidget(self.opt_button, alignment=Qt.AlignRight)
 
         self.inLayout.addLayout(self.layout_attributes)
+        # TODO: finish multianimal part:
+        # if config_file.get("multianimalproject", False):
+        #     self.inf_cfg_text = wx.Button(self, label="Edit the inference_config.yaml")
+        #     self.inf_cfg_text.Bind(wx.EVT_BUTTON, self.edit_inf_config)
+        #     self.sizer.Add(
+        #         self.inf_cfg_text,
+        #         pos=(4, 2),
+        #         span=(1, 1),
+        #         flag=wx.BOTTOM | wx.RIGHT,
+        #         border=10,
+        #     )
+
 
 
     def update_cfg(self):
@@ -127,9 +139,17 @@ class Evaluate_network_page(QWidget):
         config = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select a configuration file", cwd, "Config files (*.yaml)"
         )
-        if not config:
+        if not config[0]:
             return
-        self.config = config
+        self.config = config[0]
+        self.cfg_line.setText(self.config)
+
+    def plot_maps(self):
+        shuffle = self.shuffles.value()
+        # if self.plot_scoremaps.GetStringSelection() == "Yes":
+        deeplabcut.extract_save_all_maps(
+            self.config, shuffle=shuffle, Indices=[0, 1, 5]
+        )
 
     def _specify_shuffle(self):
         l_opt = QtWidgets.QVBoxLayout()
@@ -215,6 +235,11 @@ class Evaluate_network_page(QWidget):
         l_opt.setSpacing(20)
         l_opt.setContentsMargins(40, 0, 0, 0)
 
+        # if self.cfg.get("multianimalproject", False):
+        #     self.bodyparts = self.config["multianimalbodyparts"]
+        # else:
+        #     self.bodyparts = self.config["bodyparts"]
+
         opt_text = QtWidgets.QLabel("Compare all bodyparts?")
         self.btngroup_compare_bp = QButtonGroup()
 
@@ -236,24 +261,21 @@ class Evaluate_network_page(QWidget):
     def update_map_choice(self, rb):
         if rb.text() == "Yes":
             self.plot_scoremaps = True
-            print('plot_scoremaps = T')
         else:
             self.plot_scoremaps = False
-            print('plot_scoremaps = F')
 
     def update_plot_choice(self, rb):
         if rb.text() == "Yes":
             self.plot_choice = True
-            print('plot_choice = T')
+
         else:
             self.plot_choice = False
-            print('plot_choice = F')
+
 
     def update_bp_choice(self, rb):
+        # TODO: finish functionality
         if rb.text() == "Yes":
             self.plot_bp_choice = True
-            print('plot_bp_choice = T')
-
             self.bodyparts = "all"
             # self.bodyparts_to_compare.Hide()
             # self.SetSizer(self.sizer)
@@ -261,7 +283,6 @@ class Evaluate_network_page(QWidget):
 
         else:
             self.plot_bp_choice = False
-            print('plot_bp_choice = F')
             # self.bodyparts_to_compare.Show()
             # self.getbp(event)
             # self.SetSizer(self.sizer)
@@ -270,6 +291,30 @@ class Evaluate_network_page(QWidget):
     def getbp(self):
         self.bodyparts = list()
         # self.bodyparts = list(self.bodyparts_to_compare.GetCheckedStrings())
+
+    def edit_inf_config(self, event):
+        # Read the infer config file
+        cfg = auxiliaryfunctions.read_config(self.config)
+        trainingsetindex = self.trainingset.value()
+        trainFraction = cfg["TrainingFraction"][trainingsetindex]
+        self.inf_cfg_path = os.path.join(
+            cfg["project_path"],
+            auxiliaryfunctions.GetModelFolder(
+                trainFraction, self.shuffles.value(), cfg
+            ),
+            "test",
+            "inference_cfg.yaml",
+        )
+        # let the user open the file with default text editor. Also make it mac compatible
+        if sys.platform == "darwin":
+            self.file_open_bool = subprocess.call(["open", self.inf_cfg_path])
+            self.file_open_bool = True
+        else:
+            self.file_open_bool = webbrowser.open(self.inf_cfg_path)
+        if self.file_open_bool:
+            self.inf_cfg = auxiliaryfunctions.read_config(self.inf_cfg_path)
+        else:
+            raise FileNotFoundError("File not found!")
 
     def evaluate_network(self):
 
@@ -292,5 +337,4 @@ class Evaluate_network_page(QWidget):
             show_errors=True,
             comparisonbodyparts=self.bodyparts,
         )
-
 

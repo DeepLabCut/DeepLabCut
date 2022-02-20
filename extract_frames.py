@@ -272,9 +272,10 @@ class Extract_page(QWidget):
         config = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select a configuration file", cwd, "Config files (*.yaml)"
         )
-        if not config:
+        if not config[0]:
             return
-        self.config = config
+        self.config = config[0]
+        self.cfg_line.setText(self.config)
 
     def select_extract_method(self, rb_method):
         self.method = rb_method.text()
@@ -338,16 +339,6 @@ class Extract_page(QWidget):
         clusterstep = self.cluster_step_spin.value()
         slider_width = self.slider_width.value()
 
-        print('self.config: ', self.config)
-        print('mode: ', mode)
-        print('crop: ', crop)
-        print('userfeedback: ', userfeedback)
-        print('opencv: ', opencv)
-
-        print('algo: ', algo)
-        print('clusterstep: ', clusterstep)
-        print('slider_width: ', slider_width)
-
         extract_frames(
             self.config,
             mode,
@@ -371,7 +362,7 @@ class Extract_page(QWidget):
         self.logo = self.logo_dir + '/pictures/logo.png'
         msg.setWindowIcon(QIcon(self.logo))
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-        retval = msg.exec_()
+        msg.exec_()
 
 
 

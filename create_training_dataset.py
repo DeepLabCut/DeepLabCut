@@ -111,14 +111,15 @@ class Create_training_dataset_page(QWidget):
         self.config = text
 
     def browse_dir(self):
-        print('browse_dir')
         cwd = self.config
         config = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select a configuration file", cwd, "Config files (*.yaml)"
         )
-        if not config:
+
+        if not config[0]:
             return
-        self.config = config
+        self.config = config[0]
+        self.cfg_line.setText(self.config)
 
     def _select_network_method(self):
         l_opt = QtWidgets.QVBoxLayout()
@@ -168,7 +169,7 @@ class Create_training_dataset_page(QWidget):
         l_opt.addWidget(opt_text)
         l_opt.addWidget(self.aug_choice)
         l_opt.addStretch()
-        self.layout_select_network_method.addLayout(l_opt,1)
+        self.layout_select_network_method.addLayout(l_opt, 1)
 
     def _set_shuffle(self):
         l_opt = QtWidgets.QVBoxLayout()
@@ -258,12 +259,14 @@ class Create_training_dataset_page(QWidget):
             self.userfeedback = True
         else:
             self.userfeedback = False
+        # TODO: add functionality
 
     def update_model_comparison_choice(self, rb):
         if rb.text() == "Yes":
             self.model_comparison = True
         else:
             self.model_comparison = False
+        # TODO: add functionality
 
     def create_training_dataset(self):
         num_shuffles = self.shuffle.value()
@@ -274,6 +277,7 @@ class Create_training_dataset_page(QWidget):
 
         if config_file.get("multianimalproject", False):
             print('multianimalproject')
+            # TODO: add multianimal part
             # deeplabcut.create_multianimaltraining_dataset(
             #     self.config,
             #     num_shuffles,
@@ -282,7 +286,6 @@ class Create_training_dataset_page(QWidget):
             # )
         else:
             if self.model_comparison == False:
-                print(' comparison = False')
                 deeplabcut.create_training_dataset(
                     self.config,
                     num_shuffles,
@@ -302,10 +305,11 @@ class Create_training_dataset_page(QWidget):
                 self.logo = self.logo_dir + '/pictures/logo.png'
                 msg.setWindowIcon(QIcon(self.logo))
                 msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-                retval = msg.exec_()
+                msg.exec_()
 
             else:
-                print(' comparison = True')
+                # comparison = True
+                # TODO: finish model_comparison
                 deeplabcut.create_training_model_comparison(
                     self.config,
                     trainindex=trainindex,

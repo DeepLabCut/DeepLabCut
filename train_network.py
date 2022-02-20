@@ -1,11 +1,7 @@
 import os
-import pydoc
-import subprocess
-import sys
-import webbrowser
 from pathlib import Path
 
-from PyQt5.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup
+from PyQt5.QtWidgets import QWidget, QSpinBox, QButtonGroup
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
@@ -39,10 +35,6 @@ class Train_network_page(QWidget):
         self.display_iters = str(pose_cfg["display_iters"])
         self.save_iters = str(pose_cfg["save_iters"])
         self.max_iters = str(pose_cfg["multi_step"][-1][-1])
-
-        # self.display_iters = 1000
-        # self.save_iters = 50000
-        # self.max_iters = 1030000
 
         self.set_page()
 
@@ -132,14 +124,14 @@ class Train_network_page(QWidget):
         self.config = text
 
     def browse_dir(self):
-        print('browse_dir')
         cwd = self.config
         config = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select a configuration file", cwd, "Config files (*.yaml)"
         )
-        if not config:
+        if not config[0]:
             return
-        self.config = config
+        self.config = config[0]
+        self.cfg_line.setText(self.config)
 
     def _specify_shuffle(self):
         l_opt = QtWidgets.QVBoxLayout()
@@ -203,12 +195,11 @@ class Train_network_page(QWidget):
 
         opt_text = QtWidgets.QLabel("Display iterations")
         self.display_iters_spin = QSpinBox()
-        #print(int(self.max_iters))
+
         self.display_iters_spin.setMinimum(1)
         self.display_iters_spin.setMaximum(int(self.max_iters))
         self.display_iters_spin.setValue(1000)
 
-        #self.display_iters_spin.setMaximum(int(self.max_iters))
         self.display_iters_spin.setMinimumWidth(300)
         self.display_iters_spin.setMinimumHeight(30)
 
@@ -275,6 +266,7 @@ class Train_network_page(QWidget):
 
 
     def update_pose_cfg_choice(self, rb):
+        # TODO: finish functionality
         if rb.text() == "Yes":
             self.pose_cfg_choice = True
         else:
@@ -316,7 +308,7 @@ class Train_network_page(QWidget):
         self.logo = self.logo_dir + '/pictures/logo.png'
         msg.setWindowIcon(QIcon(self.logo))
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-        retval = msg.exec_()
+        msg.exec_()
 
 
 

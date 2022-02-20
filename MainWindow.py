@@ -1,13 +1,11 @@
 
-from PyQt5.QtWidgets import QAction
-from PyQt5.QtWidgets import QMenu, QLabel
-from PyQt5.QtWidgets import QVBoxLayout
+from PyQt5.QtWidgets import QAction, QMenu, QLabel, QVBoxLayout, QStatusBar
 
 from PyQt5.QtGui import QPixmap
 from PyQt5 import QtGui
 
-from CreateProject import *
-from OpenProject import *
+from create_project import *
+from open_project import *
 from extract_frames import *
 from label_frames import *
 from create_training_dataset import *
@@ -19,19 +17,12 @@ from create_videos import *
 from extract_outlier_frames import *
 from refine_labels import *
 
-import deeplabcut
-#from deeplabcut.gui import canvas, widgets
-#from deeplabcut.utils import auxiliaryfunctions, video_reader
 import os
-# import Dark Mode Theme
 import qdarkstyle
-#import breeze_resources
 
-#import qrc_resources
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    #config_loaded = QtCore.pyqtSignal()
 
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -50,30 +41,20 @@ class MainWindow(QtWidgets.QMainWindow):
         self.window_set()
         self.default_set()
 
-
         names = ['new_project.png', 'open.png', 'help.png']
         self.createActions(names)
         self.createMenuBar()
         self.createToolBars(0)
 
+        #TODO: finish toolbars and menubar functionality
 
-
-
-        #self.canvas = canvas.Canvas(self.main_panel)
-        #self.figtitle = widgets.ClickableLabel()
-        #self.figtitle.setAlignment(QtCore.Qt.AlignCenter)
-        #self.figtitle.setEnabled(False)
 
 
     def window_set(self):
         self.setWindowTitle("DeepLabCut")
-        #self.setGeometry(300,150,1500,750)
         self.setMinimumSize(1500, 750)
         self.statusbar = self.statusBar()
         self.statusbar.showMessage("www.deeplabcut.org")
-
-        self.setStatusBar(self.statusbar)
-
 
         palette = QtGui.QPalette()
         palette.setColor(QtGui.QPalette.Background, QtGui.QColor("#ffffff"))
@@ -89,7 +70,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def set_pic(self, name):
         pic_dir = os.path.dirname(os.path.realpath(name)) + os.path.sep
         file = pic_dir + '/pictures/' + name
-        pixmap = QPixmap(file)  # C:\Users\User\PycharmProjects
+        pixmap = QPixmap(file)
         lbl = QLabel(self)
         lbl.setPixmap(pixmap)
         lbl.setAlignment(Qt.AlignTop | Qt.AlignLeft)
@@ -102,10 +83,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         layout.addWidget(self.set_pic(name))
         layout.setAlignment(Qt.AlignTop)
-
-        #pol = QSizePolicy()
-        #pol.setHorizontalPolicy(QSizePolicy.Ignored)
-        #lbl.setSizePolicy(pol)
 
         lbl_welcome1 = QLabel("Welcome to the DeepLabCut Project Manager GUI!")
         lbl_welcome1.setAlignment(Qt.AlignCenter)
@@ -121,11 +98,7 @@ class MainWindow(QtWidgets.QMainWindow):
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
-        #desktop = QtWidgets.QDesktopWidget().screenGeometry(0)
-        #self.screen_width = desktop.width()
-        #self.screen_height = desktop.height()
-        #self.setFocus()
-        #self.activateWindow()
+
 
     def project_folder(self):
         return self.cfg.get('project_path', os.path.expanduser('~/Desktop'))
@@ -141,7 +114,6 @@ class MainWindow(QtWidgets.QMainWindow):
         # Creating action using the first constructor
         self.newAction = QAction(self)
         self.newAction.setText("&New Project...")
-        #self.newAction.setToolTip('Create new project')
 
         self.newAction.setIcon(QIcon("icons/"+names[0]))
         self.newAction.setShortcut('Ctrl+N')
@@ -200,11 +172,6 @@ class MainWindow(QtWidgets.QMainWindow):
     def updateMenuBar(self):
         self.fileMenu.removeAction(self.newAction)
         self.fileMenu.removeAction(self.openAction)
-        #self.fileMenu.addAction(self.helpAction)
-        #helpMenu.adjustSize()
-
-        #self.fileMenu.addAction(self.newAction)
-        #self.fileMenu.addAction(self.openAction)
 
     def createToolBars(self, flag):
         # File toolbar
@@ -214,6 +181,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.fileToolBar.addAction(self.newAction)
         self.fileToolBar.addAction(self.openAction)
         self.fileToolBar.addAction(self.helpAction)
+
     def remove_action(self):
         self.fileToolBar.removeAction(self.newAction)
         self.fileToolBar.removeAction(self.openAction)
@@ -222,13 +190,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def _create(self):
-        # action = self.sender()
         create_p = CreateProject(self)
         create_p.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         if create_p.exec_() == QtWidgets.QDialog.Accepted:
-            #print('loaded:   ', create_p.loaded)
             self.loaded =create_p.loaded
-            #print('cfg:   ', create_p.cfg)
             self.cfg = create_p.cfg
             self.user_feedback = create_p.user_fbk
 
@@ -239,9 +204,7 @@ class MainWindow(QtWidgets.QMainWindow):
         open_p = OpenProject(self)
         open_p.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         if open_p.exec_() == QtWidgets.QDialog.Accepted:
-            print('loaded:   ', open_p.loaded)
             self.loaded = open_p.loaded
-            print('cfg:   ', open_p.cfg)
             self.cfg = open_p.cfg
             self.user_feedback = open_p.user_fbk
 
@@ -276,9 +239,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def add_tabs(self):
         # Add all the other pages
-        # Create a top-level layout
 
-        # Create the tab widget with two tabs
         tabs = QtWidgets.QTabWidget()
         tabs.setContentsMargins(0, 20, 0, 0)
         extract_page = Extract_page(self, self.cfg)
