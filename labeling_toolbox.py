@@ -1,4 +1,3 @@
-
 import glob
 import os
 import os.path
@@ -47,7 +46,6 @@ class ImagePanel(QFrame):
 
         layout = QVBoxLayout(self)
         layout.addWidget(self.canvas)
-
 
     def getfigure(self):
         """
@@ -177,13 +175,15 @@ class ImagePanel(QFrame):
 
         return drawImage
 
-    def drawplot(self, img, img_name, itr, index, bodyparts, cmap, keep_view=False, dir=None):
+    def drawplot(
+        self, img, img_name, itr, index, bodyparts, cmap, keep_view=False, dir=None
+    ):
         xlim = self.axes.get_xlim()
         ylim = self.axes.get_ylim()
         self.axes.clear()
         # convert the image to RGB as you are showing the image with matplotlib
 
-        image = dir + '/' + img.split('/')[-1]
+        image = dir + "/" + img.split("/")[-1]
 
         im = cv2.imread(image)[..., ::-1]
 
@@ -192,7 +192,9 @@ class ImagePanel(QFrame):
         epLines, sourcePts, offsets = self.retrieveData_and_computeEpLines(img, itr)
 
         if epLines is not None:
-            im = self.drawEpLines(im.copy(), epLines, sourcePts, offsets, colorIndex, cmap)
+            im = self.drawEpLines(
+                im.copy(), epLines, sourcePts, offsets, colorIndex, cmap
+            )
         ax = self.axes.imshow(im, cmap=cmap)
 
         self.orig_xlim = self.axes.get_xlim()
@@ -217,12 +219,13 @@ class ImagePanel(QFrame):
         """
         Returns the colormaps ticks and . The order of ticks labels is reversed.
         """
-        image = dir+'/' + img.split('/')[-1]
+        image = dir + "/" + img.split("/")[-1]
         im = cv2.imread(image)
         norm = mcolors.Normalize(vmin=0, vmax=np.max(im))
         ticks = np.linspace(0, np.max(im), len(bodyparts))[::-1]
 
         return norm, ticks
+
 
 class ScrollPanel(QFrame):
     def __init__(self, parent):
@@ -237,7 +240,7 @@ class ScrollPanel(QFrame):
         self.choiceBox.setAlignment(Qt.AlignLeft | Qt.AlignTop)
 
         slider_vbox = QVBoxLayout(self)
-        slider_vbox.setContentsMargins(0,0,0,20)
+        slider_vbox.setContentsMargins(0, 0, 0, 20)
         slider_hbox = QHBoxLayout(self)
         label_minimum = QLabel("1")
         self.label = QLabel(str(markersize), alignment=Qt.AlignCenter)
@@ -268,7 +271,7 @@ class ScrollPanel(QFrame):
 
         self.btngroup = QButtonGroup()
         fieldrbns_text = QtWidgets.QLabel("Select a bodypart to label")
-        fieldrbns_text.setContentsMargins(0,20,0,0)
+        fieldrbns_text.setContentsMargins(0, 20, 0, 0)
         self.choiceBox.addWidget(fieldrbns_text)
         self.fieldradiobox = dict()
         for l in bodyparts:
@@ -285,40 +288,36 @@ class ScrollPanel(QFrame):
         self.choiceBox.Clear(True)
 
 
-
-
-
 class MainFrame(QMainWindow):
     def __init__(self, parent, config, imtypes, config3d, sourceCam):
         super(MainFrame, self).__init__(parent)
 
-        self.setWindowTitle('DeepLabCut2.0 - Labeling ToolBox')
+        self.setWindowTitle("DeepLabCut2.0 - Labeling ToolBox")
         self.setMinimumSize(1600, 750)
         size = self.size()
         self.imtypes = imtypes
 
         self.statusBar = QStatusBar()
         self.setStatusBar(self.statusBar)
-        self.statusBar.showMessage("Looking for a folder to start labeling. Click 'Load frames' to begin.")
+        self.statusBar.showMessage(
+            "Looking for a folder to start labeling. Click 'Load frames' to begin."
+        )
 
-        self.logo_dir = os.path.dirname(os.path.realpath('logo.png')) + os.path.sep
-        self.logo = self.logo_dir + '/pictures/logo.png'
+        self.logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
+        self.logo = self.logo_dir + "/assets/logo.png"
         self.setWindowIcon(QIcon(self.logo))
 
         centralWidget = QWidget(self)
         hbox = QHBoxLayout()
 
-        self.image_panel = ImagePanel(
-            self, config, config3d, sourceCam
-        )
+        self.image_panel = ImagePanel(self, config, config3d, sourceCam)
 
         self.image_panel.setFrameShape(QFrame.StyledPanel)
-        self.image_panel.setMinimumWidth(size.width()*0.75)
+        self.image_panel.setMinimumWidth(size.width() * 0.75)
         self.image_panel.setMinimumHeight(size.height() * 0.75)
 
-
         self.choice_panel = ScrollPanel(self)
-        self. choice_panel.setFrameShape(QFrame.StyledPanel)
+        self.choice_panel.setFrameShape(QFrame.StyledPanel)
 
         bottom = QFrame()
         bottom.setFrameShape(QFrame.StyledPanel)
@@ -344,37 +343,37 @@ class MainFrame(QMainWindow):
         self.l_btns.setSpacing(40)
         self.l_btns.setContentsMargins(20, 10, 20, 10)
 
-        self.load = QtWidgets.QPushButton('Load frames')
+        self.load = QtWidgets.QPushButton("Load frames")
         self.l_btns.addWidget(self.load, alignment=Qt.AlignCenter)
         self.load.setDefault(True)
         self.load.clicked.connect(self.browseDir)
 
-        self.prev = QtWidgets.QPushButton('<<Previous')
+        self.prev = QtWidgets.QPushButton("<<Previous")
         self.l_btns.addWidget(self.prev, alignment=Qt.AlignCenter)
         self.prev.setEnabled(False)
         self.prev.clicked.connect(self.prevImage)
 
-        self.next = QtWidgets.QPushButton('Next>>')
+        self.next = QtWidgets.QPushButton("Next>>")
         self.l_btns.addWidget(self.next, alignment=Qt.AlignCenter)
         self.next.setEnabled(False)
         self.next.clicked.connect(self.nextImage)
 
-        self.help = QtWidgets.QPushButton('Help')
+        self.help = QtWidgets.QPushButton("Help")
         self.l_btns.addWidget(self.help, alignment=Qt.AlignCenter)
         self.help.clicked.connect(self.helpButton)
 
-        self.zoom = QtWidgets.QPushButton('Zoom')
+        self.zoom = QtWidgets.QPushButton("Zoom")
         self.l_btns.addWidget(self.zoom, alignment=Qt.AlignCenter)
         self.zoom.setCheckable(True)
         self.zoom.setEnabled(False)
         self.zoom.clicked.connect(self.zoomButton)
 
-        self.home = QtWidgets.QPushButton('Home')
+        self.home = QtWidgets.QPushButton("Home")
         self.l_btns.addWidget(self.home, alignment=Qt.AlignCenter)
         self.home.setEnabled(False)
         self.home.clicked.connect(self.homeButton)
 
-        self.pan = QtWidgets.QPushButton('Pan')
+        self.pan = QtWidgets.QPushButton("Pan")
         self.l_btns.addWidget(self.pan, alignment=Qt.AlignCenter)
         self.pan.setCheckable(True)
         self.pan.setEnabled(False)
@@ -384,12 +383,12 @@ class MainFrame(QMainWindow):
         self.l_btns.addWidget(self.lock, alignment=Qt.AlignCenter)
         self.lock.stateChanged.connect(self.lockChecked)
 
-        self.save = QtWidgets.QPushButton('Save')
+        self.save = QtWidgets.QPushButton("Save")
         self.l_btns.addWidget(self.save, alignment=Qt.AlignCenter)
         self.save.setEnabled(False)
         self.save.clicked.connect(self.saveDataSet)
 
-        self.quit = QtWidgets.QPushButton('Quit')
+        self.quit = QtWidgets.QPushButton("Quit")
         self.l_btns.addWidget(self.quit, alignment=Qt.AlignCenter)
         self.quit.clicked.connect(self.quitButton)
 
@@ -413,6 +412,7 @@ class MainFrame(QMainWindow):
         # xlim and ylim have actually changed before turning zoom off
         self.prezoom_xlim = []
         self.prezoom_ylim = []
+
     #################################################################
 
     def updateZoomPan(self, *args):
@@ -432,7 +432,6 @@ class MainFrame(QMainWindow):
         # self.cb = event.GetEventObject()
         # self.view_locked = self.cb.GetValue()
         # TODO: finish
-
 
     def onZoom(self, ax):
         # See if axis limits have actually changed
@@ -460,7 +459,6 @@ class MainFrame(QMainWindow):
 
     ###############################################################################################################################
     # BUTTONS FUNCTIONS FOR HOTKEYS
-
 
     def OnSliderScroll(self, event):
         """
@@ -511,22 +509,22 @@ class MainFrame(QMainWindow):
         x1 = event.xdata
         y1 = event.ydata
 
-        rbn_id = abs(self.rdb.checkedId())-2
+        rbn_id = abs(self.rdb.checkedId()) - 2
         if event.button == 3:
             if rbn_id in self.buttonCounter:
                 msg = QtWidgets.QMessageBox()
                 msg.setIcon(QtWidgets.QMessageBox.Critical)
-                msg.setText("%s is already annotated. \nSelect another body part to annotate."
-                    % (str(self.bodyparts[rbn_id])))
+                msg.setText(
+                    "%s is already annotated. \nSelect another body part to annotate."
+                    % (str(self.bodyparts[rbn_id]))
+                )
                 msg.setWindowTitle("Error")
                 msg.setMinimumWidth(300)
                 msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
                 msg.exec_()
 
             else:
-                color = self.colormap(
-                    self.norm(self.colorIndex[rbn_id])
-                )
+                color = self.colormap(self.norm(self.colorIndex[rbn_id]))
                 circle = [
                     patches.Circle(
                         (x1, y1), radius=self.markerSize, fc=color, alpha=self.alpha
@@ -534,9 +532,7 @@ class MainFrame(QMainWindow):
                 ]
                 self.num.append(circle)
                 self.axes.add_patch(circle[0])
-                self.dr = auxfun_drag.DraggablePoint(
-                    circle[0], self.bodyparts[rbn_id]
-                )
+                self.dr = auxfun_drag.DraggablePoint(circle[0], self.bodyparts[rbn_id])
                 self.dr.connect()
                 self.buttonCounter.append(rbn_id)
                 self.dr.coords = [
@@ -550,13 +546,12 @@ class MainFrame(QMainWindow):
                 self.drs.append(self.dr)
                 self.updatedCoords.append(self.dr.coords)
                 if rbn_id < len(self.bodyparts) - 1:
-                    #self.rdb.setId(self.rdb.button(self.rdb.checkedId()),self.rdb.checkedId() - 1)
+                    # self.rdb.setId(self.rdb.button(self.rdb.checkedId()),self.rdb.checkedId() - 1)
                     self.rdb.button(self.rdb.checkedId() - 1).setChecked(True)
                 self.figure.canvas.draw()
 
         self.canvas.mpl_disconnect(self.onClick)
         self.canvas.mpl_disconnect(self.onButtonRelease)
-
 
     def browseDir(self):
         """
@@ -564,17 +559,17 @@ class MainFrame(QMainWindow):
         """
         self.statusBar.showMessage("Looking for a folder to start labeling...")
 
-        path = self.config_file.split('/')[0:-1]
-        path = '\\'.join(path)
+        path = self.config_file.split("/")[0:-1]
+        path = "\\".join(path)
 
         cwd = os.path.join(path, "labeled-data")
-        dirname = QtWidgets.QFileDialog.getExistingDirectory(self,
-                                                             'Choose the directory where your extracted frames are saved:',
-                                                             cwd)
+        dirname = QtWidgets.QFileDialog.getExistingDirectory(
+            self, "Choose the directory where your extracted frames are saved:", cwd
+        )
         if not dirname:
             return
         dirname = QtCore.QDir.toNativeSeparators(dirname)
-        self.dir = dirname.replace('\\','/')
+        self.dir = dirname.replace("\\", "/")
 
         self.load.setEnabled(False)
         self.next.setEnabled(True)
@@ -602,8 +597,8 @@ class MainFrame(QMainWindow):
         for imtype in self.imtypes:
             imlist.extend(
                 [
-                    fn.replace('\\','/')
-                    for fn in glob.glob(self.dir + '/' + imtype)
+                    fn.replace("\\", "/")
+                    for fn in glob.glob(self.dir + "/" + imtype)
                     if ("labeled.png" not in fn)
                 ]
             )
@@ -649,7 +644,7 @@ class MainFrame(QMainWindow):
 
         # Reading the image name
         self.img = self.dataFrame.index[self.iter]
-        self.img = self.img.replace('\\', '/')
+        self.img = self.img.replace("\\", "/")
 
         img_name = Path(self.img).name
         self.norm, self.colorIndex = self.image_panel.getColorIndices(
@@ -702,7 +697,13 @@ class MainFrame(QMainWindow):
                 self.canvas,
                 self.toolbar,
             ) = self.image_panel.drawplot(
-                self.img, img_name, self.iter, self.index, self.bodyparts, self.colormap, dir=self.dir
+                self.img,
+                img_name,
+                self.iter,
+                self.index,
+                self.bodyparts,
+                self.colormap,
+                dir=self.dir,
             )
 
             self.axes.callbacks.connect("xlim_changed", self.onZoom)
@@ -724,13 +725,15 @@ class MainFrame(QMainWindow):
         else:
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Question)
-            msg.setText("New label found in the config file. \nDo you want to see all the other labels?")
+            msg.setText(
+                "New label found in the config file. \nDo you want to see all the other labels?"
+            )
             msg.setWindowTitle("New label found")
             msg.setMinimumWidth(300)
             msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
             result = msg.exec_()
 
-            if (result == QMessageBox.No):
+            if result == QMessageBox.No:
                 self.bodyparts = self.new_bodyparts
                 self.norm, self.colorIndex = self.image_panel.getColorIndices(
                     self.img, self.bodyparts, self.dir
@@ -751,7 +754,13 @@ class MainFrame(QMainWindow):
                 self.canvas,
                 self.toolbar,
             ) = self.image_panel.drawplot(
-                self.img, img_name, self.iter, self.index, self.bodyparts, self.colormap, dir=self.dir
+                self.img,
+                img_name,
+                self.iter,
+                self.index,
+                self.bodyparts,
+                self.colormap,
+                dir=self.dir,
             )
             self.axes.callbacks.connect("xlim_changed", self.onZoom)
             self.axes.callbacks.connect("ylim_changed", self.onZoom)
@@ -767,7 +776,6 @@ class MainFrame(QMainWindow):
             self.cidClick = self.canvas.mpl_connect("button_press_event", self.onClick)
             self.canvas.mpl_connect("button_release_event", self.onButtonRelease)
             self.buttonCounter = MainFrame.plot(self, self.img)
-
 
         self.checkBox.stateChanged.connect(self.activateSlider)
         self.slider.valueChanged.connect(self.OnSliderScroll)
@@ -797,7 +805,7 @@ class MainFrame(QMainWindow):
                 self.axes.clear()
                 self.figure.delaxes(self.figure.axes[1])
 
-            #self.choiceBox.Clear(True) #TODO: find the same function in pyqt5
+            # self.choiceBox.Clear(True) #TODO: find the same function in pyqt5
             MainFrame.updateZoomPan(self)
             MainFrame.browseDir(self)
             self.save.setEnabled(True)
@@ -816,15 +824,16 @@ class MainFrame(QMainWindow):
         self.statusBar.showMessage("Help")
         self.help_info = QtWidgets.QDialog()
         self.help_info.adjustSize()
-        info = QLabel("1. Select an individual and one of the body parts from the radio buttons to add a label \n (if necessary change config.yaml first to edit the label names). \n\n2. Right clicking on the image will add the selected label and the next available label will be selected from the radio button. \n The label will be marked as circle filled with a unique color (and individual ID a unique color on the rim).\n\n3. To change the marker size, mark the checkbox and move the slider, then uncheck the box. \n\n4. Hover your mouse over this newly added label to see its name. \n\n5. Use left click and drag to move the label position.  \n\n6. Once you are happy with the position, right click to add the next available label. \n You can always reposition the old labels, if required. \n You can delete a label with the middle button mouse click (or click 'delete' key). \n\n7. Click Next/Previous to move to the next/previous image (or hot-key arrows left and right).\n User can also re-label a delete point by going to a previous/next image then returning to the current image. \n NOTE: the user cannot add a label if the label is already present. \n \n8. You can click Cntrl+C to copy+paste labels from a previous image into the current image. \n\n9. When finished labeling all the images, click 'Save' to save all the labels as a .h5 file. \n\n10. Click OK to continue using the labeling GUI. For more tips and hotkeys: see docs!!")
+        info = QLabel(
+            "1. Select an individual and one of the body parts from the radio buttons to add a label \n (if necessary change config.yaml first to edit the label names). \n\n2. Right clicking on the image will add the selected label and the next available label will be selected from the radio button. \n The label will be marked as circle filled with a unique color (and individual ID a unique color on the rim).\n\n3. To change the marker size, mark the checkbox and move the slider, then uncheck the box. \n\n4. Hover your mouse over this newly added label to see its name. \n\n5. Use left click and drag to move the label position.  \n\n6. Once you are happy with the position, right click to add the next available label. \n You can always reposition the old labels, if required. \n You can delete a label with the middle button mouse click (or click 'delete' key). \n\n7. Click Next/Previous to move to the next/previous image (or hot-key arrows left and right).\n User can also re-label a delete point by going to a previous/next image then returning to the current image. \n NOTE: the user cannot add a label if the label is already present. \n \n8. You can click Cntrl+C to copy+paste labels from a previous image into the current image. \n\n9. When finished labeling all the images, click 'Save' to save all the labels as a .h5 file. \n\n10. Click OK to continue using the labeling GUI. For more tips and hotkeys: see docs!!"
+        )
         self.help_info.setWindowTitle("User instructions")
-
 
         ok_btn = QPushButton("Ok")
         ok_btn.clicked.connect(self.close_help)
 
         layout = QVBoxLayout()
-        layout.setContentsMargins(40,40,40,40)
+        layout.setContentsMargins(40, 40, 40, 40)
         layout.setSpacing(20)
         layout.addWidget(info)
         layout.addWidget(ok_btn, alignment=Qt.AlignRight | Qt.AlignBottom)
@@ -928,7 +937,7 @@ class MainFrame(QMainWindow):
                 self.bodyparts,
                 self.colormap,
                 keep_view=self.view_locked,
-                dir = self.dir,
+                dir=self.dir,
             )
             self.axes.callbacks.connect("xlim_changed", self.onZoom)
             self.axes.callbacks.connect("ylim_changed", self.onZoom)
@@ -1005,7 +1014,7 @@ class MainFrame(QMainWindow):
         """
         Saves data for each image
         """
-        
+
         for idx, bp in enumerate(self.updatedCoords):
             self.dataFrame.loc[self.relativeimagenames[self.iter]][
                 self.scorer, bp[0][-2], "x"
@@ -1013,7 +1022,6 @@ class MainFrame(QMainWindow):
             self.dataFrame.loc[self.relativeimagenames[self.iter]][
                 self.scorer, bp[0][-2], "y"
             ] = bp[-1][1]
-
 
     def plot(self, img):
         """
@@ -1048,13 +1056,7 @@ class MainFrame(QMainWindow):
         return self.buttonCounter
 
 
-
-
-
-
-
 def show(self, config, config3d, sourceCam, imtypes=["*.png"]):
 
-    frame = MainFrame(self,config, imtypes, config3d, sourceCam)
+    frame = MainFrame(self, config, imtypes, config3d, sourceCam)
     frame.show()
-

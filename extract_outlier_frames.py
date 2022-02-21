@@ -1,18 +1,14 @@
-import os
-import pydoc
-import sys
-
-from PyQt5.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup, QDoubleSpinBox
+from PyQt5.QtWidgets import QWidget, QComboBox, QSpinBox
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 
 import deeplabcut
 from deeplabcut import utils
 
-class Extract_outlier_frames_page(QWidget):
 
+class ExtractOutlierFrames(QWidget):
     def __init__(self, parent, cfg):
-        super(Extract_outlier_frames_page, self).__init__(parent)
+        super(ExtractOutlierFrames, self).__init__(parent)
 
         # variable initilization
         self.config = cfg
@@ -55,7 +51,7 @@ class Extract_outlier_frames_page(QWidget):
         self.cfg_line.setText(self.config)
         self.cfg_line.textChanged[str].connect(self.update_cfg)
 
-        browse_button = QtWidgets.QPushButton('Browse')
+        browse_button = QtWidgets.QPushButton("Browse")
         browse_button.setMaximumWidth(100)
         browse_button.clicked.connect(self.browse_dir)
 
@@ -70,7 +66,7 @@ class Extract_outlier_frames_page(QWidget):
         choose_video_text = QtWidgets.QLabel("Choose the videos")
         choose_video_text.setContentsMargins(0, 0, 52, 0)
 
-        self.select_video_button = QtWidgets.QPushButton('Select videos to analyze')
+        self.select_video_button = QtWidgets.QPushButton("Select videos to analyze")
         self.select_video_button.setMaximumWidth(350)
         self.select_video_button.clicked.connect(self.select_video)
 
@@ -85,7 +81,7 @@ class Extract_outlier_frames_page(QWidget):
         self.layout_attributes.setSpacing(20)
         self.layout_attributes.setContentsMargins(0, 0, 40, 0)
 
-        label = QtWidgets.QLabel('Optional Attributes')
+        label = QtWidgets.QLabel("Optional Attributes")
         label.setContentsMargins(20, 20, 0, 10)
         self.layout_attributes.addWidget(label)
 
@@ -107,7 +103,7 @@ class Extract_outlier_frames_page(QWidget):
 
         self._outlier_alg()
         self.layout_attributes.addLayout(self.layout_outlier_alg)
-        self.ok_button = QtWidgets.QPushButton('Ok')
+        self.ok_button = QtWidgets.QPushButton("Ok")
         self.ok_button.setContentsMargins(0, 40, 40, 40)
         self.ok_button.clicked.connect(self.extract_outlier_frames)
 
@@ -130,15 +126,17 @@ class Extract_outlier_frames_page(QWidget):
         self.cfg_line.setText(self.config)
 
     def select_video(self):
-        cwd = self.config.split('/')[0:-1]
-        cwd = '\\'.join(cwd)
+        cwd = self.config.split("/")[0:-1]
+        cwd = "\\".join(cwd)
         videos_file = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select video to modify", cwd, "", "*.*"
         )
         if videos_file[0]:
             self.vids = videos_file[0]
             self.filelist.append(self.vids)
-            self.select_video_button.setText("Total %s Videos selected" % len(self.filelist))
+            self.select_video_button.setText(
+                "Total %s Videos selected" % len(self.filelist)
+            )
             self.select_video_button.adjustSize()
 
     def _layout_videotype(self):
@@ -192,6 +190,7 @@ class Extract_outlier_frames_page(QWidget):
         l_opt.addWidget(opt_text)
         l_opt.addWidget(self.trainingset)
         self.layout_specify.addLayout(l_opt)
+
     def _outlier_alg(self):
         l_opt = QtWidgets.QVBoxLayout()
         l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)

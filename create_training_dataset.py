@@ -7,10 +7,10 @@ from PyQt5.QtGui import QIcon
 import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
 
-class Create_training_dataset_page(QWidget):
 
+class CreateTrainingDataset(QWidget):
     def __init__(self, parent, cfg):
-        super(Create_training_dataset_page, self).__init__(parent)
+        super(CreateTrainingDataset, self).__init__(parent)
 
         self.method = "automatic"
         self.userfeedback = False
@@ -50,7 +50,7 @@ class Create_training_dataset_page(QWidget):
         self.cfg_line.setText(self.config)
         self.cfg_line.textChanged[str].connect(self.update_cfg)
 
-        browse_button = QtWidgets.QPushButton('Browse')
+        browse_button = QtWidgets.QPushButton("Browse")
         browse_button.setMaximumWidth(100)
         browse_button.clicked.connect(self.browse_dir)
 
@@ -65,7 +65,7 @@ class Create_training_dataset_page(QWidget):
         self.layout_attributes.setSpacing(20)
         self.layout_attributes.setContentsMargins(0, 0, 40, 0)
 
-        label = QtWidgets.QLabel('Optional Attributes')
+        label = QtWidgets.QLabel("Optional Attributes")
         label.setContentsMargins(20, 20, 0, 10)
         self.layout_attributes.addWidget(label)
 
@@ -98,8 +98,8 @@ class Create_training_dataset_page(QWidget):
         self.layout_attributes.addLayout(self.layout_set_indx)
         self.layout_attributes.addLayout(self.layout_feedback_compare)
 
-        self.ok_button = QtWidgets.QPushButton('Ok')
-        self.ok_button.setContentsMargins(0,40,40,40)
+        self.ok_button = QtWidgets.QPushButton("Ok")
+        self.ok_button.setContentsMargins(0, 40, 40, 40)
         self.ok_button.clicked.connect(self.create_training_dataset)
 
         self.layout_attributes.addWidget(self.ok_button, alignment=Qt.AlignRight)
@@ -145,11 +145,11 @@ class Create_training_dataset_page(QWidget):
             "efficientnet-b6",
         ]
         self.net_choice.addItems(options)
-        self.net_choice.setCurrentText('resnet_50')
+        self.net_choice.setCurrentText("resnet_50")
 
         l_opt.addWidget(opt_text)
         l_opt.addWidget(self.net_choice)
-        self.layout_select_network_method.addLayout(l_opt,1)
+        self.layout_select_network_method.addLayout(l_opt, 1)
 
     def _select_aug(self):
         l_opt = QtWidgets.QVBoxLayout()
@@ -163,8 +163,7 @@ class Create_training_dataset_page(QWidget):
         self.aug_choice.setMinimumHeight(30)
         options = ["default", "tensorpack", "imgaug"]
         self.aug_choice.addItems(options)
-        self.aug_choice.setCurrentText('imgaug')
-
+        self.aug_choice.setCurrentText("imgaug")
 
         l_opt.addWidget(opt_text)
         l_opt.addWidget(self.aug_choice)
@@ -185,7 +184,7 @@ class Create_training_dataset_page(QWidget):
 
         l_opt.addWidget(opt_text)
         l_opt.addWidget(self.shuffle)
-        self.layout_set_indx.addLayout(l_opt,1)
+        self.layout_set_indx.addLayout(l_opt, 1)
 
     def _specify_ts_ind(self):
         l_opt = QtWidgets.QVBoxLayout()
@@ -209,15 +208,21 @@ class Create_training_dataset_page(QWidget):
         l_opt.setSpacing(20)
         l_opt.setContentsMargins(20, 0, 0, 0)
 
-        opt_text = QtWidgets.QLabel("User feedback (to confirm overwrite train/test split)?")
+        opt_text = QtWidgets.QLabel(
+            "User feedback (to confirm overwrite train/test split)?"
+        )
         self.btngroup_userfeedback = QButtonGroup()
 
-        self.feedback_1 = QtWidgets.QRadioButton('Yes')
-        self.feedback_1.toggled.connect(lambda: self.update_feedback_choice(self.feedback_1))
+        self.feedback_1 = QtWidgets.QRadioButton("Yes")
+        self.feedback_1.toggled.connect(
+            lambda: self.update_feedback_choice(self.feedback_1)
+        )
 
-        self.feedback_2 = QtWidgets.QRadioButton('No')
+        self.feedback_2 = QtWidgets.QRadioButton("No")
         self.feedback_2.setChecked(True)
-        self.feedback_2.toggled.connect(lambda: self.update_feedback_choice(self.feedback_2))
+        self.feedback_2.toggled.connect(
+            lambda: self.update_feedback_choice(self.feedback_2)
+        )
 
         self.btngroup_userfeedback.addButton(self.feedback_1)
         self.btngroup_userfeedback.addButton(self.feedback_2)
@@ -237,12 +242,16 @@ class Create_training_dataset_page(QWidget):
         opt_text = QtWidgets.QLabel("Want to compare models?")
         self.btngroup_comparison = QButtonGroup()
 
-        self.model_comparison_choice1 = QtWidgets.QRadioButton('Yes')
-        self.model_comparison_choice1.toggled.connect(lambda: self.update_model_comparison_choice(self.model_comparison_choice1))
+        self.model_comparison_choice1 = QtWidgets.QRadioButton("Yes")
+        self.model_comparison_choice1.toggled.connect(
+            lambda: self.update_model_comparison_choice(self.model_comparison_choice1)
+        )
 
-        self.model_comparison_choice2 = QtWidgets.QRadioButton('No')
+        self.model_comparison_choice2 = QtWidgets.QRadioButton("No")
         self.model_comparison_choice2.setChecked(True)
-        self.model_comparison_choice2.toggled.connect(lambda: self.update_model_comparison_choice(self.model_comparison_choice2))
+        self.model_comparison_choice2.toggled.connect(
+            lambda: self.update_model_comparison_choice(self.model_comparison_choice2)
+        )
 
         self.btngroup_comparison.addButton(self.model_comparison_choice1)
         self.btngroup_comparison.addButton(self.model_comparison_choice2)
@@ -252,7 +261,6 @@ class Create_training_dataset_page(QWidget):
         l_opt.addWidget(self.model_comparison_choice2)
 
         self.layout_feedback_compare.addLayout(l_opt, 1)
-
 
     def update_feedback_choice(self, rb):
         if rb.text() == "Yes":
@@ -276,7 +284,7 @@ class Create_training_dataset_page(QWidget):
         userfeedback = self.userfeedback
 
         if config_file.get("multianimalproject", False):
-            print('multianimalproject')
+            print("multianimalproject")
             # TODO: add multianimal part
             # deeplabcut.create_multianimaltraining_dataset(
             #     self.config,
@@ -297,12 +305,16 @@ class Create_training_dataset_page(QWidget):
                 msg = QtWidgets.QMessageBox()
                 msg.setIcon(QtWidgets.QMessageBox.Information)
                 msg.setText("The training dataset is successfully created.")
-                msg.setInformativeText("Use the function 'train_network' to start training. Happy training!")
+                msg.setInformativeText(
+                    "Use the function 'train_network' to start training. Happy training!"
+                )
 
                 msg.setWindowTitle("Info")
                 msg.setMinimumWidth(900)
-                self.logo_dir = os.path.dirname(os.path.realpath('logo.png')) + os.path.sep
-                self.logo = self.logo_dir + '/pictures/logo.png'
+                self.logo_dir = (
+                    os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
+                )
+                self.logo = self.logo_dir + "/assets/logo.png"
                 msg.setWindowIcon(QIcon(self.logo))
                 msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
                 msg.exec_()
@@ -318,6 +330,3 @@ class Create_training_dataset_page(QWidget):
                     net_types=self.net_type,
                     augmenter_types=self.aug_type,
                 )
-
-
-

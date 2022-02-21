@@ -1,5 +1,4 @@
 import os
-import pydoc
 import subprocess
 import sys
 import webbrowser
@@ -11,10 +10,10 @@ from PyQt5.QtCore import Qt
 import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
 
-class Evaluate_network_page(QWidget):
 
+class EvaluateNetwork(QWidget):
     def __init__(self, parent, cfg):
-        super(Evaluate_network_page, self).__init__(parent)
+        super(EvaluateNetwork, self).__init__(parent)
 
         self.method = "automatic"
 
@@ -60,7 +59,7 @@ class Evaluate_network_page(QWidget):
         self.cfg_line.setText(self.config)
         self.cfg_line.textChanged[str].connect(self.update_cfg)
 
-        browse_button = QtWidgets.QPushButton('Browse')
+        browse_button = QtWidgets.QPushButton("Browse")
         browse_button.setMaximumWidth(100)
         browse_button.clicked.connect(self.browse_dir)
 
@@ -75,7 +74,7 @@ class Evaluate_network_page(QWidget):
         self.layout_attributes.setSpacing(20)
         self.layout_attributes.setContentsMargins(0, 0, 40, 0)
 
-        label = QtWidgets.QLabel('Attributes')
+        label = QtWidgets.QLabel("Attributes")
         label.setContentsMargins(20, 20, 0, 10)
         self.layout_attributes.addWidget(label)
 
@@ -101,12 +100,12 @@ class Evaluate_network_page(QWidget):
         self.layout_attributes.addLayout(self.layout_specify_plot)
         self.layout_attributes.addLayout(self.layout_predictions)
 
-        self.ev_nw_button = QtWidgets.QPushButton('RUN: Evaluate Network')
+        self.ev_nw_button = QtWidgets.QPushButton("RUN: Evaluate Network")
         self.ev_nw_button.setMinimumWidth(200)
         self.ev_nw_button.setContentsMargins(0, 80, 40, 40)
         self.ev_nw_button.clicked.connect(self.evaluate_network)
 
-        self.opt_button = QtWidgets.QPushButton('Optional: Plot 3 test maps')
+        self.opt_button = QtWidgets.QPushButton("Optional: Plot 3 test maps")
         self.opt_button.setMinimumWidth(200)
         self.opt_button.setContentsMargins(0, 80, 40, 40)
         self.opt_button.clicked.connect(self.plot_maps)
@@ -126,8 +125,6 @@ class Evaluate_network_page(QWidget):
         #         flag=wx.BOTTOM | wx.RIGHT,
         #         border=10,
         #     )
-
-
 
     def update_cfg(self):
         text = self.proj_line.text()
@@ -166,6 +163,7 @@ class Evaluate_network_page(QWidget):
         l_opt.addWidget(opt_text)
         l_opt.addWidget(self.shuffles)
         self.layout_specify_plot.addLayout(l_opt)
+
     def _specify_ts_index(self):
         l_opt = QtWidgets.QVBoxLayout()
         l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
@@ -181,21 +179,28 @@ class Evaluate_network_page(QWidget):
         l_opt.addWidget(opt_text)
         l_opt.addWidget(self.trainingset)
         self.layout_specify_plot.addLayout(l_opt)
+
     def _plot_maps_choice(self):
         l_opt = QtWidgets.QVBoxLayout()
         l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
         l_opt.setSpacing(20)
         l_opt.setContentsMargins(20, 0, 0, 0)
 
-        opt_text = QtWidgets.QLabel("Want to plot maps (ALL images): scoremaps, PAFs, locrefs?")
+        opt_text = QtWidgets.QLabel(
+            "Want to plot maps (ALL images): scoremaps, PAFs, locrefs?"
+        )
         self.btngroup_plot_maps_choice = QButtonGroup()
 
-        self.plot_maps_choice1 = QtWidgets.QRadioButton('Yes')
-        self.plot_maps_choice1.toggled.connect(lambda: self.update_map_choice(self.plot_maps_choice1))
+        self.plot_maps_choice1 = QtWidgets.QRadioButton("Yes")
+        self.plot_maps_choice1.toggled.connect(
+            lambda: self.update_map_choice(self.plot_maps_choice1)
+        )
 
-        self.plot_maps_choice2 = QtWidgets.QRadioButton('No')
+        self.plot_maps_choice2 = QtWidgets.QRadioButton("No")
         self.plot_maps_choice2.setChecked(True)
-        self.plot_maps_choice2.toggled.connect(lambda: self.update_map_choice(self.plot_maps_choice2))
+        self.plot_maps_choice2.toggled.connect(
+            lambda: self.update_map_choice(self.plot_maps_choice2)
+        )
 
         self.btngroup_plot_maps_choice.addButton(self.plot_maps_choice1)
         self.btngroup_plot_maps_choice.addButton(self.plot_maps_choice2)
@@ -211,15 +216,21 @@ class Evaluate_network_page(QWidget):
         l_opt.setSpacing(20)
         l_opt.setContentsMargins(20, 0, 0, 0)
 
-        opt_text = QtWidgets.QLabel("Want to plot predictions (as in standard DLC projects)?")
+        opt_text = QtWidgets.QLabel(
+            "Want to plot predictions (as in standard DLC projects)?"
+        )
         self.btngroup_plot_predictions_choice = QButtonGroup()
 
-        self.plot_predictions_choice1 = QtWidgets.QRadioButton('Yes')
-        self.plot_predictions_choice1.toggled.connect(lambda: self.update_plot_choice(self.plot_predictions_choice1))
+        self.plot_predictions_choice1 = QtWidgets.QRadioButton("Yes")
+        self.plot_predictions_choice1.toggled.connect(
+            lambda: self.update_plot_choice(self.plot_predictions_choice1)
+        )
 
-        self.plot_predictions_choice2 = QtWidgets.QRadioButton('No')
+        self.plot_predictions_choice2 = QtWidgets.QRadioButton("No")
         self.plot_predictions_choice2.setChecked(True)
-        self.plot_predictions_choice2.toggled.connect(lambda: self.update_plot_choice(self.plot_predictions_choice2))
+        self.plot_predictions_choice2.toggled.connect(
+            lambda: self.update_plot_choice(self.plot_predictions_choice2)
+        )
 
         self.btngroup_plot_predictions_choice.addButton(self.plot_predictions_choice1)
         self.btngroup_plot_predictions_choice.addButton(self.plot_predictions_choice2)
@@ -243,12 +254,16 @@ class Evaluate_network_page(QWidget):
         opt_text = QtWidgets.QLabel("Compare all bodyparts?")
         self.btngroup_compare_bp = QButtonGroup()
 
-        self.compare_bp_choice1 = QtWidgets.QRadioButton('Yes')
+        self.compare_bp_choice1 = QtWidgets.QRadioButton("Yes")
         self.compare_bp_choice1.setChecked(True)
-        self.compare_bp_choice1.toggled.connect(lambda: self.update_bp_choice(self.compare_bp_choice1))
+        self.compare_bp_choice1.toggled.connect(
+            lambda: self.update_bp_choice(self.compare_bp_choice1)
+        )
 
-        self.compare_bp_choice2 = QtWidgets.QRadioButton('No')
-        self.compare_bp_choice2.toggled.connect(lambda: self.update_bp_choice(self.compare_bp_choice2))
+        self.compare_bp_choice2 = QtWidgets.QRadioButton("No")
+        self.compare_bp_choice2.toggled.connect(
+            lambda: self.update_bp_choice(self.compare_bp_choice2)
+        )
 
         self.btngroup_compare_bp.addButton(self.compare_bp_choice1)
         self.btngroup_compare_bp.addButton(self.compare_bp_choice2)
@@ -270,7 +285,6 @@ class Evaluate_network_page(QWidget):
 
         else:
             self.plot_choice = False
-
 
     def update_bp_choice(self, rb):
         # TODO: finish functionality
@@ -337,4 +351,3 @@ class Evaluate_network_page(QWidget):
             show_errors=True,
             comparisonbodyparts=self.bodyparts,
         )
-

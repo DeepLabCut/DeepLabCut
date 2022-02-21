@@ -1,29 +1,22 @@
 import os
-import pydoc
-import sys
-from pathlib import Path
 
 from PyQt5.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 
-
 from deeplabcut.generate_training_dataset import extract_frames
-from deeplabcut.utils import auxiliaryfunctions
 
-class Extract_page(QWidget):
 
+class ExtractFrames(QWidget):
     def __init__(self, parent, cfg):
-        super(Extract_page, self).__init__(parent)
-
+        super(ExtractFrames, self).__init__(parent)
 
         # variable initilization
         self.method = "automatic"
         self.crop = False
         self.feedback = False
         self.opencv = True
-
 
         self.config = cfg
 
@@ -48,7 +41,7 @@ class Extract_page(QWidget):
 
         layout_cfg = QtWidgets.QHBoxLayout()
         layout_cfg.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        #layout_cfg.setSpacing(20)
+        # layout_cfg.setSpacing(20)
         layout_cfg.setContentsMargins(20, 10, 550, 0)
         cfg_text = QtWidgets.QLabel("Select the config file")
 
@@ -59,7 +52,7 @@ class Extract_page(QWidget):
         self.cfg_line.setText(self.config)
         self.cfg_line.textChanged[str].connect(self.update_cfg)
 
-        browse_button = QtWidgets.QPushButton('Browse')
+        browse_button = QtWidgets.QPushButton("Browse")
         browse_button.setMaximumWidth(100)
         browse_button.clicked.connect(self.browse_dir)
 
@@ -74,7 +67,7 @@ class Extract_page(QWidget):
         self.layout_attributes.setSpacing(20)
         self.layout_attributes.setContentsMargins(0, 0, 40, 50)
 
-        label = QtWidgets.QLabel('Optional Attributes')
+        label = QtWidgets.QLabel("Optional Attributes")
         label.setContentsMargins(20, 20, 0, 10)
         self.layout_attributes.addWidget(label)
 
@@ -97,7 +90,7 @@ class Extract_page(QWidget):
         self._specify_step()
         self._specify_width()
 
-        self.ok_button = QtWidgets.QPushButton('Ok')
+        self.ok_button = QtWidgets.QPushButton("Ok")
         # self.ok_button.setDefault(True)
         self.ok_button.clicked.connect(self.extract_frames)
 
@@ -106,8 +99,6 @@ class Extract_page(QWidget):
         self.layout_attributes.addWidget(self.ok_button, alignment=Qt.AlignRight)
 
         inLayout.addLayout(self.layout_attributes)
-
-
 
     def _choose(self):
         l_opt1 = QtWidgets.QVBoxLayout()
@@ -118,13 +109,16 @@ class Extract_page(QWidget):
         self.btngroup1 = QButtonGroup()
 
         opt1_text = QtWidgets.QLabel("Choose the extraction method")
-        self.method_choice_rb1 = QtWidgets.QRadioButton('automatic')
+        self.method_choice_rb1 = QtWidgets.QRadioButton("automatic")
         self.method_choice_rb1.setChecked(True)
-        self.method_choice_rb1.toggled.connect(lambda: self.select_extract_method(self.method_choice_rb1))
+        self.method_choice_rb1.toggled.connect(
+            lambda: self.select_extract_method(self.method_choice_rb1)
+        )
 
-
-        self.method_choice_rb2 = QtWidgets.QRadioButton('manual')
-        self.method_choice_rb2.clicked.connect(lambda: self.select_extract_method(self.method_choice_rb2))
+        self.method_choice_rb2 = QtWidgets.QRadioButton("manual")
+        self.method_choice_rb2.clicked.connect(
+            lambda: self.select_extract_method(self.method_choice_rb2)
+        )
 
         self.btngroup1.addButton(self.method_choice_rb1)
         self.btngroup1.addButton(self.method_choice_rb2)
@@ -143,15 +137,21 @@ class Extract_page(QWidget):
         opt_text = QtWidgets.QLabel("Want to crop the frames?")
         self.btngroup_crop = QButtonGroup()
 
-        self.crop_choice1 = QtWidgets.QRadioButton('False')
+        self.crop_choice1 = QtWidgets.QRadioButton("False")
         self.crop_choice1.setChecked(True)
-        self.crop_choice1.toggled.connect(lambda: self.update_crop_choice(self.crop_choice1))
+        self.crop_choice1.toggled.connect(
+            lambda: self.update_crop_choice(self.crop_choice1)
+        )
 
         self.crop_choice2 = QtWidgets.QRadioButton("True (read from config file)")
-        self.crop_choice2.toggled.connect(lambda: self.update_crop_choice(self.crop_choice2))
+        self.crop_choice2.toggled.connect(
+            lambda: self.update_crop_choice(self.crop_choice2)
+        )
 
-        self.crop_choice3 = QtWidgets.QRadioButton('GUI')
-        self.crop_choice3.toggled.connect(lambda: self.update_crop_choice(self.crop_choice3))
+        self.crop_choice3 = QtWidgets.QRadioButton("GUI")
+        self.crop_choice3.toggled.connect(
+            lambda: self.update_crop_choice(self.crop_choice3)
+        )
 
         self.btngroup_crop.addButton(self.crop_choice1)
         self.btngroup_crop.addButton(self.crop_choice2)
@@ -173,12 +173,16 @@ class Extract_page(QWidget):
         opt_text = QtWidgets.QLabel("Need user feedback?")
         self.btngroup_feedback = QButtonGroup()
 
-        self.feedback_choice1 = QtWidgets.QRadioButton('No')
+        self.feedback_choice1 = QtWidgets.QRadioButton("No")
         self.feedback_choice1.setChecked(True)
-        self.feedback_choice1.toggled.connect(lambda: self.update_feedback_choice(self.feedback_choice1))
+        self.feedback_choice1.toggled.connect(
+            lambda: self.update_feedback_choice(self.feedback_choice1)
+        )
 
-        self.feedback_choice2 = QtWidgets.QRadioButton('Yes')
-        self.feedback_choice2.toggled.connect(lambda: self.update_feedback_choice(self.feedback_choice2))
+        self.feedback_choice2 = QtWidgets.QRadioButton("Yes")
+        self.feedback_choice2.toggled.connect(
+            lambda: self.update_feedback_choice(self.feedback_choice2)
+        )
 
         self.btngroup_feedback.addButton(self.feedback_choice1)
         self.btngroup_feedback.addButton(self.feedback_choice2)
@@ -198,12 +202,16 @@ class Extract_page(QWidget):
         opt_text = QtWidgets.QLabel("Want to use openCV?")
         self.btngroup_opencv = QButtonGroup()
 
-        self.opencv_choice1 = QtWidgets.QRadioButton('No')
-        self.opencv_choice1.toggled.connect(lambda: self.update_opencv_choice(self.opencv_choice1))
+        self.opencv_choice1 = QtWidgets.QRadioButton("No")
+        self.opencv_choice1.toggled.connect(
+            lambda: self.update_opencv_choice(self.opencv_choice1)
+        )
 
-        self.opencv_choice2 = QtWidgets.QRadioButton('Yes')
+        self.opencv_choice2 = QtWidgets.QRadioButton("Yes")
         self.opencv_choice2.setChecked(True)
-        self.opencv_choice2.toggled.connect(lambda: self.update_opencv_choice(self.opencv_choice2))
+        self.opencv_choice2.toggled.connect(
+            lambda: self.update_opencv_choice(self.opencv_choice2)
+        )
 
         self.btngroup_opencv.addButton(self.opencv_choice1)
         self.btngroup_opencv.addButton(self.opencv_choice2)
@@ -281,33 +289,33 @@ class Extract_page(QWidget):
         self.method = rb_method.text()
         print(self.method)
         if self.method == "manual":
-             self.crop_choice1.setEnabled(False)
-             self.crop_choice2.setEnabled(False)
-             self.crop_choice3.setEnabled(False)
+            self.crop_choice1.setEnabled(False)
+            self.crop_choice2.setEnabled(False)
+            self.crop_choice3.setEnabled(False)
 
-             self.feedback_choice1.setEnabled(False)
-             self.feedback_choice2.setEnabled(False)
+            self.feedback_choice1.setEnabled(False)
+            self.feedback_choice2.setEnabled(False)
 
-             self.opencv_choice1.setEnabled(False)
-             self.opencv_choice2.setEnabled(False)
+            self.opencv_choice1.setEnabled(False)
+            self.opencv_choice2.setEnabled(False)
 
-             self.algo_choice.setEnabled(False)
-             self.cluster_step_spin.setEnabled(False)
-             self.slider_width.setEnabled(False)
+            self.algo_choice.setEnabled(False)
+            self.cluster_step_spin.setEnabled(False)
+            self.slider_width.setEnabled(False)
         else:
-             self.crop_choice1.setEnabled(True)
-             self.crop_choice2.setEnabled(True)
-             self.crop_choice3.setEnabled(True)
+            self.crop_choice1.setEnabled(True)
+            self.crop_choice2.setEnabled(True)
+            self.crop_choice3.setEnabled(True)
 
-             self.feedback_choice1.setEnabled(True)
-             self.feedback_choice2.setEnabled(True)
+            self.feedback_choice1.setEnabled(True)
+            self.feedback_choice2.setEnabled(True)
 
-             self.opencv_choice1.setEnabled(True)
-             self.opencv_choice2.setEnabled(True)
+            self.opencv_choice1.setEnabled(True)
+            self.opencv_choice2.setEnabled(True)
 
-             self.algo_choice.setEnabled(True)
-             self.cluster_step_spin.setEnabled(True)
-             self.slider_width.setEnabled(True)
+            self.algo_choice.setEnabled(True)
+            self.cluster_step_spin.setEnabled(True)
+            self.slider_width.setEnabled(True)
 
     def update_crop_choice(self, rb):
         if rb.text() == "True (read from config file)":
@@ -329,7 +337,6 @@ class Extract_page(QWidget):
         else:
             self.opencv = False
 
-
     def extract_frames(self):
         mode = self.method
         algo = self.algo_choice.currentText()
@@ -349,7 +356,7 @@ class Extract_page(QWidget):
             cluster_resizewidth=30,
             cluster_color=False,
             opencv=opencv,
-            slider_width=slider_width
+            slider_width=slider_width,
         )
 
         msg = QtWidgets.QMessageBox()
@@ -358,18 +365,8 @@ class Extract_page(QWidget):
 
         msg.setWindowTitle("Info")
         msg.setMinimumWidth(900)
-        self.logo_dir = os.path.dirname(os.path.realpath('logo.png')) + os.path.sep
-        self.logo = self.logo_dir + '/pictures/logo.png'
+        self.logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
+        self.logo = self.logo_dir + "/assets/logo.png"
         msg.setWindowIcon(QIcon(self.logo))
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()
-
-
-
-
-
-
-
-
-
-

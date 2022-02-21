@@ -1,21 +1,14 @@
-import os
-import platform
-import pydoc
-import subprocess
-import sys
-import webbrowser
-
 from deeplabcut.utils import auxiliaryfunctions
-from PyQt5.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup, QDoubleSpinBox
+from PyQt5.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 
 import deeplabcut
 
-class Analyze_videos_page(QWidget):
 
+class AnalyzeVideos(QWidget):
     def __init__(self, parent, cfg):
-        super(Analyze_videos_page, self).__init__(parent)
+        super(AnalyzeVideos, self).__init__(parent)
 
         self.filelist = []
         self.picklelist = []
@@ -29,7 +22,6 @@ class Analyze_videos_page(QWidget):
         self.trajectory = False
         self.filter = False
         self.showfigs = True
-
 
         # if self.cfg.get("multianimalproject", False):
         #     self.bodyparts = self.cfg["multianimalbodyparts"]
@@ -72,7 +64,7 @@ class Analyze_videos_page(QWidget):
         self.cfg_line.setText(self.config)
         self.cfg_line.textChanged[str].connect(self.update_cfg)
 
-        browse_button = QtWidgets.QPushButton('Browse')
+        browse_button = QtWidgets.QPushButton("Browse")
         browse_button.setMaximumWidth(100)
         browse_button.clicked.connect(self.browse_dir)
 
@@ -87,7 +79,7 @@ class Analyze_videos_page(QWidget):
         choose_video_text = QtWidgets.QLabel("Choose the videos")
         choose_video_text.setContentsMargins(0, 0, 52, 0)
 
-        self.select_video_button = QtWidgets.QPushButton('Select videos to analyze')
+        self.select_video_button = QtWidgets.QPushButton("Select videos to analyze")
         self.select_video_button.setMaximumWidth(350)
         self.select_video_button.clicked.connect(self.select_video)
 
@@ -102,7 +94,7 @@ class Analyze_videos_page(QWidget):
         self.layout_attributes.setSpacing(20)
         self.layout_attributes.setContentsMargins(0, 0, 40, 0)
 
-        label = QtWidgets.QLabel('Attributes')
+        label = QtWidgets.QLabel("Attributes")
         label.setContentsMargins(20, 20, 0, 10)
         self.layout_attributes.addWidget(label)
 
@@ -218,11 +210,11 @@ class Analyze_videos_page(QWidget):
 
             self.layout_attributes.addLayout(self.layout_crop_plot)
 
-        self.step_button = QtWidgets.QPushButton('Step 1: Analyze Videos')
+        self.step_button = QtWidgets.QPushButton("Step 1: Analyze Videos")
         self.step_button.setContentsMargins(0, 40, 40, 40)
         self.step_button.clicked.connect(self.analyze_videos)
 
-        self.edit_config_file = QtWidgets.QPushButton('Edit config.yaml')
+        self.edit_config_file = QtWidgets.QPushButton("Edit config.yaml")
         # TODO: finish function:
         # self.edit_config_file.clicked.connect(self.)
 
@@ -245,15 +237,17 @@ class Analyze_videos_page(QWidget):
         self.cfg_line.setText(self.config)
 
     def select_video(self):
-        cwd = self.config.split('/')[0:-1]
-        cwd = '\\'.join(cwd)
+        cwd = self.config.split("/")[0:-1]
+        cwd = "\\".join(cwd)
         videos_file = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select video to modify", cwd, "", "*.*"
         )
         if videos_file[0]:
             self.vids = videos_file[0]
             self.filelist.append(self.vids)
-            self.select_video_button.setText("Total %s Videos selected" % len(self.filelist))
+            self.select_video_button.setText(
+                "Total %s Videos selected" % len(self.filelist)
+            )
             self.select_video_button.adjustSize()
 
     def _layout_videotype(self):
@@ -317,12 +311,16 @@ class Analyze_videos_page(QWidget):
         opt_text = QtWidgets.QLabel("Want to save result(s) as csv?")
         self.btngroup_csv_choice = QButtonGroup()
 
-        self.csv_choice1 = QtWidgets.QRadioButton('Yes')
-        self.csv_choice1.toggled.connect(lambda: self.update_csv_choice(self.csv_choice1))
+        self.csv_choice1 = QtWidgets.QRadioButton("Yes")
+        self.csv_choice1.toggled.connect(
+            lambda: self.update_csv_choice(self.csv_choice1)
+        )
 
-        self.csv_choice2 = QtWidgets.QRadioButton('No')
+        self.csv_choice2 = QtWidgets.QRadioButton("No")
         self.csv_choice2.setChecked(True)
-        self.csv_choice2.toggled.connect(lambda: self.update_csv_choice(self.csv_choice2))
+        self.csv_choice2.toggled.connect(
+            lambda: self.update_csv_choice(self.csv_choice2)
+        )
 
         self.btngroup_csv_choice.addButton(self.csv_choice1)
         self.btngroup_csv_choice.addButton(self.csv_choice2)
@@ -341,12 +339,16 @@ class Analyze_videos_page(QWidget):
         opt_text = QtWidgets.QLabel("Want to filter the predictions?")
         self.btngroup_filter_choice = QButtonGroup()
 
-        self.filter_choice1 = QtWidgets.QRadioButton('Yes')
-        self.filter_choice1.toggled.connect(lambda: self.update_filter_choice(self.filter_choice1))
+        self.filter_choice1 = QtWidgets.QRadioButton("Yes")
+        self.filter_choice1.toggled.connect(
+            lambda: self.update_filter_choice(self.filter_choice1)
+        )
 
-        self.filter_choice2 = QtWidgets.QRadioButton('No')
+        self.filter_choice2 = QtWidgets.QRadioButton("No")
         self.filter_choice2.setChecked(True)
-        self.filter_choice2.toggled.connect(lambda: self.update_filter_choice(self.filter_choice2))
+        self.filter_choice2.toggled.connect(
+            lambda: self.update_filter_choice(self.filter_choice2)
+        )
 
         self.btngroup_filter_choice.addButton(self.filter_choice1)
         self.btngroup_filter_choice.addButton(self.filter_choice2)
@@ -365,12 +367,16 @@ class Analyze_videos_page(QWidget):
         opt_text = QtWidgets.QLabel("Want plots to pop up?")
         self.btngroup_showfigs_choice = QButtonGroup()
 
-        self.showfigs_choice1 = QtWidgets.QRadioButton('Yes')
+        self.showfigs_choice1 = QtWidgets.QRadioButton("Yes")
         self.showfigs_choice1.setChecked(True)
-        self.showfigs_choice1.toggled.connect(lambda: self.update_showfigs_choice(self.showfigs_choice1))
+        self.showfigs_choice1.toggled.connect(
+            lambda: self.update_showfigs_choice(self.showfigs_choice1)
+        )
 
-        self.showfigs_choice2 = QtWidgets.QRadioButton('No')
-        self.showfigs_choice2.toggled.connect(lambda: self.update_showfigs_choice(self.showfigs_choice2))
+        self.showfigs_choice2 = QtWidgets.QRadioButton("No")
+        self.showfigs_choice2.toggled.connect(
+            lambda: self.update_showfigs_choice(self.showfigs_choice2)
+        )
 
         self.btngroup_showfigs_choice.addButton(self.showfigs_choice1)
         self.btngroup_showfigs_choice.addButton(self.showfigs_choice2)
@@ -389,12 +395,16 @@ class Analyze_videos_page(QWidget):
         opt_text = QtWidgets.QLabel("Want to dynamically crop bodyparts?")
         self.btngroup_crop_choice = QButtonGroup()
 
-        self.crop_choice1 = QtWidgets.QRadioButton('Yes')
-        self.crop_choice1.toggled.connect(lambda: self.update_crop_choice(self.crop_choice1))
+        self.crop_choice1 = QtWidgets.QRadioButton("Yes")
+        self.crop_choice1.toggled.connect(
+            lambda: self.update_crop_choice(self.crop_choice1)
+        )
 
-        self.crop_choice2 = QtWidgets.QRadioButton('No')
+        self.crop_choice2 = QtWidgets.QRadioButton("No")
         self.crop_choice2.setChecked(True)
-        self.crop_choice2.toggled.connect(lambda: self.update_crop_choice(self.crop_choice2))
+        self.crop_choice2.toggled.connect(
+            lambda: self.update_crop_choice(self.crop_choice2)
+        )
 
         self.btngroup_crop_choice.addButton(self.crop_choice1)
         self.btngroup_crop_choice.addButton(self.crop_choice2)
@@ -418,16 +428,19 @@ class Analyze_videos_page(QWidget):
         #   self.trajectory_to_plot.SetCheckedItems(range(len(bodyparts)))
         #   self.trajectory_to_plot.Hide()
 
-
         opt_text = QtWidgets.QLabel("Want to plot the trajectories?")
         self.btngroup_plot_trajectory_choice = QButtonGroup()
 
-        self.plot_trajectory_choice1 = QtWidgets.QRadioButton('Yes')
-        self.plot_trajectory_choice1.toggled.connect(lambda: self.update_plot_trajectory_choice(self.plot_trajectory_choice1))
+        self.plot_trajectory_choice1 = QtWidgets.QRadioButton("Yes")
+        self.plot_trajectory_choice1.toggled.connect(
+            lambda: self.update_plot_trajectory_choice(self.plot_trajectory_choice1)
+        )
 
-        self.plot_trajectory_choice2 = QtWidgets.QRadioButton('No')
+        self.plot_trajectory_choice2 = QtWidgets.QRadioButton("No")
         self.plot_trajectory_choice2.setChecked(True)
-        self.plot_trajectory_choice2.toggled.connect(lambda: self.update_plot_trajectory_choice(self.plot_trajectory_choice2))
+        self.plot_trajectory_choice2.toggled.connect(
+            lambda: self.update_plot_trajectory_choice(self.plot_trajectory_choice2)
+        )
 
         self.btngroup_plot_trajectory_choice.addButton(self.plot_trajectory_choice1)
         self.btngroup_plot_trajectory_choice.addButton(self.plot_trajectory_choice2)
@@ -448,6 +461,7 @@ class Analyze_videos_page(QWidget):
             self.filter = True
         else:
             self.filter = False
+
     def update_showfigs_choice(self, rb):
         if rb.text() == "Yes":
             self.showfigs = True
@@ -532,12 +546,3 @@ class Analyze_videos_page(QWidget):
                     filtered=_filter,
                     showfigures=showfig,
                 )
-
-
-
-
-
-
-
-
-

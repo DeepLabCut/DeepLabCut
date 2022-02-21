@@ -1,6 +1,4 @@
 import os
-import pydoc
-import sys
 
 from PyQt5.QtWidgets import QWidget
 from PyQt5 import QtWidgets
@@ -9,8 +7,9 @@ from PyQt5.QtGui import QIcon
 
 
 from deeplabcut.generate_training_dataset import check_labels
-from deeplabcut.utils import auxiliaryfunctions, skeleton
+from deeplabcut.utils import auxiliaryfunctions
 from pathlib import Path
+
 
 def label_frames(
     self,
@@ -64,18 +63,19 @@ def label_frames(
     cfg = auxiliaryfunctions.read_config(config)
     if cfg.get("multianimalproject", False) or multiple_individualsGUI:
         import multiple_individuals_labeling_toolbox
-        #multiple_individuals_labeling_toolbox.show(config, config3d, sourceCam) #TODO
+
+        # multiple_individuals_labeling_toolbox.show(config, config3d, sourceCam) #TODO
     else:
         import labeling_toolbox
+
         labeling_toolbox.show(self, config, config3d, sourceCam, imtypes=imtypes)
 
     os.chdir(startpath)
 
 
-class Label_page(QWidget):
-
+class LabelFrames(QWidget):
     def __init__(self, parent, cfg):
-        super(Label_page, self).__init__(parent)
+        super(LabelFrames, self).__init__(parent)
 
         # variable initilization
         self.method = "automatic"
@@ -114,7 +114,7 @@ class Label_page(QWidget):
         self.cfg_line.setText(self.config)
         self.cfg_line.textChanged[str].connect(self.update_cfg)
 
-        browse_button = QtWidgets.QPushButton('Browse')
+        browse_button = QtWidgets.QPushButton("Browse")
         browse_button.setMaximumWidth(100)
         browse_button.clicked.connect(self.browse_dir)
 
@@ -129,10 +129,10 @@ class Label_page(QWidget):
         layout_label_btns.setSpacing(40)
         layout_label_btns.setContentsMargins(0, 0, 60, 50)
         #
-        self.label_frames_btn = QtWidgets.QPushButton('Label Frames')
+        self.label_frames_btn = QtWidgets.QPushButton("Label Frames")
         self.label_frames_btn.clicked.connect(self.label_frames)
         #
-        self.check_labels_btn = QtWidgets.QPushButton('Check Labels!')
+        self.check_labels_btn = QtWidgets.QPushButton("Check Labels!")
         self.check_labels_btn.clicked.connect(self.check_labelF)
         self.check_labels_btn.setEnabled(True)
         #
@@ -143,9 +143,10 @@ class Label_page(QWidget):
 
         self.cfg = auxiliaryfunctions.read_config(self.config)
         if self.cfg.get("multianimalproject", False):
-            print('False')
-            #TODO:finish multianimal part
-        else: print('True')
+            print("False")
+            # TODO:finish multianimal part
+        else:
+            print("True")
 
     def update_cfg(self):
         text = self.cfg_line.text()
@@ -164,18 +165,19 @@ class Label_page(QWidget):
     def check_labelF(self, event):
         msg = QtWidgets.QMessageBox()
         msg.setIcon(QtWidgets.QMessageBox.Information)
-        msg.setText("This will now plot the labeled frames after you have finished labeling!")
+        msg.setText(
+            "This will now plot the labeled frames after you have finished labeling!"
+        )
 
         msg.setWindowTitle("Info")
         msg.setMinimumWidth(1000)
-        self.logo_dir = os.path.dirname(os.path.realpath('logo.png')) + os.path.sep
-        self.logo = self.logo_dir + '/pictures/logo.png'
+        self.logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
+        self.logo = self.logo_dir + "/assets/logo.png"
         msg.setWindowIcon(QIcon(self.logo))
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()
 
         check_labels(self.config, visualizeindividuals=False)
-
 
     def label_frames(self):
         self.frame = None

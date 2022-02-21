@@ -1,18 +1,13 @@
-import datetime
-import os
-import pydoc
-import sys
-
-from PyQt5.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup, QDoubleSpinBox
+from PyQt5.QtWidgets import QWidget, QSpinBox, QButtonGroup, QDoubleSpinBox
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 
 import deeplabcut
 
-class Video_editor_page(QWidget):
 
+class VideoEditor(QWidget):
     def __init__(self, parent, cfg):
-        super(Video_editor_page, self).__init__(parent)
+        super(VideoEditor, self).__init__(parent)
 
         self.method = "automatic"
         self.filelist = []
@@ -56,7 +51,7 @@ class Video_editor_page(QWidget):
         self.cfg_line.setText(self.config)
         self.cfg_line.textChanged[str].connect(self.update_cfg)
 
-        browse_button = QtWidgets.QPushButton('Browse')
+        browse_button = QtWidgets.QPushButton("Browse")
         browse_button.setMaximumWidth(100)
         browse_button.clicked.connect(self.browse_dir)
 
@@ -71,7 +66,7 @@ class Video_editor_page(QWidget):
         choose_video_text = QtWidgets.QLabel("Choose the video")
         choose_video_text.setContentsMargins(0, 0, 60, 0)
 
-        self.select_video_button = QtWidgets.QPushButton('Select video')
+        self.select_video_button = QtWidgets.QPushButton("Select video")
         self.select_video_button.setMaximumWidth(250)
         self.select_video_button.clicked.connect(self.select_video)
 
@@ -86,7 +81,7 @@ class Video_editor_page(QWidget):
         self.layout_attributes.setSpacing(20)
         self.layout_attributes.setContentsMargins(0, 0, 40, 0)
 
-        label = QtWidgets.QLabel('Attributes')
+        label = QtWidgets.QLabel("Attributes")
         label.setContentsMargins(20, 20, 0, 10)
         self.layout_attributes.addWidget(label)
 
@@ -116,12 +111,12 @@ class Video_editor_page(QWidget):
         self.btn_layout.setContentsMargins(0, 20, 20, 20)
         self.btn_layout.setSpacing(20)
 
-        self.down_button = QtWidgets.QPushButton('DOWNSAMPLE')
+        self.down_button = QtWidgets.QPushButton("DOWNSAMPLE")
         self.down_button.setMaximumWidth(200)
         self.down_button.clicked.connect(self.downsample_video)
         self.btn_layout.addWidget(self.down_button, alignment=Qt.AlignRight)
 
-        self.crop_button = QtWidgets.QPushButton('CROP')
+        self.crop_button = QtWidgets.QPushButton("CROP")
         self.crop_button.setMaximumWidth(200)
         self.crop_button.clicked.connect(self.crop_video)
         self.btn_layout.addWidget(self.crop_button, alignment=Qt.AlignRight)
@@ -144,8 +139,8 @@ class Video_editor_page(QWidget):
         self.cfg_line.setText(self.config)
 
     def select_video(self):
-        cwd = self.config.split('/')[0:-1]
-        cwd = '\\'.join(cwd)
+        cwd = self.config.split("/")[0:-1]
+        cwd = "\\".join(cwd)
 
         videos_file = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select video to modify", cwd, "", "*.*"
@@ -153,7 +148,9 @@ class Video_editor_page(QWidget):
         if videos_file[0]:
             self.vids = videos_file[0]
             self.filelist.append(self.vids)
-            self.select_video_button.setText("Total %s Videos selected"% len(self.filelist))
+            self.select_video_button.setText(
+                "Total %s Videos selected" % len(self.filelist)
+            )
             self.select_video_button.adjustSize()
 
     def _layout_downsample(self):
@@ -162,7 +159,9 @@ class Video_editor_page(QWidget):
         l_opt.setSpacing(20)
         l_opt.setContentsMargins(20, 0, 0, 0)
 
-        opt_text = QtWidgets.QLabel("Downsample - specify the video height (aspect ratio fixed)")
+        opt_text = QtWidgets.QLabel(
+            "Downsample - specify the video height (aspect ratio fixed)"
+        )
         self.video_height = QSpinBox()
         self.video_height.setMaximum(1000)
 
@@ -183,15 +182,21 @@ class Video_editor_page(QWidget):
         opt_text = QtWidgets.QLabel("Downsample: rotate video?")
         self.btngroup_rotate_video_choice = QButtonGroup()
 
-        self.rotate_video_choice1 = QtWidgets.QRadioButton('Yes')
-        self.rotate_video_choice1.toggled.connect(lambda: self.update_rotate_video_choice(self.rotate_video_choice1))
+        self.rotate_video_choice1 = QtWidgets.QRadioButton("Yes")
+        self.rotate_video_choice1.toggled.connect(
+            lambda: self.update_rotate_video_choice(self.rotate_video_choice1)
+        )
 
-        self.rotate_video_choice2 = QtWidgets.QRadioButton('No')
+        self.rotate_video_choice2 = QtWidgets.QRadioButton("No")
         self.rotate_video_choice2.setChecked(True)
-        self.rotate_video_choice2.toggled.connect(lambda: self.update_rotate_video_choice(self.rotate_video_choice2))
+        self.rotate_video_choice2.toggled.connect(
+            lambda: self.update_rotate_video_choice(self.rotate_video_choice2)
+        )
 
-        self.rotate_video_choice3 = QtWidgets.QRadioButton('Arbitrary')
-        self.rotate_video_choice3.toggled.connect(lambda: self.update_rotate_video_choice(self.rotate_video_choice3))
+        self.rotate_video_choice3 = QtWidgets.QRadioButton("Arbitrary")
+        self.rotate_video_choice3.toggled.connect(
+            lambda: self.update_rotate_video_choice(self.rotate_video_choice3)
+        )
 
         self.btngroup_rotate_video_choice.addButton(self.rotate_video_choice1)
         self.btngroup_rotate_video_choice.addButton(self.rotate_video_choice2)
@@ -239,6 +244,7 @@ class Video_editor_page(QWidget):
         l_opt.addWidget(opt_text)
         l_opt.addWidget(self.video_stop)
         self.layout_shorten.addLayout(l_opt)
+
     def _angle(self):
         l_opt = QtWidgets.QVBoxLayout()
         l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
@@ -284,8 +290,3 @@ class Video_editor_page(QWidget):
                 deeplabcut.CropVideo(video, useGUI=True)
         else:
             print("Please select a video first!")
-
-
-
-
-

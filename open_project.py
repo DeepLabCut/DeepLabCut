@@ -1,14 +1,15 @@
+import os
 
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QCheckBox
-import os
+
 
 class OpenProject(QtWidgets.QDialog):
     def __init__(self, parent):
         super(OpenProject, self).__init__(parent)
 
-        self.setWindowTitle('Load Existing Project')
+        self.setWindowTitle("Load Existing Project")
         self.setMinimumSize(800, 400)
 
         self.cfg = None
@@ -18,27 +19,26 @@ class OpenProject(QtWidgets.QDialog):
         main_layout = QtWidgets.QVBoxLayout(self)
         self.layout_open()
 
-        self.open_button = QtWidgets.QPushButton('Ok')
+        self.open_button = QtWidgets.QPushButton("Ok")
         self.open_button.setDefault(True)
         self.open_button.clicked.connect(self.open_project)
 
         main_layout.addWidget(self.open_frame)
         main_layout.addWidget(self.open_button, alignment=QtCore.Qt.AlignRight)
 
-
     def layout_open(self):
         self.open_frame = QtWidgets.QFrame(self)
         self.open_frame.setFrameShape(self.open_frame.StyledPanel)
         self.open_frame.setLineWidth(0.5)
 
-        open_label = QtWidgets.QLabel('Select the config file:', self.open_frame)
+        open_label = QtWidgets.QLabel("Select the config file:", self.open_frame)
         self.open_line = QtWidgets.QLineEdit(self.open_frame)
         self.open_line.textChanged[str].connect(self.open_config_name)
 
-        load_button = QtWidgets.QPushButton('Browse')
+        load_button = QtWidgets.QPushButton("Browse")
         load_button.clicked.connect((self.load_config))
 
-        label = QtWidgets.QLabel('Optional Attributes:')
+        label = QtWidgets.QLabel("Optional Attributes:")
 
         ch_box = QCheckBox("User feedback")
         ch_box.stateChanged.connect(self.activate_fbk)
@@ -55,7 +55,6 @@ class OpenProject(QtWidgets.QDialog):
 
     def open_config_name(self):
         self.open_line.text()
-
 
     def load_config(self):
         cwd = os.getcwd()
@@ -76,15 +75,15 @@ class OpenProject(QtWidgets.QDialog):
             self.user_fbk = False
 
     def open_project(self):
-        if self.cfg == '':
+        if self.cfg == "":
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Critical)
             msg.setText("Please choose the config.yaml file to load the project")
 
             msg.setWindowTitle("Error")
             msg.setMinimumWidth(400)
-            self.logo_dir = os.path.dirname(os.path.realpath('logo.png')) + os.path.sep
-            self.logo = self.logo_dir + '/pictures/logo.png'
+            self.logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
+            self.logo = self.logo_dir + "/assets/logo.png"
             msg.setWindowIcon(QIcon(self.logo))
             msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
             msg.exec_()
@@ -97,8 +96,8 @@ class OpenProject(QtWidgets.QDialog):
 
             msg.setWindowTitle("Info")
             msg.setMinimumWidth(400)
-            self.logo_dir = os.path.dirname(os.path.realpath('logo.png')) + os.path.sep
-            self.logo = self.logo_dir + '/pictures/logo.png'
+            self.logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
+            self.logo = self.logo_dir + "/assets/logo.png"
             msg.setWindowIcon(QIcon(self.logo))
             msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
             msg.buttonClicked.connect(self.ok_clicked)
@@ -108,8 +107,5 @@ class OpenProject(QtWidgets.QDialog):
             self.close()
 
     def ok_clicked(self):
-            self.loaded = True
-            self.accept()
-
-
-
+        self.loaded = True
+        self.accept()
