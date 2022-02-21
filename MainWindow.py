@@ -1,29 +1,29 @@
-
-from PyQt5.QtWidgets import QAction, QMenu, QLabel, QVBoxLayout, QStatusBar
-
-from PyQt5.QtGui import QPixmap
-from PyQt5 import QtGui
-
-from create_project import *
-from open_project import *
-from extract_frames import *
-from label_frames import *
-from create_training_dataset import *
-from train_network import *
-from evaluate_network import *
-from video_editor import *
-from analyze_videos import  *
-from create_videos import *
-from extract_outlier_frames import *
-from refine_labels import *
-
 import os
 import qdarkstyle
 
+from deeplabcut import auxiliaryfunctions
+
+from PyQt5.QtWidgets import QAction, QMenu, QLabel, QVBoxLayout, QWidget
+from PyQt5 import QtCore
+from PyQt5.QtGui import QPixmap, QIcon
+from PyQt5 import QtWidgets, QtGui
+from PyQt5.QtCore import Qt
+
+from create_project import CreateProject
+from open_project import OpenProject
+from extract_frames import ExtractFrames
+from label_frames import LabelFrames
+from create_training_dataset import CreateTrainingDataset
+from train_network import TrainNetwork
+from evaluate_network import EvaluateNetwork
+from video_editor import VideoEditor
+from analyze_videos import AnalyzeVideos
+from create_videos import CreateVideos
+from extract_outlier_frames import ExtractOutlierFrames
+from refine_labels import RefineLabels
 
 
 class MainWindow(QtWidgets.QMainWindow):
-
     def __init__(self):
         super(MainWindow, self).__init__()
 
@@ -37,18 +37,16 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.default_set()
 
-        self.welcome_page('Welcome.png')
+        self.welcome_page("Welcome.png")
         self.window_set()
         self.default_set()
 
-        names = ['new_project.png', 'open.png', 'help.png']
+        names = ["new_project.png", "open.png", "help.png"]
         self.createActions(names)
         self.createMenuBar()
         self.createToolBars(0)
 
-        #TODO: finish toolbars and menubar functionality
-
-
+        # TODO: finish toolbars and menubar functionality
 
     def window_set(self):
         self.setWindowTitle("DeepLabCut")
@@ -60,16 +58,16 @@ class MainWindow(QtWidgets.QMainWindow):
         palette.setColor(QtGui.QPalette.Background, QtGui.QColor("#ffffff"))
         self.setPalette(palette)
 
-        self.logo_dir = os.path.dirname(os.path.realpath('logo.png')) + os.path.sep
-        self.logo = self.logo_dir + '/pictures/logo.png'
+        self.logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
+        self.logo = self.logo_dir + "/pictures/logo.png"
         self.setWindowIcon(QIcon(self.logo))
 
         self.status_bar = self.statusBar()
-        self.status_bar.setObjectName('Status Bar')
+        self.status_bar.setObjectName("Status Bar")
 
     def set_pic(self, name):
         pic_dir = os.path.dirname(os.path.realpath(name)) + os.path.sep
-        file = pic_dir + '/pictures/' + name
+        file = pic_dir + "/pictures/" + name
         pixmap = QPixmap(file)
         lbl = QLabel(self)
         lbl.setPixmap(pixmap)
@@ -99,31 +97,29 @@ class MainWindow(QtWidgets.QMainWindow):
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
-
     def project_folder(self):
-        return self.cfg.get('project_path', os.path.expanduser('~/Desktop'))
+        return self.cfg.get("project_path", os.path.expanduser("~/Desktop"))
 
     def default_set(self):
-        self.name_default = ''
-        self.proj_default = ''
-        self.exp_default = ''
-        self.loc_default = 'C:/'
-
+        self.name_default = ""
+        self.proj_default = ""
+        self.exp_default = ""
+        self.loc_default = "C:/"
 
     def createActions(self, names):
         # Creating action using the first constructor
         self.newAction = QAction(self)
         self.newAction.setText("&New Project...")
 
-        self.newAction.setIcon(QIcon("icons/"+names[0]))
-        self.newAction.setShortcut('Ctrl+N')
+        self.newAction.setIcon(QIcon("icons/" + names[0]))
+        self.newAction.setShortcut("Ctrl+N")
 
         self.newAction.triggered.connect(self._create)
 
         # Creating actions using the second constructor
         self.openAction = QAction("&Open...", self)
-        self.openAction.setIcon(QIcon("icons/"+names[1]))
-        self.openAction.setShortcut('Ctrl+O')
+        self.openAction.setIcon(QIcon("icons/" + names[1]))
+        self.openAction.setShortcut("Ctrl+O")
         self.openAction.triggered.connect(self._open)
 
         self.saveAction = QAction("&Save", self)
@@ -135,17 +131,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.darkmodeAction.triggered.connect(self.darkmode)
 
         self.helpAction = QAction("&Help", self)
-        self.helpAction.setIcon(QIcon("icons/"+names[2]))
+        self.helpAction.setIcon(QIcon("icons/" + names[2]))
 
         self.aboutAction = QAction("&Learn DLC", self)
-
 
     def createMenuBar(self):
         menuBar = self.menuBar()
         # File menu
         self.fileMenu = QMenu("&File", self)
         menuBar.addMenu(self.fileMenu)
-
 
         self.fileMenu.addAction(self.newAction)
         self.fileMenu.addAction(self.openAction)
@@ -187,13 +181,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.fileToolBar.removeAction(self.openAction)
         self.fileToolBar.removeAction(self.helpAction)
 
-
     @QtCore.pyqtSlot()
     def _create(self):
         create_p = CreateProject(self)
         create_p.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         if create_p.exec_() == QtWidgets.QDialog.Accepted:
-            self.loaded =create_p.loaded
+            self.loaded = create_p.loaded
             self.cfg = create_p.cfg
             self.user_feedback = create_p.user_fbk
 
@@ -211,7 +204,6 @@ class MainWindow(QtWidgets.QMainWindow):
         if open_p.loaded:
             self.add_tabs()
 
-
     def load_config(self, config):
         self.config = config
         self.cfg = auxiliaryfunctions.read_config(config)
@@ -220,18 +212,19 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def darkmode(self):
         self.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
-        self.welcome_page('Welcome2.png')
+        self.welcome_page("Welcome2.png")
 
-        names = ['new_project2.png', 'open2.png', 'help2.png']
+        names = ["new_project2.png", "open2.png", "help2.png"]
         self.remove_action()
         self.createActions(names)
         self.updateMenuBar()
         self.createToolBars(1)
-    def lightmode(self):
-        self.setStyleSheet('Fusion')
-        self.welcome_page('Welcome.png')
 
-        names = ['new_project.png', 'open.png', 'help.png']
+    def lightmode(self):
+        self.setStyleSheet("Fusion")
+        self.welcome_page("Welcome.png")
+
+        names = ["new_project.png", "open.png", "help.png"]
         self.remove_action()
         self.createActions(names)
         self.createToolBars(1)
@@ -242,27 +235,26 @@ class MainWindow(QtWidgets.QMainWindow):
 
         tabs = QtWidgets.QTabWidget()
         tabs.setContentsMargins(0, 20, 0, 0)
-        extract_page = Extract_page(self, self.cfg)
-        label_page = Label_page(self, self.cfg)
-        create_training_ds_page = Create_training_dataset_page(self, self.cfg)
-        train_network_page = Train_network_page(self, self.cfg)
-        evaluate_network_page = Evaluate_network_page(self, self.cfg)
-        video_editor_page = Video_editor_page(self, self.cfg)
-        analyze_videos_page = Analyze_videos_page(self, self.cfg)
-        create_videos_page = Create_videos_page(self, self.cfg)
-        extract_outlier_frames_page = Extract_outlier_frames_page(self, self.cfg)
-        refine_labels_page = Refine_labels_page(self, self.cfg)
+        extract_frames = ExtractFrames(self, self.cfg)
+        label_frames = LabelFrames(self, self.cfg)
+        create_training_dataset = CreateTrainingDataset(self, self.cfg)
+        train_network = TrainNetwork(self, self.cfg)
+        evaluate_network = EvaluateNetwork(self, self.cfg)
+        video_editor = VideoEditor(self, self.cfg)
+        analyze_videos = AnalyzeVideos(self, self.cfg)
+        create_videos = CreateVideos(self, self.cfg)
+        extract_outlier_frames = ExtractOutlierFrames(self, self.cfg)
+        refine_labels = RefineLabels(self, self.cfg)
 
-        tabs.addTab(extract_page, "Extract frames")
-        tabs.addTab(label_page, "Label frames")
-        tabs.addTab(create_training_ds_page, "Create training dataset")
-        tabs.addTab(train_network_page, "Train network")
-        tabs.addTab(evaluate_network_page, "Evaluate network")
-        tabs.addTab(video_editor_page, "Video editor")
-        tabs.addTab(analyze_videos_page, "Analyze videos")
-        tabs.addTab(create_videos_page, "Create videos")
-        tabs.addTab(extract_outlier_frames_page, "Extract outlier frames")
-        tabs.addTab(refine_labels_page, "Refine labels")
+        tabs.addTab(extract_frames, "Extract frames")
+        tabs.addTab(label_frames, "Label frames")
+        tabs.addTab(create_training_dataset, "Create training dataset")
+        tabs.addTab(train_network, "Train network")
+        tabs.addTab(evaluate_network, "Evaluate network")
+        tabs.addTab(video_editor, "Video editor")
+        tabs.addTab(analyze_videos, "Analyze videos")
+        tabs.addTab(create_videos, "Create videos")
+        tabs.addTab(extract_outlier_frames, "Extract outlier frames")
+        tabs.addTab(refine_labels, "Refine labels")
 
         self.setCentralWidget(tabs)
-

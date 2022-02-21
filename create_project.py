@@ -5,18 +5,19 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QCheckBox
 import os
 
+
 class CreateProject(QtWidgets.QDialog):
     def __init__(self, parent):
         super(CreateProject, self).__init__(parent)
 
-        self.setWindowTitle('New Project')
+        self.setWindowTitle("New Project")
         self.setMinimumSize(900, 500)
 
-        self.name_default = '-'.join(('{}', '{}', 'newProject'))
-        self.proj_default = ''
-        self.exp_default = ''
-        self.loc_default = ''
-        self.project_location = ''
+        self.name_default = "-".join(("{}", "{}", "newProject"))
+        self.proj_default = ""
+        self.exp_default = ""
+        self.loc_default = ""
+        self.project_location = ""
 
         self.cfg = None
         self.copy = False
@@ -24,11 +25,10 @@ class CreateProject(QtWidgets.QDialog):
         self.user_fbk = True
         self.filelist = []
 
-
         main_layout = QtWidgets.QVBoxLayout(self)
         self.layout_user()
 
-        self.create_button = QtWidgets.QPushButton('Create')
+        self.create_button = QtWidgets.QPushButton("Create")
         self.create_button.setDefault(True)
         self.create_button.clicked.connect(self.create_newproject)
         main_layout.addWidget(self.user_frame)
@@ -39,16 +39,16 @@ class CreateProject(QtWidgets.QDialog):
         self.user_frame.setFrameShape(self.user_frame.StyledPanel)
         self.user_frame.setLineWidth(0.5)
 
-        proj_label = QtWidgets.QLabel('Name of the project:', self.user_frame)
+        proj_label = QtWidgets.QLabel("Name of the project:", self.user_frame)
         self.proj_line = QtWidgets.QLineEdit(self.user_frame)
         self.proj_line.textChanged[str].connect(self.update_project_name)
 
-        exp_label = QtWidgets.QLabel('Name of the experimenter:', self.user_frame)
+        exp_label = QtWidgets.QLabel("Name of the experimenter:", self.user_frame)
         self.exp_line = QtWidgets.QLineEdit(self.user_frame)
         self.exp_line.textChanged[str].connect(self.update_experimenter_name)
 
-        videos_label = QtWidgets.QLabel('Choose Videos:', self.user_frame)
-        self.load_button = QtWidgets.QPushButton('Load Videos')
+        videos_label = QtWidgets.QLabel("Choose Videos:", self.user_frame)
+        self.load_button = QtWidgets.QPushButton("Load Videos")
         self.load_button.clicked.connect((self.load_videos))
 
         grid = QtWidgets.QGridLayout(self.user_frame)
@@ -61,19 +61,19 @@ class CreateProject(QtWidgets.QDialog):
         grid.addWidget(self.load_button, 2, 1)
 
         # Create a layout for the checkboxes
-        label = QtWidgets.QLabel('Optional Attributes:')
-        grid.addWidget(label, 3,0)
+        label = QtWidgets.QLabel("Optional Attributes:")
+        grid.addWidget(label, 3, 0)
 
         # Add some checkboxes to the layout
         ch_box1 = QCheckBox("Select the directory where project will be created")
         ch_box1.stateChanged.connect(self.activate_browse)
 
-        self.browse_button = QtWidgets.QPushButton('Browse')
+        self.browse_button = QtWidgets.QPushButton("Browse")
         self.browse_button.setEnabled(False)
         self.browse_button.clicked.connect((self.browse_dir))
 
-        grid.addWidget(ch_box1,4,0)
-        grid.addWidget(self.browse_button,4,1)
+        grid.addWidget(ch_box1, 4, 0)
+        grid.addWidget(self.browse_button, 4, 1)
 
         ch_box2 = QCheckBox("Copy the videos")
         ch_box2.stateChanged.connect(self.activate_copy_videos)
@@ -91,7 +91,9 @@ class CreateProject(QtWidgets.QDialog):
         return self.user_frame
 
     def on_click(self):
-        dirname = QtWidgets.QFileDialog.getExistingDirectory(self, 'Please select a folder', self.loc_default)
+        dirname = QtWidgets.QFileDialog.getExistingDirectory(
+            self, "Please select a folder", self.loc_default
+        )
         if not dirname:
             return
         dirname = QtCore.QDir.toNativeSeparators(dirname)
@@ -121,14 +123,13 @@ class CreateProject(QtWidgets.QDialog):
 
     def browse_dir(self):
         cwd = os.getcwd()
-        dirname = QtWidgets.QFileDialog.getExistingDirectory(self,
-                    "Choose the directory where your project will be saved:",
-                    cwd)
+        dirname = QtWidgets.QFileDialog.getExistingDirectory(
+            self, "Choose the directory where your project will be saved:", cwd
+        )
         if not dirname:
             return
         dirname = QtCore.QDir.toNativeSeparators(dirname)
         self.loc_default = dirname
-
 
     def load_videos(self):
         cwd = os.getcwd()
@@ -137,7 +138,7 @@ class CreateProject(QtWidgets.QDialog):
         )
         self.videos = videos_file[0]
         self.filelist.append(self.videos)
-        self.load_button.setText("Total %s Videos selected"% len(self.filelist))
+        self.load_button.setText("Total %s Videos selected" % len(self.filelist))
 
     def activate_fbk(self, state):
         # Activates the feedback option
@@ -148,28 +149,32 @@ class CreateProject(QtWidgets.QDialog):
         # TODO: finish functionality: with user feedback (self.user_fbk = True) / without (self.user_fbk = False)
 
     def update_project_location(self):
-        full_name = self.name_default.format(self.proj_line.text(), self.exp_line.text())
+        full_name = self.name_default.format(
+            self.proj_line.text(), self.exp_line.text()
+        )
         full_path = os.path.join(self.loc_default, full_name)
         self.project_location = full_path
 
     def create_newproject(self):
         # create the new project
-        if self.proj_default != '' and self.exp_default != '' and self.filelist != []:
+        if self.proj_default != "" and self.exp_default != "" and self.filelist != []:
             self.cfg = create_new_project(
                 self.proj_default,
                 self.exp_default,
                 self.filelist,
                 self.loc_default,
-                copy_videos=self.copy
+                copy_videos=self.copy,
             )
 
-            #self.update_project_location()
+            # self.update_project_location()
 
         else:
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Critical)
             msg.setText("Some of the enteries are missing.")
-            msg.setInformativeText("Make sure that the task and experimenter name are specified and videos are selected!")
+            msg.setInformativeText(
+                "Make sure that the task and experimenter name are specified and videos are selected!"
+            )
             msg.setWindowTitle("Error")
             msg.setMinimumWidth(300)
             msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
@@ -185,8 +190,8 @@ class CreateProject(QtWidgets.QDialog):
 
             msg.setWindowTitle("Info")
             msg.setMinimumWidth(400)
-            self.logo_dir = os.path.dirname(os.path.realpath('logo.png')) + os.path.sep
-            self.logo = self.logo_dir + '/pictures/logo.png'
+            self.logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
+            self.logo = self.logo_dir + "/pictures/logo.png"
             msg.setWindowIcon(QIcon(self.logo))
             msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
             msg.buttonClicked.connect(self.ok_clicked)
@@ -197,8 +202,3 @@ class CreateProject(QtWidgets.QDialog):
     def ok_clicked(self):
         self.loaded = True
         self.accept()
-
-
-
-
-

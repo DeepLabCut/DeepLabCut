@@ -1,13 +1,9 @@
 import os
-import pydoc
-import sys
 
-from PyQt5.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup, QDoubleSpinBox, QMessageBox
+from PyQt5.QtWidgets import QWidget, QMessageBox
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
-
-import deeplabcut
 
 from deeplabcut.utils import auxiliaryfunctions
 from pathlib import Path
@@ -53,10 +49,9 @@ def refine_labels(config, multianimal=False):
     os.chdir(startpath)
 
 
-class Refine_labels_page(QWidget):
-
+class RefineLabels(QWidget):
     def __init__(self, parent, cfg):
-        super(Refine_labels_page, self).__init__(parent)
+        super(RefineLabels, self).__init__(parent)
         # variable initilization
         self.method = "automatic"
         self.config = cfg
@@ -97,7 +92,7 @@ class Refine_labels_page(QWidget):
         self.cfg_line.setText(self.config)
         self.cfg_line.textChanged[str].connect(self.update_cfg)
 
-        browse_button = QtWidgets.QPushButton('Browse')
+        browse_button = QtWidgets.QPushButton("Browse")
         browse_button.setMaximumWidth(100)
         browse_button.clicked.connect(self.browse_dir)
 
@@ -107,17 +102,16 @@ class Refine_labels_page(QWidget):
 
         self.inLayout.addLayout(layout_cfg)
 
-        self.launch_button = QtWidgets.QPushButton('LAUNCH')
+        self.launch_button = QtWidgets.QPushButton("LAUNCH")
         self.launch_button.setContentsMargins(0, 140, 100, 40)
         self.launch_button.clicked.connect(self.refine_labels)
 
-        self.merge_button = QtWidgets.QPushButton('Merge dataset')
+        self.merge_button = QtWidgets.QPushButton("Merge dataset")
         self.merge_button.clicked.connect(self.merge_dataset)
         self.merge_button.setEnabled(False)
 
         self.inLayout.addWidget(self.merge_button, alignment=Qt.AlignRight)
         self.inLayout.addWidget(self.launch_button, alignment=Qt.AlignRight)
-
 
     def update_cfg(self):
         text = self.proj_line.text()
@@ -136,24 +130,24 @@ class Refine_labels_page(QWidget):
     def merge_dataset(self):
         msg = QtWidgets.QMessageBox()
         msg.setIcon(QtWidgets.QMessageBox.Warning)
-        msg.setText("1. Make sure that you have refined all the labels before merging the dataset.\n\n2. If you merge the dataset, you need to re-create the training dataset before you start the training.\n\n3. Are you ready to merge the dataset?")
+        msg.setText(
+            "1. Make sure that you have refined all the labels before merging the dataset.\n\n2. If you merge the dataset, you need to re-create the training dataset before you start the training.\n\n3. Are you ready to merge the dataset?"
+        )
         msg.setWindowTitle("Warning")
         msg.setMinimumWidth(1000)
-        self.logo_dir = os.path.dirname(os.path.realpath('logo.png')) + os.path.sep
-        self.logo = self.logo_dir + '/pictures/logo.png'
+        self.logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
+        self.logo = self.logo_dir + "/pictures/logo.png"
         msg.setWindowIcon(QIcon(self.logo))
         msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
         result = msg.exec_()
         if result == QMessageBox.Yes:
             print("Yes")
-            #TODO: finish -->
-            #notebook = self.GetParent()
+            # TODO: finish -->
+            # notebook = self.GetParent()
             # notebook.SetSelection(4)
             # deeplabcut.merge_datasets(self.config, forceiterate=None)
-
 
     def refine_labels(self):
         self.merge_button.setEnabled(True)
         # TODO: finish refine_labels part
-        #deeplabcut.refine_labels(self.config)
-
+        # deeplabcut.refine_labels(self.config)

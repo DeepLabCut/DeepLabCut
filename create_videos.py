@@ -1,20 +1,14 @@
-import os
-import pydoc
-import sys
-
-
 import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions, skeleton
 
-from PyQt5.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup, QDoubleSpinBox
+from PyQt5.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 
 
-class Create_videos_page(QWidget):
-
+class CreateVideos(QWidget):
     def __init__(self, parent, cfg):
-        super(Create_videos_page, self).__init__(parent)
+        super(CreateVideos, self).__init__(parent)
 
         self.filelist = []
         self.config = cfg
@@ -60,7 +54,7 @@ class Create_videos_page(QWidget):
         self.cfg_line.setText(self.config)
         self.cfg_line.textChanged[str].connect(self.update_cfg)
 
-        browse_button = QtWidgets.QPushButton('Browse')
+        browse_button = QtWidgets.QPushButton("Browse")
         browse_button.setMaximumWidth(100)
         browse_button.clicked.connect(self.browse_dir)
 
@@ -75,7 +69,7 @@ class Create_videos_page(QWidget):
         choose_video_text = QtWidgets.QLabel("Choose the videos")
         choose_video_text.setContentsMargins(0, 0, 52, 0)
 
-        self.select_video_button = QtWidgets.QPushButton('Select videos')
+        self.select_video_button = QtWidgets.QPushButton("Select videos")
         self.select_video_button.setMaximumWidth(350)
         self.select_video_button.clicked.connect(self.select_video)
 
@@ -90,7 +84,7 @@ class Create_videos_page(QWidget):
         self.layout_attributes.setSpacing(20)
         self.layout_attributes.setContentsMargins(0, 0, 40, 0)
 
-        label = QtWidgets.QLabel('Additional Attributes')
+        label = QtWidgets.QLabel("Additional Attributes")
         label.setContentsMargins(20, 20, 0, 10)
         self.layout_attributes.addWidget(label)
 
@@ -117,7 +111,7 @@ class Create_videos_page(QWidget):
             #                 majorDimension=1,
             #                 style=wx.RA_SPECIFY_COLS,
             #             )
-            #self.plot_idv.SetSelection(1)
+            # self.plot_idv.SetSelection(1)
 
         self.layout_include_specify = QtWidgets.QHBoxLayout()
         self.layout_include_specify.setAlignment(Qt.AlignLeft | Qt.AlignTop)
@@ -150,12 +144,12 @@ class Create_videos_page(QWidget):
         self.btn_layout.setContentsMargins(0, 20, 20, 20)
         self.btn_layout.setSpacing(20)
 
-        self.build = QtWidgets.QPushButton('DOWNSAMPLE')
+        self.build = QtWidgets.QPushButton("DOWNSAMPLE")
         self.build.setMaximumWidth(200)
         self.build.clicked.connect(self.build_skeleton)
         self.btn_layout.addWidget(self.build, alignment=Qt.AlignRight)
 
-        self.run_button = QtWidgets.QPushButton('RUN')
+        self.run_button = QtWidgets.QPushButton("RUN")
         self.run_button.setContentsMargins(0, 40, 40, 40)
         self.run_button.clicked.connect(self.create_videos)
         self.btn_layout.addWidget(self.run_button, alignment=Qt.AlignRight)
@@ -178,15 +172,17 @@ class Create_videos_page(QWidget):
         self.cfg_line.setText(self.config)
 
     def select_video(self):
-        cwd = self.config.split('/')[0:-1]
-        cwd = '\\'.join(cwd)
+        cwd = self.config.split("/")[0:-1]
+        cwd = "\\".join(cwd)
         videos_file = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select video to modify", cwd, "", "*.*"
         )
         if videos_file[0]:
             self.vids = videos_file[0]
             self.filelist.append(self.vids)
-            self.select_video_button.setText("Total %s Videos selected" % len(self.filelist))
+            self.select_video_button.setText(
+                "Total %s Videos selected" % len(self.filelist)
+            )
             self.select_video_button.adjustSize()
 
     def _layout_videotype(self):
@@ -250,12 +246,16 @@ class Create_videos_page(QWidget):
         opt_text = QtWidgets.QLabel("Include the skeleton in the video?")
         self.btngroup_draw_skeleton_choice = QButtonGroup()
 
-        self.draw_skeleton_choice1 = QtWidgets.QRadioButton('Yes')
-        self.draw_skeleton_choice1.toggled.connect(lambda: self.update_draw_skeleton_choice(self.draw_skeleton_choice1))
+        self.draw_skeleton_choice1 = QtWidgets.QRadioButton("Yes")
+        self.draw_skeleton_choice1.toggled.connect(
+            lambda: self.update_draw_skeleton_choice(self.draw_skeleton_choice1)
+        )
 
-        self.draw_skeleton_choice2 = QtWidgets.QRadioButton('No')
+        self.draw_skeleton_choice2 = QtWidgets.QRadioButton("No")
         self.draw_skeleton_choice2.setChecked(True)
-        self.draw_skeleton_choice2.toggled.connect(lambda: self.update_draw_skeleton_choice(self.draw_skeleton_choice2))
+        self.draw_skeleton_choice2.toggled.connect(
+            lambda: self.update_draw_skeleton_choice(self.draw_skeleton_choice2)
+        )
 
         self.btngroup_draw_skeleton_choice.addButton(self.draw_skeleton_choice1)
         self.btngroup_draw_skeleton_choice.addButton(self.draw_skeleton_choice2)
@@ -290,12 +290,16 @@ class Create_videos_page(QWidget):
         opt_text = QtWidgets.QLabel("Create a higher quality video? (slow)")
         self.btngroup_video_slow_choice = QButtonGroup()
 
-        self.video_slow_choice1 = QtWidgets.QRadioButton('Yes')
-        self.video_slow_choice1.toggled.connect(lambda: self.update_video_slow_choice(self.video_slow_choice1))
+        self.video_slow_choice1 = QtWidgets.QRadioButton("Yes")
+        self.video_slow_choice1.toggled.connect(
+            lambda: self.update_video_slow_choice(self.video_slow_choice1)
+        )
 
-        self.video_slow_choice2 = QtWidgets.QRadioButton('No')
+        self.video_slow_choice2 = QtWidgets.QRadioButton("No")
         self.video_slow_choice2.setChecked(True)
-        self.video_slow_choice2.toggled.connect(lambda: self.update_video_slow_choice(self.video_slow_choice2))
+        self.video_slow_choice2.toggled.connect(
+            lambda: self.update_video_slow_choice(self.video_slow_choice2)
+        )
 
         self.btngroup_video_slow_choice.addButton(self.video_slow_choice1)
         self.btngroup_video_slow_choice.addButton(self.video_slow_choice2)
@@ -314,12 +318,16 @@ class Create_videos_page(QWidget):
         opt_text = QtWidgets.QLabel("Use filtered predictions?")
         self.btngroup_filter_choice = QButtonGroup()
 
-        self.filter_choice1 = QtWidgets.QRadioButton('Yes')
-        self.filter_choice1.toggled.connect(lambda: self.update_filter_choice(self.filter_choice1))
+        self.filter_choice1 = QtWidgets.QRadioButton("Yes")
+        self.filter_choice1.toggled.connect(
+            lambda: self.update_filter_choice(self.filter_choice1)
+        )
 
-        self.filter_choice2 = QtWidgets.QRadioButton('No')
+        self.filter_choice2 = QtWidgets.QRadioButton("No")
         self.filter_choice2.setChecked(True)
-        self.filter_choice2.toggled.connect(lambda: self.update_filter_choice(self.filter_choice2))
+        self.filter_choice2.toggled.connect(
+            lambda: self.update_filter_choice(self.filter_choice2)
+        )
 
         self.btngroup_filter_choice.addButton(self.filter_choice1)
         self.btngroup_filter_choice.addButton(self.filter_choice2)
@@ -338,11 +346,11 @@ class Create_videos_page(QWidget):
         opt_text = QtWidgets.QLabel("Plot all bodyparts?")
         self.btngroup_bodypart_choice = QButtonGroup()
 
-        self.bodypart_choice1 = QtWidgets.QRadioButton('Yes')
+        self.bodypart_choice1 = QtWidgets.QRadioButton("Yes")
         self.bodypart_choice1.setChecked(True)
         # self.rotate_video_choice1.toggled.connect(lambda: self.update_rotate_video_choice(self.rotate_video_choice1))
 
-        self.bodypart_choice2 = QtWidgets.QRadioButton('No')
+        self.bodypart_choice2 = QtWidgets.QRadioButton("No")
         self.bodypart_choice2.setChecked(True)
         # self.rotate_video_choice2.toggled.connect(lambda: self.update_rotate_video_choice(self.rotate_video_choice2))
 
@@ -438,7 +446,3 @@ class Create_videos_page(QWidget):
                 trailpoints=self.trail_points.value(),
                 filtered=self.filtered,
             )
-
-
-
-

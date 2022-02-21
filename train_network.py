@@ -9,10 +9,10 @@ from PyQt5.QtGui import QIcon
 import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
 
-class Train_network_page(QWidget):
 
+class TrainNetwork(QWidget):
     def __init__(self, parent, cfg):
-        super(Train_network_page, self).__init__(parent)
+        super(TrainNetwork, self).__init__(parent)
 
         self.method = "automatic"
         self.userfeedback = False
@@ -37,7 +37,6 @@ class Train_network_page(QWidget):
         self.max_iters = str(pose_cfg["multi_step"][-1][-1])
 
         self.set_page()
-
 
     def set_page(self):
         separatorLine = QtWidgets.QFrame()
@@ -67,7 +66,7 @@ class Train_network_page(QWidget):
         self.cfg_line.setText(self.config)
         self.cfg_line.textChanged[str].connect(self.update_cfg)
 
-        browse_button = QtWidgets.QPushButton('Browse')
+        browse_button = QtWidgets.QPushButton("Browse")
         browse_button.setMaximumWidth(100)
         browse_button.clicked.connect(self.browse_dir)
 
@@ -82,7 +81,7 @@ class Train_network_page(QWidget):
         self.layout_attributes.setSpacing(20)
         self.layout_attributes.setContentsMargins(0, 0, 40, 0)
 
-        label = QtWidgets.QLabel('Optional Attributes')
+        label = QtWidgets.QLabel("Optional Attributes")
         label.setContentsMargins(20, 20, 0, 10)
         self.layout_attributes.addWidget(label)
 
@@ -110,14 +109,13 @@ class Train_network_page(QWidget):
         self.layout_attributes.addLayout(self.layout_specify_edit)
         self.layout_attributes.addLayout(self.layout_display)
 
-        self.ok_button = QtWidgets.QPushButton('Ok')
+        self.ok_button = QtWidgets.QPushButton("Ok")
         self.ok_button.setContentsMargins(0, 40, 40, 40)
         self.ok_button.clicked.connect(self.train_network)
 
         self.layout_attributes.addWidget(self.ok_button, alignment=Qt.AlignRight)
 
         self.inLayout.addLayout(self.layout_attributes)
-
 
     def update_cfg(self):
         text = self.proj_line.text()
@@ -148,6 +146,7 @@ class Train_network_page(QWidget):
         l_opt.addWidget(opt_text)
         l_opt.addWidget(self.shuffles)
         self.layout_specify_edit.addLayout(l_opt)
+
     def _specify_ts_index(self):
         l_opt = QtWidgets.QVBoxLayout()
         l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
@@ -163,6 +162,7 @@ class Train_network_page(QWidget):
         l_opt.addWidget(opt_text)
         l_opt.addWidget(self.trainingindex)
         self.layout_specify_edit.addLayout(l_opt)
+
     def _edit_file(self):
         l_opt = QtWidgets.QVBoxLayout()
         l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
@@ -172,12 +172,16 @@ class Train_network_page(QWidget):
         opt_text = QtWidgets.QLabel("Want to edit pose_cfg.yaml file?")
         self.btngroup_pose_cfg_choice = QButtonGroup()
 
-        self.pose_cfg_choice1 = QtWidgets.QRadioButton('Yes')
-        self.pose_cfg_choice1.toggled.connect(lambda: self.update_pose_cfg_choice(self.pose_cfg_choice1))
+        self.pose_cfg_choice1 = QtWidgets.QRadioButton("Yes")
+        self.pose_cfg_choice1.toggled.connect(
+            lambda: self.update_pose_cfg_choice(self.pose_cfg_choice1)
+        )
 
-        self.pose_cfg_choice2 = QtWidgets.QRadioButton('No')
+        self.pose_cfg_choice2 = QtWidgets.QRadioButton("No")
         self.pose_cfg_choice2.setChecked(True)
-        self.pose_cfg_choice2.toggled.connect(lambda: self.update_pose_cfg_choice(self.pose_cfg_choice2))
+        self.pose_cfg_choice2.toggled.connect(
+            lambda: self.update_pose_cfg_choice(self.pose_cfg_choice2)
+        )
 
         self.btngroup_pose_cfg_choice.addButton(self.pose_cfg_choice1)
         self.btngroup_pose_cfg_choice.addButton(self.pose_cfg_choice2)
@@ -264,7 +268,6 @@ class Train_network_page(QWidget):
         l_opt.addWidget(self.snapshots)
         self.layout_display.addLayout(l_opt)
 
-
     def update_pose_cfg_choice(self, rb):
         # TODO: finish functionality
         if rb.text() == "Yes":
@@ -300,20 +303,14 @@ class Train_network_page(QWidget):
         msg = QtWidgets.QMessageBox()
         msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.setText("The network is now trained and ready to evaluate.")
-        msg.setInformativeText("Use the function 'evaluate_network' to evaluate the network.")
+        msg.setInformativeText(
+            "Use the function 'evaluate_network' to evaluate the network."
+        )
 
         msg.setWindowTitle("Info")
         msg.setMinimumWidth(900)
-        self.logo_dir = os.path.dirname(os.path.realpath('logo.png')) + os.path.sep
-        self.logo = self.logo_dir + '/pictures/logo.png'
+        self.logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
+        self.logo = self.logo_dir + "/pictures/logo.png"
         msg.setWindowIcon(QIcon(self.logo))
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()
-
-
-
-
-
-
-
-
