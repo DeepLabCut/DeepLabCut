@@ -7,7 +7,7 @@ from MainWindow import MainWindow
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
-    app.setWindowIcon(QIcon('./pictures/logo.png'))
+    app.setWindowIcon(QIcon('./assets/logo.png'))
 
     window = MainWindow()
     window.show()

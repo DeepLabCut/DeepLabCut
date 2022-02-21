@@ -172,7 +172,7 @@ class LabelFrames(QWidget):
         msg.setWindowTitle("Info")
         msg.setMinimumWidth(1000)
         self.logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
-        self.logo = self.logo_dir + "/pictures/logo.png"
+        self.logo = self.logo_dir + "/assets/logo.png"
         msg.setWindowIcon(QIcon(self.logo))
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()

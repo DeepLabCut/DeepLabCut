@@ -304,7 +304,7 @@ class MainFrame(QMainWindow):
         )
 
         self.logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
-        self.logo = self.logo_dir + "/pictures/logo.png"
+        self.logo = self.logo_dir + "/assets/logo.png"
         self.setWindowIcon(QIcon(self.logo))
 
         centralWidget = QWidget(self)

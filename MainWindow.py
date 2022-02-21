@@ -59,7 +59,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setPalette(palette)
 
         self.logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
-        self.logo = self.logo_dir + "/pictures/logo.png"
+        self.logo = self.logo_dir + "/assets/logo.png"
         self.setWindowIcon(QIcon(self.logo))
 
         self.status_bar = self.statusBar()
@@ -67,7 +67,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def set_pic(self, name):
         pic_dir = os.path.dirname(os.path.realpath(name)) + os.path.sep
-        file = pic_dir + "/pictures/" + name
+        file = pic_dir + "/assets/" + name
         pixmap = QPixmap(file)
         lbl = QLabel(self)
         lbl.setPixmap(pixmap)
@@ -111,14 +111,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.newAction = QAction(self)
         self.newAction.setText("&New Project...")
 
-        self.newAction.setIcon(QIcon("icons/" + names[0]))
+        self.newAction.setIcon(QIcon("assets/icons/" + names[0]))
         self.newAction.setShortcut("Ctrl+N")
 
         self.newAction.triggered.connect(self._create)
 
         # Creating actions using the second constructor
         self.openAction = QAction("&Open...", self)
-        self.openAction.setIcon(QIcon("icons/" + names[1]))
+        self.openAction.setIcon(QIcon("assets/icons/" + names[1]))
         self.openAction.setShortcut("Ctrl+O")
         self.openAction.triggered.connect(self._open)
 
@@ -131,7 +131,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.darkmodeAction.triggered.connect(self.darkmode)
 
         self.helpAction = QAction("&Help", self)
-        self.helpAction.setIcon(QIcon("icons/" + names[2]))
+        self.helpAction.setIcon(QIcon("assets/icons/" + names[2]))
 
         self.aboutAction = QAction("&Learn DLC", self)
 
