@@ -80,14 +80,11 @@ We highly recommend using 2.2 first in the Project Manager GUI ([Option 3](docs/
 ##### *What scenario do you have?*
 
 - **I have single animal videos, but I want to use the advanced tracking features & updated network capabilities introduced (for multi-animal projects) in DLC2.2:**
-   - quick start: when you `create_new_project` just set the flag `multianimal=True`.
+   - quick start: when you `create_new_project` just set the flag `multianimal=False`. You still get lots of upgrades!
 
 [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/JDsa8R5J0nQ)
 
 Some tips: i.e. this is good for say, a hand or a mouse if you feel the "skeleton" during training would increase performance. DON'T do this for things that could be identified an individual objects. i.e., don't do whisker 1, whisker 2, whisker 3 as 3 individuals. Each whisker always has a specific spatial location, and by calling them individuals you will do WORSE than in single animal mode.
-
-- **I have single animal videos, but I want to use new features within in DLC2.2:**
-   - quick start: when you `create_new_project` just set the flag `multianimal=Flase`, but you still get lots of upgrades! This is the typical work path for many of you.
 
 - **I have multiple *identical-looking animals* in my videos and I need to use DLC2.2:**
    - quick start: when you `create_new_project` set the flag `multianimal=True`. If you can't tell them apart, you can assign the "individual" ID to any animal in each frame. See this [labeling w/2.2 demo video](https://www.youtube.com/watch?v=_qbEqNKApsI)
