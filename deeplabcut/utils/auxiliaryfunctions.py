@@ -339,7 +339,7 @@ def Getlistofvideos(videos: typing.Union[typing.List[str], str],
         Returns all the videos in the directory.
         """
         if videotype is None:
-            raise ValueError('When given a directory of videos, must be given a videotype )
+            raise ValueError('When given a directory of videos, must be given a videotype')
         
         from random import shuffle
 
