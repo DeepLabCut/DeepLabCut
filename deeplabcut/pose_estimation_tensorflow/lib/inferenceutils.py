@@ -900,7 +900,7 @@ def match_assemblies(
     sigma,
     margin=0,
     symmetric_kpts=None,
-    greedy=False
+    greedy_matching=False
 ):
     # Only consider assemblies of at least two keypoints
     ass_pred = [a for a in ass_pred if len(a) > 1]
@@ -909,7 +909,7 @@ def match_assemblies(
     matched = []
 
     # Greedy assembly matching like in pycocotools
-    if greedy:
+    if greedy_matching:
         inds_true = list(range(len(ass_true)))
         inds_pred = np.argsort(
             [ins.affinity if ins.n_links else ins.confidence for ins in ass_pred]
@@ -1011,7 +1011,7 @@ def evaluate_assembly(
     oks_thresholds=np.linspace(0.5, 0.95, 10),
     margin=0,
     symmetric_kpts=None,
-    greedy=False,
+    greedy_matching=False,
 ):
     # sigma is taken as the median of all COCO keypoint standard deviations
     all_matched = []
@@ -1024,7 +1024,7 @@ def evaluate_assembly(
             oks_sigma,
             margin,
             symmetric_kpts,
-            greedy,
+            greedy_matching,
         )
         all_matched.extend(matched)
         all_unmatched.extend(unmatched)
