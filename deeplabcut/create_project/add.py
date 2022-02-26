@@ -19,7 +19,7 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
         String containing the full path of the config file in the project.
 
     videos : list
-        A list of string containing the full paths of the videos to include in the project.
+        A list of strings containing the full paths of the videos to include in the project.
 
     copy_videos : bool, optional
         If this is set to True, the symlink of the videos are copied to the project/videos directory. The default is
@@ -108,9 +108,9 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
     videos_str = [str(video) for video in videos]
     if extract_frames:
         frame_extraction.extract_frames(config, userfeedback=False, videos=videos_str)
-
+        print(
+            "New videos were added to the project and frames have been extracted for labeling!"
+        )
+    else:
+        print("New video was added to the project!")
     auxiliaryfunctions.write_config(config, cfg)
-
-    print(
-        "New videos were added to the project and frames have been extracted for labeling!"
-    )
