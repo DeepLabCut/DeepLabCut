@@ -45,12 +45,11 @@
     <script src="../_static/togglebutton.js"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
     <script src="../_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
-    <script async="async" src="https://unpkg.com/thebe@0.5.1/lib/index.js"></script>
-    <script>
-        const thebe_selector = ".thebe"
-        const thebe_selector_input = "pre"
-        const thebe_selector_output = ".output"
-    </script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
     <script async="async" src="../_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -921,7 +920,9 @@ but does not guarantee best performance.</p>
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_video_with_all_detections</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;/fullpath/project/videos/testVideo.mp4&#39;</span><span class="p">],</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;.mp4&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Please note that you do <strong>not</strong> get the .h5/csv file you might be used to getting (this comes after tracking). You will get a <code class="docutils literal notranslate"><span class="pre">pickle</span></code> file that is used in <code class="docutils literal notranslate"><span class="pre">create_video_with_all_detections</span></code>. IF you have good clean out video, ending in <code class="docutils literal notranslate"><span class="pre">....full.mp4</span></code> (and the evaluation metrics look good, scoremaps look good, plotted evaluation images), then go forward!!!</p>
+<p>Please note that you do <strong>not</strong> get the .h5/csv file you might be used to getting (this comes after tracking). You will get a <code class="docutils literal notranslate"><span class="pre">pickle</span></code> file that is used in <code class="docutils literal notranslate"><span class="pre">create_video_with_all_detections</span></code>.
+Another sanity check may be to examine the distributions of edge affinity costs using <code class="docutils literal notranslate"><span class="pre">deeplabcut.utils.plot_edge_affinity_distributions</span></code>. Easily separable distributions indicate that the model has learned strong links to group keypoints into distinct individuals — likely a necessary feature for the assembly stage (note that the amount of overlap will also depend on the amount of interactions between your animals in the daset).
+IF you have good clean out video, ending in <code class="docutils literal notranslate"><span class="pre">....full.mp4</span></code> (and the evaluation metrics look good, scoremaps look good, plotted evaluation images, and affinity distributions are far apart for most edges), then go forward!!!</p>
 <p>If this does not look good, we recommend extracting and labeling more frames (even from more videos). Try to label close interactions of animals for best performance. Once you label more, you can create a new training set and train.</p>
 <p>You can either:</p>
 <ol class="simple">
