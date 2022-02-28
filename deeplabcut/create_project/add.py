@@ -112,5 +112,5 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
             "New videos were added to the project and frames have been extracted for labeling!"
         )
     else:
-        print("New video was added to the project!")
+        print("New videos were added to the project! use Use the function 'extract_frames' to select frames for labeling.")
     auxiliaryfunctions.write_config(config, cfg)
