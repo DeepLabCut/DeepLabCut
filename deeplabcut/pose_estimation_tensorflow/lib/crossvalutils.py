@@ -257,6 +257,7 @@ def _benchmark_paf_graphs(
                         oks_sigma,
                         margin=margin,
                         symmetric_kpts=symmetric_kpts,
+                        greedy_matching=inference_cfg.get("greedy_oks", False),
                     )
                 )
         else:
@@ -266,6 +267,7 @@ def _benchmark_paf_graphs(
                 oks_sigma,
                 margin=margin,
                 symmetric_kpts=symmetric_kpts,
+                greedy_matching=inference_cfg.get("greedy_oks", False),
             )
         all_metrics.append(oks)
         scores = np.full((len(image_paths), 2), np.nan)

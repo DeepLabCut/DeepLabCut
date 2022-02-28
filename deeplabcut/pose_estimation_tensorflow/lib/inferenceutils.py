@@ -900,29 +900,54 @@ def match_assemblies(
     sigma,
     margin=0,
     symmetric_kpts=None,
+    greedy_matching=False
 ):
     # Only consider assemblies of at least two keypoints
     ass_pred = [a for a in ass_pred if len(a) > 1]
     ass_true = [a for a in ass_true if len(a) > 1]
 
-    mat = np.zeros((len(ass_pred), len(ass_true)))
-    for i, a_pred in enumerate(ass_pred):
-        for j, a_true in enumerate(ass_true):
-            oks = calc_object_keypoint_similarity(
-                a_pred.xy,
-                a_true.xy,
-                sigma,
-                margin,
-                symmetric_kpts,
-            )
-            if ~np.isnan(oks):
-                mat[i, j] = oks
-    rows, cols = linear_sum_assignment(mat, maximize=True)
     matched = []
-    inds_true = list(range(len(ass_true)))
-    for row, col in zip(rows, cols):
-        matched.append((ass_pred[row], ass_true[col], mat[row, col]))
-        _ = inds_true.remove(col)
+
+    # Greedy assembly matching like in pycocotools
+    if greedy_matching:
+        inds_true = list(range(len(ass_true)))
+        inds_pred = np.argsort(
+            [ins.affinity if ins.n_links else ins.confidence for ins in ass_pred]
+        )[::-1]
+        for ind_pred in inds_pred:
+            xy_pred = ass_pred[ind_pred].xy
+            oks = []
+            for ind_true in inds_true:
+                xy_true = ass_true[ind_true].xy
+                oks.append(
+                    calc_object_keypoint_similarity(
+                        xy_pred, xy_true, sigma, margin, symmetric_kpts,
+                    )
+                )
+            if np.all(np.isnan(oks)):
+                continue
+            ind_best = np.nanargmax(oks)
+            ind_true_best = inds_true.pop(ind_best)
+            matched.append((ass_pred[ind_pred], ass_true[ind_true_best], oks[ind_best]))
+            if not inds_true:
+                break
+
+    # Global rather than greedy assembly matching
+    else:
+        mat = np.zeros((len(ass_pred), len(ass_true)))
+        for i, a_pred in enumerate(ass_pred):
+            for j, a_true in enumerate(ass_true):
+                oks = calc_object_keypoint_similarity(
+                    a_pred.xy, a_true.xy, sigma, margin, symmetric_kpts,
+                )
+                if ~np.isnan(oks):
+                    mat[i, j] = oks
+        rows, cols = linear_sum_assignment(mat, maximize=True)
+        inds_true = list(range(len(ass_true)))
+        for row, col in zip(rows, cols):
+            matched.append((ass_pred[row], ass_true[col], mat[row, col]))
+            _ = inds_true.remove(col)
+
     unmatched = [ass_true[ind] for ind in inds_true]
     return matched, unmatched
 
@@ -986,6 +1011,7 @@ def evaluate_assembly(
     oks_thresholds=np.linspace(0.5, 0.95, 10),
     margin=0,
     symmetric_kpts=None,
+    greedy_matching=False,
 ):
     # sigma is taken as the median of all COCO keypoint standard deviations
     all_matched = []
@@ -998,6 +1024,7 @@ def evaluate_assembly(
             oks_sigma,
             margin,
             symmetric_kpts,
+            greedy_matching,
         )
         all_matched.extend(matched)
         all_unmatched.extend(unmatched)
