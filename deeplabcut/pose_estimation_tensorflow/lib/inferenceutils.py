@@ -715,7 +715,7 @@ class Assembler:
             if joint.idx not in assembled and np.isfinite(joint.confidence)
         )
         for assembly in assemblies[::-1]:
-            if 0 <= assembly.n_links < self.min_n_links:
+            if 0 < assembly.n_links < self.min_n_links or not len(assembly):
                 for link in assembly._links:
                     discarded.update((link.j1, link.j2))
                 assemblies.remove(assembly)
