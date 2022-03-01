@@ -228,7 +228,7 @@ def test_assembler_with_identity(tmpdir_factory, real_assemblies):
             ids = [np.random.rand(c.shape[0], 3) for c in conf]
             v["identity"] = ids
 
-    ass = inferenceutils.Assembler(data, max_n_individuals=3, n_multibodyparts=12,)
+    ass = inferenceutils.Assembler(data, max_n_individuals=3, n_multibodyparts=12)
     assert ass._has_identity
     assert len(ass.metadata["imnames"]) == 50
     assert ass.n_keypoints == 12
@@ -260,6 +260,7 @@ def test_assembler_with_identity(tmpdir_factory, real_assemblies):
     # contain only parts of a single group ID.
     ass.identity_only = True
     ass.assemble()
+    assert len(ass.assemblies) == len(real_assemblies)
     eq = []
     for a in ass.assemblies.values():
         for _ in a:
