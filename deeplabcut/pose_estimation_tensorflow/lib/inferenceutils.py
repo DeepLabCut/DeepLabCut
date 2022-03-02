@@ -662,8 +662,8 @@ class Assembler:
         if self.max_n_individuals == 1:
             get_attr = operator.attrgetter("confidence")
             ass = Assembly(self.n_multibodyparts)
-            for joints in bag.values():
-                ass.add_joint(max(joints, key=get_attr))
+            for ind in range(self.n_multibodyparts):
+                ass.add_joint(max(bag[ind], key=get_attr))
             return [ass], unique
 
         if self.identity_only:
