@@ -1,3 +1,6 @@
-# DLCgui
+# PyQT-Based DLC GUI
 
-```python main.py```
+To run:
+```bash
+python main.py
+```

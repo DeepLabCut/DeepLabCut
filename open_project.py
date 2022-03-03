@@ -10,7 +10,6 @@ class OpenProject(QtWidgets.QDialog):
         super(OpenProject, self).__init__(parent)
 
         self.setWindowTitle("Load Existing Project")
-        self.setMinimumSize(800, 400)
 
         self.cfg = None
         self.loaded = False

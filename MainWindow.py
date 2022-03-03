@@ -86,7 +86,7 @@ class MainWindow(QtWidgets.QMainWindow):
         lbl_welcome1.setAlignment(Qt.AlignCenter)
         lbl_welcome2 = QLabel("To get started, please click on the 'File'")
         lbl_welcome2.setAlignment(Qt.AlignCenter)
-        lbl_welcome3 = QLabel("tab to cteate or load an existing project.")
+        lbl_welcome3 = QLabel("tab to create or load an existing project.")
         lbl_welcome3.setAlignment(Qt.AlignCenter)
 
         layout.addWidget(lbl_welcome1)

@@ -17,9 +17,22 @@ import pandas as pd
 
 
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+from PyQt5.QtGui import Qt, QIcon
+from PyQt5.QtWidgets import (
+    QMainWindow,
+    QFrame,
+    QVBoxLayout,
+    QScrollArea,
+    QHBoxLayout,
+    QSlider,
+    QLabel,
+    QCheckBox,
+    QButtonGroup,
+    QStatusBar,
+    QSplitter,
+    QMessageBox,
+    QPushButton,
+)
 
 from PyQt5.QtWidgets import QWidget
 
@@ -408,7 +421,8 @@ class MainFrame(QMainWindow):
         self.drs = []
         self.num = []
         self.view_locked = False
-        # Workaround for MAC - xlim and ylim changed events seem to be triggered too often so need to make sure that the
+        # Workaround for MAC - xlim and ylim changed events seem to be
+        # triggered too often so need to make sure that the
         # xlim and ylim have actually changed before turning zoom off
         self.prezoom_xlim = []
         self.prezoom_ylim = []
