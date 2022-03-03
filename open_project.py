@@ -89,22 +89,9 @@ class OpenProject(QtWidgets.QDialog):
 
             self.loaded = False
         else:
-            msg = QtWidgets.QMessageBox()
-            msg.setIcon(QtWidgets.QMessageBox.Information)
-            msg.setText("Project Loaded!")
-
-            msg.setWindowTitle("Info")
-            msg.setMinimumWidth(400)
             self.logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
             self.logo = self.logo_dir + "/assets/logo.png"
-            msg.setWindowIcon(QIcon(self.logo))
-            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-            msg.buttonClicked.connect(self.ok_clicked)
-            msg.exec_()
+
             self.loaded = True
-
+            self.accept()
             self.close()
-
-    def ok_clicked(self):
-        self.loaded = True
-        self.accept()

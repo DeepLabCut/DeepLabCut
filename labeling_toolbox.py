@@ -17,7 +17,8 @@ import pandas as pd
 
 
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtGui import Qt, QIcon
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
     QMainWindow,
     QFrame,
@@ -252,6 +253,9 @@ class ScrollPanel(QFrame):
         self.choiceBox = QVBoxLayout(self)
         self.choiceBox.setAlignment(Qt.AlignLeft | Qt.AlignTop)
 
+        self.checkBox = QCheckBox("Adjust marker size")
+        self.choiceBox.addWidget(self.checkBox)
+
         slider_vbox = QVBoxLayout(self)
         slider_vbox.setContentsMargins(0, 0, 0, 20)
         slider_hbox = QHBoxLayout(self)
@@ -278,9 +282,6 @@ class ScrollPanel(QFrame):
 
         self.slider.setEnabled(False)
         self.choiceBox.addLayout(slider_vbox)
-
-        self.checkBox = QCheckBox("Adjust marker size")
-        self.choiceBox.addWidget(self.checkBox)
 
         self.btngroup = QButtonGroup()
         fieldrbns_text = QtWidgets.QLabel("Select a bodypart to label")
