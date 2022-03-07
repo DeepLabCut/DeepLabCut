@@ -663,7 +663,10 @@ class Assembler:
             get_attr = operator.attrgetter("confidence")
             ass = Assembly(self.n_multibodyparts)
             for ind in range(self.n_multibodyparts):
-                ass.add_joint(max(bag[ind], key=get_attr))
+                joints = bag[ind]
+                if not joints:
+                    continue
+                ass.add_joint(max(joints, key=get_attr))
             return [ass], unique
 
         if self.identity_only:
