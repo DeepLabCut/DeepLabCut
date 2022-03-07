@@ -578,7 +578,7 @@ class SORTSkeleton(SORTBase):
         return mat
 
     def track(self, poses):
-        self.frame_count += 1
+        self.n_frames += 1
 
         if not len(self.trackers):
             for pose in poses:
