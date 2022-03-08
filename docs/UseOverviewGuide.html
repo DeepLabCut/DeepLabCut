@@ -559,21 +559,20 @@ const thebe_selector_output = ".output, .cell_output"
 <div class="section" id="what-scenario-do-you-have">
 <h4><em>What scenario do you have?</em><a class="headerlink" href="#what-scenario-do-you-have" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
-<li><p><strong>I have single animal videos, but I want to use the advanced tracking features &amp; updated network capabilities introduced (for multi-animal projects) in DLC2.2:</strong></p>
+<li><p><strong>I have single animal videos:</strong></p>
 <ul>
-<li><p>quick start: when you <code class="docutils literal notranslate"><span class="pre">create_new_project</span></code> just set the flag <code class="docutils literal notranslate"><span class="pre">multianimal=True</span></code>.</p></li>
+<li><p>quick start: when you <code class="docutils literal notranslate"><span class="pre">create_new_project</span></code> (and leave the default flag to False in <code class="docutils literal notranslate"><span class="pre">multianimal=False</span></code>). This is the typical work path for many of you.</p></li>
+</ul>
+</li>
+<li><p><strong>I have single animal videos, but I want to use the updated network capabilities introduced for multi-animal projects:</strong></p>
+<ul>
+<li><p>quick start: when you <code class="docutils literal notranslate"><span class="pre">create_new_project</span></code> just set the flag <code class="docutils literal notranslate"><span class="pre">multianimal=True</span></code>. This enables you to use maDLC features even though you have only one animal. To note, this is rarely required for single animal projects, and not the recommended path. Some tips for when you might want to use this: this is good for say, a hand or a mouse if you feel the “skeleton” during training would increase performance. DON’T do this for things that could be identified an individual objects. i.e., don’t do whisker 1, whisker 2, whisker 3 as 3 individuals. Each whisker always has a specific spatial location, and by calling them individuals you will do WORSE than in single animal mode.</p></li>
 </ul>
 </li>
 </ul>
 <p><a class="reference external" href="https://youtu.be/JDsa8R5J0nQ">VIDEO TUTORIAL AVAILABLE!</a></p>
-<p>Some tips: i.e. this is good for say, a hand or a mouse if you feel the “skeleton” during training would increase performance. DON’T do this for things that could be identified an individual objects. i.e., don’t do whisker 1, whisker 2, whisker 3 as 3 individuals. Each whisker always has a specific spatial location, and by calling them individuals you will do WORSE than in single animal mode.</p>
 <ul class="simple">
-<li><p><strong>I have single animal videos, but I want to use new features within in DLC2.2:</strong></p>
-<ul>
-<li><p>quick start: when you <code class="docutils literal notranslate"><span class="pre">create_new_project</span></code> just set the flag <code class="docutils literal notranslate"><span class="pre">multianimal=Flase</span></code>, but you still get lots of upgrades! This is the typical work path for many of you.</p></li>
-</ul>
-</li>
-<li><p><strong>I have multiple <em>identical-looking animals</em> in my videos and I need to use DLC2.2:</strong></p>
+<li><p><strong>I have multiple <em>identical-looking animals</em> in my videos:</strong></p>
 <ul>
 <li><p>quick start: when you <code class="docutils literal notranslate"><span class="pre">create_new_project</span></code> set the flag <code class="docutils literal notranslate"><span class="pre">multianimal=True</span></code>. If you can’t tell them apart, you can assign the “individual” ID to any animal in each frame. See this <a class="reference external" href="https://www.youtube.com/watch?v=_qbEqNKApsI">labeling w/2.2 demo video</a></p></li>
 </ul>
