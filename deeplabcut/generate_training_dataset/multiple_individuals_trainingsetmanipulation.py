@@ -103,6 +103,7 @@ def create_multianimaltraining_dataset(
     paf_graph=None,
     trainIndices=None,
     testIndices=None,
+    n_edges_threshold=105,
 ):
     """
     Creates a training dataset for multi-animal datasets. Labels from all the extracted frames are merged into a single .h5 file.\n
@@ -153,6 +154,9 @@ def create_multianimaltraining_dataset(
 
     testIndices: list of lists, optional (default=None)
         List of one or multiple lists containing test indexes.
+
+    n_edges_threshold: int, optional (default=105)
+        Number of edges above which the graph is automatically pruned.
 
     Example
     --------
@@ -224,7 +228,7 @@ def create_multianimaltraining_dataset(
         # If the graph is unnecessarily large (with 15+ keypoints by default),
         # we randomly prune it to a size guaranteeing an average node degree of 6;
         # see Suppl. Fig S9c in Lauer et al., 2022.
-        if n_edges_orig >= 105:
+        if n_edges_orig >= n_edges_threshold:
             partaffinityfield_graph = auxfun_multianimal.prune_paf_graph(
                 partaffinityfield_graph, average_degree=6,
             )
