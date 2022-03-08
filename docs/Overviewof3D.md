@@ -9,7 +9,7 @@ In this repo we directly support 2-camera based 3D pose estimation. If you want 
 
 A. You have 2D videos and a DeepLabCut network to analyze them as described in the [main documentation](https://github.com/AlexEMG/DeepLabCut/blob/master/docs/UseOverviewGuide.md). This can be with multiple separate networks for each camera, or one network trained on all views (See [Nath*, Mathis* et al., 2019](https://www.biorxiv.org/content/10.1101/476531v1)).
 
-B. You are using 2 cameras for 3D*.
+B. You are using 2 cameras, in a [stereo configuration](https://github.com/DeepLabCut/DeepLabCut/blob/5ac4c8cb6bcf2314a3abfcf979b8dd170608e094/deeplabcut/pose_estimation_3d/camera_calibration.py#L223), for 3D*.
 
 C. You have calibration images taken (see details below!).
 
@@ -35,7 +35,7 @@ Here are other excellent options for you to use that extend DeepLabCut:
 
 ### (1) Create a New 3D Project:
 
-Watch a [DEMO VIDEO](https://youtu.be/Eh6oIGE4dwI) on how to use this code!
+Watch a [DEMO VIDEO](https://youtu.be/Eh6oIGE4dwI) on how to use this code, and check out the Notebook [here](https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/JUPYTER/Demo_3D_DeepLabCut.ipynb)!
 
 
 You will run this function **one** time per project; a project is defined as a given set of cameras and calibration images. You can always analyze new videos within this project.
