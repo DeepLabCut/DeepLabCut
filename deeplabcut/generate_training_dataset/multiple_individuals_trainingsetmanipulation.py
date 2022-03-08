@@ -104,6 +104,7 @@ def create_multianimaltraining_dataset(
     trainIndices=None,
     testIndices=None,
     n_edges_threshold=105,
+    paf_graph_degree=6
 ):
     """
     Creates a training dataset for multi-animal datasets. Labels from all the extracted frames are merged into a single .h5 file.\n
@@ -158,6 +159,9 @@ def create_multianimaltraining_dataset(
     n_edges_threshold: int, optional (default=105)
         Number of edges above which the graph is automatically pruned.
 
+    paf_graph_degree: int, optional (default=6)
+        Degree of paf_graph when automatically pruning it (before training).
+        
     Example
     --------
     >>> deeplabcut.create_multianimaltraining_dataset('/analysis/project/reaching-task/config.yaml',num_shuffles=1)
@@ -230,7 +234,7 @@ def create_multianimaltraining_dataset(
         # see Suppl. Fig S9c in Lauer et al., 2022.
         if n_edges_orig >= n_edges_threshold:
             partaffinityfield_graph = auxfun_multianimal.prune_paf_graph(
-                partaffinityfield_graph, average_degree=6,
+                partaffinityfield_graph, average_degree=paf_graph_degree,
             )
     else:
         # Ignore possible connections between 'multi' and 'unique' body parts;
