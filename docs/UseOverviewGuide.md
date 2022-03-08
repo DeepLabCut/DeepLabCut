@@ -79,17 +79,15 @@ We highly recommend using 2.2 first in the Project Manager GUI ([Option 3](docs/
 
 ##### *What scenario do you have?*
 
-- **I have single animal videos, but I want to use the advanced tracking features & updated network capabilities introduced (for multi-animal projects) in DLC2.2:**
-   - quick start: when you `create_new_project` just set the flag `multianimal=True`. This enables you to use many maDLC features even though you have only one animal.
+- **I have single animal videos:**
+   - quick start: when you `create_new_project` (and leave default flag to False in `multianimal=False`). This is the typical work path for many of you.
+
+- **I have single animal videos, but I want to use the updated network capabilities introduced for multi-animal projects:**
+   - quick start: when you `create_new_project` just set the flag `multianimal=True`. This enables you to use maDLC features even though you have only one animal. To note, this is rarely required for single animal projects, and not the recommended path. Some tips for when you might want to use this: this is good for say, a hand or a mouse if you feel the "skeleton" during training would increase performance. DON'T do this for things that could be identified an individual objects. i.e., don't do whisker 1, whisker 2, whisker 3 as 3 individuals. Each whisker always has a specific spatial location, and by calling them individuals you will do WORSE than in single animal mode.
 
 [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/JDsa8R5J0nQ)
 
-Some tips: i.e. this is good for say, a hand or a mouse if you feel the "skeleton" during training would increase performance. DON'T do this for things that could be identified an individual objects. i.e., don't do whisker 1, whisker 2, whisker 3 as 3 individuals. Each whisker always has a specific spatial location, and by calling them individuals you will do WORSE than in single animal mode.
-
-- **I have single animal videos, but I want to use new features within in DLC2.2:**
-   - quick start: when you `create_new_project` just set the flag `multianimal=False`. This is the typical work path for many of you. Single-animal DLC still gets a lot of upgrades!
-
-- **I have multiple *identical-looking animals* in my videos and I need to use DLC2.2:**
+- **I have multiple *identical-looking animals* in my videos:**
    - quick start: when you `create_new_project` set the flag `multianimal=True`. If you can't tell them apart, you can assign the "individual" ID to any animal in each frame. See this [labeling w/2.2 demo video](https://www.youtube.com/watch?v=_qbEqNKApsI)
 
 [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/Kp-stcTm77g)
