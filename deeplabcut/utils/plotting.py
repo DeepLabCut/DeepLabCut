@@ -33,119 +33,129 @@ def Histogram(vector, color, bins, ax=None, linewidth=1.0):
 
 
 def PlottingResults(
-    tmpfolder,
-    Dataframe,
-    cfg,
-    bodyparts2plot,
-    individuals2plot,
-    showfigures=False,
-    suffix=".png",
-    resolution=100,
-    linewidth=1.0,
+        tmpfolder,
+        Dataframe,
+        cfg,
+        bodyparts2plot,
+        individuals2plot,
+        showfigures=False,
+        suffix=".png",
+        resolution=100,
+        linewidth=1.0,
 ):
     """ Plots poses vs time; pose x vs pose y; histogram of differences and likelihoods."""
     pcutoff = cfg["pcutoff"]
     colors = visualization.get_cmap(len(bodyparts2plot), name=cfg["colormap"])
+    # print("colors: ", colors)
     alphavalue = cfg["alphavalue"]
     if individuals2plot:
         Dataframe = Dataframe.loc(axis=1)[:, individuals2plot]
     animal_bpts = Dataframe.columns.get_level_values("bodyparts")
-    # Pose X vs pose Y
-    fig1 = plt.figure(figsize=(8, 6))
-    ax1 = fig1.add_subplot(111)
+
+    # PLOT 1: Pose X vs pose Y
+    fig1, ax1 = plt.subplots(figsize=(8, 6))
     ax1.set_xlabel("X position in pixels")
     ax1.set_ylabel("Y position in pixels")
     ax1.invert_yaxis()
 
-    # Poses vs time
-    fig2 = plt.figure(figsize=(10, 3))
-    ax2 = fig2.add_subplot(111)
-    ax2.set_xlabel("Frame Index")
-    ax2.set_ylabel("X-(dashed) and Y- (solid) position in pixels")
+    # PLOT 2: Poses vs time
+    fig2, ax2 = plt.subplots(figsize=(10, 6), nrows=2, ncols=1, sharex='row')
 
-    # Likelihoods
-    fig3 = plt.figure(figsize=(10, 3))
-    ax3 = fig3.add_subplot(111)
+    # TODO ideally these would be inferred not hardcoded
+    img_width = 1920
+    img_height = 1080
+
+    # x position
+    ax2[0].set_ylabel("x position [pixels]")
+    ax2[0].set_ylim([0, img_width])
+    ax2[0].grid()
+
+    # y position
+    ax2[1].set_xlabel("Frame Index")
+    ax2[1].set_ylabel("y position [pixels]")
+    ax2[1].set_ylim([0, img_height])
+    ax2[1].invert_yaxis()
+    ax2[1].grid()
+
+    # PLOT 3: Likelihoods
+    fig3, ax3 = plt.subplots(figsize=(10, 3))
     ax3.set_xlabel("Frame Index")
     ax3.set_ylabel("Likelihood (use to set pcutoff)")
 
-    # Histograms
-    fig4 = plt.figure()
-    ax4 = fig4.add_subplot(111)
-    ax4.set_ylabel("Count")
-    ax4.set_xlabel("DeltaX and DeltaY")
-    bins = np.linspace(0, np.amax(Dataframe.max()), 100)
+    # PLOT 4: Histograms
+    fig4, ax4 = plt.subplots(figsize=(10, 4), nrows=1, ncols=2)
+
+    ax4[0].set_ylabel("Count")
+    ax4[0].set_xlabel("DeltaX")
+
+    ax4[1].set_xlabel("DeltaY")
+    # bins = np.linspace(0, np.amax(Dataframe.max()), 50)
+    bins = np.linspace(0, 100, 50)
 
     with np.errstate(invalid="ignore"):
         for bpindex, bp in enumerate(bodyparts2plot):
-            if (
-                bp in animal_bpts
-            ):  # Avoid 'unique' bodyparts only present in the 'single' animal
-                prob = Dataframe.xs(
-                    (bp, "likelihood"), level=(-2, -1), axis=1
-                ).values.squeeze()
+            if bp in animal_bpts:  # Avoid 'unique' bodyparts only present in the 'single' animal
+
+                prob = Dataframe.xs((bp, "likelihood"), level=(-2, -1), axis=1).values.squeeze()
+
+                # cutoff mask for x and y
                 mask = prob < pcutoff
-                temp_x = np.ma.array(
-                    Dataframe.xs((bp, "x"), level=(-2, -1), axis=1).values.squeeze(),
-                    mask=mask,
-                )
-                temp_y = np.ma.array(
-                    Dataframe.xs((bp, "y"), level=(-2, -1), axis=1).values.squeeze(),
-                    mask=mask,
-                )
+
+                temp_x = np.ma.array(Dataframe.xs((bp, "x"), level=(-2, -1), axis=1).values.squeeze(), mask=mask)
+                temp_y = np.ma.array(Dataframe.xs((bp, "y"), level=(-2, -1), axis=1).values.squeeze(), mask=mask)
+
+                # Pose X vs pose Y
                 ax1.plot(temp_x, temp_y, ".", color=colors(bpindex), alpha=alphavalue)
 
-                ax2.plot(
-                    temp_x,
-                    "--",
-                    color=colors(bpindex),
-                    linewidth=linewidth,
-                    alpha=alphavalue,
-                )
-                ax2.plot(
-                    temp_y,
-                    "-",
-                    color=colors(bpindex),
-                    linewidth=linewidth,
-                    alpha=alphavalue,
-                )
+                # Poses vs time
+                ax2[0].plot(temp_x,
+                            "-",
+                            color=colors(bpindex),
+                            linewidth=linewidth,
+                            alpha=alphavalue)
 
-                ax3.plot(
-                    prob,
-                    "-",
-                    color=colors(bpindex),
-                    linewidth=linewidth,
-                    alpha=alphavalue,
-                )
+                ax2[1].plot(temp_y,
+                            "-",
+                            color=colors(bpindex),
+                            linewidth=linewidth,
+                            alpha=alphavalue)
 
-                Histogram(temp_x, colors(bpindex), bins, ax4, linewidth=linewidth)
-                Histogram(temp_y, colors(bpindex), bins, ax4, linewidth=linewidth)
+                # Likelihoods
+                ax3.plot(prob,
+                         "-",
+                         color=colors(bpindex),
+                         linewidth=linewidth,
+                         alpha=alphavalue)
 
+                # Histograms
+                Histogram(temp_x, colors(bpindex), bins, ax4[0], linewidth=linewidth)
+                Histogram(temp_y, colors(bpindex), bins, ax4[1], linewidth=linewidth)
+
+    # Colorbar
     sm = plt.cm.ScalarMappable(
         cmap=plt.get_cmap(cfg["colormap"]),
-        norm=plt.Normalize(vmin=0, vmax=len(bodyparts2plot) - 1),
-    )
+        norm=plt.Normalize(vmin=0, vmax=len(bodyparts2plot) - 1))
     sm._A = []
+    # print("scalar-mappable: ", sm)
     for ax in ax1, ax2, ax3, ax4:
         cbar = plt.colorbar(sm, ax=ax, ticks=range(len(bodyparts2plot)))
         cbar.set_ticklabels(bodyparts2plot)
 
-    fig1.savefig(
-        os.path.join(tmpfolder, "trajectory" + suffix),
-        bbox_inches="tight",
-        dpi=resolution,
-    )
-    fig2.savefig(
-        os.path.join(tmpfolder, "plot" + suffix), bbox_inches="tight", dpi=resolution
-    )
-    fig3.savefig(
-        os.path.join(tmpfolder, "plot-likelihood" + suffix),
-        bbox_inches="tight",
-        dpi=resolution,
-    )
-    fig4.savefig(
-        os.path.join(tmpfolder, "hist" + suffix), bbox_inches="tight", dpi=resolution
-    )
+    fig1.savefig(os.path.join(tmpfolder, "trajectory" + suffix),
+                 bbox_inches="tight",
+                 dpi=resolution)
+
+    fig2.savefig(os.path.join(tmpfolder, "plot" + suffix),
+                 bbox_inches="tight",
+                 dpi=resolution)
+
+    fig3.savefig(os.path.join(tmpfolder, "plot-likelihood" + suffix),
+                 bbox_inches="tight",
+                 dpi=resolution)
+
+    fig4.savefig(os.path.join(tmpfolder, "hist" + suffix),
+                 bbox_inches="tight",
+                 dpi=resolution)
 
     if not showfigures:
         plt.close("all")
@@ -159,21 +169,21 @@ def PlottingResults(
 
 
 def plot_trajectories(
-    config,
-    videos,
-    videotype=".avi",
-    shuffle=1,
-    trainingsetindex=0,
-    filtered=False,
-    displayedbodyparts="all",
-    displayedindividuals="all",
-    showfigures=False,
-    destfolder=None,
-    modelprefix="",
-    imagetype=".png",
-    resolution=100,
-    linewidth=1.0,
-    track_method="",
+        config,
+        videos,
+        videotype=".avi",
+        shuffle=1,
+        trainingsetindex=0,
+        filtered=False,
+        displayedbodyparts="all",
+        displayedindividuals="all",
+        showfigures=False,
+        destfolder=None,
+        modelprefix="",
+        imagetype=".png",
+        resolution=100,
+        linewidth=1.0,
+        track_method="",
 ):
     """
     Plots the trajectories of various bodyparts across the video.
