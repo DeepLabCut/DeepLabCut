@@ -41,13 +41,13 @@ def create_config_template(multianimal=False):
         individuals:
         uniquebodyparts:
         multianimalbodyparts:
-        skeleton:
         bodyparts:
         start:
         stop:
         numframes2pick:
         \n
     # Plotting configuration
+        skeleton:
         skeleton_color:
         pcutoff:
         dotsize:
