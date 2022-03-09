@@ -931,6 +931,9 @@ def create_training_dataset(
                     # these values are dropped as scalecrop
                     # doesn't have rotation implemented
                     items2drop = {"rotation": 0, "rotratio": 0.0}
+                # Also drop maDLC smart cropping augmentation parameters
+                for key in ["pre_resize", "crop_size", "max_shift", "crop_sampling"]:
+                    items2drop[key] = None
 
                 trainingdata = MakeTrain_pose_yaml(
                     items2change, path_train_config, defaultconfigfile, items2drop

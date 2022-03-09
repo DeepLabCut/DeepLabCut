@@ -10,6 +10,7 @@ Licensed under GNU Lesser General Public License v3.0
 
 import argparse
 import os
+import pickle
 
 ####################################################
 # Dependencies
@@ -20,6 +21,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
+from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualization
 
 
@@ -328,6 +330,97 @@ def plot_trajectories(
             f"Plots could not be created! "
             f"Videos were not evaluated with the current scorer {DLCscorer}."
         )
+
+
+def _plot_paf_performance(
+    within, between, nbins=51, kde=True, colors=None, ax=None,
+):
+    import seaborn as sns
+
+    bins = np.linspace(0, 1, nbins)
+    if colors is None:
+        colors = '#EFC9AF', '#1F8AC0'
+    if ax is None:
+        fig, ax = plt.subplots(tight_layout=True, figsize=(3, 3))
+    sns.histplot(within, kde=kde, ax=ax, stat='probability',
+                 color=colors[0], bins=bins)
+    sns.histplot(between, kde=kde, ax=ax, stat='probability',
+                 color=colors[1], bins=bins)
+    return ax
+
+
+def plot_edge_affinity_distributions(
+    eval_pickle_file,
+    include_bodyparts="all",
+    output_name="",
+    figsize=(10, 7),
+):
+    """
+    Display the distribution of affinity costs of within- and between-animal edges.
+
+    Parameters
+    ----------
+    eval_pickle_file : string
+        Path to a *_full.pickle from the evaluation-results folder.
+
+    include_bodyparts : list of strings, optional
+        A list of body part names whose edges are to be shown.
+        By default, all body parts and their corresponding edges are analyzed.
+        We recommend only passing a subset of body parts for projects with large graphs.
+
+    output_name: string, optional
+        Path where the plot is saved. By default, it is stored as costdist.png.
+
+    figsize: tuple
+        Figure size in inches.
+
+    """
+
+    with open(eval_pickle_file, 'rb') as file:
+        data = pickle.load(file)
+    meta_pickle_file = eval_pickle_file.replace('_full.', '_meta.')
+    with open(meta_pickle_file, 'rb') as file:
+        metadata = pickle.load(file)
+    (w_train, _), (b_train, _) = crossvalutils._calc_within_between_pafs(
+        data, metadata, train_set_only=True,
+    )
+    data.pop('metadata', None)
+    nonempty = set(i for i, vals in w_train.items() if vals)
+    meta = metadata['data']['DLC-model-config file']
+    bpts = list(map(str.lower, meta['all_joints_names']))
+    inds_multi = set(b for edge in meta['partaffinityfield_graph'] for b in edge)
+    if include_bodyparts == 'all':
+        include_bodyparts = inds_multi
+    else:
+        include_bodyparts = set(bpts.index(bpt) for bpt in include_bodyparts)
+    edges_to_keep = set()
+    graph = meta['partaffinityfield_graph']
+    for n, edge in enumerate(graph):
+        if not any(i in include_bodyparts for i in edge):
+            continue
+        edges_to_keep.add(n)
+    edge_inds = edges_to_keep.intersection(nonempty)
+    nrows = int(np.ceil(np.sqrt(len(edge_inds))))
+    ncols = int(np.ceil(len(edge_inds) / nrows))
+    fig, axes_ = plt.subplots(
+        nrows, ncols, figsize=figsize, tight_layout=True, squeeze=False,
+    )
+    axes = axes_.flatten()
+    for ax in axes:
+        ax.axis('off')
+    for n, ind in enumerate(edge_inds):
+        i1, i2 = graph[ind]
+        w_tr = w_train[ind]
+        b_tr = b_train[ind]
+        sep, _ = crossvalutils._calc_separability(b_tr, w_tr, metric='auc')
+        axes[n].text(0.5, 0.8, f'{bpts[i1]}–{bpts[i2]}\n{sep:.2f}', size=8,
+                     ha='center', transform=axes[n].transAxes)
+        _plot_paf_performance(w_tr, b_tr, ax=axes[n], kde=False)
+    axes[0].set_xticks([])
+    axes[0].set_yticks([])
+    if not output_name:
+        output_name = "costdist.jpg"
+    fig.savefig(output_name, dpi=600)
 
 
 if __name__ == "__main__":
