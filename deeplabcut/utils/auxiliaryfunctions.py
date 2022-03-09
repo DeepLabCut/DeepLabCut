@@ -42,11 +42,14 @@ def create_config_template(multianimal=False):
         uniquebodyparts:
         multianimalbodyparts:
         bodyparts:
+        \n
+    # Fraction of video sto start/stop when extracting frames for labeling/refinement
         start:
         stop:
         numframes2pick:
         \n
     # Plotting configuration
+    # note: skeleton is only used for plotting, not for assembly/tracking
         skeleton:
         skeleton_color:
         pcutoff:
@@ -90,6 +93,8 @@ def create_config_template(multianimal=False):
     # Annotation data set configuration (and individual video cropping parameters)
         video_sets:
         bodyparts:
+        \n
+    # Fraction of video sto start/stop when extracting frames for labeling/refinement
         start:
         stop:
         numframes2pick:
