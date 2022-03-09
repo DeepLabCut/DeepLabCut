@@ -25,13 +25,24 @@ from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualization
 
 
+def delta_position(x, y):
+
+    dx = np.diff(x)
+    dx = dx[np.isfinite(dx)]
+
+    dy = np.diff(y)
+    dy = dy[np.isfinite(dy)]
+
+    dr = (dx ** 2 + dy ** 2) ** 0.5
+
+    return dx, dy, dr
+
+
 def Histogram(vector, color, bins, ax=None, linewidth=1.0):
-    dvector = np.diff(vector)
-    dvector = dvector[np.isfinite(dvector)]
     if ax is None:
         fig = plt.figure()
         ax = fig.add_subplot(111)
-    ax.hist(dvector, color=color, histtype="step", bins=bins, linewidth=linewidth)
+    ax.hist(vector, color=color, histtype="step", bins=bins, linewidth=linewidth)
 
 
 def PlottingResults(
@@ -79,20 +90,36 @@ def PlottingResults(
     ax2[1].invert_yaxis()
     ax2[1].grid()
 
-    # PLOT 3: Likelihoods
-    fig3, ax3 = plt.subplots(figsize=(10, 3))
-    ax3.set_xlabel("Frame Index")
-    ax3.set_ylabel("Likelihood (use to set pcutoff)")
+    # PLOT 3: Delta Pose vs Time
+    fig3, ax3 = plt.subplots(figsize=(10, 9), nrows=3, ncols=1, sharex='row')
 
-    # PLOT 4: Histograms
-    fig4, ax4 = plt.subplots(figsize=(10, 4), nrows=1, ncols=2)
+    # dx/dt
+    ax3[0].set_ylabel("dx [pixels]")
+    ax3[0].grid()
 
-    ax4[0].set_ylabel("Count")
-    ax4[0].set_xlabel("DeltaX")
+    # dy/dt
+    ax3[1].set_ylabel("dy [pixels]")
+    ax3[1].grid()
 
-    ax4[1].set_xlabel("DeltaY")
+    # dr/dt
+    ax3[2].set_ylabel("dr [pixels]")
+    ax3[2].grid()
+
+    # PLOT 4: Likelihoods
+    fig4, ax4 = plt.subplots(figsize=(10, 3))
+    ax4.set_xlabel("Frame Index")
+    ax4.set_ylabel("Likelihood (use to set pcutoff)")
+
+    # PLOT 5: Histograms
+    fig5, ax5 = plt.subplots(figsize=(15, 4), nrows=1, ncols=3)
+
     # bins = np.linspace(0, np.amax(Dataframe.max()), 50)
     bins = np.linspace(0, 100, 50)
+
+    ax5[0].set_ylabel("Count")
+    ax5[0].set_xlabel("DeltaX")
+    ax5[1].set_xlabel("DeltaY")
+    ax5[2].set_xlabel("DeltaR")
 
     with np.errstate(invalid="ignore"):
         for bpindex, bp in enumerate(bodyparts2plot):
@@ -106,10 +133,12 @@ def PlottingResults(
                 temp_x = np.ma.array(Dataframe.xs((bp, "x"), level=(-2, -1), axis=1).values.squeeze(), mask=mask)
                 temp_y = np.ma.array(Dataframe.xs((bp, "y"), level=(-2, -1), axis=1).values.squeeze(), mask=mask)
 
-                # Pose X vs pose Y
+                dx, dy, dr = delta_position(temp_x, temp_y)
+
+                # PLOT 1: Pose X vs pose Y
                 ax1.plot(temp_x, temp_y, ".", color=colors(bpindex), alpha=alphavalue)
 
-                # Poses vs time
+                # PLOT 2: Poses vs time
                 ax2[0].plot(temp_x,
                             "-",
                             color=colors(bpindex),
@@ -122,16 +151,36 @@ def PlottingResults(
                             linewidth=linewidth,
                             alpha=alphavalue)
 
-                # Likelihoods
-                ax3.plot(prob,
+                # PLOT 3: Delta Pose vs Time
+                ax3[0].plot(dx,
+                            "-",
+                            color=colors(bpindex),
+                            linewidth=linewidth,
+                            alpha=alphavalue)
+
+                ax3[1].plot(dy,
+                            "-",
+                            color=colors(bpindex),
+                            linewidth=linewidth,
+                            alpha=alphavalue)
+
+                ax3[2].plot(dr,
+                            "-",
+                            color=colors(bpindex),
+                            linewidth=linewidth,
+                            alpha=alphavalue)
+
+                # PLOT 4: Likelihoods
+                ax4.plot(prob,
                          "-",
                          color=colors(bpindex),
                          linewidth=linewidth,
                          alpha=alphavalue)
 
-                # Histograms
-                Histogram(temp_x, colors(bpindex), bins, ax4[0], linewidth=linewidth)
-                Histogram(temp_y, colors(bpindex), bins, ax4[1], linewidth=linewidth)
+                # PLOT 5: Histograms
+                Histogram(dx, colors(bpindex), bins, ax5[0], linewidth=linewidth)
+                Histogram(dy, colors(bpindex), bins, ax5[1], linewidth=linewidth)
+                Histogram(dr, colors(bpindex), bins, ax5[2], linewidth=linewidth)
 
     # Colorbar
     sm = plt.cm.ScalarMappable(
@@ -139,7 +188,7 @@ def PlottingResults(
         norm=plt.Normalize(vmin=0, vmax=len(bodyparts2plot) - 1))
     sm._A = []
     # print("scalar-mappable: ", sm)
-    for ax in ax1, ax2, ax3, ax4:
+    for ax in ax1, ax2, ax4, ax5:
         cbar = plt.colorbar(sm, ax=ax, ticks=range(len(bodyparts2plot)))
         cbar.set_ticklabels(bodyparts2plot)
 
@@ -147,15 +196,19 @@ def PlottingResults(
                  bbox_inches="tight",
                  dpi=resolution)
 
-    fig2.savefig(os.path.join(tmpfolder, "plot" + suffix),
+    fig2.savefig(os.path.join(tmpfolder, "plot-position" + suffix),
                  bbox_inches="tight",
                  dpi=resolution)
 
-    fig3.savefig(os.path.join(tmpfolder, "plot-likelihood" + suffix),
+    fig3.savefig(os.path.join(tmpfolder, "plot-delta" + suffix),
                  bbox_inches="tight",
                  dpi=resolution)
 
-    fig4.savefig(os.path.join(tmpfolder, "hist" + suffix),
+    fig4.savefig(os.path.join(tmpfolder, "plot-likelihood" + suffix),
+                 bbox_inches="tight",
+                 dpi=resolution)
+
+    fig5.savefig(os.path.join(tmpfolder, "hist" + suffix),
                  bbox_inches="tight",
                  dpi=resolution)
 
