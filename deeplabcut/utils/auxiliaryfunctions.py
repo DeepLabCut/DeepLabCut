@@ -43,7 +43,7 @@ def create_config_template(multianimal=False):
         multianimalbodyparts:
         bodyparts:
         \n
-    # Fraction of video sto start/stop when extracting frames for labeling/refinement
+    # Fraction of video to start/stop when extracting frames for labeling/refinement
         start:
         stop:
         numframes2pick:
@@ -94,7 +94,7 @@ def create_config_template(multianimal=False):
         video_sets:
         bodyparts:
         \n
-    # Fraction of video sto start/stop when extracting frames for labeling/refinement
+    # Fraction of video to start/stop when extracting frames for labeling/refinement
         start:
         stop:
         numframes2pick:
