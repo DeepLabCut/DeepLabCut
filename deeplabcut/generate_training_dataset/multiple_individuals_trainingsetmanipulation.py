@@ -32,13 +32,11 @@ from deeplabcut.utils import (
     auxfun_models,
     auxfun_multianimal,
 )
+from deeplabcut.utils.skeleton import SkeletonBuilder
 
 
 def format_multianimal_training_data(
-    df,
-    train_inds,
-    project_path,
-    n_decimals=2,
+    df, train_inds, project_path, n_decimals=2,
 ):
     train_data = []
     nrows = df.shape[0]
@@ -107,7 +105,7 @@ def create_multianimaltraining_dataset(
     trainIndices=None,
     testIndices=None,
     n_edges_threshold=105,
-    paf_graph_degree=6
+    paf_graph_degree=6,
 ):
     """
     Creates a training dataset for multi-animal datasets. Labels from all the extracted frames are merged into a single .h5 file.\n
@@ -240,6 +238,19 @@ def create_multianimaltraining_dataset(
                 partaffinityfield_graph, average_degree=paf_graph_degree,
             )
     else:
+        if paf_graph == "config":
+            # Use the skeleton defined in the config file
+            skeleton = cfg["skeleton"]
+            paf_graph = [
+                sorted(
+                    (multianimalbodyparts.index(bpt1), multianimalbodyparts.index(bpt2))
+                )
+                for bpt1, bpt2 in skeleton
+            ]
+            print(
+                "Using `skeleton` from the config file as a paf_graph. Data-driven skeleton will not be computed."
+            )
+
         # Ignore possible connections between 'multi' and 'unique' body parts;
         # one can never be too careful...
         to_ignore = auxfun_multianimal.filter_unwanted_paf_connections(cfg, paf_graph)
@@ -307,10 +318,7 @@ def create_multianimaltraining_dataset(
 
         # Make training file!
         data = format_multianimal_training_data(
-            Data,
-            trainIndices,
-            cfg["project_path"],
-            numdigits,
+            Data, trainIndices, cfg["project_path"], numdigits,
         )
 
         if len(trainIndices) > 0:
@@ -366,10 +374,7 @@ def create_multianimaltraining_dataset(
             )
             path_test_config = str(
                 os.path.join(
-                    cfg["project_path"],
-                    Path(modelfoldername),
-                    "test",
-                    "pose_cfg.yaml",
+                    cfg["project_path"], Path(modelfoldername), "test", "pose_cfg.yaml",
                 )
             )
             path_inference_config = str(
@@ -470,10 +475,7 @@ def create_multianimaltraining_dataset(
 
 
 def convert_cropped_to_standard_dataset(
-    config_path,
-    recreate_datasets=True,
-    delete_crops=True,
-    back_up=True,
+    config_path, recreate_datasets=True, delete_crops=True, back_up=True,
 ):
     import pandas as pd
     import pickle
@@ -512,8 +514,7 @@ def convert_cropped_to_standard_dataset(
         return
 
     datasets_folder = os.path.join(
-        project_path,
-        auxiliaryfunctions.GetTrainingSetFolder(cfg),
+        project_path, auxiliaryfunctions.GetTrainingSetFolder(cfg),
     )
     df_old = pd.read_hdf(
         os.path.join(datasets_folder, "CollectedData_" + cfg["scorer"] + ".h5"),
