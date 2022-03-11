@@ -302,7 +302,7 @@ def evaluate_multianimal_full(
                     if os.path.isfile(data_path):
                         print("Model already evaluated.", resultsfilename)
                     else:
-                        sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
+                        pose_setup = predict.setup_pose_prediction(dlc_cfg)
 
                         PredicteData = {}
                         dist = np.full((len(Data), len(all_bpts)), np.nan)
@@ -346,9 +346,9 @@ def evaluate_multianimal_full(
                             pred = predictma.predict_batched_peaks_and_costs(
                                 dlc_cfg,
                                 np.expand_dims(frame, axis=0),
-                                sess,
-                                inputs,
-                                outputs,
+                                pose_setup.session,
+                                pose_setup.inputs,
+                                pose_setup.outputs,
                                 peaks_gt.astype(int),
                             )
                             if not pred:
@@ -421,7 +421,7 @@ def evaluate_multianimal_full(
                                 )
                                 visualization.erase_artists(ax)
 
-                        sess.close()  # closes the current tf session
+                        pose_setup.session.close()  # closes the current tf session
 
                         # Compute all distance statistics
                         df_dist = pd.DataFrame(dist, columns=df.index)
