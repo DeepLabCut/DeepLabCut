@@ -98,8 +98,8 @@ def extract_frames(
         Full path of the config.yaml file as a string.
 
     mode : string
-        String containing the mode of extraction. It must be either ``automatic`` or ``manual`` to extract the inital set of frames. It can also be ``match`` to match frames between
-        the cameras in preparation for the use of epipolar lines during labeling; namely, extract from camera_1 first, then run this to extact the matched frames in camera_2.
+        String containing the mode of extraction. It must be either ``automatic`` or ``manual`` to extract the initial set of frames. It can also be ``match`` to match frames between
+        the cameras in preparation for the use of epipolar lines during labeling; namely, extract from camera_1 first, then run this to extract the matched frames in camera_2.
         WARNING: if you use match, and you previously extracted and labeled frames from the second camera, this will overwrite your data. This will require you deleting the
         collectdata.h5/.csv files before labeling.... Use with caution!
 

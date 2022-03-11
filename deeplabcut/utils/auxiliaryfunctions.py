@@ -349,7 +349,7 @@ def Getlistofvideos(videos: typing.Union[typing.List[str], str],
         # make list of full paths
         videos = [os.path.join(videofolder, fn) for fn in os.listdir(videofolder)]
 
-        shuffle(videos) # this is useful so multiple nets can be used to analzye simultanously
+        shuffle(videos) # this is useful so multiple nets can be used to analyze simultaneously
 
     # if not given a videotype and given a list of files, use empty string
     # ( 'file.mp4'.endswith('')  == True )

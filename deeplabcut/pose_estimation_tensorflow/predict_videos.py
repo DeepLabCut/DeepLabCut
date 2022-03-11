@@ -232,7 +232,7 @@ def analyze_videos(
         )
     except FileNotFoundError:
         raise FileNotFoundError(
-            "Snapshots not found! It seems the dataset for shuffle %s has not been trained/does not exist.\n Be sure you also have the intented iteration number set.\n Please train it before using it to analyze videos.\n Use the function 'train_network' to train the network for shuffle %s."
+            "Snapshots not found! It seems the dataset for shuffle %s has not been trained/does not exist.\n Be sure you also have the intended iteration number set.\n Please train it before using it to analyze videos.\n Use the function 'train_network' to train the network for shuffle %s."
             % (shuffle, shuffle)
         )
 
@@ -1163,7 +1163,7 @@ def analyze_time_lapse_frames(
                 )
                 print("The folder was analyzed. Now your research can truly start!")
                 print(
-                    "If the tracking is not satisfactory for some frome, consider expanding the training set."
+                    "If the tracking is not satisfactory for some from, consider expanding the training set."
                 )
             else:
                 print(
@@ -1317,8 +1317,8 @@ def convert_detections2tracklets(
         By default, all the body parts are used.
 
     inferencecfg: Default is None.
-        Configuaration file for inference (assembly of individuals). Ideally
-        should be optained from cross validation (during evaluation). By default
+        Configuration file for inference (assembly of individuals). Ideally
+        should be obtained from cross validation (during evaluation). By default
         the parameters are loaded from inference_cfg.yaml, but these get_level_values
         can be overwritten.
 
@@ -1368,7 +1368,7 @@ def convert_detections2tracklets(
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     start_path = os.getcwd()  # record cwd to return to this directory in the end
 
-    # TODO: addd cropping as in video analysis!
+    # TODO: add cropping as in video analysis!
     # if cropping is not None:
     #    cfg['cropping']=True
     #    cfg['x1'],cfg['x2'],cfg['y1'],cfg['y2']=cropping

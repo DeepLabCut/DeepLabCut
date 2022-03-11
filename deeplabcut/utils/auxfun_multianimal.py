@@ -201,7 +201,7 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
     """
     Converts single animal annotation file into a multianimal annotation file,
     by introducing an individuals column with either the first individual
-    in individuals list in config.yaml or whatever is passsed via "forceindividual".
+    in individuals list in config.yaml or whatever is passed via "forceindividual".
 
     ----------
     config : string
@@ -296,7 +296,7 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
             if len(uniquebodyparts) == 0:
                 dataFrame = None
 
-            # -> adding (indivdual,bpt) for multianimalbodyparts
+            # -> adding (individual,bpt) for multianimalbodyparts
             for j, bpt in enumerate(multianimalbodyparts):
                 index = pd.MultiIndex.from_arrays(
                     np.array(

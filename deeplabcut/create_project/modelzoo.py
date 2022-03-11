@@ -143,7 +143,7 @@ def create_pretrained_project(
         ``True`` or ``False``.
 
     analyzevideo " bool, optional
-        If true, then the video is analzyed and a labeled video is created. If false, then only the project will be created and the weights downloaded. You can then access them
+        If true, then the video is analyzed and a labeled video is created. If false, then only the project will be created and the weights downloaded. You can then access them
 
     filtered: bool, default false
         Boolean variable indicating if filtered pose data output should be plotted rather than frame-by-frame predictions.
@@ -154,10 +154,10 @@ def create_pretrained_project(
 
     Example
     --------
-    Linux/MacOs loading full_human model and analzying video /homosapiens1.avi
+    Linux/MacOs loading full_human model and analyzing video /homosapiens1.avi
     >>> deeplabcut.create_pretrained_project('humanstrokestudy','Linus',['/data/videos/homosapiens1.avi'], copy_videos=False)
 
-    Loading full_cat model and analzying video "felixfeliscatus3.avi"
+    Loading full_cat model and analyzing video "felixfeliscatus3.avi"
     >>> deeplabcut.create_pretrained_project('humanstrokestudy','Linus',['/data/videos/felixfeliscatus3.avi'], model='full_cat')
 
     Windows:
@@ -261,7 +261,7 @@ def create_pretrained_project(
         )
 
         # Download the weights and put then in appropriate directory
-        print("Dowloading weights...")
+        print("Downloading weights...")
         auxfun_models.DownloadModel(model, train_dir)
 
         pose_cfg = deeplabcut.auxiliaryfunctions.read_plainconfig(path_train_config)

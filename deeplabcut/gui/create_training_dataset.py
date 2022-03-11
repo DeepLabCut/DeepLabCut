@@ -28,7 +28,7 @@ class Create_training_dataset(wx.Panel):
         """Constructor"""
         wx.Panel.__init__(self, parent=parent)
 
-        # variable initilization
+        # variable initialization
         self.method = "automatic"
         self.config = cfg
         self.cfg = auxiliaryfunctions.read_config(self.config)

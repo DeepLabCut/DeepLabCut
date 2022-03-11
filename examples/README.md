@@ -55,7 +55,7 @@ We also have some video tutorials to demonstrate how we use Anaconda and Docker 
 
 ## * You can download DeepLabCut & associated files:
 
-To have a copy of DeepLabCut on your own computer, we recommend using **Anaconda to install Python and Jupyter Notebooks, see the [Installation](/docs/installation.md) page**. Then, on your local machine using these notebooks to guide you, you can (1) demo our labeled data (or create your own), (2) create a project, extract frames to lablel, use the GUI to label, and create a training set for the neural network(s).
+To have a copy of DeepLabCut on your own computer, we recommend using **Anaconda to install Python and Jupyter Notebooks, see the [Installation](/docs/installation.md) page**. Then, on your local machine using these notebooks to guide you, you can (1) demo our labeled data (or create your own), (2) create a project, extract frames to label, use the GUI to label, and create a training set for the neural network(s).
 
 We suggest making a "Fork" of this repo and/or then place DeepLabCut files in a folder:
 ``git clone https://github.com/DeepLabCut/DeepLabCut``

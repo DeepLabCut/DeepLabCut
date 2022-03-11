@@ -528,7 +528,7 @@ def mergeandsplit(config, trainindex=0, uniform=True):
     Importantly, this allows one to freeze a split.
 
     One can also either create a uniform split (uniform = True; thereby indexing TrainingFraction in config file) or leave-one-folder out split
-    by passing the index of the corrensponding video from the config.yaml file as variable trainindex.
+    by passing the index of the corresponding video from the config.yaml file as variable trainindex.
 
     Parameter
     ----------
