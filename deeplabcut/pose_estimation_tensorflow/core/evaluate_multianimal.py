@@ -652,7 +652,6 @@ def _eval_single_image(
     pose_setup=None,
     to_coco=False,
 ):
-    test_cfg["batch_size"] = 1
     if pose_setup is None:
         pose_setup = predict.setup_pose_prediction(test_cfg)
     frame = auxfun_videos.imread(image_path, mode="skimage")
@@ -678,6 +677,7 @@ def _eval_images(
     snapshot_path="",
     to_coco=False,
 ):
+    test_cfg["batch_size"] = 1
     if snapshot_path:
         test_cfg["init_weight"] = snapshot_path.split(".")[0]
     pose_setup = predict.setup_pose_prediction(test_cfg)
