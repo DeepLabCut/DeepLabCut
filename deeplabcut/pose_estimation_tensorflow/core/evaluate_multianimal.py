@@ -11,16 +11,21 @@ Licensed under GNU Lesser General Public License v3.0
 
 import os
 import pickle
+from collections import defaultdict
 from pathlib import Path
 import numpy as np
 import pandas as pd
 from scipy.spatial import cKDTree
 from tqdm import tqdm
 
+from deeplabcut.pose_estimation_tensorflow.core import (
+    predict,
+    predict_multianimal as predictma,
+)
 from deeplabcut.pose_estimation_tensorflow.core.evaluate import make_results_file
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
-from deeplabcut.utils import visualization
+from deeplabcut.utils import visualization, auxfun_videos
 
 
 def _percentile(n):
@@ -639,3 +644,51 @@ def evaluate_multianimal_full(
                     make_results_file(final_result, evaluationfolder, DLCscorer)
 
     os.chdir(str(start_path))
+
+
+def _eval_single_image(
+    image_path,
+    test_cfg,
+    pose_setup=None,
+    to_coco=False,
+):
+    test_cfg["batch_size"] = 1
+    if pose_setup is None:
+        pose_setup = predict.setup_pose_prediction(test_cfg)
+    frame = auxfun_videos.imread(image_path, mode="skimage")
+    preds = predictma.predict_batched_peaks_and_costs(
+        test_cfg,
+        np.expand_dims(frame, axis=0),
+        pose_setup.session,
+        pose_setup.inputs,
+        pose_setup.outputs,
+    )
+    if preds is None:
+        return
+    preds = preds[0]
+    if to_coco:
+        # TODO
+        ...
+    return preds
+
+
+def _eval_images(
+    image_paths,
+    test_cfg,
+    snapshot_path="",
+    to_coco=False,
+):
+    if snapshot_path:
+        test_cfg["init_weight"] = snapshot_path.split(".")[0]
+    pose_setup = predict.setup_pose_prediction(test_cfg)
+    data = defaultdict(dict)
+    print("Network evaluation underway...")
+    for n, image_path in enumerate(tqdm(image_paths)):
+        preds = _eval_single_image(
+            image_path, test_cfg, snapshot_path, pose_setup, to_coco,
+        )
+        if preds is None:
+            continue
+        data[image_path]["index"] = n
+        data[image_path]["prediction"] = preds
+    return data
