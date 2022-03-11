@@ -49,7 +49,6 @@ def create_config_template(multianimal=False):
         numframes2pick:
         \n
     # Plotting configuration
-    # note: skeleton is only used for plotting, not for assembly/tracking
         skeleton:
         skeleton_color:
         pcutoff:
