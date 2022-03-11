@@ -32,8 +32,6 @@ from deeplabcut.utils import (
     auxfun_models,
     auxfun_multianimal,
 )
-from deeplabcut.utils.skeleton import SkeletonBuilder
-
 
 def format_multianimal_training_data(
     df, train_inds, project_path, n_decimals=2,
@@ -145,10 +143,12 @@ def create_multianimaltraining_dataset(
         or "hybrid" (alternating randomly between "uniform" and "density").
         Default is "hybrid".
 
-    paf_graph: list of lists, optional (default=None)
+    paf_graph: list of lists, or "config" optional (default=None)
         If not None, overwrite the default complete graph. This is useful for advanced users who
         already know a good graph, or simply want to use a specific one. Note that, in that case,
         the data-driven selection procedure upon model evaluation will be skipped.
+
+        "config" will use the skeleton defined in the config file.
 
     trainIndices: list of lists, optional (default=None)
         List of one or multiple lists containing train indexes.
