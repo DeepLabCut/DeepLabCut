@@ -1,9 +1,9 @@
 import os
 
-from PyQt5.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon
+from PySide2.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup
+from PySide2 import QtWidgets
+from PySide2.QtCore import Qt
+from PySide2.QtGui import QIcon
 
 from deeplabcut.generate_training_dataset import extract_frames
 

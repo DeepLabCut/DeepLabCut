@@ -1,6 +1,6 @@
-import PyQt5.QtWidgets as QtWidgets
+import PySide2.QtWidgets as QtWidgets
 import sys
-from PyQt5.QtGui import QIcon
+from PySide2.QtGui import QIcon
 
 from MainWindow import MainWindow
 

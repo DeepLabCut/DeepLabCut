@@ -1,7 +1,7 @@
 from deeplabcut.utils import auxiliaryfunctions
-from PyQt5.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt
+from PySide2.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup
+from PySide2 import QtWidgets
+from PySide2.QtCore import Qt
 
 import deeplabcut
 

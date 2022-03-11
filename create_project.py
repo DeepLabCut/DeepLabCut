@@ -1,8 +1,8 @@
 from deeplabcut.create_project import create_new_project
 
-from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QCheckBox
+from PySide2 import QtCore, QtWidgets
+from PySide2.QtGui import QIcon
+from PySide2.QtWidgets import QCheckBox
 import os
 
 

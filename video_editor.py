@@ -1,8 +1,8 @@
-from PyQt5.QtWidgets import QWidget, QSpinBox, QButtonGroup, QDoubleSpinBox
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt
+from PySide2.QtWidgets import QWidget, QSpinBox, QButtonGroup, QDoubleSpinBox
+from PySide2 import QtWidgets
+from PySide2.QtCore import Qt
 
-import deeplabcut
+from deeplabcut import CropVideo, DownSampleVideo
 
 
 class VideoEditor(QWidget):
@@ -273,7 +273,7 @@ class VideoEditor(QWidget):
         Videos = self.filelist
         if len(Videos) > 0:
             for video in Videos:
-                deeplabcut.DownSampleVideo(
+                DownSampleVideo(
                     video,
                     width=-1,
                     height=self.video_height.value(),
@@ -287,6 +287,6 @@ class VideoEditor(QWidget):
         Videos = self.filelist
         if len(Videos) > 0:
             for video in Videos:
-                deeplabcut.CropVideo(video, useGUI=True)
+                CropVideo(video, useGUI=True)
         else:
             print("Please select a video first!")

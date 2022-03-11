@@ -1,8 +1,8 @@
 import os
-from PyQt5.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon
+from PySide2.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup
+from PySide2 import QtWidgets
+from PySide2.QtCore import Qt
+from PySide2.QtGui import QIcon
 
 import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
@@ -285,13 +285,12 @@ class CreateTrainingDataset(QWidget):
 
         if config_file.get("multianimalproject", False):
             print("multianimalproject")
-            # TODO: add multianimal part
-            # deeplabcut.create_multianimaltraining_dataset(
-            #     self.config,
-            #     num_shuffles,
-            #     Shuffles=[self.shuffle.value()],
-            #     net_type=self.net_choice.currentText() ,
-            # )
+            deeplabcut.create_multianimaltraining_dataset(
+                self.config,
+                num_shuffles,
+                Shuffles=[self.shuffle.value()],
+                net_type=self.net_choice.currentText(),
+            )
         else:
             if self.model_comparison == False:
                 deeplabcut.create_training_dataset(

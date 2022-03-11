@@ -16,11 +16,12 @@ import numpy as np
 import pandas as pd
 
 
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import (
+from PySide2 import QtWidgets, QtCore
+from PySide2.QtCore import Qt
+from PySide2.QtGui import QIcon
+from PySide2.QtWidgets import (
     QMainWindow,
+    QWidget,
     QFrame,
     QVBoxLayout,
     QScrollArea,
@@ -34,8 +35,6 @@ from PyQt5.QtWidgets import (
     QMessageBox,
     QPushButton,
 )
-
-from PyQt5.QtWidgets import QWidget
 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 

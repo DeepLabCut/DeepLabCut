@@ -1,8 +1,8 @@
 import os
 
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QCheckBox
+from PySide2 import QtWidgets, QtCore
+from PySide2.QtGui import QIcon
+from PySide2.QtWidgets import QCheckBox
 
 
 class OpenProject(QtWidgets.QDialog):

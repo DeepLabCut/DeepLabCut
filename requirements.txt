@@ -1,1 +1,2 @@
-PyQt5==5.12
+PySide2
+qdarkstyle

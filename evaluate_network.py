@@ -3,9 +3,9 @@ import subprocess
 import sys
 import webbrowser
 
-from PyQt5.QtWidgets import QWidget, QSpinBox, QButtonGroup
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt
+from PySide2.QtWidgets import QWidget, QSpinBox, QButtonGroup
+from PySide2 import QtWidgets
+from PySide2.QtCore import Qt
 
 import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions

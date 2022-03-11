@@ -1,13 +1,14 @@
 import os
+from pathlib import Path
 import qdarkstyle
 
 from deeplabcut import auxiliaryfunctions
 
-from PyQt5.QtWidgets import QAction, QMenu, QLabel, QVBoxLayout, QWidget
-from PyQt5 import QtCore
-from PyQt5.QtGui import QPixmap, QIcon
-from PyQt5 import QtWidgets, QtGui
-from PyQt5.QtCore import Qt
+from PySide2.QtWidgets import QAction, QMenu, QLabel, QVBoxLayout, QWidget, QMainWindow
+from PySide2 import QtCore
+from PySide2.QtGui import QPixmap, QIcon
+from PySide2 import QtWidgets, QtGui
+from PySide2.QtCore import Qt
 
 from create_project import CreateProject
 from open_project import OpenProject
@@ -23,7 +24,7 @@ from extract_outlier_frames import ExtractOutlierFrames
 from refine_labels import RefineLabels
 
 
-class MainWindow(QtWidgets.QMainWindow):
+class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
 
@@ -104,7 +105,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.name_default = ""
         self.proj_default = ""
         self.exp_default = ""
-        self.loc_default = "C:/"
+        self.loc_default = str(Path.home())
 
     def createActions(self, names):
         # Creating action using the first constructor
@@ -181,7 +182,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.fileToolBar.removeAction(self.openAction)
         self.fileToolBar.removeAction(self.helpAction)
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def _create(self):
         create_p = CreateProject(self)
         create_p.setAttribute(QtCore.Qt.WA_DeleteOnClose)
