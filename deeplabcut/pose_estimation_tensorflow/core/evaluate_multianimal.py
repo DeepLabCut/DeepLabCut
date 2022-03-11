@@ -685,7 +685,7 @@ def _eval_images(
     print("Network evaluation underway...")
     for n, image_path in enumerate(tqdm(image_paths)):
         preds = _eval_single_image(
-            image_path, test_cfg, snapshot_path, pose_setup, to_coco,
+            image_path, test_cfg, pose_setup, to_coco,
         )
         if preds is None:
             continue
