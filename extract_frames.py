@@ -1,4 +1,6 @@
 import os
+import sys
+import logging
 
 from PySide2.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup
 from PySide2 import QtWidgets
@@ -12,6 +14,8 @@ class ExtractFrames(QWidget):
     def __init__(self, parent, cfg):
         super(ExtractFrames, self).__init__(parent)
 
+        self.logger = logging.getLogger("GUI")
+        
         # variable initilization
         self.method = "automatic"
         self.crop = False
@@ -170,27 +174,11 @@ class ExtractFrames(QWidget):
         l_opt.setSpacing(20)
         l_opt.setContentsMargins(20, 0, 0, 0)
 
-        opt_text = QtWidgets.QLabel("Need user feedback?")
-        self.btngroup_feedback = QButtonGroup()
+        self.set_user_feedback = QtWidgets.QCheckBox("User feedback")
+        self.set_user_feedback.setCheckState(Qt.Checked)
+        self.set_user_feedback.stateChanged.connect(self.update_feedback_choice)
 
-        self.feedback_choice1 = QtWidgets.QRadioButton("No")
-        self.feedback_choice1.setChecked(True)
-        self.feedback_choice1.toggled.connect(
-            lambda: self.update_feedback_choice(self.feedback_choice1)
-        )
-
-        self.feedback_choice2 = QtWidgets.QRadioButton("Yes")
-        self.feedback_choice2.toggled.connect(
-            lambda: self.update_feedback_choice(self.feedback_choice2)
-        )
-
-        self.btngroup_feedback.addButton(self.feedback_choice1)
-        self.btngroup_feedback.addButton(self.feedback_choice2)
-
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.feedback_choice1)
-        l_opt.addWidget(self.feedback_choice2)
-
+        l_opt.addWidget(self.set_user_feedback)
         self.layout_opt.addLayout(l_opt)
 
     def _openCV(self):
@@ -199,26 +187,14 @@ class ExtractFrames(QWidget):
         l_opt.setSpacing(20)
         l_opt.setContentsMargins(20, 0, 0, 0)
 
-        opt_text = QtWidgets.QLabel("Want to use openCV?")
-        self.btngroup_opencv = QButtonGroup()
-
-        self.opencv_choice1 = QtWidgets.QRadioButton("No")
-        self.opencv_choice1.toggled.connect(
-            lambda: self.update_opencv_choice(self.opencv_choice1)
+        self.use_openCV_checkbox = QtWidgets.QCheckBox("Use openCV")
+        self.use_openCV_checkbox.setCheckState(Qt.Checked)
+        self.use_openCV_checkbox.stateChanged.connect(self.update_opencv_choice)
+        self.use_openCV_checkbox.setToolTip(
+            "Recommended. Uses openCV for managing videos instead of moviepy (legacy)."
         )
 
-        self.opencv_choice2 = QtWidgets.QRadioButton("Yes")
-        self.opencv_choice2.setChecked(True)
-        self.opencv_choice2.toggled.connect(
-            lambda: self.update_opencv_choice(self.opencv_choice2)
-        )
-
-        self.btngroup_opencv.addButton(self.opencv_choice1)
-        self.btngroup_opencv.addButton(self.opencv_choice2)
-
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.opencv_choice1)
-        l_opt.addWidget(self.opencv_choice2)
+        l_opt.addWidget(self.use_openCV_checkbox)
 
         self.layout_opt.addLayout(l_opt)
 
@@ -325,17 +301,21 @@ class ExtractFrames(QWidget):
         else:
             self.crop = False
 
-    def update_feedback_choice(self, rb):
-        if rb.text() == "Yes":
+    def update_feedback_choice(self, s):
+        if s == Qt.Checked:
             self.feedback = True
+            self.logger.info("Enabling user feedback.")
         else:
             self.feedback = False
+            self.logger.info("Disabling user feedback.")
 
-    def update_opencv_choice(self, rb):
-        if rb.text() == "Yes":
+    def update_opencv_choice(self, s):
+        if s == Qt.Checked:
             self.opencv = True
+            self.logger.info("Use openCV enabled.")
         else:
             self.opencv = False
+            self.logger.info("Use openCV disabled. Using moviepy..")
 
     def extract_frames(self):
         mode = self.method

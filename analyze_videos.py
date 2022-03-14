@@ -1,14 +1,18 @@
+import logging
+
+import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
+
 from PySide2.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
-
-import deeplabcut
 
 
 class AnalyzeVideos(QWidget):
     def __init__(self, parent, cfg):
         super(AnalyzeVideos, self).__init__(parent)
+
+        self.logger = logging.getLogger("GUI")
 
         self.filelist = []
         self.picklelist = []
@@ -256,7 +260,7 @@ class AnalyzeVideos(QWidget):
         l_opt.setSpacing(20)
         l_opt.setContentsMargins(20, 0, 0, 0)
 
-        opt_text = QtWidgets.QLabel("Specify the videotype")
+        opt_text = QtWidgets.QLabel("Videotype")
         self.videotype = QComboBox()
         self.videotype.setMinimumWidth(350)
         self.videotype.setMinimumHeight(30)
@@ -274,7 +278,7 @@ class AnalyzeVideos(QWidget):
         l_opt.setSpacing(20)
         l_opt.setContentsMargins(0, 0, 0, 0)
 
-        opt_text = QtWidgets.QLabel("Specify the shuffle")
+        opt_text = QtWidgets.QLabel("Shuffle")
         self.shuffle = QSpinBox()
         self.shuffle.setMaximum(100)
         self.shuffle.setValue(1)
@@ -291,7 +295,7 @@ class AnalyzeVideos(QWidget):
         l_opt.setSpacing(20)
         l_opt.setContentsMargins(20, 0, 0, 0)
 
-        opt_text = QtWidgets.QLabel("Specify the trainingset index")
+        opt_text = QtWidgets.QLabel("Trainingset index")
         self.trainingset = QSpinBox()
         self.trainingset.setMaximum(100)
         self.trainingset.setValue(0)
@@ -308,26 +312,11 @@ class AnalyzeVideos(QWidget):
         l_opt.setSpacing(20)
         l_opt.setContentsMargins(20, 0, 0, 0)
 
-        opt_text = QtWidgets.QLabel("Want to save result(s) as csv?")
-        self.btngroup_csv_choice = QButtonGroup()
+        self.save_as_csv = QtWidgets.QCheckBox("Save result(s) as csv")
+        self.save_as_csv.setCheckState(Qt.Unchecked)
+        self.save_as_csv.stateChanged.connect(self.update_csv_choice)
 
-        self.csv_choice1 = QtWidgets.QRadioButton("Yes")
-        self.csv_choice1.toggled.connect(
-            lambda: self.update_csv_choice(self.csv_choice1)
-        )
-
-        self.csv_choice2 = QtWidgets.QRadioButton("No")
-        self.csv_choice2.setChecked(True)
-        self.csv_choice2.toggled.connect(
-            lambda: self.update_csv_choice(self.csv_choice2)
-        )
-
-        self.btngroup_csv_choice.addButton(self.csv_choice1)
-        self.btngroup_csv_choice.addButton(self.csv_choice2)
-
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.csv_choice1)
-        l_opt.addWidget(self.csv_choice2)
+        l_opt.addWidget(self.save_as_csv)
         self.layout_save_filter.addLayout(l_opt)
 
     def _layout_filter(self):
@@ -336,26 +325,11 @@ class AnalyzeVideos(QWidget):
         l_opt.setSpacing(20)
         l_opt.setContentsMargins(20, 0, 0, 0)
 
-        opt_text = QtWidgets.QLabel("Want to filter the predictions?")
-        self.btngroup_filter_choice = QButtonGroup()
+        self.filter_predictions = QtWidgets.QCheckBox("Filter predictions")
+        self.filter_predictions.setCheckState(Qt.Unchecked)
+        self.filter_predictions.stateChanged.connect(self.update_filter_choice)
 
-        self.filter_choice1 = QtWidgets.QRadioButton("Yes")
-        self.filter_choice1.toggled.connect(
-            lambda: self.update_filter_choice(self.filter_choice1)
-        )
-
-        self.filter_choice2 = QtWidgets.QRadioButton("No")
-        self.filter_choice2.setChecked(True)
-        self.filter_choice2.toggled.connect(
-            lambda: self.update_filter_choice(self.filter_choice2)
-        )
-
-        self.btngroup_filter_choice.addButton(self.filter_choice1)
-        self.btngroup_filter_choice.addButton(self.filter_choice2)
-
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.filter_choice1)
-        l_opt.addWidget(self.filter_choice2)
+        l_opt.addWidget(self.filter_predictions)
         self.layout_save_filter.addLayout(l_opt)
 
     def _layout_plot(self):
@@ -364,26 +338,11 @@ class AnalyzeVideos(QWidget):
         l_opt.setSpacing(20)
         l_opt.setContentsMargins(20, 0, 0, 0)
 
-        opt_text = QtWidgets.QLabel("Want plots to pop up?")
-        self.btngroup_showfigs_choice = QButtonGroup()
+        self.show_plots = QtWidgets.QCheckBox("Show plots")
+        self.show_plots.setCheckState(Qt.Checked)
+        self.show_plots.stateChanged.connect(self.update_showfigs_choice)
 
-        self.showfigs_choice1 = QtWidgets.QRadioButton("Yes")
-        self.showfigs_choice1.setChecked(True)
-        self.showfigs_choice1.toggled.connect(
-            lambda: self.update_showfigs_choice(self.showfigs_choice1)
-        )
-
-        self.showfigs_choice2 = QtWidgets.QRadioButton("No")
-        self.showfigs_choice2.toggled.connect(
-            lambda: self.update_showfigs_choice(self.showfigs_choice2)
-        )
-
-        self.btngroup_showfigs_choice.addButton(self.showfigs_choice1)
-        self.btngroup_showfigs_choice.addButton(self.showfigs_choice2)
-
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.showfigs_choice1)
-        l_opt.addWidget(self.showfigs_choice2)
+        l_opt.addWidget(self.show_plots)
         self.layout_save_filter.addLayout(l_opt)
 
     def _layout_crop(self):
@@ -392,26 +351,11 @@ class AnalyzeVideos(QWidget):
         l_opt.setSpacing(20)
         l_opt.setContentsMargins(20, 0, 0, 0)
 
-        opt_text = QtWidgets.QLabel("Want to dynamically crop bodyparts?")
-        self.btngroup_crop_choice = QButtonGroup()
+        self.crop_bodyparts = QtWidgets.QCheckBox("Dynamically crop bodyparts")
+        self.crop_bodyparts.setCheckState(Qt.Unchecked)
+        self.crop_bodyparts.stateChanged.connect(self.update_crop_choice)
 
-        self.crop_choice1 = QtWidgets.QRadioButton("Yes")
-        self.crop_choice1.toggled.connect(
-            lambda: self.update_crop_choice(self.crop_choice1)
-        )
-
-        self.crop_choice2 = QtWidgets.QRadioButton("No")
-        self.crop_choice2.setChecked(True)
-        self.crop_choice2.toggled.connect(
-            lambda: self.update_crop_choice(self.crop_choice2)
-        )
-
-        self.btngroup_crop_choice.addButton(self.crop_choice1)
-        self.btngroup_crop_choice.addButton(self.crop_choice2)
-
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.crop_choice1)
-        l_opt.addWidget(self.crop_choice2)
+        l_opt.addWidget(self.crop_bodyparts)
         self.layout_crop_plot.addLayout(l_opt)
 
     def _layout_trajectories(self):
@@ -428,54 +372,48 @@ class AnalyzeVideos(QWidget):
         #   self.trajectory_to_plot.SetCheckedItems(range(len(bodyparts)))
         #   self.trajectory_to_plot.Hide()
 
-        opt_text = QtWidgets.QLabel("Want to plot the trajectories?")
-        self.btngroup_plot_trajectory_choice = QButtonGroup()
+        self.plot_trajectories = QtWidgets.QCheckBox("Plot trajectories")
+        self.plot_trajectories.setCheckState(Qt.Unchecked)
+        self.plot_trajectories.stateChanged.connect(self.update_plot_trajectory_choice)
 
-        self.plot_trajectory_choice1 = QtWidgets.QRadioButton("Yes")
-        self.plot_trajectory_choice1.toggled.connect(
-            lambda: self.update_plot_trajectory_choice(self.plot_trajectory_choice1)
-        )
-
-        self.plot_trajectory_choice2 = QtWidgets.QRadioButton("No")
-        self.plot_trajectory_choice2.setChecked(True)
-        self.plot_trajectory_choice2.toggled.connect(
-            lambda: self.update_plot_trajectory_choice(self.plot_trajectory_choice2)
-        )
-
-        self.btngroup_plot_trajectory_choice.addButton(self.plot_trajectory_choice1)
-        self.btngroup_plot_trajectory_choice.addButton(self.plot_trajectory_choice2)
-
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.plot_trajectory_choice1)
-        l_opt.addWidget(self.plot_trajectory_choice2)
+        l_opt.addWidget(self.plot_trajectories)
         self.layout_crop_plot.addLayout(l_opt)
 
-    def update_csv_choice(self, rb):
-        if rb.text() == "Yes":
+    def update_csv_choice(self, s):
+        if s == Qt.Checked:
             self.csv = True
+            self.logger.info("Save results as CSV ENABLED")
         else:
             self.csv = False
+            self.logger.info("Save results as CSV DISABLED")
 
-    def update_filter_choice(self, rb):
-        if rb.text() == "Yes":
+    def update_filter_choice(self, s):
+        if s == Qt.Checked:
             self.filter = True
+            self.logger.info("Filtering predictions ENABLED")
         else:
             self.filter = False
+            self.logger.info("Filtering predictions DISABLED")
 
-    def update_showfigs_choice(self, rb):
-        if rb.text() == "Yes":
+    def update_showfigs_choice(self, s):
+        if s == Qt.Checked:
             self.showfigs = True
+            self.logger.info("Plots will show as pop ups.")
         else:
             self.showfigs = False
+            self.logger.info("Plots will not show up.")
 
-    def update_crop_choice(self, rb):
-        if rb.text() == "Yes":
+    def update_crop_choice(self, s):
+        if s == Qt.Checked:
             self.dynamic = True
+            self.logger.info("Bodyparts will be cropped dynamically.")
         else:
             self.dynamic = False
+            self.logger.info("Bodyparts will not be cropped.")
 
-    def update_plot_trajectory_choice(self, rb):
-        if rb.text() == "Yes":
+
+    def update_plot_trajectory_choice(self, s):
+        if s == Qt.Checked:
             self.trajectory = True
             # TODO: finish functionality
             # self.trajectory_to_plot.Show()
