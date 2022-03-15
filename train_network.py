@@ -1,4 +1,6 @@
 import os
+import sys
+import subprocess
 from pathlib import Path
 
 from PySide2.QtWidgets import QWidget, QSpinBox, QButtonGroup
@@ -8,6 +10,8 @@ from PySide2.QtGui import QIcon
 
 import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
+
+from widgets import ConfigEditor
 
 
 class TrainNetwork(QWidget):
@@ -169,26 +173,10 @@ class TrainNetwork(QWidget):
         l_opt.setSpacing(20)
         l_opt.setContentsMargins(20, 0, 0, 0)
 
-        opt_text = QtWidgets.QLabel("Want to edit pose_cfg.yaml file?")
-        self.btngroup_pose_cfg_choice = QButtonGroup()
+        self.edit_posecfg_btn = QtWidgets.QPushButton("Edit pose_cfg.yaml")
+        self.edit_posecfg_btn.clicked.connect(self.open_posecfg)
 
-        self.pose_cfg_choice1 = QtWidgets.QRadioButton("Yes")
-        self.pose_cfg_choice1.toggled.connect(
-            lambda: self.update_pose_cfg_choice(self.pose_cfg_choice1)
-        )
-
-        self.pose_cfg_choice2 = QtWidgets.QRadioButton("No")
-        self.pose_cfg_choice2.setChecked(True)
-        self.pose_cfg_choice2.toggled.connect(
-            lambda: self.update_pose_cfg_choice(self.pose_cfg_choice2)
-        )
-
-        self.btngroup_pose_cfg_choice.addButton(self.pose_cfg_choice1)
-        self.btngroup_pose_cfg_choice.addButton(self.pose_cfg_choice2)
-
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.pose_cfg_choice1)
-        l_opt.addWidget(self.pose_cfg_choice2)
+        l_opt.addWidget(self.edit_posecfg_btn)
         self.layout_specify_edit.addLayout(l_opt)
 
     def _display(self):
@@ -268,12 +256,23 @@ class TrainNetwork(QWidget):
         l_opt.addWidget(self.snapshots)
         self.layout_display.addLayout(l_opt)
 
-    def update_pose_cfg_choice(self, rb):
-        # TODO: finish functionality
-        if rb.text() == "Yes":
-            self.pose_cfg_choice = True
-        else:
-            self.pose_cfg_choice = False
+    def open_posecfg(self):
+        # Excavate path to pose_cfg file
+        cfg = auxiliaryfunctions.read_config(self.config)
+        self.pose_cfg_path = os.path.join(
+            cfg["project_path"],
+            auxiliaryfunctions.GetModelFolder(
+                cfg["TrainingFraction"][int(self.trainingindex.value())],
+                int(self.shuffles.value()),
+                cfg,
+            ),
+            "train",
+            "pose_cfg.yaml",
+        )
+        if not self.pose_cfg_path:
+            return
+        editor = ConfigEditor(self.pose_cfg_path)
+        editor.show()
 
     def train_network(self):
         #### children?
