@@ -7,6 +7,8 @@ from PySide2.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
+from widgets import ConfigEditor
+
 
 class AnalyzeVideos(QWidget):
     def __init__(self, parent, cfg):
@@ -214,16 +216,15 @@ class AnalyzeVideos(QWidget):
 
             self.layout_attributes.addLayout(self.layout_crop_plot)
 
-        self.step_button = QtWidgets.QPushButton("Step 1: Analyze Videos")
-        self.step_button.setContentsMargins(0, 40, 40, 40)
-        self.step_button.clicked.connect(self.analyze_videos)
+        self.analye_videos_btn = QtWidgets.QPushButton("Analyze Videos")
+        self.analye_videos_btn.setContentsMargins(0, 40, 40, 40)
+        self.analye_videos_btn.clicked.connect(self.analyze_videos)
 
-        self.edit_config_file = QtWidgets.QPushButton("Edit config.yaml")
-        # TODO: finish function:
-        # self.edit_config_file.clicked.connect(self.)
+        self.edit_config_file_btn = QtWidgets.QPushButton("Edit config.yaml")
+        self.edit_config_file_btn.clicked.connect(self.edit_config_file)
 
-        self.layout_attributes.addWidget(self.step_button, alignment=Qt.AlignRight)
-        self.layout_attributes.addWidget(self.edit_config_file, alignment=Qt.AlignRight)
+        self.layout_attributes.addWidget(self.analye_videos_btn, alignment=Qt.AlignRight)
+        self.layout_attributes.addWidget(self.edit_config_file_btn, alignment=Qt.AlignRight)
         self.inLayout.addLayout(self.layout_attributes)
 
     def update_cfg(self):
@@ -422,6 +423,13 @@ class AnalyzeVideos(QWidget):
             self.trajectory = False
             # self.trajectory_to_plot.Hide()
             # self.bodyparts = []
+
+    def edit_config_file(self):
+        
+        if not self.config:
+            return
+        editor = ConfigEditor(self.config)
+        editor.show()
 
     def getbp(self, event):
         self.bodyparts = list(self.trajectory_to_plot.GetCheckedStrings())
