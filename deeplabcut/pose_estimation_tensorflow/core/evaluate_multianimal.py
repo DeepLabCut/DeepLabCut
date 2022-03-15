@@ -702,7 +702,7 @@ def _format_gt_data(h5file):
     def _get_unique_level_values(header, level):
         return header.get_level_values(level).unique().to_list()
 
-    temp = df.stack("individuals")
+    temp = df.stack("individuals", dropna=False)
     animals = _get_unique_level_values(temp.index, "individuals")
     kpts = _get_unique_level_values(temp.columns, "bodyparts")
     data = temp.to_numpy().reshape((len(file_paths), len(animals), -1, 2))
