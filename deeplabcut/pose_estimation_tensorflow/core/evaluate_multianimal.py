@@ -742,7 +742,7 @@ def calc_prediction_errors(preds, gt):
         np.nan,
     )
     for n, (path, preds_) in enumerate(preds["predictions"].items()):
-        if not preds:
+        if not preds_:
             continue
         xy_gt = annot[map_images[path]].swapaxes(0, 1)
         xy_pred = preds_["coordinates"][0]
