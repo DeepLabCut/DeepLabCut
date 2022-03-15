@@ -26,6 +26,7 @@ from deeplabcut.pose_estimation_tensorflow.core.evaluate import make_results_fil
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
 from deeplabcut.utils import visualization, auxfun_videos
+from deeplabcut.utils.conversioncode import guarantee_multiindex_rows
 
 
 def _percentile(n):
@@ -662,8 +663,8 @@ def _eval_single_image(
         pose_setup.inputs,
         pose_setup.outputs,
     )
-    if preds is None:
-        return
+    if not preds:
+        return []
     preds = preds[0]
     if to_coco:
         # TODO
@@ -683,12 +684,86 @@ def _eval_images(
     pose_setup = predict.setup_pose_prediction(test_cfg)
     data = defaultdict(dict)
     print("Network evaluation underway...")
-    for n, image_path in enumerate(tqdm(image_paths)):
+    for image_path in tqdm(image_paths):
         preds = _eval_single_image(
             image_path, test_cfg, pose_setup, to_coco,
         )
-        if preds is None:
-            continue
-        data[image_path]["index"] = n
-        data[image_path]["prediction"] = preds
+        data["predictions"][image_path] = preds
+    data["metadata"] = {"keypoints": test_cfg["all_joints_names"]}
     return data
+
+
+def _format_gt_data(h5file):
+    df = pd.read_hdf(h5file)
+    animals = df.columns.get_level_values("individuals")
+    guarantee_multiindex_rows(df)
+    file_paths = [os.path.join(*row) for row in df.index.to_list()]
+
+    def _get_unique_level_values(header, level):
+        return header.get_level_values(level).unique().to_list()
+
+    temp = df.stack("individuals")
+    animals = _get_unique_level_values(temp.index, "individuals")
+    kpts = _get_unique_level_values(temp.columns, "bodyparts")
+    data = temp.to_numpy().reshape((len(file_paths), len(animals), -1, 2))
+    meta = {"animals": animals, "keypoints": kpts}
+    return {
+        "annotations": dict(zip(file_paths, data)),
+        "metadata": meta,
+    }
+
+
+def calc_prediction_errors(preds, gt):
+    kpts_gt = gt["metadata"]["keypoints"]
+    kpts_pred = preds["metadata"]["keypoints"]
+    map_ = {kpts_gt.index(kpt): i for i, kpt in enumerate(kpts_pred)}
+    annot = gt["annotations"]
+    images_gt = list(annot)
+    images_pred = list(preds["predictions"])
+
+    # Map image paths from predicted data to GT as the first are typically
+    # absolute whereas the latter are relative to the project path.
+    map_images = dict()
+    while images_pred:
+        im_pred = images_pred.pop()
+        for im in images_gt:
+            if im_pred.endswith(im):
+                map_images[im_pred] = im
+                images_gt.remove(im)
+                break
+
+    errors = np.full(
+        (
+            len(preds["predictions"]),
+            len(gt["metadata"]["animals"]),
+            len(kpts_gt),
+            2,  # Hold distance to GT and confidence
+        ),
+        np.nan,
+    )
+    for n, (path, preds_) in enumerate(preds["predictions"].items()):
+        if not preds:
+            continue
+        xy_gt = annot[map_images[path]].swapaxes(0, 1)
+        xy_pred = preds_["coordinates"][0]
+        conf_pred = preds_["confidence"]
+        for i, xy_gt_ in enumerate(xy_gt):
+            visible = np.flatnonzero(np.all(~np.isnan(xy_gt_), axis=1))
+            xy_pred_ = xy_pred[map_[i]]
+            if visible.size and xy_pred_.size:
+                # Pick the predictions closest to ground truth,
+                # rather than the ones the model has most confident in.
+                neighbors = _find_closest_neighbors(
+                    xy_gt_[visible], xy_pred_, k=3
+                )
+                found = neighbors != -1
+                if ~np.any(found):
+                    continue
+                min_dists = np.linalg.norm(
+                    xy_gt_[visible][found] - xy_pred_[neighbors[found]],
+                    axis=1,
+                )
+                conf_pred_ = conf_pred[map_[i]]
+                errors[n, visible[found], i, 0] = min_dists
+                errors[n, visible[found], i, 1] = conf_pred_[neighbors[found], 0]
+    return errors
