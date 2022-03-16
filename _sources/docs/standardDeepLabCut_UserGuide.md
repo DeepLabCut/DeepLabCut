@@ -32,7 +32,7 @@ Optional arguments specify the working directory, where the project directory wi
 deeplabcut.create_new_project('Name of the project', 'Name of the experimenter', ['Full path of video 1', 'Full path of video2', 'Full path of video3'], working_directory='Full path of the working directory', copy_videos=True/False, multianimal=True/False)
 ```
 
-#### Important path formating note:
+#### Important path formatting note:
 
 Windows users, you must input paths as: ``r'C:\Users\computername\Videos\reachingvideo1.avi' `` or
 
@@ -199,7 +199,7 @@ The differences of the loaders are as follows:
 
 Alternatively, you can set the loader (as well as other training parameters) in the **pose_cfg.yaml** file of the model that you want to train. Note, to get details on the options, look at the default file: [**pose_cfg.yaml**](https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml).
 
-**MODEL COMPARISION:** You can also test several models by creating the same test/train split for different networks. You can easily do this in the Project Manager GUI, or use the function ``deeplabcut.create_training_model_comparison(`` ([check the docstring for more details!](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#or-use-create_training_model_comparison)).
+**MODEL COMPARISON:** You can also test several models by creating the same test/train split for different networks. You can easily do this in the Project Manager GUI, or use the function ``deeplabcut.create_training_model_comparison(`` ([check the docstring for more details!](https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#or-use-create_training_model_comparison)).
 
 Please also see our helper WIKI on selecting models: https://github.com/AlexEMG/DeepLabCut/wiki/What-neural-network-should-I-use%3F
 
@@ -249,7 +249,7 @@ trainingsetindex: int, optional
 gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU, put None.
 See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
 
-max_snapshots_to_keep: int, or None. Sets how many snapshots are kept, i.e. states of the trained network. For every saving interation a snapshot is stored, however, only the last max_snapshots_to_keep many are kept! If you change this to None, then all are kept.
+max_snapshots_to_keep: int, or None. Sets how many snapshots are kept, i.e. states of the trained network. For every saving iteration a snapshot is stored, however, only the last max_snapshots_to_keep many are kept! If you change this to None, then all are kept.
 See: https://github.com/AlexEMG/DeepLabCut/issues/8#issuecomment-387404835
 
 autotune: property of TensorFlow, somehow faster if 'false' (as Eldar found out, see https://github.com/tensorflow/tensorflow/issues/13317). Default: False

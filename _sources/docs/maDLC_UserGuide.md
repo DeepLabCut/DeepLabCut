@@ -329,7 +329,7 @@ trainingsetindex: int, optional
 gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU, put None.
 See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
 
-max_snapshots_to_keep: int, or None. Sets how many snapshots are kept, i.e. states of the trained network. For every saving interation a snapshot is stored, however, only the last max_snapshots_to_keep many are kept! If you change this to None, then all are kept.
+max_snapshots_to_keep: int, or None. Sets how many snapshots are kept, i.e. states of the trained network. For every saving iteration a snapshot is stored, however, only the last max_snapshots_to_keep many are kept! If you change this to None, then all are kept.
 See: https://github.com/AlexEMG/DeepLabCut/issues/8#issuecomment-387404835
 
 autotune: property of TensorFlow, somehow faster if 'false' (as Eldar found out, see https://github.com/tensorflow/tensorflow/issues/13317). Default: False
@@ -416,7 +416,7 @@ you can drop "Indices" to run this on all training/testing images (this is very 
 ### -------------------- DECISION / BREAK POINT -------------------
 
 #### ATTENTION!
-**Pose estimation and tracking should be thought of as separate steps.** If you do not have good pose estimation evaluation metrics at this point, stop, check original labels, add more data, etc --> don't move forward with this model. If you think you have a good model, plese test the "raw" pose estimation performance on a video to validate performance:
+**Pose estimation and tracking should be thought of as separate steps.** If you do not have good pose estimation evaluation metrics at this point, stop, check original labels, add more data, etc --> don't move forward with this model. If you think you have a good model, please test the "raw" pose estimation performance on a video to validate performance:
 
 Please run:
 
