@@ -257,6 +257,13 @@ we leave manually-defining a skeleton as an option for the advanced user:
 my_better_graph = [[0, 1], [1, 2], [2, 3]]  # These are indices in the list of multianimalbodyparts
 deeplabcut.create_multianimaltraining_dataset(path_config_file, paf_graph=my_better_graph)
 ```
+
+Alternatively, the `skeleton` defined in the `config.yaml` file can also be used:
+
+```python
+deeplabcut.create_multianimaltraining_dataset(path_config_file, paf_graph='config')
+```
+
 Importantly, a user-defined graph is still required to cover all multianimalbodyparts at least once.
 
 **DATA AUGMENTATION:** At this stage you can also decide what type of augmentation to use. The default loaders work well for most all tasks (as shown on www.deeplabcut.org), but there are many options, more data augmentation, intermediate supervision, etc. Please look at the [**pose_cfg.yaml**](https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml) file for a full list of parameters **you might want to change before running this step.** There are several data loaders that can be used. For example, you can use the default loader (introduced and described in the Nature Protocols paper), [TensorPack](https://github.com/tensorpack/tensorpack) for data augmentation (currently this is easiest on Linux only), or [imgaug](https://imgaug.readthedocs.io/en/latest/). We recommend `imgaug` (which is default now!). You can set this by passing:``` deeplabcut.create_training_dataset(config_path, augmenter_type='imgaug')  ```
