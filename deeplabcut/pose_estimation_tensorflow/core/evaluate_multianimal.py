@@ -697,19 +697,24 @@ def _eval_images(
 
 def _format_gt_data(h5file):
     df = pd.read_hdf(h5file)
-    animals = df.columns.get_level_values("individuals")
 
     def _get_unique_level_values(header, level):
         return header.get_level_values(level).unique().to_list()
 
-    n_unique = len(_get_unique_level_values(
-        df.loc[:, animals == "single"].columns, "bodyparts")
-    )
+    animals = _get_unique_level_values(df.columns, "individuals")
+    kpts = _get_unique_level_values(df.columns, "bodyparts")
+    try:
+        n_unique = len(_get_unique_level_values(
+            df.xs("single", level="individuals", axis=1).columns, "bodyparts")
+        )
+    except KeyError:
+        n_unique = 0
     guarantee_multiindex_rows(df)
     file_paths = [os.path.join(*row) for row in df.index.to_list()]
-    temp = df.stack("individuals", dropna=False)
-    animals = _get_unique_level_values(temp.index, "individuals")
-    kpts = _get_unique_level_values(temp.columns, "bodyparts")
+    temp = (df
+            .stack("individuals", dropna=False)
+            .reindex(animals, level="individuals")
+            .reindex(kpts, level="bodyparts", axis=1))
     data = temp.to_numpy().reshape((len(file_paths), len(animals), -1, 2))
     meta = {"animals": animals, "keypoints": kpts, "n_unique": n_unique}
     return {
