@@ -14,10 +14,12 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.collections import LineCollection
+from scipy.optimize import linear_sum_assignment
 from skimage import io, color
 from tqdm import trange, tqdm
 
 from deeplabcut.utils import auxiliaryfunctions, auxfun_videos
+from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
 
 
 def get_cmap(n, name="hsv"):
@@ -382,20 +384,56 @@ def visualize_predictions(
     dpi=100,
     destfolder="",
 ):
-    import matplotlib.pyplot as plt
+    is_assembler = isinstance(preds, inferenceutils.Assembler)
+    if is_assembler:
+        n_colors = len(gt["metadata"]["animals"])
+        image_paths = preds.metadata["imnames"]
+    else:
+        n_colors = len(gt["metadata"]["keypoints"])
+        image_paths = list(preds["predictions"])
 
+    colors = plt.cm.get_cmap(cmap, n_colors)
     annot = gt["annotations"]
-    map_images = auxiliaryfunctions._map(list(preds["predictions"]), list(annot))
-    colors = plt.cm.get_cmap(cmap, len(gt["metadata"]["keypoints"]))
+    map_images = auxiliaryfunctions._map(image_paths, list(annot))
     fig, ax = create_minimal_figure(dpi=dpi)
-    for image_path, preds_ in tqdm(preds["predictions"].items()):
-        xy_gt = annot[map_images[image_path]].swapaxes(0, 1)
-        if preds_:
-            xy_pred = preds_["coordinates"][0]
-            conf_pred = preds_["confidence"]
+    for n, image_path in enumerate(tqdm(image_paths)):
+        xy_gt = annot[map_images[image_path]]
+
+        if is_assembler:
+            assemblies = preds.assemblies[n]
+            xy_pred = []
+            xy_pred += [ass.xy for ass in assemblies]
+            conf_pred = []
+            conf_pred += [ass.data[:, 2:3] for ass in assemblies]
+            if preds.unique:
+                unique = preds.unique.get(n, None)
+                if unique is not None:
+                    xy_pred.append(unique[:, :2])
+                    conf_pred.append(unique[:, 2:3])
+            while len(xy_pred) < len(xy_gt):
+                xy_pred.append(np.full((1, 2), np.nan))
+                conf_pred.append(np.full((1, 2), np.nan))
+
+            # Reorder GT to match assemblies
+            n_preds = len(xy_pred)
+            n_gts = len(xy_gt)
+            dists = np.zeros((n_preds, n_gts))
+            for i in range(n_preds):
+                for j in range(n_gts):
+                    d = np.linalg.norm(xy_pred[i] - xy_gt[j])
+                    dists[i, j] = d
+            dists[np.isnan(dists)] = 1e4
+            _, cols = linear_sum_assignment(dists)
+            xy_gt = [xy_gt[ind] for ind in cols]
         else:
-            xy_pred = np.full_like(xy_gt, np.nan)
-            conf_pred = np.full(xy_gt.shape[:2] + (1,), np.nan)
+            xy_gt = xy_gt.swapaxes(0, 1)
+            preds_ = preds["predictions"][image_path]
+            if preds_:
+                xy_pred = preds_["coordinates"][0]
+                conf_pred = preds_["confidence"]
+            else:
+                xy_pred = np.full_like(xy_gt, np.nan)
+                conf_pred = np.full(xy_gt.shape[:2] + (1,), np.nan)
 
         frame = auxfun_videos.imread(image_path, mode="skimage")
         h, w, _ = np.shape(frame)
