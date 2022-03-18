@@ -379,6 +379,11 @@ const thebe_selector_output = ".output, .cell_output"
    How to confirm that your GPU is being used by DeepLabCut
   </a>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#how-to-install-deeplabcut-for-intel-and-amd-gpus-on-windows">
+   How to install DeepLabCut for Intel and  AMD GPUs on Windows
+  </a>
+ </li>
 </ul>
 
             </nav>
@@ -463,6 +468,11 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#how-to-confirm-that-your-gpu-is-being-used-by-deeplabcut">
    How to confirm that your GPU is being used by DeepLabCut
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#how-to-install-deeplabcut-for-intel-and-amd-gpus-on-windows">
+   How to install DeepLabCut for Intel and  AMD GPUs on Windows
   </a>
  </li>
 </ul>
@@ -761,6 +771,22 @@ For more examples and ideas, visit:
 <p>(4) During training, you should see the <strong>Dedicated GPU memory usage</strong> increase to near maximum, and you should see some activity in the <strong>CUDA</strong> graph. The graph below is the activity while running <code class="docutils literal notranslate"><span class="pre">testscript.py</span></code>.</p>
 <p><img alt="" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/b1d03ca0-f8ba-4a31-a399-6e86856c81b0/installBrandon3.png?format=500w" /></p>
 <p>(5) If you don’t see activity there during training, then your GPU is likely not installed correctly for DeepLabCut. Return to the installation instructions, and be sure you installed CUDA 11+, and ran <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">cudnn</span> <span class="pre">-c</span> <span class="pre">conda-forge</span></code> after installing DeepLabCut.</p>
+</div>
+<div class="section" id="how-to-install-deeplabcut-for-intel-and-amd-gpus-on-windows">
+<h2>How to install DeepLabCut for Intel and  AMD GPUs on Windows<a class="headerlink" href="#how-to-install-deeplabcut-for-intel-and-amd-gpus-on-windows" title="Permalink to this headline">¶</a></h2>
+<p>If you are on Windows 10/11 and have a DirectX 12 compatible GPU from any vendor (AMD, Intel, or Nvidia), you utilise GPU accelleration for inference, with an installation that is consistent between devices. This method uses <a class="reference external" href="https://github.com/microsoft/tensorflow-directml">Tensorflow-directml</a> which uses DirectML instead of Cuda for ML training and inference.</p>
+<p>To check the DirectX version of your installed GPU, type in dxdiag into windows search and select the run command. In system information, the bottom item of the list shows your DirectX version. In addition to this ensure your standard GPU drivers are up-to-date. Updating drivers by any official means (Nvidia Geforce experience, AMD radeon software, direct from the vendor website) is fine.</p>
+<p>The following instructions are using conda and pip for environment management, executing within the Anaconda prompt program that was installed along with Anaconda python. The # lines are not to be typed, they are for guidance.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>conda create --name dlc_dml <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7
+conda activate dlc_dml
+<span class="c1">#specific versions noted that are validated as of DLC 2.2.0.6, but other versions may work:</span>
+pip install <span class="s1">&#39;deeplabcut[gui]&#39;</span><span class="o">==</span><span class="m">2</span>.2.0.6
+pip install tensorflow-directml<span class="o">==</span><span class="m">1</span>.15.5
+pip install pip install <span class="nv">imageio</span><span class="o">==</span><span class="m">2</span>.9.0
+conda install <span class="nv">ffmpeg</span><span class="o">==</span><span class="m">4</span>.2.2
+</pre></div>
+</div>
+<p>Attention: Please note the order of execution of these commands are important, as pip’s dependency manager may change package versions to incorrect ones if done in the wrong version.</p>
 </div>
 </div>
 

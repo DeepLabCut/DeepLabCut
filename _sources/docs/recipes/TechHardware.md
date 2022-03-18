@@ -2,7 +2,7 @@
 
 ## Quick summary:
 [On our install page](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/installation.md#technical-considerations)
-we highlight that for GPU computing you need a NVIDIA GPU, with at least 8 GB of memory.
+we highlight that for GPU computing through standard installation you need a NVIDIA GPU, with at least 8 GB of memory. If you have an Intel or AMD GPU, and are on windows, there is an alternative method of installation available which is shown on the [installation tips page](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/recipes/installTips.md) under "How to install Deeplabcut for Intel and AMD GPUs". 
 Note, some info is repeated here, and will be updated as systems and hardware changes.
 
 ### Computer:
