@@ -395,7 +395,7 @@ def visualize_predictions(
             conf_pred = preds_["confidence"]
         else:
             xy_pred = np.full_like(xy_gt, np.nan)
-            conf_pred = np.full(xy_gt.shape[:2], np.nan)
+            conf_pred = np.full(xy_gt.shape[:2] + (1,), np.nan)
 
         frame = auxfun_videos.imread(image_path, mode="skimage")
         h, w, _ = np.shape(frame)
