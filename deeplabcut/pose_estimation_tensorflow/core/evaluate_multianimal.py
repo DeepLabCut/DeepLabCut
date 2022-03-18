@@ -22,9 +22,10 @@ from deeplabcut.pose_estimation_tensorflow.core import (
     predict,
     predict_multianimal as predictma,
 )
+from deeplabcut import auxiliaryfunctions
 from deeplabcut.pose_estimation_tensorflow.core.evaluate import make_results_file
 from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
+from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils, inferenceutils
 from deeplabcut.utils import visualization, auxfun_videos
 from deeplabcut.utils.conversioncode import guarantee_multiindex_rows
 
@@ -674,13 +675,14 @@ def _eval_single_image(
 
 def _eval_images(
     image_paths,
-    test_cfg,
+    test_pose_config,
     snapshot_path="",
     to_coco=False,
 ):
+    test_cfg = load_config(test_pose_config)
     test_cfg["batch_size"] = 1
     if snapshot_path:
-        test_cfg["init_weight"] = snapshot_path.split(".")[0]
+        test_cfg["init_weights"] = snapshot_path.split(".")[0]
     pose_setup = predict.setup_pose_prediction(test_cfg)
     data = defaultdict(dict)
     print("Network evaluation underway...")
@@ -696,17 +698,20 @@ def _eval_images(
 def _format_gt_data(h5file):
     df = pd.read_hdf(h5file)
     animals = df.columns.get_level_values("individuals")
-    guarantee_multiindex_rows(df)
-    file_paths = [os.path.join(*row) for row in df.index.to_list()]
 
     def _get_unique_level_values(header, level):
         return header.get_level_values(level).unique().to_list()
 
+    n_unique = len(_get_unique_level_values(
+        df.loc[:, animals == "single"].columns, "bodyparts")
+    )
+    guarantee_multiindex_rows(df)
+    file_paths = [os.path.join(*row) for row in df.index.to_list()]
     temp = df.stack("individuals", dropna=False)
     animals = _get_unique_level_values(temp.index, "individuals")
     kpts = _get_unique_level_values(temp.columns, "bodyparts")
     data = temp.to_numpy().reshape((len(file_paths), len(animals), -1, 2))
-    meta = {"animals": animals, "keypoints": kpts}
+    meta = {"animals": animals, "keypoints": kpts, "n_unique": n_unique}
     return {
         "annotations": dict(zip(file_paths, data)),
         "metadata": meta,
@@ -718,19 +723,10 @@ def calc_prediction_errors(preds, gt):
     kpts_pred = preds["metadata"]["keypoints"]
     map_ = {kpts_gt.index(kpt): i for i, kpt in enumerate(kpts_pred)}
     annot = gt["annotations"]
-    images_gt = list(annot)
-    images_pred = list(preds["predictions"])
 
     # Map image paths from predicted data to GT as the first are typically
     # absolute whereas the latter are relative to the project path.
-    map_images = dict()
-    while images_pred:
-        im_pred = images_pred.pop()
-        for im in images_gt:
-            if im_pred.endswith(im):
-                map_images[im_pred] = im
-                images_gt.remove(im)
-                break
+    map_images = auxiliaryfunctions._map(list(preds["predictions"]), list(annot))
 
     errors = np.full(
         (
@@ -767,3 +763,60 @@ def calc_prediction_errors(preds, gt):
                 errors[n, visible[found], i, 0] = min_dists
                 errors[n, visible[found], i, 1] = conf_pred_[neighbors[found], 0]
     return errors
+
+
+def calc_mAP(
+    preds,
+    gt,
+    paf_graph,
+    paf_inds,
+    oks_sigma=0.1,
+    pcutoff=0.1,
+    min_affinity=0.1,
+    margin=0,
+    symmetric_kpts=None,
+    greedy_matching=False,
+    add_discarded=True,
+    identity_only=False,
+):
+    kpts = gt["metadata"]["keypoints"]
+    n_multi = len(kpts) - gt["metadata"]["n_unique"]
+    metadata = {
+        "all_joints_names": kpts,
+        "PAFgraph": paf_graph,
+    }
+    data = {"metadata": metadata}
+    data.update(preds["predictions"])
+    ass = inferenceutils.Assembler(
+        data,
+        max_n_individuals=len(gt["metadata"]["animals"]),
+        n_multibodyparts=n_multi,
+        paf_inds=paf_inds,
+        pcutoff=pcutoff,
+        min_affinity=min_affinity,
+        add_discarded=add_discarded,
+        identity_only=identity_only,
+    )
+    ass.assemble()
+
+    gt_images = list(gt["annotations"])
+    map_images = auxiliaryfunctions._map(list(preds["predictions"]), gt_images)
+    inds_images = [
+        gt_images.index(map_images[n]) for n in ass.metadata["imnames"]
+    ]
+    inds_non_single = [
+        i for i, n in enumerate(gt["metadata"]["animals"]) if n != "single"
+    ]
+    temp = np.stack(list(gt["annotations"].values()))
+    ass_true_dict = inferenceutils._parse_ground_truth_data(
+        temp[np.ix_(inds_images, inds_non_single)],
+    )
+    oks = inferenceutils.evaluate_assembly(
+        ass.assemblies,
+        ass_true_dict,
+        oks_sigma,
+        margin=margin,
+        symmetric_kpts=symmetric_kpts,
+        greedy_matching=greedy_matching,
+    )
+    return oks["mAP"], ass.assemblies
