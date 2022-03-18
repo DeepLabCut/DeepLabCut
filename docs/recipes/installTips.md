@@ -366,7 +366,7 @@ During training and analysis steps, DeepLabCut does not use the GPU processor he
 
 (5) If you don't see activity there during training, then your GPU is likely not installed correctly for DeepLabCut. Return to the installation instructions, and be sure you installed CUDA 11+, and ran `conda install cudnn -c conda-forge` after installing DeepLabCut.
 
-## How to install Deeplabcut for Intel, AMD (and Nvidia) GPUs
+## How to install DeepLabCut for Intel and  AMD GPUs on Windows
 If you are on Windows 10/11 and have a DirectX 12 compatible GPU from any vendor (AMD, Intel, or Nvidia), you utilise GPU accelleration for inference, with an installation that is consistent between devices. This method uses [Tensorflow-directml](https://github.com/microsoft/tensorflow-directml) which uses DirectML instead of Cuda for ML training and inference.
 
 To check the DirectX version of your installed GPU, type in dxdiag into windows search and select the run command. In system information, the bottom item of the list shows your DirectX version. In addition to this ensure your standard GPU drivers are up-to-date. Updating drivers by any official means (Nvidia Geforce experience, AMD radeon software, direct from the vendor website) is fine.
@@ -376,11 +376,11 @@ The following instructions are using conda and pip for environment management, e
 ```shell
 conda create --name dlc_dml python=3.7
 conda activate dlc_dml
-#specific version just in case something changes later
-pip install deeplabcut[gui]==2.2.0.6
+#specific versions noted that are validated as of DLC 2.2.0.6, but other versions may work:
+pip install 'deeplabcut[gui]'==2.2.0.6
 pip install tensorflow-directml==1.15.5
 pip install pip install imageio==2.9.0
 conda install ffmpeg==4.2.2
 ```
 
-Please note the order of execution of these commands are important, as pips dependency manager may change package versions to incorrect ones if done in the wrong version.
+Attention: Please note the order of execution of these commands are important, as pip's dependency manager may change package versions to incorrect ones if done in the wrong version.
