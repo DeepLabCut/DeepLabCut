@@ -60,7 +60,8 @@ def train_tracking_transformer(
     npy_list = []
     for video in videos:
         videofolder = str(Path(video).parents[0])
-        video_name = video.split("/")[-1].split(".")[0]
+        video_name = Path(video).stem
+        #video_name = '.'.join(video.split("/")[-1].split(".")[:-1])
         files = glob.glob(os.path.join(videofolder, video_name + dlcscorer + "*.npy"))
         # assuming there is only one match
         npy_list.append(files[0])
