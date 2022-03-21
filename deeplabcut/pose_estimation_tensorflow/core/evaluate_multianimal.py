@@ -814,7 +814,7 @@ def calc_mAP(
     ]
     temp = np.stack(list(gt["annotations"].values()))
     ass_true_dict = inferenceutils._parse_ground_truth_data(
-        temp[np.ix_(inds_images, inds_non_single)],
+        temp[np.ix_(inds_images, inds_non_single, np.arange(n_multi))],
     )
     oks = inferenceutils.evaluate_assembly(
         ass.assemblies,
@@ -824,4 +824,4 @@ def calc_mAP(
         symmetric_kpts=symmetric_kpts,
         greedy_matching=greedy_matching,
     )
-    return oks["mAP"], ass.assemblies
+    return oks["mAP"], ass
