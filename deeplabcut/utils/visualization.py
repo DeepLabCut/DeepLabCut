@@ -384,7 +384,11 @@ def visualize_predictions(
     dpi=100,
     destfolder="",
 ):
+    if destfolder:
+        Path(destfolder).mkdir(parents=True, exist_ok=True)
+
     is_assembler = isinstance(preds, inferenceutils.Assembler)
+    has_unique = "single" in gt["metadata"]["animals"]
     if is_assembler:
         n_colors = len(gt["metadata"]["animals"])
         image_paths = preds.metadata["imnames"]
@@ -405,26 +409,32 @@ def visualize_predictions(
             xy_pred += [ass.xy for ass in assemblies]
             conf_pred = []
             conf_pred += [ass.data[:, 2:3] for ass in assemblies]
-            if preds.unique:
-                unique = preds.unique.get(n, None)
-                if unique is not None:
-                    xy_pred.append(unique[:, :2])
-                    conf_pred.append(unique[:, 2:3])
-            while len(xy_pred) < len(xy_gt):
+
+            xy_gt_multi, xy_gt_unique = np.array_split(
+                xy_gt, [len(xy_gt) - int(has_unique)],
+            )
+            while len(xy_pred) < len(xy_gt_multi):
                 xy_pred.append(np.full((1, 2), np.nan))
                 conf_pred.append(np.full((1, 2), np.nan))
 
             # Reorder GT to match assemblies
             n_preds = len(xy_pred)
-            n_gts = len(xy_gt)
+            n_gts = len(xy_gt_multi)
             dists = np.zeros((n_preds, n_gts))
             for i in range(n_preds):
                 for j in range(n_gts):
-                    d = np.linalg.norm(xy_pred[i] - xy_gt[j])
+                    d = np.linalg.norm(xy_pred[i] - xy_gt_multi[j, :len(xy_pred[i])])
                     dists[i, j] = d
             dists[np.isnan(dists)] = 1e4
             _, cols = linear_sum_assignment(dists)
-            xy_gt = [xy_gt[ind] for ind in cols]
+            xy_gt = [xy_gt_multi[ind] for ind in cols]
+            xy_gt.append(xy_gt_unique)
+
+            if preds.unique:
+                unique = preds.unique.get(n, None)
+                if unique is not None:
+                    xy_pred.append(unique[:, :2])
+                    conf_pred.append(unique[:, 2:3])
         else:
             xy_gt = xy_gt.swapaxes(0, 1)
             preds_ = preds["predictions"][image_path]
