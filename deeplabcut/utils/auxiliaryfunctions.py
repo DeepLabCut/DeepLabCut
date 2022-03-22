@@ -7,6 +7,7 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
+from email.mime import base
 import os
 import typing
 import pickle
@@ -314,7 +315,7 @@ def write_pickle(filename, data):
         pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def Getlistofvideos(videos: typing.Union[typing.List[str], str], 
+def Getlistofvideos(videos: typing.Union[typing.List[str], str],
                     videotype: typing.Optional[str] = None) -> typing.List[str]:
     """ Returns list of videos of videotype "videotype" in
     folder videos or for list of videos.
@@ -323,29 +324,29 @@ def Getlistofvideos(videos: typing.Union[typing.List[str], str],
 
     *_labeled.videotype
     *_full.videotype
-    
+
     Args:
-        videos (list[str], str): List of video paths or a single path string. If string (or len() == 1 list of strings) is a directory, 
+        videos (list[str], str): List of video paths or a single path string. If string (or len() == 1 list of strings) is a directory,
             finds all videos whose extension matches  ``videotype`` in the directory
         videotype (None, str): File extension used to filter videos. Optional if ``videos`` is a list of video files,
             but raises a ``ValueError`` if not provided if ``videos`` is a directory.
     """
     if isinstance(videos, str):
         videos = [videos]
-    
-    
+
+
     if [os.path.isdir(i) for i in videos] == [True]:  # checks if input is a directory
         """
         Returns all the videos in the directory.
         """
         if videotype is None:
             raise ValueError('When given a directory of videos, must be given a videotype')
-        
+
         from random import shuffle
 
         print("Analyzing all the videos in the directory...")
         videofolder = videos[0]
-                             
+
         # make list of full paths
         videos = [os.path.join(videofolder, fn) for fn in os.listdir(videofolder)]
 
@@ -355,7 +356,7 @@ def Getlistofvideos(videos: typing.Union[typing.List[str], str],
     # ( 'file.mp4'.endswith('')  == True )
     if videotype is None:
         videotype = ''
-                             
+
     # filter list of videos
     videos = [
         v
@@ -365,7 +366,7 @@ def Getlistofvideos(videos: typing.Union[typing.List[str], str],
         and "_labeled." not in v
         and "_full." not in v
     ]
-        
+
     return videos
 
 
@@ -795,3 +796,28 @@ def load_detection_data(video, scorer, track_method):
             f"scorer {scorer}, and tracker {track_method}"
         )
     return read_pickle(filepath)
+
+
+def find_next_unlabeled_folder(config_path, verbose=False):
+    cfg = read_config(config_path)
+    base_folder = Path(os.path.join(cfg["project_path"], "labeled-data"))
+    h5files = sorted(
+        base_folder.rglob("*.h5"),
+        key=lambda p: p.lstat().st_mtime,
+        reverse=True,
+    )
+    folders = sorted(f for f in base_folder.iterdir() if f.is_dir())
+    most_recent_folder = h5files[0].parent
+    ind = folders.index(most_recent_folder)
+    next_folder = folders[min(ind + 1, len(folders) - 1)]
+    if verbose:  # Print some stats about data completeness
+        print("Data completeness\n-----------------")
+        for folder in folders:
+            dfs = []
+            for file in folder.rglob("*.h5"):
+                dfs.append(pd.read_hdf(file))
+            if dfs:
+                df = pd.concat(dfs)
+                frac = (~df.isna()).sum().sum() / df.size
+                print(f"{folder.name} | {int(100 * frac)} %")
+    return next_folder
