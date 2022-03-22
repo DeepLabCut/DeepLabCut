@@ -25,6 +25,7 @@ import os
 import cv2
 import numpy as np
 import scipy.io as sio
+from deeplabcut.utils.conversioncode import robust_split_path
 from numpy import array as arr
 from tensorpack.dataflow.base import RNGDataFlow
 from tensorpack.dataflow.common import MapData
@@ -112,8 +113,12 @@ class Pose(RNGDataFlow):
             item = DataItem()
             item.image_id = i
             base = str(self.cfg["project_path"])
-            im_path = os.path.join(base, *[s.strip() for s in sample[0][0]])
-            item.im_path = im_path
+            im_path = sample[0][0]
+            if isinstance(im_path, str):
+                im_path = robust_split_path(im_path)
+            else:
+                im_path = [s.strip() for s in im_path]
+            item.im_path = os.path.join(base, *im_path)
             item.im_size = sample[1][0]
             if len(sample) >= 3:
                 joints = sample[2][0][0]

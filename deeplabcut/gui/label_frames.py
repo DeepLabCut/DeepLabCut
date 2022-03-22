@@ -90,7 +90,7 @@ class Label_frames(wx.Panel):
         """Constructor"""
         wx.Panel.__init__(self, parent=parent)
 
-        # variable initilization
+        # variable initialization
         self.method = "automatic"
         self.config = cfg
         # design the panel
@@ -186,7 +186,7 @@ class Label_frames(wx.Panel):
     def check_labelF(self, event):
         dlg = wx.MessageDialog(
             None,
-            "This will now plot the labeled frames afer you have finished labeling!",
+            "This will now plot the labeled frames after you have finished labeling!",
         )
         result = dlg.ShowModal()
         check_labels(self.config, visualizeindividuals=False)
@@ -194,7 +194,7 @@ class Label_frames(wx.Panel):
     def check_labelInd(self, event):
         dlg = wx.MessageDialog(
             None,
-            "This will now plot the labeled frames afer you have finished labeling!",
+            "This will now plot the labeled frames after you have finished labeling!",
         )
         result = dlg.ShowModal()
         check_labels(self.config, visualizeindividuals=True)

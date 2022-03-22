@@ -27,7 +27,7 @@ from deeplabcut.pose_estimation_tensorflow.core.train import (
     setup_preloading,
     start_preloading,
     get_optimizer,
-    LearningRate
+    LearningRate,
 )
 
 
@@ -88,10 +88,13 @@ def train(
                 include=["MobilenetV2"]
             )
         elif "efficientnet" in net_type:
-            variables_to_restore = slim.get_variables_to_restore(include=["efficientnet"])
+            variables_to_restore = slim.get_variables_to_restore(
+                include=["efficientnet"]
+            )
             variables_to_restore = {
-                    var.op.name.replace("efficientnet/", "")
-                    + "/ExponentialMovingAverage":var for var in variables_to_restore
+                var.op.name.replace("efficientnet/", "")
+                + "/ExponentialMovingAverage": var
+                for var in variables_to_restore
             }
         else:
             print("Wait for DLC 2.3.")
@@ -145,17 +148,18 @@ def train(
     print("Training parameters:")
     print(cfg)
     print("Starting multi-animal training....")
+    max_iter += start_iter  # max_iter is relative to start_iter
     for it in range(start_iter, max_iter + 1):
         if "efficientnet" in net_type:
-            dict = {tstep: it}
-            current_lr = sess.run(learning_rate, feed_dict=dict)
+            lr_dict = {tstep: it - start_iter}
+            current_lr = sess.run(learning_rate, feed_dict=lr_dict)
         else:
-            current_lr = lr_gen.get_lr(it)
-            dict = {learning_rate: current_lr}
+            current_lr = lr_gen.get_lr(it - start_iter)
+            lr_dict = {learning_rate: current_lr}
 
         # [_, loss_val, summary] = sess.run([train_op, total_loss, merged_summaries],feed_dict={learning_rate: current_lr})
         [_, alllosses, loss_val, summary] = sess.run(
-            [train_op, losses, total_loss, merged_summaries], feed_dict=dict
+            [train_op, losses, total_loss, merged_summaries], feed_dict=lr_dict
         )
 
         partloss += alllosses["part_loss"]  # scoremap loss
@@ -199,12 +203,11 @@ def train(
             saver.save(sess, model_name, global_step=it)
 
     lrf.close()
-    
+
     sess.close()
     coord.request_stop()
     coord.join([thread])
-    
-        
+
     # return to original path.
     os.chdir(str(start_path))
 

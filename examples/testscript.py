@@ -24,6 +24,11 @@ import pandas as pd
 
 from deeplabcut.utils import auxiliaryfunctions
 
+import random
+
+USE_SHELVE = random.choice([True, False])
+MODELS = ["resnet_50", "efficientnet-b0", "mobilenet_v2_0.35"]
+
 
 if __name__ == "__main__":
     task = "TEST"  # Enter the name of your experiment Task
@@ -42,12 +47,10 @@ if __name__ == "__main__":
     # videoname='baby4hin2min'
     # video=[os.path.join('/home/alex/Desktop/Data',videoname+'.mp4')]
     # to test destination folder:
-    dfolder = basepath
+    DESTFOLDER = basepath
 
-    dfolder = None
-    net_type = "resnet_50"
-    #net_type = "mobilenet_v2_0.35"
-    #net_type = "efficientnet-b0"  # to -b6
+    DESTFOLDER = None
+    NET = random.choice(MODELS)
 
     augmenter_type = "default"  # = imgaug!!
     augmenter_type2 = "scalecrop"
@@ -58,7 +61,7 @@ if __name__ == "__main__":
     else:
         augmenter_type3 = "tensorpack"  # Does not work on WINDOWS
 
-    numiter = 5
+    N_ITER = 5
 
     print("CREATING PROJECT")
     path_config_file = deeplabcut.create_new_project(
@@ -120,13 +123,16 @@ if __name__ == "__main__":
 
     print("CREATING TRAININGSET")
     deeplabcut.create_training_dataset(
-        path_config_file, net_type=net_type, augmenter_type=augmenter_type
+        path_config_file, net_type=NET, augmenter_type=augmenter_type
     )
 
     # Check the training image paths are correctly stored as arrays of strings
     trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
     datafile, _ = auxiliaryfunctions.GetDataandMetaDataFilenames(
-        trainingsetfolder, 0.8, 1, cfg,
+        trainingsetfolder,
+        0.8,
+        1,
+        cfg,
     )
     mlab = sio.loadmat(os.path.join(cfg["project_path"], datafile))["dataset"]
     num_images = mlab.shape[1]
@@ -150,9 +156,9 @@ if __name__ == "__main__":
     )
 
     DLC_config = deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
-    DLC_config["save_iters"] = numiter
+    DLC_config["save_iters"] = N_ITER
     DLC_config["display_iters"] = 2
-    DLC_config["multi_step"] = [[0.001, numiter]]
+    DLC_config["multi_step"] = [[0.001, N_ITER]]
 
     print("CHANGING training parameters to end quickly!")
     deeplabcut.auxiliaryfunctions.write_plainconfig(posefile, DLC_config)
@@ -196,22 +202,22 @@ if __name__ == "__main__":
         path_config_file,
         [newvideo],
         save_as_csv=True,
-        destfolder=dfolder,
+        destfolder=DESTFOLDER,
         dynamic=(True, 0.1, 5),
     )
 
     print("analyze again...")
     deeplabcut.analyze_videos(
-        path_config_file, [newvideo], save_as_csv=True, destfolder=dfolder
+        path_config_file, [newvideo], save_as_csv=True, destfolder=DESTFOLDER
     )
 
     print("CREATE VIDEO")
     deeplabcut.create_labeled_video(
-        path_config_file, [newvideo], destfolder=dfolder, save_frames=True
+        path_config_file, [newvideo], destfolder=DESTFOLDER, save_frames=True
     )
 
     print("Making plots")
-    deeplabcut.plot_trajectories(path_config_file, [newvideo], destfolder=dfolder)
+    deeplabcut.plot_trajectories(path_config_file, [newvideo], destfolder=DESTFOLDER)
 
     print("EXTRACT OUTLIERS")
     deeplabcut.extract_outlier_frames(
@@ -220,7 +226,7 @@ if __name__ == "__main__":
         outlieralgorithm="jump",
         epsilon=0,
         automatic=True,
-        destfolder=dfolder,
+        destfolder=DESTFOLDER,
     )
 
     deeplabcut.extract_outlier_frames(
@@ -228,7 +234,7 @@ if __name__ == "__main__":
         [newvideo],
         outlieralgorithm="fitting",
         automatic=True,
-        destfolder=dfolder,
+        destfolder=DESTFOLDER,
     )
 
     file = os.path.join(
@@ -268,7 +274,7 @@ if __name__ == "__main__":
 
     print("CREATING TRAININGSET")
     deeplabcut.create_training_dataset(
-        path_config_file, net_type=net_type, augmenter_type=augmenter_type2
+        path_config_file, net_type=NET, augmenter_type=augmenter_type2
     )
 
     cfg = deeplabcut.auxiliaryfunctions.read_config(path_config_file)
@@ -286,9 +292,9 @@ if __name__ == "__main__":
         "train/pose_cfg.yaml",
     )
     DLC_config = deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
-    DLC_config["save_iters"] = numiter
+    DLC_config["save_iters"] = N_ITER
     DLC_config["display_iters"] = 1
-    DLC_config["multi_step"] = [[0.001, numiter]]
+    DLC_config["multi_step"] = [[0.001, N_ITER]]
 
     print("CHANGING training parameters to end quickly!")
     deeplabcut.auxiliaryfunctions.write_config(posefile, DLC_config)
@@ -328,32 +334,33 @@ if __name__ == "__main__":
         path_config_file,
         [newvideo2],
         save_as_csv=True,
-        destfolder=dfolder,
+        destfolder=DESTFOLDER,
         cropping=[0, 50, 0, 50],
-        allow_growth=True
+        allow_growth=True,
+        use_shelve=USE_SHELVE,
     )
 
     print("Extracting skeleton distances, filter and plot filtered output")
     deeplabcut.analyzeskeleton(
-        path_config_file, [newvideo2], save_as_csv=True, destfolder=dfolder
+        path_config_file, [newvideo2], save_as_csv=True, destfolder=DESTFOLDER
     )
     deeplabcut.filterpredictions(path_config_file, [newvideo2])
 
     deeplabcut.create_labeled_video(
         path_config_file,
         [newvideo2],
-        destfolder=dfolder,
+        destfolder=DESTFOLDER,
         displaycropped=True,
         filtered=True,
     )
 
     print("Creating a Johansson video!")
     deeplabcut.create_labeled_video(
-        path_config_file, [newvideo2], destfolder=dfolder, keypoints_only=True
+        path_config_file, [newvideo2], destfolder=DESTFOLDER, keypoints_only=True
     )
 
     deeplabcut.plot_trajectories(
-        path_config_file, [newvideo2], destfolder=dfolder, filtered=True
+        path_config_file, [newvideo2], destfolder=DESTFOLDER, filtered=True
     )
 
     print("ALL DONE!!! - default cases without Tensorpack loader are functional.")
@@ -364,7 +371,7 @@ if __name__ == "__main__":
     deeplabcut.create_training_dataset(
         path_config_file,
         Shuffles=[2],
-        net_type=net_type,
+        net_type=NET,
         augmenter_type=augmenter_type3,
     )
 

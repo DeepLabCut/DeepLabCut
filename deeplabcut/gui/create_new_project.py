@@ -40,7 +40,7 @@ class Create_new_project(wx.Panel):
         h = gui_size[0]
         w = gui_size[1]
         wx.Panel.__init__(self, parent, -1, style=wx.SUNKEN_BORDER, size=(h, w))
-        # variable initilization
+        # variable initialization
         self.filelist = []
         self.filelistnew = []
         self.dir = None
@@ -390,36 +390,42 @@ class Create_new_project(wx.Panel):
             cfg = auxiliaryfunctions.read_config(self.cfg)
             if self.parent.GetPageCount() < 3:
                 page3 = Extract_frames(self.parent, self.gui_size, self.cfg)
-                self.parent.AddPage(page3, "Extract frames")
+                self.parent.AddPage(page3, "Extract Frames")
 
                 page4 = Label_frames(self.parent, self.gui_size, self.cfg)
-                self.parent.AddPage(page4, "Label frames")
+                self.parent.AddPage(page4, "Label Data")
 
                 page5 = Create_training_dataset(self.parent, self.gui_size, self.cfg)
-                self.parent.AddPage(page5, "Create training dataset")
+                self.parent.AddPage(page5, "Create Training Dataset")
 
                 page6 = Train_network(self.parent, self.gui_size, self.cfg)
-                self.parent.AddPage(page6, "Train network")
+                self.parent.AddPage(page6, "Train")
 
                 page7 = Evaluate_network(self.parent, self.gui_size, self.cfg)
-                self.parent.AddPage(page7, "Evaluate network")
-
-                page12 = Video_Editing(self.parent, self.gui_size, self.cfg)
-                self.parent.AddPage(page12, "Video editor")
+                self.parent.AddPage(page7, "Evaluate")
 
                 page8 = Analyze_videos(self.parent, self.gui_size, self.cfg)
                 self.parent.AddPage(page8, "Analyze videos")
 
+                page9 = Create_Labeled_Videos(self.parent, self.gui_size, self.cfg)
+                self.parent.AddPage(page9, "Create videos")
+
+                page11 = Video_Editing(self.parent, self.gui_size, self.cfg)
+                self.parent.AddPage(page11, "OPT: Video editor")
+
+                page12 = Extract_outlier_frames(self.parent, self.gui_size, self.cfg)
+                self.parent.AddPage(page12, "OPT: Extract/Refine Outliers")
+
+                #page10 = Refine_labels(self.parent, self.gui_size, self.cfg, page5)
+                #self.parent.AddPage(page10, "OPT: Refine Labels")
+
+                self.edit_config_file.Enable(True)
+
+
+
                 if cfg.get("multianimalproject", False):
                     page = Refine_tracklets(self.parent, self.gui_size, self.cfg)
-                    self.parent.AddPage(page, "Refine tracklets")
-                page11 = Create_Labeled_Videos(self.parent, self.gui_size, self.cfg)
-                self.parent.AddPage(page11, "Create videos")
-                page9 = Extract_outlier_frames(self.parent, self.gui_size, self.cfg)
-                self.parent.AddPage(page9, "Extract outlier frames")
-                page10 = Refine_labels(self.parent, self.gui_size, self.cfg, page5)
-                self.parent.AddPage(page10, "Refine labels")
-                self.edit_config_file.Enable(True)
+                    self.parent.AddPage(page, "OPT: Refine tracklets")
 
     def add_videos(self, event):
         print("adding new videos to be able to label ...")

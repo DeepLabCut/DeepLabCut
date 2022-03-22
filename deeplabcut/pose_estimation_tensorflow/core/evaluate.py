@@ -18,7 +18,7 @@ from tqdm import tqdm
 
 
 def pairwisedistances(DataCombined, scorer1, scorer2, pcutoff=-1, bodyparts=None):
-    """ Calculates the pairwise Euclidean distance metric over body parts vs. images"""
+    """Calculates the pairwise Euclidean distance metric over body parts vs. images"""
     mask = DataCombined[scorer2].xs("likelihood", level=1, axis=1) >= pcutoff
     if bodyparts == None:
         Pointwisesquareddistance = (DataCombined[scorer1] - DataCombined[scorer2]) ** 2
@@ -191,7 +191,7 @@ def calculatepafdistancebounds(
 def Plotting(
     cfg, comparisonbodyparts, DLCscorer, trainIndices, DataCombined, foldername
 ):
-    """ Function used for plotting GT and predictions """
+    """Function used for plotting GT and predictions"""
     from deeplabcut.utils import visualization
 
     colors = visualization.get_cmap(len(comparisonbodyparts), name=cfg["colormap"])
@@ -542,7 +542,7 @@ def evaluate_network(
 
     Examples
     --------
-    If you do not want to plot, just evalute shuffle 1.
+    If you do not want to plot, just evaluate shuffle 1.
     >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml', Shuffles=[1])
     --------
     If you want to plot and evaluate shuffle 0 and 1.
@@ -582,9 +582,7 @@ def evaluate_network(
         from deeplabcut.utils.auxfun_videos import imread, imresize
         from deeplabcut.pose_estimation_tensorflow.core import predict
         from deeplabcut.pose_estimation_tensorflow.config import load_config
-        from deeplabcut.pose_estimation_tensorflow.datasets.utils import (
-            data_to_input,
-        )
+        from deeplabcut.pose_estimation_tensorflow.datasets.utils import data_to_input
         from deeplabcut.utils import auxiliaryfunctions, conversioncode
         import tensorflow as tf
 
@@ -633,8 +631,10 @@ def evaluate_network(
         )
 
         # Get list of body parts to evaluate network for
-        comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
-            cfg, comparisonbodyparts
+        comparisonbodyparts = (
+            auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
+                cfg, comparisonbodyparts
+            )
         )
         # Make folder for evaluation
         auxiliaryfunctions.attempttomakefolder(
@@ -789,7 +789,8 @@ def evaluate_network(
                         print("Running evaluation ...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
                             image = imread(
-                                os.path.join(cfg["project_path"], *imagename), mode="RGB"
+                                os.path.join(cfg["project_path"], *imagename),
+                                mode="skimage",
                             )
                             if scale != 1:
                                 image = imresize(image, scale)
@@ -958,7 +959,7 @@ def evaluate_network(
                         "Otherwise, consider adding more labeled-data and retraining the network (see DeepLabCut workflow Fig 2, Nath 2019)"
                     )
 
-    # returning to intial folder
+    # returning to initial folder
     os.chdir(str(start_path))
 
 

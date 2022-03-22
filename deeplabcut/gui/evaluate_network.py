@@ -30,7 +30,7 @@ class Evaluate_network(wx.Panel):
         """Constructor"""
         wx.Panel.__init__(self, parent=parent)
 
-        # variable initilization
+        # variable initialization
         self.config = cfg
         self.bodyparts = []
         # design the panel
@@ -89,12 +89,12 @@ class Evaluate_network(wx.Panel):
         self.shuffles = wx.SpinCtrl(self, value="1", min=0, max=100)
         shuffles_text_boxsizer.Add(self.shuffles, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
-        trainingset = wx.StaticBox(self, label="Specify the trainingset index")
-        trainingset_boxsizer = wx.StaticBoxSizer(trainingset, wx.VERTICAL)
-        self.trainingset = wx.SpinCtrl(self, value="0", min=0, max=100)
-        trainingset_boxsizer.Add(
-            self.trainingset, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
-        )
+        #trainingset = wx.StaticBox(self, label="Specify the trainingset index")
+        #trainingset_boxsizer = wx.StaticBoxSizer(trainingset, wx.VERTICAL)
+        #self.trainingset = wx.SpinCtrl(self, value="0", min=0, max=100)
+        #trainingset_boxsizer.Add(
+        #    self.trainingset, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
+        #)
 
         self.plot_choice = wx.RadioBox(
             self,
@@ -134,7 +134,7 @@ class Evaluate_network(wx.Panel):
         self.bodyparts_to_compare.Hide()
 
         self.hbox1.Add(shuffles_text_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-        self.hbox1.Add(trainingset_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        #self.hbox1.Add(trainingset_boxsizer, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         self.hbox1.Add(self.plot_scoremaps, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         self.hbox2.Add(self.plot_choice, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
@@ -229,12 +229,12 @@ class Evaluate_network(wx.Panel):
     def edit_inf_config(self, event):
         # Read the infer config file
         cfg = auxiliaryfunctions.read_config(self.config)
-        trainingsetindex = self.trainingset.GetValue()
-        trainFraction = cfg["TrainingFraction"][trainingsetindex]
+        #trainingsetindex = self.trainingset.GetValue()
+        trainFraction = cfg["TrainingFraction"]
         self.inf_cfg_path = os.path.join(
             cfg["project_path"],
             auxiliaryfunctions.GetModelFolder(
-                trainFraction, self.shuffles.GetValue(), cfg
+                trainFraction[-1], self.shuffles.GetValue(), cfg
             ),
             "test",
             "inference_cfg.yaml",
@@ -253,7 +253,7 @@ class Evaluate_network(wx.Panel):
     def evaluate_network(self, event):
 
         # shuffle = self.shuffle.GetValue()
-        trainingsetindex = self.trainingset.GetValue()
+        #trainingsetindex = self.trainingset.GetValue()
 
         Shuffles = [self.shuffles.GetValue()]
         if self.plot_choice.GetStringSelection() == "Yes":
@@ -270,7 +270,7 @@ class Evaluate_network(wx.Panel):
         deeplabcut.evaluate_network(
             self.config,
             Shuffles=Shuffles,
-            trainingsetindex=trainingsetindex,
+            #trainingsetindex=trainingsetindex,
             plotting=plotting,
             show_errors=True,
             comparisonbodyparts=self.bodyparts,

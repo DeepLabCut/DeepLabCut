@@ -21,6 +21,7 @@ from deeplabcut.pose_estimation_tensorflow.datasets.factory import PoseDatasetFa
 from deeplabcut.pose_estimation_tensorflow.datasets.pose_base import BasePoseDataset
 from deeplabcut.pose_estimation_tensorflow.datasets.utils import DataItem, Batch
 from deeplabcut.utils.auxfun_videos import imread
+from deeplabcut.utils.conversioncode import robust_split_path
 from math import sqrt
 
 
@@ -33,7 +34,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         self.batch_size = cfg["batch_size"]
         print("Batch Size is %d" % self.batch_size)
         self.pipeline = self.build_augmentation_pipeline(
-            apply_prob=cfg.get('apply_prob', 0.5),
+            apply_prob=cfg.get("apply_prob", 0.5),
         )
 
     @property
@@ -56,8 +57,11 @@ class MAImgaugPoseDataset(BasePoseDataset):
             sample = pickledata[i]  # mlab[0, i]
             item = DataItem()
             item.image_id = i
-            item.im_path = os.path.join(*sample["image"])  # [0][0]
-            item.im_size = sample["size"]  # sample[1][0]
+            im_path = sample["image"]
+            if isinstance(im_path, str):
+                im_path = robust_split_path(im_path)
+            item.im_path = os.path.join(*im_path)
+            item.im_size = sample["size"]
             if "joints" in sample.keys():
                 Joints = sample["joints"]
                 if (
@@ -232,7 +236,9 @@ class MAImgaugPoseDataset(BasePoseDataset):
             im_file = data_item.im_path
 
             logging.debug("image %s", im_file)
-            image = imread(os.path.join(self.cfg["project_path"], im_file), mode="RGB")
+            image = imread(
+                os.path.join(self.cfg["project_path"], im_file), mode="skimage"
+            )
             if self.has_gt:
                 Joints = data_item.joints
                 joint_id = [
@@ -248,7 +254,12 @@ class MAImgaugPoseDataset(BasePoseDataset):
         return batch_images, joint_ids, batch_joints, data_items
 
     def get_targetmaps_update(
-        self, joint_ids, joints, data_items, sm_size, scale,
+        self,
+        joint_ids,
+        joints,
+        data_items,
+        sm_size,
+        scale,
     ):
         part_score_targets = []
         part_score_weights = []
@@ -466,8 +477,11 @@ class MAImgaugPoseDataset(BasePoseDataset):
         if num_idchannel > 0:
             coordinateoffset = 0
             # Find indices of individuals in joint_id
-            idx = [(i, id_) for i, id_ in enumerate(data_item.joints)
-                   if id_ < num_idchannel]
+            idx = [
+                (i, id_)
+                for i, id_ in enumerate(data_item.joints)
+                if id_ < num_idchannel
+            ]
             for i, person_id in idx:
                 joint_ids = joint_id[i]
                 n_joints = joint_ids.size
@@ -507,13 +521,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
                         distance_along = Dx * x + Dy * y
                         distance_across = (
-                            (
-                                (
-                                    y * Dx
-                                    - x * Dy
-                                )
-                                - d2mid
-                            )
+                            ((y * Dx - x * Dy) - d2mid)
                             * 1.0
                             / self.cfg["pafwidth"]
                             * scale
@@ -559,7 +567,9 @@ class MAImgaugPoseDataset(BasePoseDataset):
         locref_scale = 1.0 / self.cfg["locref_stdev"]
         dist_thresh_sq = dist_thresh ** 2
 
-        partaffinityfield_shape = np.concatenate([size, np.array([self.cfg["num_limbs"] * 2])])
+        partaffinityfield_shape = np.concatenate(
+            [size, np.array([self.cfg["num_limbs"] * 2])]
+        )
         partaffinityfield_map = np.zeros(partaffinityfield_shape)
         if self.cfg["weigh_only_present_joints"]:
             partaffinityfield_mask = np.zeros(partaffinityfield_shape)

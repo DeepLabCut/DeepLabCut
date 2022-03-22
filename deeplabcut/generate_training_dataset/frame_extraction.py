@@ -74,6 +74,7 @@ def extract_frames(
     slider_width=25,
     config3d=None,
     extracted_cam=0,
+    videos_list=None,
 ):
     """
     Extracts frames from the videos in the config.yaml file. Only the videos in the config.yaml will be used to select the frames.\n
@@ -97,8 +98,8 @@ def extract_frames(
         Full path of the config.yaml file as a string.
 
     mode : string
-        String containing the mode of extraction. It must be either ``automatic`` or ``manual`` to extract the inital set of frames. It can also be ``match`` to match frames between
-        the cameras in preparation for the use of epipolar lines during labeling; namely, extract from camera_1 first, then run this to extact the matched frames in camera_2.
+        String containing the mode of extraction. It must be either ``automatic`` or ``manual`` to extract the initial set of frames. It can also be ``match`` to match frames between
+        the cameras in preparation for the use of epipolar lines during labeling; namely, extract from camera_1 first, then run this to extract the matched frames in camera_2.
         WARNING: if you use match, and you previously extracted and labeled frames from the second camera, this will overwrite your data. This will require you deleting the
         collectdata.h5/.csv files before labeling.... Use with caution!
 
@@ -141,6 +142,10 @@ def extract_frames(
     extracted_cam: number, default: 0
         The index of the camera that already has extracted frames. This will match frame numbers to extract for all other cameras.
         This parameter is necessary if you wish to use epipolar lines in the labeling toolbox. Only use if mode = 'match' and config3d is provided.
+
+    videos_list: list, default: None
+            A list of the string containing full paths to videos to extract frames for. If this is left as None all videos specified in the config file will have frames extracted. 
+            Otherwise one can select a subset by passing those paths. 
 
     Examples
     --------
@@ -206,8 +211,11 @@ def extract_frames(
             raise Exception(
                 "Perhaps consider extracting more, or a natural number of frames."
             )
-
-        videos = cfg.get("video_sets_original") or cfg["video_sets"]
+        if videos_list is None:
+            videos = cfg.get("video_sets_original") or cfg["video_sets"]
+        else: #filter video_list by the ones in the config file
+            videos = [v for v in cfg["video_sets"] if v in videos_list]
+            
         if opencv:
             from deeplabcut.utils.auxfun_videos import VideoReader
         else:
@@ -393,7 +401,9 @@ def extract_frames(
         elif any(has_failed):
             print("Although most frames were extracted, some were invalid.")
         else:
-            print("Frames were successfully extracted, for the videos listed in the config.yaml file.")
+            print(
+                "Frames were successfully extracted, for the videos listed in the config.yaml file."
+            )
         print(
             "\nYou can now label the frames using the function 'label_frames' "
             "(Note, you should label frames extracted from diverse videos (and many videos; we do not recommend training on single videos!))."

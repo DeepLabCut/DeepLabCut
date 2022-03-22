@@ -16,7 +16,7 @@ from scipy import signal
 from scipy.interpolate import CubicSpline
 
 from deeplabcut.refine_training_dataset.outlier_frames import FitSARIMAXModel
-from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
 
 def columnwise_spline_interp(data, max_gap=0):
@@ -94,7 +94,7 @@ def filterpredictions(
         Full path of the video to extract the frame from. Make sure that this video is already analyzed.
 
     shuffle : int, optional
-        The shufle index of training dataset. The extracted frames will be stored in the labeled-dataset for
+        The shuffle index of training dataset. The extracted frames will be stored in the labeled-dataset for
         the corresponding shuffle of training dataset. Default is set to 1
 
     trainingsetindex: int, optional
@@ -117,7 +117,7 @@ def filterpredictions(
         see https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html
 
     MAdegree: int
-        For filtertype 'arima' Moving Avarage degree of Sarimax model degree.
+        For filtertype 'arima' Moving Average degree of Sarimax model degree.
         See https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html
 
     alpha: float
@@ -129,6 +129,10 @@ def filterpredictions(
     destfolder: string, optional
         Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this
         folder also needs to be passed.
+
+    track_method: string, optional
+         Specifies the tracker used to generate the data. Empty by default (corresponding to a single animal project).
+         For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will be taken from the config.yaml file if none is given.
 
     Example
     --------
@@ -148,6 +152,8 @@ def filterpredictions(
     Returns filtered pandas array with the same structure as normal output of network.
     """
     cfg = auxiliaryfunctions.read_config(config)
+    track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
+
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
         cfg,
         shuffle,

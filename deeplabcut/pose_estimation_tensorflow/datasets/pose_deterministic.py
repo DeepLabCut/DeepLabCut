@@ -17,6 +17,7 @@ import numpy as np
 import os
 import scipy.io as sio
 from deeplabcut.utils.auxfun_videos import imread, imresize
+from deeplabcut.utils.conversioncode import robust_split_path
 from .factory import PoseDatasetFactory
 from .pose_base import BasePoseDataset
 from .utils import (
@@ -47,7 +48,7 @@ class DeterministicPoseDataset(BasePoseDataset):
 
     def load_dataset(self):
         cfg = self.cfg
-        file_name = os.path.join(self.cfg["project_path"], cfg['dataset'])
+        file_name = os.path.join(self.cfg["project_path"], cfg["dataset"])
         mlab = sio.loadmat(file_name)
         self.raw_data = mlab
         mlab = mlab["dataset"]
@@ -61,7 +62,12 @@ class DeterministicPoseDataset(BasePoseDataset):
 
             item = DataItem()
             item.image_id = i
-            item.im_path = os.path.join(*[s.strip() for s in sample[0][0]])
+            im_path = sample[0][0]
+            if isinstance(im_path, str):
+                im_path = robust_split_path(im_path)
+            else:
+                im_path = [s.strip() for s in im_path]
+            item.im_path = os.path.join(*im_path)
             item.im_size = sample[1][0]
             if len(sample) >= 3:
                 joints = sample[2][0][0]
@@ -166,7 +172,7 @@ class DeterministicPoseDataset(BasePoseDataset):
         im_file = data_item.im_path
         logging.debug("image %s", im_file)
         logging.debug("mirror %r", mirror)
-        image = imread(os.path.join(self.cfg['project_path'], im_file), mode="RGB")
+        image = imread(os.path.join(self.cfg["project_path"], im_file), mode="skimage")
 
         if self.has_gt:
             joints = np.copy(data_item.joints)

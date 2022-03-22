@@ -8,6 +8,7 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 import os
+import typing
 import pickle
 import warnings
 from pathlib import Path
@@ -40,13 +41,15 @@ def create_config_template(multianimal=False):
         individuals:
         uniquebodyparts:
         multianimalbodyparts:
-        skeleton:
         bodyparts:
+        \n
+    # Fraction of video to start/stop when extracting frames for labeling/refinement
         start:
         stop:
         numframes2pick:
         \n
     # Plotting configuration
+        skeleton:
         skeleton_color:
         pcutoff:
         dotsize:
@@ -58,6 +61,7 @@ def create_config_template(multianimal=False):
         iteration:
         default_net_type:
         default_augmenter:
+        default_track_method:
         snapshotindex:
         batch_size:
         \n
@@ -88,6 +92,8 @@ def create_config_template(multianimal=False):
     # Annotation data set configuration (and individual video cropping parameters)
         video_sets:
         bodyparts:
+        \n
+    # Fraction of video to start/stop when extracting frames for labeling/refinement
         start:
         stop:
         numframes2pick:
@@ -312,7 +318,8 @@ def write_pickle(filename, data):
         pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def Getlistofvideos(videos, videotype):
+def Getlistofvideos(videos: typing.Union[typing.List[str], str], 
+                    videotype: typing.Optional[str] = None) -> typing.List[str]:
     """ Returns list of videos of videotype "videotype" in
     folder videos or for list of videos.
 
@@ -320,48 +327,50 @@ def Getlistofvideos(videos, videotype):
 
     *_labeled.videotype
     *_full.videotype
-
+    
+    Args:
+        videos (list[str], str): List of video paths or a single path string. If string (or len() == 1 list of strings) is a directory, 
+            finds all videos whose extension matches  ``videotype`` in the directory
+        videotype (None, str): File extension used to filter videos. Optional if ``videos`` is a list of video files,
+            but raises a ``ValueError`` if not provided if ``videos`` is a directory.
     """
+    if isinstance(videos, str):
+        videos = [videos]
+    
+    
     if [os.path.isdir(i) for i in videos] == [True]:  # checks if input is a directory
         """
         Returns all the videos in the directory.
         """
-        from random import sample
+        if videotype is None:
+            raise ValueError('When given a directory of videos, must be given a videotype')
+        
+        from random import shuffle
 
         print("Analyzing all the videos in the directory...")
         videofolder = videos[0]
+                             
+        # make list of full paths
+        videos = [os.path.join(videofolder, fn) for fn in os.listdir(videofolder)]
 
-        os.chdir(videofolder)
-        videolist = [
-            os.path.join(videofolder, fn)
-            for fn in os.listdir(os.curdir)
-            if os.path.isfile(fn)
-            and fn.endswith(videotype)
-            and "_labeled." not in fn
-            and "_full." not in fn
-        ]  # exclude labeled (also for multianimal projects) videos!
+        shuffle(videos) # this is useful so multiple nets can be used to analyze simultaneously
 
-        Videos = sample(
-            videolist, len(videolist)
-        )  # this is useful so multiple nets can be used to analzye simultanously
-
-    else:
-        if isinstance(videos, str):
-            if (
-                os.path.isfile(videos)
-                and "_labeled." not in videos
-                and "_full." not in videos
-            ):  # #or just one direct path!
-                Videos = [videos]
-            else:
-                Videos = []
-        else:
-            Videos = [
-                v
-                for v in videos
-                if os.path.isfile(v) and "_labeled." not in v and "_full." not in v
-            ]
-    return Videos
+    # if not given a videotype and given a list of files, use empty string
+    # ( 'file.mp4'.endswith('')  == True )
+    if videotype is None:
+        videotype = ''
+                             
+    # filter list of videos
+    videos = [
+        v
+        for v in videos
+        if os.path.isfile(v)
+        and v.endswith(videotype)
+        and "_labeled." not in v
+        and "_full." not in v
+    ]
+        
+    return videos
 
 
 def SaveData(PredicteData, metadata, dataname, pdindex, imagenames, save_as_csv):
@@ -465,10 +474,9 @@ def GetModelFolder(trainFraction, shuffle, cfg, modelprefix=""):
     iterate = "iteration-" + str(cfg["iteration"])
     return Path(
         modelprefix,
-        "dlc-models/"
-        + iterate
-        + "/"
-        + Task
+        "dlc-models",
+        iterate,
+        Task
         + date
         + "-trainset"
         + str(int(trainFraction * 100))
@@ -482,15 +490,14 @@ def GetEvaluationFolder(trainFraction, shuffle, cfg, modelprefix=""):
     date = cfg["date"]
     iterate = "iteration-" + str(cfg["iteration"])
     if "eval_prefix" in cfg:
-        eval_prefix = cfg["eval_prefix"] + "/"
+        eval_prefix = cfg["eval_prefix"]
     else:
-        eval_prefix = "evaluation-results" + "/"
+        eval_prefix = "evaluation-results"
     return Path(
         modelprefix,
-        eval_prefix
-        + iterate
-        + "/"
-        + Task
+        eval_prefix,
+        iterate,
+        Task
         + date
         + "-trainset"
         + str(int(trainFraction * 100))

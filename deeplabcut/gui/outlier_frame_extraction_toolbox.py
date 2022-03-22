@@ -42,7 +42,6 @@ class ImagePanel(BasePanel):
         """
         Returns the colormaps ticks and . The order of ticks labels is reversed.
         """
-        #        im = io.imread(img)
         norm = mcolors.Normalize(vmin=np.min(img), vmax=np.max(img))
         ticks = np.linspace(np.min(img), np.max(img), len(bodyparts))[::-1]
         return norm, ticks
@@ -88,7 +87,7 @@ class MainFrame(BaseFrame):
         )
 
         ###################################################################################################################################################
-        # Spliting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
+        # Splitting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
         # topSplitter = wx.SplitterWindow(self)
         #
         # self.image_panel = ImagePanel(topSplitter, config,video,shuffle,Dataframe,self.gui_size)
@@ -100,7 +99,7 @@ class MainFrame(BaseFrame):
         # sizer.Add(topSplitter, 1, wx.EXPAND)
         # self.SetSizer(sizer)
 
-        # Spliting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
+        # Splitting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
 
         topSplitter = wx.SplitterWindow(self)
         vSplitter = wx.SplitterWindow(topSplitter)
@@ -472,9 +471,7 @@ class MainFrame(BaseFrame):
                     cbar.set_ticklabels(self.all_bodyparts)
 
                 for ci, ind in enumerate(self.individual_names):
-                    col_idx = (
-                        0
-                    )  # variable for iterating through the colorscheme for all bodyparts
+                    col_idx = 0  # variable for iterating through the colorscheme for all bodyparts
                     image_points = []
                     if ind == "single":
                         if self.visualization_rdb.GetSelection() == 0:

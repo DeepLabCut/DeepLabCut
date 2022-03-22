@@ -422,12 +422,10 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
         )
         try:
             data = pd.read_hdf(file_path)
+            conversioncode.guarantee_multiindex_rows(data)
             AnnotationData.append(data)
         except FileNotFoundError:
-            print(
-                file_path,
-                " not found (perhaps not annotated)."
-            )
+            print(file_path, " not found (perhaps not annotated).")
 
     if not len(AnnotationData):
         print(
@@ -454,7 +452,6 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
     AnnotationData = AnnotationData.reindex(
         bodyparts, axis=1, level=AnnotationData.columns.names.index("bodyparts")
     )
-    conversioncode.guarantee_multiindex_rows(AnnotationData)
     filename = os.path.join(trainingsetfolder_full, f'CollectedData_{cfg["scorer"]}')
     AnnotationData.to_hdf(filename + ".h5", key="df_with_missing", mode="w")
     AnnotationData.to_csv(filename + ".csv")  # human readable.
@@ -490,17 +487,11 @@ def SplitTrials(
         test_indices = shuffle[int(train_size) :]
         train_indices = shuffle[: int(train_size)]
         if enforce_train_fraction and not train_size.is_integer():
-            # Determine the index length required to guarantee
-            # the train–test ratio is exactly the desired one.
-            min_length_req = int(100 / math.gcd(100, int(round(100 * train_fraction))))
-            length_req = math.ceil(index_len / min_length_req) * min_length_req
-            n_train = int(round(length_req * train_fraction))
-            n_test = length_req - n_train
-            # Pad indices so lengths agree
-            train_indices = np.append(
-                train_indices, [-1] * (n_train - len(train_indices))
+            train_indices, test_indices = pad_train_test_indices(
+                train_indices,
+                test_indices,
+                train_fraction,
             )
-            test_indices = np.append(test_indices, [-1] * (n_test - len(test_indices)))
 
         return train_indices, test_indices
 
@@ -537,7 +528,7 @@ def mergeandsplit(config, trainindex=0, uniform=True):
     Importantly, this allows one to freeze a split.
 
     One can also either create a uniform split (uniform = True; thereby indexing TrainingFraction in config file) or leave-one-folder out split
-    by passing the index of the corrensponding video from the config.yaml file as variable trainindex.
+    by passing the index of the corresponding video from the config.yaml file as variable trainindex.
 
     Parameter
     ----------
@@ -765,7 +756,8 @@ def create_training_dataset(
         )
 
         Data = merge_annotateddatasets(
-            cfg, Path(os.path.join(project_path, trainingsetfolder)),
+            cfg,
+            Path(os.path.join(project_path, trainingsetfolder)),
         )
         if Data is None:
             return
@@ -808,7 +800,7 @@ def create_training_dataset(
                 print(
                     "WARNING: Specified augmenter_type does not match dataset_type from posecfg_template path entered. Proceed with caution."
                 )
-            
+                
         # Loading the encoder (if necessary downloading from TF)
         dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
         if not posecfg_template:
@@ -967,6 +959,9 @@ def create_training_dataset(
                     # these values are dropped as scalecrop
                     # doesn't have rotation implemented
                     items2drop = {"rotation": 0, "rotratio": 0.0}
+                # Also drop maDLC smart cropping augmentation parameters
+                for key in ["pre_resize", "crop_size", "max_shift", "crop_sampling"]:
+                    items2drop[key] = None
 
                 trainingdata = MakeTrain_pose_yaml(
                     items2change, path_train_config, defaultconfigfile, items2drop
@@ -999,12 +994,14 @@ def get_largestshuffle_index(config):
     dlc_model_path = os.path.join(project_path, "dlc-models", iterate)
     if os.path.isdir(dlc_model_path):
         models = os.listdir(dlc_model_path)
-        # sort the models directories
+        # sort the model directories
         models.sort(key=lambda f: int("".join(filter(str.isdigit, f))))
-        # get the shuffle index
-        max_shuffle_index = int(models[-1].split("shuffle")[-1])
+
+        # get the shuffle index and offset by 1.
+        max_shuffle_index = int(models[-1].split("shuffle")[-1]) + 1
     else:
         max_shuffle_index = 0
+
     return max_shuffle_index
 
 
@@ -1013,7 +1010,7 @@ def create_training_model_comparison(
     trainindex=0,
     num_shuffles=1,
     net_types=["resnet_50"],
-    augmenter_types=["default"],
+    augmenter_types=["imgaug"],
     userfeedback=False,
     windows2linux=False,
 ):
@@ -1047,12 +1044,19 @@ def create_training_model_comparison(
         If this is set to false, then all requested train/test splits are created (no matter if they already exist). If you
         want to assure that previous splits etc. are not overwritten, then set this to True and you will be asked for each split.
 
+    Returns
+    ----------
+    shuffle_list: list
+        List of indices corresponding to the trainigsplits/models that were created.
+
     Example
     --------
-    >>> deeplabcut.create_training_model_comparison('/analysis/project/reaching-task/config.yaml',num_shuffles=1,net_types=['resnet_50','resnet_152'],augmenter_types=['tensorpack','deterministic'])
+    >>> shuffle_list = deeplabcut.create_training_model_comparison('/analysis/project/reaching-task/config.yaml',num_shuffles=1,net_types=['resnet_50','resnet_152'],augmenter_types=['tensorpack','deterministic'])
 
     Windows:
-    >>> deeplabcut.create_training_model_comparison('C:\\Users\\Ulf\\looming-task\\config.yaml',num_shuffles=1,net_types=['resnet_50','resnet_152'],augmenter_types=['tensorpack','deterministic'])
+    >>> shuffle_list = deeplabcut.create_training_model_comparison('C:\\Users\\Ulf\\looming-task\\config.yaml',num_shuffles=1,net_types=['resnet_50','resnet_152'],augmenter_types=['tensorpack','deterministic'])
+
+    See examples/testscript_openfielddata_augmentationcomparison.py for an example of how to use shuffle_list.
 
     --------
     """
@@ -1080,6 +1084,7 @@ def create_training_model_comparison(
 
     largestshuffleindex = get_largestshuffle_index(config)
 
+    shuffle_list = []
     for shuffle in range(num_shuffles):
         trainIndices, testIndices = mergeandsplit(
             config, trainindex=trainindex, uniform=True
@@ -1092,6 +1097,8 @@ def create_training_model_comparison(
                     + idx_net * len(augmenter_types)
                     + shuffle * len(augmenter_types) * len(net_types)
                 )
+
+                shuffle_list.append(get_max_shuffle_idx)
                 log_info = str(
                     "Shuffle index:"
                     + str(get_max_shuffle_idx)
@@ -1101,6 +1108,8 @@ def create_training_model_comparison(
                     + aug
                     + ", trainsetindex:"
                     + str(trainindex)
+                    + ", frozen shuffle ID:"
+                    + str(shuffle)
                 )
                 create_training_dataset(
                     config,
@@ -1112,3 +1121,5 @@ def create_training_model_comparison(
                     userfeedback=userfeedback,
                 )
                 logger.info(log_info)
+
+    return shuffle_list

@@ -146,7 +146,7 @@ class MainFrame(BaseFrame):
 
         ###################################################################################################################################################
 
-        # Spliting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
+        # Splitting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
 
         topSplitter = wx.SplitterWindow(self)
         vSplitter = wx.SplitterWindow(topSplitter)
@@ -404,11 +404,9 @@ class MainFrame(BaseFrame):
             # Overwrite the config-defined individual names
             # with those actually present in the annotated data
             self.individual_names = (
-                self.Dataframe
-                    .columns
-                    .get_level_values("individuals")
-                    .unique()
-                    .to_list()
+                self.Dataframe.columns.get_level_values("individuals")
+                .unique()
+                .to_list()
             )
             conversioncode.guarantee_multiindex_rows(self.Dataframe)
             self.Dataframe.sort_index(inplace=True)

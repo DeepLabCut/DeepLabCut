@@ -11,6 +11,7 @@ Licensed under GNU Lesser General Public License v3.0
 import os
 import matplotlib.pyplot as plt
 import numpy as np
+from skimage.color import rgba2rgb
 from skimage.transform import resize
 
 
@@ -224,11 +225,15 @@ def extract_maps(
 
             DATA = {}
             for imageindex, imagename in tqdm(Indices):
-                image = imread(os.path.join(cfg["project_path"], *imagename), mode="RGB")
+                image = imread(
+                    os.path.join(cfg["project_path"], *imagename), mode="skimage"
+                )
+
                 if scale != 1:
                     image = imresize(image, scale)
 
                 image_batch = data_to_input(image)
+
                 # Compute prediction with the CNN
                 outputs_np = sess.run(outputs, feed_dict={inputs: image_batch})
 
