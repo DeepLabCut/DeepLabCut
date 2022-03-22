@@ -43,12 +43,13 @@ def get_track_method(cfg, track_method=""):
             track_method = cfg.get("default_track_method", "")
             if not track_method:
                 warnings.warn(
-                    f"""
-                    `default_track_method` is undefined in the config.yaml file and will be set to `ellipse`.
-                    Edit it manually to one of {TRACK_METHODS} if you want to overwrite this default choice.
-                    """
+                    "default_track_method` is undefined in the config.yaml file and will be set to `ellipse`."
                 )
                 track_method = "ellipse"
+                cfg["default_track_method"] = track_method
+                auxiliaryfunctions.write_config(
+                    str(Path(cfg["project_path"]) / "config.yaml"), cfg
+                )
             return track_method
 
     else:  # no tracker for single-animal projects
