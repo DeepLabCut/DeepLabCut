@@ -247,11 +247,11 @@ class ScrollPanel(SP.ScrolledPanel):
 
 
 class MainFrame(BaseFrame):
-    def __init__(self, parent, config, imtypes, config3d, sourceCam):
+    def __init__(self, parent, config, imtypes, config3d, sourceCam, jump_unlabeled):
         super(MainFrame, self).__init__(
             "DeepLabCut2.0 - Labeling ToolBox", parent, imtypes
         )
-
+        self.jump_unlabeled = jump_unlabeled
         self.statusbar.SetStatusText(
             "Looking for a folder to start labeling. Click 'Load frames' to begin."
         )
@@ -574,7 +574,12 @@ class MainFrame(BaseFrame):
             style=wx.DD_DEFAULT_STYLE,
         )
         if dlg.ShowModal() == wx.ID_OK:
-            self.dir = dlg.GetPath()
+            if self.jump_unlabeled:
+                self.dir = str(auxiliaryfunctions.find_next_unlabeled_folder(
+                    self.config_file
+                ))
+            else:
+                self.dir = dlg.GetPath()
             self.load.Enable(False)
             self.next.Enable(True)
             self.save.Enable(True)
@@ -957,9 +962,9 @@ class MainFrame(BaseFrame):
             self.slider.Enable(False)
 
 
-def show(config, config3d, sourceCam, imtypes=["*.png"]):
+def show(config, config3d, sourceCam, imtypes=["*.png"], jump_unlabeled=False):
     app = wx.App()
-    frame = MainFrame(None, config, imtypes, config3d, sourceCam).Show()
+    frame = MainFrame(None, config, imtypes, config3d, sourceCam, jump_unlabeled).Show()
     app.MainLoop()
 
 

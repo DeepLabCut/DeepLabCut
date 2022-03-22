@@ -144,10 +144,10 @@ class ScrollPanel(SP.ScrolledPanel):
 
 
 class MainFrame(BaseFrame):
-    def __init__(self, parent, config):
+    def __init__(self, parent, config, jump_unlabeled):
         super(MainFrame, self).__init__("DeepLabCut2.0 - Refinement ToolBox", parent)
         self.Bind(wx.EVT_CHAR_HOOK, self.OnKeyPressed)
-
+        self.jump_unlabeled = jump_unlabeled
         ###################################################################################################################################################
 
         # Spliting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
@@ -243,6 +243,7 @@ class MainFrame(BaseFrame):
         self.updatedCoords = []
         self.dataFrame = None
         self.drs = []
+        self.config_file = config
         cfg = auxiliaryfunctions.read_config(config)
         self.humanscorer = cfg["scorer"]
         self.move2corner = cfg["move2corner"]
@@ -337,7 +338,12 @@ class MainFrame(BaseFrame):
 
         fname = str("machinelabels-iter" + str(self.iterationindex) + ".h5")
         self.statusbar.SetStatusText("Looking for a folder to start refining...")
-        cwd = os.path.join(os.getcwd(), "labeled-data")
+        if self.jump_unlabeled:
+            cwd = str(auxiliaryfunctions.find_next_unlabeled_folder(
+                self.config_file
+            ))
+        else:
+            cwd = os.path.join(os.getcwd(), "labeled-data")
         #        dlg = wx.FileDialog(self, "Choose the machinelabels file for current iteration.",cwd, "",wildcard=fname,style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         platform.system()
         if platform.system() == "Darwin":
@@ -892,9 +898,9 @@ class MainFrame(BaseFrame):
         self.figure.canvas.draw()
 
 
-def show(config):
+def show(config, jump_unlabeled=False):
     app = wx.App()
-    frame = MainFrame(None, config).Show()
+    frame = MainFrame(None, config, jump_unlabeled).Show()
     app.MainLoop()
 
 
