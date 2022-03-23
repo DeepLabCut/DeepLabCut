@@ -661,7 +661,7 @@ def proc_video(
                 _create_labeled_video(
                     video,
                     filepath,
-                    kpts2show=labeled_bpts,
+                    keypoints2show=labeled_bpts,
                     animals2show=individuals,
                     bbox=bbox,
                     codec=codec,
