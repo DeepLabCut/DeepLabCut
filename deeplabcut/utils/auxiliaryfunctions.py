@@ -7,7 +7,7 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
-from email.mime import base
+
 import os
 import typing
 import pickle
