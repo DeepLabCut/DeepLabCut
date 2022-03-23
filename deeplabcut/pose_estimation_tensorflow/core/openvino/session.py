@@ -4,7 +4,12 @@ import subprocess
 import numpy as np
 from tqdm import tqdm
 import cv2
-from openvino.runtime import Core, AsyncInferQueue
+
+try:
+    from openvino.runtime import Core, AsyncInferQueue
+    is_openvino_available = True
+except ImportError:
+    is_openvino_available = False
 
 class OpenVINOSession:
     def __init__(self, cfg, device):

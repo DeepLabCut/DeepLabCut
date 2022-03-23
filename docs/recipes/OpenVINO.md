@@ -12,3 +12,9 @@ def analyze_videos(
     use_openvino="MULTI:CPU,GPU",
 )
 ```
+
+OpenVINO is an optional dependency. You can install it with DeepLabCut bu the following command:
+
+```bash
+pip install deeplabcut[openvino]
+```

@@ -34,7 +34,7 @@ from deeplabcut.pose_estimation_tensorflow.core import predict
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingutils
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
-from deeplabcut.pose_estimation_tensorflow.core.openvino.session import GetPoseF_OV
+from deeplabcut.pose_estimation_tensorflow.core.openvino.session import GetPoseF_OV, is_openvino_available
 
 
 ####################################################
@@ -63,7 +63,7 @@ def analyze_videos(
     n_tracks=None,
     calibrate=False,
     identity_only=False,
-    use_openvino="CPU",
+    use_openvino="CPU" if is_openvino_available else None,
 ):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
@@ -724,7 +724,7 @@ def AnalyzeVideo(
     destfolder=None,
     TFGPUinference=True,
     dynamic=(False, 0.5, 10),
-    use_openvino="CPU",
+    use_openvino="CPU" if is_openvino_available else None,
 ):
     """Helper function for analyzing a video."""
     print("Starting to analyze % ", video)
