@@ -94,14 +94,16 @@ class MAImgaugPoseDataset(BasePoseDataset):
             width, height = pre_resize
             pipeline.add(iaa.Resize({"height": height, "width": width}))
 
-        # Add smart, keypoint-aware image cropping
-        w, h = self.default_crop_size
-        pipeline.add(iaa.PadToFixedSize(w, h))
-        pipeline.add(
-            augmentation.KeypointAwareCropToFixedSize(
-                w, h, cfg.get("max_shift", 0.4), cfg.get("crop_sampling", "hybrid")
+        crop_sampling = cfg.get("crop_sampling", "hybrid")
+        if crop_sampling != "none":
+            # Add smart, keypoint-aware image cropping
+            w, h = self.default_crop_size
+            pipeline.add(iaa.PadToFixedSize(w, h))
+            pipeline.add(
+                augmentation.KeypointAwareCropToFixedSize(
+                    w, h, cfg.get("max_shift", 0.4), crop_sampling,
+                )
             )
-        )
 
         if cfg.get("fliplr", False):
             opt = cfg.get("fliplr", False)
